@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmargementSheet } from "../../../../_shared/EmargementSheet";
 import { InscribeButton } from "../../../../_shared/InscribeButton";
+import { InscriptionDeliverables } from "../../../../_shared/InscriptionDeliverables";
 
 export const metadata: Metadata = { title: "Session · Les Extras" };
 
@@ -31,6 +32,7 @@ interface Inscription {
   learner?: { firstName?: string | null; lastName?: string | null; email?: string | null } | null;
   status: string;
   financing: string;
+  invoiceId?: string | null;
 }
 interface SessionDetail {
   id: string;
@@ -121,16 +123,23 @@ export default async function SessionDetailPage({ params }: { params: { sessionI
               inscriptions.map((i) => {
                 const st = INSCRIPTION_STATUS[i.status] ?? { label: i.status, variant: "outline" as const };
                 return (
-                  <div
-                    key={i.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2"
-                  >
-                    <span className="min-w-0 truncate text-sm font-medium text-foreground">{learnerLabel(i)}</span>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        {FINANCING_LABEL[i.financing] ?? i.financing}
-                      </span>
-                      <Badge variant={st.variant}>{st.label}</Badge>
+                  <div key={i.id} className="rounded-lg border border-border px-3 py-2.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="min-w-0 truncate text-sm font-medium text-foreground">{learnerLabel(i)}</span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {FINANCING_LABEL[i.financing] ?? i.financing}
+                        </span>
+                        <Badge variant={st.variant}>{st.label}</Badge>
+                      </div>
+                    </div>
+                    <div className="mt-2 border-t border-border pt-2">
+                      <InscriptionDeliverables
+                        inscriptionId={i.id}
+                        accountId={session.account.id}
+                        certifying={Boolean(s.formation?.certifying)}
+                        invoiced={Boolean(i.invoiceId)}
+                      />
                     </div>
                   </div>
                 );

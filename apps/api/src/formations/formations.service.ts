@@ -9,6 +9,7 @@ import {
   FinancingType,
   FormationStatus,
   FormationType,
+  InvoiceStatus,
   MembershipStatus,
   Prisma,
 } from '@prisma/client';
@@ -387,5 +388,77 @@ export class FormationsService {
         signedAt: present ? new Date() : null,
       },
     });
+  }
+
+  // --- Phase 2 : livrables (attestation / certificat) & facturation -------
+
+  /** Détail complet d'une inscription (pour générer le document imprimable). */
+  async getInscription(inscriptionId: string, accountId: string, userId: string) {
+    const inscription = await this.prisma.inscription.findUnique({
+      where: { id: inscriptionId },
+      include: {
+        session: {
+          include: {
+            formation: {
+              include: { ownerAccount: { select: { id: true, name: true, city: true } } },
+            },
+            trainer: { select: { firstName: true, lastName: true } },
+          },
+        },
+        payerAccount: { select: { id: true, name: true } },
+        learner: { select: { firstName: true, lastName: true, email: true } },
+        emargements: true,
+      },
+    });
+    if (!inscription) throw new NotFoundException('Inscription introuvable.');
+    if (!this.canManageSession(inscription.session, accountId, userId)) {
+      throw new ForbiddenException('Accès à cette inscription refusé.');
+    }
+    return inscription;
+  }
+
+  private async nextInvoiceNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = `INV-${year}-`;
+    const count = await this.prisma.invoice.count({
+      where: { number: { startsWith: prefix } },
+    });
+    return `${prefix}${String(count + 1).padStart(5, '0')}`;
+  }
+
+  /** Génère (ou renvoie) la facture d'une inscription — payeur = compte inscripteur. */
+  async invoiceInscription(
+    inscriptionId: string,
+    accountId: string,
+    userId: string,
+    amount?: number,
+  ) {
+    const inscription = await this.prisma.inscription.findUnique({
+      where: { id: inscriptionId },
+      include: { session: { include: { formation: true } }, invoice: true },
+    });
+    if (!inscription) throw new NotFoundException('Inscription introuvable.');
+    if (!this.canManageSession(inscription.session, accountId, userId)) {
+      throw new ForbiddenException('Facturation refusée.');
+    }
+    if (inscription.invoice) return inscription.invoice;
+
+    const payerAccountId = inscription.payerAccountId ?? accountId;
+    const amt = amount ?? Number(inscription.session.priceHt ?? 0);
+    const number = await this.nextInvoiceNumber();
+
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        accountId: payerAccountId,
+        number,
+        amount: amt,
+        status: InvoiceStatus.DRAFT,
+      },
+    });
+    await this.prisma.inscription.update({
+      where: { id: inscriptionId },
+      data: { invoiceId: invoice.id },
+    });
+    return invoice;
   }
 }

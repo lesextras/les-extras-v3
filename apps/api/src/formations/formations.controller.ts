@@ -94,6 +94,27 @@ export class FormationsController {
     return this.formations.enroll(sessionId, account.id, dto);
   }
 
+  @Get('inscriptions/:inscriptionId')
+  @UseGuards(AccountGuard)
+  getInscription(
+    @Param('inscriptionId') inscriptionId: string,
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+  ) {
+    return this.formations.getInscription(inscriptionId, account.id, user.id);
+  }
+
+  @Post('inscriptions/:inscriptionId/invoice')
+  @UseGuards(AccountGuard)
+  invoiceInscription(
+    @Param('inscriptionId') inscriptionId: string,
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+    @Body('amount') amount?: number,
+  ) {
+    return this.formations.invoiceInscription(inscriptionId, account.id, user.id, amount);
+  }
+
   @Patch('inscriptions/:inscriptionId')
   @UseGuards(AccountGuard)
   updateInscription(
