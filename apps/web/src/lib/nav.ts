@@ -109,7 +109,7 @@ const establishmentNav: NavSection[] = [
 const adminNav: NavSection[] = [
   {
     items: [
-      { label: 'Vue d\u2019ensemble', href: '/admin', icon: LayoutDashboard },
+      { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d\u2019ensemble de la plateforme' },
     ],
   },
   {
