@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
   const store = cookies();
   const maxAge = 60 * 60 * 24 * 7; // 7 jours
-  const secure = process.env.NODE_ENV === 'production';
+  const secure = (request.headers.get('x-forwarded-proto') ?? '') === 'https';
 
   store.set(SESSION_COOKIE, body.token, {
     httpOnly: true,

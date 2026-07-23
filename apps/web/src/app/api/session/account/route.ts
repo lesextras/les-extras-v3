@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   cookies().set(ACTIVE_ACCOUNT_COOKIE, accountId, {
     httpOnly: false,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: (request.headers.get('x-forwarded-proto') ?? '') === 'https',
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
   });
