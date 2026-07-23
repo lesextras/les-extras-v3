@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import {
   FormationStatus,
   FormationType,
+  InvitationStatus,
   Prisma,
   SessionStatus,
   UserStatus,
@@ -55,6 +56,16 @@ export class AdminService {
         emailVerified: true,
         createdAt: true,
         lastLoginAt: true,
+        // Rattachements : structures + rôle interne (salarié, responsable…).
+        memberships: {
+          select: {
+            role: true,
+            status: true,
+            account: { select: { id: true, name: true, type: true } },
+          },
+        },
+        // Comptes possédés (freelance = son propre compte, ou direction d'établissement).
+        ownedAccounts: { select: { id: true, name: true, type: true } },
       },
     });
   }
@@ -700,6 +711,43 @@ export class AdminService {
     }
     rows.push(`TOTAL;${b.stagiaires};${b.produitTotal.toFixed(2)}`);
     return rows.join('\n');
+  }
+
+  // --- Invitations --------------------------------------------------------
+
+  async listInvitations(status?: string) {
+    const where: Prisma.InvitationWhereInput = {};
+    if (status) where.status = status as InvitationStatus;
+    return this.prisma.invitation.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: {
+        account: { select: { id: true, name: true, type: true } },
+        invitedBy: { select: { email: true, firstName: true, lastName: true } },
+      },
+    });
+  }
+
+  async revokeInvitation(id: string) {
+    const inv = await this.prisma.invitation.findUnique({ where: { id } });
+    if (!inv) throw new NotFoundException('Invitation introuvable.');
+    return this.prisma.invitation.update({
+      where: { id },
+      data: { status: InvitationStatus.REVOKED },
+    });
+  }
+
+  async resendInvitation(id: string) {
+    const inv = await this.prisma.invitation.findUnique({ where: { id } });
+    if (!inv) throw new NotFoundException('Invitation introuvable.');
+    return this.prisma.invitation.update({
+      where: { id },
+      data: {
+        status: InvitationStatus.PENDING,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
   }
 
   // --- Stats rapides ------------------------------------------------------

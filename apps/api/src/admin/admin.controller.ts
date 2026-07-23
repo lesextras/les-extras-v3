@@ -187,6 +187,23 @@ export class AdminController {
     return this.admin.updateInvoiceStatus(id, status);
   }
 
+  // --- Invitations --------------------------------------------------------
+
+  @Get('invitations')
+  listInvitations(@Query('status') status?: string) {
+    return this.admin.listInvitations(status);
+  }
+
+  @Patch('invitations/:id/revoke')
+  revokeInvitation(@Param('id') id: string) {
+    return this.admin.revokeInvitation(id);
+  }
+
+  @Patch('invitations/:id/resend')
+  resendInvitation(@Param('id') id: string) {
+    return this.admin.resendInvitation(id);
+  }
+
   // --- Centre de formation ------------------------------------------------
 
   @Get('formations')

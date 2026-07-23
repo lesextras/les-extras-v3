@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   ClipboardList,
   Home,
+  Mail,
+  KeyRound,
   Tags,
   Users,
   Building2,
@@ -139,10 +141,12 @@ const adminNav: NavSection[] = [
     ],
   },
   {
-    title: 'Comptes',
+    title: 'Comptes & accès',
     items: [
-      { label: 'Établissements', href: '/admin/etablissements', icon: Building2, hint: 'Organisations et structures inscrites' },
-      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Gérer et modérer les comptes' },
+      { label: 'Établissements', href: '/admin/etablissements', icon: Building2, hint: 'Organisations et structures inscrites + leurs membres' },
+      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Utilisateurs et leurs rattachements (salarié, responsable, freelance)' },
+      { label: 'Invitations', href: '/admin/invitations', icon: Mail, hint: 'Invitations en attente, révoquer ou renvoyer' },
+      { label: 'Rôles & droits', href: '/admin/roles', icon: KeyRound, hint: 'Matrice des rôles et permissions' },
     ],
   },
   {

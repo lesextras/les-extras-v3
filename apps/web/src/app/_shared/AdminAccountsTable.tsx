@@ -172,6 +172,9 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                       </p>
                     </div>
                     <div className="flex gap-2">
+                      <Button asChild size="sm" variant="outline">
+                        <a href={`/admin/etablissements/${a.id}`}>Membres</a>
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
                       <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>
                     </div>

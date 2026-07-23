@@ -43,6 +43,34 @@ export interface AdminUser {
   role: string;
   status: string;
   createdAt: string;
+  memberships?: {
+    role: string;
+    status?: string;
+    account: { id: string; name: string; type: string };
+  }[];
+  ownedAccounts?: { id: string; name: string; type: string }[];
+}
+
+// Libellé métier du rôle dans un compte (Membership.role).
+const ACCOUNT_ROLE_LABEL: Record<string, string> = {
+  OWNER: "Direction",
+  ADMIN: "Administrateur",
+  MANAGER: "Responsable de service",
+  MEMBER: "Salarié",
+};
+
+/** Rattachements lisibles : freelance + structures avec rôle interne. */
+function rattachements(u: AdminUser) {
+  const items: { label: string; kind: "freelance" | "estab" | "admin" }[] = [];
+  if (u.role === "ADMIN") items.push({ label: "Admin plateforme", kind: "admin" });
+  const ownsFreelance = (u.ownedAccounts ?? []).some((a) => a.type === "FREELANCE");
+  if (ownsFreelance) items.push({ label: "Freelance", kind: "freelance" });
+  for (const m of u.memberships ?? []) {
+    if (m.account.type !== "ESTABLISHMENT") continue;
+    const role = ACCOUNT_ROLE_LABEL[m.role] ?? m.role;
+    items.push({ label: `${m.account.name} · ${role}`, kind: "estab" });
+  }
+  return items;
 }
 
 const ROLE_OPTS = [
@@ -167,7 +195,8 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Utilisateur</TableHead>
-                    <TableHead>Rôle</TableHead>
+                    <TableHead>Rôle global</TableHead>
+                    <TableHead>Rattachements</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Inscrit le</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -189,6 +218,31 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                             {ROLE_OPTS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                           </SelectContent>
                         </Select>
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const items = rattachements(u);
+                          if (items.length === 0)
+                            return <span className="text-xs text-muted-foreground">—</span>;
+                          return (
+                            <div className="flex max-w-[260px] flex-wrap gap-1">
+                              {items.map((it, i) => (
+                                <Badge
+                                  key={i}
+                                  variant={
+                                    it.kind === "admin"
+                                      ? "soft"
+                                      : it.kind === "freelance"
+                                        ? "outline"
+                                        : "muted"
+                                  }
+                                >
+                                  {it.label}
+                                </Badge>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Badge variant={userStatusBadgeVariant(u.status)}>{USER_STATUS_LABEL[u.status] ?? u.status}</Badge>
