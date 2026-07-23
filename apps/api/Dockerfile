@@ -29,6 +29,8 @@ FROM deps AS build
 COPY tsconfig*.json ./
 COPY packages ./packages
 COPY apps/api ./apps/api
+# DATABASE_URL factice pour prisma generate (ne se connecte pas). Ecrasee au runtime par Coolify.
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build?schema=public"
 RUN pnpm --filter @lesextras/api exec prisma generate --schema apps/api/prisma/schema.prisma
 RUN pnpm --filter @lesextras/api build
 
