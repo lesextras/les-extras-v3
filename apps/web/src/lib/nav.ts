@@ -14,6 +14,7 @@ import {
   BarChart3,
   FolderLock,
   Megaphone,
+  Target,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -47,6 +48,7 @@ const freelanceNav: NavSection[] = [
   {
     items: [
       { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target },
       { label: 'Marketplace', href: '/marketplace', icon: Sparkles },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock },
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: GraduationCap },

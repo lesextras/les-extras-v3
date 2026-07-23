@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, EmptyState, ErrorState } from "../../../_shared/ui";
 import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { BookingActions } from "../../../_shared/BookingActions";
+import { MatchingPanel } from "../../../_shared/MatchingPanel";
 import {
   MISSION_CATEGORY_LABEL,
   MISSION_STATUS_LABEL,
@@ -101,45 +103,60 @@ export default async function RenfortsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {bookings.length === 0 ? (
-                    <p className="rounded-lg bg-muted/50 px-4 py-6 text-center text-sm text-muted-foreground">
-                      En attente de candidatures. La diffusion est en cours.
-                    </p>
-                  ) : (
-                    <ul className="divide-y divide-border">
-                      {bookings.map((b) => (
-                        <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={b.applicant?.avatarUrl ?? undefined} />
-                              <AvatarFallback>
-                                {initials(b.applicant?.firstName, b.applicant?.lastName)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm font-medium text-foreground">
-                                {fullName(b.applicant?.firstName, b.applicant?.lastName)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {b.applicant?.profile?.job ?? "Freelance"}
-                                {b.applicant?.profile?.city ? ` · ${b.applicant.profile.city}` : ""}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant={bookingBadgeVariant(b.status)}>
-                              {BOOKING_STATUS_LABEL[b.status]}
-                            </Badge>
-                            <BookingActions
-                              bookingId={b.id}
-                              accountId={session.account.id}
-                              status={b.status}
-                            />
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <Tabs defaultValue="candidatures">
+                    <TabsList>
+                      <TabsTrigger value="candidatures">
+                        Candidatures reçues ({bookings.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="suggeres">Candidats suggérés</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="candidatures">
+                      {bookings.length === 0 ? (
+                        <p className="rounded-lg bg-muted/50 px-4 py-6 text-center text-sm text-muted-foreground">
+                          En attente de candidatures. La diffusion est en cours.
+                        </p>
+                      ) : (
+                        <ul className="divide-y divide-border">
+                          {bookings.map((b) => (
+                            <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={b.applicant?.avatarUrl ?? undefined} />
+                                  <AvatarFallback>
+                                    {initials(b.applicant?.firstName, b.applicant?.lastName)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="text-sm font-medium text-foreground">
+                                    {fullName(b.applicant?.firstName, b.applicant?.lastName)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {b.applicant?.profile?.job ?? "Freelance"}
+                                    {b.applicant?.profile?.city ? ` · ${b.applicant.profile.city}` : ""}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Badge variant={bookingBadgeVariant(b.status)}>
+                                  {BOOKING_STATUS_LABEL[b.status]}
+                                </Badge>
+                                <BookingActions
+                                  bookingId={b.id}
+                                  accountId={session.account.id}
+                                  status={b.status}
+                                />
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="suggeres">
+                      <MatchingPanel missionId={mission.id} accountId={session.account.id} />
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
             );
