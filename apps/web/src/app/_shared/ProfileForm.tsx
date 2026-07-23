@@ -1,8 +1,8 @@
 "use client";
 
 // Formulaire d'édition du profil utilisateur (+ champs freelance).
-//   PATCH /users/me         { firstName, lastName, phone }
-//   PATCH /users/me/profile { bio, job, city, postalCode, hourlyRate, ... }
+//   PATCH /users/me  { firstName, lastName, phone, + champs profil freelance }
+//   (un seul endpoint : l'API met à jour User ET Profile en une transaction)
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -34,33 +34,28 @@ export function ProfileForm({
     setLoading(true);
     const fd = new FormData(e.currentTarget);
     try {
-      await apiRequest("/users/me", {
-        method: "PATCH",
-        body: {
-          firstName: String(fd.get("firstName") || "") || undefined,
-          lastName: String(fd.get("lastName") || "") || undefined,
-          phone: String(fd.get("phone") || "") || undefined,
-        },
-        accountId,
-      });
+      // Un seul appel : l'API /users/me met à jour l'identité ET le profil
+      // freelance (bio, métier, ville, tarif…) dans la même transaction.
+      const body: Record<string, unknown> = {
+        firstName: String(fd.get("firstName") || "") || undefined,
+        lastName: String(fd.get("lastName") || "") || undefined,
+        phone: String(fd.get("phone") || "") || undefined,
+      };
       if (isFreelance) {
-        await apiRequest("/users/me/profile", {
-          method: "PATCH",
-          body: {
-            job: String(fd.get("job") || "") || undefined,
-            bio: String(fd.get("bio") || "") || undefined,
-            city: String(fd.get("city") || "") || undefined,
-            postalCode: String(fd.get("postalCode") || "") || undefined,
-            radiusKm: fd.get("radiusKm") ? Number(fd.get("radiusKm")) : undefined,
-            hourlyRate: fd.get("hourlyRate") ? Number(fd.get("hourlyRate")) : undefined,
-            skills: String(fd.get("skills") || "")
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean),
-          },
-          accountId,
+        Object.assign(body, {
+          job: String(fd.get("job") || "") || undefined,
+          bio: String(fd.get("bio") || "") || undefined,
+          city: String(fd.get("city") || "") || undefined,
+          postalCode: String(fd.get("postalCode") || "") || undefined,
+          radiusKm: fd.get("radiusKm") ? Number(fd.get("radiusKm")) : undefined,
+          hourlyRate: fd.get("hourlyRate") ? Number(fd.get("hourlyRate")) : undefined,
+          skills: String(fd.get("skills") || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
         });
       }
+      await apiRequest("/users/me", { method: "PATCH", body, accountId });
       toast({ title: "Profil mis à jour" });
       router.refresh();
     } catch (err) {
