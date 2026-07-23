@@ -171,11 +171,15 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
               </div>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/dashboard/profil')}>
+            <DropdownMenuItem
+              onClick={() => router.push(user.role === 'ADMIN' ? '/admin' : '/dashboard/account')}
+            >
               <UserRound />
               Mon profil
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/dashboard/parametres')}>
+            <DropdownMenuItem
+              onClick={() => router.push(user.role === 'ADMIN' ? '/admin/statistiques' : '/dashboard/account')}
+            >
               <Settings />
               Paramètres
             </DropdownMenuItem>
