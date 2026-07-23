@@ -23,6 +23,9 @@ export class PlanningService {
 
   /** Planning d'un compte (établissement) OU shifts assignés (freelance). */
   async getPlanning(accountId: string, accountType: string, userId: string, from?: string, to?: string) {
+    if ((from && Number.isNaN(Date.parse(from))) || (to && Number.isNaN(Date.parse(to)))) {
+      throw new BadRequestException('Dates de période invalides.');
+    }
     const range: any = {};
     if (from) range.gte = new Date(from);
     if (to) range.lte = new Date(to);

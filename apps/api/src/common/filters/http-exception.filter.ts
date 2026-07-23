@@ -41,6 +41,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
       this.logger.error(exception.message, exception.stack);
     }
 
+    // Normalisation du libellé d'erreur par statut (ex: 429 -> Too Many Requests).
+    const STATUS_LABELS: Record<number, string> = {
+      400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden',
+      404: 'Not Found', 409: 'Conflict', 413: 'Payload Too Large',
+      422: 'Unprocessable Entity', 429: 'Too Many Requests',
+    };
+    if ((!error || error === 'Internal Server Error') && STATUS_LABELS[status]) {
+      error = STATUS_LABELS[status];
+    }
+
     response.status(status).json({
       statusCode: status,
       error,

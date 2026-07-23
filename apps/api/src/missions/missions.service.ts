@@ -70,25 +70,43 @@ export class MissionsService {
     };
     if (query.visibility) where.visibility = query.visibility;
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
+    if (query.postalCode) where.postalCode = { startsWith: query.postalCode.slice(0, 2) };
+    if (query.job) where.job = { contains: query.job, mode: 'insensitive' };
+    if (query.category) where.category = query.category;
+    if (query.minRate !== undefined || query.maxRate !== undefined) {
+      where.hourlyRate = {};
+      if (query.minRate !== undefined) (where.hourlyRate as any).gte = query.minRate;
+      if (query.maxRate !== undefined) (where.hourlyRate as any).lte = query.maxRate;
+    }
+    if (query.search) {
+      where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
     if (query.from || query.to) {
       where.startDate = {};
       if (query.from) where.startDate.gte = new Date(query.from);
       if (query.to) where.startDate.lte = new Date(query.to);
     }
 
+    // Pagination : page/limit ont priorité sur take/skip s'ils sont fournis.
+    const take = query.limit ?? query.take ?? 20;
+    const skip = query.page ? (query.page - 1) * take : (query.skip ?? 0);
+
     const [items, total] = await this.prisma.$transaction([
       this.prisma.reliefMission.findMany({
         where,
         orderBy: { startDate: 'asc' },
-        take: query.take ?? 20,
-        skip: query.skip ?? 0,
+        take,
+        skip,
         include: {
           account: { select: { id: true, name: true, city: true, logoUrl: true } },
         },
       }),
       this.prisma.reliefMission.count({ where }),
     ]);
-    return { items, total, take: query.take ?? 20, skip: query.skip ?? 0 };
+    return { items, total, take, skip, page: query.page ?? Math.floor(skip / take) + 1 };
   }
 
   /** Détail d'une mission. Vérifie l'appartenance si accountId fourni. */

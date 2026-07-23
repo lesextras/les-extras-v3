@@ -1,5 +1,7 @@
 import { IsEnum, IsISO8601, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { MissionStatus, MissionVisibility } from '@prisma/client';
+import { MissionCategory, MissionStatus, MissionVisibility } from '@prisma/client';
+import { Type } from 'class-transformer';
+import { IsNumber } from 'class-validator';
 
 /** Filtres du marketplace des missions (statut / visibilité / ville / dates). */
 export class QueryMissionsDto {
@@ -16,6 +18,47 @@ export class QueryMissionsDto {
   city?: string;
 
   @IsOptional()
+  @IsString()
+  postalCode?: string;
+
+  @IsOptional()
+  @IsString()
+  job?: string;
+
+  @IsOptional()
+  @IsEnum(MissionCategory)
+  category?: MissionCategory;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minRate?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  maxRate?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
+
+  @IsOptional()
   @IsISO8601()
   from?: string;
 
@@ -24,12 +67,14 @@ export class QueryMissionsDto {
   to?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
   take?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   skip?: number;
