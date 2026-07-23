@@ -79,7 +79,7 @@ export function MembersManager({
   const changeRole = (m: Membership, role: string) =>
     run(
       m.id,
-      () => apiRequest(`/memberships/${m.id}`, { method: "PATCH", body: { role }, accountId }),
+      () => apiRequest(`/memberships/${m.id}/role`, { method: "PATCH", body: { role }, accountId }),
       "Rôle mis à jour",
     );
 
@@ -94,7 +94,7 @@ export function MembersManager({
     run(
       inv.id,
       () =>
-        apiRequest(`/accounts/${accountId}/invitations/${inv.id}/resend`, {
+        apiRequest(`/invitations/${inv.id}/resend`, {
           method: "POST",
           accountId,
         }),
@@ -105,7 +105,7 @@ export function MembersManager({
     run(
       inv.id,
       () =>
-        apiRequest(`/accounts/${accountId}/invitations/${inv.id}`, {
+        apiRequest(`/invitations/${inv.id}`, {
           method: "DELETE",
           accountId,
         }),

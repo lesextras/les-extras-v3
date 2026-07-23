@@ -24,8 +24,8 @@ export default async function AccountPage() {
       session,
       "/users/me",
     ),
-    fetchApi<Membership[]>(session, `/accounts/${accountId}/memberships`),
-    fetchApi<Invitation[]>(session, `/accounts/${accountId}/invitations?status=PENDING`),
+    fetchApi<Membership[]>(session, `/memberships`),
+    fetchApi<Invitation[]>(session, `/invitations?status=PENDING`),
   ]);
 
   const user = profileRes.data?.user ?? session.user;

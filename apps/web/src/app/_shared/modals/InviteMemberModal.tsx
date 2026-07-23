@@ -49,7 +49,7 @@ export function InviteMemberModal({
     setError(null);
     const fd = new FormData(e.currentTarget);
     try {
-      await apiRequest(`/accounts/${accountId}/invitations`, {
+      await apiRequest(`/invitations`, {
         method: "POST",
         body: { email: String(fd.get("email") || ""), role },
         accountId,

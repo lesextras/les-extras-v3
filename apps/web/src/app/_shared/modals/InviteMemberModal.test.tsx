@@ -69,7 +69,7 @@ describe('InviteMemberModal', () => {
     await waitFor(() => expect(apiRequest).toHaveBeenCalledTimes(1));
 
     const [path, opts] = apiRequest.mock.calls[0];
-    expect(path).toBe(`/accounts/${ACCOUNT_ID}/invitations`);
+    expect(path).toBe(`/invitations`);
     expect(opts).toMatchObject({
       method: 'POST',
       accountId: ACCOUNT_ID, // ← header x-account-id (isolation tenant)
