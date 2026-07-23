@@ -30,6 +30,10 @@ export class UpdateMissionDto {
 
   @IsOptional()
   @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(120)
   job?: string;
 

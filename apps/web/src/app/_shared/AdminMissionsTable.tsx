@@ -116,7 +116,7 @@ export function AdminMissionsTable({
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {MISSION_CATEGORY_LABEL[m.category] ?? m.category}
+                          {(m as { categoryRef?: { title?: string } }).categoryRef?.title ?? MISSION_CATEGORY_LABEL[m.category] ?? m.category}
                         </Badge>
                       </TableCell>
                       <TableCell>

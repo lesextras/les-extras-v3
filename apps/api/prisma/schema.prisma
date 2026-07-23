@@ -153,6 +153,8 @@ model ReliefMission {
   title        String
   description  String
   category     MissionCategory @default(RENFORT)
+  categoryId   String?
+  categoryRef  Category?      @relation("MissionCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
   job          String?        // métier recherché
   startDate    DateTime
   endDate      DateTime?
@@ -186,6 +188,8 @@ model Service {
   title       String
   description String
   category    ServiceCategory @default(ATELIER)
+  categoryId  String?
+  categoryRef Category?     @relation("ServiceCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
   duration    String?        // "2H"
   maxParticipants Int?
   publicTarget String?       // "Adultes en situation de handicap"
@@ -323,6 +327,8 @@ model Category {
   children    Category[] @relation("CategoryParent")
   archived    Boolean    @default(false)
   articles    Article[]
+  missionsRef ReliefMission[] @relation("MissionCategoryRef")
+  servicesRef Service[]       @relation("ServiceCategoryRef")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 

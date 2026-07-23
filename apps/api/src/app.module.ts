@@ -24,6 +24,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { AdminModule } from './admin/admin.module';
+import { CategoriesModule } from './categories/categories.module';
 import { MatchingModule } from './matching/matching.module';
 import { PlanningModule } from './planning/planning.module';
 
@@ -53,6 +54,7 @@ import { PlanningModule } from './planning/planning.module';
     NotificationsModule,
     InvoicesModule,
     AdminModule,
+    CategoriesModule,
     MatchingModule,
     PlanningModule,
   ],

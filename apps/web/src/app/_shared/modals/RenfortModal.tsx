@@ -3,7 +3,7 @@
 // Modale « Publier un SOS Renfort » (ESTABLISHMENT).
 // Flow SOS Renfort — étape 1 : création + publication de la mission.
 // POST /missions  -> { visibility } pilote la diffusion en cascade côté API.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -54,6 +54,20 @@ export function RenfortModal({
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("RENFORT");
   const [visibility, setVisibility] = useState("SALARIES");
+  const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
+  const usingDb = dbCats.length > 0;
+
+  useEffect(() => {
+    if (!open) return;
+    apiRequest<{ id: string; title: string }[]>("/categories?type=mission", { accountId })
+      .then((rows) => {
+        if (Array.isArray(rows) && rows.length) {
+          setDbCats(rows);
+          setCategory(rows[0].id);
+        }
+      })
+      .catch(() => {});
+  }, [open, accountId]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -63,7 +77,7 @@ export function RenfortModal({
     const body = {
       title: String(fd.get("title") || ""),
       description: String(fd.get("description") || ""),
-      category,
+      ...(usingDb ? { categoryId: category } : { category }),
       job: String(fd.get("job") || "") || undefined,
       startDate: String(fd.get("startDate") || ""),
       endDate: String(fd.get("endDate") || "") || undefined,
@@ -125,7 +139,10 @@ export function RenfortModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => (
+                  {(usingDb
+                    ? dbCats.map((c) => ({ value: c.id, label: c.title }))
+                    : CATEGORIES
+                  ).map((c) => (
                     <SelectItem key={c.value} value={c.value}>
                       {c.label}
                     </SelectItem>

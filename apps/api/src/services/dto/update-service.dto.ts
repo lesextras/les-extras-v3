@@ -29,6 +29,10 @@ export class UpdateServiceDto {
 
   @IsOptional()
   @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
   duration?: string;
 
   @IsOptional()

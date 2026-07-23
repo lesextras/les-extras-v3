@@ -114,7 +114,7 @@ export function AdminServicesTable({
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {SERVICE_CATEGORY_LABEL[s.category] ?? s.category}
+                          {(s as { categoryRef?: { title?: string } }).categoryRef?.title ?? SERVICE_CATEGORY_LABEL[s.category] ?? s.category}
                         </Badge>
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">

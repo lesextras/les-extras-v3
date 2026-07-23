@@ -2,7 +2,7 @@
 
 // Modale « Créer / publier un atelier » (FREELANCE).
 //   POST /services { ... , publish }
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -47,6 +47,20 @@ export function ServiceModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("ATELIER");
+  const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
+  const usingDb = dbCats.length > 0;
+
+  useEffect(() => {
+    if (!open) return;
+    apiRequest<{ id: string; title: string }[]>("/categories?type=service", { accountId })
+      .then((rows) => {
+        if (Array.isArray(rows) && rows.length) {
+          setDbCats(rows);
+          setCategory(rows[0].id);
+        }
+      })
+      .catch(() => {});
+  }, [open, accountId]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -59,7 +73,7 @@ export function ServiceModal({
         body: {
           title: String(fd.get("title") || ""),
           description: String(fd.get("description") || ""),
-          category,
+          ...(usingDb ? { categoryId: category } : { category }),
           duration: String(fd.get("duration") || "") || undefined,
           maxParticipants: fd.get("maxParticipants") ? Number(fd.get("maxParticipants")) : undefined,
           publicTarget: String(fd.get("publicTarget") || "") || undefined,
@@ -103,7 +117,10 @@ export function ServiceModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => (
+                  {(usingDb
+                    ? dbCats.map((c) => ({ value: c.id, label: c.title }))
+                    : CATEGORIES
+                  ).map((c) => (
                     <SelectItem key={c.value} value={c.value}>
                       {c.label}
                     </SelectItem>

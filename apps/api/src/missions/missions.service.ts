@@ -41,6 +41,7 @@ export class MissionsService {
         title: dto.title,
         description: dto.description,
         category: dto.category,
+        categoryId: dto.categoryId ?? undefined,
         job: dto.job,
         startDate: new Date(dto.startDate),
         endDate: dto.endDate ? new Date(dto.endDate) : null,
@@ -59,7 +60,10 @@ export class MissionsService {
     return this.prisma.reliefMission.findMany({
       where: { accountId },
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { bookings: true } } },
+      include: {
+        _count: { select: { bookings: true } },
+        categoryRef: { select: { id: true, title: true } },
+      },
     });
   }
 
@@ -102,6 +106,7 @@ export class MissionsService {
         skip,
         include: {
           account: { select: { id: true, name: true, city: true, logoUrl: true } },
+          categoryRef: { select: { id: true, title: true } },
         },
       }),
       this.prisma.reliefMission.count({ where }),
@@ -115,6 +120,7 @@ export class MissionsService {
       where: { id },
       include: {
         account: { select: { id: true, name: true, city: true, logoUrl: true } },
+        categoryRef: { select: { id: true, title: true } },
         bookings: true,
       },
     });

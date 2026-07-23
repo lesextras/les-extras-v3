@@ -27,6 +27,10 @@ export class CreateServiceDto {
 
   @IsOptional()
   @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
   duration?: string;
 
   @IsOptional()

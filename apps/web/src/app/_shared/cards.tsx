@@ -20,7 +20,7 @@ export function MissionCard({ mission, href }: { mission: Mission; href?: string
     <Card className="group flex h-full flex-col transition-shadow hover:shadow-md">
       <CardHeader className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <Badge variant="secondary">{MISSION_CATEGORY_LABEL[mission.category] ?? mission.category}</Badge>
+          <Badge variant="secondary">{(mission as { categoryRef?: { title?: string } }).categoryRef?.title ?? MISSION_CATEGORY_LABEL[mission.category] ?? mission.category}</Badge>
           {mission.hourlyRate ? (
             <span className="text-sm font-semibold text-primary">{formatRate(mission.hourlyRate)}</span>
           ) : null}
@@ -64,7 +64,7 @@ export function ServiceCard({ service, href }: { service: Service; href?: string
     <Card className="group flex h-full flex-col transition-shadow hover:shadow-md">
       <CardHeader className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <Badge variant="outline">{SERVICE_CATEGORY_LABEL[service.category] ?? service.category}</Badge>
+          <Badge variant="outline">{(service as { categoryRef?: { title?: string } }).categoryRef?.title ?? SERVICE_CATEGORY_LABEL[service.category] ?? service.category}</Badge>
           {service.price ? (
             <span className="text-sm font-semibold text-secondary">{formatMoney(service.price)}</span>
           ) : null}

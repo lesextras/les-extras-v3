@@ -26,6 +26,7 @@ export class ServicesService {
         title: dto.title,
         description: dto.description,
         category: dto.category,
+        categoryId: dto.categoryId ?? undefined,
         duration: dto.duration,
         maxParticipants: dto.maxParticipants,
         publicTarget: dto.publicTarget,
@@ -40,7 +41,10 @@ export class ServicesService {
     return this.prisma.service.findMany({
       where: { accountId },
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { bookings: true } } },
+      include: {
+        _count: { select: { bookings: true } },
+        categoryRef: { select: { id: true, title: true } },
+      },
     });
   }
 
@@ -58,6 +62,7 @@ export class ServicesService {
         skip: query.skip ?? 0,
         include: {
           account: { select: { id: true, name: true, city: true, logoUrl: true } },
+          categoryRef: { select: { id: true, title: true } },
         },
       }),
       this.prisma.service.count({ where }),
@@ -68,7 +73,10 @@ export class ServicesService {
   async findOne(id: string, accountId?: string) {
     const service = await this.prisma.service.findUnique({
       where: { id },
-      include: { account: { select: { id: true, name: true, city: true, logoUrl: true } } },
+      include: {
+        account: { select: { id: true, name: true, city: true, logoUrl: true } },
+        categoryRef: { select: { id: true, title: true } },
+      },
     });
     if (!service) throw new NotFoundException('Service introuvable.');
     // Propriétaire : accès complet (y compris brouillon).
