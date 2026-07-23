@@ -12,6 +12,7 @@ import {
   FileText,
   ShieldCheck,
   ClipboardList,
+  Home,
   Tags,
   Users,
   Building2,
@@ -117,6 +118,7 @@ const adminNav: NavSection[] = [
   {
     items: [
       { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d’ensemble de la plateforme' },
+      { label: 'Mon espace', href: '/dashboard', icon: Home, hint: 'Votre tableau de bord personnel (ateliers, missions, activité)' },
     ],
   },
   {
