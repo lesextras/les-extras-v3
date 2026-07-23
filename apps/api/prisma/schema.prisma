@@ -44,6 +44,8 @@ model User {
   messages        Message[]
   reviewsAuthored Review[]       @relation("ReviewAuthor")
   reviewsReceived Review[]       @relation("ReviewTarget")
+  availabilities  Availability[]
+  shiftsAssigned  Shift[]        @relation("ShiftFreelance")
 
   @@index([email])
   @@index([role, status])
@@ -96,6 +98,7 @@ model Account {
   services        Service[]        @relation("ServiceAccount")
   bookings        Booking[]
   invoices        Invoice[]
+  shifts          Shift[]
 
   @@index([type])
   @@index([slug])
@@ -167,6 +170,7 @@ model ReliefMission {
 
   bookings     Booking[]
   conversations Conversation[]
+  shifts       Shift[]
 
   @@index([status, visibility])
   @@index([accountId])
@@ -215,6 +219,7 @@ model Booking {
 
   review        Review?
   invoice       Invoice?
+  shift         Shift?
 
   @@index([status])
   @@index([missionId])
@@ -386,5 +391,60 @@ enum InvoiceStatus {
   DRAFT
   ISSUED
   PAID
+  CANCELLED
+}
+
+// ---------------------------------------------------------------------------
+// PLANNING / SHIFTS & DISPONIBILITÉS (matching + gestion d'équipe terrain)
+// ---------------------------------------------------------------------------
+
+/// Fenêtre de disponibilité d'un intervenant (récurrente hebdo OU date ponctuelle).
+model Availability {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekday   Int?              // 0=dimanche .. 6=samedi (récurrent hebdo)
+  date      DateTime?         // date précise (ponctuel)
+  startTime String            // "09:00"
+  endTime   String            // "17:00"
+  type      AvailabilityType  @default(AVAILABLE)
+  createdAt DateTime          @default(now())
+
+  @@index([userId])
+}
+
+/// Créneau planifié (shift) : gestion du planning côté établissement.
+model Shift {
+  id             String      @id @default(cuid())
+  accountId      String
+  account        Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  freelanceId    String?
+  freelance      User?       @relation("ShiftFreelance", fields: [freelanceId], references: [id], onDelete: SetNull)
+  missionId      String?
+  mission        ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  bookingId      String?     @unique
+  booking        Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  title          String
+  startAt        DateTime
+  endAt          DateTime
+  status         ShiftStatus @default(PLANNED)
+  notes          String?
+  recurrenceRule String?     // RRULE iCal optionnel (récurrence)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([accountId, startAt])
+  @@index([freelanceId, startAt])
+}
+
+enum AvailabilityType {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum ShiftStatus {
+  PLANNED
+  CONFIRMED
+  DONE
   CANCELLED
 }
