@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
@@ -35,6 +36,7 @@ async function bootstrap() {
   });
 
   const port = config.get<number>('API_PORT') ?? 3001;
+  app.use(helmet());
   await app.listen(port);
   logger.log(`LES EXTRAS API en écoute sur http://localhost:${port}/api`);
 }

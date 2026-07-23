@@ -1,5 +1,7 @@
 import { HealthModule } from './health/health.module';
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 // --- Infrastructure (Backend-Core) ---
 import { ConfigModule } from './config/config.module';
@@ -26,6 +28,8 @@ import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     HealthModule,
+    // Rate limiting global : 120 requêtes / minute / IP (anti brute-force & abus).
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
     // Globaux : disponibles partout sans réimport.
     ConfigModule,
     PrismaModule,
@@ -48,5 +52,6 @@ import { AdminModule } from './admin/admin.module';
     InvoicesModule,
     AdminModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

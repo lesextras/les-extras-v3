@@ -56,4 +56,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
 
 # Migrations appliquées au démarrage, puis lancement de l'API.
 ENTRYPOINT ["tini", "--"]
-CMD ["sh", "-c", "pnpm exec prisma db push --schema ./prisma/schema.prisma --skip-generate --accept-data-loss && (TS_NODE_TRANSPILE_ONLY=1 pnpm exec prisma db seed || echo 'seed skipped') && node dist/main.js"]
+CMD ["sh", "-c", "pnpm exec prisma db push --schema ./prisma/schema.prisma --skip-generate && node dist/main.js"]
