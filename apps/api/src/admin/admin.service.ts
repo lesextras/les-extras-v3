@@ -5,6 +5,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { QueryUsersDto } from './dto/query-users.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
+import { UpdateCategoryDto } from './dto/category-admin.dto';
+import { UpdateArticleDto } from './dto/article-admin.dto';
 
 @Injectable()
 export class AdminService {
@@ -197,7 +199,7 @@ export class AdminService {
     });
   }
 
-  async updateCategory(id: string, dto: Record<string, unknown>) {
+  async updateCategory(id: string, dto: UpdateCategoryDto) {
     const cat = await this.prisma.category.findUnique({ where: { id } });
     if (!cat) throw new NotFoundException('Catégorie introuvable.');
     const data: Prisma.CategoryUpdateInput = {};
@@ -258,7 +260,7 @@ export class AdminService {
     });
   }
 
-  async updateArticle(id: string, dto: Record<string, unknown>) {
+  async updateArticle(id: string, dto: UpdateArticleDto) {
     const article = await this.prisma.article.findUnique({ where: { id } });
     if (!article) throw new NotFoundException('Article introuvable.');
     const data: Prisma.ArticleUpdateInput = {};
