@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -196,6 +197,25 @@ export class AdminController {
   @Get('formations/sessions')
   listFormationSessions(@Query('status') status?: string) {
     return this.admin.listSessions({ status });
+  }
+
+  // --- Registre & BPF (Bilan Pédagogique et Financier) --------------------
+
+  @Get('formations/registre')
+  registre() {
+    return this.admin.registre();
+  }
+
+  @Get('formations/bpf')
+  bpf(@Query('year') year?: string) {
+    return this.admin.bpf(year ? Number(year) : undefined);
+  }
+
+  @Get('formations/bpf.csv')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="bpf.csv"')
+  bpfCsv(@Query('year') year?: string) {
+    return this.admin.bpfCsv(year ? Number(year) : undefined);
   }
 
   @Post('formations')

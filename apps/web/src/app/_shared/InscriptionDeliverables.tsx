@@ -59,6 +59,9 @@ export function InscriptionDeliverables({
           </a>
         </Button>
       ) : null}
+      <Button asChild size="sm" variant="outline">
+        <a href={`/dashboard/formations/tutorat/${inscriptionId}`}>Tutorat</a>
+      </Button>
       <Button size="sm" variant="ghost" onClick={invoice} disabled={busy || done}>
         {done ? "Facturé ✓" : busy ? "…" : "Facturer"}
       </Button>

@@ -10,6 +10,8 @@ import {
   MessageSquare,
   Receipt,
   FileText,
+  ShieldCheck,
+  ClipboardList,
   Tags,
   Users,
   Building2,
@@ -130,6 +132,8 @@ const adminNav: NavSection[] = [
     title: 'Centre de formation',
     items: [
       { label: 'Formations', href: '/admin/formations', icon: GraduationCap, hint: 'Programmes certifiants (Qualiopi) et formations internes' },
+      { label: 'Conformité Qualiopi', href: '/admin/qualiopi', icon: ShieldCheck, hint: 'Matrice des 7 critères / 32 indicateurs et preuves' },
+      { label: 'Registre & BPF', href: '/admin/registre', icon: ClipboardList, hint: 'Registre des formations et Bilan Pédagogique et Financier' },
     ],
   },
   {

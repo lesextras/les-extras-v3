@@ -49,6 +49,7 @@ model User {
   authoredArticles Article[]     @relation("ArticleAuthor")
   sessionsTrained  FormationSession[] @relation("SessionTrainer")
   inscriptions     Inscription[]      @relation("InscriptionLearner")
+  tutoratsGiven    Tutorat[]          @relation("TutoratTutor")
 
   @@index([email])
   @@index([role, status])
@@ -105,6 +106,7 @@ model Account {
   formationsOwned  Formation[]        @relation("FormationOwner")
   sessionsHosted   FormationSession[] @relation("SessionHost")
   inscriptionsPaid Inscription[]      @relation("InscriptionPayer")
+  qualiopiProofs   QualiopiProof[]    @relation("QualiopiOf")
 
   @@index([type])
   @@index([slug])
@@ -561,8 +563,9 @@ model FormationSession {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  inscriptions  Inscription[]
-  emargements   Emargement[]
+  inscriptions   Inscription[]
+  emargements    Emargement[]
+  qualiopiProofs QualiopiProof[]
 
   @@index([formationId, startDate])
   @@index([trainerId])
@@ -591,6 +594,7 @@ model Inscription {
   updatedAt      DateTime          @updatedAt
 
   emargements    Emargement[]
+  tutorat        Tutorat?
 
   @@index([sessionId, status])
   @@index([learnerId])
@@ -654,4 +658,110 @@ enum FinancingType {
 enum EmargementSlot {
   MORNING
   AFTERNOON
+}
+
+// ---------------------------------------------------------------------------
+// CONFORMITE QUALIOPI (7 criteres / 32 indicateurs + preuves) — Phase 3
+// ---------------------------------------------------------------------------
+
+/// Un des 7 criteres Qualiopi (donnees de reference, seedees).
+model QualiopiCriterion {
+  id         String              @id @default(cuid())
+  number     Int                 @unique
+  title      String
+  indicators QualiopiIndicator[]
+}
+
+/// Un des 32 indicateurs, rattache a un critere (donnees de reference, seedees).
+model QualiopiIndicator {
+  id          String            @id @default(cuid())
+  criterionId String
+  criterion   QualiopiCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  number      Int               @unique
+  label       String
+  proofs      QualiopiProof[]
+
+  @@index([criterionId])
+}
+
+/// PREUVE deposee par l'OF (ADePA) pour un indicateur.
+model QualiopiProof {
+  id          String            @id @default(cuid())
+  indicatorId String
+  indicator   QualiopiIndicator @relation(fields: [indicatorId], references: [id], onDelete: Cascade)
+  ofAccountId String
+  ofAccount   Account           @relation("QualiopiOf", fields: [ofAccountId], references: [id], onDelete: Cascade)
+  sessionId   String?
+  session     FormationSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  label       String?
+  documentUrl String?
+  status      ProofStatus       @default(TODO)
+  reviewedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([indicatorId, ofAccountId])
+  @@index([ofAccountId, status])
+}
+
+// ---------------------------------------------------------------------------
+// TUTORAT / ACCOMPAGNEMENT (tuteur, entretiens, jalons, projet d'avenir)
+// ---------------------------------------------------------------------------
+
+model Tutorat {
+  id            String        @id @default(cuid())
+  inscriptionId String        @unique
+  inscription   Inscription   @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
+  tutorId       String
+  tutor         User          @relation("TutoratTutor", fields: [tutorId], references: [id], onDelete: Cascade)
+  projetAvenir  String?
+  status        TutoratStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  entretiens    Entretien[]
+  jalons        Jalon[]
+
+  @@index([tutorId])
+}
+
+model Entretien {
+  id        String   @id @default(cuid())
+  tutoratId String
+  tutorat   Tutorat  @relation(fields: [tutoratId], references: [id], onDelete: Cascade)
+  date      DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([tutoratId])
+}
+
+model Jalon {
+  id        String      @id @default(cuid())
+  tutoratId String
+  tutorat   Tutorat     @relation(fields: [tutoratId], references: [id], onDelete: Cascade)
+  label     String
+  dueDate   DateTime?
+  status    JalonStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+
+  @@index([tutoratId])
+}
+
+enum ProofStatus {
+  TODO
+  UPLOADED
+  VALIDATED
+  REJECTED
+}
+
+enum TutoratStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum JalonStatus {
+  PENDING
+  DONE
 }

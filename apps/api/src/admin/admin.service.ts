@@ -623,6 +623,85 @@ export class AdminService {
     });
   }
 
+  // --- Registre & BPF (Bilan Pédagogique et Financier) --------------------
+
+  /** Registre des formations : une ligne par session avec effectifs & assiduité. */
+  async registre() {
+    const sessions = await this.prisma.formationSession.findMany({
+      orderBy: { startDate: 'desc' },
+      include: {
+        formation: { select: { title: true, type: true, durationHours: true, certifying: true } },
+        _count: { select: { inscriptions: true, emargements: true } },
+        inscriptions: { select: { financing: true } },
+      },
+    });
+    return sessions.map((s) => {
+      const financements: Record<string, number> = {};
+      for (const i of s.inscriptions) {
+        financements[i.financing] = (financements[i.financing] ?? 0) + 1;
+      }
+      return {
+        id: s.id,
+        formation: s.formation?.title ?? '—',
+        type: s.formation?.type ?? null,
+        certifying: s.formation?.certifying ?? false,
+        startDate: s.startDate,
+        durationHours: s.formation?.durationHours ?? null,
+        inscrits: s._count.inscriptions,
+        emargements: s._count.emargements,
+        financements,
+      };
+    });
+  }
+
+  /** Agrégation BPF annuelle (effectifs, heures-stagiaires, produits par financement). */
+  async bpf(year?: number) {
+    const y = year ?? new Date().getFullYear();
+    const start = new Date(`${y}-01-01T00:00:00.000Z`);
+    const end = new Date(`${y + 1}-01-01T00:00:00.000Z`);
+    const sessions = await this.prisma.formationSession.findMany({
+      where: { startDate: { gte: start, lt: end } },
+      include: {
+        formation: { select: { durationHours: true } },
+        inscriptions: { select: { financing: true, invoice: { select: { amount: true } } } },
+      },
+    });
+    let stagiaires = 0;
+    let heuresStagiaires = 0;
+    const parFinancement: Record<string, number> = {};
+    const produits: Record<string, number> = {};
+    for (const s of sessions) {
+      const h = s.formation?.durationHours ?? 0;
+      for (const i of s.inscriptions) {
+        stagiaires += 1;
+        heuresStagiaires += h;
+        parFinancement[i.financing] = (parFinancement[i.financing] ?? 0) + 1;
+        const amt = i.invoice ? Number(i.invoice.amount) : 0;
+        produits[i.financing] = (produits[i.financing] ?? 0) + amt;
+      }
+    }
+    const produitTotal = Object.values(produits).reduce((a, b) => a + b, 0);
+    return { year: y, nbSessions: sessions.length, stagiaires, heuresStagiaires, parFinancement, produits, produitTotal };
+  }
+
+  /** Export CSV du BPF (une ligne par type de financement + total). */
+  async bpfCsv(year?: number): Promise<string> {
+    const b = await this.bpf(year);
+    const rows: string[] = [];
+    rows.push('BPF;Annee;' + b.year);
+    rows.push('Sessions;' + b.nbSessions);
+    rows.push('Stagiaires;' + b.stagiaires);
+    rows.push('Heures-stagiaires;' + b.heuresStagiaires);
+    rows.push('');
+    rows.push('Financement;Stagiaires;Produits (EUR)');
+    const keys = new Set([...Object.keys(b.parFinancement), ...Object.keys(b.produits)]);
+    for (const k of keys) {
+      rows.push(`${k};${b.parFinancement[k] ?? 0};${(b.produits[k] ?? 0).toFixed(2)}`);
+    }
+    rows.push(`TOTAL;${b.stagiaires};${b.produitTotal.toFixed(2)}`);
+    return rows.join('\n');
+  }
+
   // --- Stats rapides ------------------------------------------------------
 
   async stats() {
