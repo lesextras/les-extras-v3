@@ -27,6 +27,7 @@ import { AdminModule } from './admin/admin.module';
 import { CategoriesModule } from './categories/categories.module';
 import { MatchingModule } from './matching/matching.module';
 import { PlanningModule } from './planning/planning.module';
+import { PublicModule } from './public/public.module';
 
 @Module({
   imports: [
@@ -57,6 +58,9 @@ import { PlanningModule } from './planning/planning.module';
     CategoriesModule,
     MatchingModule,
     PlanningModule,
+
+    // Vitrine publique (non authentifiée).
+    PublicModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

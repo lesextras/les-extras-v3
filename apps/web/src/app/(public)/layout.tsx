@@ -13,6 +13,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             Les&nbsp;Extras
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground sm:flex">
+            <Link href="/ateliers" className="hover:text-foreground">
+              Ateliers
+            </Link>
+            <Link href="/formations" className="hover:text-foreground">
+              Formations
+            </Link>
             <Link href="/etablissements" className="hover:text-foreground">
               Établissements
             </Link>
@@ -37,6 +43,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} Les Extras — Marketplace médico-social</p>
           <div className="flex gap-4">
+            <Link href="/ateliers" className="hover:text-foreground">
+              Ateliers
+            </Link>
+            <Link href="/formations" className="hover:text-foreground">
+              Formations
+            </Link>
             <Link href="/etablissements" className="hover:text-foreground">
               Établissements
             </Link>

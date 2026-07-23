@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 
 const links = [
   { label: 'SOS Renfort', href: '/#renfort' },
-  { label: 'Ateliers', href: '/#ateliers' },
+  { label: 'Ateliers', href: '/ateliers' },
+  { label: 'Formations', href: '/formations' },
   { label: 'Comment ça marche', href: '/#comment' },
   { label: 'Tarifs', href: '/#tarifs' },
 ];

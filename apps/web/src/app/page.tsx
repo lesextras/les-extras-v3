@@ -18,8 +18,17 @@ import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { fetchPublic } from './_shared/server';
+import { SERVICE_CATEGORY_LABEL, formatMoney } from './_shared/format';
+import type { CatalogItem } from './(public)/_catalog';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Mise en avant publique de quelques prestations publiées (sans connexion).
+  const { data: featured } = await fetchPublic<{ items: CatalogItem[] }>(
+    '/public/catalog?type=all&take=3',
+  );
+  const featuredItems = featured?.items ?? [];
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
@@ -213,13 +222,107 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link
-                  href="/register"
+                  href="/ateliers"
                   className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-transform group-hover:translate-x-0.5"
                 >
                   Explorer le catalogue <ArrowRight className="size-4" />
                 </Link>
               </CardContent>
             </Card>
+          </div>
+        </section>
+
+        {/* CATALOGUES PUBLICS : ateliers & formations, consultables sans compte */}
+        <section id="catalogues" className="bg-card">
+          <div className="section">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="max-w-2xl">
+                <span className="eyebrow">Consultable sans compte</span>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                  Parcourez nos ateliers & formations
+                </h2>
+                <p className="mt-4 text-muted-foreground">
+                  Un aperçu des interventions et parcours proposés par nos intervenants.
+                  Explorez librement, réservez une fois connecté.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline">
+                  <Link href="/ateliers">
+                    Tous les ateliers <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/formations">
+                    Toutes les formations <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            {featuredItems.length > 0 ? (
+              <div className="mt-12 grid gap-6 md:grid-cols-3">
+                {featuredItems.map((item) => (
+                  <Card key={item.id} className="group card-interactive flex h-full flex-col">
+                    <CardContent className="flex flex-1 flex-col gap-3 p-6">
+                      <Badge variant="soft" className="w-fit">
+                        {item.categoryRef?.title ?? SERVICE_CATEGORY_LABEL[item.category]}
+                      </Badge>
+                      <h3 className="text-lg font-semibold leading-snug">{item.title}</h3>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {item.description}
+                      </p>
+                      <div className="mt-auto flex items-center justify-between border-t border-border/60 pt-4">
+                        <span className="font-semibold">{formatMoney(item.price)}</span>
+                        <Link
+                          href={`/ateliers/${item.id}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-transform group-hover:translate-x-0.5"
+                        >
+                          Voir <ArrowRight className="size-4" />
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-12 grid gap-6 md:grid-cols-2">
+                <Card className="card-interactive">
+                  <CardContent className="flex flex-col gap-3 p-8">
+                    <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+                      <GraduationCap className="size-6" />
+                    </span>
+                    <h3 className="text-xl font-semibold">Catalogue d’ateliers</h3>
+                    <p className="text-muted-foreground">
+                      Ateliers éducatifs, médiation, art-thérapie, prévention.
+                    </p>
+                    <Link
+                      href="/ateliers"
+                      className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                    >
+                      Découvrir les ateliers <ArrowRight className="size-4" />
+                    </Link>
+                  </CardContent>
+                </Card>
+                <Card className="card-interactive">
+                  <CardContent className="flex flex-col gap-3 p-8">
+                    <span className="grid size-12 place-items-center rounded-2xl bg-secondary-soft text-secondary">
+                      <Sparkles className="size-6" />
+                    </span>
+                    <h3 className="text-xl font-semibold">Catalogue de formations</h3>
+                    <p className="text-muted-foreground">
+                      Montez en compétences avec des formations dédiées au médico-social.
+                    </p>
+                    <Link
+                      href="/formations"
+                      className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary"
+                    >
+                      Découvrir les formations <ArrowRight className="size-4" />
+                    </Link>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </section>
 
