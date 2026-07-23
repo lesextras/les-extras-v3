@@ -17,6 +17,26 @@ interface SelectContextValue {
   invalid?: boolean;
   listboxId: string;
   triggerRef: React.RefObject<HTMLButtonElement>;
+  labelMap: Record<string, string>;
+}
+
+/**
+ * Parcourt l'arbre d'enfants pour construire une table valeur→libellé de tous
+ * les <SelectItem>. Résolution SYNCHRONE : le déclencheur affiche le bon libellé
+ * dès le premier rendu, sans dépendre de l'ouverture du menu.
+ */
+function collectItemLabels(children: React.ReactNode, map: Record<string, string>) {
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    if (child.type === SelectItem) {
+      const { value, children: label } = child.props as { value?: string; children?: React.ReactNode };
+      if (value != null && typeof label === 'string') map[value] = label;
+      return;
+    }
+    if ((child.props as { children?: React.ReactNode })?.children) {
+      collectItemLabels((child.props as { children?: React.ReactNode }).children, map);
+    }
+  });
 }
 const SelectContext = React.createContext<SelectContextValue | null>(null);
 function useSelect() {
@@ -40,6 +60,11 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const listboxId = React.useId();
   const current = value ?? internal;
+  const labelMap = React.useMemo(() => {
+    const m: Record<string, string> = {};
+    collectItemLabels(children, m);
+    return m;
+  }, [children]);
 
   const handleChange = React.useCallback(
     (v: string) => {
@@ -63,7 +88,7 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
 
   return (
     <SelectContext.Provider
-      value={{ value: current, onValueChange: handleChange, open, setOpen, invalid, listboxId, triggerRef }}
+      value={{ value: current, onValueChange: handleChange, open, setOpen, invalid, listboxId, triggerRef, labelMap }}
     >
       <div ref={rootRef} className="relative">
         {children}
@@ -122,17 +147,12 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
 SelectTrigger.displayName = 'SelectTrigger';
 
 function SelectValue({ placeholder }: { placeholder?: string }) {
-  const { value } = useSelect();
-  const [label, setLabel] = React.useState<string | undefined>();
-
-  // Le label affiché est résolu par les <SelectItem> enregistrés dans le registre.
-  React.useEffect(() => {
-    setLabel(itemLabels.get(value ?? ''));
-  });
+  const { value, labelMap } = useSelect();
+  const label = value ? labelMap[value] : undefined;
 
   return (
-    <span className={cn('truncate', !value && 'text-muted-foreground')}>
-      {label ?? value ?? placeholder}
+    <span className={cn('truncate', !label && 'text-muted-foreground')}>
+      {label ?? placeholder}
     </span>
   );
 }
@@ -154,9 +174,7 @@ function SelectContent({ className, children }: React.HTMLAttributes<HTMLDivElem
     requestAnimationFrame(() => (selected ?? options[0])?.focus());
   }, [open]);
 
-  // Fermé : on monte quand même les items (cachés) pour que leurs libellés
-  // s'enregistrent dans le registre — sinon le déclencheur affiche la valeur brute.
-  if (!open) return <div className="hidden" aria-hidden>{children}</div>;
+  if (!open) return null;
 
   function moveFocus(dir: 1 | -1 | 'first' | 'last') {
     const el = ref.current;
