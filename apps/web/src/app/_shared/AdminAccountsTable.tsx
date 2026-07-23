@@ -4,6 +4,7 @@
 //   GET /admin/accounts · PATCH /admin/accounts/:id
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown, ChevronRight, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { EmptyState } from "./ui";
 
+export interface AdminMembership {
+  id: string;
+  role: "OWNER" | "ADMIN" | "MANAGER" | "MEMBER";
+  status?: string;
+  user?: { id: string; email?: string | null; firstName?: string | null; lastName?: string | null } | null;
+}
+
 export interface AdminAccount {
   id: string;
   name: string;
@@ -39,6 +47,7 @@ export interface AdminAccount {
   phone?: string | null;
   credits?: number;
   owner?: { email?: string; firstName?: string | null; lastName?: string | null } | null;
+  memberships?: AdminMembership[];
   _count?: { memberships?: number; reliefMissions?: number; services?: number; bookings?: number };
 }
 
@@ -48,6 +57,18 @@ const TYPE_OPTIONS = [
   { value: "FREELANCE", label: "Freelances" },
 ];
 
+const ACCOUNT_ROLE_LABEL: Record<string, string> = {
+  OWNER: "Direction",
+  ADMIN: "Administrateur",
+  MANAGER: "Responsable de service",
+  MEMBER: "Salarié",
+};
+
+function memberName(m: AdminMembership) {
+  const n = [m.user?.firstName, m.user?.lastName].filter(Boolean).join(" ");
+  return n || m.user?.email || "—";
+}
+
 export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -56,13 +77,31 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<Partial<AdminAccount>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  function toggle(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  const totalSubAccounts = useMemo(
+    () => accounts.reduce((sum, a) => sum + (a.memberships?.length ?? a._count?.memberships ?? 0), 0),
+    [accounts],
+  );
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return accounts.filter((a) => {
       if (type && a.type !== type) return false;
       if (!needle) return true;
-      const hay = `${a.name} ${a.city ?? ""} ${a.siret ?? ""} ${a.owner?.email ?? ""}`.toLowerCase();
+      const members = (a.memberships ?? [])
+        .map((m) => `${memberName(m)} ${m.user?.email ?? ""}`)
+        .join(" ");
+      const hay = `${a.name} ${a.city ?? ""} ${a.siret ?? ""} ${a.owner?.email ?? ""} ${members}`.toLowerCase();
       return hay.includes(needle);
     });
   }, [accounts, q, type]);
@@ -132,6 +171,25 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
         </Select>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-sm">
+        <p className="text-muted-foreground">
+          <span className="font-semibold text-foreground">{filtered.length}</span> compte(s) ·{" "}
+          <span className="font-semibold text-foreground">{totalSubAccounts}</span> sous-compte(s) rattaché(s)
+        </p>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setExpanded(new Set(filtered.map((a) => a.id)))}
+          >
+            Tout déplier
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setExpanded(new Set())}>
+            Tout replier
+          </Button>
+        </div>
+      </div>
+
       {filtered.length === 0 ? (
         <EmptyState title="Aucun compte" description="Aucun compte ne correspond à votre recherche." />
       ) : (
@@ -156,28 +214,73 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-foreground">{a.name}</p>
-                        <Badge variant={a.type === "ESTABLISHMENT" ? "default" : "outline"}>
-                          {a.type === "ESTABLISHMENT" ? "Établissement" : "Freelance"}
-                        </Badge>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggle(a.id)}
+                          aria-label={expanded.has(a.id) ? "Replier les sous-comptes" : "Déplier les sous-comptes"}
+                          className="mt-0.5 rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                        >
+                          {expanded.has(a.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </button>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-semibold text-foreground">{a.name}</p>
+                            <Badge variant={a.type === "ESTABLISHMENT" ? "default" : "outline"}>
+                              {a.type === "ESTABLISHMENT" ? "Établissement" : "Freelance"}
+                            </Badge>
+                            <Badge variant="muted" className="gap-1">
+                              <Users className="h-3 w-3" />
+                              {(a.memberships?.length ?? a._count?.memberships ?? 0)} sous-compte(s)
+                            </Badge>
+                          </div>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {[a.city, a.owner?.email].filter(Boolean).join(" · ") || "—"}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {a._count?.reliefMissions ?? 0} mission(s) · {a._count?.services ?? 0} atelier(s) · {a.credits ?? 0} crédit(s)
+                          </p>
+                        </div>
                       </div>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {[a.city, a.owner?.email].filter(Boolean).join(" · ") || "—"}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {a._count?.memberships ?? 0} membre(s) · {a._count?.reliefMissions ?? 0} mission(s) · {a._count?.services ?? 0} atelier(s) · {a.credits ?? 0} crédit(s)
-                      </p>
+                      <div className="flex gap-2">
+                        <Button asChild size="sm" variant="outline">
+                          <a href={`/admin/etablissements/${a.id}`}>Fiche</a>
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
+                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button asChild size="sm" variant="outline">
-                        <a href={`/admin/etablissements/${a.id}`}>Membres</a>
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>
-                    </div>
+
+                    {expanded.has(a.id) ? (
+                      <div className="ml-8 rounded-lg border border-border bg-muted/30 p-3">
+                        {(a.memberships?.length ?? 0) === 0 ? (
+                          <p className="py-2 text-center text-xs text-muted-foreground">
+                            Aucun sous-compte rattaché à ce compte.
+                          </p>
+                        ) : (
+                          <ul className="divide-y divide-border">
+                            {a.memberships!.map((m) => (
+                              <li key={m.id} className="flex items-center justify-between gap-3 py-2">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-medium text-foreground">{memberName(m)}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{m.user?.email}</p>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2">
+                                  <Badge variant={m.role === "OWNER" ? "soft" : "muted"}>
+                                    {ACCOUNT_ROLE_LABEL[m.role] ?? m.role}
+                                  </Badge>
+                                  {m.status && m.status !== "ACTIVE" ? (
+                                    <Badge variant="outline">{m.status}</Badge>
+                                  ) : null}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                 )}
               </CardContent>

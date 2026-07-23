@@ -4,7 +4,7 @@ import { requireAdmin, fetchApi } from "../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../_shared/ui";
 import { AdminAccountsTable, type AdminAccount } from "../../../_shared/AdminAccountsTable";
 
-export const metadata: Metadata = { title: "Établissements · Administration" };
+export const metadata: Metadata = { title: "Comptes & sous-comptes · Administration" };
 
 export default async function AdminAccountsPage() {
   const session = await requireAdmin();
@@ -14,8 +14,8 @@ export default async function AdminAccountsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Établissements & comptes"
-        subtitle="Consultez et éditez les fiches des établissements et des freelances."
+        title="Comptes & sous-comptes"
+        subtitle="Tous les comptes (établissements et freelances) avec, dépliés, les sous-comptes rattachés et leurs rôles."
       />
       {res.error ? (
         <ErrorState retryHref="/admin/etablissements" />

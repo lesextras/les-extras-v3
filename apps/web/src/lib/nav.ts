@@ -141,10 +141,10 @@ const adminNav: NavSection[] = [
     ],
   },
   {
-    title: 'Comptes & accès',
+    title: 'Gestion des utilisateurs',
     items: [
-      { label: 'Établissements', href: '/admin/etablissements', icon: Building2, hint: 'Organisations et structures inscrites + leurs membres' },
-      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Utilisateurs et leurs rattachements (salarié, responsable, freelance)' },
+      { label: 'Comptes & sous-comptes', href: '/admin/etablissements', icon: Building2, hint: 'Chaque compte (établissement/freelance) avec ses sous-comptes rattachés et leurs rôles' },
+      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Tous les utilisateurs et leurs rattachements (salarié, responsable, freelance)' },
       { label: 'Invitations', href: '/admin/invitations', icon: Mail, hint: 'Invitations en attente, révoquer ou renvoyer' },
       { label: 'Rôles & droits', href: '/admin/roles', icon: KeyRound, hint: 'Matrice des rôles et permissions' },
     ],

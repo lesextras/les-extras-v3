@@ -235,6 +235,15 @@ export class AdminService {
       take: 200,
       include: {
         owner: { select: { id: true, email: true, firstName: true, lastName: true } },
+        memberships: {
+          select: {
+            id: true,
+            role: true,
+            status: true,
+            user: { select: { id: true, email: true, firstName: true, lastName: true } },
+          },
+          orderBy: { role: 'asc' },
+        },
         _count: { select: { memberships: true, reliefMissions: true, services: true, bookings: true } },
       },
     });
