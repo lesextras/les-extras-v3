@@ -99,7 +99,12 @@
 
   /* Effet "eyebrow" (surtitre) récurrent dans le branding */
   .eyebrow {
-    @apply inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-foreground;
+    @apply inline-flex items-center gap-2 rounded-full border border-primary/10 bg-primary-soft px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-accent-foreground shadow-[0_1px_2px_rgba(13,115,119,0.06)];
+  }
+
+  /* Carte interactive : légère élévation au survol (surfaces cliquables) */
+  .card-interactive {
+    @apply transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-card;
   }
 
   /* Squelette de chargement (shimmer) */
@@ -126,6 +131,23 @@
       radial-gradient(60% 60% at 85% 0%, hsl(var(--secondary) / 0.10) 0%, transparent 60%),
       radial-gradient(50% 50% at 0% 100%, hsl(var(--primary) / 0.10) 0%, transparent 55%);
   }
+
+  /* Dégradé de marque appliqué au texte (titres accentués) */
+  .text-gradient-brand {
+    background-image: linear-gradient(120deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Apparition en cascade — s'échelonne avec un délai croissant */
+  .animate-fade-in-up {
+    animation: fade-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .stagger-1 { animation-delay: 0.06s; }
+  .stagger-2 { animation-delay: 0.12s; }
+  .stagger-3 { animation-delay: 0.18s; }
+  .stagger-4 { animation-delay: 0.24s; }
 
   /* Respect des préférences de mouvement réduit */
   @media (prefers-reduced-motion: reduce) {

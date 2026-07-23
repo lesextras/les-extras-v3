@@ -12,6 +12,7 @@ import {
   Building2,
   Sparkles,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ export default function LandingPage() {
               </span>
               <h1 className="mt-5 text-4xl font-bold leading-[1.08] tracking-tight text-foreground text-balance md:text-5xl lg:text-6xl">
                 Trouvez le bon renfort,
-                <span className="text-primary"> au bon moment.</span>
+                <span className="text-gradient-brand"> au bon moment.</span>
               </h1>
               <p className="mt-5 max-w-xl text-lg text-muted-foreground text-balance">
                 LES EXTRAS relie les établissements (MECS, IME, ITEP, EHPAD, SESSAD) aux
@@ -58,9 +59,18 @@ export default function LandingPage() {
                   { k: '48 h', v: 'délai moyen pour être renforcé' },
                   { k: '1 200+', v: 'professionnels qualifiés' },
                   { k: '4,8/5', v: 'satisfaction établissements' },
-                ].map((s) => (
-                  <div key={s.k}>
-                    <dt className="text-2xl font-bold text-foreground">{s.k}</dt>
+                ].map((s, i) => (
+                  <div
+                    key={s.k}
+                    className={cn(
+                      'animate-fade-in-up border-l border-border/70 pl-4 first:border-l-0 first:pl-0',
+                      i === 1 && 'stagger-1',
+                      i === 2 && 'stagger-2',
+                    )}
+                  >
+                    <dt className="text-2xl font-bold tracking-tight text-foreground [font-variant-numeric:tabular-nums]">
+                      {s.k}
+                    </dt>
                     <dd className="mt-1 text-xs text-muted-foreground">{s.v}</dd>
                   </div>
                 ))}
@@ -149,9 +159,9 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-14 grid gap-6 lg:grid-cols-2">
-            <Card className="group overflow-hidden">
+            <Card className="group card-interactive overflow-hidden">
               <CardContent className="p-8">
-                <span className="grid size-12 place-items-center rounded-2xl bg-secondary-soft text-secondary">
+                <span className="grid size-12 place-items-center rounded-2xl bg-secondary-soft text-secondary transition-transform duration-300 group-hover:scale-105">
                   <Siren className="size-6" />
                 </span>
                 <h3 className="mt-5 text-xl font-semibold">SOS Renfort</h3>
@@ -180,9 +190,9 @@ export default function LandingPage() {
               </CardContent>
             </Card>
 
-            <Card id="ateliers" className="group overflow-hidden">
+            <Card id="ateliers" className="group card-interactive overflow-hidden">
               <CardContent className="p-8">
-                <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+                <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary transition-transform duration-300 group-hover:scale-105">
                   <GraduationCap className="size-6" />
                 </span>
                 <h3 className="mt-5 text-xl font-semibold">Ateliers & Éducat’heures</h3>
@@ -240,12 +250,12 @@ export default function LandingPage() {
                   text: 'Contrats, planning, messagerie, factures et avis : tout est réuni au même endroit.',
                 },
               ].map((step, i) => (
-                <div key={step.title} className="relative">
-                  <span className="absolute -top-3 left-0 text-6xl font-bold text-primary/10">
+                <div key={step.title} className="group relative">
+                  <span className="absolute -top-3 left-0 text-6xl font-bold text-primary/10 transition-colors duration-300 group-hover:text-primary/15">
                     {i + 1}
                   </span>
                   <div className="relative pt-6">
-                    <span className="grid size-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-soft">
+                    <span className="grid size-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-soft transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:shadow-card">
                       <step.icon className="size-6" />
                     </span>
                     <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
@@ -266,8 +276,11 @@ export default function LandingPage() {
               { icon: Users, title: 'Multi-comptes', text: 'Gérez plusieurs structures et invitez vos équipes.' },
               { icon: HeartHandshake, title: 'Humain d’abord', text: 'Un outil pensé pour le soin, pas contre lui.' },
             ].map((v) => (
-              <div key={v.title} className="rounded-2xl border border-border bg-card p-6">
-                <span className="grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground">
+              <div
+                key={v.title}
+                className="group rounded-2xl border border-border/70 bg-card p-6 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-card"
+              >
+                <span className="grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground transition-transform duration-300 group-hover:scale-105">
                   <v.icon className="size-5" />
                 </span>
                 <h3 className="mt-4 font-semibold">{v.title}</h3>
@@ -279,8 +292,12 @@ export default function LandingPage() {
 
         {/* CTA FINAL */}
         <section id="tarifs" className="section pt-0">
-          <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground md:px-16">
+          <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground shadow-card md:px-16">
             <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
+            <div
+              className="absolute -right-16 -top-16 size-64 rounded-full bg-secondary/20 blur-3xl"
+              aria-hidden
+            />
             <div className="relative mx-auto max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
                 Prêt à renforcer vos équipes, sereinement ?

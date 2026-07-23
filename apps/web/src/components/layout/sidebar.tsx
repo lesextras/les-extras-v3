@@ -55,9 +55,9 @@ export function Sidebar({ role, onNavigate, className }: SidebarProps) {
                   onClick={onNavigate}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                     active
-                      ? 'bg-primary-soft text-accent-foreground'
+                      ? 'bg-primary-soft font-semibold text-accent-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.08)] before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-primary'
                       : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                   )}
                 >

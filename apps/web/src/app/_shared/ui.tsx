@@ -104,20 +104,38 @@ export function StatCard({
       : accent === "terracotta"
         ? "before:bg-secondary"
         : "before:bg-border";
+  const iconTint =
+    accent === "teal"
+      ? "bg-primary-soft text-primary"
+      : accent === "terracotta"
+        ? "bg-secondary-soft text-secondary"
+        : "bg-muted text-muted-foreground";
   return (
     <Card
       className={cn(
-        "relative overflow-hidden before:absolute before:inset-y-0 before:left-0 before:w-1",
+        "group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card",
+        "before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full",
         ring,
       )}
     >
       <CardContent className="flex items-start justify-between gap-3 p-5">
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+          <p className="text-[13px] font-medium text-muted-foreground">{label}</p>
+          <p className="text-[26px] font-bold leading-none tracking-tight text-foreground [font-variant-numeric:tabular-nums]">
+            {value}
+          </p>
           {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
         </div>
-        {icon ? <div className="text-muted-foreground/70">{icon}</div> : null}
+        {icon ? (
+          <div
+            className={cn(
+              "grid size-9 shrink-0 place-items-center rounded-xl transition-transform duration-300 group-hover:scale-105 [&_svg]:size-[18px]",
+              iconTint,
+            )}
+          >
+            {icon}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );

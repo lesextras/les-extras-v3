@@ -12,8 +12,16 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Panneau de marque */}
-      <aside className="relative hidden overflow-hidden bg-primary p-12 text-primary-foreground lg:flex lg:flex-col">
+      <aside className="relative hidden overflow-hidden bg-gradient-to-br from-primary via-primary to-[hsl(182_80%_20%)] p-12 text-primary-foreground lg:flex lg:flex-col">
         <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
+        <div
+          className="absolute -right-24 top-1/4 size-80 rounded-full bg-secondary/25 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="absolute -bottom-24 -left-16 size-72 rounded-full bg-primary-foreground/10 blur-3xl"
+          aria-hidden
+        />
         <div className="relative">
           <Link href="/" className="inline-flex">
             <span className="inline-flex items-center gap-2.5">
@@ -40,8 +48,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               { icon: GraduationCap, text: 'Catalogue d’ateliers clé en main' },
               { icon: ShieldCheck, text: 'Profils et documents vérifiés' },
             ].map((item) => (
-              <li key={item.text} className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-xl bg-primary-foreground/15">
+              <li
+                key={item.text}
+                className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-primary-foreground/[0.07]"
+              >
+                <span className="grid size-10 place-items-center rounded-xl bg-primary-foreground/15 ring-1 ring-inset ring-primary-foreground/10">
                   <item.icon className="size-5" />
                 </span>
                 <span className="text-sm font-medium">{item.text}</span>
@@ -50,9 +61,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </ul>
         </div>
 
-        <div className="relative flex items-center gap-3 rounded-2xl bg-primary-foreground/10 p-4">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary-foreground/15">
-            <Star className="size-5" />
+        <div className="relative flex items-center gap-3 rounded-2xl bg-primary-foreground/10 p-4 ring-1 ring-inset ring-primary-foreground/10 backdrop-blur-sm">
+          <span className="grid size-10 place-items-center rounded-xl bg-primary-foreground/15 text-warning">
+            <Star className="size-5 fill-current" />
           </span>
           <div>
             <p className="text-sm font-semibold">4,8/5 de satisfaction</p>
