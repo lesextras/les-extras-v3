@@ -65,6 +65,7 @@ const freelanceNav: NavSection[] = [
     items: [
       { label: 'Marketplace', href: '/marketplace', icon: Sparkles, hint: 'Toutes les missions et ateliers ouverts' },
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: GraduationCap, hint: 'Créez et gérez vos interventions' },
+      { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
     ],
   },
   {
@@ -87,6 +88,7 @@ const establishmentNav: NavSection[] = [
     items: [
       { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos créneaux et interventions' },
+      { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les freelances' },
     ],
   },
@@ -95,6 +97,7 @@ const establishmentNav: NavSection[] = [
     items: [
       { label: 'Marketplace', href: '/marketplace', icon: Sparkles, hint: 'Toutes les missions et ateliers' },
       { label: 'Ateliers', href: '/marketplace?type=services', icon: GraduationCap, hint: 'Catalogue d’ateliers à réserver' },
+      { label: 'Formations', href: '/marketplace/formations', icon: GraduationCap, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
     ],
   },
   {
@@ -132,7 +135,12 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'R\u00e9servations', href: '/admin/reservations', icon: CalendarClock },
       { label: 'Missions', href: '/admin/missions', icon: Megaphone },
-      { label: '\u00c9ducat\u2019heures', href: '/admin/educatheures', icon: GraduationCap },
+    ],
+  },
+  {
+    title: 'Centre de formation',
+    items: [
+      { label: 'Formations', href: '/admin/formations', icon: GraduationCap },
     ],
   },
   {

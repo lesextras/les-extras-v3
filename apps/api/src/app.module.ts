@@ -28,6 +28,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { MatchingModule } from './matching/matching.module';
 import { PlanningModule } from './planning/planning.module';
 import { PublicModule } from './public/public.module';
+import { FormationsModule } from './formations/formations.module';
 
 @Module({
   imports: [
@@ -58,6 +59,9 @@ import { PublicModule } from './public/public.module';
     CategoriesModule,
     MatchingModule,
     PlanningModule,
+
+    // Centre de formation (Qualiopi) — programmes / sessions / inscriptions.
+    FormationsModule,
 
     // Vitrine publique (non authentifiée).
     PublicModule,

@@ -180,4 +180,16 @@ export class AdminController {
   updateInvoiceStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.admin.updateInvoiceStatus(id, status);
   }
+
+  // --- Centre de formation ------------------------------------------------
+
+  @Get('formations')
+  listFormations(@Query('type') type?: string, @Query('status') status?: string) {
+    return this.admin.listFormations({ type, status });
+  }
+
+  @Get('formations/sessions')
+  listFormationSessions(@Query('status') status?: string) {
+    return this.admin.listSessions({ status });
+  }
 }

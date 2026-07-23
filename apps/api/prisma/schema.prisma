@@ -47,6 +47,8 @@ model User {
   availabilities  Availability[]
   shiftsAssigned  Shift[]        @relation("ShiftFreelance")
   authoredArticles Article[]     @relation("ArticleAuthor")
+  sessionsTrained  FormationSession[] @relation("SessionTrainer")
+  inscriptions     Inscription[]      @relation("InscriptionLearner")
 
   @@index([email])
   @@index([role, status])
@@ -100,6 +102,9 @@ model Account {
   bookings        Booking[]
   invoices        Invoice[]
   shifts          Shift[]
+  formationsOwned  Formation[]        @relation("FormationOwner")
+  sessionsHosted   FormationSession[] @relation("SessionHost")
+  inscriptionsPaid Inscription[]      @relation("InscriptionPayer")
 
   @@index([type])
   @@index([slug])
@@ -301,6 +306,8 @@ model Invoice {
   issuedAt   DateTime?
   createdAt  DateTime      @default(now())
 
+  inscription Inscription? @relation("InscriptionInvoice")
+
   @@index([accountId])
 }
 
@@ -329,6 +336,7 @@ model Category {
   articles    Article[]
   missionsRef ReliefMission[] @relation("MissionCategoryRef")
   servicesRef Service[]       @relation("ServiceCategoryRef")
+  formationsRef Formation[]   @relation("FormationCategoryRef")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -498,4 +506,152 @@ enum ShiftStatus {
   CONFIRMED
   DONE
   CANCELLED
+}
+
+// ---------------------------------------------------------------------------
+// CENTRE DE FORMATION (Qualiopi) — programme / session / inscription (P1)
+// ---------------------------------------------------------------------------
+
+/// PROGRAMME de formation. Catalogue ADePA (certifiant) OU interne etablissement.
+model Formation {
+  id                String          @id @default(cuid())
+  type              FormationType   @default(CERTIFIANTE)
+  ownerAccountId    String
+  ownerAccount      Account         @relation("FormationOwner", fields: [ownerAccountId], references: [id], onDelete: Cascade)
+  title             String
+  slug              String          @unique
+  summary           String?
+  objectives        String?
+  prerequisites     String?
+  program           String?
+  targetAudience    String?
+  durationHours     Int?
+  categoryId        String?
+  categoryRef       Category?       @relation("FormationCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
+  cpfEligible       Boolean         @default(false)
+  certifying        Boolean         @default(false)
+  certificationName String?
+  edofRef           String?
+  status            FormationStatus @default(DRAFT)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  sessions          FormationSession[]
+
+  @@index([type, status])
+  @@index([ownerAccountId])
+}
+
+/// SESSION : instance datee d'un programme.
+model FormationSession {
+  id            String        @id @default(cuid())
+  formationId   String
+  formation     Formation     @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  trainerId     String?
+  trainer       User?         @relation("SessionTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
+  hostAccountId String?
+  hostAccount   Account?      @relation("SessionHost", fields: [hostAccountId], references: [id], onDelete: SetNull)
+  title         String?
+  startDate     DateTime
+  endDate       DateTime?
+  location      String?
+  maxSeats      Int?
+  priceHt       Decimal?      @db.Decimal(10, 2)
+  status        SessionStatus @default(SCHEDULED)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  inscriptions  Inscription[]
+  emargements   Emargement[]
+
+  @@index([formationId, startDate])
+  @@index([trainerId])
+}
+
+/// INSCRIPTION : un apprenant sur une session.
+model Inscription {
+  id             String            @id @default(cuid())
+  sessionId      String
+  session        FormationSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  learnerId      String?
+  learner        User?             @relation("InscriptionLearner", fields: [learnerId], references: [id], onDelete: SetNull)
+  learnerName    String?
+  learnerEmail   String?
+  payerAccountId String?
+  payerAccount   Account?          @relation("InscriptionPayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
+  financing      FinancingType     @default(ESTABLISHMENT)
+  status         InscriptionStatus @default(PENDING)
+  satisfaction   Int?
+  evalResult     String?
+  attestationUrl String?
+  certificatUrl  String?
+  invoiceId      String?           @unique
+  invoice        Invoice?          @relation("InscriptionInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  emargements    Emargement[]
+
+  @@index([sessionId, status])
+  @@index([learnerId])
+}
+
+/// EMARGEMENT : presence signee par apprenant et par creneau.
+model Emargement {
+  id            String           @id @default(cuid())
+  sessionId     String
+  session       FormationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  inscriptionId String
+  inscription   Inscription      @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
+  slotDate      DateTime
+  slot          EmargementSlot   @default(MORNING)
+  present       Boolean          @default(false)
+  signatureUrl  String?
+  signedAt      DateTime?
+  createdAt     DateTime         @default(now())
+
+  @@unique([inscriptionId, slotDate, slot])
+  @@index([sessionId])
+}
+
+enum FormationType {
+  CERTIFIANTE
+  INTERNE
+}
+
+enum FormationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  OPEN
+  FULL
+  RUNNING
+  DONE
+  CANCELLED
+}
+
+enum InscriptionStatus {
+  PENDING
+  CONFIRMED
+  ATTENDED
+  CERTIFIED
+  CANCELLED
+}
+
+enum FinancingType {
+  CPF
+  OPCO
+  ESTABLISHMENT
+  PERSONAL
+  POLE_EMPLOI
+  INTERNE
+}
+
+enum EmargementSlot {
+  MORNING
+  AFTERNOON
 }

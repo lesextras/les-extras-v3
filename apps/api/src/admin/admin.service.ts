@@ -1,5 +1,11 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, UserStatus } from '@prisma/client';
+import {
+  FormationStatus,
+  FormationType,
+  Prisma,
+  SessionStatus,
+  UserStatus,
+} from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto, UpdateUserDto } from './dto/user-admin.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -413,10 +419,41 @@ export class AdminService {
     return this.prisma.invoice.update({ where: { id }, data });
   }
 
+  // --- Centre de formation ------------------------------------------------
+
+  async listFormations(params: { type?: string; status?: string }) {
+    const where: Prisma.FormationWhereInput = {};
+    if (params.type) where.type = params.type as FormationType;
+    if (params.status) where.status = params.status as FormationStatus;
+    return this.prisma.formation.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        ownerAccount: { select: { id: true, name: true } },
+        categoryRef: { select: { id: true, title: true } },
+        _count: { select: { sessions: true } },
+      },
+    });
+  }
+
+  async listSessions(params: { status?: string }) {
+    const where: Prisma.FormationSessionWhereInput = {};
+    if (params.status) where.status = params.status as SessionStatus;
+    return this.prisma.formationSession.findMany({
+      where,
+      orderBy: { startDate: 'desc' },
+      include: {
+        formation: { select: { id: true, title: true, type: true } },
+        trainer: { select: { id: true, firstName: true, lastName: true } },
+        _count: { select: { inscriptions: true } },
+      },
+    });
+  }
+
   // --- Stats rapides ------------------------------------------------------
 
   async stats() {
-    const [users, accounts, missions, services, bookings, invoices, categories, articles] =
+    const [users, accounts, missions, services, bookings, invoices, categories, articles, formations] =
       await this.prisma.$transaction([
         this.prisma.user.count(),
         this.prisma.account.count(),
@@ -426,7 +463,8 @@ export class AdminService {
         this.prisma.invoice.count(),
         this.prisma.category.count(),
         this.prisma.article.count(),
+        this.prisma.formation.count(),
       ]);
-    return { users, accounts, missions, services, bookings, invoices, categories, articles };
+    return { users, accounts, missions, services, bookings, invoices, categories, articles, formations };
   }
 }
