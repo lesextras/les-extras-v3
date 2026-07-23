@@ -53,6 +53,7 @@ export function Sidebar({ role, onNavigate, className }: SidebarProps) {
                   key={item.href}
                   href={item.href}
                   onClick={onNavigate}
+                  title={item.hint ?? item.label}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
                     'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',

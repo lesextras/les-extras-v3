@@ -60,6 +60,50 @@ export default async function DashboardPage() {
         }
       />
 
+      {/* Onboarding : guide de démarrage, masqué une fois toutes les étapes faites. */}
+      {(() => {
+        const hasCatalog = isEstablishment
+          ? (missions.data?.length ?? 0) > 0
+          : (services.data?.length ?? 0) > 0;
+        const steps = [
+          { done: Boolean(session.user.firstName), label: "Complétez votre profil", href: "/dashboard/account" },
+          isEstablishment
+            ? { done: hasCatalog, label: "Publiez votre premier SOS Renfort", href: "/dashboard/renforts" }
+            : { done: hasCatalog, label: "Créez votre premier atelier", href: "/dashboard/ateliers" },
+          isEstablishment
+            ? { done: (session.account as { credits?: number })?.credits !== undefined && false, label: "Invitez votre équipe", href: "/dashboard/account" }
+            : { done: (s.applications ?? 0) > 0, label: "Candidatez à une première mission", href: "/dashboard/opportunites" },
+        ];
+        const remaining = steps.filter((st) => !st.done).length;
+        if (remaining === 0) return null;
+        return (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="space-y-3 p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-foreground">Prise en main — {steps.length - remaining}/{steps.length}</p>
+                <span className="text-xs text-muted-foreground">Quelques étapes pour bien démarrer</span>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {steps.map((st) => (
+                  <Link
+                    key={st.label}
+                    href={st.href}
+                    className={`flex items-center gap-2 rounded-lg border p-3 text-sm transition ${
+                      st.done ? "border-border bg-card text-muted-foreground" : "border-primary/40 bg-card hover:bg-primary/10"
+                    }`}
+                  >
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs ${st.done ? "bg-success/20 text-success" : "border border-primary text-primary"}`}>
+                      {st.done ? "✓" : ""}
+                    </span>
+                    <span className={st.done ? "line-through" : "font-medium text-foreground"}>{st.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {isEstablishment ? (
@@ -173,22 +217,54 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-primary/5">
-            <CardContent className="space-y-3 p-5">
-              <Badge variant="secondary">Raccourcis</Badge>
-              <div className="flex flex-col gap-2">
-                <Button asChild variant="outline" className="justify-start">
-                  <Link href="/dashboard/inbox">Messagerie {s.unreadMessages ? `(${s.unreadMessages})` : ""}</Link>
-                </Button>
-                <Button asChild variant="outline" className="justify-start">
-                  <Link href="/dashboard/finance">Factures &amp; revenus</Link>
-                </Button>
-                <Button asChild variant="outline" className="justify-start">
-                  <Link href="/dashboard/account">Équipe &amp; paramètres</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {(() => {
+            // Bloc « À faire » : uniquement des actions qui attendent l'utilisateur.
+            const todos: { label: string; href: string }[] = [];
+            if ((s.applications ?? 0) > 0) {
+              todos.push({
+                label: `${s.applications} candidature${s.applications! > 1 ? "s" : ""} à examiner`,
+                href: isEstablishment ? "/dashboard/renforts" : "/dashboard/opportunites",
+              });
+            }
+            if ((s.upcomingBookings ?? 0) > 0) {
+              todos.push({
+                label: `${s.upcomingBookings} intervention${s.upcomingBookings! > 1 ? "s" : ""} à venir`,
+                href: "/dashboard/planning",
+              });
+            }
+            if ((s.unreadMessages ?? 0) > 0) {
+              todos.push({
+                label: `${s.unreadMessages} message${s.unreadMessages! > 1 ? "s" : ""} non lu${s.unreadMessages! > 1 ? "s" : ""}`,
+                href: "/dashboard/inbox",
+              });
+            }
+            if (!session.user.firstName) {
+              todos.push({ label: "Compléter votre profil", href: "/dashboard/account" });
+            }
+            return (
+              <Card className="bg-primary/5">
+                <CardHeader>
+                  <SectionTitle title="À faire" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {todos.length > 0 ? (
+                    todos.map((t) => (
+                      <Button key={t.href + t.label} asChild variant="outline" className="w-full justify-between">
+                        <Link href={t.href}>
+                          <span>{t.label}</span>
+                          <span aria-hidden>→</span>
+                        </Link>
+                      </Button>
+                    ))
+                  ) : (
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      Tout est à jour. Rien ne vous attend pour le moment.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   Menu,
   Bell,
+  Search,
   ChevronsUpDown,
   Building2,
   UserRound,
@@ -14,6 +15,7 @@ import {
   Settings,
   LifeBuoy,
 } from 'lucide-react';
+import { CommandPalette } from './command-palette';
 import { cn, initials } from '@/lib/utils';
 import type { SessionUser, SessionAccount } from '@/lib/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -132,7 +134,19 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
         </DropdownMenu>
       )}
 
+      <CommandPalette />
+
       <div className="ml-auto flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event('cmdk:open'))}
+          className="flex items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          aria-label="Rechercher"
+        >
+          <Search className="size-4" />
+          <span className="hidden lg:inline">Rechercher</span>
+          <kbd className="hidden rounded border border-border px-1 text-[10px] lg:inline">⌘K</kbd>
+        </button>
         <Link
           href="/dashboard/inbox"
           className="relative rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"

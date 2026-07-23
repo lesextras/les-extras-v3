@@ -24,6 +24,8 @@ export interface NavItem {
   icon: LucideIcon;
   /** Badge optionnel (ex: nouveautés / compteur). */
   badge?: string;
+  /** Info-bulle explicative affichée au survol. */
+  hint?: string;
 }
 
 export interface NavSection {
@@ -47,19 +49,29 @@ export function resolveNavRole(params: {
 const freelanceNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
-      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target },
-      { label: 'Marketplace', href: '/marketplace', icon: Sparkles },
-      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock },
-      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: GraduationCap },
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter' },
     ],
   },
   {
     title: 'Activité',
     items: [
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare },
-      { label: 'Factures & revenus', href: '/dashboard/finance', icon: FileText },
-      { label: 'Mon compte', href: '/dashboard/account', icon: Settings },
+      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, hint: 'Missions qui correspondent à votre profil, classées par score' },
+      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos interventions confirmées' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les établissements' },
+    ],
+  },
+  {
+    title: 'Catalogue',
+    items: [
+      { label: 'Marketplace', href: '/marketplace', icon: Sparkles, hint: 'Toutes les missions et ateliers ouverts' },
+      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: GraduationCap, hint: 'Créez et gérez vos interventions' },
+    ],
+  },
+  {
+    title: 'Mon espace',
+    items: [
+      { label: 'Factures & revenus', href: '/dashboard/finance', icon: FileText, hint: 'Vos revenus et documents' },
+      { label: 'Mon compte', href: '/dashboard/account', icon: Settings, hint: 'Profil, paramètres et sécurité' },
     ],
   },
 ];
@@ -67,19 +79,29 @@ const freelanceNav: NavSection[] = [
 const establishmentNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
-      { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone },
-      { label: 'Marketplace', href: '/marketplace', icon: Sparkles },
-      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock },
-      { label: 'Ateliers', href: '/marketplace?type=services', icon: GraduationCap },
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter' },
     ],
   },
   {
-    title: 'Gestion',
+    title: 'Activité',
     items: [
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare },
-      { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users },
-      { label: 'Factures', href: '/dashboard/finance', icon: FileText },
+      { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
+      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos créneaux et interventions' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les freelances' },
+    ],
+  },
+  {
+    title: 'Catalogue',
+    items: [
+      { label: 'Marketplace', href: '/marketplace', icon: Sparkles, hint: 'Toutes les missions et ateliers' },
+      { label: 'Ateliers', href: '/marketplace?type=services', icon: GraduationCap, hint: 'Catalogue d’ateliers à réserver' },
+    ],
+  },
+  {
+    title: 'Mon espace',
+    items: [
+      { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
+      { label: 'Factures', href: '/dashboard/finance', icon: FileText, hint: 'Vos factures et dépenses' },
     ],
   },
 ];
