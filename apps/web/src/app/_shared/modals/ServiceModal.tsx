@@ -68,7 +68,7 @@ export function ServiceModal({
     setError(null);
     const fd = new FormData(e.currentTarget);
     try {
-      await apiRequest("/services", {
+      const created = await apiRequest<{ id: string }>("/services", {
         method: "POST",
         body: {
           title: String(fd.get("title") || ""),
@@ -79,10 +79,17 @@ export function ServiceModal({
           publicTarget: String(fd.get("publicTarget") || "") || undefined,
           price: fd.get("price") ? Number(fd.get("price")) : undefined,
           city: String(fd.get("city") || "") || undefined,
-          publish: true,
         },
         accountId,
       });
+      // Publication immédiate (l'atelier est créé en brouillon par défaut).
+      if ((created as { id?: string })?.id) {
+        await apiRequest(`/services/${(created as { id: string }).id}`, {
+          method: "PATCH",
+          body: { status: "PUBLISHED" },
+          accountId,
+        }).catch(() => {});
+      }
       toast({ title: "Atelier publié", description: "Il apparaît désormais dans le catalogue." });
       setOpen(false);
       router.refresh();

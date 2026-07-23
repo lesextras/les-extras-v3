@@ -88,11 +88,13 @@ export function RenfortModal({
       hourlyRate: fd.get("hourlyRate") ? Number(fd.get("hourlyRate")) : undefined,
       headcount: fd.get("headcount") ? Number(fd.get("headcount")) : 1,
       visibility,
-      // demande de publication immédiate ; l'API bascule le statut en PUBLISHED
-      publish: true,
     };
     try {
-      await apiRequest("/missions", { method: "POST", body, accountId });
+      const created = await apiRequest<{ id: string }>("/missions", { method: "POST", body, accountId });
+      // Diffusion immédiate via l'endpoint dédié.
+      if (created?.id) {
+        await apiRequest(`/missions/${created.id}/publish`, { method: "POST", accountId }).catch(() => {});
+      }
       toast({
         title: "Renfort publié",
         description: "Votre demande est diffusée. Vous serez notifié des candidatures.",
