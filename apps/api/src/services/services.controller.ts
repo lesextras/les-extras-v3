@@ -44,8 +44,9 @@ export class ServicesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.services.findOne(id);
+  @UseGuards(AccountGuard)
+  findOne(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.services.findOne(id, account.id);
   }
 
   @Post()

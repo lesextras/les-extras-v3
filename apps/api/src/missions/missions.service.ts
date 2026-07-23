@@ -32,6 +32,9 @@ export class MissionsService {
 
   /** Crée une mission (statut DRAFT) rattachée au compte établissement actif. */
   async create(accountId: string, dto: CreateMissionDto) {
+    if (dto.endDate && new Date(dto.endDate) <= new Date(dto.startDate)) {
+      throw new BadRequestException('La date de fin doit être après la date de début.');
+    }
     return this.prisma.reliefMission.create({
       data: {
         accountId,
@@ -98,10 +101,15 @@ export class MissionsService {
       },
     });
     if (!mission) throw new NotFoundException('Mission introuvable.');
-    if (accountId && mission.accountId !== accountId) {
-      throw new ForbiddenException('Mission hors de votre compte.');
+    // Propriétaire : détail complet (avec candidatures).
+    if (accountId && mission.accountId === accountId) return mission;
+    // Non-propriétaire : uniquement les missions publiées, SANS le pipeline de candidatures.
+    if (mission.status === MissionStatus.PUBLISHED) {
+      const { bookings, ...publicView } = mission as any;
+      return publicView;
     }
-    return mission;
+    // Brouillon/fermée d'un autre compte : on ne révèle pas son existence.
+    throw new NotFoundException('Mission introuvable.');
   }
 
   private async assertOwned(id: string, accountId: string) {
@@ -173,7 +181,10 @@ export class MissionsService {
    * Candidature d'un FREELANCE : crée un Booking REQUESTED rattaché au compte
    * freelance actif, et notifie l'établissement propriétaire de la mission.
    */
-  async candidate(missionId: string, freelanceAccountId: string) {
+  async candidate(missionId: string, freelanceAccountId: string, accountType?: string) {
+    if (accountType === 'ESTABLISHMENT') {
+      throw new BadRequestException('Seuls les freelances peuvent candidater à une mission.');
+    }
     const mission = await this.prisma.reliefMission.findUnique({
       where: { id: missionId },
       include: { account: { select: { ownerId: true, name: true } } },

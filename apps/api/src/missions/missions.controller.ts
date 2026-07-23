@@ -45,8 +45,8 @@ export class MissionsController {
 
   @Get(':id')
   @UseGuards(AccountGuard)
-  findOne(@Param('id') id: string) {
-    return this.missions.findOne(id);
+  findOne(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.missions.findOne(id, account.id);
   }
 
   @Post()
@@ -94,6 +94,6 @@ export class MissionsController {
   @Post(':id/candidate')
   @UseGuards(AccountGuard)
   candidate(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
-    return this.missions.candidate(id, account.id);
+    return this.missions.candidate(id, account.id, account.type);
   }
 }

@@ -65,13 +65,17 @@ export class ServicesService {
     return { items, total, take: query.take ?? 20, skip: query.skip ?? 0 };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, accountId?: string) {
     const service = await this.prisma.service.findUnique({
       where: { id },
       include: { account: { select: { id: true, name: true, city: true, logoUrl: true } } },
     });
     if (!service) throw new NotFoundException('Service introuvable.');
-    return service;
+    // Propriétaire : accès complet (y compris brouillon).
+    if (accountId && service.accountId === accountId) return service;
+    // Autre compte : uniquement les ateliers publiés.
+    if (service.status === 'PUBLISHED') return service;
+    throw new NotFoundException('Service introuvable.');
   }
 
   private async assertOwned(id: string, accountId: string) {
