@@ -154,7 +154,9 @@ function SelectContent({ className, children }: React.HTMLAttributes<HTMLDivElem
     requestAnimationFrame(() => (selected ?? options[0])?.focus());
   }, [open]);
 
-  if (!open) return null;
+  // Fermé : on monte quand même les items (cachés) pour que leurs libellés
+  // s'enregistrent dans le registre — sinon le déclencheur affiche la valeur brute.
+  if (!open) return <div className="hidden" aria-hidden>{children}</div>;
 
   function moveFocus(dir: 1 | -1 | 'first' | 'last') {
     const el = ref.current;

@@ -16,13 +16,13 @@ import {
 // La valeur "all" est le sentinel « aucun filtre » : setParam la retire des
 // query params, ce qui équivaut à une valeur vide côté page.
 const TYPES = [
-  { value: "all", label: "Tous les types" },
+  { value: "all_type", label: "Tous les types" },
   { value: "missions", label: "Missions renfort" },
   { value: "services", label: "Ateliers" },
 ];
 
 const CATEGORIES = [
-  { value: "all", label: "Toutes les catégories" },
+  { value: "all_cat", label: "Toutes les catégories" },
   { value: "RENFORT", label: "Renfort" },
   { value: "REMPLACEMENT", label: "Remplacement" },
   { value: "ATELIER_EDUCATIF", label: "Atelier éducatif" },
@@ -38,7 +38,7 @@ export function MarketplaceFilters() {
   const setParam = useCallback(
     (key: string, value: string) => {
       const next = new URLSearchParams(params.toString());
-      if (!value || value === "all") next.delete(key);
+      if (!value || value === "all" || value === "all_type" || value === "all_cat") next.delete(key);
       else next.set(key, value);
       router.push(`${pathname}?${next.toString()}`);
     },
@@ -62,7 +62,7 @@ export function MarketplaceFilters() {
         />
       </form>
       <Select
-        defaultValue={params.get("type") ?? "all"}
+        defaultValue={params.get("type") ?? "all_type"}
         onValueChange={(v) => setParam("type", v)}
       >
         <SelectTrigger className="sm:w-[180px]">
@@ -77,7 +77,7 @@ export function MarketplaceFilters() {
         </SelectContent>
       </Select>
       <Select
-        defaultValue={params.get("category") ?? "all"}
+        defaultValue={params.get("category") ?? "all_cat"}
         onValueChange={(v) => setParam("category", v)}
       >
         <SelectTrigger className="sm:w-[190px]">

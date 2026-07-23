@@ -88,25 +88,25 @@ export function AdminUsersTable({
           placeholder="Rechercher un nom ou un e-mail…"
           className="flex-1"
         />
-        <Select value={status || "__all"} onValueChange={(v) => setStatus(v === "__all" ? "" : v)}>
+        <Select value={status || "__all_status"} onValueChange={(v) => setStatus(v === "__all_status" ? "" : v)}>
           <SelectTrigger className="sm:w-[180px]">
             <SelectValue placeholder="Statut" />
           </SelectTrigger>
           <SelectContent>
             {STATUS_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value || "__all"}>
+              <SelectItem key={o.value} value={o.value || "__all_status"}>
                 {o.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Select value={role || "__all"} onValueChange={(v) => setRole(v === "__all" ? "" : v)}>
+        <Select value={role || "__all_role"} onValueChange={(v) => setRole(v === "__all_role" ? "" : v)}>
           <SelectTrigger className="sm:w-[180px]">
             <SelectValue placeholder="Rôle" />
           </SelectTrigger>
           <SelectContent>
             {ROLE_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value || "__all"}>
+              <SelectItem key={o.value} value={o.value || "__all_role"}>
                 {o.label}
               </SelectItem>
             ))}
