@@ -45,6 +45,7 @@ COPY --from=build /app/apps/api/node_modules /app/apps/api/node_modules
 COPY --from=build /app/apps/api/dist /app/apps/api/dist
 COPY --from=build /app/apps/api/prisma /app/apps/api/prisma
 COPY --from=build /app/apps/api/package.json /app/apps/api/package.json
+COPY --from=build /app/apps/api/tsconfig.json /app/apps/api/tsconfig.json
 WORKDIR /app/apps/api
 
 EXPOSE 3001
@@ -55,4 +56,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
 
 # Migrations appliquées au démarrage, puis lancement de l'API.
 ENTRYPOINT ["tini", "--"]
-CMD ["sh", "-c", "pnpm exec prisma db push --schema ./prisma/schema.prisma --skip-generate --accept-data-loss && node dist/main.js"]
+CMD ["sh", "-c", "pnpm exec prisma db push --schema ./prisma/schema.prisma --skip-generate --accept-data-loss && (TS_NODE_TRANSPILE_ONLY=1 pnpm exec prisma db seed || echo 'seed skipped') && node dist/main.js"]
