@@ -60,7 +60,11 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
     signal,
   } = options;
 
-  const url = `${getApiBaseUrl()}${path.startsWith('/') ? path : `/${path}`}`;
+  const isBrowser = typeof window !== 'undefined';
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  // Navigateur : passe par le proxy same-origin (/api/proxy) qui injecte
+  // le token depuis le cookie httpOnly. Serveur : appel direct à l'API.
+  const url = isBrowser ? `/api/proxy${cleanPath}` : `${getApiBaseUrl()}${cleanPath}`;
 
   const finalHeaders: Record<string, string> = {
     Accept: 'application/json',
@@ -73,6 +77,7 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
   const res = await fetch(url, {
     method,
     headers: finalHeaders,
+    credentials: isBrowser ? 'include' : 'same-origin',
     body: body !== undefined ? JSON.stringify(body) : undefined,
     cache: next ? undefined : cache,
     next,
