@@ -88,7 +88,20 @@ const adminNav: NavSection[] = [
   {
     items: [
       { label: 'Vue d\u2019ensemble', href: '/admin', icon: LayoutDashboard },
-      { label: 'Marketplace', href: '/marketplace', icon: Sparkles },
+    ],
+  },
+  {
+    title: 'Mod\u00e9ration',
+    items: [
+      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users },
+      { label: 'Missions', href: '/admin/missions', icon: Megaphone },
+      { label: 'Ateliers', href: '/admin/ateliers', icon: GraduationCap },
+    ],
+  },
+  {
+    title: 'Pilotage',
+    items: [
+      { label: 'Statistiques', href: '/admin/statistiques', icon: BarChart3 },
     ],
   },
 ];

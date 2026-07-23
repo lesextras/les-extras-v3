@@ -13,17 +13,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// La valeur "all" est le sentinel « aucun filtre » : setParam la retire des
+// query params, ce qui équivaut à une valeur vide côté page.
 const TYPES = [
-  { value: "all", label: "Tout" },
+  { value: "all", label: "Tous les types" },
   { value: "missions", label: "Missions renfort" },
   { value: "services", label: "Ateliers" },
 ];
 
 const CATEGORIES = [
-  { value: "all", label: "Toutes catégories" },
+  { value: "all", label: "Toutes les catégories" },
   { value: "RENFORT", label: "Renfort" },
   { value: "REMPLACEMENT", label: "Remplacement" },
-  { value: "ATELIER", label: "Atelier" },
+  { value: "ATELIER_EDUCATIF", label: "Atelier éducatif" },
   { value: "FORMATION", label: "Formation" },
   { value: "MEDIATION", label: "Médiation" },
 ];

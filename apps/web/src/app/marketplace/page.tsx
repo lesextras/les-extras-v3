@@ -1,4 +1,6 @@
 // Catalogue marketplace : missions renfort + ateliers, avec filtres.
+// Endpoints réels : GET /missions/marketplace et GET /services/catalog
+// renvoient un objet paginé { items, total, take, skip[, page] }.
 import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../_shared/server";
 import { PageHeader, EmptyState, ErrorState } from "../_shared/ui";
@@ -8,11 +10,39 @@ import type { Mission, Service } from "../_shared/types";
 
 export const metadata: Metadata = { title: "Marketplace · Les Extras" };
 
+// Enums valides côté API (évite un 400 quand une catégorie ne correspond pas).
+const MISSION_CATEGORIES = new Set([
+  "RENFORT",
+  "REMPLACEMENT",
+  "ATELIER_EDUCATIF",
+  "ATELIER_THERAPEUTIQUE",
+  "FORMATION",
+  "ANALYSE_PRATIQUES",
+]);
+const SERVICE_CATEGORIES = new Set([
+  "ATELIER",
+  "FORMATION",
+  "MEDIATION",
+  "ART_THERAPIE",
+  "PREVENTION",
+]);
+
+interface Paginated<T> {
+  items?: T[];
+  total?: number;
+}
+
 function qs(params: Record<string, string | undefined>) {
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v) sp.set(k, v);
   const s = sp.toString();
   return s ? `?${s}` : "";
+}
+
+/** Lit une liste que la réponse soit un tableau direct ou un objet paginé. */
+function asItems<T>(data: T[] | Paginated<T> | undefined): T[] {
+  if (Array.isArray(data)) return data;
+  return data?.items ?? [];
 }
 
 export default async function MarketplacePage({
@@ -21,23 +51,29 @@ export default async function MarketplacePage({
   searchParams: { q?: string; type?: string; category?: string };
 }) {
   const session = await requireSession();
-  const type = searchParams.type ?? "all";
-  const query = qs({ q: searchParams.q, category: searchParams.category });
+  const type = searchParams.type ?? "";
+  const category = searchParams.category || undefined;
 
-  const wantMissions = type === "all" || type === "missions";
-  const wantServices = type === "all" || type === "services";
+  const wantMissions = !type || type === "missions";
+  const wantServices = !type || type === "services";
+
+  const missionCategory = category && MISSION_CATEGORIES.has(category) ? category : undefined;
+  const serviceCategory = category && SERVICE_CATEGORIES.has(category) ? category : undefined;
+
+  const missionsQuery = qs({ search: searchParams.q, category: missionCategory });
+  const servicesQuery = qs({ category: serviceCategory });
 
   const [missionsRes, servicesRes] = await Promise.all([
     wantMissions
-      ? fetchApi<Mission[]>(session, `/marketplace/missions${query}`)
-      : Promise.resolve({ data: [] as Mission[] }),
+      ? fetchApi<Paginated<Mission>>(session, `/missions/marketplace${missionsQuery}`)
+      : Promise.resolve<{ data?: Paginated<Mission>; error?: string }>({ data: { items: [] } }),
     wantServices
-      ? fetchApi<Service[]>(session, `/marketplace/services${query}`)
-      : Promise.resolve({ data: [] as Service[] }),
+      ? fetchApi<Paginated<Service>>(session, `/services/catalog${servicesQuery}`)
+      : Promise.resolve<{ data?: Paginated<Service>; error?: string }>({ data: { items: [] } }),
   ]);
 
-  const missions = missionsRes.data ?? [];
-  const services = servicesRes.data ?? [];
+  const missions = asItems<Mission>(missionsRes.data);
+  const services = asItems<Service>(servicesRes.data);
   const total = missions.length + services.length;
   const anyError = missionsRes.error || servicesRes.error;
 

@@ -1,8 +1,10 @@
 "use client";
 
 // Actions de modération (back-office ADMIN).
-//   PATCH /admin/missions/:id/moderation { action: 'APPROVE' | 'REJECT' }
-//   PATCH /admin/users/:id/status        { status: 'VERIFIED' | 'BANNED' }
+//   PATCH /admin/missions/:id/moderate  { status: MissionStatus }
+//   PATCH /admin/services/:id/moderate  { status: ServiceStatus }
+//   PATCH /admin/users/:id/ban          { reason? }
+//   PATCH /admin/users/:id/unban
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,23 +14,25 @@ import { apiRequest } from "@/lib/api";
 export function ModerateMissionActions({
   missionId,
   accountId,
+  status,
 }: {
   missionId: string;
-  accountId: string;
+  accountId?: string;
+  status?: string;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
 
-  async function moderate(action: "APPROVE" | "REJECT") {
-    setLoading(action);
+  async function moderate(next: "PUBLISHED" | "CLOSED", label: string) {
+    setLoading(next);
     try {
-      await apiRequest(`/admin/missions/${missionId}/moderation`, {
+      await apiRequest(`/admin/missions/${missionId}/moderate`, {
         method: "PATCH",
-        body: { action },
+        body: { status: next },
         accountId,
       });
-      toast({ title: action === "APPROVE" ? "Offre approuvée" : "Offre rejetée" });
+      toast({ title: label });
       router.refresh();
     } catch (err) {
       toast({
@@ -41,19 +45,110 @@ export function ModerateMissionActions({
     }
   }
 
+  // Missions déjà clôturées / annulées : on ne propose que la (ré)ouverture.
+  if (status === "CLOSED" || status === "CANCELLED") {
+    return (
+      <div className="flex justify-end gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={loading !== null}
+          onClick={() => moderate("PUBLISHED", "Mission republiée")}
+        >
+          {loading === "PUBLISHED" ? "…" : "Republier"}
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex gap-2">
-      <Button size="sm" disabled={loading !== null} onClick={() => moderate("APPROVE")}>
-        {loading === "APPROVE" ? "…" : "Approuver"}
+    <div className="flex justify-end gap-2">
+      <Button
+        size="sm"
+        disabled={loading !== null}
+        onClick={() => moderate("PUBLISHED", "Mission approuvée")}
+      >
+        {loading === "PUBLISHED" ? "…" : "Approuver"}
       </Button>
       <Button
         size="sm"
         variant="outline"
         className="text-destructive hover:text-destructive"
         disabled={loading !== null}
-        onClick={() => moderate("REJECT")}
+        onClick={() => moderate("CLOSED", "Mission rejetée")}
       >
-        {loading === "REJECT" ? "…" : "Rejeter"}
+        {loading === "CLOSED" ? "…" : "Rejeter"}
+      </Button>
+    </div>
+  );
+}
+
+export function ModerateServiceActions({
+  serviceId,
+  accountId,
+  status,
+}: {
+  serviceId: string;
+  accountId?: string;
+  status?: string;
+}) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function moderate(next: "PUBLISHED" | "ARCHIVED", label: string) {
+    setLoading(next);
+    try {
+      await apiRequest(`/admin/services/${serviceId}/moderate`, {
+        method: "PATCH",
+        body: { status: next },
+        accountId,
+      });
+      toast({ title: label });
+      router.refresh();
+    } catch (err) {
+      toast({
+        title: "Action impossible",
+        description: err instanceof Error ? err.message : undefined,
+        variant: "error",
+      });
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  if (status === "ARCHIVED") {
+    return (
+      <div className="flex justify-end gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={loading !== null}
+          onClick={() => moderate("PUBLISHED", "Atelier republié")}
+        >
+          {loading === "PUBLISHED" ? "…" : "Republier"}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex justify-end gap-2">
+      <Button
+        size="sm"
+        disabled={loading !== null}
+        onClick={() => moderate("PUBLISHED", "Atelier approuvé")}
+      >
+        {loading === "PUBLISHED" ? "…" : "Approuver"}
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="text-destructive hover:text-destructive"
+        disabled={loading !== null}
+        onClick={() => moderate("ARCHIVED", "Atelier archivé")}
+      >
+        {loading === "ARCHIVED" ? "…" : "Archiver"}
       </Button>
     </div>
   );
@@ -66,21 +161,21 @@ export function UserStatusActions({
 }: {
   userId: string;
   status: string;
-  accountId: string;
+  accountId?: string;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
 
-  async function setStatus(next: "VERIFIED" | "BANNED") {
-    setLoading(next);
+  async function toggle(action: "ban" | "unban") {
+    setLoading(action);
     try {
-      await apiRequest(`/admin/users/${userId}/status`, {
+      await apiRequest(`/admin/users/${userId}/${action}`, {
         method: "PATCH",
-        body: { status: next },
+        body: action === "ban" ? {} : undefined,
         accountId,
       });
-      toast({ title: next === "BANNED" ? "Utilisateur banni" : "Utilisateur réactivé" });
+      toast({ title: action === "ban" ? "Utilisateur banni" : "Utilisateur réactivé" });
       router.refresh();
     } catch (err) {
       toast({
@@ -95,8 +190,8 @@ export function UserStatusActions({
 
   if (status === "BANNED") {
     return (
-      <Button size="sm" variant="outline" disabled={loading !== null} onClick={() => setStatus("VERIFIED")}>
-        {loading === "VERIFIED" ? "…" : "Réactiver"}
+      <Button size="sm" variant="outline" disabled={loading !== null} onClick={() => toggle("unban")}>
+        {loading === "unban" ? "…" : "Réactiver"}
       </Button>
     );
   }
@@ -106,9 +201,9 @@ export function UserStatusActions({
       variant="ghost"
       className="text-destructive hover:text-destructive"
       disabled={loading !== null}
-      onClick={() => setStatus("BANNED")}
+      onClick={() => toggle("ban")}
     >
-      {loading === "BANNED" ? "…" : "Bannir"}
+      {loading === "ban" ? "…" : "Bannir"}
     </Button>
   );
 }

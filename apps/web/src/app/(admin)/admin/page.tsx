@@ -1,172 +1,146 @@
-// Back-office ADMIN : KPIs plateforme, modération des offres, gestion des users.
+// Back-office ADMIN — tableau de bord : KPIs plateforme, raccourcis, file de modération.
 import type { Metadata } from "next";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
+import { Users, Building2, Megaphone, GraduationCap, CalendarCheck, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { requireAdmin, fetchApi } from "../../_shared/server";
 import { PageHeader, StatCard, EmptyState } from "../../_shared/ui";
-import { ModerateMissionActions, UserStatusActions } from "../../_shared/AdminActions";
 import {
   MISSION_CATEGORY_LABEL,
-  MISSION_STATUS_LABEL,
-  missionBadgeVariant,
+  SERVICE_CATEGORY_LABEL,
   formatDate,
-  fullName,
-  initials,
 } from "../../_shared/format";
-import type { Mission, PublicUser } from "../../_shared/types";
+import type { Mission, Service } from "../../_shared/types";
 
 export const metadata: Metadata = { title: "Administration · Les Extras" };
 
 interface AdminStats {
   users?: number;
-  establishments?: number;
-  freelances?: number;
-  pendingMissions?: number;
-  activeMissions?: number;
+  accounts?: number;
+  missions?: number;
+  services?: number;
+  bookings?: number;
 }
 
-interface AdminUser extends PublicUser {
-  email?: string;
-  role?: string;
-  status?: string;
-  createdAt?: string;
-}
+const SHORTCUTS = [
+  { href: "/admin/utilisateurs", label: "Utilisateurs", description: "Gérer et modérer les comptes", icon: Users },
+  { href: "/admin/missions", label: "Missions", description: "Modérer les missions de renfort", icon: Megaphone },
+  { href: "/admin/ateliers", label: "Ateliers", description: "Modérer le catalogue d'ateliers", icon: GraduationCap },
+  { href: "/admin/statistiques", label: "Statistiques", description: "KPIs détaillés de la plateforme", icon: CalendarCheck },
+];
 
 export default async function AdminPage() {
   const session = await requireAdmin();
-  const accountId = session.account.id;
 
-  const [stats, pending, users] = await Promise.all([
+  const [statsRes, missionsRes, servicesRes] = await Promise.all([
     fetchApi<AdminStats>(session, "/admin/stats"),
-    fetchApi<Mission[]>(session, "/admin/missions?moderation=pending"),
-    fetchApi<AdminUser[]>(session, "/admin/users"),
+    fetchApi<Mission[]>(session, "/admin/missions"),
+    fetchApi<Service[]>(session, "/admin/services"),
   ]);
 
-  const s = stats.data ?? {};
+  const s = statsRes.data ?? {};
+  const missions = Array.isArray(missionsRes.data) ? missionsRes.data : [];
+  const services = Array.isArray(servicesRes.data) ? servicesRes.data : [];
+
+  const pendingMissions = missions.filter((m) => m.status === "DRAFT");
+  const pendingServices = services.filter((sv) => sv.status === "DRAFT");
+  const pendingTotal = pendingMissions.length + pendingServices.length;
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Administration" subtitle="Modération des offres et gestion des utilisateurs." />
+      <PageHeader
+        title="Administration"
+        subtitle="Vue d'ensemble de la plateforme, modération et pilotage."
+      />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard label="Utilisateurs" value={s.users ?? 0} accent="teal" />
-        <StatCard label="Établissements" value={s.establishments ?? 0} />
-        <StatCard label="Freelances" value={s.freelances ?? 0} />
-        <StatCard label="Offres à modérer" value={s.pendingMissions ?? pending.data?.length ?? 0} accent="terracotta" />
-        <StatCard label="Missions actives" value={s.activeMissions ?? 0} />
+        <StatCard label="Utilisateurs" value={s.users ?? 0} accent="teal" icon={<Users />} />
+        <StatCard label="Comptes" value={s.accounts ?? 0} icon={<Building2 />} />
+        <StatCard label="Missions" value={s.missions ?? 0} icon={<Megaphone />} />
+        <StatCard label="Ateliers" value={s.services ?? 0} icon={<GraduationCap />} />
+        <StatCard label="Réservations" value={s.bookings ?? 0} accent="terracotta" icon={<CalendarCheck />} />
       </div>
 
-      <Tabs defaultValue="moderation" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="moderation">
-            Modération
-            {pending.data && pending.data.length > 0 ? (
-              <Badge variant="secondary" className="ml-2">
-                {pending.data.length}
-              </Badge>
-            ) : null}
-          </TabsTrigger>
-          <TabsTrigger value="users">Utilisateurs</TabsTrigger>
-        </TabsList>
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold text-foreground">Accès rapide</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {SHORTCUTS.map((sc) => (
+            <Link key={sc.href} href={sc.href} className="group">
+              <Card className="h-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
+                <CardContent className="flex h-full flex-col gap-3 p-5">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary [&_svg]:size-5">
+                    <sc.icon />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-1 font-medium text-foreground">
+                      {sc.label}
+                      <ArrowRight className="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                    </p>
+                    <p className="text-sm text-muted-foreground">{sc.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-        <TabsContent value="moderation" className="space-y-4">
-          {!pending.data || pending.data.length === 0 ? (
-            <EmptyState title="Rien à modérer" description="Aucune offre en attente de validation." />
-          ) : (
-            <div className="space-y-3">
-              {pending.data.map((m) => (
-                <Card key={m.id}>
-                  <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={missionBadgeVariant(m.status)}>
-                          {MISSION_STATUS_LABEL[m.status]}
-                        </Badge>
-                        <Badge variant="outline">{MISSION_CATEGORY_LABEL[m.category]}</Badge>
-                      </div>
-                      <p className="truncate text-sm font-medium text-foreground">{m.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {m.account?.name ?? "Établissement"} · {formatDate(m.startDate)}
-                      </p>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            En attente de modération
+            {pendingTotal > 0 ? <Badge variant="secondary">{pendingTotal}</Badge> : null}
+          </h2>
+        </div>
+
+        {pendingTotal === 0 ? (
+          <EmptyState title="Rien à modérer" description="Aucune offre en attente de validation." />
+        ) : (
+          <div className="space-y-3">
+            {pendingMissions.slice(0, 6).map((m) => (
+              <Card key={m.id}>
+                <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">Mission</Badge>
+                      <Badge variant="outline">{MISSION_CATEGORY_LABEL[m.category] ?? m.category}</Badge>
                     </div>
-                    <ModerateMissionActions missionId={m.id} accountId={accountId} />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="users">
-          {!users.data || users.data.length === 0 ? (
-            <EmptyState title="Aucun utilisateur" />
-          ) : (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Utilisateur</TableHead>
-                      <TableHead>Rôle</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Inscrit le</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.data.map((u) => (
-                      <TableRow key={u.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={u.avatarUrl ?? undefined} />
-                              <AvatarFallback>{initials(u.firstName, u.lastName)}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-foreground">
-                                {fullName(u.firstName, u.lastName)}
-                              </p>
-                              <p className="truncate text-xs text-muted-foreground">{u.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={u.role === "ADMIN" ? "default" : "outline"}>
-                            {u.role ?? "USER"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={u.status === "BANNED" ? "destructive" : "secondary"}>
-                            {u.status ?? "PENDING"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {formatDate(u.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {u.role !== "ADMIN" ? (
-                            <UserStatusActions userId={u.id} status={u.status ?? "PENDING"} accountId={accountId} />
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+                    <p className="truncate text-sm font-medium text-foreground">{m.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {m.account?.name ?? "Établissement"} · {formatDate(m.startDate)}
+                    </p>
+                  </div>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/admin/missions">Modérer</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+            {pendingServices.slice(0, 6).map((sv) => (
+              <Card key={sv.id}>
+                <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">Atelier</Badge>
+                      <Badge variant="outline">{SERVICE_CATEGORY_LABEL[sv.category] ?? sv.category}</Badge>
+                    </div>
+                    <p className="truncate text-sm font-medium text-foreground">{sv.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {sv.account?.name ?? "Établissement"}
+                      {sv.city ? ` · ${sv.city}` : ""}
+                    </p>
+                  </div>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/admin/ateliers">Modérer</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

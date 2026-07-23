@@ -127,6 +127,39 @@ export const INVOICE_STATUS_LABEL: Record<string, string> = {
   CANCELLED: "Annulée",
 };
 
+export const USER_STATUS_LABEL: Record<string, string> = {
+  PENDING: "En attente",
+  VERIFIED: "Vérifié",
+  BANNED: "Banni",
+};
+
+export const GLOBAL_ROLE_LABEL: Record<string, string> = {
+  USER: "Utilisateur",
+  ADMIN: "Administrateur",
+};
+
+export function userStatusBadgeVariant(status: string): BadgeVariant {
+  switch (status) {
+    case "VERIFIED":
+      return "default";
+    case "BANNED":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+}
+
+export function serviceBadgeVariant(status: string): BadgeVariant {
+  switch (status) {
+    case "PUBLISHED":
+      return "default";
+    case "ARCHIVED":
+      return "destructive";
+    default:
+      return "outline";
+  }
+}
+
 export const ACCOUNT_ROLE_LABEL: Record<string, string> = {
   OWNER: "Propriétaire",
   ADMIN: "Administrateur",
