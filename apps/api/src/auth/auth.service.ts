@@ -208,8 +208,36 @@ export class AuthService {
     return `${base}-${randomSuffix(8)}`;
   }
 
-  private signAccessToken(userId: string, email: string, role: string): Promise<string> {
-    const payload: JwtPayload = { sub: userId, email, role };
+  private async signAccessToken(userId: string, email: string, role: string): Promise<string> {
+    // Enrichit le JWT avec onboardingStep + comptes accessibles, pour que le
+    // front (qui lit tout depuis le token) dispose du contexte multi-comptes.
+    const full = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        onboardingStep: true,
+        memberships: {
+          where: { status: MembershipStatus.ACTIVE },
+          select: {
+            role: true,
+            account: { select: { id: true, name: true, type: true } },
+          },
+        },
+      },
+    });
+    const accounts = (full?.memberships ?? []).map((m) => ({
+      id: m.account.id,
+      name: m.account.name,
+      type: m.account.type,
+      role: m.role,
+    }));
+    const payload: Record<string, unknown> = {
+      sub: userId,
+      email,
+      role,
+      onboardingStep: full?.onboardingStep ?? 0,
+      accounts,
+      account: accounts[0] ?? null,
+    };
     return this.jwt.signAsync(payload);
   }
 
