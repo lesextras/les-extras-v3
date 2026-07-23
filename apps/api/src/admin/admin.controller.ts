@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -13,6 +15,9 @@ import { AdminService } from './admin.service';
 import { QueryUsersDto } from './dto/query-users.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
+import { UpdateAccountDto } from './dto/account-admin.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category-admin.dto';
+import { CreateArticleDto, UpdateArticleDto } from './dto/article-admin.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -23,6 +28,8 @@ export class AdminController {
   stats() {
     return this.admin.stats();
   }
+
+  // --- Utilisateurs -------------------------------------------------------
 
   @Get('users')
   listUsers(@Query() query: QueryUsersDto) {
@@ -39,6 +46,8 @@ export class AdminController {
     return this.admin.unbanUser(id);
   }
 
+  // --- Missions -----------------------------------------------------------
+
   @Get('missions')
   listMissions() {
     return this.admin.listMissions();
@@ -49,6 +58,8 @@ export class AdminController {
     return this.admin.moderateMission(id, dto);
   }
 
+  // --- Services / Ateliers ------------------------------------------------
+
   @Get('services')
   listServices() {
     return this.admin.listServices();
@@ -57,5 +68,80 @@ export class AdminController {
   @Patch('services/:id/moderate')
   moderateService(@Param('id') id: string, @Body() dto: ModerateServiceDto) {
     return this.admin.moderateService(id, dto);
+  }
+
+  // --- Comptes / Organisations -------------------------------------------
+
+  @Get('accounts')
+  listAccounts(@Query('type') type?: string, @Query('search') search?: string) {
+    return this.admin.listAccounts({ type, search });
+  }
+
+  @Get('accounts/:id')
+  getAccount(@Param('id') id: string) {
+    return this.admin.getAccount(id);
+  }
+
+  @Patch('accounts/:id')
+  updateAccount(@Param('id') id: string, @Body() dto: UpdateAccountDto) {
+    return this.admin.updateAccount(id, dto);
+  }
+
+  // --- Catégories ---------------------------------------------------------
+
+  @Get('categories')
+  listCategories() {
+    return this.admin.listCategories();
+  }
+
+  @Post('categories')
+  createCategory(@Body() dto: CreateCategoryDto) {
+    return this.admin.createCategory(dto);
+  }
+
+  @Patch('categories/:id')
+  updateCategory(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+    return this.admin.updateCategory(id, dto);
+  }
+
+  @Delete('categories/:id')
+  removeCategory(@Param('id') id: string) {
+    return this.admin.removeCategory(id);
+  }
+
+  // --- Articles -----------------------------------------------------------
+
+  @Get('articles')
+  listArticles() {
+    return this.admin.listArticles();
+  }
+
+  @Post('articles')
+  createArticle(@Body() dto: CreateArticleDto) {
+    return this.admin.createArticle(dto);
+  }
+
+  @Patch('articles/:id')
+  updateArticle(@Param('id') id: string, @Body() dto: UpdateArticleDto) {
+    return this.admin.updateArticle(id, dto);
+  }
+
+  @Delete('articles/:id')
+  removeArticle(@Param('id') id: string) {
+    return this.admin.removeArticle(id);
+  }
+
+  // --- Réservations -------------------------------------------------------
+
+  @Get('bookings')
+  listBookings(@Query('status') status?: string) {
+    return this.admin.listBookings({ status });
+  }
+
+  // --- Factures -----------------------------------------------------------
+
+  @Get('invoices')
+  listInvoices(@Query('status') status?: string) {
+    return this.admin.listInvoices({ status });
   }
 }
