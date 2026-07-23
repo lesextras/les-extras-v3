@@ -111,7 +111,7 @@ export class PlanningService {
   async shiftFromBooking(accountId: string, bookingId: string) {
     const booking = await this.prisma.booking.findFirst({
       where: { id: bookingId },
-      include: { mission: true },
+      include: { mission: true, shift: true },
     });
     if (!booking) throw new NotFoundException('Réservation introuvable.');
     if (booking.mission && booking.mission.accountId !== accountId) {
