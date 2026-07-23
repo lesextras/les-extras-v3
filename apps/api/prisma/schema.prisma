@@ -309,20 +309,82 @@ model Document {
 // ENUMS
 // ---------------------------------------------------------------------------
 
-enum GlobalRole { USER ADMIN }
-enum UserStatus { PENDING VERIFIED BANNED }
+enum GlobalRole {
+  USER
+  ADMIN
+}
+enum UserStatus {
+  PENDING
+  VERIFIED
+  BANNED
+}
 
-enum AccountType { ESTABLISHMENT FREELANCE }
-enum AccountRole { OWNER ADMIN MANAGER MEMBER }
-enum MembershipStatus { ACTIVE SUSPENDED }
-enum InvitationStatus { PENDING ACCEPTED EXPIRED REVOKED }
+enum AccountType {
+  ESTABLISHMENT
+  FREELANCE
+}
+enum AccountRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+}
+enum MembershipStatus {
+  ACTIVE
+  SUSPENDED
+}
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
 
-enum MissionCategory { RENFORT REMPLACEMENT ATELIER_EDUCATIF ATELIER_THERAPEUTIQUE FORMATION ANALYSE_PRATIQUES }
-enum MissionStatus { DRAFT PUBLISHED FILLED CLOSED CANCELLED }
-enum MissionVisibility { SALARIES RESERVED PUBLIC }
+enum MissionCategory {
+  RENFORT
+  REMPLACEMENT
+  ATELIER_EDUCATIF
+  ATELIER_THERAPEUTIQUE
+  FORMATION
+  ANALYSE_PRATIQUES
+}
+enum MissionStatus {
+  DRAFT
+  PUBLISHED
+  FILLED
+  CLOSED
+  CANCELLED
+}
+enum MissionVisibility {
+  SALARIES
+  RESERVED
+  PUBLIC
+}
 
-enum ServiceCategory { ATELIER FORMATION MEDIATION ART_THERAPIE PREVENTION }
-enum ServiceStatus { DRAFT PUBLISHED ARCHIVED }
+enum ServiceCategory {
+  ATELIER
+  FORMATION
+  MEDIATION
+  ART_THERAPIE
+  PREVENTION
+}
+enum ServiceStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
 
-enum BookingStatus { REQUESTED ACCEPTED CONFIRMED IN_PROGRESS COMPLETED CANCELLED }
-enum InvoiceStatus { DRAFT ISSUED PAID CANCELLED }
+enum BookingStatus {
+  REQUESTED
+  ACCEPTED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  CANCELLED
+}
