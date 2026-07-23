@@ -12,7 +12,7 @@ import {
   MembershipStatus,
   UserStatus,
 } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
