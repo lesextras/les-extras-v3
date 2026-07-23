@@ -26,7 +26,7 @@ export default async function AteliersPage() {
           description="La gestion des ateliers est disponible depuis un compte freelance. Vous pouvez réserver des ateliers dans le marketplace."
           action={
             <Button asChild>
-              <Link href="/marketplace?type=services">Voir le catalogue d'ateliers</Link>
+              <Link href="/marketplace?type=services">Voir le catalogue d’ateliers</Link>
             </Button>
           }
         />
@@ -45,7 +45,7 @@ export default async function AteliersPage() {
     <div className="space-y-8">
       <PageHeader
         title="Mes ateliers"
-        subtitle="Gérez votre catalogue d'interventions et vos demandes de réservation."
+        subtitle="Gérez votre catalogue d’interventions et vos demandes de réservation."
         actions={<ServiceModal accountId={session.account.id} />}
       />
 

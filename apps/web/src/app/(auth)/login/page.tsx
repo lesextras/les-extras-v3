@@ -35,7 +35,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const result = await login(values);
-      toast({ title: 'Connexion réussie', description: 'Bon retour parmi nous !', variant: 'success' });
+      toast({ title: 'Connexion réussie', description: 'Bon retour parmi nous !', variant: 'success' });
       const next = params.get('next');
       const needsOnboarding = (result.user?.onboardingStep ?? 3) < 3;
       router.push(next || (needsOnboarding ? '/welcome' : '/dashboard'));
@@ -90,7 +90,7 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between">
                   <FormLabel required>Mot de passe</FormLabel>
                   <Link href="/login" className="text-xs font-medium text-primary hover:underline">
-                    Mot de passe oublié ?
+                    Mot de passe oublié ?
                   </Link>
                 </div>
                 <FormControl>
@@ -115,7 +115,7 @@ export default function LoginPage() {
       </Form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
-        Pas encore de compte ?{' '}
+        Pas encore de compte ?{' '}
         <Link href="/register" className="font-semibold text-primary hover:underline">
           Créer un compte
         </Link>

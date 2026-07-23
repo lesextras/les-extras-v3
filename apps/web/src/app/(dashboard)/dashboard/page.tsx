@@ -42,7 +42,7 @@ export default async function DashboardPage() {
         title={`Bonjour ${session.user.firstName ?? fullName(session.user.firstName, session.user.lastName)}`}
         subtitle={
           isEstablishment
-            ? "Pilotez vos renforts, réservations d'ateliers et votre équipe."
+            ? "Pilotez vos renforts, réservations d’ateliers et votre équipe."
             : "Trouvez des missions, gérez vos ateliers et vos candidatures."
         }
         actions={

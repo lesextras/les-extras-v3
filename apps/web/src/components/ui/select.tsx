@@ -15,6 +15,8 @@ interface SelectContextValue {
   open: boolean;
   setOpen: (v: boolean) => void;
   invalid?: boolean;
+  listboxId: string;
+  triggerRef: React.RefObject<HTMLButtonElement>;
 }
 const SelectContext = React.createContext<SelectContextValue | null>(null);
 function useSelect() {
@@ -35,6 +37,8 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
   const [internal, setInternal] = React.useState(defaultValue);
   const [open, setOpen] = React.useState(false);
   const rootRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const listboxId = React.useId();
   const current = value ?? internal;
 
   const handleChange = React.useCallback(
@@ -42,6 +46,8 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
       if (value === undefined) setInternal(v);
       onValueChange?.(v);
       setOpen(false);
+      // Rend le focus au déclencheur après sélection.
+      triggerRef.current?.focus();
     },
     [value, onValueChange],
   );
@@ -56,7 +62,9 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
   }, [open]);
 
   return (
-    <SelectContext.Provider value={{ value: current, onValueChange: handleChange, open, setOpen, invalid }}>
+    <SelectContext.Provider
+      value={{ value: current, onValueChange: handleChange, open, setOpen, invalid, listboxId, triggerRef }}
+    >
       <div ref={rootRef} className="relative">
         {children}
       </div>
@@ -67,16 +75,35 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
 export interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
 
 const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
-  ({ className, children, ...props }, ref) => {
-    const { open, setOpen, invalid } = useSelect();
+  ({ className, children, onKeyDown, ...props }, ref) => {
+    const { open, setOpen, invalid, listboxId, triggerRef } = useSelect();
+    // Fusionne le ref transféré avec le ref interne utilisé pour le retour de focus.
+    const setRef = React.useCallback(
+      (node: HTMLButtonElement | null) => {
+        (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+      },
+      [ref, triggerRef],
+    );
     return (
       <button
-        ref={ref}
+        ref={setRef}
         type="button"
         role="combobox"
+        aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={open ? listboxId : undefined}
         aria-invalid={invalid || undefined}
         onClick={() => setOpen(!open)}
+        onKeyDown={(e) => {
+          onKeyDown?.(e);
+          if (e.defaultPrevented) return;
+          if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
         className={cn(
           'flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-3.5 text-sm text-foreground shadow-sm transition-colors',
           'focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/40',
@@ -114,11 +141,67 @@ function SelectValue({ placeholder }: { placeholder?: string }) {
 const itemLabels = new Map<string, string>();
 
 function SelectContent({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
-  const { open } = useSelect();
+  const { open, setOpen, listboxId, triggerRef } = useSelect();
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  // Focus l'option sélectionnée (ou la première) à l'ouverture.
+  React.useEffect(() => {
+    if (!open) return;
+    const el = ref.current;
+    if (!el) return;
+    const options = Array.from(el.querySelectorAll<HTMLElement>('[role="option"]'));
+    const selected = options.find((o) => o.getAttribute('aria-selected') === 'true');
+    requestAnimationFrame(() => (selected ?? options[0])?.focus());
+  }, [open]);
+
   if (!open) return null;
+
+  function moveFocus(dir: 1 | -1 | 'first' | 'last') {
+    const el = ref.current;
+    if (!el) return;
+    const options = Array.from(el.querySelectorAll<HTMLElement>('[role="option"]'));
+    if (options.length === 0) return;
+    const idx = options.indexOf(document.activeElement as HTMLElement);
+    let next: number;
+    if (dir === 'first') next = 0;
+    else if (dir === 'last') next = options.length - 1;
+    else next = (idx + dir + options.length) % options.length;
+    options[next]?.focus();
+  }
+
   return (
     <div
+      ref={ref}
+      id={listboxId}
       role="listbox"
+      onKeyDown={(e) => {
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            moveFocus(1);
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            moveFocus(-1);
+            break;
+          case 'Home':
+            e.preventDefault();
+            moveFocus('first');
+            break;
+          case 'End':
+            e.preventDefault();
+            moveFocus('last');
+            break;
+          case 'Escape':
+            e.preventDefault();
+            setOpen(false);
+            triggerRef.current?.focus();
+            break;
+          case 'Tab':
+            setOpen(false);
+            break;
+        }
+      }}
       className={cn(
         'absolute z-50 mt-2 max-h-64 w-full overflow-auto rounded-xl border border-border bg-popover p-1.5 shadow-card animate-scale-in',
         className,
@@ -145,7 +228,7 @@ const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         ref={ref}
         role="option"
         aria-selected={active}
-        tabIndex={0}
+        tabIndex={active ? 0 : -1}
         onClick={() => onValueChange(value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {

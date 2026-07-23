@@ -66,7 +66,7 @@ export default async function RenfortsPage() {
       ) : !missions || missions.length === 0 ? (
         <EmptyState
           title="Aucun renfort publié"
-          description="Créez un SOS Renfort : il sera diffusé en cascade (salariés → réseau réservé → public)."
+          description="Créez un SOS Renfort : il sera diffusé en cascade (salariés → réseau réservé → public)."
           action={<RenfortModal accountId={session.account.id} />}
         />
       ) : (
@@ -86,7 +86,7 @@ export default async function RenfortsPage() {
                           {MISSION_CATEGORY_LABEL[mission.category]}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          Diffusion : {MISSION_VISIBILITY_LABEL[mission.visibility]}
+                          Diffusion : {MISSION_VISIBILITY_LABEL[mission.visibility]}
                         </span>
                       </div>
                       <h3 className="text-lg font-semibold text-foreground">{mission.title}</h3>

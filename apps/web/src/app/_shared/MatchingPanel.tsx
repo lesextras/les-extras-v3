@@ -61,7 +61,7 @@ export function MatchingPanel({
       <EmptyState
         icon={<Sparkles />}
         title="Aucun candidat suggéré"
-        description="Le moteur de matching n'a trouvé aucun profil correspondant à ce besoin."
+        description="Le moteur de matching n’a trouvé aucun profil correspondant à ce besoin."
       />
     );
 

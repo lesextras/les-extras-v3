@@ -62,7 +62,7 @@ export default function RegisterPage() {
       await registerAccount(values);
       toast({
         title: 'Compte créé',
-        description: 'Bienvenue ! Finalisons votre profil.',
+        description: 'Bienvenue ! Finalisons votre profil.',
         variant: 'success',
       });
       router.push('/welcome');
@@ -216,11 +216,11 @@ export default function RegisterPage() {
                   />
                   <span className="text-sm text-muted-foreground">
                     J’accepte les{' '}
-                    <Link href="/#" className="font-medium text-primary hover:underline">
+                    <Link href="/legal#cgu" className="font-medium text-primary hover:underline">
                       conditions d’utilisation
                     </Link>{' '}
                     et la{' '}
-                    <Link href="/#" className="font-medium text-primary hover:underline">
+                    <Link href="/legal#confidentialite" className="font-medium text-primary hover:underline">
                       politique de confidentialité
                     </Link>
                     .
@@ -239,7 +239,7 @@ export default function RegisterPage() {
       </Form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
-        Vous avez déjà un compte ?{' '}
+        Vous avez déjà un compte ?{' '}
         <Link href="/login" className="font-semibold text-primary hover:underline">
           Se connecter
         </Link>

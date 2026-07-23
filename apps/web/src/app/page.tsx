@@ -24,7 +24,7 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
-      <main className="flex-1">
+      <main id="main" className="flex-1">
         {/* HERO */}
         <section className="relative overflow-hidden bg-warm-gradient">
           <div className="absolute inset-0 bg-grid opacity-60" aria-hidden />
@@ -197,7 +197,7 @@ export default function LandingPage() {
                 </span>
                 <h3 className="mt-5 text-xl font-semibold">Ateliers & Éducat’heures</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Un catalogue d’interventions clé en main : ateliers éducatifs, médiation,
+                  Un catalogue d’interventions clé en main : ateliers éducatifs, médiation,
                   art-thérapie, prévention, analyse des pratiques.
                 </p>
                 <ul className="mt-5 space-y-2.5">
@@ -247,7 +247,7 @@ export default function LandingPage() {
                 {
                   icon: HeartHandshake,
                   title: 'Collaborez sereinement',
-                  text: 'Contrats, planning, messagerie, factures et avis : tout est réuni au même endroit.',
+                  text: 'Contrats, planning, messagerie, factures et avis : tout est réuni au même endroit.',
                 },
               ].map((step, i) => (
                 <div key={step.title} className="group relative">
@@ -300,7 +300,7 @@ export default function LandingPage() {
             />
             <div className="relative mx-auto max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                Prêt à renforcer vos équipes, sereinement ?
+                Prêt à renforcer vos équipes, sereinement ?
               </h2>
               <p className="mt-4 text-primary-foreground/80">
                 Rejoignez les établissements et professionnels qui font confiance à LES EXTRAS.

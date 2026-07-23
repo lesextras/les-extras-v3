@@ -23,7 +23,7 @@ const buttonVariants = cva(
           'bg-destructive text-destructive-foreground shadow-soft hover:bg-destructive/90 hover:-translate-y-px',
       },
       size: {
-        sm: 'h-9 px-3.5 text-[13px]',
+        sm: 'h-10 px-3.5 text-[13px]',
         md: 'h-11 px-5',
         lg: 'h-12 px-7 text-base',
         icon: 'h-11 w-11',

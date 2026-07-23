@@ -71,7 +71,7 @@ export function AppChrome({
           onMenuClick={() => setMobileOpen(true)}
         />
         <div className="flex min-h-0 flex-1">
-          <main className={cn('min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8')}>{children}</main>
+          <main id="main" className={cn('min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8')}>{children}</main>
           {actionPanel && (
             <div className="hidden w-80 shrink-0 border-l border-border bg-card xl:block">
               {actionPanel}

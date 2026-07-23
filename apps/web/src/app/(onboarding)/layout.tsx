@@ -16,7 +16,7 @@ export default async function OnboardingLayout({ children }: { children: React.R
         <Logo />
         <span className="text-sm text-muted-foreground">{session.user.email}</span>
       </header>
-      <main className="mx-auto flex max-w-2xl flex-col px-6 py-8 md:py-12">{children}</main>
+      <main id="main" className="mx-auto flex max-w-2xl flex-col px-6 py-8 md:py-12">{children}</main>
     </div>
   );
 }

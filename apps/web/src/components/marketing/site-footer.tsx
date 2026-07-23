@@ -31,10 +31,10 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Légal',
     links: [
-      { label: 'Mentions légales', href: '/#' },
-      { label: 'CGU', href: '/#' },
-      { label: 'Confidentialité', href: '/#' },
-      { label: 'RGPD', href: '/#' },
+      { label: 'Mentions légales', href: '/legal#mentions' },
+      { label: 'CGU', href: '/legal#cgu' },
+      { label: 'Confidentialité', href: '/legal#confidentialite' },
+      { label: 'RGPD', href: '/legal#rgpd' },
     ],
   },
 ];

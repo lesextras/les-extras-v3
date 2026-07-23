@@ -82,7 +82,7 @@ export function Sidebar({ role, onNavigate, className }: SidebarProps) {
 
       <div className="border-t border-border p-4">
         <div className="rounded-xl bg-primary-soft/60 p-3">
-          <p className="text-xs font-semibold text-accent-foreground">Besoin d’aide ?</p>
+          <p className="text-xs font-semibold text-accent-foreground">Besoin d’aide ?</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Notre équipe vous accompagne du lundi au vendredi.
           </p>

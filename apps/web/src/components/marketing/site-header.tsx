@@ -27,7 +27,7 @@ export function SiteHeader() {
             <Link
               key={l.href}
               href={l.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="inline-flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               {l.label}
             </Link>
@@ -46,7 +46,7 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="rounded-lg p-2 text-foreground md:hidden"
+          className="rounded-lg p-2.5 text-foreground md:hidden"
           aria-label="Menu"
           aria-expanded={open}
         >

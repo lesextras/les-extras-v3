@@ -31,7 +31,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">{children}</main>
+      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">{children}</main>
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row">

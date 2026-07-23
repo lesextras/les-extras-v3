@@ -69,7 +69,7 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
       <button
         type="button"
         onClick={onMenuClick}
-        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+        className="rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
         aria-label="Ouvrir le menu"
       >
         <Menu className="size-5" />

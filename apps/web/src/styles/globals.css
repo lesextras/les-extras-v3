@@ -37,9 +37,11 @@
     --primary-foreground: 40 44% 98%;
     --primary-soft: 182 45% 92%;
 
-    --secondary: 14 56% 50%;
+    --secondary: 14 60% 42%;
     --secondary-foreground: 40 44% 98%;
     --secondary-soft: 14 60% 94%;
+    /* Teinte vive terracotta réservée aux fonds/pictos (non-texte) */
+    --secondary-vivid: 14 56% 50%;
 
     /* Neutres */
     --muted: 38 30% 92%;
@@ -50,7 +52,7 @@
     /* États */
     --destructive: 0 72% 51%;
     --destructive-foreground: 40 44% 98%;
-    --success: 152 55% 38%;
+    --success: 152 55% 32%;
     --success-foreground: 40 44% 98%;
     --warning: 32 90% 48%;
     --warning-foreground: 0 0% 10%;

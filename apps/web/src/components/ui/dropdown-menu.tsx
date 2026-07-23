@@ -13,6 +13,7 @@ interface DropdownContextValue {
   setOpen: (v: boolean) => void;
   triggerRef: React.RefObject<HTMLButtonElement>;
   align: 'start' | 'end';
+  menuId: string;
 }
 
 const DropdownContext = React.createContext<DropdownContextValue | null>(null);
@@ -32,6 +33,7 @@ function DropdownMenu({ children, align = 'end' }: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const rootRef = React.useRef<HTMLDivElement>(null);
+  const menuId = React.useId();
 
   React.useEffect(() => {
     if (!open) return;
@@ -53,7 +55,7 @@ function DropdownMenu({ children, align = 'end' }: DropdownMenuProps) {
   }, [open]);
 
   return (
-    <DropdownContext.Provider value={{ open, setOpen, triggerRef, align }}>
+    <DropdownContext.Provider value={{ open, setOpen, triggerRef, align, menuId }}>
       <div ref={rootRef} className="relative inline-block text-left">
         {children}
       </div>
@@ -64,18 +66,27 @@ function DropdownMenu({ children, align = 'end' }: DropdownMenuProps) {
 const DropdownMenuTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
->(({ className, onClick, children, asChild, ...props }, _ref) => {
-  const { open, setOpen, triggerRef } = useDropdown();
+>(({ className, onClick, onKeyDown, children, asChild, ...props }, _ref) => {
+  const { open, setOpen, triggerRef, menuId } = useDropdown();
   return (
     <button
       ref={triggerRef}
       type="button"
       aria-haspopup="menu"
       aria-expanded={open}
+      aria-controls={open ? menuId : undefined}
       className={cn('inline-flex items-center outline-none', className)}
       onClick={(e) => {
         onClick?.(e);
         setOpen(!open);
+      }}
+      onKeyDown={(e) => {
+        onKeyDown?.(e);
+        if (e.defaultPrevented) return;
+        if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          setOpen(true);
+        }
       }}
       {...props}
     >
@@ -86,13 +97,75 @@ const DropdownMenuTrigger = React.forwardRef<
 DropdownMenuTrigger.displayName = 'DropdownMenuTrigger';
 
 const DropdownMenuContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, ...props }, ref) => {
-    const { open, align } = useDropdown();
+  ({ className, children, onKeyDown, ...props }, ref) => {
+    const { open, align, menuId, setOpen, triggerRef } = useDropdown();
+    const innerRef = React.useRef<HTMLDivElement>(null);
+
+    const setRef = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        innerRef.current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      },
+      [ref],
+    );
+
+    // Focus le premier élément de menu à l'ouverture.
+    React.useEffect(() => {
+      if (!open) return;
+      const el = innerRef.current;
+      if (!el) return;
+      const items = el.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])');
+      requestAnimationFrame(() => items[0]?.focus());
+    }, [open]);
+
     if (!open) return null;
+
+    function move(dir: 1 | -1 | 'first' | 'last') {
+      const el = innerRef.current;
+      if (!el) return;
+      const items = Array.from(el.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])'));
+      if (items.length === 0) return;
+      const idx = items.indexOf(document.activeElement as HTMLElement);
+      let next: number;
+      if (dir === 'first') next = 0;
+      else if (dir === 'last') next = items.length - 1;
+      else next = (idx + dir + items.length) % items.length;
+      items[next]?.focus();
+    }
+
     return (
       <div
-        ref={ref}
+        ref={setRef}
+        id={menuId}
         role="menu"
+        onKeyDown={(e) => {
+          onKeyDown?.(e);
+          if (e.defaultPrevented) return;
+          switch (e.key) {
+            case 'ArrowDown':
+              e.preventDefault();
+              move(1);
+              break;
+            case 'ArrowUp':
+              e.preventDefault();
+              move(-1);
+              break;
+            case 'Home':
+              e.preventDefault();
+              move('first');
+              break;
+            case 'End':
+              e.preventDefault();
+              move('last');
+              break;
+            case 'Escape':
+              e.preventDefault();
+              setOpen(false);
+              triggerRef.current?.focus();
+              break;
+          }
+        }}
         className={cn(
           'absolute z-50 mt-2 min-w-[12rem] origin-top rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-card animate-scale-in',
           align === 'end' ? 'right-0' : 'left-0',
@@ -121,6 +194,7 @@ const DropdownMenuItem = React.forwardRef<HTMLButtonElement, DropdownMenuItemPro
         ref={ref}
         role="menuitem"
         type="button"
+        tabIndex={-1}
         disabled={disabled}
         className={cn(
           'flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm outline-none transition-colors',

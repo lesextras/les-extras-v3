@@ -8,8 +8,12 @@ import { cn } from '@/lib/utils';
 interface TabsContextValue {
   value: string;
   setValue: (v: string) => void;
+  baseId: string;
 }
 const TabsContext = React.createContext<TabsContextValue | null>(null);
+
+const tabId = (base: string, v: string) => `${base}-tab-${v}`;
+const panelId = (base: string, v: string) => `${base}-panel-${v}`;
 
 function useTabs() {
   const ctx = React.useContext(TabsContext);
@@ -26,6 +30,7 @@ export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
 function Tabs({ value, defaultValue, onValueChange, className, children, ...props }: TabsProps) {
   const [internal, setInternal] = React.useState(defaultValue ?? '');
   const current = value ?? internal;
+  const baseId = React.useId();
   const setValue = React.useCallback(
     (v: string) => {
       if (value === undefined) setInternal(v);
@@ -35,7 +40,7 @@ function Tabs({ value, defaultValue, onValueChange, className, children, ...prop
   );
 
   return (
-    <TabsContext.Provider value={{ value: current, setValue }}>
+    <TabsContext.Provider value={{ value: current, setValue, baseId }}>
       <div className={cn('flex flex-col gap-4', className)} {...props}>
         {children}
       </div>
@@ -60,15 +65,38 @@ export interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonE
 }
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
-  ({ className, value, ...props }, ref) => {
-    const { value: current, setValue } = useTabs();
+  ({ className, value, onKeyDown, ...props }, ref) => {
+    const { value: current, setValue, baseId } = useTabs();
     const active = current === value;
+
+    function onNav(e: React.KeyboardEvent<HTMLButtonElement>) {
+      onKeyDown?.(e);
+      if (e.defaultPrevented) return;
+      const list = e.currentTarget.closest('[role="tablist"]');
+      if (!list) return;
+      const tabs = Array.from(list.querySelectorAll<HTMLButtonElement>('[role="tab"]:not([disabled])'));
+      const idx = tabs.indexOf(e.currentTarget);
+      let next = -1;
+      if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      if (next < 0) return;
+      e.preventDefault();
+      tabs[next]?.focus();
+      tabs[next]?.click();
+    }
+
     return (
       <button
         ref={ref}
         role="tab"
         type="button"
+        id={tabId(baseId, value)}
         aria-selected={active}
+        aria-controls={panelId(baseId, value)}
+        tabIndex={active ? 0 : -1}
+        onKeyDown={onNav}
         onClick={() => setValue(value)}
         className={cn(
           'inline-flex h-9 items-center justify-center rounded-lg px-4 text-sm font-medium transition-all',
@@ -90,9 +118,19 @@ export interface TabsContentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
   ({ className, value, ...props }, ref) => {
-    const { value: current } = useTabs();
+    const { value: current, baseId } = useTabs();
     if (current !== value) return null;
-    return <div ref={ref} role="tabpanel" className={cn('animate-fade-in', className)} {...props} />;
+    return (
+      <div
+        ref={ref}
+        role="tabpanel"
+        id={panelId(baseId, value)}
+        aria-labelledby={tabId(baseId, value)}
+        tabIndex={0}
+        className={cn('animate-fade-in focus-visible:outline-none', className)}
+        {...props}
+      />
+    );
   },
 );
 TabsContent.displayName = 'TabsContent';
