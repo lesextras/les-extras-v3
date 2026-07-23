@@ -39,7 +39,11 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title={`Bonjour ${session.user.firstName ?? fullName(session.user.firstName, session.user.lastName)}`}
+        title={(() => {
+          const who = fullName(session.user.firstName, session.user.lastName);
+          const name = who !== "Utilisateur" ? who : (session.account?.name ?? "");
+          return name ? `Bonjour ${name}` : "Bonjour";
+        })()}
         subtitle={
           isEstablishment
             ? "Pilotez vos renforts, réservations d’ateliers et votre équipe."

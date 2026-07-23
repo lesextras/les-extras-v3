@@ -71,7 +71,7 @@ const establishmentNav: NavSection[] = [
       { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone },
       { label: 'Marketplace', href: '/marketplace', icon: Sparkles },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock },
-      { label: 'Ateliers', href: '/dashboard/ateliers', icon: GraduationCap },
+      { label: 'Ateliers', href: '/marketplace?type=services', icon: GraduationCap },
     ],
   },
   {
