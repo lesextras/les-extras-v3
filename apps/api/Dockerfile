@@ -31,9 +31,7 @@ COPY packages ./packages
 COPY apps/api ./apps/api
 # DATABASE_URL factice pour prisma generate (ne se connecte pas). Ecrasee au runtime par Coolify.
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build?schema=public"
-RUN node -v && pnpm -v && ls -la apps/api/node_modules/.bin 2>/dev/null | grep -i prisma || true \
- && (cd apps/api && pnpm exec prisma generate --schema prisma/schema.prisma) \
- || (echo "=== PRISMA GEN FAILED, diag ===" && cd apps/api && pnpm exec prisma version; ls -la prisma; node -e "console.log(require('@prisma/client/package.json').version)" 2>&1; exit 1)
+RUN cd apps/api && pnpm exec prisma generate --schema prisma/schema.prisma
 RUN pnpm --filter @lesextras/api build
 
 # ---- Runtime : dist + node_modules du workspace (Prisma CLI conservé) -------
