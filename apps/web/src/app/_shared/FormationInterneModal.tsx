@@ -114,16 +114,25 @@ export function FormationInterneModal({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Formation interne</DialogTitle>
+          <DialogTitle>Créer une formation interne</DialogTitle>
           <DialogDescription>
-            Un salarié référent forme ses collègues. Parcours simplifié, sans Qualiopi.
+            Un salarié référent forme ses collègues. Parcours simplifié, sans Qualiopi ni CPF —
+            l’établissement délivre une attestation de fin de formation.
           </DialogDescription>
         </DialogHeader>
+        <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground">
+          Étapes : <span className="font-medium text-foreground">Programme → Session → Inscription des salariés → Émargement → Attestation</span>.
+          Vous pourrez inscrire vos collègues juste après la création.
+        </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <Field label="Intitulé" htmlFor="title" required>
             <Input id="title" name="title" required placeholder="Gestion de crise en internat" />
           </Field>
-          <Field label="Objectif / résumé" htmlFor="summary">
+          <Field
+            label="Objectif / résumé"
+            htmlFor="summary"
+            hint="Décrivez ce que les participants sauront faire à l’issue de la formation."
+          >
             <Textarea id="summary" name="summary" rows={3} placeholder="Ce que les participants sauront faire à l’issue…" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
@@ -134,7 +143,8 @@ export function FormationInterneModal({
               <Input id="maxSeats" name="maxSeats" type="number" min={1} placeholder="12" />
             </Field>
           </div>
-          <Field label="Formateur référent (salarié)">
+          <Field label="Formateur référent (salarié)" hint="Un membre de votre équipe qui animera la session.">
+
             {trainers.length > 0 ? (
               <Select value={trainerId} onValueChange={setTrainerId}>
                 <SelectTrigger>
@@ -150,8 +160,9 @@ export function FormationInterneModal({
                 </SelectContent>
               </Select>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                Aucun membre disponible. Invitez d’abord vos salariés depuis « Équipe ».
+              <p className="rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground">
+                Aucun salarié disponible. Invitez d’abord vos collègues depuis « Équipe »,
+                puis désignez-en un comme formateur.
               </p>
             )}
           </Field>
@@ -159,11 +170,15 @@ export function FormationInterneModal({
             <Field label="Date de session" htmlFor="startDate" required>
               <Input id="startDate" name="startDate" type="date" required />
             </Field>
-            <Field label="Lieu" htmlFor="location">
+            <Field label="Lieu" htmlFor="location" hint="Sur site ou distanciel.">
               <Input id="location" name="location" placeholder="Sur site / Distanciel" />
             </Field>
           </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          ) : null}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Annuler

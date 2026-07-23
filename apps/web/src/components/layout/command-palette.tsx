@@ -17,7 +17,9 @@ const DESTINATIONS: Dest[] = [
   { label: "Marketplace", href: "/marketplace", group: "Navigation", keywords: "missions ateliers catalogue" },
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Freelance", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Freelance", keywords: "services educatheures" },
+  { label: "Mes formations", href: "/dashboard/formations", group: "Freelance", keywords: "formation session émargement apprenants attestation" },
   { label: "SOS Renfort", href: "/dashboard/renforts", group: "Établissement", keywords: "remplacement besoin publier" },
+  { label: "Formations", href: "/marketplace/formations", group: "Établissement", keywords: "catalogue certifiant qualiopi inscription salariés" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat" },
   { label: "Factures & revenus", href: "/dashboard/finance", group: "Navigation", keywords: "facture argent paiement" },
@@ -30,6 +32,8 @@ const DESTINATIONS: Dest[] = [
   { label: "Admin — Missions", href: "/admin/missions", group: "Admin", keywords: "modération" },
   { label: "Admin — Ateliers", href: "/admin/ateliers", group: "Admin", keywords: "services" },
   { label: "Admin — Réservations", href: "/admin/reservations", group: "Admin", keywords: "bookings" },
+  { label: "Admin — Educat’heures", href: "/admin/educatheures", group: "Admin", keywords: "banque heures crédits" },
+  { label: "Admin — Centre de formation", href: "/admin/formations", group: "Admin", keywords: "formations qualiopi certifiant interne" },
   { label: "Admin — Factures", href: "/admin/factures", group: "Admin", keywords: "invoices" },
   { label: "Admin — Statistiques", href: "/admin/statistiques", group: "Admin", keywords: "kpi" },
 ];

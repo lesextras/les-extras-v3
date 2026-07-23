@@ -27,10 +27,10 @@ import { apiRequest } from "@/lib/api";
 import { Field } from "./form-fields";
 
 const FINANCING = [
-  { value: "ESTABLISHMENT", label: "Établissement" },
-  { value: "CPF", label: "CPF" },
+  { value: "ESTABLISHMENT", label: "Établissement (plan de développement des compétences)" },
+  { value: "CPF", label: "CPF (Compte personnel de formation)" },
   { value: "OPCO", label: "OPCO" },
-  { value: "PERSONAL", label: "Personnel" },
+  { value: "PERSONAL", label: "Financement personnel" },
   { value: "POLE_EMPLOI", label: "France Travail" },
 ];
 
@@ -83,16 +83,22 @@ export function InscribeButton({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Inscrire un apprenant</DialogTitle>
-          <DialogDescription>Renseignez le stagiaire et son financement.</DialogDescription>
+          <DialogDescription>
+            Renseignez le stagiaire et son mode de financement. Une convocation lui sera adressée.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <Field label="Nom de l’apprenant" htmlFor="learnerName" required>
             <Input id="learnerName" name="learnerName" required placeholder="Prénom Nom" />
           </Field>
-          <Field label="Email" htmlFor="learnerEmail">
+          <Field
+            label="Email"
+            htmlFor="learnerEmail"
+            hint="Pour l’envoi de la convocation et des documents de fin de formation."
+          >
             <Input id="learnerEmail" name="learnerEmail" type="email" placeholder="apprenant@structure.fr" />
           </Field>
-          <Field label="Financement">
+          <Field label="Financement" hint="Le CPF n’est mobilisable que sur les formations certifiantes.">
             <Select value={financing} onValueChange={setFinancing}>
               <SelectTrigger>
                 <SelectValue />
@@ -106,7 +112,11 @@ export function InscribeButton({
               </SelectContent>
             </Select>
           </Field>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          ) : null}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Annuler

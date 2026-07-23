@@ -33,7 +33,7 @@ export function AppChrome({
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar desktop */}
       <div className="hidden md:block">
         <Sidebar role={role} />
@@ -63,17 +63,22 @@ export function AppChrome({
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header
           user={user}
           accounts={accounts}
           activeAccount={activeAccount}
           onMenuClick={() => setMobileOpen(true)}
         />
-        <div className="flex min-h-0 flex-1">
-          <main id="main" className={cn('min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8')}>{children}</main>
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <main
+            id="main"
+            className={cn('min-w-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8')}
+          >
+            {children}
+          </main>
           {actionPanel && (
-            <div className="hidden w-80 shrink-0 border-l border-border bg-card xl:block">
+            <div className="hidden w-80 shrink-0 overflow-y-auto border-l border-border bg-card xl:block">
               {actionPanel}
             </div>
           )}

@@ -1,18 +1,20 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
+  Store,
   Sparkles,
   CalendarClock,
+  CalendarCheck,
+  Clock,
   GraduationCap,
   MessageSquare,
-  Star,
+  Receipt,
   FileText,
+  Tags,
   Users,
   Building2,
-  ShieldCheck,
   Settings,
   BarChart3,
-  FolderLock,
   Megaphone,
   Target,
 } from 'lucide-react';
@@ -53,7 +55,7 @@ const freelanceNav: NavSection[] = [
     ],
   },
   {
-    title: 'Activité',
+    title: 'Mon activité',
     items: [
       { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, hint: 'Missions qui correspondent à votre profil, classées par score' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos interventions confirmées' },
@@ -61,17 +63,17 @@ const freelanceNav: NavSection[] = [
     ],
   },
   {
-    title: 'Catalogue',
+    title: 'Mon offre',
     items: [
-      { label: 'Marketplace', href: '/marketplace', icon: Sparkles, hint: 'Toutes les missions et ateliers ouverts' },
-      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: GraduationCap, hint: 'Créez et gérez vos interventions' },
+      { label: 'Marketplace', href: '/marketplace', icon: Store, hint: 'Toutes les missions et ateliers ouverts' },
+      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, hint: 'Créez et gérez vos interventions' },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
     ],
   },
   {
     title: 'Mon espace',
     items: [
-      { label: 'Factures & revenus', href: '/dashboard/finance', icon: FileText, hint: 'Vos revenus et documents' },
+      { label: 'Factures & revenus', href: '/dashboard/finance', icon: Receipt, hint: 'Vos revenus et documents' },
       { label: 'Mon compte', href: '/dashboard/account', icon: Settings, hint: 'Profil, paramètres et sécurité' },
     ],
   },
@@ -84,27 +86,27 @@ const establishmentNav: NavSection[] = [
     ],
   },
   {
-    title: 'Activité',
+    title: 'Mon activité',
     items: [
       { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos créneaux et interventions' },
-      { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les freelances' },
     ],
   },
   {
     title: 'Catalogue',
     items: [
-      { label: 'Marketplace', href: '/marketplace', icon: Sparkles, hint: 'Toutes les missions et ateliers' },
-      { label: 'Ateliers', href: '/marketplace?type=services', icon: GraduationCap, hint: 'Catalogue d’ateliers à réserver' },
+      { label: 'Marketplace', href: '/marketplace', icon: Store, hint: 'Toutes les missions et ateliers' },
+      { label: 'Ateliers', href: '/marketplace?type=services', icon: Sparkles, hint: 'Catalogue d’ateliers à réserver' },
       { label: 'Formations', href: '/marketplace/formations', icon: GraduationCap, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
     ],
   },
   {
-    title: 'Mon espace',
+    title: 'Mon établissement',
     items: [
+      { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
       { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
-      { label: 'Factures', href: '/dashboard/finance', icon: FileText, hint: 'Vos factures et dépenses' },
+      { label: 'Factures', href: '/dashboard/finance', icon: Receipt, hint: 'Vos factures et dépenses' },
     ],
   },
 ];
@@ -112,47 +114,48 @@ const establishmentNav: NavSection[] = [
 const adminNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d\u2019ensemble de la plateforme' },
+      { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d’ensemble de la plateforme' },
     ],
   },
   {
-    title: 'Contenu',
+    title: 'Marketplace',
     items: [
-      { label: 'Articles', href: '/admin/articles', icon: FileText },
-      { label: 'Cat\u00e9gories', href: '/admin/categories', icon: FolderLock },
-    ],
-  },
-  {
-    title: 'Administration',
-    items: [
-      { label: '\u00c9tablissements', href: '/admin/etablissements', icon: Building2 },
-      { label: 'Ateliers', href: '/admin/ateliers', icon: GraduationCap },
-      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users },
-    ],
-  },
-  {
-    title: 'AD\u00e9PA',
-    items: [
-      { label: 'R\u00e9servations', href: '/admin/reservations', icon: CalendarClock },
-      { label: 'Missions', href: '/admin/missions', icon: Megaphone },
+      { label: 'Missions', href: '/admin/missions', icon: Megaphone, hint: 'Modérer les missions de renfort' },
+      { label: 'Ateliers', href: '/admin/ateliers', icon: Sparkles, hint: 'Modérer le catalogue d’ateliers' },
+      { label: 'Réservations', href: '/admin/reservations', icon: CalendarCheck, hint: 'Suivi des réservations et des bookings' },
+      { label: 'Educat’heures', href: '/admin/educatheures', icon: Clock, hint: 'Banque d’heures et crédits d’intervention' },
     ],
   },
   {
     title: 'Centre de formation',
     items: [
-      { label: 'Formations', href: '/admin/formations', icon: GraduationCap },
+      { label: 'Formations', href: '/admin/formations', icon: GraduationCap, hint: 'Programmes certifiants (Qualiopi) et formations internes' },
+    ],
+  },
+  {
+    title: 'Comptes',
+    items: [
+      { label: 'Établissements', href: '/admin/etablissements', icon: Building2, hint: 'Organisations et structures inscrites' },
+      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Gérer et modérer les comptes' },
+    ],
+  },
+  {
+    title: 'Contenu',
+    items: [
+      { label: 'Articles', href: '/admin/articles', icon: FileText, hint: 'Articles et pages éditoriales' },
+      { label: 'Catégories', href: '/admin/categories', icon: Tags, hint: 'Taxonomie des missions et ateliers' },
     ],
   },
   {
     title: 'Facturation',
     items: [
-      { label: 'Factures', href: '/admin/factures', icon: Star },
+      { label: 'Factures', href: '/admin/factures', icon: Receipt, hint: 'Facturation de la plateforme' },
     ],
   },
   {
     title: 'Pilotage',
     items: [
-      { label: 'Statistiques', href: '/admin/statistiques', icon: BarChart3 },
+      { label: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, hint: 'KPIs détaillés de la plateforme' },
     ],
   },
 ];

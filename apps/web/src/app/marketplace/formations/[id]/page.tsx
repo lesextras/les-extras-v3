@@ -1,8 +1,8 @@
-// Fiche d'un programme certifiant + sessions ouvertes + inscription.
+// Fiche d'un programme (certifiant ou interne) + sessions ouvertes + inscription.
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../../../_shared/server";
-import { PageHeader } from "../../../_shared/ui";
+import { PageHeader, ErrorState } from "../../../_shared/ui";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InscribeButton } from "../../../_shared/InscribeButton";
@@ -23,6 +23,7 @@ interface SessionItem {
 interface FormationDetail {
   id: string;
   title: string;
+  type?: "CERTIFIANTE" | "INTERNE";
   summary?: string | null;
   objectives?: string | null;
   program?: string | null;
@@ -41,81 +42,151 @@ function fmtDate(d?: string | null) {
   return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
+function trainerName(t?: SessionItem["trainer"]) {
+  if (!t) return null;
+  return [t.firstName, t.lastName].filter(Boolean).join(" ") || null;
+}
+
+// Rappel visuel du cycle de vie d'une formation.
+function Pipeline({ certifying }: { certifying: boolean }) {
+  const steps = ["Catalogue", "Session", "Inscription", "Émargement", certifying ? "Certificat" : "Attestation"];
+  return (
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-xs">
+      {steps.map((step, i) => (
+        <div key={step} className="flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+            <span className="grid size-5 place-items-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+              {i + 1}
+            </span>
+            {step}
+          </span>
+          {i < steps.length - 1 ? <span className="text-muted-foreground/50" aria-hidden>→</span> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function FormationDetailPage({ params }: { params: { id: string } }) {
   const session = await requireSession();
   const res = await fetchApi<FormationDetail>(session, `/formations/${params.id}`);
   const f = res.data;
+
+  if (res.error) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Formation" />
+        <ErrorState
+          retryHref={`/marketplace/formations/${params.id}`}
+          description="Impossible de charger cette formation pour le moment."
+        />
+      </div>
+    );
+  }
   if (!f) notFound();
+
+  const isCertifying = f.type !== "INTERNE";
+  const sessions = f.sessions ?? [];
 
   return (
     <div className="space-y-6">
       <PageHeader title={f.title} subtitle={f.ownerAccount?.name ?? "ADéPA"} />
 
       <div className="flex flex-wrap gap-2">
-        {f.certifying ? <Badge variant="soft">Certifiante</Badge> : null}
+        <Badge variant={isCertifying ? "soft" : "outline"}>{isCertifying ? "Certifiante" : "Interne"}</Badge>
         {f.cpfEligible ? <Badge>CPF</Badge> : null}
+        {isCertifying ? <Badge variant="success">Qualiopi</Badge> : null}
         {f.categoryRef?.title ? <Badge variant="outline">{f.categoryRef.title}</Badge> : null}
-        {f.durationHours ? <Badge variant="outline">{f.durationHours} h</Badge> : null}
+        {f.durationHours ? <Badge variant="muted">{f.durationHours} h</Badge> : null}
       </div>
 
+      <Pipeline certifying={isCertifying} />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+        <div className="space-y-5 lg:col-span-2">
           {f.summary ? <p className="text-muted-foreground">{f.summary}</p> : null}
           {f.objectives ? (
             <section>
-              <h3 className="mb-1 font-semibold">Objectifs</h3>
+              <h3 className="mb-1.5 font-semibold text-foreground">Objectifs pédagogiques</h3>
               <p className="whitespace-pre-line text-sm text-muted-foreground">{f.objectives}</p>
             </section>
           ) : null}
           {f.program ? (
             <section>
-              <h3 className="mb-1 font-semibold">Programme</h3>
+              <h3 className="mb-1.5 font-semibold text-foreground">Programme</h3>
               <p className="whitespace-pre-line text-sm text-muted-foreground">{f.program}</p>
             </section>
           ) : null}
           {f.prerequisites ? (
             <section>
-              <h3 className="mb-1 font-semibold">Prérequis</h3>
+              <h3 className="mb-1.5 font-semibold text-foreground">Prérequis</h3>
               <p className="whitespace-pre-line text-sm text-muted-foreground">{f.prerequisites}</p>
             </section>
           ) : null}
           {f.targetAudience ? (
             <section>
-              <h3 className="mb-1 font-semibold">Public visé</h3>
+              <h3 className="mb-1.5 font-semibold text-foreground">Public visé</h3>
               <p className="text-sm text-muted-foreground">{f.targetAudience}</p>
             </section>
           ) : null}
         </div>
 
         <div>
-          <Card>
+          <Card className="lg:sticky lg:top-6">
             <CardHeader>
-              <h3 className="font-semibold">Sessions</h3>
+              <h3 className="font-semibold text-foreground">Sessions ouvertes</h3>
+              <p className="text-xs text-muted-foreground">
+                Choisissez une date et inscrivez vos apprenants.
+              </p>
             </CardHeader>
             <CardContent className="space-y-3">
-              {f.sessions && f.sessions.length > 0 ? (
-                f.sessions.map((s) => (
-                  <div key={s.id} className="rounded-lg border border-border p-3">
-                    <p className="text-sm font-medium text-foreground">{fmtDate(s.startDate)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {s.location ?? "À définir"}
-                      {s.maxSeats ? ` · ${s._count?.inscriptions ?? 0}/${s.maxSeats} places` : ""}
-                    </p>
-                    <div className="mt-2 flex items-center gap-3">
-                      <InscribeButton sessionId={s.id} accountId={session.account.id} />
-                      <a
-                        href={`/dashboard/formations/${s.id}`}
-                        className="text-xs font-medium text-primary hover:underline"
-                      >
-                        Gérer / émargement
-                      </a>
+              {sessions.length > 0 ? (
+                sessions.map((s) => {
+                  const seatsTaken = s._count?.inscriptions ?? 0;
+                  const isFull = s.maxSeats ? seatsTaken >= s.maxSeats : false;
+                  const tName = trainerName(s.trainer);
+                  return (
+                    <div key={s.id} className="rounded-lg border border-border p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold text-foreground">{fmtDate(s.startDate)}</p>
+                        {isFull ? (
+                          <Badge variant="warning">Complète</Badge>
+                        ) : s.maxSeats ? (
+                          <Badge variant="success">
+                            {Math.max(s.maxSeats - seatsTaken, 0)} place{s.maxSeats - seatsTaken > 1 ? "s" : ""}
+                          </Badge>
+                        ) : (
+                          <Badge variant="muted">Places libres</Badge>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {s.location ?? "Lieu à définir"}
+                        {s.maxSeats ? ` · ${seatsTaken}/${s.maxSeats} inscrits` : ` · ${seatsTaken} inscrit(s)`}
+                      </p>
+                      {tName ? (
+                        <p className="text-xs text-muted-foreground">Formateur : {tName}</p>
+                      ) : null}
+                      <div className="mt-2.5 flex items-center gap-3">
+                        <InscribeButton sessionId={s.id} accountId={session.account.id} />
+                        <a
+                          href={`/dashboard/formations/${s.id}`}
+                          className="text-xs font-medium text-primary hover:underline"
+                        >
+                          Gérer / émargement
+                        </a>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  Aucune session ouverte. Contactez ADéPA pour planifier une date.
-                </p>
+                <div className="rounded-lg border border-dashed border-border px-3 py-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Aucune session ouverte pour le moment.
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Contactez ADéPA pour planifier une date adaptée à votre équipe.
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>

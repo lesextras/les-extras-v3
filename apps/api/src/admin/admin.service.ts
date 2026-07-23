@@ -15,6 +15,11 @@ import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
 import { UpdateCategoryDto } from './dto/category-admin.dto';
 import { UpdateArticleDto } from './dto/article-admin.dto';
+import {
+  CreateFormationAdminDto,
+  UpdateFormationAdminDto,
+  CreateSessionAdminDto,
+} from './dto/formation-admin.dto';
 
 @Injectable()
 export class AdminService {
@@ -444,6 +449,174 @@ export class AdminService {
       orderBy: { startDate: 'desc' },
       include: {
         formation: { select: { id: true, title: true, type: true } },
+        trainer: { select: { id: true, firstName: true, lastName: true } },
+        _count: { select: { inscriptions: true } },
+      },
+    });
+  }
+
+  /**
+   * Détermine le compte OF (Organisme de Formation) propriétaire d'un programme.
+   * Choix (documenté) :
+   *  1. `explicit` fourni dans le DTO → on l'utilise (après vérification d'existence) ;
+   *  2. sinon, le 1er compte ESTABLISHMENT dont le nom contient « ADéPA / ADEPA » ;
+   *  3. sinon, le compte ESTABLISHMENT le plus ancien (fallback catalogue) ;
+   *  4. sinon → erreur explicite (aucun OF disponible).
+   */
+  private async resolveOwnerAccountId(explicit?: string): Promise<string> {
+    if (explicit) {
+      const acc = await this.prisma.account.findUnique({ where: { id: explicit } });
+      if (!acc) throw new BadRequestException('Compte propriétaire introuvable.');
+      return acc.id;
+    }
+    const adepa = await this.prisma.account.findFirst({
+      where: {
+        type: 'ESTABLISHMENT',
+        OR: [
+          { name: { contains: 'adépa', mode: 'insensitive' } },
+          { name: { contains: 'adepa', mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (adepa) return adepa.id;
+    const anyEstablishment = await this.prisma.account.findFirst({
+      where: { type: 'ESTABLISHMENT' },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (anyEstablishment) return anyEstablishment.id;
+    throw new BadRequestException(
+      "Aucun compte établissement (OF) disponible pour rattacher la formation. Créez d'abord un compte ADéPA.",
+    );
+  }
+
+  async getFormation(id: string) {
+    const formation = await this.prisma.formation.findUnique({
+      where: { id },
+      include: {
+        ownerAccount: { select: { id: true, name: true } },
+        categoryRef: { select: { id: true, title: true } },
+        _count: { select: { sessions: true } },
+        sessions: {
+          orderBy: { startDate: 'desc' },
+          include: {
+            trainer: { select: { id: true, firstName: true, lastName: true } },
+            _count: { select: { inscriptions: true } },
+          },
+        },
+      },
+    });
+    if (!formation) throw new NotFoundException('Formation introuvable.');
+    return formation;
+  }
+
+  async createFormation(dto: CreateFormationAdminDto) {
+    const ownerAccountId = await this.resolveOwnerAccountId(dto.ownerAccountId);
+    const type = dto.type ?? FormationType.CERTIFIANTE;
+    const isInterne = type === FormationType.INTERNE;
+    const cpfEligible = isInterne ? false : dto.cpfEligible ?? false;
+    const certifying = isInterne ? false : dto.certifying ?? false;
+
+    let slug = this.slugify(dto.title);
+    const exists = await this.prisma.formation.findUnique({ where: { slug } });
+    if (exists) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+
+    return this.prisma.formation.create({
+      data: {
+        type,
+        title: dto.title,
+        slug,
+        summary: dto.summary,
+        objectives: dto.objectives,
+        prerequisites: dto.prerequisites,
+        program: dto.program,
+        targetAudience: dto.targetAudience,
+        durationHours: dto.durationHours,
+        cpfEligible,
+        certifying,
+        certificationName: isInterne ? null : dto.certificationName,
+        edofRef: isInterne ? null : dto.edofRef,
+        status: dto.status ?? FormationStatus.DRAFT,
+        ownerAccount: { connect: { id: ownerAccountId } },
+        categoryRef: dto.categoryId ? { connect: { id: dto.categoryId } } : undefined,
+      },
+      include: {
+        ownerAccount: { select: { id: true, name: true } },
+        categoryRef: { select: { id: true, title: true } },
+        _count: { select: { sessions: true } },
+      },
+    });
+  }
+
+  async updateFormation(id: string, dto: UpdateFormationAdminDto) {
+    const formation = await this.prisma.formation.findUnique({ where: { id } });
+    if (!formation) throw new NotFoundException('Formation introuvable.');
+
+    const data: Prisma.FormationUpdateInput = {};
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.summary !== undefined) data.summary = dto.summary;
+    if (dto.objectives !== undefined) data.objectives = dto.objectives;
+    if (dto.prerequisites !== undefined) data.prerequisites = dto.prerequisites;
+    if (dto.program !== undefined) data.program = dto.program;
+    if (dto.targetAudience !== undefined) data.targetAudience = dto.targetAudience;
+    if (dto.durationHours !== undefined) data.durationHours = dto.durationHours;
+    if (dto.edofRef !== undefined) data.edofRef = dto.edofRef;
+    if (dto.status !== undefined) data.status = dto.status;
+    if (dto.type !== undefined) data.type = dto.type;
+
+    // Cohérence type : une formation INTERNE ne peut être ni CPF ni certifiante.
+    const nextType = dto.type ?? formation.type;
+    const isInterne = nextType === FormationType.INTERNE;
+    if (isInterne) {
+      data.cpfEligible = false;
+      data.certifying = false;
+      data.certificationName = null;
+    } else {
+      if (dto.cpfEligible !== undefined) data.cpfEligible = dto.cpfEligible;
+      if (dto.certifying !== undefined) data.certifying = dto.certifying;
+      if (dto.certificationName !== undefined) data.certificationName = dto.certificationName;
+    }
+
+    if (dto.categoryId !== undefined) {
+      data.categoryRef = dto.categoryId
+        ? { connect: { id: dto.categoryId } }
+        : { disconnect: true };
+    }
+
+    return this.prisma.formation.update({
+      where: { id },
+      data,
+      include: {
+        ownerAccount: { select: { id: true, name: true } },
+        categoryRef: { select: { id: true, title: true } },
+        _count: { select: { sessions: true } },
+      },
+    });
+  }
+
+  async deleteFormation(id: string) {
+    const formation = await this.prisma.formation.findUnique({ where: { id } });
+    if (!formation) throw new NotFoundException('Formation introuvable.');
+    await this.prisma.formation.delete({ where: { id } });
+    return { deleted: true };
+  }
+
+  async createFormationSession(formationId: string, dto: CreateSessionAdminDto) {
+    const formation = await this.prisma.formation.findUnique({ where: { id: formationId } });
+    if (!formation) throw new NotFoundException('Formation introuvable.');
+    return this.prisma.formationSession.create({
+      data: {
+        formation: { connect: { id: formationId } },
+        title: dto.title,
+        startDate: new Date(dto.startDate),
+        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        location: dto.location,
+        maxSeats: dto.maxSeats,
+        priceHt: dto.priceHt !== undefined ? new Prisma.Decimal(dto.priceHt) : undefined,
+        trainer: dto.trainerId ? { connect: { id: dto.trainerId } } : undefined,
+        status: dto.status,
+      },
+      include: {
         trainer: { select: { id: true, firstName: true, lastName: true } },
         _count: { select: { inscriptions: true } },
       },

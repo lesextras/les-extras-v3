@@ -19,6 +19,11 @@ import { UpdateAccountDto } from './dto/account-admin.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category-admin.dto';
 import { CreateArticleDto, UpdateArticleDto } from './dto/article-admin.dto';
 import { CreateUserDto, UpdateUserDto } from './dto/user-admin.dto';
+import {
+  CreateFormationAdminDto,
+  UpdateFormationAdminDto,
+  CreateSessionAdminDto,
+} from './dto/formation-admin.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -191,5 +196,30 @@ export class AdminController {
   @Get('formations/sessions')
   listFormationSessions(@Query('status') status?: string) {
     return this.admin.listSessions({ status });
+  }
+
+  @Post('formations')
+  createFormation(@Body() dto: CreateFormationAdminDto) {
+    return this.admin.createFormation(dto);
+  }
+
+  @Get('formations/:id')
+  getFormation(@Param('id') id: string) {
+    return this.admin.getFormation(id);
+  }
+
+  @Patch('formations/:id')
+  updateFormation(@Param('id') id: string, @Body() dto: UpdateFormationAdminDto) {
+    return this.admin.updateFormation(id, dto);
+  }
+
+  @Delete('formations/:id')
+  deleteFormation(@Param('id') id: string) {
+    return this.admin.deleteFormation(id);
+  }
+
+  @Post('formations/:id/sessions')
+  createFormationSession(@Param('id') id: string, @Body() dto: CreateSessionAdminDto) {
+    return this.admin.createFormationSession(id, dto);
   }
 }
