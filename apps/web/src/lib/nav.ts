@@ -91,11 +91,31 @@ const adminNav: NavSection[] = [
     ],
   },
   {
-    title: 'Mod\u00e9ration',
+    title: 'Contenu',
     items: [
-      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users },
-      { label: 'Missions', href: '/admin/missions', icon: Megaphone },
+      { label: 'Articles', href: '/admin/articles', icon: FileText },
+      { label: 'Cat\u00e9gories', href: '/admin/categories', icon: FolderLock },
+    ],
+  },
+  {
+    title: 'Administration',
+    items: [
+      { label: '\u00c9tablissements', href: '/admin/etablissements', icon: Building2 },
       { label: 'Ateliers', href: '/admin/ateliers', icon: GraduationCap },
+      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users },
+    ],
+  },
+  {
+    title: 'AD\u00e9PA',
+    items: [
+      { label: 'R\u00e9servations', href: '/admin/reservations', icon: CalendarClock },
+      { label: 'Missions', href: '/admin/missions', icon: Megaphone },
+    ],
+  },
+  {
+    title: 'Facturation',
+    items: [
+      { label: 'Factures', href: '/admin/factures', icon: Star },
     ],
   },
   {
