@@ -22,6 +22,7 @@ import { QueryMissionsDto } from './dto/query-missions.dto';
 
 interface AccountCtx {
   id: string;
+  type: string;
   role: AccountRole;
 }
 
