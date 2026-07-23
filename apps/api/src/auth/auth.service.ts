@@ -216,7 +216,7 @@ export class AuthService {
   private signEmailVerifyToken(userId: string, email: string): Promise<string> {
     return this.jwt.signAsync(
       { sub: userId, email, purpose: EMAIL_VERIFY_PURPOSE },
-      { expiresIn: '2d' },
+      { expiresIn: '2d' as unknown as number },
     );
   }
 }
