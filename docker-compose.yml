@@ -1,0 +1,112 @@
+# ============================================================================
+# LES EXTRAS v3 — Stack Docker Compose (dev local ET ressource Coolify v4)
+# ----------------------------------------------------------------------------
+# Local  :  cp .env.example .env  &&  docker compose up -d --build
+# Coolify:  Projet > New Resource > Docker Compose (coller ce fichier).
+#           Coolify injecte les variables d'env de la ressource et gère le
+#           proxy (Traefik) + le SSL via les FQDN. Voir docs/DEPLOY_RUNBOOK.md.
+# ============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # Base de données PostgreSQL 16
+  # --------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lesextras}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lesextras}
+      POSTGRES_DB: ${POSTGRES_DB:-lesextras}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    # Exposition locale uniquement (en prod Coolify : ne PAS publier le port)
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - lesextras
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lesextras} -d ${POSTGRES_DB:-lesextras}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # --------------------------------------------------------------------------
+  # API — NestJS + Prisma (migrate deploy au démarrage)
+  # --------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      API_PORT: 3001
+      # db = nom du service = hostname sur le réseau interne
+      DATABASE_URL: ${DATABASE_URL:-postgresql://lesextras:lesextras@db:5432/lesextras?schema=public}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET requis}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET requis}
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:3001/api}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      MAIL_DSN: ${MAIL_DSN:-}
+      MAIL_FROM: ${MAIL_FROM:-LES EXTRAS <no-reply@les-extras.fr>}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/app/uploads}
+    volumes:
+      - api_uploads:/app/uploads
+    ports:
+      - "${API_PORT:-3001}:3001"
+    networks:
+      - lesextras
+    # Coolify v4 — domaine + SSL (décommenter / configurer côté UI) :
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.lesextras-api.rule=Host(`api.les-extras.fr`)
+    #   - traefik.http.routers.lesextras-api.entrypoints=https
+    #   - traefik.http.routers.lesextras-api.tls.certresolver=letsencrypt
+    #   - traefik.http.services.lesextras-api.loadbalancer.server.port=3001
+    # Ou, plus simple, via l'env magique Coolify : SERVICE_FQDN_API_3001=/api
+
+  # --------------------------------------------------------------------------
+  # WEB — Next.js 14 (standalone)
+  # --------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Inliné dans le bundle client au build → doit pointer sur l'URL PUBLIQUE de l'API
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET requis}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    networks:
+      - lesextras
+    # Coolify v4 — domaine + SSL :
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.lesextras-web.rule=Host(`app.les-extras.fr`)
+    #   - traefik.http.routers.lesextras-web.entrypoints=https
+    #   - traefik.http.routers.lesextras-web.tls.certresolver=letsencrypt
+    #   - traefik.http.services.lesextras-web.loadbalancer.server.port=3000
+    # Ou env magique Coolify : SERVICE_FQDN_WEB_3000
+
+networks:
+  lesextras:
+    driver: bridge
+
+volumes:
+  pg_data:
+  api_uploads:

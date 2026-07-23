@@ -1,0 +1,328 @@
+// ============================================================================
+// LES EXTRAS v3 — Schéma Prisma
+// Marketplace médico-social : FREELANCE × ESTABLISHMENT
+// Multi-comptes (Account) + sous-comptes (Membership) + invitations
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// IDENTITÉ & MULTI-COMPTES
+// ---------------------------------------------------------------------------
+
+/// Une personne physique (identité de connexion).
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  phone         String?
+  avatarUrl     String?
+  /// Rôle global plateforme (pas le rôle DANS un compte).
+  role          GlobalRole @default(USER)
+  status        UserStatus @default(PENDING)
+  emailVerified Boolean    @default(false)
+  onboardingStep Int       @default(0)
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  profile         Profile?
+  memberships     Membership[]
+  sentInvitations Invitation[]   @relation("InvitationInviter")
+  ownedAccounts   Account[]      @relation("AccountOwner")
+  documents       Document[]
+  notifications   Notification[]
+  messages        Message[]
+  reviewsAuthored Review[]       @relation("ReviewAuthor")
+  reviewsReceived Review[]       @relation("ReviewTarget")
+
+  @@index([email])
+  @@index([role, status])
+}
+
+/// Données étendues d'un utilisateur (surtout côté FREELANCE).
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  job         String?   // Éducateur spécialisé, Moniteur-éducateur, EJE, AES...
+  skills      String[]  @default([])
+  siret       String?
+  diplomaUrl  String?
+  city        String?
+  postalCode  String?
+  radiusKm    Int?      @default(30)
+  hourlyRate  Decimal?  @db.Decimal(8, 2)
+  available   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+/// Un COMPTE (tenant). Soit une organisation ESTABLISHMENT (ex: une MECS),
+/// soit le compte individuel d'un FREELANCE. Peut avoir plusieurs membres.
+model Account {
+  id          String       @id @default(cuid())
+  name        String
+  type        AccountType
+  slug        String       @unique
+  // Coordonnées structure
+  legalName   String?
+  siret       String?
+  address     String?
+  city        String?
+  postalCode  String?
+  phone       String?
+  logoUrl     String?
+  // Facturation / crédits (packs établissement)
+  credits     Int          @default(0)
+  ownerId     String
+  owner       User         @relation("AccountOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  memberships     Membership[]
+  invitations     Invitation[]
+  reliefMissions  ReliefMission[]  @relation("MissionAccount")
+  services        Service[]        @relation("ServiceAccount")
+  bookings        Booking[]
+  invoices        Invoice[]
+
+  @@index([type])
+  @@index([slug])
+}
+
+/// SOUS-COMPTE : rattachement d'un User à un Account avec un rôle interne.
+model Membership {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId  String
+  account    Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  role       AccountRole   @default(MEMBER)
+  status     MembershipStatus @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([userId, accountId])
+  @@index([accountId, role])
+}
+
+/// INVITATION à rejoindre un compte (par email), avec rôle cible + token.
+model Invitation {
+  id         String           @id @default(cuid())
+  email      String
+  accountId  String
+  account    Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  role       AccountRole      @default(MEMBER)
+  token      String           @unique @default(cuid())
+  status     InvitationStatus @default(PENDING)
+  invitedById String
+  invitedBy  User             @relation("InvitationInviter", fields: [invitedById], references: [id])
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime         @default(now())
+
+  @@unique([email, accountId])
+  @@index([token])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// MARKETPLACE — SOS RENFORT (missions) & ATELIERS (services)
+// ---------------------------------------------------------------------------
+
+/// Mission de renfort/remplacement publiée par un ESTABLISHMENT.
+model ReliefMission {
+  id           String        @id @default(cuid())
+  accountId    String
+  account      Account       @relation("MissionAccount", fields: [accountId], references: [id], onDelete: Cascade)
+  title        String
+  description  String
+  category     MissionCategory @default(RENFORT)
+  job          String?        // métier recherché
+  startDate    DateTime
+  endDate      DateTime?
+  startTime    String?        // "09h00"
+  endTime      String?        // "17h00"
+  city         String?
+  postalCode   String?
+  hourlyRate   Decimal?       @db.Decimal(8, 2)
+  headcount    Int            @default(1)
+  status       MissionStatus  @default(DRAFT)
+  /// Diffusion en cascade : SALARIES -> RESERVED -> PUBLIC
+  visibility   MissionVisibility @default(PUBLIC)
+  publishedAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  bookings     Booking[]
+  conversations Conversation[]
+
+  @@index([status, visibility])
+  @@index([accountId])
+  @@index([startDate])
+}
+
+/// Atelier / service proposé par un FREELANCE.
+model Service {
+  id          String        @id @default(cuid())
+  accountId   String
+  account     Account       @relation("ServiceAccount", fields: [accountId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  category    ServiceCategory @default(ATELIER)
+  duration    String?        // "2H"
+  maxParticipants Int?
+  publicTarget String?       // "Adultes en situation de handicap"
+  price       Decimal?       @db.Decimal(10, 2)
+  city        String?
+  status      ServiceStatus  @default(DRAFT)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  bookings    Booking[]
+
+  @@index([status])
+  @@index([accountId])
+}
+
+/// Réservation : relie un FREELANCE à une mission OU un service.
+model Booking {
+  id            String        @id @default(cuid())
+  // Le compte à l'origine de la réservation (établissement ou freelance selon flux)
+  accountId     String
+  account       Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  missionId     String?
+  mission       ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  serviceId     String?
+  service       Service?      @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  status        BookingStatus @default(REQUESTED)
+  scheduledAt   DateTime?
+  totalAmount   Decimal?      @db.Decimal(10, 2)
+  cancelReason  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  review        Review?
+  invoice       Invoice?
+
+  @@index([status])
+  @@index([missionId])
+  @@index([serviceId])
+}
+
+// ---------------------------------------------------------------------------
+// MESSAGERIE / AVIS / NOTIFS / FACTURES / DOCUMENTS
+// ---------------------------------------------------------------------------
+
+model Conversation {
+  id         String    @id @default(cuid())
+  missionId  String?
+  mission    ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  messages   Message[]
+
+  @@index([missionId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  bookingId  String   @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation("ReviewAuthor", fields: [authorId], references: [id])
+  targetId   String
+  target     User     @relation("ReviewTarget", fields: [targetId], references: [id])
+  rating     Int      // 1..5
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@index([targetId])
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String
+  title      String
+  body       String?
+  link       String?
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, readAt])
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  accountId  String
+  account    Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  bookingId  String?       @unique
+  booking    Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  number     String        @unique
+  amount     Decimal       @db.Decimal(10, 2)
+  status     InvoiceStatus @default(DRAFT)
+  pdfUrl     String?
+  issuedAt   DateTime?
+  createdAt  DateTime      @default(now())
+
+  @@index([accountId])
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       String   // avatar, diploma, siret, contract...
+  url        String
+  createdAt  DateTime @default(now())
+
+  @@index([userId, kind])
+}
+
+// ---------------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------------
+
+enum GlobalRole { USER ADMIN }
+enum UserStatus { PENDING VERIFIED BANNED }
+
+enum AccountType { ESTABLISHMENT FREELANCE }
+enum AccountRole { OWNER ADMIN MANAGER MEMBER }
+enum MembershipStatus { ACTIVE SUSPENDED }
+enum InvitationStatus { PENDING ACCEPTED EXPIRED REVOKED }
+
+enum MissionCategory { RENFORT REMPLACEMENT ATELIER_EDUCATIF ATELIER_THERAPEUTIQUE FORMATION ANALYSE_PRATIQUES }
+enum MissionStatus { DRAFT PUBLISHED FILLED CLOSED CANCELLED }
+enum MissionVisibility { SALARIES RESERVED PUBLIC }
+
+enum ServiceCategory { ATELIER FORMATION MEDIATION ART_THERAPIE PREVENTION }
+enum ServiceStatus { DRAFT PUBLISHED ARCHIVED }
+
+enum BookingStatus { REQUESTED ACCEPTED CONFIRMED IN_PROGRESS COMPLETED CANCELLED }
+enum InvoiceStatus { DRAFT ISSUED PAID CANCELLED }

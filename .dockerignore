@@ -1,0 +1,34 @@
+# ---- Racine monorepo : contexte de build partagé (api + web) ----
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/generated
+
+# Env & secrets (injectés par Coolify, jamais dans l'image)
+.env
+.env.*
+!.env.example
+
+# Git / CI / docs
+.git
+.github
+docs
+**/*.md
+
+# OS / éditeurs
+.DS_Store
+**/*.log
+.vscode
+.idea
+
+# Docker
+**/Dockerfile
+docker-compose*.yml
+**/.dockerignore
+
+# Tests & artefacts locaux
+**/*.spec.ts
+**/*.test.ts
+uploads

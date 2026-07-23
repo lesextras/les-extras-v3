@@ -1,0 +1,11 @@
+# Ignoré si le build utilise ce dossier comme contexte (fallback).
+node_modules
+dist
+.turbo
+coverage
+generated
+prisma/migrations/*.local
+.env
+.env.*
+!.env.example
+*.log
