@@ -110,6 +110,7 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'R\u00e9servations', href: '/admin/reservations', icon: CalendarClock },
       { label: 'Missions', href: '/admin/missions', icon: Megaphone },
+      { label: '\u00c9ducat\u2019heures', href: '/admin/educatheures', icon: GraduationCap },
     ],
   },
   {

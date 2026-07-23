@@ -80,6 +80,19 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
     });
   }
 
+  async function remove(id: string) {
+    setBusy(id);
+    try {
+      await apiRequest(`/admin/accounts/${id}`, { method: "DELETE" });
+      toast({ title: "Compte supprimé" });
+      router.refresh();
+    } catch (err) {
+      toast({ title: "Suppression impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function save(id: string) {
     setBusy(id);
     try {
@@ -158,7 +171,10 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                         {a._count?.memberships ?? 0} membre(s) · {a._count?.reliefMissions ?? 0} mission(s) · {a._count?.services ?? 0} atelier(s) · {a.credits ?? 0} crédit(s)
                       </p>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>
+                    </div>
                   </div>
                 )}
               </CardContent>

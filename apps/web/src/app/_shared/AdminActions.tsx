@@ -45,6 +45,31 @@ export function ModerateMissionActions({
     }
   }
 
+  async function remove() {
+    setLoading("del");
+    try {
+      await apiRequest(`/admin/missions/${missionId}`, { method: "DELETE", accountId });
+      toast({ title: "Mission supprimée" });
+      router.refresh();
+    } catch (err) {
+      toast({ title: "Suppression impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  const delBtn = (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="text-destructive hover:text-destructive"
+      disabled={loading !== null}
+      onClick={remove}
+    >
+      {loading === "del" ? "…" : "Supprimer"}
+    </Button>
+  );
+
   // Missions déjà clôturées / annulées : on ne propose que la (ré)ouverture.
   if (status === "CLOSED" || status === "CANCELLED") {
     return (
@@ -57,6 +82,7 @@ export function ModerateMissionActions({
         >
           {loading === "PUBLISHED" ? "…" : "Republier"}
         </Button>
+        {delBtn}
       </div>
     );
   }
@@ -79,6 +105,7 @@ export function ModerateMissionActions({
       >
         {loading === "CLOSED" ? "…" : "Rejeter"}
       </Button>
+      {delBtn}
     </div>
   );
 }
@@ -117,6 +144,31 @@ export function ModerateServiceActions({
     }
   }
 
+  async function remove() {
+    setLoading("del");
+    try {
+      await apiRequest(`/admin/services/${serviceId}`, { method: "DELETE", accountId });
+      toast({ title: "Atelier supprimé" });
+      router.refresh();
+    } catch (err) {
+      toast({ title: "Suppression impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  const delBtn = (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="text-destructive hover:text-destructive"
+      disabled={loading !== null}
+      onClick={remove}
+    >
+      {loading === "del" ? "…" : "Supprimer"}
+    </Button>
+  );
+
   if (status === "ARCHIVED") {
     return (
       <div className="flex justify-end gap-2">
@@ -128,6 +180,7 @@ export function ModerateServiceActions({
         >
           {loading === "PUBLISHED" ? "…" : "Republier"}
         </Button>
+        {delBtn}
       </div>
     );
   }
@@ -150,6 +203,50 @@ export function ModerateServiceActions({
       >
         {loading === "ARCHIVED" ? "…" : "Archiver"}
       </Button>
+      {delBtn}
+    </div>
+  );
+}
+
+export function InvoiceStatusActions({
+  invoiceId,
+  status,
+}: {
+  invoiceId: string;
+  status: string;
+}) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function setStatus(next: string, label: string) {
+    setLoading(next);
+    try {
+      await apiRequest(`/admin/invoices/${invoiceId}/status`, {
+        method: "PATCH",
+        body: { status: next },
+      });
+      toast({ title: label });
+      router.refresh();
+    } catch (err) {
+      toast({ title: "Action impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  return (
+    <div className="flex justify-end gap-2">
+      {status !== "PAID" ? (
+        <Button size="sm" disabled={loading !== null} onClick={() => setStatus("PAID", "Facture marquée payée")}>
+          {loading === "PAID" ? "…" : "Marquer payée"}
+        </Button>
+      ) : null}
+      {status === "DRAFT" ? (
+        <Button size="sm" variant="outline" disabled={loading !== null} onClick={() => setStatus("ISSUED", "Facture émise")}>
+          {loading === "ISSUED" ? "…" : "Émettre"}
+        </Button>
+      ) : null}
     </div>
   );
 }

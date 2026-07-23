@@ -18,6 +18,7 @@ import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
 import { UpdateAccountDto } from './dto/account-admin.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category-admin.dto';
 import { CreateArticleDto, UpdateArticleDto } from './dto/article-admin.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user-admin.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -34,6 +35,21 @@ export class AdminController {
   @Get('users')
   listUsers(@Query() query: QueryUsersDto) {
     return this.admin.listUsers(query);
+  }
+
+  @Post('users')
+  createUser(@Body() dto: CreateUserDto) {
+    return this.admin.createUser(dto);
+  }
+
+  @Patch('users/:id')
+  updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.admin.updateUser(id, dto);
+  }
+
+  @Delete('users/:id')
+  deleteUser(@Param('id') id: string) {
+    return this.admin.deleteUser(id);
   }
 
   @Patch('users/:id/ban')
@@ -58,6 +74,11 @@ export class AdminController {
     return this.admin.moderateMission(id, dto);
   }
 
+  @Delete('missions/:id')
+  deleteMission(@Param('id') id: string) {
+    return this.admin.deleteMission(id);
+  }
+
   // --- Services / Ateliers ------------------------------------------------
 
   @Get('services')
@@ -68,6 +89,11 @@ export class AdminController {
   @Patch('services/:id/moderate')
   moderateService(@Param('id') id: string, @Body() dto: ModerateServiceDto) {
     return this.admin.moderateService(id, dto);
+  }
+
+  @Delete('services/:id')
+  deleteService(@Param('id') id: string) {
+    return this.admin.deleteService(id);
   }
 
   // --- Comptes / Organisations -------------------------------------------
@@ -85,6 +111,11 @@ export class AdminController {
   @Patch('accounts/:id')
   updateAccount(@Param('id') id: string, @Body() dto: UpdateAccountDto) {
     return this.admin.updateAccount(id, dto);
+  }
+
+  @Delete('accounts/:id')
+  deleteAccount(@Param('id') id: string) {
+    return this.admin.deleteAccount(id);
   }
 
   // --- Catégories ---------------------------------------------------------
@@ -143,5 +174,10 @@ export class AdminController {
   @Get('invoices')
   listInvoices(@Query('status') status?: string) {
     return this.admin.listInvoices({ status });
+  }
+
+  @Patch('invoices/:id/status')
+  updateInvoiceStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.admin.updateInvoiceStatus(id, status);
   }
 }

@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { INVOICE_STATUS_LABEL, invoiceBadgeVariant, formatMoney, formatDate } from "../../../_shared/format";
+import { InvoiceStatusActions } from "../../../_shared/AdminActions";
 
 export const metadata: Metadata = { title: "Factures · Administration" };
 
@@ -55,7 +56,8 @@ export default async function AdminFacturesPage() {
                     <TableHead>Montant</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead className="text-right">PDF</TableHead>
+                    <TableHead>PDF</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -76,7 +78,7 @@ export default async function AdminFacturesPage() {
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                         {formatDate(inv.issuedAt ?? inv.createdAt)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell>
                         {inv.pdfUrl ? (
                           <a href={inv.pdfUrl} target="_blank" rel="noreferrer">
                             <Button size="sm" variant="outline">Télécharger</Button>
@@ -84,6 +86,9 @@ export default async function AdminFacturesPage() {
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <InvoiceStatusActions invoiceId={inv.id} status={inv.status} />
                       </TableCell>
                     </TableRow>
                   ))}

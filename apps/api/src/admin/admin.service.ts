@@ -1,5 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, UserStatus } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import { CreateUserDto, UpdateUserDto } from './dto/user-admin.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { QueryUsersDto } from './dto/query-users.dto';
@@ -72,6 +74,73 @@ export class AdminService {
     });
   }
 
+  async createUser(dto: CreateUserDto) {
+    const email = dto.email.toLowerCase().trim();
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) throw new ConflictException('Un utilisateur avec cet e-mail existe déjà.');
+    const password = await bcrypt.hash(dto.password, 10);
+    const status = dto.status ?? UserStatus.VERIFIED;
+    return this.prisma.user.create({
+      data: {
+        email,
+        password,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        phone: dto.phone,
+        role: dto.role ?? 'USER',
+        status,
+        emailVerified: status === UserStatus.VERIFIED,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async updateUser(id: string, dto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable.');
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        phone: dto.phone,
+        role: dto.role,
+        status: dto.status,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+      },
+    });
+  }
+
+  async deleteUser(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { _count: { select: { ownedAccounts: true } } },
+    });
+    if (!user) throw new NotFoundException('Utilisateur introuvable.');
+    if (user._count.ownedAccounts > 0) {
+      throw new BadRequestException(
+        'Cet utilisateur possède un ou plusieurs comptes. Transférez ou supprimez ses comptes avant de le supprimer.',
+      );
+    }
+    await this.prisma.user.delete({ where: { id } });
+    return { deleted: true };
+  }
+
   // --- Modération missions ------------------------------------------------
 
   async listMissions() {
@@ -91,6 +160,13 @@ export class AdminService {
     });
   }
 
+  async deleteMission(id: string) {
+    const mission = await this.prisma.reliefMission.findUnique({ where: { id } });
+    if (!mission) throw new NotFoundException('Mission introuvable.');
+    await this.prisma.reliefMission.delete({ where: { id } });
+    return { deleted: true };
+  }
+
   // --- Modération services ------------------------------------------------
 
   async listServices() {
@@ -108,6 +184,13 @@ export class AdminService {
       where: { id },
       data: { status: dto.status },
     });
+  }
+
+  async deleteService(id: string) {
+    const service = await this.prisma.service.findUnique({ where: { id } });
+    if (!service) throw new NotFoundException('Atelier introuvable.');
+    await this.prisma.service.delete({ where: { id } });
+    return { deleted: true };
   }
 
   // --- Comptes / Organisations -------------------------------------------
@@ -154,6 +237,13 @@ export class AdminService {
     const account = await this.prisma.account.findUnique({ where: { id } });
     if (!account) throw new NotFoundException('Compte introuvable.');
     return this.prisma.account.update({ where: { id }, data });
+  }
+
+  async deleteAccount(id: string) {
+    const account = await this.prisma.account.findUnique({ where: { id } });
+    if (!account) throw new NotFoundException('Compte introuvable.');
+    await this.prisma.account.delete({ where: { id } });
+    return { deleted: true };
   }
 
   // --- Catégories (taxonomie éditable) -----------------------------------
@@ -313,6 +403,14 @@ export class AdminService {
       take: 200,
       include: { account: { select: { id: true, name: true, type: true } } },
     });
+  }
+
+  async updateInvoiceStatus(id: string, status: string) {
+    const invoice = await this.prisma.invoice.findUnique({ where: { id } });
+    if (!invoice) throw new NotFoundException('Facture introuvable.');
+    const data: Prisma.InvoiceUpdateInput = { status: status as never };
+    if (status === 'ISSUED' && !invoice.issuedAt) data.issuedAt = new Date();
+    return this.prisma.invoice.update({ where: { id }, data });
   }
 
   // --- Stats rapides ------------------------------------------------------
