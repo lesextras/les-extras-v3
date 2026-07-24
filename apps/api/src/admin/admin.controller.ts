@@ -88,6 +88,12 @@ export class AdminController {
     return this.admin.listMissions();
   }
 
+  /** Détail d'une mission (aperçu modération, tout statut). */
+  @Get('missions/:id')
+  getMission(@Param('id') id: string) {
+    return this.admin.getMission(id);
+  }
+
   @Patch('missions/:id/moderate')
   moderateMission(@Param('id') id: string, @Body() dto: ModerateMissionDto) {
     return this.admin.moderateMission(id, dto);
@@ -103,6 +109,12 @@ export class AdminController {
   @Get('services')
   listServices() {
     return this.admin.listServices();
+  }
+
+  /** Détail d'un atelier (aperçu modération, tout statut). */
+  @Get('services/:id')
+  getService(@Param('id') id: string) {
+    return this.admin.getService(id);
   }
 
   @Patch('services/:id/moderate')

@@ -7,6 +7,7 @@
 //   PATCH /admin/users/:id/unban
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
@@ -58,6 +59,12 @@ export function ModerateMissionActions({
     }
   }
 
+  const voirBtn = (
+    <Button asChild size="sm" variant="outline">
+      <Link href={`/admin/missions/${missionId}`}>Voir</Link>
+    </Button>
+  );
+
   const delBtn = (
     <Button
       size="sm"
@@ -74,6 +81,7 @@ export function ModerateMissionActions({
   if (status === "CLOSED" || status === "CANCELLED") {
     return (
       <div className="flex justify-end gap-2">
+        {voirBtn}
         <Button
           size="sm"
           variant="outline"
@@ -89,6 +97,7 @@ export function ModerateMissionActions({
 
   return (
     <div className="flex justify-end gap-2">
+      {voirBtn}
       <Button
         size="sm"
         disabled={loading !== null}
@@ -157,6 +166,12 @@ export function ModerateServiceActions({
     }
   }
 
+  const voirBtn = (
+    <Button asChild size="sm" variant="outline">
+      <Link href={`/admin/ateliers/${serviceId}`}>Voir</Link>
+    </Button>
+  );
+
   const delBtn = (
     <Button
       size="sm"
@@ -172,6 +187,7 @@ export function ModerateServiceActions({
   if (status === "ARCHIVED") {
     return (
       <div className="flex justify-end gap-2">
+        {voirBtn}
         <Button
           size="sm"
           variant="outline"
@@ -187,6 +203,7 @@ export function ModerateServiceActions({
 
   return (
     <div className="flex justify-end gap-2">
+      {voirBtn}
       <Button
         size="sm"
         disabled={loading !== null}

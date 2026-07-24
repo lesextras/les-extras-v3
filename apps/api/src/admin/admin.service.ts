@@ -193,6 +193,20 @@ export class AdminService {
     });
   }
 
+  /** Détail complet d'une mission pour l'aperçu de modération (tout statut). */
+  async getMission(id: string) {
+    const mission = await this.prisma.reliefMission.findUnique({
+      where: { id },
+      include: {
+        account: { select: { id: true, name: true, city: true, type: true } },
+        categoryRef: { select: { id: true, title: true } },
+        _count: { select: { bookings: true } },
+      },
+    });
+    if (!mission) throw new NotFoundException('Mission introuvable.');
+    return mission;
+  }
+
   async moderateMission(id: string, dto: ModerateMissionDto) {
     const mission = await this.prisma.reliefMission.findUnique({ where: { id } });
     if (!mission) throw new NotFoundException('Mission introuvable.');
@@ -217,6 +231,20 @@ export class AdminService {
       take: 200,
       include: { account: { select: { id: true, name: true } } },
     });
+  }
+
+  /** Détail complet d'un atelier pour l'aperçu de modération (tout statut). */
+  async getService(id: string) {
+    const service = await this.prisma.service.findUnique({
+      where: { id },
+      include: {
+        account: { select: { id: true, name: true, city: true, type: true } },
+        categoryRef: { select: { id: true, title: true } },
+        _count: { select: { bookings: true } },
+      },
+    });
+    if (!service) throw new NotFoundException('Atelier introuvable.');
+    return service;
   }
 
   async moderateService(id: string, dto: ModerateServiceDto) {
