@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import type { SessionUser, SessionAccount, NavRole } from '@/lib/types';
 import { Sidebar } from './sidebar';
 import { Header } from './header';
+import { Breadcrumb } from './breadcrumb';
 
 export interface AppChromeProps {
   user: SessionUser;
@@ -75,6 +76,7 @@ export function AppChrome({
             id="main"
             className={cn('min-w-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8')}
           >
+            <Breadcrumb />
             {children}
           </main>
           {actionPanel && (

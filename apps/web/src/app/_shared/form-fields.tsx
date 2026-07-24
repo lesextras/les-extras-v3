@@ -1,9 +1,10 @@
 "use client";
 
 // Champs de formulaire légers réutilisés par les modales (label + textarea).
-// Volontairement autonomes pour ne pas dépendre de primitives non garanties.
 import * as React from "react";
-import { cn } from "@/lib/utils";
+// Réexporte la primitive unifiée du design system (une seule source de vérité
+// pour le style des textarea — plus de divergence bg-card/bg-background).
+export { Textarea } from "@/components/ui/textarea";
 
 export function Field({
   label,
@@ -32,21 +33,3 @@ export function Field({
     </div>
   );
 }
-
-export const Textarea = React.forwardRef<
-  HTMLTextAreaElement,
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>
->(function Textarea({ className, ...props }, ref) {
-  return (
-    <textarea
-      ref={ref}
-      className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm",
-        "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2",
-        "focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    />
-  );
-});

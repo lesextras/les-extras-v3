@@ -157,11 +157,24 @@ export class AccountsService {
    * Ajuste les crédits d'un compte ESTABLISHMENT (packs de renfort).
    * OWNER/ADMIN uniquement. Refuse un solde négatif.
    */
-  async adjustCredits(userId: string, accountId: string, delta: number) {
-    await this.requireMembership(userId, accountId, [
-      AccountRole.OWNER,
-      AccountRole.ADMIN,
-    ]);
+  /**
+   * Ajuste les crédits d'un compte établissement.
+   * Réservé à l'administration plateforme (contrôlé par AdminGuard côté route) :
+   * un établissement ne peut PAS s'auto-créditer sans contrepartie (paiement).
+   * Le paramètre `platformAdmin` court-circuite le contrôle d'appartenance.
+   */
+  async adjustCredits(
+    userId: string,
+    accountId: string,
+    delta: number,
+    platformAdmin = false,
+  ) {
+    if (!platformAdmin) {
+      await this.requireMembership(userId, accountId, [
+        AccountRole.OWNER,
+        AccountRole.ADMIN,
+      ]);
+    }
 
     const account = await this.prisma.account.findUniqueOrThrow({
       where: { id: accountId },

@@ -21,4 +21,10 @@ export class PublicController {
   detail(@Param('id') id: string) {
     return this.publicService.detail(id);
   }
+
+  /** GET /public/missions/:id — détail public d'une mission publiée (404 sinon). */
+  @Get('missions/:id')
+  missionDetail(@Param('id') id: string) {
+    return this.publicService.missionDetail(id);
+  }
 }

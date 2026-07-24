@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, ServiceCategory, ServiceStatus } from '@prisma/client';
+import {
+  MissionStatus,
+  Prisma,
+  ServiceCategory,
+  ServiceStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 
@@ -91,5 +96,35 @@ export class PublicService {
     });
     if (!service) throw new NotFoundException('Service introuvable.');
     return service;
+  }
+
+  /**
+   * Détail PUBLIC d'une mission de renfort PUBLIÉE (vitrine partageable).
+   * Aucune donnée sensible : ni ownerId, ni candidatures.
+   */
+  async missionDetail(id: string) {
+    const mission = await this.prisma.reliefMission.findFirst({
+      where: { id, status: MissionStatus.PUBLISHED },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        category: true,
+        job: true,
+        startDate: true,
+        endDate: true,
+        startTime: true,
+        endTime: true,
+        city: true,
+        postalCode: true,
+        hourlyRate: true,
+        headcount: true,
+        status: true,
+        categoryRef: { select: { id: true, title: true } },
+        account: { select: { id: true, name: true, city: true, logoUrl: true } },
+      },
+    });
+    if (!mission) throw new NotFoundException('Mission introuvable.');
+    return mission;
   }
 }

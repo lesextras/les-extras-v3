@@ -13,6 +13,7 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { AdjustCreditsDto } from './dto/credits.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from '../admin/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequestUser } from '../common/types/request-context';
 
@@ -51,13 +52,18 @@ export class AccountsController {
     return this.accounts.update(user.id, id, dto);
   }
 
+  /**
+   * Ajout/retrait de crédits — réservé à l'administration plateforme.
+   * Empêche un établissement de s'auto-créditer sans paiement.
+   */
   @Patch(':id/credits')
+  @UseGuards(AdminGuard)
   adjustCredits(
     @CurrentUser() user: RequestUser,
     @Param('id') id: string,
     @Body() dto: AdjustCreditsDto,
   ) {
-    return this.accounts.adjustCredits(user.id, id, dto.delta);
+    return this.accounts.adjustCredits(user.id, id, dto.delta, true);
   }
 
   @Delete(':id')
