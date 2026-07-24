@@ -22,7 +22,7 @@ export default async function ServiceDetailPage({ params }: { params: { id: stri
   const session = await requireSession();
   const { data: service } = await fetchApi<Service & { provider?: PublicUser }>(
     session,
-    `/marketplace/services/${params.id}`,
+    `/services/${params.id}`,
   );
   if (!service) notFound();
 

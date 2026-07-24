@@ -22,7 +22,7 @@ export default async function MissionDetailPage({ params }: { params: { id: stri
   const session = await requireSession();
   const { data: mission } = await fetchApi<Mission & { alreadyApplied?: boolean }>(
     session,
-    `/marketplace/missions/${params.id}`,
+    `/missions/${params.id}`,
   );
   if (!mission) notFound();
 

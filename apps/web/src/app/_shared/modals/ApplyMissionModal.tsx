@@ -42,7 +42,7 @@ export function ApplyMissionModal({
     setError(null);
     const fd = new FormData(e.currentTarget);
     try {
-      await apiRequest(`/missions/${missionId}/apply`, {
+      await apiRequest(`/missions/${missionId}/candidate`, {
         method: "POST",
         body: { message: String(fd.get("message") || "") || undefined },
         accountId,
