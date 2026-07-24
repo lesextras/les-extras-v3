@@ -35,6 +35,18 @@ export class BookingsController {
     return this.bookings.findOne(id, account.id);
   }
 
+  /** Contrat de mission (accessible aux deux parties). */
+  @Get(':id/contract')
+  contract(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.bookings.getContract(id, account.id);
+  }
+
+  /** Signer le contrat (freelance ou établissement selon le compte actif). */
+  @Patch(':id/sign')
+  sign(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.bookings.signContract(id, account.id);
+  }
+
   @Patch(':id/accept')
   accept(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.bookings.accept(id, account.id);

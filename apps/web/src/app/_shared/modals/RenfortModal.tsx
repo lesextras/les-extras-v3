@@ -87,7 +87,7 @@ export function RenfortModal({
       postalCode: String(fd.get("postalCode") || "") || undefined,
       hourlyRate: fd.get("hourlyRate") ? Number(fd.get("hourlyRate")) : undefined,
       headcount: fd.get("headcount") ? Number(fd.get("headcount")) : 1,
-      visibility,
+      emergency: fd.get("emergency") === "on",
     };
     try {
       const created = await apiRequest<{ id: string }>("/missions", { method: "POST", body, accountId });
@@ -188,20 +188,15 @@ export function RenfortModal({
               <Input id="headcount" name="headcount" type="number" min={1} defaultValue={1} />
             </Field>
           </div>
-          <Field label="Visibilité (cascade de diffusion)">
-            <Select value={visibility} onValueChange={setVisibility}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {VISIBILITIES.map((v) => (
-                  <SelectItem key={v.value} value={v.value}>
-                    {v.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm">
+            <input type="checkbox" name="emergency" className="h-4 w-4 rounded border-input accent-primary" />
+            <span>
+              <span className="font-medium text-foreground">Mission urgente</span>
+              <span className="block text-xs text-muted-foreground">
+                À la publication, tous les freelances dont le profil correspond (métier, zone, disponibilité) sont notifiés par e-mail. Premier arrivé, premier servi.
+              </span>
+            </span>
+          </label>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>

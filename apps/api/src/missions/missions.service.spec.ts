@@ -28,7 +28,13 @@ describe('MissionsService', () => {
   beforeEach(() => {
     prisma = createPrismaMock();
     notifications = createNotificationsMock();
-    service = new MissionsService(prisma as any, notifications as any);
+    const matching = { candidatesForMission: jest.fn().mockResolvedValue({ candidates: [] }) };
+    const mail = {
+      sendMissionMatch: jest.fn(),
+      sendMissionFilledEstablishment: jest.fn(),
+      sendMissionAcceptedFreelance: jest.fn(),
+    };
+    service = new MissionsService(prisma as any, notifications as any, matching as any, mail as any);
   });
 
   describe('findOne', () => {

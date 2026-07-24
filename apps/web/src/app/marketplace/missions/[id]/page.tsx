@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireSession, fetchApi } from "../../../_shared/server";
-import { ApplyMissionModal } from "../../../_shared/modals/ApplyMissionModal";
+import { AcceptMissionButton } from "../../../_shared/AcceptMissionButton";
 import {
   MISSION_CATEGORY_LABEL,
   MISSION_STATUS_LABEL,
@@ -27,7 +27,7 @@ export default async function MissionDetailPage({ params }: { params: { id: stri
   if (!mission) notFound();
 
   const isFreelance = session.account.type === "FREELANCE";
-  const canApply = isFreelance && mission.status === "PUBLISHED" && !mission.alreadyApplied;
+  const canAccept = isFreelance && mission.status === "PUBLISHED";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -84,20 +84,20 @@ export default async function MissionDetailPage({ params }: { params: { id: stri
                 ) : null}
               </dl>
 
-              {canApply ? (
-                <ApplyMissionModal
-                  missionId={mission.id}
-                  missionTitle={mission.title}
-                  accountId={session.account.id}
-                  trigger={<Button className="w-full">Candidater</Button>}
-                />
-              ) : mission.alreadyApplied ? (
+              {canAccept ? (
+                <div className="space-y-2">
+                  <AcceptMissionButton missionId={mission.id} accountId={session.account.id} />
+                  <p className="text-center text-xs text-muted-foreground">
+                    Premier arrivé, premier servi : la mission vous est attribuée dès validation.
+                  </p>
+                </div>
+              ) : mission.status === "FILLED" ? (
                 <Button className="w-full" disabled>
-                  Candidature envoyée
+                  Mission déjà pourvue
                 </Button>
               ) : !isFreelance ? (
                 <p className="text-center text-xs text-muted-foreground">
-                  Seuls les freelances peuvent candidater.
+                  Seuls les freelances peuvent accepter une mission de renfort.
                 </p>
               ) : (
                 <Button className="w-full" disabled>

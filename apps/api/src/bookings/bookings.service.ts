@@ -63,6 +63,56 @@ export class BookingsService {
     return booking;
   }
 
+  /**
+   * Contrat de mission : accessible aux DEUX parties (freelance + établissement).
+   * Renvoie le détail complet (mission, établissement, freelance) + signatures.
+   */
+  async getContract(id: string, accountId: string) {
+    await this.loadForAccount(id, accountId); // contrôle d'accès (participant)
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      include: {
+        mission: {
+          select: {
+            id: true, title: true, description: true, job: true, startDate: true, endDate: true,
+            startTime: true, endTime: true, city: true, postalCode: true, hourlyRate: true, headcount: true,
+            account: { select: { id: true, name: true, legalName: true, siret: true, city: true, address: true } },
+          },
+        },
+        account: {
+          select: {
+            id: true, name: true,
+            owner: { select: { firstName: true, lastName: true, email: true, phone: true, profile: { select: { job: true, siret: true, city: true } } } },
+          },
+        },
+      },
+    });
+    if (!booking || !booking.mission) throw new NotFoundException('Contrat introuvable.');
+    return booking;
+  }
+
+  /**
+   * Signature du contrat par la partie appelante (freelance OU établissement),
+   * déterminée par le compte actif. Idempotent.
+   */
+  async signContract(id: string, accountId: string) {
+    const booking = await this.loadForAccount(id, accountId);
+    const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
+    const data: Prisma.BookingUpdateInput = {};
+    if (accountId === booking.accountId) {
+      data.signedFreelanceAt = new Date();
+    } else if (accountId === offerAccountId) {
+      data.signedEstablishmentAt = new Date();
+    } else {
+      throw new ForbiddenException('Signature non autorisée pour ce compte.');
+    }
+    return this.prisma.booking.update({
+      where: { id },
+      data,
+      select: { id: true, signedFreelanceAt: true, signedEstablishmentAt: true },
+    });
+  }
+
   private async loadForAccount(id: string, accountId: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { id },

@@ -133,6 +133,7 @@ export class MatchingService {
       results.push({
         freelanceId: u.id,
         accountId: acc.id,
+        email: u.email,
         name: [u.firstName, u.lastName].filter(Boolean).join(' ') || acc.name,
         job: p?.job ?? null,
         city: p?.city ?? null,

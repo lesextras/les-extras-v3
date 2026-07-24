@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsISO8601,
@@ -70,4 +71,12 @@ export class CreateMissionDto {
   @IsInt()
   @Min(1)
   headcount?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  emergency?: boolean;
+
+  @IsOptional()
+  @IsString()
+  attachmentUrl?: string;
 }

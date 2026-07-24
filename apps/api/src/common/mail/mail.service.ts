@@ -149,4 +149,72 @@ export class MailService {
       ),
     );
   }
+
+  private frDate(d?: string | Date | null): string | null {
+    if (!d) return null;
+    return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  /** SOS Renfort : e-mail envoyé à chaque freelance dont le profil correspond. */
+  async sendMissionMatch(
+    to: string,
+    data: { title: string; city?: string | null; date?: string | Date | null; job?: string | null; rate?: string | number | null; emergency?: boolean; missionId: string },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = `${this.webUrl}/marketplace/missions/${data.missionId}`;
+    const tag = data.emergency ? '🚨 <b>Mission urgente</b> — ' : '';
+    await this.send(
+      to,
+      `${data.emergency ? '🚨 ' : ''}Une mission de renfort pour vous : ${data.title}`,
+      this.layout(
+        'Une mission qui vous correspond',
+        `${tag}Un établissement recherche un renfort <b>« ${data.title} »</b>${data.job ? ` (${data.job})` : ''}${
+          data.city ? ` à <b>${data.city}</b>` : ''
+        }${when ? ` le <b>${when}</b>` : ''}${data.rate ? `, rémunéré ${data.rate} €/h` : ''}.
+        <br><br><b>Premier arrivé, premier servi</b> : la mission est attribuée au premier intervenant qui l'accepte.`,
+        { label: 'Voir et accepter la mission', url },
+      ),
+    );
+  }
+
+  /** SOS Renfort : e-mail à l'établissement quand la mission est pourvue. */
+  async sendMissionFilledEstablishment(
+    to: string,
+    data: { title: string; freelanceName: string; freelanceJob?: string | null; city?: string | null; date?: string | Date | null; contractUrl: string },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = data.contractUrl.startsWith('http') ? data.contractUrl : `${this.webUrl}${data.contractUrl}`;
+    await this.send(
+      to,
+      `Mission pourvue : ${data.title}`,
+      this.layout(
+        'Votre mission est pourvue ✅',
+        `Bonne nouvelle : la mission <b>« ${data.title} »</b>${when ? ` du <b>${when}</b>` : ''} a été acceptée par
+        <b>${data.freelanceName}</b>${data.freelanceJob ? ` — ${data.freelanceJob}` : ''}.
+        <br><br>Le contrat de mission est prêt à être signé. Vous y retrouverez le détail du profil de l'intervenant.`,
+        { label: 'Voir le contrat & le profil', url },
+      ),
+    );
+  }
+
+  /** SOS Renfort : e-mail au freelance qui a accepté (contrat + infos). */
+  async sendMissionAcceptedFreelance(
+    to: string,
+    data: { title: string; city?: string | null; address?: string | null; date?: string | Date | null; time?: string | null; contractUrl: string },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = data.contractUrl.startsWith('http') ? data.contractUrl : `${this.webUrl}${data.contractUrl}`;
+    await this.send(
+      to,
+      `Mission confirmée : ${data.title}`,
+      this.layout(
+        'Vous avez décroché la mission 🎉',
+        `Vous avez accepté la mission <b>« ${data.title} »</b>.
+        <br><br><b>Quand :</b> ${when ?? 'à confirmer'}${data.time ? ` (${data.time})` : ''}
+        <br><b>Où :</b> ${[data.address, data.city].filter(Boolean).join(', ') || 'voir le contrat'}
+        <br><br>Merci de <b>signer le contrat de mission</b> ci-dessous. Vous y trouverez toutes les informations pour vous y rendre.`,
+        { label: 'Signer le contrat', url },
+      ),
+    );
+  }
 }

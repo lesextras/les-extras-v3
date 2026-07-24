@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -12,6 +13,8 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MatchingService } from '../matching/matching.service';
+import { MailService } from '../common/mail/mail.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { QueryMissionsDto } from './dto/query-missions.dto';
@@ -28,6 +31,8 @@ export class MissionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly matching: MatchingService,
+    private readonly mail: MailService,
   ) {}
 
   /** Crée une mission (statut DRAFT) rattachée au compte établissement actif. */
@@ -51,6 +56,8 @@ export class MissionsService {
         postalCode: dto.postalCode,
         hourlyRate: dto.hourlyRate,
         headcount: dto.headcount ?? 1,
+        emergency: dto.emergency ?? false,
+        attachmentUrl: dto.attachmentUrl,
       },
     });
   }
@@ -175,14 +182,137 @@ export class MissionsService {
     if (mission.status !== MissionStatus.DRAFT) {
       throw new BadRequestException('Seule une mission en brouillon peut être publiée.');
     }
-    return this.prisma.reliefMission.update({
+    const published = await this.prisma.reliefMission.update({
       where: { id },
       data: {
         status: MissionStatus.PUBLISHED,
-        visibility: MissionVisibility.SALARIES,
+        visibility: MissionVisibility.PUBLIC,
         publishedAt: new Date(),
       },
     });
+    // Diffusion : e-mail à tous les freelances dont le profil correspond
+    // (métier + zone + disponibilité). N'échoue jamais la publication.
+    this.broadcastToMatched(id, accountId).catch(() => undefined);
+    return published;
+  }
+
+  /**
+   * Envoie l'offre par e-mail aux freelances dont le score de correspondance
+   * est suffisant et qui sont disponibles (premier arrivé, premier servi).
+   */
+  private async broadcastToMatched(missionId: string, accountId: string) {
+    const mission = await this.prisma.reliefMission.findUnique({ where: { id: missionId } });
+    if (!mission) return;
+    const { candidates } = await this.matching.candidatesForMission(missionId, accountId);
+    const targets = candidates
+      .filter((c: any) => c.available && !c.hasConflict && c.total >= 45 && c.email)
+      .slice(0, 100);
+    await Promise.allSettled(
+      targets.map((c: any) =>
+        this.mail.sendMissionMatch(c.email, {
+          title: mission.title,
+          city: mission.city,
+          date: mission.startDate,
+          job: mission.job,
+          rate: mission.hourlyRate ? String(mission.hourlyRate) : null,
+          emergency: mission.emergency,
+          missionId,
+        }),
+      ),
+    );
+  }
+
+  /**
+   * SOS Renfort — un FREELANCE accepte la mission (premier arrivé, premier servi).
+   * Verrou atomique : la mission ne peut être remportée que par un seul intervenant.
+   */
+  async accept(missionId: string, freelanceAccountId: string, accountType?: string) {
+    if (accountType === 'ESTABLISHMENT') {
+      throw new BadRequestException('Seuls les freelances peuvent accepter une mission de renfort.');
+    }
+    const mission = await this.prisma.reliefMission.findUnique({
+      where: { id: missionId },
+      include: { account: { select: { id: true, name: true, ownerId: true, city: true } } },
+    });
+    if (!mission) throw new NotFoundException('Mission introuvable.');
+    if (mission.accountId === freelanceAccountId) {
+      throw new BadRequestException('Vous ne pouvez pas accepter votre propre mission.');
+    }
+
+    // Verrou : passe PUBLISHED -> FILLED uniquement si personne ne l'a déjà prise.
+    const claim = await this.prisma.reliefMission.updateMany({
+      where: { id: missionId, status: MissionStatus.PUBLISHED },
+      data: { status: MissionStatus.FILLED },
+    });
+    if (claim.count === 0) {
+      throw new ConflictException('Cette mission vient d’être pourvue par un autre intervenant.');
+    }
+
+    // Booking confirmé pour le freelance + fermeture des autres candidatures.
+    const booking = await this.prisma.booking.create({
+      data: {
+        accountId: freelanceAccountId,
+        missionId,
+        status: BookingStatus.CONFIRMED,
+        scheduledAt: mission.startDate,
+        totalAmount: mission.hourlyRate ?? undefined,
+      },
+    });
+    await this.prisma.booking.updateMany({
+      where: { missionId, status: BookingStatus.REQUESTED, id: { not: booking.id } },
+      data: { status: BookingStatus.CANCELLED, cancelReason: 'Mission pourvue par un autre intervenant.' },
+    });
+
+    // Profil du freelance (pour l'établissement).
+    const freelance = await this.prisma.account.findUnique({
+      where: { id: freelanceAccountId },
+      select: { name: true, owner: { select: { id: true, email: true, firstName: true, lastName: true, profile: { select: { job: true } } } } },
+    });
+    const flName = [freelance?.owner?.firstName, freelance?.owner?.lastName].filter(Boolean).join(' ') || freelance?.name || 'Un intervenant';
+    const contractUrl = `/documents/contrat/${booking.id}`;
+
+    // Notifications établissement.
+    if (mission.account?.ownerId) {
+      await this.notifications.create(mission.account.ownerId, {
+        type: 'MISSION_FILLED',
+        title: 'Mission pourvue',
+        body: `« ${mission.title} » a été acceptée par ${flName}. Contrat à signer.`,
+        link: contractUrl,
+      });
+      const estOwner = await this.prisma.user.findUnique({ where: { id: mission.account.ownerId }, select: { email: true } });
+      if (estOwner?.email) {
+        await this.mail.sendMissionFilledEstablishment(estOwner.email, {
+          title: mission.title,
+          freelanceName: flName,
+          freelanceJob: freelance?.owner?.profile?.job ?? null,
+          city: mission.city,
+          date: mission.startDate,
+          contractUrl,
+        }).catch(() => undefined);
+      }
+    }
+
+    // Notifications freelance.
+    if (freelance?.owner?.id) {
+      await this.notifications.create(freelance.owner.id, {
+        type: 'MISSION_ACCEPTED',
+        title: 'Mission confirmée',
+        body: `Vous avez décroché « ${mission.title} ». Signez le contrat de mission.`,
+        link: contractUrl,
+      });
+      if (freelance.owner.email) {
+        await this.mail.sendMissionAcceptedFreelance(freelance.owner.email, {
+          title: mission.title,
+          city: mission.city,
+          address: null,
+          date: mission.startDate,
+          time: mission.startTime && mission.endTime ? `${mission.startTime} – ${mission.endTime}` : mission.startTime ?? null,
+          contractUrl,
+        }).catch(() => undefined);
+      }
+    }
+
+    return { booking, contractUrl };
   }
 
   /** Élargit la diffusion d'un cran : SALARIES -> RESERVED -> PUBLIC. */

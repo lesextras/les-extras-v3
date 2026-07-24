@@ -97,4 +97,14 @@ export class MissionsController {
   candidate(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.missions.candidate(id, account.id, account.type);
   }
+
+  /**
+   * SOS Renfort — accepter la mission (FREELANCE) : premier arrivé, premier servi.
+   * La mission passe en « pourvue » et n'est plus disponible ; contrat généré.
+   */
+  @Post(':id/accept')
+  @UseGuards(AccountGuard)
+  accept(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.missions.accept(id, account.id, account.type);
+  }
 }
