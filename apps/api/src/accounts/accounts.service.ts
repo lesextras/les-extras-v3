@@ -192,11 +192,87 @@ export class AccountsService {
       throw new BadRequestException('Crédits insuffisants.');
     }
 
-    return this.prisma.account.update({
-      where: { id: accountId },
-      data: { credits: next },
-      select: { id: true, credits: true },
+    // Variation + entrée de grand livre dans la même transaction (traçabilité).
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.account.update({
+        where: { id: accountId },
+        data: { credits: next },
+        select: { id: true, credits: true },
+      }),
+      this.prisma.creditLedger.create({
+        data: {
+          accountId,
+          delta,
+          balanceAfter: next,
+          reason: 'ADMIN_TOPUP',
+        },
+      }),
+    ]);
+
+    return updated;
+  }
+
+  /**
+   * Débit interne de crédits (réservation d'atelier par un établissement, etc.).
+   * Vérifie le solde, décrémente Account.credits et écrit le grand livre dans la
+   * MÊME transaction. Lève 400 « Crédits insuffisants » si le solde ne couvre pas.
+   * Ne fait AUCUN contrôle d'appartenance : à appeler par une logique déjà gardée.
+   */
+  async debitCredits(
+    accountId: string,
+    amount: number,
+    reason: string,
+    refs?: { bookingId?: string; invoiceId?: string },
+  ) {
+    if (amount <= 0) {
+      throw new BadRequestException('Le montant à débiter doit être positif.');
+    }
+    return this.prisma.$transaction(async (tx) => {
+      const account = await tx.account.findUniqueOrThrow({
+        where: { id: accountId },
+        select: { credits: true },
+      });
+      if (account.credits < amount) {
+        throw new BadRequestException('Crédits insuffisants');
+      }
+      const balanceAfter = account.credits - amount;
+      const updated = await tx.account.update({
+        where: { id: accountId },
+        data: { credits: balanceAfter },
+        select: { id: true, credits: true },
+      });
+      await tx.creditLedger.create({
+        data: {
+          accountId,
+          delta: -amount,
+          balanceAfter,
+          reason,
+          bookingId: refs?.bookingId,
+          invoiceId: refs?.invoiceId,
+        },
+      });
+      return updated;
     });
+  }
+
+  /**
+   * Solde de crédits + historique récent (grand livre) d'un compte.
+   * Réservé aux membres actifs du compte (isolation multi-tenant).
+   */
+  async creditLedger(userId: string, accountId: string, limit = 10) {
+    await this.requireMembership(userId, accountId);
+    const [account, entries] = await this.prisma.$transaction([
+      this.prisma.account.findUniqueOrThrow({
+        where: { id: accountId },
+        select: { credits: true },
+      }),
+      this.prisma.creditLedger.findMany({
+        where: { accountId },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+    ]);
+    return { balance: account.credits, entries };
   }
 
   private async generateUniqueSlug(name: string): Promise<string> {

@@ -36,11 +36,6 @@ export class InvoicesController {
     return this.invoices.findOne(id, account.id);
   }
 
-  @Get(':id/pdf')
-  getPdf(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
-    return this.invoices.getPdf(id, account.id);
-  }
-
   @Post()
   @UseGuards(AccountRolesGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)

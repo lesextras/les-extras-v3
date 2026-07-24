@@ -56,7 +56,7 @@ export default async function AdminFacturesPage() {
                     <TableHead>Montant</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>PDF</TableHead>
+                    <TableHead>Facture</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -79,13 +79,9 @@ export default async function AdminFacturesPage() {
                         {formatDate(inv.issuedAt ?? inv.createdAt)}
                       </TableCell>
                       <TableCell>
-                        {inv.pdfUrl ? (
-                          <a href={inv.pdfUrl} target="_blank" rel="noreferrer">
-                            <Button size="sm" variant="outline">Télécharger</Button>
-                          </a>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
+                        <a href={`/documents/facture/${inv.id}`} target="_blank" rel="noreferrer">
+                          <Button size="sm" variant="outline">Télécharger</Button>
+                        </a>
                       </TableCell>
                       <TableCell>
                         <InvoiceStatusActions invoiceId={inv.id} status={inv.status} />

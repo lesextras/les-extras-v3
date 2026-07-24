@@ -30,16 +30,40 @@ interface FinanceSummary {
   invoiceCount?: number;
 }
 
+interface CreditLedgerEntry {
+  id: string;
+  delta: number;
+  balanceAfter: number;
+  reason: string;
+  bookingId?: string | null;
+  invoiceId?: string | null;
+  createdAt: string;
+}
+
+interface CreditLedger {
+  balance: number;
+  entries: CreditLedgerEntry[];
+}
+
+const CREDIT_REASON_LABEL: Record<string, string> = {
+  ADMIN_TOPUP: "Rechargement (administration)",
+  ATELIER_BOOKING: "Réservation d'atelier",
+};
+
 export default async function FinancePage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
 
-  const [summary, invoices] = await Promise.all([
+  const [summary, invoices, ledger] = await Promise.all([
     fetchApi<FinanceSummary>(session, "/invoices/summary"),
     fetchApi<Invoice[]>(session, "/invoices?scope=account"),
+    isEstablishment
+      ? fetchApi<CreditLedger>(session, `/accounts/${session.account.id}/credit-ledger`)
+      : Promise.resolve({ data: undefined, error: undefined }),
   ]);
 
   const s = summary.data ?? {};
+  const credit = ledger.data;
 
   return (
     <div className="space-y-8">
@@ -63,6 +87,59 @@ export default async function FinancePage() {
         <StatCard label="Factures" value={s.invoiceCount ?? invoices.data?.length ?? 0} />
       </div>
 
+      {isEstablishment && credit ? (
+        <section className="space-y-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-lg font-semibold text-foreground">Crédits</h2>
+            <p className="text-sm text-muted-foreground">
+              Solde :{" "}
+              <span className="font-semibold text-foreground">{credit.balance} crédit(s)</span>
+            </p>
+          </div>
+          {credit.entries.length === 0 ? (
+            <EmptyState
+              title="Aucun mouvement"
+              description="L'historique de vos crédits apparaîtra ici après vos premières réservations."
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Motif</TableHead>
+                      <TableHead className="text-right">Variation</TableHead>
+                      <TableHead className="text-right">Solde</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {credit.entries.map((e) => (
+                      <TableRow key={e.id}>
+                        <TableCell className="text-muted-foreground">
+                          {formatDate(e.createdAt)}
+                        </TableCell>
+                        <TableCell>{CREDIT_REASON_LABEL[e.reason] ?? e.reason}</TableCell>
+                        <TableCell
+                          className={`text-right font-medium ${
+                            e.delta < 0 ? "text-destructive" : "text-emerald-600"
+                          }`}
+                        >
+                          {e.delta > 0 ? `+${e.delta}` : e.delta}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {e.balanceAfter}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+      ) : null}
+
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Factures</h2>
         {invoices.error ? (
@@ -82,7 +159,7 @@ export default async function FinancePage() {
                     <TableHead>Date</TableHead>
                     <TableHead>Montant</TableHead>
                     <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">PDF</TableHead>
+                    <TableHead className="text-right">Facture</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -99,15 +176,15 @@ export default async function FinancePage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {inv.pdfUrl ? (
-                          <Button asChild size="sm" variant="outline">
-                            <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer">
-                              Télécharger
-                            </a>
-                          </Button>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
+                        <Button asChild size="sm" variant="outline">
+                          <a
+                            href={`/documents/facture/${inv.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Télécharger la facture
+                          </a>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

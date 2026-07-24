@@ -2,11 +2,13 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Booking, BookingStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MailService } from '../common/mail/mail.service';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
 
@@ -22,9 +24,12 @@ const TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
 
 @Injectable()
 export class BookingsService {
+  private readonly logger = new Logger(BookingsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly mail: MailService,
   ) {}
 
   /**
@@ -109,6 +114,26 @@ export class BookingsService {
         body: `« ${label} » est désormais ${next}.`,
         link: `/dashboard/bookings/${id}`,
       });
+    }
+
+    // Email de confirmation à l'établissement réservant (n'échoue jamais la requête).
+    if (next === BookingStatus.CONFIRMED && booking.account?.ownerId) {
+      try {
+        const owner = await this.prisma.user.findUnique({
+          where: { id: booking.account.ownerId },
+          select: { email: true },
+        });
+        if (owner?.email) {
+          await this.mail.sendBookingConfirmation(owner.email, {
+            title: label,
+            date: updated.scheduledAt,
+          });
+        }
+      } catch (e) {
+        this.logger.warn(
+          `Email de confirmation de réservation non envoyé (${id}): ${(e as Error).message}`,
+        );
+      }
     }
 
     return updated;

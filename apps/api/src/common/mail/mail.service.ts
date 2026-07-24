@@ -96,4 +96,57 @@ export class MailService {
       ),
     );
   }
+
+  /** Confirmation d'une réservation (mission ou atelier) passée en CONFIRMED. */
+  async sendBookingConfirmation(
+    to: string,
+    data: { title: string; date?: string | Date | null },
+  ): Promise<void> {
+    const when = data.date
+      ? new Date(data.date).toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        })
+      : null;
+    const url = `${this.webUrl}/dashboard/bookings`;
+    await this.send(
+      to,
+      'Votre réservation est confirmée',
+      this.layout(
+        'Réservation confirmée ✅',
+        `Bonne nouvelle : la réservation <b>« ${data.title} »</b> est désormais <b>confirmée</b>.${
+          when ? ` Elle est programmée pour le <b>${when}</b>.` : ''
+        } Retrouvez tous les détails depuis votre tableau de bord.`,
+        { label: 'Voir mes réservations', url },
+      ),
+    );
+  }
+
+  /** Notification d'émission d'une facture (DRAFT -> ISSUED). */
+  async sendInvoiceIssued(
+    to: string,
+    data: { number: string; amount: string | number; url: string },
+  ): Promise<void> {
+    const amountNum =
+      typeof data.amount === 'string' ? Number(data.amount) : data.amount;
+    const amountLabel = Number.isNaN(amountNum)
+      ? String(data.amount)
+      : new Intl.NumberFormat('fr-FR', {
+          style: 'currency',
+          currency: 'EUR',
+        }).format(amountNum);
+    const url = data.url.startsWith('http')
+      ? data.url
+      : `${this.webUrl}${data.url}`;
+    await this.send(
+      to,
+      `Votre facture ${data.number}`,
+      this.layout(
+        'Nouvelle facture émise',
+        `La facture <b>${data.number}</b> d'un montant de <b>${amountLabel}</b> vient d'être émise. Vous pouvez la consulter et l'imprimer depuis le lien ci-dessous.`,
+        { label: 'Consulter la facture', url },
+      ),
+    );
+  }
 }

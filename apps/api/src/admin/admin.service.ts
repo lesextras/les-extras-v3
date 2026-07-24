@@ -1,8 +1,10 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import {
+  BookingStatus,
   FormationStatus,
   FormationType,
   InvitationStatus,
+  MissionStatus,
   Prisma,
   SessionStatus,
   UserStatus,
@@ -11,6 +13,7 @@ import * as bcrypt from 'bcryptjs';
 import { CreateUserDto, UpdateUserDto } from './dto/user-admin.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ConformiteService } from '../conformite/conformite.service';
 import { QueryUsersDto } from './dto/query-users.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
@@ -22,12 +25,29 @@ import {
   CreateSessionAdminDto,
 } from './dto/formation-admin.dto';
 
+/**
+ * Hypothèse d'économie moyenne réalisée sur une mission de renfort pourvue
+ * « en direct » via la plateforme, comparée au recours à une agence d'intérim.
+ * 250 € = estimation prudente de la marge d'agence + frais de gestion évités
+ * sur une mission courte. Constante volontairement simple et ajustable ; sert
+ * uniquement d'ordre de grandeur pédagogique dans les statistiques ROI.
+ */
+const AVG_INTERIM_SAVINGS_EUR = 250;
+
 @Injectable()
 export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly conformite: ConformiteService,
   ) {}
+
+  // --- Coffre-fort de conformité (agrégat plateforme) ---------------------
+
+  /** Complétude conformité agrégée de tous les comptes établissements. */
+  conformiteOverview() {
+    return this.conformite.summaryForAllEstablishments();
+  }
 
   // --- Utilisateurs -------------------------------------------------------
 
@@ -423,6 +443,21 @@ export class AdminService {
     });
   }
 
+  /** Met à jour le statut d'une réservation (back-office). */
+  async updateBookingStatus(id: string, status: BookingStatus) {
+    const booking = await this.prisma.booking.findUnique({ where: { id } });
+    if (!booking) throw new NotFoundException('Réservation introuvable.');
+    return this.prisma.booking.update({
+      where: { id },
+      data: { status },
+      include: {
+        account: { select: { id: true, name: true, type: true } },
+        mission: { select: { id: true, title: true } },
+        service: { select: { id: true, title: true } },
+      },
+    });
+  }
+
   // --- Factures (supervision) --------------------------------------------
 
   async listInvoices(query: { status?: string }) {
@@ -775,5 +810,96 @@ export class AdminService {
         this.prisma.formation.count(),
       ]);
     return { users, accounts, missions, services, bookings, invoices, categories, articles, formations };
+  }
+
+  /**
+   * Statistiques ROI & performance de la marketplace de renfort.
+   * Toutes les valeurs sont calculées à partir des données réelles (missions +
+   * bookings). Voir AVG_INTERIM_SAVINGS_EUR pour l'hypothèse d'économie.
+   */
+  async roiStats() {
+    // On ne charge que le nécessaire : statut + date de publication de chaque
+    // mission, et les bookings associés (date + statut) triés chronologiquement.
+    const missions = await this.prisma.reliefMission.findMany({
+      select: {
+        id: true,
+        status: true,
+        publishedAt: true,
+        bookings: {
+          select: { createdAt: true, status: true },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    // Prépare les 6 derniers mois glissants (mois courant inclus).
+    const now = new Date();
+    const monthsIndex: Record<string, number> = {};
+    const missionsPerMonth: { mois: string; count: number }[] = [];
+    for (let i = 5; i >= 0; i -= 1) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthsIndex[key] = missionsPerMonth.length;
+      missionsPerMonth.push({ mois: key, count: 0 });
+    }
+
+    // Une réservation « qui pourvoit » = statut CONFIRMED, IN_PROGRESS ou COMPLETED.
+    const COVERING: BookingStatus[] = [
+      BookingStatus.CONFIRMED,
+      BookingStatus.IN_PROGRESS,
+      BookingStatus.COMPLETED,
+    ];
+
+    let publishedMissions = 0;
+    let filledMissions = 0;
+    let delaySumHours = 0;
+    let delayCount = 0;
+
+    for (const m of missions) {
+      // Null-safety : sans publishedAt, la mission n'est pas considérée publiée.
+      if (!m.publishedAt) continue;
+      publishedMissions += 1;
+
+      // Répartition mensuelle (uniquement dans la fenêtre des 6 mois).
+      const key = `${m.publishedAt.getFullYear()}-${String(m.publishedAt.getMonth() + 1).padStart(2, '0')}`;
+      if (key in monthsIndex) missionsPerMonth[monthsIndex[key]].count += 1;
+
+      // Mission pourvue : statut FILLED OU au moins un booking « couvrant ».
+      const hasCovering = m.bookings.some((b) => COVERING.includes(b.status));
+      if (m.status === MissionStatus.FILLED || hasCovering) filledMissions += 1;
+
+      // Délai jusqu'à la 1ère candidature (bookings triés asc → [0] = 1er).
+      if (m.bookings.length > 0) {
+        const diffH = (m.bookings[0].createdAt.getTime() - m.publishedAt.getTime()) / 3_600_000;
+        if (diffH >= 0) {
+          delaySumHours += diffH;
+          delayCount += 1;
+        }
+      }
+    }
+
+    const coverageRate =
+      publishedMissions > 0 ? Math.round((filledMissions / publishedMissions) * 1000) / 10 : 0;
+    const avgFirstApplicationHours =
+      delayCount > 0 ? Math.round((delaySumHours / delayCount) * 10) / 10 : null;
+
+    // Répartition des bookings par statut (tous statuts, sur toute la base).
+    const grouped = await this.prisma.booking.groupBy({
+      by: ['status'],
+      _count: { _all: true },
+    });
+    const bookingsByStatus: Record<string, number> = {};
+    for (const g of grouped) bookingsByStatus[g.status] = g._count._all;
+
+    return {
+      coverageRate, // %
+      publishedMissions,
+      filledMissions,
+      avgFirstApplicationHours, // heures (null si aucune candidature)
+      estimatedSavingsEur: filledMissions * AVG_INTERIM_SAVINGS_EUR,
+      savingsPerMissionEur: AVG_INTERIM_SAVINGS_EUR,
+      missionsPerMonth,
+      bookingsByStatus,
+    };
   }
 }

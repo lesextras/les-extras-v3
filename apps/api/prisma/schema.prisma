@@ -50,6 +50,7 @@ model User {
   sessionsTrained  FormationSession[] @relation("SessionTrainer")
   inscriptions     Inscription[]      @relation("InscriptionLearner")
   tutoratsGiven    Tutorat[]          @relation("TutoratTutor")
+  complianceDocuments ComplianceDocument[]
 
   @@index([email])
   @@index([role, status])
@@ -102,11 +103,13 @@ model Account {
   services        Service[]        @relation("ServiceAccount")
   bookings        Booking[]
   invoices        Invoice[]
+  creditLedger    CreditLedger[]
   shifts          Shift[]
   formationsOwned  Formation[]        @relation("FormationOwner")
   sessionsHosted   FormationSession[] @relation("SessionHost")
   inscriptionsPaid Inscription[]      @relation("InscriptionPayer")
   qualiopiProofs   QualiopiProof[]    @relation("QualiopiOf")
+  complianceDocuments ComplianceDocument[]
 
   @@index([type])
   @@index([slug])
@@ -201,6 +204,8 @@ model Service {
   maxParticipants Int?
   publicTarget String?       // "Adultes en situation de handicap"
   price       Decimal?       @db.Decimal(10, 2)
+  /// Coût en crédits d'une réservation de cet atelier par un établissement.
+  creditCost  Int            @default(1)
   city        String?
   status      ServiceStatus  @default(DRAFT)
   createdAt   DateTime       @default(now())
@@ -309,6 +314,22 @@ model Invoice {
   createdAt  DateTime      @default(now())
 
   inscription Inscription? @relation("InscriptionInvoice")
+
+  @@index([accountId])
+}
+
+/// GRAND LIVRE DES CRÉDITS : trace chaque variation de solde d'un compte
+/// (top-up admin, débit à la réservation d'un atelier). Immuable, append-only.
+model CreditLedger {
+  id           String   @id @default(cuid())
+  accountId    String
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  delta        Int
+  balanceAfter Int
+  reason       String
+  bookingId    String?
+  invoiceId    String?
+  createdAt    DateTime @default(now())
 
   @@index([accountId])
 }
@@ -764,4 +785,51 @@ enum TutoratStatus {
 enum JalonStatus {
   PENDING
   DONE
+}
+
+// ---------------------------------------------------------------------------
+// COFFRE-FORT DE CONFORMITE — pieces obligatoires des intervenants (P3)
+// CNI, casier judiciaire (B3), permis, IBAN/RIB, attestation auto-entrepreneur...
+// Suivi par compte (etablissement ou freelance) avec statut + echeance.
+// ---------------------------------------------------------------------------
+
+/// Piece justificative reglementaire suivie pour un intervenant dans un compte.
+model ComplianceDocument {
+  id         String            @id @default(cuid())
+  /// Le professionnel concerne par la piece.
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Le compte qui suit le dossier (etablissement ou freelance).
+  accountId  String
+  account    Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type       ComplianceDocType
+  label      String?
+  status     ComplianceStatus  @default(MISSING)
+  fileUrl    String?
+  issuedAt   DateTime?
+  expiresAt  DateTime?
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([userId, accountId, type])
+  @@index([accountId])
+  @@index([userId])
+}
+
+enum ComplianceDocType {
+  IDENTITY
+  CRIMINAL_RECORD
+  DRIVING_LICENSE
+  IBAN
+  AUTOENTREPRENEUR
+  VITALE
+  OTHER
+}
+
+enum ComplianceStatus {
+  MISSING
+  PENDING
+  VALID
+  EXPIRED
 }

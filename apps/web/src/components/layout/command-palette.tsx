@@ -20,6 +20,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Mes formations", href: "/dashboard/formations", group: "Freelance", keywords: "formation session émargement apprenants attestation" },
   { label: "SOS Renfort", href: "/dashboard/renforts", group: "Établissement", keywords: "remplacement besoin publier" },
   { label: "Formations", href: "/marketplace/formations", group: "Établissement", keywords: "catalogue certifiant qualiopi inscription salariés" },
+  { label: "Coffre-fort conformité", href: "/dashboard/conformite", group: "Établissement", keywords: "conformité pièces obligatoires cni casier judiciaire permis iban urssaf échéance renouvellement" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat" },
   { label: "Factures & revenus", href: "/dashboard/finance", group: "Navigation", keywords: "facture argent paiement" },
@@ -36,6 +37,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Admin — Réservations", href: "/admin/reservations", group: "Admin", keywords: "bookings" },
   { label: "Admin — Educat’heures", href: "/admin/educatheures", group: "Admin", keywords: "banque heures crédits" },
   { label: "Admin — Centre de formation", href: "/admin/formations", group: "Admin", keywords: "formations qualiopi certifiant interne" },
+  { label: "Admin — Coffre-fort conformité", href: "/admin/conformite", group: "Admin", keywords: "conformité pièces obligatoires intervenants cni casier permis iban urssaf établissement" },
   { label: "Admin — Factures", href: "/admin/factures", group: "Admin", keywords: "invoices" },
   { label: "Admin — Statistiques", href: "/admin/statistiques", group: "Admin", keywords: "kpi" },
 ];

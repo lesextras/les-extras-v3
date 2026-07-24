@@ -43,6 +43,12 @@ export class AccountsController {
     return this.accounts.findOne(user.id, id);
   }
 
+  /** Solde de crédits + grand livre récent — réservé aux membres du compte. */
+  @Get(':id/credit-ledger')
+  creditLedger(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.accounts.creditLedger(user.id, id);
+  }
+
   @Patch(':id')
   update(
     @CurrentUser() user: RequestUser,

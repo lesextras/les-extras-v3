@@ -2,15 +2,22 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InvoiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../common/mail/mail.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 
 @Injectable()
 export class InvoicesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(InvoicesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+  ) {}
 
   /** Numéro séquentiel annuel : INV-YYYY-00001. */
   private async nextNumber(): Promise<string> {
@@ -33,7 +40,26 @@ export class InvoicesService {
   async findOne(id: string, accountId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
-      include: { booking: true },
+      include: {
+        booking: {
+          include: {
+            service: { select: { title: true } },
+            mission: { select: { title: true } },
+          },
+        },
+        account: {
+          select: {
+            id: true,
+            name: true,
+            legalName: true,
+            address: true,
+            city: true,
+            postalCode: true,
+            siret: true,
+            owner: { select: { email: true } },
+          },
+        },
+      },
     });
     if (!invoice) throw new NotFoundException('Facture introuvable.');
     if (invoice.accountId !== accountId) {
@@ -64,20 +90,39 @@ export class InvoicesService {
     });
   }
 
-  /** Émet la facture : DRAFT -> ISSUED, pose issuedAt + lien PDF (stub). */
+  /**
+   * Émet la facture : DRAFT -> ISSUED, pose issuedAt. Notifie le compte par email
+   * avec le lien vers le document imprimable (n'échoue jamais la requête).
+   */
   async issue(id: string, accountId: string) {
     const invoice = await this.findOne(id, accountId);
     if (invoice.status !== InvoiceStatus.DRAFT) {
       throw new BadRequestException('Seule une facture en brouillon peut être émise.');
     }
-    return this.prisma.invoice.update({
+    const updated = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: InvoiceStatus.ISSUED,
         issuedAt: new Date(),
-        pdfUrl: this.pdfUrl(invoice.number),
       },
     });
+
+    try {
+      const to = invoice.account?.owner?.email;
+      if (to) {
+        await this.mail.sendInvoiceIssued(to, {
+          number: invoice.number,
+          amount: updated.amount.toString(),
+          url: `/documents/facture/${id}`,
+        });
+      }
+    } catch (e) {
+      this.logger.warn(
+        `Email d'émission de facture non envoyé (${id}): ${(e as Error).message}`,
+      );
+    }
+
+    return updated;
   }
 
   async markPaid(id: string, accountId: string) {
@@ -100,16 +145,5 @@ export class InvoicesService {
       where: { id },
       data: { status: InvoiceStatus.CANCELLED },
     });
-  }
-
-  /** Stub PDF : renvoie l'URL du document (génération réelle branchée ailleurs). */
-  async getPdf(id: string, accountId: string) {
-    const invoice = await this.findOne(id, accountId);
-    const url = invoice.pdfUrl ?? this.pdfUrl(invoice.number);
-    return { number: invoice.number, url };
-  }
-
-  private pdfUrl(number: string): string {
-    return `/invoices/pdf/${number}.pdf`;
   }
 }

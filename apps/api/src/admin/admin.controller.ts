@@ -25,6 +25,7 @@ import {
   UpdateFormationAdminDto,
   CreateSessionAdminDto,
 } from './dto/formation-admin.dto';
+import { UpdateBookingStatusDto } from './dto/booking-admin.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -34,6 +35,18 @@ export class AdminController {
   @Get('stats')
   stats() {
     return this.admin.stats();
+  }
+
+  @Get('stats/roi')
+  roiStats() {
+    return this.admin.roiStats();
+  }
+
+  // --- Coffre-fort de conformité (vue plateforme) -------------------------
+
+  @Get('conformite')
+  conformite() {
+    return this.admin.conformiteOverview();
   }
 
   // --- Utilisateurs -------------------------------------------------------
@@ -173,6 +186,11 @@ export class AdminController {
   @Get('bookings')
   listBookings(@Query('status') status?: string) {
     return this.admin.listBookings({ status });
+  }
+
+  @Patch('bookings/:id/status')
+  updateBookingStatus(@Param('id') id: string, @Body() dto: UpdateBookingStatusDto) {
+    return this.admin.updateBookingStatus(id, dto.status);
   }
 
   // --- Factures -----------------------------------------------------------
