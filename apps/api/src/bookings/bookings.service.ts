@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailService } from '../common/mail/mail.service';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
+import { CreateTimeEntryDto } from './dto/time-entry.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
 
 /** Transitions autorisées du cycle de vie d'un booking. */
@@ -209,5 +210,80 @@ export class BookingsService {
     return this.transition(id, accountId, BookingStatus.CANCELLED, {
       cancelReason: dto.reason,
     });
+  }
+
+  // ── Pointage : temps travaillé (freelance déclare, établissement valide) ─────
+
+  /** Minutes d'un créneau (0 si non terminé). */
+  private durationMinutes(startedAt: Date, endedAt: Date | null): number {
+    if (!endedAt) return 0;
+    return Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 60000));
+  }
+
+  /** Liste des créneaux d'un booking + totaux, pour les deux parties. */
+  async listTimeEntries(bookingId: string, accountId: string) {
+    const booking = await this.loadForAccount(bookingId, accountId);
+    const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
+    const side =
+      accountId === booking.accountId
+        ? 'freelance'
+        : accountId === offerAccountId
+          ? 'establishment'
+          : 'none';
+    const entries = await this.prisma.timeEntry.findMany({
+      where: { bookingId },
+      orderBy: { startedAt: 'asc' },
+    });
+    let validatedMinutes = 0;
+    let pendingMinutes = 0;
+    for (const e of entries) {
+      const mins = this.durationMinutes(e.startedAt, e.endedAt);
+      if (e.status === 'VALIDATED') validatedMinutes += mins;
+      else if (e.status === 'PENDING') pendingMinutes += mins;
+    }
+    return { entries, side, validatedMinutes, pendingMinutes };
+  }
+
+  /** Le freelance (titulaire du booking) déclare un créneau travaillé. */
+  async addTimeEntry(bookingId: string, accountId: string, dto: CreateTimeEntryDto) {
+    const booking = await this.loadForAccount(bookingId, accountId);
+    if (accountId !== booking.accountId) {
+      throw new ForbiddenException("Seul l'intervenant peut déclarer son temps de travail.");
+    }
+    const started = new Date(dto.startedAt);
+    const ended = dto.endedAt ? new Date(dto.endedAt) : null;
+    if (ended && ended.getTime() < started.getTime()) {
+      throw new BadRequestException('La fin doit être postérieure au début.');
+    }
+    return this.prisma.timeEntry.create({
+      data: { bookingId, startedAt: started, endedAt: ended, note: dto.note },
+    });
+  }
+
+  /** L'établissement valide ou refuse un créneau. */
+  async reviewTimeEntry(entryId: string, accountId: string, status: 'VALIDATED' | 'REJECTED') {
+    const entry = await this.prisma.timeEntry.findUnique({ where: { id: entryId } });
+    if (!entry) throw new NotFoundException('Créneau introuvable.');
+    const booking = await this.loadForAccount(entry.bookingId, accountId);
+    const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
+    if (accountId !== offerAccountId) {
+      throw new ForbiddenException("Seul l'établissement peut valider le temps de travail.");
+    }
+    return this.prisma.timeEntry.update({ where: { id: entryId }, data: { status } });
+  }
+
+  /** Le freelance supprime un de ses créneaux tant qu'il n'est pas validé. */
+  async removeTimeEntry(entryId: string, accountId: string) {
+    const entry = await this.prisma.timeEntry.findUnique({ where: { id: entryId } });
+    if (!entry) throw new NotFoundException('Créneau introuvable.');
+    const booking = await this.loadForAccount(entry.bookingId, accountId);
+    if (accountId !== booking.accountId) {
+      throw new ForbiddenException("Seul l'intervenant peut supprimer son créneau.");
+    }
+    if (entry.status === 'VALIDATED') {
+      throw new BadRequestException('Un créneau validé ne peut plus être supprimé.');
+    }
+    await this.prisma.timeEntry.delete({ where: { id: entryId } });
+    return { deleted: true };
   }
 }

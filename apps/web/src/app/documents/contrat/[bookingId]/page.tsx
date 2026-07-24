@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { ContractDocument, type ContractData } from "../../../_shared/ContractDocument";
+import { TimeSheet } from "../../../_shared/TimeSheet";
 
 export const metadata: Metadata = { title: "Contrat de mission" };
 
@@ -16,5 +17,10 @@ export default async function ContratPage({ params }: { params: { bookingId: str
   const side: "freelance" | "establishment" | "none" =
     activeId === c.accountId ? "freelance" : activeId === c.mission?.account?.id ? "establishment" : "none";
 
-  return <ContractDocument contract={c} side={side} />;
+  return (
+    <>
+      <ContractDocument contract={c} side={side} />
+      {side !== "none" ? <TimeSheet bookingId={c.id} accountId={activeId} /> : null}
+    </>
+  );
 }

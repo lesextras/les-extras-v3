@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +16,7 @@ import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { BookingsService } from './bookings.service';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
+import { CreateTimeEntryDto, ReviewTimeEntryDto } from './dto/time-entry.dto';
 
 interface AccountCtx {
   id: string;
@@ -74,5 +77,38 @@ export class BookingsController {
     @Body() dto: CancelBookingDto,
   ) {
     return this.bookings.cancel(id, account.id, dto);
+  }
+
+  // ── Pointage (temps travaillé) ─────────────────────────────────────────────
+  /** Liste des créneaux + totaux (les deux parties). */
+  @Get(':id/time-entries')
+  listTimeEntries(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.bookings.listTimeEntries(id, account.id);
+  }
+
+  /** Le freelance déclare un créneau travaillé. */
+  @Post(':id/time-entries')
+  addTimeEntry(
+    @Param('id') id: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto: CreateTimeEntryDto,
+  ) {
+    return this.bookings.addTimeEntry(id, account.id, dto);
+  }
+
+  /** L'établissement valide / refuse un créneau. */
+  @Patch('time-entries/:entryId')
+  reviewTimeEntry(
+    @Param('entryId') entryId: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto: ReviewTimeEntryDto,
+  ) {
+    return this.bookings.reviewTimeEntry(entryId, account.id, dto.status);
+  }
+
+  /** Le freelance supprime un créneau non validé. */
+  @Delete('time-entries/:entryId')
+  removeTimeEntry(@Param('entryId') entryId: string, @CurrentAccount() account: AccountCtx) {
+    return this.bookings.removeTimeEntry(entryId, account.id);
   }
 }

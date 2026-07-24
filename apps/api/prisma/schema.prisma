@@ -244,10 +244,34 @@ model Booking {
   review        Review?
   invoice       Invoice?
   shift         Shift?
+  timeEntries   TimeEntry[]
 
   @@index([status])
   @@index([missionId])
   @@index([serviceId])
+}
+
+/// Pointage : temps travaillé déclaré par le freelance sur une mission (Booking),
+/// validé par l'établissement. Repris de Symfony (entité Period). Base de la facturation.
+model TimeEntry {
+  id        String          @id @default(cuid())
+  bookingId String
+  booking   Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  startedAt DateTime
+  endedAt   DateTime?
+  note      String?
+  status    TimeEntryStatus @default(PENDING)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+enum TimeEntryStatus {
+  PENDING
+  VALIDATED
+  REJECTED
 }
 
 // ---------------------------------------------------------------------------
