@@ -1,0 +1,94 @@
+import 'reflect-metadata';
+import { ACCOUNT_ROLES_KEY } from './decorators/account-roles.decorator';
+import { MissionsController } from '../missions/missions.controller';
+import { ServicesController } from '../services/services.controller';
+import { MembershipsController } from '../memberships/memberships.controller';
+import { InvitationsController } from '../invitations/invitations.controller';
+import { InvoicesController } from '../invoices/invoices.controller';
+import { ConformiteController } from '../conformite/conformite.controller';
+
+/**
+ * Matrice d'autorisation « par profil » — vérifie que chaque endpoint sensible
+ * porte bien les rôles de compte (AccountRole) attendus via @AccountRoles.
+ * C'est le contrat RBAC entre Direction (OWNER), Administrateur (ADMIN),
+ * Responsable (MANAGER) et Salarié (MEMBER).
+ */
+function rolesOf(ctrl: any, method: string): string[] | undefined {
+  return Reflect.getMetadata(ACCOUNT_ROLES_KEY, ctrl.prototype[method]);
+}
+
+const MANAGER = ['OWNER', 'ADMIN', 'MANAGER'];
+const ADMINS = ['OWNER', 'ADMIN'];
+
+describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
+  describe('Missions (SOS Renfort)', () => {
+    it('créer / éditer / publier / élargir : Direction, Administrateur, Responsable', () => {
+      for (const m of ['create', 'update', 'publish', 'broaden']) {
+        expect(rolesOf(MissionsController, m)).toEqual(MANAGER);
+      }
+    });
+    it('supprimer : Direction + Administrateur uniquement', () => {
+      expect(rolesOf(MissionsController, 'remove')).toEqual(ADMINS);
+    });
+    it('candidater / consulter : aucun rôle requis (tout membre actif)', () => {
+      expect(rolesOf(MissionsController, 'candidate')).toBeUndefined();
+      expect(rolesOf(MissionsController, 'findOne')).toBeUndefined();
+    });
+  });
+
+  describe('Ateliers / services', () => {
+    it('créer / éditer : Direction, Administrateur, Responsable', () => {
+      expect(rolesOf(ServicesController, 'create')).toEqual(MANAGER);
+      expect(rolesOf(ServicesController, 'update')).toEqual(MANAGER);
+    });
+    it('supprimer : Direction + Administrateur', () => {
+      expect(rolesOf(ServicesController, 'remove')).toEqual(ADMINS);
+    });
+    it('réserver : aucun rôle requis (tout membre actif)', () => {
+      expect(rolesOf(ServicesController, 'book')).toBeUndefined();
+    });
+  });
+
+  describe('Membres & invitations (gouvernance du compte)', () => {
+    it('changer rôle / suspendre / réactiver / retirer un membre : Direction + Administrateur', () => {
+      for (const m of ['changeRole', 'suspend', 'reactivate', 'remove']) {
+        expect(rolesOf(MembershipsController, m)).toEqual(ADMINS);
+      }
+    });
+    it('lister les membres : tout membre actif', () => {
+      expect(rolesOf(MembershipsController, 'list')).toBeUndefined();
+    });
+    it('inviter / renvoyer / révoquer : Direction + Administrateur', () => {
+      for (const m of ['create', 'resend', 'revoke', 'list']) {
+        expect(rolesOf(InvitationsController, m)).toEqual(ADMINS);
+      }
+    });
+    it('accepter une invitation : tout utilisateur connecté', () => {
+      expect(rolesOf(InvitationsController, 'accept')).toBeUndefined();
+    });
+  });
+
+  describe('Facturation', () => {
+    it('créer / émettre / marquer payée : Direction, Administrateur, Responsable', () => {
+      for (const m of ['create', 'issue', 'pay']) {
+        expect(rolesOf(InvoicesController, m)).toEqual(MANAGER);
+      }
+    });
+    it('annuler : Direction + Administrateur', () => {
+      expect(rolesOf(InvoicesController, 'cancel')).toEqual(ADMINS);
+    });
+    it('consulter : tout membre actif', () => {
+      expect(rolesOf(InvoicesController, 'findAll')).toBeUndefined();
+    });
+  });
+
+  describe('Coffre-fort de conformité', () => {
+    it('éditer une pièce : Direction, Administrateur, Responsable', () => {
+      expect(rolesOf(ConformiteController, 'upsertDocument')).toEqual(MANAGER);
+    });
+    it('consulter la complétude : tout membre actif', () => {
+      expect(rolesOf(ConformiteController, 'summary')).toBeUndefined();
+      expect(rolesOf(ConformiteController, 'listForUser')).toBeUndefined();
+    });
+  });
+});
