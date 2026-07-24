@@ -112,9 +112,27 @@ model Account {
   inscriptionsPaid Inscription[]      @relation("InscriptionPayer")
   qualiopiProofs   QualiopiProof[]    @relation("QualiopiOf")
   complianceDocuments ComplianceDocument[]
+  orgUnits         OrgUnit[]
 
   @@index([type])
   @@index([slug])
+}
+
+/// Unité / service d'un établissement (repris de Symfony : Service/unités).
+/// Ex. « Internat », « Pôle jour », « SESSAD ». Rattache membres et missions.
+model OrgUnit {
+  id          String        @id @default(cuid())
+  accountId   String
+  account     Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  memberships Membership[]
+  missions    ReliefMission[]
+
+  @@index([accountId])
 }
 
 /// SOUS-COMPTE : rattachement d'un User à un Account avec un rôle interne.
@@ -126,6 +144,8 @@ model Membership {
   account    Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
   role       AccountRole   @default(MEMBER)
   status     MembershipStatus @default(ACTIVE)
+  orgUnitId  String?
+  orgUnit    OrgUnit?      @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
@@ -178,6 +198,8 @@ model ReliefMission {
   headcount    Int            @default(1)
   emergency    Boolean        @default(false)  // mission urgente (renfort de dernière minute)
   attachmentUrl String?                        // pièce jointe (fiche de poste, planning…)
+  orgUnitId    String?                          // unité/service concerné
+  orgUnit      OrgUnit?       @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   status       MissionStatus  @default(DRAFT)
   /// Diffusion en cascade : SALARIES -> RESERVED -> PUBLIC
   visibility   MissionVisibility @default(PUBLIC)

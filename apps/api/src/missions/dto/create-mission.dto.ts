@@ -79,4 +79,8 @@ export class CreateMissionDto {
   @IsOptional()
   @IsString()
   attachmentUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  orgUnitId?: string;
 }

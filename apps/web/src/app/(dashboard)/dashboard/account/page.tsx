@@ -7,6 +7,7 @@ import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle } from "../../../_shared/ui";
 import { ProfileForm } from "../../../_shared/ProfileForm";
 import { CvManager } from "../../../_shared/CvManager";
+import { UnitsManager } from "../../../_shared/UnitsManager";
 import { MembersManager } from "../../../_shared/MembersManager";
 import { InviteMemberModal } from "../../../_shared/modals/InviteMemberModal";
 import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
@@ -92,6 +93,11 @@ export default async function AccountPage() {
             <p className="text-xs text-muted-foreground">
               Seuls les propriétaires et administrateurs peuvent modifier l'équipe.
             </p>
+          ) : null}
+          {!isFreelance ? (
+            <div className="pt-2">
+              <UnitsManager accountId={accountId} canManage={canManage} />
+            </div>
           ) : null}
         </TabsContent>
 

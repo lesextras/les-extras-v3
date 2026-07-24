@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { MembershipsModule } from './memberships/memberships.module';
+import { UnitsModule } from './units/units.module';
 import { InvitationsModule } from './invitations/invitations.module';
 
 // --- Marketplace (Backend-Marketplace : dossiers séparés) ---
@@ -48,6 +49,7 @@ import { ConformiteModule } from './conformite/conformite.module';
     UsersModule,
     AccountsModule,
     MembershipsModule,
+    UnitsModule,
     InvitationsModule,
 
     // Marketplace.

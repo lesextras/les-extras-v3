@@ -55,6 +55,7 @@ export function RenfortModal({
   const [category, setCategory] = useState("RENFORT");
   const [visibility, setVisibility] = useState("SALARIES");
   const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
+  const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
   const usingDb = dbCats.length > 0;
 
   useEffect(() => {
@@ -65,6 +66,11 @@ export function RenfortModal({
           setDbCats(rows);
           setCategory(rows[0].id);
         }
+      })
+      .catch(() => {});
+    apiRequest<{ id: string; name: string }[]>("/units", { accountId })
+      .then((rows) => {
+        if (Array.isArray(rows)) setUnits(rows);
       })
       .catch(() => {});
   }, [open, accountId]);
@@ -89,6 +95,7 @@ export function RenfortModal({
       headcount: fd.get("headcount") ? Number(fd.get("headcount")) : 1,
       emergency: fd.get("emergency") === "on",
       attachmentUrl: String(fd.get("attachmentUrl") || "") || undefined,
+      orgUnitId: String(fd.get("orgUnitId") || "") || undefined,
     };
     try {
       const created = await apiRequest<{ id: string }>("/missions", { method: "POST", body, accountId });
@@ -189,6 +196,23 @@ export function RenfortModal({
               <Input id="headcount" name="headcount" type="number" min={1} defaultValue={1} />
             </Field>
           </div>
+          {units.length > 0 ? (
+            <Field label="Unité / service concerné" htmlFor="orgUnitId">
+              <select
+                id="orgUnitId"
+                name="orgUnitId"
+                defaultValue=""
+                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">— Toute la structure —</option>
+                {units.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          ) : null}
           <Field label="Pièce jointe (lien vers un document)" htmlFor="attachmentUrl">
             <Input
               id="attachmentUrl"

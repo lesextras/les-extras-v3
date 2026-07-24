@@ -22,6 +22,8 @@ export class MembershipsService {
         role: true,
         status: true,
         createdAt: true,
+        orgUnitId: true,
+        orgUnit: { select: { id: true, name: true } },
         user: {
           select: {
             id: true,
