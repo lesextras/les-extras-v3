@@ -51,6 +51,8 @@ model User {
   inscriptions     Inscription[]      @relation("InscriptionLearner")
   tutoratsGiven    Tutorat[]          @relation("TutoratTutor")
   complianceDocuments ComplianceDocument[]
+  qualifications   Qualification[]
+  experiences      Experience[]
 
   @@index([email])
   @@index([role, status])
@@ -837,4 +839,49 @@ enum ComplianceStatus {
   PENDING
   VALID
   EXPIRED
+}
+
+/// Diplôme / formation du CV freelance (repris de Symfony : Qualification).
+model Qualification {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String   // Intitulé du diplôme / de la formation
+  organization String?  // École, organisme
+  year         String?  // Année d'obtention (texte libre)
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Expérience professionnelle du CV freelance (repris de Symfony : Experience).
+model Experience {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String   // Poste / structure
+  year        String?  // Période (texte libre)
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Demande de contact publique (repris de Symfony : Contact / NewRequest).
+model ContactRequest {
+  id        String              @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  type      String?             // Sujet / type de demande
+  content   String
+  status    ContactRequestStatus @default(NEW)
+  createdAt DateTime            @default(now())
+
+  @@index([status, createdAt])
+}
+
+enum ContactRequestStatus {
+  NEW
+  HANDLED
 }

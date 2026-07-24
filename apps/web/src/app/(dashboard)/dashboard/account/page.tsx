@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle } from "../../../_shared/ui";
 import { ProfileForm } from "../../../_shared/ProfileForm";
+import { CvManager } from "../../../_shared/CvManager";
 import { MembersManager } from "../../../_shared/MembersManager";
 import { InviteMemberModal } from "../../../_shared/modals/InviteMemberModal";
 import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
@@ -59,6 +60,15 @@ export default async function AccountPage() {
             isFreelance={isFreelance}
             accountId={accountId}
           />
+          {isFreelance ? (
+            <div className="mt-6 space-y-2">
+              <SectionTitle title="Mon CV" />
+              <p className="text-sm text-muted-foreground">
+                Diplômes et expériences visibles par les établissements qui consultent votre profil.
+              </p>
+              <CvManager accountId={accountId} />
+            </div>
+          ) : null}
         </TabsContent>
 
         <TabsContent value="team" className="space-y-4">

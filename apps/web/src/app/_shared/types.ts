@@ -124,6 +124,8 @@ export interface Mission {
   postalCode?: string | null;
   hourlyRate?: string | number | null;
   headcount: number;
+  emergency?: boolean;
+  attachmentUrl?: string | null;
   status: MissionStatus;
   visibility: MissionVisibility;
   publishedAt?: string | null;

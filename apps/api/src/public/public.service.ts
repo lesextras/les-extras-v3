@@ -6,7 +6,9 @@ import {
   ServiceStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../common/mail/mail.service';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
+import { CreateContactDto } from './dto/create-contact.dto';
 
 /**
  * Champs exposés publiquement (aucune donnée sensible : pas d'ownerId, pas de
@@ -29,7 +31,34 @@ const PUBLIC_SELECT = {
 
 @Injectable()
 export class PublicService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+  ) {}
+
+  /** Enregistre une demande de contact publique et notifie l'équipe par e-mail. */
+  async createContact(dto: CreateContactDto) {
+    const request = await this.prisma.contactRequest.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone,
+        type: dto.type,
+        content: dto.content,
+      },
+    });
+    // Notification best-effort : ne bloque pas la réponse à l'utilisateur.
+    this.mail
+      .sendContactNotification({
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone,
+        type: dto.type,
+        content: dto.content,
+      })
+      .catch(() => undefined);
+    return { ok: true, id: request.id };
+  }
 
   /** Construit le filtre de type (atelier / formation / all). */
   private typeWhere(type?: string): Prisma.ServiceWhereInput {
@@ -119,6 +148,8 @@ export class PublicService {
         postalCode: true,
         hourlyRate: true,
         headcount: true,
+        emergency: true,
+        attachmentUrl: true,
         status: true,
         categoryRef: { select: { id: true, title: true } },
         account: { select: { id: true, name: true, city: true, logoUrl: true } },

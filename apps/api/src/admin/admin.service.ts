@@ -930,4 +930,31 @@ export class AdminService {
       bookingsByStatus,
     };
   }
+
+  // ── Demandes de contact (formulaire public) ────────────────────────────────
+  /** Liste des demandes de contact, optionnellement filtrées par statut. */
+  async listContacts(status?: string) {
+    const where =
+      status === 'NEW' || status === 'HANDLED'
+        ? { status: status as 'NEW' | 'HANDLED' }
+        : {};
+    const items = await this.prisma.contactRequest.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+    const newCount = await this.prisma.contactRequest.count({ where: { status: 'NEW' } });
+    return { items, newCount };
+  }
+
+  /** Marque une demande de contact comme traitée / à traiter. */
+  async setContactStatus(id: string, status?: string) {
+    const next = status === 'HANDLED' ? 'HANDLED' : 'NEW';
+    const found = await this.prisma.contactRequest.findUnique({ where: { id } });
+    if (!found) throw new NotFoundException('Demande introuvable.');
+    return this.prisma.contactRequest.update({
+      where: { id },
+      data: { status: next as 'NEW' | 'HANDLED' },
+    });
+  }
 }

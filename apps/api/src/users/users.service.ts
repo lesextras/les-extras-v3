@@ -16,6 +16,8 @@ const USER_PUBLIC_SELECT = {
   onboardingStep: true,
   createdAt: true,
   profile: true,
+  qualifications: { orderBy: { createdAt: 'desc' } },
+  experiences: { orderBy: { createdAt: 'desc' } },
 } satisfies Prisma.UserSelect;
 
 @Injectable()
@@ -73,5 +75,46 @@ export class UsersService {
       data: { onboardingStep: step },
       select: { id: true, onboardingStep: true },
     });
+  }
+
+  // ── CV : diplômes & expériences (freelance) ────────────────────────────────
+  listCv(userId: string) {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: userId },
+        select: {
+          qualifications: { orderBy: { createdAt: 'desc' } },
+          experiences: { orderBy: { createdAt: 'desc' } },
+        },
+      });
+  }
+
+  addQualification(
+    userId: string,
+    data: { title: string; organization?: string; year?: string },
+  ) {
+    return this.prisma.qualification.create({
+      data: { userId, title: data.title, organization: data.organization, year: data.year },
+    });
+  }
+
+  async removeQualification(userId: string, id: string) {
+    // deleteMany borne la suppression au propriétaire (pas de fuite inter-comptes).
+    const res = await this.prisma.qualification.deleteMany({ where: { id, userId } });
+    return { deleted: res.count };
+  }
+
+  addExperience(
+    userId: string,
+    data: { title: string; year?: string; description?: string },
+  ) {
+    return this.prisma.experience.create({
+      data: { userId, title: data.title, year: data.year, description: data.description },
+    });
+  }
+
+  async removeExperience(userId: string, id: string) {
+    const res = await this.prisma.experience.deleteMany({ where: { id, userId } });
+    return { deleted: res.count };
   }
 }

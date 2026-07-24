@@ -25,6 +25,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             <Link href="/marketplace" className="hover:text-foreground">
               Marketplace
             </Link>
+            <Link href="/contact" className="hover:text-foreground">
+              Contact
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
@@ -54,6 +57,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </Link>
             <Link href="/marketplace" className="hover:text-foreground">
               Missions
+            </Link>
+            <Link href="/contact" className="hover:text-foreground">
+              Contact
             </Link>
           </div>
         </div>

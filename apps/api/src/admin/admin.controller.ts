@@ -289,4 +289,15 @@ export class AdminController {
   createFormationSession(@Param('id') id: string, @Body() dto: CreateSessionAdminDto) {
     return this.admin.createFormationSession(id, dto);
   }
+
+  // ── Demandes de contact (formulaire public) ──────────────────────────────
+  @Get('contacts')
+  listContacts(@Query('status') status?: string) {
+    return this.admin.listContacts(status);
+  }
+
+  @Patch('contacts/:id')
+  setContactStatus(@Param('id') id: string, @Body() body: { status?: string }) {
+    return this.admin.setContactStatus(id, body?.status);
+  }
 }

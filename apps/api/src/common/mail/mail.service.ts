@@ -217,4 +217,27 @@ export class MailService {
       ),
     );
   }
+
+  /** Notifie l'équipe ADéPA d'une nouvelle demande de contact (formulaire public). */
+  async sendContactNotification(data: {
+    name: string;
+    email: string;
+    phone?: string | null;
+    type?: string | null;
+    content: string;
+  }): Promise<void> {
+    const to = this.config.get<string>('CONTACT_INBOX_EMAIL') ?? 'contact@adepa77.fr';
+    await this.send(
+      to,
+      `Nouvelle demande de contact — ${data.name}`,
+      this.layout(
+        'Nouvelle demande de contact',
+        `<b>${data.name}</b> vous a écrit via le site.
+        <br><br><b>Email :</b> ${data.email}
+        ${data.phone ? `<br><b>Téléphone :</b> ${data.phone}` : ''}
+        ${data.type ? `<br><b>Sujet :</b> ${data.type}` : ''}
+        <br><br><b>Message :</b><br>${data.content.replace(/</g, '&lt;').replace(/\n/g, '<br>')}`,
+      ),
+    );
+  }
 }

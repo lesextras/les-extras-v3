@@ -84,6 +84,17 @@ export default async function MissionDetailPage({ params }: { params: { id: stri
                 ) : null}
               </dl>
 
+              {mission.attachmentUrl ? (
+                <a
+                  href={mission.attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                >
+                  📎 Pièce jointe de la mission
+                </a>
+              ) : null}
+
               {canAccept ? (
                 <div className="space-y-2">
                   <AcceptMissionButton missionId={mission.id} accountId={session.account.id} />

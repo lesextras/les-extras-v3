@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
+import { CreateContactDto } from './dto/create-contact.dto';
 
 /**
  * Vitrine PUBLIQUE, sans authentification (aucun JwtAuthGuard).
@@ -26,5 +27,11 @@ export class PublicController {
   @Get('missions/:id')
   missionDetail(@Param('id') id: string) {
     return this.publicService.missionDetail(id);
+  }
+
+  /** POST /public/contact — dépôt d'une demande de contact depuis le site public. */
+  @Post('contact')
+  contact(@Body() dto: CreateContactDto) {
+    return this.publicService.createContact(dto);
   }
 }
