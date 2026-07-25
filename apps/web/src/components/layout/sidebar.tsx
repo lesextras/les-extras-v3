@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getNavForRole } from '@/lib/nav';
 import type { NavRole } from '@/lib/types';
@@ -15,9 +17,14 @@ export interface SidebarProps {
   className?: string;
 }
 
+/** Clé de persistance des sections repliées (par rôle). */
+const STORAGE_PREFIX = 'lx.sidebar.collapsed.';
+
 /**
  * Navigation latérale, contenu piloté par le rôle (FREELANCE / ESTABLISHMENT /
- * ADMIN). Surligne l'entrée active en fonction du pathname.
+ * ADMIN). Les sections titrées sont des accordéons dépliables : la section
+ * contenant la page courante s'ouvre automatiquement, et l'état plié/déplié est
+ * mémorisé d'une visite à l'autre.
  */
 export function Sidebar({ role, onNavigate, className }: SidebarProps) {
   const pathname = usePathname();
@@ -25,6 +32,47 @@ export function Sidebar({ role, onNavigate, className }: SidebarProps) {
 
   const isActive = (href: string) =>
     pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(`${href}/`));
+
+  /** Titre de la section qui contient la page courante (pour l'ouvrir d'office). */
+  const activeSectionTitle = useMemo(() => {
+    const match = sections.find((s) => s.title && s.items.some((it) => isActive(it.href)));
+    return match?.title ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, role]);
+
+  // Rendu serveur et premier rendu client identiques : tout est ouvert.
+  // La restauration depuis localStorage se fait après montage (pas de mismatch).
+  const [collapsed, setCollapsed] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_PREFIX + role);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setCollapsed(parsed.filter((t) => typeof t === 'string'));
+      }
+    } catch {
+      /* stockage indisponible : on reste tout déplié */
+    }
+  }, [role]);
+
+  // La section de la page courante ne doit jamais rester repliée.
+  useEffect(() => {
+    if (!activeSectionTitle) return;
+    setCollapsed((prev) => (prev.includes(activeSectionTitle) ? prev.filter((t) => t !== activeSectionTitle) : prev));
+  }, [activeSectionTitle]);
+
+  function toggleSection(title: string) {
+    setCollapsed((prev) => {
+      const next = prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title];
+      try {
+        window.localStorage.setItem(STORAGE_PREFIX + role, JSON.stringify(next));
+      } catch {
+        /* stockage indisponible : l'état reste valable pour la session */
+      }
+      return next;
+    });
+  }
 
   return (
     <aside
@@ -37,53 +85,83 @@ export function Sidebar({ role, onNavigate, className }: SidebarProps) {
         <Logo />
       </div>
 
-      <nav className="flex-1 space-y-6 overflow-y-auto p-4">
-        {sections.map((section, i) => (
-          <div key={section.title ?? i} className="space-y-1">
-            {section.title && (
-              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {section.title}
-              </p>
-            )}
-            {section.items.map((item) => {
-              const active = isActive(item.href);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onNavigate}
-                  title={item.hint ?? item.label}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                    active
-                      ? 'bg-primary-soft font-semibold text-accent-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.08)] before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-primary'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-                  )}
+      <nav className="flex-1 space-y-4 overflow-y-auto p-4">
+        {sections.map((section, i) => {
+          const open = !section.title || !collapsed.includes(section.title);
+          const sectionId = `nav-section-${i}`;
+          /** Une section repliée signale par une pastille qu'elle contient la page courante. */
+          const hasActive = section.items.some((it) => isActive(it.href));
+
+          return (
+            <div key={section.title ?? i} className="space-y-1">
+              {section.title && (
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.title!)}
+                  aria-expanded={open}
+                  aria-controls={sectionId}
+                  className="group flex w-full items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 >
-                  <Icon
+                  <ChevronDown
+                    aria-hidden="true"
                     className={cn(
-                      'size-[18px] shrink-0 transition-colors',
-                      active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+                      'size-3.5 shrink-0 transition-transform duration-200',
+                      open ? 'rotate-0' : '-rotate-90',
                     )}
                   />
-                  <span className="truncate">{item.label}</span>
-                  {item.badge && (
-                    <Badge variant="secondary" className="ml-auto">
-                      {item.badge}
-                    </Badge>
+                  <span className="truncate">{section.title}</span>
+                  {!open && hasActive && (
+                    <span aria-hidden="true" className="ml-auto size-1.5 shrink-0 rounded-full bg-primary" />
                   )}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+                </button>
+              )}
+
+              <div
+                id={sectionId}
+                hidden={!open}
+                className={cn('space-y-1', section.title && 'pl-1')}
+              >
+                {section.items.map((item) => {
+                  const active = isActive(item.href);
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onNavigate}
+                      title={item.hint ?? item.label}
+                      aria-current={active ? 'page' : undefined}
+                      className={cn(
+                        'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                        active
+                          ? 'bg-primary-soft font-semibold text-accent-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.08)] before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-primary'
+                          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          'size-[18px] shrink-0 transition-colors',
+                          active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+                        )}
+                      />
+                      <span className="truncate">{item.label}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="ml-auto">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </nav>
 
       <div className="border-t border-border p-4">
         <div className="rounded-xl bg-primary-soft/60 p-3">
-          <p className="text-xs font-semibold text-accent-foreground">Besoin d’aide ?</p>
+          <p className="text-xs font-semibold text-accent-foreground">Besoin d’aide ?</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Notre équipe vous accompagne du lundi au vendredi.
           </p>
