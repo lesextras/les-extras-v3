@@ -11,6 +11,8 @@ import {
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto, UpdateUserDto } from './dto/user-admin.dto';
+import { randomBytes } from 'crypto';
+import { ImportListingDto } from './dto/import-catalog.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConformiteService } from '../conformite/conformite.service';
@@ -1194,4 +1196,119 @@ export class AdminService {
       pages: Math.max(1, Math.ceil(total / perPage)),
     };
   }
+  /**
+   * Import du catalogue historique (fiches les-extras.fr).
+   * Idempotent : la clé `sourceId` évite les doublons — réimporter met à jour.
+   * Crée au besoin le compte intervenant et la catégorie.
+   */
+  async importCatalog(listings: ImportListingDto[]) {
+    const bilan = { crees: 0, misAJour: 0, intervenants: 0, erreurs: [] as string[] };
+
+    for (const l of listings) {
+      try {
+        // ── Intervenant : compte FREELANCE réutilisé ou créé ──────────────
+        let vendorAccountId: string | null = null;
+        const nomIntervenant = (l.vendorName || '').trim();
+        if (nomIntervenant) {
+          const existant = await this.prisma.account.findFirst({
+            where: { name: nomIntervenant, type: 'FREELANCE' },
+            select: { id: true },
+          });
+          if (existant) {
+            vendorAccountId = existant.id;
+          } else {
+            const base = nomIntervenant
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '') || 'intervenant';
+            const email = `${base}@intervenants.les-extras.fr`;
+            const user = await this.prisma.user.upsert({
+              where: { email },
+              update: {},
+              create: {
+                email,
+                password: randomBytes(24).toString('hex'),
+                firstName: nomIntervenant,
+                role: 'USER',
+                status: 'PENDING',
+              },
+              select: { id: true },
+            });
+            const compte = await this.prisma.account.create({
+              data: {
+                name: nomIntervenant,
+                slug: `${base}-${randomBytes(3).toString('hex')}`,
+                type: 'FREELANCE',
+                ownerId: user.id,
+                memberships: { create: { userId: user.id, role: 'OWNER', status: 'ACTIVE' } },
+              },
+              select: { id: true },
+            });
+            vendorAccountId = compte.id;
+            bilan.intervenants += 1;
+          }
+        }
+        if (!vendorAccountId) {
+          bilan.erreurs.push(`${l.title} : intervenant manquant`);
+          continue;
+        }
+
+        // ── Catégorie (créée si absente) ──────────────────────────────────
+        let categoryId: string | undefined;
+        if (l.categoryTitle) {
+          const existante = await this.prisma.category.findFirst({
+            where: { title: l.categoryTitle },
+            select: { id: true },
+          });
+          categoryId =
+            existante?.id ??
+            (
+              await this.prisma.category.create({
+                data: { title: l.categoryTitle, type: 'service' },
+                select: { id: true },
+              })
+            ).id;
+        }
+
+        const donnees = {
+          accountId: vendorAccountId,
+          title: l.title,
+          description: l.description,
+          categoryId,
+          price: l.price,
+          durationMinutes: l.durationMinutes,
+          duration: l.durationMinutes ? `${Math.round(l.durationMinutes / 60)}h` : undefined,
+          maxParticipants: l.maxParticipants,
+          publicTargets: l.publicTargets ?? [],
+          material: l.material,
+          city: l.city,
+          images: l.images ?? [],
+          objectives: l.objectives,
+          methodology: l.methodology,
+          evaluation: l.evaluation,
+          status: (l.publish ? 'PUBLISHED' : 'DRAFT') as 'PUBLISHED' | 'DRAFT',
+          verified: true,
+          sourceId: l.sourceId,
+        };
+
+        const deja = await this.prisma.service.findFirst({
+          where: { sourceId: l.sourceId },
+          select: { id: true },
+        });
+        if (deja) {
+          await this.prisma.service.update({ where: { id: deja.id }, data: donnees });
+          bilan.misAJour += 1;
+        } else {
+          await this.prisma.service.create({ data: donnees });
+          bilan.crees += 1;
+        }
+      } catch (e) {
+        bilan.erreurs.push(`${l.title} : ${(e as Error).message.slice(0, 120)}`);
+      }
+    }
+    return bilan;
+  }
+
 }

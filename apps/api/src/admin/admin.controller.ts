@@ -16,6 +16,7 @@ import type { RequestUser } from '../common/types/request-context';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminService } from './admin.service';
 import { QueryUsersDto } from './dto/query-users.dto';
+import { ImportCatalogDto } from './dto/import-catalog.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
 import { UpdateAccountDto } from './dto/account-admin.dto';
@@ -37,6 +38,12 @@ export class AdminController {
   @Get('stats')
   stats() {
     return this.admin.stats();
+  }
+
+  /** Import du catalogue historique (fiches les-extras.fr) — idempotent. */
+  @Post('import/catalog')
+  importCatalog(@Body() dto: ImportCatalogDto) {
+    return this.admin.importCatalog(dto.listings);
   }
 
   @Get('desk')

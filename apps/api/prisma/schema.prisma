@@ -265,6 +265,8 @@ model Service {
   verified    Boolean        @default(false)
   /// Compteur de consultations de la fiche.
   views       Int            @default(0)
+  /// Identifiant d'origine (import du catalogue historique) : clé d'idempotence.
+  sourceId    String?        @unique
   price       Decimal?       @db.Decimal(10, 2)
   /// Coût en crédits d'une réservation de cet atelier par un établissement.
   creditCost  Int            @default(1)
