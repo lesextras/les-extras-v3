@@ -38,6 +38,7 @@ interface Funnel {
     demandes: number;
     devis: number;
     reservations: number;
+    reservationsTotales: number;
     demandesPubliques: number;
     tauxVueVersDemande: number | null;
     tauxDemandeVersDevis: number | null;
@@ -89,9 +90,9 @@ export default async function TunnelPage() {
           accent="warning"
         />
         <StatCard
-          label="Réservations"
+          label="Réservations issues d'un devis"
           value={g.reservations}
-          hint={`${pourcent(g.tauxDevisVersReservation)} des devis`}
+          hint={`${pourcent(g.tauxDevisVersReservation)} des devis · ${g.reservationsTotales} réservations toutes origines`}
           icon={<CalendarCheck />}
           accent="terracotta"
         />

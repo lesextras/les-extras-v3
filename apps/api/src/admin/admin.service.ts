@@ -1033,7 +1033,7 @@ export class AdminService {
    * pour lire la conversion à chaque étage : vue → demande → devis → réservation.
    */
   async funnel() {
-    const [services, formations, devis, reservations, demandesPubliques] =
+    const [services, formations, devis, reservations, reservationsTotales, demandesPubliques] =
       await this.prisma.$transaction([
         this.prisma.service.findMany({
           where: { status: 'PUBLISHED' },
@@ -1055,6 +1055,10 @@ export class AdminService {
           select: { id: true, slug: true, title: true, views: true, requestsCount: true },
         }),
         this.prisma.quote.count(),
+        // Seules les réservations réellement issues d'un devis appartiennent au
+        // tunnel : compter toutes les réservations (dont celles créées à la main
+        // ou par SOS Renfort) produisait des taux absurdes, supérieurs à 100 %.
+        this.prisma.quote.count({ where: { bookingId: { not: null } } }),
         this.prisma.booking.count(),
         this.prisma.contactRequest.count(),
       ]);
@@ -1071,6 +1075,8 @@ export class AdminService {
         demandes,
         devis,
         reservations,
+        /** Réservations toutes origines confondues (SOS Renfort inclus). */
+        reservationsTotales,
         demandesPubliques,
         tauxVueVersDemande: taux(demandes, vues),
         tauxDemandeVersDevis: taux(devis, demandes),
