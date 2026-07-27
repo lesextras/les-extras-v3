@@ -158,4 +158,73 @@ export class PublicService {
     if (!mission) throw new NotFoundException('Mission introuvable.');
     return mission;
   }
+  /**
+   * Fiche publique d'un intervenant : identité, présentation, réputation et
+   * toutes ses interventions publiées. Équivalent des pages « host » du site
+   * actuel — c'est la preuve sociale du catalogue.
+   */
+  async vendorDetail(accountId: string) {
+    const account = await this.prisma.account.findFirst({
+      where: { id: accountId, type: 'FREELANCE' },
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        logoUrl: true,
+        createdAt: true,
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profile: { select: { job: true, bio: true, skills: true, city: true } },
+          },
+        },
+      },
+    });
+    if (!account) throw new NotFoundException('Intervenant introuvable.');
+
+    const [services, reviews] = await this.prisma.$transaction([
+      this.prisma.service.findMany({
+        where: { accountId, status: 'PUBLISHED' },
+        orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          category: true,
+          price: true,
+          city: true,
+          duration: true,
+          durationMinutes: true,
+          maxParticipants: true,
+          images: true,
+          featured: true,
+          verified: true,
+        },
+      }),
+      account.owner?.id
+        ? this.prisma.review.findMany({
+            where: { targetId: account.owner.id },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+            select: {
+              id: true,
+              rating: true,
+              comment: true,
+              createdAt: true,
+              author: { select: { firstName: true, lastName: true } },
+            },
+          })
+        : this.prisma.review.findMany({ where: { id: '' } }),
+    ]);
+
+    const rating =
+      reviews.length > 0
+        ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
+        : null;
+
+    return { ...account, services, reviews, rating };
+  }
+
 }

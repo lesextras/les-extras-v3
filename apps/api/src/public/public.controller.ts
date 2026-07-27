@@ -29,6 +29,12 @@ export class PublicController {
     return this.publicService.missionDetail(id);
   }
 
+  /** GET /public/vendors/:id — fiche publique d'un intervenant. */
+  @Get('vendors/:id')
+  vendorDetail(@Param('id') id: string) {
+    return this.publicService.vendorDetail(id);
+  }
+
   /** POST /public/contact — dépôt d'une demande de contact depuis le site public. */
   @Post('contact')
   contact(@Body() dto: CreateContactDto) {
