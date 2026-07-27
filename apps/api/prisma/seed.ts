@@ -591,10 +591,10 @@ async function main() {
   });
 
   // ==========================================================================
-  // 8) AVIS BIDIRECTIONNELS (1 avis par booking ET par auteur)
+  // 8) AVIS (1 avis par booking terminé)
   // ==========================================================================
   await prisma.review.upsert({
-    where: { bookingId_authorId: { bookingId: 'seed-bk-2', authorId: mecsOwner.id } },
+    where: { bookingId: 'seed-bk-2' },
     update: {},
     create: {
       id: 'seed-rev-1',
@@ -606,7 +606,7 @@ async function main() {
     },
   });
   await prisma.review.upsert({
-    where: { bookingId_authorId: { bookingId: 'seed-bk-4', authorId: amina.id } },
+    where: { bookingId: 'seed-bk-4' },
     update: {},
     create: {
       id: 'seed-rev-2',
