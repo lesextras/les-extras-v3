@@ -26,8 +26,8 @@ interface AdminStats {
 
 interface DeskData {
   urgentMissions?: { id: string; title: string; startDate: string; city?: string | null; emergency?: boolean; account?: { name?: string | null } | null }[];
-  pendingUsers?: { id: string; email: string; role: string; createdAt: string; profile?: { firstName?: string | null; lastName?: string | null } | null }[];
-  expiringDocuments?: { id: string; type: string; label?: string | null; expiresAt?: string | null; user?: { email?: string; profile?: { firstName?: string | null; lastName?: string | null } | null } | null }[];
+  pendingUsers?: { id: string; email: string; role: string; createdAt: string; firstName?: string | null; lastName?: string | null }[];
+  expiringDocuments?: { id: string; type: string; label?: string | null; expiresAt?: string | null; user?: { email?: string; firstName?: string | null; lastName?: string | null } | null }[];
   counts?: {
     urgentMissions?: number;
     pendingUsers?: number;

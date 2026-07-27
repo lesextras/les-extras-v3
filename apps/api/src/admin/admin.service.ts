@@ -980,7 +980,7 @@ export class AdminService {
           take: 10,
           select: {
             id: true, email: true, role: true, createdAt: true,
-            profile: { select: { firstName: true, lastName: true } },
+            firstName: true, lastName: true,
           },
         }),
         // Documents de conformité expirés ou qui expirent sous 30 jours.
@@ -990,7 +990,7 @@ export class AdminService {
           take: 10,
           select: {
             id: true, type: true, label: true, expiresAt: true, accountId: true,
-            user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } },
+            user: { select: { email: true, firstName: true, lastName: true } },
           },
         }),
         // Heures déclarées en attente de validation.
