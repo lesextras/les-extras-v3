@@ -24,6 +24,8 @@ import {
   Megaphone,
   Target,
   Star,
+  ScrollText,
+  ShieldQuestion,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
