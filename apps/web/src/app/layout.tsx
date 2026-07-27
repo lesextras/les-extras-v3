@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { Providers } from '@/components/providers';
+import { PwaRegister } from './_shared/PwaRegister';
+import { InstallPrompt } from './_shared/InstallPrompt';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,12 +38,33 @@ export const metadata: Metadata = {
     siteName: 'LES EXTRAS',
   },
   robots: { index: true, follow: true },
+  // PWA — l'app doit être installable sur l'écran d'accueil (SOS Renfort se
+  // consulte au téléphone). Manifeste servi par src/app/manifest.ts.
+  applicationName: 'Les Extras',
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'Les Extras',
+    statusBarStyle: 'default',
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: '#0D7377',
   width: 'device-width',
   initialScale: 1,
+  // Plein écran sous les encoches (iPhone) en mode standalone.
+  viewportFit: 'cover',
+  // Le zoom reste autorisé : accessibilité avant tout.
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -54,7 +77,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Aller au contenu
         </a>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <PwaRegister />
+          <InstallPrompt />
+        </Providers>
       </body>
     </html>
   );

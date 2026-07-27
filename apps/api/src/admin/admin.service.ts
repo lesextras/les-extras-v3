@@ -34,6 +34,17 @@ import {
  */
 const AVG_INTERIM_SAVINGS_EUR = 250;
 
+/** Pagination par défaut / maximale du journal d'audit. */
+const AUDIT_DEFAULT_PER_PAGE = 50;
+const AUDIT_MAX_PER_PAGE = 200;
+
+/** Convertit un paramètre de date en Date valide, ou `undefined` si inexploitable. */
+function parseAuditDate(value?: string): Date | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -985,5 +996,65 @@ export class AdminService {
       where: { id },
       data: { status: next as 'NEW' | 'HANDLED' },
     });
+  }
+
+  // --- Journal d'audit (traçabilité) --------------------------------------
+
+  /**
+   * Journal d'audit paginé pour le back-office, du plus récent au plus ancien.
+   * Lecture directe via Prisma (le journal est append-only : aucune écriture ici).
+   */
+  async listAudit(filters: {
+    action?: string;
+    entityType?: string;
+    entityId?: string;
+    actorId?: string;
+    from?: string;
+    to?: string;
+    page?: number;
+    perPage?: number;
+  }) {
+    const page = Math.max(1, Math.trunc(Number(filters.page) || 1));
+    const perPage = Math.min(
+      AUDIT_MAX_PER_PAGE,
+      Math.max(1, Math.trunc(Number(filters.perPage) || AUDIT_DEFAULT_PER_PAGE)),
+    );
+
+    const where: Prisma.AuditLogWhereInput = {};
+    if (filters.action) where.action = filters.action;
+    if (filters.entityType) where.entityType = filters.entityType;
+    if (filters.entityId) where.entityId = filters.entityId;
+    if (filters.actorId) where.actorId = filters.actorId;
+
+    const from = parseAuditDate(filters.from);
+    const to = parseAuditDate(filters.to);
+    if (from || to) {
+      where.createdAt = {
+        ...(from ? { gte: from } : {}),
+        ...(to ? { lte: to } : {}),
+      };
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * perPage,
+        take: perPage,
+        include: {
+          actor: { select: { id: true, email: true, firstName: true, lastName: true } },
+          account: { select: { id: true, name: true, type: true } },
+        },
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      perPage,
+      pages: Math.max(1, Math.ceil(total / perPage)),
+    };
   }
 }
