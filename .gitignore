@@ -7,3 +7,7 @@ dist
 *.log
 coverage
 generated
+
+# Caches de compilation incrementale : versionnes, ils font croire a tsc que
+# le build est deja fait et le conteneur se retrouve sans dist/.
+*.tsbuildinfo
