@@ -9,7 +9,7 @@ import { PageHeader, SectionTitle, ErrorState } from "../../../_shared/ui";
 import { CheckoutButton } from "../../../_shared/BillingActions";
 import { formatDate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Abonnement & crédits · Les Extras" };
+export const metadata: Metadata = { title: "Abonnement & crédits" };
 
 interface Pack {
   id: string;

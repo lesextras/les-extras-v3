@@ -72,6 +72,9 @@ export class BookingsService {
    */
   async getContract(id: string, accountId: string) {
     await this.loadForAccount(id, accountId); // contrôle d'accès (participant)
+    const PARTIE_ETABLISSEMENT = {
+      select: { id: true, name: true, legalName: true, siret: true, city: true, address: true },
+    };
     const booking = await this.prisma.booking.findUnique({
       where: { id },
       include: {
@@ -79,7 +82,17 @@ export class BookingsService {
           select: {
             id: true, title: true, description: true, job: true, startDate: true, endDate: true,
             startTime: true, endTime: true, city: true, postalCode: true, hourlyRate: true, headcount: true,
-            account: { select: { id: true, name: true, legalName: true, siret: true, city: true, address: true } },
+            account: PARTIE_ETABLISSEMENT,
+          },
+        },
+        // Un atelier réservé donne lieu au même contrat qu'une mission : c'est
+        // le produit d'appel, il ne peut pas être le seul à ne pas être
+        // contractualisable.
+        service: {
+          select: {
+            id: true, title: true, description: true, duration: true, durationMinutes: true,
+            maxParticipants: true, city: true, price: true,
+            account: PARTIE_ETABLISSEMENT,
           },
         },
         account: {
@@ -90,8 +103,33 @@ export class BookingsService {
         },
       },
     });
-    if (!booking || !booking.mission) throw new NotFoundException('Contrat introuvable.');
-    return booking;
+    if (!booking) throw new NotFoundException('Contrat introuvable.');
+    if (booking.mission) return booking;
+    if (!booking.service) throw new NotFoundException('Contrat introuvable.');
+
+    // Vue unifiée : le document contractuel parle de « prestation », que
+    // l'origine soit une mission de renfort ou un atelier du catalogue.
+    const s = booking.service;
+    const debut = booking.scheduledAt ?? new Date();
+    return {
+      ...booking,
+      kind: 'service' as const,
+      mission: {
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        job: null,
+        startDate: debut,
+        endDate: null,
+        startTime: null,
+        endTime: null,
+        city: s.city,
+        postalCode: null,
+        hourlyRate: s.price,
+        headcount: s.maxParticipants ?? 1,
+        account: s.account,
+      },
+    };
   }
 
   /**

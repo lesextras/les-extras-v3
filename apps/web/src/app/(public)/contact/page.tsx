@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ContactForm } from "../../_shared/ContactForm";
 
 export const metadata: Metadata = {
-  title: "Contact · Les Extras",
+  title: "Contact",
   description:
     "Contactez l'équipe ADéPA — Les Extras, la marketplace du renfort médico-social. Établissements, intervenants, formations : écrivez-nous.",
 };

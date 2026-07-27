@@ -14,7 +14,7 @@ import {
 } from "../../_shared/format";
 import type { Mission, Service } from "../../_shared/types";
 
-export const metadata: Metadata = { title: "Administration · Les Extras" };
+export const metadata: Metadata = { title: "Administration" };
 
 interface AdminStats {
   users?: number;

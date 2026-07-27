@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { fetchPublic } from "../../../_shared/server";
 import { MISSION_CATEGORY_LABEL, formatDate, formatRate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Mission de renfort · Les Extras" };
+export const metadata: Metadata = { title: "Mission de renfort" };
 
 interface PublicMission {
   id: string;

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { CatalogView } from "../_catalog";
 
 export const metadata: Metadata = {
-  title: "Ateliers · Les Extras",
+  title: "Ateliers",
   description:
     "Découvrez le catalogue public des ateliers, médiations, art-thérapie et actions de prévention proposés sur Les Extras.",
 };

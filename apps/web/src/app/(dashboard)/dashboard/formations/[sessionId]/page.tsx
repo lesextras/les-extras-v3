@@ -9,7 +9,7 @@ import { EmargementSheet } from "../../../../_shared/EmargementSheet";
 import { InscribeButton } from "../../../../_shared/InscribeButton";
 import { InscriptionDeliverables } from "../../../../_shared/InscriptionDeliverables";
 
-export const metadata: Metadata = { title: "Session · Les Extras" };
+export const metadata: Metadata = { title: "Session" };
 
 const FINANCING_LABEL: Record<string, string> = {
   ESTABLISHMENT: "Établissement",

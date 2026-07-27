@@ -7,7 +7,7 @@ import { PageHeader, SectionTitle } from "../../../_shared/ui";
 import { PrivacyPanel } from "../../../_shared/PrivacyPanel";
 
 export const metadata: Metadata = {
-  title: "Mes données personnelles · Les Extras",
+  title: "Mes données personnelles",
 };
 
 /** Les trois droits que cette page rend concrets, expliqués sans jargon. */

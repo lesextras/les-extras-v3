@@ -21,7 +21,7 @@ import {
   initials,
 } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Atelier · Les Extras" };
+export const metadata: Metadata = { title: "Atelier" };
 
 interface FaqItem { question: string; answer: string }
 interface PriceExtra { label: string; price: number | string }

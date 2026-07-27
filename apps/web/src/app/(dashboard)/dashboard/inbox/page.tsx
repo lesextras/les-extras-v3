@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { fullName, initials, timeAgo, formatDateTime } from "../../../_shared/format";
 import type { Conversation, Message } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "Messagerie · Les Extras" };
+export const metadata: Metadata = { title: "Messagerie" };
 
 export default async function InboxPage({
   searchParams,

@@ -10,7 +10,7 @@ import { PageHeader, SectionTitle, ErrorState } from "../../../../_shared/ui";
 import { QuoteEditor, QuoteDecision, type QuoteLine } from "../../../../_shared/QuotePanel";
 import { formatDate } from "../../../../_shared/format";
 
-export const metadata: Metadata = { title: "Devis · Les Extras" };
+export const metadata: Metadata = { title: "Devis" };
 
 interface Quote {
   id: string;

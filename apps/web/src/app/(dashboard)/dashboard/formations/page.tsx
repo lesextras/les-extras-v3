@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormationInterneModal } from "../../../_shared/FormationInterneModal";
 
-export const metadata: Metadata = { title: "Formations · Les Extras" };
+export const metadata: Metadata = { title: "Formations" };
 
 interface FormationRow {
   id: string;

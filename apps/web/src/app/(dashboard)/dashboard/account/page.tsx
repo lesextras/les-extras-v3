@@ -13,7 +13,7 @@ import { InviteMemberModal } from "../../../_shared/modals/InviteMemberModal";
 import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
 import type { Invitation, Membership, Profile } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "Mon compte · Les Extras" };
+export const metadata: Metadata = { title: "Mon compte" };
 
 export default async function AccountPage() {
   const session = await requireSession();

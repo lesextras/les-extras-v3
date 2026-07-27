@@ -53,7 +53,7 @@ export async function generateMetadata({
   const { data } = await fetchPublic<Vendor>(`/public/vendors/${params.id}`);
   const nom = fullName(data?.owner?.firstName, data?.owner?.lastName) || data?.name;
   return {
-    title: nom ? `${nom} · Les Extras` : "Intervenant · Les Extras",
+    title: nom || "Intervenant",
     description: data?.owner?.profile?.bio?.slice(0, 160),
   };
 }

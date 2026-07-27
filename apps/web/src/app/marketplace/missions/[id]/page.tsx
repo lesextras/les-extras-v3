@@ -16,7 +16,7 @@ import {
 } from "../../../_shared/format";
 import type { Mission } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "Mission · Les Extras" };
+export const metadata: Metadata = { title: "Mission" };
 
 export default async function MissionDetailPage({ params }: { params: { id: string } }) {
   const session = await requireSession();

@@ -10,7 +10,7 @@ import { ReviewForm } from "../../../_shared/ReviewForm";
 import { ReviewList, type ReviewSummary } from "../../../_shared/ReviewList";
 import { formatDate, fullName } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Avis · Les Extras" };
+export const metadata: Metadata = { title: "Avis" };
 
 interface PendingReview {
   bookingId: string;

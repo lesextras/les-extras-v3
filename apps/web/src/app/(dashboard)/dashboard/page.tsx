@@ -12,7 +12,7 @@ import { RenfortModal } from "../../_shared/modals/RenfortModal";
 import { fullName } from "../../_shared/format";
 import type { Booking, Mission, Service } from "../../_shared/types";
 
-export const metadata: Metadata = { title: "Tableau de bord · Les Extras" };
+export const metadata: Metadata = { title: "Tableau de bord" };
 
 interface DashStats {
   activeMissions?: number;

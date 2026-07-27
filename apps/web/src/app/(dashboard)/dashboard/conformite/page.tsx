@@ -10,7 +10,7 @@ import {
   type ComplianceMember,
 } from "../../../_shared/ComplianceManager";
 
-export const metadata: Metadata = { title: "Coffre-fort conformité · Les Extras" };
+export const metadata: Metadata = { title: "Coffre-fort conformité" };
 
 interface Summary {
   accountId: string;

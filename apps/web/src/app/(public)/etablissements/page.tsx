@@ -9,7 +9,7 @@ import { PageHeader, EmptyState } from "../../_shared/ui";
 import { initials } from "../../_shared/format";
 import type { Account } from "../../_shared/types";
 
-export const metadata: Metadata = { title: "Établissements · Les Extras" };
+export const metadata: Metadata = { title: "Établissements" };
 
 interface EstablishmentCard extends Account {
   openMissions?: number;

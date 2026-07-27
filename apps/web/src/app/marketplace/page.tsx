@@ -8,7 +8,7 @@ import { MarketplaceFilters } from "../_shared/MarketplaceFilters";
 import { MissionCard, ServiceCard } from "../_shared/cards";
 import type { Mission, Service } from "../_shared/types";
 
-export const metadata: Metadata = { title: "Marketplace · Les Extras" };
+export const metadata: Metadata = { title: "Marketplace" };
 
 // Enums valides côté API (évite un 400 quand une catégorie ne correspond pas).
 const MISSION_CATEGORIES = new Set([

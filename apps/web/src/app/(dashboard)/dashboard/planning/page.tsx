@@ -7,7 +7,7 @@ import { PageHeader, ErrorState } from "../../../_shared/ui";
 import { PlanningBoard, type Shift, type Availability } from "../../../_shared/PlanningBoard";
 import type { Mission } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "Planning · Les Extras" };
+export const metadata: Metadata = { title: "Planning" };
 
 /** Début de la semaine courante (lundi 00:00). */
 function startOfWeek(d = new Date()): Date {

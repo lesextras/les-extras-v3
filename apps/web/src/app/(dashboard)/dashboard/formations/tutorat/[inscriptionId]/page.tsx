@@ -5,7 +5,7 @@ import { requireSession, fetchApi } from "../../../../../_shared/server";
 import { PageHeader } from "../../../../../_shared/ui";
 import { TutoratPanel } from "../../../../../_shared/TutoratPanel";
 
-export const metadata: Metadata = { title: "Tutorat · Les Extras" };
+export const metadata: Metadata = { title: "Tutorat" };
 
 interface TutoratData {
   id: string;

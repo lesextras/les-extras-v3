@@ -12,7 +12,7 @@ import { BookingActions } from "../../../_shared/BookingActions";
 import { SERVICE_STATUS_LABEL } from "../../../_shared/format";
 import type { Booking, Service } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "Mes ateliers · Les Extras" };
+export const metadata: Metadata = { title: "Mes ateliers" };
 
 export default async function AteliersPage() {
   const session = await requireSession();

@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = { title: "Formations certifiantes · Les Extras" };
+export const metadata: Metadata = { title: "Formations certifiantes" };
 
 interface FormationItem {
   id: string;

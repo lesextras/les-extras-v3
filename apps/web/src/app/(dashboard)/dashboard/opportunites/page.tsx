@@ -10,7 +10,7 @@ import { PageHeader, EmptyState, ErrorState } from "../../../_shared/ui";
 import { ScoreMeter, ScoreBreakdown, type MatchOpportunity } from "../../../_shared/matching";
 import { MISSION_CATEGORY_LABEL, formatDate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Opportunités · Les Extras" };
+export const metadata: Metadata = { title: "Opportunités" };
 
 export default async function OpportunitesPage() {
   const session = await requireSession();

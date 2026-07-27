@@ -22,7 +22,7 @@ import {
 } from "../../../_shared/format";
 import type { Invoice } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "Finance · Les Extras" };
+export const metadata: Metadata = { title: "Finance" };
 
 interface FinanceSummary {
   total?: number;

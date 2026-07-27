@@ -8,7 +8,7 @@ import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, EmptyState, ErrorState } from "../../../_shared/ui";
 import { formatDate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Devis · Les Extras" };
+export const metadata: Metadata = { title: "Devis" };
 
 interface QuoteRow {
   id: string;

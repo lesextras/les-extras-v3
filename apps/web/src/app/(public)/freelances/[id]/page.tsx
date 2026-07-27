@@ -9,7 +9,7 @@ import { ServiceCard } from "../../../_shared/cards";
 import { formatRate, fullName, initials } from "../../../_shared/format";
 import type { PublicUser, Review, Service } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "Freelance · Les Extras" };
+export const metadata: Metadata = { title: "Freelance" };
 
 interface FreelanceProfile extends PublicUser {
   services?: Service[];

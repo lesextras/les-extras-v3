@@ -26,7 +26,7 @@ import {
 } from "../../../_shared/format";
 import type { Mission } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "SOS Renfort · Les Extras" };
+export const metadata: Metadata = { title: "SOS Renfort" };
 
 export default async function RenfortsPage() {
   const session = await requireSession();

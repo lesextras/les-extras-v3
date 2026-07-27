@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InscribeButton } from "../../../_shared/InscribeButton";
 
-export const metadata: Metadata = { title: "Formation · Les Extras" };
+export const metadata: Metadata = { title: "Formation" };
 
 interface SessionItem {
   id: string;
