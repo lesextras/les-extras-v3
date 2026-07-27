@@ -28,7 +28,7 @@ services:
       PORT: 3001
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://saas.les-extras.fr,http://localhost:3000,http://127.0.0.1:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://saas.les-extras.fr,https://front-saas.les-extras.fr,http://localhost:3000,http://127.0.0.1:3000}
       DATABASE_URL: postgresql://${POSTGRES_USER:-lesextras}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lesextras}?schema=public
     expose:
       - "3001"
@@ -71,7 +71,7 @@ services:
       PORT: 3000
       API_BASE_URL: http://api:3001/api
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-saas.les-extras.fr/api}
-      APP_WEB_HOST: ${APP_WEB_HOST:-saas.les-extras.fr}
+      APP_WEB_HOST: ${APP_WEB_HOST:-front-saas.les-extras.fr}
       APP_DESK_HOST: ${APP_DESK_HOST:-saas.les-extras.fr}
       APP_RUNTIME: front
       SESSION_SECRET: ${SESSION_SECRET}
@@ -87,11 +87,11 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=coolify"
       - "traefik.http.routers.lesextras-web-front-http.entrypoints=http"
-      - "traefik.http.routers.lesextras-web-front-http.rule=Host(`saas.les-extras.fr`) || Host(`saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-web-front-http.rule=Host(`front-saas.les-extras.fr`)"
       - "traefik.http.routers.lesextras-web-front-http.middlewares=redirect-to-https"
       - "traefik.http.routers.lesextras-web-front-http.service=lesextras-web-front"
       - "traefik.http.routers.lesextras-web-front-https.entrypoints=https"
-      - "traefik.http.routers.lesextras-web-front-https.rule=Host(`saas.les-extras.fr`) || Host(`saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-web-front-https.rule=Host(`front-saas.les-extras.fr`)"
       - "traefik.http.routers.lesextras-web-front-https.tls=true"
       - "traefik.http.routers.lesextras-web-front-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.lesextras-web-front-https.middlewares=gzip"
@@ -117,7 +117,7 @@ services:
       PORT: 3000
       API_BASE_URL: http://api:3001/api
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-saas.les-extras.fr/api}
-      APP_WEB_HOST: ${APP_WEB_HOST:-saas.les-extras.fr}
+      APP_WEB_HOST: ${APP_WEB_HOST:-front-saas.les-extras.fr}
       APP_DESK_HOST: ${APP_DESK_HOST:-saas.les-extras.fr}
       APP_RUNTIME: desk
       JWT_SECRET: ${JWT_SECRET}
