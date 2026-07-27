@@ -28,12 +28,12 @@ export class MailService {
 
   private layout(title: string, bodyHtml: string, cta?: { label: string; url: string }): string {
     const button = cta
-      ? `<a href="${cta.url}" style="display:inline-block;background:#0D7377;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600">${cta.label}</a>`
+      ? `<a href="${cta.url}" style="display:inline-block;background:#183767;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600">${cta.label}</a>`
       : '';
     return `<!doctype html><html><body style="margin:0;background:#FAF7F2;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1A1A">
       <div style="max-width:520px;margin:0 auto;padding:32px 20px">
         <div style="background:#fff;border:1px solid #ece7df;border-radius:16px;padding:32px">
-          <div style="font-weight:800;font-size:18px;color:#0D7377;letter-spacing:.5px">LES EXTRAS</div>
+          <div style="font-weight:800;font-size:18px;color:#183767;letter-spacing:.5px">LES EXTRAS</div>
           <h1 style="font-size:22px;margin:18px 0 10px">${title}</h1>
           <div style="font-size:15px;line-height:1.6;color:#374151">${bodyHtml}</div>
           <div style="margin:24px 0">${button}</div>

@@ -12,10 +12,10 @@ import { PageHeader, EmptyState } from "../../_shared/ui";
 import { formatDate, initials } from "../../_shared/format";
 
 export const metadata: Metadata = {
-  title: "Actualités",
+  title: "Édublog",
   description:
-    "Le fil d’actualité du médico-social : retours d’expérience, projets d’établissements et publications des intervenants de Les Extras.",
-  alternates: { canonical: "/actualites" },
+    "L’Édublog de Les Extras : articles et actualités du médico-social — retours d’expérience, projets d’établissements et publications des intervenants. En accès libre.",
+  alternates: { canonical: "/edublog" },
 };
 
 export interface ArticleCard {
@@ -56,8 +56,8 @@ export default async function ActualitesPage({
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Actualités"
-        subtitle="Ce que publient les établissements et les intervenants du réseau : retours d’expérience, projets, nouvelles interventions."
+        title="Édublog"
+        subtitle="Articles et actualités publiés par les établissements et les intervenants du réseau : retours d’expérience, projets, nouvelles interventions. En accès libre, sans compte."
       />
 
       <form method="GET" className="flex flex-col gap-3 sm:flex-row">
@@ -96,7 +96,7 @@ export default async function ActualitesPage({
       ) : (
         <>
           {/* À la une */}
-          <Link href={`/actualites/${une.slug}`} className="group block">
+          <Link href={`/edublog/${une.slug}`} className="group block">
             <Card className="overflow-hidden transition group-hover:shadow-card">
               <div className="grid gap-0 md:grid-cols-2">
                 {une.coverUrl ? (
@@ -119,7 +119,7 @@ export default async function ActualitesPage({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {suite.map((a) => (
-              <Link key={a.id} href={`/actualites/${a.slug}`} className="group">
+              <Link key={a.id} href={`/edublog/${a.slug}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                   {a.coverUrl ? (
                     <div className="relative aspect-[16/10] bg-muted">

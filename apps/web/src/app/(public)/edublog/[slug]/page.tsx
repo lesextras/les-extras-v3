@@ -32,7 +32,7 @@ export async function generateMetadata({
   return {
     title: data.title,
     description: desc,
-    alternates: { canonical: `/actualites/${data.slug}` },
+    alternates: { canonical: `/edublog/${data.slug}` },
     openGraph: {
       title: `${data.title} · LES EXTRAS`,
       description: desc,
@@ -59,7 +59,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
   return (
     <article className="mx-auto max-w-3xl space-y-8">
       <nav aria-label="Fil d'Ariane" className="text-sm text-muted-foreground">
-        <Link href="/actualites" className="hover:text-foreground">Actualités</Link>
+        <Link href="/edublog" className="hover:text-foreground">Édublog</Link>
         <span className="mx-2" aria-hidden>/</span>
         <span className="text-foreground">{a.title}</span>
       </nav>
@@ -117,7 +117,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           <h2 className="text-lg font-semibold text-foreground">À lire aussi</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             {a.related.map((r) => (
-              <Link key={r.id} href={`/actualites/${r.slug}`} className="group">
+              <Link key={r.id} href={`/edublog/${r.slug}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                   {r.coverUrl ? (
                     <div className="relative aspect-[16/10] bg-muted">
@@ -155,7 +155,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
               "@context": "https://schema.org",
               "@type": "BreadcrumbList",
               itemListElement: [
-                { "@type": "ListItem", position: 1, name: "Actualités", item: "/actualites" },
+                { "@type": "ListItem", position: 1, name: "Édublog", item: "/edublog" },
                 { "@type": "ListItem", position: 2, name: a.title },
               ],
             },

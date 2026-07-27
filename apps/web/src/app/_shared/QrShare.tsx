@@ -31,7 +31,7 @@ export function QrShare({
     QRCode.toCanvas(canvasRef.current, complet, {
       width: 240,
       margin: 1,
-      color: { dark: "#0D7377", light: "#FFFFFF" },
+      color: { dark: "#183767", light: "#FFFFFF" },
     }).catch(() => undefined);
   }, [path, ouvert]);
 

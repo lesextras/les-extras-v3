@@ -33,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/ateliers",
     "/formations",
-    "/actualites",
+    "/edublog",
     "/etablissements",
     "/contact",
     "/legal/mentions-legales",
@@ -89,7 +89,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const actus = await safeJson<{ items: { slug: string }[] }>("/articles/feed?take=50");
   for (const a of actus?.items ?? []) {
     dynamic.push({
-      url: `${base}/actualites/${a.slug}`,
+      url: `${base}/edublog/${a.slug}`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.6,

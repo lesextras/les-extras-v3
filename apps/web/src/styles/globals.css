@@ -5,12 +5,12 @@
 /*
  * ============================================================================
  *  Design system "Quietly Bold" — LES EXTRAS v3
- *  Chaleureux, professionnel, light-only. Inspiration Hublo / Mediflash.
+ *  Sobre, institutionnel, light-only. Bleu nuit + terracotta.
  *  Toutes les couleurs sont exprimées en HSL (sans hsl()) pour être composées
  *  avec l'opacité Tailwind (ex: hsl(var(--primary) / 0.1)).
  *
  *  Repères de marque :
- *   - Primary  teal        #0D7377  → 182 80% 26%
+ *   - Primary  bleu nuit   #183767  → 217 62% 25%
  *   - Secondary terracotta #C75B39  → 14 56% 50%
  *   - Bg ivoire            #FAF7F2  → 38 44% 96%
  *   - Surface blanc        #FFFFFF  → 0 0% 100%
@@ -33,9 +33,9 @@
     --popover-foreground: 0 0% 10%;
 
     /* Marque */
-    --primary: 182 80% 26%;
+    --primary: 217 62% 25%;
     --primary-foreground: 40 44% 98%;
-    --primary-soft: 182 45% 92%;
+    --primary-soft: 217 48% 93%;
 
     --secondary: 14 60% 42%;
     --secondary-foreground: 40 44% 98%;
@@ -46,8 +46,8 @@
     /* Neutres */
     --muted: 38 30% 92%;
     --muted-foreground: 220 14% 38%;
-    --accent: 182 45% 94%;
-    --accent-foreground: 182 80% 22%;
+    --accent: 217 48% 95%;
+    --accent-foreground: 217 62% 22%;
 
     /* États */
     --destructive: 0 72% 51%;
@@ -60,7 +60,7 @@
     /* Lignes & focus */
     --border: 38 22% 88%;
     --input: 38 22% 86%;
-    --ring: 182 80% 30%;
+    --ring: 217 62% 33%;
 
     --radius: 0.85rem;
   }
@@ -101,7 +101,7 @@
 
   /* Effet "eyebrow" (surtitre) récurrent dans le branding */
   .eyebrow {
-    @apply inline-flex items-center gap-2 rounded-full border border-primary/10 bg-primary-soft px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-accent-foreground shadow-[0_1px_2px_rgba(13,115,119,0.06)];
+    @apply inline-flex items-center gap-2 rounded-full border border-primary/10 bg-primary-soft px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-accent-foreground shadow-[0_1px_2px_rgba(24,55,103,0.08)];
   }
 
   /* Carte interactive : légère élévation au survol (surfaces cliquables) */

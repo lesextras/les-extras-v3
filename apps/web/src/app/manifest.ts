@@ -9,7 +9,7 @@ import type { MetadataRoute } from 'next';
  * son téléphone, pas devant un ordinateur.
  *
  * Couleurs alignées sur le design system « Quietly Bold » (src/styles/globals.css) :
- *   - primary teal  #0D7377  (182 80% 26%)
+ *   - primary teal  #183767  (182 80% 26%)
  *   - fond ivoire   #FAF7F2  (38 44% 96%)
  */
 export default function manifest(): MetadataRoute.Manifest {
@@ -25,7 +25,7 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: '/',
     display: 'standalone',
     orientation: 'portrait',
-    theme_color: '#0D7377',
+    theme_color: '#183767',
     background_color: '#FAF7F2',
     categories: ['business', 'productivity', 'medical'],
     icons: [

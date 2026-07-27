@@ -75,7 +75,7 @@ const config: Config = {
       },
       boxShadow: {
         soft: '0 1px 2px rgba(26,26,26,0.04), 0 8px 24px -12px rgba(26,26,26,0.12)',
-        card: '0 1px 3px rgba(26,26,26,0.06), 0 12px 32px -16px rgba(13,115,119,0.18)',
+        card: '0 1px 3px rgba(26,26,26,0.06), 0 12px 32px -16px rgba(24,55,103,0.18)',
         glow: '0 0 0 4px hsl(var(--primary) / 0.12)',
       },
       keyframes: {

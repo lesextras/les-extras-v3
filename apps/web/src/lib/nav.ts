@@ -76,7 +76,7 @@ const freelanceNav: NavSection[] = [
   {
     title: 'Mon offre',
     items: [
-      { label: 'Marketplace', href: '/marketplace', icon: Store, hint: 'Toutes les missions et ateliers ouverts' },
+      { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, hint: 'Créez et gérez vos interventions' },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
       { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Demandes reçues à chiffrer et devis envoyés' },
@@ -87,7 +87,7 @@ const freelanceNav: NavSection[] = [
     items: [
       { label: 'Factures & revenus', href: '/dashboard/finance', icon: Receipt, hint: 'Vos revenus et documents' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
-      { label: 'Actualités', href: '/dashboard/actualites', icon: Newspaper, hint: 'Publiez sur le fil public et partagez sur LinkedIn' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Mon compte', href: '/dashboard/account', icon: Settings, hint: 'Profil, paramètres et sécurité' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
@@ -111,7 +111,7 @@ const establishmentNav: NavSection[] = [
   {
     title: 'Catalogue',
     items: [
-      { label: 'Marketplace', href: '/marketplace', icon: Store, hint: 'Toutes les missions et ateliers' },
+      { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
       { label: 'Ateliers', href: '/marketplace?type=services', icon: Sparkles, hint: 'Catalogue d’ateliers à réserver' },
       { label: 'Formations', href: '/marketplace/formations', icon: GraduationCap, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
     ],
@@ -126,7 +126,7 @@ const establishmentNav: NavSection[] = [
       { label: 'Factures', href: '/dashboard/finance', icon: Receipt, hint: 'Vos factures et dépenses' },
       { label: 'Abonnement & crédits', href: '/dashboard/credits', icon: Receipt, hint: 'Abonnement mensuel et rechargement de crédits' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },
-      { label: 'Actualités', href: '/dashboard/actualites', icon: Newspaper, hint: 'Publiez sur le fil public et partagez sur LinkedIn' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
   },
@@ -140,7 +140,7 @@ const adminNav: NavSection[] = [
     ],
   },
   {
-    title: 'Marketplace',
+    title: 'Catalogue & réservations',
     items: [
       { label: 'Missions', href: '/admin/missions', icon: Megaphone, hint: 'Modérer les missions de renfort' },
       { label: 'Ateliers', href: '/admin/ateliers', icon: Sparkles, hint: 'Modérer le catalogue d’ateliers' },

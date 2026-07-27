@@ -28,6 +28,15 @@ const nextConfig = {
   async rewrites() {
     return [];
   },
+  // Les URL /actualites ont été indexées avant le passage à « Édublog » :
+  // on les redirige définitivement pour ne perdre ni le référencement ni les
+  // liens déjà partagés.
+  async redirects() {
+    return [
+      { source: '/actualites', destination: '/edublog', permanent: true },
+      { source: '/actualites/:slug', destination: '/edublog/:slug', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

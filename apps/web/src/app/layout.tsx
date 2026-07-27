@@ -68,7 +68,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0D7377',
+  themeColor: '#183767',
   width: 'device-width',
   initialScale: 1,
   // Plein écran sous les encoches (iPhone) en mode standalone.
