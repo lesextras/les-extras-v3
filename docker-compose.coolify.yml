@@ -20,6 +20,7 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    entrypoint: ["sh", "-c", "./docker-entrypoint.sh || (echo '=== ENTRYPOINT API EN ECHEC (voir ci-dessus) ==='; sleep 3600)"]
     restart: unless-stopped
     depends_on:
       postgres:
@@ -36,7 +37,8 @@ services:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3001/api/health >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 60s
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=coolify"
