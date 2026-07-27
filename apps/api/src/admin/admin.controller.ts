@@ -305,4 +305,34 @@ export class AdminController {
   setContactStatus(@Param('id') id: string, @Body() body: { status?: string }) {
     return this.admin.setContactStatus(id, body?.status);
   }
+
+  // ── Journal d'audit (traçabilité) ────────────────────────────────────────
+
+  /**
+   * Journal d'audit paginé, du plus récent au plus ancien.
+   * Filtres optionnels : action, type/identifiant d'entité, auteur, période.
+   * Ex. GET /admin/audit?action=booking.time_entry.validated&from=2026-01-01&page=2
+   */
+  @Get('audit')
+  listAudit(
+    @Query('action') action?: string,
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+    @Query('actorId') actorId?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+  ) {
+    return this.admin.listAudit({
+      action,
+      entityType,
+      entityId,
+      actorId,
+      from,
+      to,
+      page: page ? Number(page) : undefined,
+      perPage: perPage ? Number(perPage) : undefined,
+    });
+  }
 }

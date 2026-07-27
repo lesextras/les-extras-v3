@@ -200,13 +200,24 @@ export class MissionsService {
   /**
    * Envoie l'offre par e-mail aux freelances dont le score de correspondance
    * est suffisant et qui sont disponibles (premier arrivé, premier servi).
+   * `options.excludeAccountIds` permet d'écarter certains comptes lors d'une
+   * relance automatique (ex. : les intervenants ayant déjà candidaté).
+   * Retourne le nombre d'intervenants effectivement ciblés.
    */
-  private async broadcastToMatched(missionId: string, accountId: string) {
+  private async broadcastToMatched(
+    missionId: string,
+    accountId: string,
+    options?: { excludeAccountIds?: string[] },
+  ): Promise<number> {
     const mission = await this.prisma.reliefMission.findUnique({ where: { id: missionId } });
-    if (!mission) return;
+    if (!mission) return 0;
     const { candidates } = await this.matching.candidatesForMission(missionId, accountId);
+    const exclus = new Set(options?.excludeAccountIds ?? []);
     const targets = candidates
-      .filter((c: any) => c.available && !c.hasConflict && c.total >= 45 && c.email)
+      .filter(
+        (c: any) =>
+          c.available && !c.hasConflict && c.total >= 45 && c.email && !exclus.has(c.accountId),
+      )
       .slice(0, 100);
     await Promise.allSettled(
       targets.map((c: any) =>
@@ -221,6 +232,7 @@ export class MissionsService {
         }),
       ),
     );
+    return targets.length;
   }
 
   /**
@@ -377,5 +389,75 @@ export class MissionsService {
     });
 
     return booking;
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Relance automatique des missions non pourvues
+  // (consommé par MissionsScheduler — aucune de ces méthodes ne modifie le
+  //  comportement des endpoints existants)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Palier de diffusion suivant dans la cascade SALARIES -> RESERVED -> PUBLIC,
+   * ou `null` si la mission est déjà diffusée au niveau maximal.
+   * Méthode statique : permet au scheduler de savoir s'il est utile d'appeler
+   * `broaden()` sans avoir à dupliquer l'ordre de la cascade.
+   */
+  static visibiliteSuivante(visibilite: MissionVisibility): MissionVisibility | null {
+    const idx = CASCADE.indexOf(visibilite);
+    if (idx < 0 || idx >= CASCADE.length - 1) return null;
+    return CASCADE[idx + 1];
+  }
+
+  /**
+   * Missions encore « ouvertes » au sens de la relance automatique :
+   * publiées (donc ni brouillon, ni pourvues, ni clôturées, ni annulées) et
+   * dont la date de début n'est pas dépassée. Le résultat est borné par
+   * `limite` pour ne jamais saturer un passage du scheduler.
+   */
+  async listerMissionsOuvertes(params: { limite?: number; maintenant?: Date } = {}) {
+    const maintenant = params.maintenant ?? new Date();
+    const limite = Math.max(1, Math.min(params.limite ?? 50, 500));
+    return this.prisma.reliefMission.findMany({
+      where: {
+        status: MissionStatus.PUBLISHED,
+        startDate: { gt: maintenant },
+      },
+      // Les missions les plus imminentes d'abord : ce sont les plus critiques.
+      orderBy: { startDate: 'asc' },
+      take: limite,
+      select: {
+        id: true,
+        accountId: true,
+        title: true,
+        job: true,
+        city: true,
+        startDate: true,
+        startTime: true,
+        visibility: true,
+        emergency: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        account: { select: { id: true, name: true, ownerId: true } },
+      },
+    });
+  }
+
+  /**
+   * Relance : renvoie l'offre par e-mail aux intervenants correspondants.
+   * Les comptes ayant déjà candidaté (ou déjà réservés) sur cette mission sont
+   * exclus pour ne pas les re-solliciter inutilement — en pratique, seuls les
+   * intervenants « nouvellement concernés » reçoivent l'e-mail.
+   * Retourne le nombre d'intervenants notifiés.
+   */
+  async rediffuserAuxIntervenants(missionId: string, accountId: string): Promise<number> {
+    const dejaEnLice = await this.prisma.booking.findMany({
+      where: { missionId },
+      select: { accountId: true },
+    });
+    return this.broadcastToMatched(missionId, accountId, {
+      excludeAccountIds: dejaEnLice.map((b) => b.accountId),
+    });
   }
 }

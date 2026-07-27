@@ -53,6 +53,7 @@ model User {
   complianceDocuments ComplianceDocument[]
   qualifications   Qualification[]
   experiences      Experience[]
+  auditLogs        AuditLog[]         @relation("AuditActor")
 
   @@index([email])
   @@index([role, status])
@@ -113,6 +114,7 @@ model Account {
   qualiopiProofs   QualiopiProof[]    @relation("QualiopiOf")
   complianceDocuments ComplianceDocument[]
   orgUnits         OrgUnit[]
+  auditLogs        AuditLog[]         @relation("AuditAccount")
 
   @@index([type])
   @@index([slug])
@@ -324,6 +326,9 @@ model Message {
   @@index([conversationId])
 }
 
+/// AVIS déposé après une réservation. Chaque partie (établissement ET
+/// intervenant) peut déposer le sien : la contrainte d'unicité porte donc sur
+/// le couple (réservation, auteur) et non sur la seule réservation.
 model Review {
   id         String   @id @default(cuid())
   bookingId  String   @unique
@@ -437,6 +442,43 @@ model Article {
   updatedAt   DateTime      @updatedAt
 
   @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// JOURNAL D'AUDIT (traçabilité)
+// ---------------------------------------------------------------------------
+
+/// JOURNAL D'AUDIT : trace append-only des actions sensibles de la plateforme
+/// (validation d'heures pointées, modification d'un document de conformité,
+/// modération, changement de statut…). Dans le médico-social, savoir QUI a fait
+/// QUOI et QUAND a une vraie valeur probante en cas de litige.
+/// Aucune entrée n'est jamais modifiée ni supprimée par le métier.
+model AuditLog {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  /// Auteur de l'action. Nullable : action système / automatique, ou auteur supprimé.
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  /// Compte (tenant) concerné par l'action. Nullable : action hors contexte de compte.
+  accountId  String?
+  account    Account? @relation("AuditAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  /// Code court et stable de l'action, ex. "booking.time_entry.validated".
+  action     String
+  /// Type d'entité visée, ex. "TimeEntry", "ComplianceDocument", "Booking".
+  entityType String
+  /// Identifiant de l'entité visée (nullable pour les actions globales).
+  entityId   String?
+  /// Résumé lisible en français, affiché tel quel dans le back-office.
+  summary    String
+  /// Contexte libre (avant/après, motif…). Optionnel.
+  metadata   Json?
+  /// Adresse IP de l'appelant, si connue.
+  ip         String?
+
+  @@index([createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([action])
 }
 
 // ---------------------------------------------------------------------------
