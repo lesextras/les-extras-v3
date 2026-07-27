@@ -50,7 +50,7 @@ const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n || 0)));
 
 /** Palette « pro » par palier de score. */
 export function scoreTone(label: MatchLabel): {
-  badge: BadgeVariant | "soft" | "warning" | "muted";
+  badge: BadgeVariant;
   bar: string;
 } {
   switch (label) {
@@ -84,8 +84,7 @@ export function ScoreMeter({
           {clamp(total)}
           <span className="ml-0.5 text-xs font-normal text-muted-foreground">/100</span>
         </span>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <Badge variant={tone.badge as any}>{label}</Badge>
+        <Badge variant={tone.badge}>{label}</Badge>
       </div>
       <div
         className={cn("w-full overflow-hidden rounded-full bg-muted", compact ? "h-1.5" : "h-2")}

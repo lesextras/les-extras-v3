@@ -17,13 +17,17 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 // --- Mocks des dépendances (isolent le composant) ---
-const apiRequest = vi.fn().mockResolvedValue({ id: 'invite_1' });
+// `vi.mock` est remonté en tête de fichier : les doubles doivent donc être
+// créés dans `vi.hoisted`, sinon la fabrique référence une variable pas encore
+// initialisée (« Cannot access 'apiRequest' before initialization »).
+const { apiRequest, refresh, toast } = vi.hoisted(() => ({
+  apiRequest: vi.fn().mockResolvedValue({ id: 'invite_1' }),
+  refresh: vi.fn(),
+  toast: vi.fn(),
+}));
+
 vi.mock('@/lib/api', () => ({ apiRequest, ApiError: class extends Error {} }));
-
-const refresh = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh, push: vi.fn() }) }));
-
-const toast = vi.fn();
 vi.mock('@/components/ui/use-toast', () => ({ useToast: () => ({ toast }) }));
 
 import { InviteMemberModal } from './InviteMemberModal';

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { assignRef } from '@/lib/merge-refs';
 
 /**
  * DropdownMenu léger (sans dépendance Radix) : gère clic extérieur, Escape,
@@ -99,13 +100,12 @@ DropdownMenuTrigger.displayName = 'DropdownMenuTrigger';
 const DropdownMenuContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, onKeyDown, ...props }, ref) => {
     const { open, align, menuId, setOpen, triggerRef } = useDropdown();
-    const innerRef = React.useRef<HTMLDivElement>(null);
+    const innerRef = React.useRef<HTMLDivElement | null>(null);
 
     const setRef = React.useCallback(
       (node: HTMLDivElement | null) => {
         innerRef.current = node;
-        if (typeof ref === 'function') ref(node);
-        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        assignRef(ref, node);
       },
       [ref],
     );

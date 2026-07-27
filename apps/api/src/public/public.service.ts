@@ -131,6 +131,7 @@ export class PublicService {
 
   /** Enregistre une demande de contact publique et notifie l'équipe par e-mail. */
   async createContact(dto: CreateContactDto) {
+    if (dto.website) return { ok: true };
     const request = await this.prisma.contactRequest.create({
       data: {
         name: dto.name,
@@ -312,7 +313,10 @@ export class PublicService {
     desiredDate?: string;
     participants?: string;
     message: string;
+    /** Champ-piège : rempli = robot. */
+    website?: string;
   }) {
+    if (dto.website) return { ok: true };
     let objet = 'Demande de devis';
     if (dto.serviceId) {
       const s = await this.prisma.service.findFirst({
@@ -629,6 +633,42 @@ export class PublicService {
    * Détail PUBLIC d'une mission de renfort PUBLIÉE (vitrine partageable).
    * Aucune donnée sensible : ni ownerId, ni candidatures.
    */
+  /**
+   * Liste PUBLIQUE des missions de renfort ouvertes.
+   * Sert le sitemap et le maillage interne : une annonce « remplacement
+   * éducateur à Melun » est exactement ce que cherchent les intervenants.
+   * On exclut les missions déjà passées pour ne pas indexer d'URL périmée.
+   */
+  async missions(query: { take?: number; skip?: number }) {
+    const take = Math.min(query.take ?? 50, 100);
+    const skip = query.skip ?? 0;
+    const where = {
+      status: MissionStatus.PUBLISHED,
+      OR: [{ endDate: { gte: new Date() } }, { endDate: null }],
+    };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.reliefMission.findMany({
+        where,
+        orderBy: { startDate: 'asc' },
+        take,
+        skip,
+        select: {
+          id: true,
+          title: true,
+          city: true,
+          job: true,
+          startDate: true,
+          endDate: true,
+          emergency: true,
+          updatedAt: true,
+          categoryRef: { select: { title: true } },
+        },
+      }),
+      this.prisma.reliefMission.count({ where }),
+    ]);
+    return { items, total, take, skip };
+  }
+
   async missionDetail(id: string) {
     const mission = await this.prisma.reliefMission.findFirst({
       where: { id, status: MissionStatus.PUBLISHED },

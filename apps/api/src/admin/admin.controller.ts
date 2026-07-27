@@ -51,6 +51,12 @@ export class AdminController {
     return this.admin.desk();
   }
 
+  /** Tunnel vue → demande → devis → réservation, global et par fiche. */
+  @Get('stats/funnel')
+  funnel() {
+    return this.admin.funnel();
+  }
+
   @Get('stats/roi')
   roiStats() {
     return this.admin.roiStats();

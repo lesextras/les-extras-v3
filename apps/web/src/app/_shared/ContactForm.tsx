@@ -30,6 +30,7 @@ export function ContactForm() {
       phone: String(fd.get("phone") || "") || undefined,
       type: String(fd.get("type") || "") || undefined,
       content: String(fd.get("content") || ""),
+      website: String(fd.get("website") || "") || undefined,
     };
     try {
       await apiRequest("/public/contact", { method: "POST", body });
@@ -53,7 +54,13 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="relative space-y-4">
+          {/* Champ-piège anti-robot : invisible pour un humain, rempli par les bots. */}
+          <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+            <label htmlFor="contact-website">Ne pas remplir</label>
+            <input id="contact-website" type="text" name="website" tabIndex={-1} autoComplete="off" />
+          </div>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Votre nom" htmlFor="name" required>
           <Input id="name" name="name" required placeholder="Prénom Nom" />

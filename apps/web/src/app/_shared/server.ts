@@ -25,10 +25,13 @@ export async function requireAdmin(): Promise<Session> {
  * Renvoie `{ data }` ou `{ error }` — jamais de throw, pour permettre aux écrans
  * d'afficher un état d'erreur propre sans faire planter le rendu.
  */
+/** Verbes acceptés par le client API — aligné sur `apiRequest`. */
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
 export async function fetchApi<T>(
   session: Session,
   path: string,
-  init?: { method?: string; body?: unknown },
+  init?: { method?: HttpMethod; body?: unknown },
 ): Promise<{ data?: T; error?: string }> {
   try {
     const data = (await apiRequest(path, {

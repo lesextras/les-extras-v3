@@ -18,7 +18,6 @@ import { MailService } from '../common/mail/mail.service';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { JwtPayload } from './jwt.strategy';
 
 const BCRYPT_ROUNDS = 12;
 const EMAIL_VERIFY_PURPOSE = 'email-verify';

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { assignRef } from '@/lib/merge-refs';
 
 /**
  * Dialog / Modal contrôlé, léger (portail + Escape + clic overlay).
@@ -103,7 +104,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   ({ className, children, hideClose, ...props }, ref) => {
     const { open, onOpenChange } = useDialog();
     const [mounted, setMounted] = React.useState(false);
-    const panelRef = React.useRef<HTMLDivElement>(null);
+    const panelRef = React.useRef<HTMLDivElement | null>(null);
     const previouslyFocused = React.useRef<HTMLElement | null>(null);
     const reactId = React.useId();
     const titleId = `dialog-title-${reactId}`;
@@ -115,8 +116,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     const setPanelRef = React.useCallback(
       (node: HTMLDivElement | null) => {
         panelRef.current = node;
-        if (typeof ref === 'function') ref(node);
-        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        assignRef(ref, node);
       },
       [ref],
     );

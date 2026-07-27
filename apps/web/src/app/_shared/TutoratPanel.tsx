@@ -51,7 +51,7 @@ export function TutoratPanel({
       toast({ title: ok });
       router.refresh();
     } catch (err) {
-      toast({ title: "Action impossible", description: err instanceof Error ? err.message : undefined, variant: "destructive" });
+      toast({ title: "Action impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
     } finally {
       setBusy(false);
     }
@@ -64,7 +64,7 @@ export function TutoratPanel({
       toast({ title: "Projet d'avenir enregistré" });
       router.refresh();
     } catch (err) {
-      toast({ title: "Enregistrement impossible", description: err instanceof Error ? err.message : undefined, variant: "destructive" });
+      toast({ title: "Enregistrement impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
     } finally {
       setBusy(false);
     }

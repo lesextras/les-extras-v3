@@ -138,7 +138,7 @@ export class MissionsService {
     if (accountId && mission.accountId === accountId) return mission;
     // Non-propriétaire : uniquement les missions publiées, SANS le pipeline de candidatures.
     if (mission.status === MissionStatus.PUBLISHED) {
-      const { bookings, ...publicView } = mission as any;
+      const { bookings: _bookings, ...publicView } = mission as any;
       return publicView;
     }
     // Brouillon/fermée d'un autre compte : on ne révèle pas son existence.

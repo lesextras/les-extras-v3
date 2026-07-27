@@ -1,16 +1,27 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+  // Le typage et le lint bloquent le build : une régression ne doit jamais
+  // pouvoir atteindre la production sans être vue.
+  typescript: { ignoreBuildErrors: false },
+  eslint: { ignoreDuringBuilds: false },
   reactStrictMode: true,
   poweredByHeader: false,
   experimental: {
     typedRoutes: false,
   },
   images: {
+    // Liste blanche stricte : un joker sur le hostname transforme
+    // l'optimiseur d'images en proxy ouvert exploitable par n'importe qui.
     remotePatterns: [
-      { protocol: 'https', hostname: '**' },
+      { protocol: 'https', hostname: 'les-extras.fr' },
+      { protocol: 'https', hostname: 'www.les-extras.fr' },
+      { protocol: 'https', hostname: 'app.les-extras.fr' },
+      { protocol: 'https', hostname: 'api.les-extras.fr' },
+      { protocol: 'https', hostname: 'adepa77.fr' },
+      { protocol: 'https', hostname: 'www.adepa77.fr' },
+      { protocol: 'https', hostname: 'toulali.fr' },
+      { protocol: 'https', hostname: 's3.adepa77.fr' },
       { protocol: 'http', hostname: 'localhost' },
     ],
   },
@@ -30,7 +41,7 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
           },
         ],
       },

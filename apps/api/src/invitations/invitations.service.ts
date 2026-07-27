@@ -8,7 +8,6 @@ import {
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import {
-  AccountRole,
   InvitationStatus,
   MembershipStatus,
 } from '@prisma/client';

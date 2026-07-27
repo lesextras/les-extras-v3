@@ -84,7 +84,7 @@ const STATUS_LABEL: Record<ShiftStatus, string> = {
   CANCELLED: "Annulé",
 };
 
-const STATUS_VARIANT: Record<ShiftStatus, BadgeVariant | "success" | "warning" | "muted"> = {
+const STATUS_VARIANT: Record<ShiftStatus, BadgeVariant> = {
   PLANNED: "outline",
   CONFIRMED: "default",
   DONE: "success",
@@ -280,8 +280,7 @@ export function PlanningBoard({
                         ) : null}
                       </div>
                       <div className="flex items-center gap-2">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        <Badge variant={STATUS_VARIANT[s.status] as any}>
+                        <Badge variant={STATUS_VARIANT[s.status]}>
                           {STATUS_LABEL[s.status]}
                         </Badge>
                         {isEstablishment ? (

@@ -21,6 +21,9 @@ const badgeVariants = cva(
   },
 );
 
+/** Source de vérité des variantes : dérivée du cva, jamais recopiée à la main. */
+export type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>;
+
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {}

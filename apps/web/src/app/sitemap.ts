@@ -96,6 +96,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
+  // Missions de renfort ouvertes : le référencement longue traîne
+  // (« remplacement éducateur Melun ») est notre premier canal d'acquisition
+  // d'intervenants. Les missions passées sont exclues côté API.
+  const missions = await safeJson<{ items: { id: string; updatedAt?: string }[] }>(
+    "/public/missions?take=100",
+  );
+  for (const m of missions?.items ?? []) {
+    dynamic.push({
+      url: `${base}/missions/${m.id}`,
+      lastModified: m.updatedAt ? new Date(m.updatedAt) : now,
+      changeFrequency: "daily",
+      priority: 0.7,
+    });
+  }
+
   // Pages intervenants : preuve sociale et maillage interne vers les fiches.
   for (const id of vendorIds) {
     dynamic.push({

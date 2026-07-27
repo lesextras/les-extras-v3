@@ -3,6 +3,7 @@
 // Boutons de paiement Stripe : abonnement, rechargement de crédits,
 // paiement d'une facture en une fois. POST /billing/checkout → redirection
 // vers l'URL Stripe Checkout renvoyée par l'API.
+import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -17,7 +18,7 @@ export function CheckoutButton({
   planId,
   invoiceId,
   label,
-  variant = "default",
+  variant = "primary",
   disabled,
 }: {
   accountId: string;
@@ -26,7 +27,7 @@ export function CheckoutButton({
   planId?: string;
   invoiceId?: string;
   label: string;
-  variant?: "default" | "outline" | "secondary";
+  variant?: React.ComponentProps<typeof Button>["variant"];
   disabled?: boolean;
 }) {
   const { toast } = useToast();
@@ -49,7 +50,7 @@ export function CheckoutButton({
         title: "Paiement indisponible",
         description:
           err instanceof Error ? err.message : "Réessayez dans un instant.",
-        variant: "destructive",
+        variant: "error",
       });
       setLoading(false);
     }

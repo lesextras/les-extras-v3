@@ -52,7 +52,7 @@ export default async function DevisDetailPage({ params }: { params: { id: string
     return (
       <div className="space-y-6">
         <PageHeader title="Devis" />
-        <ErrorState message={res.error} />
+        <ErrorState description={res.error} />
       </div>
     );
   }

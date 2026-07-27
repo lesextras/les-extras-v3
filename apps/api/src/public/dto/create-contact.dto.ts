@@ -1,7 +1,8 @@
+import { HoneypotDto } from './honeypot';
 import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 /** Demande de contact déposée depuis le site public (sans authentification). */
-export class CreateContactDto {
+export class CreateContactDto extends HoneypotDto {
   @IsString()
   @MinLength(2)
   @MaxLength(120)

@@ -65,7 +65,7 @@ export default async function CreditsPage({
           title="Abonnement & crédits"
           subtitle="Gérez votre abonnement et rechargez vos crédits."
         />
-        <ErrorState message={res.error ?? "Données indisponibles."} />
+        <ErrorState description={res.error ?? "Données indisponibles."} />
       </div>
     );
   }

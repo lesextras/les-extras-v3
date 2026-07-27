@@ -96,20 +96,24 @@ export function StatCard({
   value: ReactNode;
   hint?: string;
   icon?: ReactNode;
-  accent?: "teal" | "terracotta" | "neutral";
+  accent?: "teal" | "terracotta" | "warning" | "neutral";
 }) {
   const ring =
     accent === "teal"
       ? "before:bg-primary"
       : accent === "terracotta"
         ? "before:bg-secondary"
-        : "before:bg-border";
+        : accent === "warning"
+          ? "before:bg-amber-500"
+          : "before:bg-border";
   const iconTint =
     accent === "teal"
       ? "bg-primary-soft text-primary"
       : accent === "terracotta"
         ? "bg-secondary-soft text-secondary"
-        : "bg-muted text-muted-foreground";
+        : accent === "warning"
+          ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+          : "bg-muted text-muted-foreground";
   return (
     <Card
       className={cn(
@@ -143,14 +147,17 @@ export function StatCard({
 
 export function SectionTitle({
   title,
+  children,
   action,
 }: {
-  title: string;
+  /** Titre court ; `children` est accepté pour la forme `<SectionTitle>Titre</SectionTitle>`. */
+  title?: string;
+  children?: ReactNode;
   action?: ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between">
-      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      <h2 className="text-lg font-semibold text-foreground">{children ?? title}</h2>
       {action}
     </div>
   );

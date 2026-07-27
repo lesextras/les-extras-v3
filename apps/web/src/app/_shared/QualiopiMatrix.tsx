@@ -80,7 +80,7 @@ function IndicatorRow({ indicator }: { indicator: Indicator }) {
       toast({
         title: "Enregistrement impossible",
         description: err instanceof Error ? err.message : undefined,
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setBusy(false);

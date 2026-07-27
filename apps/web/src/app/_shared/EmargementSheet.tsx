@@ -66,7 +66,7 @@ export function EmargementSheet({
       toast({
         title: "Émargement impossible",
         description: err instanceof Error ? err.message : "Réessayez dans un instant.",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setBusy(null);

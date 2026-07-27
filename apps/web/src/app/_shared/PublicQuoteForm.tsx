@@ -44,6 +44,7 @@ export function PublicQuoteForm({
           desiredDate: f.get("desiredDate") || undefined,
           participants: f.get("participants") || undefined,
           message: f.get("message"),
+          website: f.get("website") || undefined,
         }),
       });
       if (!res.ok) {
@@ -86,7 +87,13 @@ export function PublicQuoteForm({
     <Card>
       <CardContent className="p-5">
         <p className="mb-3 text-sm font-medium text-foreground">Devis — {titre}</p>
-        <form onSubmit={soumettre} className="space-y-3">
+        <form onSubmit={soumettre} className="relative space-y-3">
+          {/* Champ-piège anti-robot : invisible pour un humain, rempli par les bots. */}
+          <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
+            <label htmlFor="devis-website">Ne pas remplir</label>
+            <input id="devis-website" type="text" name="website" tabIndex={-1} autoComplete="off" />
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <Input name="name" required placeholder="Vos nom et prénom *" />
             <Input name="email" type="email" required placeholder="Votre e-mail *" />

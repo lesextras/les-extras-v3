@@ -208,7 +208,7 @@ export function QuoteDecision({ quoteId }: { quoteId: string }) {
       toast({
         title: "Action impossible",
         description: err instanceof Error ? err.message : "Réessayez.",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setLoading(null);

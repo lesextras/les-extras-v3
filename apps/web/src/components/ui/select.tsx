@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { assignRef } from '@/lib/merge-refs';
 
 /**
  * Select accessible et léger (bouton + panneau custom). API compatible avec un
@@ -18,6 +19,7 @@ interface SelectContextValue {
   listboxId: string;
   triggerRef: React.RefObject<HTMLButtonElement>;
   labelMap: Record<string, string>;
+  disabled?: boolean;
 }
 
 /**
@@ -50,10 +52,12 @@ export interface SelectProps {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   invalid?: boolean;
+  /** Désactive le déclencheur : aucune ouverture ni changement possible. */
+  disabled?: boolean;
   children: React.ReactNode;
 }
 
-function Select({ value, defaultValue, onValueChange, invalid, children }: SelectProps) {
+function Select({ value, defaultValue, onValueChange, invalid, disabled, children }: SelectProps) {
   const [internal, setInternal] = React.useState(defaultValue);
   const [open, setOpen] = React.useState(false);
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -88,7 +92,7 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
 
   return (
     <SelectContext.Provider
-      value={{ value: current, onValueChange: handleChange, open, setOpen, invalid, listboxId, triggerRef, labelMap }}
+      value={{ value: current, onValueChange: handleChange, open, setOpen, invalid, disabled, listboxId, triggerRef, labelMap }}
     >
       <div ref={rootRef} className="relative">
         {children}
@@ -100,14 +104,14 @@ function Select({ value, defaultValue, onValueChange, invalid, children }: Selec
 export interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
 
 const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
-  ({ className, children, onKeyDown, ...props }, ref) => {
-    const { open, setOpen, invalid, listboxId, triggerRef } = useSelect();
+  ({ className, children, onKeyDown, disabled, ...props }, ref) => {
+    const { open, setOpen, invalid, listboxId, triggerRef, disabled: ctxDisabled } = useSelect();
+    const estDesactive = disabled ?? ctxDisabled;
     // Fusionne le ref transféré avec le ref interne utilisé pour le retour de focus.
     const setRef = React.useCallback(
       (node: HTMLButtonElement | null) => {
-        (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
-        if (typeof ref === 'function') ref(node);
-        else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+        assignRef(triggerRef, node);
+        assignRef(ref, node);
       },
       [ref, triggerRef],
     );
@@ -120,10 +124,14 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
         aria-expanded={open}
         aria-controls={open ? listboxId : undefined}
         aria-invalid={invalid || undefined}
-        onClick={() => setOpen(!open)}
+        disabled={estDesactive}
+        onClick={() => {
+          if (estDesactive) return;
+          setOpen(!open);
+        }}
         onKeyDown={(e) => {
           onKeyDown?.(e);
-          if (e.defaultPrevented) return;
+          if (e.defaultPrevented || estDesactive) return;
           if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             setOpen(true);

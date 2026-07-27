@@ -1,3 +1,4 @@
+import { HoneypotDto } from './honeypot';
 import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 /**
@@ -5,7 +6,7 @@ import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-valid
  * Obliger la création d'un compte avant le premier contact fait perdre
  * l'essentiel des demandes : on récupère les coordonnées, on qualifie ensuite.
  */
-export class CreateQuoteRequestDto {
+export class CreateQuoteRequestDto extends HoneypotDto {
   /** Fiche concernée : atelier (id) ou formation (slug). */
   @IsOptional() @IsString() @MaxLength(60) serviceId?: string;
   @IsOptional() @IsString() @MaxLength(120) formationSlug?: string;

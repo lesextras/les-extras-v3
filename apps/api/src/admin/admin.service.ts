@@ -1024,6 +1024,79 @@ export class AdminService {
    * Toutes les valeurs sont calculées à partir des données réelles (missions +
    * bookings). Voir AVG_INTERIM_SAVINGS_EUR pour l'hypothèse d'économie.
    */
+  /**
+   * Tunnel d'acquisition, fiche par fiche.
+   *
+   * Les compteurs `views` et `requestsCount` existaient en base mais ne
+   * remontaient nulle part : impossible de savoir quelle fiche travaille.
+   * On les croise ici avec les devis et les réservations réellement obtenus,
+   * pour lire la conversion à chaque étage : vue → demande → devis → réservation.
+   */
+  async funnel() {
+    const [services, formations, devis, reservations, demandesPubliques] =
+      await this.prisma.$transaction([
+        this.prisma.service.findMany({
+          where: { status: 'PUBLISHED' },
+          orderBy: { views: 'desc' },
+          take: 100,
+          select: {
+            id: true,
+            title: true,
+            views: true,
+            requestsCount: true,
+            price: true,
+            _count: { select: { bookings: true, quotes: true } },
+          },
+        }),
+        this.prisma.formation.findMany({
+          where: { status: 'PUBLISHED' },
+          orderBy: { views: 'desc' },
+          take: 100,
+          select: { id: true, slug: true, title: true, views: true, requestsCount: true },
+        }),
+        this.prisma.quote.count(),
+        this.prisma.booking.count(),
+        this.prisma.contactRequest.count(),
+      ]);
+
+    const vues = services.reduce((t, s) => t + (s.views ?? 0), 0);
+    const demandes = services.reduce((t, s) => t + (s.requestsCount ?? 0), 0);
+
+    const taux = (haut: number, bas: number) =>
+      bas > 0 ? Math.round((haut / bas) * 1000) / 10 : null;
+
+    return {
+      global: {
+        vues,
+        demandes,
+        devis,
+        reservations,
+        demandesPubliques,
+        tauxVueVersDemande: taux(demandes, vues),
+        tauxDemandeVersDevis: taux(devis, demandes),
+        tauxDevisVersReservation: taux(reservations, devis),
+      },
+      ateliers: services.map((s) => ({
+        id: s.id,
+        titre: s.title,
+        vues: s.views ?? 0,
+        demandes: s.requestsCount ?? 0,
+        devis: s._count.quotes,
+        reservations: s._count.bookings,
+        prix: s.price,
+        conversion: taux(s.requestsCount ?? 0, s.views ?? 0),
+      })),
+      formations: formations.map((f) => ({
+        id: f.id,
+        slug: f.slug,
+        titre: f.title,
+        vues: f.views ?? 0,
+        demandes: f.requestsCount ?? 0,
+        conversion: taux(f.requestsCount ?? 0, f.views ?? 0),
+      })),
+    };
+  }
+
   async roiStats() {
     // On ne charge que le nécessaire : statut + date de publication de chaque
     // mission, et les bookings associés (date + statut) triés chronologiquement.

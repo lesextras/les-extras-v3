@@ -1,3 +1,5 @@
+import type { BadgeVariant } from '@/components/ui/badge';
+
 // Helpers de formatage (dates, montants, libellés d'enums) — pures fonctions.
 
 const EUR = new Intl.NumberFormat("fr-FR", {
@@ -179,7 +181,8 @@ export const INVITATION_STATUS_LABEL: Record<string, string> = {
 };
 
 // Variante shadcn Badge par statut (default | secondary | destructive | outline)
-export type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
+// Réexport du type du composant : une seule définition pour toute l'app.
+export type { BadgeVariant };
 
 export function bookingBadgeVariant(status: string): BadgeVariant {
   switch (status) {

@@ -21,6 +21,7 @@ import {
   Building2,
   Settings,
   BarChart3,
+  Filter,
   Megaphone,
   Target,
   Star,
@@ -183,6 +184,7 @@ const adminNav: NavSection[] = [
     title: 'Pilotage',
     items: [
       { label: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, hint: 'KPIs détaillés de la plateforme' },
+      { label: "Tunnel d'acquisition", href: '/admin/tunnel', icon: Filter, hint: 'Vue → demande → devis → réservation, fiche par fiche' },
       { label: 'Journal d\'audit', href: '/admin/journal', icon: ScrollText, hint: 'Qui a fait quoi, et quand : validations d\'heures, modérations, changements de rôle' },
     ],
   },
