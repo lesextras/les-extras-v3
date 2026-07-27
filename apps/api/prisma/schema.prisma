@@ -803,6 +803,16 @@ model Formation {
   certifying        Boolean         @default(false)
   certificationName String?
   edofRef           String?
+  /// Vitrine : sans image ni ville, une formation ne se vend pas en ligne.
+  images            String[]        @default([])
+  city              String?
+  /// Contenu commercial repris du modèle des fiches atelier.
+  methodology       String?
+  evaluation        String?
+  faq               Json?
+  /// Compteurs de la fiche (preuve sociale et pilotage du funnel).
+  views             Int             @default(0)
+  requestsCount     Int             @default(0)
   status            FormationStatus @default(DRAFT)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt

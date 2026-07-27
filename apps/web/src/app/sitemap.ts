@@ -71,6 +71,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (items.length < PAGE) break;
   }
 
+  // Formations publiées : fiches vitrine indexables.
+  const formations = await safeJson<{ items: { slug: string }[] }>(
+    "/public/formations?take=60",
+  );
+  for (const f of formations?.items ?? []) {
+    dynamic.push({
+      url: `${base}/formations/${f.slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    });
+  }
+
   // Pages intervenants : preuve sociale et maillage interne vers les fiches.
   for (const id of vendorIds) {
     dynamic.push({

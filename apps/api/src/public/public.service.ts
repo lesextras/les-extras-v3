@@ -71,6 +71,57 @@ const PUBLIC_DETAIL_SELECT = {
   },
 } satisfies Prisma.ServiceSelect;
 
+/** Champs d'une carte formation (liste et fiche partagent la même base). */
+const FORMATION_CARD_SELECT = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  objectives: true,
+  durationHours: true,
+  type: true,
+  certifying: true,
+  cpfEligible: true,
+  images: true,
+  city: true,
+  requestsCount: true,
+  categoryRef: { select: { id: true, title: true } },
+  ownerAccount: { select: { id: true, name: true, city: true, logoUrl: true } },
+  sessions: {
+    where: { startDate: { gte: new Date() } },
+    orderBy: { startDate: 'asc' },
+    take: 1,
+    select: { startDate: true, priceHt: true, location: true },
+  },
+} satisfies Prisma.FormationSelect;
+
+type CarteFormationSource = Prisma.FormationGetPayload<{
+  select: typeof FORMATION_CARD_SELECT;
+}>;
+
+/** Prix d'appel et prochaine date : ce que l'acheteur regarde en premier. */
+function carteFormation(f: CarteFormationSource) {
+  const prochaine = f.sessions[0] ?? null;
+  return {
+    id: f.id,
+    slug: f.slug,
+    title: f.title,
+    summary: f.summary,
+    objectives: f.objectives,
+    durationHours: f.durationHours,
+    type: f.type,
+    certifying: f.certifying,
+    cpfEligible: f.cpfEligible,
+    images: f.images,
+    city: f.city ?? prochaine?.location ?? f.ownerAccount?.city ?? null,
+    requestsCount: f.requestsCount,
+    categoryRef: f.categoryRef,
+    account: f.ownerAccount,
+    priceFrom: prochaine?.priceHt ?? null,
+    nextSessionAt: prochaine?.startDate ?? null,
+  };
+}
+
 @Injectable()
 export class PublicService {
   constructor(
@@ -253,6 +304,121 @@ export class PublicService {
     }
 
     return { ...service, reviews, rating, ratingSource, related };
+  }
+
+  /**
+   * Catalogue PUBLIC des formations publiées. Une formation se vend sur une
+   * promesse (objectifs, durée, prix d'appel, prochaine session) — pas sur un
+   * calendrier. On expose donc la fiche, et la session n'arrive qu'ensuite.
+   */
+  async formations(query: { search?: string; category?: string; take?: number; skip?: number }) {
+    const where: Prisma.FormationWhereInput = { status: 'PUBLISHED' };
+    if (query.category) where.categoryRef = { is: { title: query.category } };
+    if (query.search) {
+      where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
+        { summary: { contains: query.search, mode: 'insensitive' } },
+        { objectives: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const take = Math.min(query.take ?? 24, 60);
+    const skip = query.skip ?? 0;
+
+    const [rows, total, catRows] = await this.prisma.$transaction([
+      this.prisma.formation.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+        select: FORMATION_CARD_SELECT,
+      }),
+      this.prisma.formation.count({ where }),
+      this.prisma.formation.findMany({
+        where: { status: 'PUBLISHED' },
+        distinct: ['categoryId'],
+        select: { categoryRef: { select: { title: true } } },
+      }),
+    ]);
+
+    const categories = Array.from(
+      new Set(catRows.map((r) => r.categoryRef?.title).filter((t): t is string => Boolean(t))),
+    ).sort((a, b) => a.localeCompare(b, 'fr'));
+
+    return { items: rows.map(carteFormation), total, take, skip, categories };
+  }
+
+  /** Fiche PUBLIQUE d'une formation publiée, par slug (404 sinon). */
+  async formationDetail(slug: string) {
+    const formation = await this.prisma.formation.findFirst({
+      where: { slug, status: 'PUBLISHED' },
+      select: {
+        ...FORMATION_CARD_SELECT,
+        program: true,
+        prerequisites: true,
+        targetAudience: true,
+        methodology: true,
+        evaluation: true,
+        faq: true,
+        certificationName: true,
+        views: true,
+        createdAt: true,
+        sessions: {
+          where: { startDate: { gte: new Date() } },
+          orderBy: { startDate: 'asc' },
+          take: 6,
+          select: {
+            id: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            location: true,
+            maxSeats: true,
+            priceHt: true,
+            status: true,
+            _count: { select: { inscriptions: true } },
+          },
+        },
+      },
+    });
+    if (!formation) throw new NotFoundException('Formation introuvable.');
+
+    this.prisma.formation
+      .update({ where: { id: formation.id }, data: { views: { increment: 1 } } })
+      .catch(() => undefined);
+
+    // Satisfaction stagiaires (Qualiopi, indicateur 30) : la preuve sociale.
+    const agg = await this.prisma.inscription.aggregate({
+      where: { session: { formationId: formation.id }, satisfaction: { not: null } },
+      _avg: { satisfaction: true },
+      _count: { satisfaction: true },
+    });
+
+    const autres = await this.prisma.formation.findMany({
+      where: { id: { not: formation.id }, status: 'PUBLISHED' },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+      select: FORMATION_CARD_SELECT,
+    });
+
+    return {
+      ...carteFormation(formation),
+      program: formation.program,
+      prerequisites: formation.prerequisites,
+      targetAudience: formation.targetAudience,
+      methodology: formation.methodology,
+      evaluation: formation.evaluation,
+      faq: formation.faq,
+      certificationName: formation.certificationName,
+      views: formation.views,
+      createdAt: formation.createdAt,
+      sessions: formation.sessions,
+      rating:
+        agg._count.satisfaction > 0 && agg._avg.satisfaction != null
+          ? Math.round(agg._avg.satisfaction * 10) / 10
+          : null,
+      ratingCount: agg._count.satisfaction,
+      related: autres.map(carteFormation),
+    };
   }
 
   /**

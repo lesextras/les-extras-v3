@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
+import { QueryPublicFormationsDto } from './dto/query-public-formations.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 
 /**
@@ -21,6 +22,18 @@ export class PublicController {
   @Get('catalog/:id')
   detail(@Param('id') id: string) {
     return this.publicService.detail(id);
+  }
+
+  /** GET /public/formations?search=&category=&take=&skip= — catalogue public. */
+  @Get('formations')
+  formations(@Query() query: QueryPublicFormationsDto) {
+    return this.publicService.formations(query);
+  }
+
+  /** GET /public/formations/:slug — fiche publique d'une formation publiée. */
+  @Get('formations/:slug')
+  formationDetail(@Param('slug') slug: string) {
+    return this.publicService.formationDetail(slug);
   }
 
   /** GET /public/missions/:id — détail public d'une mission publiée (404 sinon). */
