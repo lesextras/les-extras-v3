@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-lesextras}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_v2:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lesextras} -d ${POSTGRES_DB:-lesextras}"]
       interval: 10s
@@ -157,4 +157,4 @@ networks:
     external: true
 
 volumes:
-  postgres_data:
+  postgres_data_v2:
