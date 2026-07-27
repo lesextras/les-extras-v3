@@ -36,9 +36,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/edublog",
     "/etablissements",
     "/contact",
-    "/legal/mentions-legales",
-    "/legal/confidentialite",
-    "/legal/cgu",
+    // Les mentions, CGU, confidentialité et RGPD tiennent sur une seule page
+    // à ancres : annoncer des sous-routes inexistantes envoyait Google sur
+    // trois 404 depuis notre propre sitemap.
+    "/legal",
     "/login",
     "/register",
   ].map((p) => ({
