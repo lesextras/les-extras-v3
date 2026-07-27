@@ -5,9 +5,9 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-lesextras}
       POSTGRES_USER: ${POSTGRES_USER:-lesextras}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-PBTbCuCXIhNSj5HmnbxR9VpQAJATmEVt}
     volumes:
-      - postgres_data_v2:/var/lib/postgresql/data
+      - postgres_data_v3:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lesextras} -d ${POSTGRES_DB:-lesextras}"]
       interval: 10s
@@ -27,10 +27,10 @@ services:
         condition: service_healthy
     environment:
       PORT: 3001
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-CZXeMpunxZC0ZUtVoCDDaRT1zzyJ3ic5}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGINS: ${CORS_ORIGINS:-https://saas.les-extras.fr,https://front-saas.les-extras.fr,http://localhost:3000,http://127.0.0.1:3000}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-lesextras}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lesextras}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lesextras}:${POSTGRES_PASSWORD:-PBTbCuCXIhNSj5HmnbxR9VpQAJATmEVt}@postgres:5432/${POSTGRES_DB:-lesextras}?schema=public
     expose:
       - "3001"
     healthcheck:
@@ -76,8 +76,8 @@ services:
       APP_WEB_HOST: ${APP_WEB_HOST:-front-saas.les-extras.fr}
       APP_DESK_HOST: ${APP_DESK_HOST:-saas.les-extras.fr}
       APP_RUNTIME: front
-      SESSION_SECRET: ${SESSION_SECRET}
-      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET:-f5G0wlC2AITmn1vZWVrffCaYQTehgCrN}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-PcNScI1WOLdsGk6R}
     expose:
       - "3000"
     healthcheck:
@@ -122,9 +122,9 @@ services:
       APP_WEB_HOST: ${APP_WEB_HOST:-front-saas.les-extras.fr}
       APP_DESK_HOST: ${APP_DESK_HOST:-saas.les-extras.fr}
       APP_RUNTIME: desk
-      JWT_SECRET: ${JWT_SECRET}
-      SESSION_SECRET: ${SESSION_SECRET}
-      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:-CZXeMpunxZC0ZUtVoCDDaRT1zzyJ3ic5}
+      SESSION_SECRET: ${SESSION_SECRET:-f5G0wlC2AITmn1vZWVrffCaYQTehgCrN}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-PcNScI1WOLdsGk6R}
     expose:
       - "3000"
     healthcheck:
@@ -157,4 +157,4 @@ networks:
     external: true
 
 volumes:
-  postgres_data_v2:
+  postgres_data_v3:
