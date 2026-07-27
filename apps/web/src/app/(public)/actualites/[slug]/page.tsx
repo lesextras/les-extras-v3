@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, Building2 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
 import { formatDate, initials, fullName } from "../../../_shared/format";
+import { RichText, texteBrut } from "../../../_shared/RichText";
 import type { ArticleCard } from "../page";
 
 interface ArticleDetail extends ArticleCard {
@@ -17,10 +18,7 @@ interface ArticleDetail extends ArticleCard {
   related?: ArticleCard[];
 }
 
-function resume(t: string, max = 155) {
-  const plat = t.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  return plat.length > max ? `${plat.slice(0, max - 1).trimEnd()}…` : plat;
-}
+const resume = (t: string, max = 155) => texteBrut(t, max);
 
 export async function generateMetadata({
   params,
@@ -98,9 +96,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
       ) : null}
 
       {a.content ? (
-        <div className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
-          {a.content}
-        </div>
+        <RichText value={a.content} />
       ) : null}
 
       {a.account && a.account.type === "FREELANCE" ? (

@@ -1,7 +1,7 @@
 "use client";
 
 // Espace de rédaction des actualités : écrire, publier, partager sur LinkedIn.
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
-import { Linkedin, Eye, ExternalLink, Trash2, Pencil } from "lucide-react";
+import {
+  Linkedin, Eye, Trash2, Pencil, Bold, Italic, Heading2, List, Quote, Link2, ImagePlus,
+} from "lucide-react";
 import { formatDate } from "./format";
 
 export interface ArticleRow {
@@ -54,6 +56,60 @@ export function ArticlesManager({
   const [edite, setEdite] = useState<ArticleRow | null>(null);
   const [ouvert, setOuvert] = useState(false);
   const [envoi, setEnvoi] = useState(false);
+  const [depot, setDepot] = useState(false);
+  const zoneRef = useRef<HTMLTextAreaElement>(null);
+  const fichierRef = useRef<HTMLInputElement>(null);
+
+  /** Insère du texte autour de la sélection courante. */
+  function entourer(avant: string, apres: string) {
+    const z = zoneRef.current;
+    if (!z || !edite) return;
+    const { selectionStart: d, selectionEnd: f, value } = z;
+    const nouveau = value.slice(0, d) + avant + value.slice(d, f) + apres + value.slice(f);
+    setEdite({ ...edite, content: nouveau });
+    requestAnimationFrame(() => {
+      z.focus();
+      z.setSelectionRange(d + avant.length, f + avant.length);
+    });
+  }
+
+  /** Préfixe la ligne courante (intertitre, liste, citation). */
+  function prefixer(marque: string) {
+    const z = zoneRef.current;
+    if (!z || !edite) return;
+    const { selectionStart: d, value } = z;
+    const debutLigne = value.lastIndexOf("\n", d - 1) + 1;
+    const nouveau = value.slice(0, debutLigne) + marque + value.slice(debutLigne);
+    setEdite({ ...edite, content: nouveau });
+    requestAnimationFrame(() => {
+      z.focus();
+      z.setSelectionRange(d + marque.length, d + marque.length);
+    });
+  }
+
+  /** Dépose l'image dans le stockage privé et insère sa référence publique. */
+  async function deposerImage(fichier: File) {
+    if (!edite) return;
+    setDepot(true);
+    try {
+      const form = new FormData();
+      form.append("file", fichier);
+      const res = await fetch("/api/proxy/files/article", { method: "POST", body: form });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? "Envoi refusé");
+      const { id } = (await res.json()) as { id: string };
+      const url = `/api/proxy/public/images/${id}`;
+      const z = zoneRef.current;
+      const pos = z?.selectionStart ?? (edite.content ?? "").length;
+      const v = edite.content ?? "";
+      const balise = `\n![${fichier.name.replace(/\.[^.]+$/, "")}](${url})\n`;
+      setEdite({ ...edite, content: v.slice(0, pos) + balise + v.slice(pos) });
+      toast({ title: "Image ajoutée" });
+    } catch (e) {
+      toast({ title: "Image refusée", description: (e as Error).message });
+    } finally {
+      setDepot(false);
+    }
+  }
 
   const vide: ArticleRow = {
     id: "", title: "", slug: "", excerpt: "", content: "", coverUrl: "", status: "DRAFT",
@@ -179,12 +235,45 @@ export function ArticlesManager({
               value={edite.coverUrl ?? ""}
               onChange={(e) => setEdite({ ...edite, coverUrl: e.target.value })}
             />
-            <Textarea
-              rows={14}
-              placeholder="Votre texte…"
-              value={edite.content ?? ""}
-              onChange={(e) => setEdite({ ...edite, content: e.target.value })}
-            />
+            <div className="rounded-lg border border-input">
+              <div className="flex flex-wrap items-center gap-1 border-b border-input bg-muted/40 px-2 py-1.5">
+                <Outil titre="Gras" onClick={() => entourer("**", "**")}><Bold className="size-4" /></Outil>
+                <Outil titre="Italique" onClick={() => entourer("*", "*")}><Italic className="size-4" /></Outil>
+                <Outil titre="Intertitre" onClick={() => prefixer("## ")}><Heading2 className="size-4" /></Outil>
+                <Outil titre="Liste" onClick={() => prefixer("- ")}><List className="size-4" /></Outil>
+                <Outil titre="Citation" onClick={() => prefixer("> ")}><Quote className="size-4" /></Outil>
+                <Outil titre="Lien" onClick={() => entourer("[", "](https://)")}><Link2 className="size-4" /></Outil>
+                <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+                <Outil titre="Insérer une image" onClick={() => fichierRef.current?.click()}>
+                  <ImagePlus className="size-4" />
+                  <span className="ml-1 text-xs">{depot ? "Envoi…" : "Image"}</span>
+                </Outil>
+                <input
+                  ref={fichierRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) deposerImage(f);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <Textarea
+                ref={zoneRef}
+                rows={16}
+                placeholder="Votre texte… **gras**, *italique*, ## intertitre, - liste"
+                className="rounded-none border-0 focus-visible:ring-0"
+                value={edite.content ?? ""}
+                onChange={(e) => setEdite({ ...edite, content: e.target.value })}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Mise en forme simple : <b>**gras**</b>, <i>*italique*</i>, <code>## intertitre</code>,{" "}
+              <code>- liste</code>, <code>&gt; citation</code>. Les images sont insérées dans le texte
+              à l’endroit du curseur.
+            </p>
             <div className="flex flex-wrap justify-end gap-2">
               <Button variant="ghost" onClick={() => { setOuvert(false); setEdite(null); }}>
                 Annuler
@@ -258,5 +347,27 @@ export function ArticlesManager({
         </div>
       )}
     </div>
+  );
+}
+
+function Outil({
+  titre,
+  onClick,
+  children,
+}: {
+  titre: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={titre}
+      aria-label={titre}
+      onClick={onClick}
+      className="inline-flex min-h-8 items-center rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+    >
+      {children}
+    </button>
   );
 }

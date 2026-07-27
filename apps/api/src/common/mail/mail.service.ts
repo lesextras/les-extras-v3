@@ -219,6 +219,39 @@ export class MailService {
   }
 
   /** Notifie l'équipe ADéPA d'une nouvelle demande de contact (formulaire public). */
+  /**
+   * Première publication d'un compte sur le fil public. Les articles paraissent
+   * sans validation préalable — ce signal permet à l'équipe de relire a
+   * posteriori le tout premier texte d'un nouveau compte.
+   */
+  async sendFirstArticleAlert(data: {
+    accountName: string;
+    accountType: string;
+    title: string;
+    slug: string;
+    authorName?: string | null;
+  }): Promise<void> {
+    const to = this.config.get<string>('CONTACT_INBOX_EMAIL') ?? 'contact@adepa77.fr';
+    const site = (
+      this.config.get<string>('WEB_PUBLIC_URL') ?? 'https://app.les-extras.fr'
+    ).replace(/\/$/, '');
+    const url = `${site}/actualites/${data.slug}`;
+    await this.send(
+      to,
+      `Première actualité publiée — ${data.accountName}`,
+      this.layout(
+        'Une nouvelle structure publie',
+        `<b>${data.accountName}</b> (${data.accountType}) vient de publier sa première
+        actualité sur le fil public.
+        ${data.authorName ? `<br><b>Auteur :</b> ${data.authorName}` : ''}
+        <br><br><b>Titre :</b> ${data.title.replace(/</g, '&lt;')}
+        <br><a href="${url}">Lire l'article</a>
+        <br><br>La publication est immédiate : si le contenu ne convient pas,
+        archivez-le depuis le back-office.`,
+      ),
+    );
+  }
+
   async sendContactNotification(data: {
     name: string;
     email: string;

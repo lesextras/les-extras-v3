@@ -133,6 +133,19 @@ export class FilesService {
    * Vérifie les droits puis renvoie le flux du fichier.
    * Toute consultation d'une pièce de conformité est journalisée.
    */
+  /**
+   * Lecture PUBLIQUE d'une illustration d'actualité. Aucune autre famille n'est
+   * servie ici : une pièce de conformité ne doit jamais sortir sans contrôle.
+   */
+  async lirePublic(fileId: string) {
+    const asset = await this.prisma.fileAsset.findUnique({ where: { id: fileId } });
+    if (!asset || asset.kind !== FileKind.ARTICLE) {
+      throw new NotFoundException('Image introuvable.');
+    }
+    const flux = await this.storage.lire(asset.storageKey);
+    return { flux, nom: asset.originalName, type: asset.mimeType, taille: asset.size };
+  }
+
   async telecharger(
     fileId: string,
     userId: string,

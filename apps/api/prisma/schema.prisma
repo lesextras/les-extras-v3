@@ -1169,6 +1169,9 @@ enum FileKind {
   AVATAR
   /// Support pédagogique, émargement signé, preuve Qualiopi.
   FORMATION
+  /// Illustration d'une actualité. Seule famille lisible sans authentification :
+  /// un article public doit afficher ses images à un visiteur non connecté.
+  ARTICLE
 }
 
 /// Un fichier réellement stocké (objet dans le dépôt privé), avec sa fiche

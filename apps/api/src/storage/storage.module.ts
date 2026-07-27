@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { StorageService } from './storage.service';
 import { FilesService } from './files.service';
 import { FilesController } from './files.controller';
+import { PublicFilesController } from './public-files.controller';
 
 /**
  * Module de stockage, global : StorageService et FilesService sont injectables
@@ -10,7 +11,7 @@ import { FilesController } from './files.controller';
  */
 @Global()
 @Module({
-  controllers: [FilesController],
+  controllers: [FilesController, PublicFilesController],
   providers: [StorageService, FilesService],
   exports: [StorageService, FilesService],
 })

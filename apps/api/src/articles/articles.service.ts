@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ArticleStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../common/mail/mail.service';
 import { CreateArticleDto, QueryArticlesDto, UpdateArticleDto } from './dto/article.dto';
 
 /** Ce qu'un visiteur voit : ni brouillon, ni e-mail, ni donnée interne. */
@@ -25,7 +26,42 @@ const PUBLIC_SELECT = {
 
 @Injectable()
 export class ArticlesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+  ) {}
+
+  /**
+   * Prévient l'équipe si c'est la toute première publication de ce compte.
+   * Best-effort : une alerte qui échoue ne doit jamais bloquer une publication.
+   */
+  private async alerterSiPremiere(articleId: string, accountId: string) {
+    const [nb, article] = await Promise.all([
+      this.prisma.article.count({
+        where: { accountId, status: ArticleStatus.PUBLISHED, id: { not: articleId } },
+      }),
+      this.prisma.article.findUnique({
+        where: { id: articleId },
+        select: {
+          title: true,
+          slug: true,
+          account: { select: { name: true, type: true } },
+          author: { select: { firstName: true, lastName: true } },
+        },
+      }),
+    ]);
+    if (nb > 0 || !article?.account) return;
+    await this.mail
+      .sendFirstArticleAlert({
+        accountName: article.account.name,
+        accountType: article.account.type,
+        title: article.title,
+        slug: article.slug,
+        authorName:
+          [article.author?.firstName, article.author?.lastName].filter(Boolean).join(' ') || null,
+      })
+      .catch(() => undefined);
+  }
 
   /** Slug lisible et unique : le titre, puis un suffixe si déjà pris. */
   private async slugify(titre: string): Promise<string> {
@@ -59,7 +95,7 @@ export class ArticlesService {
 
   async create(accountId: string, userId: string, dto: CreateArticleDto) {
     const publie = dto.status === ArticleStatus.PUBLISHED;
-    return this.prisma.article.create({
+    const article = await this.prisma.article.create({
       data: {
         accountId,
         authorId: userId,
@@ -74,6 +110,8 @@ export class ArticlesService {
       },
       select: { ...PUBLIC_SELECT, status: true, content: true },
     });
+    if (publie) await this.alerterSiPremiere(article.id, accountId);
+    return article;
   }
 
   /** Un compte ne touche que ses propres actualités. */
@@ -93,7 +131,7 @@ export class ArticlesService {
     const actuel = await this.assertOwned(id, accountId);
     const passeEnPublie =
       dto.status === ArticleStatus.PUBLISHED && actuel.status !== ArticleStatus.PUBLISHED;
-    return this.prisma.article.update({
+    const article = await this.prisma.article.update({
       where: { id },
       data: {
         ...dto,
@@ -102,6 +140,8 @@ export class ArticlesService {
       },
       select: { ...PUBLIC_SELECT, status: true, content: true },
     });
+    if (passeEnPublie) await this.alerterSiPremiere(id, accountId);
+    return article;
   }
 
   async remove(id: string, accountId: string) {

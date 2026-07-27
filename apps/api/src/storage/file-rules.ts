@@ -25,6 +25,11 @@ const PPTX =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 export const REGLES: Record<FileKind, RegleFamille> = {
+  ARTICLE: {
+    tailleMax: 5 * Mo,
+    types: ['image/jpeg', 'image/png', 'image/webp'],
+    libelle: "illustration d'actualité",
+  },
   COMPLIANCE: {
     tailleMax: 10 * Mo,
     types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'],
