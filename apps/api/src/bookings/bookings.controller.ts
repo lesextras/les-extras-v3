@@ -12,6 +12,7 @@ import {
 import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { BookingsService } from './bookings.service';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
@@ -102,8 +103,9 @@ export class BookingsController {
     @Param('entryId') entryId: string,
     @CurrentAccount() account: AccountCtx,
     @Body() dto: ReviewTimeEntryDto,
+    @CurrentUser() actor: { id: string },
   ) {
-    return this.bookings.reviewTimeEntry(entryId, account.id, dto.status);
+    return this.bookings.reviewTimeEntry(entryId, account.id, dto.status, actor.id);
   }
 
   /** Le freelance supprime un créneau non validé. */

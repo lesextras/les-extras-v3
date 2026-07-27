@@ -49,6 +49,7 @@ const STATUS_OPTIONS = [
   { value: "VERIFIED", label: "Vérifiés" },
   { value: "PENDING", label: "En attente" },
   { value: "BANNED", label: "Bannis" },
+  { value: "ANONYMIZED", label: "Supprimés (RGPD)" },
 ];
 
 const ROLE_OPTIONS = [

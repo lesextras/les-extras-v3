@@ -6,11 +6,15 @@ import {
 } from '@nestjs/common';
 import { AccountRole, MembershipStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../common/audit/audit.service';
 import { RequestAccount } from '../common/types/request-context';
 
 @Injectable()
 export class MembershipsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
 
   /** Liste les membres (sous-comptes) du compte actif. */
   list(account: RequestAccount) {
@@ -53,7 +57,12 @@ export class MembershipsService {
     return membership;
   }
 
-  async changeRole(account: RequestAccount, membershipId: string, role: AccountRole) {
+  async changeRole(
+    account: RequestAccount,
+    membershipId: string,
+    role: AccountRole,
+    actorId?: string,
+  ) {
     const membership = await this.loadInAccount(account, membershipId);
 
     if (membership.userId === membership.account.ownerId) {
@@ -72,11 +81,21 @@ export class MembershipsService {
       throw new ForbiddenException("Un ADMIN ne peut pas modifier un autre ADMIN.");
     }
 
-    return this.prisma.membership.update({
+    const updated = await this.prisma.membership.update({
       where: { id: membershipId },
       data: { role },
       select: { id: true, role: true, status: true },
     });
+    await this.audit.log({
+      actorId,
+      action: 'membre.role_modifie',
+      entityType: 'Membership',
+      entityId: membershipId,
+      accountId: account.id,
+      summary: `Rôle du membre : ${membership.role} → ${role}.`,
+      metadata: { avant: membership.role, apres: role, userId: membership.userId },
+    });
+    return updated;
   }
 
   async setStatus(

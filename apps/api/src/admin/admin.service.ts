@@ -18,6 +18,7 @@ import { QueryUsersDto } from './dto/query-users.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
 import { UpdateCategoryDto } from './dto/category-admin.dto';
+import { AuditService } from '../common/audit/audit.service';
 import { UpdateArticleDto } from './dto/article-admin.dto';
 import {
   CreateFormationAdminDto,
@@ -51,6 +52,7 @@ export class AdminService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     private readonly conformite: ConformiteService,
+    private readonly audit: AuditService,
   ) {}
 
   // --- Coffre-fort de conformité (agrégat plateforme) ---------------------
@@ -101,9 +103,14 @@ export class AdminService {
     });
   }
 
-  async banUser(id: string, dto: BanUserDto) {
+  async banUser(id: string, dto: BanUserDto, actorId?: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur introuvable.');
+    if (user.status === UserStatus.ANONYMIZED) {
+      throw new BadRequestException(
+        'Ce compte a été effacé à la demande de son titulaire : son statut ne peut plus être modifié.',
+      );
+    }
     const updated = await this.prisma.user.update({
       where: { id },
       data: { status: UserStatus.BANNED },
@@ -114,17 +121,39 @@ export class AdminService {
       title: 'Compte suspendu',
       body: dto.reason ?? 'Votre compte a été suspendu par un administrateur.',
     });
+    await this.audit.log({
+      actorId,
+      action: 'utilisateur.suspendu',
+      entityType: 'User',
+      entityId: id,
+      summary: `Compte de ${user.email} suspendu.${dto.reason ? ` Motif : ${dto.reason}` : ''}`,
+      metadata: { email: user.email, motif: dto.reason ?? null },
+    });
     return updated;
   }
 
-  async unbanUser(id: string) {
+  async unbanUser(id: string, actorId?: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur introuvable.');
-    return this.prisma.user.update({
+    if (user.status === UserStatus.ANONYMIZED) {
+      throw new BadRequestException(
+        'Ce compte a été effacé à la demande de son titulaire : son statut ne peut plus être modifié.',
+      );
+    }
+    const updated = await this.prisma.user.update({
       where: { id },
       data: { status: UserStatus.VERIFIED },
       select: { id: true, email: true, status: true },
     });
+    await this.audit.log({
+      actorId,
+      action: 'utilisateur.reactive',
+      entityType: 'User',
+      entityId: id,
+      summary: `Compte de ${user.email} réactivé.`,
+      metadata: { email: user.email },
+    });
+    return updated;
   }
 
   async createUser(dto: CreateUserDto) {
@@ -133,6 +162,7 @@ export class AdminService {
     if (existing) throw new ConflictException('Un utilisateur avec cet e-mail existe déjà.');
     const password = await bcrypt.hash(dto.password, 10);
     const status = dto.status ?? UserStatus.VERIFIED;
+    this.refuseStatutAnonymise(status);
     return this.prisma.user.create({
       data: {
         email,
@@ -156,9 +186,28 @@ export class AdminService {
     });
   }
 
+  /**
+   * ANONYMIZED n'est pas un statut qu'on attribue : il n'est posé que par la
+   * procédure d'effacement RGPD, qui neutralise réellement les données. Le
+   * poser à la main afficherait « effacé » sur un dossier resté intact.
+   */
+  private refuseStatutAnonymise(status?: UserStatus | null) {
+    if (status === UserStatus.ANONYMIZED) {
+      throw new BadRequestException(
+        'Le statut « supprimé (RGPD) » ne peut pas être attribué manuellement : il résulte de la procédure d’effacement demandée par la personne.',
+      );
+    }
+  }
+
   async updateUser(id: string, dto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur introuvable.');
+    this.refuseStatutAnonymise(dto.status);
+    if (user.status === UserStatus.ANONYMIZED) {
+      throw new BadRequestException(
+        'Ce compte a été effacé à la demande de son titulaire : il ne peut plus être modifié.',
+      );
+    }
     return this.prisma.user.update({
       where: { id },
       data: {
@@ -218,13 +267,23 @@ export class AdminService {
     return mission;
   }
 
-  async moderateMission(id: string, dto: ModerateMissionDto) {
+  async moderateMission(id: string, dto: ModerateMissionDto, actorId?: string) {
     const mission = await this.prisma.reliefMission.findUnique({ where: { id } });
     if (!mission) throw new NotFoundException('Mission introuvable.');
-    return this.prisma.reliefMission.update({
+    const updated = await this.prisma.reliefMission.update({
       where: { id },
       data: { status: dto.status },
     });
+    await this.audit.log({
+      actorId,
+      action: 'mission.moderee',
+      entityType: 'ReliefMission',
+      entityId: id,
+      accountId: mission.accountId,
+      summary: `Mission « ${mission.title} » : statut ${mission.status} → ${dto.status}.`,
+      metadata: { avant: mission.status, apres: dto.status },
+    });
+    return updated;
   }
 
   async deleteMission(id: string) {
@@ -258,13 +317,23 @@ export class AdminService {
     return service;
   }
 
-  async moderateService(id: string, dto: ModerateServiceDto) {
+  async moderateService(id: string, dto: ModerateServiceDto, actorId?: string) {
     const service = await this.prisma.service.findUnique({ where: { id } });
     if (!service) throw new NotFoundException('Service introuvable.');
-    return this.prisma.service.update({
+    const updated = await this.prisma.service.update({
       where: { id },
       data: { status: dto.status },
     });
+    await this.audit.log({
+      actorId,
+      action: 'atelier.modere',
+      entityType: 'Service',
+      entityId: id,
+      accountId: service.accountId,
+      summary: `Atelier « ${service.title} » : statut ${service.status} → ${dto.status}.`,
+      metadata: { avant: service.status, apres: dto.status },
+    });
+    return updated;
   }
 
   async deleteService(id: string) {

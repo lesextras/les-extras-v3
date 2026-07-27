@@ -81,6 +81,7 @@ const STATUS_OPTS = [
   { value: "VERIFIED", label: "Vérifié" },
   { value: "PENDING", label: "En attente" },
   { value: "BANNED", label: "Banni" },
+  { value: "ANONYMIZED", label: "Supprimé (RGPD)" },
 ];
 
 export function AdminUsersManager({ users }: { users: AdminUser[] }) {
@@ -173,7 +174,7 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger><SelectValue placeholder="Statut" /></SelectTrigger>
                   <SelectContent>
-                    {STATUS_OPTS.filter((o) => o.value !== "BANNED").map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                    {STATUS_OPTS.filter((o) => o.value !== "BANNED" && o.value !== "ANONYMIZED").map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -250,7 +251,10 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDate(u.createdAt)}</TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-2">
-                          {u.status === "BANNED" ? (
+                          {/* Compte effacé à la demande de la personne : plus rien à administrer. */}
+                          {u.status === "ANONYMIZED" ? (
+                            <span className="text-xs text-muted-foreground">Effacé sur demande</span>
+                          ) : u.status === "BANNED" ? (
                             <Button size="sm" variant="outline" disabled={busy === u.id} onClick={() => patch(u.id, { status: "VERIFIED" }, "Utilisateur réactivé")}>Réactiver</Button>
                           ) : (
                             <Button size="sm" variant="ghost" disabled={busy === u.id} onClick={() => patch(u.id, { status: "BANNED" }, "Utilisateur banni")}>Bannir</Button>

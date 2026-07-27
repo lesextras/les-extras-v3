@@ -131,6 +131,7 @@ export const USER_STATUS_LABEL: Record<string, string> = {
   PENDING: "En attente",
   VERIFIED: "Vérifié",
   BANNED: "Banni",
+  ANONYMIZED: "Supprimé (RGPD)",
 };
 
 export const GLOBAL_ROLE_LABEL: Record<string, string> = {
@@ -144,6 +145,9 @@ export function userStatusBadgeVariant(status: string): BadgeVariant {
       return "default";
     case "BANNED":
       return "destructive";
+    case "ANONYMIZED":
+      // Neutre volontairement : exercer son droit à l'effacement n'est pas une sanction.
+      return "outline";
     default:
       return "secondary";
   }

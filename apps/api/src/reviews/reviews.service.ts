@@ -95,12 +95,14 @@ export class ReviewsService {
       throw new BadRequestException('Un avis n’est possible qu’après une prestation terminée.');
     }
 
-    // 3. Un seul avis par réservation (contrainte d'unicité côté base).
-    const existing = await this.prisma.review.findUnique({
-      where: { bookingId: dto.bookingId },
+    // 3. Un avis par réservation ET par auteur : l'établissement et l'intervenant
+    //    peuvent chacun déposer le leur. Unicité vérifiée ici (pas de contrainte
+    //    composite en base : l'ajouter aurait exigé une migration destructive).
+    const existing = await this.prisma.review.findFirst({
+      where: { bookingId: dto.bookingId, authorId: userId },
     });
     if (existing) {
-      throw new ConflictException('Un avis a déjà été déposé pour cette réservation.');
+      throw new ConflictException('Vous avez déjà déposé un avis pour cette prestation.');
     }
 
     // 4. L'auteur et la cible doivent tous deux avoir participé.
@@ -139,8 +141,9 @@ export class ReviewsService {
     const bookings = await this.prisma.booking.findMany({
       where: {
         status: BookingStatus.COMPLETED,
-        // Contrainte du schéma : un seul avis par réservation.
-        review: { is: null },
+        // Ne propose que les prestations où CET utilisateur n'a pas encore
+        // donné son avis (l'autre partie peut avoir déjà déposé le sien).
+        reviews: { none: { authorId: userId } },
         OR: [{ accountId }, { mission: { accountId } }, { service: { accountId } }],
       },
       orderBy: { updatedAt: 'desc' },
@@ -200,6 +203,6 @@ export class ReviewsService {
   }
 
   async findForBooking(bookingId: string) {
-    return this.prisma.review.findUnique({ where: { bookingId } });
+    return this.prisma.review.findMany({ where: { bookingId } });
   }
 }

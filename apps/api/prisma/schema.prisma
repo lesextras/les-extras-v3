@@ -265,7 +265,7 @@ model Booking {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  review        Review?
+  reviews       Review[]
   invoice       Invoice?
   shift         Shift?
   timeEntries   TimeEntry[]
@@ -331,7 +331,7 @@ model Message {
 /// le couple (réservation, auteur) et non sur la seule réservation.
 model Review {
   id         String   @id @default(cuid())
-  bookingId  String   @unique
+  bookingId  String
   booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   authorId   String
   author     User     @relation("ReviewAuthor", fields: [authorId], references: [id])
@@ -342,6 +342,7 @@ model Review {
   createdAt  DateTime @default(now())
 
   @@index([targetId])
+  @@index([bookingId])
 }
 
 model Notification {
@@ -493,6 +494,9 @@ enum UserStatus {
   PENDING
   VERIFIED
   BANNED
+  /// Compte anonymisé à la demande de la personne (droit à l'effacement, RGPD art. 17).
+  /// Distinct de BANNED : ce n'est pas une sanction.
+  ANONYMIZED
 }
 
 enum AccountType {

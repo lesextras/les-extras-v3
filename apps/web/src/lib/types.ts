@@ -4,7 +4,7 @@
  */
 
 export type GlobalRole = 'USER' | 'ADMIN';
-export type UserStatus = 'PENDING' | 'VERIFIED' | 'BANNED';
+export type UserStatus = 'PENDING' | 'VERIFIED' | 'BANNED' | 'ANONYMIZED';
 export type AccountType = 'ESTABLISHMENT' | 'FREELANCE';
 export type AccountRole = 'OWNER' | 'ADMIN' | 'MANAGER' | 'MEMBER';
 

@@ -302,6 +302,10 @@ export function UserStatusActions({
     }
   }
 
+  // Compte anonymisé (droit à l'effacement) : ni bannissement ni réactivation.
+  if (status === "ANONYMIZED") {
+    return <span className="text-xs text-muted-foreground">Effacé sur demande</span>;
+  }
   if (status === "BANNED") {
     return (
       <Button size="sm" variant="outline" disabled={loading !== null} onClick={() => toggle("unban")}>

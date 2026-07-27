@@ -647,7 +647,7 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('Compte introuvable.');
     }
-    if (user.status === UserStatus.BANNED) {
+    if (user.status === UserStatus.ANONYMIZED) {
       throw new ConflictException(
         'Ce compte est déjà désactivé. Aucune action supplémentaire n\'est possible.',
       );
@@ -844,9 +844,10 @@ export class UsersService {
         data: { status: MembershipStatus.SUSPENDED },
       });
 
-      // h) Identité neutralisée + compte désactivé. Le statut BANNED est le seul
-      //    état « compte fermé » du schéma : il est revérifié à CHAQUE requête
-      //    par JwtStrategy, donc tous les jetons encore en circulation cessent
+      // h) Identité neutralisée + compte fermé. Le statut ANONYMIZED marque un
+      //    effacement demandé par la personne — volontairement distinct de
+      //    BANNED, qui est une sanction. Il est revérifié à CHAQUE requête par
+      //    JwtStrategy, donc tous les jetons encore en circulation cessent
       //    immédiatement de fonctionner.
       await tx.user.update({
         where: { id: userId },
@@ -857,7 +858,7 @@ export class UsersService {
           phone: null,
           avatarUrl: null,
           password: neutralPassword,
-          status: UserStatus.BANNED,
+          status: UserStatus.ANONYMIZED,
           emailVerified: false,
           lastLoginAt: null,
           onboardingStep: 0,

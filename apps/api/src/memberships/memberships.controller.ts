@@ -11,11 +11,12 @@ import { AccountRole, MembershipStatus } from '@prisma/client';
 import { MembershipsService } from './memberships.service';
 import { UpdateMembershipRoleDto } from './dto/update-membership-role.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
 import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
-import { RequestAccount } from '../common/types/request-context';
+import { RequestAccount, RequestUser } from '../common/types/request-context';
 
 /**
  * Toutes les routes agissent sur le COMPTE ACTIF (header x-account-id),
@@ -39,8 +40,9 @@ export class MembershipsController {
     @CurrentAccount() account: RequestAccount,
     @Param('id') id: string,
     @Body() dto: UpdateMembershipRoleDto,
+    @CurrentUser() actor: RequestUser,
   ) {
-    return this.memberships.changeRole(account, id, dto.role);
+    return this.memberships.changeRole(account, id, dto.role, actor.id);
   }
 
   @Patch(':id/suspend')

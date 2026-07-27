@@ -11,6 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { RequestUser } from '../common/types/request-context';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminService } from './admin.service';
 import { QueryUsersDto } from './dto/query-users.dto';
@@ -72,13 +74,17 @@ export class AdminController {
   }
 
   @Patch('users/:id/ban')
-  banUser(@Param('id') id: string, @Body() dto: BanUserDto) {
-    return this.admin.banUser(id, dto);
+  banUser(
+    @Param('id') id: string,
+    @Body() dto: BanUserDto,
+    @CurrentUser() actor: RequestUser,
+  ) {
+    return this.admin.banUser(id, dto, actor.id);
   }
 
   @Patch('users/:id/unban')
-  unbanUser(@Param('id') id: string) {
-    return this.admin.unbanUser(id);
+  unbanUser(@Param('id') id: string, @CurrentUser() actor: RequestUser) {
+    return this.admin.unbanUser(id, actor.id);
   }
 
   // --- Missions -----------------------------------------------------------
@@ -95,8 +101,12 @@ export class AdminController {
   }
 
   @Patch('missions/:id/moderate')
-  moderateMission(@Param('id') id: string, @Body() dto: ModerateMissionDto) {
-    return this.admin.moderateMission(id, dto);
+  moderateMission(
+    @Param('id') id: string,
+    @Body() dto: ModerateMissionDto,
+    @CurrentUser() actor: RequestUser,
+  ) {
+    return this.admin.moderateMission(id, dto, actor.id);
   }
 
   @Delete('missions/:id')
@@ -118,8 +128,12 @@ export class AdminController {
   }
 
   @Patch('services/:id/moderate')
-  moderateService(@Param('id') id: string, @Body() dto: ModerateServiceDto) {
-    return this.admin.moderateService(id, dto);
+  moderateService(
+    @Param('id') id: string,
+    @Body() dto: ModerateServiceDto,
+    @CurrentUser() actor: RequestUser,
+  ) {
+    return this.admin.moderateService(id, dto, actor.id);
   }
 
   @Delete('services/:id')

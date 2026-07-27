@@ -121,6 +121,9 @@ export class AuthService {
     if (user.status === UserStatus.BANNED) {
       throw new UnauthorizedException('Compte suspendu.');
     }
+    if (user.status === UserStatus.ANONYMIZED) {
+      throw new UnauthorizedException('Ce compte a été supprimé à la demande de son titulaire.');
+    }
 
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) {

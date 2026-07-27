@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailService } from '../common/mail/mail.service';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
+import { AuditService } from '../common/audit/audit.service';
 import { CreateTimeEntryDto } from './dto/time-entry.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
 
@@ -31,6 +32,7 @@ export class BookingsService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     private readonly mail: MailService,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -261,7 +263,12 @@ export class BookingsService {
   }
 
   /** L'établissement valide ou refuse un créneau. */
-  async reviewTimeEntry(entryId: string, accountId: string, status: 'VALIDATED' | 'REJECTED') {
+  async reviewTimeEntry(
+    entryId: string,
+    accountId: string,
+    status: 'VALIDATED' | 'REJECTED',
+    actorId?: string,
+  ) {
     const entry = await this.prisma.timeEntry.findUnique({ where: { id: entryId } });
     if (!entry) throw new NotFoundException('Créneau introuvable.');
     const booking = await this.loadForAccount(entry.bookingId, accountId);
@@ -269,7 +276,24 @@ export class BookingsService {
     if (accountId !== offerAccountId) {
       throw new ForbiddenException("Seul l'établissement peut valider le temps de travail.");
     }
-    return this.prisma.timeEntry.update({ where: { id: entryId }, data: { status } });
+    const updated = await this.prisma.timeEntry.update({ where: { id: entryId }, data: { status } });
+    const heures =
+      updated.startedAt && updated.endedAt
+        ? (new Date(updated.endedAt).getTime() - new Date(updated.startedAt).getTime()) / 3_600_000
+        : null;
+    await this.audit.log({
+      actorId,
+      action: status === 'VALIDATED' ? 'temps.valide' : 'temps.refuse',
+      entityType: 'TimeEntry',
+      entityId: entryId,
+      accountId,
+      summary:
+        status === 'VALIDATED'
+          ? `Créneau validé${heures != null ? ` (${heures.toFixed(2)} h)` : ''} sur la réservation ${entry.bookingId}.`
+          : `Créneau refusé sur la réservation ${entry.bookingId}.`,
+      metadata: { bookingId: entry.bookingId, heures },
+    });
+    return updated;
   }
 
   /** Le freelance supprime un de ses créneaux tant qu'il n'est pas validé. */

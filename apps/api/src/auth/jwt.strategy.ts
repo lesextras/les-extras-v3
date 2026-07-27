@@ -43,6 +43,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (user.status === UserStatus.BANNED) {
       throw new UnauthorizedException('Compte suspendu.');
     }
+    if (user.status === UserStatus.ANONYMIZED) {
+      throw new UnauthorizedException('Ce compte a été supprimé à la demande de son titulaire.');
+    }
 
     return { id: user.id, email: user.email, role: user.role };
   }
