@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { FileUpload, type FichierDepose } from "./FileUpload";
 import { Field, Textarea } from "./form-fields";
 import { SectionTitle } from "./ui";
 import type { Profile, SessionUser } from "./types";
@@ -28,6 +29,8 @@ export function ProfileForm({
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [photo, setPhoto] = useState<FichierDepose | null>(null);
+  const [photoTouchee, setPhotoTouchee] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -41,6 +44,9 @@ export function ProfileForm({
         lastName: String(fd.get("lastName") || "") || undefined,
         phone: String(fd.get("phone") || "") || undefined,
       };
+      // On ne touche à la photo que si la personne l'a modifiée pendant la
+      // session : sinon on laisserait un champ vide écraser l'existant.
+      if (photoTouchee) body.avatarFileId = photo?.id ?? "";
       if (isFreelance) {
         Object.assign(body, {
           job: String(fd.get("job") || "") || undefined,
@@ -90,6 +96,21 @@ export function ProfileForm({
             </Field>
             <Field label="Téléphone" htmlFor="phone">
               <Input id="phone" name="phone" defaultValue={user.phone ?? ""} placeholder="06 12 34 56 78" />
+            </Field>
+          </div>
+          <div className="mt-4">
+            <Field label="Photo de profil" htmlFor="avatar">
+              <FileUpload
+                famille="avatar"
+                accountId={accountId}
+                fichier={photo}
+                onChange={(f) => {
+                  setPhoto(f);
+                  setPhotoTouchee(true);
+                }}
+                label="Choisir une photo"
+                aide="JPEG, PNG ou WEBP · 3 Mo maximum"
+              />
             </Field>
           </div>
         </CardContent>

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { FileUpload, type FichierDepose } from "./FileUpload";
 
 type DocType =
   | "IDENTITY"
@@ -72,6 +73,8 @@ interface ComplianceDoc {
   label: string | null;
   status: Status;
   fileUrl: string | null;
+  /** Fichier réellement déposé dans le dépôt privé (null si aucun). */
+  fichier: FichierDepose | null;
   issuedAt: string | null;
   expiresAt: string | null;
   notes: string | null;
@@ -125,6 +128,7 @@ function DocRow({
   const [expiresAt, setExpiresAt] = useState(toDateInput(doc.expiresAt));
   const [issuedAt, setIssuedAt] = useState(toDateInput(doc.issuedAt));
   const [notes, setNotes] = useState(doc.notes ?? "");
+  const [fichier, setFichier] = useState<FichierDepose | null>(doc.fichier ?? null);
   const [busy, setBusy] = useState(false);
 
   async function save() {
@@ -139,6 +143,8 @@ function DocRow({
           expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
           issuedAt: issuedAt ? new Date(issuedAt).toISOString() : undefined,
           notes: notes || undefined,
+          // Chaîne vide = on détache le fichier ; identifiant = on l'attache.
+          fileId: fichier?.id ?? "",
         },
       });
       toast({ title: `${TYPE_LABEL[doc.type]} enregistrée` });
@@ -200,6 +206,16 @@ function DocRow({
             {busy ? "…" : "Enregistrer"}
           </Button>
           <div className="space-y-1 sm:col-span-4">
+            <label className="text-xs text-muted-foreground">Pièce justificative</label>
+            <FileUpload
+              famille="compliance"
+              accountId={accountId}
+              fichier={fichier}
+              onChange={(f) => setFichier(f)}
+              aide="PDF ou photo · 10 Mo maximum · visible seulement par les responsables du compte"
+            />
+          </div>
+          <div className="space-y-1 sm:col-span-4">
             <label className="text-xs text-muted-foreground">Note</label>
             <Input
               value={notes}
@@ -210,10 +226,20 @@ function DocRow({
           </div>
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground">
-          {doc.expiresAt ? `Échéance : ${toDateInput(doc.expiresAt)}` : "Aucune échéance renseignée"}
-          {doc.notes ? ` · ${doc.notes}` : ""}
-        </p>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            {doc.expiresAt ? `Échéance : ${toDateInput(doc.expiresAt)}` : "Aucune échéance renseignée"}
+            {doc.notes ? ` · ${doc.notes}` : ""}
+          </p>
+          {doc.fichier ? (
+            <FileUpload
+              famille="compliance"
+              fichier={doc.fichier}
+              onChange={() => undefined}
+              disabled
+            />
+          ) : null}
+        </div>
       )}
     </div>
   );

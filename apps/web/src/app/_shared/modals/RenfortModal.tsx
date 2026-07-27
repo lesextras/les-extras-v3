@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FileUpload, type FichierDepose } from "../FileUpload";
 import {
   Select,
   SelectContent,
@@ -49,6 +50,7 @@ export function RenfortModal({
 }) {
   const router = useRouter();
   const { toast } = useToast();
+  const [piece, setPiece] = useState<FichierDepose | null>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +97,7 @@ export function RenfortModal({
       headcount: fd.get("headcount") ? Number(fd.get("headcount")) : 1,
       emergency: fd.get("emergency") === "on",
       attachmentUrl: String(fd.get("attachmentUrl") || "") || undefined,
+      attachmentId: piece?.id,
       orgUnitId: String(fd.get("orgUnitId") || "") || undefined,
     };
     try {
@@ -213,13 +216,23 @@ export function RenfortModal({
               </select>
             </Field>
           ) : null}
-          <Field label="Pièce jointe (lien vers un document)" htmlFor="attachmentUrl">
-            <Input
-              id="attachmentUrl"
-              name="attachmentUrl"
-              type="url"
-              placeholder="https://… (fiche de poste, planning, consignes)"
-            />
+          <Field label="Pièce jointe" htmlFor="attachmentUrl">
+            <div className="space-y-2">
+              <FileUpload
+                famille="mission"
+                accountId={accountId}
+                fichier={piece}
+                onChange={(f) => setPiece(f)}
+                label="Joindre un document"
+                aide="Fiche de poste, planning, consignes · 10 Mo maximum"
+              />
+              <Input
+                id="attachmentUrl"
+                name="attachmentUrl"
+                type="url"
+                placeholder="…ou collez un lien vers un document existant"
+              />
+            </div>
           </Field>
           <label className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm">
             <input type="checkbox" name="emergency" className="h-4 w-4 rounded border-input accent-primary" />

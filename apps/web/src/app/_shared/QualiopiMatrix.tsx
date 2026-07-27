@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { FileUpload, type FichierDepose } from "./FileUpload";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -51,6 +52,19 @@ function IndicatorRow({ indicator }: { indicator: Indicator }) {
   const [status, setStatus] = useState<Status>(indicator.proof?.status ?? "TODO");
   const [label, setLabel] = useState(indicator.proof?.label ?? "");
   const [url, setUrl] = useState(indicator.proof?.documentUrl ?? "");
+  // Une preuve déjà déposée est reconnaissable à son adresse interne.
+  const dejaDepose = url.startsWith("/api/proxy/files/");
+  const [preuve, setPreuve] = useState<FichierDepose | null>(
+    dejaDepose
+      ? {
+          id: url.split("/").pop() ?? "",
+          nom: indicator.proof?.label || "Preuve déposée",
+          type: "",
+          taille: 0,
+          url,
+        }
+      : null,
+  );
   const [busy, setBusy] = useState(false);
 
   async function save() {
@@ -98,6 +112,20 @@ function IndicatorRow({ indicator }: { indicator: Indicator }) {
       <Button size="sm" onClick={save} disabled={busy}>
         {busy ? "…" : "Enregistrer"}
       </Button>
+      <div className="lg:col-span-5">
+        <FileUpload
+          famille="formation"
+          fichier={preuve}
+          onChange={(f) => {
+            setPreuve(f);
+            // La preuve pointe vers la route protégée : elle n'est lisible
+            // que par les personnes habilitées, jamais par une adresse publique.
+            setUrl(f ? `/api/proxy/files/${f.id}` : "");
+          }}
+          label="Déposer la preuve"
+          aide="PDF, image ou document bureautique · 20 Mo maximum"
+        />
+      </div>
     </div>
   );
 }
