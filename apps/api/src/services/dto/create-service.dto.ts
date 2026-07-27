@@ -133,4 +133,14 @@ export class CreateServiceDto {
   @ValidateNested({ each: true })
   @Type(() => PriceExtraDto)
   priceExtras?: PriceExtraDto[];
+  /** Créneaux proposés à la réservation : ["9h-12h", "14h-17h"]. */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  timeSlots?: string[];
+
+  /** Formation couverte par la certification Qualiopi d'ADéPA. */
+  @IsOptional()
+  @IsBoolean()
+  qualiopi?: boolean;
 }

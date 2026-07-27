@@ -267,6 +267,13 @@ model Service {
   views       Int            @default(0)
   /// Identifiant d'origine (import du catalogue historique) : clé d'idempotence.
   sourceId    String?        @unique
+  /// Repères affichés sur la fiche (modèle les-extras.fr).
+  /// Nombre de demandes reçues : sert la preuve sociale « X demandes / semaine ».
+  requestsCount Int          @default(0)
+  /// Créneaux horaires proposés à la réservation : ["9h-12h", "14h-17h"].
+  timeSlots     String[]     @default([])
+  /// Formation couverte par la certification Qualiopi d'ADéPA (finançable OPCO).
+  qualiopi      Boolean      @default(false)
   price       Decimal?       @db.Decimal(10, 2)
   /// Coût en crédits d'une réservation de cet atelier par un établissement.
   creditCost  Int            @default(1)

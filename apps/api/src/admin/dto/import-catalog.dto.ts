@@ -83,6 +83,15 @@ export class ImportListingDto {
   evaluation?: string;
 
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  timeSlots?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  qualiopi?: boolean;
+
+  @IsOptional()
   @IsBoolean()
   publish?: boolean;
 }

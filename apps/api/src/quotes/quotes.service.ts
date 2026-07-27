@@ -130,6 +130,13 @@ export class QuotesService {
       },
     });
 
+    // Compteur affiché sur la fiche : « X demandes cette semaine ».
+    if (dto.serviceId) {
+      await this.prisma.service
+        .update({ where: { id: dto.serviceId }, data: { requestsCount: { increment: 1 } } })
+        .catch(() => undefined);
+    }
+
     if (provider.ownerId) {
       await this.notifications.create(provider.ownerId, {
         type: 'QUOTE_REQUESTED',

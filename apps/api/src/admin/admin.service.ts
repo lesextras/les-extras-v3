@@ -1288,6 +1288,8 @@ export class AdminService {
           objectives: l.objectives,
           methodology: l.methodology,
           evaluation: l.evaluation,
+          timeSlots: l.timeSlots ?? [],
+          qualiopi: l.qualiopi ?? false,
           status: (l.publish ? 'PUBLISHED' : 'DRAFT') as 'PUBLISHED' | 'DRAFT',
           verified: true,
           sourceId: l.sourceId,

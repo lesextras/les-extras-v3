@@ -40,6 +40,8 @@ export class ServicesService {
         faq: (dto.faq as unknown as object) ?? undefined,
         images: dto.images ?? [],
         priceExtras: (dto.priceExtras as unknown as object) ?? undefined,
+        timeSlots: dto.timeSlots ?? [],
+        qualiopi: dto.qualiopi ?? false,
         price: dto.price,
         city: dto.city,
       },
