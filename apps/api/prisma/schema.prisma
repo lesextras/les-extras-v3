@@ -266,7 +266,10 @@ model Service {
   /// Compteur de consultations de la fiche.
   views       Int            @default(0)
   /// Identifiant d'origine (import du catalogue historique) : clé d'idempotence.
-  sourceId    String?        @unique
+  /// Index simple et non unique : une contrainte UNIQUE bloquerait `prisma db push`
+  /// au démarrage du conteneur (avertissement de perte de données). L'unicité est
+  /// garantie applicativement par le `findFirst` de AdminService.importCatalog().
+  sourceId    String?
   /// Repères affichés sur la fiche (modèle les-extras.fr).
   /// Nombre de demandes reçues : sert la preuve sociale « X demandes / semaine ».
   requestsCount Int          @default(0)
@@ -287,6 +290,7 @@ model Service {
 
   @@index([status])
   @@index([accountId])
+  @@index([sourceId])
 }
 
 /// Réservation : relie un FREELANCE à une mission OU un service.
