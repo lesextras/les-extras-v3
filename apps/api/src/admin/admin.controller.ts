@@ -212,6 +212,11 @@ export class AdminController {
     return this.admin.listInvoices({ status });
   }
 
+  @Get('invoices/:id')
+  getInvoice(@Param('id') id: string) {
+    return this.admin.getInvoice(id);
+  }
+
   @Patch('invoices/:id/status')
   updateInvoiceStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.admin.updateInvoiceStatus(id, status);

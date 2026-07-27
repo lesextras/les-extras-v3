@@ -499,6 +499,36 @@ export class AdminService {
     });
   }
 
+  /** Facture complète pour l'admin plateforme (hors périmètre de compte actif). */
+  async getInvoice(id: string) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        booking: {
+          include: {
+            service: { select: { title: true } },
+            mission: { select: { title: true } },
+            freelance: { select: { firstName: true, lastName: true, email: true } },
+          },
+        },
+        account: {
+          select: {
+            id: true,
+            name: true,
+            legalName: true,
+            address: true,
+            city: true,
+            postalCode: true,
+            siret: true,
+            owner: { select: { email: true } },
+          },
+        },
+      },
+    });
+    if (!invoice) throw new NotFoundException('Facture introuvable.');
+    return invoice;
+  }
+
   async updateInvoiceStatus(id: string, status: string) {
     const invoice = await this.prisma.invoice.findUnique({ where: { id } });
     if (!invoice) throw new NotFoundException('Facture introuvable.');

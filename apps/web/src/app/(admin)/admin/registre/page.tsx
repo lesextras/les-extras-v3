@@ -51,7 +51,7 @@ export default async function AdminRegistrePage() {
         subtitle="Registre des formations et Bilan Pédagogique et Financier annuel (à ressaisir sur EDOF)."
         actions={
           <Button asChild variant="outline">
-            <a href="/api/admin/formations/bpf.csv" download>
+            <a href="/api/proxy/admin/formations/bpf.csv" download>
               Exporter le BPF (CSV)
             </a>
           </Button>
