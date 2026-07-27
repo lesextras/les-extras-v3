@@ -27,8 +27,15 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
   const search = req.nextUrl.search ?? '';
   const target = `${apiBase()}/${path.join('/')}${search}`;
 
-  const headers: Record<string, string> = { Accept: 'application/json' };
+  // On relaie l'Accept du navigateur : un téléchargement de PDF ne demande pas
+  // du JSON. Le forcer casserait la négociation de contenu.
+  const headers: Record<string, string> = {
+    Accept: req.headers.get('accept') ?? 'application/json',
+  };
   const ct = req.headers.get('content-type');
+  // Pour un envoi multipart, on ne recopie PAS le Content-Type tel quel :
+  // il porte une frontière (boundary) qui doit rester cohérente avec le corps.
+  // Comme on retransmet le corps octet pour octet, la recopie est correcte.
   if (ct) headers['Content-Type'] = ct;
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const headerAccount = req.headers.get('x-account-id');
@@ -37,14 +44,17 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
 
   const method = req.method.toUpperCase();
   const hasBody = !['GET', 'HEAD'].includes(method);
-  const body = hasBody ? await req.text() : undefined;
+  // arrayBuffer et non text : un dépôt de fichier est binaire, et le décoder
+  // en UTF-8 corromprait irrémédiablement le contenu.
+  const raw = hasBody ? await req.arrayBuffer() : undefined;
+  const body = raw && raw.byteLength ? Buffer.from(raw) : undefined;
 
   let res: Response;
   try {
     res = await fetch(target, {
       method,
       headers,
-      body: body && body.length ? body : undefined,
+      body,
       cache: 'no-store',
     });
   } catch {
@@ -54,13 +64,17 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
     );
   }
 
-  const payload = await res.text();
-  return new NextResponse(payload, {
-    status: res.status,
-    headers: {
-      'content-type': res.headers.get('content-type') ?? 'application/json',
-    },
-  });
+  // Idem au retour : un PDF ou une image doit traverser sans transformation.
+  const payload = await res.arrayBuffer();
+  const outHeaders: Record<string, string> = {
+    'content-type': res.headers.get('content-type') ?? 'application/json',
+  };
+  // Entêtes utiles au téléchargement de fichiers, relayés tels quels.
+  for (const nom of ['content-disposition', 'cache-control', 'x-content-type-options']) {
+    const valeur = res.headers.get(nom);
+    if (valeur) outHeaders[nom] = valeur;
+  }
+  return new NextResponse(payload, { status: res.status, headers: outHeaders });
 }
 
 type Ctx = { params: { path: string[] } };
