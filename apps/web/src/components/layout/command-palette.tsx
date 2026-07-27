@@ -25,6 +25,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat" },
   { label: "Factures & revenus", href: "/dashboard/finance", group: "Navigation", keywords: "facture argent paiement" },
   { label: "Abonnement & crédits", href: "/dashboard/credits", group: "Établissement", keywords: "stripe paiement abonnement recharger crédits" },
+  { label: "Devis", href: "/dashboard/devis", group: "Navigation", keywords: "devis chiffrage proposition estimation prix" },
   { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres équipe" },
   { label: "Admin — Vue d’ensemble", href: "/admin", group: "Admin", keywords: "back-office" },
   { label: "Admin — Utilisateurs", href: "/admin/utilisateurs", group: "Admin", keywords: "users comptes rattachements salarié responsable" },

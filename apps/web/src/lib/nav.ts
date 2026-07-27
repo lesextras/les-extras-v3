@@ -77,6 +77,7 @@ const freelanceNav: NavSection[] = [
       { label: 'Marketplace', href: '/marketplace', icon: Store, hint: 'Toutes les missions et ateliers ouverts' },
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, hint: 'Créez et gérez vos interventions' },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
+      { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Demandes reçues à chiffrer et devis envoyés' },
     ],
   },
   {
@@ -118,6 +119,7 @@ const establishmentNav: NavSection[] = [
       { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
       { label: 'Coffre-fort conformité', href: '/dashboard/conformite', icon: FileCheck, hint: 'Pièces obligatoires des intervenants (CNI, casier, permis, IBAN, URSSAF) : statut, échéances et alertes' },
       { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
+      { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Vos demandes de devis et les propositions reçues' },
       { label: 'Factures', href: '/dashboard/finance', icon: Receipt, hint: 'Vos factures et dépenses' },
       { label: 'Abonnement & crédits', href: '/dashboard/credits', icon: Receipt, hint: 'Abonnement mensuel et rechargement de crédits' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },

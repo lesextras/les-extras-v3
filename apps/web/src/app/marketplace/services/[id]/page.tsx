@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { BookServiceModal } from "../../../_shared/modals/BookServiceModal";
+import { RequestQuoteModal } from "../../../_shared/modals/RequestQuoteModal";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -95,13 +96,29 @@ export default async function ServiceDetailPage({ params }: { params: { id: stri
               </dl>
 
               {isEstablishment ? (
-                <BookServiceModal
-                  serviceId={service.id}
-                  serviceTitle={service.title}
-                  price={service.price}
-                  accountId={session.account.id}
-                  trigger={<Button className="w-full">Réserver cet atelier</Button>}
-                />
+                <div className="space-y-2">
+                  <BookServiceModal
+                    serviceId={service.id}
+                    serviceTitle={service.title}
+                    price={service.price}
+                    accountId={session.account.id}
+                    trigger={<Button className="w-full">Réserver cet atelier</Button>}
+                  />
+                  <RequestQuoteModal
+                    serviceId={service.id}
+                    serviceTitle={service.title}
+                    accountId={session.account.id}
+                    trigger={
+                      <Button variant="outline" className="w-full">
+                        Demander un devis
+                      </Button>
+                    }
+                  />
+                  <p className="text-center text-xs text-muted-foreground">
+                    Réservation immédiate, ou devis chiffré si votre besoin est
+                    spécifique.
+                  </p>
+                </div>
               ) : (
                 <p className="text-center text-xs text-muted-foreground">
                   Seuls les établissements peuvent réserver.

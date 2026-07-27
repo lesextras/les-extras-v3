@@ -33,6 +33,7 @@ const LABELS: Record<string, string> = {
   opportunites: 'Opportunités',
   finance: 'Factures & revenus',
   credits: 'Abonnement & crédits',
+  devis: 'Devis',
   account: 'Mon compte',
   tutorat: 'Tutorat',
 };
