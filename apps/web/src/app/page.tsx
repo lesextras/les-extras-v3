@@ -396,8 +396,124 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* TARIFS — montants repris de la configuration de facturation reelle
+            (packs de credits et plans d'abonnement definis cote API). */}
+        <section id="tarifs" className="bg-card">
+          <div className="section">
+            <div className="mx-auto max-w-2xl text-center">
+              <span className="eyebrow">Tarifs</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                Vous ne payez que ce que vous utilisez
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Pas de frais d’entrée, pas d’engagement. Le prix de chaque atelier est affiché
+                sur sa fiche, et l’intervenant touche l’intégralité de son tarif.
+              </p>
+            </div>
+
+            <div className="mt-14 grid gap-6 lg:grid-cols-3">
+              {/* 1. À la prestation */}
+              <Card className="flex flex-col">
+                <CardContent className="flex flex-1 flex-col p-8">
+                  <h3 className="text-lg font-semibold">À la prestation</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Pour un besoin ponctuel, sans compte payant.
+                  </p>
+                  <p className="mt-6 text-3xl font-bold tracking-tight">Prix de la fiche</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Affiché sur chaque atelier et chaque formation
+                  </p>
+                  <ul className="mt-6 flex-1 space-y-2.5">
+                    {[
+                      'Devis chiffré sous 48 h',
+                      'Contrat et facture générés automatiquement',
+                      '0 % de commission prélevée sur l’intervenant',
+                      'Paiement en ligne ou sur facture',
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button asChild variant="outline" className="mt-6 w-full">
+                    <Link href="/ateliers">Voir les prix du catalogue</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* 2. Crédits */}
+              <Card className="flex flex-col border-primary/40 shadow-card">
+                <CardContent className="flex flex-1 flex-col p-8">
+                  <Badge className="w-fit">Le plus choisi</Badge>
+                  <h3 className="mt-3 text-lg font-semibold">Crédits d’intervention</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Un crédit = une réservation d’atelier. Valables sans limite de durée.
+                  </p>
+                  <p className="mt-6 text-3xl font-bold tracking-tight">
+                    dès 7 €<span className="text-base font-normal text-muted-foreground"> / crédit</span>
+                  </p>
+                  <ul className="mt-6 flex-1 space-y-2.5">
+                    {[
+                      'Pack Découverte — 10 crédits, 90 €',
+                      'Pack Équipe — 25 crédits, 200 € (8 €/crédit)',
+                      'Pack Établissement — 60 crédits, 420 € (7 €/crédit)',
+                      'Rechargement en ligne, facture immédiate',
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button asChild className="mt-6 w-full">
+                    <Link href="/register">Créer un compte</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* 3. Abonnement de gestion interne */}
+              <Card className="flex flex-col">
+                <CardContent className="flex flex-1 flex-col p-8">
+                  <h3 className="text-lg font-semibold">Abonnement</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Gérez aussi vos remplacements, ateliers et formations en interne.
+                  </p>
+                  <p className="mt-6 text-3xl font-bold tracking-tight">
+                    149 €<span className="text-base font-normal text-muted-foreground"> / mois</span>
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Essentiel · Pro à 299 € / mois
+                  </p>
+                  <ul className="mt-6 flex-1 space-y-2.5">
+                    {[
+                      'Essentiel : 5 crédits offerts / mois, marketplace complète',
+                      'Pro : 15 crédits offerts / mois, support prioritaire, statistiques',
+                      'Planning, équipe, multi-unités et pointage',
+                      'Coffre-fort de conformité et registre Qualiopi',
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button asChild variant="outline" className="mt-6 w-full">
+                    <Link href="/contact">Parler à l’équipe</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              Montants hors taxes. Les formations portées par la certification Qualiopi d’ADéPA
+              sont finançables par votre OPCO.
+            </p>
+          </div>
+        </section>
+
         {/* CTA FINAL */}
-        <section id="tarifs" className="section pt-0">
+        <section className="section pt-0">
           <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground shadow-card md:px-16">
             <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
             <div

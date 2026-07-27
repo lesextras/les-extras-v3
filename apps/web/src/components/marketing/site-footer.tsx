@@ -24,8 +24,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
     title: 'Ressources',
     links: [
       { label: 'Comment ça marche', href: '/#comment' },
-      { label: 'Aide & support', href: '/login' },
-      { label: 'Blog', href: '/#' },
+      { label: 'Nous contacter', href: '/contact' },
     ],
   },
   {

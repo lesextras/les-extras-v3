@@ -6,10 +6,12 @@ import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 
+// Ordre = ordre de la strategie : l'atelier et la formation sont les produits
+// d'appel, le renfort vient ensuite.
 const links = [
-  { label: 'SOS Renfort', href: '/#renfort' },
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
+  { label: 'SOS Renfort', href: '/#renfort' },
   { label: 'Comment ça marche', href: '/#comment' },
   { label: 'Tarifs', href: '/#tarifs' },
 ];
