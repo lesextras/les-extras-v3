@@ -14,27 +14,28 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: {
-    default: 'LES EXTRAS — Le renfort médico-social, sereinement',
+    default: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     template: '%s · LES EXTRAS',
   },
   description:
-    'La marketplace qui relie les établissements médico-sociaux aux professionnels indépendants : SOS Renfort en urgence et ateliers d’intervention. Simple, humain, fiable.',
+    'Le catalogue d’ateliers et de formations courtes pour les établissements médico-sociaux : réservation en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe quand l’urgence arrive.',
   keywords: [
+    'atelier médico-social',
+    'formation médico-social',
+    'analyse des pratiques professionnelles',
+    'intervention MECS IME ITEP',
+    'formation Qualiopi médico-social',
     'renfort médico-social',
     'remplacement éducateur',
-    'MECS',
-    'IME',
-    'ITEP',
     'EHPAD',
     'freelance médico-social',
-    'ateliers éducatifs',
   ],
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    title: 'LES EXTRAS — Le renfort médico-social, sereinement',
+    title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     description:
-      'SOS Renfort en urgence et catalogue d’ateliers. La marketplace du secteur médico-social.',
+      'Ateliers et formations courtes réservables en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe quand l’urgence arrive.',
     siteName: 'LES EXTRAS',
   },
   robots: { index: true, follow: true },

@@ -66,9 +66,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <Star className="size-5 fill-current" />
           </span>
           <div>
-            <p className="text-sm font-semibold">4,8/5 de satisfaction</p>
+            <p className="text-sm font-semibold">Formations certifiées Qualiopi</p>
             <p className="text-xs text-primary-foreground/70">
-              Par les établissements accompagnés
+              Certification portée par l’association ADéPA — finançables OPCO
             </p>
           </div>
         </div>

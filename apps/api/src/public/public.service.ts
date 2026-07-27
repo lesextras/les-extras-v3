@@ -21,12 +21,54 @@ const PUBLIC_SELECT = {
   category: true,
   price: true,
   duration: true,
+  durationMinutes: true,
   city: true,
   maxParticipants: true,
   publicTarget: true,
+  publicTargets: true,
+  images: true,
+  qualiopi: true,
+  verified: true,
+  featured: true,
   createdAt: true,
   categoryRef: { select: { id: true, title: true } },
   account: { select: { id: true, name: true, city: true, logoUrl: true } },
+} satisfies Prisma.ServiceSelect;
+
+/**
+ * Fiche publique complète : tout ce que la fiche connectée affiche, moins les
+ * actions. Objectif SEO — la page vitrine doit valoir la page interne, sinon
+ * Google n'indexe qu'une coquille et l'acheteur n'a aucune raison de cliquer.
+ */
+const PUBLIC_DETAIL_SELECT = {
+  ...PUBLIC_SELECT,
+  material: true,
+  prerequisites: true,
+  objectives: true,
+  methodology: true,
+  evaluation: true,
+  faq: true,
+  priceExtras: true,
+  timeSlots: true,
+  views: true,
+  requestsCount: true,
+  updatedAt: true,
+  account: {
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      logoUrl: true,
+      owner: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          profile: { select: { job: true, bio: true } },
+        },
+      },
+    },
+  },
 } satisfies Prisma.ServiceSelect;
 
 @Injectable()
@@ -117,14 +159,66 @@ export class PublicService {
     return { items, total, take, skip, categories };
   }
 
-  /** Détail d'un service PUBLISHED (404 sinon). */
+  /**
+   * Détail PUBLIC d'un service PUBLISHED (404 sinon) — fiche vitrine complète :
+   * contenu pédagogique, réputation de l'intervenant et fiches de la même
+   * famille. Incrémente le compteur de consultations (preuve sociale).
+   */
   async detail(id: string) {
     const service = await this.prisma.service.findFirst({
       where: { id, status: ServiceStatus.PUBLISHED },
-      select: PUBLIC_SELECT,
+      select: PUBLIC_DETAIL_SELECT,
     });
     if (!service) throw new NotFoundException('Service introuvable.');
-    return service;
+
+    // Best-effort : une erreur de compteur ne doit jamais casser la page.
+    this.prisma.service
+      .update({ where: { id }, data: { views: { increment: 1 } } })
+      .catch(() => undefined);
+
+    const ownerId = service.account?.owner?.id ?? null;
+    const reviews = ownerId
+      ? await this.prisma.review.findMany({
+          where: { targetId: ownerId },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
+            author: { select: { firstName: true, lastName: true } },
+          },
+        })
+      : [];
+    const rating =
+      reviews.length > 0
+        ? Math.round(
+            (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10,
+          ) / 10
+        : null;
+
+    const related = await this.prisma.service.findMany({
+      where: {
+        id: { not: id },
+        status: ServiceStatus.PUBLISHED,
+        ...(service.categoryRef?.id
+          ? { categoryId: service.categoryRef.id }
+          : { category: service.category }),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        city: true,
+        duration: true,
+        images: true,
+      },
+    });
+
+    return { ...service, reviews, rating, related };
   }
 
   /**

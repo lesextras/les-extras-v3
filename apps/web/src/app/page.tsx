@@ -24,10 +24,11 @@ import type { CatalogItem } from './(public)/_catalog';
 
 export default async function LandingPage() {
   // Mise en avant publique de quelques prestations publiées (sans connexion).
-  const { data: featured } = await fetchPublic<{ items: CatalogItem[] }>(
+  const { data: featured } = await fetchPublic<{ items: CatalogItem[]; total?: number }>(
     '/public/catalog?type=all&take=3',
   );
   const featuredItems = featured?.items ?? [];
+  const catalogueTotal = featured?.total ?? featuredItems.length;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -41,33 +42,34 @@ export default async function LandingPage() {
             <div className="animate-fade-in">
               <span className="eyebrow">
                 <Sparkles className="size-3.5" />
-                Le renfort médico-social, sereinement
+                Ateliers &amp; formations courtes pour le médico-social
               </span>
               <h1 className="mt-5 text-4xl font-bold leading-[1.08] tracking-tight text-foreground text-balance md:text-5xl lg:text-6xl">
-                Trouvez le bon renfort,
-                <span className="text-gradient-brand"> au bon moment.</span>
+                Des interventions prêtes à réserver,
+                <span className="text-gradient-brand"> pour vos publics et vos équipes.</span>
               </h1>
               <p className="mt-5 max-w-xl text-lg text-muted-foreground text-balance">
-                LES EXTRAS relie les établissements (MECS, IME, ITEP, EHPAD, SESSAD) aux
-                professionnels indépendants du secteur. Publiez un besoin urgent, réservez un
-                atelier, gérez tout depuis un seul espace.
+                Analyse des pratiques, médiation, prévention, spécialisations métier : un
+                catalogue d’ateliers et de formations animés par des intervenants vérifiés.
+                Réservation en ligne, devis chiffré en 48 h, contrat et facture automatiques.
+                Et quand l’urgence arrive, le SOS Renfort prend le relais.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg">
-                  <Link href="/register">
-                    Commencer gratuitement
+                  <Link href="/ateliers">
+                    Explorer le catalogue
                     <ArrowRight />
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <Link href="/#comment">Voir comment ça marche</Link>
+                  <Link href="/#renfort">Besoin d’un renfort urgent ?</Link>
                 </Button>
               </div>
               <dl className="mt-10 grid max-w-lg grid-cols-3 gap-6">
                 {[
-                  { k: '48 h', v: 'délai moyen pour être renforcé' },
-                  { k: '1 200+', v: 'professionnels qualifiés' },
-                  { k: '4,8/5', v: 'satisfaction établissements' },
+                  { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
+                  { k: 'Qualiopi', v: 'formations finançables OPCO' },
+                  { k: '48 h', v: 'pour recevoir votre devis' },
                 ].map((s, i) => (
                   <div
                     key={s.k}
@@ -159,46 +161,16 @@ export default async function LandingPage() {
           <div className="mx-auto max-w-2xl text-center">
             <span className="eyebrow">Deux services, un seul espace</span>
             <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-              Répondez à l’urgence, enrichissez l’accompagnement
+              Enrichissez l’accompagnement, absorbez l’imprévu
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Que vous cherchiez un remplacement de dernière minute ou un atelier thématique, LES
-              EXTRAS couvre tous vos besoins de renfort.
+              Commencez par un atelier ou une formation courte : planifiable, budgétable,
+              réservable en ligne. Le renfort d’urgence est là quand il faut, sur la même
+              plateforme et avec les mêmes intervenants.
             </p>
           </div>
 
           <div className="mt-14 grid gap-6 lg:grid-cols-2">
-            <Card className="group card-interactive overflow-hidden">
-              <CardContent className="p-8">
-                <span className="grid size-12 place-items-center rounded-2xl bg-secondary-soft text-secondary transition-transform duration-300 group-hover:scale-105">
-                  <Siren className="size-6" />
-                </span>
-                <h3 className="mt-5 text-xl font-semibold">SOS Renfort</h3>
-                <p className="mt-2 text-muted-foreground">
-                  Publiez une mission en 2 minutes. Notre diffusion en cascade
-                  (salariés → réseau réservé → public) trouve le bon professionnel, vite.
-                </p>
-                <ul className="mt-5 space-y-2.5">
-                  {[
-                    'Remplacements urgents jour & nuit',
-                    'Candidatures centralisées et qualifiées',
-                    'Contrat et facturation générés automatiquement',
-                  ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm">
-                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/register"
-                  className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary transition-transform group-hover:translate-x-0.5"
-                >
-                  Publier un renfort <ArrowRight className="size-4" />
-                </Link>
-              </CardContent>
-            </Card>
-
             <Card id="ateliers" className="group card-interactive overflow-hidden">
               <CardContent className="p-8">
                 <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary transition-transform duration-300 group-hover:scale-105">
@@ -226,6 +198,37 @@ export default async function LandingPage() {
                   className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-transform group-hover:translate-x-0.5"
                 >
                   Explorer le catalogue <ArrowRight className="size-4" />
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="group card-interactive overflow-hidden">
+              <CardContent className="p-8">
+                <span className="grid size-12 place-items-center rounded-2xl bg-secondary-soft text-secondary transition-transform duration-300 group-hover:scale-105">
+                  <Siren className="size-6" />
+                </span>
+                <h3 className="mt-5 text-xl font-semibold">SOS Renfort</h3>
+                <p className="mt-2 text-muted-foreground">
+                  Publiez une mission en 2 minutes. Notre diffusion en cascade
+                  (salariés → réseau réservé → public) trouve le bon professionnel, vite.
+                </p>
+                <ul className="mt-5 space-y-2.5">
+                  {[
+                    'Remplacements urgents jour & nuit',
+                    'Candidatures centralisées et qualifiées',
+                    'Contrat et facturation générés automatiquement',
+                  ].map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm">
+                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/register"
+                  className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary transition-transform group-hover:translate-x-0.5"
+                >
+                  Publier un renfort <ArrowRight className="size-4" />
                 </Link>
               </CardContent>
             </Card>

@@ -27,13 +27,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const now = new Date();
 
+  // Uniquement des URL réellement publiques et servant un 200 :
+  // /freelances n'existe pas (404) et /marketplace redirige vers la connexion.
   const staticRoutes = [
     "",
     "/ateliers",
     "/formations",
     "/etablissements",
-    "/freelances",
-    "/marketplace",
     "/contact",
     "/legal/mentions-legales",
     "/legal/confidentialite",
@@ -48,16 +48,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const dynamic: MetadataRoute.Sitemap = [];
+  const vendorIds = new Set<string>();
 
-  const catalog = await safeJson<{ items: { id: string; category?: string }[] }>(
-    "/public/catalog?take=200",
-  );
-  for (const it of catalog?.items ?? []) {
+  // L'API plafonne `take` à 60 : on pagine, sinon la requête part en 400 et le
+  // sitemap se retrouve vide de toute fiche (le catalogue devient invisible).
+  const PAGE = 60;
+  for (let skip = 0; skip < 600; skip += PAGE) {
+    const page = await safeJson<{
+      items: { id: string; account?: { id?: string } | null }[];
+      total?: number;
+    }>(`/public/catalog?take=${PAGE}&skip=${skip}`);
+    const items = page?.items ?? [];
+    for (const it of items) {
+      dynamic.push({
+        url: `${base}/ateliers/${it.id}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.8,
+      });
+      if (it.account?.id) vendorIds.add(it.account.id);
+    }
+    if (items.length < PAGE) break;
+  }
+
+  // Pages intervenants : preuve sociale et maillage interne vers les fiches.
+  for (const id of vendorIds) {
     dynamic.push({
-      url: `${base}/ateliers/${it.id}`,
+      url: `${base}/intervenants/${id}`,
       lastModified: now,
       changeFrequency: "weekly",
-      priority: 0.5,
+      priority: 0.6,
     });
   }
 
