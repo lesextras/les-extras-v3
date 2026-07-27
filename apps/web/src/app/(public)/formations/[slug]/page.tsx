@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
 import { formatMoney, formatDate } from "../../../_shared/format";
+import { QrShare } from "../../../_shared/QrShare";
+import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
 import type { FormationCard } from "../page";
 
 interface FaqItem { question: string; answer: string }
@@ -219,9 +221,7 @@ export default async function FormationPubliquePage({
                 <Button asChild className="w-full">
                   <Link href={`/marketplace/formations/${f.id}`}>S’inscrire à une session</Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/contact">Demander un devis</Link>
-                </Button>
+                <PublicQuoteForm formationSlug={f.slug} titre={f.title} />
                 <p className="text-center text-xs text-muted-foreground">
                   Formation intra-établissement possible. Réponse garantie sous 72 h.
                 </p>
@@ -234,6 +234,8 @@ export default async function FormationPubliquePage({
               </div>
             </CardContent>
           </Card>
+
+          <QrShare path={`/formations/${f.slug}`} title={f.title} fileName={f.slug} />
 
           {f.account ? (
             <Card>

@@ -29,6 +29,8 @@ import {
   fullName,
   initials,
 } from "../../../_shared/format";
+import { QrShare } from "../../../_shared/QrShare";
+import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
 
 interface FaqItem { question: string; answer: string }
 interface PriceExtra { label: string; price: number | string }
@@ -389,11 +391,9 @@ export default async function AtelierPublicPage({ params }: { params: { id: stri
                 <Button asChild className="w-full">
                   <Link href={`/marketplace/services/${service.id}`}>Réserver cet atelier</Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={`/marketplace/services/${service.id}`}>Demander un devis</Link>
-                </Button>
+                <PublicQuoteForm serviceId={service.id} titre={service.title} />
                 <p className="text-center text-xs text-muted-foreground">
-                  Réservation immédiate ou devis chiffré. Réponse garantie sous 72 h.
+                  Réservation immédiate si vous avez un compte, sinon devis chiffré sous 48 h.
                 </p>
               </div>
 
@@ -410,6 +410,12 @@ export default async function AtelierPublicPage({ params }: { params: { id: stri
               </div>
             </CardContent>
           </Card>
+
+          <QrShare
+            path={`/ateliers/${service.id}`}
+            title={service.title}
+            fileName={service.id}
+          />
 
           {/* Intervenant */}
           {service.account ? (

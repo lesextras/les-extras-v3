@@ -38,24 +38,48 @@ export interface FormationCard {
 const inputClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3.5 py-2 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
+type Filtres = {
+  search?: string;
+  category?: string;
+  city?: string;
+  cpf?: string;
+  certifying?: string;
+  priceMax?: string;
+  sort?: string;
+};
+
 export default async function FormationsCatalogPage({
   searchParams,
 }: {
-  searchParams?: { search?: string; category?: string };
+  searchParams?: Filtres;
 }) {
   const qs = new URLSearchParams();
-  if (searchParams?.search) qs.set("search", searchParams.search);
-  if (searchParams?.category) qs.set("category", searchParams.category);
+  for (const cle of ["search", "category", "city", "priceMax", "sort"] as const) {
+    const v = searchParams?.[cle];
+    if (v) qs.set(cle, v);
+  }
+  if (searchParams?.cpf === "true") qs.set("cpf", "true");
+  if (searchParams?.certifying === "true") qs.set("certifying", "true");
   qs.set("take", "60");
 
   const { data } = await fetchPublic<{
     items: FormationCard[];
     total: number;
     categories: string[];
+    cities: string[];
   }>(`/public/formations?${qs.toString()}`);
 
   const items = data?.items ?? [];
   const categories = data?.categories ?? [];
+  const cities = data?.cities ?? [];
+  const filtree = Boolean(
+    searchParams?.search ||
+      searchParams?.category ||
+      searchParams?.city ||
+      searchParams?.priceMax ||
+      searchParams?.cpf ||
+      searchParams?.certifying,
+  );
 
   return (
     <div className="space-y-8">
@@ -64,42 +88,122 @@ export default async function FormationsCatalogPage({
         subtitle="Montez en compétences avec des formations pensées pour le médico-social : analyse des pratiques, prévention, spécialisations métier. Certification Qualiopi portée par ADéPA — finançables OPCO."
       />
 
-      <form method="GET" className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            name="search"
-            defaultValue={searchParams?.search ?? ""}
-            placeholder="Rechercher une formation…"
-            className={`${inputClass} pl-9`}
-            aria-label="Rechercher une formation"
-          />
+      <form method="GET" className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              name="search"
+              defaultValue={searchParams?.search ?? ""}
+              placeholder="Rechercher une formation…"
+              className={`${inputClass} pl-9`}
+              aria-label="Rechercher une formation"
+            />
+          </div>
+          <Button type="submit" className="sm:w-auto">
+            Filtrer
+          </Button>
         </div>
-        {categories.length > 0 ? (
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {categories.length > 0 ? (
+            <select
+              name="category"
+              defaultValue={searchParams?.category ?? ""}
+              className={inputClass}
+              aria-label="Filtrer par thématique"
+            >
+              <option value="">Toutes les thématiques</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          ) : null}
+
+          {cities.length > 0 ? (
+            <select
+              name="city"
+              defaultValue={searchParams?.city ?? ""}
+              className={inputClass}
+              aria-label="Filtrer par ville"
+            >
+              <option value="">Toutes les villes</option>
+              {cities.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          ) : null}
+
+          <input
+            type="number"
+            name="priceMax"
+            min={0}
+            step={50}
+            defaultValue={searchParams?.priceMax ?? ""}
+            placeholder="Budget max (€)"
+            className={inputClass}
+            aria-label="Budget maximum par participant"
+          />
+
           <select
-            name="category"
-            defaultValue={searchParams?.category ?? ""}
-            className={`${inputClass} sm:w-64`}
-            aria-label="Filtrer par catégorie"
+            name="sort"
+            defaultValue={searchParams?.sort ?? ""}
+            className={inputClass}
+            aria-label="Trier les formations"
           >
-            <option value="">Toutes les catégories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+            <option value="">Tri : les plus récentes</option>
+            <option value="soonest">Prochaine session</option>
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix décroissant</option>
+            <option value="duration-asc">Durée la plus courte</option>
           </select>
-        ) : null}
-        <Button type="submit" className="sm:w-auto">
-          Filtrer
-        </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <label className="inline-flex items-center gap-2 text-muted-foreground">
+            <input
+              type="checkbox"
+              name="cpf"
+              value="true"
+              defaultChecked={searchParams?.cpf === "true"}
+              className="size-4 rounded border-input accent-primary"
+            />
+            Éligible CPF
+          </label>
+          <label className="inline-flex items-center gap-2 text-muted-foreground">
+            <input
+              type="checkbox"
+              name="certifying"
+              value="true"
+              defaultChecked={searchParams?.certifying === "true"}
+              className="size-4 rounded border-input accent-primary"
+            />
+            Certifiante Qualiopi
+          </label>
+          {filtree ? (
+            <Link href="/formations" className="text-primary underline-offset-4 hover:underline">
+              Réinitialiser les filtres
+            </Link>
+          ) : null}
+          <span className="ml-auto text-muted-foreground">
+            {data?.total ?? 0} formation{(data?.total ?? 0) > 1 ? "s" : ""}
+          </span>
+        </div>
       </form>
 
       {items.length === 0 ? (
         <EmptyState
-          title="Catalogue de formations en préparation"
-          description="Nos formations arrivent très prochainement. Contactez-nous pour être informé de l’ouverture des prochaines sessions."
+          title={filtree ? "Aucune formation ne correspond" : "Catalogue de formations en préparation"}
+          description={
+            filtree
+              ? "Élargissez vos critères, ou dites-nous ce que vous cherchez : nous montons des sessions sur mesure."
+              : "Nos formations arrivent très prochainement. Contactez-nous pour être informé de l’ouverture des prochaines sessions."
+          }
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /** Filtres du catalogue PUBLIC (ateliers & formations publiés). */
@@ -19,6 +19,30 @@ export class QueryPublicCatalogDto {
   @IsString()
   @MaxLength(120)
   search?: string;
+
+  /** Public visé : Adolescent, Enfant, Handicap, Sénior… */
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  public?: string;
+
+  /** Ville ou département tel que saisi sur la fiche. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  city?: string;
+
+  /** Budget maximum, en euros. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  priceMax?: number;
+
+  /** Ordre d'affichage. */
+  @IsOptional()
+  @IsIn(['recent', 'rating', 'price-asc', 'price-desc'])
+  sort?: 'recent' | 'rating' | 'price-asc' | 'price-desc';
 
   @IsOptional()
   @Type(() => Number)

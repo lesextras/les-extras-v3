@@ -3,6 +3,7 @@ import { PublicService } from './public.service';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { QueryPublicFormationsDto } from './dto/query-public-formations.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
+import { CreateQuoteRequestDto } from './dto/create-quote-request.dto';
 
 /**
  * Vitrine PUBLIQUE, sans authentification (aucun JwtAuthGuard).
@@ -22,6 +23,18 @@ export class PublicController {
   @Get('catalog/:id')
   detail(@Param('id') id: string) {
     return this.publicService.detail(id);
+  }
+
+  /** GET /public/highlights — les 10 ateliers et 10 formations mis en avant. */
+  @Get('highlights')
+  highlights() {
+    return this.publicService.highlights();
+  }
+
+  /** POST /public/quote-request — demande de devis sans compte. */
+  @Post('quote-request')
+  quoteRequest(@Body() dto: CreateQuoteRequestDto) {
+    return this.publicService.createQuoteRequest(dto);
   }
 
   /** GET /public/formations?search=&category=&take=&skip= — catalogue public. */

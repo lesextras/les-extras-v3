@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { fetchPublic } from './_shared/server';
 import { SERVICE_CATEGORY_LABEL, formatMoney } from './_shared/format';
 import type { CatalogItem } from './(public)/_catalog';
+import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 
 export default async function LandingPage() {
   // Mise en avant publique de quelques prestations publiées (sans connexion).
@@ -29,6 +30,12 @@ export default async function LandingPage() {
   );
   const featuredItems = featured?.items ?? [];
   const catalogueTotal = featured?.total ?? featuredItems.length;
+
+  // Marketplace visible sans compte : les mieux notés, directement en page
+  // d'accueil. Un visiteur doit voir l'offre avant qu'on lui demande son e-mail.
+  const { data: unes } = await fetchPublic<{ ateliers: OfferCard[]; formations: OfferCard[] }>(
+    '/public/highlights',
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -234,6 +241,55 @@ export default async function LandingPage() {
             </Card>
           </div>
         </section>
+
+        {/* MARKETPLACE EN ACCÈS LIBRE — les mieux notés, sans connexion */}
+        {(unes?.ateliers?.length ?? 0) > 0 || (unes?.formations?.length ?? 0) > 0 ? (
+          <section id="marketplace" className="section">
+            {(unes?.ateliers?.length ?? 0) > 0 ? (
+              <div className="space-y-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="max-w-2xl">
+                    <span className="eyebrow">Sans compte, sans engagement</span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                      Les ateliers les mieux notés
+                    </h2>
+                    <p className="mt-2 text-muted-foreground">
+                      Réservables en ligne ou sur devis, animés par des intervenants vérifiés.
+                    </p>
+                  </div>
+                  <Button asChild variant="outline">
+                    <Link href="/ateliers">
+                      Tout le catalogue <ArrowRight />
+                    </Link>
+                  </Button>
+                </div>
+                <OfferCarousel items={unes!.ateliers} basePath="/ateliers" />
+              </div>
+            ) : null}
+
+            {(unes?.formations?.length ?? 0) > 0 ? (
+              <div className="mt-16 space-y-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="max-w-2xl">
+                    <span className="eyebrow">Qualiopi · finançable OPCO</span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                      Nos formations
+                    </h2>
+                    <p className="mt-2 text-muted-foreground">
+                      Sessions datées, attestation et certificat délivrés, émargement inclus.
+                    </p>
+                  </div>
+                  <Button asChild variant="outline">
+                    <Link href="/formations">
+                      Toutes les formations <ArrowRight />
+                    </Link>
+                  </Button>
+                </div>
+                <OfferCarousel items={unes!.formations} basePath="/formations" useSlug />
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         {/* CATALOGUES PUBLICS : ateliers & formations, consultables sans compte */}
         <section id="catalogues" className="bg-card">

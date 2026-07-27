@@ -1,7 +1,8 @@
 // Vue catalogue PUBLIQUE réutilisable (ateliers / formations).
 // Server Component : rendu sans JS client, filtres via <form method="GET">.
 import Link from "next/link";
-import { MapPin, Clock, Building2, Search, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { MapPin, Clock, Building2, Search, ArrowRight, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,13 @@ export interface CatalogItem {
   price?: string | number | null;
   duration?: string | null;
   city?: string | null;
+  images?: string[] | null;
+  publicTargets?: string[] | null;
+  publicTarget?: string | null;
+  qualiopi?: boolean;
+  verified?: boolean;
+  rating?: number | null;
+  reviewsCount?: number;
   categoryRef?: { id: string; title: string } | null;
   account?: { id: string; name: string; city?: string | null; logoUrl?: string | null } | null;
 }
@@ -28,6 +36,8 @@ interface CatalogResponse {
   take: number;
   skip: number;
   categories: string[];
+  publics: string[];
+  cities: string[];
 }
 
 const inputClass =
@@ -50,19 +60,36 @@ export async function CatalogView({
   subtitle: string;
   searchPlaceholder: string;
   emptyTitle: string;
-  searchParams?: { search?: string; category?: string };
+  searchParams?: {
+    search?: string;
+    category?: string;
+    public?: string;
+    city?: string;
+    priceMax?: string;
+    sort?: string;
+  };
 }) {
   const search = searchParams?.search?.trim() ?? "";
   const category = searchParams?.category ?? "";
+  const publicVise = searchParams?.public ?? "";
+  const ville = searchParams?.city ?? "";
+  const budget = searchParams?.priceMax ?? "";
+  const tri = searchParams?.sort ?? "";
 
-  const qs = new URLSearchParams({ type });
+  const qs = new URLSearchParams({ type, take: "60" });
   if (search) qs.set("search", search);
   if (category) qs.set("category", category);
+  if (publicVise) qs.set("public", publicVise);
+  if (ville) qs.set("city", ville);
+  if (budget) qs.set("priceMax", budget);
+  if (tri) qs.set("sort", tri);
 
   const { data, error } = await fetchPublic<CatalogResponse>(`/public/catalog?${qs.toString()}`);
   const items = data?.items ?? [];
   const categories = data?.categories ?? [];
-  const hasFilters = Boolean(search || category);
+  const publics = data?.publics ?? [];
+  const cities = data?.cities ?? [];
+  const hasFilters = Boolean(search || category || publicVise || ville || budget || tri);
 
   return (
     <div className="space-y-8">
@@ -72,7 +99,7 @@ export async function CatalogView({
       <form
         method="GET"
         action={basePath}
-        className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/60 p-4 sm:flex-row sm:items-center"
+        className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/60 p-4 sm:flex-row sm:flex-wrap sm:items-center"
       >
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -100,6 +127,53 @@ export async function CatalogView({
             ))}
           </select>
         ) : null}
+        <select
+          name="public"
+          defaultValue={publicVise}
+          aria-label="Filtrer par public visé"
+          className={`${inputClass} sm:w-44`}
+        >
+          <option value="">Tous les publics</option>
+          {publics.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+        <select
+          name="city"
+          defaultValue={ville}
+          aria-label="Filtrer par lieu"
+          className={`${inputClass} sm:w-40`}
+        >
+          <option value="">Partout</option>
+          {cities.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          name="priceMax"
+          min={0}
+          step={50}
+          defaultValue={budget}
+          placeholder="Budget max €"
+          aria-label="Budget maximum"
+          className={`${inputClass} sm:w-36`}
+        />
+        <select
+          name="sort"
+          defaultValue={tri}
+          aria-label="Trier"
+          className={`${inputClass} sm:w-44`}
+        >
+          <option value="">Plus récents</option>
+          <option value="rating">Mieux notés</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+        </select>
         <div className="flex gap-2">
           <Button type="submit">Rechercher</Button>
           {hasFilters ? (
@@ -137,7 +211,29 @@ export async function CatalogView({
             const organisme = item.account?.name;
             const ville = item.city ?? item.account?.city;
             return (
-              <Card key={item.id} className="group card-interactive flex h-full flex-col">
+              <Card key={item.id} className="group card-interactive flex h-full flex-col overflow-hidden">
+                {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
+                <Link href={`/ateliers/${item.id}`} className="relative block aspect-[16/10] bg-muted">
+                  {item.images?.[0] ? (
+                    <Image
+                      src={item.images[0]}
+                      alt={item.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="grid h-full place-items-center bg-warm-gradient text-sm text-muted-foreground">
+                      Les Extras
+                    </span>
+                  )}
+                  {item.categoryRef?.title ? (
+                    <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+                      {item.categoryRef.title}
+                    </span>
+                  ) : null}
+                </Link>
                 <CardContent className="flex flex-1 flex-col gap-3 p-5">
                   <div className="flex items-center justify-between gap-2">
                     <Badge variant="soft">
@@ -170,11 +266,25 @@ export async function CatalogView({
                           <span className="truncate">{ville}</span>
                         </p>
                       ) : null}
+                      {(item.publicTargets?.length ?? 0) > 0 ? (
+                        <p className="line-clamp-1">
+                          <span className="font-medium">Public :</span>{" "}
+                          {item.publicTargets!.join(", ")}
+                        </p>
+                      ) : null}
                     </div>
 
                     <div className="flex items-center justify-between border-t border-border/60 pt-3">
-                      <span className="text-base font-semibold text-foreground">
-                        {formatMoney(item.price)}
+                      <span className="inline-flex items-center gap-2">
+                        <span className="text-base font-semibold text-foreground">
+                          {formatMoney(item.price)}
+                        </span>
+                        {item.rating ? (
+                          <span className="inline-flex items-center gap-0.5 text-sm text-muted-foreground">
+                            <Star className="size-3.5 fill-current text-amber-500" />
+                            {item.rating.toFixed(1)}
+                          </span>
+                        ) : null}
                       </span>
                       <Button asChild size="sm" variant="outline">
                         <Link href={`/ateliers/${item.id}`}>

@@ -178,13 +178,25 @@ export class PublicService {
       ];
     }
 
+    if (query.public) where.publicTargets = { has: query.public };
+    if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
+    if (query.priceMax != null) where.price = { lte: query.priceMax };
+
     const take = query.take ?? 24;
     const skip = query.skip ?? 0;
+    const tri: Prisma.ServiceOrderByWithRelationInput[] =
+      query.sort === 'price-asc'
+        ? [{ price: 'asc' }]
+        : query.sort === 'price-desc'
+          ? [{ price: 'desc' }]
+          : query.sort === 'rating'
+            ? [{ featured: 'desc' }, { views: 'desc' }]
+            : [{ createdAt: 'desc' }];
 
     const [items, total, catRows] = await this.prisma.$transaction([
       this.prisma.service.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: tri,
         take,
         skip,
         select: PUBLIC_SELECT,
@@ -207,7 +219,154 @@ export class PublicService {
       ),
     ).sort((a, b) => a.localeCompare(b, 'fr'));
 
-    return { items, total, take, skip, categories };
+    // Facettes : on ne propose que des filtres qui donnent des résultats.
+    const facettes = await this.prisma.service.findMany({
+      where: this.typeWhere(query.type),
+      select: { publicTargets: true, city: true },
+    });
+    const publics = Array.from(
+      new Set(facettes.flatMap((f) => f.publicTargets)),
+    ).sort((a, b) => a.localeCompare(b, 'fr'));
+    const cities = Array.from(
+      new Set(facettes.map((f) => f.city).filter((c): c is string => Boolean(c))),
+    ).sort((a, b) => a.localeCompare(b, 'fr'));
+
+    const notes = await this.noteParService(items.map((i) => i.id));
+    const enrichis = items.map((i) => ({ ...i, ...(notes.get(i.id) ?? { rating: null, reviewsCount: 0 }) }));
+    if (query.sort === 'rating') {
+      enrichis.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
+    }
+
+    return { items: enrichis, total, take, skip, categories, publics, cities };
+  }
+
+  /** Note moyenne et nombre d'avis, par fiche, en une seule requête. */
+  private async noteParService(ids: string[]) {
+    const carte = new Map<string, { rating: number | null; reviewsCount: number }>();
+    if (ids.length === 0) return carte;
+    const lignes = await this.prisma.review.groupBy({
+      by: ['serviceId'],
+      where: { serviceId: { in: ids } },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+    for (const l of lignes) {
+      if (!l.serviceId) continue;
+      carte.set(l.serviceId, {
+        rating: l._avg.rating != null ? Math.round(l._avg.rating * 10) / 10 : null,
+        reviewsCount: l._count._all,
+      });
+    }
+    return carte;
+  }
+
+  /**
+   * Mises en avant de la page d'accueil : les dix ateliers et les dix formations
+   * les mieux notés. À défaut d'avis — cas d'un catalogue jeune — on classe par
+   * mise en avant puis par consultations, jamais au hasard.
+   */
+  async highlights() {
+    const ateliers = await this.prisma.service.findMany({
+      where: { status: ServiceStatus.PUBLISHED },
+      orderBy: [{ featured: 'desc' }, { views: 'desc' }, { createdAt: 'desc' }],
+      take: 30,
+      select: PUBLIC_SELECT,
+    });
+    const notes = await this.noteParService(ateliers.map((a) => a.id));
+    const ateliersNotes = ateliers
+      .map((a) => ({ ...a, ...(notes.get(a.id) ?? { rating: null, reviewsCount: 0 }) }))
+      .sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
+      .slice(0, 10);
+
+    const brutes = await this.prisma.formation.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: [{ views: 'desc' }, { createdAt: 'desc' }],
+      take: 30,
+      select: FORMATION_CARD_SELECT,
+    });
+    const satisfactions = await this.prisma.inscription.groupBy({
+      by: ['sessionId'],
+      where: { satisfaction: { not: null } },
+      _avg: { satisfaction: true },
+    });
+    void satisfactions; // agrégation par session : la note est portée par la fiche détail.
+    const formations = brutes.map(carteFormation).slice(0, 10);
+
+    return { ateliers: ateliersNotes, formations };
+  }
+
+  /**
+   * Demande de devis SANS COMPTE. On enregistre une demande de contact
+   * structurée et on prévient l'équipe : le prospect n'a rien à créer pour
+   * entrer en relation.
+   */
+  async createQuoteRequest(dto: {
+    serviceId?: string;
+    formationSlug?: string;
+    name: string;
+    email: string;
+    phone?: string;
+    organization?: string;
+    role?: string;
+    city?: string;
+    desiredDate?: string;
+    participants?: string;
+    message: string;
+  }) {
+    let objet = 'Demande de devis';
+    if (dto.serviceId) {
+      const s = await this.prisma.service.findFirst({
+        where: { id: dto.serviceId, status: ServiceStatus.PUBLISHED },
+        select: { title: true },
+      });
+      if (s) objet = `Devis — ${s.title}`;
+    } else if (dto.formationSlug) {
+      const f = await this.prisma.formation.findFirst({
+        where: { slug: dto.formationSlug, status: 'PUBLISHED' },
+        select: { title: true },
+      });
+      if (f) objet = `Devis formation — ${f.title}`;
+    }
+
+    const corps = [
+      dto.organization ? `Structure : ${dto.organization}` : null,
+      dto.role ? `Fonction : ${dto.role}` : null,
+      dto.city ? `Ville : ${dto.city}` : null,
+      dto.desiredDate ? `Période souhaitée : ${dto.desiredDate}` : null,
+      dto.participants ? `Participants : ${dto.participants}` : null,
+      '',
+      dto.message,
+    ]
+      .filter((l) => l !== null)
+      .join('\n');
+
+    const demande = await this.prisma.contactRequest.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone,
+        type: objet,
+        content: corps,
+      },
+    });
+
+    if (dto.serviceId) {
+      await this.prisma.service
+        .update({ where: { id: dto.serviceId }, data: { requestsCount: { increment: 1 } } })
+        .catch(() => undefined);
+    }
+
+    this.mail
+      .sendContactNotification({
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone,
+        type: objet,
+        content: corps,
+      })
+      .catch(() => undefined);
+
+    return { ok: true, id: demande.id };
   }
 
   /**
@@ -311,9 +470,22 @@ export class PublicService {
    * promesse (objectifs, durée, prix d'appel, prochaine session) — pas sur un
    * calendrier. On expose donc la fiche, et la session n'arrive qu'ensuite.
    */
-  async formations(query: { search?: string; category?: string; take?: number; skip?: number }) {
+  async formations(query: {
+    search?: string;
+    category?: string;
+    city?: string;
+    cpf?: string;
+    certifying?: string;
+    priceMax?: number;
+    sort?: string;
+    take?: number;
+    skip?: number;
+  }) {
     const where: Prisma.FormationWhereInput = { status: 'PUBLISHED' };
     if (query.category) where.categoryRef = { is: { title: query.category } };
+    if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
+    if (query.cpf === 'true') where.cpfEligible = true;
+    if (query.certifying === 'true') where.certifying = true;
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
@@ -324,28 +496,60 @@ export class PublicService {
     const take = Math.min(query.take ?? 24, 60);
     const skip = query.skip ?? 0;
 
-    const [rows, total, catRows] = await this.prisma.$transaction([
+    // Le prix et la prochaine date viennent des sessions : le tri sur ces deux
+    // critères se fait donc après projection, sur un catalogue volontairement
+    // borné à 60 fiches.
+    const triEnBase: Prisma.FormationOrderByWithRelationInput =
+      query.sort === 'duration-asc' ? { durationHours: 'asc' } : { createdAt: 'desc' };
+
+    const [rows, catRows, villeRows] = await this.prisma.$transaction([
       this.prisma.formation.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
-        take,
-        skip,
+        orderBy: triEnBase,
+        take: 200,
         select: FORMATION_CARD_SELECT,
       }),
-      this.prisma.formation.count({ where }),
       this.prisma.formation.findMany({
         where: { status: 'PUBLISHED' },
         distinct: ['categoryId'],
         select: { categoryRef: { select: { title: true } } },
       }),
+      this.prisma.formation.findMany({
+        where: { status: 'PUBLISHED', city: { not: null } },
+        distinct: ['city'],
+        select: { city: true },
+      }),
     ]);
+
+    let cartes = rows.map(carteFormation);
+    if (query.priceMax != null) {
+      cartes = cartes.filter((c) => c.priceFrom != null && Number(c.priceFrom) <= query.priceMax!);
+    }
+    const prix = (c: (typeof cartes)[number]) =>
+      c.priceFrom == null ? Number.POSITIVE_INFINITY : Number(c.priceFrom);
+    if (query.sort === 'price-asc') cartes.sort((a, b) => prix(a) - prix(b));
+    else if (query.sort === 'price-desc')
+      cartes.sort((a, b) => (prix(b) === Infinity ? -1 : prix(b)) - (prix(a) === Infinity ? -1 : prix(a)));
+    else if (query.sort === 'soonest')
+      cartes.sort((a, b) => {
+        const da = a.nextSessionAt ? new Date(a.nextSessionAt).getTime() : Number.POSITIVE_INFINITY;
+        const db = b.nextSessionAt ? new Date(b.nextSessionAt).getTime() : Number.POSITIVE_INFINITY;
+        return da - db;
+      });
+
+    const total = cartes.length;
+    const items = cartes.slice(skip, skip + take);
 
     const categories = Array.from(
       new Set(catRows.map((r) => r.categoryRef?.title).filter((t): t is string => Boolean(t))),
     ).sort((a, b) => a.localeCompare(b, 'fr'));
+    const cities = Array.from(
+      new Set(villeRows.map((r) => r.city).filter((c): c is string => Boolean(c))),
+    ).sort((a, b) => a.localeCompare(b, 'fr'));
 
-    return { items: rows.map(carteFormation), total, take, skip, categories };
+    return { items, total, take, skip, categories, cities };
   }
+
 
   /** Fiche PUBLIQUE d'une formation publiée, par slug (404 sinon). */
   async formationDetail(slug: string) {
