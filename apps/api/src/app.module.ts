@@ -26,6 +26,7 @@ import { ConversationsModule } from './conversations/conversations.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { BillingModule } from './billing/billing.module';
 import { AdminModule } from './admin/admin.module';
 import { CategoriesModule } from './categories/categories.module';
 import { MatchingModule } from './matching/matching.module';
@@ -64,6 +65,7 @@ import { ConformiteModule } from './conformite/conformite.module';
     ReviewsModule,
     NotificationsModule,
     InvoicesModule,
+    BillingModule,
     AdminModule,
     CategoriesModule,
     MatchingModule,

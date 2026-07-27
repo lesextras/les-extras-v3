@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { requireSession, fetchApi } from "../../../_shared/server";
+import { CheckoutButton } from "../../../_shared/BillingActions";
 import { PageHeader, StatCard, EmptyState, ErrorState } from "../../../_shared/ui";
 import {
   INVOICE_STATUS_LABEL,
@@ -176,15 +177,25 @@ export default async function FinancePage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button asChild size="sm" variant="outline">
-                          <a
-                            href={`/documents/facture/${inv.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Télécharger la facture
-                          </a>
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          {isEstablishment && inv.status === "ISSUED" ? (
+                            <CheckoutButton
+                              accountId={session.account.id}
+                              kind="invoice"
+                              invoiceId={inv.id}
+                              label="Payer en ligne"
+                            />
+                          ) : null}
+                          <Button asChild size="sm" variant="outline">
+                            <a
+                              href={`/documents/facture/${inv.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Télécharger la facture
+                            </a>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

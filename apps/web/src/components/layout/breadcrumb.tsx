@@ -32,6 +32,7 @@ const LABELS: Record<string, string> = {
   inbox: 'Messagerie',
   opportunites: 'Opportunités',
   finance: 'Factures & revenus',
+  credits: 'Abonnement & crédits',
   account: 'Mon compte',
   tutorat: 'Tutorat',
 };

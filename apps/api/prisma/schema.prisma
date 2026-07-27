@@ -123,6 +123,8 @@ model Account {
   @@index([type])
   @@index([slug])
   uploadedFiles FileAsset[]  @relation("FileAccount")
+  creditPurchases CreditPurchase[]
+  subscription    Subscription?
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
@@ -386,6 +388,42 @@ model Invoice {
 
 /// GRAND LIVRE DES CRÉDITS : trace chaque variation de solde d'un compte
 /// (top-up admin, débit à la réservation d'un atelier). Immuable, append-only.
+model Subscription {
+  id                   String   @id @default(cuid())
+  accountId            String   @unique
+  account              Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  planId               String
+  stripeCustomerId     String?
+  stripeSubscriptionId String?  @unique
+  status               String   @default("pending") // pending | active | past_due | canceled
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model CreditPurchase {
+  id              String   @id @default(cuid())
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId          String
+  packId          String
+  credits         Int
+  amountCents     Int
+  currency        String   @default("eur")
+  stripeSessionId String   @unique
+  status          CreditPurchaseStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([accountId])
+}
+
+enum CreditPurchaseStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
 model CreditLedger {
   id           String   @id @default(cuid())
   accountId    String
