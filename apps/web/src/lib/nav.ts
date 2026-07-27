@@ -26,6 +26,7 @@ import {
   Star,
   ScrollText,
   ShieldQuestion,
+  Newspaper,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -85,6 +86,7 @@ const freelanceNav: NavSection[] = [
     items: [
       { label: 'Factures & revenus', href: '/dashboard/finance', icon: Receipt, hint: 'Vos revenus et documents' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
+      { label: 'Actualités', href: '/dashboard/actualites', icon: Newspaper, hint: 'Publiez sur le fil public et partagez sur LinkedIn' },
       { label: 'Mon compte', href: '/dashboard/account', icon: Settings, hint: 'Profil, paramètres et sécurité' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
@@ -123,6 +125,7 @@ const establishmentNav: NavSection[] = [
       { label: 'Factures', href: '/dashboard/finance', icon: Receipt, hint: 'Vos factures et dépenses' },
       { label: 'Abonnement & crédits', href: '/dashboard/credits', icon: Receipt, hint: 'Abonnement mensuel et rechargement de crédits' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },
+      { label: 'Actualités', href: '/dashboard/actualites', icon: Newspaper, hint: 'Publiez sur le fil public et partagez sur LinkedIn' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
   },

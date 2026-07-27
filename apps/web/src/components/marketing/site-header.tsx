@@ -12,6 +12,7 @@ const links = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
   { label: 'SOS Renfort', href: '/#renfort' },
+  { label: 'Actualités', href: '/actualites' },
   { label: 'Comment ça marche', href: '/#comment' },
   { label: 'Tarifs', href: '/#tarifs' },
 ];

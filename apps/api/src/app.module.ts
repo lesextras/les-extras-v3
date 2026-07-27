@@ -28,6 +28,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { BillingModule } from './billing/billing.module';
 import { QuotesModule } from './quotes/quotes.module';
+import { ArticlesModule } from './articles/articles.module';
 import { AdminModule } from './admin/admin.module';
 import { CategoriesModule } from './categories/categories.module';
 import { MatchingModule } from './matching/matching.module';
@@ -68,6 +69,7 @@ import { ConformiteModule } from './conformite/conformite.module';
     InvoicesModule,
     BillingModule,
     QuotesModule,
+    ArticlesModule,
     AdminModule,
     CategoriesModule,
     MatchingModule,

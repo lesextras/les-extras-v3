@@ -34,6 +34,12 @@ model User {
   status        UserStatus @default(PENDING)
   emailVerified Boolean    @default(false)
   onboardingStep Int       @default(0)
+  /// Connexion LinkedIn (partage d'articles). Jeton conservé côté serveur
+  /// uniquement, jamais exposé au navigateur.
+  linkedinUrn         String?
+  linkedinAccessToken String?
+  linkedinExpiresAt   DateTime?
+  linkedinName        String?
   lastLoginAt   DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -101,6 +107,7 @@ model Account {
   credits     Int          @default(0)
   ownerId     String
   owner       User         @relation("AccountOwner", fields: [ownerId], references: [id])
+  articles          Article[]        @relation("AccountArticles")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -587,11 +594,21 @@ model Article {
   category    Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   authorId    String?
   author      User?         @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  /// Compte qui publie (établissement ou intervenant). Null = article éditorial
+  /// publié par l'équipe Les Extras depuis le back-office.
+  accountId   String?
+  account     Account?      @relation("AccountArticles", fields: [accountId], references: [id], onDelete: Cascade)
+  /// Consultations de l'article (preuve d'audience pour l'auteur).
+  views       Int           @default(0)
+  /// Partage LinkedIn : identifiant de la publication et date d'envoi.
+  linkedinUrn      String?
+  linkedinSharedAt DateTime?
   publishedAt DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  @@index([status])
+  @@index([status, publishedAt])
+  @@index([accountId])
 }
 
 // ---------------------------------------------------------------------------

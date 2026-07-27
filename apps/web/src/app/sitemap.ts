@@ -33,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/ateliers",
     "/formations",
+    "/actualites",
     "/etablissements",
     "/contact",
     "/legal/mentions-legales",
@@ -81,6 +82,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
+    });
+  }
+
+  // Actualités publiées : contenu frais, c'est ce qui fait revenir Google.
+  const actus = await safeJson<{ items: { slug: string }[] }>("/articles/feed?take=50");
+  for (const a of actus?.items ?? []) {
+    dynamic.push({
+      url: `${base}/actualites/${a.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
     });
   }
 
