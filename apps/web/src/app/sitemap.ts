@@ -35,6 +35,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/formations",
     "/edublog",
     "/etablissements",
+    "/notre-histoire",
+    "/catalogue",
     "/contact",
     // Les mentions, CGU, confidentialité et RGPD tiennent sur une seule page
     // à ancres : annoncer des sous-routes inexistantes envoyait Google sur

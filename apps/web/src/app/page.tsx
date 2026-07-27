@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Siren,
   GraduationCap,
@@ -11,6 +12,9 @@ import {
   Star,
   Building2,
   Sparkles,
+  Newspaper,
+  Megaphone,
+  Palette,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SiteHeader } from '@/components/marketing/site-header';
@@ -22,6 +26,8 @@ import { fetchPublic } from './_shared/server';
 import { SERVICE_CATEGORY_LABEL, formatMoney } from './_shared/format';
 import type { CatalogItem } from './(public)/_catalog';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
+import { HeroSearch } from './_shared/HeroSearch';
+import { VideoFacade } from './_shared/VideoFacade';
 
 export default async function LandingPage() {
   // Mise en avant publique de quelques prestations publiées (sans connexion).
@@ -36,6 +42,16 @@ export default async function LandingPage() {
   const { data: unes } = await fetchPublic<{ ateliers: OfferCard[]; formations: OfferCard[] }>(
     '/public/highlights',
   );
+
+  // Édublog : trois dernières publications, pour montrer que le réseau vit.
+  const { data: fluxArticles } = await fetchPublic<{
+    items: { id: string; slug: string; title: string; excerpt?: string | null; coverUrl?: string | null; publishedAt?: string | null }[];
+  }>('/articles/feed?take=3');
+  const articles = fluxArticles?.items ?? [];
+
+  // Images de couverture pour les trois domaines d'action, prises dans le
+  // catalogue réel plutôt que dans une banque d'images.
+  const visuels = featuredItems.map((i) => i.images?.[0]).filter(Boolean) as string[];
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -72,6 +88,8 @@ export default async function LandingPage() {
                   <Link href="/#renfort">Besoin d’un renfort urgent ?</Link>
                 </Button>
               </div>
+
+              <HeroSearch />
               <dl className="mt-10 grid max-w-lg grid-cols-3 gap-6">
                 {[
                   { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
@@ -159,6 +177,146 @@ export default async function LandingPage() {
                   {t}
                 </span>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* NOS DOMAINES D'ACTIONS — reprise du site historique : trois portes
+            d'entrée visuelles, avant tout discours. */}
+        <section className="section">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="eyebrow">Trois portes d’entrée</span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+              Nos domaines d’actions
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                titre: 'Les ateliers de notre réseau',
+                texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant vérifié.',
+                href: '/ateliers',
+                icone: <Palette className="size-5" />,
+                image: visuels[0],
+              },
+              {
+                titre: 'Nos parcours de formations certifiés Qualiopi',
+                texte: 'Montée en compétences des équipes, finançable par votre OPCO.',
+                href: '/formations',
+                icone: <GraduationCap className="size-5" />,
+                image: visuels[1],
+              },
+              {
+                titre: 'Le renfort d’équipe et parental',
+                texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
+                href: '/#renfort',
+                icone: <Megaphone className="size-5" />,
+                image: visuels[2],
+              },
+            ].map((d) => (
+              <Link key={d.titre} href={d.href} className="group block">
+                <Card className="h-full overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-card">
+                  <div className="relative aspect-[4/3] bg-muted">
+                    {d.image ? (
+                      <Image
+                        src={d.image}
+                        alt=""
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        unoptimized
+                      />
+                    ) : null}
+                    <span className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/25 to-transparent" />
+                    <span className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-5">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/15 text-white backdrop-blur">
+                        {d.icone}
+                      </span>
+                      <span className="text-lg font-bold leading-tight text-white text-balance">
+                        {d.titre}
+                      </span>
+                    </span>
+                  </div>
+                  <CardContent className="flex items-center justify-between gap-3 p-5">
+                    <p className="text-sm text-muted-foreground">{d.texte}</p>
+                    <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* VOUS RECONNAISSEZ-VOUS ? — le bloc qui dit qui nous sommes et d'où
+            l'on parle. C'est ce que le site historique faisait de mieux. */}
+        <section id="association" className="bg-primary-soft/50">
+          <div className="mx-auto max-w-[1000px] px-6 py-16 text-center md:py-24">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Vous reconnaissez-vous ?</h2>
+            <p className="mx-auto mt-5 max-w-3xl text-lg text-muted-foreground text-balance">
+              Violences, décrochage, tensions d’équipe, conduites à risque, difficultés parentales,
+              épuisement… Le quotidien complexe, on le connaît.
+            </p>
+            <p className="mx-auto mt-6 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              Les Extras est le dispositif de l’association <strong className="font-semibold text-foreground">ADéPA</strong>{' '}
+              (Association pour le Développement de l’Éducation Par l’Animation). Depuis sa création,
+              l’ADéPA œuvre pour l’insertion sociale des enfants, des adolescents et des familles en
+              difficulté par l’éducation, la prévention et l’animation. Nous créons des dispositifs
+              éducatifs innovants pour sécuriser les accompagnements, soutenir les professionnels et
+              renforcer les compétences psychosociales des jeunes.
+            </p>
+
+            <ol className="mt-12 grid gap-8 md:grid-cols-3">
+              {[
+                { n: '01', t: 'Visualisez les offres et les profils d’experts de notre réseau', i: <Users className="size-5" /> },
+                { n: '02', t: 'Réservez en ligne ou faites une demande de devis', i: <HeartHandshake className="size-5" /> },
+                { n: '03', t: 'La mission est réalisée. Consultez son compte rendu', i: <CheckCircle2 className="size-5" /> },
+              ].map((e) => (
+                <li key={e.n} className="flex flex-col items-center gap-3">
+                  <span className="relative grid size-14 place-items-center rounded-2xl bg-card text-primary shadow-soft">
+                    {e.i}
+                    <span className="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
+                      {e.n}
+                    </span>
+                  </span>
+                  <p className="max-w-[15rem] text-sm font-medium text-foreground text-balance">{e.t}</p>
+                </li>
+              ))}
+            </ol>
+
+            <p className="mt-10 text-sm text-muted-foreground">
+              Quelques étapes suffisent pour réserver votre intervenant.
+            </p>
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button asChild size="lg">
+                <Link href="/formations">Le centre de formation</Link>
+              </Button>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/notre-histoire">Découvrir l’association</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* ÊTRE OU NE PAS ÊTRE ? — la vidéo du réseau, chargée seulement au clic. */}
+        <section className="section">
+          <div className="mx-auto max-w-[880px]">
+            <div className="text-center">
+              <span className="eyebrow">Être ou ne pas être ?</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                Rejoindre le réseau des Extras
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+                Éducateurs spécialisés, moniteurs-éducateurs, AES, psychologues : ce que change le
+                fait de travailler en indépendant, raconté par ceux qui le font.
+              </p>
+            </div>
+            <div className="mt-8">
+              <VideoFacade id="8dXRvZU5TQY" titre="Comment rejoindre Les Extras freelances" />
+            </div>
+            <div className="mt-6 text-center">
+              <Button asChild variant="outline">
+                <Link href="/register">Proposer mes services</Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -567,6 +725,66 @@ export default async function LandingPage() {
             </p>
           </div>
         </section>
+
+        {/* ÉDUBLOG — le contenu frais, en accès libre. */}
+        {articles.length > 0 ? (
+          <section className="bg-card">
+            <div className="section">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <span className="eyebrow">
+                    <Newspaper className="size-3.5" />
+                    L’Édublog
+                  </span>
+                  <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                    Ce que publie le réseau
+                  </h2>
+                  <p className="mt-3 max-w-xl text-muted-foreground">
+                    Retours d’expérience, projets d’établissements, pratiques éducatives. En accès
+                    libre, sans compte.
+                  </p>
+                </div>
+                <Button asChild variant="outline">
+                  <Link href="/edublog">
+                    Tous les articles
+                    <ArrowRight />
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="mt-10 grid gap-5 md:grid-cols-3">
+                {articles.map((a) => (
+                  <Link key={a.id} href={`/edublog/${a.slug}`} className="group">
+                    <Card className="h-full overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-card">
+                      {a.coverUrl ? (
+                        <div className="relative aspect-[16/10] bg-muted">
+                          <Image
+                            src={a.coverUrl}
+                            alt=""
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      ) : null}
+                      <CardContent className="space-y-2 p-5">
+                        <h3 className="line-clamp-2 font-semibold text-foreground">{a.title}</h3>
+                        {a.excerpt ? (
+                          <p className="line-clamp-3 text-sm text-muted-foreground">{a.excerpt}</p>
+                        ) : null}
+                        <span className="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary">
+                          Lire l’article
+                          <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* CTA FINAL */}
         <section className="section pt-0">
