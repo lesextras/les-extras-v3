@@ -1,0 +1,158 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lesextras}
+      POSTGRES_USER: ${POSTGRES_USER:-lesextras}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lesextras} -d ${POSTGRES_DB:-lesextras}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://saas.les-extras.fr,http://localhost:3000,http://127.0.0.1:3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lesextras}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lesextras}?schema=public
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/api/health >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.lesextras-api-http.entrypoints=http"
+      - "traefik.http.routers.lesextras-api-http.rule=Host(`api-saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-api-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.lesextras-api-http.service=lesextras-api"
+      - "traefik.http.routers.lesextras-api-https.entrypoints=https"
+      - "traefik.http.routers.lesextras-api-https.rule=Host(`api-saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-api-https.tls=true"
+      - "traefik.http.routers.lesextras-api-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.lesextras-api-https.middlewares=gzip"
+      - "traefik.http.routers.lesextras-api-https.service=lesextras-api"
+      - "traefik.http.services.lesextras-api.loadbalancer.server.port=3001"
+    networks:
+      - internal
+      - coolify
+
+  web-front:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        API_BASE_URL: http://api:3001/api
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-saas.les-extras.fr/api}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      API_BASE_URL: http://api:3001/api
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-saas.les-extras.fr/api}
+      APP_WEB_HOST: ${APP_WEB_HOST:-saas.les-extras.fr}
+      APP_DESK_HOST: ${APP_DESK_HOST:-saas.les-extras.fr}
+      APP_RUNTIME: front
+      SESSION_SECRET: ${SESSION_SECRET}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD}
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.lesextras-web-front-http.entrypoints=http"
+      - "traefik.http.routers.lesextras-web-front-http.rule=Host(`saas.les-extras.fr`) || Host(`saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-web-front-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.lesextras-web-front-http.service=lesextras-web-front"
+      - "traefik.http.routers.lesextras-web-front-https.entrypoints=https"
+      - "traefik.http.routers.lesextras-web-front-https.rule=Host(`saas.les-extras.fr`) || Host(`saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-web-front-https.tls=true"
+      - "traefik.http.routers.lesextras-web-front-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.lesextras-web-front-https.middlewares=gzip"
+      - "traefik.http.routers.lesextras-web-front-https.service=lesextras-web-front"
+      - "traefik.http.services.lesextras-web-front.loadbalancer.server.port=3000"
+    networks:
+      - internal
+      - coolify
+
+  web-desk:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        API_BASE_URL: http://api:3001/api
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-saas.les-extras.fr/api}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      API_BASE_URL: http://api:3001/api
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-saas.les-extras.fr/api}
+      APP_WEB_HOST: ${APP_WEB_HOST:-saas.les-extras.fr}
+      APP_DESK_HOST: ${APP_DESK_HOST:-saas.les-extras.fr}
+      APP_RUNTIME: desk
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD}
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.lesextras-web-desk-http.entrypoints=http"
+      - "traefik.http.routers.lesextras-web-desk-http.rule=Host(`saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-web-desk-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.lesextras-web-desk-http.service=lesextras-web-desk"
+      - "traefik.http.routers.lesextras-web-desk-https.entrypoints=https"
+      - "traefik.http.routers.lesextras-web-desk-https.rule=Host(`saas.les-extras.fr`)"
+      - "traefik.http.routers.lesextras-web-desk-https.tls=true"
+      - "traefik.http.routers.lesextras-web-desk-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.lesextras-web-desk-https.middlewares=gzip"
+      - "traefik.http.routers.lesextras-web-desk-https.service=lesextras-web-desk"
+      - "traefik.http.services.lesextras-web-desk.loadbalancer.server.port=3000"
+    networks:
+      - internal
+      - coolify
+
+networks:
+  internal:
+    driver: bridge
+  coolify:
+    external: true
+
+volumes:
+  postgres_data:

@@ -1,0 +1,582 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  ESTABLISHMENT
+  FREELANCE
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  VERIFIED
+  BANNED
+}
+
+enum ReliefMissionStatus {
+  OPEN
+  ASSIGNED
+  COMPLETED
+  CANCELLED
+}
+
+enum ServiceStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ServiceType {
+  WORKSHOP
+  TRAINING
+}
+
+enum PricingType {
+  SESSION
+  PER_PARTICIPANT
+  QUOTE
+}
+
+enum BookingStatus {
+  PENDING
+  QUOTE_SENT
+  QUOTE_ACCEPTED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  AWAITING_PAYMENT
+  PAID
+  CANCELLED
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  REVISED
+}
+
+enum MessageType {
+  USER
+  SYSTEM
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PAID
+}
+
+enum ReviewType {
+  ESTABLISHMENT_TO_FREELANCE
+  FREELANCE_TO_ESTABLISHMENT
+}
+
+enum DocumentType {
+  AVATAR
+  SERVICE_PHOTO
+  IDENTITY_DOC
+  CV
+  DIPLOMA
+  AUTO_ENTREPRENEUR_CERTIFICATE
+  DRIVER_LICENSE
+  CRIMINAL_RECORD
+  RIB
+  OTHER
+}
+
+enum DocumentReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DeskRequestStatus {
+  OPEN
+  IN_PROGRESS
+  ANSWERED
+  CLOSED
+}
+
+enum DeskRequestType {
+  MISSION_INFO_REQUEST
+  PAYMENT_ISSUE
+  BOOKING_FAILURE
+  PACK_PURCHASE_FAILURE
+  MISSION_PUBLISH_FAILURE
+  TECHNICAL_ISSUE
+  USER_REPORT
+  LITIGE
+}
+
+enum DeskRequestPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ContactBypassBlockedReason {
+  EMAIL
+  PHONE
+  WHATSAPP
+  TELEGRAM
+  EXTERNAL_URL
+}
+
+// ─────────────────────────────────────────────
+// CORE IDENTITY
+// ─────────────────────────────────────────────
+
+model User {
+  id               String     @id @default(cuid())
+  email            String     @unique
+  password         String
+  role             UserRole
+  status           UserStatus @default(PENDING)
+  onboardingStep   Int        @default(0)
+  isAvailable      Boolean    @default(false)
+  resetToken       String?    @unique
+  resetTokenExpiry DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  // Relations
+  profile               Profile?
+  establishmentMissions ReliefMission[] @relation("EstablishmentMissions")
+  ownerServices         Service[]       @relation("OwnerServices")
+  establishmentBookings Booking[]       @relation("EstablishmentBookings")
+  freelanceBookings     Booking[]       @relation("FreelanceBookings")
+  sentMessages          Message[]       @relation("SentMessages")
+  receivedMessages      Message[]       @relation("ReceivedMessages")
+  conversationsAsA      Conversation[]  @relation("ConversationParticipantA")
+  conversationsAsB      Conversation[]  @relation("ConversationParticipantB")
+  notifications         Notification[]
+  reviewsAuthored       Review[]        @relation("ReviewsAuthored")
+  reviewsReceived       Review[]        @relation("ReviewsReceived")
+  documents             Document[]
+  issuedQuotes          Quote[]         @relation("QuoteIssuer")
+  packPurchases         PackPurchase[]  @relation("EstablishmentPackPurchases")
+  deskRequests          DeskRequest[]   @relation("UserDeskRequests")
+  answeredDeskRequests  DeskRequest[]   @relation("DeskRequestAnsweredBy")
+  assignedDeskRequests  DeskRequest[]   @relation("DeskRequestAssignedToAdmin")
+  contactBypassEvents   ContactBypassEvent[] @relation("ContactBypassSender")
+  reviewedDocuments     Document[]      @relation("DocumentReviewedBy")
+}
+
+model Profile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  firstName      String
+  lastName       String
+  bio            String?
+  avatar         String?
+  jobTitle       String?
+  phone          String?
+  address        String?
+  city           String?
+  zipCode        String?
+  country        String?
+  skills         String[] @default([])
+  availableDays  String[] @default([])
+  diplomaUrl     String?
+  companyName    String?
+  siret          String?
+  tvaNumber      String?
+  availableCredits Int    @default(0)
+  onboardingStep Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// MESSAGING
+// ─────────────────────────────────────────────
+
+model Conversation {
+  id             String   @id @default(cuid())
+  participantAId String
+  participantBId String
+  bookingId      String?  @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  participantAUser User      @relation("ConversationParticipantA", fields: [participantAId], references: [id], onDelete: Cascade)
+  participantBUser User      @relation("ConversationParticipantB", fields: [participantBId], references: [id], onDelete: Cascade)
+  booking          Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  messages         Message[]
+  contactBypassEvents ContactBypassEvent[]
+
+  @@unique([participantAId, participantBId])
+  @@index([participantAId])
+  @@index([participantBId])
+  @@index([bookingId])
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  content        String
+  senderId       String
+  receiverId     String
+  conversationId String
+  isRead         Boolean     @default(false)
+  type           MessageType @default(USER)
+  metadata       Json?
+  createdAt      DateTime    @default(now())
+
+  sender       User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User          @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String
+  type      String // INFO, SUCCESS, WARNING
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminActionLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  entityType String
+  entityId   String
+  action     String
+  meta       Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@index([action])
+}
+
+model PackPurchase {
+  id              String   @id @default(cuid())
+  establishmentId String
+  amount          Float
+  creditsAdded    Int
+  createdAt       DateTime @default(now())
+
+  establishment User @relation("EstablishmentPackPurchases", fields: [establishmentId], references: [id], onDelete: Restrict)
+
+  @@index([establishmentId])
+}
+
+// ─────────────────────────────────────────────
+// PILIER 1 — RENFORT (ReliefMission)
+// ─────────────────────────────────────────────
+
+model ReliefMission {
+  id                 String              @id @default(cuid())
+  title              String
+  dateStart          DateTime
+  dateEnd            DateTime
+  hourlyRate         Float
+  status             ReliefMissionStatus @default(OPEN)
+  address            String
+  metier             String?
+  shift              String? // "JOUR" | "NUIT"
+  city               String?
+  zipCode            String?
+  description        String?             @db.Text
+  requiredSkills     String[]
+  establishmentType  String?
+  targetPublic       String[]            @default([])
+  unitSize           String?
+  slots              Json?
+  diplomaRequired    Boolean?            @default(false)
+  hasTransmissions   Boolean?            @default(false)
+  transmissionTime   String?
+  perks              String[]            @default([])
+  exactAddress       String?
+  accessInstructions String?             @db.Text
+
+  establishmentId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  establishment User          @relation("EstablishmentMissions", fields: [establishmentId], references: [id], onDelete: Restrict)
+  bookings      Booking[]
+  deskRequests  DeskRequest[] @relation("MissionDeskRequests")
+
+  @@index([establishmentId])
+}
+
+// ─────────────────────────────────────────────
+// PILIER 2 — ATELIERS (Service)
+// ─────────────────────────────────────────────
+
+model Service {
+  id              String  @id @default(cuid())
+  title           String
+  description     String?
+  price           Float   @default(0)
+  capacity        Int     @default(10)
+  durationMinutes Int     @default(120)
+  category        String?
+
+  type                ServiceType @default(WORKSHOP)
+  pricingType         PricingType @default(SESSION)
+  publicCible         String[]    @default([])
+  slots               Json?
+  pricePerParticipant Float?
+  materials           String?
+  objectives          String?     @db.Text
+  methodology         String?     @db.Text
+  evaluation          String?     @db.Text
+  imageUrl            String?
+  scheduleInfo        String?
+
+  status ServiceStatus @default(ACTIVE)
+  isFeatured Boolean @default(false)
+  isHidden   Boolean @default(false)
+
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User       @relation("OwnerServices", fields: [ownerId], references: [id], onDelete: Restrict)
+  bookings  Booking[]
+  documents Document[]
+
+  @@index([ownerId])
+}
+
+// ─────────────────────────────────────────────
+// RÉSERVATIONS & CANDIDATURES (Booking)
+// ─────────────────────────────────────────────
+
+model Booking {
+  id            String        @id @default(cuid())
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING) // Paiement manuel
+  message       String?
+  scheduledAt   DateTime      @default(now())
+
+  // Champs spécifiques aux candidatures (Renfort)
+  proposedRate            Float?
+  freelanceAcknowledged   Boolean   @default(false)
+
+  // Champs spécifiques aux ateliers
+  nbParticipants Int?
+
+  establishmentId String // Celui qui réserve/qui crée la mission
+  freelanceId     String? // Celui qui postule/ou anime l'atelier
+  reliefMissionId String?
+  serviceId       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  establishment  User           @relation("EstablishmentBookings", fields: [establishmentId], references: [id], onDelete: Restrict)
+  freelance      User?          @relation("FreelanceBookings", fields: [freelanceId], references: [id], onDelete: SetNull)
+  reliefMission  ReliefMission? @relation(fields: [reliefMissionId], references: [id], onDelete: SetNull)
+  service        Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  invoice        Invoice?
+  reviews        Review[]
+  quotes         Quote[]
+  conversation   Conversation?
+  deskRequests   DeskRequest[]  @relation("BookingDeskRequests")
+
+  @@index([establishmentId])
+  @@index([freelanceId])
+  @@index([reliefMissionId])
+  @@index([serviceId])
+}
+
+// ─────────────────────────────────────────────
+// FACTURATION (Invoice)
+// ─────────────────────────────────────────────
+
+model Invoice {
+  id            String        @id @default(cuid())
+  bookingId     String        @unique
+  amount        Float
+  status        InvoiceStatus @default(UNPAID)
+  invoiceNumber String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// AVIS
+// ─────────────────────────────────────────────
+
+model Review {
+  id        String     @id @default(cuid())
+  bookingId String
+  authorId  String
+  targetId  String
+  rating    Int
+  comment   String?
+  type      ReviewType
+  createdAt DateTime   @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  author  User    @relation("ReviewsAuthored", fields: [authorId], references: [id])
+  target  User    @relation("ReviewsReceived", fields: [targetId], references: [id])
+
+  @@unique([bookingId, authorId])
+  @@index([targetId])
+  @@index([authorId])
+}
+
+// ─────────────────────────────────────────────
+// DEVIS (Quote)
+// ─────────────────────────────────────────────
+
+model Quote {
+  id          String      @id @default(cuid())
+  bookingId   String
+  issuedBy    String
+  status      QuoteStatus @default(DRAFT)
+
+  subtotalHT  Float
+  vatRate     Float       @default(0.20)
+  vatAmount   Float
+  totalTTC    Float
+
+  validUntil  DateTime?
+  conditions  String?     @db.Text
+  notes       String?     @db.Text
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  acceptedAt  DateTime?
+  rejectedAt  DateTime?
+
+  booking     Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  issuer      User        @relation("QuoteIssuer", fields: [issuedBy], references: [id], onDelete: Cascade)
+  lines       QuoteLine[]
+
+  @@index([bookingId])
+  @@index([issuedBy])
+}
+
+model QuoteLine {
+  id          String @id @default(cuid())
+  quoteId     String
+  description String
+  quantity    Float
+  unitPrice   Float
+  unit        String @default("heure")
+  totalHT     Float
+
+  quote       Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@index([quoteId])
+}
+
+// ─────────────────────────────────────────────
+// DOCUMENTS / UPLOADS
+// ─────────────────────────────────────────────
+
+model Document {
+  id           String               @id @default(cuid())
+  type         DocumentType         @default(OTHER)
+  status       DocumentReviewStatus @default(PENDING)
+  url          String
+  storagePath  String?
+  filename     String
+  mimeType     String?
+  sizeBytes    Int?
+  reviewReason String?              @db.Text
+  userId       String?
+  serviceId    String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service    Service? @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  reviewedBy User?    @relation("DocumentReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([reviewedById])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// DESK / CRM — Demandes d'informations
+// ─────────────────────────────────────────────
+
+model DeskRequest {
+  id                String              @id @default(cuid())
+  type              DeskRequestType
+  priority          DeskRequestPriority @default(NORMAL)
+  status            DeskRequestStatus   @default(OPEN)
+  missionId         String?
+  bookingId         String?
+  requesterId       String
+  assignedToAdminId String?
+  message           String              @db.Text
+  response          String?             @db.Text
+  answeredById      String?
+  answeredAt        DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  mission         ReliefMission? @relation("MissionDeskRequests", fields: [missionId], references: [id], onDelete: SetNull)
+  booking         Booking?       @relation("BookingDeskRequests", fields: [bookingId], references: [id], onDelete: SetNull)
+  requester       User           @relation("UserDeskRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  assignedToAdmin User?          @relation("DeskRequestAssignedToAdmin", fields: [assignedToAdminId], references: [id], onDelete: SetNull)
+  answeredBy      User?          @relation("DeskRequestAnsweredBy", fields: [answeredById], references: [id], onDelete: SetNull)
+
+  @@index([requesterId])
+  @@index([missionId])
+  @@index([bookingId])
+  @@index([status])
+  @@index([type])
+  @@index([priority])
+  @@index([assignedToAdminId])
+}
+
+model ContactBypassEvent {
+  id            String                     @id @default(cuid())
+  conversationId String?
+  senderId      String
+  blockedReason ContactBypassBlockedReason
+  rawExcerpt    String                     @db.Text
+  createdAt     DateTime                   @default(now())
+
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  sender       User          @relation("ContactBypassSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([blockedReason])
+  @@index([senderId])
+  @@index([conversationId])
+}

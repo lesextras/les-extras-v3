@@ -1,0 +1,26 @@
+{
+  "name": "lesextras",
+  "private": true,
+  "packageManager": "pnpm@10.6.1",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "prisma:generate": "pnpm --filter @lesextras/api prisma:generate",
+    "prisma:migrate": "pnpm --filter @lesextras/api prisma:migrate",
+    "prisma:seed": "pnpm --filter @lesextras/api prisma:seed",
+    "verify:system": "ts-node --transpile-only scripts/verify-system.ts",
+    "verify:next": "node scripts/verify-next-install.mjs",
+    "build:checked": "pnpm run verify:next && turbo run build",
+    "clean:install": "pnpm store prune && pnpm install --force --frozen-lockfile",
+    "validate:build": "ts-node --transpile-only scripts/validate-build.ts && npm run validate:skills",
+    "validate:skills": "node --test .agent/skills/ux-arch-2026/extras/tests/skills-json.spec.mjs .agent/skills/ux-arch-2026/extras/tests/env-contract.spec.mjs"
+  },
+  "devDependencies": {
+    "@jridgewell/sourcemap-codec": "^1.5.5",
+    "ts-node": "^10.9.2",
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.3"
+  }
+}
