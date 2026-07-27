@@ -7,6 +7,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ConfigModule } from './config/config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuditModule } from './common/audit/audit.module';
+import { StorageModule } from './storage/storage.module';
 import { MailModule } from './common/mail/mail.module';
 
 // --- Cœur identité / multi-comptes (Backend-Core) ---
@@ -44,6 +45,7 @@ import { ConformiteModule } from './conformite/conformite.module';
     ConfigModule,
     PrismaModule,
     AuditModule,
+    StorageModule,
     MailModule,
 
     // Cœur.

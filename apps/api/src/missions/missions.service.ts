@@ -58,6 +58,7 @@ export class MissionsService {
         headcount: dto.headcount ?? 1,
         emergency: dto.emergency ?? false,
         attachmentUrl: dto.attachmentUrl,
+        attachmentId: dto.attachmentId ?? null,
         orgUnitId: dto.orgUnitId,
       },
     });

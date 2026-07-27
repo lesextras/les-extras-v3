@@ -129,7 +129,14 @@ export class ConformiteService {
       },
     });
 
-    const docs = await this.prisma.complianceDocument.findMany({ where: { accountId } });
+    const docs = await this.prisma.complianceDocument.findMany({
+      where: { accountId },
+      include: {
+        file: {
+          select: { id: true, originalName: true, mimeType: true, size: true },
+        },
+      }
+    });
     const docsByUser = new Map<string, typeof docs>();
     for (const doc of docs) {
       const list = docsByUser.get(doc.userId) ?? [];
@@ -183,6 +190,11 @@ export class ConformiteService {
 
     const docs = await this.prisma.complianceDocument.findMany({
       where: { accountId, userId },
+      include: {
+        file: {
+          select: { id: true, originalName: true, mimeType: true, size: true },
+        },
+      },
     });
     const byType = new Map(docs.map((d) => [d.type, d]));
 
@@ -241,6 +253,7 @@ export class ConformiteService {
         type: dto.type,
         label: dto.label,
         fileUrl: dto.fileUrl,
+        fileId: dto.fileId ?? null,
         notes: dto.notes,
         issuedAt,
         expiresAt,
@@ -249,6 +262,8 @@ export class ConformiteService {
       update: {
         label: dto.label,
         fileUrl: dto.fileUrl,
+        // `undefined` = champ non transmis, on ne touche pas au fichier existant.
+        ...(dto.fileId !== undefined ? { fileId: dto.fileId || null } : {}),
         notes: dto.notes,
         issuedAt,
         expiresAt,
@@ -305,6 +320,8 @@ export class ConformiteService {
       label: string | null;
       status: ComplianceStatus;
       fileUrl: string | null;
+      fileId?: string | null;
+      file?: { id: string; originalName: string; mimeType: string; size: number } | null;
       issuedAt: Date | null;
       expiresAt: Date | null;
       notes: string | null;
@@ -318,6 +335,16 @@ export class ConformiteService {
       label: doc.label,
       status: doc.status,
       fileUrl: doc.fileUrl,
+      /** Fichier réellement déposé, servi par l'API après contrôle des droits. */
+      fichier: doc.file
+        ? {
+            id: doc.file.id,
+            nom: doc.file.originalName,
+            type: doc.file.mimeType,
+            taille: doc.file.size,
+            url: `/files/${doc.file.id}`,
+          }
+        : null,
       issuedAt: doc.issuedAt,
       expiresAt: doc.expiresAt,
       notes: doc.notes,
@@ -334,6 +361,7 @@ export class ConformiteService {
       label: null,
       status: ComplianceStatus.MISSING,
       fileUrl: null,
+      fichier: null as { id: string; nom: string; type: string; taille: number; url: string } | null,
       issuedAt: null as Date | null,
       expiresAt: null as Date | null,
       notes: null,

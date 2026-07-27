@@ -26,6 +26,9 @@ model User {
   lastName      String?
   phone         String?
   avatarUrl     String?
+  /// Photo de profil déposée (prioritaire sur avatarUrl quand elle existe).
+  avatarFileId  String?
+  avatarFile    FileAsset? @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
   /// Rôle global plateforme (pas le rôle DANS un compte).
   role          GlobalRole @default(USER)
   status        UserStatus @default(PENDING)
@@ -40,6 +43,7 @@ model User {
   sentInvitations Invitation[]   @relation("InvitationInviter")
   ownedAccounts   Account[]      @relation("AccountOwner")
   documents       Document[]
+  uploadedFiles   FileAsset[]        @relation("FileUploader")
   notifications   Notification[]
   messages        Message[]
   reviewsAuthored Review[]       @relation("ReviewAuthor")
@@ -118,6 +122,7 @@ model Account {
 
   @@index([type])
   @@index([slug])
+  uploadedFiles FileAsset[]  @relation("FileAccount")
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
@@ -199,7 +204,9 @@ model ReliefMission {
   hourlyRate   Decimal?       @db.Decimal(8, 2)
   headcount    Int            @default(1)
   emergency    Boolean        @default(false)  // mission urgente (renfort de dernière minute)
-  attachmentUrl String?                        // pièce jointe (fiche de poste, planning…)
+  attachmentUrl String?                        // ancien mode : adresse web saisie à la main
+  attachmentId  String?                        // nouveau mode : fichier déposé
+  attachment    FileAsset? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
   orgUnitId    String?                          // unité/service concerné
   orgUnit      OrgUnit?       @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   status       MissionStatus  @default(DRAFT)
@@ -398,7 +405,10 @@ model Document {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   kind       String   // avatar, diploma, siret, contract...
+  /// Ancien mode : adresse web. Vide quand le fichier est déposé (fileId).
   url        String
+  fileId     String?
+  file       FileAsset? @relation(fields: [fileId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
 
   @@index([userId, kind])
@@ -904,7 +914,11 @@ model ComplianceDocument {
   type       ComplianceDocType
   label      String?
   status     ComplianceStatus  @default(MISSING)
+  /// Ancien mode : adresse web saisie à la main. Conservé pour l'existant.
   fileUrl    String?
+  /// Nouveau mode : fichier réellement déposé dans le dépôt privé.
+  fileId     String?
+  file       FileAsset?        @relation(fields: [fileId], references: [id], onDelete: SetNull)
   issuedAt   DateTime?
   expiresAt  DateTime?
   notes      String?
@@ -976,4 +990,51 @@ model ContactRequest {
 enum ContactRequestStatus {
   NEW
   HANDLED
+}
+
+/// Catégorie fonctionnelle d'un fichier déposé. Sert au contrôle d'accès :
+/// une pièce de conformité n'obéit pas aux mêmes règles qu'un avatar.
+enum FileKind {
+  /// Coffre-fort : CNI, casier, diplôme, URSSAF, RIB, permis. Le plus sensible.
+  COMPLIANCE
+  /// Pièce jointe d'une mission de renfort (fiche de poste, protocole…).
+  MISSION
+  /// Photo de profil.
+  AVATAR
+  /// Support pédagogique, émargement signé, preuve Qualiopi.
+  FORMATION
+}
+
+/// Un fichier réellement stocké (objet dans le dépôt privé), avec sa fiche
+/// d'identité. Aucune URL publique : le téléchargement passe par l'API, qui
+/// vérifie les droits à chaque requête.
+model FileAsset {
+  id           String    @id @default(cuid())
+  /// Clé de l'objet dans le dépôt. Jamais devinable (identifiant aléatoire).
+  storageKey   String    @unique
+  /// Nom tel que déposé par la personne — sert uniquement à l'affichage
+  /// et au nom du fichier téléchargé.
+  originalName String
+  mimeType     String
+  /// Taille en octets.
+  size         Int
+  /// Empreinte SHA-256, pour détecter un doublon ou une altération.
+  checksum     String
+  kind         FileKind
+  /// Qui a déposé le fichier.
+  uploaderId   String?
+  uploader     User?     @relation("FileUploader", fields: [uploaderId], references: [id], onDelete: SetNull)
+  /// Compte dans le périmètre duquel le fichier a été déposé.
+  accountId    String?
+  account      Account?  @relation("FileAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  createdAt    DateTime  @default(now())
+
+  complianceDocuments ComplianceDocument[]
+  missions            ReliefMission[]
+  documents           Document[]
+  avatarOf            User[]               @relation("UserAvatar")
+
+  @@index([uploaderId])
+  @@index([accountId])
+  @@index([kind])
 }

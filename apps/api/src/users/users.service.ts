@@ -22,6 +22,7 @@ import {
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { FilesService } from '../storage/files.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import {
   AccountDeletionRequestDto,
@@ -55,7 +56,10 @@ const USER_PUBLIC_SELECT = {
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly files: FilesService,
+  ) {}
 
   /** Profil complet de l'utilisateur courant. */
   getMe(userId: string) {
@@ -72,6 +76,9 @@ export class UsersService {
     if (dto.lastName !== undefined) userData.lastName = dto.lastName;
     if (dto.phone !== undefined) userData.phone = dto.phone;
     if (dto.avatarUrl !== undefined) userData.avatarUrl = dto.avatarUrl;
+    if (dto.avatarFileId !== undefined) {
+      userData.avatarFileId = dto.avatarFileId || null;
+    }
 
     const profileData: Prisma.ProfileUpdateWithoutUserInput = {};
     if (dto.bio !== undefined) profileData.bio = dto.bio;
@@ -510,8 +517,8 @@ export class UsersService {
           cv: 'Vos diplômes et vos expériences professionnelles déclarés sur la plateforme.',
           disponibilites: 'Les créneaux de disponibilité (ou d\'indisponibilité) que vous avez déclarés.',
           rattachementsAuxComptes: 'Les comptes (structures ou compte individuel) auxquels vous êtes rattaché, avec votre rôle et votre unité.',
-          piecesDeConformite: 'Le suivi de vos pièces obligatoires (identité, casier judiciaire, permis, IBAN, attestations). Seul le suivi figure ici, pas les fichiers eux-mêmes : ils restent accessibles via leur lien.',
-          fichiersDeposes: 'Les fichiers que vous avez déposés (photo, diplôme, documents divers), sous forme de liens.',
+          piecesDeConformite: 'Le suivi de vos pièces obligatoires (identité, casier judiciaire, permis, IBAN, attestations). Les fichiers eux-mêmes sont stockés dans un dépôt privé ; ils sont supprimés en même temps que ces lignes si vous demandez l’effacement.',
+          fichiersDeposes: 'Les fichiers que vous avez déposés (photo, diplôme, documents divers).',
           missionsEtReservations: 'Vos missions et ateliers réservés, avec le détail de vos pointages (heures déclarées et validées) et la facture associée.',
           creneauxPlanifies: 'Les créneaux de planning sur lesquels vous avez été positionné par une structure.',
           factures: 'Les factures rattachées à votre compte individuel.',
@@ -883,6 +890,23 @@ export class UsersService {
     // le défaut de 5 s de Prisma est trop court pour un compte très actif.
     { timeout: 20_000 });
 
+    // ── 4 bis. Les fichiers eux-mêmes ───────────────────────────────────────
+    // Effacer les lignes ne suffit pas : les documents déposés (CNI, casier,
+    // RIB…) sont des objets dans le dépôt. On les supprime pour de bon. Hors
+    // transaction, à dessein : le dépôt n'est pas transactionnel, et un échec
+    // ici ne doit pas annuler l'anonymisation déjà acquise en base.
+    let fichiersDepotSupprimes = 0;
+    try {
+      fichiersDepotSupprimes = await this.files.effacerPourUtilisateur(userId);
+    } catch (error) {
+      this.logger.warn(
+        `Anonymisation RGPD ${userId} : suppression des fichiers du dépôt incomplète (${
+          error instanceof Error ? error.message : String(error)
+        }).`,
+      );
+    }
+    const effaceComplet = { ...efface, fichiersDepotSupprimes };
+
     // ── 5. Traçabilité : on garde la preuve que la demande a été honorée ─────
     // (sans jamais réintroduire l'identité effacée dans le journal).
     try {
@@ -894,7 +918,7 @@ export class UsersService {
           entityId: userId,
           summary:
             "Demande de suppression RGPD honorée : compte anonymisé et désactivé, écritures comptables conservées.",
-          metadata: efface as unknown as Prisma.InputJsonValue,
+          metadata: effaceComplet as unknown as Prisma.InputJsonValue,
           ip: ip ?? null,
         },
       });
@@ -912,7 +936,7 @@ export class UsersService {
     return {
       anonymise: true,
       effectueLe: new Date().toISOString(),
-      efface,
+      efface: effaceComplet,
       conserve: [
         'Les factures et leurs montants, ainsi que les heures de travail validées : obligation de conservation comptable (10 ans) et sociale. Elles ne portent plus votre nom mais restent rattachées aux écritures.',
         "Les avis échangés après mission et les messages de la messagerie : ils appartiennent aussi à votre interlocuteur, qui a le droit de conserver son historique.",

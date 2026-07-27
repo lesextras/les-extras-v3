@@ -80,6 +80,15 @@ export class CreateMissionDto {
   @IsString()
   attachmentUrl?: string;
 
+  /**
+   * Identifiant du fichier déposé via /files. Prend le pas sur l'adresse web
+   * saisie à la main : c'est le mode recommandé.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  attachmentId?: string;
+
   @IsOptional()
   @IsString()
   orgUnitId?: string;

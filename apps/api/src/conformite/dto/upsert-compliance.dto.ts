@@ -20,6 +20,15 @@ export class UpsertComplianceDto {
   @MaxLength(500)
   fileUrl?: string;
 
+  /**
+   * Identifiant du fichier déposé via /files. Prend le pas sur l'adresse web
+   * saisie à la main : c'est le mode recommandé.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  fileId?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(1000)

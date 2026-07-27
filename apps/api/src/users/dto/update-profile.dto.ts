@@ -33,6 +33,15 @@ export class UpdateProfileDto {
   @MaxLength(500)
   avatarUrl?: string;
 
+  /**
+   * Identifiant du fichier déposé via /files. Prend le pas sur l'adresse web
+   * saisie à la main : c'est le mode recommandé.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  avatarFileId?: string;
+
   // --- Profile ---
   @IsOptional()
   @IsString()
