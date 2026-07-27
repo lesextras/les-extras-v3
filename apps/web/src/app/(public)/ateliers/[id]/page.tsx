@@ -114,9 +114,10 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const { data } = await fetchPublic<ServiceDetail>(`/public/catalog/${params.id}`);
-  if (!data) return { title: "Atelier introuvable · Les Extras" };
+  if (!data) return { title: "Atelier introuvable" };
 
-  const titre = `${data.title} · Les Extras`;
+  // Le gabarit racine suffixe deja « · LES EXTRAS ».
+  const titre = data.title;
   const desc = resume(
     data.objectives || data.description || "Intervention proposée sur Les Extras.",
   );
@@ -127,14 +128,14 @@ export async function generateMetadata({
     description: desc,
     alternates: { canonical: `/ateliers/${data.id}` },
     openGraph: {
-      title: titre,
+      title: `${titre} · LES EXTRAS`,
       description: desc,
       type: "article",
       ...(image ? { images: [{ url: image }] } : {}),
     },
     twitter: {
       card: image ? "summary_large_image" : "summary",
-      title: titre,
+      title: `${titre} · LES EXTRAS`,
       description: desc,
       ...(image ? { images: [image] } : {}),
     },

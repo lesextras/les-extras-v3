@@ -198,25 +198,42 @@ export class PublicService {
           ) / 10
         : null;
 
-    const related = await this.prisma.service.findMany({
-      where: {
-        id: { not: id },
-        status: ServiceStatus.PUBLISHED,
-        ...(service.categoryRef?.id
-          ? { categoryId: service.categoryRef.id }
-          : { category: service.category }),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 3,
-      select: {
-        id: true,
-        title: true,
-        price: true,
-        city: true,
-        duration: true,
-        images: true,
-      },
-    });
+    const RELATED_SELECT = {
+      id: true,
+      title: true,
+      price: true,
+      city: true,
+      duration: true,
+      images: true,
+    } satisfies Prisma.ServiceSelect;
+
+    // D'abord la meme categorie editable ; si elle ne contient qu'une fiche, on
+    // elargit a la famille (ATELIER, FORMATION...) pour ne jamais afficher un
+    // bloc vide — le maillage interne compte autant pour le SEO que pour l'achat.
+    let related = service.categoryRef?.id
+      ? await this.prisma.service.findMany({
+          where: {
+            id: { not: id },
+            status: ServiceStatus.PUBLISHED,
+            categoryId: service.categoryRef.id,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 3,
+          select: RELATED_SELECT,
+        })
+      : [];
+    if (related.length === 0) {
+      related = await this.prisma.service.findMany({
+        where: {
+          id: { not: id },
+          status: ServiceStatus.PUBLISHED,
+          category: service.category,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        select: RELATED_SELECT,
+      });
+    }
 
     return { ...service, reviews, rating, related };
   }
