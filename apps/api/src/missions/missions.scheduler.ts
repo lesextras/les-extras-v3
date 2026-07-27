@@ -1,6 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { MissionVisibility } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -49,9 +48,12 @@ const TYPE_ALERTE = 'MISSION_ALERTE_ECHEANCE';
  * à l'import du module, avant que le conteneur Nest (et donc ConfigService)
  * ne soit disponible. Défaut : toutes les 30 minutes.
  */
-const EXPRESSION_CRON =
-  (process.env.RELANCE_CRON ?? '').trim() || CronExpression.EVERY_30_MINUTES;
-
+/** Intervalle entre deux passages, en minutes (RELANCE_INTERVALLE_MINUTES, defaut 30, borne [5;720]). */
+const INTERVALLE_MINUTES = (() => {
+  const brut = Number((process.env.RELANCE_INTERVALLE_MINUTES ?? '').trim() || '30');
+  if (!Number.isFinite(brut)) return 30;
+  return Math.min(720, Math.max(5, brut));
+})();
 /** Libellés lisibles des paliers de diffusion (messages en français). */
 const LIBELLE_PALIER: Record<MissionVisibility, string> = {
   [MissionVisibility.SALARIES]: 'vos salariés',
@@ -66,7 +68,7 @@ interface BilanMission {
 }
 
 @Injectable()
-export class MissionsScheduler {
+export class MissionsScheduler implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MissionsScheduler.name);
 
   /**
@@ -135,7 +137,21 @@ export class MissionsScheduler {
 
   // ── Tâche planifiée ──────────────────────────────────────────────────────
 
-  @Cron(EXPRESSION_CRON, { name: 'relance-missions-non-pourvues' })
+  private minuteur: ReturnType<typeof setInterval> | null = null;
+
+  /** Demarre la boucle sans dependance externe : simple setInterval natif. */
+  onModuleInit(): void {
+    this.minuteur = setInterval(() => {
+      void this.relancerMissionsNonPourvues();
+    }, INTERVALLE_MINUTES * 60_000);
+    // Ne bloque pas l'arret du process pendant les tests / scripts.
+    if (typeof this.minuteur === 'object' && 'unref' in this.minuteur) this.minuteur.unref();
+  }
+
+  onModuleDestroy(): void {
+    if (this.minuteur) clearInterval(this.minuteur);
+  }
+
   async relancerMissionsNonPourvues(): Promise<void> {
     if (!this.actif) {
       this.logger.debug('Relance désactivée (SCHEDULER_ENABLED=false) — passage ignoré.');
