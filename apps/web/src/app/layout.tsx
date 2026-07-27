@@ -12,7 +12,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  // Sans base explicite, Next retombe sur localhost et TOUTES les URL
+  // canoniques et images Open Graph du site pointent vers la machine de dev.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ??
+      process.env.WEB_PUBLIC_URL ??
+      'https://app.les-extras.fr',
+  ),
   title: {
     default: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     template: '%s · LES EXTRAS',
