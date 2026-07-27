@@ -508,7 +508,6 @@ export class AdminService {
           include: {
             service: { select: { title: true } },
             mission: { select: { title: true } },
-            freelance: { select: { firstName: true, lastName: true, email: true } },
           },
         },
         account: {
