@@ -176,24 +176,32 @@ export class MissionsService {
   }
 
   /**
-   * Publie une mission : DRAFT -> PUBLISHED et démarre la cascade au niveau
-   * le plus restreint (SALARIES). Utiliser /broaden pour élargir la diffusion.
+   * Publie une mission : DRAFT -> PUBLISHED et démarre la cascade au palier
+   * le plus restreint utile (SALARIES si vivier interne, sinon PUBLIC).
+   * L'établissement peut forcer un palier ; /broaden élargit ensuite, et le
+   * planificateur élargit tout seul si la mission reste non pourvue.
    */
-  async publish(id: string, accountId: string) {
+  async publish(id: string, accountId: string, visibiliteDemandee?: MissionVisibility) {
     const mission = await this.assertOwned(id, accountId);
     if (mission.status !== MissionStatus.DRAFT) {
       throw new BadRequestException('Seule une mission en brouillon peut être publiée.');
     }
+    // Palier de départ : « mon équipe d'abord » si le compte a effectivement
+    // un vivier interne (salariés ou intervenants déjà venus), sinon on
+    // publierait dans le vide → diffusion publique immédiate.
+    const demande = visibiliteDemandee ?? null;
+    const palierDepart =
+      demande ?? ((await this.aUnViverInterne(accountId)) ? MissionVisibility.SALARIES : MissionVisibility.PUBLIC);
+
     const published = await this.prisma.reliefMission.update({
       where: { id },
       data: {
         status: MissionStatus.PUBLISHED,
-        visibility: MissionVisibility.PUBLIC,
+        visibility: palierDepart,
         publishedAt: new Date(),
       },
     });
-    // Diffusion : e-mail à tous les freelances dont le profil correspond
-    // (métier + zone + disponibilité). N'échoue jamais la publication.
+    // Diffusion ciblée selon le palier. N'échoue jamais la publication.
     this.broadcastToMatched(id, accountId).catch(() => undefined);
     return published;
   }
@@ -205,6 +213,75 @@ export class MissionsService {
    * relance automatique (ex. : les intervenants ayant déjà candidaté).
    * Retourne le nombre d'intervenants effectivement ciblés.
    */
+  /**
+   * Comptes d'intervenants déjà venus travailler pour cet établissement :
+   * ils ont soit accepté une de ses missions, soit animé un de ses ateliers.
+   * C'est le « vivier réservé » du palier RESERVED.
+   */
+  private async intervenantsConnus(accountId: string): Promise<string[]> {
+    const [surMissions, surAteliers] = await this.prisma.$transaction([
+      this.prisma.booking.findMany({
+        where: {
+          status: { in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED] },
+          mission: { accountId },
+        },
+        select: { accountId: true },
+        distinct: ['accountId'],
+      }),
+      this.prisma.booking.findMany({
+        where: {
+          accountId,
+          status: { in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED] },
+          service: { isNot: null },
+        },
+        select: { service: { select: { accountId: true } } },
+      }),
+    ]);
+    const ids = new Set<string>();
+    surMissions.forEach((b) => b.accountId !== accountId && ids.add(b.accountId));
+    surAteliers.forEach((b) => b.service?.accountId && ids.add(b.service.accountId));
+    return [...ids];
+  }
+
+  /** Le compte a-t-il de quoi alimenter un palier interne (équipe ou habitués) ? */
+  private async aUnViverInterne(accountId: string): Promise<boolean> {
+    const membres = await this.prisma.membership.count({
+      where: { accountId, status: 'ACTIVE' },
+    });
+    if (membres > 1) return true;
+    const connus = await this.intervenantsConnus(accountId);
+    return connus.length > 0;
+  }
+
+  /**
+   * Palier SALARIES : on ne sort pas de la structure. L'offre est poussée aux
+   * membres actifs du compte (l'équipe), à charge pour l'établissement de
+   * couvrir le créneau en interne avant d'ouvrir à l'extérieur.
+   */
+  private async notifierEquipeInterne(mission: {
+    id: string;
+    title: string;
+    accountId: string;
+    startDate: Date;
+  }): Promise<number> {
+    const membres = await this.prisma.membership.findMany({
+      where: { accountId: mission.accountId, status: 'ACTIVE' },
+      select: { userId: true },
+    });
+    const lien = `/dashboard/missions/${mission.id}`;
+    await Promise.allSettled(
+      membres.map((m) =>
+        this.notifications.create(m.userId, {
+          type: 'MISSION_INTERNE',
+          title: 'Créneau à couvrir en interne',
+          body: `« ${mission.title} » du ${mission.startDate.toLocaleDateString('fr-FR')} est proposé à l'équipe avant d'être ouvert aux intervenants extérieurs.`,
+          link: lien,
+        }),
+      ),
+    );
+    return membres.length;
+  }
+
   private async broadcastToMatched(
     missionId: string,
     accountId: string,
@@ -212,12 +289,32 @@ export class MissionsService {
   ): Promise<number> {
     const mission = await this.prisma.reliefMission.findUnique({ where: { id: missionId } });
     if (!mission) return 0;
+
+    // ── Cascade : le palier décide QUI est sollicité ───────────────────────
+    if (mission.visibility === MissionVisibility.SALARIES) {
+      // Rien ne sort de la structure à ce stade.
+      return this.notifierEquipeInterne(mission);
+    }
+
     const { candidates } = await this.matching.candidatesForMission(missionId, accountId);
     const exclus = new Set(options?.excludeAccountIds ?? []);
+
+    // Palier RESERVED : uniquement les intervenants déjà venus dans la structure.
+    let autorises: Set<string> | null = null;
+    if (mission.visibility === MissionVisibility.RESERVED) {
+      autorises = new Set(await this.intervenantsConnus(accountId));
+      if (autorises.size === 0) return 0; // pas de vivier : le planificateur élargira.
+    }
+
     const targets = candidates
       .filter(
         (c: any) =>
-          c.available && !c.hasConflict && c.total >= 45 && c.email && !exclus.has(c.accountId),
+          c.available &&
+          !c.hasConflict &&
+          c.total >= 45 &&
+          c.email &&
+          !exclus.has(c.accountId) &&
+          (!autorises || autorises.has(c.accountId)),
       )
       .slice(0, 100);
     await Promise.allSettled(

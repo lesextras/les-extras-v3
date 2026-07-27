@@ -125,6 +125,8 @@ model Account {
   uploadedFiles FileAsset[]  @relation("FileAccount")
   creditPurchases CreditPurchase[]
   subscription    Subscription?
+  quotesAsClient   Quote[] @relation("QuoteClient")
+  quotesAsProvider Quote[] @relation("QuoteProvider")
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
@@ -221,6 +223,7 @@ model ReliefMission {
   bookings     Booking[]
   conversations Conversation[]
   shifts       Shift[]
+  quotes       Quote[]
 
   @@index([status, visibility])
   @@index([accountId])
@@ -249,12 +252,62 @@ model Service {
   updatedAt   DateTime       @updatedAt
 
   bookings    Booking[]
+  quotes      Quote[]
 
   @@index([status])
   @@index([accountId])
 }
 
 /// Réservation : relie un FREELANCE à une mission OU un service.
+/// Devis : chiffrage d'une prestation (atelier, formation, renfort) demandé
+/// par un établissement à un intervenant. Accepté -> réservation + contrat.
+model Quote {
+  id                String      @id @default(cuid())
+  reference         String      @unique
+  /// Établissement demandeur.
+  clientAccountId   String
+  clientAccount     Account     @relation("QuoteClient", fields: [clientAccountId], references: [id], onDelete: Cascade)
+  /// Intervenant qui chiffre.
+  providerAccountId String
+  providerAccount   Account     @relation("QuoteProvider", fields: [providerAccountId], references: [id], onDelete: Cascade)
+  serviceId         String?
+  service           Service?    @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  missionId         String?
+  mission           ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  title             String
+  /// Besoin exprimé par l'établissement.
+  request           String?
+  /// Message / conditions de l'intervenant.
+  message           String?
+  /// Lignes du devis : [{ label, quantity, unitPrice }] (JSON pour rester souple).
+  lines             Json?
+  amount            Decimal?    @db.Decimal(10, 2)
+  status            QuoteStatus @default(REQUESTED)
+  /// Date d'intervention souhaitée / retenue.
+  scheduledAt       DateTime?
+  validUntil        DateTime?
+  sentAt            DateTime?
+  decidedAt         DateTime?
+  refusalReason     String?
+  /// Réservation créée à l'acceptation (contrat + facturation en aval).
+  bookingId         String?     @unique
+  booking           Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([clientAccountId])
+  @@index([providerAccountId])
+  @@index([status])
+}
+
+enum QuoteStatus {
+  REQUESTED
+  SENT
+  ACCEPTED
+  REFUSED
+  EXPIRED
+}
+
 model Booking {
   id            String        @id @default(cuid())
   // Le compte à l'origine de la réservation (établissement ou freelance selon flux)
@@ -276,6 +329,7 @@ model Booking {
 
   reviews       Review[]
   invoice       Invoice?
+  quote         Quote?
   shift         Shift?
   timeEntries   TimeEntry[]
 

@@ -17,6 +17,7 @@ import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { MissionsService } from './missions.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
+import { PublishMissionDto } from './dto/publish-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { QueryMissionsDto } from './dto/query-missions.dto';
 
@@ -75,12 +76,19 @@ export class MissionsController {
     return this.missions.remove(id, account.id);
   }
 
-  /** Publier : DRAFT -> PUBLISHED, démarre la cascade (SALARIES). */
+  /**
+   * Publier : DRAFT -> PUBLISHED. Démarre la cascade au palier le plus
+   * restreint utile ; `visibility` permet de forcer (ex. urgence -> PUBLIC).
+   */
   @Post(':id/publish')
   @UseGuards(AccountGuard, AccountRolesGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
-  publish(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
-    return this.missions.publish(id, account.id);
+  publish(
+    @Param('id') id: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto?: PublishMissionDto,
+  ) {
+    return this.missions.publish(id, account.id, dto?.visibility);
   }
 
   /** Élargir la diffusion d'un cran (SALARIES -> RESERVED -> PUBLIC). */
