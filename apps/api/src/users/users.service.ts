@@ -77,7 +77,11 @@ export class UsersService {
     if (dto.phone !== undefined) userData.phone = dto.phone;
     if (dto.avatarUrl !== undefined) userData.avatarUrl = dto.avatarUrl;
     if (dto.avatarFileId !== undefined) {
-      userData.avatarFileId = dto.avatarFileId || null;
+      // Prisma n'accepte pas la clé étrangère brute sur un UserUpdateInput :
+      // il faut passer par la relation. Chaîne vide = on retire la photo.
+      userData.avatarFile = dto.avatarFileId
+        ? { connect: { id: dto.avatarFileId } }
+        : { disconnect: true };
     }
 
     const profileData: Prisma.ProfileUpdateWithoutUserInput = {};
