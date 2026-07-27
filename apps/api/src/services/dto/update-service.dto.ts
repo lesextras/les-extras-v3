@@ -1,59 +1,13 @@
-import {
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString,
-  MaxLength,
-  Min,
-  MinLength,
-} from 'class-validator';
-import { ServiceCategory, ServiceStatus } from '@prisma/client';
+import { PartialType } from '@nestjs/mapped-types';
+import { IsEnum, IsOptional } from 'class-validator';
+import { ServiceStatus } from '@prisma/client';
+import { CreateServiceDto } from './create-service.dto';
 
-/** Mise à jour partielle d'un service. */
-export class UpdateServiceDto {
-  @IsOptional()
-  @IsString()
-  @MinLength(3)
-  @MaxLength(160)
-  title?: string;
-
-  @IsOptional()
-  @IsString()
-  @MinLength(10)
-  description?: string;
-
-  @IsOptional()
-  @IsEnum(ServiceCategory)
-  category?: ServiceCategory;
-
-  @IsOptional()
-  @IsString()
-  categoryId?: string;
-
-  @IsOptional()
-  @IsString()
-  duration?: string;
-
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  maxParticipants?: number;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  publicTarget?: string;
-
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  price?: number;
-
-  @IsOptional()
-  @IsString()
-  city?: string;
-
+/**
+ * Mise à jour partielle : tous les champs de création deviennent facultatifs,
+ * plus le statut (brouillon / publié / archivé).
+ */
+export class UpdateServiceDto extends PartialType(CreateServiceDto) {
   @IsOptional()
   @IsEnum(ServiceStatus)
   status?: ServiceStatus;

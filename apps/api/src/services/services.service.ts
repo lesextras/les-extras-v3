@@ -28,8 +28,18 @@ export class ServicesService {
         category: dto.category,
         categoryId: dto.categoryId ?? undefined,
         duration: dto.duration,
+        durationMinutes: dto.durationMinutes,
         maxParticipants: dto.maxParticipants,
         publicTarget: dto.publicTarget,
+        publicTargets: dto.publicTargets ?? [],
+        material: dto.material,
+        prerequisites: dto.prerequisites,
+        objectives: dto.objectives,
+        methodology: dto.methodology,
+        evaluation: dto.evaluation,
+        faq: (dto.faq as unknown as object) ?? undefined,
+        images: dto.images ?? [],
+        priceExtras: (dto.priceExtras as unknown as object) ?? undefined,
         price: dto.price,
         city: dto.city,
       },
@@ -74,16 +84,82 @@ export class ServicesService {
     const service = await this.prisma.service.findUnique({
       where: { id },
       include: {
-        account: { select: { id: true, name: true, city: true, logoUrl: true } },
+        account: {
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            logoUrl: true,
+            slug: true,
+            owner: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                profile: { select: { job: true, bio: true } },
+              },
+            },
+          },
+        },
         categoryRef: { select: { id: true, title: true } },
       },
     });
     if (!service) throw new NotFoundException('Service introuvable.');
-    // Propriétaire : accès complet (y compris brouillon).
-    if (accountId && service.accountId === accountId) return service;
-    // Autre compte : uniquement les ateliers publiés.
-    if (service.status === 'PUBLISHED') return service;
-    throw new NotFoundException('Service introuvable.');
+    const estProprietaire = Boolean(accountId && service.accountId === accountId);
+    if (!estProprietaire && service.status !== 'PUBLISHED') {
+      throw new NotFoundException('Service introuvable.');
+    }
+
+    // Consultation comptabilisée pour les visiteurs (jamais pour le propriétaire).
+    if (!estProprietaire) {
+      this.prisma.service
+        .update({ where: { id }, data: { views: { increment: 1 } } })
+        .catch(() => undefined);
+    }
+
+    // Réputation de l'intervenant + autres fiches de la même famille.
+    const ownerId = service.account?.owner?.id;
+    const [notes, similaires] = await this.prisma.$transaction([
+      ownerId
+        ? this.prisma.review.findMany({
+            where: { targetId: ownerId },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: {
+              id: true,
+              rating: true,
+              comment: true,
+              createdAt: true,
+              author: { select: { firstName: true, lastName: true } },
+            },
+          })
+        : this.prisma.review.findMany({ where: { id: '' } }),
+      this.prisma.service.findMany({
+        where: {
+          status: 'PUBLISHED',
+          id: { not: id },
+          OR: [{ category: service.category }, { categoryId: service.categoryId ?? undefined }],
+        },
+        orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+        take: 3,
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          city: true,
+          duration: true,
+          images: true,
+          category: true,
+        },
+      }),
+    ]);
+
+    const moyenne =
+      notes.length > 0
+        ? Math.round((notes.reduce((sum, r) => sum + r.rating, 0) / notes.length) * 10) / 10
+        : null;
+
+    return { ...service, reviews: notes, rating: moyenne, related: similaires };
   }
 
   private async assertOwned(id: string, accountId: string) {
@@ -97,7 +173,17 @@ export class ServicesService {
 
   async update(id: string, accountId: string, dto: UpdateServiceDto) {
     await this.assertOwned(id, accountId);
-    return this.prisma.service.update({ where: { id }, data: { ...dto } });
+    const { faq, priceExtras, ...rest } = dto;
+    return this.prisma.service.update({
+      where: { id },
+      data: {
+        ...rest,
+        ...(faq !== undefined ? { faq: faq as unknown as object } : {}),
+        ...(priceExtras !== undefined
+          ? { priceExtras: priceExtras as unknown as object }
+          : {}),
+      },
+    });
   }
 
   async remove(id: string, accountId: string) {

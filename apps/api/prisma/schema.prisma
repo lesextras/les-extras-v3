@@ -240,9 +240,31 @@ model Service {
   category    ServiceCategory @default(ATELIER)
   categoryId  String?
   categoryRef Category?     @relation("ServiceCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
-  duration    String?        // "2H"
+  duration    String?        // "2H" — libellé libre historique
+  /// Durée normalisée en minutes (480 = 8 h) — sert au tri et aux filtres.
+  durationMinutes Int?
   maxParticipants Int?
   publicTarget String?       // "Adultes en situation de handicap"
+  /// Publics visés, en liste (Adolescent, Enfant, Handicap, Sénior…).
+  publicTargets String[]     @default([])
+  /// Matériel nécessaire et prérequis, tels qu'annoncés à l'établissement.
+  material     String?
+  prerequisites String?
+  /// Contenu pédagogique structuré (modèle des fiches les-extras.fr).
+  objectives   String?
+  methodology  String?
+  evaluation   String?
+  /// Questions fréquentes : [{ question, answer }].
+  faq          Json?
+  /// Galerie : URLs (fichier déposé /api/files/... ou image externe).
+  images       String[]      @default([])
+  /// Options facturables en supplément : [{ label, price }].
+  priceExtras  Json?
+  /// Mise en avant sur la marketplace et validation par l'équipe.
+  featured    Boolean        @default(false)
+  verified    Boolean        @default(false)
+  /// Compteur de consultations de la fiche.
+  views       Int            @default(0)
   price       Decimal?       @db.Decimal(10, 2)
   /// Coût en crédits d'une réservation de cet atelier par un établissement.
   creditCost  Int            @default(1)
