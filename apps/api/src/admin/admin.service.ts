@@ -1200,6 +1200,18 @@ export class AdminService {
   }
 
   /** Marque une demande de contact comme traitée / à traiter. */
+  /**
+   * Suppression d'une demande de contact.
+   * Nécessaire pour deux raisons : purger le spam qui passerait les filtres,
+   * et honorer une demande d'effacement RGPD sans passer par la base.
+   */
+  async deleteContact(id: string) {
+    const found = await this.prisma.contactRequest.findUnique({ where: { id } });
+    if (!found) throw new NotFoundException('Demande introuvable.');
+    await this.prisma.contactRequest.delete({ where: { id } });
+    return { ok: true, id };
+  }
+
   async setContactStatus(id: string, status?: string) {
     const next = status === 'HANDLED' ? 'HANDLED' : 'NEW';
     const found = await this.prisma.contactRequest.findUnique({ where: { id } });

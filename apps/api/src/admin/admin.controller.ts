@@ -338,6 +338,12 @@ export class AdminController {
     return this.admin.setContactStatus(id, body?.status);
   }
 
+  /** Purge d'une demande (spam ou effacement RGPD). */
+  @Delete('contacts/:id')
+  deleteContact(@Param('id') id: string) {
+    return this.admin.deleteContact(id);
+  }
+
   // ── Journal d'audit (traçabilité) ────────────────────────────────────────
 
   /**
