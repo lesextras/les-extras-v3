@@ -1,7 +1,7 @@
 // Back-office ADMIN — tableau de bord : KPIs plateforme, raccourcis, file de modération.
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Users, Building2, Megaphone, GraduationCap, CalendarCheck, ArrowRight } from "lucide-react";
+import { Users, Building2, Megaphone, GraduationCap, CalendarCheck, ArrowRight, AlertTriangle, Clock, FileWarning, UserCheck, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,20 @@ interface AdminStats {
   bookings?: number;
 }
 
+interface DeskData {
+  urgentMissions?: { id: string; title: string; startDate: string; city?: string | null; emergency?: boolean; account?: { name?: string | null } | null }[];
+  pendingUsers?: { id: string; email: string; role: string; createdAt: string; profile?: { firstName?: string | null; lastName?: string | null } | null }[];
+  expiringDocuments?: { id: string; type: string; label?: string | null; expiresAt?: string | null; user?: { email?: string; profile?: { firstName?: string | null; lastName?: string | null } | null } | null }[];
+  counts?: {
+    urgentMissions?: number;
+    pendingUsers?: number;
+    expiredDocuments?: number;
+    expiringDocuments?: number;
+    pendingTimeEntries?: number;
+    pendingModeration?: number;
+  };
+}
+
 const SHORTCUTS = [
   { href: "/admin/utilisateurs", label: "Utilisateurs", description: "Gérer et modérer les comptes", icon: Users },
   { href: "/admin/missions", label: "Missions", description: "Modérer les missions de renfort", icon: Megaphone },
@@ -34,10 +48,11 @@ const SHORTCUTS = [
 export default async function AdminPage() {
   const session = await requireAdmin();
 
-  const [statsRes, missionsRes, servicesRes] = await Promise.all([
+  const [statsRes, missionsRes, servicesRes, deskRes] = await Promise.all([
     fetchApi<AdminStats>(session, "/admin/stats"),
     fetchApi<Mission[]>(session, "/admin/missions"),
     fetchApi<Service[]>(session, "/admin/services"),
+    fetchApi<DeskData>(session, "/admin/desk"),
   ]);
 
   const s = statsRes.data ?? {};
@@ -48,6 +63,18 @@ export default async function AdminPage() {
   const pendingServices = services.filter((sv) => sv.status === "DRAFT");
   const pendingTotal = pendingMissions.length + pendingServices.length;
 
+  const desk = deskRes.data ?? {};
+  const dc = desk.counts ?? {};
+  const urgent = desk.urgentMissions ?? [];
+  const toValidate = desk.pendingUsers ?? [];
+  const expDocs = desk.expiringDocuments ?? [];
+  const alertTotal =
+    (dc.urgentMissions ?? 0) +
+    (dc.pendingUsers ?? 0) +
+    (dc.expiredDocuments ?? 0) +
+    (dc.expiringDocuments ?? 0) +
+    (dc.pendingTimeEntries ?? 0);
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -55,12 +82,72 @@ export default async function AdminPage() {
         subtitle="Vue d'ensemble de la plateforme, modération et pilotage."
       />
 
+      {/* ── LE DESK — cockpit par alertes : on traite ce qui brûle, on ne navigue pas ── */}
+      <section aria-label="Le Desk" className="space-y-4">
+        {alertTotal === 0 ? (
+          <Card className="border-emerald-200 bg-emerald-50/60">
+            <CardContent className="flex items-center gap-3 p-4">
+              <CheckCircle2 className="size-5 shrink-0 text-emerald-600" />
+              <p className="text-sm text-emerald-900">
+                <span className="font-semibold">Rien d&apos;urgent.</span> Aucun renfort à moins de 48 h non pourvu,
+                aucun compte à valider, aucun document en échéance, aucune heure en attente.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-warning/40 bg-warning/5">
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="size-5 text-warning" />
+                <h2 className="text-base font-semibold text-foreground">
+                  {alertTotal} point{alertTotal > 1 ? "s" : ""} à traiter
+                </h2>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {(dc.urgentMissions ?? 0) > 0 ? (
+                  <Link href="/admin/missions" className="group rounded-xl border border-warning/30 bg-white p-4 transition hover:shadow-card">
+                    <div className="flex items-center gap-2 text-warning"><Clock className="size-4" /><span className="text-2xl font-bold">{dc.urgentMissions}</span></div>
+                    <p className="mt-1 text-sm font-medium text-foreground">Renfort{(dc.urgentMissions ?? 0) > 1 ? "s" : ""} &lt; 48 h non pourvu{(dc.urgentMissions ?? 0) > 1 ? "s" : ""}</p>
+                    <p className="text-xs text-muted-foreground">{urgent[0] ? `${urgent[0].title} · ${formatDate(urgent[0].startDate)}` : ""}</p>
+                  </Link>
+                ) : null}
+                {(dc.pendingUsers ?? 0) > 0 ? (
+                  <Link href="/admin/utilisateurs" className="group rounded-xl border border-border bg-white p-4 transition hover:shadow-card">
+                    <div className="flex items-center gap-2 text-primary"><UserCheck className="size-4" /><span className="text-2xl font-bold">{dc.pendingUsers}</span></div>
+                    <p className="mt-1 text-sm font-medium text-foreground">Compte{(dc.pendingUsers ?? 0) > 1 ? "s" : ""} à valider</p>
+                    <p className="text-xs text-muted-foreground">{toValidate[0] ? `Le plus ancien : ${toValidate[0].email}` : ""}</p>
+                  </Link>
+                ) : null}
+                {((dc.expiredDocuments ?? 0) + (dc.expiringDocuments ?? 0)) > 0 ? (
+                  <Link href="/admin/conformite" className="group rounded-xl border border-border bg-white p-4 transition hover:shadow-card">
+                    <div className="flex items-center gap-2 text-warning"><FileWarning className="size-4" /><span className="text-2xl font-bold">{(dc.expiredDocuments ?? 0) + (dc.expiringDocuments ?? 0)}</span></div>
+                    <p className="mt-1 text-sm font-medium text-foreground">Document{((dc.expiredDocuments ?? 0) + (dc.expiringDocuments ?? 0)) > 1 ? "s" : ""} en échéance</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(dc.expiredDocuments ?? 0) > 0 ? `${dc.expiredDocuments} déjà expiré${(dc.expiredDocuments ?? 0) > 1 ? "s" : ""}` : "Expire(nt) sous 30 jours"}
+                      {expDocs[0]?.expiresAt ? ` · 1er : ${formatDate(expDocs[0].expiresAt)}` : ""}
+                    </p>
+                  </Link>
+                ) : null}
+                {(dc.pendingTimeEntries ?? 0) > 0 ? (
+                  <Link href="/admin/reservations" className="group rounded-xl border border-border bg-white p-4 transition hover:shadow-card">
+                    <div className="flex items-center gap-2 text-primary"><CalendarCheck className="size-4" /><span className="text-2xl font-bold">{dc.pendingTimeEntries}</span></div>
+                    <p className="mt-1 text-sm font-medium text-foreground">Heure{(dc.pendingTimeEntries ?? 0) > 1 ? "s" : ""} à valider</p>
+                    <p className="text-xs text-muted-foreground">Déclarées par les freelances, en attente</p>
+                  </Link>
+                ) : null}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <StatCard label="Utilisateurs" value={s.users ?? 0} accent="teal" icon={<Users />} />
         <StatCard label="Comptes" value={s.accounts ?? 0} icon={<Building2 />} />
         <StatCard label="Missions" value={s.missions ?? 0} icon={<Megaphone />} />
         <StatCard label="Ateliers" value={s.services ?? 0} icon={<GraduationCap />} />
-        <StatCard label="Réservations" value={s.bookings ?? 0} accent="terracotta" icon={<CalendarCheck />} />
+        <StatCard label="Réservations" value={s.bookings ?? 0} accent="warning" icon={<CalendarCheck />} />
       </div>
 
       <section className="space-y-4">

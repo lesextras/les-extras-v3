@@ -950,6 +950,74 @@ export class AdminService {
   }
 
   /**
+   * Le Desk — cockpit d'exploitation piloté par alertes.
+   * Remonte uniquement ce qui demande une action humaine maintenant :
+   * missions urgentes non pourvues, comptes à valider, documents de
+   * conformité expirés ou proches de l'échéance, heures à valider,
+   * contenus en attente de modération.
+   */
+  async desk() {
+    const now = new Date();
+    const in48h = new Date(now.getTime() + 48 * 3600 * 1000);
+    const in30d = new Date(now.getTime() + 30 * 24 * 3600 * 1000);
+
+    const [urgentMissions, pendingUsers, expiringDocs, pendingTimeEntries, draftMissions, draftServices] =
+      await this.prisma.$transaction([
+        // Missions publiées qui démarrent dans moins de 48 h et ne sont pas pourvues.
+        this.prisma.reliefMission.findMany({
+          where: { status: 'PUBLISHED', startDate: { lte: in48h } },
+          orderBy: { startDate: 'asc' },
+          take: 10,
+          select: {
+            id: true, title: true, startDate: true, city: true, emergency: true,
+            account: { select: { name: true } },
+          },
+        }),
+        // Comptes en attente de vérification (les plus anciens d'abord).
+        this.prisma.user.findMany({
+          where: { status: 'PENDING' },
+          orderBy: { createdAt: 'asc' },
+          take: 10,
+          select: {
+            id: true, email: true, role: true, createdAt: true,
+            profile: { select: { firstName: true, lastName: true } },
+          },
+        }),
+        // Documents de conformité expirés ou qui expirent sous 30 jours.
+        this.prisma.complianceDocument.findMany({
+          where: { expiresAt: { not: null, lte: in30d } },
+          orderBy: { expiresAt: 'asc' },
+          take: 10,
+          select: {
+            id: true, type: true, label: true, expiresAt: true, accountId: true,
+            user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } },
+          },
+        }),
+        // Heures déclarées en attente de validation.
+        this.prisma.timeEntry.count({ where: { status: 'PENDING' } }),
+        this.prisma.reliefMission.count({ where: { status: 'DRAFT' } }),
+        this.prisma.service.count({ where: { status: 'DRAFT' } }),
+      ]);
+
+    const expired = expiringDocs.filter((d) => d.expiresAt && d.expiresAt < now).length;
+
+    return {
+      generatedAt: now.toISOString(),
+      urgentMissions,
+      pendingUsers,
+      expiringDocuments: expiringDocs,
+      counts: {
+        urgentMissions: urgentMissions.length,
+        pendingUsers: pendingUsers.length,
+        expiredDocuments: expired,
+        expiringDocuments: expiringDocs.length - expired,
+        pendingTimeEntries,
+        pendingModeration: draftMissions + draftServices,
+      },
+    };
+  }
+
+  /**
    * Statistiques ROI & performance de la marketplace de renfort.
    * Toutes les valeurs sont calculées à partir des données réelles (missions +
    * bookings). Voir AVG_INTERIM_SAVINGS_EUR pour l'hypothèse d'économie.

@@ -39,6 +39,11 @@ export class AdminController {
     return this.admin.stats();
   }
 
+  @Get('desk')
+  desk() {
+    return this.admin.desk();
+  }
+
   @Get('stats/roi')
   roiStats() {
     return this.admin.roiStats();
