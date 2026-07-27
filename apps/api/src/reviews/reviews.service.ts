@@ -120,11 +120,15 @@ export class ReviewsService {
       throw new BadRequestException('La cible de l’avis ne participe pas à cette réservation.');
     }
 
+    // On rattache l'avis à la prestation elle-même : c'est cette note-là qui
+    // décide un acheteur, pas seulement celle de l'intervenant.
     return this.prisma.review.create({
       data: {
         bookingId: dto.bookingId,
         authorId: userId,
         targetId: dto.targetId,
+        serviceId: booking.serviceId ?? undefined,
+        missionId: booking.missionId ?? undefined,
         rating: dto.rating,
         comment: dto.comment,
       },

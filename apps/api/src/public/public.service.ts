@@ -176,27 +176,44 @@ export class PublicService {
       .update({ where: { id }, data: { views: { increment: 1 } } })
       .catch(() => undefined);
 
-    const ownerId = service.account?.owner?.id ?? null;
-    const reviews = ownerId
-      ? await this.prisma.review.findMany({
-          where: { targetId: ownerId },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-          select: {
-            id: true,
-            rating: true,
-            comment: true,
-            createdAt: true,
-            author: { select: { firstName: true, lastName: true } },
-          },
-        })
-      : [];
-    const rating =
-      reviews.length > 0
+    const REVIEW_SELECT = {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      author: { select: { firstName: true, lastName: true } },
+    } satisfies Prisma.ReviewSelect;
+    const moyenne = (notes: { rating: number }[]) =>
+      notes.length > 0
         ? Math.round(
-            (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10,
+            (notes.reduce((sum, r) => sum + r.rating, 0) / notes.length) * 10,
           ) / 10
         : null;
+
+    // Priorité à la note de CETTE prestation. Tant qu'elle n'a pas d'avis, on
+    // affiche celle de l'intervenant, explicitement étiquetée comme telle.
+    const avisPrestation = await this.prisma.review.findMany({
+      where: { serviceId: id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: REVIEW_SELECT,
+    });
+    const ownerId = service.account?.owner?.id ?? null;
+    const avisIntervenant =
+      avisPrestation.length === 0 && ownerId
+        ? await this.prisma.review.findMany({
+            where: { targetId: ownerId },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+            select: REVIEW_SELECT,
+          })
+        : [];
+
+    const reviews = avisPrestation.length > 0 ? avisPrestation : avisIntervenant;
+    const rating = moyenne(reviews);
+    /** 'service' = note de l'atelier, 'provider' = note de l'intervenant. */
+    const ratingSource: 'service' | 'provider' | null =
+      avisPrestation.length > 0 ? 'service' : reviews.length > 0 ? 'provider' : null;
 
     const RELATED_SELECT = {
       id: true,
@@ -235,7 +252,7 @@ export class PublicService {
       });
     }
 
-    return { ...service, reviews, rating, related };
+    return { ...service, reviews, rating, ratingSource, related };
   }
 
   /**

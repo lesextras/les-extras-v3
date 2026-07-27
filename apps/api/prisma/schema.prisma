@@ -221,6 +221,7 @@ model ReliefMission {
   updatedAt    DateTime       @updatedAt
 
   bookings     Booking[]
+  reviews      Review[]      @relation("MissionReviews")
   conversations Conversation[]
   shifts       Shift[]
   quotes       Quote[]
@@ -287,6 +288,7 @@ model Service {
 
   bookings    Booking[]
   quotes      Quote[]
+  reviews     Review[]       @relation("ServiceReviews")
 
   @@index([status])
   @@index([accountId])
@@ -435,12 +437,22 @@ model Review {
   author     User     @relation("ReviewAuthor", fields: [authorId], references: [id])
   targetId   String
   target     User     @relation("ReviewTarget", fields: [targetId], references: [id])
+  /// Prestation notée, déduite de la réservation à la création de l'avis.
+  /// Sur une marketplace, la note portée par l'offre pèse plus dans la décision
+  /// d'achat que celle du vendeur : deux ateliers d'un même intervenant ne
+  /// doivent pas partager la même note.
+  serviceId  String?
+  service    Service? @relation("ServiceReviews", fields: [serviceId], references: [id], onDelete: SetNull)
+  missionId  String?
+  mission    ReliefMission? @relation("MissionReviews", fields: [missionId], references: [id], onDelete: SetNull)
   rating     Int      // 1..5
   comment    String?
   createdAt  DateTime @default(now())
 
   @@index([targetId])
   @@index([bookingId])
+  @@index([serviceId])
+  @@index([missionId])
 }
 
 model Notification {

@@ -35,6 +35,9 @@ interface FormationDetail {
   ownerAccount?: { name?: string | null } | null;
   categoryRef?: { title?: string | null } | null;
   sessions?: SessionItem[];
+  /** Moyenne des appréciations stagiaires (Qualiopi, indicateur 30). */
+  rating?: number | null;
+  ratingCount?: number;
 }
 
 function fmtDate(d?: string | null) {
@@ -99,6 +102,19 @@ export default async function FormationDetailPage({ params }: { params: { id: st
         {f.categoryRef?.title ? <Badge variant="outline">{f.categoryRef.title}</Badge> : null}
         {f.durationHours ? <Badge variant="muted">{f.durationHours} h</Badge> : null}
       </div>
+
+      {/* Satisfaction stagiaires : preuve sociale déjà collectée à l'inscription. */}
+      {f.rating ? (
+        <p className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+          <span className="text-amber-500" aria-hidden>
+            ★
+          </span>
+          {f.rating.toFixed(1)}/5
+          <span className="font-normal text-muted-foreground">
+            — satisfaction de {f.ratingCount} stagiaire{(f.ratingCount ?? 0) > 1 ? "s" : ""}
+          </span>
+        </p>
+      ) : null}
 
       <Pipeline certifying={isCertifying} />
 

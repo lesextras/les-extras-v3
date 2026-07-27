@@ -131,8 +131,28 @@ export class FormationsService {
       },
     });
     if (!formation) throw new NotFoundException('Formation introuvable.');
-    if (accountId && formation.ownerAccountId === accountId) return formation;
-    if (formation.status === FormationStatus.PUBLISHED) return formation;
+
+    // Satisfaction des stagiaires : la donnée est déjà collectée sur chaque
+    // inscription (exigence Qualiopi, indicateur 30). On l'agrège ici pour en
+    // faire une note affichable — sans elle, une formation n'a aucune preuve
+    // sociale alors qu'un atelier en a une.
+    const agg = await this.prisma.inscription.aggregate({
+      where: { session: { formationId: id }, satisfaction: { not: null } },
+      _avg: { satisfaction: true },
+      _count: { satisfaction: true },
+    });
+    const enrichie = {
+      ...formation,
+      rating:
+        agg._count.satisfaction > 0 && agg._avg.satisfaction != null
+          ? Math.round(agg._avg.satisfaction * 10) / 10
+          : null,
+      ratingCount: agg._count.satisfaction,
+      ratingSource: agg._count.satisfaction > 0 ? ('learners' as const) : null,
+    };
+
+    if (accountId && formation.ownerAccountId === accountId) return enrichie;
+    if (formation.status === FormationStatus.PUBLISHED) return enrichie;
     throw new NotFoundException('Formation introuvable.');
   }
 

@@ -119,21 +119,28 @@ export class ServicesService {
         .catch(() => undefined);
     }
 
-    // Réputation de l'intervenant + autres fiches de la même famille.
+    // Réputation : d'abord celle de CET atelier, sinon celle de l'intervenant.
     const ownerId = service.account?.owner?.id;
-    const [notes, similaires] = await this.prisma.$transaction([
-      ownerId
+    const REVIEW_SELECT = {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      author: { select: { firstName: true, lastName: true } },
+    };
+    const avisPrestation = await this.prisma.review.findMany({
+      where: { serviceId: id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: REVIEW_SELECT,
+    });
+    const [notesIntervenant, similaires] = await this.prisma.$transaction([
+      ownerId && avisPrestation.length === 0
         ? this.prisma.review.findMany({
             where: { targetId: ownerId },
             orderBy: { createdAt: 'desc' },
             take: 5,
-            select: {
-              id: true,
-              rating: true,
-              comment: true,
-              createdAt: true,
-              author: { select: { firstName: true, lastName: true } },
-            },
+            select: REVIEW_SELECT,
           })
         : this.prisma.review.findMany({ where: { id: '' } }),
       this.prisma.service.findMany({
@@ -156,12 +163,15 @@ export class ServicesService {
       }),
     ]);
 
+    const notes = avisPrestation.length > 0 ? avisPrestation : notesIntervenant;
     const moyenne =
       notes.length > 0
         ? Math.round((notes.reduce((sum, r) => sum + r.rating, 0) / notes.length) * 10) / 10
         : null;
+    const ratingSource: 'service' | 'provider' | null =
+      avisPrestation.length > 0 ? 'service' : notes.length > 0 ? 'provider' : null;
 
-    return { ...service, reviews: notes, rating: moyenne, related: similaires };
+    return { ...service, reviews: notes, rating: moyenne, ratingSource, related: similaires };
   }
 
   private async assertOwned(id: string, accountId: string) {

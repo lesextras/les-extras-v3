@@ -79,6 +79,8 @@ interface ServiceDetail {
   } | null;
   reviews?: ReviewItem[];
   rating?: number | null;
+  /** 'service' = note de cet atelier, 'provider' = note de l'intervenant. */
+  ratingSource?: "service" | "provider" | null;
   related?: RelatedItem[];
 }
 
@@ -178,7 +180,8 @@ export default async function ServiceDetailPage({ params }: { params: { id: stri
                   <Star className="size-4 fill-current text-amber-500" />
                   {service.rating.toFixed(1)}
                   <span className="font-normal text-muted-foreground">
-                    ({avis.length} avis)
+                    ({avis.length} avis
+                    {service.ratingSource === "provider" ? " sur l\u2019intervenant" : ""})
                   </span>
                 </span>
               ) : null}
@@ -263,7 +266,9 @@ export default async function ServiceDetailPage({ params }: { params: { id: stri
           {avis.length > 0 ? (
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">
-                Avis sur l&apos;intervenant
+                {service.ratingSource === "service"
+                  ? "Avis sur cet atelier"
+                  : "Avis sur l\u2019intervenant"}
               </h2>
               <div className="space-y-2">
                 {avis.map((a) => (
