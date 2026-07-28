@@ -71,15 +71,66 @@ export class MailService {
     }
   }
 
-  async sendEmailVerification(to: string, token: string): Promise<void> {
+  async sendEmailVerification(to: string, token: string, prenom?: string | null): Promise<void> {
     const url = `${this.webUrl}/verify-email?token=${encodeURIComponent(token)}`;
     await this.send(
       to,
-      'Activez votre compte LES EXTRAS',
+      'Confirmez votre adresse — LES EXTRAS',
       this.layout(
-        'Bienvenue \u{1F44B}',
-        `Merci de votre inscription. Confirmez votre adresse email pour activer votre compte et accéder à la plateforme.`,
-        { label: 'Activer mon compte', url },
+        `Plus qu'une étape${prenom ? `, ${prenom}` : ''}`,
+        `Votre compte est créé. Confirmez cette adresse pour l'activer complètement : c'est ce qui
+         nous permet de vous joindre quand une mission vous correspond ou qu'un devis arrive.
+         <br><br>Ce lien est valable 24 heures.`,
+        { label: 'Confirmer mon adresse', url },
+      ),
+    );
+  }
+
+  /**
+   * Bienvenue — envoyé UNE FOIS, à la confirmation de l'adresse.
+   *
+   * Ce n'est pas un accusé de réception : c'est le moment où l'on dit à
+   * quelqu'un dans quoi il vient d'entrer, et ce qu'il peut faire dès
+   * maintenant. Le contenu change selon qu'on est un établissement ou un
+   * intervenant — les deux ne cherchent pas la même chose.
+   */
+  async sendBienvenue(
+    to: string,
+    data: { prenom?: string | null; type: 'ESTABLISHMENT' | 'FREELANCE' },
+  ): Promise<void> {
+    const etab = data.type === 'ESTABLISHMENT';
+
+    const premiersPas = etab
+      ? [
+          'Parcourez le catalogue d’ateliers et de formations, et demandez un devis en deux clics.',
+          'Publiez un SOS Renfort quand une absence tombe : il part d’abord à votre équipe interne.',
+          'Invitez vos salariés : la gestion interne (planning, pointage, conformité) est gratuite.',
+        ]
+      : [
+          'Publiez votre premier atelier : c’est gratuit, et vous gardez 100 % de votre tarif.',
+          'Consultez les missions de renfort qui correspondent à votre métier et à votre secteur.',
+          'Ouvrez le GAP : déposez une situation, ou répondez à un collègue qui attend un retour.',
+        ];
+
+    await this.send(
+      to,
+      'Bienvenue dans la communauté LES EXTRAS',
+      this.layout(
+        `Bienvenue${data.prenom ? `, ${data.prenom}` : ''} 🎉`,
+        `Votre adresse est confirmée : vous faites maintenant partie de la communauté
+         <b>LES EXTRAS</b>, le dispositif de l'association <b>ADéPA</b>.
+         <br><br>
+         ADéPA est une association loi 1901 engagée depuis 2012 dans l'insertion sociale par
+         l'éducation, la prévention et l'animation. LES EXTRAS en est le prolongement numérique :
+         relier les établissements médico-sociaux et les professionnels qui les font tenir.
+         <br><br>
+         <b>Ce que vous pouvez faire dès maintenant :</b>
+         <ul style="margin:10px 0 0;padding-left:18px">
+           ${premiersPas.map((p) => `<li style="margin:6px 0">${p}</li>`).join('')}
+         </ul>
+         <br>
+         Une question ? Répondez simplement à cet e-mail, une vraie personne le lit.`,
+        { label: 'Ouvrir mon espace', url: `${this.webUrl}/dashboard` },
       ),
     );
   }
