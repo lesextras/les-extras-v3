@@ -22,6 +22,7 @@ import { FileUpload, type FichierDepose } from "./FileUpload";
 
 type DocType =
   | "IDENTITY"
+  | "DIPLOMA"
   | "CRIMINAL_RECORD"
   | "DRIVING_LICENSE"
   | "IBAN"
@@ -32,6 +33,7 @@ type Status = "MISSING" | "PENDING" | "VALID" | "EXPIRED";
 
 const TYPE_LABEL: Record<DocType, string> = {
   IDENTITY: "Carte nationale d'identité",
+  DIPLOMA: "Diplôme d'État (DEES, DEME, DEAES, DEEJE…)",
   CRIMINAL_RECORD: "Casier judiciaire (bulletin n°3)",
   DRIVING_LICENSE: "Permis de conduire",
   IBAN: "IBAN / RIB",
@@ -128,6 +130,8 @@ function DocRow({
   const [expiresAt, setExpiresAt] = useState(toDateInput(doc.expiresAt));
   const [issuedAt, setIssuedAt] = useState(toDateInput(doc.issuedAt));
   const [notes, setNotes] = useState(doc.notes ?? "");
+  /** Sert d'« établissement délivrant » pour un diplôme. */
+  const [label, setLabel] = useState(doc.label ?? "");
   const [fichier, setFichier] = useState<FichierDepose | null>(doc.fichier ?? null);
   const [busy, setBusy] = useState(false);
 
@@ -143,6 +147,7 @@ function DocRow({
           expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
           issuedAt: issuedAt ? new Date(issuedAt).toISOString() : undefined,
           notes: notes || undefined,
+          label: label || undefined,
           // Chaîne vide = on détache le fichier ; identifiant = on l'attache.
           fileId: fichier?.id ?? "",
         },
@@ -194,14 +199,32 @@ function DocRow({
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">
-              {doc.type === "CRIMINAL_RECORD" ? "Date d'émission" : "Émise le"}
+              {doc.type === "CRIMINAL_RECORD"
+                ? "Date d'émission"
+                : doc.type === "DIPLOMA"
+                  ? "Année d'obtention"
+                  : "Émise le"}
             </label>
             <Input type="date" value={issuedAt} onChange={(e) => setIssuedAt(e.target.value)} className="h-9" />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Échéance</label>
-            <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="h-9" />
-          </div>
+          {/* Un diplôme d'État ne se périme pas : afficher un champ d'échéance
+              laisserait croire qu'il faut le renouveler. */}
+          {doc.type === "DIPLOMA" ? (
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Établissement délivrant</label>
+              <Input
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="IRTS, IFTS, université…"
+                className="h-9"
+              />
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Échéance</label>
+              <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="h-9" />
+            </div>
+          )}
           <Button size="sm" onClick={save} disabled={busy}>
             {busy ? "…" : "Enregistrer"}
           </Button>

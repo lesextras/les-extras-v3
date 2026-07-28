@@ -1125,6 +1125,9 @@ model ComplianceDocument {
 
 enum ComplianceDocType {
   IDENTITY
+  /// Diplôme d'État (DEES, DEME, DEAES, DEEJE...). Pièce la plus regardée
+  /// par un établissement : elle conditionne le poste, pas seulement l'accès.
+  DIPLOMA
   CRIMINAL_RECORD
   DRIVING_LICENSE
   IBAN

@@ -35,6 +35,7 @@ export class ConformiteService {
   /** Pièces obligatoires suivies pour tout intervenant (médico-social). */
   static readonly REQUIRED_TYPES: ComplianceDocType[] = [
     ComplianceDocType.IDENTITY,
+    ComplianceDocType.DIPLOMA,
     ComplianceDocType.CRIMINAL_RECORD,
     ComplianceDocType.DRIVING_LICENSE,
     ComplianceDocType.IBAN,

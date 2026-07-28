@@ -145,9 +145,6 @@ export function ProfileForm({
               <Field label="Code postal" htmlFor="postalCode">
                 <Input id="postalCode" name="postalCode" defaultValue={profile?.postalCode ?? ""} />
               </Field>
-              <Field label="Rayon (km)" htmlFor="radiusKm">
-                <Input id="radiusKm" name="radiusKm" type="number" defaultValue={profile?.radiusKm ?? 30} />
-              </Field>
               <Field label="Taux horaire (€)" htmlFor="hourlyRate">
                 <Input
                   id="hourlyRate"
@@ -158,6 +155,33 @@ export function ProfileForm({
                 />
               </Field>
             </div>
+
+            {/* Le rayon pilote directement le score de proximité du matching.
+                Laissé en champ numérique nu, personne ne le renseignait — et un
+                rayon vide fait disparaître l'intervenant des propositions. */}
+            <Field
+              label="Rayon d'intervention"
+              htmlFor="radiusKm"
+              hint="Distance maximale que vous acceptez de parcourir depuis votre ville. C'est ce qui détermine les missions qui vous sont proposées."
+            >
+              <div className="flex flex-wrap gap-2">
+                {[10, 20, 30, 50, 80, 100].map((km) => (
+                  <label
+                    key={km}
+                    className="cursor-pointer rounded-full border border-border bg-card px-4 py-1.5 text-sm font-medium transition-colors hover:border-primary/50 has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground"
+                  >
+                    <input
+                      type="radio"
+                      name="radiusKm"
+                      value={km}
+                      defaultChecked={(profile?.radiusKm ?? 30) === km}
+                      className="sr-only"
+                    />
+                    {km} km
+                  </label>
+                ))}
+              </div>
+            </Field>
           </CardContent>
         </Card>
       ) : null}
