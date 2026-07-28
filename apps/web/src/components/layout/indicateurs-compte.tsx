@@ -9,8 +9,9 @@
 // Deux règles de retenue :
 //  - rien ne s'affiche tant que la donnée n'est pas là (aucun squelette qui
 //    clignote à chaque changement de page) ;
-//  - la note n'apparaît pas s'il n'y a aucun avis. Un « 0 ★ » sur un compte
-//    neuf est un faux signal négatif.
+//  - la note reste affichée même sans aucun avis reçu. Dans ce cas on montre
+//    « 0 avis » et non « 0,0 / 5 » : c'est la même information, mais elle dit
+//    « pas encore noté » au lieu de « mal noté ».
 import * as React from 'react';
 import Link from 'next/link';
 import { Award, Star } from 'lucide-react';
@@ -51,8 +52,8 @@ export function IndicateursCompte({
     };
   }, [userId, accountId]);
 
-  const aDesNotes = notes && notes.count > 0 && notes.average != null;
-  if (!solde && !aDesNotes) return null;
+  const aDesNotes = notes != null && notes.count > 0 && notes.average != null;
+  if (!solde && !notes) return null;
 
   return (
     <div className="hidden items-center gap-1.5 md:flex">
@@ -69,22 +70,37 @@ export function IndicateursCompte({
         </Link>
       ) : null}
 
-      {aDesNotes ? (
+      {notes ? (
         <Link
           href="/dashboard/avis"
-          title={`${notes.average!.toFixed(1)} sur 5 · ${notes.count} avis reçu${notes.count > 1 ? 's' : ''}`}
+          title={
+            aDesNotes
+              ? `${notes.average!.toFixed(1)} sur 5 · ${notes.count} avis reçu${notes.count > 1 ? 's' : ''}`
+              : 'Aucun avis reçu pour le moment — votre note apparaîtra dès le premier'
+          }
           className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent"
         >
-          <Star className="size-4 fill-warning text-warning" aria-hidden />
-          <span className="[font-variant-numeric:tabular-nums]">
-            {notes.average!.toFixed(1)}
-          </span>
-          <span className="hidden text-muted-foreground xl:inline">
-            ({notes.count})
-          </span>
-          <span className="sr-only">
-            note moyenne sur {notes.count} avis reçus
-          </span>
+          <Star
+            className={
+              aDesNotes ? 'size-4 fill-warning text-warning' : 'size-4 text-muted-foreground'
+            }
+            aria-hidden
+          />
+          {aDesNotes ? (
+            <>
+              <span className="[font-variant-numeric:tabular-nums]">
+                {notes.average!.toFixed(1)}
+              </span>
+              <span className="hidden text-muted-foreground xl:inline">({notes.count})</span>
+              <span className="sr-only">note moyenne sur {notes.count} avis reçus</span>
+            </>
+          ) : (
+            <>
+              <span className="[font-variant-numeric:tabular-nums] text-muted-foreground">0</span>
+              <span className="hidden text-muted-foreground xl:inline">avis</span>
+              <span className="sr-only">aucun avis reçu pour le moment</span>
+            </>
+          )}
         </Link>
       ) : null}
     </div>
