@@ -199,6 +199,15 @@ const adminNav: NavSection[] = [
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
       { label: 'Le GAP', href: '/dashboard/gap', icon: MessagesSquare, hint: 'Groupe d’Analyse de Pratique : modérer et animer les situations déposées' },
+      { label: 'La communauté', href: '/dashboard/communaute', icon: Users2, hint: 'Ce que le réseau a produit ce mois-ci, et qui l’a fait vivre' },
+    ],
+  },
+  {
+    title: 'Mon compte',
+    items: [
+      { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis que vous avez reçus et ceux qu’il vous reste à donner' },
+      { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction. Publier, intervenir, donner un avis : tout compte.' },
+      { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations, votre équipe et vos invitations' },
     ],
   },
   {

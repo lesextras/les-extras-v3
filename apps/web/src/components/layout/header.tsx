@@ -126,7 +126,9 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/dashboard/equipe')}>
+            {/* /dashboard/equipe n'a jamais existé : la gestion des membres
+                et des invitations vit dans /dashboard/account. */}
+            <DropdownMenuItem onClick={() => router.push('/dashboard/account')}>
               <Building2 />
               Gérer les comptes
             </DropdownMenuItem>
