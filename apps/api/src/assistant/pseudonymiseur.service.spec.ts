@@ -46,3 +46,21 @@ describe('PseudonymiseurService', () => {
     expect(r.dates).toBe(1);
   });
 });
+
+describe('PseudonymiseurService — prénom en tête de phrase', () => {
+  const svc = new PseudonymiseurService();
+
+  it('masque un prénom du dictionnaire qui ouvre une phrase', () => {
+    const source = 'Medhi a son rdv dentiste demain. Yanis était calme.';
+    const { texte, table } = svc.masquer(source);
+    expect(texte).not.toContain('Medhi');
+    expect(texte).not.toContain('Yanis');
+    expect(svc.restaurer(texte, table)).toBe(source);
+  });
+
+  it('ne masque pas un verbe capitalisé en tête de phrase', () => {
+    const { texte } = svc.masquer('Prévoir un accompagnement. Surveiller le sommeil.');
+    expect(texte).toContain('Prévoir');
+    expect(texte).toContain('Surveiller');
+  });
+});

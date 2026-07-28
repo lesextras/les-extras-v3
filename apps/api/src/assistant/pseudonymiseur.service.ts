@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PRENOMS_COURANTS } from './prenoms';
 
 /**
  * Pseudonymisation des écrits AVANT tout appel à un modèle externe.
@@ -87,11 +88,24 @@ export class PseudonymiseurService {
     //    un mot courant. Volontairement prudent : mieux vaut masquer un mot de
     //    trop que laisser passer un prénom.
     resultat = resultat.replace(
-      /(^|[^.!?\n]\s)([A-ZÀ-Ü][a-zà-ÿ'-]{2,})(\s+[A-ZÀ-Ü][a-zà-ÿ'-]{2,})?/gm,
+      /([^.!?\n]\s)([A-ZÀ-Ü][a-zà-ÿ'-]{2,})(\s+[A-ZÀ-Ü][a-zà-ÿ'-]{2,})?/gm,
       (m, avant: string, mot1: string, mot2?: string) => {
         if (MOTS_COURANTS.has(mot1.toLowerCase())) return m;
         const valeur = mot2 ? `${mot1}${mot2}` : mot1;
         return `${avant}${jetonPour(valeur.trim(), 'PERSONNE')}`;
+      },
+    );
+
+    // 4 bis. Prénom en TÊTE de phrase : la capitalisation ne suffit plus à
+    //    trancher, on s'appuie sur le dictionnaire de prénoms courants.
+    //    C'est la fuite détectée au premier test réel (« Medhi a son rdv… »).
+    const normaliser = (m: string) =>
+      m.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    resultat = resultat.replace(
+      /(^|[.!?]\s+|\n\s*)([A-ZÀ-Ü][a-zà-ÿ'-]{2,})/gm,
+      (m, avant: string, mot: string) => {
+        if (!PRENOMS_COURANTS.has(normaliser(mot))) return m;
+        return `${avant}${jetonPour(mot, 'PERSONNE')}`;
       },
     );
 
