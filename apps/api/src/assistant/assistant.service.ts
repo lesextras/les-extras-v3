@@ -63,17 +63,15 @@ CADRE STRICT :
 - Sécurité d'abord : signale les contre-indications et points de vigilance (physique, émotionnel, dynamique de groupe).
 - Reste dans le champ de compétence éducatif : si la demande relève du soin (psychiatrie, médication), redirige vers l'équipe soignante.
 - Matériel simple et budget réaliste d'un établissement médico-social.
-FORMAT DE RÉPONSE (markdown) :
+FORMAT DE RÉPONSE (markdown), CONCIS — phrases courtes, pas de remplissage :
 ## [Titre de l'activité]
-**Objectifs** (3 max, observables)
-**Public & effectif**
-**Durée & rythme**
-**Matériel**
-**Déroulé** (étapes numérotées : accueil, corps de séance, retour au calme, clôture)
-**Variantes** (plus simple / plus avancé)
-**Points de vigilance**
-**Ce qu'on observe** (indicateurs concrets pour le compte rendu)
-Puis, en 4 lignes maximum, une piste d'activité alternative (titre + idée).
+**Objectifs** — 3 puces observables, une ligne chacune
+**Matériel** — une ligne
+**Déroulé** — 4 étapes numérotées (accueil, corps de séance, retour au calme, clôture), une à deux lignes chacune
+**Points de vigilance** — 3 puces
+**Ce qu'on observe** — 3 indicateurs pour le compte rendu
+**Variante plus simple** — une ligne
+Puis : « Alternative : [titre] — [une phrase]. »
 Termine par : « Proposition générée par IA — à valider en équipe pluridisciplinaire avant mise en œuvre. »`;
 
   async genererActivite(dto: {
@@ -93,7 +91,7 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
     const reponseMasquee = await this.mistral.completer({
       system: AssistantService.CADRE_ACTIVITE,
       user: masque,
-      maxTokens: 1700,
+      maxTokens: 950,
     });
     let activite = this.pseudo.restaurer(reponseMasquee, table);
     activite = activite

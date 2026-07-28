@@ -21,6 +21,12 @@ export function ActivityGenerator() {
     const fd = new FormData(e.currentTarget);
     setLoading(true);
     setResultat(null);
+    const minuteur = setTimeout(() => {
+      toast({
+        title: "C'est un peu long…",
+        description: "LEX rédige encore. Laissez la page ouverte quelques secondes de plus.",
+      });
+    }, 20_000);
     try {
       const r = await apiRequest<{ activite: string; protection?: string }>("/assistant/activite", {
         method: "POST",
@@ -42,6 +48,7 @@ export function ActivityGenerator() {
         variant: "error",
       });
     } finally {
+      clearTimeout(minuteur);
       setLoading(false);
     }
   }
