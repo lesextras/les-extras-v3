@@ -9,6 +9,7 @@ import { requireSession, fetchApi } from "../../_shared/server";
 import { PageHeader, StatCard, EmptyState, SectionTitle } from "../../_shared/ui";
 import { MissionCard, ServiceCard, BookingRow } from "../../_shared/cards";
 import { RenfortModal } from "../../_shared/modals/RenfortModal";
+import { ActionsPublication } from "../../_shared/ActionsPublication";
 import { fullName } from "../../_shared/format";
 import type { Booking, Mission, Service } from "../../_shared/types";
 
@@ -50,13 +51,18 @@ export default async function DashboardPage() {
             : "Trouvez des missions, gérez vos ateliers et vos candidatures."
         }
         actions={
-          isEstablishment ? (
-            <RenfortModal accountId={session.account.id} />
-          ) : (
-            <Button asChild>
-              <Link href="/marketplace">Explorer les missions</Link>
-            </Button>
-          )
+          <div className="flex flex-wrap items-center gap-2">
+            <ActionsPublication
+              accountId={session.account.id}
+              accountType={session.account.type}
+              role={session.account.role}
+            />
+            {!isEstablishment ? (
+              <Button asChild variant="outline">
+                <Link href="/marketplace">Explorer les missions</Link>
+              </Button>
+            ) : null}
+          </div>
         }
       />
 

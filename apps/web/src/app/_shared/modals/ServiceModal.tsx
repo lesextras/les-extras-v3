@@ -37,18 +37,24 @@ const CATEGORIES = [
 export function ServiceModal({
   accountId,
   trigger,
+  categorieInitiale = "ATELIER",
 }: {
   accountId: string;
   trigger?: React.ReactNode;
+  /** Pré-sélectionne le type de fiche. Le champ reste modifiable : on ouvre
+   *  la bonne porte, on n'enferme pas. */
+  categorieInitiale?: "ATELIER" | "FORMATION" | "MEDIATION" | "ART_THERAPIE" | "PREVENTION";
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [category, setCategory] = useState("ATELIER");
+  const [category, setCategory] = useState<string>(categorieInitiale);
   const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
   const [brief, setBrief] = useState("");
+  const intitule =
+    categorieInitiale === "FORMATION" ? "Créer une formation" : "Créer un atelier";
   const [iaLoading, setIaLoading] = useState(false);
 
   /** Pré-remplit le formulaire depuis un brief, via l'assistant. Les champs
@@ -134,10 +140,10 @@ export function ServiceModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger ?? <Button>Créer un atelier</Button>}</DialogTrigger>
+      <DialogTrigger asChild>{trigger ?? <Button>{intitule}</Button>}</DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Créer un atelier</DialogTitle>
+          <DialogTitle>{intitule}</DialogTitle>
           <DialogDescription>
             Décrivez votre intervention pour la rendre réservable par les établissements.
           </DialogDescription>
