@@ -41,10 +41,31 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
+    url: '/',
     title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     description:
       'Ateliers et formations courtes réservables en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe quand l’urgence arrive.',
     siteName: 'LES EXTRAS',
+    // Carte de partage 1200×630. Sans elle, LinkedIn et Facebook affichent un
+    // rectangle gris à la place du lien — le pire format possible pour une
+    // annonce payante, dont le visuel est justement ce qui arrête le regard.
+    images: [
+      {
+        url: '/images/partage-les-extras.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'LES EXTRAS — ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
+      },
+    ],
+  },
+  twitter: {
+    // « summary » affiche une vignette minuscule ; le grand format double la
+    // surface cliquable dans un fil.
+    card: 'summary_large_image',
+    title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
+    description:
+      'Ateliers et formations courtes réservables en ligne, devis en 48 h, intervenants vérifiés.',
+    images: ['/images/partage-les-extras.jpg'],
   },
   robots: { index: true, follow: true },
   // PWA — l'app doit être installable sur l'écran d'accueil (SOS Renfort se
