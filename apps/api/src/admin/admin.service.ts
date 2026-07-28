@@ -319,6 +319,27 @@ export class AdminService {
     return service;
   }
 
+  /**
+   * Correction éditoriale d'une fiche, quel que soit son propriétaire.
+   * Sans cela, la seule façon de compléter une ville manquante après import
+   * était d'écrire directement en base.
+   */
+  async updateService(id: string, dto: Record<string, unknown>, acteurId: string) {
+    const fiche = await this.prisma.service.findUnique({ where: { id }, select: { id: true } });
+    if (!fiche) throw new NotFoundException('Atelier introuvable.');
+    const donnees = Object.fromEntries(Object.entries(dto).filter(([, v]) => v !== undefined));
+    const maj = await this.prisma.service.update({ where: { id }, data: donnees });
+    await this.audit.log({
+      actorId: acteurId,
+      action: 'admin.service.updated',
+      entityType: 'Service',
+      entityId: id,
+      summary: `Fiche corrigée par un administrateur (${Object.keys(donnees).join(', ')})`,
+      metadata: { champs: Object.keys(donnees) },
+    }).catch(() => undefined);
+    return maj;
+  }
+
   async moderateService(id: string, dto: ModerateServiceDto, actorId?: string) {
     const service = await this.prisma.service.findUnique({ where: { id } });
     if (!service) throw new NotFoundException('Service introuvable.');

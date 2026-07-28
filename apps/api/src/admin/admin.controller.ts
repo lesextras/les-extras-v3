@@ -29,6 +29,7 @@ import {
   CreateSessionAdminDto,
 } from './dto/formation-admin.dto';
 import { UpdateBookingStatusDto } from './dto/booking-admin.dto';
+import { UpdateServiceAdminDto } from './dto/service-admin.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -143,6 +144,16 @@ export class AdminController {
   @Get('services/:id')
   getService(@Param('id') id: string) {
     return this.admin.getService(id);
+  }
+
+  /** Correction éditoriale d'une fiche (ville, titre, résumé, images). */
+  @Patch('services/:id')
+  updateService(
+    @Param('id') id: string,
+    @Body() dto: UpdateServiceAdminDto,
+    @CurrentUser() actor: RequestUser,
+  ) {
+    return this.admin.updateService(id, { ...dto }, actor.id);
   }
 
   @Patch('services/:id/moderate')

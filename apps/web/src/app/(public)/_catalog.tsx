@@ -6,7 +6,9 @@ import { MapPin, Clock, Building2, Search, ArrowRight, Star } from "lucide-react
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fetchPublic } from "../_shared/server";
+import { fetchPublic, fetchApi } from "../_shared/server";
+import { getSession } from "@/lib/session";
+import { FavoriteButton } from "../_shared/FavoriteButton";
 import { PageHeader, EmptyState } from "../_shared/ui";
 import { SERVICE_CATEGORY_LABEL, formatMoney } from "../_shared/format";
 import type { ServiceCategory } from "../_shared/types";
@@ -76,6 +78,14 @@ export async function CatalogView({
   const budget = searchParams?.priceMax ?? "";
   const tri = searchParams?.sort ?? "";
 
+  // Favoris de l'utilisateur connecté, s'il y en a un. Le catalogue reste
+  // entièrement public : sans session, on n'appelle simplement pas l'API.
+  const session = await getSession();
+  const { data: favorisIds } = session
+    ? await fetchApi<string[]>(session as never, "/favorites/ids")
+    : { data: undefined as string[] | undefined };
+  const favoris = new Set(favorisIds ?? []);
+
   const qs = new URLSearchParams({ type, take: "60" });
   if (search) qs.set("search", search);
   if (category) qs.set("category", category);
@@ -88,6 +98,8 @@ export async function CatalogView({
   const items = data?.items ?? [];
   const categories = data?.categories ?? [];
   const publics = data?.publics ?? [];
+  /** Aucun critère actif : on peut proposer les entrées par expertise. */
+  const filtree = Boolean(search || category || publicVise || ville || budget);
   const cities = data?.cities ?? [];
   const hasFilters = Boolean(search || category || publicVise || ville || budget || tri);
 
@@ -206,12 +218,56 @@ export async function CatalogView({
           }
         />
       ) : (
+        <>
+        {/* Entrées rapides par expertise — repris du site historique, où l'on
+            cherchait d'abord « pour qui » puis « comment ». */}
+        {!filtree && (publics.length > 0 || categories.length > 0) ? (
+          <div className="grid gap-5 md:grid-cols-2">
+            {publics.length > 0 ? (
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Expert d’un public
+                </h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {publics.map((pu) => (
+                    <Link
+                      key={pu}
+                      href={`?public=${encodeURIComponent(pu)}`}
+                      className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
+                    >
+                      {pu}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {categories.length > 0 ? (
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Expert d’une technique
+                </h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {categories.map((c) => (
+                    <Link
+                      key={c}
+                      href={`?category=${encodeURIComponent(c)}`}
+                      className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
+                    >
+                      {c}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => {
             const organisme = item.account?.name;
             const ville = item.city ?? item.account?.city;
             return (
-              <Card key={item.id} className="group card-interactive flex h-full flex-col overflow-hidden">
+              <Card key={item.id} className="group card-interactive relative flex h-full flex-col overflow-hidden">
                 {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
                 <Link href={`/ateliers/${item.id}`} className="relative block aspect-[16/10] bg-muted">
                   {item.images?.[0] ? (
@@ -234,6 +290,17 @@ export async function CatalogView({
                     </span>
                   ) : null}
                 </Link>
+
+                {/* Le cœur est hors du lien : cliquer « mettre de côté » ne doit
+                    pas ouvrir la fiche. */}
+                <div className="absolute right-3 top-3 z-10">
+                  <FavoriteButton
+                    serviceId={item.id}
+                    initial={favoris.has(item.id)}
+                    connecte={Boolean(session)}
+                    retour={`/ateliers/${item.id}`}
+                  />
+                </div>
                 <CardContent className="flex flex-1 flex-col gap-3 p-5">
                   <div className="flex items-center justify-between gap-2">
                     <Badge variant="soft">
@@ -299,6 +366,7 @@ export async function CatalogView({
             );
           })}
         </div>
+        </>
       )}
     </div>
   );

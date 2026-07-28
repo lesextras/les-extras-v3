@@ -67,6 +67,7 @@ model User {
 
   @@index([email])
   @@index([role, status])
+  favorites          Favorite[]
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -300,6 +301,7 @@ model Service {
   @@index([status])
   @@index([accountId])
   @@index([sourceId])
+  favorites     Favorite[]
 }
 
 /// Réservation : relie un FREELANCE à une mission OU un service.
@@ -1206,4 +1208,22 @@ model FileAsset {
   @@index([uploaderId])
   @@index([accountId])
   @@index([kind])
+}
+
+
+/// Fiche mise de côté par un utilisateur.
+/// Le cœur du site historique : un directeur repère trois ateliers en réunion
+/// et y revient plus tard. Stocké côté serveur pour survivre au changement
+/// d'appareil, contrairement à un simple stockage navigateur.
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, serviceId])
+  @@index([userId])
+  @@index([serviceId])
 }

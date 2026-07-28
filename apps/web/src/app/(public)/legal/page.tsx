@@ -16,6 +16,17 @@ const sections = [
     ],
   },
   {
+    id: 'remboursements',
+    title: 'Remboursements et annulations',
+    body: [
+      'Une prestation réservée peut être annulée sans frais jusqu’à sept jours calendaires avant la date d’intervention : les crédits éventuellement débités sont recrédités et la facture est annulée.',
+      'Entre sept jours et quarante-huit heures avant l’intervention, la moitié du montant reste due, pour couvrir le temps de préparation déjà engagé par l’intervenant.',
+      'À moins de quarante-huit heures, ou en cas d’absence non signalée, le montant reste dû en totalité. Si l’annulation vient de l’intervenant, l’établissement est intégralement remboursé et nous cherchons un remplaçant en priorité.',
+      'En cas d’imprévu grave et documenté — hospitalisation, décès, fermeture administrative de l’établissement — ces règles sont suspendues : écrivez-nous, chaque situation est examinée.',
+      'Les remboursements sont effectués sur le moyen de paiement d’origine sous quatorze jours. Pour toute demande, contactez-nous depuis votre espace ou via la page Contact.',
+    ],
+  },
+  {
     id: 'cgu',
     title: 'Conditions générales d’utilisation',
     body: [
