@@ -16,7 +16,7 @@ export function VideoFacade({
   couverture?: string;
 }) {
   const [lance, setLance] = useState(false);
-  const vignette = couverture ?? `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+  const vignette = couverture ?? `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
   if (lance) {
     return (

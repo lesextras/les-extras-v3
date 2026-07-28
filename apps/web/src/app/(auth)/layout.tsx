@@ -25,8 +25,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative">
           <Link href="/" className="inline-flex">
             <span className="inline-flex items-center gap-2.5">
-              <span className="grid size-9 place-items-center rounded-xl bg-primary-foreground/15 text-base font-bold">
-                Le
+              <span className="grid size-9 place-items-center rounded-xl bg-primary-foreground/15 text-[11px] font-bold tracking-wide">
+                LEX
               </span>
               <span className="text-[15px] font-bold tracking-tight">LES EXTRAS</span>
             </span>

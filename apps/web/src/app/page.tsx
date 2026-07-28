@@ -27,6 +27,8 @@ import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { HeroSearch } from './_shared/HeroSearch';
 import { VideoFacade } from './_shared/VideoFacade';
 import { Reveal } from './_shared/Reveal';
+import { CatalogueRequestForm } from './_shared/CatalogueRequestForm';
+import { ContactForm } from './_shared/ContactForm';
 
 export default async function LandingPage() {
   // Compteur réel du catalogue public (affiché dans le hero).
@@ -278,10 +280,10 @@ export default async function LandingPage() {
               <Reveal className="md:col-span-2">
                 <Link
                   href="/ateliers"
-                  className="group grid h-full overflow-hidden rounded-3xl border border-border/70 bg-background shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(217,50%,94%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="flex flex-col p-7 md:p-8">
-                    <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
+                    <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
                       <Sparkles className="size-5" />
                     </span>
                     <h3 className="mt-4 text-xl font-semibold">Les ateliers éducatifs</h3>
@@ -312,20 +314,20 @@ export default async function LandingPage() {
               <Reveal delay={100}>
                 <div
                   id="renfort"
-                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bg-primary p-7 text-primary-foreground shadow-card md:p-8"
+                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bg-[hsl(14,60%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8"
                 >
-                  <span className="grid size-11 place-items-center rounded-xl bg-white/10 text-primary-foreground">
+                  <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
                     <Siren className="size-5" />
                   </span>
                   <h3 className="mt-4 text-xl font-semibold">SOS Renfort</h3>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-primary-foreground/80">
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-foreground/75">
                     Une absence ce soir ? Publiez le besoin : diffusion en cascade — votre équipe,
                     puis les intervenants déjà venus, enfin le réseau. Le premier qui accepte est
                     engagé, contrat généré.
                   </p>
                   <Link
                     href="/register"
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-foreground hover:underline"
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:underline"
                   >
                     Publier un renfort
                     <ArrowRight className="size-4" />
@@ -335,8 +337,8 @@ export default async function LandingPage() {
 
               {/* Formations */}
               <Reveal>
-                <div className="flex h-full flex-col rounded-3xl border border-border/70 bg-background p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
-                  <span className="grid size-11 place-items-center rounded-xl bg-secondary-soft text-secondary">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(152,40%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                  <span className="grid size-11 place-items-center rounded-xl bg-card text-success shadow-soft">
                     <GraduationCap className="size-5" />
                   </span>
                   <h3 className="mt-4 text-xl font-semibold">Formations Qualiopi</h3>
@@ -358,7 +360,7 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/register"
-                  className="group grid h-full overflow-hidden rounded-3xl border border-border/70 bg-background shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(266,35%,95%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="relative order-2 min-h-52 bg-muted sm:order-1">
                     <Image
@@ -372,7 +374,7 @@ export default async function LandingPage() {
                   </div>
                   <div className="order-1 flex flex-col p-7 sm:order-2 md:p-8">
                     <span className="flex items-center gap-2">
-                      <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
+                      <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
                         <PenLine className="size-5" />
                       </span>
                       <Badge variant="soft">IA</Badge>
@@ -393,8 +395,8 @@ export default async function LandingPage() {
 
               {/* Gestion sans papier */}
               <Reveal>
-                <div className="flex h-full flex-col rounded-3xl border border-border/70 bg-background p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
-                  <span className="grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,65%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                  <span className="grid size-11 place-items-center rounded-xl bg-card text-accent-foreground shadow-soft">
                     <FileCheck className="size-5" />
                   </span>
                   <h3 className="mt-4 text-xl font-semibold">La gestion sans papier</h3>
@@ -416,10 +418,10 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/edublog"
-                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl border border-border/70 bg-background p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
+                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bg-[hsl(190,45%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
                 >
                   <div>
-                    <span className="grid size-11 place-items-center rounded-xl bg-secondary-soft text-secondary">
+                    <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
                       <Newspaper className="size-5" />
                     </span>
                     <h3 className="mt-4 text-xl font-semibold">L’Édublog</h3>
@@ -570,6 +572,15 @@ export default async function LandingPage() {
             </Reveal>
             <Reveal delay={120}>
               <VideoFacade id="8dXRvZU5TQY" titre="Comment rejoindre Les Extras freelances" />
+              <a
+                href="https://youtu.be/8dXRvZU5TQY"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                Ouvrir la vidéo sur YouTube
+                <ArrowRight className="size-3.5" />
+              </a>
             </Reveal>
           </div>
         </section>
@@ -768,6 +779,49 @@ export default async function LandingPage() {
             </div>
           </section>
         ) : null}
+
+        {/* ============ CATALOGUE & CONTACT — les formulaires du site historique ============ */}
+        <section id="catalogue-contact" className="scroll-mt-24">
+          <div className="section">
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <span className="eyebrow">On reste en contact</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                Recevez le catalogue, posez vos questions
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Sans créer de compte : le catalogue complet des ateliers et formations vous est
+                envoyé par e-mail, et l’équipe répond à toutes vos questions.
+              </p>
+            </Reveal>
+
+            <div className="mt-12 grid gap-6 lg:grid-cols-2">
+              <Reveal className="h-full">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,50%,94%)] p-7 md:p-9">
+                  <h3 className="text-xl font-semibold">Recevoir notre catalogue</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/70">
+                    Les 15 interventions détaillées — publics, objectifs, tarifs — dans votre
+                    boîte mail.
+                  </p>
+                  <div className="mt-6">
+                    <CatalogueRequestForm />
+                  </div>
+                </div>
+              </Reveal>
+              <Reveal delay={120} className="h-full">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,65%,93%)] p-7 md:p-9">
+                  <h3 className="text-xl font-semibold">Nous écrire</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/70">
+                    Une question sur un atelier, une formation, un renfort ou un partenariat ?
+                    Réponse de l’équipe ADéPA.
+                  </p>
+                  <div className="mt-6">
+                    <ContactForm />
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
 
         {/* ============ CTA FINAL ============ */}
         <section className="section">
