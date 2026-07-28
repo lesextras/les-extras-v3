@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 const links = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
+  { label: 'Intervenants', href: '/intervenants' },
   { label: 'SOS Renfort', href: '/#renfort' },
   { label: 'Entraide', href: '/entraide' },
   { label: 'Édublog', href: '/edublog' },

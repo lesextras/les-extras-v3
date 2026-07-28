@@ -28,6 +28,11 @@ export class UpdateProfileDto {
   @MaxLength(30)
   phone?: string;
 
+  /** Rendez-vous hebdomadaire du lundi : un e-mail par semaine, groupé. */
+  @IsOptional()
+  @IsBoolean()
+  hebdoOptIn?: boolean;
+
   @IsOptional()
   @IsString()
   @MaxLength(500)

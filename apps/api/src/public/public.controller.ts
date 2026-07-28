@@ -5,6 +5,7 @@ import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { QueryPublicFormationsDto } from './dto/query-public-formations.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { CreateQuoteRequestDto } from './dto/create-quote-request.dto';
+import { QueryVendorsDto } from './dto/query-vendors.dto';
 
 /**
  * Vitrine PUBLIQUE, sans authentification (aucun JwtAuthGuard).
@@ -68,6 +69,12 @@ export class PublicController {
   @Get('missions/:id')
   missionDetail(@Param('id') id: string) {
     return this.publicService.missionDetail(id);
+  }
+
+  /** GET /public/vendors — annuaire des intervenants qui publient. */
+  @Get('vendors')
+  vendors(@Query() query: QueryVendorsDto) {
+    return this.publicService.vendors(query);
   }
 
   /** GET /public/vendors/:id — fiche publique d'un intervenant. */

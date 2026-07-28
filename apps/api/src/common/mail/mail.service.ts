@@ -156,6 +156,78 @@ export class MailService {
   }
 
   /** SOS Renfort : e-mail envoyé à chaque freelance dont le profil correspond. */
+  /**
+   * Le rendez-vous du lundi — un e-mail par semaine, groupé, jamais plus.
+   *
+   * Ce n'est pas une newsletter : chaque ligne est une action possible pour
+   * CETTE personne. S'il n'y a rien à dire, l'e-mail n'est pas envoyé (voir le
+   * planificateur) — mieux vaut une semaine de silence qu'un message vide.
+   */
+  async sendRendezVousHebdo(
+    to: string,
+    data: {
+      prenom?: string | null;
+      missions: { titre: string; ville?: string | null; id: string }[];
+      questions: { titre: string; metier: string; id: string }[];
+      nouveautes: { titre: string; lien: string }[];
+      points?: number;
+    },
+  ): Promise<void> {
+    const bloc = (
+      titre: string,
+      lignes: string[],
+      lien?: { label: string; url: string },
+    ) =>
+      lignes.length === 0
+        ? ''
+        : `<div style="margin:22px 0 0">
+             <div style="font-weight:700;font-size:14px;color:#183767;text-transform:uppercase;letter-spacing:.4px">${titre}</div>
+             <ul style="margin:8px 0 0;padding-left:18px">${lignes.map((l) => `<li style="margin:6px 0">${l}</li>`).join('')}</ul>
+             ${lien ? `<a href="${lien.url}" style="font-size:13px;color:#183767;font-weight:600">${lien.label} →</a>` : ''}
+           </div>`;
+
+    const corps = [
+      bloc(
+        'Des missions près de chez vous',
+        data.missions.map(
+          (m) =>
+            `<a href="${this.webUrl}/marketplace/missions/${m.id}" style="color:#1A1A1A">${m.titre}</a>${m.ville ? ` — ${m.ville}` : ''}`,
+        ),
+        data.missions.length ? { label: 'Voir toutes les missions', url: `${this.webUrl}/dashboard/opportunites` } : undefined,
+      ),
+      bloc(
+        'Des collègues attendent une réponse',
+        data.questions.map(
+          (q) =>
+            `<a href="${this.webUrl}/entraide/${q.id}" style="color:#1A1A1A">${q.titre}</a> <span style="color:#9ca3af">— ${q.metier}</span>`,
+        ),
+        data.questions.length ? { label: 'Ouvrir l’Entraide', url: `${this.webUrl}/entraide` } : undefined,
+      ),
+      bloc(
+        'Nouveau cette semaine',
+        data.nouveautes.map((n) => `<a href="${n.lien}" style="color:#1A1A1A">${n.titre}</a>`),
+      ),
+    ]
+      .filter(Boolean)
+      .join('');
+
+    const solde =
+      data.points && data.points > 0
+        ? `<div style="margin-top:22px;font-size:13px;color:#6b7280">Vous avez <b>${data.points} points</b>, soit ${Math.floor(data.points / 10)} € de réduction disponibles.</div>`
+        : '';
+
+    await this.send(
+      to,
+      'Votre semaine sur Les Extras',
+      this.layout(
+        `Bonjour${data.prenom ? ` ${data.prenom}` : ''},`,
+        `Ce qui vous concerne cette semaine, en une minute.${corps}${solde}
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">Vous recevez ce message une fois par semaine, le lundi. Vous pouvez le désactiver depuis votre compte.</div>`,
+        { label: 'Ouvrir mon espace', url: `${this.webUrl}/dashboard` },
+      ),
+    );
+  }
+
   async sendMissionMatch(
     to: string,
     data: { title: string; city?: string | null; date?: string | Date | null; job?: string | null; rate?: string | number | null; emergency?: boolean; missionId: string },

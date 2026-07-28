@@ -64,6 +64,9 @@ model User {
   qualifications   Qualification[]
   experiences      Experience[]
   auditLogs        AuditLog[]         @relation("AuditActor")
+  /// Rendez-vous hebdomadaire du lundi. Activé par défaut, désactivable en un
+  /// clic : un e-mail non désiré coûte plus cher qu'un e-mail non envoyé.
+  hebdoOptIn       Boolean            @default(true)
   questionsAsked   Question[]         @relation("QuestionAuthor")
   answersWritten   Answer[]           @relation("AnswerAuthor")
   answerVotes      AnswerVote[]       @relation("AnswerVoter")

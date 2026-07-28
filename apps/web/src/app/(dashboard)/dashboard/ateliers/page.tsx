@@ -90,7 +90,7 @@ export default async function AteliersPage() {
                 <Badge className="absolute right-3 top-3 z-10" variant="outline">
                   {SERVICE_STATUS_LABEL[sv.status]}
                 </Badge>
-                <ServiceCard service={sv} href={`/marketplace/services/${sv.id}`} />
+                <ServiceCard audience service={sv} href={`/marketplace/services/${sv.id}`} />
               </div>
             ))}
           </div>

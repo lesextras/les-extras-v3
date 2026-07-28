@@ -97,6 +97,78 @@ export class CommunityService {
     return { reduction, pointsUtilises: reduction * POINTS_PAR_EURO, plafond, dispo };
   }
 
+  // ── Contributeurs ────────────────────────────────────────────────────────
+
+  /**
+   * Les contributions du mois.
+   *
+   * Volontairement SANS podium ni classement numéroté : le médico-social
+   * déteste la compétition frontale, et un « 7ᵉ place » démobilise plus qu'il
+   * ne motive. On montre qui a fait vivre le réseau ce mois-ci, et ce qu'ils
+   * ont fait — c'est de la reconnaissance, pas un tableau de chasse.
+   */
+  async contributeurs() {
+    const debutMois = new Date();
+    debutMois.setDate(1);
+    debutMois.setHours(0, 0, 0, 0);
+
+    const lignes = await this.prisma.loyaltyPoint.findMany({
+      where: { createdAt: { gte: debutMois }, amount: { gt: 0 } },
+      select: {
+        amount: true,
+        reason: true,
+        account: { select: { id: true, name: true, type: true, logoUrl: true, city: true } },
+      },
+    });
+
+    const parCompte = new Map<
+      string,
+      {
+        id: string;
+        nom: string;
+        type: string;
+        logoUrl: string | null;
+        ville: string | null;
+        points: number;
+        actions: Record<string, number>;
+      }
+    >();
+
+    for (const l of lignes) {
+      if (!l.account) continue;
+      const cle = l.account.id;
+      const courant = parCompte.get(cle) ?? {
+        id: l.account.id,
+        nom: l.account.name,
+        type: l.account.type,
+        logoUrl: l.account.logoUrl,
+        ville: l.account.city,
+        points: 0,
+        actions: {} as Record<string, number>,
+      };
+      courant.points += l.amount;
+      courant.actions[l.reason] = (courant.actions[l.reason] ?? 0) + 1;
+      parCompte.set(cle, courant);
+    }
+
+    const contributeurs = [...parCompte.values()]
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 12);
+
+    // Totaux du mois : ce que la communauté a produit ensemble.
+    const totaux = lignes.reduce<Record<string, number>>((acc, l) => {
+      acc[l.reason] = (acc[l.reason] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      mois: debutMois,
+      contributeurs,
+      totaux,
+      nbContributeurs: parCompte.size,
+    };
+  }
+
   // ── Boîte à idées ────────────────────────────────────────────────────────
 
   async listerIdees(userId: string) {

@@ -705,6 +705,129 @@ export class PublicService {
    * toutes ses interventions publiées. Équivalent des pages « host » du site
    * actuel — c'est la preuve sociale du catalogue.
    */
+  /**
+   * Annuaire public des intervenants.
+   *
+   * Ne sont listés que les comptes qui ont AU MOINS une fiche publiée : un
+   * annuaire rempli de profils vides dessert le réseau plus qu'il ne le sert.
+   * Chaque entrée porte de quoi choisir : métier, ville, nombre d'ateliers et
+   * de formations, note moyenne réelle.
+   */
+  async vendors(query: { search?: string; city?: string; take?: number; skip?: number }) {
+    const take = Math.min(query.take ?? 24, 60);
+
+    const comptes = await this.prisma.account.findMany({
+      where: {
+        type: 'FREELANCE',
+        services: { some: { status: 'PUBLISHED' } },
+        ...(query.city ? { OR: [{ city: query.city }, { services: { some: { city: query.city } } }] } : {}),
+        ...(query.search
+          ? {
+              OR: [
+                { name: { contains: query.search, mode: 'insensitive' } },
+                { owner: { is: { profile: { is: { job: { contains: query.search, mode: 'insensitive' } } } } } },
+                { services: { some: { title: { contains: query.search, mode: 'insensitive' } } } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { createdAt: 'asc' },
+      take,
+      skip: query.skip ?? 0,
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        logoUrl: true,
+        createdAt: true,
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+            profile: { select: { job: true, bio: true, skills: true, city: true } },
+          },
+        },
+        services: {
+          where: { status: 'PUBLISHED' },
+          orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            price: true,
+            city: true,
+            images: true,
+            qualiopi: true,
+          },
+        },
+      },
+    });
+
+    // Notes moyennes : une seule requête pour tous les propriétaires listés.
+    const proprietaires = comptes.map((c) => c.owner?.id).filter((v): v is string => Boolean(v));
+    const notes = proprietaires.length
+      ? await this.prisma.review.groupBy({
+          by: ['targetId'],
+          where: { targetId: { in: proprietaires } },
+          _avg: { rating: true },
+          _count: { _all: true },
+          orderBy: { targetId: 'asc' },
+        })
+      : [];
+    const parCible = new Map(
+      notes.map((n) => [n.targetId, { moyenne: n._avg.rating, nb: n._count._all }]),
+    );
+
+    const total = await this.prisma.account.count({
+      where: { type: 'FREELANCE', services: { some: { status: 'PUBLISHED' } } },
+    });
+
+    // Villes proposées au filtre : celles où il y a réellement quelqu'un.
+    const villes = Array.from(
+      new Set(
+        comptes
+          .flatMap((c) => [c.city, c.owner?.profile?.city, ...c.services.map((s) => s.city)])
+          .filter((v): v is string => Boolean(v)),
+      ),
+    ).sort((a, b) => a.localeCompare(b, 'fr'));
+
+    return {
+      items: comptes.map((c) => {
+        const note = c.owner?.id ? parCible.get(c.owner.id) : undefined;
+        const ateliers = c.services.filter((s) => s.category !== 'FORMATION');
+        const formations = c.services.filter((s) => s.category === 'FORMATION');
+        return {
+          id: c.id,
+          nom:
+            [c.owner?.firstName, c.owner?.lastName].filter(Boolean).join(' ') || c.name,
+          metier: c.owner?.profile?.job ?? null,
+          bio: c.owner?.profile?.bio ?? null,
+          competences: c.owner?.profile?.skills ?? [],
+          ville: c.city ?? c.owner?.profile?.city ?? c.services.find((s) => s.city)?.city ?? null,
+          logoUrl: c.logoUrl ?? c.owner?.avatarUrl ?? null,
+          depuis: c.createdAt,
+          rating: note?.moyenne ?? null,
+          reviewsCount: note?.nb ?? 0,
+          nbAteliers: ateliers.length,
+          nbFormations: formations.length,
+          qualiopi: c.services.some((s) => s.qualiopi),
+          // Les trois premières fiches, pour donner à voir le travail réel.
+          apercu: c.services.slice(0, 3).map((s) => ({
+            id: s.id,
+            title: s.title,
+            price: s.price,
+            image: s.images?.[0] ?? null,
+            formation: s.category === 'FORMATION',
+          })),
+        };
+      }),
+      total,
+      villes,
+    };
+  }
+
   async vendorDetail(accountId: string) {
     const account = await this.prisma.account.findFirst({
       where: { id: accountId, type: 'FREELANCE' },

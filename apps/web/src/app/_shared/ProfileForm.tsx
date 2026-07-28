@@ -21,7 +21,7 @@ export function ProfileForm({
   isFreelance,
   accountId,
 }: {
-  user: SessionUser & { phone?: string | null };
+  user: SessionUser & { phone?: string | null; hebdoOptIn?: boolean };
   profile?: Profile | null;
   isFreelance: boolean;
   accountId: string;
@@ -31,6 +31,7 @@ export function ProfileForm({
   const [loading, setLoading] = useState(false);
   const [photo, setPhoto] = useState<FichierDepose | null>(null);
   const [photoTouchee, setPhotoTouchee] = useState(false);
+  const [hebdo, setHebdo] = useState(user.hebdoOptIn !== false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,6 +44,7 @@ export function ProfileForm({
         firstName: String(fd.get("firstName") || "") || undefined,
         lastName: String(fd.get("lastName") || "") || undefined,
         phone: String(fd.get("phone") || "") || undefined,
+        hebdoOptIn: hebdo,
       };
       // On ne touche à la photo que si la personne l'a modifiée pendant la
       // session : sinon on laisserait un champ vide écraser l'existant.
@@ -159,6 +161,29 @@ export function ProfileForm({
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Le rendez-vous du lundi — désactivable en un clic, sans détour par
+          un e-mail de désinscription. */}
+      <Card>
+        <CardContent className="pt-6">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={hebdo}
+              onChange={(e) => setHebdo(e.target.checked)}
+              className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
+            />
+            <span className="text-sm">
+              <span className="font-medium">Recevoir le rendez-vous du lundi</span>
+              <span className="block text-muted-foreground">
+                Un e-mail par semaine, groupé : les missions près de chez vous, les questions sans
+                réponse dans votre métier, les nouveautés. Jamais plus d&apos;un par semaine, et
+                rien du tout s&apos;il n&apos;y a rien à dire.
+              </span>
+            </span>
+          </label>
+        </CardContent>
+      </Card>
 
       <div className="flex justify-end">
         <Button type="submit" disabled={loading}>

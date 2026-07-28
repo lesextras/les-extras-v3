@@ -17,6 +17,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: 'MECS & foyers', href: '/#renfort' },
       { label: 'IME · ITEP · SESSAD', href: '/#renfort' },
       { label: 'EHPAD', href: '/#renfort' },
+      { label: 'Les intervenants', href: '/intervenants' },
       { label: 'Freelances', href: '/register' },
     ],
   },

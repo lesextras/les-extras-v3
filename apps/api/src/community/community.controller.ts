@@ -30,6 +30,12 @@ export class CommunityController {
     return this.community.solde(account.id);
   }
 
+  /** Les contributions du mois — accessible à tous les comptes. */
+  @Get('contributeurs')
+  contributeurs() {
+    return this.community.contributeurs();
+  }
+
   @Get('idees')
   idees(@CurrentUser() user: RequestUser) {
     return this.community.listerIdees(user.id);

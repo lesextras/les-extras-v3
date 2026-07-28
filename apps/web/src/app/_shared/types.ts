@@ -149,6 +149,10 @@ export interface Service {
   price?: string | number | null;
   city?: string | null;
   status: ServiceStatus;
+  /** Consultations de la fiche publique. */
+  views?: number;
+  /** Demandes de devis reçues sur cette fiche. */
+  requestsCount?: number;
   createdAt: string;
 }
 

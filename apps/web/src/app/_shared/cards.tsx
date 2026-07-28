@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Eye, MessageSquare } from "lucide-react";
 import {
   MISSION_CATEGORY_LABEL,
   SERVICE_CATEGORY_LABEL,
@@ -58,7 +59,20 @@ export function MissionCard({ mission, href }: { mission: Mission; href?: string
   );
 }
 
-export function ServiceCard({ service, href }: { service: Service; href?: string }) {
+/**
+ * Carte d'un atelier. `audience` n'est activée que sur SES PROPRES fiches :
+ * savoir qu'une fiche a été vue 14 fois cette semaine est une raison de
+ * revenir, et l'information existait en base sans jamais être montrée.
+ */
+export function ServiceCard({
+  service,
+  href,
+  audience,
+}: {
+  service: Service;
+  href?: string;
+  audience?: boolean;
+}) {
   const link = href ?? `/marketplace/services/${service.id}`;
   return (
     <Card className="group flex h-full flex-col transition-shadow hover:shadow-md">
@@ -84,9 +98,24 @@ export function ServiceCard({ service, href }: { service: Service; href?: string
         </div>
       </CardContent>
       <CardFooter className="justify-between">
-        <span className="text-xs text-muted-foreground">
-          {service.account?.name ?? "Intervenant"}
-        </span>
+        {audience ? (
+          <span className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1" title="Consultations de votre fiche">
+              <Eye className="size-3.5" aria-hidden />
+              {service.views ?? 0}
+            </span>
+            {service.requestsCount ? (
+              <span className="inline-flex items-center gap-1" title="Demandes reçues">
+                <MessageSquare className="size-3.5" aria-hidden />
+                {service.requestsCount}
+              </span>
+            ) : null}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            {service.account?.name ?? "Intervenant"}
+          </span>
+        )}
         <Button asChild size="sm" variant="outline">
           <Link href={link}>Voir</Link>
         </Button>

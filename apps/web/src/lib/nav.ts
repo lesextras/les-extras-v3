@@ -33,6 +33,7 @@ import {
   Award,
   UserPlus,
   MessagesSquare,
+  Users2,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -101,6 +102,7 @@ const freelanceNav: NavSection[] = [
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction. Publier, intervenir, donner un avis : tout compte.' },
+      { label: 'La communauté', href: '/dashboard/communaute', icon: Users2, hint: 'Ce que le réseau a produit ce mois-ci, et qui l’a fait vivre' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
       { label: 'Mon compte', href: '/dashboard/account', icon: Settings, hint: 'Profil, paramètres et sécurité' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
@@ -146,6 +148,7 @@ const establishmentNav: NavSection[] = [
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
       { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction sur vos factures, dans la limite de 30 % du montant' },
+      { label: 'La communauté', href: '/dashboard/communaute', icon: Users2, hint: 'Ce que le réseau a produit ce mois-ci, et qui l’a fait vivre' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],

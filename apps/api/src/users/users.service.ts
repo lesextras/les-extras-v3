@@ -76,6 +76,7 @@ export class UsersService {
     if (dto.lastName !== undefined) userData.lastName = dto.lastName;
     if (dto.phone !== undefined) userData.phone = dto.phone;
     if (dto.avatarUrl !== undefined) userData.avatarUrl = dto.avatarUrl;
+    if (dto.hebdoOptIn !== undefined) userData.hebdoOptIn = dto.hebdoOptIn;
     if (dto.avatarFileId !== undefined) {
       // Prisma n'accepte pas la clé étrangère brute sur un UserUpdateInput :
       // il faut passer par la relation. Chaîne vide = on retire la photo.
