@@ -14,7 +14,7 @@ const links = [
   { label: 'SOS Renfort', href: '/#renfort' },
   { label: 'Édublog', href: '/edublog' },
   { label: 'Comment ça marche', href: '/#comment' },
-  { label: 'Tarifs', href: '/#tarifs' },
+  { label: 'Notre histoire', href: '/notre-histoire' },
 ];
 
 /** En-tête public sticky avec navigation d'ancres et CTA connexion/inscription. */
@@ -31,7 +31,7 @@ export function SiteHeader() {
             <Link
               key={l.href}
               href={l.href}
-              className="inline-flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="inline-flex min-h-10 items-center rounded-lg px-3.5 py-2 text-[15.5px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               {l.label}
             </Link>
@@ -66,7 +66,7 @@ export function SiteHeader() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+                className="rounded-lg px-3 py-2.5 text-base font-medium text-foreground hover:bg-accent"
               >
                 {l.label}
               </Link>
