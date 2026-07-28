@@ -3,6 +3,7 @@
 import { getPublicApiBaseUrl } from './api';
 import type { LoginValues, RegisterValues } from './validation';
 import type { SessionAccount } from './types';
+import { sourceComplete } from './source';
 
 /**
  * Fonctions d'authentification côté navigateur : appellent l'API NestJS, puis
@@ -69,11 +70,18 @@ export async function login(values: LoginValues): Promise<AuthResult> {
 }
 
 export async function register(values: RegisterValues): Promise<AuthResult> {
+  // Origine de la visite, mémorisée à l'arrivée sur le site : c'est ici
+  // qu'elle quitte le navigateur, et nulle part ailleurs.
+  const origine = sourceComplete();
   const payload = {
     accountType: values.accountType,
     name: values.name,
     email: values.email,
     password: values.password,
+    source: origine.source,
+    sourceMedium: origine.medium,
+    sourceCampaign: origine.campaign,
+    sourceLanding: origine.landing,
   };
   const result = await callApi<AuthResult>('/auth/register', payload);
   const { token, accountId } = extractAuth(result);

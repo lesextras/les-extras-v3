@@ -46,4 +46,13 @@ export class RegisterDto {
   @IsString()
   @MaxLength(160)
   organizationName?: string;
+
+  // --- Attribution ---------------------------------------------------------
+  // Envoyés par le navigateur, donc non fiables par nature : on les borne en
+  // longueur et on ne s'en sert que pour des statistiques, jamais pour une
+  // décision d'accès.
+  @IsOptional() @IsString() @MaxLength(60) source?: string;
+  @IsOptional() @IsString() @MaxLength(60) sourceMedium?: string;
+  @IsOptional() @IsString() @MaxLength(60) sourceCampaign?: string;
+  @IsOptional() @IsString() @MaxLength(120) sourceLanding?: string;
 }

@@ -34,7 +34,7 @@ const DETAIL = [
   },
   {
     nom: "Préférences d'affichage",
-    role: "Menu replié, aides déjà lues — stockées dans votre navigateur, jamais envoyées",
+    role: "Menu replié, aides déjà lues, campagne d'arrivée — stockées dans votre navigateur",
     duree: "Jusqu'à effacement",
     type: "Local",
   },

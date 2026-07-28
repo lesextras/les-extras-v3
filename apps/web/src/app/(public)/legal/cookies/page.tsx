@@ -34,6 +34,10 @@ const LOCAL = [
   { nom: "lex-aide-v1:*", role: "Encarts d'aide que vous avez déjà fermés" },
   { nom: "lx.cookies.info.v1", role: "Bandeau d'information déjà lu" },
   { nom: "lx.pwa.dismissed", role: "Proposition d'installation déjà écartée" },
+  {
+    nom: "lx.source.v1",
+    role: "Le mot-clé de la campagne par laquelle vous êtes arrivé (ex. « google »), pour savoir où communiquer. Effacé à la fermeture de l'onglet.",
+  },
 ];
 
 export default function CookiesPage() {
@@ -103,9 +107,12 @@ export default function CookiesPage() {
           <h2 className="text-lg font-semibold">Préférences stockées dans votre navigateur</h2>
         </div>
         <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Ce ne sont pas des cookies : ces informations restent dans le stockage local de votre
-          navigateur et ne sont <strong>jamais transmises à nos serveurs</strong>. Elles servent
-          uniquement à retrouver l&apos;interface comme vous l&apos;aviez laissée.
+          Ce ne sont pas des cookies : ces informations restent dans le stockage de votre
+          navigateur. Elles servent à retrouver l&apos;interface comme vous l&apos;aviez laissée.
+          Une seule fait exception, <code className="font-mono text-xs">lx.source.v1</code> : si
+          vous créez un compte, le mot-clé de campagne qu&apos;elle contient est enregistré avec
+          ce compte, pour que l&apos;association sache quelle communication a fonctionné. Aucun
+          identifiant, aucun suivi d&apos;une page à l&apos;autre, aucun partage.
         </p>
         <Card>
           <CardContent className="p-0">

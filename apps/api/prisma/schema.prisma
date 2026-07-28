@@ -103,6 +103,16 @@ model Account {
   name        String
   type        AccountType
   slug        String       @unique
+  /// Attribution — d'où vient ce compte. Renseigné une fois, à l'inscription,
+  /// et jamais modifié ensuite : c'est la campagne qui a amené la personne.
+  /// utm_source, sinon domaine référent, sinon « direct ».
+  source      String?
+  /// utm_medium : cpc, social, email, referral...
+  sourceMedium String?
+  /// utm_campaign : nom de l'annonce, pour comparer deux créations.
+  sourceCampaign String?
+  /// Page d'arrivée : sait-on vers quoi l'annonce pointait.
+  sourceLanding  String?
   // Coordonnées structure
   legalName   String?
   siret       String?
@@ -154,6 +164,7 @@ model Account {
 
   @@index([type])
   @@index([slug])
+  @@index([source])
   uploadedFiles FileAsset[]  @relation("FileAccount")
   creditPurchases CreditPurchase[]
   subscription    Subscription?

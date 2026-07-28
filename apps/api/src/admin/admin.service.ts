@@ -1142,6 +1142,33 @@ export class AdminService {
       demandes: r._count._all,
     }));
 
+    // Attribution des INSCRIPTIONS. C'est la métrique qui compte pendant une
+    // campagne payante : une demande de contact se voit, un compte créé se
+    // monétise. Les deux tableaux sont volontairement distincts — une source
+    // peut très bien générer des clics et aucune inscription.
+    const comptesParSource = await this.prisma.account
+      .groupBy({
+        by: ['source', 'sourceMedium', 'sourceCampaign'],
+        _count: { _all: true },
+        orderBy: { _count: { source: 'desc' } },
+        take: 12,
+      })
+      .catch(
+        () =>
+          [] as {
+            source: string | null;
+            sourceMedium: string | null;
+            sourceCampaign: string | null;
+            _count: { _all: number };
+          }[],
+      );
+    const inscriptionsParSource = comptesParSource.map((r) => ({
+      source: r.source || 'direct',
+      medium: r.sourceMedium,
+      campagne: r.sourceCampaign,
+      comptes: r._count._all,
+    }));
+
     // Fil d'activité : les 8 derniers signaux, tous types confondus.
     const [dernieresDemandes, derniersComptes, dernieresResas] = await Promise.all([
       this.prisma.contactRequest.findMany({
@@ -1186,6 +1213,7 @@ export class AdminService {
     return {
       objectif,
       sources,
+      inscriptionsParSource,
       activite,
       global: {
         vues,

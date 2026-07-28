@@ -34,10 +34,17 @@ const PUCE: Record<Activite["type"], string> = {
   reservation: "bg-success",
 };
 
-export function ObjectifCampagne({ objectif, funnel, sources, activite }: {
+export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSource, activite }: {
   objectif: ObjectifData;
   funnel?: { vues: number; demandes: number; devis: number; reservations: number };
   sources?: { source: string; demandes: number }[];
+  /** Comptes créés par campagne : la métrique qui compte quand on paie. */
+  inscriptionsParSource?: {
+    source: string;
+    medium?: string | null;
+    campagne?: string | null;
+    comptes: number;
+  }[];
   activite?: Activite[];
 }) {
   const atteint = objectif.pourcentage >= 100;
@@ -136,6 +143,41 @@ export function ObjectifCampagne({ objectif, funnel, sources, activite }: {
           </Link>
         </div>
       ) : null}
+      {/* Inscriptions par campagne — placé avant les demandes : pendant une
+          campagne payante, c'est le compte créé qui se monétise, pas le clic. */}
+      {inscriptionsParSource && inscriptionsParSource.length ? (
+        <div className="mt-6 border-t border-border/60 pt-5">
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <Compass className="size-3.5" /> Comptes créés, par campagne
+          </p>
+          <ul className="mt-3 space-y-2">
+            {inscriptionsParSource.map((s, i) => {
+              const max = Math.max(...inscriptionsParSource.map((x) => x.comptes), 1);
+              const detail = [s.medium, s.campagne].filter(Boolean).join(' · ');
+              return (
+                <li key={`${s.source}-${i}`} className="flex items-center gap-3">
+                  <span className="w-40 shrink-0 truncate text-sm text-foreground">
+                    {s.source}
+                    {detail ? (
+                      <span className="block truncate text-xs text-muted-foreground">{detail}</span>
+                    ) : null}
+                  </span>
+                  <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                    <span
+                      className="block h-full rounded-full bg-success/70"
+                      style={{ width: `${Math.max(6, (s.comptes / max) * 100)}%` }}
+                    />
+                  </span>
+                  <span className="w-8 text-right text-sm font-semibold [font-variant-numeric:tabular-nums]">
+                    {s.comptes}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
+
       {/* Attribution + activité en direct */}
       {(sources && sources.length) || (activite && activite.length) ? (
         <div className="mt-6 grid gap-6 border-t border-border/60 pt-5 lg:grid-cols-2">

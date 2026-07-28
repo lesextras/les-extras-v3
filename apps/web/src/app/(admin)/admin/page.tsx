@@ -59,6 +59,12 @@ export default async function AdminPage() {
     objectif?: ObjectifData;
     global?: { vues: number; demandes: number; devis: number; reservations: number };
     sources?: { source: string; demandes: number }[];
+    inscriptionsParSource?: {
+      source: string;
+      medium?: string | null;
+      campagne?: string | null;
+      comptes: number;
+    }[];
     activite?: Activite[];
   }>(session, "/admin/stats/funnel");
 
@@ -94,6 +100,7 @@ export default async function AdminPage() {
           objectif={funnelRes.data.objectif}
           funnel={funnelRes.data.global}
           sources={funnelRes.data.sources}
+          inscriptionsParSource={funnelRes.data.inscriptionsParSource}
           activite={funnelRes.data.activite}
         />
       ) : null}

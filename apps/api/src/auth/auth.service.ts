@@ -79,6 +79,13 @@ export class AuthService {
           legalName:
             dto.accountType === AccountType.ESTABLISHMENT ? accountName : undefined,
           ownerId: createdUser.id,
+          // Attribution figée à la création. On ne la met jamais à jour
+          // ensuite : un compte n'a qu'une seule origine, celle du jour où
+          // la personne est arrivée.
+          source: dto.source ?? 'direct',
+          sourceMedium: dto.sourceMedium ?? null,
+          sourceCampaign: dto.sourceCampaign ?? null,
+          sourceLanding: dto.sourceLanding ?? null,
         },
       });
 
