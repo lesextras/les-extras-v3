@@ -151,6 +151,41 @@
   .stagger-3 { animation-delay: 0.18s; }
   .stagger-4 { animation-delay: 0.24s; }
 
+  /* Révélation au scroll (composant <Reveal/>) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Bande défilante en continu (confiance) */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+  .marquee-hover:hover .animate-marquee {
+    animation-play-state: paused;
+  }
+
+  /* Flottement doux (éléments décoratifs du hero) */
+  @keyframes float-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-float {
+    animation: float-soft 7s ease-in-out infinite;
+  }
+
   /* Respect des préférences de mouvement réduit */
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -160,6 +195,10 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;
       scroll-behavior: auto !important;
+    }
+    .reveal {
+      opacity: 1 !important;
+      transform: none !important;
     }
   }
 }
