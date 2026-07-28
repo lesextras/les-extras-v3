@@ -29,6 +29,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { BillingModule } from './billing/billing.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { CommunityModule } from './community/community.module';
 import { AssistantModule } from './assistant/assistant.module';
 import { ArticlesModule } from './articles/articles.module';
 import { AdminModule } from './admin/admin.module';
@@ -74,6 +75,7 @@ import { ConformiteModule } from './conformite/conformite.module';
     ArticlesModule,
     FavoritesModule,
     AssistantModule,
+    CommunityModule,
     AdminModule,
     CategoriesModule,
     MatchingModule,
