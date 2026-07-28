@@ -30,6 +30,8 @@ import {
   Newspaper,
   PenLine,
   Lightbulb,
+  Award,
+  UserPlus,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -43,6 +45,8 @@ export interface NavItem {
   hint?: string;
   /** Fonctionnalité LEX réservée aux adhérents (cadenas si non-adhérent). */
   premium?: boolean;
+  /** Entrée du « mode essentiel » : visible même quand le menu est replié. */
+  essentiel?: boolean;
 }
 
 export interface NavSection {
@@ -66,15 +70,15 @@ export function resolveNavRole(params: {
 const freelanceNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter' },
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter', essentiel: true },
     ],
   },
   {
     title: 'Mon activité',
     items: [
-      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, hint: 'Missions qui correspondent à votre profil, classées par score' },
-      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos interventions confirmées' },
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les établissements' },
+      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Missions qui correspondent à votre profil, classées par score' },
+      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos interventions confirmées' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les établissements' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
     ],
@@ -83,7 +87,7 @@ const freelanceNav: NavSection[] = [
     title: 'Mon offre',
     items: [
       { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
-      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, hint: 'Créez et gérez vos interventions' },
+      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true, hint: 'Créez et gérez vos interventions' },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
       { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Demandes reçues à chiffrer et devis envoyés' },
     ],
@@ -91,9 +95,11 @@ const freelanceNav: NavSection[] = [
   {
     title: 'Mon espace',
     items: [
-      { label: 'Factures & revenus', href: '/dashboard/finance', icon: Receipt, hint: 'Vos revenus et documents' },
+      { label: 'Factures & revenus', href: '/dashboard/finance', icon: Receipt, essentiel: true, hint: 'Vos revenus et documents' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
+      { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction. Publier, intervenir, donner un avis : tout compte.' },
+      { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
       { label: 'Mon compte', href: '/dashboard/account', icon: Settings, hint: 'Profil, paramètres et sécurité' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
@@ -103,15 +109,15 @@ const freelanceNav: NavSection[] = [
 const establishmentNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter' },
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter', essentiel: true },
     ],
   },
   {
     title: 'Mon activité',
     items: [
-      { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
-      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos créneaux et interventions' },
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les freelances' },
+      { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
+      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos créneaux et interventions' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
     ],
@@ -120,8 +126,8 @@ const establishmentNav: NavSection[] = [
     title: 'Catalogue',
     items: [
       { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
-      { label: 'Ateliers', href: '/marketplace?type=services', icon: Sparkles, hint: 'Catalogue d’ateliers à réserver' },
-      { label: 'Formations', href: '/marketplace/formations', icon: GraduationCap, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
+      { label: 'Ateliers', href: '/marketplace?type=services', icon: Sparkles, essentiel: true, hint: 'Catalogue d’ateliers à réserver' },
+      { label: 'Formations', href: '/marketplace/formations', icon: GraduationCap, essentiel: true, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
     ],
   },
   {
@@ -131,10 +137,13 @@ const establishmentNav: NavSection[] = [
       { label: 'Coffre-fort conformité', href: '/dashboard/conformite', icon: FileCheck, hint: 'Pièces obligatoires des intervenants (CNI, casier, permis, IBAN, URSSAF) : statut, échéances et alertes' },
       { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
       { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Vos demandes de devis et les propositions reçues' },
-      { label: 'Factures', href: '/dashboard/finance', icon: Receipt, hint: 'Vos factures et dépenses' },
+      { label: 'Factures', href: '/dashboard/finance', icon: Receipt, essentiel: true, hint: 'Vos factures et dépenses' },
       { label: 'Abonnement & crédits', href: '/dashboard/credits', icon: Receipt, hint: 'Abonnement mensuel et rechargement de crédits' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
+      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
+      { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction sur vos factures, dans la limite de 30 % du montant' },
+      { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
   },
@@ -182,6 +191,7 @@ const adminNav: NavSection[] = [
       { label: 'Articles', href: '/admin/articles', icon: FileText, hint: 'Articles et pages éditoriales' },
       { label: 'Catégories', href: '/admin/categories', icon: Tags, hint: 'Taxonomie des missions et ateliers' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
+      { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
     ],
   },
   {

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { Field, Textarea } from "./form-fields";
+import { DecompositionPrix } from "./DecompositionPrix";
 
 export interface QuoteLine {
   label: string;
@@ -144,10 +145,7 @@ export function QuoteEditor({
         </Button>
       </div>
 
-      <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
-        <span className="text-sm text-muted-foreground">Total TTC</span>
-        <span className="text-lg font-bold text-foreground">{euros(total)}</span>
-      </div>
+      <DecompositionPrix tarifIntervenant={total} vue="intervenant" />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Date d'intervention" htmlFor="scheduledAt">

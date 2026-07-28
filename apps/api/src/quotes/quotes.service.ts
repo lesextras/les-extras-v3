@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { decomposerPrix, COMMISSION_DEFAUT } from '../billing/commission';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateQuoteRequestDto, QuoteLineDto, SendQuoteDto } from './dto/quote.dto';
 
@@ -203,6 +204,18 @@ export class QuotesService {
       throw new BadRequestException('Ce devis a expiré.');
     }
 
+    // Modèle prestataire : le montant facturé à l'établissement est le tarif
+    // de l'intervenant AUGMENTÉ des frais de gestion. Rien n'est prélevé sur
+    // l'intervenant, qui perçoit exactement le montant qu'il a chiffré.
+    const compteClient = await this.prisma.account.findUnique({
+      where: { id: quote.clientAccountId },
+      select: { commissionRate: true },
+    });
+    const taux = compteClient?.commissionRate
+      ? Number(compteClient.commissionRate)
+      : COMMISSION_DEFAUT;
+    const { prixClientHt } = decomposerPrix(Number(quote.amount ?? 0), taux);
+
     const result = await this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.create({
         data: {
@@ -211,7 +224,7 @@ export class QuotesService {
           missionId: quote.missionId,
           status: 'CONFIRMED',
           scheduledAt: quote.scheduledAt,
-          totalAmount: quote.amount,
+          totalAmount: prixClientHt,
         },
       });
       const accepted = await tx.quote.update({

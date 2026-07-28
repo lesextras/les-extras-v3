@@ -12,6 +12,37 @@ export interface PageHelpEntry {
 }
 
 const AIDE: Record<string, PageHelpEntry> = {
+  "/dashboard/points": {
+    titre: "Vos points, et comment ils deviennent des euros",
+    texte:
+      "Chaque contribution à la communauté crédite des points : publier un atelier, réaliser une mission, déposer un avis, écrire un article, proposer une idée retenue. 10 points valent 1 € de réduction, déduite au moment de la facturation dans la limite de 30 % du montant. Les points expirent au bout de 12 mois — mieux vaut les utiliser au fil de l'eau.",
+    etapes: [
+      "Repérez dans « Comment en gagner » l'action qui vous rapporte le plus.",
+      "Signalez votre solde à l'équipe au moment de votre prochaine commande.",
+      "Surveillez la carte « Validité » : elle prévient des points bientôt périmés.",
+    ],
+  },
+  "/dashboard/idees": {
+    titre: "Dites ce qui vous manque — c'est ce qui oriente les versions",
+    texte:
+      "Cette page n'est pas une boîte à suggestions décorative : les idées les plus votées passent en priorité de développement, et leur statut est mis à jour publiquement. Une idée retenue rapporte 40 points à son auteur.",
+    etapes: [
+      "Cherchez d'abord si quelqu'un a déjà proposé la même chose : votez plutôt que de dupliquer.",
+      "Décrivez la situation concrète qui vous bloque, pas seulement la solution imaginée.",
+      "Revenez voir le statut : « À l'étude », « Retenue », « Livrée ».",
+    ],
+  },
+  "/dashboard/devenir-intervenant": {
+    titre: "Proposer vos interventions en votre nom",
+    texte:
+      "Vous intervenez déjà auprès de publics accompagnés. Vous pouvez proposer les mêmes ateliers à d'autres structures, en votre nom propre, sans quitter votre poste. Vos deux espaces restent séparés : vous basculez de l'un à l'autre avec le sélecteur de compte.",
+    etapes: [
+      "Choisissez le nom sous lequel vous exercerez (votre nom propre convient).",
+      "Cochez les fiches à reprendre : elles sont recopiées en brouillon, jamais publiées à votre place.",
+      "Relisez chaque fiche, ajustez le tarif, puis publiez depuis « Mes ateliers ».",
+    ],
+  },
+
   // ---------- Espace personnel ----------
   '/dashboard': {
     titre: 'Votre tableau de bord',

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { requireSession, fetchApi } from "../../../../_shared/server";
 import { PageHeader, SectionTitle, ErrorState } from "../../../../_shared/ui";
 import { QuoteEditor, QuoteDecision, type QuoteLine } from "../../../../_shared/QuotePanel";
+import { DecompositionPrix } from "../../../../_shared/DecompositionPrix";
 import { formatDate } from "../../../../_shared/format";
 
 export const metadata: Metadata = { title: "Devis" };
@@ -136,6 +137,10 @@ export default async function DevisDetailPage({ params }: { params: { id: string
               </table>
             </CardContent>
           </Card>
+          <DecompositionPrix
+            tarifIntervenant={Number(q.amount ?? 0)}
+            vue={q.viewerIsClient ? "etablissement" : "intervenant"}
+          />
           {q.message ? (
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{q.message}</p>
           ) : null}

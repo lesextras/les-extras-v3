@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown } from 'lucide-react';
-import { Lock } from 'lucide-react';
+import { ChevronDown, LayoutList, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getNavForRole } from '@/lib/nav';
 import type { NavRole } from '@/lib/types';
@@ -23,18 +22,74 @@ export interface SidebarProps {
 /** Clé de persistance des sections repliées (par rôle). */
 const STORAGE_PREFIX = 'lx.sidebar.collapsed.';
 
+/** Clé de persistance du mode d'affichage (essentiel / complet). */
+const MODE_PREFIX = 'lx.sidebar.mode.';
+
 /**
  * Navigation latérale, contenu piloté par le rôle (FREELANCE / ESTABLISHMENT /
  * ADMIN). Les sections titrées sont des accordéons dépliables : la section
  * contenant la page courante s'ouvre automatiquement, et l'état plié/déplié est
  * mémorisé d'une visite à l'autre.
  */
+function isActiveHref(pathname: string, href: string) {
+  return (
+    pathname === href ||
+    (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(`${href}/`))
+  );
+}
+
 export function Sidebar({ role, isMember, onNavigate, className }: SidebarProps) {
   const pathname = usePathname();
-  const sections = getNavForRole(role);
+  const toutesSections = getNavForRole(role);
 
-  const isActive = (href: string) =>
-    pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(`${href}/`));
+  // Mode « essentiel » : ne montre que les entrées du quotidien. Il évite qu'un
+  // directeur qui vient une fois par mois se noie dans quinze entrées. L'admin
+  // travaille dans l'outil tous les jours : mode complet par défaut pour lui.
+  const [modeEssentiel, setModeEssentiel] = useState(false);
+  const [modeCharge, setModeCharge] = useState(false);
+
+  useEffect(() => {
+    let valeur = role !== 'ADMIN';
+    try {
+      const brut = window.localStorage.getItem(MODE_PREFIX + role);
+      if (brut === 'complet') valeur = false;
+      else if (brut === 'essentiel') valeur = true;
+    } catch {
+      /* stockage indisponible : on garde la valeur par défaut du rôle */
+    }
+    setModeEssentiel(valeur);
+    setModeCharge(true);
+  }, [role]);
+
+  function basculerMode() {
+    setModeEssentiel((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(MODE_PREFIX + role, next ? 'essentiel' : 'complet');
+      } catch {
+        /* stockage indisponible : le choix vaut pour la session */
+      }
+      return next;
+    });
+  }
+
+  const total = toutesSections.reduce((n, s) => n + s.items.length, 0);
+
+  // Le filtre ne s'applique qu'après lecture du stockage : rendu serveur et
+  // premier rendu client restent identiques (pas de mismatch d'hydratation).
+  const sections =
+    modeCharge && modeEssentiel
+      ? toutesSections
+          .map((s) => ({
+            ...s,
+            items: s.items.filter((it) => it.essentiel || isActiveHref(pathname, it.href)),
+          }))
+          .filter((s) => s.items.length > 0)
+      : toutesSections;
+
+  const masquees = total - sections.reduce((n, s) => n + s.items.length, 0);
+
+  const isActive = (href: string) => isActiveHref(pathname, href);
 
   /** Titre de la section qui contient la page courante (pour l'ouvrir d'office). */
   const activeSectionTitle = useMemo(() => {
@@ -165,7 +220,25 @@ export function Sidebar({ role, isMember, onNavigate, className }: SidebarProps)
         })}
       </nav>
 
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border px-4 pt-3">
+        <button
+          type="button"
+          onClick={basculerMode}
+          aria-pressed={modeEssentiel}
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <LayoutList aria-hidden="true" className="size-3.5 shrink-0" />
+          <span className="truncate text-left">
+            {modeEssentiel
+              ? masquees > 0
+                ? `Afficher tout le menu (+${masquees})`
+                : 'Afficher tout le menu'
+              : 'Vue essentielle'}
+          </span>
+        </button>
+      </div>
+
+      <div className="p-4 pt-2">
         <div className="rounded-xl bg-primary-soft/60 p-3">
           <p className="text-xs font-semibold text-accent-foreground">Besoin d’aide ?</p>
           <p className="mt-0.5 text-xs text-muted-foreground">

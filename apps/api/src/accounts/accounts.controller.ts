@@ -12,6 +12,7 @@ import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { AdjustCreditsDto } from './dto/credits.dto';
+import { DevenirIntervenantDto } from './dto/devenir-intervenant.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../admin/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -31,6 +32,21 @@ export class AccountsController {
   @Post()
   create(@CurrentUser() user: RequestUser, @Body() dto: CreateAccountDto) {
     return this.accounts.create(user.id, dto);
+  }
+
+  /** Bascule salarié → intervenant : crée le compte et reprend les fiches. */
+  @Post('devenir-intervenant')
+  devenirIntervenant(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: DevenirIntervenantDto,
+  ) {
+    return this.accounts.devenirIntervenant(user.id, dto);
+  }
+
+  /** Fiches d'un compte que l'utilisateur peut reprendre à son compte propre. */
+  @Get(':id/fiches-importables')
+  fichesImportables(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.accounts.fichesImportables(user.id, id);
   }
 
   @Post(':id/switch')

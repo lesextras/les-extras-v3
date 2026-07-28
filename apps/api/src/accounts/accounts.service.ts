@@ -110,6 +110,85 @@ export class AccountsService {
     });
   }
 
+  /**
+   * Bascule salarié → intervenant.
+   *
+   * Un salarié d'établissement peut proposer ses interventions en son nom
+   * propre : on lui crée un compte FREELANCE dont il est OWNER, et on recopie
+   * les fiches qu'il désigne. Les copies partent en BROUILLON — il les relit et
+   * les publie lui-même, on ne met jamais en ligne à sa place.
+   *
+   * Idempotent : si l'utilisateur possède déjà un compte intervenant, on le
+   * réutilise plutôt que d'en empiler un second.
+   */
+  async devenirIntervenant(
+    userId: string,
+    dto: { name: string; sourceAccountId?: string; serviceIds?: string[] },
+  ) {
+    const existant = await this.prisma.membership.findFirst({
+      where: { userId, status: MembershipStatus.ACTIVE, account: { type: AccountType.FREELANCE } },
+      select: { account: { select: { id: true, name: true, slug: true, type: true } } },
+    });
+
+    const compte =
+      existant?.account ??
+      (await this.create(userId, { name: dto.name, type: AccountType.FREELANCE } as CreateAccountDto));
+
+    let importees = 0;
+    if (dto.sourceAccountId && dto.serviceIds?.length) {
+      // L'utilisateur doit être membre actif du compte source : on ne recopie
+      // jamais le catalogue d'une structure à laquelle il n'appartient pas.
+      await this.requireMembership(userId, dto.sourceAccountId);
+      const fiches = await this.prisma.service.findMany({
+        where: { id: { in: dto.serviceIds }, accountId: dto.sourceAccountId },
+      });
+      for (const f of fiches) {
+        await this.prisma.service.create({
+          data: {
+            accountId: compte.id,
+            title: f.title,
+            description: f.description,
+            category: f.category,
+            categoryId: f.categoryId,
+            duration: f.duration,
+            durationMinutes: f.durationMinutes,
+            maxParticipants: f.maxParticipants,
+            publicTarget: f.publicTarget,
+            publicTargets: f.publicTargets,
+            material: f.material,
+            prerequisites: f.prerequisites,
+            objectives: f.objectives,
+            methodology: f.methodology,
+            evaluation: f.evaluation,
+            faq: f.faq ?? undefined,
+            images: f.images,
+            priceExtras: f.priceExtras ?? undefined,
+            timeSlots: f.timeSlots,
+            price: f.price,
+            creditCost: f.creditCost,
+            city: f.city,
+            // Toujours en brouillon : c'est lui qui décide de publier.
+            status: 'DRAFT',
+          },
+        });
+        importees += 1;
+      }
+    }
+
+    return { account: compte, importees, dejaExistant: Boolean(existant) };
+  }
+
+  /** Fiches du compte source que l'utilisateur peut reprendre à son compte. */
+  async fichesImportables(userId: string, sourceAccountId: string) {
+    await this.requireMembership(userId, sourceAccountId);
+    return this.prisma.service.findMany({
+      where: { accountId: sourceAccountId },
+      orderBy: { updatedAt: 'desc' },
+      select: { id: true, title: true, category: true, price: true, status: true },
+      take: 60,
+    });
+  }
+
   async update(userId: string, accountId: string, dto: UpdateAccountDto) {
     await this.requireMembership(userId, accountId, [
       AccountRole.OWNER,
