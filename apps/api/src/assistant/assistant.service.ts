@@ -319,7 +319,11 @@ Déjà tenté : ${contexte.tente}` : ''
       system: AssistantService.CADRE_GAPISTE,
       user: masque,
       historique: fil,
-      maxTokens: 900,
+      // Le second temps est structuré en sept blocs (analyse, posture,
+      // activités, action de la semaine, réunion, et un mot pour le
+      // professionnel) : à 900 jetons la réponse était tronquée en plein
+      // milieu d'un conseil, ce qui est pire que pas de conseil du tout.
+      maxTokens: 1600,
       temperature: 0.55,
     });
 
