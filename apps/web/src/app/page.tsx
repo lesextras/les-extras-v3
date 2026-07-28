@@ -280,7 +280,7 @@ export default async function LandingPage() {
               <Reveal className="md:col-span-2">
                 <Link
                   href="/ateliers"
-                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(160,45%,92%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(347,55%,94%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="flex flex-col p-7 md:p-8">
                     <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
@@ -796,7 +796,7 @@ export default async function LandingPage() {
 
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
               <Reveal className="h-full">
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(160,45%,92%)] p-7 md:p-9">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(347,55%,94%)] p-7 md:p-9">
                   <h3 className="text-xl font-semibold">Recevoir notre catalogue</h3>
                   <p className="mt-2 text-sm leading-relaxed text-foreground/70">
                     Les 15 interventions détaillées — publics, objectifs, tarifs — dans votre
