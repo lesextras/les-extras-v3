@@ -9,6 +9,11 @@ import {
   CheckCircle2,
   Sparkles,
   Newspaper,
+  Siren,
+  PenLine,
+  FileCheck,
+  Clock,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SiteHeader } from '@/components/marketing/site-header';
@@ -46,94 +51,108 @@ export default async function LandingPage() {
       <SiteHeader />
 
       <main id="main" className="flex-1">
-        {/* ============ HERO — clair, typographique, épuré ============ */}
+        {/* ============ HERO — scindé, style grande plateforme ============ */}
         <section className="relative isolate overflow-hidden bg-warm-gradient">
-          <div className="absolute inset-0 bg-grid opacity-50" aria-hidden />
-          {/* halos décoratifs en mouvement lent */}
-          <div
-            className="absolute -left-24 top-24 -z-10 size-[420px] rounded-full bg-secondary/10 blur-3xl"
-            aria-hidden
-          />
-          <div
-            className="absolute -right-28 bottom-0 -z-10 size-[480px] rounded-full bg-primary/10 blur-3xl"
-            aria-hidden
-          />
-
-          <div className="relative mx-auto max-w-[1200px] px-6 pb-14 pt-20 text-center md:pb-20 md:pt-28">
-            <span className="eyebrow animate-fade-in-up inline-flex">
-              <Sparkles className="size-3.5" />
-              Le dispositif de l’association ADéPA — depuis 2012
-            </span>
-
-            <h1 className="mx-auto mt-6 max-w-4xl text-[2.6rem] font-bold leading-[1.04] tracking-tight text-foreground text-balance sm:text-6xl lg:text-[4.4rem]">
-              <span className="block animate-fade-in-up stagger-1">Des interventions à fort impact,</span>
-              <span className="block animate-fade-in-up stagger-2 text-secondary">
-                portées par ceux qui font le terrain.
+          <div className="mx-auto grid max-w-[1360px] items-center gap-12 px-6 pb-16 pt-14 md:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pb-24 lg:pt-20">
+            {/* Colonne texte */}
+            <div>
+              <span className="eyebrow animate-fade-in-up inline-flex">
+                <Sparkles className="size-3.5" />
+                Le dispositif de l’association ADéPA — depuis 2012
               </span>
-            </h1>
+              <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
+                Des interventions à fort impact,{' '}
+                <span className="text-secondary">portées par ceux qui font le terrain.</span>
+              </h1>
+              <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
+                Ateliers éducatifs, formations Qualiopi et renfort d’équipe, animés par des
+                indépendants vérifiés du médico-social.
+              </p>
 
-            <p className="animate-fade-in-up stagger-3 mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground text-balance">
-              Ateliers éducatifs, formations Qualiopi et renfort d’équipe, animés par des
-              indépendants vérifiés du médico-social. Devis, contrat et facture générés
-              automatiquement.
-            </p>
+              <div className="animate-fade-in-up stagger-3 mt-7 max-w-xl">
+                <HeroSearch />
+              </div>
 
-            <div className="animate-fade-in-up stagger-3 mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button asChild size="lg" className="shadow-card">
-                <Link href="/ateliers">
-                  Explorer les ateliers
-                  <ArrowRight />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href="/catalogue">Demander notre catalogue</Link>
-              </Button>
+              {/* Recherches populaires — vraies catégories du catalogue */}
+              <div className="animate-fade-in-up stagger-4 mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">Populaire :</span>
+                {['Psycho-boxe', 'Slam', 'Théâtre', 'Musicothérapie', 'Socio-esthétique'].map((c) => (
+                  <Link
+                    key={c}
+                    href={`/ateliers?search=${encodeURIComponent(c.toLowerCase())}`}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+                  >
+                    <Search className="size-3" />
+                    {c}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="animate-fade-in-up stagger-4 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="size-4 text-primary" />
+                  Intervenants vérifiés
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <GraduationCap className="size-4 text-primary" />
+                  Qualiopi · finançable OPCO
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="size-4 text-primary" />
+                  Devis sous 48 h
+                </span>
+              </div>
             </div>
 
-            <div className="animate-fade-in-up stagger-4 mx-auto mt-9 w-full max-w-3xl rounded-2xl bg-card p-2 shadow-card ring-1 ring-border/60">
-              <HeroSearch />
-            </div>
-
-            <dl className="animate-fade-in-up stagger-4 mx-auto mt-10 grid w-full max-w-2xl grid-cols-3 divide-x divide-border">
-              {[
-                { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
-                { k: 'Qualiopi', v: 'formations finançables OPCO' },
-                { k: '48 h', v: 'pour recevoir votre devis' },
-              ].map((st) => (
-                <div key={st.v} className="px-4">
-                  <dt className="text-2xl font-bold tracking-tight text-foreground [font-variant-numeric:tabular-nums] md:text-3xl">
-                    {st.k}
-                  </dt>
-                  <dd className="mt-1 text-xs text-muted-foreground md:text-[13px]">{st.v}</dd>
+            {/* Colonne visuelle — composition avec cartes flottantes */}
+            <div className="relative hidden lg:block">
+              <Reveal>
+                <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] shadow-card">
+                  <Image
+                    src="https://les-extras.fr/wp-content/uploads/2023/04/cropped-groupe-id-3-1.jpg"
+                    alt="Le réseau des intervenants Les Extras"
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 0px, 45vw"
+                    className="object-cover"
+                    unoptimized
+                  />
                 </div>
-              ))}
-            </dl>
-          </div>
-
-          {/* la photo du réseau : large, chaleureuse, en couleurs réelles */}
-          <Reveal className="relative mx-auto max-w-[1200px] px-6 pb-16 md:pb-20">
-            <div className="relative aspect-[21/9] overflow-hidden rounded-3xl shadow-card">
-              <Image
-                src="https://les-extras.fr/wp-content/uploads/2023/04/cropped-groupe-id-3-1.jpg"
-                alt="Le réseau des intervenants Les Extras"
-                fill
-                priority
-                sizes="(max-width: 1200px) 100vw, 1200px"
-                className="object-cover object-[center_35%]"
-                unoptimized
-              />
+              </Reveal>
+              <Reveal delay={200}>
+                <div className="absolute -left-8 bottom-16 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
+                  <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary">
+                    <FileCheck className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Devis sous 48 h</p>
+                    <p className="text-xs text-muted-foreground">contrat et facture automatiques</p>
+                  </div>
+                </div>
+              </Reveal>
+              <Reveal delay={320}>
+                <div className="absolute -right-4 top-10 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
+                  <span className="grid size-10 place-items-center rounded-xl bg-secondary-soft text-secondary">
+                    <GraduationCap className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{catalogueTotal} interventions</p>
+                    <p className="text-xs text-muted-foreground">au catalogue, notées après mission</p>
+                  </div>
+                </div>
+              </Reveal>
             </div>
-          </Reveal>
+          </div>
         </section>
 
-        {/* ============ CONFIANCE — bande défilante en continu ============ */}
+        {/* ============ CONFIANCE — bande défilante ============ */}
         <section className="border-y border-border/60 bg-card">
-          <div className="mx-auto max-w-[1360px] py-8">
+          <div className="mx-auto max-w-[1360px] py-7">
             <p className="px-6 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Ils nous font confiance dans toute la France
             </p>
             <div
-              className="marquee-hover mt-5 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+              className="marquee-hover mt-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
               aria-hidden
             >
               <div className="animate-marquee flex w-max items-center gap-14 pr-14">
@@ -157,15 +176,22 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ DOMAINES — trois portes d'entrée ============ */}
+        {/* ============ DOMAINES — cartes photo + texte (style annonce) ============ */}
         <section className="section">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <span className="eyebrow">Trois portes d’entrée</span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
-              Nos domaines d’actions
-            </h2>
+          <Reveal className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <span className="eyebrow">Trois portes d’entrée</span>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Nos domaines d’actions
+              </h2>
+            </div>
+            <Button asChild variant="outline">
+              <Link href="/ateliers">
+                Tout explorer <ArrowRight />
+              </Link>
+            </Button>
           </Reveal>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-8 md:grid-cols-3">
             {[
               {
                 titre: 'Les ateliers de notre réseau',
@@ -190,8 +216,8 @@ export default async function LandingPage() {
               },
             ].map((d, i) => (
               <Reveal key={d.titre} delay={i * 110}>
-                <Link href={d.href} className="group relative block overflow-hidden rounded-3xl">
-                  <div className="relative aspect-[3/4] w-full bg-muted md:aspect-[4/5]">
+                <Link href={d.href} className="group block">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted">
                     <Image
                       src={d.image}
                       alt=""
@@ -200,69 +226,273 @@ export default async function LandingPage() {
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                       unoptimized
                     />
-                    <span className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                    <span className="absolute inset-x-0 bottom-0 p-7">
-                      <span className="block text-2xl font-bold leading-tight text-white text-balance">
-                        {d.titre}
-                      </span>
-                      <span className="mt-2 block text-sm leading-relaxed text-white/75">{d.texte}</span>
-                      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white">
-                        {d.action}
-                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                      </span>
-                    </span>
                   </div>
+                  <h3 className="mt-4 text-lg font-semibold leading-snug text-foreground group-hover:text-primary">
+                    {d.titre}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{d.texte}</p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                    {d.action}
+                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                  </span>
                 </Link>
               </Reveal>
             ))}
           </div>
         </section>
 
-        {/* ============ QUI NOUS SOMMES + COMMENT ÇA MARCHE ============ */}
-        <section id="comment" className="bg-primary-soft/50">
-          <div className="mx-auto max-w-[1000px] px-6 py-16 text-center md:py-24">
-            <Reveal>
-              <h2 className="text-3xl font-bold tracking-tight md:text-5xl">
-                Vous reconnaissez-vous ?
+        {/* ============ BANDEAU DE CHIFFRES — fond bleu nuit ============ */}
+        <section className="bg-primary">
+          <div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-8 px-6 py-12 text-center md:grid-cols-4 md:px-10 md:py-14">
+            {[
+              { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
+              { k: '2012', v: 'année de création de l’ADéPA' },
+              { k: 'Qualiopi', v: 'organisme de formation certifié' },
+              { k: '48 h', v: 'pour recevoir votre devis' },
+            ].map((st, i) => (
+              <Reveal key={st.v} delay={i * 90}>
+                <p className="text-3xl font-bold tracking-tight text-primary-foreground [font-variant-numeric:tabular-nums] md:text-4xl">
+                  {st.k}
+                </p>
+                <p className="mt-1.5 text-sm text-primary-foreground/70">{st.v}</p>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* ============ BENTO — tout ce que la plateforme fait ============ */}
+        <section id="produits" className="bg-card">
+          <div className="section">
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <span className="eyebrow">La plateforme</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
+                Tout ce qu’elle fait pour vous
               </h2>
-              <p className="mx-auto mt-5 max-w-3xl text-lg text-muted-foreground text-balance">
-                Violences, décrochage, tensions d’équipe, conduites à risque, difficultés
-                parentales, épuisement… Le quotidien complexe, on le connaît.
-              </p>
-              <p className="mx-auto mt-7 max-w-3xl text-base leading-relaxed text-foreground/85 md:text-lg">
-                Les Extras est le dispositif de l’association{' '}
-                <strong className="font-semibold text-foreground">ADéPA</strong>, engagée depuis
-                2012 pour l’insertion sociale des enfants, des adolescents et des familles par
-                l’éducation, la prévention et l’animation.
+              <p className="mt-4 text-muted-foreground">
+                Six services, un seul compte — du premier devis jusqu’au compte rendu.
               </p>
             </Reveal>
 
-            <ol className="mt-12 grid gap-8 md:grid-cols-3">
-              {[
-                { n: '01', t: 'Visualisez les offres et les profils d’experts de notre réseau', i: <Users className="size-5" /> },
-                { n: '02', t: 'Réservez en ligne ou faites une demande de devis', i: <HeartHandshake className="size-5" /> },
-                { n: '03', t: 'La mission est réalisée. Consultez son compte rendu', i: <CheckCircle2 className="size-5" /> },
-              ].map((e, i) => (
-                <Reveal key={e.n} delay={i * 110}>
-                  <li className="flex flex-col items-center gap-3">
-                    <span className="relative grid size-14 place-items-center rounded-2xl bg-card text-primary shadow-soft">
-                      {e.i}
-                      <span className="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
-                        {e.n}
-                      </span>
+            <div className="mt-14 grid gap-5 md:grid-cols-3">
+              {/* Ateliers — grande tuile avec photo */}
+              <Reveal className="md:col-span-2">
+                <Link
+                  href="/ateliers"
+                  className="group grid h-full overflow-hidden rounded-3xl border border-border/70 bg-background shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                >
+                  <div className="flex flex-col p-7 md:p-8">
+                    <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
+                      <Sparkles className="size-5" />
                     </span>
-                    <p className="max-w-[15rem] text-sm font-medium text-foreground text-balance">{e.t}</p>
-                  </li>
+                    <h3 className="mt-4 text-xl font-semibold">Les ateliers éducatifs</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                      Quinze médiations clés en main — psycho-boxe, slam, théâtre,
+                      musicothérapie… Réservables en ligne, avec compte rendu après chaque
+                      intervention.
+                    </p>
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                      Parcourir le catalogue
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                  <div className="relative min-h-52 bg-muted">
+                    <Image
+                      src="https://les-extras.fr/wp-content/uploads/2025/02/musicotherapie.jpg"
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      unoptimized
+                    />
+                  </div>
+                </Link>
+              </Reveal>
+
+              {/* SOS Renfort — tuile bleu nuit */}
+              <Reveal delay={100}>
+                <div
+                  id="renfort"
+                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bg-primary p-7 text-primary-foreground shadow-card md:p-8"
+                >
+                  <span className="grid size-11 place-items-center rounded-xl bg-white/10 text-primary-foreground">
+                    <Siren className="size-5" />
+                  </span>
+                  <h3 className="mt-4 text-xl font-semibold">SOS Renfort</h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-primary-foreground/80">
+                    Une absence ce soir ? Publiez le besoin : diffusion en cascade — votre équipe,
+                    puis les intervenants déjà venus, enfin le réseau. Le premier qui accepte est
+                    engagé, contrat généré.
+                  </p>
+                  <Link
+                    href="/register"
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-foreground hover:underline"
+                  >
+                    Publier un renfort
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </Reveal>
+
+              {/* Formations */}
+              <Reveal>
+                <div className="flex h-full flex-col rounded-3xl border border-border/70 bg-background p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                  <span className="grid size-11 place-items-center rounded-xl bg-secondary-soft text-secondary">
+                    <GraduationCap className="size-5" />
+                  </span>
+                  <h3 className="mt-4 text-xl font-semibold">Formations Qualiopi</h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                    En intra, finançables OPCO. Émargement en ligne, attestations et certificats
+                    générés automatiquement.
+                  </p>
+                  <Link
+                    href="/formations"
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary"
+                  >
+                    Voir les formations
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </Reveal>
+
+              {/* Assistant IA — grande tuile avec photo */}
+              <Reveal delay={100} className="md:col-span-2">
+                <Link
+                  href="/register"
+                  className="group grid h-full overflow-hidden rounded-3xl border border-border/70 bg-background shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                >
+                  <div className="relative order-2 min-h-52 bg-muted sm:order-1">
+                    <Image
+                      src="https://les-extras.fr/wp-content/uploads/2026/04/school.jpeg"
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="order-1 flex flex-col p-7 sm:order-2 md:p-8">
+                    <span className="flex items-center gap-2">
+                      <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
+                        <PenLine className="size-5" />
+                      </span>
+                      <Badge variant="soft">IA</Badge>
+                    </span>
+                    <h3 className="mt-4 text-xl font-semibold">L’assistant d’écriture</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                      Vos notes brutes deviennent des écrits professionnels. Noms masqués avant
+                      traitement, notes jamais stockées, relecture obligatoire : vous restez
+                      l’auteur.
+                    </p>
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                      Essayer l’assistant
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
+
+              {/* Gestion sans papier */}
+              <Reveal>
+                <div className="flex h-full flex-col rounded-3xl border border-border/70 bg-background p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                  <span className="grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground">
+                    <FileCheck className="size-5" />
+                  </span>
+                  <h3 className="mt-4 text-xl font-semibold">La gestion sans papier</h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                    Devis, contrats à double signature, factures PDF, pointage validé, coffre-fort
+                    de conformité avec alertes d’échéance.
+                  </p>
+                  <Link
+                    href="/register"
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                  >
+                    Ouvrir un compte
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </Reveal>
+
+              {/* Édublog */}
+              <Reveal delay={100} className="md:col-span-2">
+                <Link
+                  href="/edublog"
+                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl border border-border/70 bg-background p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
+                >
+                  <div>
+                    <span className="grid size-11 place-items-center rounded-xl bg-secondary-soft text-secondary">
+                      <Newspaper className="size-5" />
+                    </span>
+                    <h3 className="mt-4 text-xl font-semibold">L’Édublog</h3>
+                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                      Le fil public du réseau : retours d’expérience, projets, pratiques
+                      éducatives. Publiez, puis partagez sur LinkedIn en un clic.
+                    </p>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary">
+                    Lire l’Édublog
+                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ COMMENT ÇA MARCHE — trois grandes étapes ============ */}
+        <section id="comment" className="scroll-mt-24">
+          <div className="section">
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <span className="eyebrow">Comment ça marche</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                Trois étapes, zéro friction
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Les Extras est porté par l’association <strong className="font-semibold text-foreground">ADéPA</strong>,
+                engagée depuis 2012 pour l’insertion sociale par l’éducation, la prévention et
+                l’animation.
+              </p>
+            </Reveal>
+            <div className="mt-14 grid gap-10 md:grid-cols-3">
+              {[
+                {
+                  t: 'Visualisez les offres',
+                  d: 'Parcourez le catalogue et les profils d’experts du réseau — sans compte.',
+                  i: <Users className="size-6" />,
+                },
+                {
+                  t: 'Réservez ou demandez un devis',
+                  d: 'En ligne, en quelques clics. Le devis accepté devient contrat, tout seul.',
+                  i: <HeartHandshake className="size-6" />,
+                },
+                {
+                  t: 'La mission est réalisée',
+                  d: 'Compte rendu, facture et avis vous attendent dans votre espace.',
+                  i: <CheckCircle2 className="size-6" />,
+                },
+              ].map((e, i) => (
+                <Reveal key={e.t} delay={i * 110}>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute -top-6 left-0 text-7xl font-bold text-primary/10">
+                      {i + 1}
+                    </span>
+                    <span className="relative grid size-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-soft">
+                      {e.i}
+                    </span>
+                    <h3 className="relative mt-4 text-lg font-semibold">{e.t}</h3>
+                    <p className="relative mt-2 text-sm leading-relaxed text-muted-foreground">{e.d}</p>
+                  </div>
                 </Reveal>
               ))}
-            </ol>
-
-            <Reveal delay={120} className="mt-10">
+            </div>
+            <Reveal delay={120} className="mt-12 text-center">
               <div className="flex flex-col justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg">
-                  <Link href="/formations">Le centre de formation</Link>
+                  <Link href="/ateliers">
+                    Explorer le catalogue
+                    <ArrowRight />
+                  </Link>
                 </Button>
-                <Button asChild size="lg" variant="secondary">
+                <Button asChild size="lg" variant="outline">
                   <Link href="/notre-histoire">Découvrir l’association</Link>
                 </Button>
               </div>
@@ -270,239 +500,82 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ LA PLATEFORME, PRODUIT PAR PRODUIT ============ */}
-        <section id="produits" className="bg-card">
-          <div className="section">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <span className="eyebrow">Visite guidée</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
-                Tout ce que la plateforme fait pour vous
-              </h2>
-              <p className="mt-4 text-muted-foreground">
-                Six services, un seul compte. Pour chacun : à quoi il sert, et comment il
-                s’utilise en trois gestes.
-              </p>
-            </Reveal>
-
-            <div className="mt-16 space-y-24 md:space-y-28">
-              {[
-                {
-                  titre: 'Les ateliers éducatifs',
-                  pour: 'Établissements',
-                  texte:
-                    'Quinze médiations clés en main — psycho-boxe, slam, socio-esthétique, théâtre, musicothérapie… — animées chez vous par un intervenant vérifié. Une demi-journée, un budget de fonctionnement, une décision immédiate.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2025/02/musicotherapie.jpg',
-                  tuto: [
-                    'Parcourez le catalogue et filtrez par public, ville ou budget.',
-                    'Demandez un devis — même sans compte — ou réservez en ligne.',
-                    'L’intervention a lieu ; le compte rendu vous revient avec des recommandations.',
-                  ],
-                  href: '/ateliers',
-                  lien: 'Parcourir les ateliers',
-                },
-                {
-                  titre: 'Les formations certifiées Qualiopi',
-                  pour: 'Équipes & responsables formation',
-                  texte:
-                    'Analyse des pratiques, prévention, spécialisations métier — en intra, dans votre structure. Portées par la certification Qualiopi d’ADéPA, donc finançables par votre OPCO.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2025/02/lever-vous.jpeg',
-                  tuto: [
-                    'Choisissez le parcours et la session adaptés à votre plan de compétences.',
-                    'Nous vous aidons à monter le dossier de financement OPCO.',
-                    'Émargement en ligne, attestations et certificats produits automatiquement.',
-                  ],
-                  href: '/formations',
-                  lien: 'Voir les formations',
-                },
-                {
-                  id: 'renfort',
-                  titre: 'Le SOS Renfort',
-                  pour: 'Urgences de personnel',
-                  texte:
-                    'Une absence ce soir, un surcroît la semaine prochaine : publiez le besoin, la plateforme le diffuse en cascade — votre équipe d’abord, puis les intervenants déjà venus chez vous, enfin le réseau.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2026/04/etoile-mec.jpeg',
-                  tuto: [
-                    'Décrivez la mission : poste, dates, horaires, public accueilli.',
-                    'La diffusion en cascade privilégie ceux qui connaissent déjà votre maison.',
-                    'Premier accepté = mission pourvue. Contrat et facture suivent tout seuls.',
-                  ],
-                  href: '/register',
-                  lien: 'Publier un renfort',
-                },
-                {
-                  titre: 'L’assistant d’écriture IA',
-                  pour: 'Tous les professionnels',
-                  texte:
-                    'Vos notes brutes deviennent des écrits professionnels : notes d’observation, rapports de situation, transmissions. Les noms sont masqués avant tout traitement, vos notes ne sont jamais stockées.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2026/04/school.jpeg',
-                  tuto: [
-                    'Choisissez le type d’écrit, puis dictez ou tapez vos notes comme elles viennent.',
-                    'L’assistant structure : faits d’un côté, hypothèses prudentes de l’autre.',
-                    'Vous relisez, corrigez et validez — vous restez l’auteur du document.',
-                  ],
-                  href: '/register',
-                  lien: 'Essayer l’assistant',
-                },
-                {
-                  titre: 'L’Édublog',
-                  pour: 'Visibilité du réseau',
-                  texte:
-                    'Chaque compte peut publier articles et actualités sur le fil public, et les partager sur LinkedIn en un clic — votre travail devient votre meilleure publicité.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2025/02/prev-reseaux-sociaux.jpg',
-                  tuto: [
-                    'Écrivez dans l’éditeur : mise en forme simple, images, relecture.',
-                    'Publiez — l’article est lisible par tous, sans compte.',
-                    'Connectez LinkedIn une fois, puis partagez chaque article en un clic.',
-                  ],
-                  href: '/edublog',
-                  lien: 'Lire l’Édublog',
-                },
-                {
-                  titre: 'La gestion sans papier',
-                  pour: 'Administratif',
-                  texte:
-                    'Devis chiffrés en ligne, contrats à double signature, factures PDF, pointage des heures validé, coffre-fort de conformité. Tout ce qui prenait des soirées se fait dans le même espace.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2023/03/video-atelier.webp',
-                  tuto: [
-                    'Le devis accepté devient réservation, puis contrat signé en ligne.',
-                    'Les heures déclarées par l’intervenant sont validées par vous.',
-                    'La facture PDF tombe dans votre espace ; la conformité est suivie avec ses échéances.',
-                  ],
-                  href: '/register',
-                  lien: 'Ouvrir un compte',
-                },
-              ].map((prod, idx) => (
-                <article
-                  key={prod.titre}
-                  id={prod.id}
-                  className={cn(
-                    'grid items-center gap-10 scroll-mt-24 lg:grid-cols-2 lg:gap-20',
-                    idx % 2 === 1 && 'lg:[&>*:first-child]:order-2',
-                  )}
-                >
-                  <Reveal>
-                    <div className="group relative aspect-[4/3] overflow-hidden rounded-3xl bg-muted shadow-card">
-                      <Image
-                        src={prod.image}
-                        alt={prod.titre}
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                        unoptimized
-                      />
-                      <span className="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-                        {prod.pour}
-                      </span>
+        {/* ============ MARKETPLACE EN ACCÈS LIBRE ============ */}
+        {(unes?.ateliers?.length ?? 0) > 0 || (unes?.formations?.length ?? 0) > 0 ? (
+          <section id="marketplace" className="bg-card">
+            <div className="section">
+              {(unes?.ateliers?.length ?? 0) > 0 ? (
+                <div className="space-y-6">
+                  <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="max-w-2xl">
+                      <span className="eyebrow">Sans compte, sans engagement</span>
+                      <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                        Les ateliers les mieux notés
+                      </h2>
                     </div>
-                  </Reveal>
-                  <Reveal delay={120}>
-                    <h3 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">{prod.titre}</h3>
-                    <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{prod.texte}</p>
-                    <ol className="mt-7 space-y-4">
-                      {prod.tuto.map((etape, i) => (
-                        <li key={etape} className="flex gap-3">
-                          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                            {i + 1}
-                          </span>
-                          <span className="pt-1 text-[15px] leading-relaxed text-foreground">{etape}</span>
-                        </li>
-                      ))}
-                    </ol>
-                    <Button asChild size="lg" className="mt-8">
-                      <Link href={prod.href}>
-                        {prod.lien}
-                        <ArrowRight />
+                    <Button asChild variant="outline">
+                      <Link href="/ateliers">
+                        Tout le catalogue <ArrowRight />
                       </Link>
                     </Button>
                   </Reveal>
-                </article>
-              ))}
+                  <Reveal delay={100}>
+                    <OfferCarousel items={unes!.ateliers} basePath="/ateliers" />
+                  </Reveal>
+                </div>
+              ) : null}
+
+              {(unes?.formations?.length ?? 0) > 0 ? (
+                <div className="mt-16 space-y-6">
+                  <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="max-w-2xl">
+                      <span className="eyebrow">Qualiopi · finançable OPCO</span>
+                      <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                        Nos formations
+                      </h2>
+                    </div>
+                    <Button asChild variant="outline">
+                      <Link href="/formations">
+                        Toutes les formations <ArrowRight />
+                      </Link>
+                    </Button>
+                  </Reveal>
+                  <Reveal delay={100}>
+                    <OfferCarousel items={unes!.formations} basePath="/formations" useSlug />
+                  </Reveal>
+                </div>
+              ) : null}
             </div>
-          </div>
-        </section>
-
-        {/* ============ MARKETPLACE EN ACCÈS LIBRE ============ */}
-        {(unes?.ateliers?.length ?? 0) > 0 || (unes?.formations?.length ?? 0) > 0 ? (
-          <section id="marketplace" className="section">
-            {(unes?.ateliers?.length ?? 0) > 0 ? (
-              <div className="space-y-6">
-                <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="max-w-2xl">
-                    <span className="eyebrow">Sans compte, sans engagement</span>
-                    <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                      Les ateliers les mieux notés
-                    </h2>
-                    <p className="mt-2 text-muted-foreground">
-                      Réservables en ligne ou sur devis, animés par des intervenants vérifiés.
-                    </p>
-                  </div>
-                  <Button asChild variant="outline">
-                    <Link href="/ateliers">
-                      Tout le catalogue <ArrowRight />
-                    </Link>
-                  </Button>
-                </Reveal>
-                <Reveal delay={100}>
-                  <OfferCarousel items={unes!.ateliers} basePath="/ateliers" />
-                </Reveal>
-              </div>
-            ) : null}
-
-            {(unes?.formations?.length ?? 0) > 0 ? (
-              <div className="mt-16 space-y-6">
-                <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="max-w-2xl">
-                    <span className="eyebrow">Qualiopi · finançable OPCO</span>
-                    <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                      Nos formations
-                    </h2>
-                    <p className="mt-2 text-muted-foreground">
-                      Sessions datées, attestation et certificat délivrés, émargement inclus.
-                    </p>
-                  </div>
-                  <Button asChild variant="outline">
-                    <Link href="/formations">
-                      Toutes les formations <ArrowRight />
-                    </Link>
-                  </Button>
-                </Reveal>
-                <Reveal delay={100}>
-                  <OfferCarousel items={unes!.formations} basePath="/formations" useSlug />
-                </Reveal>
-              </div>
-            ) : null}
           </section>
         ) : null}
 
-        {/* ============ REJOINDRE LE RÉSEAU (vidéo à la demande) ============ */}
-        <section className="bg-card">
-          <div className="section">
-            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
-              <Reveal>
-                <span className="eyebrow">Être ou ne pas être ?</span>
-                <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                  Rejoindre le réseau des Extras
-                </h2>
-                <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                  Éducateurs spécialisés, moniteurs-éducateurs, AES, psychologues : ce que change
-                  le fait de travailler en indépendant, raconté par ceux qui le font.
-                </p>
-                <Button asChild size="lg" className="mt-7">
-                  <Link href="/register">
-                    Proposer mes services
-                    <ArrowRight />
-                  </Link>
-                </Button>
-              </Reveal>
-              <Reveal delay={120}>
-                <VideoFacade id="8dXRvZU5TQY" titre="Comment rejoindre Les Extras freelances" />
-              </Reveal>
-            </div>
+        {/* ============ REJOINDRE LE RÉSEAU ============ */}
+        <section className="section">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+            <Reveal>
+              <span className="eyebrow">Être ou ne pas être ?</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                Rejoindre le réseau des Extras
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                Éducateurs spécialisés, moniteurs-éducateurs, AES, psychologues : ce que change le
+                fait de travailler en indépendant, raconté par ceux qui le font.
+              </p>
+              <Button asChild size="lg" className="mt-7">
+                <Link href="/register">
+                  Proposer mes services
+                  <ArrowRight />
+                </Link>
+              </Button>
+            </Reveal>
+            <Reveal delay={120}>
+              <VideoFacade id="8dXRvZU5TQY" titre="Comment rejoindre Les Extras freelances" />
+            </Reveal>
           </div>
         </section>
 
         {/* ============ TARIFS ============ */}
-        <section id="tarifs" className="scroll-mt-24">
+        <section id="tarifs" className="scroll-mt-24 bg-card">
           <div className="section">
             <Reveal className="mx-auto max-w-2xl text-center">
               <span className="eyebrow">Tarifs</span>
@@ -613,45 +686,22 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ PREUVE — une association, pas une startup ============ */}
-        <section className="relative isolate overflow-hidden bg-neutral-950">
-          <Image
-            src="https://les-extras.fr/wp-content/uploads/2023/02/cerf-volant-game-enfant.jpg"
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover opacity-25"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/85" aria-hidden />
-          <div className="relative mx-auto max-w-[1100px] px-6 py-20 text-center md:py-28">
+        {/* ============ PREUVE — bandeau bleu nuit, épuré ============ */}
+        <section className="bg-primary">
+          <div className="mx-auto max-w-[1100px] px-6 py-20 text-center md:py-24">
             <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-white/90">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground/90">
                 Une association, pas une startup
               </span>
-              <blockquote className="mx-auto mt-8 max-w-3xl text-2xl font-semibold leading-snug text-white text-balance md:text-3xl">
+              <blockquote className="mx-auto mt-8 max-w-3xl text-2xl font-semibold leading-snug text-primary-foreground text-balance md:text-3xl">
                 « Créer des dispositifs éducatifs innovants pour sécuriser les accompagnements,
                 soutenir les professionnels et renforcer les compétences psychosociales des
                 jeunes. »
               </blockquote>
-              <p className="mt-4 text-sm text-white/70">La mission de l’ADéPA, depuis 2012</p>
+              <p className="mt-4 text-sm text-primary-foreground/70">La mission de l’ADéPA, depuis 2012</p>
             </Reveal>
-            <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-3 sm:divide-x sm:divide-white/15">
-              {[
-                { k: 'Depuis 2012', v: 'association loi 1901, active en France, au Maroc et au Sénégal' },
-                { k: 'Qualiopi', v: 'organisme de formation certifié — vos formations sont finançables' },
-                { k: '15 ateliers', v: 'documentés et animés par des intervenants du terrain' },
-              ].map((f, i) => (
-                <Reveal key={f.k} delay={i * 110}>
-                  <div className="px-6">
-                    <p className="text-2xl font-bold text-white">{f.k}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-white/70">{f.v}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
             <Reveal delay={150}>
-              <Button asChild size="lg" variant="secondary" className="mt-12">
+              <Button asChild size="lg" variant="secondary" className="mt-10">
                 <Link href="/notre-histoire">
                   Découvrir notre histoire
                   <ArrowRight />
@@ -674,10 +724,6 @@ export default async function LandingPage() {
                   <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
                     Ce que publie le réseau
                   </h2>
-                  <p className="mt-3 max-w-xl text-muted-foreground">
-                    Retours d’expérience, projets d’établissements, pratiques éducatives. En accès
-                    libre, sans compte.
-                  </p>
                 </div>
                 <Button asChild variant="outline">
                   <Link href="/edublog">
@@ -723,28 +769,9 @@ export default async function LandingPage() {
           </section>
         ) : null}
 
-        {/* ============ GARANTIES + CTA FINAL ============ */}
+        {/* ============ CTA FINAL ============ */}
         <section className="section">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: ShieldCheck, title: 'Profils vérifiés', text: 'Diplômes et documents contrôlés, coffre-fort conformité.' },
-              { icon: GraduationCap, title: 'Qualiopi', text: 'Formations certifiées, finançables par votre OPCO.' },
-              { icon: Users, title: 'Multi-comptes', text: 'Gérez plusieurs structures et invitez vos équipes.' },
-              { icon: HeartHandshake, title: 'Humain d’abord', text: 'Un outil pensé pour le soin, pas contre lui.' },
-            ].map((v, i) => (
-              <Reveal key={v.title} delay={i * 90} className="h-full">
-                <div className="group h-full rounded-2xl border border-border/70 bg-card p-6 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-card">
-                  <span className="grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground transition-transform duration-300 group-hover:scale-105">
-                    <v.icon className="size-5" />
-                  </span>
-                  <h3 className="mt-4 font-semibold">{v.title}</h3>
-                  <p className="mt-1.5 text-sm text-muted-foreground">{v.text}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal className="mt-16">
+          <Reveal>
             <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground shadow-card md:px-16">
               <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
               <div

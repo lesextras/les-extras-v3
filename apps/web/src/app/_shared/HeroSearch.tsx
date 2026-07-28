@@ -24,7 +24,7 @@ export function HeroSearch() {
   return (
     <form
       onSubmit={soumettre}
-      className="mt-8 flex w-full flex-col gap-2 rounded-2xl border border-border bg-card p-2 shadow-card sm:flex-row sm:items-center"
+      className="flex w-full flex-col gap-2 rounded-3xl border border-border bg-card p-2 shadow-card sm:rounded-full sm:flex-row sm:items-center"
       role="search"
       aria-label="Rechercher un atelier ou une formation"
     >
@@ -35,7 +35,7 @@ export function HeroSearch() {
           name="search"
           placeholder="Mots-clés : violence, estime de soi, théâtre…"
           aria-label="Mots-clés"
-          className="h-12 w-full rounded-xl border-0 bg-transparent pl-10 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="h-12 w-full rounded-full border-0 bg-transparent pl-10 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
         />
       </div>
       <div className="relative flex-1 sm:max-w-[16rem] sm:border-l sm:border-border">
@@ -45,10 +45,10 @@ export function HeroSearch() {
           name="city"
           placeholder="Localisation"
           aria-label="Localisation"
-          className="h-12 w-full rounded-xl border-0 bg-transparent pl-10 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="h-12 w-full rounded-full border-0 bg-transparent pl-10 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
         />
       </div>
-      <Button type="submit" size="lg" className="h-12 shrink-0 rounded-xl px-6">
+      <Button type="submit" size="lg" className="h-12 shrink-0 rounded-full px-7">
         Rechercher
       </Button>
     </form>
