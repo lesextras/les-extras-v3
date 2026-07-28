@@ -32,6 +32,14 @@ export class QuotesService {
 
   /** Membre ACTIF du compte, sinon 403 (sans divulguer l'existence du compte). */
   private async requireMembership(userId: string, accountId: string) {
+    // Sans ce garde-fou, un accountId absent partait tel quel dans le
+    // findUnique composite : Prisma levait une erreur de validation et le
+    // client recevait un 500 opaque au lieu d'un message exploitable.
+    if (!accountId) {
+      throw new BadRequestException(
+        'Aucun compte actif : précisez le compte concerné (paramètre accountId).',
+      );
+    }
     const m = await this.prisma.membership.findUnique({
       where: { userId_accountId: { userId, accountId } },
     });

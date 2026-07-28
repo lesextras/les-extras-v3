@@ -11,6 +11,15 @@ function createPrismaMock() {
       findFirst: jest.fn(),
       create: jest.fn(),
     },
+    // candidate() vérifie que le salarié ne facture pas son propre employeur
+    // (risque de requalification). Sans ce délégué, le service plantait sur un
+    // TypeError et le test ne testait plus la règle métier attendue.
+    account: {
+      findUnique: jest.fn().mockResolvedValue({ ownerId: 'freelance-user' }),
+    },
+    membership: {
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
   };
 }
 
