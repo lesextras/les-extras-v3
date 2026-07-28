@@ -160,6 +160,16 @@
   --secondary-foreground: 0 0% 100%;
   --secondary-soft: 14 32% 15%;
   --ring: 347 80% 60%;
+
+  /* États : les valeurs claires (vert 32 % de luminosité, texte de warning
+     quasi noir) deviennent illisibles sur fond sombre. On les remonte, et on
+     inverse le texte des bandeaux d'alerte. */
+  --success: 152 58% 52%;
+  --success-foreground: 152 60% 10%;
+  --warning: 38 92% 60%;
+  --warning-foreground: 38 92% 76%;
+  --destructive: 0 78% 63%;
+  --destructive-foreground: 0 0% 100%;
 }
 
 @layer utilities {

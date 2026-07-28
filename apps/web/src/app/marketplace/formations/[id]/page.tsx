@@ -106,7 +106,7 @@ export default async function FormationDetailPage({ params }: { params: { id: st
       {/* Satisfaction stagiaires : preuve sociale déjà collectée à l'inscription. */}
       {f.rating ? (
         <p className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
-          <span className="text-amber-500" aria-hidden>
+          <span className="text-amber-400" aria-hidden>
             ★
           </span>
           {f.rating.toFixed(1)}/5

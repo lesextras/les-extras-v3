@@ -85,8 +85,8 @@ export default async function AdhesionPage({
       />
 
       {retour === "succes" ? (
-        <Card className="border-emerald-200 bg-emerald-50/60">
-          <CardContent className="p-4 text-sm text-emerald-900">
+        <Card className="border-success/30 bg-success/10">
+          <CardContent className="p-4 text-sm text-foreground">
             <span className="font-semibold">Paiement confirmé.</span> Votre adhésion sera active
             d&apos;ici quelques secondes.
           </CardContent>

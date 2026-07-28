@@ -144,7 +144,7 @@ export function OfferCarousel({
                     </p>
                     {o.rating ? (
                       <span className="inline-flex items-center gap-1 text-sm font-medium text-foreground">
-                        <Star className="size-4 fill-current text-amber-500" />
+                        <Star className="size-4 fill-current text-amber-400" />
                         {o.rating.toFixed(1)}
                       </span>
                     ) : null}

@@ -79,6 +79,8 @@ export function QrShare({
         </button>
 
         <div className={ouvert ? "space-y-3" : "hidden"}>
+          {/* Fond blanc volontaire : un QR code ne se scanne pas de façon
+              fiable en clair sur sombre. */}
           <div className="flex justify-center rounded-xl bg-white p-3">
             <canvas ref={canvasRef} aria-label={`QR code vers ${title}`} />
           </div>

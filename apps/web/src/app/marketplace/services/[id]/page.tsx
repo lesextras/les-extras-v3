@@ -177,7 +177,7 @@ export default async function ServiceDetailPage({ params }: { params: { id: stri
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               {service.rating ? (
                 <span className="inline-flex items-center gap-1 font-medium text-foreground">
-                  <Star className="size-4 fill-current text-amber-500" />
+                  <Star className="size-4 fill-current text-amber-400" />
                   {service.rating.toFixed(1)}
                   <span className="font-normal text-muted-foreground">
                     ({avis.length} avis
@@ -280,7 +280,7 @@ export default async function ServiceDetailPage({ params }: { params: { id: stri
                             <Star
                               key={i}
                               className={`size-3.5 ${
-                                i < a.rating ? "fill-current text-amber-500" : "text-muted"
+                                i < a.rating ? "fill-current text-amber-400" : "text-muted"
                               }`}
                             />
                           ))}

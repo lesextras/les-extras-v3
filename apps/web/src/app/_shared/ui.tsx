@@ -104,7 +104,7 @@ export function StatCard({
       : accent === "terracotta"
         ? "before:bg-secondary"
         : accent === "warning"
-          ? "before:bg-amber-500"
+          ? "before:bg-warning"
           : "before:bg-border";
   const iconTint =
     accent === "teal"
@@ -112,7 +112,7 @@ export function StatCard({
       : accent === "terracotta"
         ? "bg-secondary-soft text-secondary"
         : accent === "warning"
-          ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+          ? "bg-warning/15 text-warning-foreground"
           : "bg-muted text-muted-foreground";
   return (
     <Card

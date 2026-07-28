@@ -178,9 +178,9 @@ export default async function DevisDetailPage({ params }: { params: { id: string
       ) : null}
 
       {q.status === "ACCEPTED" ? (
-        <Card className="border-emerald-200 bg-emerald-50/60">
+        <Card className="border-success/30 bg-success/10">
           <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <p className="text-sm text-emerald-900">
+            <p className="text-sm text-foreground">
               Devis accepté — la prestation est confirmée et la réservation créée.
             </p>
             {q.bookingId ? (

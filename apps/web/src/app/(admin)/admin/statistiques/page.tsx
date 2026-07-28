@@ -51,11 +51,11 @@ interface RoiStats {
 
 // Couleurs (Tailwind) par statut pour la barre empilée des réservations.
 const BOOKING_STATUS_COLOR: Record<string, string> = {
-  REQUESTED: "bg-slate-400",
-  ACCEPTED: "bg-sky-500",
+  REQUESTED: "bg-muted-foreground",
+  ACCEPTED: "bg-primary/60",
   CONFIRMED: "bg-primary",
-  IN_PROGRESS: "bg-amber-500",
-  COMPLETED: "bg-emerald-500",
+  IN_PROGRESS: "bg-warning",
+  COMPLETED: "bg-success",
   CANCELLED: "bg-destructive",
 };
 
