@@ -31,8 +31,8 @@ export function ActionsPublication({
 
   // Une couleur par nature d'action, pour qu'on la reconnaisse sans lire :
   //   framboise  = renfort   (l'urgence, la couleur d'alerte de la marque)
-  //   terracotta = atelier   (la prestation, couleur secondaire de la charte)
-  //   vert       = formation (le certifiant, le durable)
+  //   bleu nuit  = atelier   (la prestation posée, préparée à l'avance)
+  //   vert forêt = formation (le certifiant, le durable)
   // L'ordre, lui, suit le besoin dominant du profil : un établissement cherche
   // d'abord à couvrir une absence, un intervenant à vendre une prestation.
   const renfort = (
@@ -47,7 +47,7 @@ export function ActionsPublication({
       key="atelier"
       accountId={accountId}
       categorieInitiale="ATELIER"
-      trigger={<Button variant="secondary">Publier un atelier</Button>}
+      trigger={<Button variant="nuit">Publier un atelier</Button>}
     />
   );
   const formation = (
@@ -55,7 +55,7 @@ export function ActionsPublication({
       key="formation"
       accountId={accountId}
       categorieInitiale="FORMATION"
-      trigger={<Button variant="success">Publier une formation</Button>}
+      trigger={<Button variant="foret">Publier une formation</Button>}
     />
   );
 

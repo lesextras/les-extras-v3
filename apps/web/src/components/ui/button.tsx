@@ -20,6 +20,15 @@ const buttonVariants = cva(
         // correct des deux côtés, ce qu'un vert codé en dur ne garantirait pas.
         success:
           'bg-success text-success-foreground shadow-soft hover:bg-success/90 hover:shadow-card hover:-translate-y-px',
+        // Deux teintes profondes, volontairement fixes : elles doivent rester
+        // les mêmes quel que soit le thème, c'est ce qui en fait des repères.
+        // Le texte est blanc dans les deux cas (contraste ≈ 10:1 et 7,7:1).
+        // Le liseré clair est indispensable : sur le fond charbon du tableau
+        // de bord, deux aplats sombres sans contour se fondraient dans la page.
+        nuit:
+          'bg-[hsl(222,62%,32%)] text-white shadow-soft ring-1 ring-white/15 hover:bg-[hsl(222,62%,38%)] hover:shadow-card hover:-translate-y-px',
+        foret:
+          'bg-[hsl(152,55%,24%)] text-white shadow-soft ring-1 ring-white/15 hover:bg-[hsl(152,55%,29%)] hover:shadow-card hover:-translate-y-px',
         outline:
           'border border-input bg-card text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground hover:border-primary/40',
         ghost: 'text-foreground hover:bg-accent hover:text-accent-foreground',
