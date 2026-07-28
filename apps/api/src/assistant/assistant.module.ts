@@ -8,6 +8,6 @@ import { MistralService } from './mistral.service';
 @Module({
   controllers: [AssistantController, PublicChatController, PublicLexDemoController],
   providers: [AssistantService, PseudonymiseurService, MistralService],
-  exports: [AssistantService],
+  exports: [AssistantService, PseudonymiseurService],
 })
 export class AssistantModule {}

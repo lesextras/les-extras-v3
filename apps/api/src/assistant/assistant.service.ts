@@ -105,9 +105,9 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
 
   private static readonly FAITS_PLATEFORME = `FAITS (seule source autorisée) :
 - Les Extras est le dispositif de l'association ADéPA (loi 1901, engagée depuis 2012 dans l'insertion sociale par l'éducation, la prévention et l'animation).
-- Produits : ateliers éducatifs clé en main (~15 au catalogue, ~200 à 1 200 € la demi-journée selon la fiche, réservables en ligne ou sur devis SANS créer de compte, devis sous 48 h) ; formations certifiées Qualiopi finançables OPCO (catalogue en cours de publication) ; SOS Renfort (remplacement urgent, diffusion en cascade, contrat automatique) ; assistant d'écriture IA (notes brutes → écrits professionnels, noms masqués, notes jamais stockées) ; Édublog (articles publics).
-- Modèle : l'usage INTERNE avec ses propres salariés est GRATUIT (missions internes, formation interne, planning, gestion d'équipe). Les prestations EXTERNES (ateliers, formations, renfort via le réseau) sont facturées à l'usage : prix sur chaque fiche, crédits dès 7 €/crédit (packs 10/90 €, 25/200 €, 60/420 €). Les outils LEX (assistant d'écriture, générateur d'activités, bot d'aide) sont réservés aux ADHÉRENTS : adhésion 149 €/mois (Essentiel) ou 299 €/mois (Pro). Montants HT. 0 % de commission prélevée sur l'intervenant.
-- Pages utiles : /ateliers (catalogue), /formations, /catalogue (recevoir le catalogue par e-mail), /contact (écrire à l'équipe), /register (créer un compte), /tarifs.`;
+- Produits : ateliers éducatifs clé en main (~15 au catalogue, ~200 à 1 200 € la demi-journée selon la fiche, réservables en ligne ou sur devis SANS créer de compte, devis sous 48 h) ; formations certifiées Qualiopi finançables OPCO (catalogue en cours de publication) ; SOS Renfort (remplacement urgent, diffusion en cascade, contrat automatique) ; assistant d'écriture IA (notes brutes → écrits professionnels, noms masqués, notes jamais stockées) ; Édublog (articles publics) ; Entraide (questions de terrain entre professionnels, filtrables par métier et par public accompagné, en lecture libre).
+- Modèle : l'usage INTERNE avec ses propres salariés est GRATUIT (missions internes, formation interne, planning, gestion d'équipe). Les prestations EXTERNES (ateliers, formations, renfort via le réseau) sont facturées à la prestation : le prix figure sur chaque fiche, la facture arrive après l'intervention. Il n'y a AUCUNE monnaie interne ni crédit à recharger. Les outils LEX (assistant d'écriture, générateur d'activités, bot d'aide) sont réservés aux ADHÉRENTS : adhésion 149 €/mois (Essentiel) ou 299 €/mois (Pro). Montants HT. 0 % de commission prélevée sur l'intervenant.
+- Pages utiles : /ateliers (catalogue), /formations, /entraide (questions entre professionnels), /edublog, /outils (calculateurs gratuits), /catalogue (recevoir le catalogue par e-mail), /contact (écrire à l'équipe), /register (créer un compte).`;
 
   private static readonly CADRE_BOT_PUBLIC = `Tu es « Lex », l'assistant du site Les Extras (app.les-extras.fr).
 Tu réponds UNIQUEMENT aux questions sur la plateforme, ses produits, ses tarifs et son fonctionnement.
@@ -151,49 +151,59 @@ Jamais de conseil clinique ou juridique individualisé. N'invente rien : si la f
   static readonly DEMO_MAX_RENDU = 850;
 
   /**
-   * Essai public de LEX : mêmes garanties que l'outil complet
-   * (pseudonymisation avant l'appel, restauration après), mais entrée bornée
-   * et sortie tronquée. Aucune trace n'est écrite en base.
+   * Essai public de LEX : le GÉNÉRATEUR D'ACTIVITÉS.
+   *
+   * C'est le produit à montrer en premier — il produit quelque chose
+   * d'immédiatement utilisable, et aucun concurrent français ne le propose.
+   * Mêmes garanties que l'outil complet (masquage avant l'appel au modèle),
+   * mais sortie tronquée et rien n'est enregistré.
    */
-  async demoPublique(notes: string) {
-    const brut = notes.trim().slice(0, AssistantService.DEMO_MAX_NOTES);
-    if (brut.length < 20) {
+  async demoPublique(dto: {
+    publicCible: string;
+    besoins: string;
+    duree?: string;
+    effectif?: string;
+  }) {
+    const publicCible = dto.publicCible.trim().slice(0, 120);
+    const besoins = dto.besoins.trim().slice(0, AssistantService.DEMO_MAX_NOTES);
+    if (besoins.length < 10) {
       return {
         erreur:
-          'Décrivez la situation en quelques lignes (20 caractères minimum) pour que LEX ait de quoi travailler.',
+          'Décrivez en quelques mots ce que vous voulez travailler pour que LEX ait de quoi construire.',
       };
     }
 
-    const def = trouverTrame(AssistantTrame.NOTE_OBSERVATION);
-    const { texte: masque, table } = this.pseudo.masquer(brut);
+    const brut = [
+      `Public : ${publicCible}`,
+      `Besoins / difficultés à travailler : ${besoins}`,
+      dto.duree ? `Durée disponible : ${dto.duree}` : '',
+      dto.effectif ? `Effectif : ${dto.effectif}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
 
+    const { texte: masque, table } = this.pseudo.masquer(brut);
     const reponseMasquee = await this.mistral.completer({
-      system: def.system,
-      user: `Notes brutes du professionnel :\n\n${masque}`,
-      maxTokens: 420,
-      temperature: 0.4,
+      system: AssistantService.CADRE_ACTIVITE,
+      user: masque,
+      maxTokens: 520,
+      temperature: 0.5,
     });
 
-    let brouillon = this.pseudo
+    let activite = this.pseudo
       .restaurer(reponseMasquee, table)
       .replace(/\[DATE-\d+\]/g, '[date à préciser]')
       .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
       .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]');
 
-    const tronque = brouillon.length > AssistantService.DEMO_MAX_RENDU;
+    const tronque = activite.length > AssistantService.DEMO_MAX_RENDU;
     if (tronque) {
-      // Coupure sur une fin de phrase pour ne pas laisser un mot en suspens.
-      const coupe = brouillon.slice(0, AssistantService.DEMO_MAX_RENDU);
-      const fin = Math.max(coupe.lastIndexOf('. '), coupe.lastIndexOf('\n'));
-      brouillon = (fin > 200 ? coupe.slice(0, fin + 1) : coupe).trimEnd();
+      const coupe = activite.slice(0, AssistantService.DEMO_MAX_RENDU);
+      const fin = Math.max(coupe.lastIndexOf('\n'), coupe.lastIndexOf('. '));
+      activite = (fin > 200 ? coupe.slice(0, fin + 1) : coupe).trimEnd();
     }
 
-    return {
-      brouillon,
-      tronque,
-      protection: this.pseudo.resume(table),
-      trame: def.id,
-    };
+    return { activite, tronque, protection: this.pseudo.resume(table) };
   }
 
   // ── Aide au remplissage des fiches ───────────────────────────────────────

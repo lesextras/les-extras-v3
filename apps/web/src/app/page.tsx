@@ -32,6 +32,9 @@ import { CartesContact } from './_shared/CartesContact';
 import { TimelineParcours } from './_shared/TimelineParcours';
 import { BlocOutils } from './_shared/BlocOutils';
 import { DemoLex } from './_shared/DemoLex';
+import { OffreLex } from './_shared/OffreLex';
+import { BlocEntraide } from './_shared/BlocEntraide';
+import type { QuestionCard } from './_shared/entraide';
 import { RetourHaut } from './_shared/RetourHaut';
 
 export default async function LandingPage() {
@@ -51,6 +54,13 @@ export default async function LandingPage() {
     items: { id: string; slug: string; title: string; excerpt?: string | null; coverUrl?: string | null; publishedAt?: string | null }[];
   }>('/articles/feed?take=3');
   const articles = fluxArticles?.items ?? [];
+
+  // Entraide : trois situations réelles du fil, pour montrer le produit plutôt
+  // que le décrire. Aucune question n'est fabriquée si le fil est vide.
+  const { data: filEntraide } = await fetchPublic<{ items: QuestionCard[] }>(
+    '/public/entraide?take=3',
+  );
+  const questions = filEntraide?.items ?? [];
 
   return (
     <div className="theme-sombre flex min-h-screen flex-col bg-background">
@@ -578,16 +588,37 @@ export default async function LandingPage() {
           <Reveal>
             <span className="eyebrow">LEX · essai libre</span>
             <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-              Vos notes de terrain, en écrit professionnel
+              Décrivez un besoin, LEX construit la séance
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Les écrits sont la corvée quotidienne du secteur. LEX les met en forme à partir de
-              vos notes brutes — sans rien inventer, sans jamais décider à votre place. Essayez
-              maintenant, sans compte.
+              LEX est l’assistant IA de la plateforme, conçu pour le médico-social. Essayez son
+              générateur d’activités maintenant, sans compte : un public, ce que vous voulez
+              travailler, et vous obtenez une séance complète en quinze secondes.
             </p>
           </Reveal>
           <Reveal className="mt-10">
             <DemoLex />
+          </Reveal>
+
+          <Reveal className="mt-16">
+            <h3 className="text-2xl font-bold tracking-tight md:text-3xl text-balance">
+              Ce que LEX fait pour vous, au-delà de cet essai
+            </h3>
+            <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
+              Quatre outils, une seule adhésion. Ils partagent le même parti pris : faire gagner du
+              temps sur ce qui n’a jamais été le cœur du métier — la paperasse — pour en laisser
+              plus à ce qui l’est.
+            </p>
+          </Reveal>
+          <Reveal className="mt-8">
+            <OffreLex />
+          </Reveal>
+        </section>
+
+        {/* ============ ENTRAIDE ============ */}
+        <section id="entraide" className="section scroll-mt-24">
+          <Reveal>
+            <BlocEntraide questions={questions} />
           </Reveal>
         </section>
 

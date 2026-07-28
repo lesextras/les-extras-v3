@@ -1,56 +1,76 @@
 "use client";
 
-// Essai public de LEX, sans compte. Objectif : rendre tangible en trente
-// secondes ce que fait l'assistant d'écriture — le produit le plus désirable
-// de la plateforme était jusqu'ici invisible avant inscription.
-// La sortie est volontairement tronquée : on montre le geste, pas l'outil.
+// Essai public de LEX — le générateur d'activités. C'est le produit qui
+// démontre le mieux la valeur en trente secondes : on décrit un public et ce
+// qu'on veut travailler, on obtient une séance structurée, utilisable telle
+// quelle après validation en équipe. La sortie est tronquée volontairement.
 import { useState } from "react";
 import Link from "next/link";
-import { PenLine, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ShieldCheck, ArrowRight, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Field } from "./form-fields";
 
 const MAX = 400;
 
 const EXEMPLES = [
   {
-    label: "Un refus en atelier",
-    notes:
-      "Mercredi, Léa 14 ans a refusé de venir à l'atelier cuisine. Elle est restée dans sa chambre, a dit qu'elle en avait marre. Je suis allé la voir, elle a fini par sortir au bout de 20 min et a participé à la fin. Elle m'a dit qu'elle avait mal dormi.",
+    label: "Ados, gestion de la colère",
+    publicCible: "Adolescents 13-16 ans accompagnés en MECS",
+    besoins:
+      "Gestion de la colère et des passages à l'acte, difficulté à mettre des mots sur ce qu'ils ressentent",
+    duree: "1h30",
+    effectif: "6 jeunes",
   },
   {
-    label: "Une progression",
-    notes:
-      "Karim, 9 ans, arrive à rester assis pendant tout le temps du repas depuis 2 semaines. Avant il se levait 5 ou 6 fois. Il demande maintenant s'il peut sortir de table. On a mis en place le sablier depuis début du mois.",
+    label: "Adultes handicap, estime de soi",
+    publicCible: "Adultes en situation de handicap psychique, foyer de vie",
+    besoins:
+      "Estime de soi très basse, repli, peu d'initiative dans les activités proposées",
+    duree: "1h",
+    effectif: "8 personnes",
   },
   {
-    label: "Un incident à tracer",
-    notes:
-      "Ce matin dispute entre deux jeunes dans le couloir, ton qui monte, l'un a poussé l'autre. Séparés tout de suite par moi et ma collègue. Chacun a été vu séparément après. Pas de blessure. Ils se sont reparlé au goûter.",
+    label: "Enfants TSA, sensoriel",
+    publicCible: "Enfants 6-10 ans avec troubles du spectre autistique, IME",
+    besoins:
+      "Hypersensibilité sensorielle, difficultés de transition entre deux activités",
+    duree: "45 min",
+    effectif: "4 enfants",
   },
 ];
 
 interface Resultat {
-  brouillon?: string;
+  activite?: string;
   tronque?: boolean;
   protection?: { personnes: number; dates: number; contacts: number };
   erreur?: string;
 }
 
 export function DemoLex() {
-  const [notes, setNotes] = useState("");
+  const [publicCible, setPublicCible] = useState("");
+  const [besoins, setBesoins] = useState("");
+  const [duree, setDuree] = useState("");
+  const [effectif, setEffectif] = useState("");
   const [piege, setPiege] = useState("");
   const [chargement, setChargement] = useState(false);
   const [res, setRes] = useState<Resultat | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  async function lancer(texte?: string) {
-    const contenu = (texte ?? notes).trim();
-    if (contenu.length < 20) {
-      setErreur("Décrivez la situation en quelques lignes — 20 caractères minimum.");
+  async function lancer(exemple?: (typeof EXEMPLES)[number]) {
+    const p = exemple?.publicCible ?? publicCible;
+    const b = exemple?.besoins ?? besoins;
+    if (p.trim().length < 3 || b.trim().length < 10) {
+      setErreur("Indiquez le public accompagné et ce que vous voulez travailler.");
       return;
     }
-    if (texte) setNotes(texte);
+    if (exemple) {
+      setPublicCible(exemple.publicCible);
+      setBesoins(exemple.besoins);
+      setDuree(exemple.duree);
+      setEffectif(exemple.effectif);
+    }
     setErreur(null);
     setChargement(true);
     setRes(null);
@@ -58,13 +78,19 @@ export function DemoLex() {
       const r = await fetch("/api/proxy/public/lex-demo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: contenu, website: piege || undefined }),
+        body: JSON.stringify({
+          publicCible: p.trim(),
+          besoins: b.trim(),
+          duree: (exemple?.duree ?? duree) || undefined,
+          effectif: (exemple?.effectif ?? effectif) || undefined,
+          website: piege || undefined,
+        }),
       });
       const data = (await r.json()) as Resultat & { message?: string | string[] };
       if (!r.ok) {
         setErreur(
           r.status === 429
-            ? "Vous avez atteint la limite d'essais gratuits pour cette heure. Créez un compte pour utiliser LEX sans compteur."
+            ? "Vous avez atteint la limite d'essais gratuits pour cette heure. Adhérez pour utiliser LEX sans compteur."
             : Array.isArray(data.message)
               ? data.message[0]
               : (data.message ?? "L'essai n'a pas abouti. Réessayez dans un instant."),
@@ -87,12 +113,12 @@ export function DemoLex() {
       {/* Entrée */}
       <div className="rounded-3xl border border-border bg-card p-7 md:p-8">
         <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-          <PenLine className="size-4" />
-          Vos notes, telles que vous les prenez
+          <Lightbulb className="size-4" />
+          Votre public, et ce que vous voulez travailler
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Écrivez comme sur un carnet : bouts de phrases, abréviations, désordre. C&apos;est
-          exactement ce que LEX attend.
+          Pas de diagnostic, pas de jargon : décrivez la situation comme vous la diriez à un
+          collègue.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -100,7 +126,7 @@ export function DemoLex() {
             <button
               key={e.label}
               type="button"
-              onClick={() => lancer(e.notes)}
+              onClick={() => lancer(e)}
               disabled={chargement}
               className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground disabled:opacity-50"
             >
@@ -109,15 +135,48 @@ export function DemoLex() {
           ))}
         </div>
 
-        <Textarea
-          rows={7}
-          value={notes}
-          maxLength={MAX}
-          onChange={(ev) => setNotes(ev.target.value)}
-          placeholder="Ex. Mardi, refus d'aller en cours le matin, a fini par y aller après discussion…"
-          aria-label="Vos notes brutes"
-          className="mt-4"
-        />
+        <div className="mt-4 space-y-4">
+          <Field label="Public accompagné" htmlFor="lex-public">
+            <Input
+              id="lex-public"
+              value={publicCible}
+              maxLength={120}
+              onChange={(e) => setPublicCible(e.target.value)}
+              placeholder="Adolescents 13-16 ans en MECS"
+            />
+          </Field>
+          <Field label="Ce que vous voulez travailler" htmlFor="lex-besoins">
+            <Textarea
+              id="lex-besoins"
+              rows={4}
+              value={besoins}
+              maxLength={MAX}
+              onChange={(e) => setBesoins(e.target.value)}
+              placeholder="Difficulté à coopérer en groupe, tensions récurrentes au moment des repas…"
+            />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Durée" htmlFor="lex-duree">
+              <Input
+                id="lex-duree"
+                value={duree}
+                maxLength={40}
+                onChange={(e) => setDuree(e.target.value)}
+                placeholder="1h30"
+              />
+            </Field>
+            <Field label="Effectif" htmlFor="lex-effectif">
+              <Input
+                id="lex-effectif"
+                value={effectif}
+                maxLength={40}
+                onChange={(e) => setEffectif(e.target.value)}
+                placeholder="6 jeunes"
+              />
+            </Field>
+          </div>
+        </div>
+
         {/* Champ-piège : invisible pour un humain, rempli par les robots. */}
         <input
           type="text"
@@ -129,15 +188,12 @@ export function DemoLex() {
           className="hidden"
         />
 
-        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {notes.length} / {MAX} caractères
-          </span>
-          <span>3 essais par heure, sans compte</span>
+        <div className="mt-3 text-right text-xs text-muted-foreground">
+          3 essais par heure, sans compte
         </div>
 
-        <Button onClick={() => lancer()} disabled={chargement} className="mt-4 w-full">
-          {chargement ? "LEX rédige…" : "Transformer mes notes"}
+        <Button onClick={() => lancer()} disabled={chargement} className="mt-3 w-full">
+          {chargement ? "LEX construit la séance…" : "Générer une activité"}
           {!chargement ? <Sparkles /> : null}
         </Button>
 
@@ -145,9 +201,8 @@ export function DemoLex() {
 
         <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" aria-hidden />
-          Les noms, dates et coordonnées sont remplacés par des jetons <em>avant</em> l&apos;envoi au
-          modèle, puis restaurés sur votre écran. Rien n&apos;est enregistré, ici comme dans
-          l&apos;espace connecté.
+          Les noms et coordonnées que vous citez sont remplacés par des jetons <em>avant</em>
+          l&apos;envoi au modèle, puis restaurés sur votre écran. Rien n&apos;est enregistré.
         </p>
       </div>
 
@@ -155,59 +210,49 @@ export function DemoLex() {
       <div className="rounded-3xl border border-primary/25 bg-[hsl(222,22%,13%)] p-7 md:p-8">
         <div className="flex items-center gap-2 text-sm font-semibold text-primary">
           <Sparkles className="size-4" />
-          Le brouillon de LEX
+          La séance proposée par LEX
         </div>
 
         {!res && !chargement ? (
           <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-            Choisissez une situation d&apos;exemple ou écrivez la vôtre : le brouillon apparaît
-            ici, structuré en contexte et faits observés, prêt à être relu et corrigé.
+            Choisissez un exemple ou décrivez votre situation : LEX construit une séance complète —
+            objectifs observables, matériel, déroulé en quatre temps, points de vigilance, et ce
+            qu&apos;il faudra noter dans le compte rendu.
             <br />
             <br />
-            LEX ne décide rien et n&apos;interprète pas : il met en forme ce que vous avez écrit.
-            La responsabilité de l&apos;écrit reste la vôtre.
+            LEX ne pose aucun diagnostic et n&apos;interprète rien. Il propose une activité, à
+            valider en équipe pluridisciplinaire avant mise en œuvre.
           </p>
         ) : null}
 
         {chargement ? (
           <div className="mt-6 space-y-3" aria-live="polite">
-            <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-10/12 animate-pulse rounded bg-muted" />
             <div className="h-3 w-full animate-pulse rounded bg-muted" />
             <div className="h-3 w-9/12 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-10/12 animate-pulse rounded bg-muted" />
-            <p className="pt-2 text-xs text-muted-foreground">
-              Comptez une quinzaine de secondes.
-            </p>
+            <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
+            <p className="pt-2 text-xs text-muted-foreground">Comptez une quinzaine de secondes.</p>
           </div>
         ) : null}
 
         {res?.erreur ? <p className="mt-6 text-sm text-destructive">{res.erreur}</p> : null}
 
-        {res?.brouillon ? (
+        {res?.activite ? (
           <div className="mt-5">
             <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
-              {res.brouillon}
+              {res.activite}
             </p>
             {res.tronque ? (
               <p className="mt-4 rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
-                Aperçu volontairement tronqué. Dans votre espace, le brouillon est complet, sur
-                cinq trames différentes (note d&apos;observation, synthèse, rapport, transmission,
-                projet personnalisé).
+                Aperçu volontairement tronqué. Dans votre espace, la séance est complète — avec la
+                variante simplifiée, l&apos;alternative et les indicateurs d&apos;observation.
               </p>
             ) : null}
             {protege > 0 ? (
               <p className="mt-3 flex items-center gap-2 text-xs text-success">
                 <ShieldCheck className="size-3.5" aria-hidden />
                 {protege} élément{protege > 1 ? "s" : ""} masqué{protege > 1 ? "s" : ""} avant
-                l&apos;envoi (
-                {[
-                  p!.personnes ? `${p!.personnes} nom${p!.personnes > 1 ? "s" : ""}` : null,
-                  p!.dates ? `${p!.dates} date${p!.dates > 1 ? "s" : ""}` : null,
-                  p!.contacts ? `${p!.contacts} contact${p!.contacts > 1 ? "s" : ""}` : null,
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
-                )
+                l&apos;envoi
               </p>
             ) : null}
             <Button asChild className="mt-5">

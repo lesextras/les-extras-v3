@@ -32,6 +32,7 @@ import {
   Lightbulb,
   Award,
   UserPlus,
+  MessagesSquare,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -79,6 +80,7 @@ const freelanceNav: NavSection[] = [
       { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Missions qui correspondent à votre profil, classées par score' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos interventions confirmées' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les établissements' },
+      { label: 'Entraide', href: '/dashboard/entraide', icon: MessagesSquare, essentiel: true, hint: 'Les situations de terrain partagées par le réseau : posez la vôtre, répondez à celles des autres' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
     ],
@@ -118,6 +120,7 @@ const establishmentNav: NavSection[] = [
       { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos créneaux et interventions' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
+      { label: 'Entraide', href: '/dashboard/entraide', icon: MessagesSquare, essentiel: true, hint: 'Les situations de terrain partagées par le réseau : posez la vôtre, répondez à celles des autres' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
     ],
@@ -192,6 +195,7 @@ const adminNav: NavSection[] = [
       { label: 'Catégories', href: '/admin/categories', icon: Tags, hint: 'Taxonomie des missions et ateliers' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
+      { label: 'Entraide', href: '/dashboard/entraide', icon: MessagesSquare, hint: 'Le fil des situations de terrain : modérer et animer' },
     ],
   },
   {

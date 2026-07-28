@@ -4,12 +4,20 @@ import { Throttle } from '@nestjs/throttler';
 import { AssistantService } from './assistant.service';
 import { ChatDto } from './dto/assistant.dto';
 
-/** Essai public de LEX : notes courtes + champ-piège anti-robot. */
+/** Essai public de LEX : générateur d'activités + champ-piège anti-robot. */
 class DemoLexDto {
   @IsString()
-  @MinLength(20, { message: 'Décrivez la situation en quelques lignes.' })
+  @MinLength(3)
+  @MaxLength(120)
+  publicCible!: string;
+
+  @IsString()
+  @MinLength(10, { message: 'Décrivez ce que vous voulez travailler.' })
   @MaxLength(400)
-  notes!: string;
+  besoins!: string;
+
+  @IsOptional() @IsString() @MaxLength(40) duree?: string;
+  @IsOptional() @IsString() @MaxLength(40) effectif?: string;
 
   @IsOptional()
   @IsString()
@@ -34,7 +42,8 @@ export class PublicChatController {
 }
 
 /**
- * Démonstration publique de LEX — SANS authentification.
+ * Démonstration publique de LEX — le générateur d'activités, SANS
+ * authentification.
  *
  * Plafond volontairement bas (3 essais par heure et par IP) : la démo sert à
  * faire comprendre le geste, pas à remplacer l'outil. La chaîne de protection
@@ -48,7 +57,7 @@ export class PublicLexDemoController {
   @Throttle({ default: { limit: 3, ttl: 3_600_000 } })
   @Post()
   async demo(@Body() dto: DemoLexDto) {
-    if (dto.website) return { brouillon: 'Merci !', tronque: false, protection: [] };
-    return this.assistant.demoPublique(dto.notes);
+    if (dto.website) return { activite: 'Merci !', tronque: false };
+    return this.assistant.demoPublique(dto);
   }
 }
