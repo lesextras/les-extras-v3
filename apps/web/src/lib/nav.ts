@@ -29,6 +29,7 @@ import {
   ShieldQuestion,
   Newspaper,
   PenLine,
+  Lightbulb,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -73,6 +74,7 @@ const freelanceNav: NavSection[] = [
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos interventions confirmées' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les établissements' },
       { label: "Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées.' },
+      { label: "Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, hint: 'Décrivez le public et les besoins : l’IA propose des activités structurées, à valider en équipe.' },
     ],
   },
   {
@@ -109,6 +111,7 @@ const establishmentNav: NavSection[] = [
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, hint: 'Vos créneaux et interventions' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, hint: 'Échanges avec les freelances' },
       { label: "Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées.' },
+      { label: "Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, hint: 'Décrivez le public et les besoins : l’IA propose des activités structurées, à valider en équipe.' },
     ],
   },
   {
@@ -141,6 +144,7 @@ const adminNav: NavSection[] = [
       { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d’ensemble de la plateforme' },
       { label: 'Mon espace', href: '/dashboard', icon: Home, hint: 'Votre tableau de bord personnel (ateliers, missions, activité)' },
       { label: "Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées.' },
+      { label: "Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, hint: 'Décrivez le public et les besoins : l’IA propose des activités structurées, à valider en équipe.' },
     ],
   },
   {

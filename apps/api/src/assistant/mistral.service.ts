@@ -22,6 +22,8 @@ export class MistralService {
   async completer(options: {
     system: string;
     user: string;
+    /** Tours précédents (bot conversationnel) — déjà pseudonymisés. */
+    historique?: { role: 'user' | 'assistant'; content: string }[];
     maxTokens?: number;
     temperature?: number;
   }): Promise<string> {
@@ -42,6 +44,7 @@ export class MistralService {
         max_tokens: options.maxTokens ?? 2048,
         messages: [
           { role: 'system', content: options.system },
+          ...(options.historique ?? []).slice(-8),
           { role: 'user', content: options.user },
         ],
       }),

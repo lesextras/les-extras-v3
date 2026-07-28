@@ -6,6 +6,7 @@
 // seul endroit.
 import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/marketing/site-header";
+import { ChatBot } from '../_shared/ChatBot';
 import { SiteFooter } from "@/components/marketing/site-footer";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
@@ -16,6 +17,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <SiteFooter />
+      <ChatBot mode="public" />
     </div>
   );
 }

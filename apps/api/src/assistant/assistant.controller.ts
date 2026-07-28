@@ -8,7 +8,7 @@ import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
 import { AssistantService } from './assistant.service';
-import { EnregistrerDocumentDto, FeedbackDto, GenererDto, ModifierDocumentDto } from './dto/assistant.dto';
+import { ActiviteDto, ChatDto, EnregistrerDocumentDto, FeedbackDto, FicheDto, GenererDto, ModifierDocumentDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
@@ -30,6 +30,27 @@ export class AssistantController {
   @Post('generer')
   generer(@Body() dto: GenererDto) {
     return this.assistant.generer(dto.trame, dto.notes);
+  }
+
+  /** Générateur d'activités éducatives & thérapeutiques. */
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @Post('activite')
+  activite(@Body() dto: ActiviteDto) {
+    return this.assistant.genererActivite(dto);
+  }
+
+  /** Bot d'aide de l'espace connecté. */
+  @Throttle({ default: { limit: 60, ttl: 3_600_000 } })
+  @Post('chat')
+  chat(@Body() dto: ChatDto) {
+    return this.assistant.chat('dashboard', dto.message, dto.historique);
+  }
+
+  /** Pré-remplissage d'une fiche atelier/formation depuis un brief. */
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @Post('fiche')
+  fiche(@Body() dto: FicheDto) {
+    return this.assistant.remplirFiche(dto.type, dto.brief);
   }
 
   @Post('documents')

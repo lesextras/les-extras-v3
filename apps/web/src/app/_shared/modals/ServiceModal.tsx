@@ -48,6 +48,38 @@ export function ServiceModal({
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("ATELIER");
   const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
+  const [brief, setBrief] = useState("");
+  const [iaLoading, setIaLoading] = useState(false);
+
+  /** Pré-remplit le formulaire depuis un brief, via l'assistant. Les champs
+   *  restent modifiables : l'IA propose, l'intervenant décide. */
+  async function remplirAvecIA() {
+    if (brief.trim().length < 15 || iaLoading) return;
+    setIaLoading(true);
+    try {
+      const r = await apiRequest<{ fiche?: Record<string, unknown>; brut?: string }>("/assistant/fiche", {
+        method: "POST",
+        accountId,
+        body: { type: "ATELIER", brief: brief.trim() },
+      });
+      const f = r.fiche as { title?: string; description?: string; publicTarget?: string; duration?: string; objectifs?: string[] } | undefined;
+      if (!f) throw new Error("Réponse inexploitable — réessayez en précisant le brief.");
+      const set = (id: string, v?: string) => {
+        const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+        if (el && v) el.value = v;
+      };
+      set("title", f.title);
+      const desc = [f.description, f.objectifs?.length ? `\nObjectifs :\n- ${f.objectifs.join("\n- ")}` : ""].filter(Boolean).join("\n");
+      set("description", desc);
+      set("publicTarget", f.publicTarget);
+      set("duration", f.duration);
+      toast({ title: "Fiche pré-remplie", description: "Relisez et ajustez chaque champ avant de publier." });
+    } catch (err) {
+      toast({ title: "Aide IA indisponible", description: err instanceof Error ? err.message : "Réessayez.", variant: "error" });
+    } finally {
+      setIaLoading(false);
+    }
+  }
   const usingDb = dbCats.length > 0;
 
   useEffect(() => {
@@ -111,6 +143,22 @@ export function ServiceModal({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
+          <div className="rounded-xl border border-primary/20 bg-primary-soft/40 p-3">
+            <p className="text-xs font-semibold text-foreground">✨ Remplir avec l'IA</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Décrivez votre atelier en 2-3 phrases : titre, description, public et durée seront proposés. Vous restez libre de tout modifier.
+            </p>
+            <Textarea
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
+              rows={2}
+              placeholder="Ex : atelier boxe éducative pour ados en foyer, canaliser l'agressivité, 2 h en gymnase…"
+              className="mt-2"
+            />
+            <Button type="button" size="sm" variant="outline" className="mt-2" disabled={iaLoading || brief.trim().length < 15} onClick={remplirAvecIA}>
+              {iaLoading ? "Rédaction en cours…" : "Proposer un contenu"}
+            </Button>
+          </div>
           <Field label="Titre" htmlFor="title" required>
             <Input id="title" name="title" required placeholder="Atelier médiation animale" />
           </Field>

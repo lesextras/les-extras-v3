@@ -102,14 +102,30 @@ export function RenfortModal({
     };
     try {
       const created = await apiRequest<{ id: string }>("/missions", { method: "POST", body, accountId });
-      // Diffusion immédiate via l'endpoint dédié.
+      // Diffusion immédiate. Si elle échoue, on le DIT : une mission en
+      // brouillon silencieux est le pire piège pour un besoin urgent.
+      let publiee = false;
       if (created?.id) {
-        await apiRequest(`/missions/${created.id}/publish`, { method: "POST", accountId }).catch(() => {});
+        try {
+          await apiRequest(`/missions/${created.id}/publish`, { method: "POST", accountId });
+          publiee = true;
+        } catch {
+          publiee = false;
+        }
       }
-      toast({
-        title: "Renfort publié",
-        description: "Votre demande est diffusée. Vous serez notifié des candidatures.",
-      });
+      if (publiee) {
+        toast({
+          title: "Renfort publié",
+          description: "Votre demande est diffusée. Vous serez notifié des candidatures.",
+        });
+      } else {
+        toast({
+          title: "Mission créée en brouillon",
+          description:
+            "La diffusion n'a pas pu se faire automatiquement. Ouvrez la mission dans SOS Renfort et cliquez sur « Publier ».",
+          variant: "error",
+        });
+      }
       setOpen(false);
       router.refresh();
     } catch (err) {

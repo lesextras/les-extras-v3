@@ -27,6 +27,7 @@ import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { HeroSearch } from './_shared/HeroSearch';
 import { VideoFacade } from './_shared/VideoFacade';
 import { Reveal } from './_shared/Reveal';
+import { ChatBot } from './_shared/ChatBot';
 import { CatalogueRequestForm } from './_shared/CatalogueRequestForm';
 import { ContactForm } from './_shared/ContactForm';
 
@@ -863,6 +864,7 @@ export default async function LandingPage() {
       </main>
 
       <SiteFooter />
+      <ChatBot mode="public" />
     </div>
   );
 }

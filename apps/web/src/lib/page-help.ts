@@ -39,6 +39,12 @@ const AIDE: Record<string, PageHelpEntry> = {
     texte:
       'Vos échanges avec les établissements ou les intervenants, rattachés à chaque mission ou réservation. Tout reste tracé au même endroit.',
   },
+  '/dashboard/activites': {
+    titre: 'Générateur d’activités',
+    texte:
+      'Décrivez votre public et les besoins ou difficultés à travailler : l’assistant propose deux activités structurées (déroulé, matériel, variantes, points de vigilance). Les noms sont masqués avant tout traitement.',
+    etapes: ['Décrivez le public et les besoins', 'Générez, ajustez à votre contexte', 'Validez en équipe pluridisciplinaire avant de mettre en œuvre'],
+  },
   '/dashboard/assistant': {
     titre: 'Assistant d’écriture',
     texte:

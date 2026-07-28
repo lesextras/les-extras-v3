@@ -8,6 +8,7 @@ import { Sidebar } from './sidebar';
 import { Header } from './header';
 import { Breadcrumb } from './breadcrumb';
 import { PageHelp } from './page-help';
+import { ChatBot } from '@/app/_shared/ChatBot';
 
 export interface AppChromeProps {
   user: SessionUser;
@@ -81,6 +82,7 @@ export function AppChrome({
             <PageHelp />
             {children}
           </main>
+          <ChatBot mode="dashboard" />
           {actionPanel && (
             <div className="hidden w-80 shrink-0 overflow-y-auto border-l border-border bg-card xl:block">
               {actionPanel}
