@@ -3,6 +3,10 @@
 // Flèche de retour en haut : apparaît une fois la première hauteur d'écran
 // passée. Le défilement est doux, sauf si la personne a demandé à réduire les
 // animations (prefers-reduced-motion), auquel cas le saut est immédiat.
+//
+// Position : SYSTÉMATIQUEMENT au-dessus de la bulle du bot (fixe en bas à
+// droite, 3,5 rem de haut). Sans ce décalage, les deux se superposent et la
+// flèche disparaît derrière le bot, qui a un z-index supérieur.
 import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
 
@@ -27,7 +31,7 @@ export function RetourHaut() {
       onClick={remonter}
       aria-label="Revenir en haut de la page"
       title="Revenir en haut"
-      className={`fixed bottom-24 right-5 z-40 grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-card transition-all duration-300 hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:bottom-8 md:right-8 ${
+      className={`fixed bottom-[5.75rem] right-[1.4rem] z-40 grid size-11 place-items-center rounded-full border border-border bg-card text-foreground shadow-card transition-all duration-300 hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
       }`}
     >

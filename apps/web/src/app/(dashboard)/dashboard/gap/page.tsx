@@ -108,9 +108,10 @@ export default async function GapPage({
               </p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 L&apos;animateur IA du GAP, avec la posture d&apos;un psychologue clinicien et
-                d&apos;un éducateur spécialisé senior. Il ne donne jamais de réponse tout de
-                suite : il commence par vous questionner sur le contexte, les faits, ce que vous
-                ressentez et ce qui se joue — exactement comme un animateur en séance.
+                d&apos;un éducateur spécialisé senior. Il ne répond jamais tout de suite : il
+                commence par vous questionner — contexte, faits, ressentis, enjeux — exactement
+                comme un animateur en séance. Ensuite il prend position : son analyse, la posture
+                à tenir, des activités à essayer, et ce qu&apos;il ferait dès lundi.
               </p>
             </div>
           </div>

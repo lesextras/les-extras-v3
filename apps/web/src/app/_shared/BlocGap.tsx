@@ -97,15 +97,16 @@ export function BlocGap() {
                 2
               </span>
               <span className="text-muted-foreground">
-                <strong className="text-foreground">Puis il élabore avec vous</strong> — ce
-                qu&apos;il comprend, des hypothèses de lecture, des pistes à explorer en équipe, et
-                un mot sur ce que la situation vous coûte.
+                <strong className="text-foreground">Puis il prend position</strong> — son analyse
+                de ce qui se joue, la posture qu&apos;il vous conseille de tenir (avec les mots à
+                dire), deux ou trois activités à essayer, et ce qu&apos;il ferait, lui, dès lundi.
               </span>
             </li>
           </ol>
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-            Aucun diagnostic, aucune prescription : il n&apos;a vu ni la personne ni l&apos;équipe.
-            Il aide à penser, il ne pense pas à votre place.
+            Il donne un avis franc, jamais un diagnostic : il n&apos;a vu ni la personne ni
+            l&apos;équipe, et tout ce qu&apos;il propose se valide en réunion avant d&apos;être mis
+            en œuvre.
           </p>
         </div>
 

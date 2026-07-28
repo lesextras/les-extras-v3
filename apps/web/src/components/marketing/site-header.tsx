@@ -15,7 +15,6 @@ const links = [
   { label: 'SOS Renfort', href: '/#renfort' },
   { label: 'Le GAP', href: '/dashboard/gap' },
   { label: 'Édublog', href: '/edublog' },
-  { label: 'Comment ça marche', href: '/#comment' },
 ];
 
 /** En-tête public sticky avec navigation d'ancres et CTA connexion/inscription. */

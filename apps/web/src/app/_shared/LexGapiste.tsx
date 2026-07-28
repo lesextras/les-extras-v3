@@ -84,8 +84,9 @@ export function LexGapiste({
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 L&apos;animateur IA du GAP, avec la posture d&apos;un psychologue clinicien et
                 d&apos;un éducateur spécialisé senior. Il questionne d&apos;abord le contexte, les
-                faits, ce que vous ressentez et ce qui se joue — puis il élabore avec vous. Le GAP
-                entre pairs, lui, reste gratuit avec votre compte.
+                faits, ce que vous ressentez et ce qui se joue. Puis il donne son avis, une posture
+                à tenir et des activités à essayer. Le GAP entre pairs, lui, reste gratuit avec
+                votre compte.
               </p>
             </div>
           </div>
@@ -107,9 +108,10 @@ export function LexGapiste({
             <div className="max-w-2xl">
               <p className="font-semibold">Demander à LEX le GAPiste</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Il va d&apos;abord vous poser quelques questions pour comprendre la situation —
-                le contexte, les faits, ce que ça vous fait, ce qui se joue. Ce n&apos;est
-                qu&apos;ensuite qu&apos;il élabore avec vous. Comptez cinq minutes.
+                Il commence par vous poser quelques questions — le contexte, les faits, ce que ça
+                vous fait, ce qui se joue. Puis il vous donne son analyse, la posture qu&apos;il
+                vous conseille, des activités à essayer et ce qu&apos;il ferait dès lundi.
+                Comptez cinq minutes.
               </p>
             </div>
           </div>
