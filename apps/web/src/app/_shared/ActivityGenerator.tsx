@@ -121,7 +121,7 @@ export function ActivityGenerator() {
                 {copie ? "Copié" : "Copier"}
               </Button>
             </div>
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
+            <div className="prose prose-sm prose-invert max-w-none whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
               {resultat}
             </div>
           </div>
