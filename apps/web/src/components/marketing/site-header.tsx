@@ -15,7 +15,6 @@ const links = [
   { label: 'Édublog', href: '/edublog' },
   { label: 'Comment ça marche', href: '/#comment' },
   { label: 'Tarifs', href: '/#tarifs' },
-  { label: 'Notre histoire', href: '/notre-histoire' },
 ];
 
 /** En-tête public sticky avec navigation d'ancres et CTA connexion/inscription. */

@@ -592,27 +592,46 @@ export default async function LandingPage() {
             <Reveal className="mx-auto max-w-2xl text-center">
               <span className="eyebrow">Tarifs</span>
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Vous ne payez que ce que vous utilisez
+                Gratuit en interne, payant seulement quand on travaille pour vous
               </h2>
               <p className="mt-4 text-muted-foreground">
-                L’usage interne avec vos salariés est gratuit. Les interventions externes sont
-                facturées à l’usage — prix affiché sur chaque fiche, 0 % de commission prélevée
-                sur l’intervenant. Les outils LEX (IA) sont réservés aux adhérents.
+                Le principe est simple : organiser votre <strong className="font-semibold text-foreground">équipe interne</strong> sur
+                la plateforme ne coûte rien, et ne coûtera jamais rien. Vous ne payez que dans
+                deux cas — quand un <strong className="font-semibold text-foreground">intervenant externe</strong> vient
+                chez vous (facturé à la prestation, prix affiché sur chaque fiche), ou si vous
+                choisissez l’<strong className="font-semibold text-foreground">adhésion</strong> pour débloquer les
+                outils d’intelligence artificielle LEX.
               </p>
             </Reveal>
 
             <div className="mt-14 grid gap-6 lg:grid-cols-3">
               {[
                 {
-                  nom: 'À la prestation',
-                  sous: 'Pour un besoin ponctuel, sans compte payant.',
-                  prix: 'Prix de la fiche',
-                  prixSous: 'Affiché sur chaque atelier et chaque formation',
+                  nom: 'Usage interne',
+                  sous: 'Votre équipe salariée, sur la plateforme, sans limite.',
+                  prix: '0 €',
+                  prixSous: 'Gratuit, pour toujours',
                   points: [
-                    'Devis chiffré sous 48 h',
+                    'Missions de renfort diffusées à vos salariés',
+                    'Formation interne animée par vos référents',
+                    'Planning, équipe, multi-unités et pointage',
+                    'Coffre-fort de conformité et devis illimités',
+                  ],
+                  href: '/register',
+                  action: 'Créer un compte gratuit',
+                  variant: 'outline' as const,
+                  vedette: false,
+                },
+                {
+                  nom: 'Prestations externes',
+                  sous: 'Un intervenant du réseau vient chez vous : vous payez la prestation, rien d’autre.',
+                  prix: 'Prix de la fiche',
+                  prixSous: 'ou crédits dès 7 € (packs 10/90 €, 25/200 €, 60/420 €)',
+                  points: [
+                    'Ateliers et formations réservables en ligne ou sur devis (48 h)',
+                    'SOS Renfort : le réseau prend le relais de votre équipe',
                     'Contrat et facture générés automatiquement',
                     '0 % de commission prélevée sur l’intervenant',
-                    'Paiement en ligne ou sur facture',
                   ],
                   href: '/ateliers',
                   action: 'Voir les prix du catalogue',
@@ -620,37 +639,21 @@ export default async function LandingPage() {
                   vedette: false,
                 },
                 {
-                  nom: 'Crédits d’intervention',
-                  sous: 'Un crédit = une réservation d’atelier. Valables sans limite de durée.',
-                  prix: 'dès 7 €',
-                  prixSuffixe: ' / crédit',
-                  points: [
-                    'Pack Découverte — 10 crédits, 90 €',
-                    'Pack Équipe — 25 crédits, 200 € (8 €/crédit)',
-                    'Pack Établissement — 60 crédits, 420 € (7 €/crédit)',
-                    'Rechargement en ligne, facture immédiate',
-                  ],
-                  href: '/register',
-                  action: 'Créer un compte',
-                  variant: 'primary' as const,
-                  vedette: true,
-                },
-                {
                   nom: 'Adhésion',
-                  sous: 'Toutes les fonctionnalités LEX (IA) + la gestion interne complète.',
+                  sous: 'Les outils d’intelligence artificielle LEX, pour toute votre équipe.',
                   prix: '149 €',
                   prixSuffixe: ' / mois',
-                  prixSous: 'Essentiel · Pro à 299 € / mois',
+                  prixSous: 'Essentiel · Pro à 299 € / mois — montants HT',
                   points: [
-                    'LEX inclus : assistant d’écriture, générateur d’activités, bot d’aide',
-                    'Essentiel : 5 crédits offerts / mois — Pro : 15 crédits + support prioritaire',
-                    'Planning, équipe, multi-unités et pointage',
-                    'Coffre-fort de conformité et registre Qualiopi',
+                    'LEX Assistant d’écriture : notes brutes → écrits professionnels',
+                    'LEX Générateur d’activités éducatives et thérapeutiques',
+                    'LEX Bot d’aide intégré à votre espace',
+                    'Crédits offerts chaque mois (5 en Essentiel, 15 en Pro)',
                   ],
-                  href: '/contact',
-                  action: 'Parler à l’équipe',
-                  variant: 'outline' as const,
-                  vedette: false,
+                  href: '/register',
+                  action: 'Devenir adhérent',
+                  variant: 'primary' as const,
+                  vedette: true,
                 },
               ].map((offre, i) => (
                 <Reveal key={offre.nom} delay={i * 110} className="h-full">
