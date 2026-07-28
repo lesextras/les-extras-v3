@@ -38,6 +38,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/notre-histoire",
     "/catalogue",
     "/contact",
+    "/outils",
+    "/outils/cout-remplacement",
+    "/outils/budget-ateliers",
     // Les mentions, CGU, confidentialité et RGPD tiennent sur une seule page
     // à ancres : annoncer des sous-routes inexistantes envoyait Google sur
     // trois 404 depuis notre propre sitemap.
