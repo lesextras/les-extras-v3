@@ -127,7 +127,7 @@ export default async function DevisDetailPage({ params }: { params: { id: string
                 <tfoot>
                   <tr className="bg-muted/30">
                     <td className="p-3 font-semibold text-foreground" colSpan={3}>
-                      Total TTC
+                      Sous-total prestation
                     </td>
                     <td className="p-3 text-right text-lg font-bold text-foreground">
                       {euros(q.amount)}
