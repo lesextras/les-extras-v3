@@ -42,7 +42,7 @@ export function AppChrome({
     // --card, --foreground…), donc un seul conteneur suffit à basculer. Les
     // documents imprimables (contrat, facture, attestation) ont leur propre
     // route hors de cette coquille : ils restent clairs, pour le papier.
-    <div className="theme-sombre flex h-screen overflow-hidden bg-background">
+    <div className="theme-sombre flex h-screen overflow-hidden bg-background text-foreground">
       {/* Sidebar desktop */}
       <div className="hidden md:block">
         <Sidebar role={role} isMember={isMember} />

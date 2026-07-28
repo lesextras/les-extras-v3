@@ -12,7 +12,7 @@ import { SiteFooter } from "@/components/marketing/site-footer";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="theme-sombre flex min-h-screen flex-col bg-background">
+    <div className="theme-sombre flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
       <main id="main" className="mx-auto w-full max-w-[1200px] flex-1 px-6 py-12">
         {children}
