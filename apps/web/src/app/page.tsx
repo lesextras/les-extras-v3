@@ -29,6 +29,7 @@ import { VideoFacade } from './_shared/VideoFacade';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
+import { TimelineParcours } from './_shared/TimelineParcours';
 
 export default async function LandingPage() {
   // Compteur réel du catalogue public (affiché dans le hero).
@@ -259,6 +260,24 @@ export default async function LandingPage() {
                 <p className="mt-1.5 text-sm text-muted-foreground">{st.v}</p>
               </Reveal>
             ))}
+          </div>
+        </section>
+
+        {/* ============ TIMELINE PAR PROFIL ============ */}
+        <section id="parcours" className="scroll-mt-24 bg-card">
+          <div className="section">
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <span className="eyebrow">Votre parcours</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
+                Étape par étape, selon qui vous êtes
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Ce que vous pouvez faire, dans quel ordre, et ce que ça coûte — ou pas.
+              </p>
+            </Reveal>
+            <Reveal delay={120} className="mt-10">
+              <TimelineParcours />
+            </Reveal>
           </div>
         </section>
 

@@ -19,13 +19,13 @@ export class MemberGuard implements CanActivate {
       where: { id: accountId },
       select: { isMember: true, type: true },
     });
-    // Les intervenants indépendants ont TOUT gratuitement : ils sont le côté
-    // rare de la marketplace, on ne facture jamais l'offre. Seuls les
-    // établissements passent à l'adhésion pour le niveau 2.
-    if (account?.type === 'FREELANCE') return true;
+    // Cette garde ne protège QUE les fonctionnalités LEX (IA) : l'adhésion à
+    // l'association est requise pour tous, établissements comme intervenants.
+    // Tout le reste — publier ses ateliers, candidater au renfort, animer une
+    // formation — demeure gratuit pour les intervenants indépendants.
     if (!account?.isMember) {
       throw new ForbiddenException(
-        "Fonctionnalité LEX réservée aux adhérents. Activez l'adhésion depuis Abonnement & crédits.",
+        "LEX est réservé aux adhérents de l'association. Le reste de la plateforme demeure gratuit.",
       );
     }
     return true;
