@@ -16,6 +16,7 @@ import {
   LifeBuoy,
 } from 'lucide-react';
 import { CommandPalette } from './command-palette';
+import { IndicateursCompte } from './indicateurs-compte';
 import { cn, initials } from '@/lib/utils';
 import type { SessionUser, SessionAccount } from '@/lib/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -139,6 +140,7 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
       <CommandPalette />
 
       <div className="ml-auto flex items-center gap-1.5">
+        <IndicateursCompte userId={user.id} accountId={activeAccount?.id} />
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event('cmdk:open'))}
