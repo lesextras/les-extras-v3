@@ -2,7 +2,7 @@
 // Règles affichées telles qu'elles sont appliquées côté API : 10 points = 1 €,
 // réduction plafonnée à 30 % d'une facture, points valables 12 mois.
 import type { Metadata } from "next";
-import { Award, Sparkles, Newspaper, Star, Lightbulb, Megaphone, MessagesSquare, CheckCircle2 } from "lucide-react";
+import { Award, Sparkles, Newspaper, Star, Lightbulb, Megaphone, MessagesSquare, CheckCircle2, Rocket } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi } from "../../../_shared/server";
@@ -72,6 +72,13 @@ const ACTIONS: { reason: string; label: string; detail: string; icon: typeof Awa
     label: "Atelier ou formation mis en ligne",
     detail: "Une nouvelle fiche publiée et validée dans le catalogue.",
     icon: Sparkles,
+  },
+  {
+    reason: "PREMIERE_FICHE",
+    label: "Votre toute première fiche",
+    detail:
+      "Créditée dès la création, même en brouillon. Une seule fois : c'est un coup de pouce pour se lancer.",
+    icon: Rocket,
   },
 ];
 

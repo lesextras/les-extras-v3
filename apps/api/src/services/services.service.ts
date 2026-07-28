@@ -23,7 +23,7 @@ export class ServicesService {
   ) {}
 
   async create(accountId: string, dto: CreateServiceDto) {
-    return this.prisma.service.create({
+    const fiche = await this.prisma.service.create({
       data: {
         accountId,
         title: dto.title,
@@ -49,6 +49,22 @@ export class ServicesService {
         city: dto.city,
       },
     });
+
+    // Bonus de démarrage : on compte APRÈS la création. Si le total vaut 1,
+    // c'est que celle-ci était la première — la condition ne peut donc jamais
+    // se déclencher deux fois, même si deux fiches partent en même temps.
+    const total = await this.prisma.service.count({ where: { accountId } });
+    if (total === 1) {
+      await this.community
+        .crediter(
+          accountId,
+          PointReason.PREMIERE_FICHE,
+          `Première fiche créée : ${fiche.title}`,
+        )
+        .catch(() => undefined);
+    }
+
+    return fiche;
   }
 
   /** Services du compte freelance actif. */

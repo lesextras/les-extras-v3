@@ -1308,6 +1308,9 @@ model AssistantFeedback {
 
 /// Motif d'attribution de points de fidélité.
 enum PointReason {
+  /// Toute première fiche créée par le compte : petit coup de pouce au
+  /// démarrage, versé une seule fois dans la vie du compte.
+  PREMIERE_FICHE
   /// Une fiche atelier/formation publiée.
   PUBLICATION
   /// Un article publié sur l'Édublog.

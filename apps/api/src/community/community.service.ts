@@ -15,6 +15,10 @@ export const VALIDITE_MOIS = 12;
 
 /** Barème d'attribution — volontairement sobre pour maîtriser la dette. */
 export const BAREME = {
+  /// Créer sa toute première fiche, même en brouillon. Volontairement petit :
+  /// ce n'est pas une contribution au catalogue, juste un encouragement à
+  /// franchir le pas. La vraie récompense arrive à la publication (20).
+  PREMIERE_FICHE: 2,
   PUBLICATION: 20,
   ARTICLE: 30,
   MISSION: 50,
