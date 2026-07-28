@@ -68,6 +68,7 @@ model User {
   @@index([email])
   @@index([role, status])
   favorites          Favorite[]
+  assistantDocuments AssistantDocument[]
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -135,6 +136,7 @@ model Account {
   subscription    Subscription?
   quotesAsClient   Quote[] @relation("QuoteClient")
   quotesAsProvider Quote[] @relation("QuoteProvider")
+  assistantDocuments AssistantDocument[]
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
@@ -1226,4 +1228,51 @@ model Favorite {
   @@unique([userId, serviceId])
   @@index([userId])
   @@index([serviceId])
+}
+
+
+/// Types d'écrits professionnels que l'assistant sait produire.
+enum AssistantTrame {
+  NOTE_OBSERVATION
+  RAPPORT_SITUATION
+  TRANSMISSION
+  SYNTHESE_REUNION
+  COMPTE_RENDU_ATELIER
+}
+
+/// Écrit professionnel VALIDÉ par son auteur.
+/// Volontairement, seul le document final est conservé : les notes brutes
+/// dictées par l'éducateur ne sont jamais persistées — c'est la promesse
+/// de confidentialité qui rend l'outil acceptable dans ce secteur.
+model AssistantDocument {
+  id        String         @id @default(cuid())
+  accountId String
+  account   Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  trame     AssistantTrame
+  title     String
+  /// Contenu final, relu et validé par l'auteur (les vrais noms y figurent :
+  /// il reste dans le compte de l'établissement, jamais envoyé à un tiers).
+  content   String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([accountId, createdAt])
+  @@index([authorId])
+}
+
+/// Retour utilisateur sur une génération (pouce haut/bas + commentaire).
+/// C'est ce qui permet d'améliorer les trames, et une preuve de suivi
+/// sérieuse à présenter aux directions.
+model AssistantFeedback {
+  id        String   @id @default(cuid())
+  accountId String
+  userId    String
+  trame     AssistantTrame
+  utile     Boolean
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@index([trame, utile])
 }

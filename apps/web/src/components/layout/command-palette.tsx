@@ -15,6 +15,7 @@ interface Dest {
 const DESTINATIONS: Dest[] = [
   { label: "Tableau de bord", href: "/dashboard", group: "Navigation", keywords: "accueil home" },
   { label: "Édublog", href: "/edublog", group: "Navigation", keywords: "articles actualites blog publications" },
+  { label: "Assistant d'écriture", href: "/dashboard/assistant", group: "Navigation", keywords: "ia rapport note observation transmission redaction" },
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Freelance", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Freelance", keywords: "services educatheures" },
   { label: "Mes formations", href: "/dashboard/formations", group: "Freelance", keywords: "formation session émargement apprenants attestation" },
