@@ -122,7 +122,7 @@ export default async function LandingPage() {
                 </div>
               </Reveal>
               <Reveal delay={200}>
-                <div className="absolute -left-8 bottom-16 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
+                <div className="absolute bottom-5 left-5 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
                   <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary">
                     <FileCheck className="size-5" />
                   </span>
@@ -133,7 +133,7 @@ export default async function LandingPage() {
                 </div>
               </Reveal>
               <Reveal delay={320}>
-                <div className="absolute -right-4 top-10 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
+                <div className="absolute right-5 top-5 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
                   <span className="grid size-10 place-items-center rounded-xl bg-secondary-soft text-secondary">
                     <GraduationCap className="size-5" />
                   </span>
@@ -280,7 +280,7 @@ export default async function LandingPage() {
               <Reveal className="md:col-span-2">
                 <Link
                   href="/ateliers"
-                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(217,50%,94%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(160,45%,92%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="flex flex-col p-7 md:p-8">
                     <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
@@ -337,8 +337,8 @@ export default async function LandingPage() {
 
               {/* Formations */}
               <Reveal>
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(152,40%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
-                  <span className="grid size-11 place-items-center rounded-xl bg-card text-success shadow-soft">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,50%,94%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                  <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
                     <GraduationCap className="size-5" />
                   </span>
                   <h3 className="mt-4 text-xl font-semibold">Formations Qualiopi</h3>
@@ -360,7 +360,7 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/register"
-                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(266,35%,95%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(217,55%,90%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="relative order-2 min-h-52 bg-muted sm:order-1">
                     <Image
@@ -418,7 +418,7 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/edublog"
-                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bg-[hsl(190,45%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
+                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bg-[hsl(14,45%,96%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
                 >
                   <div>
                     <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
@@ -796,7 +796,7 @@ export default async function LandingPage() {
 
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
               <Reveal className="h-full">
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,50%,94%)] p-7 md:p-9">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(160,45%,92%)] p-7 md:p-9">
                   <h3 className="text-xl font-semibold">Recevoir notre catalogue</h3>
                   <p className="mt-2 text-sm leading-relaxed text-foreground/70">
                     Les 15 interventions détaillées — publics, objectifs, tarifs — dans votre
