@@ -107,9 +107,9 @@ export default async function LandingPage() {
             {/* Colonne visuelle — composition avec cartes flottantes */}
             <div className="relative hidden lg:block">
               <Reveal>
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] shadow-card">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-card">
                   <Image
-                    src="https://les-extras.fr/wp-content/uploads/2023/04/cropped-groupe-id-3-1.jpg"
+                    src="/images/reseau-les-extras.jpg"
                     alt="Le réseau des intervenants Les Extras"
                     fill
                     priority
