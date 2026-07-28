@@ -16,7 +16,19 @@ const SUBJECTS = [
   "Autre",
 ];
 
-export function ContactForm() {
+export function ContactForm({
+  sujets = SUBJECTS,
+  valeursInitiales,
+  onEnvoye,
+}: {
+  /** Liste de sujets adaptée au contexte (support, catalogue…). */
+  sujets?: string[];
+  /** Pré-remplissage quand la personne est déjà connectée : lui faire
+   *  retaper son nom et son e-mail est une friction gratuite. */
+  valeursInitiales?: { name?: string; email?: string; phone?: string };
+  /** Permet au parent (une modale) de réagir à l'envoi réussi. */
+  onEnvoye?: () => void;
+} = {}) {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +51,7 @@ export function ContactForm() {
       await apiRequest("/public/contact", { method: "POST", body });
       setDone(true);
       lancerConfettis();
+      onEnvoye?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Envoi impossible. Réessayez.");
     } finally {
@@ -67,24 +80,24 @@ export function ContactForm() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Votre nom" htmlFor="name" required>
-          <Input id="name" name="name" required placeholder="Prénom Nom" />
+          <Input id="name" name="name" required placeholder="Prénom Nom" defaultValue={valeursInitiales?.name ?? ""} />
         </Field>
         <Field label="Email" htmlFor="email" required>
-          <Input id="email" name="email" type="email" required placeholder="vous@exemple.fr" />
+          <Input id="email" name="email" type="email" required placeholder="vous@exemple.fr" defaultValue={valeursInitiales?.email ?? ""} />
         </Field>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Téléphone" htmlFor="phone">
-          <Input id="phone" name="phone" placeholder="06 12 34 56 78" />
+          <Input id="phone" name="phone" placeholder="06 12 34 56 78" defaultValue={valeursInitiales?.phone ?? ""} />
         </Field>
         <Field label="Sujet" htmlFor="type">
           <select
             id="type"
             name="type"
             className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-            defaultValue={SUBJECTS[0]}
+            defaultValue={sujets[0]}
           >
-            {SUBJECTS.map((s) => (
+            {sujets.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>

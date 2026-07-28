@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { SupportModal } from '@/app/_shared/modals/SupportModal';
 import { ChevronDown, LayoutList, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getNavForRole } from '@/lib/nav';
@@ -17,6 +18,8 @@ export interface SidebarProps {
   /** Ferme la sidebar (usage mobile en overlay). */
   onNavigate?: () => void;
   className?: string;
+  /** Identité connectée, pour préremplir le formulaire de support. */
+  utilisateur?: { name?: string | null; email?: string | null };
 }
 
 /** Clé de persistance des sections repliées (par rôle). */
@@ -38,7 +41,7 @@ function isActiveHref(pathname: string, href: string) {
   );
 }
 
-export function Sidebar({ role, isMember, onNavigate, className }: SidebarProps) {
+export function Sidebar({ role, isMember, onNavigate, className, utilisateur }: SidebarProps) {
   const pathname = usePathname();
   const toutesSections = getNavForRole(role);
 
@@ -244,12 +247,17 @@ export function Sidebar({ role, isMember, onNavigate, className }: SidebarProps)
           <p className="mt-0.5 text-xs text-muted-foreground">
             Notre équipe vous accompagne du lundi au vendredi.
           </p>
-          <Link
-            href="/dashboard/inbox"
-            className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
-          >
-            Contacter le support
-          </Link>
+          <SupportModal
+            utilisateur={utilisateur}
+            trigger={
+              <button
+                type="button"
+                className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
+              >
+                Contacter le support
+              </button>
+            }
+          />
         </div>
       </div>
     </aside>
