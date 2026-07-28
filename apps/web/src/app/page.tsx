@@ -72,16 +72,16 @@ export default async function LandingPage() {
             className="absolute inset-0 bg-gradient-to-b from-[hsl(217,62%,10%)]/80 via-[hsl(217,62%,12%)]/60 to-[hsl(217,62%,14%)]/95"
             aria-hidden
           />
-          <div className="relative mx-auto max-w-[1080px] px-6 pb-16 pt-20 text-center md:pb-20 md:pt-28">
+          <div className="relative mx-auto flex min-h-[88vh] max-w-[1100px] flex-col items-center justify-center px-6 py-24 text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-white/90 backdrop-blur">
               <Sparkles className="size-3.5" />
               Le dispositif de l’association ADéPA
             </span>
-            <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-white text-balance md:text-5xl lg:text-[3.4rem]">
+            <h1 className="mx-auto mt-8 max-w-4xl text-4xl font-bold leading-[1.06] tracking-tight text-white text-balance sm:text-5xl md:text-6xl lg:text-[4.2rem]">
               Des interventions à fort impact,{' '}
               <span className="text-[hsl(14,72%,62%)]">portées par ceux qui font le terrain.</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/80 text-balance">
+            <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-white/80 text-balance md:text-xl">
               Un réseau d’indépendants du médico-social. Des ateliers et des formations
               spécialisées, ancrés dans le réel de chacun — à réserver en ligne, avec devis,
               contrat et facture générés automatiquement.
@@ -103,6 +103,10 @@ export default async function LandingPage() {
               </Button>
             </div>
 
+            <div className="mt-10 w-full max-w-3xl">
+              <HeroSearch />
+            </div>
+
             <dl className="mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-6">
               {[
                 { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
@@ -119,17 +123,11 @@ export default async function LandingPage() {
             </dl>
           </div>
 
-          {/* La recherche chevauche le bas du hero : premier geste possible. */}
-          <div className="relative mx-auto max-w-3xl px-6 pb-0 translate-y-1/2">
-            <HeroSearch />
-          </div>
         </section>
 
-        <div className="h-16" aria-hidden />
-
         {/* CONFIANCE */}
-        <section className="border-y border-border bg-card">
-          <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-6 px-6 py-8 text-center">
+        <section className="bg-card">
+          <div className="mx-auto flex max-w-[1360px] flex-col items-center gap-5 px-6 py-10 text-center">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Ils nous font confiance dans toute la France
             </p>
@@ -143,67 +141,61 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* NOS DOMAINES D'ACTIONS — reprise du site historique : trois portes
-            d'entrée visuelles, avant tout discours. */}
+        {/* NOS DOMAINES D'ACTIONS — trois grandes cartes éditoriales pleine
+            image, texte en surimpression : le regard choisit sa porte d'entrée. */}
         <section className="section">
           <div className="mx-auto max-w-2xl text-center">
             <span className="eyebrow">Trois portes d’entrée</span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
               Nos domaines d’actions
             </h2>
           </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               {
                 titre: 'Les ateliers de notre réseau',
                 texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant vérifié.',
                 href: '/ateliers',
-                icone: <Palette className="size-5" />,
                 image: 'https://les-extras.fr/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg',
+                action: 'Parcourir les ateliers',
               },
               {
                 titre: 'Nos parcours de formations certifiés Qualiopi',
                 texte: 'Montée en compétences des équipes, finançable par votre OPCO.',
                 href: '/formations',
-                icone: <GraduationCap className="size-5" />,
                 image: 'https://les-extras.fr/wp-content/uploads/2025/02/lever-vous-400x400.jpeg',
+                action: 'Voir les formations',
               },
               {
                 titre: 'Le renfort d’équipe et parental',
                 texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
                 href: '/#renfort',
-                icone: <Megaphone className="size-5" />,
                 image: 'https://les-extras.fr/wp-content/uploads/2023/03/adulte-pris-en-charge-400x357.jpg',
+                action: 'Comprendre le renfort',
               },
             ].map((d) => (
-              <Link key={d.titre} href={d.href} className="group block">
-                <Card className="h-full overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-card">
-                  <div className="relative aspect-[4/3] bg-muted">
-                    {d.image ? (
-                      <Image
-                        src={d.image}
-                        alt=""
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        unoptimized
-                      />
-                    ) : null}
-                    <span className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/25 to-transparent" />
-                    <span className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-5">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/15 text-white backdrop-blur">
-                        {d.icone}
-                      </span>
-                      <span className="text-lg font-bold leading-tight text-white text-balance">
-                        {d.titre}
-                      </span>
+              <Link key={d.titre} href={d.href} className="group relative block overflow-hidden rounded-3xl">
+                <div className="relative aspect-[3/4] w-full bg-muted md:aspect-[4/5]">
+                  <Image
+                    src={d.image}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    unoptimized
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-t from-[hsl(217,62%,12%)]/95 via-[hsl(217,62%,14%)]/35 to-transparent" />
+                  <span className="absolute inset-x-0 bottom-0 p-7">
+                    <span className="block text-2xl font-bold leading-tight text-white text-balance">
+                      {d.titre}
                     </span>
-                  </div>
-                  <CardContent className="flex items-center justify-between gap-3 p-5">
-                    <p className="text-sm text-muted-foreground">{d.texte}</p>
-                    <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
-                  </CardContent>
-                </Card>
+                    <span className="mt-2 block text-sm leading-relaxed text-white/75">{d.texte}</span>
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white">
+                      {d.action}
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
@@ -213,7 +205,7 @@ export default async function LandingPage() {
             l'on parle. C'est ce que le site historique faisait de mieux. */}
         <section id="association" className="bg-primary-soft/50">
           <div className="mx-auto max-w-[1000px] px-6 py-16 text-center md:py-24">
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Vous reconnaissez-vous ?</h2>
+            <h2 className="text-3xl font-bold tracking-tight md:text-5xl">Vous reconnaissez-vous ?</h2>
             <p className="mx-auto mt-5 max-w-3xl text-lg text-muted-foreground text-balance">
               Violences, décrochage, tensions d’équipe, conduites à risque, difficultés parentales,
               épuisement… Le quotidien complexe, on le connaît.
@@ -266,7 +258,7 @@ export default async function LandingPage() {
           <div className="section">
             <div className="mx-auto max-w-2xl text-center">
               <span className="eyebrow">Visite guidée</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
                 Tout ce que la plateforme fait pour vous
               </h2>
               <p className="mt-4 text-muted-foreground">
@@ -275,7 +267,7 @@ export default async function LandingPage() {
               </p>
             </div>
 
-            <div className="mt-14 space-y-16">
+            <div className="mt-16 space-y-24 md:space-y-32">
               {[
                 {
                   titre: 'Les ateliers éducatifs',
@@ -296,7 +288,7 @@ export default async function LandingPage() {
                   pour: 'Équipes & responsables formation',
                   texte:
                     'Analyse des pratiques, prévention, spécialisations métier — en intra, dans votre structure. Portées par la certification Qualiopi d’ADéPA, donc finançables par votre OPCO. Émargements, attestations et registre sont générés par la plateforme.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2025/08/gestion-violence.jpg',
+                  image: 'https://les-extras.fr/wp-content/uploads/2025/02/lever-vous.jpeg',
                   tuto: [
                     'Choisissez le parcours et la session qui correspondent à votre plan de compétences.',
                     'Nous vous aidons à monter le dossier de financement OPCO.',
@@ -352,7 +344,7 @@ export default async function LandingPage() {
                   pour: 'Administratif',
                   texte:
                     'Devis chiffrés en ligne, contrats à double signature, factures PDF, pointage des heures validé par l’établissement, coffre-fort de conformité pour les pièces obligatoires des intervenants. Tout ce qui prenait des soirées se fait dans le même espace.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2023/03/adulte-pris-en-charge.jpg',
+                  image: 'https://les-extras.fr/wp-content/uploads/2023/03/video-atelier.webp',
                   tuto: [
                     'Le devis accepté devient réservation, puis contrat signé en ligne.',
                     'Les heures déclarées par l’intervenant sont validées par vous.',
@@ -365,11 +357,11 @@ export default async function LandingPage() {
                 <article
                   key={prod.titre}
                   className={cn(
-                    'grid items-center gap-8 lg:grid-cols-2 lg:gap-14',
+                    'grid items-center gap-10 lg:grid-cols-2 lg:gap-20',
                     idx % 2 === 1 && 'lg:[&>*:first-child]:order-2',
                   )}
                 >
-                  <div className="relative aspect-[16/11] overflow-hidden rounded-2xl bg-muted shadow-card">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-muted shadow-card">
                     <Image
                       src={prod.image}
                       alt={prod.titre}
@@ -383,19 +375,19 @@ export default async function LandingPage() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold tracking-tight text-foreground">{prod.titre}</h3>
-                    <p className="mt-3 leading-relaxed text-muted-foreground">{prod.texte}</p>
-                    <ol className="mt-6 space-y-3">
+                    <h3 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">{prod.titre}</h3>
+                    <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{prod.texte}</p>
+                    <ol className="mt-7 space-y-4">
                       {prod.tuto.map((etape, i) => (
                         <li key={etape} className="flex gap-3">
-                          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary">
+                          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                             {i + 1}
                           </span>
-                          <span className="text-sm leading-relaxed text-foreground">{etape}</span>
+                          <span className="pt-1 text-[15px] leading-relaxed text-foreground">{etape}</span>
                         </li>
                       ))}
                     </ol>
-                    <Button asChild variant="outline" className="mt-6">
+                    <Button asChild size="lg" className="mt-8">
                       <Link href={prod.href}>
                         {prod.lien}
                         <ArrowRight />
