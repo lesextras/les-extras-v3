@@ -58,18 +58,18 @@ export default async function LandingPage() {
         {/* HERO — reprise du parti pris visuel de les-extras.fr : une grande
             photo sombre du terrain, un titre qui parle métier, la recherche
             immédiatement disponible. */}
-        <section className="relative isolate overflow-hidden bg-[hsl(217,62%,12%)]">
+        <section className="relative isolate overflow-hidden bg-neutral-950">
           <Image
             src="https://les-extras.fr/wp-content/uploads/2023/04/cropped-groupe-id-3-1.jpg"
             alt=""
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center opacity-40"
+            className="object-cover object-center opacity-60"
             unoptimized
           />
           <div
-            className="absolute inset-0 bg-gradient-to-b from-[hsl(217,62%,10%)]/80 via-[hsl(217,62%,12%)]/60 to-[hsl(217,62%,14%)]/95"
+            className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/75"
             aria-hidden
           />
           <div className="relative mx-auto flex min-h-[88vh] max-w-[1100px] flex-col items-center justify-center px-6 py-24 text-center">
@@ -78,8 +78,8 @@ export default async function LandingPage() {
               Le dispositif de l’association ADéPA
             </span>
             <h1 className="mx-auto mt-8 max-w-4xl text-4xl font-bold leading-[1.06] tracking-tight text-white text-balance sm:text-5xl md:text-6xl lg:text-[4.2rem]">
-              Des interventions à fort impact,{' '}
-              <span className="text-[hsl(14,72%,62%)]">portées par ceux qui font le terrain.</span>
+              <span className="block">Des interventions à fort impact,</span>
+              <span className="block text-[hsl(14,80%,64%)]">portées par ceux qui font le terrain.</span>
             </h1>
             <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-white/80 text-balance md:text-xl">
               Un réseau d’indépendants du médico-social. Des ateliers et des formations
@@ -107,17 +107,17 @@ export default async function LandingPage() {
               <HeroSearch />
             </div>
 
-            <dl className="mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-6">
+            <dl className="mx-auto mt-12 grid w-full max-w-3xl grid-cols-3 divide-x divide-white/15">
               {[
                 { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
                 { k: 'Qualiopi', v: 'formations finançables OPCO' },
                 { k: '48 h', v: 'pour recevoir votre devis' },
               ].map((st) => (
-                <div key={st.k}>
-                  <dt className="text-2xl font-bold tracking-tight text-white [font-variant-numeric:tabular-nums] md:text-3xl">
+                <div key={st.k} className="px-4">
+                  <dt className="text-3xl font-bold tracking-tight text-white [font-variant-numeric:tabular-nums] md:text-4xl">
                     {st.k}
                   </dt>
-                  <dd className="mt-1 text-xs text-white/70">{st.v}</dd>
+                  <dd className="mt-1.5 text-[13px] text-white/75">{st.v}</dd>
                 </div>
               ))}
             </dl>
@@ -170,7 +170,7 @@ export default async function LandingPage() {
                 titre: 'Le renfort d’équipe et parental',
                 texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
                 href: '/#renfort',
-                image: 'https://les-extras.fr/wp-content/uploads/2023/03/adulte-pris-en-charge-400x357.jpg',
+                image: 'https://les-extras.fr/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg',
                 action: 'Comprendre le renfort',
               },
             ].map((d) => (
@@ -184,7 +184,7 @@ export default async function LandingPage() {
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                     unoptimized
                   />
-                  <span className="absolute inset-0 bg-gradient-to-t from-[hsl(217,62%,12%)]/95 via-[hsl(217,62%,14%)]/35 to-transparent" />
+                  <span className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                   <span className="absolute inset-x-0 bottom-0 p-7">
                     <span className="block text-2xl font-bold leading-tight text-white text-balance">
                       {d.titre}
@@ -210,13 +210,12 @@ export default async function LandingPage() {
               Violences, décrochage, tensions d’équipe, conduites à risque, difficultés parentales,
               épuisement… Le quotidien complexe, on le connaît.
             </p>
-            <p className="mx-auto mt-6 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              Les Extras est le dispositif de l’association <strong className="font-semibold text-foreground">ADéPA</strong>{' '}
-              (Association pour le Développement de l’Éducation Par l’Animation). Depuis sa création,
-              l’ADéPA œuvre pour l’insertion sociale des enfants, des adolescents et des familles en
-              difficulté par l’éducation, la prévention et l’animation. Nous créons des dispositifs
-              éducatifs innovants pour sécuriser les accompagnements, soutenir les professionnels et
-              renforcer les compétences psychosociales des jeunes.
+            <p className="mx-auto mt-7 max-w-3xl text-base leading-relaxed text-foreground/85 md:text-lg">
+              Les Extras est le dispositif de l’association{' '}
+              <strong className="font-semibold text-foreground">ADéPA</strong>, engagée depuis 2012
+              pour l’insertion sociale des enfants, des adolescents et des familles par l’éducation,
+              la prévention et l’animation. Nous créons des dispositifs éducatifs qui sécurisent les
+              accompagnements et soutiennent les professionnels.
             </p>
 
             <ol className="mt-12 grid gap-8 md:grid-cols-3">
@@ -274,7 +273,7 @@ export default async function LandingPage() {
                   pour: 'Établissements',
                   texte:
                     'Quinze médiations clés en main — psycho-boxe, slam, socio-esthétique, théâtre, musicothérapie… — animées chez vous par un intervenant vérifié. Le produit d’appel : une demi-journée, un budget de fonctionnement, une décision immédiate.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2023/02/PSYCHO-BOXE.png',
+                  image: 'https://les-extras.fr/wp-content/uploads/2025/02/musicotherapie.jpg',
                   tuto: [
                     'Parcourez le catalogue et filtrez par public, ville ou budget.',
                     'Demandez un devis — même sans compte — ou réservez en ligne.',
@@ -302,7 +301,7 @@ export default async function LandingPage() {
                   pour: 'Urgences de personnel',
                   texte:
                     'Une absence ce soir, un surcroît la semaine prochaine : publiez le besoin, la plateforme le diffuse en cascade — votre équipe d’abord, puis les intervenants déjà venus chez vous, enfin le réseau. Le premier qui accepte est engagé, le contrat est généré.',
-                  image: 'https://les-extras.fr/wp-content/uploads/2023/03/adulte-pris-en-charge.jpg',
+                  image: 'https://les-extras.fr/wp-content/uploads/2026/04/etoile-mec.jpeg',
                   tuto: [
                     'Décrivez la mission : poste, dates, horaires, public accueilli.',
                     'La diffusion en cascade privilégie ceux qui connaissent déjà votre maison.',
@@ -826,6 +825,49 @@ export default async function LandingPage() {
               Montants hors taxes. Les formations portées par la certification Qualiopi d’ADéPA
               sont finançables par votre OPCO.
             </p>
+          </div>
+        </section>
+
+        {/* PREUVE — des faits vérifiables plutôt que des témoignages inventés :
+            l'ancrage associatif est le vrai différenciateur face aux startups
+            du secteur. */}
+        <section className="relative isolate overflow-hidden bg-neutral-950">
+          <Image
+            src="https://les-extras.fr/wp-content/uploads/2023/02/cerf-volant-game-enfant.jpg"
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover opacity-25"
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/85" aria-hidden />
+          <div className="relative mx-auto max-w-[1100px] px-6 py-20 text-center md:py-28">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-white/90">
+              Une association, pas une startup
+            </span>
+            <blockquote className="mx-auto mt-8 max-w-3xl text-2xl font-semibold leading-snug text-white text-balance md:text-3xl">
+              « Créer des dispositifs éducatifs innovants pour sécuriser les accompagnements,
+              soutenir les professionnels et renforcer les compétences psychosociales des jeunes. »
+            </blockquote>
+            <p className="mt-4 text-sm text-white/70">La mission de l’ADéPA, depuis 2012</p>
+            <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-3 sm:divide-x sm:divide-white/15">
+              {[
+                { k: 'Depuis 2012', v: 'association loi 1901, active en France, au Maroc et au Sénégal' },
+                { k: 'Qualiopi', v: 'organisme de formation certifié — vos formations sont finançables' },
+                { k: '15 ateliers', v: 'documentés et animés par des intervenants du terrain' },
+              ].map((f) => (
+                <div key={f.k} className="px-6">
+                  <p className="text-2xl font-bold text-white">{f.k}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/70">{f.v}</p>
+                </div>
+              ))}
+            </div>
+            <Button asChild size="lg" variant="secondary" className="mt-12">
+              <Link href="/notre-histoire">
+                Découvrir notre histoire
+                <ArrowRight />
+              </Link>
+            </Button>
           </div>
         </section>
 
