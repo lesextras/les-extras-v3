@@ -14,6 +14,12 @@ const buttonVariants = cva(
           'bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:shadow-card hover:-translate-y-px',
         secondary:
           'bg-secondary text-secondary-foreground shadow-soft hover:bg-secondary/90 hover:shadow-card hover:-translate-y-px',
+        // Troisième couleur d'action. Le couple success / success-foreground
+        // s'inverse selon le thème (vert foncé + texte clair en thème clair,
+        // vert clair + texte sombre en thème sombre) : le contraste reste
+        // correct des deux côtés, ce qu'un vert codé en dur ne garantirait pas.
+        success:
+          'bg-success text-success-foreground shadow-soft hover:bg-success/90 hover:shadow-card hover:-translate-y-px',
         outline:
           'border border-input bg-card text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground hover:border-primary/40',
         ghost: 'text-foreground hover:bg-accent hover:text-accent-foreground',
