@@ -513,6 +513,7 @@ export class AdminService {
     categoryId?: string;
     status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     authorId?: string;
+    publishedAt?: string;
   }) {
     let slug = this.slugify(dto.title);
     const exists = await this.prisma.article.findUnique({ where: { slug } });
@@ -525,7 +526,11 @@ export class AdminService {
         content: dto.content,
         coverUrl: dto.coverUrl,
         status: dto.status ?? 'DRAFT',
-        publishedAt: dto.status === 'PUBLISHED' ? new Date() : null,
+        publishedAt: dto.publishedAt
+          ? new Date(dto.publishedAt)
+          : dto.status === 'PUBLISHED'
+            ? new Date()
+            : null,
         categoryId: dto.categoryId || null,
         authorId: dto.authorId || null,
       },
@@ -547,6 +552,9 @@ export class AdminService {
     if (dto.categoryId !== undefined) {
       data.category = dto.categoryId ? { connect: { id: dto.categoryId as string } } : { disconnect: true };
     }
+    // Date explicite (import d'un article existant) : elle prime sur le
+    // « maintenant » posé automatiquement à la première publication.
+    if (dto.publishedAt !== undefined) data.publishedAt = new Date(dto.publishedAt);
     return this.prisma.article.update({ where: { id }, data });
   }
 

@@ -31,6 +31,8 @@ import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
 import { TimelineParcours } from './_shared/TimelineParcours';
 import { BlocOutils } from './_shared/BlocOutils';
+import { DemoLex } from './_shared/DemoLex';
+import { RetourHaut } from './_shared/RetourHaut';
 
 export default async function LandingPage() {
   // Compteur réel du catalogue public (affiché dans le hero).
@@ -571,6 +573,24 @@ export default async function LandingPage() {
           </section>
         ) : null}
 
+        {/* ============ ESSAYER LEX ============ */}
+        <section id="lex" className="section scroll-mt-24">
+          <Reveal>
+            <span className="eyebrow">LEX · essai libre</span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              Vos notes de terrain, en écrit professionnel
+            </h2>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+              Les écrits sont la corvée quotidienne du secteur. LEX les met en forme à partir de
+              vos notes brutes — sans rien inventer, sans jamais décider à votre place. Essayez
+              maintenant, sans compte.
+            </p>
+          </Reveal>
+          <Reveal className="mt-10">
+            <DemoLex />
+          </Reveal>
+        </section>
+
         {/* ============ OUTILS GRATUITS ============ */}
         <section id="outils" className="section scroll-mt-24">
           <Reveal>
@@ -882,6 +902,7 @@ export default async function LandingPage() {
 
       <SiteFooter />
       <ChatBot mode="public" />
+      <RetourHaut />
     </div>
   );
 }

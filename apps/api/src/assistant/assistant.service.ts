@@ -142,6 +142,60 @@ Jamais de conseil clinique ou juridique individualisé. N'invente rien : si la f
     return { reponse: this.pseudo.restaurer(brute, table) };
   }
 
+
+  // ── Démonstration publique (sans compte) ────────────────────────────────
+
+  /** Limite d'entrée : la démo montre le geste, elle ne remplace pas l'outil. */
+  static readonly DEMO_MAX_NOTES = 400;
+  /** Longueur du brouillon rendu publiquement avant la coupure. */
+  static readonly DEMO_MAX_RENDU = 850;
+
+  /**
+   * Essai public de LEX : mêmes garanties que l'outil complet
+   * (pseudonymisation avant l'appel, restauration après), mais entrée bornée
+   * et sortie tronquée. Aucune trace n'est écrite en base.
+   */
+  async demoPublique(notes: string) {
+    const brut = notes.trim().slice(0, AssistantService.DEMO_MAX_NOTES);
+    if (brut.length < 20) {
+      return {
+        erreur:
+          'Décrivez la situation en quelques lignes (20 caractères minimum) pour que LEX ait de quoi travailler.',
+      };
+    }
+
+    const def = trouverTrame(AssistantTrame.NOTE_OBSERVATION);
+    const { texte: masque, table } = this.pseudo.masquer(brut);
+
+    const reponseMasquee = await this.mistral.completer({
+      system: def.system,
+      user: `Notes brutes du professionnel :\n\n${masque}`,
+      maxTokens: 420,
+      temperature: 0.4,
+    });
+
+    let brouillon = this.pseudo
+      .restaurer(reponseMasquee, table)
+      .replace(/\[DATE-\d+\]/g, '[date à préciser]')
+      .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
+      .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]');
+
+    const tronque = brouillon.length > AssistantService.DEMO_MAX_RENDU;
+    if (tronque) {
+      // Coupure sur une fin de phrase pour ne pas laisser un mot en suspens.
+      const coupe = brouillon.slice(0, AssistantService.DEMO_MAX_RENDU);
+      const fin = Math.max(coupe.lastIndexOf('. '), coupe.lastIndexOf('\n'));
+      brouillon = (fin > 200 ? coupe.slice(0, fin + 1) : coupe).trimEnd();
+    }
+
+    return {
+      brouillon,
+      tronque,
+      protection: this.pseudo.resume(table),
+      trame: def.id,
+    };
+  }
+
   // ── Aide au remplissage des fiches ───────────────────────────────────────
 
   async remplirFiche(type: 'ATELIER' | 'FORMATION', brief: string) {
