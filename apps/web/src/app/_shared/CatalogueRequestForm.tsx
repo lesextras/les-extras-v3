@@ -7,6 +7,7 @@ import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { sourceAcquisition } from "@/lib/source";
 import { useToast } from "@/components/ui/use-toast";
 
 const champ =
@@ -37,6 +38,7 @@ export function CatalogueRequestForm() {
             `Besoin : ${f.get("message") || "non précisé"}`,
           ].join("\n"),
           website: f.get("website") || undefined,
+          source: sourceAcquisition(),
         }),
       });
       if (!res.ok) {

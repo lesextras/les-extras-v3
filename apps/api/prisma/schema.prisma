@@ -1154,9 +1154,12 @@ model ContactRequest {
   type      String?             // Sujet / type de demande
   content   String
   status    ContactRequestStatus @default(NEW)
+  /// Origine de la demande : utm_source, sinon domaine référent, sinon "direct".
+  source    String?
   createdAt DateTime            @default(now())
 
   @@index([status, createdAt])
+  @@index([source])
 }
 
 enum ContactRequestStatus {

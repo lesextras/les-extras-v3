@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiRequest } from "@/lib/api";
+import { sourceAcquisition } from "@/lib/source";
 import { Field, Textarea } from "./form-fields";
 
 const SUBJECTS = [
@@ -31,6 +32,7 @@ export function ContactForm() {
       type: String(fd.get("type") || "") || undefined,
       content: String(fd.get("content") || ""),
       website: String(fd.get("website") || "") || undefined,
+      source: sourceAcquisition(),
     };
     try {
       await apiRequest("/public/contact", { method: "POST", body });

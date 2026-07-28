@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireAdmin, fetchApi } from "../../_shared/server";
-import { ObjectifCampagne, type ObjectifData } from "../../_shared/ObjectifCampagne";
+import { ObjectifCampagne, type ObjectifData, type Activite } from "../../_shared/ObjectifCampagne";
 import { PageHeader, StatCard, EmptyState } from "../../_shared/ui";
 import {
   MISSION_CATEGORY_LABEL,
@@ -58,6 +58,8 @@ export default async function AdminPage() {
   const funnelRes = await fetchApi<{
     objectif?: ObjectifData;
     global?: { vues: number; demandes: number; devis: number; reservations: number };
+    sources?: { source: string; demandes: number }[];
+    activite?: Activite[];
   }>(session, "/admin/stats/funnel");
 
   const s = statsRes.data ?? {};
@@ -91,6 +93,8 @@ export default async function AdminPage() {
         <ObjectifCampagne
           objectif={funnelRes.data.objectif}
           funnel={funnelRes.data.global}
+          sources={funnelRes.data.sources}
+          activite={funnelRes.data.activite}
         />
       ) : null}
 

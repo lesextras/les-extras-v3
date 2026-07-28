@@ -25,4 +25,7 @@ export class CreateContactDto extends HoneypotDto {
   @MinLength(10)
   @MaxLength(4000)
   content!: string;
+
+  /** Origine (utm_source / référent). */
+  @IsOptional() @IsString() @MaxLength(120) source?: string;
 }

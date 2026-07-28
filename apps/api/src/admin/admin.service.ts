@@ -1122,11 +1122,63 @@ export class AdminService {
       detail: { reservations: Math.round(caReservations), factures: Math.round(caFactures) },
     };
 
+    // Attribution : d'où viennent les demandes (mécanisme Vesk).
+    const parSource = await this.prisma.contactRequest.groupBy({
+      by: ['source'],
+      _count: { _all: true },
+      orderBy: { _count: { source: 'desc' } },
+      take: 8,
+    }).catch(() => [] as { source: string | null; _count: { _all: number } }[]);
+    const sources = parSource.map((r) => ({
+      source: r.source || 'direct',
+      demandes: r._count._all,
+    }));
+
+    // Fil d'activité : les 8 derniers signaux, tous types confondus.
+    const [dernieresDemandes, derniersComptes, dernieresResas] = await Promise.all([
+      this.prisma.contactRequest.findMany({
+        orderBy: { createdAt: 'desc' }, take: 5,
+        select: { id: true, name: true, type: true, source: true, createdAt: true },
+      }),
+      this.prisma.account.findMany({
+        orderBy: { createdAt: 'desc' }, take: 5,
+        select: { id: true, name: true, type: true, createdAt: true },
+      }),
+      this.prisma.booking.findMany({
+        orderBy: { createdAt: 'desc' }, take: 5,
+        select: { id: true, totalAmount: true, status: true, createdAt: true },
+      }),
+    ]);
+    const activite = [
+      ...dernieresDemandes.map((d) => ({
+        type: 'demande' as const,
+        libelle: `${d.name} — ${d.type ?? 'demande'}`,
+        detail: d.source || 'direct',
+        date: d.createdAt.toISOString(),
+      })),
+      ...derniersComptes.map((a) => ({
+        type: 'compte' as const,
+        libelle: a.name,
+        detail: a.type === 'ESTABLISHMENT' ? 'établissement' : 'intervenant',
+        date: a.createdAt.toISOString(),
+      })),
+      ...dernieresResas.map((b) => ({
+        type: 'reservation' as const,
+        libelle: b.totalAmount ? `Réservation ${Math.round(Number(b.totalAmount))} €` : 'Réservation',
+        detail: String(b.status).toLowerCase(),
+        date: b.createdAt.toISOString(),
+      })),
+    ]
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .slice(0, 8);
+
     const taux = (haut: number, bas: number) =>
       bas > 0 ? Math.round((haut / bas) * 1000) / 10 : null;
 
     return {
       objectif,
+      sources,
+      activite,
       global: {
         vues,
         demandes,

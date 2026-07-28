@@ -21,4 +21,7 @@ export class CreateQuoteRequestDto extends HoneypotDto {
   @IsOptional() @IsString() @MaxLength(120) desiredDate?: string;
   @IsOptional() @IsString() @MaxLength(60) participants?: string;
   @IsString() @MinLength(10) @MaxLength(3000) message!: string;
+
+  /** Origine (utm_source / référent) — renseignée par le formulaire. */
+  @IsOptional() @IsString() @MaxLength(120) source?: string;
 }

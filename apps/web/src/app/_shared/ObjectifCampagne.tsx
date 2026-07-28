@@ -2,7 +2,7 @@
 // septembre, et quel rythme hebdomadaire il reste à tenir. Données réelles :
 // réservations confirmées + factures payées.
 import Link from "next/link";
-import { Target, TrendingUp, CalendarClock } from "lucide-react";
+import { Target, TrendingUp, CalendarClock, Radio, Compass } from "lucide-react";
 
 export interface ObjectifData {
   cible: number;
@@ -17,9 +17,28 @@ export interface ObjectifData {
 const euros = (n: number) =>
   new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
-export function ObjectifCampagne({ objectif, funnel }: {
+export interface Activite { type: "demande" | "compte" | "reservation"; libelle: string; detail?: string; date: string }
+
+const ilYA = (iso: string) => {
+  const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (min < 1) return "à l'instant";
+  if (min < 60) return `il y a ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `il y a ${h} h`;
+  return `il y a ${Math.round(h / 24)} j`;
+};
+
+const PUCE: Record<Activite["type"], string> = {
+  demande: "bg-secondary",
+  compte: "bg-primary",
+  reservation: "bg-success",
+};
+
+export function ObjectifCampagne({ objectif, funnel, sources, activite }: {
   objectif: ObjectifData;
   funnel?: { vues: number; demandes: number; devis: number; reservations: number };
+  sources?: { source: string; demandes: number }[];
+  activite?: Activite[];
 }) {
   const atteint = objectif.pourcentage >= 100;
 
@@ -115,6 +134,58 @@ export function ObjectifCampagne({ objectif, funnel }: {
           >
             Voir le tunnel fiche par fiche →
           </Link>
+        </div>
+      ) : null}
+      {/* Attribution + activité en direct */}
+      {(sources && sources.length) || (activite && activite.length) ? (
+        <div className="mt-6 grid gap-6 border-t border-border/60 pt-5 lg:grid-cols-2">
+          {sources && sources.length ? (
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <Compass className="size-3.5" /> D’où viennent les demandes
+              </p>
+              <ul className="mt-3 space-y-2">
+                {sources.map((s) => {
+                  const max = Math.max(...sources.map((x) => x.demandes), 1);
+                  return (
+                    <li key={s.source} className="flex items-center gap-3">
+                      <span className="w-28 shrink-0 truncate text-sm text-foreground">{s.source}</span>
+                      <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                        <span
+                          className="block h-full rounded-full bg-primary/70"
+                          style={{ width: `${Math.max(6, (s.demandes / max) * 100)}%` }}
+                        />
+                      </span>
+                      <span className="w-8 text-right text-sm font-semibold [font-variant-numeric:tabular-nums]">
+                        {s.demandes}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
+          {activite && activite.length ? (
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <Radio className="size-3.5" /> Activité récente
+              </p>
+              <ul className="mt-3 space-y-2.5">
+                {activite.map((a, i) => (
+                  <li key={`${a.date}-${i}`} className="flex items-start gap-2.5 text-sm">
+                    <span className={`mt-1.5 size-2 shrink-0 rounded-full ${PUCE[a.type]}`} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-foreground">{a.libelle}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {a.detail ? `${a.detail} · ` : ""}{ilYA(a.date)}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>

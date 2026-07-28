@@ -139,6 +139,7 @@ export class PublicService {
         phone: dto.phone,
         type: dto.type,
         content: dto.content,
+        source: (dto.source || 'direct').slice(0, 120),
       },
     });
     // Notification best-effort : ne bloque pas la réponse à l'utilisateur.
@@ -313,6 +314,8 @@ export class PublicService {
     desiredDate?: string;
     participants?: string;
     message: string;
+    /** Origine (utm_source / référent), pour l'attribution. */
+    source?: string;
     /** Champ-piège : rempli = robot. */
     website?: string;
   }) {
@@ -351,6 +354,7 @@ export class PublicService {
         phone: dto.phone,
         type: objet,
         content: corps,
+        source: (dto.source || 'direct').slice(0, 120),
       },
     });
 
