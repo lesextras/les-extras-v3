@@ -123,6 +123,23 @@
 /* Thème sombre de la page d'accueil (esprit toulali.fr) : fond charbon
    bleuté, textes clairs, rose framboise réservé aux accents (boutons,
    icônes, chiffres) — jamais en fond de bloc. */
+/* Remet la palette claire à l'intérieur d'un conteneur (modales posées
+   sur la page d'accueil sombre) : les formulaires restent lisibles. */
+.theme-clair {
+  --background: 38 44% 96%;
+  --foreground: 0 0% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+  --muted: 38 30% 92%;
+  --muted-foreground: 220 14% 38%;
+  --accent: 347 45% 95%;
+  --accent-foreground: 347 70% 24%;
+  --border: 38 22% 88%;
+  --input: 38 22% 86%;
+}
+
 .theme-sombre {
   --background: 222 26% 8%;
   --foreground: 40 30% 96%;

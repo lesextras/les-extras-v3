@@ -28,8 +28,7 @@ import { HeroSearch } from './_shared/HeroSearch';
 import { VideoFacade } from './_shared/VideoFacade';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
-import { CatalogueRequestForm } from './_shared/CatalogueRequestForm';
-import { ContactForm } from './_shared/ContactForm';
+import { CartesContact } from './_shared/CartesContact';
 
 export default async function LandingPage() {
   // Compteur réel du catalogue public (affiché dans le hero).
@@ -718,10 +717,10 @@ export default async function LandingPage() {
             </Reveal>
             <Reveal delay={150}>
               <Button asChild size="lg" variant="secondary" className="mt-10">
-                <Link href="/notre-histoire">
+                <a href="https://adepa77.fr" target="_blank" rel="noopener noreferrer">
                   Découvrir notre histoire
                   <ArrowRight />
-                </Link>
+                </a>
               </Button>
             </Reveal>
           </div>
@@ -799,32 +798,9 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              <Reveal className="h-full">
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,36%,15%)] p-7 md:p-9">
-                  <h3 className="text-xl font-semibold">Recevoir notre catalogue</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/70">
-                    Les 15 interventions détaillées — publics, objectifs, tarifs — dans votre
-                    boîte mail.
-                  </p>
-                  <div className="mt-6">
-                    <CatalogueRequestForm />
-                  </div>
-                </div>
-              </Reveal>
-              <Reveal delay={120} className="h-full">
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,26%,13%)] p-7 md:p-9">
-                  <h3 className="text-xl font-semibold">Nous écrire</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/70">
-                    Une question sur un atelier, une formation, un renfort ou un partenariat ?
-                    Réponse de l’équipe ADéPA.
-                  </p>
-                  <div className="mt-6">
-                    <ContactForm />
-                  </div>
-                </div>
-              </Reveal>
-            </div>
+            <Reveal className="mt-12">
+              <CartesContact />
+            </Reveal>
           </div>
         </section>
 
