@@ -120,6 +120,31 @@
   }
 }
 
+/* Thème sombre de la page d'accueil (esprit toulali.fr) : fond charbon
+   bleuté, textes clairs, rose framboise réservé aux accents (boutons,
+   icônes, chiffres) — jamais en fond de bloc. */
+.theme-sombre {
+  --background: 222 26% 8%;
+  --foreground: 40 30% 96%;
+  --card: 222 22% 12%;
+  --card-foreground: 40 30% 96%;
+  --popover: 222 22% 12%;
+  --popover-foreground: 40 30% 96%;
+  --muted: 222 18% 16%;
+  --muted-foreground: 222 10% 70%;
+  --accent: 222 18% 17%;
+  --accent-foreground: 40 30% 92%;
+  --border: 222 14% 22%;
+  --input: 222 14% 24%;
+  --primary: 347 80% 57%;
+  --primary-foreground: 0 0% 100%;
+  --primary-soft: 347 32% 16%;
+  --secondary: 14 72% 58%;
+  --secondary-foreground: 0 0% 100%;
+  --secondary-soft: 14 32% 15%;
+  --ring: 347 80% 60%;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

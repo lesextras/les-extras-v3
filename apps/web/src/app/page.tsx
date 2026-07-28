@@ -50,7 +50,7 @@ export default async function LandingPage() {
   const articles = fluxArticles?.items ?? [];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="theme-sombre flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
       <main id="main" className="flex-1">
@@ -245,7 +245,7 @@ export default async function LandingPage() {
         </section>
 
         {/* ============ BANDEAU DE CHIFFRES — fond bleu nuit ============ */}
-        <section className="bg-primary">
+        <section className="border-y border-border bg-[hsl(222,24%,10%)]">
           <div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-8 px-6 py-12 text-center md:grid-cols-4 md:px-10 md:py-14">
             {[
               { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
@@ -254,10 +254,10 @@ export default async function LandingPage() {
               { k: '48 h', v: 'pour recevoir votre devis' },
             ].map((st, i) => (
               <Reveal key={st.v} delay={i * 90}>
-                <p className="text-3xl font-bold tracking-tight text-primary-foreground [font-variant-numeric:tabular-nums] md:text-4xl">
+                <p className="text-3xl font-bold tracking-tight text-primary [font-variant-numeric:tabular-nums] md:text-4xl">
                   {st.k}
                 </p>
-                <p className="mt-1.5 text-sm text-primary-foreground/70">{st.v}</p>
+                <p className="mt-1.5 text-sm text-muted-foreground">{st.v}</p>
               </Reveal>
             ))}
           </div>
@@ -281,7 +281,7 @@ export default async function LandingPage() {
               <Reveal className="md:col-span-2">
                 <Link
                   href="/ateliers"
-                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(347,55%,94%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(160,30%,13%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="flex flex-col p-7 md:p-8">
                     <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
@@ -315,7 +315,7 @@ export default async function LandingPage() {
               <Reveal delay={100}>
                 <div
                   id="renfort"
-                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bg-[hsl(14,60%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8"
+                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bg-[hsl(14,32%,14%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8"
                 >
                   <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
                     <Siren className="size-5" />
@@ -338,7 +338,7 @@ export default async function LandingPage() {
 
               {/* Formations */}
               <Reveal>
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,50%,94%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,36%,15%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
                   <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
                     <GraduationCap className="size-5" />
                   </span>
@@ -361,7 +361,7 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/register"
-                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(217,55%,90%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(266,24%,15%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="relative order-2 min-h-52 bg-muted sm:order-1">
                     <Image
@@ -396,7 +396,7 @@ export default async function LandingPage() {
 
               {/* Gestion sans papier */}
               <Reveal>
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,65%,93%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,26%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
                   <span className="grid size-11 place-items-center rounded-xl bg-card text-accent-foreground shadow-soft">
                     <FileCheck className="size-5" />
                   </span>
@@ -419,7 +419,7 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/edublog"
-                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bg-[hsl(14,45%,96%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
+                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bg-[hsl(190,28%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
                 >
                   <div>
                     <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
@@ -703,18 +703,18 @@ export default async function LandingPage() {
         </section>
 
         {/* ============ PREUVE — bandeau bleu nuit, épuré ============ */}
-        <section className="bg-primary">
+        <section className="border-y border-border bg-[hsl(222,24%,10%)]">
           <div className="mx-auto max-w-[1100px] px-6 py-20 text-center md:py-24">
             <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground/90">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-foreground/90">
                 Une association, pas une startup
               </span>
-              <blockquote className="mx-auto mt-8 max-w-3xl text-2xl font-semibold leading-snug text-primary-foreground text-balance md:text-3xl">
+              <blockquote className="mx-auto mt-8 max-w-3xl text-2xl font-semibold leading-snug text-foreground text-balance md:text-3xl">
                 « Créer des dispositifs éducatifs innovants pour sécuriser les accompagnements,
                 soutenir les professionnels et renforcer les compétences psychosociales des
                 jeunes. »
               </blockquote>
-              <p className="mt-4 text-sm text-primary-foreground/70">La mission de l’ADéPA, depuis 2012</p>
+              <p className="mt-4 text-sm text-muted-foreground">La mission de l’ADéPA, depuis 2012</p>
             </Reveal>
             <Reveal delay={150}>
               <Button asChild size="lg" variant="secondary" className="mt-10">
@@ -801,7 +801,7 @@ export default async function LandingPage() {
 
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
               <Reveal className="h-full">
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(347,55%,94%)] p-7 md:p-9">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,36%,15%)] p-7 md:p-9">
                   <h3 className="text-xl font-semibold">Recevoir notre catalogue</h3>
                   <p className="mt-2 text-sm leading-relaxed text-foreground/70">
                     Les 15 interventions détaillées — publics, objectifs, tarifs — dans votre
@@ -813,7 +813,7 @@ export default async function LandingPage() {
                 </div>
               </Reveal>
               <Reveal delay={120} className="h-full">
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,65%,93%)] p-7 md:p-9">
+                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,26%,13%)] p-7 md:p-9">
                   <h3 className="text-xl font-semibold">Nous écrire</h3>
                   <p className="mt-2 text-sm leading-relaxed text-foreground/70">
                     Une question sur un atelier, une formation, un renfort ou un partenariat ?
@@ -831,7 +831,7 @@ export default async function LandingPage() {
         {/* ============ CTA FINAL ============ */}
         <section className="section">
           <Reveal>
-            <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground shadow-card md:px-16">
+            <div className="relative overflow-hidden rounded-3xl bg-[hsl(222,22%,13%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">
               <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
               <div
                 className="absolute -right-16 -top-16 size-64 rounded-full bg-secondary/20 blur-3xl"
@@ -841,7 +841,7 @@ export default async function LandingPage() {
                 <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
                   Prêt à renforcer vos équipes, sereinement ?
                 </h2>
-                <p className="mt-4 text-primary-foreground/80">
+                <p className="mt-4 text-muted-foreground">
                   Rejoignez les établissements et professionnels qui font confiance à LES EXTRAS.
                   Création de compte gratuite, sans engagement.
                 </p>
@@ -856,7 +856,7 @@ export default async function LandingPage() {
                     asChild
                     size="lg"
                     variant="outline"
-                    className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
+                    className="border-border bg-transparent text-foreground hover:bg-accent"
                   >
                     <Link href="/login">J’ai déjà un compte</Link>
                   </Button>
