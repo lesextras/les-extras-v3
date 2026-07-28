@@ -49,121 +49,83 @@ export default async function LandingPage() {
   }>('/articles/feed?take=3');
   const articles = fluxArticles?.items ?? [];
 
-  // Images de couverture pour les trois domaines d'action, prises dans le
-  // catalogue réel plutôt que dans une banque d'images.
-  const visuels = featuredItems.map((i) => i.images?.[0]).filter(Boolean) as string[];
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
       <main id="main" className="flex-1">
-        {/* HERO */}
-        <section className="relative overflow-hidden bg-warm-gradient">
-          <div className="absolute inset-0 bg-grid opacity-60" aria-hidden />
-          <div className="relative mx-auto grid max-w-[1200px] items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="animate-fade-in">
-              <span className="eyebrow">
-                <Sparkles className="size-3.5" />
-                Ateliers &amp; formations courtes pour le médico-social
-              </span>
-              <h1 className="mt-5 text-4xl font-bold leading-[1.08] tracking-tight text-foreground text-balance md:text-5xl lg:text-6xl">
-                Des interventions prêtes à réserver,
-                <span className="text-gradient-brand"> pour vos publics et vos équipes.</span>
-              </h1>
-              <p className="mt-5 max-w-xl text-lg text-muted-foreground text-balance">
-                Analyse des pratiques, médiation, prévention, spécialisations métier : un
-                catalogue d’ateliers et de formations animés par des intervenants vérifiés.
-                Réservation en ligne, devis chiffré en 48 h, contrat et facture automatiques.
-                Et quand l’urgence arrive, le SOS Renfort prend le relais.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg">
-                  <Link href="/ateliers">
-                    Explorer le catalogue
-                    <ArrowRight />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link href="/#renfort">Besoin d’un renfort urgent ?</Link>
-                </Button>
-              </div>
-
-              <HeroSearch />
-              <dl className="mt-10 grid max-w-lg grid-cols-3 gap-6">
-                {[
-                  { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
-                  { k: 'Qualiopi', v: 'formations finançables OPCO' },
-                  { k: '48 h', v: 'pour recevoir votre devis' },
-                ].map((s, i) => (
-                  <div
-                    key={s.k}
-                    className={cn(
-                      'animate-fade-in-up border-l border-border/70 pl-4 first:border-l-0 first:pl-0',
-                      i === 1 && 'stagger-1',
-                      i === 2 && 'stagger-2',
-                    )}
-                  >
-                    <dt className="text-2xl font-bold tracking-tight text-foreground [font-variant-numeric:tabular-nums]">
-                      {s.k}
-                    </dt>
-                    <dd className="mt-1 text-xs text-muted-foreground">{s.v}</dd>
-                  </div>
-                ))}
-              </dl>
+        {/* HERO — reprise du parti pris visuel de les-extras.fr : une grande
+            photo sombre du terrain, un titre qui parle métier, la recherche
+            immédiatement disponible. */}
+        <section className="relative isolate overflow-hidden bg-[hsl(217,62%,12%)]">
+          <Image
+            src="https://les-extras.fr/wp-content/uploads/2023/04/cropped-groupe-id-3-1.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center opacity-40"
+            unoptimized
+          />
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-[hsl(217,62%,10%)]/80 via-[hsl(217,62%,12%)]/60 to-[hsl(217,62%,14%)]/95"
+            aria-hidden
+          />
+          <div className="relative mx-auto max-w-[1080px] px-6 pb-16 pt-20 text-center md:pb-20 md:pt-28">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-white/90 backdrop-blur">
+              <Sparkles className="size-3.5" />
+              Le dispositif de l’association ADéPA
+            </span>
+            <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-white text-balance md:text-5xl lg:text-[3.4rem]">
+              Des interventions à fort impact,{' '}
+              <span className="text-[hsl(14,72%,62%)]">portées par ceux qui font le terrain.</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/80 text-balance">
+              Un réseau d’indépendants du médico-social. Des ateliers et des formations
+              spécialisées, ancrés dans le réel de chacun — à réserver en ligne, avec devis,
+              contrat et facture générés automatiquement.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button asChild size="lg" variant="secondary" className="shadow-card">
+                <Link href="/ateliers">
+                  Explorer les ateliers
+                  <ArrowRight />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/30 bg-transparent text-white hover:bg-white/10"
+              >
+                <Link href="/catalogue">Demander notre catalogue</Link>
+              </Button>
             </div>
 
-            {/* Carte visuelle "mission" */}
-            <div className="relative animate-scale-in">
-              <Card className="shadow-card">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary">
-                      <Siren className="size-3" />
-                      SOS Renfort
-                    </Badge>
-                    <span className="text-xs font-medium text-muted-foreground">Publié il y a 12 min</span>
-                  </div>
-                  <h3 className="mt-4 text-lg font-semibold">Éducateur spécialisé — nuit</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    MECS Les Tilleuls · Melun (77) · dès ce soir 21 h
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Badge variant="soft">Internat</Badge>
-                    <Badge variant="soft">Adolescents</Badge>
-                    <Badge variant="soft">3 nuits</Badge>
-                  </div>
-                  <div className="mt-5 space-y-2 rounded-xl bg-muted/60 p-3">
-                    {['Diffusion aux salariés', 'Puis réseau réservé', 'Enfin, ouverture publique'].map(
-                      (step, i) => (
-                        <div key={step} className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className={i === 0 ? 'size-4 text-success' : 'size-4 text-muted-foreground'} />
-                          <span className={i === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}>
-                            {step}
-                          </span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                  <Button asChild className="mt-5 w-full">
-                    <Link href="/register">Répondre à la mission</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-              <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border border-border bg-card p-4 shadow-soft sm:block">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-xl bg-secondary-soft text-secondary">
-                    <Star className="size-5" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">Booking confirmé</p>
-                    <p className="text-xs text-muted-foreground">Contrat généré automatiquement</p>
-                  </div>
+            <dl className="mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-6">
+              {[
+                { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
+                { k: 'Qualiopi', v: 'formations finançables OPCO' },
+                { k: '48 h', v: 'pour recevoir votre devis' },
+              ].map((st) => (
+                <div key={st.k}>
+                  <dt className="text-2xl font-bold tracking-tight text-white [font-variant-numeric:tabular-nums] md:text-3xl">
+                    {st.k}
+                  </dt>
+                  <dd className="mt-1 text-xs text-white/70">{st.v}</dd>
                 </div>
-              </div>
-            </div>
+              ))}
+            </dl>
+          </div>
+
+          {/* La recherche chevauche le bas du hero : premier geste possible. */}
+          <div className="relative mx-auto max-w-3xl px-6 pb-0 translate-y-1/2">
+            <HeroSearch />
           </div>
         </section>
+
+        <div className="h-16" aria-hidden />
 
         {/* CONFIANCE */}
         <section className="border-y border-border bg-card">
@@ -197,21 +159,21 @@ export default async function LandingPage() {
                 texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant vérifié.',
                 href: '/ateliers',
                 icone: <Palette className="size-5" />,
-                image: visuels[0],
+                image: 'https://les-extras.fr/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg',
               },
               {
                 titre: 'Nos parcours de formations certifiés Qualiopi',
                 texte: 'Montée en compétences des équipes, finançable par votre OPCO.',
                 href: '/formations',
                 icone: <GraduationCap className="size-5" />,
-                image: visuels[1],
+                image: 'https://les-extras.fr/wp-content/uploads/2025/02/lever-vous-400x400.jpeg',
               },
               {
                 titre: 'Le renfort d’équipe et parental',
                 texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
                 href: '/#renfort',
                 icone: <Megaphone className="size-5" />,
-                image: visuels[2],
+                image: 'https://les-extras.fr/wp-content/uploads/2023/03/adulte-pris-en-charge-400x357.jpg',
               },
             ].map((d) => (
               <Link key={d.titre} href={d.href} className="group block">
@@ -293,6 +255,155 @@ export default async function LandingPage() {
               <Button asChild size="lg" variant="secondary">
                 <Link href="/notre-histoire">Découvrir l’association</Link>
               </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* LA PLATEFORME, PRODUIT PAR PRODUIT — chaque service expliqué avec
+            son mini-tutoriel en trois gestes. C'est la réponse à « mais que
+            fait le logiciel, concrètement ? ». */}
+        <section id="produits" className="bg-card">
+          <div className="section">
+            <div className="mx-auto max-w-2xl text-center">
+              <span className="eyebrow">Visite guidée</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                Tout ce que la plateforme fait pour vous
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Six services, un seul compte. Pour chacun : à quoi il sert, et comment il
+                s’utilise en trois gestes.
+              </p>
+            </div>
+
+            <div className="mt-14 space-y-16">
+              {[
+                {
+                  titre: 'Les ateliers éducatifs',
+                  pour: 'Établissements',
+                  texte:
+                    'Quinze médiations clés en main — psycho-boxe, slam, socio-esthétique, théâtre, musicothérapie… — animées chez vous par un intervenant vérifié. Le produit d’appel : une demi-journée, un budget de fonctionnement, une décision immédiate.',
+                  image: 'https://les-extras.fr/wp-content/uploads/2023/02/PSYCHO-BOXE.png',
+                  tuto: [
+                    'Parcourez le catalogue et filtrez par public, ville ou budget.',
+                    'Demandez un devis — même sans compte — ou réservez en ligne.',
+                    'L’intervention a lieu ; le compte rendu vous revient avec des recommandations pour la suite.',
+                  ],
+                  href: '/ateliers',
+                  lien: 'Parcourir les ateliers',
+                },
+                {
+                  titre: 'Les formations certifiées Qualiopi',
+                  pour: 'Équipes & responsables formation',
+                  texte:
+                    'Analyse des pratiques, prévention, spécialisations métier — en intra, dans votre structure. Portées par la certification Qualiopi d’ADéPA, donc finançables par votre OPCO. Émargements, attestations et registre sont générés par la plateforme.',
+                  image: 'https://les-extras.fr/wp-content/uploads/2025/08/gestion-violence.jpg',
+                  tuto: [
+                    'Choisissez le parcours et la session qui correspondent à votre plan de compétences.',
+                    'Nous vous aidons à monter le dossier de financement OPCO.',
+                    'Pendant la session : émargement en ligne, attestations et certificats produits automatiquement.',
+                  ],
+                  href: '/formations',
+                  lien: 'Voir les formations',
+                },
+                {
+                  titre: 'Le SOS Renfort',
+                  pour: 'Urgences de personnel',
+                  texte:
+                    'Une absence ce soir, un surcroît la semaine prochaine : publiez le besoin, la plateforme le diffuse en cascade — votre équipe d’abord, puis les intervenants déjà venus chez vous, enfin le réseau. Le premier qui accepte est engagé, le contrat est généré.',
+                  image: 'https://les-extras.fr/wp-content/uploads/2023/03/adulte-pris-en-charge.jpg',
+                  tuto: [
+                    'Décrivez la mission : poste, dates, horaires, public accueilli.',
+                    'La diffusion en cascade privilégie ceux qui connaissent déjà votre maison.',
+                    'Premier accepté = mission pourvue. Contrat et facture suivent tout seuls.',
+                  ],
+                  href: '/#renfort',
+                  lien: 'Comprendre le renfort',
+                },
+                {
+                  titre: 'L’assistant d’écriture IA',
+                  pour: 'Tous les professionnels',
+                  texte:
+                    'Vos notes brutes deviennent des écrits professionnels : notes d’observation, rapports de situation, transmissions, comptes rendus. Les noms sont masqués avant tout traitement, vos notes ne sont jamais stockées, et rien ne part sans votre relecture.',
+                  image: 'https://les-extras.fr/wp-content/uploads/2026/04/school.jpeg',
+                  tuto: [
+                    'Choisissez le type d’écrit, puis dictez ou tapez vos notes comme elles viennent.',
+                    'L’assistant structure : faits d’un côté, hypothèses prudentes de l’autre.',
+                    'Vous relisez, corrigez et validez — vous restez l’auteur du document.',
+                  ],
+                  href: '/register',
+                  lien: 'Essayer l’assistant',
+                },
+                {
+                  titre: 'L’Édublog',
+                  pour: 'Visibilité du réseau',
+                  texte:
+                    'Chaque compte peut publier articles et actualités sur le fil public : retours d’expérience, projets, pratiques éducatives. Et les partager sur LinkedIn en un clic — votre travail devient votre meilleure publicité.',
+                  image: 'https://les-extras.fr/wp-content/uploads/2025/02/prev-reseaux-sociaux.jpg',
+                  tuto: [
+                    'Écrivez dans l’éditeur : mise en forme simple, images, relecture.',
+                    'Publiez — l’article apparaît sur l’Édublog, lisible par tous, sans compte.',
+                    'Connectez LinkedIn une fois, puis partagez chaque article en un clic.',
+                  ],
+                  href: '/edublog',
+                  lien: 'Lire l’Édublog',
+                },
+                {
+                  titre: 'La gestion sans papier',
+                  pour: 'Administratif',
+                  texte:
+                    'Devis chiffrés en ligne, contrats à double signature, factures PDF, pointage des heures validé par l’établissement, coffre-fort de conformité pour les pièces obligatoires des intervenants. Tout ce qui prenait des soirées se fait dans le même espace.',
+                  image: 'https://les-extras.fr/wp-content/uploads/2023/03/adulte-pris-en-charge.jpg',
+                  tuto: [
+                    'Le devis accepté devient réservation, puis contrat signé en ligne.',
+                    'Les heures déclarées par l’intervenant sont validées par vous.',
+                    'La facture PDF tombe dans votre espace ; les pièces de conformité sont suivies avec leurs échéances.',
+                  ],
+                  href: '/register',
+                  lien: 'Ouvrir un compte',
+                },
+              ].map((prod, idx) => (
+                <article
+                  key={prod.titre}
+                  className={cn(
+                    'grid items-center gap-8 lg:grid-cols-2 lg:gap-14',
+                    idx % 2 === 1 && 'lg:[&>*:first-child]:order-2',
+                  )}
+                >
+                  <div className="relative aspect-[16/11] overflow-hidden rounded-2xl bg-muted shadow-card">
+                    <Image
+                      src={prod.image}
+                      alt={prod.titre}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover"
+                      unoptimized
+                    />
+                    <span className="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+                      {prod.pour}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold tracking-tight text-foreground">{prod.titre}</h3>
+                    <p className="mt-3 leading-relaxed text-muted-foreground">{prod.texte}</p>
+                    <ol className="mt-6 space-y-3">
+                      {prod.tuto.map((etape, i) => (
+                        <li key={etape} className="flex gap-3">
+                          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary">
+                            {i + 1}
+                          </span>
+                          <span className="text-sm leading-relaxed text-foreground">{etape}</span>
+                        </li>
+                      ))}
+                    </ol>
+                    <Button asChild variant="outline" className="mt-6">
+                      <Link href={prod.href}>
+                        {prod.lien}
+                        <ArrowRight />
+                      </Link>
+                    </Button>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>
