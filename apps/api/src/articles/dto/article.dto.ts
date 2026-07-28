@@ -47,6 +47,12 @@ export class QueryArticlesDto {
   @IsOptional() @IsString() @MaxLength(120) search?: string;
   @IsOptional() @IsString() @MaxLength(120) category?: string;
   @IsOptional() @IsString() accountId?: string;
+  /**
+   * Section de l'Édublog :
+   *  - "editorial" : articles de fond publiés par l'équipe (accountId null)
+   *  - "reseau"    : actualités publiées par les comptes du réseau
+   */
+  @IsOptional() @IsIn(['editorial', 'reseau']) section?: 'editorial' | 'reseau';
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) take?: number;
   @IsOptional() @Type(() => Number) @IsInt() @Min(0) skip?: number;
 }

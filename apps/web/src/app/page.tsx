@@ -30,6 +30,7 @@ import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
 import { TimelineParcours } from './_shared/TimelineParcours';
+import { BlocOutils } from './_shared/BlocOutils';
 
 export default async function LandingPage() {
   // Compteur réel du catalogue public (affiché dans le hero).
@@ -570,6 +571,23 @@ export default async function LandingPage() {
           </section>
         ) : null}
 
+        {/* ============ OUTILS GRATUITS ============ */}
+        <section id="outils" className="section scroll-mt-24">
+          <Reveal>
+            <span className="eyebrow">Gratuit · sans inscription</span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              Des calculateurs pour arbitrer, avant même de nous parler
+            </h2>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+              Un budget se défend avec des chiffres, pas avec une intuition. Ces deux outils
+              produisent les vôtres en deux minutes — sans compte, sans e-mail à laisser.
+            </p>
+          </Reveal>
+          <Reveal className="mt-10">
+            <BlocOutils />
+          </Reveal>
+        </section>
+
         {/* ============ REJOINDRE LE RÉSEAU ============ */}
         <section className="section">
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
@@ -644,7 +662,7 @@ export default async function LandingPage() {
                   nom: 'Prestations externes',
                   sous: 'Un intervenant du réseau vient chez vous : vous payez la prestation, rien d’autre.',
                   prix: 'Prix de la fiche',
-                  prixSous: 'ou crédits dès 7 € (packs 10/90 €, 25/200 €, 60/420 €)',
+                  prixSous: 'Facturé après l’intervention — rien à avancer',
                   points: [
                     'Ateliers et formations réservables en ligne ou sur devis (48 h)',
                     'SOS Renfort : le réseau prend le relais de votre équipe',
@@ -666,7 +684,7 @@ export default async function LandingPage() {
                     'LEX Assistant d’écriture : notes brutes → écrits professionnels',
                     'LEX Générateur d’activités éducatives et thérapeutiques',
                     'LEX Bot d’aide intégré à votre espace',
-                    'Crédits offerts chaque mois (5 en Essentiel, 15 en Pro)',
+                    'LEX Aide au remplissage de vos fiches ateliers et formations',
                   ],
                   href: '/register',
                   action: 'Devenir adhérent',

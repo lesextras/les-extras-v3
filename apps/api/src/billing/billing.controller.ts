@@ -22,14 +22,7 @@ import { RequestUser } from '../common/types/request-context';
 export class BillingController {
   constructor(private readonly billing: BillingService) {}
 
-  /** Packs de crédits disponibles à l'achat. */
-  @Get('packs')
-  @UseGuards(JwtAuthGuard)
-  packs() {
-    return this.billing.listPacks();
-  }
-
-  /** Vue d'ensemble facturation : abonnement, solde, packs, plans. */
+  /** Vue d'ensemble facturation : adhésion en cours et formules disponibles. */
   @Get('overview')
   @UseGuards(JwtAuthGuard)
   overview(
@@ -52,8 +45,9 @@ export class BillingController {
       if (!dto.invoiceId) throw new BadRequestException('invoiceId requis.');
       return this.billing.createInvoiceCheckout(user.id, dto.accountId, dto.invoiceId);
     }
-    if (!dto.packId) throw new BadRequestException('packId requis.');
-    return this.billing.createCheckout(user.id, dto.accountId, dto.packId);
+    throw new BadRequestException(
+      'Type de paiement inconnu. Les prestations se règlent à la facture, il n’y a plus de crédits à recharger.',
+    );
   }
 
   /** Webhook Stripe — public, authentifié par signature HMAC sur le corps brut. */

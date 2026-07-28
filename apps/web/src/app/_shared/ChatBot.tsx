@@ -89,7 +89,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
                   dans l'adhésion. L'usage interne de la plateforme reste gratuit.
                 </p>
                 <a
-                  href="/dashboard/credits"
+                  href="/dashboard/adhesion"
                   className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-90"
                 >
                   Devenir adhérent

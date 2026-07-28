@@ -13,7 +13,6 @@ const links = [
   { label: 'Formations', href: '/formations' },
   { label: 'SOS Renfort', href: '/#renfort' },
   { label: 'Édublog', href: '/edublog' },
-  { label: 'Outils gratuits', href: '/outils' },
   { label: 'Comment ça marche', href: '/#comment' },
 ];
 

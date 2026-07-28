@@ -138,7 +138,7 @@ const establishmentNav: NavSection[] = [
       { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
       { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Vos demandes de devis et les propositions reçues' },
       { label: 'Factures', href: '/dashboard/finance', icon: Receipt, essentiel: true, hint: 'Vos factures et dépenses' },
-      { label: 'Abonnement & crédits', href: '/dashboard/credits', icon: Receipt, hint: 'Abonnement mensuel et rechargement de crédits' },
+      { label: 'Adhésion', href: '/dashboard/adhesion', icon: Receipt, hint: 'Adhérer à l’association pour débloquer LEX. Les prestations, elles, se règlent à la facture.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
@@ -164,7 +164,7 @@ const adminNav: NavSection[] = [
       { label: 'Missions', href: '/admin/missions', icon: Megaphone, hint: 'Modérer les missions de renfort' },
       { label: 'Ateliers', href: '/admin/ateliers', icon: Sparkles, hint: 'Modérer le catalogue d’ateliers' },
       { label: 'Réservations', href: '/admin/reservations', icon: CalendarCheck, hint: 'Suivi des réservations et des bookings' },
-      { label: 'Educat’heures', href: '/admin/educatheures', icon: Clock, hint: 'Banque d’heures et crédits d’intervention' },
+      { label: 'Educat’heures', href: '/admin/educatheures', icon: Clock, hint: 'Banque d’heures d’intervention' },
     ],
   },
   {

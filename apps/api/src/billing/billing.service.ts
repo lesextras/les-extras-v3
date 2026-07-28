@@ -10,23 +10,24 @@ import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
-/**
- * Packs de crédits vendus via Stripe Checkout.
- * Montants en centimes d'euro — AJUSTABLES avant mise en production réelle.
- */
-export const CREDIT_PACKS = [
-  { id: 'pack-10', label: 'Pack Découverte', credits: 10, amountCents: 9000 },
-  { id: 'pack-25', label: 'Pack Équipe', credits: 25, amountCents: 20000 },
-  { id: 'pack-60', label: 'Pack Établissement', credits: 60, amountCents: 42000 },
-] as const;
 
 /**
  * Plans d'abonnement mensuel (Stripe Checkout mode=subscription).
  * Montants en centimes d'euro — AJUSTABLES avant mise en production réelle.
  */
 export const SUBSCRIPTION_PLANS = [
-  { id: 'plan-essentiel', label: 'Essentiel', amountCents: 14900, perks: '5 crédits offerts / mois, accès marketplace complet' },
-  { id: 'plan-pro', label: 'Pro', amountCents: 29900, perks: '15 crédits offerts / mois, support prioritaire, stats avancées' },
+  {
+    id: 'plan-essentiel',
+    label: 'Adhésion Essentiel',
+    amountCents: 14900,
+    perks: 'LEX en accès complet (écriture, activités, remplissage de fiches) + bot d’aide',
+  },
+  {
+    id: 'plan-pro',
+    label: 'Adhésion Pro',
+    amountCents: 29900,
+    perks: 'Tout Essentiel + support prioritaire, statistiques avancées et accompagnement',
+  },
 ] as const;
 
 const STRIPE_API = 'https://api.stripe.com/v1';
@@ -75,9 +76,6 @@ export class BillingService {
     return json;
   }
 
-  listPacks() {
-    return CREDIT_PACKS.map((p) => ({ ...p, currency: 'eur' }));
-  }
 
   listPlans() {
     return SUBSCRIPTION_PLANS.map((p) => ({ ...p, currency: 'eur', interval: 'month' }));
@@ -89,14 +87,13 @@ export class BillingService {
     const [account, subscription] = await this.prisma.$transaction([
       this.prisma.account.findUniqueOrThrow({
         where: { id: accountId },
-        select: { credits: true },
+        select: { id: true },
       }),
       this.prisma.subscription.findUnique({ where: { accountId } }),
     ]);
+    void account;
     return {
-      balance: account.credits,
       subscription,
-      packs: this.listPacks(),
       plans: this.listPlans(),
       configured: Boolean(this.config.get<string>('STRIPE_SECRET_KEY')),
     };
@@ -129,47 +126,6 @@ export class BillingService {
   }
 
   /**
-   * Crée une session Stripe Checkout pour un pack de crédits.
-   * Réservé aux membres actifs OWNER/ADMIN d'un compte ESTABLISHMENT.
-   */
-  async createCheckout(userId: string, accountId: string, packId: string) {
-    const pack = CREDIT_PACKS.find((p) => p.id === packId);
-    if (!pack) throw new BadRequestException('Pack inconnu.');
-
-    await this.requireEstablishmentMember(userId, accountId);
-
-    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://app.les-extras.fr';
-    const session = await this.stripe('/checkout/sessions', {
-      mode: 'payment',
-      'payment_method_types[0]': 'card',
-      'line_items[0][quantity]': '1',
-      'line_items[0][price_data][currency]': 'eur',
-      'line_items[0][price_data][unit_amount]': String(pack.amountCents),
-      'line_items[0][price_data][product_data][name]': `Les Extras — ${pack.label} (${pack.credits} crédits)`,
-      success_url: `${webUrl}/dashboard/credits?paiement=succes`,
-      cancel_url: `${webUrl}/dashboard/credits?paiement=annule`,
-      'metadata[kind]': 'credit_pack',
-      'metadata[accountId]': accountId,
-      'metadata[packId]': pack.id,
-      'metadata[credits]': String(pack.credits),
-      client_reference_id: accountId,
-    });
-
-    await this.prisma.creditPurchase.create({
-      data: {
-        accountId,
-        userId,
-        packId: pack.id,
-        credits: pack.credits,
-        amountCents: pack.amountCents,
-        stripeSessionId: String(session.id),
-      },
-    });
-
-    return { url: String(session.url) };
-  }
-
-  /**
    * Abonnement mensuel via Stripe Checkout (mode subscription).
    * Un seul abonnement par compte : refuse si un abonnement actif existe déjà.
    */
@@ -191,8 +147,8 @@ export class BillingService {
       'line_items[0][price_data][unit_amount]': String(plan.amountCents),
       'line_items[0][price_data][recurring][interval]': 'month',
       'line_items[0][price_data][product_data][name]': `Les Extras — Abonnement ${plan.label}`,
-      success_url: `${webUrl}/dashboard/credits?paiement=succes`,
-      cancel_url: `${webUrl}/dashboard/credits?paiement=annule`,
+      success_url: `${webUrl}/dashboard/adhesion?paiement=succes`,
+      cancel_url: `${webUrl}/dashboard/adhesion?paiement=annule`,
       'metadata[kind]': 'subscription',
       'metadata[accountId]': accountId,
       'metadata[planId]': plan.id,
@@ -364,44 +320,10 @@ export class BillingService {
       return { received: true };
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      // Verrou d'idempotence : on ne crédite qu'une seule fois par session.
-      const purchase = await tx.creditPurchase.findUnique({
-        where: { stripeSessionId: session.id },
-      });
-      if (!purchase) {
-        this.logger.warn(`Webhook: session inconnue ${session.id}`);
-        return;
-      }
-      if (purchase.status === 'PAID') return; // déjà traité (relivraison Stripe)
-
-      const account = await tx.account.findUniqueOrThrow({
-        where: { id: purchase.accountId },
-        select: { credits: true },
-      });
-      const balanceAfter = account.credits + purchase.credits;
-
-      await tx.creditPurchase.update({
-        where: { id: purchase.id },
-        data: { status: 'PAID' },
-      });
-      await tx.account.update({
-        where: { id: purchase.accountId },
-        data: { credits: balanceAfter },
-      });
-      await tx.creditLedger.create({
-        data: {
-          accountId: purchase.accountId,
-          delta: purchase.credits,
-          balanceAfter,
-          reason: 'STRIPE_PURCHASE',
-        },
-      });
-      this.logger.log(
-        `Achat ${purchase.packId} payé : +${purchase.credits} crédits pour ${purchase.accountId}`,
-      );
-    });
-
+    // Plus de monnaie interne : les seuls paiements Stripe sont l'adhésion
+    // (mode subscription) et le règlement d'une facture de prestation, tous
+    // deux traités plus haut. Toute autre session est ignorée sans erreur.
+    this.logger.warn(`Webhook: session sans traitement associé (${session.id})`);
     return { received: true };
   }
 }

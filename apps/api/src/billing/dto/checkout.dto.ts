@@ -2,21 +2,18 @@ import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
 
 /**
  * Demande de paiement. `kind` choisit le tunnel :
- * - credit_pack   : rechargement de crédits (packId requis)
- * - subscription  : abonnement mensuel (planId requis)
- * - invoice       : paiement en une fois d'une facture (invoiceId requis)
+ * - subscription : adhésion mensuelle à l'association (planId requis)
+ * - invoice      : règlement d'une facture de prestation (invoiceId requis)
+ *
+ * Il n'y a pas de monnaie interne : une prestation se règle à sa facture.
  */
 export class CreateCheckoutDto {
   @IsString()
   @MinLength(1)
   accountId!: string;
 
-  @IsIn(['credit_pack', 'subscription', 'invoice'])
-  kind!: 'credit_pack' | 'subscription' | 'invoice';
-
-  @IsOptional()
-  @IsString()
-  packId?: string;
+  @IsIn(['subscription', 'invoice'])
+  kind!: 'subscription' | 'invoice';
 
   @IsOptional()
   @IsString()

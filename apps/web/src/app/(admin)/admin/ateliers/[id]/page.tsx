@@ -85,7 +85,7 @@ export default async function AdminServiceDetail({ params }: { params: { id: str
             {s.duration ? <Row label="Durée" value={s.duration} /> : null}
             {s.maxParticipants ? <Row label="Participants" value={`${s.maxParticipants} max`} /> : null}
             {s.publicTarget ? <Row label="Public" value={s.publicTarget} /> : null}
-            <Row label="Coût en crédits" value={`${s.creditCost ?? 1} crédit(s)`} />
+            
             <Row label="Lieu" value={s.city ?? "—"} />
           </CardContent>
         </Card>

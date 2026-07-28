@@ -114,10 +114,15 @@ const AIDE: Record<string, PageHelpEntry> = {
     texte:
       'Vos factures, paiements et documents comptables. Chaque facture est téléchargeable en PDF ; le paiement en ligne est disponible sur les factures dues.',
   },
-  '/dashboard/credits': {
-    titre: 'Abonnement & crédits',
+  '/dashboard/adhesion': {
+    titre: 'Adhésion',
     texte:
-      'Gérez votre abonnement mensuel et rechargez vos crédits d’intervention. Les crédits se consomment automatiquement à chaque réservation.',
+      'L’adhésion mensuelle à l’association débloque LEX, l’assistant IA. Le reste de la plateforme est gratuit, et les prestations se règlent à leur facture — il n’y a rien à recharger à l’avance.',
+    etapes: [
+      'Choisissez une formule : Essentiel ou Pro.',
+      'Le paiement est mensuel et résiliable ; LEX s’active dès la confirmation.',
+      'Vos factures de prestations restent dans « Factures & revenus ».',
+    ],
   },
   '/dashboard/avis': {
     titre: 'Avis',
@@ -165,7 +170,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/admin/educatheures': {
     titre: 'Educat’heures',
     texte:
-      'La banque d’heures : crédits achetés par les établissements et leur consommation au fil des interventions.',
+      'La banque d’heures : heures d’intervention acquises par les établissements et leur consommation au fil des interventions.',
   },
   '/admin/etablissements': {
     titre: 'Comptes & sous-comptes',

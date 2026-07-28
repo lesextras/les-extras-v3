@@ -123,8 +123,50 @@ export class AccountsService {
    */
   async devenirIntervenant(
     userId: string,
-    dto: { name: string; sourceAccountId?: string; serviceIds?: string[] },
+    dto: {
+      name: string;
+      contactEmail: string;
+      phone: string;
+      sourceAccountId?: string;
+      serviceIds?: string[];
+    },
   ) {
+    const email = dto.contactEmail.trim().toLowerCase();
+    const tel = dto.phone.replace(/[\s.-]/g, '');
+
+    // Garde-fou : une activité indépendante ne se pilote pas depuis la
+    // messagerie ni la ligne de son employeur. On refuse les coordonnées de la
+    // structure source, et l'adresse professionnelle de connexion.
+    const [utilisateur, source] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } }),
+      dto.sourceAccountId
+        ? this.prisma.account.findUnique({
+            where: { id: dto.sourceAccountId },
+            select: { phone: true, contactEmail: true, owner: { select: { email: true } } },
+          })
+        : Promise.resolve(null),
+    ]);
+
+    const emailsInterdits = [
+      utilisateur?.email,
+      source?.contactEmail,
+      source?.owner?.email,
+    ]
+      .filter(Boolean)
+      .map((e) => (e as string).trim().toLowerCase());
+
+    if (emailsInterdits.includes(email)) {
+      throw new BadRequestException(
+        'Utilisez une adresse e-mail personnelle : les demandes liées à votre activité indépendante ne doivent pas arriver sur la messagerie de votre employeur.',
+      );
+    }
+
+    if (source?.phone && source.phone.replace(/[\s.-]/g, '') === tel) {
+      throw new BadRequestException(
+        'Utilisez un numéro de téléphone personnel, distinct de celui de votre structure.',
+      );
+    }
+
     const existant = await this.prisma.membership.findFirst({
       where: { userId, status: MembershipStatus.ACTIVE, account: { type: AccountType.FREELANCE } },
       select: { account: { select: { id: true, name: true, slug: true, type: true } } },
@@ -132,7 +174,17 @@ export class AccountsService {
 
     const compte =
       existant?.account ??
-      (await this.create(userId, { name: dto.name, type: AccountType.FREELANCE } as CreateAccountDto));
+      (await this.create(userId, {
+        name: dto.name,
+        type: AccountType.FREELANCE,
+        phone: dto.phone,
+      } as CreateAccountDto));
+
+    // Le contact personnel est posé (ou rafraîchi) à chaque passage.
+    await this.prisma.account.update({
+      where: { id: compte.id },
+      data: { contactEmail: email, phone: dto.phone },
+    });
 
     let importees = 0;
     if (dto.sourceAccountId && dto.serviceIds?.length) {

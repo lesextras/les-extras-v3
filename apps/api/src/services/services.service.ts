@@ -221,23 +221,10 @@ export class ServicesService {
       throw new BadRequestException('Vous ne pouvez pas réserver votre propre service.');
     }
 
-    // Le compte réservant : seuls les ESTABLISHMENT consomment des crédits.
-    // (Réservations freelances / missions = pas de débit.)
-    const bookingAccount = await this.prisma.account.findUniqueOrThrow({
-      where: { id: bookingAccountId },
-      select: { type: true, credits: true },
-    });
-    const cost = service.creditCost;
-    const debits =
-      bookingAccount.type === AccountType.ESTABLISHMENT && cost > 0;
-
-    if (debits && bookingAccount.credits < cost) {
-      throw new BadRequestException(
-        `Crédits insuffisants : cette réservation coûte ${cost} crédit(s), solde actuel ${bookingAccount.credits}.`,
-      );
-    }
-
-    // Création du booking + débit + grand livre dans une seule transaction.
+    // Paiement à la prestation : aucune monnaie interne. La réservation est
+    // créée telle quelle, puis facturée au tarif de la prestation (majoré des
+    // frais de gestion) une fois l'intervention confirmée. Un seul prix, une
+    // seule facture — rien à recharger à l'avance.
     const booking = await this.prisma.$transaction(async (tx) => {
       const created = await tx.booking.create({
         data: {
@@ -248,31 +235,6 @@ export class ServicesService {
           totalAmount: service.price ?? undefined,
         },
       });
-
-      if (debits) {
-        // Re-lecture du solde DANS la transaction (garde anti-course).
-        const fresh = await tx.account.findUniqueOrThrow({
-          where: { id: bookingAccountId },
-          select: { credits: true },
-        });
-        if (fresh.credits < cost) {
-          throw new BadRequestException('Crédits insuffisants');
-        }
-        const balanceAfter = fresh.credits - cost;
-        await tx.account.update({
-          where: { id: bookingAccountId },
-          data: { credits: balanceAfter },
-        });
-        await tx.creditLedger.create({
-          data: {
-            accountId: bookingAccountId,
-            delta: -cost,
-            balanceAfter,
-            reason: 'ATELIER_BOOKING',
-            bookingId: created.id,
-          },
-        });
-      }
 
       return created;
     });

@@ -33,6 +33,8 @@ export function DevenirIntervenant({
   const router = useRouter();
   const { toast } = useToast();
   const [nom, setNom] = useState(nomParDefaut);
+  const [email, setEmail] = useState("");
+  const [tel, setTel] = useState("");
   const [choisies, setChoisies] = useState<string[]>([]);
   const [envoi, setEnvoi] = useState(false);
 
@@ -50,6 +52,23 @@ export function DevenirIntervenant({
       });
       return;
     }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
+      toast({
+        title: "E-mail personnel requis",
+        description:
+          "Indiquez une adresse personnelle : les demandes liées à votre activité indépendante ne doivent pas arriver sur la messagerie de votre employeur.",
+        variant: "error",
+      });
+      return;
+    }
+    if (tel.replace(/[\s.-]/g, "").length < 10) {
+      toast({
+        title: "Téléphone personnel requis",
+        description: "Indiquez un numéro personnel, distinct de la ligne de votre structure.",
+        variant: "error",
+      });
+      return;
+    }
     setEnvoi(true);
     try {
       const res = await apiRequest<{ importees: number; dejaExistant: boolean }>(
@@ -58,7 +77,10 @@ export function DevenirIntervenant({
           method: "POST",
           body: {
             name: nom.trim(),
-            ...(choisies.length ? { sourceAccountId, serviceIds: choisies } : {}),
+            contactEmail: email.trim(),
+            phone: tel.trim(),
+            sourceAccountId,
+            ...(choisies.length ? { serviceIds: choisies } : {}),
           },
         },
       );
@@ -97,6 +119,46 @@ export function DevenirIntervenant({
               onChange={(e) => setNom(e.target.value)}
             />
           </Field>
+
+          <div className="rounded-lg border-l-2 border-primary bg-muted/40 p-3 text-sm text-muted-foreground">
+            Vos coordonnées d&apos;intervenant doivent être <strong>personnelles</strong>. Une
+            activité indépendante ne se pilote pas depuis la messagerie et la ligne de son
+            employeur : c&apos;est ce qui vous protège en cas de départ de la structure, et ce qui
+            évite toute confusion pour les établissements qui vous contactent.
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="E-mail personnel"
+              htmlFor="email-intervenant"
+              hint="Différent de votre adresse professionnelle."
+            >
+              <Input
+                id="email-intervenant"
+                type="email"
+                autoComplete="off"
+                value={email}
+                maxLength={180}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="prenom.nom@exemple.fr"
+              />
+            </Field>
+            <Field
+              label="Téléphone personnel"
+              htmlFor="tel-intervenant"
+              hint="Différent de la ligne de votre structure."
+            >
+              <Input
+                id="tel-intervenant"
+                type="tel"
+                autoComplete="off"
+                value={tel}
+                maxLength={30}
+                onChange={(e) => setTel(e.target.value)}
+                placeholder="06 12 34 56 78"
+              />
+            </Field>
+          </div>
         </CardContent>
       </Card>
 

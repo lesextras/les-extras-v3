@@ -176,6 +176,10 @@ export class ArticlesService {
   async feed(query: QueryArticlesDto) {
     const where: Prisma.ArticleWhereInput = { status: ArticleStatus.PUBLISHED };
     if (query.accountId) where.accountId = query.accountId;
+    // Deux rayons distincts dans l'Édublog : le fond éditorial de l'équipe
+    // d'un côté, la parole du réseau de l'autre.
+    if (query.section === 'editorial') where.accountId = null;
+    if (query.section === 'reseau') where.accountId = { not: null };
     if (query.category) where.category = { is: { title: query.category } };
     if (query.search) {
       where.OR = [
@@ -207,7 +211,16 @@ export class ArticlesService {
       new Set(catRows.map((r) => r.category?.title).filter((t): t is string => Boolean(t))),
     ).sort((a, b) => a.localeCompare(b, 'fr'));
 
-    return { items, total, take, skip, categories };
+    const [nbEditorial, nbReseau] = await this.prisma.$transaction([
+      this.prisma.article.count({
+        where: { status: ArticleStatus.PUBLISHED, accountId: null },
+      }),
+      this.prisma.article.count({
+        where: { status: ArticleStatus.PUBLISHED, accountId: { not: null } },
+      }),
+    ]);
+
+    return { items, total, take, skip, categories, nbEditorial, nbReseau };
   }
 
   /** Article public par slug, avec le contenu et les actualités liées. */

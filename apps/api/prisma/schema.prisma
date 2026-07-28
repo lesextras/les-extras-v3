@@ -104,6 +104,11 @@ model Account {
   city        String?
   postalCode  String?
   phone       String?
+  /// Adresse de contact publique du compte. Pour un compte intervenant créé
+  /// depuis un poste salarié, c'est OBLIGATOIREMENT un contact personnel : les
+  /// sollicitations d'activité indépendante ne doivent jamais arriver sur la
+  /// messagerie de l'employeur.
+  contactEmail String?
   logoUrl     String?
   // Facturation / crédits (packs établissement)
   credits     Int          @default(0)

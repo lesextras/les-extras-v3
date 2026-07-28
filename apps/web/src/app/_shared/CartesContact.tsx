@@ -1,7 +1,9 @@
 "use client";
 
-// Deux cartes illustrées qui ouvrent le formulaire en modale (fond clair,
-// lisible même sur la page d'accueil sombre).
+// Deux cartes illustrées qui ouvrent le formulaire en modale. La modale est
+// rendue dans un portail, donc hors du conteneur .theme-sombre de la page :
+// on lui applique explicitement le thème pour qu'elle prenne la couleur du
+// fond au lieu de trancher en blanc.
 import * as React from "react";
 import Image from "next/image";
 import { ArrowRight, Mail, MessageSquare } from "lucide-react";
@@ -70,7 +72,7 @@ export function CartesContact() {
                 </div>
               </button>
             </DialogTrigger>
-            <DialogContent className="theme-clair max-h-[90vh] overflow-y-auto bg-card text-foreground sm:max-w-lg">
+            <DialogContent className="theme-sombre max-h-[90vh] overflow-y-auto border-border bg-card text-foreground sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>{c.dialogTitre}</DialogTitle>
                 <DialogDescription>{c.dialogTexte}</DialogDescription>
