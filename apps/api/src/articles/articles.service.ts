@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { ArticleStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CommunityService } from '../community/community.service';
+import { PointReason } from '@prisma/client';
 import { MailService } from '../common/mail/mail.service';
 import { CreateArticleDto, QueryArticlesDto, UpdateArticleDto } from './dto/article.dto';
 
@@ -29,6 +31,7 @@ export class ArticlesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
+    private readonly community: CommunityService,
   ) {}
 
   /**
@@ -110,8 +113,18 @@ export class ArticlesService {
       },
       select: { ...PUBLIC_SELECT, status: true, content: true },
     });
-    if (publie) await this.alerterSiPremiere(article.id, accountId);
+    if (publie) {
+      await this.alerterSiPremiere(article.id, accountId);
+      await this.crediterPublication(accountId, article.title);
+    }
     return article;
+  }
+
+  /** Écrire pour l'Édublog fait vivre le réseau : c'est crédité en points. */
+  private async crediterPublication(accountId: string, titre: string) {
+    await this.community
+      .crediter(accountId, PointReason.ARTICLE, `Article publié : ${titre}`)
+      .catch(() => undefined);
   }
 
   /** Un compte ne touche que ses propres actualités. */
@@ -140,7 +153,10 @@ export class ArticlesService {
       },
       select: { ...PUBLIC_SELECT, status: true, content: true },
     });
-    if (passeEnPublie) await this.alerterSiPremiere(id, accountId);
+    if (passeEnPublie) {
+      await this.alerterSiPremiere(id, accountId);
+      await this.crediterPublication(accountId, article.title);
+    }
     return article;
   }
 

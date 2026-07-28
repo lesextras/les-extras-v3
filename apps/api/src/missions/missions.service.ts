@@ -12,6 +12,8 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CommunityService } from '../community/community.service';
+import { PointReason } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MatchingService } from '../matching/matching.service';
 import { MailService } from '../common/mail/mail.service';
@@ -33,6 +35,7 @@ export class MissionsService {
     private readonly notifications: NotificationsService,
     private readonly matching: MatchingService,
     private readonly mail: MailService,
+    private readonly community: CommunityService,
   ) {}
 
   /** Crée une mission (statut DRAFT) rattachée au compte établissement actif. */
@@ -373,6 +376,12 @@ export class MissionsService {
       where: { missionId, status: BookingStatus.REQUESTED, id: { not: booking.id } },
       data: { status: BookingStatus.CANCELLED, cancelReason: 'Mission pourvue par un autre intervenant.' },
     });
+
+    // La mission est pourvue : l'intervenant qui prend le relais est crédité.
+    // C'est l'action la plus utile au réseau, c'est la mieux récompensée.
+    await this.community
+      .crediter(freelanceAccountId, PointReason.MISSION, `Mission acceptée : ${mission.title}`)
+      .catch(() => undefined);
 
     // Profil du freelance (pour l'établissement).
     const freelance = await this.prisma.account.findUnique({

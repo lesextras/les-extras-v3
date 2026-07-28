@@ -34,7 +34,14 @@ describe('MissionsService', () => {
       sendMissionFilledEstablishment: jest.fn(),
       sendMissionAcceptedFreelance: jest.fn(),
     };
-    service = new MissionsService(prisma as any, notifications as any, matching as any, mail as any);
+    const community = { crediter: jest.fn().mockResolvedValue(null) };
+    service = new MissionsService(
+      prisma as any,
+      notifications as any,
+      matching as any,
+      mail as any,
+      community as any,
+    );
   });
 
   describe('findOne', () => {

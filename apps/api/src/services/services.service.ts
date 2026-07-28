@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { AccountType, BookingStatus, Prisma, ServiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CommunityService } from '../community/community.service';
+import { PointReason } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -17,6 +19,7 @@ export class ServicesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly community: CommunityService,
   ) {}
 
   async create(accountId: string, dto: CreateServiceDto) {
@@ -184,8 +187,16 @@ export class ServicesService {
   }
 
   async update(id: string, accountId: string, dto: UpdateServiceDto) {
-    await this.assertOwned(id, accountId);
+    const avant = await this.assertOwned(id, accountId);
     const { faq, priceExtras, ...rest } = dto;
+    // Première mise en ligne de cette fiche : elle enrichit le catalogue
+    // commun, elle est créditée en points. Les republications suivantes ne
+    // rapportent rien (sinon il suffirait de dépublier/republier en boucle).
+    if (dto.status === 'PUBLISHED' && avant?.status !== 'PUBLISHED') {
+      await this.community
+        .crediter(accountId, PointReason.PUBLICATION, `Fiche publiée : ${avant?.title ?? id}`)
+        .catch(() => undefined);
+    }
     return this.prisma.service.update({
       where: { id },
       data: {

@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CommunityService } from '../community/community.service';
+import { PointReason } from '@prisma/client';
 import { CreateReviewDto } from './dto/create-review.dto';
 
 /** Sélection minimale d'un utilisateur affiché à côté d'un avis. */
@@ -49,7 +51,10 @@ export interface PendingReview {
 
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly community: CommunityService,
+  ) {}
 
   /**
    * Crée un avis bidirectionnel après un booking COMPLETED. L'auteur doit
@@ -122,7 +127,7 @@ export class ReviewsService {
 
     // On rattache l'avis à la prestation elle-même : c'est cette note-là qui
     // décide un acheteur, pas seulement celle de l'intervenant.
-    return this.prisma.review.create({
+    const avis = await this.prisma.review.create({
       data: {
         bookingId: dto.bookingId,
         authorId: userId,
@@ -133,6 +138,13 @@ export class ReviewsService {
         comment: dto.comment,
       },
     });
+
+    // Un avis déposé nourrit la confiance de tout le réseau : il est crédité.
+    await this.community
+      .crediter(accountId, PointReason.AVIS, 'Avis déposé après une prestation')
+      .catch(() => undefined);
+
+    return avis;
   }
 
   /**
