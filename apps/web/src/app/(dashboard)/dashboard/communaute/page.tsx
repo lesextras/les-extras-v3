@@ -125,7 +125,7 @@ export default async function CommunautePage() {
             description="Publier un atelier, répondre à un collègue, laisser un avis : toute contribution apparaîtra ici."
             action={
               <Button asChild>
-                <Link href="/dashboard/entraide">Voir les questions sans réponse</Link>
+                <Link href="/dashboard/gap">Voir les questions sans réponse</Link>
               </Button>
             }
           />

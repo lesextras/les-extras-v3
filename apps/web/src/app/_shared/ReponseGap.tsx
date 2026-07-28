@@ -1,6 +1,6 @@
 "use client";
 
-// Réponses de l'Entraide : dépôt, vote « utile », et désignation de la réponse
+// Réponses du GAP : dépôt, vote « utile », et désignation de la réponse
 // qui a aidé (réservée à l'auteur de la question). L'auteur d'une réponse ne
 // peut pas voter pour elle-même — c'est le seul garde-fou nécessaire ici.
 import { useState } from "react";
@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { Field, Textarea } from "./form-fields";
-import type { Reponse } from "./entraide";
+import type { Reponse } from "./gap";
 import { formatDate } from "./format";
 
 export function FilReponses({
@@ -48,7 +48,7 @@ export function FilReponses({
     }
     setEnvoi(true);
     try {
-      await apiRequest(`/entraide/${questionId}/reponses`, {
+      await apiRequest(`/dashboard/gap/${questionId}/reponses`, {
         method: "POST",
         body: { content: texte.trim(), website: piege || undefined },
         accountId,
@@ -110,7 +110,7 @@ export function FilReponses({
                     type="button"
                     onClick={() =>
                       connecte
-                        ? agir(`/entraide/reponses/${r.id}/vote`, r.id)
+                        ? agir(`/dashboard/gap/reponses/${r.id}/vote`, r.id)
                         : toast({
                             title: "Connexion requise",
                             description: "Créez un compte gratuit pour voter.",
@@ -150,7 +150,7 @@ export function FilReponses({
                         disabled={enCours === r.id}
                         onClick={() =>
                           agir(
-                            `/entraide/reponses/${r.id}/retenir`,
+                            `/dashboard/gap/reponses/${r.id}/retenir`,
                             r.id,
                             "Réponse retenue — son auteur reçoit 40 points",
                           )

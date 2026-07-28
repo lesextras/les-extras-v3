@@ -33,8 +33,7 @@ import { TimelineParcours } from './_shared/TimelineParcours';
 import { BlocOutils } from './_shared/BlocOutils';
 import { DemoLex } from './_shared/DemoLex';
 import { OffreLex } from './_shared/OffreLex';
-import { BlocEntraide } from './_shared/BlocEntraide';
-import type { QuestionCard } from './_shared/entraide';
+import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 
 export default async function LandingPage() {
@@ -55,12 +54,6 @@ export default async function LandingPage() {
   }>('/articles/feed?take=3');
   const articles = fluxArticles?.items ?? [];
 
-  // Entraide : trois situations réelles du fil, pour montrer le produit plutôt
-  // que le décrire. Aucune question n'est fabriquée si le fil est vide.
-  const { data: filEntraide } = await fetchPublic<{ items: QuestionCard[] }>(
-    '/public/entraide?take=3',
-  );
-  const questions = filEntraide?.items ?? [];
 
   return (
     <div className="theme-sombre flex min-h-screen flex-col bg-background">
@@ -615,10 +608,10 @@ export default async function LandingPage() {
           </Reveal>
         </section>
 
-        {/* ============ ENTRAIDE ============ */}
-        <section id="entraide" className="section scroll-mt-24">
+        {/* ============ LE GAP ============ */}
+        <section id="gap" className="section scroll-mt-24">
           <Reveal>
-            <BlocEntraide questions={questions} />
+            <BlocGap />
           </Reveal>
         </section>
 

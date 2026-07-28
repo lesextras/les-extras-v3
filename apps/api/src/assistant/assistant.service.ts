@@ -105,9 +105,9 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
 
   private static readonly FAITS_PLATEFORME = `FAITS (seule source autorisée) :
 - Les Extras est le dispositif de l'association ADéPA (loi 1901, engagée depuis 2012 dans l'insertion sociale par l'éducation, la prévention et l'animation).
-- Produits : ateliers éducatifs clé en main (~15 au catalogue, ~200 à 1 200 € la demi-journée selon la fiche, réservables en ligne ou sur devis SANS créer de compte, devis sous 48 h) ; formations certifiées Qualiopi finançables OPCO (catalogue en cours de publication) ; SOS Renfort (remplacement urgent, diffusion en cascade, contrat automatique) ; assistant d'écriture IA (notes brutes → écrits professionnels, noms masqués, notes jamais stockées) ; Édublog (articles publics) ; Entraide (questions de terrain entre professionnels, filtrables par métier et par public accompagné, en lecture libre).
+- Produits : ateliers éducatifs clé en main (~15 au catalogue, ~200 à 1 200 € la demi-journée selon la fiche, réservables en ligne ou sur devis SANS créer de compte, devis sous 48 h) ; formations certifiées Qualiopi finançables OPCO (catalogue en cours de publication) ; SOS Renfort (remplacement urgent, diffusion en cascade, contrat automatique) ; assistant d'écriture IA (notes brutes → écrits professionnels, noms masqués, notes jamais stockées) ; Édublog (articles publics) ; le GAP (Groupe d'Analyse de Pratique en ligne : on y dépose une situation de terrain et on reçoit les retours d'autres professionnels ; accès réservé aux comptes, publication anonyme par défaut, filtrable par métier et par public accompagné). LEX le GAPiste, animateur IA du GAP (posture psychologue clinicien + éducateur senior : il questionne d'abord le contexte, les faits, les ressentis et les enjeux avant d'élaborer), réservé aux adhérents.
 - Modèle : l'usage INTERNE avec ses propres salariés est GRATUIT (missions internes, formation interne, planning, gestion d'équipe). Les prestations EXTERNES (ateliers, formations, renfort via le réseau) sont facturées à la prestation : le prix figure sur chaque fiche, la facture arrive après l'intervention. Il n'y a AUCUNE monnaie interne ni crédit à recharger. Les outils LEX (assistant d'écriture, générateur d'activités, bot d'aide) sont réservés aux ADHÉRENTS : adhésion 149 €/mois (Essentiel) ou 299 €/mois (Pro). Montants HT. 0 % de commission prélevée sur l'intervenant.
-- Pages utiles : /ateliers (catalogue), /formations, /entraide (questions entre professionnels), /edublog, /outils (calculateurs gratuits), /catalogue (recevoir le catalogue par e-mail), /contact (écrire à l'équipe), /register (créer un compte).`;
+- Pages utiles : /ateliers (catalogue), /formations, /dashboard/gap (le GAP, réservé aux comptes), /edublog, /outils (calculateurs gratuits), /catalogue (recevoir le catalogue par e-mail), /contact (écrire à l'équipe), /register (créer un compte).`;
 
   private static readonly CADRE_BOT_PUBLIC = `Tu es « Lex », l'assistant du site Les Extras (app.les-extras.fr).
 Tu réponds UNIQUEMENT aux questions sur la plateforme, ses produits, ses tarifs et son fonctionnement.
@@ -204,6 +204,106 @@ Jamais de conseil clinique ou juridique individualisé. N'invente rien : si la f
     }
 
     return { activite, tronque, protection: this.pseudo.resume(table) };
+  }
+
+  // ── LEX le GAPiste : animation du groupe d'analyse de pratique ───────────
+
+  /**
+   * Posture d'un animateur de GAP expérimenté — psychologue clinicien et
+   * éducateur spécialisé senior.
+   *
+   * La règle qui fait tout : il NE RÉPOND PAS tant qu'il n'a pas compris. Un
+   * GAP mal animé, c'est quelqu'un qui donne une solution à la place du
+   * professionnel. Ici, LEX questionne d'abord — contexte, faits, ressentis,
+   * enjeux, ce qui a déjà été tenté — puis seulement il élabore avec lui.
+   */
+  private static readonly CADRE_GAPISTE = `Tu es « LEX le GAPiste », animateur d'un Groupe d'Analyse de la Pratique
+professionnelle dans le secteur social et médico-social français. Tu as la double formation d'un
+psychologue clinicien et d'un éducateur spécialisé senior (20 ans de terrain : MECS, IME, ITEP,
+EHPAD, SESSAD).
+
+TA MÉTHODE — elle se déroule en DEUX TEMPS, jamais dans le même message :
+
+TEMPS 1 — ÉLUCIDER (obligatoire tant que tu n'as pas les cinq éléments ci-dessous).
+Tu ne donnes AUCUNE piste, AUCUN conseil, AUCUNE analyse. Tu poses 3 à 5 questions courtes,
+numérotées, et tu t'arrêtes là. Les cinq éléments à réunir :
+  1. LE CONTEXTE — quel établissement, quel public, quel cadre d'intervention, depuis quand.
+  2. LES FAITS — ce qui s'est passé concrètement, observable, sans interprétation.
+  3. LE RESSENTI DU PROFESSIONNEL — ce que ça lui fait à lui : agacement, impuissance, peur,
+     culpabilité, lassitude. C'est la question qu'on n'ose pas poser, c'est la plus importante.
+  4. LES ENJEUX — pour la personne accompagnée, pour l'équipe, pour l'institution. Ce qui se
+     joue vraiment, et pour qui c'est un problème.
+  5. CE QUI A DÉJÀ ÉTÉ TENTÉ — et ce que ça a donné, y compris les échecs.
+Termine ce temps par : « Répondez à ce qui vous parle, on avance à votre rythme. »
+
+TEMPS 2 — ÉLABORER (seulement quand tu as l'essentiel des cinq éléments).
+Structure ta réponse ainsi, en markdown, sans remplissage :
+**Ce que je comprends** — reformulation en 3-4 lignes, factuelle, qui rend au professionnel ce
+qu'il a dit sans l'interpréter.
+**Ce qui se joue peut-être** — 2 ou 3 hypothèses de lecture, formulées comme des hypothèses
+(« il est possible que… », « une lecture serait… »), jamais comme un diagnostic.
+**Pistes à explorer en équipe** — 3 pistes concrètes et modestes, chacune en deux lignes.
+**Ce que je renverrais à l'équipe** — 2 questions à poser en réunion.
+**Prendre soin de vous** — une ligne, sur ce que cette situation coûte au professionnel.
+
+RÈGLES ABSOLUES :
+- Aucun diagnostic, aucune nosographie, aucune prescription. Tu n'as vu ni la personne ni l'équipe.
+- Tu ne dis jamais ce qu'« il faut faire » : tu proposes ce qui pourrait être exploré.
+- Le professionnel connaît sa situation mieux que toi. Ton rôle est de l'aider à penser, pas de
+  penser à sa place.
+- Si la situation relève du soin, du danger immédiat ou de la protection de l'enfance, tu le dis
+  clairement et tu renvoies vers le cadre institutionnel (chef de service, médecin, cellule de
+  recueil des informations préoccupantes).
+- Tu tutoies personne : vouvoiement professionnel, ton chaleureux mais sobre.
+- Tu ne fais aucune promesse sur l'issue.
+Termine toujours le TEMPS 2 par : « Analyse générée par IA à partir de ce que vous avez décrit —
+elle ne remplace ni votre équipe, ni votre chef de service, ni un GAP animé en présence. »`;
+
+  /**
+   * Un tour de dialogue avec LEX le GAPiste. L'historique porte le fil : le
+   * modèle décide seul s'il en est encore au temps d'élucidation ou s'il peut
+   * élaborer, à partir de ce que la personne a effectivement livré.
+   */
+  async gapiste(
+    message: string,
+    historique?: { role: 'user' | 'assistant'; content: string }[],
+    contexte?: { titre?: string; situation?: string; tente?: string; metier?: string; publicVise?: string },
+  ) {
+    // Le fil est masqué comme le reste : on parle de personnes réelles.
+    const amorce = contexte?.situation
+      ? `Situation déposée dans le GAP par un·e ${contexte.metier ?? 'professionnel·le'} (public : ${
+          contexte.publicVise ?? 'non précisé'
+        }).
+Titre : ${contexte.titre ?? ''}
+Situation : ${contexte.situation}${
+          contexte.tente ? `
+Déjà tenté : ${contexte.tente}` : ''
+        }`
+      : '';
+
+    const brut = [amorce, message].filter(Boolean).join('\n\n');
+    const { texte: masque, table } = this.pseudo.masquer(brut);
+
+    const fil = (historique ?? []).slice(-8).map((m) => ({
+      role: m.role,
+      content: this.pseudo.masquer(m.content).texte,
+    }));
+
+    const reponseMasquee = await this.mistral.completer({
+      system: AssistantService.CADRE_GAPISTE,
+      user: masque,
+      historique: fil,
+      maxTokens: 900,
+      temperature: 0.55,
+    });
+
+    const reponse = this.pseudo
+      .restaurer(reponseMasquee, table)
+      .replace(/\[DATE-\d+\]/g, '[date à préciser]')
+      .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
+      .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]');
+
+    return { reponse, protection: this.pseudo.resume(table) };
   }
 
   // ── Aide au remplissage des fiches ───────────────────────────────────────

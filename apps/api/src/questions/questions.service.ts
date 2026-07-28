@@ -199,7 +199,7 @@ export class QuestionsService {
 
     // Répondre à un pair, c'est la contribution la plus utile au réseau.
     await this.community
-      .crediter(accountId, PointReason.REPONSE, 'Réponse apportée dans l’Entraide')
+      .crediter(accountId, PointReason.REPONSE, 'Réponse apportée dans le GAP')
       .catch(() => undefined);
 
     return reponse;

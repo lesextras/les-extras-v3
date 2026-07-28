@@ -11,14 +11,16 @@ import {
 } from './dto/question.dto';
 
 /**
- * ENTRAIDE — lecture publique, écriture réservée aux comptes.
+ * LE GAP — Groupe d'Analyse de Pratique en ligne.
  *
- * La lecture est ouverte volontairement : c'est ce qui permet à un
- * professionnel de mesurer la valeur du réseau avant de s'inscrire, et ce qui
- * rend les situations trouvables depuis un moteur de recherche.
+ * Une table ronde permanente : un professionnel dépose une situation, les
+ * autres lui renvoient ce qu'ils ont vécu et tenté. L'accès est réservé aux
+ * comptes et les échanges ne sont PAS publics : on parle de situations
+ * réelles, et la sécurité du cadre prime sur la visibilité.
  */
-@Controller('public/entraide')
-export class PublicQuestionsController {
+@Controller('gap')
+@UseGuards(JwtAuthGuard, AccountGuard)
+export class QuestionsController {
   constructor(private readonly questions: QuestionsService) {}
 
   /** Listes fermées des filtres — sert aussi à construire le formulaire. */
@@ -27,23 +29,7 @@ export class PublicQuestionsController {
     return { metiers: METIERS, publics: PUBLICS };
   }
 
-  @Get()
-  lister(@Query() query: QueryQuestionsDto) {
-    return this.questions.lister(query);
-  }
-
-  @Get(':id')
-  detail(@Param('id') id: string) {
-    return this.questions.detail(id);
-  }
-}
-
-@Controller('entraide')
-@UseGuards(JwtAuthGuard, AccountGuard)
-export class QuestionsController {
-  constructor(private readonly questions: QuestionsService) {}
-
-  /** Même liste, enrichie de « c'est la mienne » et de l'état des votes. */
+  /** Le fil, enrichi de « c'est la mienne » et de l'état des votes. */
   @Get()
   lister(@Query() query: QueryQuestionsDto, @CurrentUser() user: RequestUser) {
     return this.questions.lister(query, user.id);

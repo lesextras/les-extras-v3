@@ -1,46 +1,32 @@
-// Fiche d'une situation. Lecture libre ; répondre demande un compte.
-// Si la personne est connectée, on relit via l'API authentifiée pour connaître
-// l'état de ses votes et savoir si la question est la sienne.
+// Une situation déposée dans le GAP : le récit, les retours des pairs, et
+// LEX le GAPiste pour ceux qui veulent une élaboration guidée.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Eye, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getSession } from "@/lib/session";
-import { fetchPublic, fetchApi } from "../../../_shared/server";
-import { formatDate } from "../../../_shared/format";
-import { FilReponses } from "../../../_shared/ReponseEntraide";
-import type { QuestionDetail } from "../../../_shared/entraide";
-import type { Session as SessionType } from "../../../_shared/types";
+import { requireSession, fetchApi, estAdherent } from "../../../../_shared/server";
+import { formatDate } from "../../../../_shared/format";
+import { FilReponses } from "../../../../_shared/ReponseGap";
+import { LexGapiste } from "../../../../_shared/LexGapiste";
+import type { QuestionDetail } from "../../../../_shared/gap";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { id: string };
-}): Promise<Metadata> {
-  const { data } = await fetchPublic<QuestionDetail>(`/public/entraide/${params.id}`);
-  if (!data) return { title: "Situation introuvable" };
-  return {
-    title: data.title,
-    description: data.situation.slice(0, 155),
-    alternates: { canonical: `/entraide/${params.id}` },
-  };
-}
+export const metadata: Metadata = { title: "Situation — Le GAP" };
 
-export default async function QuestionPage({ params }: { params: { id: string } }) {
-  const session = (await getSession()) as SessionType | null;
-
-  const { data } = session
-    ? await fetchApi<QuestionDetail>(session, `/entraide/${params.id}`)
-    : await fetchPublic<QuestionDetail>(`/public/entraide/${params.id}`);
+export default async function SituationPage({ params }: { params: { id: string } }) {
+  const session = await requireSession();
+  const [{ data }, adherent] = await Promise.all([
+    fetchApi<QuestionDetail>(session, `/gap/${params.id}`),
+    estAdherent(session),
+  ]);
 
   if (!data) notFound();
 
   return (
     <div className="space-y-8">
       <Link
-        href="/entraide"
+        href="/dashboard/gap"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" aria-hidden />
@@ -53,7 +39,7 @@ export default async function QuestionPage({ params }: { params: { id: string } 
           <Badge variant="outline">{data.publicVise}</Badge>
           {data.status === "RESOLUE" ? (
             <Badge variant="success">
-              <CheckCircle2 aria-hidden /> Réponse retenue
+              <CheckCircle2 aria-hidden /> Retour retenu
             </Badge>
           ) : null}
         </div>
@@ -93,19 +79,35 @@ export default async function QuestionPage({ params }: { params: { id: string } 
             ) : null}
             <p className="flex items-start gap-2 border-t border-border pt-4 text-xs text-muted-foreground">
               <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" aria-hidden />
-              Les prénoms et coordonnées ont été masqués automatiquement à l&apos;enregistrement,
-              et ne sont stockés nulle part en clair.
+              Les prénoms et coordonnées ont été masqués automatiquement à l&apos;enregistrement.
+              Cette page n&apos;est visible que par les membres connectés, et n&apos;est pas
+              indexée par les moteurs de recherche.
             </p>
           </CardContent>
         </Card>
       </article>
 
+      {/* LEX le GAPiste — proposé à l'auteur de la situation en priorité */}
+      {data.estMienne ? (
+        <LexGapiste
+          accountId={session.account.id}
+          estAdherent={adherent}
+          contexte={{
+            titre: data.title,
+            situation: data.situation,
+            tente: data.tente,
+            metier: data.metier,
+            publicVise: data.publicVise,
+          }}
+        />
+      ) : null}
+
       <FilReponses
         questionId={data.id}
         reponses={data.reponses}
         estAuteurQuestion={data.estMienne}
-        connecte={Boolean(session)}
-        accountId={session?.account?.id}
+        connecte
+        accountId={session.account.id}
       />
     </div>
   );

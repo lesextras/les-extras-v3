@@ -1,4 +1,4 @@
-// Types partagés de l'Entraide — miroir des DTO de l'API.
+// Types partagés du GAP (Groupe d'Analyse de Pratique) — miroir des DTO de l'API.
 export interface QuestionCard {
   id: string;
   title: string;

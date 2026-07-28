@@ -13,7 +13,7 @@ const links = [
   { label: 'Formations', href: '/formations' },
   { label: 'Intervenants', href: '/intervenants' },
   { label: 'SOS Renfort', href: '/#renfort' },
-  { label: 'Entraide', href: '/entraide' },
+  { label: 'Le GAP', href: '/dashboard/gap' },
   { label: 'Édublog', href: '/edublog' },
   { label: 'Comment ça marche', href: '/#comment' },
 ];

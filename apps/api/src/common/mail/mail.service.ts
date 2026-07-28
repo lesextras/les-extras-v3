@@ -196,12 +196,12 @@ export class MailService {
         data.missions.length ? { label: 'Voir toutes les missions', url: `${this.webUrl}/dashboard/opportunites` } : undefined,
       ),
       bloc(
-        'Des collègues attendent une réponse',
+        'Des collègues attendent un retour dans le GAP',
         data.questions.map(
           (q) =>
-            `<a href="${this.webUrl}/entraide/${q.id}" style="color:#1A1A1A">${q.titre}</a> <span style="color:#9ca3af">— ${q.metier}</span>`,
+            `<a href="${this.webUrl}/dashboard/gap/${q.id}" style="color:#1A1A1A">${q.titre}</a> <span style="color:#9ca3af">— ${q.metier}</span>`,
         ),
-        data.questions.length ? { label: 'Ouvrir l’Entraide', url: `${this.webUrl}/entraide` } : undefined,
+        data.questions.length ? { label: 'Ouvrir le GAP', url: `${this.webUrl}/dashboard/gap` } : undefined,
       ),
       bloc(
         'Nouveau cette semaine',

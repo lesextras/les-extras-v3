@@ -1,4 +1,4 @@
-// Layout des pages publiques (ateliers, formations, Entraide, Édublog…).
+// Layout des pages publiques (ateliers, formations, Édublog, intervenants…).
 //
 // Il réutilise le MÊME en-tête, le MÊME pied de page et le MÊME thème sombre
 // que la page d'accueil : une navigation ou une couleur qui change d'une page

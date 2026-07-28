@@ -1,9 +1,9 @@
 "use client";
 
-// Formulaire de dépôt d'une situation. Le parti pris : une question n'est pas
-// un sujet, c'est une situation. Les champs l'imposent — contexte obligatoire,
-// « ce qui a été tenté » fortement suggéré, métier et public en listes fermées
-// (c'est ce qui rend les filtres utiles pour les collègues).
+// Dépôt d'une situation dans le GAP. Le parti pris : ce n'est pas un sujet
+// qu'on dépose, c'est une situation. Les champs l'imposent — contexte
+// obligatoire, « ce qui a été tenté » fortement suggéré, métier et public en
+// listes fermées (c'est ce qui permet aux bons collègues de vous retrouver).
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { Field, Textarea } from "./form-fields";
-import { METIERS, PUBLICS } from "./entraide";
+import { METIERS, PUBLICS } from "./gap";
 
 const selectClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3.5 py-2 text-sm text-foreground shadow-sm transition-colors hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
@@ -66,7 +66,7 @@ export function PoserQuestion({
     }
     setEnvoi(true);
     try {
-      const r = await apiRequest<{ id: string }>("/entraide", {
+      const r = await apiRequest<{ id: string }>("/dashboard/gap", {
         method: "POST",
         body: {
           title: titre.trim(),
@@ -80,10 +80,10 @@ export function PoserQuestion({
         accountId,
       });
       toast({
-        title: "Question publiée",
+        title: "Situation déposée",
         description: "Les professionnels de votre métier la verront dans leur fil.",
       });
-      router.push(`/entraide/${r.id}`);
+      router.push(`/dashboard/gap/${r.id}`);
     } catch (err) {
       toast({
         title: "Publication impossible",
@@ -190,8 +190,10 @@ export function PoserQuestion({
             <span className="text-sm">
               <span className="font-medium">Publier sous pseudonyme</span>
               <span className="block text-muted-foreground">
-                Votre question apparaîtra signée « Un·e {metier ? metier.toLowerCase() : "professionnel·le"} ».
-                Recommandé : on parle de situations réelles.
+                Votre situation apparaîtra signée « Un·e{" "}
+                {metier ? metier.toLowerCase() : "professionnel·le"} ». C&apos;est le mode par
+                défaut du GAP : on parle de personnes réelles, et l&apos;anonymat est ce qui
+                permet de parler vraiment.
               </span>
             </span>
           </label>
@@ -216,7 +218,7 @@ export function PoserQuestion({
       />
 
       <Button type="submit" disabled={envoi} size="lg">
-        {envoi ? "Publication…" : "Publier ma question"}
+        {envoi ? "Dépôt…" : "Déposer ma situation"}
       </Button>
     </form>
   );

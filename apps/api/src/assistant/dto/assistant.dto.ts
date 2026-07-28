@@ -91,6 +91,25 @@ export class ChatDto {
   website?: string;
 }
 
+/** Un tour de dialogue avec LEX le GAPiste. */
+export class GapisteDto {
+  @IsString() @MinLength(2) @MaxLength(3000)
+  message!: string;
+
+  @IsOptional()
+  historique?: { role: 'user' | 'assistant'; content: string }[];
+
+  /** Situation du GAP à laquelle le dialogue se rattache (facultatif). */
+  @IsOptional()
+  contexte?: {
+    titre?: string;
+    situation?: string;
+    tente?: string;
+    metier?: string;
+    publicVise?: string;
+  };
+}
+
 /** Aide au remplissage d'une fiche atelier/formation depuis un brief. */
 export class FicheDto {
   @IsString() @MaxLength(20)

@@ -45,7 +45,7 @@ const ACTIONS: { reason: string; label: string; detail: string; icon: typeof Awa
   },
   {
     reason: "REPONSE",
-    label: "Réponse apportée dans l'Entraide",
+    label: "Réponse apportée dans le GAP",
     detail: "Un collègue décrit une situation, vous racontez ce que vous avez tenté.",
     icon: MessagesSquare,
   },

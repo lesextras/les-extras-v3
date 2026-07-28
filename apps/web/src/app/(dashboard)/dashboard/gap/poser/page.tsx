@@ -3,7 +3,7 @@ import { requireSession, fetchApi } from "../../../../_shared/server";
 import { PageHeader } from "../../../../_shared/ui";
 import { PoserQuestion } from "../../../../_shared/PoserQuestion";
 
-export const metadata: Metadata = { title: "Poser une question" };
+export const metadata: Metadata = { title: "Déposer une situation" };
 
 export default async function PoserPage() {
   const session = await requireSession();
@@ -16,8 +16,8 @@ export default async function PoserPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Poser une question à la communauté"
-        subtitle="Une situation de terrain, décrite concrètement, trouve presque toujours quelqu'un qui l'a déjà vécue. C'est plus rapide qu'une recherche, et plus juste qu'un manuel."
+        title="Déposer une situation dans le GAP"
+        subtitle="Mettez sur la table ce qui vous occupe. D'autres professionnels vous renverront leur lecture et ce qu'ils ont tenté. Vous publiez anonymement, et les prénoms cités sont masqués automatiquement."
       />
       <PoserQuestion accountId={session.account.id} metierParDefaut={data?.profile?.job ?? undefined} />
     </div>

@@ -9,7 +9,7 @@ import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
 import { AssistantService } from './assistant.service';
-import { ActiviteDto, ChatDto, EnregistrerDocumentDto, FeedbackDto, FicheDto, GenererDto, ModifierDocumentDto } from './dto/assistant.dto';
+import { ActiviteDto, ChatDto, EnregistrerDocumentDto, FeedbackDto, FicheDto, GenererDto, ModifierDocumentDto, GapisteDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
@@ -48,6 +48,19 @@ export class AssistantController {
   @Post('chat')
   chat(@Body() dto: ChatDto) {
     return this.assistant.chat('dashboard', dto.message, dto.historique);
+  }
+
+  /**
+   * LEX le GAPiste — animation du groupe d'analyse de pratique.
+   *
+   * Réservé aux adhérents comme le reste de LEX : le GAP entre pairs, lui,
+   * reste ouvert à tous les comptes.
+   */
+  @Throttle({ default: { limit: 40, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
+  @Post('gapiste')
+  gapiste(@Body() dto: GapisteDto) {
+    return this.assistant.gapiste(dto.message, dto.historique, dto.contexte);
   }
 
   /** Pré-remplissage d'une fiche atelier/formation depuis un brief. */
