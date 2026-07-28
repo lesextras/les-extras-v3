@@ -1087,10 +1087,46 @@ export class AdminService {
     const vues = services.reduce((t, s) => t + (s.views ?? 0), 0);
     const demandes = services.reduce((t, s) => t + (s.requestsCount ?? 0), 0);
 
+    // Objectif de campagne : CA encaissé (réservations confirmées + factures payées).
+    const [reservationsPayees, facturesPayees] = await Promise.all([
+      this.prisma.booking.findMany({
+        where: { status: { in: ['CONFIRMED', 'COMPLETED'] } },
+        select: { totalAmount: true, createdAt: true },
+      }),
+      this.prisma.invoice.findMany({
+        where: { status: 'PAID' },
+        select: { amount: true, issuedAt: true, createdAt: true },
+      }),
+    ]);
+    const nombre = (v: unknown) => (v == null ? 0 : Number(v));
+    const caReservations = reservationsPayees.reduce((t, b) => t + nombre(b.totalAmount), 0);
+    const caFactures = facturesPayees.reduce((t, f) => t + nombre(f.amount), 0);
+    const caEncaisse = Math.round(caReservations + caFactures);
+
+    const OBJECTIF = 4000;
+    const echeance = new Date('2026-09-30T23:59:59Z');
+    const maintenant = new Date();
+    const joursRestants = Math.max(
+      0,
+      Math.ceil((echeance.getTime() - maintenant.getTime()) / 86_400_000),
+    );
+    const semainesRestantes = Math.max(1, Math.ceil(joursRestants / 7));
+    const objectif = {
+      cible: OBJECTIF,
+      encaisse: caEncaisse,
+      reste: Math.max(0, OBJECTIF - caEncaisse),
+      pourcentage: Math.min(100, Math.round((caEncaisse / OBJECTIF) * 100)),
+      joursRestants,
+      rythmeHebdo: Math.ceil(Math.max(0, OBJECTIF - caEncaisse) / semainesRestantes),
+      echeance: echeance.toISOString(),
+      detail: { reservations: Math.round(caReservations), factures: Math.round(caFactures) },
+    };
+
     const taux = (haut: number, bas: number) =>
       bas > 0 ? Math.round((haut / bas) * 1000) / 10 : null;
 
     return {
+      objectif,
       global: {
         vues,
         demandes,

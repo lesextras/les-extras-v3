@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireAdmin, fetchApi } from "../../_shared/server";
+import { ObjectifCampagne, type ObjectifData } from "../../_shared/ObjectifCampagne";
 import { PageHeader, StatCard, EmptyState } from "../../_shared/ui";
 import {
   MISSION_CATEGORY_LABEL,
@@ -54,6 +55,10 @@ export default async function AdminPage() {
     fetchApi<Service[]>(session, "/admin/services"),
     fetchApi<DeskData>(session, "/admin/desk"),
   ]);
+  const funnelRes = await fetchApi<{
+    objectif?: ObjectifData;
+    global?: { vues: number; demandes: number; devis: number; reservations: number };
+  }>(session, "/admin/stats/funnel");
 
   const s = statsRes.data ?? {};
   const missions = Array.isArray(missionsRes.data) ? missionsRes.data : [];
@@ -81,6 +86,13 @@ export default async function AdminPage() {
         title="Administration"
         subtitle="Vue d'ensemble de la plateforme, modération et pilotage."
       />
+
+      {funnelRes.data?.objectif ? (
+        <ObjectifCampagne
+          objectif={funnelRes.data.objectif}
+          funnel={funnelRes.data.global}
+        />
+      ) : null}
 
       {/* ── LE DESK — cockpit par alertes : on traite ce qui brûle, on ne navigue pas ── */}
       <section aria-label="Le Desk" className="space-y-4">
