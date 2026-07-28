@@ -65,7 +65,7 @@ export default function RegisterPage() {
         description: 'Bienvenue ! Finalisons votre profil.',
         variant: 'success',
       });
-      router.push('/welcome');
+      router.push('/welcome?bienvenue=1');
       router.refresh();
     } catch (err) {
       toast({

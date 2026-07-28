@@ -4,6 +4,7 @@
 // que le formulaire de contact (avec un type distinct pour le tri côté admin),
 // ce qui évite d'ouvrir une deuxième porte à protéger contre les robots.
 import { useState } from "react";
+import { lancerConfettis } from "@/lib/confetti";
 import { CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ export function CatalogueRequestForm() {
         throw new Error(Array.isArray(d.message) ? d.message[0] : (d.message ?? "Envoi impossible"));
       }
       setEnvoye(true);
+      lancerConfettis();
     } catch (err) {
       toast({ title: "Envoi impossible", description: (err as Error).message, variant: "error" });
     } finally {

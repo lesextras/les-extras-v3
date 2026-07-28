@@ -67,6 +67,12 @@ export default async function LandingPage() {
       <main id="main" className="flex-1">
         {/* ============ HERO — scindé, style grande plateforme ============ */}
         <section className="relative isolate overflow-hidden bg-warm-gradient">
+          {/* Deux masses floues qui dérivent lentement derrière le contenu.
+              Purement décoratives : aria-hidden, aucun coût de lecture. */}
+          <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+            <span className="animate-halo absolute -left-24 -top-32 size-[34rem] rounded-full bg-primary/[0.13] blur-3xl" />
+            <span className="animate-halo-2 absolute -right-32 top-1/3 size-[30rem] rounded-full bg-secondary/[0.11] blur-3xl" />
+          </div>
           <div className="mx-auto grid max-w-[1360px] items-center gap-12 px-6 pb-16 pt-14 md:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pb-24 lg:pt-20">
             {/* Colonne texte */}
             <div>
@@ -118,7 +124,11 @@ export default async function LandingPage() {
               </div>
             </div>
 
-            {/* Colonne visuelle — composition avec cartes flottantes */}
+            {/* Colonne visuelle — composition avec cartes flottantes.
+                Attention : Reveal applique un `transform`, ce qui en fait le
+                bloc conteneur de tout enfant `absolute`. Le positionnement
+                doit donc vivre SUR le Reveal, pas dans son enfant — sinon les
+                cartes retombent sous la photo au lieu de se poser dessus. */}
             <div className="relative hidden lg:block">
               <Reveal>
                 <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-card">
@@ -128,13 +138,17 @@ export default async function LandingPage() {
                     fill
                     priority
                     sizes="(max-width: 1024px) 0px, 45vw"
-                    className="object-cover"
+                    className="animate-panoramique object-cover"
                     unoptimized
                   />
+                  {/* Voile bas : garantit le contraste de la carte posée
+                      dessus, quelle que soit la photo qui remplacera celle-ci. */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
                 </div>
               </Reveal>
-              <Reveal delay={200}>
-                <div className="absolute bottom-5 left-5 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
+
+              <Reveal delay={200} className="absolute bottom-5 left-5 z-10">
+                <div className="animate-derive flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
                   <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary">
                     <FileCheck className="size-5" />
                   </span>
@@ -144,8 +158,9 @@ export default async function LandingPage() {
                   </div>
                 </div>
               </Reveal>
-              <Reveal delay={320}>
-                <div className="absolute right-5 top-5 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
+
+              <Reveal delay={320} className="absolute right-5 top-5 z-10">
+                <div className="animate-derive-lente flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
                   <span className="grid size-10 place-items-center rounded-xl bg-secondary-soft text-secondary">
                     <GraduationCap className="size-5" />
                   </span>
@@ -153,6 +168,20 @@ export default async function LandingPage() {
                     <p className="text-sm font-semibold text-foreground">{catalogueTotal} interventions</p>
                     <p className="text-xs text-muted-foreground">au catalogue, notées après mission</p>
                   </div>
+                </div>
+              </Reveal>
+
+              {/* Pastille « en activité » : le seul élément qui pulse, et il
+                  porte une information réelle — la plateforme tourne. */}
+              <Reveal delay={440} className="absolute -bottom-4 right-8 z-10">
+                <div className="flex items-center gap-2.5 rounded-full border border-border/70 bg-card/95 py-2 pl-3 pr-4 shadow-card backdrop-blur">
+                  <span className="relative grid size-2.5 place-items-center">
+                    <span className="animate-anneau absolute size-2.5 rounded-full bg-success" />
+                    <span className="size-2.5 rounded-full bg-success" />
+                  </span>
+                  <span className="text-xs font-medium text-foreground">
+                    Réseau actif dans toute la France
+                  </span>
                 </div>
               </Reveal>
             </div>

@@ -2,6 +2,7 @@
 
 // Formulaire de contact public (sans authentification) — POST /public/contact.
 import { useState } from "react";
+import { lancerConfettis } from "@/lib/confetti";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiRequest } from "@/lib/api";
@@ -37,6 +38,7 @@ export function ContactForm() {
     try {
       await apiRequest("/public/contact", { method: "POST", body });
       setDone(true);
+      lancerConfettis();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Envoi impossible. Réessayez.");
     } finally {

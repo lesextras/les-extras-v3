@@ -4,8 +4,13 @@ import { PartyPopper, Sparkles, ShieldCheck, CalendarClock, ArrowRight } from 'l
 import { getSession } from '@/lib/session';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ConfettisArrivee } from '../../_shared/ConfettisArrivee';
 
-export default async function WelcomePage() {
+export default async function WelcomePage({
+  searchParams,
+}: {
+  searchParams?: { bienvenue?: string };
+}) {
   const session = await getSession();
   if (!session) redirect('/login');
 
@@ -14,6 +19,7 @@ export default async function WelcomePage() {
 
   return (
     <div className="animate-fade-in">
+      <ConfettisArrivee actif={searchParams?.bienvenue === '1'} />
       <span className="grid size-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-soft">
         <PartyPopper className="size-7" />
       </span>

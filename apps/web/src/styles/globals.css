@@ -255,6 +255,94 @@
     animation: float-soft 7s ease-in-out infinite;
   }
 
+  /* ------------------------------------------------------------------
+     MOUVEMENT DU HERO
+     Trois couches qui bougent à des rythmes différents et jamais en phase :
+     c'est le décalage entre elles qui donne l'impression de vie. Des durées
+     identiques produiraient un balancement mécanique, façon métronome.
+     Tout passe par transform/opacity — donc sur le GPU, sans reflow.
+     ------------------------------------------------------------------ */
+
+  /* Cartes flottantes : monte, dérive latéralement, s'incline très peu. */
+  @keyframes derive-carte {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    33% {
+      transform: translate3d(4px, -11px, 0) rotate(-0.7deg);
+    }
+    66% {
+      transform: translate3d(-4px, -5px, 0) rotate(0.6deg);
+    }
+  }
+  .animate-derive {
+    animation: derive-carte 9s ease-in-out infinite;
+    will-change: transform;
+  }
+  .animate-derive-lente {
+    animation: derive-carte 12.5s ease-in-out infinite;
+    animation-delay: -3.5s;
+    will-change: transform;
+  }
+
+  /* Photo : très lent zoom-panoramique. 1,06 au maximum — au-delà, on voit
+     le mouvement, et une photo qui « bouge » distrait de la lecture. */
+  @keyframes panoramique-lent {
+    0%,
+    100% {
+      transform: scale(1.04) translate3d(0, 0, 0);
+    }
+    50% {
+      transform: scale(1.075) translate3d(-1.2%, -1%, 0);
+    }
+  }
+  .animate-panoramique {
+    animation: panoramique-lent 26s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* Halos colorés derrière le hero : deux masses floues qui se croisent
+     lentement. Elles ne sont jamais nettes, donc jamais lisibles comme des
+     formes — elles se contentent de faire respirer le fond. */
+  @keyframes halo-derive {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate3d(6%, -7%, 0) scale(1.18);
+      opacity: 0.8;
+    }
+  }
+  .animate-halo {
+    animation: halo-derive 18s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+  .animate-halo-2 {
+    animation: halo-derive 23s ease-in-out infinite reverse;
+    animation-delay: -6s;
+    will-change: transform, opacity;
+  }
+
+  /* Pastille de statut : pulsation discrète, pour signaler « c'est vivant »
+     sans clignoter. */
+  @keyframes pulsation-anneau {
+    0% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+    70%,
+    100% {
+      transform: scale(2.1);
+      opacity: 0;
+    }
+  }
+  .animate-anneau {
+    animation: pulsation-anneau 2.8s ease-out infinite;
+  }
+
   /* Respect des préférences de mouvement réduit */
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -268,6 +356,16 @@
     .reveal {
       opacity: 1 !important;
       transform: none !important;
+    }
+    .animate-derive,
+    .animate-derive-lente,
+    .animate-panoramique,
+    .animate-halo,
+    .animate-halo-2,
+    .animate-anneau {
+      animation: none !important;
+      transform: none !important;
+      opacity: 1 !important;
     }
   }
 }
