@@ -2,7 +2,7 @@
 // Règles affichées telles qu'elles sont appliquées côté API : 10 points = 1 €,
 // réduction plafonnée à 30 % d'une facture, points valables 12 mois.
 import type { Metadata } from "next";
-import { Award, Sparkles, Newspaper, Star, Lightbulb, Megaphone } from "lucide-react";
+import { Award, Sparkles, Newspaper, Star, Lightbulb, Megaphone, MessagesSquare, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi } from "../../../_shared/server";
@@ -36,6 +36,18 @@ const ACTIONS: { reason: string; label: string; detail: string; icon: typeof Awa
     label: "Mission de renfort réalisée",
     detail: "Une intervention menée à son terme et validée par l'établissement.",
     icon: Megaphone,
+  },
+  {
+    reason: "REPONSE_RETENUE",
+    label: "Votre réponse retenue comme utile",
+    detail: "Le professionnel qui avait le problème a désigné votre réponse. C'est le meilleur signal.",
+    icon: CheckCircle2,
+  },
+  {
+    reason: "REPONSE",
+    label: "Réponse apportée dans l'Entraide",
+    detail: "Un collègue décrit une situation, vous racontez ce que vous avez tenté.",
+    icon: MessagesSquare,
   },
   {
     reason: "ARTICLE",

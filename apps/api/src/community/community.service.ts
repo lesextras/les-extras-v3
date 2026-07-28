@@ -20,6 +20,12 @@ export const BAREME = {
   MISSION: 50,
   AVIS: 25,
   IDEE: 40,
+  /// Répondre à un pair dans l'Entraide.
+  REPONSE: 15,
+  /// Réponse désignée comme utile par celui qui avait le problème : c'est le
+  /// seul signal de qualité qui vaille, il est le mieux récompensé après la
+  /// mission réalisée.
+  REPONSE_RETENUE: 40,
 } as const;
 
 @Injectable()
