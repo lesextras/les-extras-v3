@@ -73,7 +73,7 @@ FORMAT DE RÉPONSE (markdown) :
 **Variantes** (plus simple / plus avancé)
 **Points de vigilance**
 **Ce qu'on observe** (indicateurs concrets pour le compte rendu)
-Puis une 2e activité alternative plus courte, même format condensé.
+Puis, en 4 lignes maximum, une piste d'activité alternative (titre + idée).
 Termine par : « Proposition générée par IA — à valider en équipe pluridisciplinaire avant mise en œuvre. »`;
 
   async genererActivite(dto: {
@@ -93,7 +93,7 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
     const reponseMasquee = await this.mistral.completer({
       system: AssistantService.CADRE_ACTIVITE,
       user: masque,
-      maxTokens: 2400,
+      maxTokens: 1700,
     });
     let activite = this.pseudo.restaurer(reponseMasquee, table);
     activite = activite
