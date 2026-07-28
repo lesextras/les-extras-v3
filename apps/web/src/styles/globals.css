@@ -138,6 +138,23 @@
   --accent-foreground: 347 70% 24%;
   --border: 38 22% 88%;
   --input: 38 22% 86%;
+
+  /* Imbriqué dans .theme-sombre, ce bloc n'hériterait sinon que des variables
+     remontées pour le fond charbon (vert clair, rose vif, warning pâle) —
+     illisibles sur ivoire. On rétablit la palette claire complète. */
+  --primary: 347 70% 45%;
+  --primary-foreground: 0 0% 100%;
+  --primary-soft: 347 55% 94%;
+  --secondary: 14 62% 46%;
+  --secondary-foreground: 0 0% 100%;
+  --secondary-soft: 14 60% 94%;
+  --ring: 347 70% 48%;
+  --success: 152 55% 32%;
+  --success-foreground: 40 44% 98%;
+  --warning: 32 90% 48%;
+  --warning-foreground: 0 0% 10%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 40 44% 98%;
 }
 
 .theme-sombre {

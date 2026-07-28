@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { Providers } from '@/components/providers';
 import { PwaRegister } from './_shared/PwaRegister';
+import { BandeauCookies } from './_shared/BandeauCookies';
 import { InstallPrompt } from './_shared/InstallPrompt';
 
 const inter = Inter({
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <PwaRegister />
           <InstallPrompt />
+          <BandeauCookies />
         </Providers>
       </body>
     </html>

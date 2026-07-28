@@ -47,6 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // à ancres : annoncer des sous-routes inexistantes envoyait Google sur
     // trois 404 depuis notre propre sitemap.
     "/legal",
+    "/legal/cookies",
     "/login",
     "/register",
   ].map((p) => ({

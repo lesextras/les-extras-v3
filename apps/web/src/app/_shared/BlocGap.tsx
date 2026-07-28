@@ -25,7 +25,7 @@ const CADRE = [
   },
 ];
 
-export function BlocGap() {
+export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-14">
       <div>
@@ -112,13 +112,20 @@ export function BlocGap() {
         </div>
 
         <div className="rounded-3xl border border-border bg-card p-7">
-          <Users className="size-5 text-primary" aria-hidden />
-          <p className="mt-3 font-medium">Filtré par métier et par public accompagné</p>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Un éducateur en EHPAD et un en ITEP ne cherchent pas les mêmes retours. Vous ne voyez
-            que les situations qui vous concernent — et répondre à un collègue rapporte 15 points,
-            40 de plus si votre retour est retenu.
-          </p>
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="min-w-[15rem] flex-1">
+              <Users className="size-5 text-primary" aria-hidden />
+              <p className="mt-3 font-medium">Filtré par métier et par public accompagné</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Un éducateur en EHPAD et un en ITEP ne cherchent pas les mêmes retours. Vous ne
+                voyez que les situations qui vous concernent — et répondre à un collègue rapporte
+                15 points, 40 de plus si votre retour est retenu.
+              </p>
+            </div>
+            {illustration ? (
+              <div className="mx-auto w-full max-w-[15rem] shrink-0">{illustration}</div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

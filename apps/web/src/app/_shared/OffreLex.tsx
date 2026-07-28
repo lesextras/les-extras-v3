@@ -88,7 +88,7 @@ export function OffreLex() {
         })}
       </ul>
 
-      <div className="rounded-2xl border border-border bg-[hsl(222,22%,13%)] p-6 md:p-8">
+      <div className="rounded-2xl border border-success/25 bg-success/[0.06] p-6 md:p-8">
         <h3 className="font-semibold">Ce qui rend LEX utilisable dans le médico-social</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Trois garanties, parce qu&apos;un outil qui touche à des écrits professionnels sur des
@@ -99,8 +99,10 @@ export function OffreLex() {
             const Icone = g.icone;
             return (
               <li key={g.titre}>
-                <Icone className="size-5 text-success" aria-hidden />
-                <p className="mt-2 font-medium">{g.titre}</p>
+                <span className="grid size-10 place-items-center rounded-xl bg-success/15 text-success">
+                  <Icone className="size-5" aria-hidden />
+                </span>
+                <p className="mt-3 font-medium">{g.titre}</p>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{g.texte}</p>
               </li>
             );

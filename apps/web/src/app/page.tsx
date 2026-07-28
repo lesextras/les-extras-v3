@@ -33,6 +33,11 @@ import { TimelineParcours } from './_shared/TimelineParcours';
 import { BlocOutils } from './_shared/BlocOutils';
 import { DemoLex } from './_shared/DemoLex';
 import { OffreLex } from './_shared/OffreLex';
+import {
+  IllustrationCalcul,
+  IllustrationEcrit,
+  IllustrationReseau,
+} from "./_shared/Illustrations";
 import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 
@@ -593,39 +598,62 @@ export default async function LandingPage() {
             <DemoLex />
           </Reveal>
 
-          <Reveal className="mt-16">
-            <h3 className="text-2xl font-bold tracking-tight md:text-3xl text-balance">
-              Ce que LEX fait pour vous, au-delà de cet essai
-            </h3>
-            <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-              Quatre outils, une seule adhésion. Ils partagent le même parti pris : faire gagner du
-              temps sur ce qui n’a jamais été le cœur du métier — la paperasse — pour en laisser
-              plus à ce qui l’est.
-            </p>
-          </Reveal>
-          <Reveal className="mt-8">
-            <OffreLex />
-          </Reveal>
+        </section>
+
+        {/* ============ CE QUE LEX FAIT (respiration claire) ============
+            Toute la page est sur fond charbon. Une bande ivoire au milieu
+            casse l'effet de bloc et sert de repère : c'est ici que l'offre
+            se détaille. */}
+        <section
+          id="offre-lex"
+          className="theme-clair scroll-mt-24 bg-background text-foreground"
+        >
+          <div className="section">
+            <Reveal>
+              <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
+                <div>
+                  <span className="eyebrow">Les quatre outils</span>
+                  <h3 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                    Ce que LEX fait pour vous, au-delà de cet essai
+                  </h3>
+                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                    Quatre outils, une seule adhésion. Ils partagent le même parti pris : faire
+                    gagner du temps sur ce qui n’a jamais été le cœur du métier — la paperasse —
+                    pour en laisser plus à ce qui l’est.
+                  </p>
+                </div>
+                <IllustrationEcrit className="mx-auto w-full max-w-md" />
+              </div>
+            </Reveal>
+            <Reveal className="mt-10">
+              <OffreLex />
+            </Reveal>
+          </div>
         </section>
 
         {/* ============ LE GAP ============ */}
         <section id="gap" className="section scroll-mt-24">
           <Reveal>
-            <BlocGap />
+            <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
           </Reveal>
         </section>
 
         {/* ============ OUTILS GRATUITS ============ */}
         <section id="outils" className="section scroll-mt-24">
           <Reveal>
-            <span className="eyebrow">Gratuit · sans inscription</span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-              Des calculateurs pour arbitrer, avant même de nous parler
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Un budget se défend avec des chiffres, pas avec une intuition. Ces deux outils
-              produisent les vôtres en deux minutes — sans compte, sans e-mail à laisser.
-            </p>
+            <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
+              <div>
+                <span className="eyebrow">Gratuit · sans inscription</span>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                  Des calculateurs pour arbitrer, avant même de nous parler
+                </h2>
+                <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                  Un budget se défend avec des chiffres, pas avec une intuition. Ces deux outils
+                  produisent les vôtres en deux minutes — sans compte, sans e-mail à laisser.
+                </p>
+              </div>
+              <IllustrationCalcul className="mx-auto w-full max-w-sm" />
+            </div>
           </Reveal>
           <Reveal className="mt-10">
             <BlocOutils />
