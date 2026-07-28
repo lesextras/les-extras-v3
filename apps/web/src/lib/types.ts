@@ -32,6 +32,8 @@ export interface SessionAccount {
   logoUrl?: string | null;
   /** Rôle de l'utilisateur DANS ce compte. */
   role: AccountRole;
+  /** Adhérent (abonnement actif) : accès aux fonctionnalités LEX. */
+  isMember?: boolean;
 }
 
 export interface Session {

@@ -4,13 +4,13 @@
 // plateforme uniquement ; dans l'espace connecté il guide l'utilisation.
 // Aucune donnée n'est conservée : l'historique vit dans l'onglet.
 import * as React from "react";
-import { MessageCircle, Send, X, Sparkles } from "lucide-react";
+import { MessageCircle, Send, X, Sparkles, Lock } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-export function ChatBot({ mode }: { mode: "public" | "dashboard" }) {
+export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"; locked?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [saisie, setSaisie] = React.useState("");
@@ -77,6 +77,26 @@ export function ChatBot({ mode }: { mode: "public" | "dashboard" }) {
             </div>
           </div>
 
+          {locked ? (
+            <div className="grid flex-1 place-items-center p-6 text-center">
+              <div>
+                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+                  <Lock className="size-5" />
+                </span>
+                <p className="mt-3 font-semibold text-foreground">LEX est réservé aux adhérents</p>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  L'assistant d'écriture, le générateur d'activités et ce bot d'aide sont inclus
+                  dans l'adhésion. L'usage interne de la plateforme reste gratuit.
+                </p>
+                <a
+                  href="/dashboard/credits"
+                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                >
+                  Devenir adhérent
+                </a>
+              </div>
+            </div>
+          ) : (
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 ? (
               <div className="space-y-2">
@@ -121,7 +141,9 @@ export function ChatBot({ mode }: { mode: "public" | "dashboard" }) {
             ) : null}
             <div ref={finRef} />
           </div>
+          )}
 
+          {locked ? null : (
           <form onSubmit={envoyer} className="flex items-center gap-2 border-t border-border p-3">
             <input
               value={saisie}
@@ -139,6 +161,7 @@ export function ChatBot({ mode }: { mode: "public" | "dashboard" }) {
               <Send className="size-4" />
             </button>
           </form>
+          )}
           <p className="border-t border-border/60 px-3 py-1.5 text-center text-[10px] text-muted-foreground">
             Réponses générées par IA — vérifiez les informations importantes.
           </p>

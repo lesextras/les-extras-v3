@@ -34,12 +34,13 @@ export function AppChrome({
   actionPanel,
 }: AppChromeProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const isMember = Boolean(activeAccount?.isMember) || role === 'ADMIN';
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar desktop */}
       <div className="hidden md:block">
-        <Sidebar role={role} />
+        <Sidebar role={role} isMember={isMember} />
       </div>
 
       {/* Sidebar mobile en overlay */}
@@ -60,7 +61,7 @@ export function AppChrome({
               >
                 <X className="size-5" />
               </button>
-              <Sidebar role={role} onNavigate={() => setMobileOpen(false)} />
+              <Sidebar role={role} isMember={isMember} onNavigate={() => setMobileOpen(false)} />
             </div>
           </div>
         </div>
@@ -82,7 +83,7 @@ export function AppChrome({
             <PageHelp />
             {children}
           </main>
-          <ChatBot mode="dashboard" />
+          <ChatBot mode="dashboard" locked={!isMember} />
           {actionPanel && (
             <div className="hidden w-80 shrink-0 overflow-y-auto border-l border-border bg-card xl:block">
               {actionPanel}

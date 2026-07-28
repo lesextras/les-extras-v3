@@ -1425,4 +1425,20 @@ export class AdminService {
     return bilan;
   }
 
+
+  /** Adhésion manuelle (les webhooks Stripe feront la même chose plus tard). */
+  async setMembership(accountId: string, isMember: boolean) {
+    const account = await this.prisma.account.update({
+      where: { id: accountId },
+      data: { isMember },
+      select: { id: true, name: true, isMember: true },
+    });
+    await this.audit.log({
+      action: 'admin.account.membership',
+      entityType: 'Account',
+      entityId: accountId,
+      summary: `Adhésion ${isMember ? 'activée' : 'désactivée'} pour ${account.name}`,
+    });
+    return account;
+  }
 }

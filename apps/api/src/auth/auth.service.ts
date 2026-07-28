@@ -189,7 +189,7 @@ export class AuthService {
             role: true,
             status: true,
             account: {
-              select: { id: true, name: true, slug: true, type: true, logoUrl: true },
+              select: { id: true, name: true, slug: true, type: true, logoUrl: true, isMember: true },
             },
           },
         },
@@ -221,7 +221,7 @@ export class AuthService {
           where: { status: MembershipStatus.ACTIVE },
           select: {
             role: true,
-            account: { select: { id: true, name: true, type: true } },
+            account: { select: { id: true, name: true, type: true, isMember: true } },
           },
         },
       },
@@ -230,6 +230,7 @@ export class AuthService {
       id: m.account.id,
       name: m.account.name,
       type: m.account.type,
+      isMember: m.account.isMember,
       role: m.role,
     }));
     const payload: Record<string, unknown> = {

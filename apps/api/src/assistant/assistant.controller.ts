@@ -3,6 +3,7 @@ import {
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { MemberGuard } from '../common/guards/member.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -27,6 +28,7 @@ export class AssistantController {
 
   /** Génération : plafonnée par utilisateur — le poste de coût est ici. */
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
   @Post('generer')
   generer(@Body() dto: GenererDto) {
     return this.assistant.generer(dto.trame, dto.notes);
@@ -34,6 +36,7 @@ export class AssistantController {
 
   /** Générateur d'activités éducatives & thérapeutiques. */
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
   @Post('activite')
   activite(@Body() dto: ActiviteDto) {
     return this.assistant.genererActivite(dto);
@@ -41,6 +44,7 @@ export class AssistantController {
 
   /** Bot d'aide de l'espace connecté. */
   @Throttle({ default: { limit: 60, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
   @Post('chat')
   chat(@Body() dto: ChatDto) {
     return this.assistant.chat('dashboard', dto.message, dto.historique);
@@ -48,6 +52,7 @@ export class AssistantController {
 
   /** Pré-remplissage d'une fiche atelier/formation depuis un brief. */
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
   @Post('fiche')
   fiche(@Body() dto: FicheDto) {
     return this.assistant.remplirFiche(dto.type, dto.brief);

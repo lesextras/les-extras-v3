@@ -378,9 +378,9 @@ export default async function LandingPage() {
                       <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
                         <PenLine className="size-5" />
                       </span>
-                      <Badge variant="soft">IA</Badge>
+                      <Badge variant="soft">LEX · Adhérents</Badge>
                     </span>
-                    <h3 className="mt-4 text-xl font-semibold">L’assistant d’écriture</h3>
+                    <h3 className="mt-4 text-xl font-semibold">LEX, l’assistant d’écriture</h3>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
                       Vos notes brutes deviennent des écrits professionnels. Noms masqués avant
                       traitement, notes jamais stockées, relecture obligatoire : vous restez
@@ -595,8 +595,9 @@ export default async function LandingPage() {
                 Vous ne payez que ce que vous utilisez
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Pas de frais d’entrée, pas d’engagement. Le prix de chaque atelier est affiché sur
-                sa fiche, et l’intervenant touche l’intégralité de son tarif.
+                L’usage interne avec vos salariés est gratuit. Les interventions externes sont
+                facturées à l’usage — prix affiché sur chaque fiche, 0 % de commission prélevée
+                sur l’intervenant. Les outils LEX (IA) sont réservés aux adhérents.
               </p>
             </Reveal>
 
@@ -635,14 +636,14 @@ export default async function LandingPage() {
                   vedette: true,
                 },
                 {
-                  nom: 'Abonnement',
-                  sous: 'Gérez aussi vos remplacements, ateliers et formations en interne.',
+                  nom: 'Adhésion',
+                  sous: 'Toutes les fonctionnalités LEX (IA) + la gestion interne complète.',
                   prix: '149 €',
                   prixSuffixe: ' / mois',
                   prixSous: 'Essentiel · Pro à 299 € / mois',
                   points: [
-                    'Essentiel : 5 crédits offerts / mois, marketplace complète',
-                    'Pro : 15 crédits offerts / mois, support prioritaire, statistiques',
+                    'LEX inclus : assistant d’écriture, générateur d’activités, bot d’aide',
+                    'Essentiel : 5 crédits offerts / mois — Pro : 15 crédits + support prioritaire',
                     'Planning, équipe, multi-unités et pointage',
                     'Coffre-fort de conformité et registre Qualiopi',
                   ],

@@ -107,6 +107,8 @@ model Account {
   logoUrl     String?
   // Facturation / crédits (packs établissement)
   credits     Int          @default(0)
+  /** Adhérent : abonnement actif -> accès aux fonctionnalités LEX. */
+  isMember    Boolean      @default(false)
   ownerId     String
   owner       User         @relation("AccountOwner", fields: [ownerId], references: [id])
   articles          Article[]        @relation("AccountArticles")

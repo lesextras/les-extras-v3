@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getNavForRole } from '@/lib/nav';
 import type { NavRole } from '@/lib/types';
@@ -12,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 
 export interface SidebarProps {
   role: NavRole;
+  /** Compte actif adhérent ? Cadenas sur les entrées LEX sinon. */
+  isMember?: boolean;
   /** Ferme la sidebar (usage mobile en overlay). */
   onNavigate?: () => void;
   className?: string;
@@ -26,7 +29,7 @@ const STORAGE_PREFIX = 'lx.sidebar.collapsed.';
  * contenant la page courante s'ouvre automatiquement, et l'état plié/déplié est
  * mémorisé d'une visite à l'autre.
  */
-export function Sidebar({ role, onNavigate, className }: SidebarProps) {
+export function Sidebar({ role, isMember, onNavigate, className }: SidebarProps) {
   const pathname = usePathname();
   const sections = getNavForRole(role);
 
@@ -145,6 +148,9 @@ export function Sidebar({ role, onNavigate, className }: SidebarProps) {
                         )}
                       />
                       <span className="truncate">{item.label}</span>
+                      {item.premium && !isMember ? (
+                        <Lock className="ml-auto size-3.5 shrink-0 text-muted-foreground/70" aria-label="Réservé aux adhérents" />
+                      ) : null}
                       {item.badge && (
                         <Badge variant="secondary" className="ml-auto">
                           {item.badge}
