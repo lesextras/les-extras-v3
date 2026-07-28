@@ -140,6 +140,7 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d’ensemble de la plateforme' },
       { label: 'Mon espace', href: '/dashboard', icon: Home, hint: 'Votre tableau de bord personnel (ateliers, missions, activité)' },
+      { label: "Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées.' },
     ],
   },
   {

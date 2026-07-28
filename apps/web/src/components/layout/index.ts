@@ -5,3 +5,4 @@ export type { AppChromeProps } from './app-shell';
 export * from './sidebar';
 export * from './header';
 export * from './action-panel';
+export { PageHelp } from './page-help';
