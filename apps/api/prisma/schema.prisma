@@ -109,8 +109,10 @@ model Account {
   credits     Int          @default(0)
   /// Adhérent : abonnement actif -> accès au niveau 2 (LEX, services externes).
   isMember    Boolean      @default(false)
-  /// Compte Stripe connecté de l'intervenant : c'est LUI qui encaisse.
-  stripeAccountId String?
+  /// Taux de commission ADéPA appliqué aux prestations externes de ce compte
+  /// (null = taux par défaut de la plateforme). Modèle prestataire : ADéPA
+  /// facture l'établissement, l'intervenant facture ADéPA.
+  commissionRate  Decimal?  @db.Decimal(5, 4)
   /// Solde de points de fidélité (10 points = 1 € de réduction).
   points      Int          @default(0)
   ownerId     String

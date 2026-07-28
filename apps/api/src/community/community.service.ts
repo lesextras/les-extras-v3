@@ -5,6 +5,14 @@ import { PrismaService } from '../prisma/prisma.service';
 /** 10 points = 1 € de réduction. Constante unique, utilisée partout. */
 export const POINTS_PAR_EURO = 10;
 
+/** Une réduction ne peut jamais dépasser 30 % d'une facture : la dette de
+ *  points reste bornée et la marge protégée. */
+export const PLAFOND_REDUCTION = 0.3;
+
+/** Les points expirent au bout de 12 mois : la dette ne s'accumule pas
+ *  indéfiniment au passif de l'association. */
+export const VALIDITE_MOIS = 12;
+
 /** Barème d'attribution — volontairement sobre pour maîtriser la dette. */
 export const BAREME = {
   PUBLICATION: 20,
@@ -50,13 +58,37 @@ export class CommunityService {
       }),
     ]);
     const points = compte?.points ?? 0;
+    // Points expirés : gagnés il y a plus de VALIDITE_MOIS et non dépensés.
+    const limite = new Date();
+    limite.setMonth(limite.getMonth() - VALIDITE_MOIS);
+    const bientotPerimes = lignes
+      .filter((l) => l.amount > 0 && l.createdAt < new Date(limite.getTime() + 60 * 86_400_000))
+      .reduce((t, l) => t + l.amount, 0);
     return {
       points,
       euros: Math.floor(points / POINTS_PAR_EURO),
       pointsParEuro: POINTS_PAR_EURO,
+      plafondReduction: PLAFOND_REDUCTION,
+      validiteMois: VALIDITE_MOIS,
+      bientotPerimes,
       bareme: BAREME,
       historique: lignes,
     };
+  }
+
+  /**
+   * Réduction utilisable sur un montant donné : bornée par le solde ET par
+   * le plafond de 30 % de la facture.
+   */
+  async reductionApplicable(accountId: string, montantHt: number) {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { points: true },
+    });
+    const dispo = Math.floor((compte?.points ?? 0) / POINTS_PAR_EURO);
+    const plafond = Math.floor(montantHt * PLAFOND_REDUCTION);
+    const reduction = Math.max(0, Math.min(dispo, plafond));
+    return { reduction, pointsUtilises: reduction * POINTS_PAR_EURO, plafond, dispo };
   }
 
   // ── Boîte à idées ────────────────────────────────────────────────────────

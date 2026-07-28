@@ -17,8 +17,12 @@ export class MemberGuard implements CanActivate {
     if (!accountId) return false;
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
-      select: { isMember: true },
+      select: { isMember: true, type: true },
     });
+    // Les intervenants indépendants ont TOUT gratuitement : ils sont le côté
+    // rare de la marketplace, on ne facture jamais l'offre. Seuls les
+    // établissements passent à l'adhésion pour le niveau 2.
+    if (account?.type === 'FREELANCE') return true;
     if (!account?.isMember) {
       throw new ForbiddenException(
         "Fonctionnalité LEX réservée aux adhérents. Activez l'adhésion depuis Abonnement & crédits.",

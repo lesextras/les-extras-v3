@@ -462,6 +462,25 @@ export class MissionsService {
       throw new BadRequestException('Vous ne pouvez pas candidater à votre propre mission.');
     }
 
+    // Garde-fou juridique : un salarié de l'établissement ne peut pas s'y
+    // facturer en indépendant (requalification / travail dissimulé). Il reste
+    // libre d'intervenir dans tous les autres établissements.
+    const compteFreelance = await this.prisma.account.findUnique({
+      where: { id: freelanceAccountId },
+      select: { ownerId: true },
+    });
+    if (compteFreelance?.ownerId) {
+      const salarie = await this.prisma.membership.findFirst({
+        where: { accountId: mission.accountId, userId: compteFreelance.ownerId },
+        select: { id: true },
+      });
+      if (salarie) {
+        throw new BadRequestException(
+          "Vous êtes rattaché à cet établissement : vous ne pouvez pas y candidater en tant qu'indépendant.",
+        );
+      }
+    }
+
     const existing = await this.prisma.booking.findFirst({
       where: { missionId, accountId: freelanceAccountId },
     });
