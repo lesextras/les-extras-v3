@@ -1,6 +1,6 @@
 // Générateur d'activités éducatives & thérapeutiques.
 import type { Metadata } from "next";
-import { requireSession } from "../../../_shared/server";
+import { estAdherent, requireSession } from "../../../_shared/server";
 import { PageHeader } from "../../../_shared/ui";
 import { ActivityGenerator } from "../../../_shared/ActivityGenerator";
 import { AdherentGate } from "../../../_shared/AdherentGate";
@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "LEX · Générateur d'activités" };
 
 export default async function ActivitesPage() {
   const session = await requireSession();
-  const adherent = Boolean(session.account?.isMember) || session.user.role === "ADMIN";
+  const adherent = await estAdherent(session);
 
   if (!adherent) {
     return (

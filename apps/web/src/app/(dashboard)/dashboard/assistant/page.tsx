@@ -2,7 +2,7 @@
 // Server Component minimal : l'en-tête explicatif est rendu côté serveur,
 // le studio (interactif) est un composant client.
 import type { Metadata } from "next";
-import { requireSession } from "../../../_shared/server";
+import { estAdherent, requireSession } from "../../../_shared/server";
 import { PageHeader } from "../../../_shared/ui";
 import { AssistantStudio } from "../../../_shared/AssistantStudio";
 import { AdherentGate } from "../../../_shared/AdherentGate";
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "LEX · Assistant d'écriture" };
 
 export default async function AssistantPage() {
   const session = await requireSession();
-  const adherent = Boolean(session.account?.isMember) || session.user.role === "ADMIN";
+  const adherent = await estAdherent(session);
 
   if (!adherent) {
     return (

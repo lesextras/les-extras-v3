@@ -57,3 +57,20 @@ export async function fetchPublic<T>(path: string): Promise<{ data?: T; error?: 
     return { error: message };
   }
 }
+
+/**
+ * L'adhésion (accès LEX) est lue EN FRAIS depuis l'API : le jeton de session
+ * est émis au login et ne reflète pas un changement d'adhésion postérieur.
+ * Les ADMIN passent toujours. En cas d'erreur réseau, on laisse passer :
+ * la garde serveur de l'API reste le verrou de vérité.
+ */
+export async function estAdherent(session: Session): Promise<boolean> {
+  if (session.user.role === "ADMIN") return true;
+  const { data } = await fetchApi<{ accounts?: { id: string; isMember?: boolean }[] }>(
+    session,
+    "/auth/me",
+  );
+  if (!data?.accounts) return true; // API muette -> l'API tranchera à l'appel
+  const actif = data.accounts.find((a) => a.id === session.account.id);
+  return Boolean(actif?.isMember);
+}
