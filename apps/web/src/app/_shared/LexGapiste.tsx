@@ -2,10 +2,18 @@
 
 // LEX LE GAPISTE — l'animateur IA du groupe d'analyse de pratique.
 //
-// Le point qui fait toute la différence avec un chatbot ordinaire : il ne
-// répond pas tout de suite. Il commence par questionner — contexte, faits,
-// ressentis, enjeux, ce qui a déjà été tenté — comme un animateur de GAP qui
-// refuse de donner une solution à la place du professionnel.
+// DEUX PRINCIPES TENUS PAR CE COMPOSANT :
+//
+// 1. IL N'INTERVIENT QUE SUR SOLLICITATION. Aucun appel n'est déclenché au
+//    montage : le seul point d'entrée est le bouton « Solliciter LEX ». Tant
+//    qu'on ne clique pas, il n'existe pas. Le GAP est d'abord un espace entre
+//    humains ; l'IA n'y prend jamais la parole d'elle-même.
+// 2. LE DIALOGUE EST PRIVÉ. Rien de ce qui se dit ici n'est publié dans le fil
+//    de la situation : les autres professionnels ne voient pas cet échange, et
+//    LEX ne dépose aucune réponse à leur place.
+//
+// Sa méthode : il commence par questionner — contexte, faits, ressentis,
+// enjeux, ce qui a déjà été tenté — puis il prend position.
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Sparkles, Send, ShieldCheck, Lock } from "lucide-react";
@@ -106,12 +114,17 @@ export function LexGapiste({
           <div className="flex gap-3">
             <Sparkles className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
             <div className="max-w-2xl">
-              <p className="font-semibold">Demander à LEX le GAPiste</p>
+              <p className="font-semibold">Solliciter LEX le GAPiste</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Il commence par vous poser quelques questions — le contexte, les faits, ce que ça
                 vous fait, ce qui se joue. Puis il vous donne son analyse, la posture qu&apos;il
                 vous conseille, des activités à essayer et ce qu&apos;il ferait dès lundi.
                 Comptez cinq minutes.
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Il n&apos;intervient <strong>que si vous le sollicitez</strong>, jamais de
+                lui-même, et cet échange reste <strong>entre vous et lui</strong> : il ne publie
+                rien dans le fil et ne répond à la place de personne.
               </p>
             </div>
           </div>
@@ -125,7 +138,7 @@ export function LexGapiste({
               );
             }}
           >
-            Ouvrir la table ronde
+            Solliciter LEX
             <Sparkles />
           </Button>
         </CardContent>
@@ -141,6 +154,9 @@ export function LexGapiste({
           <h2 className="font-semibold">LEX le GAPiste</h2>
           <span className="text-xs text-muted-foreground">
             psychologue clinicien · éducateur spécialisé senior
+          </span>
+          <span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+            Échange privé
           </span>
         </div>
 
@@ -192,7 +208,8 @@ export function LexGapiste({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <ShieldCheck className="size-3.5 text-success" aria-hidden />
-              Les prénoms sont masqués avant l&apos;envoi. Ce dialogue n&apos;est pas enregistré.
+              Prénoms masqués avant l&apos;envoi · dialogue non enregistré · rien n&apos;est publié
+              dans le fil
             </span>
             <Button type="submit" disabled={chargement || message.trim().length < 2}>
               Envoyer

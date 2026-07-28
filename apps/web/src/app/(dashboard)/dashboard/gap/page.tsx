@@ -104,14 +104,16 @@ export default async function GapPage({
             <Sparkles className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
             <div className="max-w-2xl">
               <p className="font-semibold">
-                Et si personne ne répond ? Demandez à LEX le GAPiste
+                Et si personne ne répond ? Sollicitez LEX le GAPiste
               </p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 L&apos;animateur IA du GAP, avec la posture d&apos;un psychologue clinicien et
                 d&apos;un éducateur spécialisé senior. Il ne répond jamais tout de suite : il
                 commence par vous questionner — contexte, faits, ressentis, enjeux — exactement
                 comme un animateur en séance. Ensuite il prend position : son analyse, la posture
-                à tenir, des activités à essayer, et ce qu&apos;il ferait dès lundi.
+                à tenir, des activités à essayer, et ce qu&apos;il ferait dès lundi. Il
+                n&apos;intervient que si vous le sollicitez, depuis votre situation, et
+                l&apos;échange reste privé.
               </p>
             </div>
           </div>

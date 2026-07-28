@@ -24,6 +24,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Ressources',
     links: [
+      { label: 'Comment ça marche', href: '/#comment' },
       { label: 'Le GAP', href: '/dashboard/gap' },
       { label: 'L’Édublog', href: '/edublog' },
       { label: 'Notre histoire', href: '/notre-histoire' },

@@ -104,9 +104,10 @@ export function BlocGap() {
             </li>
           </ol>
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-            Il donne un avis franc, jamais un diagnostic : il n&apos;a vu ni la personne ni
-            l&apos;équipe, et tout ce qu&apos;il propose se valide en réunion avant d&apos;être mis
-            en œuvre.
+            Il n&apos;intervient que si vous le sollicitez, depuis votre propre situation, et
+            l&apos;échange reste privé : il ne publie rien dans le fil. Il donne un avis franc,
+            jamais un diagnostic — et tout ce qu&apos;il propose se valide en réunion avant
+            d&apos;être mis en œuvre.
           </p>
         </div>
 
