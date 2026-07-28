@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { CommandPalette } from './command-palette';
 import { IndicateursCompte } from './indicateurs-compte';
+import { SupportModal } from '@/app/_shared/modals/SupportModal';
 import { cn, initials } from '@/lib/utils';
 import type { SessionUser, SessionAccount } from '@/lib/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -45,6 +46,7 @@ export interface HeaderProps {
 export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderProps) {
   const router = useRouter();
   const [switching, setSwitching] = React.useState(false);
+  const [supportOuvert, setSupportOuvert] = React.useState(false);
 
   async function switchAccount(accountId: string) {
     if (accountId === activeAccount?.id || switching) return;
@@ -201,7 +203,10 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
               <Settings />
               Paramètres
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/dashboard/inbox')}>
+            {/* /dashboard/inbox est la messagerie entre membres : y envoyer
+                quelqu'un qui cherche de l'aide, c'est le faire écrire dans le
+                vide. Le support, c'est un contact avec l'équipe ADéPA. */}
+            <DropdownMenuItem onClick={() => setSupportOuvert(true)}>
               <LifeBuoy />
               Support
             </DropdownMenuItem>
@@ -213,6 +218,14 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Rendue hors du menu déroulant : celui-ci se referme au clic et
+          emporterait la modale avec lui. */}
+      <SupportModal
+        open={supportOuvert}
+        onOpenChange={setSupportOuvert}
+        utilisateur={{ name: user.name, email: user.email }}
+      />
     </header>
   );
 }

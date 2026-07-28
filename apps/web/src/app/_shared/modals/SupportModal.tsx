@@ -33,16 +33,26 @@ const SUJETS_SUPPORT = [
 export function SupportModal({
   trigger,
   utilisateur,
+  open: ouvertPilote,
+  onOpenChange,
 }: {
-  trigger: React.ReactNode;
+  /** Absent en mode piloté : l'ouverture vient d'ailleurs (menu déroulant). */
+  trigger?: React.ReactNode;
   /** Identité connue : on ne la redemande pas. */
   utilisateur?: { name?: string | null; email?: string | null };
+  /** Mode piloté — un élément de menu se referme au clic et ne peut donc pas
+   *  porter lui-même le déclencheur de la modale. */
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [ouvertInterne, setOuvertInterne] = useState(false);
+  const pilote = ouvertPilote !== undefined;
+  const open = pilote ? ouvertPilote : ouvertInterne;
+  const setOpen = (v: boolean) => (pilote ? onOpenChange?.(v) : setOuvertInterne(v));
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
