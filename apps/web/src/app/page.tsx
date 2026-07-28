@@ -51,11 +51,11 @@ export default async function LandingPage() {
           <div className="absolute inset-0 bg-grid opacity-50" aria-hidden />
           {/* halos décoratifs en mouvement lent */}
           <div
-            className="absolute -left-24 top-24 -z-10 size-[420px] rounded-full bg-secondary/10 blur-3xl animate-float"
+            className="absolute -left-24 top-24 -z-10 size-[420px] rounded-full bg-secondary/10 blur-3xl"
             aria-hidden
           />
           <div
-            className="absolute -right-28 bottom-0 -z-10 size-[480px] rounded-full bg-primary/10 blur-3xl animate-float [animation-delay:-3.5s]"
+            className="absolute -right-28 bottom-0 -z-10 size-[480px] rounded-full bg-primary/10 blur-3xl"
             aria-hidden
           />
 
@@ -748,7 +748,7 @@ export default async function LandingPage() {
             <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground shadow-card md:px-16">
               <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
               <div
-                className="absolute -right-16 -top-16 size-64 rounded-full bg-secondary/20 blur-3xl animate-float"
+                className="absolute -right-16 -top-16 size-64 rounded-full bg-secondary/20 blur-3xl"
                 aria-hidden
               />
               <div className="relative mx-auto max-w-2xl">
