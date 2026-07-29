@@ -91,6 +91,20 @@ export default async function AteliersPage() {
                   {SERVICE_STATUS_LABEL[sv.status]}
                 </Badge>
                 <ServiceCard audience service={sv} href={`/marketplace/services/${sv.id}`} />
+                {/* Une fiche publiée n'était plus modifiable ni suspendable :
+                    la liste n'offrait aucune action, alors que l'API l'a
+                    toujours permis. */}
+                <div className="mt-2 flex justify-end">
+                  <ServiceModal
+                    accountId={session.account.id}
+                    fiche={sv as never}
+                    trigger={
+                      <Button size="sm" variant="outline">
+                        Modifier
+                      </Button>
+                    }
+                  />
+                </div>
               </div>
             ))}
           </div>

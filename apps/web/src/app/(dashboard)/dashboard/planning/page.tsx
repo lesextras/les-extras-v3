@@ -54,8 +54,8 @@ export default async function PlanningPage() {
         title="Planning"
         subtitle={
           isEstablishment
-            ? "Organisez vos créneaux d'intervention et suivez les affectations."
-            : "Vos créneaux confirmés et vos disponibilités hebdomadaires."
+            ? "Vos renforts pourvus, ateliers réservés et sessions de formation, plus les créneaux que vous ajoutez vous-même."
+            : "Vos interventions confirmées — missions et ateliers — et vos disponibilités hebdomadaires."
         }
       />
 

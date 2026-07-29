@@ -21,26 +21,142 @@ export class PlanningService {
     });
   }
 
-  /** Planning d'un compte (établissement) OU shifts assignés (freelance). */
+  /**
+   * PLANNING UNIFIÉ.
+   *
+   * Le planning ne montrait que les créneaux saisis à la main : un renfort
+   * pourvu, un atelier réservé ou une session de formation n'y apparaissaient
+   * jamais. Il fallait tout ressaisir en double.
+   *
+   * On ne duplique rien en base : on ASSEMBLE à la lecture les réservations et
+   * les sessions déjà enregistrées. Conséquence directe : si une date de
+   * réservation change, le planning suit tout seul — il n'y a pas deux vérités
+   * à tenir synchronisées, donc pas de planning qui ment.
+   *
+   * Les entrées déduites portent `modifiable: false` : on ne déplace pas une
+   * intervention depuis le planning, on change sa date là où elle engage les
+   * deux parties.
+   */
   async getPlanning(accountId: string, accountType: string, userId: string, from?: string, to?: string) {
     if ((from && Number.isNaN(Date.parse(from))) || (to && Number.isNaN(Date.parse(to)))) {
       throw new BadRequestException('Dates de période invalides.');
     }
+    const debut = from ? new Date(from) : undefined;
+    const fin = to ? new Date(to) : undefined;
+    const dansLaPeriode = (d: Date | null | undefined) =>
+      Boolean(d) && (!debut || d! >= debut) && (!fin || d! <= fin);
+
     const range: any = {};
-    if (from) range.gte = new Date(from);
-    if (to) range.lte = new Date(to);
-    const where: any = accountType === 'FREELANCE'
-      ? { freelanceId: userId }
-      : { accountId };
-    if (from || to) where.startAt = range;
-    return this.prisma.shift.findMany({
-      where,
+    if (debut) range.gte = debut;
+    if (fin) range.lte = fin;
+    const estFreelance = accountType === 'FREELANCE';
+
+    // 1. Créneaux saisis à la main (réunions, astreintes, affectations).
+    const whereShift: any = estFreelance ? { freelanceId: userId } : { accountId };
+    if (debut || fin) whereShift.startAt = range;
+    const shifts = await this.prisma.shift.findMany({
+      where: whereShift,
       orderBy: { startAt: 'asc' },
       include: {
         freelance: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
         mission: { select: { id: true, title: true } },
       },
     });
+
+    // Une réservation déjà matérialisée en créneau ne doit pas s'afficher deux
+    // fois : on retient les bookings déjà représentés.
+    const dejaAffiches = new Set(shifts.map((s) => s.bookingId).filter(Boolean) as string[]);
+
+    // 2. Réservations : renforts et ateliers, dans les deux sens (le compte a
+    //    réservé, ou c'est lui qui intervient).
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        status: { in: ['ACCEPTED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED'] },
+        OR: [{ accountId }, { mission: { accountId } }, { service: { accountId } }],
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        mission: { select: { id: true, title: true, accountId: true, startDate: true, endDate: true } },
+        service: { select: { id: true, title: true, accountId: true, durationMinutes: true } },
+        account: { select: { id: true, name: true } },
+      },
+    });
+
+    const DUREE_DEFAUT_MIN = 120;
+    const entreesReservations = bookings
+      .filter((b) => !dejaAffiches.has(b.id))
+      .map((b) => {
+        const debutEntree = b.mission?.startDate ?? b.scheduledAt ?? null;
+        if (!dansLaPeriode(debutEntree)) return null;
+        const minutes = b.service?.durationMinutes ?? DUREE_DEFAUT_MIN;
+        const finEntree =
+          b.mission?.endDate ?? new Date(debutEntree!.getTime() + minutes * 60_000);
+        return {
+          id: `booking:${b.id}`,
+          title: b.mission?.title ?? b.service?.title ?? 'Intervention',
+          startAt: debutEntree!,
+          endAt: finEntree,
+          status: b.status === 'COMPLETED' ? 'DONE' : 'CONFIRMED',
+          notes: b.account?.name ? `Avec ${b.account.name}` : null,
+          freelance: null,
+          mission: b.mission ? { id: b.mission.id, title: b.mission.title } : null,
+          origine: b.mission ? 'RENFORT' : 'ATELIER',
+          modifiable: false,
+          lien: `/documents/contrat/${b.id}`,
+        };
+      })
+      .filter(Boolean);
+
+    // 3. Sessions de formation : celles que le compte accueille, et celles où
+    //    il a inscrit quelqu'un.
+    const sessions = await this.prisma.formationSession.findMany({
+      where: {
+        ...(debut || fin ? { startDate: range } : {}),
+        OR: [
+          { hostAccountId: accountId },
+          { formation: { ownerAccountId: accountId } },
+          { inscriptions: { some: { payerAccountId: accountId } } },
+          ...(estFreelance ? [{ trainerId: userId }] : []),
+        ],
+      },
+      orderBy: { startDate: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        startDate: true,
+        endDate: true,
+        location: true,
+        formation: { select: { id: true, title: true, slug: true } },
+        _count: { select: { inscriptions: true } },
+      },
+    });
+
+    const entreesFormations = sessions.map((se) => ({
+      id: `session:${se.id}`,
+      title: se.title ?? se.formation?.title ?? 'Session de formation',
+      startAt: se.startDate,
+      endAt: se.endDate ?? new Date(se.startDate.getTime() + 7 * 3600_000),
+      status: 'CONFIRMED',
+      notes: [se.location, se._count.inscriptions ? `${se._count.inscriptions} inscrit(s)` : null]
+        .filter(Boolean)
+        .join(' · ') || null,
+      freelance: null,
+      mission: null,
+      origine: 'FORMATION',
+      modifiable: false,
+      lien: se.formation?.slug ? `/formations/${se.formation.slug}` : null,
+    }));
+
+    const manuels = shifts.map((s) => ({
+      ...s,
+      origine: s.missionId ? 'RENFORT' : 'MANUEL',
+      modifiable: true,
+      lien: null as string | null,
+    }));
+
+    return [...manuels, ...entreesReservations, ...entreesFormations].sort(
+      (a: any, b: any) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+    );
   }
 
   async createShift(accountId: string, dto: CreateShiftDto) {

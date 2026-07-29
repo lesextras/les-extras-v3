@@ -54,7 +54,23 @@ export interface Shift {
   notes?: string | null;
   freelance?: { id: string; firstName?: string | null; lastName?: string | null; avatarUrl?: string | null } | null;
   mission?: { id: string; title: string } | null;
+  /** D'où vient la ligne : saisie manuelle, ou activité réelle du compte. */
+  origine?: "MANUEL" | "RENFORT" | "ATELIER" | "FORMATION";
+  /**
+   * Une ligne déduite d'une réservation ne se modifie pas ici : sa date engage
+   * les deux parties et se change sur la réservation elle-même. La déplacer
+   * dans le planning donnerait l'illusion d'avoir prévenu l'intervenant.
+   */
+  modifiable?: boolean;
+  /** Contrat ou fiche formation, pour aller à la source en un clic. */
+  lien?: string | null;
 }
+
+const ORIGINE_LABEL: Record<string, string> = {
+  RENFORT: "SOS Renfort",
+  ATELIER: "Atelier",
+  FORMATION: "Formation",
+};
 
 export interface Availability {
   id: string;
@@ -280,10 +296,18 @@ export function PlanningBoard({
                         ) : null}
                       </div>
                       <div className="flex items-center gap-2">
+                        {s.origine && s.origine !== "MANUEL" ? (
+                          <Badge variant="secondary">{ORIGINE_LABEL[s.origine]}</Badge>
+                        ) : null}
                         <Badge variant={STATUS_VARIANT[s.status]}>
                           {STATUS_LABEL[s.status]}
                         </Badge>
-                        {isEstablishment ? (
+                        {s.lien ? (
+                          <Button asChild size="sm" variant="ghost">
+                            <a href={s.lien}>Ouvrir</a>
+                          </Button>
+                        ) : null}
+                        {isEstablishment && s.modifiable !== false ? (
                           <>
                             <div className="w-36">
                               <Select
