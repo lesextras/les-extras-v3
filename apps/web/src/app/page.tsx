@@ -16,6 +16,7 @@ import {
   Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getSession } from '@/lib/session';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,15 @@ import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 
 export default async function LandingPage() {
+  // Même raison que sur les pages publiques : l'accueil doit reconnaître
+  // quelqu'un qui est déjà connecté.
+  const sessionEnCours = await getSession();
+  const utilisateurEnTete = sessionEnCours
+    ? {
+        prenom: sessionEnCours.user.firstName ?? null,
+        compte: sessionEnCours.activeAccount?.name ?? sessionEnCours.account?.name ?? null,
+      }
+    : null;
   // Compteur réel du catalogue public (affiché dans le hero).
   const { data: featured } = await fetchPublic<{ items: CatalogItem[]; total?: number }>(
     '/public/catalog?type=all&take=3',
@@ -62,7 +72,7 @@ export default async function LandingPage() {
 
   return (
     <div className="theme-sombre flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader utilisateur={utilisateurEnTete} />
 
       <main id="main" className="flex-1">
         {/* ============ HERO — scindé, style grande plateforme ============ */}

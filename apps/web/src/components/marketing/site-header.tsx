@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LayoutDashboard } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 
@@ -17,9 +17,25 @@ const links = [
   { label: 'Édublog', href: '/edublog' },
 ];
 
-/** En-tête public sticky avec navigation d'ancres et CTA connexion/inscription. */
-export function SiteHeader() {
+export interface UtilisateurEnTete {
+  prenom?: string | null;
+  compte?: string | null;
+}
+
+/**
+ * En-tête public.
+ *
+ * Il affichait « Se connecter / Créer un compte » en toutes circonstances,
+ * y compris à quelqu'un déjà connecté qui venait du tableau de bord : la
+ * session était pourtant intacte, mais l'en-tête ne la lisait pas. Résultat,
+ * on croyait avoir été déconnecté en consultant le catalogue.
+ *
+ * La session est lue côté serveur (layout) et transmise ici : ce composant
+ * reste client pour le menu mobile, mais ne devine plus l'état de connexion.
+ */
+export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | null }) {
   const [open, setOpen] = React.useState(false);
+  const connecte = Boolean(utilisateur);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -39,12 +55,30 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/login">Se connecter</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/register">Créer un compte</Link>
-          </Button>
+          {connecte ? (
+            <>
+              {utilisateur?.compte && (
+                <span className="max-w-[200px] truncate text-sm text-muted-foreground">
+                  {utilisateur.compte}
+                </span>
+              )}
+              <Button asChild size="sm">
+                <Link href="/dashboard">
+                  <LayoutDashboard />
+                  Mon espace
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/login">Se connecter</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/register">Créer un compte</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         <button
@@ -72,12 +106,23 @@ export function SiteHeader() {
               </Link>
             ))}
             <div className="mt-2 flex flex-col gap-2">
-              <Button asChild variant="outline">
-                <Link href="/login">Se connecter</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/register">Créer un compte</Link>
-              </Button>
+              {connecte ? (
+                <Button asChild>
+                  <Link href="/dashboard" onClick={() => setOpen(false)}>
+                    <LayoutDashboard />
+                    Mon espace
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild variant="outline">
+                    <Link href="/login">Se connecter</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/register">Créer un compte</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         </div>
