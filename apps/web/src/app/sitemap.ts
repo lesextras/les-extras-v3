@@ -38,7 +38,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/notre-histoire",
     "/catalogue",
     "/contact",
-    "/dashboard/gap",
+    // Les deux dispositifs ont désormais une vitrine publique qui répond 200.
+    // /dashboard/gap n'y a plus sa place : elle redirige vers la connexion,
+    // et un sitemap qui pointe une redirection gaspille le budget de crawl.
+    "/gap",
+    "/sos-renfort",
     "/intervenants",
     "/outils",
     "/outils/cout-remplacement",

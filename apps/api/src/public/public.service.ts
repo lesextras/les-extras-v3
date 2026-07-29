@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   MissionStatus,
   Prisma,
+  QuestionStatus,
   ServiceCategory,
   ServiceStatus,
 } from '@prisma/client';
@@ -1002,4 +1003,61 @@ export class PublicService {
     };
   }
 
+
+  // ── GAP : aperçu public, volontairement incomplet ────────────────────────
+
+  /**
+   * Ce qu'un visiteur peut voir du GAP sans compte : la preuve que ça vit,
+   * jamais le contenu. Les situations décrivent des personnes accompagnées
+   * réelles — même anonymisées, elles ne sortent pas de l'espace connecté et
+   * ne doivent pas se retrouver dans un index de moteur de recherche.
+   *
+   * On ne renvoie donc ni `situation`, ni `tente`, ni les réponses, et le
+   * titre est tronqué côté serveur : ce qui n'est pas envoyé ne peut pas fuir.
+   */
+  async gapApercu() {
+    const where = { status: { in: [QuestionStatus.OUVERTE, QuestionStatus.RESOLUE] } };
+    const [recentes, nbQuestions, nbReponses, metiers] = await this.prisma.$transaction([
+      this.prisma.question.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: 6,
+        select: {
+          id: true,
+          title: true,
+          metier: true,
+          publicVise: true,
+          status: true,
+          createdAt: true,
+          _count: { select: { answers: true } },
+        },
+      }),
+      this.prisma.question.count({ where }),
+      this.prisma.answer.count(),
+      this.prisma.question.findMany({
+        where,
+        distinct: ['metier'],
+        select: { metier: true },
+        take: 12,
+      }),
+    ]);
+
+    /** 48 caractères : assez pour saisir le thème, trop peu pour la situation. */
+    const tronquer = (t: string) => (t.length <= 48 ? t : `${t.slice(0, 48).trimEnd()}…`);
+
+    return {
+      apercu: recentes.map((q) => ({
+        id: q.id,
+        extrait: tronquer(q.title),
+        metier: q.metier,
+        publicVise: q.publicVise,
+        resolue: q.status === QuestionStatus.RESOLUE,
+        nbReponses: q._count.answers,
+        creeLe: q.createdAt,
+      })),
+      nbQuestions,
+      nbReponses,
+      metiers: metiers.map((m) => m.metier).filter(Boolean),
+    };
+  }
 }

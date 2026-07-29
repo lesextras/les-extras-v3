@@ -71,6 +71,15 @@ export class PublicController {
     return this.publicService.missionDetail(id);
   }
 
+  /**
+   * GET /public/gap/apercu — de quoi montrer que le GAP vit, sans rien livrer
+   * de son contenu : titres tronqués, compteurs, métiers représentés.
+   */
+  @Get('gap/apercu')
+  gapApercu() {
+    return this.publicService.gapApercu();
+  }
+
   /** GET /public/vendors — annuaire des intervenants qui publient. */
   @Get('vendors')
   vendors(@Query() query: QueryVendorsDto) {

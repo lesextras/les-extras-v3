@@ -263,7 +263,7 @@ export default async function LandingPage() {
               {
                 titre: 'Le renfort d’équipe et parental',
                 texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
-                href: '/#renfort',
+                href: '/sos-renfort',
                 image: 'https://les-extras.fr/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg',
                 action: 'Comprendre le renfort',
               },

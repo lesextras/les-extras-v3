@@ -101,11 +101,50 @@ export function FilReponses({
           </CardContent>
         </Card>
       ) : (
-        <ul className="space-y-3">
-          {reponses.map((r) => (
-            <li key={r.id}>
-              <Card className={r.retenue ? "border-success/40 bg-success/5" : undefined}>
-                <CardContent className="flex gap-4 pt-6">
+        /* Le fil des retours : une colonne, chaque réponse rattachée à la
+           précédente par un trait. On suit la conversation de haut en bas. */
+        <ul>
+          {reponses.map((r, i) => (
+            <li key={r.id} className="relative flex gap-3">
+              <div className="flex shrink-0 flex-col items-center">
+                <span
+                  className={`grid size-9 shrink-0 place-items-center rounded-full text-xs font-semibold ring-1 ${
+                    r.retenue
+                      ? "bg-success/15 text-success-foreground ring-success/40"
+                      : "bg-muted text-muted-foreground ring-border"
+                  }`}
+                  aria-hidden
+                >
+                  {r.auteur.replace(/^Un·e\s*/i, "").slice(0, 2).toUpperCase()}
+                </span>
+                {i < reponses.length - 1 ? (
+                  <span className="mt-1 w-px flex-1 bg-border" aria-hidden />
+                ) : null}
+              </div>
+
+              <div
+                className={`min-w-0 flex-1 rounded-xl px-3 pb-6 pt-1 ${
+                  r.retenue ? "bg-success/5" : ""
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-x-2 text-sm">
+                  <span className="font-medium text-foreground">{r.auteur}</span>
+                  <span className="text-xs text-muted-foreground">
+                    · {formatDate(r.createdAt)}
+                  </span>
+                  {r.retenue ? (
+                    <Badge variant="success" className="ml-auto">
+                      <CheckCircle2 aria-hidden /> Retour retenu
+                    </Badge>
+                  ) : null}
+                </div>
+
+                <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-foreground">
+                  {r.content}
+                </p>
+
+                {/* Actions sous le message, comme dans un fil de discussion */}
+                <div className="mt-3 flex flex-wrap items-center gap-4">
                   <button
                     type="button"
                     onClick={() =>
@@ -118,50 +157,42 @@ export function FilReponses({
                     }
                     disabled={enCours === r.id || r.estMienne}
                     aria-pressed={r.aVote}
-                    aria-label={r.aVote ? "Retirer mon vote" : "Cette réponse m'a aidé"}
-                    title={r.estMienne ? "Vous ne pouvez pas voter pour votre réponse" : "Cette réponse m'a aidé"}
-                    className={`flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-lg border transition ${
+                    aria-label={r.aVote ? "Retirer mon vote" : "Ce retour m'a aidé"}
+                    title={
+                      r.estMienne
+                        ? "Vous ne pouvez pas voter pour votre propre retour"
+                        : "Ce retour m'a aidé"
+                    }
+                    className={`inline-flex items-center gap-1.5 text-xs transition-colors disabled:opacity-60 ${
                       r.aVote
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    } disabled:opacity-60`}
+                        ? "font-medium text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    <ThumbsUp className="h-4 w-4" aria-hidden />
-                    <span className="text-sm font-semibold tabular-nums">{r.votes}</span>
+                    <ThumbsUp className="size-4" aria-hidden />
+                    <span className="tabular-nums">{r.votes}</span>
                   </button>
 
-                  <div className="min-w-0 flex-1 space-y-2">
-                    {r.retenue ? (
-                      <Badge variant="success">
-                        <CheckCircle2 aria-hidden /> Réponse retenue par l&apos;auteur
-                      </Badge>
-                    ) : null}
-                    <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
-                      {r.content}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {r.auteur} · {formatDate(r.createdAt)}
-                    </p>
-                    {estAuteurQuestion && !r.retenue ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={enCours === r.id}
-                        onClick={() =>
-                          agir(
-                            `/dashboard/gap/reponses/${r.id}/retenir`,
-                            r.id,
-                            "Réponse retenue — son auteur reçoit 40 points",
-                          )
-                        }
-                      >
-                        Cette réponse m&apos;a aidé
-                      </Button>
-                    ) : null}
-                  </div>
-                </CardContent>
-              </Card>
+                  {estAuteurQuestion && !r.retenue ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      disabled={enCours === r.id}
+                      onClick={() =>
+                        agir(
+                          `/dashboard/gap/reponses/${r.id}/retenir`,
+                          r.id,
+                          "Retour retenu — son auteur reçoit 40 points",
+                        )
+                      }
+                    >
+                      Ce retour m&apos;a aidé
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
             </li>
           ))}
         </ul>

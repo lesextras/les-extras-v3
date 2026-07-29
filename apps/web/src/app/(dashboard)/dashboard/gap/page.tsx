@@ -239,38 +239,75 @@ export default async function GapPage({
           }
         />
       ) : (
-        <ul className="space-y-3">
-          {items.map((q) => (
-            <li key={q.id}>
-              <Link href={`/dashboard/gap/${q.id}`} className="group block">
-                <Card className="transition group-hover:border-primary/40 group-hover:shadow-card">
-                  <CardContent className="space-y-3 pt-6">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="soft">{q.metier}</Badge>
-                      <Badge variant="outline">{q.publicVise}</Badge>
-                      {q.estMienne ? <Badge variant="secondary">Ma situation</Badge> : null}
-                      {q.status === "RESOLUE" ? (
-                        <Badge variant="success">
-                          <CheckCircle2 aria-hidden /> Retour retenu
-                        </Badge>
-                      ) : q.nbReponses === 0 ? (
-                        <Badge variant="warning">Sans retour</Badge>
-                      ) : null}
-                    </div>
-                    <h2 className="font-semibold leading-snug text-foreground">{q.title}</h2>
-                    <p className="line-clamp-2 text-sm text-muted-foreground">{q.extrait}…</p>
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                      <span>{q.auteur}</span>
-                      <span>{formatDate(q.createdAt)}</span>
-                      <span>
-                        {q.nbReponses} retour{q.nbReponses > 1 ? "s" : ""}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Eye className="size-3" aria-hidden /> {q.views}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
+        /* Le fil : une seule colonne, chaque situation à la suite de la
+           précédente, reliées par un trait continu. On lit le GAP comme une
+           conversation qui se déroule, pas comme un tableau d'annonces. */
+        <ul className="mx-auto w-full max-w-2xl">
+          {items.map((q, i) => (
+            <li key={q.id} className="relative flex gap-3 pb-2">
+              {/* Colonne de gauche : pastille + trait de liaison vers la suivante */}
+              <div className="flex shrink-0 flex-col items-center">
+                <span
+                  className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-semibold text-accent-foreground ring-1 ring-border"
+                  aria-hidden
+                >
+                  {initialesMetier(q.metier)}
+                </span>
+                {i < items.length - 1 ? (
+                  <span className="mt-1 w-px flex-1 bg-border" aria-hidden />
+                ) : null}
+              </div>
+
+              <Link
+                href={`/dashboard/gap/${q.id}`}
+                className="group min-w-0 flex-1 rounded-xl px-3 pb-6 pt-1.5 transition-colors hover:bg-accent/40"
+              >
+                {/* Ligne d'auteur, comme un fil de discussion */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                  <span className="font-medium text-foreground">{q.auteur}</span>
+                  <span className="text-muted-foreground">· {q.publicVise}</span>
+                  <span className="text-muted-foreground">· {formatDate(q.createdAt)}</span>
+                  {q.estMienne ? (
+                    <Badge variant="secondary" className="ml-auto">
+                      Ma situation
+                    </Badge>
+                  ) : null}
+                </div>
+
+                <h2 className="mt-1.5 font-semibold leading-snug text-foreground group-hover:underline">
+                  {q.title}
+                </h2>
+                <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                  {q.extrait}…
+                </p>
+
+                {q.status === "RESOLUE" ? (
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-success-foreground">
+                    <CheckCircle2 className="size-3.5" aria-hidden /> Un retour a été retenu
+                  </p>
+                ) : q.nbReponses === 0 ? (
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-warning-foreground">
+                    Personne n’a encore répondu
+                  </p>
+                ) : null}
+
+                {/* Barre d'actions, en bas comme dans un fil */}
+                <div className="mt-3 flex items-center gap-5 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5 transition-colors group-hover:text-foreground">
+                    <MessageCircleQuestion className="size-4" aria-hidden />
+                    {q.nbReponses > 0
+                      ? `${q.nbReponses} retour${q.nbReponses > 1 ? "s" : ""}`
+                      : "Répondre"}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Eye className="size-4" aria-hidden /> {q.views}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Badge variant="outline" className="font-normal">
+                      {q.metier}
+                    </Badge>
+                  </span>
+                </div>
               </Link>
             </li>
           ))}
@@ -278,4 +315,11 @@ export default async function GapPage({
       )}
     </div>
   );
+}
+
+/** Deux lettres tirées du métier : une pastille d'auteur qui ne dit rien de la personne. */
+function initialesMetier(metier: string): string {
+  const mots = metier.split(/[\s'’-]+/).filter(Boolean);
+  if (mots.length >= 2) return (mots[0][0] + mots[1][0]).toUpperCase();
+  return metier.slice(0, 2).toUpperCase();
 }
