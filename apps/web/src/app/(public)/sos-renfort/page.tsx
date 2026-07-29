@@ -28,7 +28,7 @@ import { formatDate } from "../../_shared/format";
 export const metadata: Metadata = {
   title: "SOS Renfort — remplacement urgent en médico-social",
   description:
-    "Un poste à couvrir demain matin ? Publiez votre besoin, il est diffusé en cascade à votre équipe, aux intervenants déjà venus chez vous, puis à la marketplace. Le premier qui accepte emporte la mission.",
+    "Un poste à couvrir demain matin ? Publiez le besoin. Il descend en cascade : votre équipe, les habitués, le réseau. Le premier qui accepte emporte la mission.",
   alternates: { canonical: "/sos-renfort" },
 };
 
@@ -48,19 +48,19 @@ const CASCADE = [
     numero: "1",
     titre: "Votre équipe d’abord",
     texte:
-      "Le besoin part vers vos propres salariés rattachés au compte. Une heure supplémentaire en interne coûte toujours moins qu’un renfort externe — et personne n’a besoin d’être présenté au public accueilli.",
+      "Vos salariés d’abord. Moins cher qu’un renfort externe, et personne à présenter au public accueilli.",
   },
   {
     numero: "2",
     titre: "Puis les intervenants déjà venus chez vous",
     texte:
-      "Ceux qui connaissent déjà la structure, les habitudes, les enfants ou les résidents. Ils reprennent le poste sans temps d’adaptation.",
+      "Ceux qui connaissent déjà la maison. Ils reprennent le poste sans temps d’adaptation.",
   },
   {
     numero: "3",
     titre: "Enfin la marketplace",
     texte:
-      "Si personne n’a répondu, le besoin s’ouvre à tous les intervenants qualifiés du réseau, classés par correspondance avec votre demande.",
+      "Sans réponse, le besoin s’ouvre au réseau, classé par correspondance avec votre demande.",
   },
 ];
 
@@ -102,9 +102,7 @@ export default async function SosRenfortPage() {
             Un arrêt maladie à 21 h. Le poste est couvert avant l’ouverture.
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
-            Publiez votre besoin de remplacement : il part d’abord vers votre équipe, puis
-            vers les intervenants déjà venus chez vous, puis vers le réseau. Le premier qui
-            accepte emporte la mission — vous n’avez rien à arbitrer.
+            Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte emporte la mission. Vous n’arbitrez rien.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button asChild size="lg">
@@ -187,8 +185,7 @@ export default async function SosRenfortPage() {
             La diffusion en cascade
           </h2>
           <p className="text-muted-foreground">
-            Un renfort ne part pas au hasard sur toute la France. Il descend palier par
-            palier, et s’arrête dès qu’il est pourvu.
+            Pas de diffusion au hasard. Le besoin descend palier par palier et s’arrête dès qu’il est pourvu.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
@@ -212,8 +209,7 @@ export default async function SosRenfortPage() {
               {total} {total > 1 ? "missions ouvertes" : "mission ouverte"} en ce moment
             </h2>
             <p className="text-muted-foreground">
-              Métier, ville et dates sont visibles. Le détail, la structure et le taux
-              horaire s’affichent une fois connecté.
+              Métier, ville et dates visibles. Le reste s’affiche une fois connecté.
             </p>
           </div>
 
@@ -281,8 +277,7 @@ export default async function SosRenfortPage() {
             Le prochain arrêt maladie tombera un vendredi soir.
           </h2>
           <p className="text-muted-foreground">
-            Créer le compte prend cinq minutes et ne coûte rien. Vous ne payez que les
-            renforts effectivement réalisés.
+            Cinq minutes, gratuit. Vous ne payez que les renforts réalisés.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Button asChild size="lg">

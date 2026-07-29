@@ -117,8 +117,7 @@ export function DemoLex() {
           Votre public, et ce que vous voulez travailler
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Pas de diagnostic, pas de jargon : décrivez la situation comme vous la diriez à un
-          collègue.
+          Pas de jargon. Décrivez la situation comme à un collègue.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -215,13 +214,10 @@ export function DemoLex() {
 
         {!res && !chargement ? (
           <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-            Choisissez un exemple ou décrivez votre situation : LEX construit une séance complète —
-            objectifs observables, matériel, déroulé en quatre temps, points de vigilance, et ce
-            qu&apos;il faudra noter dans le compte rendu.
+            Décrivez une situation, LEX construit la séance : objectifs, matériel, déroulé en quatre temps, points de vigilance.
             <br />
             <br />
-            LEX ne pose aucun diagnostic et n&apos;interprète rien. Il propose une activité, à
-            valider en équipe pluridisciplinaire avant mise en œuvre.
+            Aucun diagnostic, aucune interprétation. À valider en équipe avant mise en œuvre.
           </p>
         ) : null}
 
@@ -244,8 +240,7 @@ export function DemoLex() {
             </p>
             {res.tronque ? (
               <p className="mt-4 rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
-                Aperçu volontairement tronqué. Dans votre espace, la séance est complète — avec la
-                variante simplifiée, l&apos;alternative et les indicateurs d&apos;observation.
+                Aperçu tronqué. Dans votre espace : séance complète, variantes et indicateurs d’observation.
               </p>
             ) : null}
             {protege > 0 ? (

@@ -14,7 +14,7 @@ import { formatDate, initials } from "../../_shared/format";
 export const metadata: Metadata = {
   title: "Édublog",
   description:
-    "L’Édublog de Les Extras : articles et actualités du médico-social — retours d’expérience, projets d’établissements et publications des intervenants. En accès libre.",
+    "Articles et actualités du médico-social : retours d’expérience, projets d’établissements, publications des intervenants. En accès libre.",
   alternates: { canonical: "/edublog" },
 };
 
@@ -87,7 +87,7 @@ export default async function ActualitesPage({
     <div className="space-y-8">
       <PageHeader
         title="Édublog"
-        subtitle="Deux rayons : les articles de fond, et les actualités du réseau. Établissements, intervenants et équipe ADéPA y écrivent. En accès libre, sans compte."
+        subtitle="Deux rayons : articles de fond et actualités du réseau. Écrit par les établissements, les intervenants et l’équipe. Sans compte."
       />
 
       <nav aria-label="Sections de l’Édublog" className="grid gap-3 sm:grid-cols-2">

@@ -11,7 +11,7 @@ import { CatalogueRequestForm } from "../../_shared/CatalogueRequestForm";
 export const metadata: Metadata = {
   title: "Demander le catalogue 2026",
   description:
-    "Recevez le catalogue 2026 des ateliers et formations Les Extras : contenus, durées, publics visés et tarifs, dans un document à partager en réunion.",
+    "Le catalogue 2026 des ateliers et formations : contenus, durées, publics, tarifs. Un document à partager en réunion.",
   alternates: { canonical: "/catalogue" },
 };
 
@@ -26,7 +26,7 @@ export default function CataloguePage() {
     <div className="space-y-10">
       <PageHeader
         title="Demander le catalogue 2026"
-        subtitle="Un document unique à faire circuler en réunion d’équipe : nos ateliers, nos formations certifiées Qualiopi, les publics visés et les tarifs."
+        subtitle="Nos ateliers, nos formations Qualiopi, les publics visés et les tarifs. En un document."
       />
 
       <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr]">
@@ -46,8 +46,7 @@ export default function CataloguePage() {
           ))}
           <p className="flex items-start gap-2 pt-2 text-xs text-muted-foreground">
             <Mail className="mt-0.5 size-3.5 shrink-0" />
-            Vos coordonnées servent uniquement à vous envoyer le catalogue et à vous répondre.
-            Aucune revente, désinscription à tout moment.
+            Vos coordonnées servent au catalogue et à vous répondre. Aucune revente.
           </p>
         </div>
 

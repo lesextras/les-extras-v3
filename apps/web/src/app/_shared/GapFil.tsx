@@ -83,7 +83,7 @@ export async function GapFil({
     <div className="space-y-8">
       <PageHeader
         title="Le GAP"
-        subtitle="Groupe d'Analyse de la Pratique, en ligne et permanent. Une table ronde où chacun dépose une situation qui l'occupe et reçoit les retours de professionnels qui l'ont vécue."
+        subtitle="Groupe d'Analyse de la Pratique, en ligne et permanent. Vous déposez une situation, des professionnels qui l'ont vécue vous répondent."
         actions={
           <Button asChild>
             <Link href="/gap/poser">Déposer une situation</Link>
@@ -291,7 +291,7 @@ export async function GapFil({
       {items.length === 0 ? (
         <EmptyState
           title="La table est encore vide"
-          description="La première situation déposée est celle qui lance le groupe. Celle qui vous occupe en ce moment occupe probablement dix autres professionnels."
+          description="La première situation lance le groupe. Celle qui vous occupe en occupe sûrement dix autres."
           action={
             <Button asChild>
               <Link href="/gap/poser">Déposer la première situation</Link>

@@ -12,7 +12,7 @@ import { PageHeader } from "../../_shared/ui";
 export const metadata: Metadata = {
   title: "Notre histoire",
   description:
-    "Les Extras est le dispositif de mise en relation de l’association ADéPA, créée en 2012 : éducation, prévention et animation auprès des enfants, adolescents et familles en difficulté.",
+    "Le dispositif de mise en relation de l’association ADéPA, créée en 2012 : éducation, prévention et animation auprès des jeunes et des familles.",
   alternates: { canonical: "/notre-histoire" },
 };
 
@@ -20,21 +20,21 @@ const dispositifs = [
   {
     titre: "Les Extras",
     texte:
-      "La plateforme qui relie les établissements médico-sociaux aux intervenants éducatifs : ateliers à réserver et renfort d’équipe.",
+      "Les établissements médico-sociaux et les intervenants éducatifs : ateliers à réserver, renfort d’équipe.",
     icone: <Users className="size-5" />,
     href: "/ateliers",
   },
   {
     titre: "ADéPA Formation & Insertion",
     texte:
-      "Le centre de formation certifié Qualiopi : parcours métier, analyse des pratiques, prévention. Finançables par les OPCO.",
+      "Centre de formation Qualiopi : parcours métier, analyse des pratiques, prévention. Finançable OPCO.",
     icone: <GraduationCap className="size-5" />,
     href: "/formations",
   },
   {
     titre: "Studio A2PA",
     texte:
-      "Création de contenu et formation digitale : l’atelier qui donne aux jeunes et aux professionnels les outils du numérique.",
+      "Création de contenu et formation digitale, pour les jeunes et les professionnels.",
     icone: <Sparkles className="size-5" />,
     href: "https://adepa77.fr",
   },
@@ -45,26 +45,19 @@ export default function NotreHistoirePage() {
     <div className="space-y-14">
       <PageHeader
         title="Notre histoire"
-        subtitle="Les Extras est la plateforme de mise en relation développée par l’association ADéPA — Association pour le Développement de l’Éducation Par l’Animation."
+        subtitle="Les Extras est développée par l’ADéPA — Association pour le Développement de l’Éducation Par l’Animation."
       />
 
       <section className="space-y-4">
         <p className="text-lg leading-relaxed text-muted-foreground">
-          Association loi 1901 créée en <strong className="font-semibold text-foreground">2012</strong>, l’ADéPA
-          est active dans le champ éducatif et de la solidarité en Île-de-France, au Maroc et au
-          Sénégal. Depuis sa création, elle œuvre pour l’insertion sociale des enfants, des
-          adolescents et des familles en difficulté, par l’éducation, la prévention et l’animation.
+          Association loi 1901 créée en <strong className="font-semibold text-foreground">2012</strong>, l’ADéPA agit en Île-de-France, au Maroc et au Sénégal. Sa mission : l’insertion sociale des jeunes et des familles en difficulté, par l’éducation, la prévention et l’animation.
         </p>
       </section>
 
       <section className="space-y-5">
         <h2 className="text-2xl font-bold tracking-tight">Pourquoi Les Extras ?</h2>
         <p className="leading-relaxed text-muted-foreground">
-          Les établissements médico-sociaux — MECS, IME, ITEP, foyers, SESSAD — font régulièrement
-          face à des besoins de renfort ponctuel ou régulier : absences, remplacements, surcroîts
-          d’activité. Les Extras a été conçue pour répondre à ce besoin, en permettant à ces
-          établissements de réserver en ligne des intervenants éducatifs qualifiés et vérifiés, en
-          toute simplicité.
+          MECS, IME, ITEP, foyers, SESSAD : absences, remplacements, surcroîts d’activité. Les Extras leur permet de réserver en ligne des intervenants qualifiés et vérifiés.
         </p>
       </section>
 
@@ -78,8 +71,7 @@ export default function NotreHistoirePage() {
               </span>
               <h3 className="pt-2 font-semibold text-foreground">SOS Renfort</h3>
               <p className="text-sm text-muted-foreground">
-                Pour les besoins de remplacement urgent. Diffusion en cascade : votre équipe
-                d’abord, puis les intervenants déjà venus chez vous, puis le réseau.
+                Pour les remplacements urgents. Votre équipe d’abord, puis les habitués, puis le réseau.
               </p>
             </CardContent>
           </Card>
@@ -90,8 +82,7 @@ export default function NotreHistoirePage() {
               </span>
               <h3 className="pt-2 font-semibold text-foreground">Ateliers</h3>
               <p className="text-sm text-muted-foreground">
-                Un catalogue d’interventions et d’ateliers éducatifs à réserver selon vos besoins,
-                avec devis chiffré, contrat et facture.
+                Un catalogue d’ateliers éducatifs à réserver. Devis, contrat et facture générés.
               </p>
             </CardContent>
           </Card>
@@ -101,8 +92,7 @@ export default function NotreHistoirePage() {
       <section className="space-y-5">
         <h2 className="text-2xl font-bold tracking-tight">Pour les professionnels</h2>
         <p className="leading-relaxed text-muted-foreground">
-          Éducateurs spécialisés, moniteurs-éducateurs, AES, psychologues : vous pouvez proposer vos
-          services via Les Extras et accéder à des missions près de chez vous, en toute liberté.
+          Éducateurs, moniteurs, AES, psychologues : proposez vos services et trouvez des missions près de chez vous.
         </p>
         <Button asChild>
           <Link href="/register">

@@ -9,7 +9,7 @@ const CADRE = [
     icone: EyeOff,
     titre: "Anonyme, toujours",
     texte:
-      "Vous déposez sous « Un·e éducateur spécialisé », jamais sous votre nom. Les prénoms des personnes accompagnées sont masqués automatiquement et ne sont stockés nulle part en clair.",
+      "Vous déposez sous « Un·e éducateur spécialisé », jamais sous votre nom. Les prénoms sont masqués automatiquement.",
   },
   {
     icone: ShieldCheck,
@@ -34,10 +34,7 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
           Un groupe d&apos;analyse de la pratique, en ligne et permanent
         </h2>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          Une table ronde où chacun dépose la situation qui l&apos;occupe — celle qui tourne en
-          boucle depuis trois semaines — et reçoit les retours de professionnels qui l&apos;ont
-          vécue. Personne ne détient la bonne réponse : c&apos;est le fait de penser à plusieurs
-          qui débloque.
+          Vous déposez la situation qui tourne en boucle. Des professionnels qui l’ont vécue vous répondent. Penser à plusieurs, c’est ça qui débloque.
         </p>
 
         <ul className="mt-8 space-y-5">
@@ -77,8 +74,7 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
           </span>
           <h3 className="mt-4 text-2xl font-bold tracking-tight">LEX le GAPiste</h3>
           <p className="mt-3 leading-relaxed text-muted-foreground">
-            L&apos;animateur IA du groupe, avec la posture d&apos;un psychologue clinicien et
-            d&apos;un éducateur spécialisé senior. Sa particularité : <strong>il ne répond pas
+            L’animateur IA du groupe, posture de psychologue clinicien. Sa particularité : <strong>il ne répond pas
             tout de suite</strong>.
           </p>
           <ol className="mt-5 space-y-3 text-sm">
@@ -87,9 +83,7 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
                 1
               </span>
               <span className="text-muted-foreground">
-                <strong className="text-foreground">Il questionne d&apos;abord</strong> — le
-                contexte, les faits observables, ce que vous ressentez, ce qui se joue pour la
-                personne et pour l&apos;équipe, ce que vous avez déjà tenté.
+                <strong className="text-foreground">Il questionne d&apos;abord</strong> — contexte, faits, ressentis, enjeux, ce que vous avez déjà tenté.
               </span>
             </li>
             <li className="flex gap-3">
@@ -97,17 +91,12 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
                 2
               </span>
               <span className="text-muted-foreground">
-                <strong className="text-foreground">Puis il prend position</strong> — son analyse
-                de ce qui se joue, la posture qu&apos;il vous conseille de tenir (avec les mots à
-                dire), deux ou trois activités à essayer, et ce qu&apos;il ferait, lui, dès lundi.
+                <strong className="text-foreground">Puis il prend position</strong> — son analyse, la posture à tenir avec les mots à dire, deux ou trois activités, et ce qu’il ferait dès lundi.
               </span>
             </li>
           </ol>
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-            Il n&apos;intervient que si vous le sollicitez, depuis votre propre situation, et
-            l&apos;échange reste privé : il ne publie rien dans le fil. Il donne un avis franc,
-            jamais un diagnostic — et tout ce qu&apos;il propose se valide en réunion avant
-            d&apos;être mis en œuvre.
+            Il n’intervient que si vous le sollicitez, et l’échange reste privé. Un avis franc, jamais un diagnostic — à valider en réunion.
           </p>
         </div>
 
@@ -117,9 +106,7 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
               <Users className="size-5 text-primary" aria-hidden />
               <p className="mt-3 font-medium">Filtré par métier et par public accompagné</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Un éducateur en EHPAD et un en ITEP ne cherchent pas les mêmes retours. Vous ne
-                voyez que les situations qui vous concernent — et répondre à un collègue rapporte
-                15 points, 40 de plus si votre retour est retenu.
+                EHPAD et ITEP ne cherchent pas les mêmes retours. Vous ne voyez que ce qui vous concerne. Répondre rapporte 15 points, 40 de plus si votre retour est retenu.
               </p>
             </div>
             {illustration ? (

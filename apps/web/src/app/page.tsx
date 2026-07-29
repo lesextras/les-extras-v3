@@ -95,8 +95,7 @@ export default async function LandingPage() {
                 <span className="text-secondary">portées par ceux qui font le terrain.</span>
               </h1>
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Ateliers éducatifs, formations Qualiopi et renfort d’équipe, animés par des
-                indépendants vérifiés du médico-social.
+                Ateliers, formations Qualiopi et renfort d’équipe. Par des indépendants vérifiés du médico-social.
               </p>
 
               <div className="animate-fade-in-up stagger-3 mt-7 max-w-xl">
@@ -322,8 +321,7 @@ export default async function LandingPage() {
                 Étape par étape, selon qui vous êtes
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Pour chaque étape : le problème tel qu’il se vit aujourd’hui, ce que ça change
-                concrètement, et ce que ça coûte — ou pas.
+                Le problème d’aujourd’hui, ce qui change, ce que ça coûte.
               </p>
             </Reveal>
             <Reveal delay={120} className="mt-10">
@@ -358,9 +356,7 @@ export default async function LandingPage() {
                     </span>
                     <h3 className="mt-4 text-xl font-semibold">Les ateliers éducatifs</h3>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                      Quinze médiations clés en main — psycho-boxe, slam, théâtre,
-                      musicothérapie… Réservables en ligne, avec compte rendu après chaque
-                      intervention.
+                      Quinze médiations clés en main : psycho-boxe, slam, théâtre, musicothérapie. Réservables en ligne, compte rendu après chaque séance.
                     </p>
                     <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
                       Parcourir le catalogue
@@ -391,9 +387,7 @@ export default async function LandingPage() {
                   </span>
                   <h3 className="mt-4 text-xl font-semibold">SOS Renfort</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-foreground/75">
-                    Une absence ce soir ? Publiez le besoin : diffusion en cascade — votre équipe,
-                    puis les intervenants déjà venus, enfin le réseau. Le premier qui accepte est
-                    engagé, contrat généré.
+                    Une absence ce soir ? Publiez le besoin. Il descend en cascade : votre équipe, les habitués, le réseau. Le premier qui accepte est engagé.
                   </p>
                   <Link
                     href="/register"
@@ -413,8 +407,7 @@ export default async function LandingPage() {
                   </span>
                   <h3 className="mt-4 text-xl font-semibold">Formations Qualiopi</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    En intra, finançables OPCO. Émargement en ligne, attestations et certificats
-                    générés automatiquement.
+                    En intra, finançables OPCO. Émargement, attestations et certificats automatiques.
                   </p>
                   <Link
                     href="/formations"
@@ -451,9 +444,7 @@ export default async function LandingPage() {
                     </span>
                     <h3 className="mt-4 text-xl font-semibold">LEX, l’assistant d’écriture</h3>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                      Vos notes brutes deviennent des écrits professionnels. Noms masqués avant
-                      traitement, notes jamais stockées, relecture obligatoire : vous restez
-                      l’auteur.
+                      Vos notes deviennent des écrits professionnels. Noms masqués, rien stocké, relecture obligatoire : vous restez l’auteur.
                     </p>
                     <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
                       Essayer l’assistant
@@ -471,8 +462,7 @@ export default async function LandingPage() {
                   </span>
                   <h3 className="mt-4 text-xl font-semibold">La gestion sans papier</h3>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    Devis, contrats à double signature, factures PDF, pointage validé, coffre-fort
-                    de conformité avec alertes d’échéance.
+                    Devis, contrats signés, factures PDF, pointage validé. Coffre-fort avec alerte avant échéance.
                   </p>
                   <Link
                     href="/register"
@@ -496,8 +486,7 @@ export default async function LandingPage() {
                     </span>
                     <h3 className="mt-4 text-xl font-semibold">L’Édublog</h3>
                     <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                      Le fil public du réseau : retours d’expérience, projets, pratiques
-                      éducatives. Publiez, puis partagez sur LinkedIn en un clic.
+                      Le fil public du réseau : retours d’expérience, projets, pratiques. Partage LinkedIn en un clic.
                     </p>
                   </div>
                   <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary">
@@ -629,9 +618,7 @@ export default async function LandingPage() {
               Décrivez un besoin, LEX construit la séance
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              LEX est l’assistant IA de la plateforme, conçu pour le médico-social. Essayez son
-              générateur d’activités maintenant, sans compte : un public, ce que vous voulez
-              travailler, et vous obtenez une séance complète en quinze secondes.
+              L’assistant IA conçu pour le médico-social. Un public, un objectif — une séance complète en quinze secondes. Sans compte.
             </p>
           </Reveal>
           <Reveal className="mt-10">
@@ -657,9 +644,7 @@ export default async function LandingPage() {
                     Ce que LEX fait pour vous, au-delà de cet essai
                   </h3>
                   <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                    Quatre outils, une seule adhésion. Ils partagent le même parti pris : faire
-                    gagner du temps sur ce qui n’a jamais été le cœur du métier — la paperasse —
-                    pour en laisser plus à ce qui l’est.
+                    Quatre outils, une seule adhésion. Moins de paperasse, plus d’accompagnement.
                   </p>
                 </div>
                 <IllustrationEcrit className="mx-auto w-full max-w-md" />
@@ -688,8 +673,7 @@ export default async function LandingPage() {
                   Des calculateurs pour arbitrer, avant même de nous parler
                 </h2>
                 <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                  Un budget se défend avec des chiffres, pas avec une intuition. Ces deux outils
-                  produisent les vôtres en deux minutes — sans compte, sans e-mail à laisser.
+                  Un budget se défend avec des chiffres. Les vôtres en deux minutes, sans compte.
                 </p>
               </div>
               <IllustrationCalcul className="mx-auto w-full max-w-sm" />
@@ -709,8 +693,7 @@ export default async function LandingPage() {
                 Rejoindre le réseau des Extras
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Éducateurs spécialisés, moniteurs-éducateurs, AES, psychologues : ce que change le
-                fait de travailler en indépendant, raconté par ceux qui le font.
+                Éducateurs, moniteurs, AES, psychologues : l’indépendance racontée par ceux qui la vivent.
               </p>
               <Button asChild size="lg" className="mt-7">
                 <Link href="/register">
@@ -743,12 +726,11 @@ export default async function LandingPage() {
                 Gratuit en interne, payant seulement quand on travaille pour vous
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Le principe est simple : organiser votre <strong className="font-semibold text-foreground">équipe interne</strong> sur
-                la plateforme ne coûte rien, et ne coûtera jamais rien. Vous ne payez que dans
-                deux cas — quand un <strong className="font-semibold text-foreground">intervenant externe</strong> vient
-                chez vous (facturé à la prestation, prix affiché sur chaque fiche), ou si vous
-                choisissez l’<strong className="font-semibold text-foreground">adhésion</strong> pour débloquer les
-                outils d’intelligence artificielle LEX.
+                Organiser votre <strong className="font-semibold text-foreground">équipe interne</strong> est
+                gratuit, pour toujours. Vous payez dans deux cas seulement : un{" "}
+                <strong className="font-semibold text-foreground">intervenant externe</strong> vient
+                chez vous (prix affiché sur la fiche), ou vous prenez l’<strong className="font-semibold text-foreground">adhésion</strong> pour
+                débloquer LEX.
               </p>
             </Reveal>
 
@@ -843,8 +825,7 @@ export default async function LandingPage() {
 
             <Reveal delay={120}>
               <p className="mt-8 text-center text-sm text-muted-foreground">
-                Montants hors taxes. Les formations portées par la certification Qualiopi d’ADéPA
-                sont finançables par votre OPCO.
+                Montants HT. Formations Qualiopi finançables par votre OPCO.
               </p>
             </Reveal>
           </div>
@@ -942,8 +923,7 @@ export default async function LandingPage() {
                 Recevez le catalogue, posez vos questions
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Sans créer de compte : le catalogue complet des ateliers et formations vous est
-                envoyé par e-mail, et l’équipe répond à toutes vos questions.
+                Sans créer de compte. Le catalogue complet par e-mail, et l’équipe répond à vos questions.
               </p>
             </Reveal>
 
@@ -967,8 +947,7 @@ export default async function LandingPage() {
                   Prêt à renforcer vos équipes, sereinement ?
                 </h2>
                 <p className="mt-4 text-muted-foreground">
-                  Rejoignez les établissements et professionnels qui font confiance à LES EXTRAS.
-                  Création de compte gratuite, sans engagement.
+                  Compte gratuit, sans engagement. Vous ne payez que ce que vous utilisez.
                 </p>
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg" variant="secondary">

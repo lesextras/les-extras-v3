@@ -51,77 +51,77 @@ const PARCOURS: Record<
         niveau: "gratuit",
         icone: LayoutDashboard,
         titre: "Créez votre espace",
-        texte: "Votre structure, vos unités, vos membres. En quelques minutes, sans engagement.",
+        texte: "Structure, unités, membres. Cinq minutes, sans engagement.",
         probleme:
-          "Les remplacements se gèrent entre un cahier, un tableur et trois conversations téléphoniques.",
+          "Un cahier, un tableur, trois appels.",
         change:
-          "Un seul endroit où l’information ne disparaît plus quand la personne qui la détenait est en congé.",
+          "Tout au même endroit. Même quand la personne qui savait est en congé.",
       },
       {
         niveau: "gratuit",
         icone: CalendarClock,
         titre: "Organisez votre équipe interne",
         texte:
-          "Planning, missions confiées à vos propres salariés, messagerie, pointage des heures : gratuit, pour toujours.",
+          "Planning, missions internes, messagerie, pointage. Gratuit, pour toujours.",
         probleme:
-          "Le planning vit dans la tête du chef de service, et le remplaçant découvre son créneau la veille au soir.",
+          "Le planning vit dans la tête du chef de service.",
         change:
-          "Chacun voit ses créneaux, déclare ses heures, et les échanges restent attachés à la mission — pas perdus dans un fil de messages.",
+          "Chacun voit ses créneaux et déclare ses heures.",
       },
       {
         niveau: "gratuit",
         icone: ShieldCheck,
         titre: "Sécurisez vos obligations",
         texte:
-          "Coffre-fort de conformité : pièces d’identité, casier, diplômes, URSSAF — avec alerte avant chaque expiration.",
+          "Coffre-fort : identité, casier, diplômes, URSSAF. Alerte avant expiration.",
         probleme:
-          "Un extrait de casier périmé, on s’en aperçoit le jour où l’autorité de contrôle le demande.",
+          "Un casier périmé se découvre le jour du contrôle.",
         change:
-          "Les pièces sont rangées au même endroit et vous êtes prévenue avant l’échéance, pas après.",
+          "Vous êtes prévenue avant l’échéance, pas après.",
       },
       {
         niveau: "usage",
         icone: Sparkles,
         titre: "Réservez un atelier du réseau",
         texte:
-          "Des médiations clés en main. Devis sous 48 h, contrat et facture générés. Vous ne payez que la prestation.",
+          "Médiations clés en main. Devis sous 48 h, contrat et facture générés.",
         probleme:
-          "Monter une médiation, c’est trouver l’intervenant, vérifier ses diplômes, négocier, contractualiser. Des semaines pour une séance.",
+          "Trouver, vérifier, négocier, contractualiser : des semaines pour une séance.",
         change:
-          "Vous choisissez dans un catalogue de fiches déjà décrites et déjà vérifiées, et la partie administrative se fait toute seule.",
+          "Vous choisissez une fiche vérifiée. L’administratif se fait tout seul.",
       },
       {
         niveau: "usage",
         icone: Megaphone,
         titre: "Publiez un SOS Renfort",
         texte:
-          "Diffusion en cascade : votre équipe d’abord, puis les intervenants déjà venus, enfin le réseau. Le premier qui accepte est engagé.",
+          "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé.",
         probleme:
-          "Un arrêt maladie à 21 h, et commence le tour des appels. Vingt numéros, personne ne décroche, et le poste n’est toujours pas couvert.",
+          "Un arrêt maladie à 21 h. Vingt appels, personne ne décroche.",
         change:
-          "Le besoin part tout seul, palier par palier, en commençant par les moins chers et les mieux placés. Vous n’avez rien à arbitrer.",
+          "Le besoin descend tout seul, palier par palier. Rien à arbitrer.",
       },
       {
         niveau: "usage",
         icone: GraduationCap,
         titre: "Formez vos équipes",
         texte:
-          "Parcours certifiés Qualiopi, finançables par votre OPCO. Émargement, attestations et registre automatiques.",
+          "Parcours Qualiopi finançables OPCO. Émargement et attestations automatiques.",
         probleme:
-          "Chaque formation demande de chercher l’organisme, monter le financement, puis justifier a posteriori.",
+          "Chercher l’organisme, monter le financement, justifier après coup.",
         change:
-          "Un catalogue déjà certifié, et les pièces justificatives qui se remplissent au fil des séances au lieu d’être reconstituées après coup.",
+          "Un catalogue déjà certifié. Les justificatifs se remplissent au fil des séances.",
       },
       {
         niveau: "adhesion",
         icone: PenLine,
         titre: "Adhérez pour débloquer LEX",
         texte:
-          "Assistant d’écriture, générateur d’activités éducatives et assistant intégré — l’IA au service de vos équipes.",
+          "Assistant d’écriture, générateur d’activités, assistant intégré.",
         probleme:
-          "Les écrits professionnels se rédigent le soir, après le service, sur du temps qui n’appartient plus à personne.",
+          "Les écrits se rédigent le soir, après le service.",
         change:
-          "Des notes brutes deviennent un écrit structuré que vous relisez et signez. Le temps repart vers l’accompagnement.",
+          "Vos notes deviennent un écrit structuré. Vous relisez, vous signez.",
       },
     ],
   },
@@ -133,77 +133,77 @@ const PARCOURS: Record<
         icone: UserRound,
         titre: "Créez votre profil",
         texte:
-          "Diplômes, expériences, zones d’intervention. Profil vérifié par l’équipe : c’est ce qui rassure les établissements.",
+          "Diplômes, expériences, zones d’intervention. Profil vérifié par l’équipe.",
         probleme:
-          "À chaque nouvelle structure, on renvoie les mêmes diplômes, on réexplique son parcours, et on repart de zéro.",
+          "À chaque structure, on renvoie les mêmes diplômes.",
         change:
-          "Un profil vérifié une fois, qui parle pour vous auprès de tous les établissements du réseau.",
+          "Un profil vérifié une fois, qui parle pour vous partout.",
       },
       {
         niveau: "gratuit",
         icone: Sparkles,
         titre: "Publiez vos ateliers",
         texte:
-          "Vos médiations au catalogue, avec vos tarifs. Vous touchez 100 % de votre prix : aucune commission ne vous est prélevée.",
+          "Vos médiations au catalogue, à vos tarifs. Zéro commission.",
         probleme:
-          "Faire connaître sa médiation repose sur le bouche-à-oreille et sur la chance de connaître la bonne personne.",
+          "Faire connaître sa médiation tient au bouche-à-oreille.",
         change:
-          "Votre atelier est présenté aux établissements comme un produit, avec vos objectifs et votre méthode — et votre prix reste le vôtre.",
+          "Votre atelier est présenté comme un produit. Votre prix reste le vôtre.",
       },
       {
         niveau: "gratuit",
         icone: Target,
         titre: "Répondez aux missions de renfort",
         texte:
-          "Les opportunités qui correspondent à votre profil, classées par pertinence. Candidature en un clic.",
+          "Les opportunités qui collent à votre profil, classées par pertinence. Candidature en un clic.",
         probleme:
-          "Les remplacements circulent dans des groupes fermés. On apprend qu’ils existaient une fois qu’ils sont pourvus.",
+          "Les remplacements circulent en groupes fermés.",
         change:
-          "Les missions viennent à vous, filtrées sur votre métier et votre secteur. Le premier qui accepte emporte la mission.",
+          "Les missions viennent à vous, filtrées sur votre métier et votre secteur.",
       },
       {
         niveau: "gratuit",
         icone: GraduationCap,
         titre: "Animez des formations",
         texte:
-          "Intervenez dans les parcours certifiants portés par la certification Qualiopi de l’association.",
+          "Intervenez sous la certification Qualiopi de l’association.",
         probleme:
-          "Se déclarer organisme de formation seul, c’est Qualiopi, le bilan pédagogique, et un mur administratif pour quelques jours par an.",
+          "Se déclarer organisme seul : Qualiopi, bilan pédagogique, mur administratif.",
         change:
-          "Vous intervenez sous la certification de l’association : vous apportez le contenu, elle porte le cadre.",
+          "Vous apportez le contenu, l’association porte le cadre.",
       },
       {
         niveau: "gratuit",
         icone: FileCheck2,
         titre: "Laissez la paperasse à la plateforme",
         texte:
-          "Contrat, déclaration d’heures, facture : générés automatiquement. Vous facturez l’association, elle facture le client.",
+          "Contrat, déclaration d’heures, facture : générés automatiquement.",
         probleme:
-          "Chaque mission traîne son contrat à rédiger, ses heures à récapituler, sa facture à relancer. Des heures non facturables, tous les mois.",
+          "Chaque mission traîne son contrat, ses heures, sa facture à relancer.",
         change:
-          "Tout se génère à partir de la mission elle-même. Et vous avez un seul payeur au lieu de dix.",
+          "Tout part de la mission. Et un seul payeur au lieu de dix.",
       },
       {
         niveau: "gratuit",
         icone: Star,
         titre: "Gagnez en visibilité",
         texte:
-          "Avis après chaque mission, articles sur l’Édublog, points de fidélité : votre travail devient votre réputation.",
+          "Avis après mission, articles, points de fidélité : votre travail devient votre réputation.",
         probleme:
-          "La réputation se construit en dix ans, ne se transporte pas d’une structure à l’autre, et ne se prouve nulle part.",
+          "La réputation met dix ans à se construire et ne se transporte pas.",
         change:
-          "Chaque intervention laisse une trace publique et vérifiable, qui travaille pour vous quand vous n’êtes pas dans la pièce.",
+          "Chaque intervention laisse une trace publique et vérifiable.",
       },
       {
         niveau: "adhesion",
         icone: PenLine,
         titre: "Adhérez pour débloquer LEX",
         texte:
-          "Vos notes brutes deviennent des écrits professionnels, et l’IA conçoit vos activités éducatives.",
+          "Assistant d’écriture, générateur d’activités, assistant intégré.",
         probleme:
-          "Les comptes rendus et les projets d’activité se font sur votre temps personnel, entre deux interventions.",
+          "Comptes rendus et projets d’activité sur votre temps personnel.",
         change:
-          "Vous dictez l’essentiel, LEX structure, vous relisez. Les prénoms sont masqués, rien n’est conservé.",
+          "Vous dictez, LEX structure, vous relisez. Prénoms masqués, rien conservé.",
       },
     ],
   },
@@ -394,7 +394,7 @@ export function TimelineParcours() {
           </Link>
         </Button>
         <p className="mt-3 text-xs text-muted-foreground">
-          Gratuit = sans limite de durée · À l’usage = vous payez la prestation · Adhésion = LEX inclus
+          Gratuit = pour toujours · À l’usage = la prestation seule · Adhésion = LEX inclus
         </p>
       </div>
     </div>

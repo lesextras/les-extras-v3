@@ -11,7 +11,7 @@ const SECONDAIRES = [
     href: "/outils/budget-ateliers",
     titre: "Budget annuel d'ateliers",
     texte:
-      "Coût total, coût par jeune, coût par jeune et par mois — les trois chiffres qui font passer un arbitrage en direction.",
+      "Coût total, par jeune, par jeune et par mois. Les trois chiffres qui font passer un arbitrage.",
     icone: PiggyBank,
   },
 ];
@@ -38,9 +38,7 @@ export function BlocOutils() {
             Combien vous coûte vraiment un remplacement ?
           </h3>
           <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
-            Une agence d&apos;intérim applique un coefficient de 1,9 à 2,2 sur le salaire brut. Un
-            intervenant indépendant, non. Entrez vos chiffres réels — salaire, durée, charges — et
-            l&apos;écart apparaît en euros, poste par poste.
+            L’intérim applique un coefficient de 1,9 à 2,2. Un indépendant, non. Entrez vos chiffres : l’écart apparaît en euros.
           </p>
           <ul className="mt-5 space-y-1.5 text-sm text-muted-foreground">
             <li>· Comparaison intérim / indépendant sur la même mission</li>
@@ -83,8 +81,7 @@ export function BlocOutils() {
           </span>
           <h3 className="mt-4 text-lg font-semibold">Aucune inscription, aucune donnée gardée</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Tout se calcule dans votre navigateur. Rien n&apos;est envoyé, rien n&apos;est
-            enregistré, et nous ne vous rappellerons pas à cause d&apos;un calcul.
+            Tout se calcule dans votre navigateur. Rien envoyé, rien enregistré, aucun rappel commercial.
           </p>
           <Button asChild variant="outline" size="sm" className="mt-5">
             <Link href="/outils">

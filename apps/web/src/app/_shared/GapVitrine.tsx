@@ -43,25 +43,25 @@ const REGLES = [
     icone: EyeOff,
     titre: "Anonyme par défaut",
     texte:
-      "Vous publiez sous pseudonyme. Ni votre nom ni celui de votre structure n’apparaissent, sauf si vous choisissez de les montrer.",
+      "Vous publiez sous pseudonyme. Ni votre nom, ni celui de votre structure.",
   },
   {
     icone: ShieldCheck,
     titre: "Les prénoms sont masqués",
     texte:
-      "À l’enregistrement, les prénoms détectés dans votre texte sont remplacés. On parle de personnes accompagnées réelles : elles n’ont pas à être reconnaissables.",
+      "Les prénoms sont remplacés à l’enregistrement. On parle de personnes réelles.",
   },
   {
     icone: Lock,
     titre: "Rien n’est public",
     texte:
-      "Aucune situation n’est visible depuis le site ni indexée par Google. Il faut un compte pour lire, et un compte pour répondre.",
+      "Rien n’est visible depuis le site, rien n’est indexé. Compte obligatoire pour lire et pour répondre.",
   },
   {
     icone: Users,
     titre: "Entre pairs, sans hiérarchie",
     texte:
-      "Éducateurs, AES, psychologues, moniteurs, chefs de service : on répond depuis sa pratique, pas depuis son grade.",
+      "Éducateurs, AES, psychologues, chefs de service : on répond depuis sa pratique, pas depuis son grade.",
   },
 ];
 
@@ -70,19 +70,19 @@ const ETAPES = [
     numero: "1",
     titre: "Vous déposez une situation",
     texte:
-      "Pas un sujet théorique : ce qui se passe, depuis quand, avec qui — et surtout ce que vous avez déjà tenté. C’est ce dernier point qui évite les réponses évidentes.",
+      "Ce qui se passe, depuis quand, avec qui. Et ce que vous avez déjà tenté — c’est ça qui évite les réponses évidentes.",
   },
   {
     numero: "2",
     titre: "Des professionnels répondent",
     texte:
-      "Le fil s’enrichit au fil des retours. Chacun raconte comment il a fait face à quelque chose de proche. Vous pouvez relancer, préciser, remercier.",
+      "Chacun raconte comment il a fait face à quelque chose de proche. Vous relancez, vous précisez.",
   },
   {
     numero: "3",
     titre: "Vous retenez ce qui vous aide",
     texte:
-      "Vous désignez la réponse qui a débloqué la situation. Elle reste visible en tête du fil pour les prochains qui traverseront la même chose.",
+      "Vous désignez la réponse qui a débloqué. Elle reste en tête du fil pour les suivants.",
   },
 ];
 
@@ -110,9 +110,7 @@ export async function GapVitrine() {
             La situation que vous n’osez raconter qu’en salle de pause.
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
-            Le GAP, c’est l’analyse de pratique sans attendre la séance du mois prochain.
-            Vous déposez une situation de terrain, des professionnels du médico-social vous
-            répondent depuis leur expérience. Anonymement, entre pairs.
+            L’analyse de pratique sans attendre la séance du mois prochain. Vous déposez une situation, des professionnels du médico-social répondent depuis leur expérience. Anonymement.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button asChild size="lg">
@@ -142,8 +140,7 @@ export async function GapVitrine() {
             Ce qui rend la parole possible
           </h2>
           <p className="text-muted-foreground">
-            Un GAP ne fonctionne que si l’on peut dire ce qui coince vraiment. Quatre règles
-            tiennent ce cadre — elles ne sont pas négociables.
+            Un GAP ne marche que si l’on peut dire ce qui coince. Quatre règles, non négociables.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -192,8 +189,7 @@ export async function GapVitrine() {
                 Ce qui se discute en ce moment
               </h2>
               <p className="text-muted-foreground">
-                Les situations ne sont pas lisibles ici, et ne le seront jamais : elles
-                parlent de personnes réelles. Voici seulement les thèmes ouverts.
+                Les situations ne sont pas lisibles ici, et ne le seront jamais. Voici les thèmes ouverts.
               </p>
             </div>
           </div>
@@ -269,10 +265,7 @@ export async function GapVitrine() {
             <div className="space-y-2">
               <p className="text-xl font-medium text-foreground">LEX, l’animateur du GAP</p>
               <p className="leading-relaxed text-muted-foreground">
-                Quand un fil s’essouffle, LEX relance avec les questions qu’un animateur de
-                GAP poserait : qu’est-ce qui vous a surpris ? qu’avez-vous ressenti ? qu’est-ce
-                que la personne cherchait à dire par ce comportement ? Il n’apporte pas de
-                réponse toute faite — il aide le groupe à penser.
+                Quand un fil s’essouffle, LEX relance comme le ferait un animateur : qu’est-ce qui vous a surpris ? que cherchait à dire la personne ? Il ne donne pas la réponse, il aide à penser.
               </p>
             </div>
           </CardContent>
@@ -287,8 +280,7 @@ export async function GapVitrine() {
             Vous avez une situation en tête depuis ce matin ?
           </h2>
           <p className="text-muted-foreground">
-            Créer un compte prend deux minutes et ne coûte rien. Le GAP est ouvert à tous
-            les professionnels du médico-social, salariés comme intervenants indépendants.
+            Deux minutes, gratuit. Ouvert à tous les professionnels du médico-social, salariés comme indépendants.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Button asChild size="lg">

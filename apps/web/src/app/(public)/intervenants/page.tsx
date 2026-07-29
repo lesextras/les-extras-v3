@@ -19,7 +19,7 @@ import { formatMoney, initials } from "../../_shared/format";
 export const metadata: Metadata = {
   title: "Les intervenants — éducateurs, thérapeutes et formateurs du réseau",
   description:
-    "Découvrez les intervenants de Les Extras : leur métier, leurs ateliers, leurs formations et les avis reçus. Chaque profil est vérifié et rassemble toutes ses interventions.",
+    "Les intervenants de Les Extras : métier, ateliers, formations, avis reçus. Chaque profil est vérifié.",
   alternates: { canonical: "/intervenants" },
 };
 
