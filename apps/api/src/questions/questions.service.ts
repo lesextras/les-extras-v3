@@ -3,7 +3,12 @@ import { PointReason, Prisma, QuestionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService } from '../assistant/pseudonymiseur.service';
 import { CommunityService } from '../community/community.service';
-import { CreateAnswerDto, CreateQuestionDto, QueryQuestionsDto } from './dto/question.dto';
+import {
+  CreateAnswerDto,
+  CreateQuestionDto,
+  QueryQuestionsDto,
+  UpdateQuestionDto,
+} from './dto/question.dto';
 
 /** Compte les occurrences et trie du plus fréquent au moins fréquent. */
 function compter(valeurs: string[]): { valeur: string; nb: number }[] {

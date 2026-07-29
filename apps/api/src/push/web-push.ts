@@ -155,9 +155,10 @@ export async function envoyerPush(
         TTL: String(ttl),
         Urgency: 'high',
       },
-      // Buffer n'est pas un BodyInit valide au sens des types du DOM : on
-      // passe la vue Uint8Array sous-jacente, sans recopier les octets.
-      body: new Uint8Array(corps.buffer, corps.byteOffset, corps.byteLength),
+      // Les types du DOM embarqués ici n'acceptent ni Buffer ni Uint8Array
+      // comme BodyInit, alors que l'implémentation de Node les gère très bien.
+      // On force donc le type plutôt que de recopier les octets pour rien.
+      body: corps as unknown as BodyInit,
       signal: AbortSignal.timeout(10_000),
     });
     return {
