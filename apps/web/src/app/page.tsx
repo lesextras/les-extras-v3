@@ -295,7 +295,7 @@ export default async function LandingPage() {
         </section>
 
         {/* ============ BANDEAU DE CHIFFRES — fond bleu nuit ============ */}
-        <section className="border-y border-border bg-[hsl(222,24%,10%)]">
+        <section className="border-y border-border bloc-nuit bg-[hsl(222,24%,10%)]">
           <div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-8 px-6 py-12 text-center md:grid-cols-4 md:px-10 md:py-14">
             {[
               { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
@@ -350,7 +350,7 @@ export default async function LandingPage() {
               <Reveal className="md:col-span-2">
                 <Link
                   href="/ateliers"
-                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(160,30%,13%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bloc-nuit bg-[hsl(160,30%,13%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="flex flex-col p-7 md:p-8">
                     <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
@@ -384,7 +384,7 @@ export default async function LandingPage() {
               <Reveal delay={100}>
                 <div
                   id="renfort"
-                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bg-[hsl(14,32%,14%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8"
+                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bloc-nuit bg-[hsl(14,32%,14%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8"
                 >
                   <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
                     <Siren className="size-5" />
@@ -407,7 +407,7 @@ export default async function LandingPage() {
 
               {/* Formations */}
               <Reveal>
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(217,36%,15%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                <div className="flex h-full flex-col rounded-3xl bloc-nuit bg-[hsl(217,36%,15%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
                   <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
                     <GraduationCap className="size-5" />
                   </span>
@@ -430,7 +430,7 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/register"
-                  className="group grid h-full overflow-hidden rounded-3xl bg-[hsl(266,24%,15%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
+                  className="group grid h-full overflow-hidden rounded-3xl bloc-nuit bg-[hsl(266,24%,15%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
                 >
                   <div className="relative order-2 min-h-52 bg-muted sm:order-1">
                     <Image
@@ -465,7 +465,7 @@ export default async function LandingPage() {
 
               {/* Gestion sans papier */}
               <Reveal>
-                <div className="flex h-full flex-col rounded-3xl bg-[hsl(40,26%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
+                <div className="flex h-full flex-col rounded-3xl bloc-nuit bg-[hsl(40,26%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
                   <span className="grid size-11 place-items-center rounded-xl bg-card text-accent-foreground shadow-soft">
                     <FileCheck className="size-5" />
                   </span>
@@ -488,7 +488,7 @@ export default async function LandingPage() {
               <Reveal delay={100} className="md:col-span-2">
                 <Link
                   href="/edublog"
-                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bg-[hsl(190,28%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
+                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bloc-nuit bg-[hsl(190,28%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
                 >
                   <div>
                     <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
@@ -851,7 +851,7 @@ export default async function LandingPage() {
         </section>
 
         {/* ============ PREUVE — bandeau bleu nuit, épuré ============ */}
-        <section className="border-y border-border bg-[hsl(222,24%,10%)]">
+        <section className="border-y border-border bloc-nuit bg-[hsl(222,24%,10%)]">
           <div className="mx-auto max-w-[1100px] px-6 py-20 text-center md:py-24">
             <Reveal>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-foreground/90">
@@ -956,7 +956,7 @@ export default async function LandingPage() {
         {/* ============ CTA FINAL ============ */}
         <section className="section">
           <Reveal>
-            <div className="relative overflow-hidden rounded-3xl bg-[hsl(222,22%,13%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">
+            <div className="relative overflow-hidden rounded-3xl bloc-nuit bg-[hsl(222,22%,13%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">
               <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
               <div
                 className="absolute -right-16 -top-16 size-64 rounded-full bg-secondary/20 blur-3xl"

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, X, LayoutDashboard, CircleUserRound } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
+import { BasculeTheme } from '@/app/_shared/BasculeTheme';
 
 // Ordre = ordre de la strategie : l'atelier et la formation sont les produits
 // d'appel, le renfort vient ensuite.
@@ -55,6 +56,7 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <BasculeTheme />
           {connecte ? (
             <>
               {utilisateur?.compte && (
@@ -86,15 +88,20 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="rounded-lg p-2.5 text-foreground md:hidden"
-          aria-label="Menu"
-          aria-expanded={open}
-        >
-          {open ? <X className="size-5" /> : <Menu className="size-5" />}
-        </button>
+        {/* Sur mobile la bascule reste hors du menu : on change d'ambiance sans
+            avoir à déplier quoi que ce soit. */}
+        <div className="flex items-center gap-1 md:hidden">
+          <BasculeTheme />
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            className="rounded-lg p-2.5 text-foreground"
+            aria-label="Menu"
+            aria-expanded={open}
+          >
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (

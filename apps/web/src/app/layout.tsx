@@ -104,6 +104,16 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={inter.variable} suppressHydrationWarning>
+      <head>
+        {/* Le thème est posé AVANT le premier pixel : sans ce script, une
+            personne en mode clair verrait la page s'afficher en sombre puis
+            basculer — un clignotement désagréable à chaque navigation. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var c=localStorage.getItem('lesextras-theme');document.documentElement.dataset.theme=(c==='clair')?'clair':'sombre';}catch(e){document.documentElement.dataset.theme='sombre';}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <a
           href="#main"

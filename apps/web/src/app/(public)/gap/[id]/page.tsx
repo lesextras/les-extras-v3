@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi, estAdherent } from "../../_shared/server";
 import { formatDate } from "../../_shared/format";
 import { FilReponses } from "../../_shared/ReponseGap";
+import { ActionsSituation } from "../../_shared/ActionsSituation";
 import { LexGapiste } from "../../_shared/LexGapiste";
 import type { QuestionDetail } from "../../_shared/gap";
 
@@ -48,13 +49,21 @@ export default async function SituationPage({ params }: { params: { id: string }
           {data.title}
         </h1>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <span>{data.auteur}</span>
           <span>{formatDate(data.createdAt)}</span>
           <span className="inline-flex items-center gap-1">
             <Eye className="size-3.5" aria-hidden /> {data.views} lecture
             {data.views > 1 ? "s" : ""}
           </span>
+          </div>
+          <ActionsSituation
+            id={data.id}
+            estMienne={data.estMienne}
+            estAdmin={session.user.role === "ADMIN"}
+            accountId={session.account.id}
+          />
         </div>
 
         <Card>
@@ -106,6 +115,7 @@ export default async function SituationPage({ params }: { params: { id: string }
         questionId={data.id}
         reponses={data.reponses}
         estAuteurQuestion={data.estMienne}
+        estAdmin={session.user.role === "ADMIN"}
         connecte
         accountId={session.account.id}
       />

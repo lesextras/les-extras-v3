@@ -22,7 +22,7 @@ export function BlocOutils() {
       {/* Mise en avant : le comparateur intérim / indépendant */}
       <Link
         href="/outils/cout-remplacement"
-        className="group relative overflow-hidden rounded-3xl bg-[hsl(222,22%,13%)] p-8 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-card md:p-10"
+        className="group relative bloc-nuit overflow-hidden rounded-3xl bg-[hsl(222,22%,13%)] p-8 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-card md:p-10"
       >
         <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
         <div

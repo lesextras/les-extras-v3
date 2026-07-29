@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
@@ -7,7 +7,13 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
 import { QuestionsService } from './questions.service';
 import {
-  CreateAnswerDto, CreateQuestionDto, METIERS, PUBLICS, QueryQuestionsDto,
+  CreateAnswerDto,
+  CreateQuestionDto,
+  METIERS,
+  PUBLICS,
+  QueryQuestionsDto,
+  UpdateAnswerDto,
+  UpdateQuestionDto,
 } from './dto/question.dto';
 
 /**
@@ -76,5 +82,39 @@ export class QuestionsController {
   @Post(':id/fermer')
   fermer(@Param('id') id: string, @CurrentUser() user: RequestUser) {
     return this.questions.fermer(id, user.id, user.role === 'ADMIN');
+  }
+
+  // ── Correction et retrait ────────────────────────────────────────────────
+  //
+  // L'auteur reste maître de sa parole : il corrige, il retire. L'équipe, elle,
+  // ne réécrit rien — elle ne peut que supprimer, et c'est le rôle du modérateur
+  // dans un GAP : garantir le cadre, pas mettre des mots dans la bouche des pairs.
+
+  @Patch(':id')
+  modifier(
+    @Param('id') id: string,
+    @CurrentUser() user: RequestUser,
+    @Body() dto: UpdateQuestionDto,
+  ) {
+    return this.questions.modifier(id, user.id, dto);
+  }
+
+  @Delete(':id')
+  supprimer(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.questions.supprimer(id, user.id, user.role === 'ADMIN');
+  }
+
+  @Patch('reponses/:id')
+  modifierReponse(
+    @Param('id') id: string,
+    @CurrentUser() user: RequestUser,
+    @Body() dto: UpdateAnswerDto,
+  ) {
+    return this.questions.modifierReponse(id, user.id, dto.content);
+  }
+
+  @Delete('reponses/:id')
+  supprimerReponse(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.questions.supprimerReponse(id, user.id, user.role === 'ADMIN');
   }
 }

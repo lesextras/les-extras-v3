@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ThumbsUp, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ThumbsUp, CheckCircle2, ShieldCheck, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,21 +20,74 @@ export function FilReponses({
   questionId,
   reponses,
   estAuteurQuestion,
+  estAdmin = false,
   connecte,
   accountId,
 }: {
   questionId: string;
   reponses: Reponse[];
   estAuteurQuestion: boolean;
+  /** L'équipe modère : elle peut retirer une réponse, jamais la réécrire. */
+  estAdmin?: boolean;
   connecte: boolean;
   accountId?: string;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [texte, setTexte] = useState("");
+  /** Réponse en cours de correction par son auteur. */
+  const [correction, setCorrection] = useState<{ id: string; texte: string } | null>(null);
   const [piege, setPiege] = useState("");
   const [envoi, setEnvoi] = useState(false);
   const [enCours, setEnCours] = useState<string | null>(null);
+
+  async function enregistrerCorrection() {
+    if (!correction) return;
+    if (correction.texte.trim().length < 20) {
+      toast({ title: "Réponse trop courte", variant: "error" });
+      return;
+    }
+    setEnCours(correction.id);
+    try {
+      await apiRequest(`/gap/reponses/${correction.id}`, {
+        method: "PATCH",
+        body: { content: correction.texte.trim() },
+        accountId,
+      });
+      setCorrection(null);
+      toast({ title: "Réponse corrigée" });
+      router.refresh();
+    } catch (err) {
+      toast({
+        title: "Correction impossible",
+        description: err instanceof Error ? err.message : undefined,
+        variant: "error",
+      });
+    } finally {
+      setEnCours(null);
+    }
+  }
+
+  async function supprimerReponse(id: string, moderation: boolean) {
+    const message = moderation
+      ? "Retirer cette réponse en tant que modérateur ? Son auteur la perdra définitivement."
+      : "Supprimer votre réponse ? Elle disparaîtra du fil pour tout le monde.";
+    if (!window.confirm(message)) return;
+    setEnCours(id);
+    try {
+      await apiRequest(`/gap/reponses/${id}`, { method: "DELETE", accountId });
+      toast({ title: "Réponse supprimée" });
+      router.refresh();
+    } catch (err) {
+      toast({
+        title: "Suppression impossible",
+        description: err instanceof Error ? err.message : undefined,
+        variant: "error",
+      });
+    } finally {
+      setEnCours(null);
+    }
+  }
 
   async function repondre(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -139,9 +192,28 @@ export function FilReponses({
                   ) : null}
                 </div>
 
-                <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-foreground">
-                  {r.content}
-                </p>
+                {correction?.id === r.id ? (
+                  <div className="mt-2 space-y-2">
+                    <Textarea
+                      value={correction.texte}
+                      onChange={(e) => setCorrection({ id: r.id, texte: e.target.value })}
+                      rows={6}
+                      aria-label="Corriger ma réponse"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" onClick={enregistrerCorrection} disabled={enCours === r.id}>
+                        {enCours === r.id ? "Enregistrement…" : "Enregistrer"}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setCorrection(null)}>
+                        <X className="size-4" /> Annuler
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-foreground">
+                    {r.content}
+                  </p>
+                )}
 
                 {/* Actions sous le message, comme dans un fil de discussion */}
                 <div className="mt-3 flex flex-wrap items-center gap-4">
@@ -190,6 +262,28 @@ export function FilReponses({
                     >
                       Ce retour m&apos;a aidé
                     </Button>
+                  ) : null}
+
+                  {r.estMienne && correction?.id !== r.id ? (
+                    <button
+                      type="button"
+                      onClick={() => setCorrection({ id: r.id, texte: r.content })}
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Pencil className="size-3.5" aria-hidden /> Corriger
+                    </button>
+                  ) : null}
+
+                  {r.estMienne || estAdmin ? (
+                    <button
+                      type="button"
+                      disabled={enCours === r.id}
+                      onClick={() => supprimerReponse(r.id, !r.estMienne)}
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-destructive disabled:opacity-60"
+                    >
+                      <Trash2 className="size-3.5" aria-hidden />
+                      {r.estMienne ? "Supprimer" : "Retirer (modération)"}
+                    </button>
                   ) : null}
                 </div>
               </div>

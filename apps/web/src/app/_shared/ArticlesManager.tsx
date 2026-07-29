@@ -188,7 +188,14 @@ export function ArticlesManager({
     }
   }
 
-  async function supprimer(id: string) {
+  async function supprimer(id: string, titre: string) {
+    if (
+      !window.confirm(
+        `Supprimer « ${titre} » ? Cette publication et ses lectures seront définitivement perdues. Pour la retirer du fil sans l’effacer, passez-la plutôt en brouillon ou archivez-la.`,
+      )
+    ) {
+      return;
+    }
     try {
       await apiRequest(`/articles/${id}`, { method: "DELETE", accountId });
       setRows((l) => l.filter((x) => x.id !== id));
@@ -296,6 +303,31 @@ export function ArticlesManager({
                 );
               })}
             </div>
+            {/* Statut : on peut retirer de la vitrine sans supprimer. Un texte
+                publié trop tôt repasse en brouillon, un texte daté s'archive. */}
+            {edite.id ? (
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="statut-publication"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Visibilité
+                </label>
+                <select
+                  id="statut-publication"
+                  value={edite.status}
+                  onChange={(e) =>
+                    setEdite({ ...edite, status: e.target.value as ArticleRow["status"] })
+                  }
+                  className="h-11 w-full rounded-lg border border-input bg-card px-3.5 text-sm text-foreground shadow-sm transition-colors hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:w-72"
+                >
+                  <option value="DRAFT">Brouillon — visible de vous seul</option>
+                  <option value="PUBLISHED">Publiée — visible sur l’Édublog</option>
+                  <option value="ARCHIVED">Archivée — retirée du fil, conservée ici</option>
+                </select>
+              </div>
+            ) : null}
+
             <Input
               placeholder={edite.kind === "ARTICLE" ? "Titre de l’article" : "Titre de l’actualité"}
               value={edite.title}
@@ -408,12 +440,20 @@ export function ArticlesManager({
               <Button variant="ghost" onClick={() => { setOuvert(false); setEdite(null); }}>
                 Annuler
               </Button>
-              <Button variant="outline" disabled={envoi} onClick={() => enregistrer(false)}>
-                Enregistrer le brouillon
-              </Button>
-              <Button disabled={envoi} onClick={() => enregistrer(true)}>
-                Publier
-              </Button>
+              {edite.id ? (
+                <Button disabled={envoi} onClick={() => enregistrer(false)}>
+                  {envoi ? "Enregistrement…" : "Enregistrer"}
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" disabled={envoi} onClick={() => enregistrer(false)}>
+                    Enregistrer le brouillon
+                  </Button>
+                  <Button disabled={envoi} onClick={() => enregistrer(true)}>
+                    Publier
+                  </Button>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -471,7 +511,7 @@ export function ArticlesManager({
                       <Linkedin className="size-4" /> Publier sur LinkedIn
                     </Button>
                   ) : null}
-                  <Button variant="ghost" size="sm" onClick={() => supprimer(a.id)}>
+                  <Button variant="ghost" size="sm" onClick={() => supprimer(a.id, a.title)}>
                     <Trash2 className="size-4" />
                   </Button>
                 </div>

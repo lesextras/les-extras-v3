@@ -56,6 +56,22 @@ export class CreateQuestionDto {
   website?: string;
 }
 
+/** Correction d'une situation par son auteur : tout est optionnel. */
+export class UpdateQuestionDto {
+  @IsOptional() @IsString() @MinLength(10) @MaxLength(180) title?: string;
+  @IsOptional() @IsString() @MinLength(30) @MaxLength(4000) situation?: string;
+  @IsOptional() @IsString() @MaxLength(2000) tente?: string;
+  @IsOptional() @IsIn(METIERS as unknown as string[]) metier?: string;
+  @IsOptional() @IsIn(PUBLICS as unknown as string[]) publicVise?: string;
+  /** L'auteur peut rouvrir une situation qu'il avait fermée. */
+  @IsOptional() @IsIn(['OUVERTE', 'FERMEE']) status?: 'OUVERTE' | 'FERMEE';
+}
+
+/** Correction d'une réponse par son auteur. */
+export class UpdateAnswerDto {
+  @IsString() @MinLength(20) @MaxLength(4000) content!: string;
+}
+
 export class CreateAnswerDto {
   @IsString() @MinLength(20) @MaxLength(4000)
   content!: string;

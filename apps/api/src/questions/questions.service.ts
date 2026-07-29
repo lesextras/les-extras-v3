@@ -263,4 +263,90 @@ export class QuestionsService {
     await this.prisma.question.update({ where: { id }, data: { status: QuestionStatus.FERMEE } });
     return { ferme: true };
   }
+
+  // ── Modification et suppression ──────────────────────────────────────────
+  //
+  // Deux droits distincts : l'auteur dispose de sa parole (il corrige, il
+  // retire), l'administrateur modère (il retire ce qui n'a pas sa place).
+  // On ne confond pas les deux — un admin ne réécrit jamais le texte d'un
+  // pair, il peut seulement le supprimer.
+
+  /** L'auteur corrige sa situation. Le texte repasse par l'anonymisation. */
+  async modifier(id: string, userId: string, dto: UpdateQuestionDto) {
+    const q = await this.prisma.question.findUnique({
+      where: { id },
+      select: { authorId: true, status: true },
+    });
+    if (!q) throw new NotFoundException('Situation introuvable.');
+    if (q.authorId !== userId) {
+      throw new ForbiddenException('Seul l’auteur peut modifier sa situation.');
+    }
+    const data: Prisma.QuestionUpdateInput = {};
+    if (dto.title !== undefined) data.title = this.anonymiser(dto.title.trim());
+    if (dto.situation !== undefined) data.situation = this.anonymiser(dto.situation.trim());
+    if (dto.tente !== undefined) data.tente = dto.tente ? this.anonymiser(dto.tente.trim()) : null;
+    if (dto.metier !== undefined) data.metier = dto.metier;
+    if (dto.publicVise !== undefined) data.publicVise = dto.publicVise;
+    // Rouvrir une situation fermée est un droit de l'auteur : il peut avoir
+    // fermé trop vite, et la conversation mérite parfois de reprendre.
+    if (dto.status !== undefined) data.status = dto.status;
+
+    await this.prisma.question.update({ where: { id }, data });
+    return { id, modifie: true };
+  }
+
+  /** Suppression : l'auteur retire sa situation, l'admin modère. */
+  async supprimer(id: string, userId: string, estAdmin: boolean) {
+    const q = await this.prisma.question.findUnique({
+      where: { id },
+      select: { authorId: true, title: true },
+    });
+    if (!q) throw new NotFoundException('Situation introuvable.');
+    if (!estAdmin && q.authorId !== userId) {
+      throw new ForbiddenException('Seul l’auteur ou l’équipe peut supprimer cette situation.');
+    }
+    // Les réponses partent avec (onDelete: Cascade côté schéma) : une réponse
+    // sans sa situation n'a plus de sens et ne se relit pas.
+    await this.prisma.question.delete({ where: { id } });
+    return { supprime: true, parModeration: estAdmin && q.authorId !== userId };
+  }
+
+  /** L'auteur d'une réponse la corrige. */
+  async modifierReponse(id: string, userId: string, contenu: string) {
+    const r = await this.prisma.answer.findUnique({
+      where: { id },
+      select: { authorId: true },
+    });
+    if (!r) throw new NotFoundException('Réponse introuvable.');
+    if (r.authorId !== userId) {
+      throw new ForbiddenException('Seul l’auteur peut modifier sa réponse.');
+    }
+    await this.prisma.answer.update({
+      where: { id },
+      data: { content: this.anonymiser(contenu.trim()) },
+    });
+    return { id, modifie: true };
+  }
+
+  /** Suppression d'une réponse : son auteur, ou l'admin en modération. */
+  async supprimerReponse(id: string, userId: string, estAdmin: boolean) {
+    const r = await this.prisma.answer.findUnique({
+      where: { id },
+      select: { authorId: true, questionId: true, retenue: true },
+    });
+    if (!r) throw new NotFoundException('Réponse introuvable.');
+    if (!estAdmin && r.authorId !== userId) {
+      throw new ForbiddenException('Seul l’auteur ou l’équipe peut supprimer cette réponse.');
+    }
+    await this.prisma.answer.delete({ where: { id } });
+    // Si la réponse retenue disparaît, la situation n'est plus résolue : on la
+    // rouvre, sinon elle resterait marquée « résolue » sans rien à montrer.
+    if (r.retenue) {
+      await this.prisma.question.update({
+        where: { id: r.questionId },
+        data: { status: QuestionStatus.OUVERTE },
+      });
+    }
+    return { supprime: true, parModeration: estAdmin && r.authorId !== userId };
+  }
 }

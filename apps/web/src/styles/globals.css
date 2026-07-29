@@ -125,7 +125,12 @@
    icônes, chiffres) — jamais en fond de bloc. */
 /* Remet la palette claire à l'intérieur d'un conteneur (modales posées
    sur la page d'accueil sombre) : les formulaires restent lisibles. */
-.theme-clair {
+/* Deux entrées vers la même palette :
+   - .theme-clair  : un bloc clair posé DANS une page sombre (modales) ;
+   - le mode clair choisi par le visiteur, qui éclaircit tout ce qui était
+     sombre. Même liste de variables, écrite une seule fois. */
+.theme-clair,
+:root[data-theme='clair'] .theme-sombre {
   --background: 38 44% 96%;
   --foreground: 0 0% 10%;
   --card: 0 0% 100%;
@@ -155,6 +160,28 @@
   --warning-foreground: 0 0% 10%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 40 44% 98%;
+}
+
+/* Bloc dont le fond est figé en sombre (tuiles colorées de l'accueil, bandeau
+   bleu nuit) : son texte ne doit PAS suivre la bascule clair/sombre, sinon on
+   se retrouve avec du texte quasi noir posé sur du charbon. On rattache donc
+   la palette claire-sur-sombre au bloc lui-même. */
+.bloc-nuit {
+  --foreground: 40 30% 96%;
+  --card-foreground: 40 30% 96%;
+  --muted-foreground: 222 10% 78%;
+  --accent-foreground: 40 30% 92%;
+  --border: 222 14% 26%;
+  --primary: 347 80% 60%;
+  --primary-foreground: 0 0% 100%;
+  --primary-soft: 347 32% 20%;
+  --secondary: 14 72% 60%;
+  --secondary-foreground: 0 0% 100%;
+  --secondary-soft: 14 32% 18%;
+  --success: 152 58% 55%;
+  --warning: 38 92% 62%;
+  --destructive: 0 78% 66%;
+  color: hsl(var(--foreground));
 }
 
 .theme-sombre {
@@ -187,6 +214,45 @@
   --warning-foreground: 38 92% 76%;
   --destructive: 0 78% 63%;
   --destructive-foreground: 0 0% 100%;
+}
+
+
+/* Mode clair : les teintes d'accent avaient été choisies pour du texte posé sur
+   du charbon (nuances 200 à 400). Sur ivoire elles disparaissent. On les
+   redescend à une nuance lisible, sans toucher au code des composants. */
+:root[data-theme='clair'] .theme-sombre .text-emerald-200,
+:root[data-theme='clair'] .theme-sombre .text-emerald-300,
+:root[data-theme='clair'] .theme-sombre .text-emerald-400 {
+  color: hsl(152 58% 26%);
+}
+:root[data-theme='clair'] .theme-sombre .text-amber-200,
+:root[data-theme='clair'] .theme-sombre .text-amber-300,
+:root[data-theme='clair'] .theme-sombre .text-amber-400,
+:root[data-theme='clair'] .theme-sombre .text-amber-500 {
+  color: hsl(32 92% 30%);
+}
+:root[data-theme='clair'] .theme-sombre .text-sky-200 {
+  color: hsl(205 80% 28%);
+}
+
+/* Les aplats translucides posés sur charbon (10-20 %) deviennent presque
+   blancs sur ivoire : on les densifie pour que la pastille reste visible. */
+:root[data-theme='clair'] .theme-sombre :is(.bg-emerald-500\/5, .bg-emerald-500\/15, .bg-emerald-500\/20, .bg-emerald-500\/25) {
+  background-color: hsl(152 58% 40% / 0.16);
+}
+:root[data-theme='clair'] .theme-sombre :is(.bg-amber-500\/15, .bg-amber-500\/20, .bg-amber-500\/25) {
+  background-color: hsl(32 92% 45% / 0.18);
+}
+:root[data-theme='clair'] .theme-sombre .bg-sky-500\/20 {
+  background-color: hsl(205 80% 45% / 0.16);
+}
+
+:root[data-theme='clair'] .theme-sombre .prose-invert {
+  --tw-prose-body: hsl(var(--foreground));
+  --tw-prose-headings: hsl(var(--foreground));
+  --tw-prose-bold: hsl(var(--foreground));
+  --tw-prose-bullets: hsl(var(--muted-foreground));
+  --tw-prose-links: hsl(var(--primary));
 }
 
 @layer utilities {

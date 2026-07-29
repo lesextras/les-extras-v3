@@ -18,22 +18,37 @@ import { METIERS, PUBLICS } from "./gap";
 const selectClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3.5 py-2 text-sm text-foreground shadow-sm transition-colors hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
+/** Situation existante : le même formulaire sert à corriger ce qu'on a déposé. */
+export interface SituationAModifier {
+  id: string;
+  title: string;
+  situation: string;
+  tente?: string | null;
+  metier: string;
+  publicVise: string;
+}
+
 export function PoserQuestion({
   accountId,
   metierParDefaut,
+  aModifier,
 }: {
   accountId: string;
   metierParDefaut?: string;
+  /** Fournie : le formulaire passe en correction au lieu de création. */
+  aModifier?: SituationAModifier;
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const [titre, setTitre] = useState("");
-  const [situation, setSituation] = useState("");
-  const [tente, setTente] = useState("");
+  const modification = Boolean(aModifier);
+  const [titre, setTitre] = useState(aModifier?.title ?? "");
+  const [situation, setSituation] = useState(aModifier?.situation ?? "");
+  const [tente, setTente] = useState(aModifier?.tente ?? "");
   const [metier, setMetier] = useState(
-    metierParDefaut && METIERS.includes(metierParDefaut) ? metierParDefaut : "",
+    aModifier?.metier ??
+      (metierParDefaut && METIERS.includes(metierParDefaut) ? metierParDefaut : ""),
   );
-  const [publicVise, setPublicVise] = useState("");
+  const [publicVise, setPublicVise] = useState(aModifier?.publicVise ?? "");
   const [anonyme, setAnonyme] = useState(true);
   const [piege, setPiege] = useState("");
   const [envoi, setEnvoi] = useState(false);
@@ -66,27 +81,35 @@ export function PoserQuestion({
     }
     setEnvoi(true);
     try {
-      const r = await apiRequest<{ id: string }>("/gap", {
-        method: "POST",
-        body: {
-          title: titre.trim(),
-          situation: situation.trim(),
-          ...(tente.trim() ? { tente: tente.trim() } : {}),
-          metier,
-          publicVise,
-          anonyme,
-          ...(piege ? { website: piege } : {}),
-        },
-        accountId,
-      });
+      const corps = {
+        title: titre.trim(),
+        situation: situation.trim(),
+        tente: tente.trim() || undefined,
+        metier,
+        publicVise,
+      };
+      const r = aModifier
+        ? await apiRequest<{ id: string }>(`/gap/${aModifier.id}`, {
+            method: "PATCH",
+            body: corps,
+            accountId,
+          })
+        : await apiRequest<{ id: string }>("/gap", {
+            method: "POST",
+            body: { ...corps, anonyme, ...(piege ? { website: piege } : {}) },
+            accountId,
+          });
       toast({
-        title: "Situation déposée",
-        description: "Les professionnels de votre métier la verront dans leur fil.",
+        title: aModifier ? "Situation corrigée" : "Situation déposée",
+        description: aModifier
+          ? "Votre texte est à jour. Les prénoms restent masqués automatiquement."
+          : "Les professionnels de votre métier la verront dans leur fil.",
       });
-      router.push(`/gap/${r.id}`);
+      router.push(`/gap/${aModifier?.id ?? r.id}`);
+      router.refresh();
     } catch (err) {
       toast({
-        title: "Publication impossible",
+        title: aModifier ? "Correction impossible" : "Publication impossible",
         description: err instanceof Error ? err.message : "Réessayez dans un instant.",
         variant: "error",
       });
@@ -217,9 +240,27 @@ export function PoserQuestion({
         className="hidden"
       />
 
-      <Button type="submit" disabled={envoi} size="lg">
-        {envoi ? "Dépôt…" : "Déposer ma situation"}
-      </Button>
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit" disabled={envoi} size="lg">
+          {envoi
+            ? modification
+              ? "Enregistrement…"
+              : "Dépôt…"
+            : modification
+              ? "Enregistrer les corrections"
+              : "Déposer ma situation"}
+        </Button>
+        {modification ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => router.push(`/gap/${aModifier!.id}`)}
+          >
+            Annuler
+          </Button>
+        ) : null}
+      </div>
     </form>
   );
 }

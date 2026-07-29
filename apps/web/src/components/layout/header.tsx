@@ -18,6 +18,7 @@ import {
 import { CommandPalette } from './command-palette';
 import { IndicateursCompte } from './indicateurs-compte';
 import { SupportModal } from '@/app/_shared/modals/SupportModal';
+import { BasculeTheme } from '@/app/_shared/BasculeTheme';
 import { cn, initials } from '@/lib/utils';
 import type { SessionUser, SessionAccount } from '@/lib/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -161,6 +162,7 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
           <Bell className="size-5" />
           <span className="absolute right-2 top-2 size-2 rounded-full bg-secondary ring-2 ring-card" />
         </Link>
+        <BasculeTheme />
 
         {/* Menu utilisateur */}
         <DropdownMenu align="end">

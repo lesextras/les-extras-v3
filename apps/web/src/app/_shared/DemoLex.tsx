@@ -207,7 +207,7 @@ export function DemoLex() {
       </div>
 
       {/* Sortie */}
-      <div className="rounded-3xl border border-primary/25 bg-[hsl(222,22%,13%)] p-7 md:p-8">
+      <div className="bloc-nuit rounded-3xl border border-primary/25 bg-[hsl(222,22%,13%)] p-7 md:p-8">
         <div className="flex items-center gap-2 text-sm font-semibold text-primary">
           <Sparkles className="size-4" />
           La séance proposée par LEX
