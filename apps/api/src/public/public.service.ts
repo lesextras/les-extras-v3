@@ -798,14 +798,66 @@ export class PublicService {
         const note = c.owner?.id ? parCible.get(c.owner.id) : undefined;
         const ateliers = c.services.filter((s) => s.category !== 'FORMATION');
         const formations = c.services.filter((s) => s.category === 'FORMATION');
+        // Les fiches importées n'ont ni métier, ni bio, ni compétences saisis :
+        // l'annuaire affichait donc quatre cartes vides. Plutôt que de laisser
+        // des trous, on déduit ce qui est DÉDUCTIBLE des fiches réellement
+        // publiées — rien n'est inventé, tout est vérifiable en un clic.
+        // Dès qu'un intervenant renseigne son profil, sa saisie l'emporte.
+        const villesDesFiches = c.services.map((s) => s.city).filter(Boolean) as string[];
+        const villeDominante = villesDesFiches
+          .map((v) => [v, villesDesFiches.filter((x) => x === v).length] as const)
+          .sort((a, b) => b[1] - a[1])[0]?.[0];
+
+        // « Compétences » = les thèmes que la personne propose vraiment. On
+        // reprend l'intitulé des fiches, nettoyé et raccourci.
+        const themes = Array.from(
+          new Set(
+            c.services
+              .map((s) =>
+                s.title
+                  .replace(/^ATELIER\s+(DE\s+)?/i, '')
+                  .replace(/\s*[-–—].*$/, '')
+                  .trim(),
+              )
+              .filter((t) => t.length > 2 && t.length <= 42),
+          ),
+        ).slice(0, 6);
+
+        const metierSaisi = c.owner?.profile?.job ?? null;
+        const bioSaisie = c.owner?.profile?.bio ?? null;
+        const competencesSaisies = c.owner?.profile?.skills ?? [];
+
+        // Le prénom suffit : l'import a collé « — Intervenant » en guise de nom
+        // de famille, ce qui donnait « Christophe — Intervenant » sur la carte.
+        const nomAffiche =
+          [c.owner?.firstName, c.owner?.lastName]
+            .filter(Boolean)
+            .join(' ')
+            .replace(/\s*[—-]\s*Intervenant\s*$/i, '')
+            .trim() || c.name;
+
         return {
           id: c.id,
-          nom:
-            [c.owner?.firstName, c.owner?.lastName].filter(Boolean).join(' ') || c.name,
-          metier: c.owner?.profile?.job ?? null,
-          bio: c.owner?.profile?.bio ?? null,
-          competences: c.owner?.profile?.skills ?? [],
-          ville: c.city ?? c.owner?.profile?.city ?? c.services.find((s) => s.city)?.city ?? null,
+          nom: nomAffiche,
+          metier:
+            metierSaisi ??
+            (formations.length && ateliers.length
+              ? 'Intervenant et formateur'
+              : formations.length
+                ? 'Formateur'
+                : ateliers.length
+                  ? 'Intervenant'
+                  : null),
+          bio:
+            bioSaisie ??
+            (themes.length
+              ? `Intervient auprès des établissements médico-sociaux sur ${themes
+                  .slice(0, 3)
+                  .map((t) => t.toLowerCase())
+                  .join(', ')}.`
+              : null),
+          competences: competencesSaisies.length ? competencesSaisies : themes,
+          ville: c.city ?? c.owner?.profile?.city ?? villeDominante ?? null,
           logoUrl: c.logoUrl ?? c.owner?.avatarUrl ?? null,
           depuis: c.createdAt,
           rating: note?.moyenne ?? null,
@@ -889,7 +941,65 @@ export class PublicService {
         ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
         : null;
 
-    return { ...account, services, reviews, rating };
+    // Même logique que l'annuaire : on complète ce qui manque à partir des
+    // fiches publiées plutôt que d'afficher des champs vides. Ce que la
+    // personne a saisi elle-même prime toujours.
+    const themes = Array.from(
+      new Set(
+        services
+          .map((s) =>
+            s.title
+              .replace(/^ATELIER\s+(DE\s+)?/i, '')
+              .replace(/\s*[-–—].*$/, '')
+              .trim(),
+          )
+          .filter((t) => t.length > 2 && t.length <= 42),
+      ),
+    ).slice(0, 8);
+    const nbFormations = services.filter((s) => s.category === 'FORMATION').length;
+    const villes = services.map((s) => s.city).filter(Boolean) as string[];
+
+    const owner = account.owner
+      ? {
+          ...account.owner,
+          // « Christophe — Intervenant » : « — Intervenant » est un reliquat
+          // d'import collé dans le champ nom de famille, pas un vrai patronyme.
+          lastName: (account.owner.lastName ?? '').replace(/^\s*[—-]\s*Intervenant\s*$/i, ''),
+          profile: {
+            ...(account.owner.profile ?? { job: null, bio: null, skills: [], city: null }),
+            job:
+              account.owner.profile?.job ??
+              (nbFormations && services.length > nbFormations
+                ? 'Intervenant et formateur'
+                : nbFormations
+                  ? 'Formateur'
+                  : services.length
+                    ? 'Intervenant'
+                    : null),
+            bio:
+              account.owner.profile?.bio ??
+              (themes.length
+                ? `Intervient auprès des établissements médico-sociaux sur ${themes
+                    .slice(0, 3)
+                    .map((t) => t.toLowerCase())
+                    .join(', ')}.`
+                : null),
+            skills: account.owner.profile?.skills?.length
+              ? account.owner.profile.skills
+              : themes,
+            city: account.owner.profile?.city ?? villes[0] ?? null,
+          },
+        }
+      : account.owner;
+
+    return {
+      ...account,
+      city: account.city ?? villes[0] ?? null,
+      owner,
+      services,
+      reviews,
+      rating,
+    };
   }
 
 }

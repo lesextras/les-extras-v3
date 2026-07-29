@@ -89,8 +89,13 @@ const freelanceNav: NavSection[] = [
     title: 'Mon offre',
     items: [
       { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
+      // Deux besoins distincts, deux entrées : gérer SES fiches (dans l'espace)
+      // et parcourir le catalogue tel que le voient les établissements (la
+      // vitrine publique).
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true, hint: 'Créez et gérez vos interventions' },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
+      { label: 'Le catalogue d’ateliers', href: '/ateliers', icon: Sparkles, hint: 'Le catalogue public, tel que le voient les établissements' },
+      { label: 'Les formations Qualiopi', href: '/formations', icon: GraduationCap, hint: 'Le catalogue certifiant ADéPA, côté public' },
       { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Demandes reçues à chiffrer et devis envoyés' },
     ],
   },
@@ -129,8 +134,12 @@ const establishmentNav: NavSection[] = [
     title: 'Catalogue',
     items: [
       { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
-      { label: 'Ateliers', href: '/marketplace?type=services', icon: Sparkles, essentiel: true, hint: 'Catalogue d’ateliers à réserver' },
-      { label: 'Formations', href: '/marketplace/formations', icon: GraduationCap, essentiel: true, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
+      // Comme l'Édublog : on envoie sur la vitrine publique, pas sur un double
+      // interne. Le catalogue de l'accueil est le plus complet et le mieux
+      // présenté ; entretenir une seconde liste dans le tableau de bord, c'est
+      // entretenir deux vérités et en laisser une vieillir.
+      { label: 'Ateliers', href: '/ateliers', icon: Sparkles, essentiel: true, hint: 'Catalogue d’ateliers à réserver' },
+      { label: 'Formations', href: '/formations', icon: GraduationCap, essentiel: true, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
     ],
   },
   {
