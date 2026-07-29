@@ -778,7 +778,7 @@ export default async function LandingPage() {
                 {
                   nom: 'Adhésion',
                   sous: 'Les outils d’intelligence artificielle LEX, pour toute votre équipe.',
-                  prix: '149 €',
+                  prix: '49 €',
                   prixSuffixe: ' / mois',
                   prixSous: 'Essentiel · Pro à 299 € / mois — montants HT',
                   points: [

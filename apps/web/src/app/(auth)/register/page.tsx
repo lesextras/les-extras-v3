@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, Lock, Building2, UserRound, ArrowRight, Check } from 'lucide-react';
@@ -39,6 +39,9 @@ const accountTypes = [
 
 export default function RegisterPage() {
   const router = useRouter();
+  // Une personne invitée arrive souvent ici sans compte. Sans ce paramètre,
+  // elle créerait son compte puis perdrait l'invitation en route.
+  const params = useSearchParams();
   const { toast } = useToast();
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -67,7 +70,8 @@ export default function RegisterPage() {
         description: 'Bienvenue ! Finalisons votre profil.',
         variant: 'success',
       });
-      router.push('/welcome?bienvenue=1');
+      const suite = params.get('next');
+      router.push(suite || '/welcome?bienvenue=1');
       router.refresh();
     } catch (err) {
       toast({

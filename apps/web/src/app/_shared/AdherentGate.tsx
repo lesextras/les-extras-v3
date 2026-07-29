@@ -29,7 +29,7 @@ export function AdherentGate({ titre, description, benefices }: {
       </ul>
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
         <Button asChild size="lg">
-          <Link href="/dashboard/adhesion">Devenir adhérent — dès 149 € / mois</Link>
+          <Link href="/dashboard/adhesion">Devenir adhérent — dès 49 € / mois</Link>
         </Button>
         <Button asChild size="lg" variant="outline">
           <Link href="/contact">Parler à l'équipe</Link>
