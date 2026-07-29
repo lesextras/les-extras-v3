@@ -48,6 +48,12 @@ export interface NavItem {
   premium?: boolean;
   /** Entrée du « mode essentiel » : visible même quand le menu est replié. */
   essentiel?: boolean;
+  /**
+   * Réservée aux sous-comptes, c'est-à-dire à toute personne rattachée au
+   * compte sans en être le titulaire. Proposer à une MECS de « devenir
+   * intervenante » n'a pas de sens : c'est à ses salariés que l'on s'adresse.
+   */
+  sousComptesSeulement?: boolean;
 }
 
 export interface NavSection {
@@ -159,11 +165,10 @@ const establishmentNav: NavSection[] = [
       { label: 'Adhésion', href: '/dashboard/adhesion', icon: Receipt, hint: 'Adhérer à l’association pour débloquer LEX. Les prestations, elles, se règlent à la facture.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
-      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
+      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
       { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction sur vos factures, dans la limite de 30 % du montant' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
-      { label: 'Coffre-fort conformité', href: '/dashboard/conformite', icon: FileCheck, hint: 'Pièces obligatoires des intervenants (CNI, casier, permis, IBAN, URSSAF) : statut, échéances et alertes' },
     ],
   },
 ];

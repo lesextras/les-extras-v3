@@ -8,7 +8,7 @@ import { ModaleAdherent } from '@/app/_shared/modals/ModaleAdherent';
 import { ChevronDown, LayoutList, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getNavForRole } from '@/lib/nav';
-import type { NavRole } from '@/lib/types';
+import type { NavRole, AccountRole } from '@/lib/types';
 import { Logo } from '@/components/brand/logo';
 import { Badge } from '@/components/ui/badge';
 
@@ -16,6 +16,12 @@ export interface SidebarProps {
   role: NavRole;
   /** Compte actif adhérent ? Cadenas sur les entrées LEX sinon. */
   isMember?: boolean;
+  /**
+   * Rôle de la personne DANS le compte actif. Le titulaire (OWNER) est la
+   * structure elle-même ; les autres sont ses sous-comptes, c'est-à-dire des
+   * personnes physiques — seules concernées par certaines entrées.
+   */
+  roleCompte?: AccountRole;
   /** Ferme la sidebar (usage mobile en overlay). */
   onNavigate?: () => void;
   className?: string;
@@ -42,12 +48,21 @@ function isActiveHref(pathname: string, href: string) {
   );
 }
 
-export function Sidebar({ role, isMember, onNavigate, className, utilisateur }: SidebarProps) {
+export function Sidebar({ role, isMember, roleCompte, onNavigate, className, utilisateur }: SidebarProps) {
   const pathname = usePathname();
   // Entrée LEX cliquée sans adhésion : on retient laquelle pour que la modale
   // parle de la fonctionnalité visée, pas d'une restriction abstraite.
   const [lexBloquee, setLexBloquee] = useState<string | null>(null);
-  const toutesSections = getNavForRole(role);
+  // Le titulaire du compte, c'est la structure elle-même. Les entrées qui
+  // s'adressent à une personne physique — « Proposer mes services » — ne le
+  // concernent pas : elles ne s'affichent que pour ses sous-comptes.
+  const estTitulaire = roleCompte === 'OWNER';
+  const toutesSections = getNavForRole(role)
+    .map((s) => ({
+      ...s,
+      items: s.items.filter((it) => !(it.sousComptesSeulement && estTitulaire)),
+    }))
+    .filter((s) => s.items.length > 0);
 
   // Mode « essentiel » : ne montre que les entrées du quotidien. Il évite qu'un
   // directeur qui vient une fois par mois se noie dans quinze entrées. L'admin
