@@ -19,12 +19,30 @@ export async function POST(request: Request) {
   };
   const step = body.step ?? ONBOARDING_TOTAL_STEPS;
 
+  // Deux appels, parce que l'API expose deux choses distinctes : l'avancement
+  // du parcours d'un côté, les données de profil de l'autre. L'ancien code
+  // envoyait tout au même endroit, sous le nom `onboardingStep` — nom que
+  // l'API ne connaît pas. Résultat : un 400, et le profil jamais enregistré.
+  const profil = Object.fromEntries(
+    Object.entries(body.profile ?? {}).filter(
+      ([, v]) => v !== undefined && v !== null && String(v).trim() !== '',
+    ),
+  );
+
   try {
+    if (Object.keys(profil).length > 0) {
+      await apiRequest('/users/me', {
+        method: 'PATCH',
+        token: session.token,
+        accountId: session.activeAccount?.id ?? null,
+        body: profil,
+      });
+    }
     await apiRequest('/users/me/onboarding', {
       method: 'PATCH',
       token: session.token,
       accountId: session.activeAccount?.id ?? null,
-      body: { onboardingStep: step, ...(body.profile ?? {}) },
+      body: { step },
     });
     return NextResponse.json({ ok: true, step });
   } catch (err) {
