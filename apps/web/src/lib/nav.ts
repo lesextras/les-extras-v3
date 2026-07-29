@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
+  TrendingUp,
   Store,
   Sparkles,
   CalendarClock,
@@ -120,6 +121,7 @@ const freelanceNav: NavSection[] = [
     items: [
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures — au même endroit' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
+      { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
       { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction. Publier, intervenir, donner un avis : tout compte.' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
       // « Mon compte » n'est plus listé ici : il vit dans le menu de l'avatar,

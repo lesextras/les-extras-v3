@@ -20,6 +20,8 @@ interface Payload {
   side: "freelance" | "establishment" | "none";
   validatedMinutes: number;
   pendingMinutes: number;
+  /** Fenêtre d'ajustement de 72 h après la fin de mission. */
+  ajustement?: { limite: string | null; ouverte: boolean };
 }
 
 function fmtDur(a: string, b?: string | null): string {
@@ -114,6 +116,8 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
   if (!data || data.side === "none") return null;
   const isFreelance = data.side === "freelance";
   const isEstablishment = data.side === "establishment";
+  const fenetre = data.ajustement;
+  const verrouille = fenetre ? !fenetre.ouverte : false;
 
   return (
     <div className="mx-auto mt-6 max-w-3xl rounded-2xl border border-border bg-card p-6 print:hidden">
@@ -124,6 +128,21 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
           {data.pendingMinutes ? <> · {hoursLabel(data.pendingMinutes)} en attente</> : null}
         </div>
       </div>
+
+      {fenetre?.limite ? (
+        verrouille ? (
+          <p className="mt-3 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+            La fenêtre d&apos;ajustement de 72 h est terminée : le pointage est verrouillé et les
+            créneaux non contestés ont été validés automatiquement.
+          </p>
+        ) : (
+          <p className="mt-3 rounded-lg border border-[#b8860b]/30 bg-[#b8860b]/10 px-3 py-2 text-xs text-foreground">
+            Fenêtre d&apos;ajustement ouverte jusqu&apos;au{" "}
+            <span className="font-medium">{fmtWhen(fenetre.limite)}</span> — après cette date, les
+            heures déclarées sont validées telles quelles et tout est verrouillé.
+          </p>
+        )
+      ) : null}
 
       <ul className="mt-4 divide-y divide-border">
         {data.entries.length === 0 ? (
@@ -149,7 +168,7 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
                 >
                   {STATUS_LABEL[e.status]}
                 </span>
-                {isEstablishment && e.status === "PENDING" ? (
+                {isEstablishment && e.status === "PENDING" && !verrouille ? (
                   <>
                     <Button size="sm" variant="secondary" disabled={busy} onClick={() => review(e.id, "VALIDATED")}>
                       Valider
@@ -159,7 +178,7 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
                     </Button>
                   </>
                 ) : null}
-                {isFreelance && e.status !== "VALIDATED" ? (
+                {isFreelance && e.status !== "VALIDATED" && !verrouille ? (
                   <button
                     type="button"
                     onClick={() => remove(e.id)}
@@ -175,7 +194,7 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
         )}
       </ul>
 
-      {isFreelance ? (
+      {isFreelance && !verrouille ? (
         <form onSubmit={add} className="mt-4 grid grid-cols-1 gap-3 border-t border-border pt-4 sm:grid-cols-2">
           <label className="text-sm">
             <span className="mb-1 block text-muted-foreground">Début</span>
@@ -195,11 +214,11 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
             </Button>
           </div>
         </form>
-      ) : (
+      ) : isEstablishment && !verrouille ? (
         <p className="mt-4 border-t border-border pt-4 text-xs text-muted-foreground">
           Validez les créneaux déclarés par l&apos;intervenant. Le total validé sert de base à la facturation.
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

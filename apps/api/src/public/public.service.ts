@@ -7,6 +7,7 @@ import {
   ServiceStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ProgressionService } from '../users/progression.service';
 import { MailService } from '../common/mail/mail.service';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
@@ -128,6 +129,7 @@ export class PublicService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
+    private readonly progression: ProgressionService,
   ) {}
 
   /** Enregistre une demande de contact publique et notifie l'équipe par e-mail. */
@@ -993,6 +995,10 @@ export class PublicService {
         }
       : account.owner;
 
+    // Palier du programme de progression (Nouveau / Confirme / Super Extra),
+    // calcule sur les missions reellement effectuees — jamais declaratif.
+    const palier = await this.progression.palier(account.id);
+
     return {
       ...account,
       city: account.city ?? villes[0] ?? null,
@@ -1000,6 +1006,7 @@ export class PublicService {
       services,
       reviews,
       rating,
+      palier,
     };
   }
 

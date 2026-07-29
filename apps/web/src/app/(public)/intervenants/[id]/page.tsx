@@ -43,6 +43,7 @@ interface Vendor {
     author?: { firstName?: string | null; lastName?: string | null } | null;
   }[];
   rating?: number | null;
+  palier?: "NOUVEAU" | "CONFIRME" | "SUPER_EXTRA";
 }
 
 export async function generateMetadata({
@@ -78,8 +79,17 @@ export default async function VendorPage({ params }: { params: { id: string } })
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1 space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             {nom}
+            {vendor.palier === "SUPER_EXTRA" ? (
+              <Badge className="gap-1 align-middle text-xs" title="10 missions terminées minimum, note moyenne d'au moins 4,5 et moins de 5 % d'annulations">
+                <BadgeCheck className="size-3" /> Super Extra
+              </Badge>
+            ) : vendor.palier === "CONFIRME" ? (
+              <Badge variant="secondary" className="gap-1 align-middle text-xs" title="Au moins 3 missions terminées avec une note moyenne d'au moins 4">
+                <BadgeCheck className="size-3" /> Confirmé
+              </Badge>
+            ) : null}
           </h1>
           <p className="text-muted-foreground">
             {[metier, vendor.city].filter(Boolean).join(" · ") || "Intervenant Les Extras"}

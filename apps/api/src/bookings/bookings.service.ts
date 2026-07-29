@@ -243,7 +243,8 @@ export class BookingsService {
   }
 
   complete(id: string, accountId: string) {
-    return this.transition(id, accountId, BookingStatus.COMPLETED);
+    // La date de fin ouvre la fenetre d'ajustement du pointage (72 h).
+    return this.transition(id, accountId, BookingStatus.COMPLETED, { completedAt: new Date() });
   }
 
   cancel(id: string, accountId: string, dto: CancelBookingDto) {
@@ -260,9 +261,45 @@ export class BookingsService {
     return Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 60000));
   }
 
+  /**
+   * Fenetre d'ajustement : apres la fin de mission, chaque partie dispose de
+   * 72 h pour declarer ou corriger les heures. Passe ce delai, les creneaux
+   * en attente sont valides tels quels et tout est verrouille.
+   */
+  private static readonly FENETRE_AJUSTEMENT_MS = 72 * 3_600_000;
+
+  private limiteAjustement(booking: { completedAt: Date | null }): Date | null {
+    if (!booking.completedAt) return null; // mission pas encore terminee : pas de compte a rebours
+    return new Date(booking.completedAt.getTime() + BookingsService.FENETRE_AJUSTEMENT_MS);
+  }
+
+  private ajustementOuvert(booking: { completedAt: Date | null }): boolean {
+    const limite = this.limiteAjustement(booking);
+    return limite === null || Date.now() < limite.getTime();
+  }
+
+  /** A l'echeance des 72 h, les creneaux non contestes sont valides d'office. */
+  private async validerCreneauxEchus(bookingId: string, booking: { completedAt: Date | null }) {
+    if (this.ajustementOuvert(booking)) return;
+    const echus = await this.prisma.timeEntry.updateMany({
+      where: { bookingId, status: 'PENDING' },
+      data: { status: 'VALIDATED' },
+    });
+    if (echus.count > 0) {
+      await this.audit.log({
+        action: 'temps.valide.echeance',
+        entityType: 'Booking',
+        entityId: bookingId,
+        summary: `${echus.count} creneau(x) valide(s) automatiquement a la fin de la fenetre d'ajustement de 72 h.`,
+        metadata: { bookingId, count: echus.count },
+      });
+    }
+  }
+
   /** Liste des créneaux d'un booking + totaux, pour les deux parties. */
   async listTimeEntries(bookingId: string, accountId: string) {
     const booking = await this.loadForAccount(bookingId, accountId);
+    await this.validerCreneauxEchus(bookingId, booking);
     const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
     const side =
       accountId === booking.accountId
@@ -281,7 +318,17 @@ export class BookingsService {
       if (e.status === 'VALIDATED') validatedMinutes += mins;
       else if (e.status === 'PENDING') pendingMinutes += mins;
     }
-    return { entries, side, validatedMinutes, pendingMinutes };
+    const limite = this.limiteAjustement(booking);
+    return {
+      entries,
+      side,
+      validatedMinutes,
+      pendingMinutes,
+      ajustement: {
+        limite: limite ? limite.toISOString() : null,
+        ouverte: this.ajustementOuvert(booking),
+      },
+    };
   }
 
   /** Le freelance (titulaire du booking) déclare un créneau travaillé. */
@@ -289,6 +336,11 @@ export class BookingsService {
     const booking = await this.loadForAccount(bookingId, accountId);
     if (accountId !== booking.accountId) {
       throw new ForbiddenException("Seul l'intervenant peut déclarer son temps de travail.");
+    }
+    if (!this.ajustementOuvert(booking)) {
+      throw new BadRequestException(
+        "La fenêtre d'ajustement de 72 h après la mission est terminée : le pointage est verrouillé.",
+      );
     }
     const started = new Date(dto.startedAt);
     const ended = dto.endedAt ? new Date(dto.endedAt) : null;
@@ -313,6 +365,11 @@ export class BookingsService {
     const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
     if (accountId !== offerAccountId) {
       throw new ForbiddenException("Seul l'établissement peut valider le temps de travail.");
+    }
+    if (!this.ajustementOuvert(booking)) {
+      throw new BadRequestException(
+        "La fenêtre d'ajustement de 72 h après la mission est terminée : les créneaux restants ont été validés automatiquement.",
+      );
     }
     const updated = await this.prisma.timeEntry.update({ where: { id: entryId }, data: { status } });
     const heures =
@@ -344,6 +401,11 @@ export class BookingsService {
     }
     if (entry.status === 'VALIDATED') {
       throw new BadRequestException('Un créneau validé ne peut plus être supprimé.');
+    }
+    if (!this.ajustementOuvert(booking)) {
+      throw new BadRequestException(
+        "La fenêtre d'ajustement de 72 h après la mission est terminée : le pointage est verrouillé.",
+      );
     }
     await this.prisma.timeEntry.delete({ where: { id: entryId } });
     return { deleted: true };

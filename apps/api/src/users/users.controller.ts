@@ -15,6 +15,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { UsersService } from './users.service';
+import { ProgressionService } from './progression.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { OnboardingStepDto } from './dto/onboarding.dto';
 import { CreateQualificationDto, CreateExperienceDto } from './dto/cv.dto';
@@ -26,7 +27,16 @@ import { RequestUser } from '../common/types/request-context';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly users: UsersService) {}
+  constructor(
+    private readonly users: UsersService,
+    private readonly progression: ProgressionService,
+  ) {}
+
+  /** Programme de progression de l'intervenant (paliers, criteres, avantages). */
+  @Get('me/progression')
+  getProgression(@CurrentUser() user: RequestUser) {
+    return this.progression.progressionPourUser(user.id);
+  }
 
   @Get('me')
   getMe(@CurrentUser() user: RequestUser) {

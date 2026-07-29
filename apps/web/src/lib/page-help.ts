@@ -23,6 +23,16 @@ const AIDE: Record<string, PageHelpEntry> = {
     ],
   },
 
+  "/dashboard/progression": {
+    titre: "Trois paliers, gagnés sur le terrain",
+    texte:
+      "Nouveau, Confirmé, Super Extra : votre palier est calculé uniquement sur vos missions réelles — missions terminées, note moyenne reçue, taux d'annulation. Rien de déclaratif. Le palier Super Extra vous donne un accès prioritaire aux missions : vous êtes sollicité avant leur ouverture au réseau complet.",
+    etapes: [
+      "Regardez les critères du prochain palier : chacun indique où vous en êtes.",
+      "Honorez vos missions et évitez les annulations de dernière minute — c'est le critère qui pèse le plus.",
+      "Demandez un avis après chaque prestation : la note moyenne compte dès 1 avis.",
+    ],
+  },
   "/dashboard/points": {
     titre: "Vos points, et comment ils deviennent des euros",
     texte:

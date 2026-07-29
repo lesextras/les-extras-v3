@@ -16,6 +16,7 @@ import { CommunityService } from '../community/community.service';
 import { PointReason } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MatchingService } from '../matching/matching.service';
+import { ProgressionService } from '../users/progression.service';
 import { MailService } from '../common/mail/mail.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
@@ -36,6 +37,7 @@ export class MissionsService {
     private readonly matching: MatchingService,
     private readonly mail: MailService,
     private readonly community: CommunityService,
+    private readonly progression: ProgressionService,
   ) {}
 
   /** Crée une mission (statut DRAFT) rattachée au compte établissement actif. */
@@ -315,6 +317,13 @@ export class MissionsService {
     let autorises: Set<string> | null = null;
     if (mission.visibility === MissionVisibility.RESERVED) {
       autorises = new Set(await this.intervenantsConnus(accountId));
+      // Programme de progression : les « Super Extra » (10 missions terminees,
+      // note >= 4,5, annulations <= 5 %) sont sollicites des ce palier, avant
+      // l'ouverture au reseau complet — c'est leur avantage d'acces prioritaire.
+      const superExtras = await this.progression.superExtrasParmi(
+        candidates.map((c: any) => c.accountId).filter((id: string) => !autorises!.has(id)),
+      );
+      for (const id of superExtras) autorises.add(id);
       if (autorises.size === 0) return 0; // pas de vivier : le planificateur élargira.
     }
 
