@@ -9,23 +9,32 @@ import type { Mission } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Planning" };
 
-/** Début de la semaine courante (lundi 00:00). */
+/** Lundi de la semaine de `d` (la semaine française commence le lundi). */
 function startOfWeek(d = new Date()): Date {
   const date = new Date(d);
   date.setHours(0, 0, 0, 0);
   const day = date.getDay(); // 0 = dimanche
-  const diff = (day === 0 ? -6 : 1) - day; // reculer jusqu'au lundi
-  date.setDate(date.getDate() + diff);
+  date.setDate(date.getDate() + ((day === 0 ? -6 : 1) - day));
   return date;
+}
+
+/** Première case de la grille du mois : le lundi qui précède le 1er. */
+function startOfMonthGrid(d = new Date()): Date {
+  const premier = new Date(d);
+  premier.setHours(0, 0, 0, 0);
+  premier.setDate(1);
+  return startOfWeek(premier);
 }
 
 export default async function PlanningPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
 
-  const from = startOfWeek();
+  // Premier affichage : le mois courant, exactement la grille que le
+  // calendrier montrera côté client (6 semaines à partir du lundi précédant le 1er).
+  const from = startOfMonthGrid();
   const to = new Date(from);
-  to.setDate(to.getDate() + 28); // fenêtre de 4 semaines
+  to.setDate(to.getDate() + 42);
   const fromISO = from.toISOString();
   const toISO = to.toISOString();
 
@@ -54,7 +63,7 @@ export default async function PlanningPage() {
         title="Planning"
         subtitle={
           isEstablishment
-            ? "Vos renforts pourvus, ateliers réservés et sessions de formation, plus les créneaux que vous ajoutez vous-même."
+            ? "Vos renforts pourvus, ateliers réservés et sessions de formation, plus les créneaux que vous ajoutez vous-même. Cliquez sur un jour pour en voir le détail."
             : "Vos interventions confirmées — missions et ateliers — et vos disponibilités hebdomadaires."
         }
       />
