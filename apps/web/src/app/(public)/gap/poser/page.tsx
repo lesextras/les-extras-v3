@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { requireSession, fetchApi } from "../../_shared/server";
-import { PageHeader } from "../../_shared/ui";
-import { PoserQuestion } from "../../_shared/PoserQuestion";
+import { requireSession, fetchApi } from "@/app/_shared/server";
+import { PageHeader } from "@/app/_shared/ui";
+import { PoserQuestion } from "@/app/_shared/PoserQuestion";
 
 export const metadata: Metadata = { title: "Déposer une situation" };
 

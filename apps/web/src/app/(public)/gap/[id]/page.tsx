@@ -6,12 +6,12 @@ import { notFound } from "next/navigation";
 import { Eye, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { requireSession, fetchApi, estAdherent } from "../../_shared/server";
-import { formatDate } from "../../_shared/format";
-import { FilReponses } from "../../_shared/ReponseGap";
-import { ActionsSituation } from "../../_shared/ActionsSituation";
-import { LexGapiste } from "../../_shared/LexGapiste";
-import type { QuestionDetail } from "../../_shared/gap";
+import { requireSession, fetchApi, estAdherent } from "@/app/_shared/server";
+import { formatDate } from "@/app/_shared/format";
+import { FilReponses } from "@/app/_shared/ReponseGap";
+import { ActionsSituation } from "@/app/_shared/ActionsSituation";
+import { LexGapiste } from "@/app/_shared/LexGapiste";
+import type { QuestionDetail } from "@/app/_shared/gap";
 
 export const metadata: Metadata = { title: "Situation — Le GAP" };
 
