@@ -110,7 +110,7 @@ export class ProgressionService {
   /** Vue complete pour la page « Ma progression » du dashboard intervenant. */
   async progressionPourUser(userId: string) {
     const account = await this.prisma.account.findFirst({
-      where: { ownerId: userId, role: 'FREELANCE' },
+      where: { ownerId: userId, type: 'FREELANCE' },
       select: { id: true, ownerId: true, createdAt: true },
     });
     if (!account) {
