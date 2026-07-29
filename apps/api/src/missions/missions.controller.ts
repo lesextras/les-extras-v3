@@ -55,7 +55,7 @@ export class MissionsController {
   @UseGuards(AccountGuard, AccountRolesGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   create(@CurrentAccount() account: AccountCtx, @Body() dto: CreateMissionDto) {
-    return this.missions.create(account.id, dto);
+    return this.missions.create(account.id, account.type, dto);
   }
 
   @Patch(':id')

@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BookingStatus, MissionStatus } from '@prisma/client';
 import { MissionsService } from './missions.service';
 
@@ -6,6 +6,7 @@ function createPrismaMock() {
   return {
     reliefMission: {
       findUnique: jest.fn(),
+      create: jest.fn(),
     },
     booking: {
       findFirst: jest.fn(),
@@ -97,6 +98,17 @@ describe('MissionsService', () => {
 
       expect(result).toBe(mission);
       expect(result.bookings).toHaveLength(1);
+    });
+  });
+
+  describe('create', () => {
+    it('refuse un compte FREELANCE : un intervenant ne publie pas de besoin', async () => {
+      await expect(
+        service.create('account-1', 'FREELANCE', { title: 'x' } as never),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      // Court-circuité avant toute écriture Prisma.
+      expect(prisma.reliefMission.create).not.toHaveBeenCalled();
     });
   });
 

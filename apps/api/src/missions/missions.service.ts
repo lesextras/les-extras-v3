@@ -39,7 +39,16 @@ export class MissionsService {
   ) {}
 
   /** Crée une mission (statut DRAFT) rattachée au compte établissement actif. */
-  async create(accountId: string, dto: CreateMissionDto) {
+  async create(accountId: string, accountType: string, dto: CreateMissionDto) {
+    // Un renfort est un BESOIN de remplacement : il n'est émis que par une
+    // structure qui a un poste à couvrir. Un intervenant se propose, il ne
+    // publie pas de besoin — sinon le marketplace se remplit d'offres qui
+    // n'engagent personne et les deux côtés du métier se confondent.
+    if (accountType !== 'ESTABLISHMENT') {
+      throw new ForbiddenException(
+        'Seul un compte établissement publie un besoin de renfort. Depuis un compte intervenant, répondez aux missions ouvertes.',
+      );
+    }
     if (dto.endDate && new Date(dto.endDate) <= new Date(dto.startDate)) {
       throw new BadRequestException('La date de fin doit être après la date de début.');
     }
