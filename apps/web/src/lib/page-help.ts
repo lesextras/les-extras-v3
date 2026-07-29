@@ -12,7 +12,7 @@ export interface PageHelpEntry {
 }
 
 const AIDE: Record<string, PageHelpEntry> = {
-  "/dashboard/gap": {
+  "/gap": {
     titre: "Le fil des situations de terrain",
     texte:
       "Ici, des professionnels décrivent des situations concrètes et d'autres racontent ce qu'ils ont tenté. C'est plus rapide qu'une recherche et plus juste qu'un manuel, parce que ça vient de gens qui accompagnent les mêmes publics que vous.",

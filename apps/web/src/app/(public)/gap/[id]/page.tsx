@@ -6,11 +6,11 @@ import { notFound } from "next/navigation";
 import { Eye, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { requireSession, fetchApi, estAdherent } from "../../../../_shared/server";
-import { formatDate } from "../../../../_shared/format";
-import { FilReponses } from "../../../../_shared/ReponseGap";
-import { LexGapiste } from "../../../../_shared/LexGapiste";
-import type { QuestionDetail } from "../../../../_shared/gap";
+import { requireSession, fetchApi, estAdherent } from "../../_shared/server";
+import { formatDate } from "../../_shared/format";
+import { FilReponses } from "../../_shared/ReponseGap";
+import { LexGapiste } from "../../_shared/LexGapiste";
+import type { QuestionDetail } from "../../_shared/gap";
 
 export const metadata: Metadata = { title: "Situation — Le GAP" };
 
@@ -26,7 +26,7 @@ export default async function SituationPage({ params }: { params: { id: string }
   return (
     <div className="space-y-8">
       <Link
-        href="/dashboard/gap"
+        href="/gap"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" aria-hidden />

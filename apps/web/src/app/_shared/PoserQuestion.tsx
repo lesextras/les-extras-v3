@@ -66,7 +66,7 @@ export function PoserQuestion({
     }
     setEnvoi(true);
     try {
-      const r = await apiRequest<{ id: string }>("/dashboard/gap", {
+      const r = await apiRequest<{ id: string }>("/gap", {
         method: "POST",
         body: {
           title: titre.trim(),
@@ -83,7 +83,7 @@ export function PoserQuestion({
         title: "Situation déposée",
         description: "Les professionnels de votre métier la verront dans leur fil.",
       });
-      router.push(`/dashboard/gap/${r.id}`);
+      router.push(`/gap/${r.id}`);
     } catch (err) {
       toast({
         title: "Publication impossible",

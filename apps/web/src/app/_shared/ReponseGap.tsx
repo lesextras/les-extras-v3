@@ -48,7 +48,7 @@ export function FilReponses({
     }
     setEnvoi(true);
     try {
-      await apiRequest(`/dashboard/gap/${questionId}/reponses`, {
+      await apiRequest(`/gap/${questionId}/reponses`, {
         method: "POST",
         body: { content: texte.trim(), website: piege || undefined },
         accountId,
@@ -149,7 +149,7 @@ export function FilReponses({
                     type="button"
                     onClick={() =>
                       connecte
-                        ? agir(`/dashboard/gap/reponses/${r.id}/vote`, r.id)
+                        ? agir(`/gap/reponses/${r.id}/vote`, r.id)
                         : toast({
                             title: "Connexion requise",
                             description: "Créez un compte gratuit pour voter.",
@@ -182,7 +182,7 @@ export function FilReponses({
                       disabled={enCours === r.id}
                       onClick={() =>
                         agir(
-                          `/dashboard/gap/reponses/${r.id}/retenir`,
+                          `/gap/reponses/${r.id}/retenir`,
                           r.id,
                           "Retour retenu — son auteur reçoit 40 points",
                         )
