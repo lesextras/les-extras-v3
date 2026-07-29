@@ -155,7 +155,9 @@ export async function envoyerPush(
         TTL: String(ttl),
         Urgency: 'high',
       },
-      body: corps,
+      // Buffer n'est pas un BodyInit valide au sens des types du DOM : on
+      // passe la vue Uint8Array sous-jacente, sans recopier les octets.
+      body: new Uint8Array(corps.buffer, corps.byteOffset, corps.byteLength),
       signal: AbortSignal.timeout(10_000),
     });
     return {

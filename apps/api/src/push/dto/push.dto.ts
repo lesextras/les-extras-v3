@@ -1,23 +1,22 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
 export class AbonnementPushDto {
-  @ApiProperty({ description: "URL du service de push du navigateur" })
+  /** URL du service de push du navigateur (Google, Mozilla, Apple…). */
   @IsUrl({ protocols: ['https'], require_protocol: true })
   @MaxLength(1000)
   endpoint!: string;
 
-  @ApiProperty({ description: "Clé publique de l'appareil" })
+  /** Clé publique de l'appareil, pour chiffrer le message. */
   @IsString()
   @MaxLength(200)
   p256dh!: string;
 
-  @ApiProperty({ description: "Sel d'authentification de l'appareil" })
+  /** Sel d'authentification fourni par le navigateur. */
   @IsString()
   @MaxLength(100)
   auth!: string;
 
-  @ApiPropertyOptional({ description: 'Libellé lisible de l’appareil' })
+  /** Libellé lisible de l'appareil, choisi côté navigateur. */
   @IsOptional()
   @IsString()
   @MaxLength(120)
@@ -25,7 +24,6 @@ export class AbonnementPushDto {
 }
 
 export class DesabonnementPushDto {
-  @ApiProperty()
   @IsString()
   @MaxLength(1000)
   endpoint!: string;

@@ -1,12 +1,10 @@
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestUser } from '../common/types/request-context';
 import { PushService } from './push.service';
 import { AbonnementPushDto, DesabonnementPushDto } from './dto/push.dto';
 
-@ApiTags('push')
 @Controller('push')
 export class PushController {
   constructor(private readonly push: PushService) {}
