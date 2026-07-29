@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PushService } from '../push/push.service';
 
 interface NotificationPayload {
   type: string;
@@ -10,11 +11,14 @@ interface NotificationPayload {
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly push: PushService,
+  ) {}
 
   /** Création interne d'une notification in-app pour un utilisateur. */
   async create(userId: string, payload: NotificationPayload) {
-    return this.prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data: {
         userId,
         type: payload.type,
@@ -23,6 +27,18 @@ export class NotificationsService {
         link: payload.link,
       },
     });
+
+    // Le téléphone est prévenu en même temps que la cloche de l'application.
+    // Sans attendre : un envoi push lent ou en échec ne doit jamais retarder
+    // ni faire échouer l'action métier qui vient de se produire.
+    void this.push.notifier(userId, {
+      titre: payload.title,
+      corps: payload.body,
+      lien: payload.link,
+      tag: payload.type,
+    });
+
+    return notification;
   }
 
   /** Liste des notifications de l'utilisateur (plus récentes d'abord). */

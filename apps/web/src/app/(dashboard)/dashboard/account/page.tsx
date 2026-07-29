@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle } from "../../../_shared/ui";
+import { BasculeNotifications } from "../../../_shared/BasculeNotifications";
 import { ProfileForm } from "../../../_shared/ProfileForm";
 import { CvManager } from "../../../_shared/CvManager";
 import { UnitsManager } from "../../../_shared/UnitsManager";
@@ -39,6 +40,10 @@ export default async function AccountPage() {
         title="Mon compte"
         subtitle={`${session.account.name} · Votre rôle : ${ACCOUNT_ROLE_LABEL[session.account.role]}`}
       />
+
+      {/* Le réglage vit ici parce qu'il est propre à l'appareil, pas au compte :
+          l'activer sur le téléphone n'active rien sur l'ordinateur. */}
+      <BasculeNotifications />
 
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList>

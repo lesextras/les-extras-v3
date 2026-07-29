@@ -41,6 +41,8 @@ import {
 } from "./_shared/Illustrations";
 import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
+import { DeuxPortes } from './_shared/DeuxPortes';
+import { ApercuProduit } from './_shared/ApercuProduit';
 
 export default async function LandingPage() {
   // Même raison que sur les pages publiques : l'accueil doit reconnaître
@@ -197,6 +199,9 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* ============ LES DEUX PORTES ============ */}
+        <DeuxPortes />
+
         {/* ============ CONFIANCE — bande défilante ============ */}
         <section className="border-y border-border/60 bg-card">
           <div className="mx-auto max-w-[1360px] py-7">
@@ -311,6 +316,9 @@ export default async function LandingPage() {
             ))}
           </div>
         </section>
+
+        {/* ============ APERÇU DU PRODUIT ============ */}
+        <ApercuProduit />
 
         {/* ============ TIMELINE PAR PROFIL ============ */}
         <section id="parcours" className="scroll-mt-24 bg-card">

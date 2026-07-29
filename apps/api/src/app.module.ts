@@ -25,6 +25,7 @@ import { ServicesModule } from './services/services.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PushModule } from './push/push.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { BillingModule } from './billing/billing.module';
 import { QuotesModule } from './quotes/quotes.module';
@@ -70,6 +71,7 @@ import { ConformiteModule } from './conformite/conformite.module';
     ConversationsModule,
     ReviewsModule,
     NotificationsModule,
+    PushModule,
     InvoicesModule,
     BillingModule,
     QuotesModule,

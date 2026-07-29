@@ -124,3 +124,51 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
+
+/* ------------------------------------------------------------------
+   NOTIFICATIONS PUSH
+   Le serveur envoie un message chiffré ; seul cet appareil peut le lire.
+   On affiche la notification et, au clic, on ouvre la bonne page — en
+   réutilisant un onglet déjà ouvert plutôt que d'en empiler un nouveau.
+   ------------------------------------------------------------------ */
+
+self.addEventListener('push', (event) => {
+  let donnees = {};
+  try {
+    donnees = event.data ? event.data.json() : {};
+  } catch {
+    donnees = {};
+  }
+
+  const titre = donnees.titre || 'Les Extras';
+  const options = {
+    body: donnees.corps || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    // Le tag regroupe : deux réponses au même GAP ne font qu'une ligne.
+    tag: donnees.tag || 'lesextras',
+    renotify: true,
+    data: { lien: donnees.lien || '/dashboard' },
+  };
+
+  event.waitUntil(self.registration.showNotification(titre, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const lien = (event.notification.data && event.notification.data.lien) || '/dashboard';
+  const cible = new URL(lien, self.location.origin).href;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((fenetres) => {
+      for (const fenetre of fenetres) {
+        // Une fenêtre de l'application est déjà ouverte : on la réutilise.
+        if (fenetre.url.startsWith(self.location.origin) && 'focus' in fenetre) {
+          fenetre.navigate ? fenetre.navigate(cible) : undefined;
+          return fenetre.focus();
+        }
+      }
+      return self.clients.openWindow(cible);
+    }),
+  );
+});

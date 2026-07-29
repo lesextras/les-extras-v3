@@ -75,6 +75,7 @@ model User {
   @@index([role, status])
   favorites          Favorite[]
   assistantDocuments AssistantDocument[]
+  pushSubscriptions PushSubscription[]
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -1480,4 +1481,35 @@ model AnswerVote {
   createdAt DateTime @default(now())
 
   @@unique([answerId, userId])
+}
+
+/// Abonnement d'un navigateur aux notifications push (Web Push).
+/// Un utilisateur peut en avoir plusieurs : téléphone, tablette, poste de travail.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// URL du service de push du navigateur (Google, Mozilla, Apple…). Identifiant unique de l'appareil.
+  endpoint  String   @unique
+  /// Clé publique de l'appareil, pour chiffrer le message.
+  p256dh    String
+  /// Sel d'authentification fourni par le navigateur.
+  auth      String
+  /// Libellé lisible, pour que la personne reconnaisse son appareil.
+  appareil  String?
+  /// Dernier envoi réussi : sert à repérer les abonnements morts.
+  dernierOk DateTime?
+  /// Nombre d'échecs consécutifs. Au-delà d'un seuil, on supprime.
+  echecs    Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Réglages techniques persistés (clés VAPID…). Une ligne par clé.
+/// Évite de dépendre d'une variable d'environnement à poser à la main.
+model Reglage {
+  cle       String   @id
+  valeur    String
+  majLe     DateTime @updatedAt
 }
