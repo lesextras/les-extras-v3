@@ -511,6 +511,7 @@ export class AdminService {
     content?: string;
     coverUrl?: string;
     categoryId?: string;
+    kind?: 'ACTUALITE' | 'ARTICLE';
     status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     authorId?: string;
     publishedAt?: string;
@@ -525,6 +526,7 @@ export class AdminService {
         excerpt: dto.excerpt,
         content: dto.content,
         coverUrl: dto.coverUrl,
+        kind: dto.kind ?? 'ARTICLE',
         status: dto.status ?? 'DRAFT',
         publishedAt: dto.publishedAt
           ? new Date(dto.publishedAt)
@@ -545,6 +547,7 @@ export class AdminService {
     if (dto.excerpt !== undefined) data.excerpt = dto.excerpt as string;
     if (dto.content !== undefined) data.content = dto.content as string;
     if (dto.coverUrl !== undefined) data.coverUrl = dto.coverUrl as string;
+    if (dto.kind !== undefined) data.kind = dto.kind as 'ACTUALITE' | 'ARTICLE';
     if (dto.status !== undefined) {
       data.status = dto.status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
       if (dto.status === 'PUBLISHED' && !article.publishedAt) data.publishedAt = new Date();

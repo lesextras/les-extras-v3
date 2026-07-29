@@ -620,10 +620,19 @@ model Category {
 }
 
 /// ARTICLE de contenu (blog / actualités). Calque du back-office Symfony.
+/// Deux rayons dans l'Édublog : l'actualité (une nouvelle, un retour de
+/// terrain, un temps fort) et l'article de fond (une analyse, un guide).
+/// Chaque compte écrit dans l'un ou l'autre.
+enum ArticleKind {
+  ACTUALITE
+  ARTICLE
+}
+
 model Article {
   id          String        @id @default(cuid())
   title       String
   slug        String        @unique
+  kind        ArticleKind   @default(ACTUALITE)
   excerpt     String?
   content     String?
   coverUrl    String?
@@ -646,6 +655,7 @@ model Article {
   updatedAt   DateTime      @updatedAt
 
   @@index([status, publishedAt])
+  @@index([status, kind, publishedAt])
   @@index([accountId])
 }
 

@@ -8,7 +8,7 @@ import {
   type LinkedinStatus,
 } from "../../../_shared/ArticlesManager";
 
-export const metadata: Metadata = { title: "Actualités" };
+export const metadata: Metadata = { title: "Mes publications" };
 
 export default async function DashboardActualitesPage() {
   const session = await requireSession();
@@ -20,8 +20,8 @@ export default async function DashboardActualitesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Actualités"
-        subtitle="Publiez sur le fil public de Les Extras : retours d’expérience, projets, nouveautés. Chaque article est visible de tous et référencé sur Google."
+        title="Mes publications"
+        subtitle="Écrivez pour l’Édublog : une actualité pour raconter un temps fort, un article de fond pour partager une méthode. Tout est visible de tous et référencé sur Google."
       />
       <ArticlesManager
         initial={liste.data ?? []}

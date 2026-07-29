@@ -16,10 +16,13 @@ import {
 } from "lucide-react";
 import { formatDate } from "./format";
 
+export type ArticleKind = "ACTUALITE" | "ARTICLE";
+
 export interface ArticleRow {
   id: string;
   title: string;
   slug: string;
+  kind?: ArticleKind;
   excerpt?: string | null;
   content?: string | null;
   coverUrl?: string | null;
@@ -34,6 +37,20 @@ export interface LinkedinStatus {
   connected: boolean;
   name?: string | null;
 }
+
+/** Ce que chaque rayon veut dire, en clair, au moment d'écrire. */
+const RAYONS: { cle: ArticleKind; titre: string; aide: string }[] = [
+  {
+    cle: "ACTUALITE",
+    titre: "Actualité",
+    aide: "Une nouvelle, un temps fort, un retour de terrain. Court, daté, vivant.",
+  },
+  {
+    cle: "ARTICLE",
+    titre: "Article de fond",
+    aide: "Une analyse, un guide, une méthode. Plus long, il reste utile des mois.",
+  },
+];
 
 const LIBELLE: Record<ArticleRow["status"], string> = {
   DRAFT: "Brouillon",
@@ -59,6 +76,8 @@ export function ArticlesManager({
   const [depot, setDepot] = useState(false);
   const zoneRef = useRef<HTMLTextAreaElement>(null);
   const fichierRef = useRef<HTMLInputElement>(null);
+  const couvertureRef = useRef<HTMLInputElement>(null);
+  const [depotCouverture, setDepotCouverture] = useState(false);
 
   /** Insère du texte autour de la sélection courante. */
   function entourer(avant: string, apres: string) {
@@ -111,8 +130,28 @@ export function ArticlesManager({
     }
   }
 
+  /** Dépose l'image de couverture : on choisit un fichier, pas une adresse. */
+  async function deposerCouverture(fichier: File) {
+    if (!edite) return;
+    setDepotCouverture(true);
+    try {
+      const form = new FormData();
+      form.append("file", fichier);
+      const res = await fetch("/api/proxy/files/article", { method: "POST", body: form });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? "Envoi refusé");
+      const { id } = (await res.json()) as { id: string };
+      setEdite({ ...edite, coverUrl: `/api/proxy/public/images/${id}` });
+      toast({ title: "Couverture ajoutée" });
+    } catch (e) {
+      toast({ title: "Image refusée", description: (e as Error).message });
+    } finally {
+      setDepotCouverture(false);
+    }
+  }
+
   const vide: ArticleRow = {
-    id: "", title: "", slug: "", excerpt: "", content: "", coverUrl: "", status: "DRAFT",
+    id: "", title: "", slug: "", kind: "ACTUALITE", excerpt: "", content: "", coverUrl: "",
+    status: "DRAFT",
   };
 
   async function enregistrer(publier: boolean) {
@@ -124,6 +163,7 @@ export function ArticlesManager({
         excerpt: edite.excerpt || undefined,
         content: edite.content ?? "",
         coverUrl: edite.coverUrl || undefined,
+        kind: edite.kind ?? "ACTUALITE",
         status: publier ? "PUBLISHED" : edite.status,
       };
       const r = await apiRequest<ArticleRow>(
@@ -133,7 +173,13 @@ export function ArticlesManager({
       setRows((l) => (edite.id ? l.map((x) => (x.id === r.id ? { ...x, ...r } : x)) : [r, ...l]));
       setOuvert(false);
       setEdite(null);
-      toast({ title: publier ? "Actualité publiée" : "Brouillon enregistré" });
+      toast({
+        title: publier
+          ? edite.kind === "ARTICLE"
+            ? "Article publié"
+            : "Actualité publiée"
+          : "Brouillon enregistré",
+      });
       router.refresh();
     } catch (e) {
       toast({ title: "Enregistrement impossible", description: (e as Error).message });
@@ -205,14 +251,23 @@ export function ArticlesManager({
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
         <Button
+          variant="outline"
           onClick={() => {
-            setEdite(vide);
+            setEdite({ ...vide, kind: "ACTUALITE" });
             setOuvert(true);
           }}
         >
           Écrire une actualité
+        </Button>
+        <Button
+          onClick={() => {
+            setEdite({ ...vide, kind: "ARTICLE" });
+            setOuvert(true);
+          }}
+        >
+          Écrire un article
         </Button>
       </div>
 
@@ -220,8 +275,29 @@ export function ArticlesManager({
       {ouvert && edite ? (
         <Card>
           <CardContent className="space-y-4 p-6">
+            <div className="grid gap-2 sm:grid-cols-2">
+              {RAYONS.map((r) => {
+                const actif = (edite.kind ?? "ACTUALITE") === r.cle;
+                return (
+                  <button
+                    key={r.cle}
+                    type="button"
+                    onClick={() => setEdite({ ...edite, kind: r.cle })}
+                    aria-pressed={actif}
+                    className={`rounded-lg border p-3 text-left transition-colors ${
+                      actif
+                        ? "border-primary bg-primary/10"
+                        : "border-input hover:bg-accent/50"
+                    }`}
+                  >
+                    <span className="block text-sm font-medium text-foreground">{r.titre}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{r.aide}</span>
+                  </button>
+                );
+              })}
+            </div>
             <Input
-              placeholder="Titre de l’actualité"
+              placeholder={edite.kind === "ARTICLE" ? "Titre de l’article" : "Titre de l’actualité"}
               value={edite.title}
               onChange={(e) => setEdite({ ...edite, title: e.target.value })}
             />
@@ -230,11 +306,65 @@ export function ArticlesManager({
               value={edite.excerpt ?? ""}
               onChange={(e) => setEdite({ ...edite, excerpt: e.target.value })}
             />
-            <Input
-              placeholder="URL de l’image de couverture (facultatif)"
-              value={edite.coverUrl ?? ""}
-              onChange={(e) => setEdite({ ...edite, coverUrl: e.target.value })}
-            />
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Image de couverture <span className="font-normal text-muted-foreground">(facultative)</span>
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                {edite.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={edite.coverUrl}
+                    alt="Aperçu de la couverture"
+                    className="h-20 w-32 rounded-md border border-input object-cover"
+                  />
+                ) : (
+                  <span className="grid h-20 w-32 place-items-center rounded-md border border-dashed border-input text-xs text-muted-foreground">
+                    Aucune image
+                  </span>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={depotCouverture}
+                    onClick={() => couvertureRef.current?.click()}
+                  >
+                    <ImagePlus className="size-4" />
+                    {depotCouverture
+                      ? "Envoi…"
+                      : edite.coverUrl
+                        ? "Changer l’image"
+                        : "Télécharger une image"}
+                  </Button>
+                  {edite.coverUrl ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEdite({ ...edite, coverUrl: "" })}
+                    >
+                      Retirer
+                    </Button>
+                  ) : null}
+                </div>
+                <input
+                  ref={couvertureRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) deposerCouverture(f);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                JPEG, PNG ou WebP. Elle illustre votre publication dans le fil de l’Édublog.
+              </p>
+            </div>
             <div className="rounded-lg border border-input">
               <div className="flex flex-wrap items-center gap-1 border-b border-input bg-muted/40 px-2 py-1.5">
                 <Outil titre="Gras" onClick={() => entourer("**", "**")}><Bold className="size-4" /></Outil>
@@ -292,8 +422,9 @@ export function ArticlesManager({
       {/* Liste */}
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Aucune actualité pour le moment. Racontez une intervention réussie, un projet de service,
-          une nouveauté — c’est ce qui vous rend visible.
+          Rien de publié pour le moment. Une actualité pour raconter une intervention réussie ou un
+          temps fort ; un article de fond pour partager une méthode qui marche — c’est ce qui vous
+          rend visible.
         </p>
       ) : (
         <div className="space-y-3">
@@ -302,6 +433,9 @@ export function ArticlesManager({
               <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="soft">
+                      {a.kind === "ARTICLE" ? "Article de fond" : "Actualité"}
+                    </Badge>
                     <Badge variant={a.status === "PUBLISHED" ? "secondary" : "outline"}>
                       {LIBELLE[a.status]}
                     </Badge>

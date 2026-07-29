@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ArticleStatus, Prisma } from '@prisma/client';
+import { ArticleKind, ArticleStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CommunityService } from '../community/community.service';
 import { PointReason } from '@prisma/client';
@@ -16,6 +16,7 @@ const PUBLIC_SELECT = {
   id: true,
   title: true,
   slug: true,
+  kind: true,
   excerpt: true,
   coverUrl: true,
   publishedAt: true,
@@ -108,6 +109,7 @@ export class ArticlesService {
         content: dto.content,
         coverUrl: dto.coverUrl,
         categoryId: dto.categoryId ?? undefined,
+        kind: dto.kind ?? ArticleKind.ACTUALITE,
         status: dto.status ?? ArticleStatus.DRAFT,
         publishedAt: publie ? new Date() : null,
       },
@@ -192,10 +194,10 @@ export class ArticlesService {
   async feed(query: QueryArticlesDto) {
     const where: Prisma.ArticleWhereInput = { status: ArticleStatus.PUBLISHED };
     if (query.accountId) where.accountId = query.accountId;
-    // Deux rayons distincts dans l'Édublog : le fond éditorial de l'équipe
-    // d'un côté, la parole du réseau de l'autre.
-    if (query.section === 'editorial') where.accountId = null;
-    if (query.section === 'reseau') where.accountId = { not: null };
+    // Deux rayons distincts dans l'Édublog, selon ce que l'auteur a choisi
+    // d'écrire — et non selon qui il est : chacun peut signer les deux.
+    if (query.section === 'editorial') where.kind = ArticleKind.ARTICLE;
+    if (query.section === 'reseau') where.kind = ArticleKind.ACTUALITE;
     if (query.category) where.category = { is: { title: query.category } };
     if (query.search) {
       where.OR = [
@@ -229,10 +231,10 @@ export class ArticlesService {
 
     const [nbEditorial, nbReseau] = await this.prisma.$transaction([
       this.prisma.article.count({
-        where: { status: ArticleStatus.PUBLISHED, accountId: null },
+        where: { status: ArticleStatus.PUBLISHED, kind: ArticleKind.ARTICLE },
       }),
       this.prisma.article.count({
-        where: { status: ArticleStatus.PUBLISHED, accountId: { not: null } },
+        where: { status: ArticleStatus.PUBLISHED, kind: ArticleKind.ACTUALITE },
       }),
     ]);
 

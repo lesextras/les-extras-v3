@@ -1,6 +1,6 @@
 import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ArticleStatus } from '@prisma/client';
+import { ArticleKind, ArticleStatus } from '@prisma/client';
 
 /** Rédaction d'une actualité par un compte (établissement ou intervenant). */
 export class CreateArticleDto {
@@ -27,6 +27,11 @@ export class CreateArticleDto {
   @IsString()
   categoryId?: string;
 
+  /** ACTUALITE (par défaut) ou ARTICLE de fond. */
+  @IsOptional()
+  @IsEnum(ArticleKind)
+  kind?: ArticleKind;
+
   /** DRAFT (par défaut) ou PUBLISHED pour publier immédiatement. */
   @IsOptional()
   @IsEnum(ArticleStatus)
@@ -39,6 +44,7 @@ export class UpdateArticleDto {
   @IsOptional() @IsString() @MinLength(30) @MaxLength(40000) content?: string;
   @IsOptional() @IsString() coverUrl?: string;
   @IsOptional() @IsString() categoryId?: string | null;
+  @IsOptional() @IsEnum(ArticleKind) kind?: ArticleKind;
   @IsOptional() @IsEnum(ArticleStatus) status?: ArticleStatus;
 }
 
@@ -49,8 +55,8 @@ export class QueryArticlesDto {
   @IsOptional() @IsString() accountId?: string;
   /**
    * Section de l'Édublog :
-   *  - "editorial" : articles de fond publiés par l'équipe (accountId null)
-   *  - "reseau"    : actualités publiées par les comptes du réseau
+   *  - "editorial" : les articles de fond, d'où qu'ils viennent
+   *  - "reseau"    : les actualités, les nouvelles du terrain
    */
   @IsOptional() @IsIn(['editorial', 'reseau']) section?: 'editorial' | 'reseau';
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) take?: number;

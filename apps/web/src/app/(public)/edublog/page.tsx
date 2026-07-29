@@ -72,13 +72,13 @@ export default async function ActualitesPage({
     {
       cle: "editorial" as const,
       titre: "Articles",
-      detail: "Les repères de fond écrits par l'équipe ADéPA",
+      detail: "Analyses, guides et méthodes — par l'équipe et par le réseau",
       nb: data?.nbEditorial,
     },
     {
       cle: "reseau" as const,
       titre: "Actualités du réseau",
-      detail: "Ce que publient les établissements et les intervenants",
+      detail: "Les nouvelles du terrain : projets, temps forts, retours",
       nb: data?.nbReseau,
     },
   ];
@@ -87,7 +87,7 @@ export default async function ActualitesPage({
     <div className="space-y-8">
       <PageHeader
         title="Édublog"
-        subtitle="Deux rayons : les articles de fond de l’équipe, et les actualités publiées par le réseau. En accès libre, sans compte."
+        subtitle="Deux rayons : les articles de fond, et les actualités du réseau. Établissements, intervenants et équipe ADéPA y écrivent. En accès libre, sans compte."
       />
 
       <nav aria-label="Sections de l’Édublog" className="grid gap-3 sm:grid-cols-2">
@@ -156,8 +156,8 @@ export default async function ActualitesPage({
           }
           description={
             section === "editorial"
-              ? "Les articles de fond de l’équipe ADéPA apparaîtront ici."
-              : "Les publications des établissements et des intervenants apparaîtront ici."
+              ? "Les articles de fond publiés par la communauté apparaîtront ici."
+              : "Les nouvelles publiées par les établissements et les intervenants apparaîtront ici."
           }
         />
       ) : (
