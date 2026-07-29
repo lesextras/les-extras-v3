@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getApiBaseUrl } from "@/lib/api";
+import { METIERS, VILLES } from "./(public)/renfort/donnees";
+import { RUBRIQUES } from "./(public)/aide/contenu";
 
 // Sitemap dynamique : pages statiques publiques + catalogue & missions publiés.
 // Régénéré périodiquement (revalidate) et tolérant à une API indisponible.
@@ -54,12 +56,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/legal/cookies",
     "/login",
     "/register",
+    // Centre d'aide, démonstration, frais de service et entrées de référencement
+    // local : autant de pages qui répondent à une recherche précise.
+    "/aide",
+    "/demo",
+    "/frais-de-service",
+    "/renfort",
   ].map((p) => ({
     url: `${base}${p}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: p === "" ? 1 : 0.6,
   }));
+
+  // Pages écrites en dur mais nombreuses : rubriques d'aide, métiers, territoires.
+  // Elles ne dépendent pas de l'API, donc elles restent dans le sitemap même si
+  // l'API est indisponible au moment de la génération.
+  const editoriales: MetadataRoute.Sitemap = [
+    ...RUBRIQUES.map((r) => ({
+      url: `${base}/aide/${r.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+    ...METIERS.map((m) => ({
+      url: `${base}/renfort/metier/${m.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    ...VILLES.map((v) => ({
+      url: `${base}/renfort/${v.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
 
   const dynamic: MetadataRoute.Sitemap = [];
   const vendorIds = new Set<string>();
@@ -134,5 +166,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  return [...staticRoutes, ...dynamic];
+  return [...staticRoutes, ...editoriales, ...dynamic];
 }

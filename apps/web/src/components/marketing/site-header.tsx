@@ -16,6 +16,11 @@ const links = [
   { label: 'SOS Renfort', href: '/sos-renfort' },
   { label: 'Le GAP', href: '/gap' },
   { label: 'Édublog', href: '/edublog' },
+  // Tarifs et aide ferment la barre : ce sont les deux pages qu'on cherche
+  // quand on hésite encore, et elles n'ont pas à se disputer la place avec
+  // les produits.
+  { label: 'Tarifs', href: '/frais-de-service' },
+  { label: 'Aide', href: '/aide' },
 ];
 
 export interface UtilisateurEnTete {
