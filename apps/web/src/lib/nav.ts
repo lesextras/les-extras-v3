@@ -92,6 +92,7 @@ const freelanceNav: NavSection[] = [
       // Deux besoins distincts, deux entrées : gérer SES fiches (dans l'espace)
       // et parcourir le catalogue tel que le voient les établissements (la
       // vitrine publique).
+      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Missions et ateliers qu’on vous a réservés, avec leur contrat' },
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true, hint: 'Créez et gérez vos interventions' },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
       { label: 'Le catalogue d’ateliers', href: '/ateliers', icon: Sparkles, hint: 'Le catalogue public, tel que le voient les établissements' },
@@ -123,6 +124,10 @@ const establishmentNav: NavSection[] = [
     title: 'Mon activité',
     items: [
       { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
+      // Le suivi de ce qu'on a commandé manquait complètement : renforts,
+      // ateliers et inscriptions en formation étaient enregistrés mais
+      // invisibles hors du back-office administrateur.
+      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Renforts pourvus, ateliers réservés et inscriptions en formation — internes comme externes' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos créneaux et interventions' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
       { label: 'Le GAP', href: '/dashboard/gap', icon: MessagesSquare, essentiel: true, hint: 'Groupe d’Analyse de Pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },

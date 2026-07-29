@@ -61,6 +61,17 @@ export class FormationsController {
     return this.formations.create(account.id, dto);
   }
 
+  /**
+   * Les formations auxquelles la structure a inscrit ses salariés. Déclaré
+   * AVANT `:id`, sinon Nest interpréterait « mes-inscriptions » comme un
+   * identifiant de formation.
+   */
+  @Get('mes-inscriptions')
+  @UseGuards(AccountGuard)
+  mesInscriptions(@CurrentAccount() account: RequestAccount) {
+    return this.formations.mesInscriptions(account.id);
+  }
+
   // --- Sessions (préfixe à 2+ segments, déclaré avant :id) ----------------
 
   @Get('sessions/:sessionId')

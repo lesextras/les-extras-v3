@@ -27,6 +27,7 @@ const DESTINATIONS: Dest[] = [
   { label: "SOS Renfort", href: "/dashboard/renforts", group: "Établissement", keywords: "remplacement besoin publier" },
   { label: "Formations", href: "/marketplace/formations", group: "Établissement", keywords: "catalogue certifiant qualiopi inscription salariés" },
   { label: "Coffre-fort conformité", href: "/dashboard/conformite", group: "Établissement", keywords: "conformité pièces obligatoires cni casier judiciaire permis iban urssaf échéance renouvellement" },
+  { label: "Mes réservations", href: "/dashboard/reservations", group: "Navigation", keywords: "reservations bookings renfort atelier formation inscriptions contrat" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat" },
   { label: "Factures & revenus", href: "/dashboard/finance", group: "Navigation", keywords: "facture argent paiement" },

@@ -310,6 +310,38 @@ export class FormationsService {
     });
   }
 
+  /**
+   * Toutes les inscriptions payées par ce compte, quelle que soit la session.
+   * Sans cette vue, un établissement pouvait inscrire ses salariés mais ne
+   * retrouvait plus nulle part la liste de ce qu'il avait réservé.
+   */
+  async mesInscriptions(accountId: string) {
+    return this.prisma.inscription.findMany({
+      where: { payerAccountId: accountId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        status: true,
+        financing: true,
+        learnerName: true,
+        learnerEmail: true,
+        attestationUrl: true,
+        certificatUrl: true,
+        createdAt: true,
+        learner: { select: { firstName: true, lastName: true } },
+        session: {
+          select: {
+            id: true,
+            startDate: true,
+            endDate: true,
+            location: true,
+            formation: { select: { id: true, title: true, slug: true, certifying: true, city: true } },
+          },
+        },
+      },
+    });
+  }
+
   // --- Inscriptions -------------------------------------------------------
 
   async enroll(sessionId: string, accountId: string, dto: CreateInscriptionDto) {

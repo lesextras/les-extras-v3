@@ -71,6 +71,11 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Les missions publiées par les établissements qui correspondent à votre profil, classées par pertinence. Postulez directement depuis la fiche.',
     etapes: ['Ouvrez une mission pour voir le détail', 'Postulez en un clic', 'Suivez vos candidatures ici même'],
   },
+  '/dashboard/reservations': {
+    titre: 'Mes réservations',
+    texte:
+      'Tout ce qui a été réservé, dans les deux sens : les renforts pourvus, les ateliers commandés et les salariés inscrits en formation. Chaque ligne indique si vous êtes du côté qui réserve ou du côté qui intervient — un même compte peut faire les deux. Le contrat s’ouvre en cliquant sur l’intitulé.',
+  },
   '/dashboard/planning': {
     titre: 'Votre planning',
     texte:
