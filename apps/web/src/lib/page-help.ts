@@ -71,6 +71,11 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Les missions publiées par les établissements qui correspondent à votre profil, classées par pertinence. Postulez directement depuis la fiche.',
     etapes: ['Ouvrez une mission pour voir le détail', 'Postulez en un clic', 'Suivez vos candidatures ici même'],
   },
+  '/dashboard/facturation': {
+    titre: 'Devis & factures',
+    texte:
+      'Deux vues, une page. Onglet Devis : ce qu’on vous demande de chiffrer, et ce qu’on vous propose et qu’il faut accepter ou refuser. Onglet Factures : ce qui est dû, ce qui est réglé, et le PDF de chaque document. Le chiffre à côté de chaque onglet compte ce qui attend une action de votre part.',
+  },
   '/dashboard/reservations': {
     titre: 'Mes réservations',
     texte:

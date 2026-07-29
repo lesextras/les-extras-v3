@@ -97,13 +97,13 @@ const freelanceNav: NavSection[] = [
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
       { label: 'Le catalogue d’ateliers', href: '/ateliers', icon: Sparkles, hint: 'Le catalogue public, tel que le voient les établissements' },
       { label: 'Les formations Qualiopi', href: '/formations', icon: GraduationCap, hint: 'Le catalogue certifiant ADéPA, côté public' },
-      { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Demandes reçues à chiffrer et devis envoyés' },
+
     ],
   },
   {
     title: 'Mon espace',
     items: [
-      { label: 'Factures & revenus', href: '/dashboard/finance', icon: Receipt, essentiel: true, hint: 'Vos revenus et documents' },
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures — au même endroit' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction. Publier, intervenir, donner un avis : tout compte.' },
@@ -153,8 +153,10 @@ const establishmentNav: NavSection[] = [
       { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
       { label: 'Coffre-fort conformité', href: '/dashboard/conformite', icon: FileCheck, hint: 'Pièces obligatoires des intervenants (CNI, casier, permis, IBAN, URSSAF) : statut, échéances et alertes' },
       { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
-      { label: 'Devis', href: '/dashboard/devis', icon: FileCheck, hint: 'Vos demandes de devis et les propositions reçues' },
-      { label: 'Factures', href: '/dashboard/finance', icon: Receipt, essentiel: true, hint: 'Vos factures et dépenses' },
+      // Devis et factures sont les deux temps du même geste : on chiffre,
+      // puis on facture. Deux entrées éloignées obligeaient à traverser le
+      // menu pour retrouver la facture d'un devis accepté.
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer ou à décider, et vos factures — au même endroit' },
       { label: 'Adhésion', href: '/dashboard/adhesion', icon: Receipt, hint: 'Adhérer à l’association pour débloquer LEX. Les prestations, elles, se règlent à la facture.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },

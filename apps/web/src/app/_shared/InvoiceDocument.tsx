@@ -54,7 +54,7 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
   return (
     <div className="min-h-screen bg-neutral-100 py-8 print:bg-white print:py-0">
       <div className="mx-auto mb-4 flex max-w-[210mm] items-center justify-between px-4 print:hidden">
-        <a href="/dashboard/finance" className="text-sm text-neutral-600 hover:underline">
+        <a href="/dashboard/facturation?vue=factures" className="text-sm text-neutral-600 hover:underline">
           ← Retour à la finance
         </a>
         <PrintButton label="Imprimer / Enregistrer en PDF" />

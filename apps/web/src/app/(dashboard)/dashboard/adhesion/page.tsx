@@ -203,7 +203,7 @@ export default async function AdhesionPage({
             </div>
           </div>
           <Button asChild variant="outline" className="shrink-0">
-            <Link href="/dashboard/finance">Voir mes factures</Link>
+            <Link href="/dashboard/facturation?vue=factures">Voir mes factures</Link>
           </Button>
         </CardContent>
       </Card>
