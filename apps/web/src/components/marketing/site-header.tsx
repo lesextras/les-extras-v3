@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, X, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LayoutDashboard, CircleUserRound } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 
@@ -58,8 +58,13 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
           {connecte ? (
             <>
               {utilisateur?.compte && (
-                <span className="max-w-[200px] truncate text-sm text-muted-foreground">
-                  {utilisateur.compte}
+                // L'icône rend le nom identifiable comme « le compte connecté »
+                // plutôt que comme un mot posé là. `shrink-0` la protège :
+                // sans ça, un nom d'établissement long l'écraserait avant de
+                // se tronquer lui-même.
+                <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <CircleUserRound className="size-4 shrink-0" aria-hidden />
+                  <span className="max-w-[200px] truncate">{utilisateur.compte}</span>
                 </span>
               )}
               <Button asChild size="sm">
