@@ -43,10 +43,18 @@ async function callApi<T>(path: string, body: unknown): Promise<T> {
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const message =
-      (data && typeof data === 'object' && 'message' in data && String(data.message)) ||
-      'Une erreur est survenue. Réessayez.';
-    throw new Error(Array.isArray(message) ? message[0] : message);
+    // NestJS renvoie soit une chaîne, soit un tableau de messages de
+    // validation. L'ancienne version faisait String() AVANT le test
+    // Array.isArray : le tableau devenait une chaîne à virgules, le test
+    // échouait toujours, et l'utilisateur recevait la liste brute des
+    // règles de validation, en anglais. On teste le tableau d'abord.
+    const brut = data && typeof data === 'object' && 'message' in data ? data.message : null;
+    const message = Array.isArray(brut)
+      ? String(brut[0])
+      : typeof brut === 'string' && brut.trim()
+        ? brut
+        : 'Une erreur est survenue. Réessayez.';
+    throw new Error(message);
   }
   return data as T;
 }
@@ -75,7 +83,11 @@ export async function register(values: RegisterValues): Promise<AuthResult> {
   const origine = sourceComplete();
   const payload = {
     accountType: values.accountType,
-    name: values.name,
+    firstName: values.firstName.trim(),
+    lastName: values.lastName.trim(),
+    // Un intervenant n'a pas de structure : le compte prend alors son nom.
+    organizationName:
+      values.accountType === 'ESTABLISHMENT' ? values.organizationName?.trim() : undefined,
     email: values.email,
     password: values.password,
     source: origine.source,

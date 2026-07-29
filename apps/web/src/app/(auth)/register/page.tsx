@@ -46,7 +46,9 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       accountType: undefined,
-      name: '',
+      firstName: '',
+      lastName: '',
+      organizationName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -136,27 +138,60 @@ export default function RegisterPage() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel required>
-                  {selectedType === 'ESTABLISHMENT' ? 'Nom de l’établissement' : 'Nom complet'}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={
-                      selectedType === 'ESTABLISHMENT' ? 'MECS Les Tilleuls' : 'Camille Durand'
-                    }
-                    autoComplete={selectedType === 'ESTABLISHMENT' ? 'organization' : 'name'}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* L'API stocke un prénom et un nom séparés : c'est la personne qui
+              ouvre le compte, y compris pour un établissement. Le nom de la
+              structure est un champ distinct, demandé juste après. */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Prénom</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Camille" autoComplete="given-name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Nom</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Durand" autoComplete="family-name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {selectedType === 'ESTABLISHMENT' && (
+            <FormField
+              control={form.control}
+              name="organizationName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Nom de l’établissement</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="MECS Les Tilleuls"
+                      autoComplete="organization"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    C’est ce nom qui apparaîtra sur vos devis et vos factures.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}
