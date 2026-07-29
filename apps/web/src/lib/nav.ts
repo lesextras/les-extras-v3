@@ -19,7 +19,6 @@ import {
   Tags,
   Users,
   Building2,
-  Settings,
   BarChart3,
   Filter,
   Megaphone,
@@ -84,6 +83,10 @@ const freelanceNav: NavSection[] = [
     title: 'Mon activité',
     items: [
       { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Missions qui correspondent à votre profil, classées par score' },
+      // Ce qu'on m'a réservé relève de mon activité, pas de mon offre : c'est
+      // du travail engagé, avec une date et un contrat — au même rang que le
+      // planning, comme côté établissement.
+      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Missions et ateliers qu’on vous a réservés, avec leur contrat' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos interventions confirmées' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les établissements' },
       { label: 'Le GAP', href: '/dashboard/gap', icon: MessagesSquare, essentiel: true, hint: 'Groupe d’Analyse de Pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
@@ -91,19 +94,25 @@ const freelanceNav: NavSection[] = [
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
     ],
   },
+  // Même section, mêmes libellés que côté établissement : ce sont les mêmes
+  // pages publiques. Un intervenant les consulte pour voir comment son offre
+  // est présentée, et pour s'inscrire lui-même à une formation.
+  {
+    title: 'Catalogue',
+    items: [
+      { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
+      { label: 'Ateliers', href: '/ateliers', icon: Sparkles, hint: 'Le catalogue public, tel que le voient les établissements' },
+      { label: 'Formations', href: '/formations', icon: GraduationCap, hint: 'Le catalogue certifiant ADéPA, côté public' },
+    ],
+  },
+  // « Mon offre », c'est ce que je vends et que je pilote — mes fiches, mes
+  // sessions. Rien d'autre : les vitrines publiques sont dans Catalogue.
   {
     title: 'Mon offre',
     items: [
-      { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
-      // Deux besoins distincts, deux entrées : gérer SES fiches (dans l'espace)
-      // et parcourir le catalogue tel que le voient les établissements (la
-      // vitrine publique).
-      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Missions et ateliers qu’on vous a réservés, avec leur contrat' },
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true, hint: 'Créez et gérez vos interventions' },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
-      { label: 'Le catalogue d’ateliers', href: '/ateliers', icon: Sparkles, hint: 'Le catalogue public, tel que le voient les établissements' },
-      { label: 'Les formations Qualiopi', href: '/formations', icon: GraduationCap, hint: 'Le catalogue certifiant ADéPA, côté public' },
-
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
     ],
   },
   {
@@ -111,10 +120,11 @@ const freelanceNav: NavSection[] = [
     items: [
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures — au même endroit' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction. Publier, intervenir, donner un avis : tout compte.' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
-      { label: 'Mon compte', href: '/dashboard/account', icon: Settings, hint: 'Profil, paramètres et sécurité' },
+      // « Mon compte » n'est plus listé ici : il vit dans le menu de l'avatar,
+      // en haut à droite, et dans la palette ⌘K. Deux chemins vers la même
+      // page allongeaient le menu sans rien apporter.
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
   },
