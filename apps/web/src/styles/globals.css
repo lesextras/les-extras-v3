@@ -343,6 +343,37 @@
     animation: pulsation-anneau 2.8s ease-out infinite;
   }
 
+  /* ------------------------------------------------------------------
+     PARCOURS — la timeline de l'accueil
+     Les étapes montent une par une quand la section entre à l'écran, et
+     rejouent l'animation quand on change de profil : le mouvement dit
+     « c'est un autre chemin », mieux qu'un simple remplacement de texte.
+     ------------------------------------------------------------------ */
+  @keyframes etape-entree {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .animate-etape {
+    opacity: 0;
+    animation: etape-entree 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* Le trait se dessine du haut vers le bas, comme un chemin qu'on trace. */
+  @keyframes trait-descend {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  .animate-trait {
+    transform-origin: top;
+    animation: trait-descend 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
   /* Respect des préférences de mouvement réduit */
   @media (prefers-reduced-motion: reduce) {
     *,

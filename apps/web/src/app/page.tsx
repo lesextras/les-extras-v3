@@ -322,7 +322,8 @@ export default async function LandingPage() {
                 Étape par étape, selon qui vous êtes
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Ce que vous pouvez faire, dans quel ordre, et ce que ça coûte — ou pas.
+                Pour chaque étape : le problème tel qu’il se vit aujourd’hui, ce que ça change
+                concrètement, et ce que ça coûte — ou pas.
               </p>
             </Reveal>
             <Reveal delay={120} className="mt-10">
