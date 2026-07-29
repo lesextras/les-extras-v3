@@ -21,27 +21,45 @@ import type { ListeQuestions } from "./gap";
 const inputClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3.5 py-2 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
-/** Le cadre du GAP, rappelé en haut de page : c'est lui qui rend la parole possible. */
+/** Le cadre du GAP, rappelé en haut de page : c'est lui qui rend la parole
+ *  possible. Trois règles, une phrase chacune — on les relit d'un coup d'œil
+ *  à chaque visite, ce qui est le but ; un paragraphe, on ne le relit jamais. */
 const CADRE = [
   {
     icone: EyeOff,
-    titre: "Anonyme par défaut",
-    texte:
-      "Vous publiez sous « Un·e éducateur spécialisé », jamais sous votre nom. Les prénoms des personnes accompagnées sont masqués automatiquement, et ne sont stockés nulle part en clair.",
+    titre: "Anonyme",
+    texte: "Vous publiez sous « Un·e éducateur spécialisé ». Les prénoms sont masqués tout seuls.",
+    teinte: "text-primary",
+    fond: "bg-primary/10",
+    anneau: "ring-primary/25",
+    halo: "bg-primary/20",
   },
   {
     icone: ShieldCheck,
-    titre: "Entre professionnels uniquement",
-    texte:
-      "Rien n'est public, rien n'est indexé par les moteurs de recherche. Il faut un compte pour lire comme pour écrire — c'est ce qui permet de déposer une situation sans se surveiller.",
+    titre: "Entre pros",
+    texte: "Rien n'est public, rien n'est indexé. Il faut un compte pour lire comme pour écrire.",
+    teinte: "text-success",
+    fond: "bg-success/10",
+    anneau: "ring-success/25",
+    halo: "bg-success/20",
   },
   {
     icone: HeartHandshake,
-    titre: "Bienveillant et constructif",
-    texte:
-      "On ne juge pas la pratique d'un collègue. On raconte ce qu'on a vécu, ce qu'on a tenté, ce que ça a donné — y compris les échecs, qui sont souvent les plus utiles.",
+    titre: "Sans jugement",
+    texte: "On raconte ce qu'on a tenté et ce que ça a donné. Les échecs sont les plus utiles.",
+    teinte: "text-secondary",
+    fond: "bg-secondary/10",
+    anneau: "ring-secondary/25",
+    halo: "bg-secondary/20",
   },
 ];
+
+/** Ce que LEX fait, en trois temps — plus lisible qu'un paragraphe de dix lignes. */
+const TEMPS_LEX = ["Il questionne d'abord", "Puis il prend position", "Échange privé"];
+
+/** Les délais d'apparition, écrits en clair : Tailwind ne sait pas deviner une
+ *  classe construite par interpolation, elle serait purgée du bundle. */
+const DELAIS = ["stagger-1", "stagger-2", "stagger-3"];
 
 export async function GapFil({
   searchParams,
@@ -73,23 +91,50 @@ export async function GapFil({
         }
       />
 
-      {/* Le cadre — il se rappelle à chaque visite, comme en GAP présentiel */}
-      <section className="rounded-2xl border border-border bg-card p-6 md:p-7">
-        <h2 className="font-semibold">Comment ça se passe ici</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Un GAP, ce n&apos;est pas un forum d&apos;entraide et ce n&apos;est pas une formation.
-          C&apos;est un espace où l&apos;on met une situation sur la table — celle qui tourne en
-          boucle depuis trois semaines — et où d&apos;autres professionnels vous renvoient leur
-          lecture et leur expérience. Personne ne détient la bonne réponse ; c&apos;est le fait de
-          penser à plusieurs qui débloque.
+      {/* Le cadre — il se rappelle à chaque visite, comme en GAP présentiel.
+          Une phrase de cadrage, trois règles colorées : on doit pouvoir le
+          relire en trois secondes, sinon il ne sera pas relu du tout. */}
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 md:p-8">
+        <span
+          className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-primary/10 blur-3xl"
+          aria-hidden
+        />
+
+        <div className="relative flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 className="text-lg font-semibold md:text-xl">Comment ça se passe ici</h2>
+          <span className="text-sm text-muted-foreground">
+            ni un forum, ni une formation
+          </span>
+        </div>
+        <p className="relative mt-2 max-w-2xl text-[15px] leading-relaxed text-foreground/90">
+          Vous posez la situation qui tourne en boucle. D&apos;autres professionnels vous
+          renvoient leur lecture.{" "}
+          <span className="font-medium text-primary">
+            Penser à plusieurs, c&apos;est ça qui débloque.
+          </span>
         </p>
-        <ul className="mt-5 grid gap-5 md:grid-cols-3">
-          {CADRE.map((c) => {
+
+        <ul className="relative mt-6 grid gap-3 sm:grid-cols-3">
+          {CADRE.map((c, i) => {
             const Icone = c.icone;
             return (
-              <li key={c.titre}>
-                <Icone className="size-5 text-primary" aria-hidden />
-                <p className="mt-2 font-medium">{c.titre}</p>
+              <li
+                key={c.titre}
+                className={`group animate-fade-in-up ${DELAIS[i]} rounded-xl bg-background/40 p-4 ring-1 ring-inset ${c.anneau} transition-all duration-300 hover:-translate-y-0.5 hover:bg-background/70 hover:shadow-card`}
+              >
+                <span className="relative inline-grid size-10 place-items-center">
+                  {/* Le halo respire au survol : la carte répond, elle n'est pas qu'un bloc. */}
+                  <span
+                    className={`absolute inset-0 rounded-xl ${c.halo} opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100`}
+                    aria-hidden
+                  />
+                  <span
+                    className={`relative grid size-10 place-items-center rounded-xl ${c.fond} ${c.teinte} transition-transform duration-300 group-hover:scale-110`}
+                  >
+                    <Icone className="size-5" aria-hidden />
+                  </span>
+                </span>
+                <p className={`mt-3 text-sm font-semibold ${c.teinte}`}>{c.titre}</p>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{c.texte}</p>
               </li>
             );
@@ -97,24 +142,39 @@ export async function GapFil({
         </ul>
       </section>
 
-      {/* LEX le GAPiste */}
-      <Card className="border-primary/30 bg-primary-soft/40">
-        <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-6">
-          <div className="flex gap-3">
-            <Sparkles className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-            <div className="max-w-2xl">
+      {/* LEX le GAPiste — l'issue de secours quand le fil reste silencieux.
+          Trois repères plutôt qu'un paragraphe : on comprend le principe sans
+          lire, et le détail se découvre en l'utilisant. */}
+      <Card className="group relative overflow-hidden border-primary/30 bg-primary-soft/40 transition-colors hover:border-primary/50">
+        <span
+          className="pointer-events-none absolute -left-16 -top-16 size-48 rounded-full bg-primary/15 blur-3xl transition-opacity duration-500 group-hover:opacity-70"
+          aria-hidden
+        />
+        <CardContent className="relative flex flex-wrap items-center justify-between gap-5 pt-6">
+          <div className="flex gap-3.5">
+            <span className="relative mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <span className="absolute inset-0 rounded-xl bg-primary/25 animate-anneau" aria-hidden />
+              <Sparkles className="relative size-5" aria-hidden />
+            </span>
+            <div className="max-w-xl">
               <p className="font-semibold">
-                Et si personne ne répond ? Sollicitez LEX le GAPiste
+                Personne ne répond ? Appelez <span className="text-primary">LEX le GAPiste</span>
               </p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                L&apos;animateur IA du GAP, avec la posture d&apos;un psychologue clinicien et
-                d&apos;un éducateur spécialisé senior. Il ne répond jamais tout de suite : il
-                commence par vous questionner — contexte, faits, ressentis, enjeux — exactement
-                comme un animateur en séance. Ensuite il prend position : son analyse, la posture
-                à tenir, des activités à essayer, et ce qu&apos;il ferait dès lundi. Il
-                n&apos;intervient que si vous le sollicitez, depuis votre situation, et
-                l&apos;échange reste privé.
+                L&apos;animateur IA du GAP, posture de psychologue clinicien. Il ne donne pas la
+                réponse tout de suite : il vous questionne, comme un animateur en séance.
               </p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {TEMPS_LEX.map((t, i) => (
+                  <li
+                    key={t}
+                    className={`animate-fade-in-up ${DELAIS[i]} inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary`}
+                  >
+                    <CheckCircle2 className="size-3.5" aria-hidden />
+                    {t}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
           <Button asChild variant="outline" className="shrink-0">
