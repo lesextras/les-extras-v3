@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SupportModal } from '@/app/_shared/modals/SupportModal';
+import { ModaleAdherent } from '@/app/_shared/modals/ModaleAdherent';
 import { ChevronDown, LayoutList, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getNavForRole } from '@/lib/nav';
@@ -43,6 +44,9 @@ function isActiveHref(pathname: string, href: string) {
 
 export function Sidebar({ role, isMember, onNavigate, className, utilisateur }: SidebarProps) {
   const pathname = usePathname();
+  // Entrée LEX cliquée sans adhésion : on retient laquelle pour que la modale
+  // parle de la fonctionnalité visée, pas d'une restriction abstraite.
+  const [lexBloquee, setLexBloquee] = useState<string | null>(null);
   const toutesSections = getNavForRole(role);
 
   // Mode « essentiel » : ne montre que les entrées du quotidien. Il évite qu'un
@@ -185,20 +189,15 @@ export function Sidebar({ role, isMember, onNavigate, className, utilisateur }: 
                 {section.items.map((item) => {
                   const active = isActive(item.href);
                   const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={onNavigate}
-                      title={item.hint ?? item.label}
-                      aria-current={active ? 'page' : undefined}
-                      className={cn(
-                        'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                        active
-                          ? 'bg-primary-soft font-semibold text-accent-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.08)] before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-primary'
-                          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-                      )}
-                    >
+                  const verrouille = Boolean(item.premium) && !isMember;
+                  const classes = cn(
+                    'group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-200',
+                    active
+                      ? 'bg-primary-soft font-semibold text-accent-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.08)] before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-primary'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                  );
+                  const contenu = (
+                    <>
                       <Icon
                         className={cn(
                           'size-[18px] shrink-0 transition-colors',
@@ -206,14 +205,46 @@ export function Sidebar({ role, isMember, onNavigate, className, utilisateur }: 
                         )}
                       />
                       <span className="truncate">{item.label}</span>
-                      {item.premium && !isMember ? (
-                        <Lock className="ml-auto size-3.5 shrink-0 text-muted-foreground/70" aria-label="Réservé aux adhérents" />
+                      {verrouille ? (
+                        <Lock className="ml-auto size-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
                       ) : null}
                       {item.badge && (
                         <Badge variant="secondary" className="ml-auto">
                           {item.badge}
                         </Badge>
                       )}
+                    </>
+                  );
+
+                  // Sans adhésion, l'entrée n'est plus un lien : la navigation
+                  // n'a pas lieu du tout. Laisser la page s'ouvrir pour y
+                  // afficher un refus, c'est faire perdre un aller-retour à
+                  // quelqu'un à qui on va dire non de toute façon.
+                  if (verrouille) {
+                    return (
+                      <button
+                        key={item.href}
+                        type="button"
+                        onClick={() => setLexBloquee(item.label)}
+                        title="Réservé aux adhérents"
+                        aria-label={`${item.label} — réservé aux adhérents`}
+                        className={classes}
+                      >
+                        {contenu}
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onNavigate}
+                      title={item.hint ?? item.label}
+                      aria-current={active ? 'page' : undefined}
+                      className={classes}
+                    >
+                      {contenu}
                     </Link>
                   );
                 })}
@@ -260,6 +291,14 @@ export function Sidebar({ role, isMember, onNavigate, className, utilisateur }: 
           />
         </div>
       </div>
+
+      {/* Rendue hors de la liste : la modale doit survivre au repli d'une
+          section comme à la fermeture du menu sur mobile. */}
+      <ModaleAdherent
+        open={lexBloquee !== null}
+        onOpenChange={(v) => !v && setLexBloquee(null)}
+        fonctionnalite={lexBloquee ?? undefined}
+      />
     </aside>
   );
 }

@@ -139,7 +139,7 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
         </DropdownMenu>
       )}
 
-      <CommandPalette />
+      <CommandPalette isMember={activeAccount?.isMember} />
 
       <div className="ml-auto flex items-center gap-1.5">
         <IndicateursCompte userId={user.id} accountId={activeAccount?.id} />

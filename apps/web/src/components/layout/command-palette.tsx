@@ -10,12 +10,17 @@ interface Dest {
   href: string;
   group: string;
   keywords?: string;
+  /** Réservé aux adhérents : masqué de la palette pour les autres. */
+  premium?: boolean;
 }
 
 const DESTINATIONS: Dest[] = [
   { label: "Tableau de bord", href: "/dashboard", group: "Navigation", keywords: "accueil home" },
   { label: "Édublog", href: "/edublog", group: "Navigation", keywords: "articles actualites blog publications" },
-  { label: "Assistant d'écriture", href: "/dashboard/assistant", group: "Navigation", keywords: "ia rapport note observation transmission redaction" },
+  // `premium` : réservé aux adhérents. La palette est une porte d'entrée comme
+  // une autre — la laisser ouverte pendant que le menu est verrouillé serait
+  // incohérent.
+  { label: "Assistant d'écriture", href: "/dashboard/assistant", group: "Navigation", keywords: "ia rapport note observation transmission redaction", premium: true },
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Freelance", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Freelance", keywords: "services educatheures" },
   { label: "Mes formations", href: "/dashboard/formations", group: "Freelance", keywords: "formation session émargement apprenants attestation" },
@@ -45,7 +50,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Admin — Statistiques", href: "/admin/statistiques", group: "Admin", keywords: "kpi" },
 ];
 
-export function CommandPalette() {
+export function CommandPalette({ isMember }: { isMember?: boolean } = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -53,12 +58,13 @@ export function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const results = useMemo(() => {
+    const ouvertes = DESTINATIONS.filter((d) => !d.premium || isMember);
     const needle = q.trim().toLowerCase();
-    if (!needle) return DESTINATIONS;
-    return DESTINATIONS.filter((d) =>
+    if (!needle) return ouvertes;
+    return ouvertes.filter((d) =>
       `${d.label} ${d.group} ${d.keywords ?? ""}`.toLowerCase().includes(needle),
     );
-  }, [q]);
+  }, [q, isMember]);
 
   const close = useCallback(() => {
     setOpen(false);
