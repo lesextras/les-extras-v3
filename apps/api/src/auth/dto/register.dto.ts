@@ -55,4 +55,6 @@ export class RegisterDto {
   @IsOptional() @IsString() @MaxLength(60) sourceMedium?: string;
   @IsOptional() @IsString() @MaxLength(60) sourceCampaign?: string;
   @IsOptional() @IsString() @MaxLength(120) sourceLanding?: string;
+  /** Compte intervenant parrain (lien de parrainage). */
+  @IsOptional() @IsString() @MaxLength(60) parrain?: string;
 }

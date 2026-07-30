@@ -12,7 +12,6 @@ import { BasculeTheme } from '@/app/_shared/BasculeTheme';
 const links = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
-  { label: 'Intervenants', href: '/intervenants' },
   { label: 'SOS Renfort', href: '/sos-renfort' },
   { label: 'Le GAP', href: '/gap' },
   { label: 'Édublog', href: '/edublog' },

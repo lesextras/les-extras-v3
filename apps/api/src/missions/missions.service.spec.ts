@@ -45,12 +45,14 @@ describe('MissionsService', () => {
       sendMissionAcceptedFreelance: jest.fn(),
     };
     const community = { crediter: jest.fn().mockResolvedValue(null) };
+    const progression = { superExtrasParmi: jest.fn().mockResolvedValue(new Set()) };
     service = new MissionsService(
       prisma as any,
       notifications as any,
       matching as any,
       mail as any,
       community as any,
+      progression as any,
     );
   });
 

@@ -31,6 +31,12 @@ export class CommunityController {
   }
 
   /** Les contributions du mois — accessible à tous les comptes. */
+  /** Parrainage : lien a partager + nombre de filleuls (inscrits / actifs). */
+  @Get('parrainage')
+  parrainage(@CurrentAccount() account: { id: string }) {
+    return this.community.parrainage(account.id);
+  }
+
   @Get('contributeurs')
   contributeurs() {
     return this.community.contributeurs();

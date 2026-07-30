@@ -12,6 +12,7 @@ import { CvManager } from "../../../_shared/CvManager";
 import { UnitsManager } from "../../../_shared/UnitsManager";
 import { MembersManager } from "../../../_shared/MembersManager";
 import { InviteMemberModal } from "../../../_shared/modals/InviteMemberModal";
+import { ImportEquipeCsv } from "../../../_shared/ImportEquipeCsv";
 import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
 import type { Invitation, Membership, Profile } from "../../../_shared/types";
 
@@ -86,7 +87,12 @@ export default async function AccountPage() {
                 Gérez les sous-comptes et les invitations de {session.account.name}.
               </p>
             </div>
-            {canManage ? <InviteMemberModal accountId={accountId} /> : null}
+            {canManage ? (
+              <div className="flex items-center gap-2">
+                <ImportEquipeCsv accountId={accountId} />
+                <InviteMemberModal accountId={accountId} />
+              </div>
+            ) : null}
           </div>
           <MembersManager
             accountId={accountId}

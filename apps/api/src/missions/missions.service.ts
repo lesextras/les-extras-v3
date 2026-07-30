@@ -17,6 +17,7 @@ import { PointReason } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MatchingService } from '../matching/matching.service';
 import { ProgressionService } from '../users/progression.service';
+import { geocoderCodePostal, distanceKm } from './geo';
 import { MailService } from '../common/mail/mail.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
@@ -71,6 +72,8 @@ export class MissionsService {
         hourlyRate: dto.hourlyRate,
         headcount: dto.headcount ?? 1,
         emergency: dto.emergency ?? false,
+        recurrence: dto.recurrence ?? null,
+        ...(await geocoderCodePostal(dto.postalCode)),
         attachmentUrl: dto.attachmentUrl,
         attachmentId: dto.attachmentId ?? null,
         orgUnitId: dto.orgUnitId,
@@ -97,7 +100,11 @@ export class MissionsService {
     };
     if (query.visibility) where.visibility = query.visibility;
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
-    if (query.postalCode) where.postalCode = { startsWith: query.postalCode.slice(0, 2) };
+    // Sans rayon : filtre departemental historique. Avec rayon : on ne
+    // restreint pas ici, la distance est calculee apres coup (volumes faibles).
+    if (query.postalCode && !query.rayonKm) {
+      where.postalCode = { startsWith: query.postalCode.slice(0, 2) };
+    }
     if (query.job) where.job = { contains: query.job, mode: 'insensitive' };
     if (query.category) where.category = query.category;
     if (query.minRate !== undefined || query.maxRate !== undefined) {
@@ -120,6 +127,39 @@ export class MissionsService {
     // Pagination : page/limit ont priorité sur take/skip s'ils sont fournis.
     const take = query.limit ?? query.take ?? 20;
     const skip = query.page ? (query.page - 1) * take : (query.skip ?? 0);
+
+    // Filtre « a moins de X km » : centre geocode du code postal demande,
+    // puis tri des missions geocodees par distance a vol d'oiseau.
+    if (query.postalCode && query.rayonKm) {
+      const centre = await geocoderCodePostal(query.postalCode);
+      if (centre) {
+        const candidates = await this.prisma.reliefMission.findMany({
+          where: { ...where, latitude: { not: null }, longitude: { not: null } },
+          orderBy: { startDate: 'asc' },
+          take: 500,
+          include: {
+            account: { select: { id: true, name: true, city: true, logoUrl: true } },
+            categoryRef: { select: { id: true, title: true } },
+          },
+        });
+        const dansLeRayon = candidates
+          .map((m) => ({
+            ...m,
+            distanceKm: Math.round(
+              distanceKm(centre, { latitude: m.latitude!, longitude: m.longitude! }) * 10,
+            ) / 10,
+          }))
+          .filter((m) => m.distanceKm <= query.rayonKm!)
+          .sort((a, b) => a.distanceKm - b.distanceKm);
+        return {
+          items: dansLeRayon.slice(skip, skip + take),
+          total: dansLeRayon.length,
+          take,
+          skip,
+          page: query.page ?? Math.floor(skip / take) + 1,
+        };
+      }
+    }
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.reliefMission.findMany({
@@ -271,6 +311,40 @@ export class MissionsService {
     }
     await this.prisma.reliefMission.update({ where: { id }, data: { attenteValidation: false } });
     return this.publish(id, accountId, visibiliteDemandee);
+  }
+
+  /**
+   * Republier : duplique une mission en brouillon, datee une semaine plus
+   * tard (ou a la date demandee). L'etablissement ajuste puis publie —
+   * fini la ressaisie des missions qui reviennent chaque semaine.
+   */
+  async dupliquer(id: string, accountId: string, dateDebut?: string) {
+    const source = await this.assertOwned(id, accountId);
+    const debut = dateDebut
+      ? new Date(dateDebut)
+      : new Date(new Date(source.startDate).getTime() + 7 * 86_400_000);
+    const decalage = debut.getTime() - new Date(source.startDate).getTime();
+    return this.prisma.reliefMission.create({
+      data: {
+        accountId,
+        title: source.title,
+        description: source.description,
+        category: source.category,
+        categoryId: source.categoryId,
+        job: source.job,
+        startDate: debut,
+        endDate: source.endDate ? new Date(new Date(source.endDate).getTime() + decalage) : null,
+        startTime: source.startTime,
+        endTime: source.endTime,
+        city: source.city,
+        postalCode: source.postalCode,
+        hourlyRate: source.hourlyRate,
+        headcount: source.headcount,
+        emergency: source.emergency,
+        orgUnitId: source.orgUnitId,
+        status: 'DRAFT',
+      },
+    });
   }
 
   /**

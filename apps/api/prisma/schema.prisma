@@ -106,6 +106,8 @@ model Account {
   /// Validation hierarchique : si active, une mission publiee par un MANAGER
   /// attend l'approbation d'un OWNER/ADMIN avant diffusion.
   validationMissions Boolean @default(false)
+  /// Parrainage : compte intervenant qui a invite celui-ci (fige a l'inscription).
+  parrainAccountId String?
   slug        String       @unique
   /// Attribution — d'où vient ce compte. Renseigné une fois, à l'inscription,
   /// et jamais modifié ensuite : c'est la campagne qui a amené la personne.
@@ -253,6 +255,10 @@ model ReliefMission {
   endTime      String?        // "17h00"
   city         String?
   postalCode   String?
+  /// Coordonnees geocodees depuis le code postal (geo.api.gouv.fr) —
+  /// permettent le filtre « a moins de X km » sur la marketplace.
+  latitude     Float?
+  longitude    Float?
   hourlyRate   Decimal?       @db.Decimal(8, 2)
   headcount    Int            @default(1)
   emergency    Boolean        @default(false)  // mission urgente (renfort de dernière minute)
@@ -265,6 +271,9 @@ model ReliefMission {
   /// Validation hierarchique : publication demandee par un MANAGER, en
   /// attente d'approbation par un OWNER/ADMIN du compte.
   attenteValidation Boolean   @default(false)
+  /// Mission recurrente : 'HEBDO' -> le planificateur cree et publie
+  /// automatiquement l'occurrence de la semaine suivante.
+  recurrence   String?
   /// Diffusion en cascade : SALARIES -> RESERVED -> PUBLIC
   visibility   MissionVisibility @default(PUBLIC)
   publishedAt  DateTime?
@@ -1355,6 +1364,8 @@ enum PointReason {
   REPONSE
   /// Une réponse désignée comme utile par l'auteur de la question.
   REPONSE_RETENUE
+  /// Filleul parraine qui termine sa premiere mission (verse aux deux).
+  PARRAINAGE
   /// Ajustement manuel par un administrateur.
   MANUEL
   /// Points dépensés en réduction.

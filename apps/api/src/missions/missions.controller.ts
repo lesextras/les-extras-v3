@@ -91,6 +91,18 @@ export class MissionsController {
     return this.missions.publish(id, account.id, dto?.visibility, account.role);
   }
 
+  /** Republier : duplique la mission en brouillon (une semaine plus tard par défaut). */
+  @Post(':id/dupliquer')
+  @UseGuards(AccountGuard, AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  dupliquer(
+    @Param('id') id: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto?: { startDate?: string },
+  ) {
+    return this.missions.dupliquer(id, account.id, dto?.startDate);
+  }
+
   /** Approbation d'une mission en attente de validation hiérarchique. */
   @Post(':id/approve')
   @UseGuards(AccountGuard, AccountRolesGuard)

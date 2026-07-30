@@ -48,7 +48,7 @@ function asItems<T>(data: T[] | Paginated<T> | undefined): T[] {
 export default async function MarketplacePage({
   searchParams,
 }: {
-  searchParams: { q?: string; type?: string; category?: string };
+  searchParams: { q?: string; type?: string; category?: string; cp?: string; rayon?: string };
 }) {
   const session = await requireSession();
   const type = searchParams.type ?? "";
@@ -60,7 +60,12 @@ export default async function MarketplacePage({
   const missionCategory = category && MISSION_CATEGORIES.has(category) ? category : undefined;
   const serviceCategory = category && SERVICE_CATEGORIES.has(category) ? category : undefined;
 
-  const missionsQuery = qs({ search: searchParams.q, category: missionCategory });
+  const missionsQuery = qs({
+    search: searchParams.q,
+    category: missionCategory,
+    postalCode: searchParams.cp,
+    rayonKm: searchParams.cp ? searchParams.rayon : undefined,
+  });
   const servicesQuery = qs({ category: serviceCategory });
 
   const [missionsRes, servicesRes] = await Promise.all([

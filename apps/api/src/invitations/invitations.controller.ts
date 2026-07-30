@@ -45,6 +45,32 @@ export class InvitationsController {
     return this.invitations.list(account);
   }
 
+  /**
+   * Import d'équipe : invitations en masse (le CSV est lu côté client,
+   * l'API reçoit une liste déjà structurée). Chaque ligne est traitée
+   * indépendamment : une adresse invalide n'annule pas les autres.
+   */
+  @Post('lot')
+  @UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  async createLot(
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+    @Body() dto: { lignes: CreateInvitationDto[] },
+  ) {
+    const lignes = (dto?.lignes ?? []).slice(0, 200);
+    const resultat = { envoyees: 0, ignorees: [] as { email: string; raison: string }[] };
+    for (const ligne of lignes) {
+      try {
+        await this.invitations.create(account, user, ligne);
+        resultat.envoyees += 1;
+      } catch (e) {
+        resultat.ignorees.push({ email: ligne?.email ?? '?', raison: (e as Error).message });
+      }
+    }
+    return resultat;
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)

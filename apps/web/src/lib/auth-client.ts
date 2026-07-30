@@ -94,6 +94,7 @@ export async function register(values: RegisterValues): Promise<AuthResult> {
     sourceMedium: origine.medium,
     sourceCampaign: origine.campaign,
     sourceLanding: origine.landing,
+    parrain: origine.parrain,
   };
   const result = await callApi<AuthResult>('/auth/register', payload);
   const { token, accountId } = extractAuth(result);

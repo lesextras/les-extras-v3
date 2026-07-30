@@ -135,6 +135,105 @@ export class MissionsScheduler {
 
   // ── Tâche planifiée ──────────────────────────────────────────────────────
 
+  /**
+   * Missions recurrentes (HEBDO) : quand la date de debut d'une mission
+   * recurrente est passee, l'occurrence de la semaine suivante est creee et
+   * publiee automatiquement. La recurrence est transferee a la nouvelle
+   * occurrence (l'ancienne est fermee) : la chaine avance d'une semaine a la
+   * fois, sans doublon possible, et s'arrete des que l'etablissement retire
+   * la recurrence de l'occurrence courante.
+   */
+  @Cron(CronExpression.EVERY_HOUR, { name: 'missions-recurrentes' })
+  async traiterRecurrences(): Promise<void> {
+    if (!this.actif) return;
+    const dues = await this.prisma.reliefMission.findMany({
+      where: { recurrence: 'HEBDO', startDate: { lt: new Date() }, status: { not: 'CANCELLED' } },
+      take: 20,
+      include: { account: { select: { ownerId: true } } },
+    });
+    for (const mission of dues) {
+      try {
+        // 1. L'ancienne occurrence sort de la chaine AVANT toute creation :
+        //    en cas d'echec plus loin, on ne cree jamais deux copies.
+        await this.prisma.reliefMission.update({
+          where: { id: mission.id },
+          data: { recurrence: null },
+        });
+        // 2. Nouvelle occurrence : brouillon date +7 jours, recurrence reprise.
+        const copie = await this.missions.dupliquer(mission.id, mission.accountId);
+        await this.prisma.reliefMission.update({
+          where: { id: copie.id },
+          data: { recurrence: 'HEBDO' },
+        });
+        // 3. Publication automatique (cascade habituelle).
+        await this.missions.publish(copie.id, mission.accountId);
+        if (mission.account?.ownerId) {
+          await this.notifications.create(mission.account.ownerId, {
+            type: 'MISSION_RECURRENTE',
+            title: 'Mission récurrente republiée',
+            body: `« ${mission.title} » a été republiée pour la semaine prochaine.`,
+            link: '/dashboard/renforts',
+          });
+        }
+      } catch (e) {
+        this.logger.warn(
+          `Récurrence non traitée pour la mission ${mission.id}: ${(e as Error).message}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Rappel J-1 : la veille d'une mission confirmee, l'intervenant et
+   * l'etablissement recoivent une notification (cloche + push). Fenetre
+   * glissante d'une heure ([J-1, J-1 + 1 h)) parcourue toutes les heures :
+   * chaque reservation n'est rappelee qu'une fois, avec un repere
+   * anti-doublon dans la table Notification (type RAPPEL_J1).
+   */
+  @Cron(CronExpression.EVERY_HOUR, { name: 'rappels-j-1' })
+  async rappelerVeilleDeMission(): Promise<void> {
+    if (!this.actif) return;
+    const debut = new Date(Date.now() + 23 * 3_600_000);
+    const fin = new Date(Date.now() + 24 * 3_600_000);
+    const reservations = await this.prisma.booking.findMany({
+      where: {
+        status: { in: ['ACCEPTED', 'CONFIRMED'] },
+        mission: { startDate: { gte: debut, lt: fin } },
+      },
+      take: 100,
+      include: {
+        account: { select: { ownerId: true } },
+        mission: {
+          select: { title: true, startDate: true, startTime: true, city: true, account: { select: { ownerId: true } } },
+        },
+      },
+    });
+    for (const r of reservations) {
+      try {
+        const lien = `/dashboard/bookings/${r.id}`;
+        const deja = await this.prisma.notification.findFirst({
+          where: { type: 'RAPPEL_J1', link: lien },
+          select: { id: true },
+        });
+        if (deja || !r.mission) continue;
+        const quand = `${new Date(r.mission.startDate).toLocaleDateString('fr-FR')}${r.mission.startTime ? ` à ${r.mission.startTime}` : ''}`;
+        const destinataires = new Set<string>();
+        if (r.account?.ownerId) destinataires.add(r.account.ownerId);
+        if (r.mission.account?.ownerId) destinataires.add(r.mission.account.ownerId);
+        for (const userId of destinataires) {
+          await this.notifications.create(userId, {
+            type: 'RAPPEL_J1',
+            title: 'Mission demain',
+            body: `Rappel : « ${r.mission.title} » commence demain (${quand}${r.mission.city ? `, ${r.mission.city}` : ''}).`,
+            link: lien,
+          });
+        }
+      } catch (e) {
+        this.logger.warn(`Rappel J-1 non envoyé (booking ${r.id}): ${(e as Error).message}`);
+      }
+    }
+  }
+
   @Cron(EXPRESSION_CRON, { name: 'relance-missions-non-pourvues' })
   async relancerMissionsNonPourvues(): Promise<void> {
     if (!this.actif) {

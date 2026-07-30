@@ -86,6 +86,17 @@ export class AuthService {
           sourceMedium: dto.sourceMedium ?? null,
           sourceCampaign: dto.sourceCampaign ?? null,
           sourceLanding: dto.sourceLanding ?? null,
+          // Parrainage : uniquement pour un nouveau compte intervenant, et
+          // seulement si le parrain existe vraiment (sinon on ignore sans bruit).
+          parrainAccountId:
+            dto.accountType === AccountType.FREELANCE && dto.parrain
+              ? (
+                  await tx.account.findFirst({
+                    where: { id: dto.parrain, type: AccountType.FREELANCE },
+                    select: { id: true },
+                  })
+                )?.id ?? null
+              : null,
         },
       });
 

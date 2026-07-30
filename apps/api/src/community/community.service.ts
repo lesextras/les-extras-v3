@@ -19,6 +19,10 @@ export const BAREME = {
   /// ce n'est pas une contribution au catalogue, juste un encouragement à
   /// franchir le pas. La vraie récompense arrive à la publication (20).
   PREMIERE_FICHE: 2,
+  /// Filleul parraine qui termine sa premiere mission : verse au parrain ET
+  /// au filleul. La recompense arrive quand la valeur est prouvee, pas a
+  /// l'inscription (sinon on paie des comptes vides).
+  PARRAINAGE: 40,
   PUBLICATION: 20,
   ARTICLE: 30,
   MISSION: 50,
@@ -39,6 +43,28 @@ export class CommunityService {
   // ── Points ───────────────────────────────────────────────────────────────
 
   /** Crédite des points et met à jour le solde, en une transaction. */
+  /** Filleuls du compte : inscrits, et actifs (au moins une mission terminee). */
+  async parrainage(accountId: string) {
+    const filleuls = await this.prisma.account.findMany({
+      where: { parrainAccountId: accountId },
+      select: { id: true, name: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    const actifs = filleuls.length
+      ? await this.prisma.booking.groupBy({
+          by: ['accountId'],
+          where: { accountId: { in: filleuls.map((f) => f.id) }, status: 'COMPLETED' },
+        })
+      : [];
+    return {
+      accountId,
+      filleuls: filleuls.map((f) => ({ nom: f.name, depuis: f.createdAt })),
+      inscrits: filleuls.length,
+      actifs: actifs.length,
+      pointsParFilleulActif: BAREME.PARRAINAGE,
+    };
+  }
+
   async crediter(accountId: string, reason: PointReason, label: string, amount?: number) {
     const montant = amount ?? BAREME[reason as keyof typeof BAREME] ?? 0;
     if (!montant) return null;

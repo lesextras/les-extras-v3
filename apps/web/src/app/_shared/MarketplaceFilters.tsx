@@ -76,6 +76,37 @@ export function MarketplaceFilters() {
           ))}
         </SelectContent>
       </Select>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const cp = String(new FormData(e.currentTarget).get("cp") || "").trim();
+          setParam("cp", /^\d{5}$/.test(cp) ? cp : "");
+        }}
+      >
+        <Input
+          name="cp"
+          inputMode="numeric"
+          maxLength={5}
+          defaultValue={params.get("cp") ?? ""}
+          placeholder="Code postal"
+          className="sm:w-[130px]"
+        />
+      </form>
+      <Select
+        defaultValue={params.get("rayon") ?? "all"}
+        onValueChange={(v) => setParam("rayon", v)}
+      >
+        <SelectTrigger className="sm:w-[150px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Distance : libre</SelectItem>
+          <SelectItem value="10">Moins de 10 km</SelectItem>
+          <SelectItem value="30">Moins de 30 km</SelectItem>
+          <SelectItem value="50">Moins de 50 km</SelectItem>
+          <SelectItem value="100">Moins de 100 km</SelectItem>
+        </SelectContent>
+      </Select>
       <Select
         defaultValue={params.get("category") ?? "all_cat"}
         onValueChange={(v) => setParam("category", v)}

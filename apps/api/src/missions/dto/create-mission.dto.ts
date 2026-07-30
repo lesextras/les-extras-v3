@@ -1,4 +1,5 @@
 import {
+  IsIn,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -75,6 +76,11 @@ export class CreateMissionDto {
   @IsOptional()
   @IsBoolean()
   emergency?: boolean;
+
+  /** 'HEBDO' : l'occurrence de la semaine suivante est creee et publiee automatiquement. */
+  @IsOptional()
+  @IsIn(['HEBDO'])
+  recurrence?: string;
 
   @IsOptional()
   @IsString()

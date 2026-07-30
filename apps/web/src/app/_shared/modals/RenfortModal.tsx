@@ -99,6 +99,7 @@ export function RenfortModal({
       attachmentUrl: String(fd.get("attachmentUrl") || "") || undefined,
       attachmentId: piece?.id,
       orgUnitId: String(fd.get("orgUnitId") || "") || undefined,
+      recurrence: fd.get("recurrence") === "on" ? "HEBDO" : undefined,
     };
     try {
       const created = await apiRequest<{ id: string }>("/missions", { method: "POST", body, accountId });
@@ -267,6 +268,15 @@ export function RenfortModal({
               <span className="font-medium text-foreground">Mission urgente</span>
               <span className="block text-xs text-muted-foreground">
                 À la publication, tous les freelances dont le profil correspond (métier, zone, disponibilité) sont notifiés par e-mail. Premier arrivé, premier servi.
+              </span>
+            </span>
+          </label>
+          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm">
+            <input type="checkbox" name="recurrence" className="h-4 w-4 rounded border-input accent-primary" />
+            <span>
+              <span className="font-medium text-foreground">Répéter chaque semaine</span>
+              <span className="block text-xs text-muted-foreground">
+                L&apos;occurrence de la semaine suivante est créée et publiée automatiquement, jusqu&apos;à ce que vous décochiez la récurrence sur la mission en cours.
               </span>
             </span>
           </label>

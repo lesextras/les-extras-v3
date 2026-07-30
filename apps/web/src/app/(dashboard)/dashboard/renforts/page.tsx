@@ -13,6 +13,7 @@ import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { BookingActions } from "../../../_shared/BookingActions";
 import { MatchingPanel } from "../../../_shared/MatchingPanel";
 import { ApprouverMission } from "../../../_shared/ApprouverMission";
+import { RepublierMission } from "../../../_shared/RepublierMission";
 import {
   MISSION_CATEGORY_LABEL,
   MISSION_STATUS_LABEL,
@@ -112,6 +113,7 @@ export default async function RenfortsPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      <RepublierMission missionId={mission.id} accountId={session.account.id} />
                       {mission.attenteValidation &&
                       (session.account.role === "OWNER" || session.account.role === "ADMIN") ? (
                         <ApprouverMission missionId={mission.id} accountId={session.account.id} />

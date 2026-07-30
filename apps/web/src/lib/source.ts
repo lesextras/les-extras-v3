@@ -15,6 +15,8 @@
 const CLE = 'lx.source.v1';
 
 export interface SourceAcquisition {
+  /** Compte parrain (?parrain=) : lien de parrainage intervenant. */
+  parrain?: string;
   /** utm_source, sinon domaine référent, sinon « direct ». */
   source: string;
   /** utm_medium : cpc, social, email… */
@@ -40,7 +42,10 @@ function lireUrl(): SourceAcquisition | null {
     const campaign = nettoyer(p.get('utm_campaign'));
     const landing = window.location.pathname.slice(0, 120);
 
-    if (utm) return { source: utm, medium, campaign, landing };
+    const parrain = (p.get('parrain') ?? '').trim().slice(0, 60) || undefined;
+
+    if (utm) return { source: utm, medium, campaign, landing, parrain };
+    if (parrain) return { source: 'parrainage', landing, parrain };
 
     const ref = document.referrer;
     if (!ref) return { source: 'direct', landing };

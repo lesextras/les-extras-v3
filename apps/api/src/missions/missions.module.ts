@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CommunityModule } from '../community/community.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MissionsController } from './missions.controller';
+import { DashboardController } from './dashboard.controller';
 import { MissionsService } from './missions.service';
 import { MissionsScheduler } from './missions.scheduler';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -20,7 +21,7 @@ import { UsersModule } from '../users/users.module';
     // façon l'ensemble des providers de l'application.
     ScheduleModule.forRoot(),
   ],
-  controllers: [MissionsController],
+  controllers: [MissionsController, DashboardController],
   providers: [MissionsService, MissionsScheduler],
   exports: [MissionsService],
 })

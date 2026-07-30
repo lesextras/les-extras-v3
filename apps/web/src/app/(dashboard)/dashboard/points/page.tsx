@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle, StatCard, EmptyState, ErrorState } from "../../../_shared/ui";
 import { formatDate } from "../../../_shared/format";
+import { BlocParrainage } from "../../../_shared/BlocParrainage";
 
 export const metadata: Metadata = { title: "Points & récompenses" };
 
@@ -105,6 +106,10 @@ export default async function PointsPage() {
         title="Points & récompenses"
         subtitle={`Votre participation à la communauté se transforme en réduction : ${data.pointsParEuro} points = 1 €, à valoir sur vos factures.`}
       />
+
+      {session.account.type === "FREELANCE" ? (
+        <BlocParrainage accountId={session.account.id} />
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard

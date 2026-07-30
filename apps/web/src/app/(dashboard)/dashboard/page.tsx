@@ -22,6 +22,7 @@ interface DashStats {
   revenueMonth?: number;
   unreadMessages?: number;
   fillRate?: number;
+  delaiMoyenHeures?: number | null;
 }
 
 export default async function DashboardPage() {
@@ -117,7 +118,15 @@ export default async function DashboardPage() {
             <StatCard label="Renforts actifs" value={s.activeMissions ?? 0} accent="teal" />
             <StatCard label="Candidatures reçues" value={s.applications ?? 0} accent="terracotta" />
             <StatCard label="Missions à venir" value={s.upcomingBookings ?? 0} />
-            <StatCard label="Taux de couverture" value={`${s.fillRate ?? 0}%`} hint="30 derniers jours" />
+            <StatCard
+              label="Taux de couverture"
+              value={`${s.fillRate ?? 0}%`}
+              hint={
+                s.delaiMoyenHeures != null
+                  ? `30 derniers jours · pourvues en ${s.delaiMoyenHeures} h en moyenne`
+                  : "30 derniers jours"
+              }
+            />
           </>
         ) : (
           <>

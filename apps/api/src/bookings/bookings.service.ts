@@ -5,12 +5,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Booking, BookingStatus, Prisma } from '@prisma/client';
+import { Booking, BookingStatus, Prisma, PointReason } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailService } from '../common/mail/mail.service';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { AuditService } from '../common/audit/audit.service';
+import { CommunityService } from '../community/community.service';
 import { CreateTimeEntryDto } from './dto/time-entry.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
 
@@ -33,6 +34,7 @@ export class BookingsService {
     private readonly notifications: NotificationsService,
     private readonly mail: MailService,
     private readonly audit: AuditService,
+    private readonly community: CommunityService,
   ) {}
 
   /**
@@ -154,6 +156,29 @@ export class BookingsService {
     });
   }
 
+  /** Premiere mission terminee d'un filleul : points au parrain et au filleul. */
+  private async recompenserParrainage(freelanceAccountId: string) {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: freelanceAccountId },
+      select: { parrainAccountId: true, name: true },
+    });
+    if (!compte?.parrainAccountId) return;
+    const terminees = await this.prisma.booking.count({
+      where: { accountId: freelanceAccountId, status: BookingStatus.COMPLETED },
+    });
+    if (terminees !== 1) return; // seulement la toute premiere
+    await this.community.crediter(
+      compte.parrainAccountId,
+      PointReason.PARRAINAGE,
+      `Votre filleul ${compte.name} a terminé sa première mission`,
+    );
+    await this.community.crediter(
+      freelanceAccountId,
+      PointReason.PARRAINAGE,
+      'Première mission terminée — bonus de parrainage',
+    );
+  }
+
   private async loadForAccount(id: string, accountId: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { id },
@@ -242,9 +267,15 @@ export class BookingsService {
     return this.transition(id, accountId, BookingStatus.IN_PROGRESS);
   }
 
-  complete(id: string, accountId: string) {
+  async complete(id: string, accountId: string) {
     // La date de fin ouvre la fenetre d'ajustement du pointage (72 h).
-    return this.transition(id, accountId, BookingStatus.COMPLETED, { completedAt: new Date() });
+    const booking = await this.transition(id, accountId, BookingStatus.COMPLETED, {
+      completedAt: new Date(),
+    });
+    // Parrainage : quand un filleul termine sa TOUTE premiere mission, le
+    // parrain et lui recoivent leurs points. Jamais bloquant.
+    void this.recompenserParrainage(booking.accountId).catch(() => undefined);
+    return booking;
   }
 
   cancel(id: string, accountId: string, dto: CancelBookingDto) {

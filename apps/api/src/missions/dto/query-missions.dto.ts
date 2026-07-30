@@ -21,6 +21,14 @@ export class QueryMissionsDto {
   @IsString()
   postalCode?: string;
 
+  /** Avec postalCode : ne garder que les missions a moins de X km. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(300)
+  rayonKm?: number;
+
   @IsOptional()
   @IsString()
   job?: string;
