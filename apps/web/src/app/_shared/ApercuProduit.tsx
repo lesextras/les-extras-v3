@@ -120,6 +120,17 @@ function EcranTelephone() {
         </div>
         <div className="rounded-xl border border-border bg-card p-2.5">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Rappel
+          </p>
+          <p className="mt-1 text-[12px] font-semibold leading-snug text-foreground">
+            Mission demain 21 h
+          </p>
+          <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+            MECS Les Hirondelles — rappel automatique la veille.
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Il y a 2 h
           </p>
           <p className="mt-1 text-[12px] font-semibold leading-snug text-foreground">
@@ -176,13 +187,16 @@ export function ApercuProduit() {
 
       <div className="mt-12 grid gap-4 sm:grid-cols-3">
         {[
-          { titre: "Planning partagé", texte: "Créneaux, missions et heures déclarées au même endroit." },
+          { titre: "Planning partagé", texte: "Créneaux, missions récurrentes et heures déclarées au même endroit." },
           { titre: "Coffre-fort de conformité", texte: "Diplômes, casier, URSSAF — alerte avant l’échéance." },
           { titre: "Devis, contrat, facture", texte: "Générés depuis la mission. Rien à ressaisir." },
+          { titre: "Congés & compteurs", texte: "Demandes d’absence, soldes, heures du mois et export paie en CSV." },
+          { titre: "72 h pour ajuster", texte: "Après la mission, chacun vérifie les heures. Passé le délai, tout se valide seul." },
+          { titre: "Progression intervenant", texte: "Nouveau, Confirmé, Super Extra : les plus fiables sont prévenus en premier." },
         ].map((c, i) => (
           <div
             key={c.titre}
-            className={`animate-fade-in-up ${["stagger-1", "stagger-2", "stagger-3"][i]} rounded-xl border border-border bg-card p-4`}
+            className={`animate-fade-in-up ${["stagger-1", "stagger-2", "stagger-3"][i % 3]} rounded-xl border border-border bg-card p-4`}
           >
             <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
               <ChevronRight className="size-4 text-primary" aria-hidden />

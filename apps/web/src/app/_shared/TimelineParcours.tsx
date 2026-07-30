@@ -62,7 +62,7 @@ const PARCOURS: Record<
         icone: CalendarClock,
         titre: "Organisez votre équipe interne",
         texte:
-          "Planning, missions internes, messagerie, pointage. Gratuit, pour toujours.",
+          "Planning, missions récurrentes, congés et compteurs d’heures, import de l’équipe en CSV. Gratuit, pour toujours.",
         probleme:
           "Le planning vit dans la tête du chef de service.",
         change:
@@ -95,7 +95,7 @@ const PARCOURS: Record<
         icone: Megaphone,
         titre: "Publiez un SOS Renfort",
         texte:
-          "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé.",
+          "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé. Rappel automatique la veille, validation hiérarchique en option.",
         probleme:
           "Un arrêt maladie à 21 h. Vingt appels, personne ne décroche.",
         change:
@@ -111,6 +111,17 @@ const PARCOURS: Record<
           "Chercher l’organisme, monter le financement, justifier après coup.",
         change:
           "Un catalogue déjà certifié. Les justificatifs se remplissent au fil des séances.",
+      },
+      {
+        niveau: "gratuit",
+        icone: FileCheck2,
+        titre: "Suivez et payez juste",
+        texte:
+          "72 h pour ajuster les heures après chaque mission, alertes amplitude et repos, taux de missions pourvues, export paie en CSV.",
+        probleme:
+          "Les heures se contestent des semaines après, au moment de payer.",
+        change:
+          "Chacun vérifie dans les 72 h. Passé le délai, tout est validé et exportable.",
       },
       {
         niveau: "adhesion",
@@ -155,7 +166,7 @@ const PARCOURS: Record<
         icone: Target,
         titre: "Répondez aux missions de renfort",
         texte:
-          "Les opportunités qui collent à votre profil, classées par pertinence. Candidature en un clic.",
+          "Les opportunités qui collent à votre profil, filtrées par rayon autour de chez vous. Candidature en un clic, rappel la veille de chaque mission.",
         probleme:
           "Les remplacements circulent en groupes fermés.",
         change:
@@ -193,6 +204,17 @@ const PARCOURS: Record<
           "La réputation met dix ans à se construire et ne se transporte pas.",
         change:
           "Chaque intervention laisse une trace publique et vérifiable.",
+      },
+      {
+        niveau: "gratuit",
+        icone: Target,
+        titre: "Progressez : Confirmé, puis Super Extra",
+        texte:
+          "Vos missions réussies vous font monter de palier. Les Super Extras sont prévenus en premier des renforts. Parrainez un collègue : 40 points chacun.",
+        probleme:
+          "Être fiable ne se voit nulle part et ne rapporte rien.",
+        change:
+          "Votre fiabilité devient un badge public et une priorité réelle sur les missions.",
       },
       {
         niveau: "adhesion",
