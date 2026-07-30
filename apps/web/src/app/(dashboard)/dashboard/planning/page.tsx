@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../_shared/ui";
+import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { PlanningBoard, type Shift, type Availability } from "../../../_shared/PlanningBoard";
 import type { Mission } from "../../../_shared/types";
 
@@ -65,6 +66,10 @@ export default async function PlanningPage() {
           isEstablishment
             ? "Vos renforts pourvus, ateliers réservés et sessions de formation, plus les créneaux que vous ajoutez vous-même. Cliquez sur un jour pour en voir le détail."
             : "Vos interventions confirmées — missions et ateliers — et vos disponibilités hebdomadaires."
+        }
+        actions={
+          // Un trou dans le planning -> on publie le renfort sans changer d'outil.
+          isEstablishment ? <RenfortModal accountId={session.account.id} /> : undefined
         }
       />
 

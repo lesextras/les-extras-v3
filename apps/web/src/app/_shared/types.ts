@@ -129,6 +129,8 @@ export interface Mission {
   emergency?: boolean;
   attachmentUrl?: string | null;
   status: MissionStatus;
+  /** Validation hiérarchique : publication demandée, en attente d'approbation. */
+  attenteValidation?: boolean;
   visibility: MissionVisibility;
   publishedAt?: string | null;
   createdAt: string;

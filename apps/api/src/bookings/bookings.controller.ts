@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -32,6 +33,14 @@ export class BookingsController {
   @Get()
   findAll(@CurrentAccount() account: AccountCtx, @Query() query: QueryBookingsDto) {
     return this.bookings.findAllByAccount(account.id, query);
+  }
+
+  /** Export CSV des heures validées du compte (pointage) — paie/facturation. */
+  @Get('export/heures.csv')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="les-extras_heures-validees.csv"')
+  exportHeures(@CurrentAccount() account: AccountCtx) {
+    return this.bookings.exportHeuresValidees(account.id);
   }
 
   @Get(':id')

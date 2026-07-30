@@ -195,10 +195,35 @@ export class MissionsService {
    * L'établissement peut forcer un palier ; /broaden élargit ensuite, et le
    * planificateur élargit tout seul si la mission reste non pourvue.
    */
-  async publish(id: string, accountId: string, visibiliteDemandee?: MissionVisibility) {
+  async publish(
+    id: string,
+    accountId: string,
+    visibiliteDemandee?: MissionVisibility,
+    roleUtilisateur?: string,
+  ) {
     const mission = await this.assertOwned(id, accountId);
     if (mission.status !== MissionStatus.DRAFT) {
       throw new BadRequestException('Seule une mission en brouillon peut être publiée.');
+    }
+    // Validation hierarchique (option du compte) : un MANAGER demande, un
+    // OWNER/ADMIN approuve avant toute diffusion.
+    if (roleUtilisateur === 'MANAGER') {
+      const compte = await this.prisma.account.findUnique({
+        where: { id: accountId },
+        select: { validationMissions: true },
+      });
+      if (compte?.validationMissions) {
+        const enAttente = await this.prisma.reliefMission.update({
+          where: { id },
+          data: { attenteValidation: true },
+        });
+        await this.notifierApprobateurs(accountId, enAttente.id, enAttente.title);
+        return enAttente;
+      }
+    }
+    if (mission.attenteValidation) {
+      // Un OWNER/ADMIN qui publie vaut approbation.
+      await this.prisma.reliefMission.update({ where: { id }, data: { attenteValidation: false } });
     }
     // Palier de départ : « mon équipe d'abord » si le compte a effectivement
     // un vivier interne (salariés ou intervenants déjà venus), sinon on
@@ -218,6 +243,34 @@ export class MissionsService {
     // Diffusion ciblée selon le palier. N'échoue jamais la publication.
     this.broadcastToMatched(id, accountId).catch(() => undefined);
     return published;
+  }
+
+  /** Previent les OWNER/ADMIN du compte qu'une mission attend leur approbation. */
+  private async notifierApprobateurs(accountId: string, missionId: string, titre: string) {
+    const approbateurs = await this.prisma.membership.findMany({
+      where: { accountId, role: { in: ['OWNER', 'ADMIN'] }, status: 'ACTIVE' },
+      select: { userId: true },
+    });
+    await Promise.allSettled(
+      approbateurs.map((m) =>
+        this.notifications.create(m.userId, {
+          type: 'MISSION_APPROVAL',
+          title: 'Mission à approuver',
+          body: `« ${titre} » attend votre validation avant diffusion.`,
+          link: '/dashboard/renforts',
+        }),
+      ),
+    );
+  }
+
+  /** Approbation par un OWNER/ADMIN : la mission part en diffusion normale. */
+  async approve(id: string, accountId: string, visibiliteDemandee?: MissionVisibility) {
+    const mission = await this.assertOwned(id, accountId);
+    if (!mission.attenteValidation) {
+      throw new BadRequestException("Cette mission n'attend pas d'approbation.");
+    }
+    await this.prisma.reliefMission.update({ where: { id }, data: { attenteValidation: false } });
+    return this.publish(id, accountId, visibiliteDemandee);
   }
 
   /**

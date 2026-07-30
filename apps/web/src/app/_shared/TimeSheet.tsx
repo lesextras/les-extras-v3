@@ -22,6 +22,8 @@ interface Payload {
   pendingMinutes: number;
   /** Fenêtre d'ajustement de 72 h après la fin de mission. */
   ajustement?: { limite: string | null; ouverte: boolean };
+  /** Garde-fous temps de travail : messages par créneau (informatifs). */
+  alertes?: Record<string, string[]>;
 }
 
 function fmtDur(a: string, b?: string | null): string {
@@ -155,6 +157,11 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
                 <span className="text-muted-foreground"> → {e.endedAt ? fmtWhen(e.endedAt) : "…"}</span>
                 <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs">{fmtDur(e.startedAt, e.endedAt)}</span>
                 {e.note ? <span className="block text-xs text-muted-foreground">{e.note}</span> : null}
+                {(data.alertes?.[e.id] ?? []).map((a) => (
+                  <span key={a} className="mt-1 block text-xs font-medium text-[#b8860b]">
+                    ⚠ {a}
+                  </span>
+                ))}
               </div>
               <div className="flex items-center gap-2">
                 <span

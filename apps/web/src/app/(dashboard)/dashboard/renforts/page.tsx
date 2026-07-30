@@ -12,6 +12,7 @@ import { PageHeader, EmptyState, ErrorState } from "../../../_shared/ui";
 import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { BookingActions } from "../../../_shared/BookingActions";
 import { MatchingPanel } from "../../../_shared/MatchingPanel";
+import { ApprouverMission } from "../../../_shared/ApprouverMission";
 import {
   MISSION_CATEGORY_LABEL,
   MISSION_STATUS_LABEL,
@@ -58,7 +59,17 @@ export default async function RenfortsPage() {
       <PageHeader
         title="SOS Renfort"
         subtitle="Publiez un besoin et suivez les candidatures en temps réel."
-        actions={<RenfortModal accountId={session.account.id} />}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              {/* Export CSV des heures validées (pointage) — pour la paie/facturation. */}
+              <a href="/api/proxy/bookings/export/heures.csv" download>
+                Exporter les heures validées
+              </a>
+            </Button>
+            <RenfortModal accountId={session.account.id} />
+          </div>
+        }
       />
 
       {error ? (
@@ -82,6 +93,9 @@ export default async function RenfortsPage() {
                         <Badge variant={missionBadgeVariant(mission.status)}>
                           {MISSION_STATUS_LABEL[mission.status]}
                         </Badge>
+                        {mission.attenteValidation ? (
+                          <Badge variant="outline">En attente de validation</Badge>
+                        ) : null}
                         <Badge variant="outline">
                           {MISSION_CATEGORY_LABEL[mission.category]}
                         </Badge>
@@ -97,9 +111,15 @@ export default async function RenfortsPage() {
                         {` · ${mission.headcount} poste(s)`}
                       </p>
                     </div>
-                    <Badge variant="secondary">
-                      {bookings.length} candidature{bookings.length > 1 ? "s" : ""}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {mission.attenteValidation &&
+                      (session.account.role === "OWNER" || session.account.role === "ADMIN") ? (
+                        <ApprouverMission missionId={mission.id} accountId={session.account.id} />
+                      ) : null}
+                      <Badge variant="secondary">
+                        {bookings.length} candidature{bookings.length > 1 ? "s" : ""}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>

@@ -105,15 +105,26 @@ export function RenfortModal({
       // Diffusion immédiate. Si elle échoue, on le DIT : une mission en
       // brouillon silencieux est le pire piège pour un besoin urgent.
       let publiee = false;
+      let enValidation = false;
       if (created?.id) {
         try {
-          await apiRequest(`/missions/${created.id}/publish`, { method: "POST", accountId });
+          const res = await apiRequest<{ attenteValidation?: boolean }>(
+            `/missions/${created.id}/publish`,
+            { method: "POST", accountId },
+          );
           publiee = true;
+          enValidation = Boolean(res?.attenteValidation);
         } catch {
           publiee = false;
         }
       }
-      if (publiee) {
+      if (enValidation) {
+        toast({
+          title: "Envoyée pour validation",
+          description:
+            "Votre compte demande l'approbation d'un responsable avant diffusion : il vient d'être prévenu.",
+        });
+      } else if (publiee) {
         toast({
           title: "Renfort publié",
           description: "Votre demande est diffusée. Vous serez notifié des candidatures.",

@@ -88,7 +88,19 @@ export class MissionsController {
     @CurrentAccount() account: AccountCtx,
     @Body() dto?: PublishMissionDto,
   ) {
-    return this.missions.publish(id, account.id, dto?.visibility);
+    return this.missions.publish(id, account.id, dto?.visibility, account.role);
+  }
+
+  /** Approbation d'une mission en attente de validation hiérarchique. */
+  @Post(':id/approve')
+  @UseGuards(AccountGuard, AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  approve(
+    @Param('id') id: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto?: PublishMissionDto,
+  ) {
+    return this.missions.approve(id, account.id, dto?.visibility);
   }
 
   /** Élargir la diffusion d'un cran (SALARIES -> RESERVED -> PUBLIC). */

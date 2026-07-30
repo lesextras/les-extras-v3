@@ -31,6 +31,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: 'Notre histoire', href: '/notre-histoire' },
       { label: 'Centre d’aide', href: '/aide' },
       { label: 'Frais de service', href: '/frais-de-service' },
+      { label: "Simulateur d'économies", href: '/simulateur' },
       { label: 'Recevoir le catalogue', href: '/catalogue' },
       { label: 'Demander une démo', href: '/demo' },
       { label: 'Nous contacter', href: '/contact' },

@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { BasculeValidationMissions } from "../../../_shared/BasculeValidationMissions";
 import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle } from "../../../_shared/ui";
@@ -119,6 +120,9 @@ export default async function AccountPage() {
                 </div>
                 <Badge variant="outline">Activé</Badge>
               </div>
+              {!isFreelance ? (
+                <BasculeValidationMissions accountId={accountId} canManage={canManage} />
+              ) : null}
               <div className="flex items-center justify-between border-b border-border pb-4">
                 <div>
                   <p className="font-medium text-foreground">Compte actif</p>

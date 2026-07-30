@@ -103,6 +103,9 @@ model Account {
   id          String       @id @default(cuid())
   name        String
   type        AccountType
+  /// Validation hierarchique : si active, une mission publiee par un MANAGER
+  /// attend l'approbation d'un OWNER/ADMIN avant diffusion.
+  validationMissions Boolean @default(false)
   slug        String       @unique
   /// Attribution — d'où vient ce compte. Renseigné une fois, à l'inscription,
   /// et jamais modifié ensuite : c'est la campagne qui a amené la personne.
@@ -259,6 +262,9 @@ model ReliefMission {
   orgUnitId    String?                          // unité/service concerné
   orgUnit      OrgUnit?       @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   status       MissionStatus  @default(DRAFT)
+  /// Validation hierarchique : publication demandee par un MANAGER, en
+  /// attente d'approbation par un OWNER/ADMIN du compte.
+  attenteValidation Boolean   @default(false)
   /// Diffusion en cascade : SALARIES -> RESERVED -> PUBLIC
   visibility   MissionVisibility @default(PUBLIC)
   publishedAt  DateTime?

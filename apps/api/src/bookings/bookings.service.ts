@@ -324,11 +324,66 @@ export class BookingsService {
       side,
       validatedMinutes,
       pendingMinutes,
+      // Garde-fous temps de travail (informatifs, jamais bloquants) :
+      // amplitude d'un creneau > 12 h, repos entre deux creneaux < 11 h.
+      alertes: await this.alertesTempsDeTravail(booking.accountId, entries),
       ajustement: {
         limite: limite ? limite.toISOString() : null,
         ouverte: this.ajustementOuvert(booking),
       },
     };
+  }
+
+  private static readonly AMPLITUDE_MAX_H = 12;
+  private static readonly REPOS_MIN_H = 11;
+
+  /**
+   * Signale les situations a risque, tous bookings confondus pour le meme
+   * intervenant : creneau de plus de 12 h, repos de moins de 11 h entre deux
+   * creneaux. Informations affichees telles quelles — la decision reste humaine.
+   */
+  private async alertesTempsDeTravail(
+    freelanceAccountId: string,
+    entries: { id: string; startedAt: Date; endedAt: Date | null }[],
+  ): Promise<Record<string, string[]>> {
+    const resultat: Record<string, string[]> = {};
+    const dates = entries.filter((e) => e.endedAt);
+    if (dates.length === 0) return resultat;
+    const min = new Date(Math.min(...dates.map((e) => e.startedAt.getTime())) - 24 * 3_600_000);
+    const max = new Date(Math.max(...dates.map((e) => e.endedAt!.getTime())) + 24 * 3_600_000);
+    // Tous les creneaux du meme intervenant dans la fenetre, autres missions comprises.
+    const voisins = await this.prisma.timeEntry.findMany({
+      where: {
+        booking: { accountId: freelanceAccountId },
+        status: { not: 'REJECTED' },
+        startedAt: { gte: min, lte: max },
+      },
+      orderBy: { startedAt: 'asc' },
+      select: { id: true, startedAt: true, endedAt: true },
+    });
+    const ajouter = (id: string, message: string) => {
+      if (!resultat[id]) resultat[id] = [];
+      if (!resultat[id].includes(message)) resultat[id].push(message);
+    };
+    const ids = new Set(entries.map((e) => e.id));
+    for (let i = 0; i < voisins.length; i++) {
+      const v = voisins[i];
+      if (!v.endedAt) continue;
+      const heures = (v.endedAt.getTime() - v.startedAt.getTime()) / 3_600_000;
+      if (ids.has(v.id) && heures > BookingsService.AMPLITUDE_MAX_H) {
+        ajouter(v.id, `Créneau de ${heures.toFixed(1).replace('.', ',')} h — au-delà de 12 h d'affilée.`);
+      }
+      const suivant = voisins[i + 1];
+      if (suivant) {
+        const repos = (suivant.startedAt.getTime() - v.endedAt.getTime()) / 3_600_000;
+        if (repos >= 0 && repos < BookingsService.REPOS_MIN_H) {
+          const msg = `Repos de ${repos.toFixed(1).replace('.', ',')} h avant le créneau suivant — moins que les 11 h de repos quotidien.`;
+          if (ids.has(v.id)) ajouter(v.id, msg);
+          if (ids.has(suivant.id)) ajouter(suivant.id, msg);
+        }
+      }
+    }
+    return resultat;
   }
 
   /** Le freelance (titulaire du booking) déclare un créneau travaillé. */
@@ -389,6 +444,57 @@ export class BookingsService {
       metadata: { bookingId: entry.bookingId, heures },
     });
     return updated;
+  }
+
+  /**
+   * Export CSV des heures validees du compte (les deux cotes) : une ligne par
+   * creneau valide, colonnes lisibles par un tableur francais (separateur ;).
+   * Base de la paie ou de la facturation interne de l'etablissement.
+   */
+  async exportHeuresValidees(accountId: string): Promise<string> {
+    const entries = await this.prisma.timeEntry.findMany({
+      where: {
+        status: 'VALIDATED',
+        booking: {
+          OR: [
+            { accountId },
+            { mission: { accountId } },
+            { service: { accountId } },
+          ],
+        },
+      },
+      orderBy: { startedAt: 'asc' },
+      include: {
+        booking: {
+          select: {
+            id: true,
+            account: { select: { name: true } },
+            mission: { select: { title: true } },
+            service: { select: { title: true } },
+          },
+        },
+      },
+    });
+    const esc = (v: string) => '"' + v.replace(/"/g, '""') + '"';
+    const lignes = [
+      ['Intervenant', 'Prestation', 'Debut', 'Fin', 'Duree (h)', 'Reservation'].join(';'),
+    ];
+    for (const e of entries) {
+      if (!e.endedAt) continue;
+      const heures = (e.endedAt.getTime() - e.startedAt.getTime()) / 3_600_000;
+      lignes.push(
+        [
+          esc(e.booking.account?.name ?? ''),
+          esc(e.booking.mission?.title ?? e.booking.service?.title ?? ''),
+          e.startedAt.toISOString(),
+          e.endedAt.toISOString(),
+          heures.toFixed(2).replace('.', ','),
+          e.booking.id,
+        ].join(';'),
+      );
+    }
+    // BOM pour qu'Excel ouvre le fichier en UTF-8 sans manipulation.
+    return '\ufeff' + lignes.join('\r\n');
   }
 
   /** Le freelance supprime un de ses créneaux tant qu'il n'est pas validé. */
