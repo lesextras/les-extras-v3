@@ -62,7 +62,7 @@ export function BasculeValidationMissions({
         </p>
       </div>
       {canManage ? (
-        <Button size="sm" variant={actif ? "default" : "outline"} onClick={basculer} disabled={busy || actif === null}>
+        <Button size="sm" variant={actif ? "primary" : "outline"} onClick={basculer} disabled={busy || actif === null}>
           {actif === null ? "…" : actif ? "Activée" : "Désactivée"}
         </Button>
       ) : (
