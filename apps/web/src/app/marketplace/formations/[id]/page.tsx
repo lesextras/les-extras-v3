@@ -17,7 +17,7 @@ interface SessionItem {
   location?: string | null;
   maxSeats?: number | null;
   status: string;
-  trainer?: { firstName?: string | null; lastName?: string | null } | null;
+  trainer?: { id?: string; firstName?: string | null; lastName?: string | null } | null;
   _count?: { inscriptions?: number };
 }
 interface FormationDetail {
@@ -32,7 +32,7 @@ interface FormationDetail {
   durationHours?: number | null;
   certifying?: boolean;
   cpfEligible?: boolean;
-  ownerAccount?: { name?: string | null } | null;
+  ownerAccount?: { id?: string; name?: string | null } | null;
   categoryRef?: { title?: string | null } | null;
   sessions?: SessionItem[];
   /** Moyenne des appréciations stagiaires (Qualiopi, indicateur 30). */
@@ -184,12 +184,18 @@ export default async function FormationDetailPage({ params }: { params: { id: st
                       ) : null}
                       <div className="mt-2.5 flex items-center gap-3">
                         <InscribeButton sessionId={s.id} accountId={session.account.id} />
-                        <a
-                          href={`/dashboard/formations/${s.id}`}
-                          className="text-xs font-medium text-primary hover:underline"
-                        >
-                          Gérer / émargement
-                        </a>
+                        {/* Lien de gestion : uniquement pour l'organisateur de la
+                            formation ou le formateur de la session — pour les
+                            autres, la page de gestion refuserait l'accès. */}
+                        {f.ownerAccount?.id === session.account.id ||
+                        s.trainer?.id === session.user.id ? (
+                          <a
+                            href={`/dashboard/formations/${s.id}`}
+                            className="text-xs font-medium text-primary hover:underline"
+                          >
+                            Gérer / émargement
+                          </a>
+                        ) : null}
                       </div>
                     </div>
                   );
