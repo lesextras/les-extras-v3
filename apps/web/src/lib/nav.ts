@@ -172,6 +172,7 @@ const establishmentNav: NavSection[] = [
     items: [
       { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
       { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
+      { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.

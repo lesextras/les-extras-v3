@@ -76,6 +76,7 @@ model User {
   favorites          Favorite[]
   assistantDocuments AssistantDocument[]
   pushSubscriptions PushSubscription[]
+  leaveRequests    LeaveRequest[] @relation("LeaveUser")
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -155,6 +156,7 @@ model Account {
   memberships     Membership[]
   invitations     Invitation[]
   reliefMissions  ReliefMission[]  @relation("MissionAccount")
+  leaveRequests   LeaveRequest[]
   services        Service[]        @relation("ServiceAccount")
   bookings        Booking[]
   invoices        Invoice[]
@@ -810,6 +812,42 @@ enum ArticleStatus {
 // ---------------------------------------------------------------------------
 // PLANNING / SHIFTS & DISPONIBILITÉS (matching + gestion d'équipe terrain)
 // ---------------------------------------------------------------------------
+
+/// GTA — demande de conge/absence d'un membre de l'etablissement,
+/// validee par un responsable (OWNER/ADMIN/MANAGER).
+model LeaveRequest {
+  id         String      @id @default(cuid())
+  accountId  String
+  account    Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User        @relation("LeaveUser", fields: [userId], references: [id], onDelete: Cascade)
+  type       LeaveType   @default(CONGE)
+  debut      DateTime
+  fin        DateTime
+  motif      String?
+  statut     LeaveStatus @default(EN_ATTENTE)
+  decideurId String?
+  decideLe   DateTime?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([accountId, statut])
+  @@index([userId, debut])
+}
+
+enum LeaveType {
+  CONGE
+  RTT
+  MALADIE
+  SANS_SOLDE
+  AUTRE
+}
+
+enum LeaveStatus {
+  EN_ATTENTE
+  APPROUVE
+  REFUSE
+}
 
 /// Fenêtre de disponibilité d'un intervenant (récurrente hebdo OU date ponctuelle).
 model Availability {

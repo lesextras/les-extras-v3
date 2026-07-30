@@ -6,6 +6,61 @@ import { CreateShiftDto, UpdateShiftDto } from './dto/shift.dto';
 export class PlanningService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Garde-fous reglementaires sur un creneau (informatifs, jamais bloquants) :
+   * amplitude > 12 h, repos < 11 h avec le creneau voisin, semaine > 48 h.
+   * Le seul blocage reste le chevauchement pur (double affectation).
+   */
+  private async alertesReglementaires(
+    freelanceId: string | null | undefined,
+    startAt: Date,
+    endAt: Date,
+    excludeId?: string,
+  ): Promise<string[]> {
+    const alertes: string[] = [];
+    const heures = (endAt.getTime() - startAt.getTime()) / 3_600_000;
+    if (heures > 12) {
+      alertes.push(`Créneau de ${heures.toFixed(1).replace('.', ',')} h — au-delà de 12 h d'affilée.`);
+    }
+    if (!freelanceId) return alertes;
+    const voisins = await this.prisma.shift.findMany({
+      where: {
+        freelanceId,
+        id: excludeId ? { not: excludeId } : undefined,
+        status: { in: ['PLANNED', 'CONFIRMED'] },
+        startAt: { gte: new Date(startAt.getTime() - 7 * 86_400_000) },
+        endAt: { lte: new Date(endAt.getTime() + 86_400_000) },
+      },
+      select: { startAt: true, endAt: true },
+    });
+    for (const v of voisins) {
+      const reposApres = (startAt.getTime() - v.endAt.getTime()) / 3_600_000;
+      const reposAvant = (v.startAt.getTime() - endAt.getTime()) / 3_600_000;
+      const repos = reposApres >= 0 ? reposApres : reposAvant >= 0 ? reposAvant : null;
+      if (repos !== null && repos < 11) {
+        alertes.push(
+          `Repos de ${repos.toFixed(1).replace('.', ',')} h avec un créneau voisin — moins que les 11 h de repos quotidien.`,
+        );
+        break;
+      }
+    }
+    // Semaine du creneau : lundi 00:00 -> lundi suivant.
+    const lundi = new Date(startAt);
+    lundi.setUTCHours(0, 0, 0, 0);
+    lundi.setUTCDate(lundi.getUTCDate() - ((lundi.getUTCDay() + 6) % 7));
+    const lundiSuivant = new Date(lundi.getTime() + 7 * 86_400_000);
+    const semaine = voisins.filter((v) => v.startAt >= lundi && v.startAt < lundiSuivant);
+    const totalSemaine =
+      semaine.reduce((acc, v) => acc + (v.endAt.getTime() - v.startAt.getTime()), 0) / 3_600_000 +
+      heures;
+    if (totalSemaine > 48) {
+      alertes.push(
+        `${totalSemaine.toFixed(1).replace('.', ',')} h planifiées sur la semaine — au-delà du plafond de 48 h.`,
+      );
+    }
+    return alertes;
+  }
+
   /** Détecte les chevauchements de créneaux pour un même intervenant. */
   async detectConflicts(freelanceId: string, startAt: Date, endAt: Date, excludeId?: string) {
     if (!freelanceId) return [];
@@ -186,7 +241,14 @@ export class PlanningService {
         recurrenceRule: dto.recurrenceRule ?? null,
       },
     });
-    return { shift, warnings: conflicts.length ? { conflicts } : undefined };
+    const reglementaires = await this.alertesReglementaires(dto.freelanceId, startAt, endAt);
+    return {
+      shift,
+      warnings:
+        conflicts.length || reglementaires.length
+          ? { conflicts: conflicts.length ? conflicts : undefined, reglementaires: reglementaires.length ? reglementaires : undefined }
+          : undefined,
+    };
   }
 
   async updateShift(accountId: string, id: string, dto: UpdateShiftDto) {

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../_shared/ui";
 import { RenfortModal } from "../../../_shared/modals/RenfortModal";
+import { RepeterSemaine } from "../../../_shared/RepeterSemaine";
 import { PlanningBoard, type Shift, type Availability } from "../../../_shared/PlanningBoard";
 import type { Mission } from "../../../_shared/types";
 
@@ -68,8 +69,14 @@ export default async function PlanningPage() {
             : "Vos interventions confirmées — missions et ateliers — et vos disponibilités hebdomadaires."
         }
         actions={
-          // Un trou dans le planning -> on publie le renfort sans changer d'outil.
-          isEstablishment ? <RenfortModal accountId={session.account.id} /> : undefined
+          // Un trou dans le planning -> on publie le renfort sans changer
+          // d'outil ; une semaine type se deroule en cycle sans ressaisie.
+          isEstablishment ? (
+            <div className="flex items-center gap-2">
+              <RepeterSemaine accountId={session.account.id} />
+              <RenfortModal accountId={session.account.id} />
+            </div>
+          ) : undefined
         }
       />
 

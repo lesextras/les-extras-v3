@@ -23,6 +23,16 @@ const AIDE: Record<string, PageHelpEntry> = {
     ],
   },
 
+  "/dashboard/conges": {
+    titre: "Les congés au même endroit que le planning",
+    texte:
+      "Un membre pose sa demande, un responsable l'approuve ou la refuse — chacun est notifié. Une absence approuvée apparaît automatiquement dans le planning, et les compteurs (heures planifiées, congés pris, solde) se mettent à jour tout seuls. L'export CSV donne les éléments de paie du mois, prêt pour votre comptable.",
+    etapes: [
+      "Posez la demande avec le bon type : congés, RTT, maladie, sans solde.",
+      "Responsables : surveillez la colonne Alertes — elle signale les semaines à plus de 48 h.",
+      "En fin de mois, exportez les éléments de paie et transmettez le fichier tel quel.",
+    ],
+  },
   "/dashboard/progression": {
     titre: "Trois paliers, gagnés sur le terrain",
     texte:
