@@ -44,6 +44,7 @@ import { QualiopiModule } from './qualiopi/qualiopi.module';
 import { TutoratModule } from './tutorat/tutorat.module';
 import { ConformiteModule } from './conformite/conformite.module';
 import { ContratsModule } from './contrats/contrats.module';
+import { DocumentsModule } from './documents/documents.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { ContratsModule } from './contrats/contrats.module';
     // Coffre-fort de conformité (pièces obligatoires des intervenants).
     ConformiteModule,
     ContratsModule,
+    DocumentsModule,
 
     // Vitrine publique (non authentifiée).
     PublicModule,
