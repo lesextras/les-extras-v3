@@ -33,6 +33,7 @@ import {
   Award,
   UserPlus,
   MessagesSquare,
+  FileSignature,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -148,6 +149,11 @@ const establishmentNav: NavSection[] = [
       // invisibles hors du back-office administrateur.
       { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Renforts pourvus, ateliers réservés et inscriptions en formation — internes comme externes' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos créneaux et interventions' },
+      // Le pendant contractuel du planning : on a trouvé quelqu'un, on
+      // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
+      // calcule — essai, précarité, carence — et refuse de transmettre un
+      // contrat auquel il manque une mention obligatoire.
+      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, essentiel: true, hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
       { label: 'Le GAP', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Groupe d’Analyse de Pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },

@@ -23,6 +23,17 @@ const AIDE: Record<string, PageHelpEntry> = {
     ],
   },
 
+  "/dashboard/contrats": {
+    titre: "Vous embauchez, l'outil calcule",
+    texte:
+      "Votre établissement reste l'employeur : le CDD est conclu entre lui et la personne, sans intermédiaire ni mise à disposition. Ce que l'outil apporte, c'est le calcul que personne ne refait à chaque contrat — période d'essai maximale, indemnité de fin de contrat, délai de carence avant de repourvoir le poste, date limite de transmission et fenêtre de la DPAE.",
+    etapes: [
+      "Créez le brouillon : la personne, le motif de recours, les dates.",
+      "Complétez les mentions obligatoires — la transmission est refusée tant qu'il en manque une, parce qu'un CDD incomplet vaut CDI.",
+      "Déclarez la DPAE avant l'embauche, puis clôturez en indiquant la cause : elle décide de l'indemnité de précarité.",
+    ],
+  },
+
   "/dashboard/conges": {
     titre: "Les congés au même endroit que le planning",
     texte:
