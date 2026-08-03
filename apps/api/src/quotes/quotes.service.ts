@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { bornes, page } from '../common/pagination';
 import { decomposerPrix, COMMISSION_DEFAUT } from '../billing/commission';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateQuoteRequestDto, QuoteLineDto, SendQuoteDto } from './dto/quote.dto';
@@ -73,17 +74,29 @@ export class QuotesService {
   }
 
   /** Devis du compte courant (comme demandeur ou comme intervenant). */
-  async findAllForAccount(userId: string, accountId: string) {
+  async findAllForAccount(
+    userId: string,
+    accountId: string,
+    filtres: { page?: number; perPage?: number } = {},
+  ) {
     await this.requireMembership(userId, accountId);
-    return this.prisma.quote.findMany({
-      where: { OR: [{ clientAccountId: accountId }, { providerAccountId: accountId }] },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        clientAccount: { select: { id: true, name: true } },
-        providerAccount: { select: { id: true, name: true } },
-        service: { select: { id: true, title: true, category: true } },
-      },
-    });
+    const { page: p, perPage, skip, take } = bornes(filtres);
+    const where = { OR: [{ clientAccountId: accountId }, { providerAccountId: accountId }] };
+    const [items, total] = await Promise.all([
+      this.prisma.quote.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        include: {
+          clientAccount: { select: { id: true, name: true } },
+          providerAccount: { select: { id: true, name: true } },
+          service: { select: { id: true, title: true, category: true } },
+        },
+      }),
+      this.prisma.quote.count({ where }),
+    ]);
+    return page(items, total, p, perPage);
   }
 
   async findOne(userId: string, id: string) {

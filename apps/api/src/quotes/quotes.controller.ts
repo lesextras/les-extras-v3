@@ -16,8 +16,16 @@ export class QuotesController {
 
   /** Devis du compte : reçus (intervenant) et émis (établissement). */
   @Get()
-  findAll(@CurrentUser() user: RequestUser, @Query('accountId') accountId: string) {
-    return this.quotes.findAllForAccount(user.id, accountId);
+  findAll(
+    @CurrentUser() user: RequestUser,
+    @Query('accountId') accountId: string,
+    @Query('page') p?: string,
+    @Query('perPage') perPage?: string,
+  ) {
+    return this.quotes.findAllForAccount(user.id, accountId, {
+      page: p ? Number(p) : undefined,
+      perPage: perPage ? Number(perPage) : undefined,
+    });
   }
 
   @Get(':id')
