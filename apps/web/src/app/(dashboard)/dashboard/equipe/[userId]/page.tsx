@@ -34,7 +34,7 @@ export default async function FichePersonnePage({
   const [liste, repartition, contrats] = await Promise.all([
     fetchApi<MembreListe>(session, `/memberships/personne/${userId}`),
     fetchApi<Repartition>(session, "/memberships/repartition"),
-    fetchApi<ContratListe[]>(session, "/contrats"),
+    fetchApi<{ items: ContratListe[] }>(session, `/contrats?userId=${userId}&perPage=50`),
   ]);
 
   if (liste.error) {
@@ -49,15 +49,13 @@ export default async function FichePersonnePage({
   const membre = liste.data;
   if (!membre) notFound();
 
-  const siens: ContratResume[] = (contrats.data ?? [])
-    .filter((c) => c.user?.id === userId)
-    .map((c) => ({
-      id: c.id,
-      statut: c.statut,
-      poste: c.poste,
-      dateDebut: c.dateDebut,
-      dateFin: c.dateFin,
-    }));
+  const siens: ContratResume[] = (contrats.data?.items ?? []).map((c) => ({
+    id: c.id,
+    statut: c.statut,
+    poste: c.poste,
+    dateDebut: c.dateDebut,
+    dateFin: c.dateFin,
+  }));
 
   return (
     <div className="space-y-6">
