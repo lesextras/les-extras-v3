@@ -1,4 +1,4 @@
-import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 /**
  * Demande de paiement. `kind` choisit le tunnel :
@@ -8,10 +8,9 @@ import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
  * Il n'y a pas de monnaie interne : une prestation se règle à sa facture.
  */
 export class CreateCheckoutDto {
-  @IsString()
-  @MinLength(1)
-  accountId!: string;
-
+  // Le compte payeur ne figure plus ici : il vient du garde, qui a vérifié
+  // l'appartenance. Le laisser dans le corps de la requête, c'était laisser
+  // le client désigner qui paie.
   @IsIn(['subscription', 'invoice'])
   kind!: 'subscription' | 'invoice';
 
