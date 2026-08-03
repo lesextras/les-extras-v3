@@ -27,6 +27,46 @@ export interface ApiRequestOptions<TBody = unknown> {
   signal?: AbortSignal;
 }
 
+/** Libellés français des statuts HTTP courants — le repli quand l'API ne dit rien de mieux. */
+const STATUT_FR: Record<number, string> = {
+  400: 'Demande invalide — vérifiez les champs saisis.',
+  401: 'Session expirée — reconnectez-vous.',
+  403: "Vous n'avez pas les droits pour cette action.",
+  404: 'Introuvable — la page ou la ressource a peut-être été supprimée.',
+  409: 'Conflit — cette action a déjà été faite, ou entre en collision avec une autre.',
+  422: 'Données invalides — vérifiez les champs saisis.',
+  429: 'Trop de tentatives — patientez un instant avant de réessayer.',
+  500: 'Erreur du serveur — réessayez dans un instant.',
+  502: 'Service momentanément indisponible — réessayez dans un instant.',
+  503: 'Service momentanément indisponible — réessayez dans un instant.',
+};
+
+/**
+ * Extrait un message montrable d'une erreur NestJS.
+ *
+ * La ValidationPipe renvoie `message` comme TABLEAU de phrases (une par champ
+ * en faute) : `String(tableau)` les collait avec des virgules en un bloc
+ * illisible. On les aplatit proprement, et quand l'API ne fournit rien
+ * d'utilisable (ou un libellé technique anglais type "Internal server error"),
+ * on retombe sur un libellé français du statut.
+ */
+function messageLisible(status: number, payload: unknown): string {
+  const repli = STATUT_FR[status] ?? `Erreur ${status} — réessayez dans un instant.`;
+  if (!payload || typeof payload !== 'object' || !('message' in payload)) return repli;
+  const brut = (payload as { message: unknown }).message;
+  const textes = (Array.isArray(brut) ? brut : [brut])
+    .filter((m): m is string => typeof m === 'string' && m.trim().length > 0);
+  if (textes.length === 0) return repli;
+  // Libellés techniques par défaut de NestJS : pas montrables tels quels.
+  const techniques = new Set([
+    'Bad Request', 'Unauthorized', 'Forbidden', 'Not Found', 'Conflict',
+    'Internal Server Error', 'Internal server error', 'Unprocessable Entity',
+    'Too Many Requests', 'ThrottlerException: Too Many Requests',
+  ]);
+  const utiles = textes.filter((t) => !techniques.has(t));
+  return utiles.length > 0 ? utiles.join(' · ') : repli;
+}
+
 /** Erreur API typée : conserve le status HTTP et le payload d'erreur. */
 export class ApiError extends Error {
   readonly status: number;
@@ -94,11 +134,7 @@ export async function apiRequest<TResponse = unknown, TBody = unknown>(
   const payload = isJson ? await res.json().catch(() => null) : await res.text();
 
   if (!res.ok) {
-    const message =
-      (isJson && payload && typeof payload === 'object' && 'message' in payload
-        ? String((payload as { message: unknown }).message)
-        : undefined) ?? `Erreur API ${res.status}`;
-    throw new ApiError(res.status, message, payload);
+    throw new ApiError(res.status, messageLisible(res.status, isJson ? payload : null), payload);
   }
 
   return payload as TResponse;

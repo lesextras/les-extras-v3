@@ -46,6 +46,10 @@ const USER_PUBLIC_SELECT = {
   status: true,
   emailVerified: true,
   onboardingStep: true,
+  /// Sans ce champ, le formulaire de profil ne connaissait pas le choix de la
+  /// personne et re-cochait la case : chaque enregistrement re-abonnait
+  /// silencieusement au courriel hebdomadaire quelqu'un qui s'etait desinscrit.
+  hebdoOptIn: true,
   createdAt: true,
   profile: true,
   qualifications: { orderBy: { createdAt: 'desc' } },

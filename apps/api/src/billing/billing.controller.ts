@@ -13,6 +13,7 @@ import {
 import { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { BillingService } from './billing.service';
+import { CreditsService } from './credits.service';
 import { CreateCheckoutDto } from './dto/checkout.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
@@ -31,7 +32,10 @@ import { RequestAccount, RequestUser } from '../common/types/request-context';
  */
 @Controller('billing')
 export class BillingController {
-  constructor(private readonly billing: BillingService) {}
+  constructor(
+    private readonly billing: BillingService,
+    private readonly credits: CreditsService,
+  ) {}
 
   /** Vue d'ensemble facturation : adhésion en cours et formules disponibles. */
   @Get('overview')
@@ -53,13 +57,28 @@ export class BillingController {
       if (!dto.planId) throw new BadRequestException('planId requis.');
       return this.billing.createSubscriptionCheckout(user.id, account.id, dto.planId);
     }
+    if (dto.kind === 'credits') {
+      if (!dto.packId) throw new BadRequestException('packId requis.');
+      return this.billing.createCreditsCheckout(user.id, account.id, dto.packId);
+    }
     if (dto.kind === 'invoice') {
       if (!dto.invoiceId) throw new BadRequestException('invoiceId requis.');
       return this.billing.createInvoiceCheckout(user.id, account.id, dto.invoiceId);
     }
     throw new BadRequestException(
-      'Type de paiement inconnu. Les prestations se règlent à la facture, il n’y a plus de crédits à recharger.',
+      'Type de paiement inconnu : subscription, credits ou invoice.',
     );
+  }
+
+  /**
+   * Écran « Utilisation » : solde de crédits LEX, consommation sur 30 jours
+   * et derniers mouvements du grand livre. Lisible par tout membre actif du
+   * compte — voir sa consommation n'exige pas le droit de payer.
+   */
+  @Get('utilisation')
+  @UseGuards(JwtAuthGuard, AccountGuard)
+  utilisation(@CurrentAccount() account: RequestAccount) {
+    return this.credits.utilisation(account.id);
   }
 
   /** Webhook Stripe — public, authentifié par signature HMAC sur le corps brut. */

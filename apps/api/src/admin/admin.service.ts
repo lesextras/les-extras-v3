@@ -1553,7 +1553,11 @@ export class AdminService {
   }
 
 
-  /** Adhésion manuelle (les webhooks Stripe feront la même chose plus tard). */
+  /**
+   * Accès LEX illimité accordé (ou retiré) à la main — compte partenaire,
+   * test, geste commercial. Le drapeau `isMember` exonère le compte de la
+   * consommation de crédits ; l'accès normal, lui, passe par les crédits.
+   */
   async setMembership(accountId: string, isMember: boolean) {
     const account = await this.prisma.account.update({
       where: { id: accountId },
@@ -1564,7 +1568,7 @@ export class AdminService {
       action: 'admin.account.membership',
       entityType: 'Account',
       entityId: accountId,
-      summary: `Adhésion ${isMember ? 'activée' : 'désactivée'} pour ${account.name}`,
+      summary: `Accès LEX illimité ${isMember ? 'accordé' : 'retiré'} pour ${account.name}`,
     });
     return account;
   }

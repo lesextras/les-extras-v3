@@ -14,6 +14,7 @@ import { BookingActions } from "../../../_shared/BookingActions";
 import { MatchingPanel } from "../../../_shared/MatchingPanel";
 import { ApprouverMission } from "../../../_shared/ApprouverMission";
 import { RepublierMission } from "../../../_shared/RepublierMission";
+import { PublierMission } from "../../../_shared/PublierMission";
 import { RetenirIntervenant } from "../../../_shared/VivierActions";
 import {
   MISSION_CATEGORY_LABEL,
@@ -70,12 +71,16 @@ export default async function RenfortsPage() {
         subtitle="Publiez un besoin et suivez les candidatures en temps réel."
         actions={
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              {/* Export CSV des heures validées (pointage) — pour la paie/facturation. */}
-              <a href="/api/proxy/bookings/export/heures.csv" download>
-                Exporter les heures validées
-              </a>
-            </Button>
+            {/* L'export porte les heures et les montants de tout le compte :
+                le serveur le réserve désormais aux responsables, l'écran dit
+                la même chose. */}
+            {peutPublier ? (
+              <Button asChild variant="outline" size="sm">
+                <a href="/api/proxy/bookings/export/heures.csv" download>
+                  Exporter les heures validées
+                </a>
+              </Button>
+            ) : null}
             {peutPublier ? <RenfortModal accountId={session.account.id} /> : null}
           </div>
         }
@@ -125,7 +130,15 @@ export default async function RenfortsPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RepublierMission missionId={mission.id} accountId={session.account.id} />
+                      {/* Publier une mission restee en brouillon : l'impasse
+                          historique. Le message d'erreur du modal renvoyait
+                          vers un bouton « Publier » qui n'existait nulle part. */}
+                      {mission.status === "DRAFT" && peutPublier ? (
+                        <PublierMission missionId={mission.id} accountId={session.account.id} />
+                      ) : null}
+                      {peutPublier ? (
+                        <RepublierMission missionId={mission.id} accountId={session.account.id} />
+                      ) : null}
                       {mission.attenteValidation &&
                       (session.account.role === "OWNER" || session.account.role === "ADMIN") ? (
                         <ApprouverMission missionId={mission.id} accountId={session.account.id} />

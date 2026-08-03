@@ -89,8 +89,8 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "combien-ca-coute",
         question: "Combien la plateforme me prélève-t-elle ?",
         reponse: [
-          "Rien. Aucune commission n'est prélevée sur ce que vous facturez : vous touchez 100 % de votre prix.",
-          "C'est la contrepartie du modèle associatif. La plateforme se finance sur la prestation facturée à l'établissement et sur l'adhésion, pas sur votre rémunération.",
+          "Rien. Aucune commission n'est prélevée sur ce que vous facturez : vous touchez 100 % de votre prix, et la mise en relation est gratuite pour l'établissement aussi.",
+          "C'est le parti pris du modèle associatif. L'association se finance sur les formations Qualiopi qu'elle facture au devis et sur les crédits LEX (l'assistant IA), jamais sur votre rémunération.",
         ],
       },
       {
@@ -98,7 +98,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Puis-je proposer mes propres ateliers ?",
         reponse: [
           "Oui. Vous créez une fiche avec vos objectifs, votre méthode, votre public et votre tarif. Elle rejoint le catalogue public une fois relue par l'équipe.",
-          "Votre prix reste le vôtre. La commission visible sur le devis est celle payée par l'établissement, pas prélevée sur vous.",
+          "Votre prix reste le vôtre, intégralement : l'établissement paie votre tarif, sans commission ajoutée ni prélevée.",
         ],
       },
       {
@@ -129,16 +129,16 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "ce-qui-est-gratuit",
         question: "Qu'est-ce qui est gratuit ?",
         reponse: [
-          "Organiser votre équipe interne est gratuit, sans limite de durée : planning, missions confiées à vos propres salariés, messagerie, pointage des heures, coffre-fort de conformité.",
-          "Vous ne payez que dans deux cas : un intervenant externe vient chez vous, ou vous prenez l'adhésion pour débloquer les outils LEX.",
+          "Toute la mise en relation et l'aide à la contractualisation : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité — gratuit, pour les établissements comme pour les intervenants, sans commission.",
+          "Deux services seulement se paient : les formations Qualiopi (au devis, facturées par l'association) et LEX, l'assistant IA à crédits. Un renfort ou un atelier se paie à son intervenant, à son tarif — la plateforme n'ajoute rien.",
         ],
       },
       {
         slug: "adhesion",
-        question: "À quoi sert l'adhésion ?",
+        question: "Comment fonctionnent les crédits LEX ?",
         reponse: [
-          "L'adhésion à l'association donne accès aux outils d'intelligence artificielle LEX : assistant d'écriture professionnelle et générateur d'activités éducatives.",
-          "Elle soutient aussi les actions de l'association, qui portent les dispositifs et la certification.",
+          "LEX, l'assistant IA (écriture professionnelle, générateur d'activités, fiches pré-remplies, GAPiste), fonctionne à crédits : un crédit par génération. Vous rechargez par packs, ou par un abonnement dont la recharge quotidienne remet votre solde à niveau chaque matin.",
+          "Votre consommation, votre solde et les tarifs sont visibles dans votre espace, page « LEX — Crédits & abonnement ». Le bot d'aide, lui, reste gratuit. Les recettes soutiennent les actions de l'association.",
         ],
       },
       {

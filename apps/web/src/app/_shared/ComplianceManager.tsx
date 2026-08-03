@@ -20,34 +20,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { FileUpload, type FichierDepose } from "./FileUpload";
 
-type DocType =
-  | "IDENTITY"
-  | "DIPLOMA"
-  | "CRIMINAL_RECORD"
-  | "DRIVING_LICENSE"
-  | "IBAN"
-  | "AUTOENTREPRENEUR"
-  | "VITALE"
-  | "OTHER";
-type Status = "MISSING" | "PENDING" | "VALID" | "EXPIRED";
+import { TYPE_LABEL, STATUS_META, type DocType, type DocStatus } from "./conformite";
 
-const TYPE_LABEL: Record<DocType, string> = {
-  IDENTITY: "Carte nationale d'identité",
-  DIPLOMA: "Diplôme d'État (DEES, DEME, DEAES, DEEJE…)",
-  CRIMINAL_RECORD: "Casier judiciaire (bulletin n°3)",
-  DRIVING_LICENSE: "Permis de conduire",
-  IBAN: "IBAN / RIB",
-  AUTOENTREPRENEUR: "Attestation auto-entrepreneur (URSSAF)",
-  VITALE: "Carte Vitale / attestation",
-  OTHER: "Autre pièce",
-};
-
-const STATUS_META: Record<Status, { label: string; variant: "muted" | "warning" | "success" | "destructive" }> = {
-  MISSING: { label: "Manquante", variant: "muted" },
-  PENDING: { label: "En attente", variant: "warning" },
-  VALID: { label: "Valide", variant: "success" },
-  EXPIRED: { label: "Expirée", variant: "destructive" },
-};
+type Status = DocStatus;
 
 export interface Completeness {
   total: number;

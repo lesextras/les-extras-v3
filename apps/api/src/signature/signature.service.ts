@@ -234,12 +234,14 @@ export class SignatureService {
           ? "une proposition d'engagement"
           : 'un devis';
 
+    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://app.les-extras.fr';
     await this.mail
       .sendCodeSignature(s.signataireEmail, {
         code,
         document: libelle,
         minutes: VALIDITE_CODE_MINUTES,
         nomSignataire: s.signataireNom,
+        url: `${webUrl}/dashboard/signer/${s.id}`,
       })
       .catch((e) => this.logger.error(`Envoi du code impossible : ${e}`));
 
@@ -404,6 +406,34 @@ export class SignatureService {
     // Le code haché ne sort jamais de la couche de données.
     const { codeHache: _ignore, ...reste } = s;
     return { ...reste, prestataireActif: this.prestataire };
+  }
+
+  /**
+   * Lecture pour le SIGNATAIRE lui-même.
+   *
+   * Le salarié qui doit signer est en général un simple membre du compte :
+   * il n'a pas accès à la fiche contrat, et il ne doit pas pour autant
+   * pouvoir lire les demandes de signature des autres. La règle : un
+   * responsable voit tout, un membre ne voit que les demandes adressées à
+   * SA propre adresse.
+   */
+  async lirePourSignataire(
+    accountId: string,
+    signatureId: string,
+    userEmail: string,
+    role: string,
+  ) {
+    const s = await this.prisma.signature.findFirst({
+      where: { id: signatureId, accountId },
+      include: { evenements: { orderBy: { createdAt: 'asc' } } },
+    });
+    if (!s) throw new NotFoundException('Demande de signature introuvable.');
+    const responsable = ['OWNER', 'ADMIN', 'MANAGER'].includes(role);
+    if (!responsable && s.signataireEmail !== userEmail.toLowerCase().trim()) {
+      throw new ForbiddenException('Cette demande de signature ne vous est pas adressée.');
+    }
+    const { codeHache: _ignore2, ...reste2 } = s;
+    return { ...reste2, prestataireActif: this.prestataire };
   }
 
   /** Les signatures d'un document, pour l'afficher à côté. */

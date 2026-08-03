@@ -66,9 +66,14 @@ export function GestionConges({
 
   const charger = useCallback(async () => {
     try {
+      // Les compteurs portent les heures et soldes de toute l'equipe : le
+      // serveur les reserve desormais aux responsables. Ne pas les demander
+      // pour un membre evite un 403 sur chaque chargement de la page.
       const [c, k] = await Promise.all([
         apiRequest<Conge[]>("/gta/conges", { accountId }),
-        apiRequest<Compteur[]>("/gta/compteurs", { accountId }),
+        canDecide
+          ? apiRequest<Compteur[]>("/gta/compteurs", { accountId })
+          : Promise.resolve([] as Compteur[]),
       ]);
       setConges(c);
       setCompteurs(k);
@@ -78,7 +83,7 @@ export function GestionConges({
       // si on le dit. Or on solde des congés sur ces chiffres.
       setPanne(true);
     }
-  }, [accountId]);
+  }, [accountId, canDecide]);
 
   useEffect(() => {
     void charger();

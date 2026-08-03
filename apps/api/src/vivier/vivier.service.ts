@@ -261,7 +261,10 @@ export class VivierService {
         accountId_intervenantAccountId: { accountId, intervenantAccountId },
       },
       create: { accountId, intervenantAccountId, note: propre, addedById: userId },
-      update: { note: propre },
+      // Une note absente ne veut pas dire « effacer la note » : le bouton
+      // « Retenir » du board SOS Renfort ne connait pas l'etat du vivier et
+      // envoyait un champ vide qui ecrasait la note de service existante.
+      update: { ...(propre !== null ? { note: propre } : {}) },
     });
 
     // L'intervenant est prévenu : c'est une bonne nouvelle pour lui, et c'est

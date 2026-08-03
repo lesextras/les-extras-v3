@@ -87,7 +87,7 @@ const ETAPES = [
 ];
 
 export async function GapVitrine() {
-  const { data } = await fetchPublic<Apercu>("/gap/apercu");
+  const { data } = await fetchPublic<Apercu>("/public/gap/apercu");
   const apercu = data?.apercu ?? [];
   const nbQuestions = data?.nbQuestions ?? 0;
   const nbReponses = data?.nbReponses ?? 0;

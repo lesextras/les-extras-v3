@@ -1,7 +1,8 @@
-// Écran « Réservé aux adhérents » — style HubSpot : la fonctionnalité est
-// visible et expliquée, l'accès demande l'adhésion. L'interne reste gratuit.
+// Écran « Crédits LEX épuisés » — style HubSpot : la fonctionnalité est
+// visible et expliquée, l'accès demande des crédits. Tout le reste de la
+// plateforme — mise en relation, contractualisation — est gratuit.
 import Link from "next/link";
-import { Lock, Check } from "lucide-react";
+import { Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AdherentGate({ titre, description, benefices }: {
@@ -12,10 +13,10 @@ export function AdherentGate({ titre, description, benefices }: {
   return (
     <div className="mx-auto max-w-2xl rounded-3xl border border-primary/20 bg-card p-8 text-center shadow-soft md:p-12">
       <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
-        <Lock className="size-6" />
+        <Sparkles className="size-6" />
       </span>
       <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-primary">
-        Fonctionnalité LEX · réservée aux adhérents
+        Fonctionnalité LEX · fonctionne à crédits
       </p>
       <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">{titre}</h2>
       <p className="mx-auto mt-3 max-w-lg text-muted-foreground">{description}</p>
@@ -29,15 +30,16 @@ export function AdherentGate({ titre, description, benefices }: {
       </ul>
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
         <Button asChild size="lg">
-          <Link href="/dashboard/adhesion">Devenir adhérent — dès 49 € / mois</Link>
+          <Link href="/dashboard/adhesion">Recharger des crédits</Link>
         </Button>
         <Button asChild size="lg" variant="outline">
           <Link href="/contact">Parler à l'équipe</Link>
         </Button>
       </div>
       <p className="mt-6 text-xs text-muted-foreground">
-        L'usage interne de la plateforme (missions à votre équipe, formation interne, planning,
-        gestion) reste gratuit. Les prestations externes sont facturées à l'usage.
+        Un crédit = une génération. Rechargez par packs, ou prenez un abonnement dont la recharge
+        quotidienne remet votre solde à niveau chaque matin. Tout le reste de la plateforme —
+        renforts, ateliers, contractualisation, planning — reste gratuit.
       </p>
     </div>
   );

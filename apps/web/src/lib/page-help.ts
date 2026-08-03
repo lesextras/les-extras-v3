@@ -167,14 +167,59 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Vos factures, paiements et documents comptables. Chaque facture est téléchargeable en PDF ; le paiement en ligne est disponible sur les factures dues.',
   },
   '/dashboard/adhesion': {
-    titre: 'Adhésion',
+    titre: 'LEX — Crédits & abonnement',
     texte:
-      'L’adhésion mensuelle à l’association débloque LEX, l’assistant IA. Le reste de la plateforme est gratuit, et les prestations se règlent à leur facture — il n’y a rien à recharger à l’avance.',
+      'LEX, l’assistant IA, fonctionne à crédits : un crédit par génération. Cet écran montre votre solde, votre consommation et vos recharges. Toute la mise en relation — renforts, ateliers, contractualisation — reste gratuite.',
     etapes: [
-      'Choisissez une formule : Essentiel ou Pro.',
-      'Le paiement est mensuel et résiliable ; LEX s’active dès la confirmation.',
-      'Vos factures de prestations restent dans « Factures & revenus ».',
+      'Rechargez par packs (paiement en une fois, les crédits n’expirent pas).',
+      'Ou prenez un abonnement : chaque matin, votre solde est remis au niveau de votre allocation quotidienne.',
+      'Chaque génération LEX débite un crédit ; une génération échouée est remboursée automatiquement.',
     ],
+  },
+  '/dashboard/mon-dossier': {
+    titre: 'Vos pièces obligatoires, une fois pour toutes',
+    texte:
+      'Identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : les pièces que chaque structure vous redemanderait, déposées une fois et vérifiées. Un dossier complet vous fait passer devant sur les missions.',
+    etapes: [
+      'Déposez chaque pièce ; elle passe « En attente » le temps de la vérification.',
+      'Surveillez les dates : une pièce expirée redescend votre dossier.',
+      'Le casier judiciaire (bulletin n°3) se renouvelle chaque année.',
+    ],
+  },
+  '/dashboard/equipe': {
+    titre: "Tout le monde, service par service",
+    texte:
+      "Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier. C'est par cette page qu'on invite un salarié, qu'on lui donne un rôle et qu'on suit ses pièces obligatoires.",
+    etapes: [
+      'Invitez un salarié par son adresse e-mail ; il choisit son mot de passe.',
+      "Le rôle décide de ce qu'il voit : Direction, Chef de service ou Équipe.",
+      "Les pièces de conformité se suivent depuis la fiche de chaque personne.",
+    ],
+  },
+  '/dashboard/vivier': {
+    titre: 'Les intervenants qui connaissent déjà votre maison',
+    texte:
+      "Votre vivier, ce sont les professionnels déjà venus chez vous ou que vous avez retenus. Une mission diffusée « à mes intervenants connus » leur est proposée avant d'être ouverte au réseau.",
+    etapes: [
+      'Retenez un intervenant après une mission réussie : il entre au vivier.',
+      'Notez ce qui compte (habitudes, unités où il est à l’aise) — visible de vous seul.',
+      'Rappelez-le en un clic à la prochaine publication de mission.',
+    ],
+  },
+  '/dashboard/temps-de-travail': {
+    titre: 'Les règles de votre convention, reportées une fois',
+    texte:
+      "Nuit, dimanche, jours fériés, seuil d'heures supplémentaires, annualisation : chaque convention (CCN 66, 51, CHRS…) a ses règles. Reportez-les ici une fois — tous les chiffrages et compteurs de la plateforme les appliquent ensuite.",
+    etapes: [
+      'Seul le 1er mai est majoré par la loi ; le reste vient de VOTRE convention.',
+      'Le plafond de 1 607 h et le plancher de 10 % sur les heures sup. sont verrouillés — ordre public.',
+      'Laissez un champ vide pour appliquer la valeur légale par défaut.',
+    ],
+  },
+  '/dashboard/notifications': {
+    titre: 'Tout ce qui s’est passé sans vous',
+    texte:
+      'Candidatures, signatures, rappels et confirmations. Ouvrir cette page marque tout comme lu — le compteur de la cloche repart de zéro.',
   },
   '/dashboard/avis': {
     titre: 'Avis',

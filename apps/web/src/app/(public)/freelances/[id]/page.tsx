@@ -18,7 +18,7 @@ interface FreelanceProfile extends PublicUser {
 }
 
 export default async function FreelancePublicPage({ params }: { params: { id: string } }) {
-  const { data } = await fetchPublic<FreelanceProfile>(`/freelances/${params.id}`);
+  const { data } = await fetchPublic<FreelanceProfile>(`/public/vendors/${params.id}`);
   if (!data) notFound();
 
   const p = data.profile;

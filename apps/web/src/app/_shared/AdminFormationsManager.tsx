@@ -416,7 +416,7 @@ export function AdminFormationsManager({
             <DialogDescription>{sessionTarget?.title}</DialogDescription>
           </DialogHeader>
           <form onSubmit={createSession} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Date de début" htmlFor="s-start" required>
                 <Input id="s-start" name="startDate" type="date" required />
               </Field>
@@ -427,7 +427,7 @@ export function AdminFormationsManager({
             <Field label="Lieu" htmlFor="s-location">
               <Input id="s-location" name="location" placeholder="Melun / Distanciel" />
             </Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Places" htmlFor="s-seats">
                 <Input id="s-seats" name="maxSeats" type="number" min={1} placeholder="12" />
               </Field>

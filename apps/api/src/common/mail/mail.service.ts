@@ -161,7 +161,15 @@ export class MailService {
    */
   async sendCodeSignature(
     to: string,
-    data: { code: string; document: string; minutes: number; nomSignataire?: string | null },
+    data: {
+      code: string;
+      document: string;
+      minutes: number;
+      nomSignataire?: string | null;
+      /** Où saisir le code. Sans ce lien, le courriel donnait six chiffres et
+       *  aucune destination — le signataire ne savait pas où aller. */
+      url?: string | null;
+    },
   ): Promise<void> {
     const bonjour = data.nomSignataire ? `Bonjour ${data.nomSignataire},<br/><br/>` : '';
     await this.send(
@@ -176,6 +184,7 @@ export class MailService {
          Il est valable <b>${data.minutes} minutes</b> et ne sert qu'une fois.
          <br/><br/>
          <span style="color:#5b6470;font-size:13px">Vous n'avez rien demandé ? Ignorez ce message : sans ce code, personne ne peut signer à votre place. Ne le transmettez à personne, pas même à un collègue.</span>`,
+        data.url ? { label: 'Saisir mon code et signer', url: data.url } : undefined,
       ),
     );
   }

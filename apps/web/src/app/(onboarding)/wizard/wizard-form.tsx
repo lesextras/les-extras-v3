@@ -66,7 +66,10 @@ export default function WizardForm({
       const res = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ step: STEPS.length, profile: form.getValues() }),
+        // Le seuil de sortie du tunnel est 3 partout (login, session). Le wizard
+        // etablissement n'a que deux etapes : envoyer STEPS.length le laissait a
+        // 2, et chaque connexion renvoyait sur l'ecran de bienvenue, a vie.
+        body: JSON.stringify({ step: 3, profile: form.getValues() }),
       });
       if (!res.ok) throw new Error('Impossible d’enregistrer votre profil.');
       toast({ title: 'Profil complété', description: 'Bienvenue sur LES EXTRAS !', variant: 'success' });

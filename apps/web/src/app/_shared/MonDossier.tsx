@@ -24,60 +24,15 @@ import { apiRequest } from "@/lib/api";
 import { Field } from "./form-fields";
 import { FileUpload, type FichierDepose } from "./FileUpload";
 
-type DocType =
-  | "IDENTITY"
-  | "DIPLOMA"
-  | "CRIMINAL_RECORD"
-  | "DRIVING_LICENSE"
-  | "IBAN"
-  | "AUTOENTREPRENEUR"
-  | "VITALE"
-  | "OTHER";
-type Status = "MISSING" | "PENDING" | "VALID" | "EXPIRED";
+import {
+  TYPE_LABEL,
+  TYPE_POURQUOI,
+  STATUS_META,
+  type DocType,
+  type DocStatus,
+} from "./conformite";
 
-const TYPE_LABEL: Record<DocType, string> = {
-  IDENTITY: "Carte nationale d'identité",
-  DIPLOMA: "Diplôme d'État",
-  CRIMINAL_RECORD: "Casier judiciaire (bulletin n°3)",
-  DRIVING_LICENSE: "Permis de conduire",
-  IBAN: "IBAN / RIB",
-  AUTOENTREPRENEUR: "Attestation URSSAF (auto-entrepreneur)",
-  VITALE: "Carte Vitale / attestation",
-  OTHER: "Autre pièce",
-};
-
-/** Pourquoi cette pièce est demandée. Une exigence expliquée se remplit. */
-const TYPE_POURQUOI: Partial<Record<DocType, string>> = {
-  IDENTITY: "Vérification d'identité avant toute intervention auprès d'un public vulnérable.",
-  DIPLOMA: "Justifie la qualification exigée par la convention collective.",
-  CRIMINAL_RECORD:
-    "Obligatoire pour intervenir auprès de mineurs ou de majeurs protégés. À renouveler chaque année.",
-  DRIVING_LICENSE: "Demandé dès qu'une intervention suppose de transporter des personnes.",
-  IBAN: "Nécessaire au règlement de vos factures.",
-  AUTOENTREPRENEUR: "Attestation de vigilance URSSAF, exigée de tout prestataire indépendant.",
-};
-
-const STATUS_META: Record<
-  Status,
-  { label: string; variant: "muted" | "warning" | "success" | "destructive"; aide: string }
-> = {
-  MISSING: {
-    label: "À fournir",
-    variant: "muted",
-    aide: "Cette pièce n'a pas encore été déposée.",
-  },
-  PENDING: {
-    label: "En attente de vérification",
-    variant: "warning",
-    aide: "Déposée. La structure la vérifie de son côté.",
-  },
-  VALID: { label: "Vérifiée", variant: "success", aide: "Validée par la structure." },
-  EXPIRED: {
-    label: "Périmée",
-    variant: "destructive",
-    aide: "La date de validité est dépassée : déposez une version à jour.",
-  },
-};
+type Status = DocStatus;
 
 export interface DocLigne {
   id?: string | null;
@@ -156,7 +111,7 @@ function Piece({
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-medium text-foreground">{TYPE_LABEL[doc.type]}</p>
             {doc.required ? <Badge variant="outline">Obligatoire</Badge> : null}
-            <Badge variant={meta.variant}>{meta.label}</Badge>
+            <Badge variant={meta.variant}>{meta.labelIntervenant}</Badge>
           </div>
           <p className="text-xs text-muted-foreground">{meta.aide}</p>
           {TYPE_POURQUOI[doc.type] ? (

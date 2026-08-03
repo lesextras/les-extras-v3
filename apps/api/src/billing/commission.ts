@@ -1,16 +1,19 @@
 /**
- * Modèle économique « prestataire » (et non place de marché) :
+ * Modèle économique : la mise en relation et l'aide à la contractualisation
+ * (renforts, ateliers) sont GRATUITES, pour l'établissement comme pour
+ * l'intervenant. La commission par défaut est donc de ZÉRO : l'établissement
+ * paie exactement le tarif chiffré par l'intervenant, rien de plus, et
+ * l'intervenant le touche intégralement.
  *
- *   Intervenant → facture ADéPA (son tarif net, intégralement)
- *   ADéPA       → facture l'établissement (tarif + commission)
+ * Les deux seuls services payants de la plateforme sont ailleurs : les
+ * formations Qualiopi (facturées au devis par l'association, qui fait appel
+ * aux formateurs du réseau) et LEX, l'assistant IA à crédits.
  *
- * Conséquence volontaire : la plateforme ne « facilite » aucun paiement entre
- * tiers, il n'y a qu'une seule caisse (celle de l'association). Un seul compte
- * Stripe, une seule comptabilité, aucune obligation déclarative de plateforme.
- * L'intervenant touche 100 % de son tarif : la commission est AJOUTÉE au prix
- * client, jamais prélevée sur lui.
+ * La mécanique est CONSERVÉE (taux par compte via `commissionRate`) : si un
+ * jour un accord particulier prévoit des frais de gestion, ils se règlent
+ * compte par compte, sans réécrire le tunnel de devis.
  */
-export const COMMISSION_DEFAUT = 0.15;
+export const COMMISSION_DEFAUT = 0;
 
 /** Décompose un prix intervenant en prix client, transparent pour les deux. */
 export function decomposerPrix(tarifIntervenant: number, taux = COMMISSION_DEFAUT) {

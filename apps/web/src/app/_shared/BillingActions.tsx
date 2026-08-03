@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 
-type Kind = "credit_pack" | "subscription" | "invoice";
+type Kind = "credits" | "subscription" | "invoice";
 
 export function CheckoutButton({
   accountId,

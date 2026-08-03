@@ -2,9 +2,17 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
- * Réserve une route aux comptes ADHÉRENTS (abonnement actif) — modèle
- * freemium : l'usage interne de la plateforme est gratuit, les
- * fonctionnalités LEX demandent l'adhésion. Les ADMIN passent toujours.
+ * Réserve une route aux comptes qui peuvent payer une génération LEX :
+ * solde de crédits > 0, ou accès illimité accordé à la main (`isMember`,
+ * utilisé comme interrupteur d'exonération pour les comptes partenaires).
+ * Les ADMIN passent toujours.
+ *
+ * C'est la SEULE barrière payante de la plateforme : publier ses ateliers,
+ * candidater au renfort, contractualiser, gérer son équipe — tout cela
+ * demeure gratuit, pour les intervenants comme pour les établissements.
+ * La consommation effective du crédit se fait dans le gestionnaire de la
+ * route (CreditsService.avecCredit), pas ici : la garde vérifie seulement
+ * qu'il y a de quoi payer.
  */
 @Injectable()
 export class MemberGuard implements CanActivate {
@@ -17,15 +25,13 @@ export class MemberGuard implements CanActivate {
     if (!accountId) return false;
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
-      select: { isMember: true, type: true },
+      select: { credits: true, isMember: true },
     });
-    // Cette garde ne protège QUE les fonctionnalités LEX (IA) : l'adhésion à
-    // l'association est requise pour tous, établissements comme intervenants.
-    // Tout le reste — publier ses ateliers, candidater au renfort, animer une
-    // formation — demeure gratuit pour les intervenants indépendants.
-    if (!account?.isMember) {
+    if (!account) return false;
+    if (account.isMember) return true;
+    if (account.credits <= 0) {
       throw new ForbiddenException(
-        "LEX est réservé aux adhérents de l'association. Le reste de la plateforme demeure gratuit.",
+        'Votre solde de crédits LEX est épuisé. Rechargez des crédits ou prenez un abonnement à recharge quotidienne — le reste de la plateforme demeure gratuit.',
       );
     }
     return true;

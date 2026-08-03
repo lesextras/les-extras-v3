@@ -156,7 +156,10 @@ export function ServiceModal({
       .then((rows) => {
         if (Array.isArray(rows) && rows.length) {
           setDbCats(rows);
-          setCategory(rows[0].id);
+          // En edition, la categorie de la fiche est deja posee : la forcer a
+          // la premiere de la liste reaffectait silencieusement chaque fiche
+          // modifiee. On ne preselectionne qu'a la creation.
+          if (!fiche) setCategory((c) => (rows.some((r) => r.id === c) ? c : rows[0].id));
         }
       })
       .catch(() => {});
@@ -280,7 +283,7 @@ export function ServiceModal({
           <Field label="Description" htmlFor="description" required>
             <Textarea id="description" name="description" required rows={4} defaultValue={fiche?.description ?? ""} />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Catégorie">
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
@@ -302,7 +305,7 @@ export function ServiceModal({
               <Input id="duration" name="duration" defaultValue={fiche?.duration ?? ""} placeholder="2H" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Participants max" htmlFor="maxParticipants">
               <Input id="maxParticipants" name="maxParticipants" type="number" min={1} defaultValue={fiche?.maxParticipants ?? ""} placeholder="10" />
             </Field>
@@ -310,7 +313,7 @@ export function ServiceModal({
               <Input id="price" name="price" type="number" step="0.5" defaultValue={fiche?.price != null ? String(fiche.price) : ""} placeholder="250" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Public visé" htmlFor="publicTarget">
               <Input id="publicTarget" name="publicTarget" defaultValue={fiche?.publicTarget ?? ""} placeholder="Adultes en situation de handicap" />
             </Field>

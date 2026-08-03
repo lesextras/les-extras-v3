@@ -10,16 +10,16 @@ interface Dest {
   href: string;
   group: string;
   keywords?: string;
-  /** Réservé aux adhérents : masqué de la palette pour les autres. */
+  /** Fonctionnalité LEX à crédits : masquée de la palette si solde à zéro. */
   premium?: boolean;
 }
 
 const DESTINATIONS: Dest[] = [
   { label: "Tableau de bord", href: "/dashboard", group: "Navigation", keywords: "accueil home" },
   { label: "Édublog", href: "/edublog", group: "Navigation", keywords: "articles actualites blog publications" },
-  // `premium` : réservé aux adhérents. La palette est une porte d'entrée comme
-  // une autre — la laisser ouverte pendant que le menu est verrouillé serait
-  // incohérent.
+  // `premium` : fonctionnalité LEX à crédits. La palette est une porte
+  // d'entrée comme une autre — la laisser ouverte pendant que le menu est
+  // verrouillé serait incohérent.
   { label: "Assistant d'écriture", href: "/dashboard/assistant", group: "Navigation", keywords: "ia rapport note observation transmission redaction", premium: true },
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Freelance", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Freelance", keywords: "services educatheures" },
@@ -31,7 +31,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
   { label: "Contrats CDD", href: "/dashboard/contrats", group: "Établissement", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat" },
-  { label: "Adhésion", href: "/dashboard/adhesion", group: "Établissement", keywords: "stripe paiement adhésion adhérent lex abonnement" },
+  { label: "LEX · Crédits & abonnement", href: "/dashboard/adhesion", group: "Établissement", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },
   { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres équipe" },
   { label: "Admin — Vue d’ensemble", href: "/admin", group: "Admin", keywords: "back-office" },
   { label: "Admin — Utilisateurs", href: "/admin/utilisateurs", group: "Admin", keywords: "users comptes rattachements salarié responsable" },

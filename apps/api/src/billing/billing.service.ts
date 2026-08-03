@@ -12,21 +12,42 @@ import { PrismaService } from '../prisma/prisma.service';
 
 
 /**
- * Plans d'abonnement mensuel (Stripe Checkout mode=subscription).
+ * Le modèle économique, en une phrase : la mise en relation et l'aide à la
+ * contractualisation (renforts, ateliers) sont GRATUITES pour les
+ * établissements comme pour les intervenants ; les formations Qualiopi se
+ * facturent au devis par l'association ; seul LEX, l'assistant IA, se paie —
+ * en crédits. Un crédit = une génération.
+ *
+ * Packs de crédits (paiement en une fois, Stripe Checkout mode=payment).
+ * Montants en centimes d'euro — AJUSTABLES avant mise en production réelle,
+ * repris de la grille historique de la plateforme.
+ */
+export const CREDIT_PACKS = [
+  { id: 'pack-10', label: 'Pack Découverte', credits: 10, amountCents: 9000 },
+  { id: 'pack-25', label: 'Pack Équipe', credits: 25, amountCents: 20000 },
+  { id: 'pack-60', label: 'Pack Établissement', credits: 60, amountCents: 42000 },
+] as const;
+
+/**
+ * Abonnements LEX (Stripe Checkout mode=subscription). Un abonnement actif
+ * remet chaque jour le solde de crédits au niveau de `dailyCredits` (recharge
+ * quotidienne, sans cumul — voir CreditsService).
  * Montants en centimes d'euro — AJUSTABLES avant mise en production réelle.
  */
 export const SUBSCRIPTION_PLANS = [
   {
     id: 'plan-essentiel',
-    label: 'Adhésion Essentiel',
+    label: 'LEX Essentiel',
     amountCents: 14900,
-    perks: 'LEX en accès complet (écriture, activités, remplissage de fiches) + bot d’aide',
+    dailyCredits: 10,
+    perks: '10 crédits rechargés chaque jour — écriture, activités, remplissage de fiches, GAPiste',
   },
   {
     id: 'plan-pro',
-    label: 'Adhésion Pro',
+    label: 'LEX Pro',
     amountCents: 29900,
-    perks: 'Tout Essentiel + support prioritaire, statistiques avancées et accompagnement',
+    dailyCredits: 30,
+    perks: 'Recharge quotidienne de 30 crédits + support prioritaire et accompagnement',
   },
 ] as const;
 
@@ -81,30 +102,36 @@ export class BillingService {
     return SUBSCRIPTION_PLANS.map((p) => ({ ...p, currency: 'eur', interval: 'month' }));
   }
 
-  /** Vue d'ensemble facturation d'un compte : abonnement + solde + offres. */
+  listPacks() {
+    return CREDIT_PACKS.map((p) => ({ ...p, currency: 'eur' }));
+  }
+
+  /** Vue d'ensemble LEX d'un compte : solde, abonnement, packs et plans. */
   async overview(userId: string, accountId: string) {
-    await this.requireEstablishmentMember(userId, accountId, false);
+    await this.requireMember(userId, accountId, false);
     const [account, subscription] = await this.prisma.$transaction([
       this.prisma.account.findUniqueOrThrow({
         where: { id: accountId },
-        select: { id: true },
+        select: { credits: true, isMember: true },
       }),
       this.prisma.subscription.findUnique({ where: { accountId } }),
     ]);
-    void account;
     return {
+      credits: account.credits,
+      illimite: account.isMember,
       subscription,
       plans: this.listPlans(),
+      packs: this.listPacks(),
       configured: Boolean(this.config.get<string>('STRIPE_SECRET_KEY')),
     };
   }
 
-  /** Membre ACTIF d'un compte ESTABLISHMENT ; roles OWNER/ADMIN si demandé. */
-  private async requireEstablishmentMember(
-    userId: string,
-    accountId: string,
-    manageRole = true,
-  ) {
+  /**
+   * Membre ACTIF du compte, quel que soit son type — LEX se recharge depuis
+   * un compte établissement COMME depuis un compte intervenant, puisque
+   * l'assistant est ouvert aux deux. Rôles OWNER/ADMIN si `manageRole`.
+   */
+  private async requireMember(userId: string, accountId: string, manageRole = true) {
     const membership = await this.prisma.membership.findUnique({
       where: { userId_accountId: { userId, accountId } },
       include: { account: { select: { type: true, name: true } } },
@@ -117,11 +144,6 @@ export class BillingService {
         'Seul un propriétaire ou administrateur du compte peut gérer la facturation.',
       );
     }
-    if (membership.account.type !== 'ESTABLISHMENT') {
-      throw new BadRequestException(
-        'La facturation ne concerne que les comptes établissement.',
-      );
-    }
     return membership;
   }
 
@@ -132,7 +154,7 @@ export class BillingService {
   async createSubscriptionCheckout(userId: string, accountId: string, planId: string) {
     const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId);
     if (!plan) throw new BadRequestException('Plan inconnu.');
-    await this.requireEstablishmentMember(userId, accountId);
+    await this.requireMember(userId, accountId);
 
     const existing = await this.prisma.subscription.findUnique({ where: { accountId } });
     if (existing && existing.status === 'active') {
@@ -169,7 +191,7 @@ export class BillingService {
    * La facture passe PAID à la réception du webhook.
    */
   async createInvoiceCheckout(userId: string, accountId: string, invoiceId: string) {
-    await this.requireEstablishmentMember(userId, accountId);
+    await this.requireMember(userId, accountId);
     const invoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
     if (!invoice || invoice.accountId !== accountId) {
       throw new BadRequestException('Facture introuvable sur ce compte.');
@@ -199,6 +221,48 @@ export class BillingService {
       'metadata[accountId]': accountId,
       'metadata[invoiceId]': invoice.id,
       client_reference_id: accountId,
+    });
+
+    return { url: String(session.url) };
+  }
+
+  /**
+   * Achat d'un pack de crédits LEX (mode payment, une seule fois).
+   * L'achat est enregistré PENDING avant la redirection ; c'est le webhook
+   * qui le passera PAID et créditera le compte — idempotent grâce à
+   * l'unicité de `stripeSessionId`.
+   */
+  async createCreditsCheckout(userId: string, accountId: string, packId: string) {
+    const pack = CREDIT_PACKS.find((p) => p.id === packId);
+    if (!pack) throw new BadRequestException('Pack de crédits inconnu.');
+    await this.requireMember(userId, accountId);
+
+    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://app.les-extras.fr';
+    const session = await this.stripe('/checkout/sessions', {
+      mode: 'payment',
+      'payment_method_types[0]': 'card',
+      'line_items[0][quantity]': '1',
+      'line_items[0][price_data][currency]': 'eur',
+      'line_items[0][price_data][unit_amount]': String(pack.amountCents),
+      'line_items[0][price_data][product_data][name]': `Les Extras — LEX ${pack.label} (${pack.credits} crédits)`,
+      success_url: `${webUrl}/dashboard/adhesion?paiement=succes`,
+      cancel_url: `${webUrl}/dashboard/adhesion?paiement=annule`,
+      'metadata[kind]': 'credits',
+      'metadata[accountId]': accountId,
+      'metadata[packId]': pack.id,
+      client_reference_id: accountId,
+    });
+
+    await this.prisma.creditPurchase.create({
+      data: {
+        accountId,
+        userId,
+        packId: pack.id,
+        credits: pack.credits,
+        amountCents: pack.amountCents,
+        stripeSessionId: String(session.id),
+        status: 'PENDING',
+      },
     });
 
     return { url: String(session.url) };
@@ -320,9 +384,47 @@ export class BillingService {
       return { received: true };
     }
 
-    // Plus de monnaie interne : les seuls paiements Stripe sont l'adhésion
-    // (mode subscription) et le règlement d'une facture de prestation, tous
-    // deux traités plus haut. Toute autre session est ignorée sans erreur.
+    // Achat d'un pack de crédits LEX : marquer PAID et créditer le compte
+    // dans la même transaction. L'idempotence tient au verrou sur le statut :
+    // une relivraison Stripe retombe sur PAID et ne crédite pas deux fois.
+    if (kind === 'credits') {
+      await this.prisma.$transaction(async (tx) => {
+        const purchase = await tx.creditPurchase.findUnique({
+          where: { stripeSessionId: session.id },
+        });
+        if (!purchase) {
+          this.logger.warn(`Webhook crédits: session inconnue ${session.id}`);
+          return;
+        }
+        if (purchase.status === 'PAID') return; // déjà traité (relivraison)
+
+        const account = await tx.account.update({
+          where: { id: purchase.accountId },
+          data: { credits: { increment: purchase.credits } },
+          select: { credits: true },
+        });
+        await tx.creditPurchase.update({
+          where: { id: purchase.id },
+          data: { status: 'PAID' },
+        });
+        await tx.creditLedger.create({
+          data: {
+            accountId: purchase.accountId,
+            delta: purchase.credits,
+            balanceAfter: account.credits,
+            reason: 'ACHAT_PACK',
+          },
+        });
+        this.logger.log(
+          `LEX ${purchase.packId} payé : +${purchase.credits} crédits pour ${purchase.accountId}`,
+        );
+      });
+      return { received: true };
+    }
+
+    // Les paiements Stripe connus sont l'abonnement LEX, le règlement d'une
+    // facture et l'achat de crédits, tous traités plus haut. Toute autre
+    // session est ignorée sans erreur.
     this.logger.warn(`Webhook: session sans traitement associé (${session.id})`);
     return { received: true };
   }

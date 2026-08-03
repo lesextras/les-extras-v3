@@ -135,7 +135,7 @@ export function FormationInterneModal({
           >
             <Textarea id="summary" name="summary" rows={3} placeholder="Ce que les participants sauront faire à l’issue…" />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Durée (heures)" htmlFor="durationHours">
               <Input id="durationHours" name="durationHours" type="number" min={1} placeholder="7" />
             </Field>
@@ -166,7 +166,7 @@ export function FormationInterneModal({
               </p>
             )}
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Date de session" htmlFor="startDate" required>
               <Input id="startDate" name="startDate" type="date" required />
             </Field>

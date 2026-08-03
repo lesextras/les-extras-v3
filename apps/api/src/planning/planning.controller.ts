@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
+import { AccountRolesGuard } from '../common/guards/account-roles.guard';
+import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -20,11 +22,15 @@ export class PlanningController {
   }
 
   @Post('shifts')
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   create(@CurrentAccount() a: RequestAccount, @Body() dto: CreateShiftDto) {
     return this.planning.createShift(a.id, dto);
   }
 
   @Patch('shifts/:id')
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   update(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: UpdateShiftDto) {
     return this.planning.updateShift(a.id, id, dto);
   }
@@ -35,11 +41,15 @@ export class PlanningController {
   }
 
   @Delete('shifts/:id')
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   remove(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
     return this.planning.deleteShift(a.id, id);
   }
 
   @Post('shifts/from-booking/:bookingId')
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   fromBooking(@CurrentAccount() a: RequestAccount, @Param('bookingId') bookingId: string) {
     return this.planning.shiftFromBooking(a.id, bookingId);
   }

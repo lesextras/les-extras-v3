@@ -47,7 +47,7 @@ export interface NavItem {
   badge?: string;
   /** Info-bulle explicative affichée au survol. */
   hint?: string;
-  /** Fonctionnalité LEX réservée aux adhérents (cadenas si non-adhérent). */
+  /** Fonctionnalité LEX à crédits (badge si le solde est à zéro). */
   premium?: boolean;
   /** Entrée du « mode essentiel » : visible même quand le menu est replié. */
   essentiel?: boolean;
@@ -104,8 +104,8 @@ const freelanceNav: NavSection[] = [
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos interventions confirmées' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les établissements' },
       { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
+      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
+      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
     ],
   },
   // Même section, mêmes libellés que côté établissement : ce sont les mêmes
@@ -138,6 +138,9 @@ const freelanceNav: NavSection[] = [
       // voir ce qui manquait, ni deposer sa carte d'identite.
       { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces obligatoires : identité, diplôme, casier judiciaire, IBAN, attestation URSSAF. Un dossier complet vous fait passer devant.' },
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures — au même endroit' },
+      // LEX se recharge aussi depuis un compte intervenant : l'assistant IA
+      // est ouvert aux deux types de comptes, à crédits pour tout le monde.
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER'], hint: 'Votre solde de crédits LEX, votre consommation et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
@@ -155,8 +158,12 @@ const establishmentNav: NavSection[] = [
       { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter', essentiel: true },
     ],
   },
+  // L'ancienne section « Mon activité » empilait douze entrées, presque
+  // toutes marquées essentielles — un menu où tout est prioritaire n'a plus
+  // de priorité. Trois sections à la place, dans l'ordre du quotidien :
+  // trouver du monde, gérer les siens, s'outiller.
   {
-    title: 'Mon activité',
+    title: 'Renfort & prestations',
     items: [
       { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
       // Le suivi de ce qu'on a commandé manquait complètement : renforts,
@@ -168,7 +175,13 @@ const establishmentNav: NavSection[] = [
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
       // calcule — essai, précarité, carence — et refuse de transmettre un
       // contrat auquel il manque une mention obligatoire.
-      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' },
+      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les intervenants' },
+    ],
+  },
+  {
+    title: 'Équipe & conformité',
+    items: [
       // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
       // Une fiche par personne, et la conformité comme propriété de cette
       // personne — pas comme un annuaire parallèle qu'il faut recouper.
@@ -176,12 +189,22 @@ const establishmentNav: NavSection[] = [
       // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
       // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
       // Les uns sont salariés, les autres viennent en renfort.
-      { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
+      { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
       { label: 'Conformité', href: '/dashboard/conformite', icon: ShieldAlert, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires qui manquent ou arrivent à échéance : identité, diplôme, casier judiciaire, permis' },
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
-      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
+      { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' },
+      // Les regles de la convention, reportees une fois. Sans elles, les
+      // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
+      // juridiquement exact mais rarement ce que veut l'etablissement.
+      { label: 'Temps de travail', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Nuit, dimanche, jours fériés, heures supplémentaires, annualisation : les règles de votre convention, appliquées à chaque chiffrage' },
+      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
+    ],
+  },
+  {
+    title: 'LEX & pratique',
+    items: [
+      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
+      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
+      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
     ],
   },
   {
@@ -192,26 +215,20 @@ const establishmentNav: NavSection[] = [
       // interne. Le catalogue de l'accueil est le plus complet et le mieux
       // présenté ; entretenir une seconde liste dans le tableau de bord, c'est
       // entretenir deux vérités et en laisser une vieillir.
-      { label: 'Annuaire des intervenants', href: '/intervenants', icon: Users, essentiel: true, hint: 'Parcourez les profils publics des intervenants du réseau' },
-      { label: 'Ateliers', href: '/ateliers', icon: Sparkles, essentiel: true, hint: 'Catalogue d’ateliers à réserver' },
+      { label: 'Annuaire des intervenants', href: '/intervenants', icon: Users, hint: 'Parcourez les profils publics des intervenants du réseau' },
+      { label: 'Ateliers', href: '/ateliers', icon: Sparkles, essentiel: true, hint: 'Catalogue d’ateliers à réserver — la mise en relation est gratuite' },
       { label: 'Formations', href: '/formations', icon: GraduationCap, essentiel: true, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
     ],
   },
   {
     title: 'Mon établissement',
     items: [
-      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
       { label: 'Mon établissement', href: '/dashboard/account', icon: Building2, hint: 'Coordonnées, préférences et réglages de votre structure' },
-      { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' },
-      // Les regles de la convention, reportees une fois. Sans elles, les
-      // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
-      // juridiquement exact mais rarement ce que veut l'etablissement.
-      { label: 'Temps de travail', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Nuit, dimanche, jours fériés, heures supplémentaires, annualisation : les règles de votre convention, appliquées à chaque chiffrage' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures — au même endroit' },
-      { label: 'Adhésion', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER'], hint: 'Adhérer à l’association pour débloquer LEX. Les prestations, elles, se règlent à la facture.' },
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER'], hint: 'Votre solde de crédits LEX, votre consommation et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
@@ -226,8 +243,8 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d’ensemble de la plateforme' },
       { label: 'Mon espace', href: '/dashboard', icon: Home, hint: 'Votre tableau de bord personnel (ateliers, missions, activité)' },
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. Réservé aux adhérents.' },
+      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
+      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
     ],
   },
   {

@@ -83,16 +83,16 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
                 <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
                   <Lock className="size-5" />
                 </span>
-                <p className="mt-3 font-semibold text-foreground">LEX est réservé aux adhérents</p>
+                <p className="mt-3 font-semibold text-foreground">Crédits LEX épuisés</p>
                 <p className="mt-1.5 text-sm text-muted-foreground">
-                  L'assistant d'écriture, le générateur d'activités et ce bot d'aide sont inclus
-                  dans l'adhésion. L'usage interne de la plateforme reste gratuit.
+                  Les générations LEX consomment des crédits. Rechargez par packs ou prenez un
+                  abonnement à recharge quotidienne — le reste de la plateforme reste gratuit.
                 </p>
                 <a
                   href="/dashboard/adhesion"
                   className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-90"
                 >
-                  Devenir adhérent
+                  Recharger des crédits
                 </a>
               </div>
             </div>

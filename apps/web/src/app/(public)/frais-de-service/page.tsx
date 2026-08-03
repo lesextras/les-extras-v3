@@ -5,7 +5,7 @@ import { ArrowRight, Check, Coins, Info, Receipt, Sparkles, Users, X } from "luc
 export const metadata: Metadata = {
   title: "Frais de service — ce qui est gratuit, ce qui est payant",
   description:
-    "Organiser son équipe interne est gratuit, pour toujours. Zéro commission prélevée sur les intervenants. Vous ne payez que la prestation réalisée, ou l’adhésion pour les outils LEX.",
+    "La mise en relation et la contractualisation sont gratuites, pour les établissements comme pour les intervenants, sans commission. Seuls se paient les formations Qualiopi (au devis, facturées par l’association) et LEX, l’assistant IA à crédits.",
   alternates: { canonical: "/frais-de-service" },
 };
 
@@ -14,28 +14,28 @@ export const metadata: Metadata = {
 // e-mail à une direction, et un contenu qui ne se lit pas entre deux sections.
 
 const GRATUIT = [
-  "Planning partagé et créneaux de l’équipe",
-  "Missions confiées à vos propres salariés",
+  "SOS Renfort : publication, candidatures, jusqu’au CDD généré",
+  "Ateliers : catalogue, réservation, devis, contrat et facture",
+  "Planning partagé, pointage et validation des heures",
   "Messagerie interne rattachée aux missions",
-  "Pointage et validation des heures",
   "Coffre-fort de conformité et alertes d’échéance",
-  "Catalogue, devis et notifications",
+  "Publier ses services et candidater, côté intervenant",
 ];
 
 const PAYANT = [
   {
     icone: Users,
-    titre: "Un intervenant externe vient chez vous",
-    prix: "Le prix affiché sur la fiche",
+    titre: "Vous commandez une formation Qualiopi",
+    prix: "Sur devis — facturée par l’association",
     detail:
-      "Vous payez la prestation réalisée, pas un abonnement. Le prix est visible avant de réserver, et la commission de la plateforme apparaît en clair sur le devis et sur la facture.",
+      "C’est le seul service facturé par l’association ADéPA, sous sa certification Qualiopi et finançable OPCO. Elle fait appel aux formateurs du réseau Les Extras ; vous recevez un devis avant, une facture après.",
   },
   {
     icone: Sparkles,
-    titre: "Vous prenez l’adhésion",
-    prix: "Cotisation annuelle à l’association",
+    titre: "Vous utilisez LEX, l’assistant IA",
+    prix: "À crédits — un crédit par génération",
     detail:
-      "L’adhésion débloque les outils LEX — assistant d’écriture professionnelle et générateur d’activités éducatives — et soutient les actions de l’association.",
+      "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. Rechargez par packs, ou par un abonnement dont la recharge quotidienne remet votre solde à niveau. Les tarifs sont affichés dans votre espace ; le bot d’aide reste gratuit.",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function FraisPage() {
             Gratuit, pour toujours
           </p>
           <p className="mt-2 text-xl font-semibold text-foreground">
-            Organiser votre équipe interne
+            Toute la mise en relation et la contractualisation
           </p>
           <ul className="mt-5 space-y-2.5">
             {GRATUIT.map((g) => (
@@ -73,8 +73,8 @@ export default function FraisPage() {
             ))}
           </ul>
           <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-            Sans limite de durée et sans nombre d’utilisateurs imposé. Une structure qui
-            n’utilise jamais d’intervenant externe ne paie jamais rien.
+            Sans limite de durée et sans nombre d’utilisateurs imposé. Un renfort ou un
+            atelier se paie à son intervenant, à son tarif — la plateforme n’ajoute rien.
           </p>
         </section>
 
@@ -118,8 +118,8 @@ export default function FraisPage() {
             </p>
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
               Vous touchez 100 % de votre prix. C’est le parti pris du modèle associatif :
-              la plateforme se finance sur la prestation facturée à l’établissement et sur
-              l’adhésion, jamais sur la rémunération de celui qui fait le travail.
+              l’association se finance sur les formations Qualiopi qu’elle facture et sur
+              les crédits LEX, jamais sur la rémunération de celui qui fait le travail.
             </p>
           </div>
           <div className="grid size-28 shrink-0 place-items-center rounded-2xl bg-background ring-1 ring-inset ring-secondary/25 md:size-32">

@@ -36,7 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/ateliers",
     "/formations",
     "/edublog",
-    "/etablissements",
     "/notre-histoire",
     "/catalogue",
     "/contact",

@@ -193,7 +193,11 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
             aria-describedby={descriptionId}
             tabIndex={-1}
             className={cn(
-              'relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-card animate-scale-in focus:outline-none',
+              // max-h + overflow-y : sur mobile, une modale plus haute que
+              // l'écran (13 modales de formulaire dans l'app) devenait
+              // infranchissable — les boutons du bas étaient hors de portée.
+              // Toute modale défile désormais à l'intérieur de son cadre.
+              'relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-card animate-scale-in focus:outline-none',
               className,
             )}
             {...props}

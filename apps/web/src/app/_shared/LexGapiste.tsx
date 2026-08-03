@@ -80,7 +80,7 @@ export function LexGapiste({
     }
   }
 
-  // ── Non-adhérent : on explique, on ne fait pas semblant ──────────────────
+  // ── Solde de crédits épuisé : on explique, on ne fait pas semblant ───────
   if (!estAdherent) {
     return (
       <Card className="border-dashed">
@@ -88,7 +88,7 @@ export function LexGapiste({
           <div className="flex gap-3">
             <Lock className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
             <div className="max-w-2xl">
-              <p className="font-semibold">LEX le GAPiste — réservé aux adhérents</p>
+              <p className="font-semibold">LEX le GAPiste — fonctionne à crédits</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 L&apos;animateur IA du GAP, avec la posture d&apos;un psychologue clinicien et
                 d&apos;un éducateur spécialisé senior. Il questionne d&apos;abord le contexte, les
@@ -99,7 +99,7 @@ export function LexGapiste({
             </div>
           </div>
           <Button asChild variant="outline" className="shrink-0">
-            <Link href="/dashboard/adhesion">Découvrir l&apos;adhésion</Link>
+            <Link href="/dashboard/adhesion">Recharger des crédits</Link>
           </Button>
         </CardContent>
       </Card>

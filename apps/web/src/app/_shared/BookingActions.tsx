@@ -1,15 +1,25 @@
 "use client";
 
-// Actions sur une candidature de renfort (côté ESTABLISHMENT).
-//
-// Ces boutons appelaient `PATCH /bookings/:id { status }` — une route qui
-// n'a jamais existé. Chaque clic partait donc en 404, et le message affiché
-// ressemblait à une panne alors que c'était un lien mort. Le serveur expose
-// une route PAR transition, parce que chaque transition fait autre chose
-// que changer un champ : confirmer crée le créneau de planning, terminer
-// ouvre la fenêtre de pointage de 72 h. On appelle donc la bonne.
+/**
+ * Actions sur une candidature de renfort (côté établissement).
+ *
+ * La machine à états du serveur est stricte, et c'est une qualité : chaque
+ * transition fait un vrai travail (confirmer crée le créneau de planning,
+ * terminer ouvre la fenêtre de pointage de 72 heures). L'erreur historique de
+ * ce composant était de sauter des marches — « Retenir & confirmer » envoyait
+ * REQUESTED → CONFIRMED, que le serveur refuse à juste titre. Résultat : une
+ * erreur 400 sur chaque clic, et aucune candidature n'a jamais pu être
+ * acceptée.
+ *
+ * Le chemin est donc affiché tel qu'il est : retenir (accept), puis confirmer
+ * (confirm), puis démarrer (start), puis terminer (complete). Et au moment où
+ * le renfort est confirmé, on propose LE geste que le produit vend — établir
+ * le contrat à durée déterminée — au lieu de le laisser caché derrière un
+ * lien non signalé.
+ */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
@@ -28,28 +38,12 @@ export function BookingActions({
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
 
-  /** Chaque statut visé a sa route : c'est là que vit sa logique métier. */
-  const ROUTE: Partial<Record<BookingStatus, string>> = {
-    ACCEPTED: "accept",
-    CONFIRMED: "confirm",
-    IN_PROGRESS: "start",
-    COMPLETED: "complete",
-    CANCELLED: "cancel",
-  };
-
-  async function setStatus(next: BookingStatus, okMsg: string) {
-    const action = ROUTE[next];
-    if (!action) return;
-    setLoading(next);
+  async function agir(action: string, okMsg: string, body?: Record<string, unknown>) {
+    setLoading(action);
     try {
       await apiRequest(`/bookings/${bookingId}/${action}`, {
         method: "PATCH",
-        // Décliner exige un motif : il est transmis à la personne. Celui-ci
-        // est neutre et vrai ; un échange détaillé passe par la messagerie,
-        // qui est le bon endroit pour ça.
-        ...(action === "cancel"
-          ? { body: { reason: "Candidature non retenue par l’établissement." } }
-          : {}),
+        ...(body ? { body } : {}),
         accountId,
       });
       toast({ title: okMsg });
@@ -65,38 +59,96 @@ export function BookingActions({
     }
   }
 
+  const decliner = (
+    <Button
+      size="sm"
+      variant="outline"
+      className="text-destructive hover:text-destructive"
+      loading={loading === "cancel"}
+      disabled={loading !== null && loading !== "cancel"}
+      onClick={() =>
+        agir("cancel", "Candidature déclinée", {
+          // Décliner exige un motif : il est transmis à la personne. Celui-ci
+          // est neutre et vrai ; un échange détaillé passe par la messagerie.
+          reason: "Candidature non retenue par l’établissement.",
+        })
+      }
+    >
+      Décliner
+    </Button>
+  );
+
   if (status === "REQUESTED") {
     return (
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           size="sm"
-          disabled={loading !== null}
-          onClick={() => setStatus("CONFIRMED", "Candidat retenu — renfort confirmé")}
+          loading={loading === "accept"}
+          disabled={loading !== null && loading !== "accept"}
+          onClick={() => agir("accept", "Candidature retenue — confirmez pour bloquer le créneau")}
         >
-          {loading === "CONFIRMED" ? "…" : "Retenir & confirmer"}
+          Retenir
         </Button>
+        {decliner}
+      </div>
+    );
+  }
+
+  if (status === "ACCEPTED") {
+    return (
+      <div className="flex flex-wrap gap-2">
         <Button
           size="sm"
-          variant="outline"
-          className="text-destructive hover:text-destructive"
-          disabled={loading !== null}
-          onClick={() => setStatus("CANCELLED", "Candidature déclinée")}
+          loading={loading === "confirm"}
+          disabled={loading !== null && loading !== "confirm"}
+          onClick={() =>
+            agir("confirm", "Renfort confirmé — le créneau est posé sur le planning")
+          }
         >
-          {loading === "CANCELLED" ? "…" : "Décliner"}
+          Confirmer le renfort
         </Button>
+        {decliner}
       </div>
     );
   }
 
   if (status === "CONFIRMED") {
     return (
+      <div className="flex flex-wrap gap-2">
+        {/* Le pont vers le CDD, au moment exact où l'on en a besoin : la
+            personne est confirmée, l'établissement l'embauche. La page du
+            document reprend tout ce qui est connu. */}
+        <Button asChild size="sm">
+          <Link href={`/documents/contrat/${bookingId}`}>Établir le CDD</Link>
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          loading={loading === "start"}
+          disabled={loading !== null && loading !== "start"}
+          onClick={() => agir("start", "Mission démarrée")}
+        >
+          Démarrer la mission
+        </Button>
+      </div>
+    );
+  }
+
+  if (status === "IN_PROGRESS") {
+    return (
       <Button
         size="sm"
         variant="outline"
-        disabled={loading !== null}
-        onClick={() => setStatus("COMPLETED", "Mission marquée comme terminée")}
+        loading={loading === "complete"}
+        disabled={loading !== null && loading !== "complete"}
+        onClick={() =>
+          agir(
+            "complete",
+            "Mission terminée — la fenêtre de pointage de 72 h est ouverte",
+          )
+        }
       >
-        {loading === "COMPLETED" ? "…" : "Marquer terminée"}
+        Marquer terminée
       </Button>
     );
   }

@@ -64,7 +64,7 @@ export interface SessionAccount {
   /** rôle du user DANS ce compte */
   role: AccountRole;
   logoUrl?: string | null;
-  /** Adhérent (abonnement actif) : accès aux fonctionnalités LEX. */
+  /** Accès LEX illimité accordé à la main (sinon, l'accès dépend des crédits). */
   isMember?: boolean;
 }
 

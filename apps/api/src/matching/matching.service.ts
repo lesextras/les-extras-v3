@@ -199,8 +199,62 @@ export class MatchingService {
     const user = await this.prisma.user.findUnique({ where: { id: userId }, include: { profile: true } });
     if (!user) return [];
     const p = user.profile;
+
+    // La cascade s'applique aussi ici. Le palier « reseau reserve » n'est
+    // ouvert qu'aux intervenants deja connus de l'etablissement : vivier
+    // choisi, ou historique de missions/ateliers. Ouvrir RESERVED a tout le
+    // monde — comme avant — vidait la promesse de confidentialite ET
+    // l'avantage « acces prioritaire » vendu par la progression.
+    const comptes = await this.prisma.account.findMany({
+      where: { ownerId: userId, type: 'FREELANCE' },
+      select: { id: true },
+    });
+    const mesComptes = comptes.map((c) => c.id);
+    const [duVivier, surMissions, surAteliers] = mesComptes.length
+      ? await Promise.all([
+          this.prisma.poolMember.findMany({
+            where: { intervenantAccountId: { in: mesComptes } },
+            select: { accountId: true },
+          }),
+          this.prisma.booking.findMany({
+            where: {
+              accountId: { in: mesComptes },
+              status: { in: ['CONFIRMED', 'COMPLETED'] },
+              mission: { isNot: null },
+            },
+            select: { mission: { select: { accountId: true } } },
+            take: 500,
+          }),
+          this.prisma.booking.findMany({
+            where: {
+              status: { in: ['CONFIRMED', 'COMPLETED'] },
+              service: { accountId: { in: mesComptes } },
+            },
+            select: { accountId: true },
+            take: 500,
+          }),
+        ])
+      : [[], [], []];
+    const etablissementsConnus = [
+      ...new Set([
+        ...duVivier.map((v) => v.accountId),
+        ...surMissions.map((b) => b.mission?.accountId).filter(Boolean),
+        ...surAteliers.map((b) => b.accountId),
+      ]),
+    ] as string[];
+
     const missions = await this.prisma.reliefMission.findMany({
-      where: { status: 'PUBLISHED', visibility: { in: ['PUBLIC', 'RESERVED'] } },
+      where: {
+        status: 'PUBLISHED',
+        // Une mission dont la date est passee n'est plus une opportunite.
+        startDate: { gte: new Date(Date.now() - 86_400_000) },
+        OR: [
+          { visibility: 'PUBLIC' },
+          ...(etablissementsConnus.length
+            ? [{ visibility: 'RESERVED' as const, accountId: { in: etablissementsConnus } }]
+            : []),
+        ],
+      },
       orderBy: { startDate: 'asc' },
       take: 100,
     });

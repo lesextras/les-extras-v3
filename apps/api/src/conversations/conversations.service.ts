@@ -12,7 +12,7 @@ export class ConversationsService {
    * ou celles rattachées à une mission d'un de ses comptes.
    */
   async findAll(userId: string) {
-    return this.prisma.conversation.findMany({
+    const conversations = await this.prisma.conversation.findMany({
       where: {
         OR: [
           { messages: { some: { senderId: userId } } },
@@ -20,14 +20,49 @@ export class ConversationsService {
         ],
       },
       orderBy: { updatedAt: 'desc' },
+      take: 100,
       include: {
         mission: { select: { id: true, title: true } },
         messages: {
           orderBy: { createdAt: 'desc' },
-          take: 1,
-          select: { id: true, body: true, senderId: true, createdAt: true, readAt: true },
+          take: 30,
+          select: {
+            id: true,
+            body: true,
+            senderId: true,
+            createdAt: true,
+            readAt: true,
+            sender: {
+              select: { id: true, firstName: true, lastName: true, avatarUrl: true },
+            },
+          },
         },
       },
+    });
+
+    // L'ecran attendait trois champs que personne ne produisait : le nom de
+    // l'interlocuteur, le dernier message et le compteur de non-lus. Faute de
+    // quoi toutes les conversations s'appelaient « Utilisateur » et le badge
+    // ne s'affichait jamais. On les fabrique ici, a partir des trente
+    // derniers messages charges.
+    return conversations.map((c) => {
+      const dernier = c.messages[0] ?? null;
+      const interlocuteurs = new Map<string, (typeof c.messages)[number]['sender']>();
+      for (const m of c.messages) {
+        if (m.senderId !== userId && m.sender) interlocuteurs.set(m.senderId, m.sender);
+      }
+      const unreadCount = c.messages.filter(
+        (m) => m.senderId !== userId && !m.readAt,
+      ).length;
+      const { messages: _msgs, ...reste } = c;
+      return {
+        ...reste,
+        participants: [...interlocuteurs.values()],
+        lastMessage: dernier
+          ? { id: dernier.id, body: dernier.body, senderId: dernier.senderId, createdAt: dernier.createdAt }
+          : null,
+        unreadCount,
+      };
     });
   }
 
@@ -88,7 +123,26 @@ export class ConversationsService {
       }),
     ]);
     if (!conversation) throw new NotFoundException('Conversation introuvable.');
-    return { conversation, messages };
+
+    // Ouvrir un fil, c'est le lire : les messages reçus passent en « lu »
+    // sans geste supplémentaire. Avant, aucun écran n'appelait jamais la
+    // route de lecture et le compteur de non-lus ne redescendait pas.
+    await this.prisma.message.updateMany({
+      where: { conversationId, senderId: { not: userId }, readAt: null },
+      data: { readAt: new Date() },
+    });
+
+    // L'en-tête du fil affiche l'interlocuteur : on le déduit des messages,
+    // comme dans la liste.
+    const interlocuteurs = new Map<string, (typeof messages)[number]['sender']>();
+    for (const m of messages) {
+      if (m.senderId !== userId && m.sender) interlocuteurs.set(m.senderId, m.sender);
+    }
+
+    return {
+      conversation: { ...conversation, participants: [...interlocuteurs.values()] },
+      messages,
+    };
   }
 
   /** Crée une conversation avec un premier message. */

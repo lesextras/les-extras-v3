@@ -122,6 +122,30 @@ export const BOOKING_STATUS_LABEL: Record<string, string> = {
   CANCELLED: "Annulée",
 };
 
+/** Inscriptions aux sessions de formation (statut + émargement). */
+export const INSCRIPTION_STATUS_LABEL: Record<string, string> = {
+  PENDING: "En attente",
+  VALIDATED: "Validée",
+  CANCELLED: "Annulée",
+  REFUSED: "Refusée",
+  PRESENT: "Présent",
+  ABSENT: "Absent",
+};
+
+export function inscriptionBadgeVariant(status: string): BadgeVariant {
+  switch (status) {
+    case "VALIDATED":
+    case "PRESENT":
+      return "success";
+    case "CANCELLED":
+    case "REFUSED":
+    case "ABSENT":
+      return "destructive";
+    default:
+      return "outline";
+  }
+}
+
 export const INVOICE_STATUS_LABEL: Record<string, string> = {
   DRAFT: "Brouillon",
   ISSUED: "Émise",
@@ -144,7 +168,7 @@ export const GLOBAL_ROLE_LABEL: Record<string, string> = {
 export function userStatusBadgeVariant(status: string): BadgeVariant {
   switch (status) {
     case "VERIFIED":
-      return "default";
+      return "success";
     case "BANNED":
       return "destructive";
     case "ANONYMIZED":
@@ -158,9 +182,10 @@ export function userStatusBadgeVariant(status: string): BadgeVariant {
 export function serviceBadgeVariant(status: string): BadgeVariant {
   switch (status) {
     case "PUBLISHED":
-      return "default";
+      return "success";
     case "ARCHIVED":
-      return "destructive";
+      // Archiver est un rangement volontaire, pas une erreur.
+      return "muted";
     default:
       return "outline";
   }
@@ -184,9 +209,9 @@ export const ACCOUNT_ROLE_LABEL: Record<string, string> = {
 /** Ce que chaque rôle peut faire, en une phrase — affiché à côté du choix. */
 export const ACCOUNT_ROLE_DESCRIPTION: Record<string, string> = {
   OWNER:
-    "Tout, y compris l’adhésion, la facturation et la suppression de la structure. Un seul par établissement.",
+    "Tout, y compris les crédits LEX, la facturation et la suppression de la structure. Un seul par établissement.",
   ADMIN:
-    "Tout sauf l’adhésion et la facturation : équipe, services, plannings, contrats, conformité.",
+    "Tout sauf les crédits LEX et la facturation : équipe, services, plannings, contrats, conformité.",
   MANAGER:
     "Son service : plannings et créneaux, publication de renforts, validation des congés, contrats et pièces de son équipe.",
   MEMBER:
@@ -205,15 +230,20 @@ export const INVITATION_STATUS_LABEL: Record<string, string> = {
 export type { BadgeVariant };
 
 export function bookingBadgeVariant(status: string): BadgeVariant {
+  // Sémantique visuelle : vert = abouti, couleur primaire = engagé,
+  // doux = en train de se faire, rouge = rompu, neutre = en attente.
   switch (status) {
     case "COMPLETED":
+      return "success";
     case "CONFIRMED":
-    case "ACCEPTED":
       return "default";
-    case "CANCELLED":
-      return "destructive";
-    case "IN_PROGRESS":
+    case "ACCEPTED":
       return "secondary";
+    case "IN_PROGRESS":
+      return "soft";
+    case "CANCELLED":
+    case "REFUSED":
+      return "destructive";
     default:
       return "outline";
   }
@@ -224,10 +254,13 @@ export function missionBadgeVariant(status: string): BadgeVariant {
     case "PUBLISHED":
       return "default";
     case "FILLED":
-      return "secondary";
+      // Pourvue = l'issue heureuse d'une mission, pas un état secondaire.
+      return "success";
     case "CANCELLED":
-    case "CLOSED":
       return "destructive";
+    case "CLOSED":
+      // Clôturée = terminée sans drame : gris, pas rouge.
+      return "muted";
     default:
       return "outline";
   }
@@ -236,11 +269,12 @@ export function missionBadgeVariant(status: string): BadgeVariant {
 export function invoiceBadgeVariant(status: string): BadgeVariant {
   switch (status) {
     case "PAID":
-      return "default";
+      return "success";
     case "ISSUED":
-      return "secondary";
+      return "default";
     case "CANCELLED":
-      return "destructive";
+      // Une facture annulée est un non-événement comptable, pas une alerte.
+      return "muted";
     default:
       return "outline";
   }

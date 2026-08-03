@@ -290,7 +290,7 @@ export default async function FacturationPage({
           ) : listeFactures.length === 0 ? (
             <EmptyState
               title="Aucune facture"
-              description="Vos factures sont générées automatiquement après chaque mission ou réservation confirmée."
+              description="Un brouillon de facture est préparé pour chaque atelier terminé — de l'intervenant vers l'établissement, sans commission. Les renforts, eux, relèvent du contrat de travail : ils ne passent pas par une facture."
             />
           ) : (
             <Card>

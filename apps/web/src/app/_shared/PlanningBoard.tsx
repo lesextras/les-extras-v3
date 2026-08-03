@@ -949,7 +949,7 @@ function NewShiftModal({
             <Field label="Date" htmlFor="date" required>
               <Input id="date" name="date" type="date" required />
             </Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Heure début" htmlFor="startTime" required>
                 <Input id="startTime" name="startTime" type="time" required />
               </Field>

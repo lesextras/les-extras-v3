@@ -83,7 +83,7 @@ const INTERVENANT = [
 
 export default async function SosRenfortPage() {
   const { data } = await fetchPublic<{ items: MissionApercu[]; total: number }>(
-    "/missions?take=6",
+    "/public/missions?take=6",
   );
   const missions = data?.items ?? [];
   const total = data?.total ?? 0;

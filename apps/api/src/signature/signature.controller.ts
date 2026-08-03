@@ -103,9 +103,19 @@ export class SignatureController {
     return this.signature.pourDocument(a.id, type, id);
   }
 
+  /**
+   * Ouvert au signataire lui-même : le service restreint un simple membre aux
+   * demandes adressées à sa propre adresse.
+   */
   @Get(':id')
-  lire(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
-    return this.signature.lire(a.id, id);
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
+  lire(
+    @CurrentAccount() a: RequestAccount,
+    @Req() req: Request,
+    @Param('id') id: string,
+  ) {
+    const user = (req as Request & { user?: { email?: string } }).user;
+    return this.signature.lirePourSignataire(a.id, id, user?.email ?? '', a.role);
   }
 
   /** Le dossier de preuve complet. */

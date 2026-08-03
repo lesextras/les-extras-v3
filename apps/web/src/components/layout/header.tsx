@@ -37,6 +37,8 @@ export interface HeaderProps {
   user: SessionUser;
   accounts: SessionAccount[];
   activeAccount?: SessionAccount | null;
+  /** Accès LEX (solde de crédits > 0 ou accès illimité), lu en frais par AppChrome. */
+  isMember?: boolean;
   /** Ouvre la sidebar mobile. */
   onMenuClick?: () => void;
 }
@@ -45,7 +47,7 @@ export interface HeaderProps {
  * Barre supérieure de l'app : bouton menu (mobile), switch de compte actif
  * (multi-comptes), notifications et menu utilisateur.
  */
-export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderProps) {
+export function Header({ user, accounts, activeAccount, isMember, onMenuClick }: HeaderProps) {
   const router = useRouter();
   const [switching, setSwitching] = React.useState(false);
   const [supportOuvert, setSupportOuvert] = React.useState(false);
@@ -141,7 +143,7 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
         </DropdownMenu>
       )}
 
-      <CommandPalette isMember={activeAccount?.isMember} />
+      <CommandPalette isMember={isMember ?? activeAccount?.isMember} />
 
       <div className="ml-auto flex items-center gap-1.5">
         <IndicateursCompte userId={user.id} accountId={activeAccount?.id} />
@@ -155,8 +157,11 @@ export function Header({ user, accounts, activeAccount, onMenuClick }: HeaderPro
           <span className="hidden lg:inline">Rechercher</span>
           <kbd className="hidden rounded border border-border px-1 text-[10px] lg:inline">⌘K</kbd>
         </button>
+        {/* La cloche mène aux notifications, pas à la messagerie : la
+            pastille compte des notifications, et la page marque tout lu —
+            avant, le compteur ne redescendait jamais. */}
         <Link
-          href="/dashboard/inbox"
+          href="/dashboard/notifications"
           className="relative rounded-lg p-2.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           aria-label="Notifications"
         >

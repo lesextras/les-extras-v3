@@ -89,15 +89,48 @@ export class MissionsService {
    * afficher quatre lignes. Plafond dur à 200 : au-delà, on pagine ailleurs.
    */
   async findAllByAccount(accountId: string, take?: number) {
-    return this.prisma.reliefMission.findMany({
+    const missions = await this.prisma.reliefMission.findMany({
       where: { accountId },
       orderBy: { createdAt: 'desc' },
       take: Math.min(200, Math.max(1, Math.trunc(Number(take) || 50))),
       include: {
         _count: { select: { bookings: true } },
         categoryRef: { select: { id: true, title: true } },
+        // Les candidatures, AVEC la personne derriere chacune. Sans cette
+        // jointure, le board SOS Renfort affichait « Candidatures recues (0) »
+        // a vie : l'ecran attendait mission.bookings, l'API ne l'envoyait
+        // jamais. Le coeur du produit etait muet.
+        bookings: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          include: {
+            account: {
+              select: {
+                id: true,
+                name: true,
+                owner: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    avatarUrl: true,
+                    profile: { select: { job: true, city: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
+
+    // L'ecran parle d'un « candidat », pas d'un compte : on aplati la relation
+    // compte -> proprietaire en un champ applicant que le front sait afficher.
+    return missions.map((m) => ({
+      ...m,
+      bookings: m.bookings.map((b) => ({ ...b, applicant: b.account?.owner ?? null })),
+    }));
   }
 
   /** Marketplace : missions publiées filtrées (statut/visibilité/ville/dates). */
@@ -105,7 +138,15 @@ export class MissionsService {
     const where: Prisma.ReliefMissionWhereInput = {
       status: query.status ?? MissionStatus.PUBLISHED,
     };
-    if (query.visibility) where.visibility = query.visibility;
+    // La cascade de diffusion s'applique aussi a la LECTURE. Une mission au
+    // palier « salaries » ou « reseau reserve » ne doit pas apparaitre sur la
+    // marketplace publique : la promesse de confidentialite faite a
+    // l'etablissement ne vaut que si on la tient ici. Une requete ne peut pas
+    // elargir ce perimetre, seulement le restreindre.
+    where.visibility =
+      query.visibility && query.visibility === MissionVisibility.PUBLIC
+        ? query.visibility
+        : MissionVisibility.PUBLIC;
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
     // Sans rayon : filtre departemental historique. Avec rayon : on ne
     // restreint pas ici, la distance est calculee apres coup (volumes faibles).
@@ -634,6 +675,24 @@ export class MissionsService {
     }
     if (mission.accountId === freelanceAccountId) {
       throw new BadRequestException('Vous ne pouvez pas candidater à votre propre mission.');
+    }
+
+    // La cascade s'applique aussi a la candidature. Une mission encore
+    // reservee aux salaries n'est pas candidatable de l'exterieur ; une
+    // mission au palier « reseau reserve » n'est ouverte qu'aux intervenants
+    // deja connus de l'etablissement (vivier ou historique).
+    if (mission.visibility === MissionVisibility.SALARIES) {
+      throw new BadRequestException(
+        "Cette mission est encore réservée aux salariés de l'établissement.",
+      );
+    }
+    if (mission.visibility === MissionVisibility.RESERVED) {
+      const connus = await this.intervenantsConnus(mission.accountId);
+      if (!connus.includes(freelanceAccountId)) {
+        throw new BadRequestException(
+          "Cette mission est réservée au réseau de l'établissement pour l'instant. Elle s'ouvrira plus largement si elle n'est pas pourvue.",
+        );
+      }
     }
 
     // Garde-fou juridique : un salarié de l'établissement ne peut pas s'y

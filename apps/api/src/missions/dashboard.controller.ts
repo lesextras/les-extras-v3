@@ -9,6 +9,7 @@ interface AccountCtx {
   type: string;
 }
 
+
 /**
  * Statistiques du hub de tableau de bord. Tout est calcule sur les donnees
  * reelles du compte — la carte « Taux de couverture » et le delai moyen de
@@ -73,13 +74,43 @@ export class DashboardController {
       return { activeMissions, applications, upcomingBookings, fillRate, delaiMoyenHeures };
     }
 
-    // FREELANCE : ses candidatures en cours et ses missions a venir.
-    const [applications, upcomingBookings] = await Promise.all([
+    // FREELANCE : ses candidatures en cours, ses missions a venir, et les
+    // deux chiffres que l'ecran affichait sans que personne ne les calcule —
+    // « Revenus du mois » et « messages non lus » restaient a zero a vie.
+    const debutDuMois = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+    const compte = await this.prisma.account.findUnique({
+      where: { id: account.id },
+      select: { ownerId: true },
+    });
+    const ownerId = compte?.ownerId ?? '';
+    const [applications, upcomingBookings, reglees, nonLus] = await Promise.all([
       this.prisma.booking.count({ where: { accountId: account.id, status: 'REQUESTED' } }),
       this.prisma.booking.count({
         where: { accountId: account.id, status: { in: ['ACCEPTED', 'CONFIRMED'] } },
       }),
+      this.prisma.invoice.aggregate({
+        where: {
+          accountId: account.id,
+          status: 'PAID',
+          createdAt: { gte: debutDuMois },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.message.count({
+        where: {
+          readAt: null,
+          senderId: { not: ownerId },
+          conversation: {
+            messages: { some: { senderId: ownerId } },
+          },
+        },
+      }),
     ]);
-    return { applications, upcomingBookings };
+    return {
+      applications,
+      upcomingBookings,
+      revenueMonth: Number(reglees._sum.amount ?? 0),
+      unreadMessages: nonLus,
+    };
   }
 }

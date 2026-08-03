@@ -84,7 +84,7 @@ const PARCOURS: Record<
         icone: Sparkles,
         titre: "Réservez un atelier du réseau",
         texte:
-          "Médiations clés en main. Devis sous 48 h, contrat et facture générés.",
+          "Médiations clés en main. Devis sous 48 h, contrat et facture générés. La mise en relation est gratuite : vous payez l'intervenant, à son tarif, sans commission.",
         probleme:
           "Trouver, vérifier, négocier, contractualiser : des semaines pour une séance.",
         change:
@@ -95,7 +95,7 @@ const PARCOURS: Record<
         icone: Megaphone,
         titre: "Publiez un SOS Renfort",
         texte:
-          "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé. Rappel automatique la veille, validation hiérarchique en option.",
+          "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé, jusqu'au CDD généré — la mise en relation et la contractualisation sont gratuites. Rappel automatique la veille, validation hiérarchique en option.",
         probleme:
           "Un arrêt maladie à 21 h. Vingt appels, personne ne décroche.",
         change:
@@ -126,9 +126,9 @@ const PARCOURS: Record<
       {
         niveau: "adhesion",
         icone: PenLine,
-        titre: "Adhérez pour débloquer LEX",
+        titre: "Rechargez LEX quand vous en avez besoin",
         texte:
-          "Assistant d’écriture, générateur d’activités, assistant intégré.",
+          "Assistant d’écriture, générateur d’activités, GAPiste. Un crédit par génération : packs ou abonnement à recharge quotidienne.",
         probleme:
           "Les écrits se rédigent le soir, après le service.",
         change:
@@ -219,9 +219,9 @@ const PARCOURS: Record<
       {
         niveau: "adhesion",
         icone: PenLine,
-        titre: "Adhérez pour débloquer LEX",
+        titre: "Rechargez LEX quand vous en avez besoin",
         texte:
-          "Assistant d’écriture, générateur d’activités, assistant intégré.",
+          "Assistant d’écriture, générateur d’activités, GAPiste. Un crédit par génération : packs ou abonnement à recharge quotidienne.",
         probleme:
           "Comptes rendus et projets d’activité sur votre temps personnel.",
         change:
@@ -253,7 +253,7 @@ const NIVEAU: Record<
     trait: "from-amber-500/60",
   },
   adhesion: {
-    label: "Adhésion",
+    label: "LEX à crédits",
     icone: Lock,
     pastille: "bg-primary/20 text-primary ring-primary/40",
     badge: "bg-primary/15 text-primary",
@@ -416,7 +416,7 @@ export function TimelineParcours() {
           </Link>
         </Button>
         <p className="mt-3 text-xs text-muted-foreground">
-          Gratuit = pour toujours · À l’usage = la prestation seule · Adhésion = LEX inclus
+          Gratuit = pour toujours, sans commission · À l’usage = le tarif de l’intervenant ou le devis Qualiopi, rien d’autre · LEX = à crédits
         </p>
       </div>
     </div>

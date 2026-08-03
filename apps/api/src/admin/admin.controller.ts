@@ -187,7 +187,7 @@ export class AdminController {
     return this.admin.updateAccount(id, dto);
   }
 
-  /** Bascule l'adhésion (accès LEX) d'un compte — en attendant Stripe. */
+  /** Accorde ou retire l'accès LEX ILLIMITÉ d'un compte (exonération de crédits). */
   @Patch('accounts/:id/adhesion')
   async toggleAdhesion(@Param('id') id: string, @Body() body: { isMember: boolean }) {
     return this.admin.setMembership(id, Boolean(body?.isMember));

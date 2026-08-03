@@ -195,7 +195,7 @@ export function RenfortModal({
               <Input id="job" name="job" placeholder="Moniteur-éducateur, AES…" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Date de début" htmlFor="startDate" required>
               <Input id="startDate" name="startDate" type="date" required />
             </Field>
@@ -203,7 +203,7 @@ export function RenfortModal({
               <Input id="endDate" name="endDate" type="date" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Heure début" htmlFor="startTime">
               <Input id="startTime" name="startTime" placeholder="09h00" />
             </Field>
@@ -211,7 +211,7 @@ export function RenfortModal({
               <Input id="endTime" name="endTime" placeholder="17h00" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Ville" htmlFor="city">
               <Input id="city" name="city" placeholder="Melun" />
             </Field>
@@ -219,7 +219,7 @@ export function RenfortModal({
               <Input id="postalCode" name="postalCode" placeholder="77000" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Taux horaire (€)" htmlFor="hourlyRate">
               <Input id="hourlyRate" name="hourlyRate" type="number" step="0.5" placeholder="24" />
             </Field>

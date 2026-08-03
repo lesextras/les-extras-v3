@@ -19,7 +19,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle, EmptyState, ErrorState } from "../../../_shared/ui";
-import { formatDate } from "../../../_shared/format";
+import {
+  formatDate,
+  formatMoney,
+  BOOKING_STATUS_LABEL,
+  bookingBadgeVariant,
+  INSCRIPTION_STATUS_LABEL,
+  inscriptionBadgeVariant,
+} from "../../../_shared/format";
 
 export const metadata: Metadata = { title: "Mes réservations" };
 
@@ -32,8 +39,14 @@ interface Booking {
   requestNote?: string | null;
   totalAmount?: string | number | null;
   createdAt: string;
-  mission?: { id: string; title: string; accountId: string; startDate?: string | null } | null;
-  service?: { id: string; title: string; accountId: string } | null;
+  mission?: {
+    id: string;
+    title: string;
+    accountId: string;
+    startDate?: string | null;
+    account?: { id: string; name: string } | null;
+  } | null;
+  service?: { id: string; title: string; accountId: string; account?: { id: string; name: string } | null } | null;
   account?: { id: string; name: string; type: string } | null;
 }
 
@@ -54,29 +67,10 @@ interface Inscription {
   } | null;
 }
 
-const ETAT: Record<string, string> = {
-  REQUESTED: "Demandée",
-  ACCEPTED: "Acceptée",
-  CONFIRMED: "Confirmée",
-  IN_PROGRESS: "En cours",
-  COMPLETED: "Terminée",
-  CANCELLED: "Annulée",
-  REFUSED: "Refusée",
-  PENDING: "En attente",
-  VALIDATED: "Validée",
-  PRESENT: "Présent",
-  ABSENT: "Absent",
-};
-
-function ton(status: string): "default" | "secondary" | "outline" | "destructive" {
-  if (["COMPLETED", "CONFIRMED", "VALIDATED", "PRESENT"].includes(status)) return "default";
-  if (["CANCELLED", "REFUSED", "ABSENT"].includes(status)) return "destructive";
-  if (["ACCEPTED", "IN_PROGRESS"].includes(status)) return "secondary";
-  return "outline";
-}
-
+// Libellés et couleurs : ceux de `format.ts`, comme partout — un statut se
+// lit avec les mêmes mots et la même couleur sur toutes les pages.
 const euros = (v: string | number | null | undefined) =>
-  v == null ? null : Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  v == null ? null : formatMoney(v);
 
 /** Une ligne de réservation, quel que soit le type. */
 function Ligne({
@@ -84,6 +78,7 @@ function Ligne({
   titre,
   href,
   statut,
+  famille = "booking",
   quand,
   contrepartie,
   montant,
@@ -101,6 +96,8 @@ function Ligne({
   titre: string;
   href?: string;
   statut: string;
+  /** Inscription de formation (statuts PENDING/PRESENT…) ou réservation. */
+  famille?: "booking" | "inscription";
   quand?: string | null;
   contrepartie?: string | null;
   montant?: string | null;
@@ -140,7 +137,14 @@ function Ligne({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {montant && <span className="text-sm font-semibold">{montant}</span>}
-          <Badge variant={ton(statut)}>{ETAT[statut] ?? statut}</Badge>
+          <Badge
+            variant={
+              famille === "inscription" ? inscriptionBadgeVariant(statut) : bookingBadgeVariant(statut)
+            }
+          >
+            {(famille === "inscription" ? INSCRIPTION_STATUS_LABEL : BOOKING_STATUS_LABEL)[statut] ??
+              statut}
+          </Badge>
         </div>
       </CardContent>
     </Card>
@@ -191,9 +195,15 @@ export default async function ReservationsPage() {
               <Button asChild>
                 <Link href="/ateliers">Voir le catalogue d’ateliers</Link>
               </Button>
-              <Button asChild variant="outline">
-                <Link href="/dashboard/renforts">Publier un renfort</Link>
-              </Button>
+              {session.account.type === "ESTABLISHMENT" ? (
+                <Button asChild variant="outline">
+                  <Link href="/dashboard/renforts">Publier un renfort</Link>
+                </Button>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href="/dashboard/opportunites">Voir mes opportunités</Link>
+                </Button>
+              )}
             </div>
           }
         />
@@ -210,7 +220,11 @@ export default async function ReservationsPage() {
               href={`/documents/contrat/${b.id}`}
               statut={b.status}
               quand={b.scheduledAt ?? b.mission?.startDate ?? null}
-              contrepartie={b.account?.name}
+              // La contrepartie est l'AUTRE partie : le candidat quand on est
+              // l'etablissement, l'etablissement quand on est le candidat.
+              contrepartie={
+                b.mission?.accountId === accountId ? b.account?.name : b.mission?.account?.name
+              }
               montant={euros(b.totalAmount)}
               role={b.mission?.accountId === accountId ? "client" : "prestataire"}
             />
@@ -231,7 +245,9 @@ export default async function ReservationsPage() {
               href={`/documents/contrat/${b.id}`}
               statut={b.status}
               quand={b.scheduledAt}
-              contrepartie={b.account?.name}
+              contrepartie={
+                b.service?.accountId === accountId ? b.account?.name : b.service?.account?.name
+              }
               montant={euros(b.totalAmount)}
               role={b.service?.accountId === accountId ? "prestataire" : "client"}
             />
@@ -256,6 +272,7 @@ export default async function ReservationsPage() {
                 titre={i.session?.formation?.title ?? "Formation"}
                 href={i.session?.formation?.slug ? `/formations/${i.session.formation.slug}` : undefined}
                 statut={i.status}
+                famille="inscription"
                 quand={i.session?.startDate}
                 contrepartie={apprenant ? `pour ${apprenant}` : null}
                 role="client"

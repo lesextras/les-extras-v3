@@ -448,7 +448,7 @@ export default async function LandingPage() {
                       <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
                         <PenLine className="size-5" />
                       </span>
-                      <Badge variant="soft">LEX · Adhérents</Badge>
+                      <Badge variant="soft">LEX · À crédits</Badge>
                     </span>
                     <h3 className="mt-4 text-xl font-semibold">LEX, l’assistant d’écriture</h3>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
@@ -652,7 +652,7 @@ export default async function LandingPage() {
                     Ce que LEX fait pour vous, au-delà de cet essai
                   </h3>
                   <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                    Quatre outils, une seule adhésion. Moins de paperasse, plus d’accompagnement.
+                    Quatre outils, un seul compteur de crédits. Moins de paperasse, plus d’accompagnement.
                   </p>
                 </div>
                 <IllustrationEcrit className="mx-auto w-full max-w-md" />
@@ -731,67 +731,69 @@ export default async function LandingPage() {
             <Reveal className="mx-auto max-w-2xl text-center">
               <span className="eyebrow">Tarifs</span>
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Gratuit en interne, payant seulement quand on travaille pour vous
+                La mise en relation est gratuite. Pour tout le monde.
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Organiser votre <strong className="font-semibold text-foreground">équipe interne</strong> est
-                gratuit, pour toujours. Vous payez dans deux cas seulement : un{" "}
-                <strong className="font-semibold text-foreground">intervenant externe</strong> vient
-                chez vous (prix affiché sur la fiche), ou vous prenez l’<strong className="font-semibold text-foreground">adhésion</strong> pour
-                débloquer LEX.
+                Publier un renfort, proposer ou réserver un atelier, jusqu’au{" "}
+                <strong className="font-semibold text-foreground">contrat</strong> et à la{" "}
+                <strong className="font-semibold text-foreground">facture</strong> : gratuit, pour les
+                établissements comme pour les intervenants, sans commission. Deux services seulement
+                se paient : les <strong className="font-semibold text-foreground">formations
+                Qualiopi</strong>, facturées au devis par l’association, et{" "}
+                <strong className="font-semibold text-foreground">LEX</strong>, l’assistant IA à
+                crédits.
               </p>
             </Reveal>
 
             <div className="mt-14 grid gap-6 lg:grid-cols-3">
               {[
                 {
-                  nom: 'Usage interne',
-                  sous: 'Votre équipe salariée, sur la plateforme, sans limite.',
+                  nom: 'Mise en relation & contractualisation',
+                  sous: 'Renforts et ateliers, de la publication au contrat signé. Pour les deux côtés.',
                   prix: '0 €',
-                  prixSous: 'Gratuit, pour toujours',
+                  prixSous: 'Gratuit, pour toujours — 0 % de commission',
                   points: [
-                    'Missions de renfort diffusées à vos salariés',
-                    'Formation interne animée par vos référents',
-                    'Planning, équipe, multi-unités et pointage',
-                    'Coffre-fort de conformité et devis illimités',
+                    'SOS Renfort : diffusion en cascade, jusqu’au CDD généré',
+                    'Ateliers : catalogue, devis sous 48 h, contrat et facture automatiques',
+                    'L’établissement paie le tarif de l’intervenant, qui le touche intégralement',
+                    'Planning, équipe, conformité et messagerie inclus, sans limite',
                   ],
                   href: '/register',
                   action: 'Créer un compte gratuit',
                   variant: 'outline' as const,
-                  vedette: false,
+                  vedette: true,
                 },
                 {
-                  nom: 'Prestations externes',
-                  sous: 'Un intervenant du réseau vient chez vous : vous payez la prestation, rien d’autre.',
-                  prix: 'Prix de la fiche',
-                  prixSous: 'Facturé après l’intervention — rien à avancer',
+                  nom: 'Formations Qualiopi',
+                  sous: 'Le seul service facturé par l’association, sous sa certification Qualiopi.',
+                  prix: 'Sur devis',
+                  prixSous: 'Facturées par l’association ADéPA — finançables OPCO',
                   points: [
-                    'Ateliers et formations réservables en ligne ou sur devis (48 h)',
-                    'SOS Renfort : le réseau prend le relais de votre équipe',
-                    'Contrat et facture générés automatiquement',
-                    '0 % de commission prélevée sur l’intervenant',
+                    'L’association fait appel aux formateurs du réseau Les Extras',
+                    'Parcours certifiés Qualiopi, finançables par votre OPCO',
+                    'Émargement, attestations et justificatifs générés automatiquement',
+                    'Demande de devis en ligne, réponse sous 48 h',
                   ],
-                  href: '/ateliers',
-                  action: 'Voir les prix du catalogue',
+                  href: '/formations',
+                  action: 'Demander un devis',
                   variant: 'outline' as const,
                   vedette: false,
                 },
                 {
-                  nom: 'Adhésion',
-                  sous: 'Les outils d’intelligence artificielle LEX, pour toute votre équipe.',
-                  prix: '49 €',
-                  prixSuffixe: ' / mois',
-                  prixSous: 'Essentiel · Pro à 299 € / mois — montants HT',
+                  nom: 'LEX, l’assistant IA',
+                  sous: 'Le second service payant : des crédits, rechargeables quand vous en avez besoin.',
+                  prix: 'À crédits',
+                  prixSous: 'Un crédit par génération — tarifs des packs et abonnements dans votre espace',
                   points: [
-                    'LEX Assistant d’écriture : notes brutes → écrits professionnels',
-                    'LEX Générateur d’activités éducatives et thérapeutiques',
-                    'LEX Bot d’aide intégré à votre espace',
-                    'LEX Aide au remplissage de vos fiches ateliers et formations',
+                    'Assistant d’écriture : notes brutes → écrits professionnels',
+                    'Générateur d’activités éducatives et thérapeutiques',
+                    'Packs de crédits, ou abonnement à recharge quotidienne',
+                    'Suivi de consommation dans votre espace ; le bot d’aide reste gratuit',
                   ],
                   href: '/register',
-                  action: 'Devenir adhérent',
+                  action: 'Découvrir LEX',
                   variant: 'primary' as const,
-                  vedette: true,
+                  vedette: false,
                 },
               ].map((offre, i) => (
                 <Reveal key={offre.nom} delay={i * 110} className="h-full">
@@ -805,12 +807,7 @@ export default async function LandingPage() {
                       {offre.vedette ? <Badge className="w-fit">Le plus choisi</Badge> : null}
                       <h3 className={cn('text-lg font-semibold', offre.vedette && 'mt-3')}>{offre.nom}</h3>
                       <p className="mt-1 text-sm text-muted-foreground">{offre.sous}</p>
-                      <p className="mt-6 text-3xl font-bold tracking-tight">
-                        {offre.prix}
-                        {offre.prixSuffixe ? (
-                          <span className="text-base font-normal text-muted-foreground">{offre.prixSuffixe}</span>
-                        ) : null}
-                      </p>
+                      <p className="mt-6 text-3xl font-bold tracking-tight">{offre.prix}</p>
                       {offre.prixSous ? (
                         <p className="mt-1 text-sm text-muted-foreground">{offre.prixSous}</p>
                       ) : null}
@@ -955,7 +952,7 @@ export default async function LandingPage() {
                   Prêt à renforcer vos équipes, sereinement ?
                 </h2>
                 <p className="mt-4 text-muted-foreground">
-                  Compte gratuit, sans engagement. Vous ne payez que ce que vous utilisez.
+                  Compte gratuit, sans engagement. La mise en relation ne se paie pas — seuls les formations Qualiopi et LEX se facturent.
                 </p>
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg" variant="secondary">

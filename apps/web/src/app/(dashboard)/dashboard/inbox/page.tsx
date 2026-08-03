@@ -20,8 +20,11 @@ export default async function InboxPage({
   const session = await requireSession();
   const activeId = searchParams.c;
 
-  const { data: conversations } = await fetchApi<Conversation[]>(session, "/conversations");
-  const list = conversations ?? [];
+  const res = await fetchApi<Conversation[]>(session, "/conversations");
+  // Une panne n'est pas « aucune conversation » : le dire évite de croire que
+  // ses échanges ont disparu.
+  const enPanne = Boolean(res.error);
+  const list = res.data ?? [];
   const active = activeId ?? list[0]?.id;
 
   const thread = active
@@ -35,7 +38,12 @@ export default async function InboxPage({
     <div className="space-y-6">
       <PageHeader title="Messagerie" subtitle="Échangez avec vos établissements et freelances." />
 
-      {list.length === 0 ? (
+      {enPanne ? (
+        <EmptyState
+          title="Messagerie momentanément indisponible"
+          description="Vos conversations n'ont pas pu être chargées. Rechargez la page dans un instant."
+        />
+      ) : list.length === 0 ? (
         <EmptyState
           title="Aucune conversation"
           description="Les échanges démarrent automatiquement lors d'une candidature ou d'une réservation."

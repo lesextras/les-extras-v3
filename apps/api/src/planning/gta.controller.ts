@@ -12,6 +12,8 @@ import {
 import { LeaveType } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
+import { AccountRolesGuard } from '../common/guards/account-roles.guard';
+import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -47,7 +49,14 @@ export class GtaController {
     return this.gta.deciderConge(a.id, id, u.id, a.role, dto.statut);
   }
 
+  /**
+   * Les compteurs portent les heures et les soldes de TOUTE l'equipe : ce
+   * n'est pas une information d'equipe. Sans cette garde, n'importe quel
+   * membre les recuperait par appel direct.
+   */
   @Get('compteurs')
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   compteurs(
     @CurrentAccount() a: RequestAccount,
     @Query('mois') mois?: string,
@@ -64,6 +73,8 @@ export class GtaController {
     return this.gta.deroulerCycle(a.id, a.role, dto);
   }
 
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Get('export/evp.csv')
   @Header('Content-Type', 'text/csv; charset=utf-8')
   @Header('Content-Disposition', 'attachment; filename="les-extras_elements-de-paie.csv"')

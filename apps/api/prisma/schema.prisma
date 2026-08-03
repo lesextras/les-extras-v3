@@ -596,12 +596,12 @@ model Subscription {
   updatedAt            DateTime @updatedAt
 }
 
-/// OBSOLÈTE — la monnaie interne a été abandonnée au profit du paiement à la
-/// prestation. Plus aucun code ne lit ni n'écrit ce modèle. La table est
-/// CONSERVÉE volontairement : elle porte la trace d'achats réellement payés,
-/// et une écriture comptable ne se supprime pas parce que la fonctionnalité
-/// a changé. À supprimer par une migration dédiée, après export, le jour où
-/// le délai de conservation sera écoulé.
+/// RÉACTIVÉ pour LEX — les crédits ne sont plus une monnaie interne de
+/// réservation (ce modèle-là a été abandonné : la mise en relation est
+/// gratuite), mais la monnaie de l'assistant IA : un crédit = une
+/// génération. Chaque achat de pack passe ici, PENDING à la création de la
+/// session Stripe, PAID au webhook — `stripeSessionId @unique` garantit
+/// qu'une relivraison ne crédite pas deux fois.
 model CreditPurchase {
   id              String   @id @default(cuid())
   accountId       String

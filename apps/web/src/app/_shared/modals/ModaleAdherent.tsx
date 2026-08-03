@@ -1,12 +1,12 @@
 "use client";
 
-// Blocage des entrées LEX pour un compte non adhérent.
+// Blocage des entrées LEX pour un compte au solde de crédits épuisé.
 //
 // La page /dashboard/assistant sait déjà refuser l'accès, mais elle le fait
 // APRÈS s'être ouverte : on quitte sa page, on attend un chargement, et on
 // tombe sur un mur. Le cadenas du menu annonçait la restriction sans
 // l'appliquer. Ici le clic n'ouvre plus rien : il explique, sur place, et
-// propose l'adhésion. La page reste protégée pour l'accès par URL directe.
+// propose de recharger. La page reste protégée pour l'accès par URL directe.
 import { Lock, Check, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {
@@ -21,7 +21,8 @@ import { Button } from "@/components/ui/button";
 const BENEFICES = [
   "L'assistant d'écriture : notes brutes vers écrit professionnel",
   "Le générateur d'activités éducatives",
-  "Le bot d'aide LEX, sur le site et dans votre espace",
+  "Le pré-remplissage de vos fiches ateliers et formations",
+  "LEX le GAPiste, animateur du groupe d'analyse de pratique",
 ];
 
 export function ModaleAdherent({
@@ -42,11 +43,12 @@ export function ModaleAdherent({
             <Lock className="size-5" />
           </span>
           <DialogTitle>
-            {fonctionnalite ? `${fonctionnalite} — réservé aux adhérents` : "Réservé aux adhérents"}
+            {fonctionnalite ? `${fonctionnalite} — crédits LEX épuisés` : "Crédits LEX épuisés"}
           </DialogTitle>
           <DialogDescription>
-            Vous n’avez pas accès à cette fonctionnalité avec votre compte actuel. Les outils LEX
-            sont inclus dans l’adhésion à l’association.
+            Les outils LEX fonctionnent à crédits : un crédit par génération. Rechargez par packs,
+            ou prenez un abonnement dont la recharge quotidienne remet votre solde à niveau chaque
+            matin.
           </DialogDescription>
         </DialogHeader>
 
@@ -62,7 +64,7 @@ export function ModaleAdherent({
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <Button asChild className="sm:flex-1" onClick={() => onOpenChange(false)}>
             <Link href="/dashboard/adhesion">
-              Devenir adhérent
+              Recharger des crédits
               <ArrowRight />
             </Link>
           </Button>
@@ -72,8 +74,8 @@ export function ModaleAdherent({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          L’usage interne de la plateforme — missions à votre équipe, planning, formation interne,
-          gestion — reste gratuit et le restera.
+          Tout le reste de la plateforme — renforts, ateliers, contractualisation, planning,
+          gestion d’équipe et bot d’aide — reste gratuit et le restera.
         </p>
       </DialogContent>
     </Dialog>

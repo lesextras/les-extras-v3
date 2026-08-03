@@ -14,6 +14,7 @@ import { AuditService } from '../common/audit/audit.service';
 import { CommunityService } from '../community/community.service';
 import { CreateTimeEntryDto } from './dto/time-entry.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
+import { numeroSuivant, prefixeAnnee } from '../invoices/numerotation';
 import { Constat, evaluerCreneau, PLAFONDS } from '../planning/conformite-horaire';
 
 /** Transitions autorisées du cycle de vie d'un booking. */
@@ -51,6 +52,10 @@ export class BookingsService {
       ],
     };
     if (query.status) where.status = query.status;
+    // kind=service : uniquement les reservations d'ateliers ; kind=mission :
+    // uniquement les renforts. C'est ce qu'attendait « Mes ateliers ».
+    if (query.kind === 'service') where.serviceId = { not: null };
+    if (query.kind === 'mission') where.missionId = { not: null };
 
     // Borne dure : cette liste alimente des écrans, jamais un export. Sans
     // elle, le tableau de bord chargeait tout l'historique du compte pour en
@@ -62,8 +67,26 @@ export class BookingsService {
       orderBy: { createdAt: 'desc' },
       take,
       include: {
-        mission: { select: { id: true, title: true, accountId: true, startDate: true } },
-        service: { select: { id: true, title: true, accountId: true } },
+        // Le nom des DEUX parties : sans celui du proprietaire de la mission
+        // ou de l'atelier, l'ecran affichait le nom du lecteur comme
+        // « contrepartie » — on se voyait soi-meme en face.
+        mission: {
+          select: {
+            id: true,
+            title: true,
+            accountId: true,
+            startDate: true,
+            account: { select: { id: true, name: true } },
+          },
+        },
+        service: {
+          select: {
+            id: true,
+            title: true,
+            accountId: true,
+            account: { select: { id: true, name: true } },
+          },
+        },
         account: { select: { id: true, name: true, type: true } },
       },
     });
@@ -282,7 +305,46 @@ export class BookingsService {
     // Parrainage : quand un filleul termine sa TOUTE premiere mission, le
     // parrain et lui recoivent leurs points. Jamais bloquant.
     void this.recompenserParrainage(booking.accountId).catch(() => undefined);
+
+    // Aide a la contractualisation, version atelier : quand une intervention
+    // facturable se termine, un BROUILLON de facture est prepare pour
+    // l'intervenant — de lui vers l'etablissement, sans commission de la
+    // plateforme. L'ecran Devis & factures promettait cette automatisation
+    // depuis toujours ; aucun code ne la faisait. Jamais bloquant.
+    void this.preparerFactureAtelier(id).catch(() => undefined);
     return booking;
+  }
+
+  /** Brouillon de facture pour un atelier termine (idempotent, jamais bloquant). */
+  private async preparerFactureAtelier(bookingId: string) {
+    const b = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        totalAmount: true,
+        service: { select: { accountId: true, title: true } },
+      },
+    });
+    // Seuls les ateliers avec un montant connu se facturent ; les renforts
+    // relevent du CDD conclu par l'etablissement, pas d'une facture.
+    if (!b?.service || b.totalAmount === null) return;
+    const existante = await this.prisma.invoice.findUnique({ where: { bookingId } });
+    if (existante) return;
+
+    const derniere = await this.prisma.invoice.findFirst({
+      where: { number: { startsWith: prefixeAnnee(new Date().getFullYear()) } },
+      orderBy: { number: 'desc' },
+      select: { number: true },
+    });
+    await this.prisma.invoice.create({
+      data: {
+        accountId: b.service.accountId,
+        bookingId,
+        number: numeroSuivant(new Date().getFullYear(), derniere?.number ?? null),
+        amount: b.totalAmount,
+        status: 'DRAFT',
+      },
+    });
   }
 
   cancel(id: string, accountId: string, dto: CancelBookingDto) {

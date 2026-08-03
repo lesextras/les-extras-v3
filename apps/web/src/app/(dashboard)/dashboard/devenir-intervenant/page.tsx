@@ -24,7 +24,7 @@ const AVANTAGES = [
   {
     titre: "Publier est gratuit",
     detail:
-      "Mettre en ligne vos ateliers, candidater aux missions de renfort, animer une formation : rien n'est facturé. Seul LEX (l'assistant IA) demande l'adhésion à l'association.",
+      "Mettre en ligne vos ateliers, candidater aux missions de renfort, animer une formation : rien n'est facturé, sans commission. Seul LEX (l'assistant IA) se paie, à crédits.",
   },
 ];
 

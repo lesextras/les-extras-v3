@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiRequest } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
 import { EmptyState, StatCard } from "./ui";
 import { ACCOUNT_ROLE_LABEL, fullName, initials } from "./format";
 import type { Repartition } from "./EquipeTable";
@@ -66,21 +67,33 @@ export function AlertesConformite({
   initial: PageAlertes;
   repartition: Repartition;
 }) {
+  const { toast } = useToast();
   const [donnees, setDonnees] = useState(initial);
   const [service, setService] = useState(TOUS);
   const [chargement, setChargement] = useState(false);
   const premierRendu = useRef(true);
 
-  const charger = useCallback(async (page: number, unite: string) => {
-    setChargement(true);
-    try {
-      const p = new URLSearchParams({ page: String(page), perPage: "25" });
-      if (unite !== TOUS) p.set("orgUnitId", unite);
-      setDonnees((await apiRequest(`/conformite/alertes?${p.toString()}`)) as PageAlertes);
-    } finally {
-      setChargement(false);
-    }
-  }, []);
+  const charger = useCallback(
+    async (page: number, unite: string) => {
+      setChargement(true);
+      try {
+        const p = new URLSearchParams({ page: String(page), perPage: "25" });
+        if (unite !== TOUS) p.set("orgUnitId", unite);
+        setDonnees((await apiRequest(`/conformite/alertes?${p.toString()}`)) as PageAlertes);
+      } catch (err) {
+        // Sans ce toast, un filtre qui échoue laissait l'écran figé sur les
+        // anciennes données, sans un mot : on croyait le service vide.
+        toast({
+          title: "Chargement impossible",
+          description: err instanceof Error ? err.message : "Réessayez dans un instant.",
+          variant: "error",
+        });
+      } finally {
+        setChargement(false);
+      }
+    },
+    [toast],
+  );
 
   useEffect(() => {
     if (premierRendu.current) {

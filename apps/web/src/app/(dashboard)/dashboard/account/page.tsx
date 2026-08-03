@@ -29,12 +29,16 @@ export default async function AccountPage() {
   const canManage = session.account.role === "OWNER" || session.account.role === "ADMIN";
   const accountId = session.account.id;
 
-  const profileRes = await fetchApi<{
-    user: typeof session.user & { phone?: string | null };
-    profile?: Profile | null;
-  }>(session, "/users/me");
+  // /users/me renvoie l'utilisateur À PLAT, avec `profile` imbriqué — pas un
+  // objet { user, profile }. L'ancienne lecture cherchait `data.user`, ne le
+  // trouvait jamais, et retombait sur le jeton de connexion : les
+  // modifications de prénom, nom ou téléphone ne s'affichaient qu'après une
+  // reconnexion.
+  const profileRes = await fetchApi<
+    typeof session.user & { phone?: string | null; hebdoOptIn?: boolean; profile?: Profile | null }
+  >(session, "/users/me");
 
-  const user = profileRes.data?.user ?? session.user;
+  const user = profileRes.data ?? session.user;
   const profile = profileRes.data?.profile ?? null;
 
   return (

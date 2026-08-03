@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 
 export interface SidebarProps {
   role: NavRole;
-  /** Compte actif adhérent ? Cadenas sur les entrées LEX sinon. */
+  /** Accès LEX (crédits > 0 ou illimité) ? Cadenas sur les entrées LEX sinon. */
   isMember?: boolean;
   /**
    * Rôle de la personne DANS le compte actif. Le titulaire (OWNER) est la
@@ -50,7 +50,7 @@ function isActiveHref(pathname: string, href: string) {
 
 export function Sidebar({ role, isMember, roleCompte, onNavigate, className, utilisateur }: SidebarProps) {
   const pathname = usePathname();
-  // Entrée LEX cliquée sans adhésion : on retient laquelle pour que la modale
+  // Entrée LEX cliquée sans crédits : on retient laquelle pour que la modale
   // parle de la fonctionnalité visée, pas d'une restriction abstraite.
   const [lexBloquee, setLexBloquee] = useState<string | null>(null);
   // Le titulaire du compte, c'est la structure elle-même. Les entrées qui
@@ -231,7 +231,7 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
                     </>
                   );
 
-                  // Sans adhésion, l'entrée n'est plus un lien : la navigation
+                  // Sans crédits, l'entrée n'est plus un lien : la navigation
                   // n'a pas lieu du tout. Laisser la page s'ouvrir pour y
                   // afficher un refus, c'est faire perdre un aller-retour à
                   // quelqu'un à qui on va dire non de toute façon.
@@ -241,8 +241,8 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
                         key={item.href}
                         type="button"
                         onClick={() => setLexBloquee(item.label)}
-                        title="Réservé aux adhérents"
-                        aria-label={`${item.label} — réservé aux adhérents`}
+                        title="Crédits LEX épuisés — rechargez pour y accéder"
+                        aria-label={`${item.label} — crédits LEX épuisés`}
                         className={classes}
                       >
                         {contenu}

@@ -9,17 +9,33 @@ import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
 import { AssistantService } from './assistant.service';
+import { CreditsService } from '../billing/credits.service';
 import { ActiviteDto, ChatDto, EnregistrerDocumentDto, FeedbackDto, FicheDto, GenererDto, ModifierDocumentDto, GapisteDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
  * Toutes les routes exigent une session ET un compte actif : les documents
  * vivent dans le compte, cloisonnés par auteur.
+ *
+ * LEX est le produit payant de la plateforme : chaque GÉNÉRATION (écrit,
+ * activité, fiche, tour de GAPiste) consomme UN crédit, débité par
+ * `avecCredit` qui rembourse si la génération échoue. Le bot d'aide `chat`,
+ * lui, reste gratuit : aider à se servir d'une plateforme gratuite ne se
+ * facture pas. Les ADMIN de la plateforme ne consomment rien.
  */
 @Controller('assistant')
 @UseGuards(JwtAuthGuard, AccountGuard)
 export class AssistantController {
-  constructor(private readonly assistant: AssistantService) {}
+  constructor(
+    private readonly assistant: AssistantService,
+    private readonly credits: CreditsService,
+  ) {}
+
+  /** Un crédit par génération — sauf ADMIN de la plateforme. */
+  private payer<T>(user: RequestUser, account: RequestAccount, reason: string, fn: () => Promise<T>) {
+    if (user.role === 'ADMIN') return fn();
+    return this.credits.avecCredit(account.id, reason, fn);
+  }
 
   @Get('trames')
   trames() {
@@ -30,21 +46,35 @@ export class AssistantController {
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @UseGuards(MemberGuard)
   @Post('generer')
-  generer(@Body() dto: GenererDto) {
-    return this.assistant.generer(dto.trame, dto.notes);
+  generer(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: GenererDto,
+  ) {
+    return this.payer(user, account, 'LEX_ECRIT', () =>
+      this.assistant.generer(dto.trame, dto.notes),
+    );
   }
 
   /** Générateur d'activités éducatives & thérapeutiques. */
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @UseGuards(MemberGuard)
   @Post('activite')
-  activite(@Body() dto: ActiviteDto) {
-    return this.assistant.genererActivite(dto);
+  activite(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: ActiviteDto,
+  ) {
+    return this.payer(user, account, 'LEX_ACTIVITE', () =>
+      this.assistant.genererActivite(dto),
+    );
   }
 
-  /** Bot d'aide de l'espace connecté. */
+  /**
+   * Bot d'aide de l'espace connecté — GRATUIT et sans crédit : il aide à se
+   * servir de la plateforme, il ne produit pas de livrable.
+   */
   @Throttle({ default: { limit: 60, ttl: 3_600_000 } })
-  @UseGuards(MemberGuard)
   @Post('chat')
   chat(@Body() dto: ChatDto) {
     return this.assistant.chat('dashboard', dto.message, dto.historique);
@@ -53,22 +83,34 @@ export class AssistantController {
   /**
    * LEX le GAPiste — animation du groupe d'analyse de pratique.
    *
-   * Réservé aux adhérents comme le reste de LEX : le GAP entre pairs, lui,
-   * reste ouvert à tous les comptes.
+   * Payant comme le reste de LEX (un crédit par tour de parole généré) :
+   * le GAP entre pairs, lui, reste ouvert à tous les comptes.
    */
   @Throttle({ default: { limit: 40, ttl: 3_600_000 } })
   @UseGuards(MemberGuard)
   @Post('gapiste')
-  gapiste(@Body() dto: GapisteDto) {
-    return this.assistant.gapiste(dto.message, dto.historique, dto.contexte);
+  gapiste(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: GapisteDto,
+  ) {
+    return this.payer(user, account, 'LEX_GAPISTE', () =>
+      this.assistant.gapiste(dto.message, dto.historique, dto.contexte),
+    );
   }
 
   /** Pré-remplissage d'une fiche atelier/formation depuis un brief. */
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @UseGuards(MemberGuard)
   @Post('fiche')
-  fiche(@Body() dto: FicheDto) {
-    return this.assistant.remplirFiche(dto.type, dto.brief);
+  fiche(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: FicheDto,
+  ) {
+    return this.payer(user, account, 'LEX_FICHE', () =>
+      this.assistant.remplirFiche(dto.type, dto.brief),
+    );
   }
 
   @Post('documents')

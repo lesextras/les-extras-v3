@@ -9,6 +9,7 @@ import { Header } from './header';
 import { Breadcrumb } from './breadcrumb';
 import { PageHelp } from './page-help';
 import { ChatBot } from '@/app/_shared/ChatBot';
+import { apiRequest } from '@/lib/api';
 
 export interface AppChromeProps {
   user: SessionUser;
@@ -34,7 +35,29 @@ export function AppChrome({
   actionPanel,
 }: AppChromeProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const isMember = Boolean(activeAccount?.isMember) || role === 'ADMIN';
+
+  // Accès LEX = solde de crédits > 0 (ou accès illimité, ou ADMIN). Le jeton
+  // de session ne connaît pas le solde — il bouge à chaque génération — donc
+  // on l'interroge une fois au montage. Optimiste par défaut : pas de cadenas
+  // qui clignote pendant le chargement, et en cas d'erreur réseau c'est la
+  // garde serveur qui tranchera de toute façon.
+  const [lexOk, setLexOk] = React.useState(true);
+  const accountId = activeAccount?.id;
+  React.useEffect(() => {
+    if (!accountId || role === 'ADMIN') return;
+    let annule = false;
+    apiRequest<{ credits?: number; illimite?: boolean }>('/billing/utilisation', { accountId })
+      .then((d) => {
+        if (!annule && d) setLexOk(Boolean(d.illimite) || (d.credits ?? 0) > 0);
+      })
+      .catch(() => {
+        /* API muette : on reste optimiste, la garde serveur décide. */
+      });
+    return () => {
+      annule = true;
+    };
+  }, [accountId, role]);
+  const isMember = lexOk || Boolean(activeAccount?.isMember) || role === 'ADMIN';
 
   return (
     // theme-sombre : l'espace connecté partage l'identité de l'accueil. Toutes
@@ -77,6 +100,7 @@ export function AppChrome({
           user={user}
           accounts={accounts}
           activeAccount={activeAccount}
+          isMember={isMember}
           onMenuClick={() => setMobileOpen(true)}
         />
         <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -88,7 +112,9 @@ export function AppChrome({
             <PageHelp />
             {children}
           </main>
-          <ChatBot mode="dashboard" locked={!isMember} />
+          {/* Le bot d'aide est GRATUIT pour tous : il aide à se servir de la
+              plateforme, seule la génération LEX consomme des crédits. */}
+          <ChatBot mode="dashboard" />
           {actionPanel && (
             <div className="hidden w-80 shrink-0 overflow-y-auto border-l border-border bg-card xl:block">
               {actionPanel}
