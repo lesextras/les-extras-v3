@@ -68,10 +68,11 @@ export class ServicesService {
   }
 
   /** Services du compte freelance actif. */
-  async findAllByAccount(accountId: string) {
+  async findAllByAccount(accountId: string, take?: number) {
     return this.prisma.service.findMany({
       where: { accountId },
       orderBy: { createdAt: 'desc' },
+      take: Math.min(200, Math.max(1, Math.trunc(Number(take) || 50))),
       include: {
         _count: { select: { bookings: true } },
         categoryRef: { select: { id: true, title: true } },

@@ -39,8 +39,8 @@ export class ServicesController {
 
   @Get()
   @UseGuards(AccountGuard)
-  findMine(@CurrentAccount() account: AccountCtx) {
-    return this.services.findAllByAccount(account.id);
+  findMine(@CurrentAccount() account: AccountCtx, @Query('take') take?: string) {
+    return this.services.findAllByAccount(account.id, take ? Number(take) : undefined);
   }
 
   @Get(':id')
