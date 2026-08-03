@@ -45,6 +45,47 @@ export class InvoicesService {
     });
   }
 
+  /**
+   * Les trois chiffres de l'en-tête : total facturé, réglé, en attente.
+   *
+   * L'écran de facturation appelait cette route depuis toujours ; elle
+   * n'existait pas. La requête tombait sur `findOne('summary')`, échouait, et
+   * l'échec était avalé — les trois cartes affichaient « 0 € » en permanence.
+   * Un directeur pouvait donc croire n'avoir rien facturé de l'année.
+   *
+   * Les montants s'agrègent en base, pas en mémoire : la somme d'un exercice
+   * ne se calcule pas en chargeant toutes les factures.
+   */
+  async summary(accountId: string) {
+    const [emises, reglees, total] = await Promise.all([
+      this.prisma.invoice.aggregate({
+        where: { accountId, status: InvoiceStatus.ISSUED },
+        _sum: { amount: true },
+        _count: { _all: true },
+      }),
+      this.prisma.invoice.aggregate({
+        where: { accountId, status: InvoiceStatus.PAID },
+        _sum: { amount: true },
+        _count: { _all: true },
+      }),
+      this.prisma.invoice.count({
+        where: { accountId, status: { not: InvoiceStatus.CANCELLED } },
+      }),
+    ]);
+
+    const nombre = (v: unknown) => Number(v ?? 0);
+    const enAttente = nombre(emises._sum.amount);
+    const paye = nombre(reglees._sum.amount);
+    return {
+      // Le total facturé comprend ce qui est réglé et ce qui reste dû ; les
+      // factures annulées n'y figurent pas, elles n'ont jamais été dues.
+      total: Math.round((enAttente + paye) * 100) / 100,
+      paid: Math.round(paye * 100) / 100,
+      pending: Math.round(enAttente * 100) / 100,
+      invoiceCount: total,
+    };
+  }
+
   async findOne(id: string, accountId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },

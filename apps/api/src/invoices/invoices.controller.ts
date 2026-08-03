@@ -31,6 +31,15 @@ export class InvoicesController {
     return this.invoices.findAllByAccount(account.id);
   }
 
+  /**
+   * Déclaré AVANT `:id` : sans cela Nest prendrait « summary » pour un
+   * identifiant de facture et la route ne serait jamais atteinte.
+   */
+  @Get('summary')
+  summary(@CurrentAccount() account: AccountCtx) {
+    return this.invoices.summary(account.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.invoices.findOne(id, account.id);
