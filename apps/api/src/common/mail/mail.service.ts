@@ -148,6 +148,38 @@ export class MailService {
     );
   }
 
+  /**
+   * LE CODE DE SIGNATURE.
+   *
+   * Le code voyage par un canal distinct de celui où l'on signe : c'est ce
+   * second facteur qui donne sa valeur au faisceau de preuves. Envoyer le
+   * code sur l'écran où l'on clique ne prouverait rien.
+   *
+   * Le courriel dit le document, le code, et sa durée de validité — et rien
+   * d'autre : ni lien de connexion, ni contenu du contrat. Un courriel qui
+   * traîne dans une boîte partagée ne doit pas suffire à signer.
+   */
+  async sendCodeSignature(
+    to: string,
+    data: { code: string; document: string; minutes: number; nomSignataire?: string | null },
+  ): Promise<void> {
+    const bonjour = data.nomSignataire ? `Bonjour ${data.nomSignataire},<br/><br/>` : '';
+    await this.send(
+      to,
+      `Votre code de signature : ${data.code}`,
+      this.layout(
+        'Code de signature',
+        `${bonjour}Voici votre code pour signer <b>${data.document}</b> :
+         <div style="margin:22px 0;text-align:center">
+           <span style="display:inline-block;font-size:32px;letter-spacing:10px;font-weight:800;color:#183767;background:#FAF7F2;border:1px solid #ece7df;border-radius:12px;padding:14px 22px">${data.code}</span>
+         </div>
+         Il est valable <b>${data.minutes} minutes</b> et ne sert qu'une fois.
+         <br/><br/>
+         <span style="color:#5b6470;font-size:13px">Vous n'avez rien demandé ? Ignorez ce message : sans ce code, personne ne peut signer à votre place. Ne le transmettez à personne, pas même à un collègue.</span>`,
+      ),
+    );
+  }
+
   /** Confirmation d'une réservation (mission ou atelier) passée en CONFIRMED. */
   async sendBookingConfirmation(
     to: string,

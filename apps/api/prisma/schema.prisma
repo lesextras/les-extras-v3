@@ -80,6 +80,8 @@ model User {
   contratsCDD    ContratCDD[] @relation("ContratSalarie")
   /// Ajouts au vivier effectues par cette personne.
   ajoutsAuVivier PoolMember[] @relation("PoolAjoutePar")
+  /// Signatures electroniques apposees par cette personne.
+  signatures     Signature[]  @relation("SignatureSignataire")
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -176,6 +178,10 @@ model Account {
   vivier           PoolMember[]       @relation("PoolEtablissement")
   /// Les etablissements qui ont place cet intervenant dans leur vivier.
   vivierDe         PoolMember[]       @relation("PoolIntervenant")
+  /// Les regles de temps de travail lues dans SA convention collective.
+  parametresTemps  ParametresTemps?
+  /// Demandes de signature electronique emises par ce compte.
+  signatures       Signature[]        @relation("SignatureCompte")
 
   @@index([type])
   @@index([slug])
@@ -1443,6 +1449,92 @@ model PoolMember {
   @@index([intervenantAccountId])
 }
 
+/// LES REGLES DE TEMPS DE TRAVAIL DE L'ETABLISSEMENT.
+///
+/// Rien de ce qui figure ici n'est impose par la loi, et c'est la raison
+/// d'etre de cette table. Dans le secteur social et medico-social, la SEULE
+/// majoration legale est celle du 1er mai (article L. 3133-6). La nuit ouvre
+/// un repos compensateur obligatoire mais une compensation salariale
+/// seulement « le cas echeant » (L. 3122-8) ; le dimanche ne donne lieu a
+/// aucune majoration legale, les ESSMS relevant d'une derogation permanente
+/// au repos dominical (R. 3132-5) ; les dix feries autres que le 1er mai sont
+/// travaillables sans majoration.
+///
+/// Ecrire ces taux en dur dans le code produirait des chiffrages faux pour
+/// tous les etablissements — et faux dans le sens le plus dangereux : un cout
+/// annonce qui ne correspond pas a ce qui sera paye. Chaque structure les lit
+/// donc dans SA convention et les saisit ici.
+model ParametresTemps {
+  id        String  @id @default(cuid())
+  accountId String  @unique
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  /// Convention appliquee, a titre documentaire : CCN 51, CCN 66, CHRS, autre.
+  convention String?
+  /// Un accord d'entreprise existe-t-il ? Il commute tout le moteur entre la
+  /// branche conventionnelle et la branche suppletive.
+  accordEntreprise Boolean @default(false)
+
+  // --- Nuit -----------------------------------------------------------------
+  /// Plage de nuit. A defaut d'accord, la loi retient 21 h - 6 h (L. 3122-20).
+  /// L'accord de branche du 17 avril 2002 demande 9 heures continues a
+  /// positionner dans l'amplitude 21 h - 7 h.
+  nuitDebutHeure Int @default(21)
+  nuitFinHeure   Int @default(6)
+  /// Majoration de nuit, en pourcentage. Zero par defaut : la loi n'en impose
+  /// aucune, et inventer un taux serait pire que ne rien afficher.
+  nuitPct        Decimal @default(0) @db.Decimal(5, 2)
+
+  // --- Dimanche et feries ---------------------------------------------------
+  dimanchePct Decimal @default(0) @db.Decimal(5, 2)
+  feriePct    Decimal @default(0) @db.Decimal(5, 2)
+  /// Cumul dimanche + ferie quand un ferie tombe un dimanche. La CCN 51
+  /// l'exclut expressement (annexe III, art. A3.3).
+  cumulDimancheEtFerie Boolean @default(false)
+
+  // --- Droit local ----------------------------------------------------------
+  /// Moselle, Bas-Rhin, Haut-Rhin : Saint-Etienne le 26 decembre.
+  droitLocal Boolean @default(false)
+  /// Le Vendredi saint n'est pas departemental mais COMMUNAL : l'article
+  /// L. 3134-13 le reserve aux communes disposant d'un temple protestant ou
+  /// d'une eglise mixte. Un simple drapeau Alsace-Moselle serait faux.
+  vendrediSaint Boolean @default(false)
+
+  // --- Heures supplementaires -----------------------------------------------
+  /// Valeurs SUPPLETIVES (L. 3121-36 et D. 3121-24), pas d'ordre public : un
+  /// accord peut les modifier, dans la limite du plancher de 10 % (L. 3121-33).
+  majorationHS1Pct Decimal @default(25) @db.Decimal(5, 2)
+  majorationHS2Pct Decimal @default(50) @db.Decimal(5, 2)
+  seuilBasculeHS   Int     @default(8)
+  contingentAnnuel Int     @default(220)
+
+  // --- Annualisation --------------------------------------------------------
+  /// Seuil de declenchement des heures supplementaires. 1607 h est un
+  /// PLAFOND (L. 3121-41 ; Cass. soc. 11 mai 2016 n° 14-29.512) : un accord
+  /// peut descendre en dessous, jamais monter au-dessus.
+  seuilDeclenchementHS Int  @default(1607)
+  /// Limite hebdomadaire haute de la modulation. L'accord de branche du
+  /// 1er avril 1999 retient 44 h. Les heures au-dela sont supplementaires
+  /// immediatement et NE sont PAS recomptees en fin de periode (L. 3121-44).
+  limiteHebdoHaute Int?
+  /// Limite basse de la modulation. L'accord de 1999 retient 21 h.
+  limiteHebdoBasse Int?
+  /// Delai de prevenance d'un changement d'horaire. 7 jours a defaut
+  /// d'accord (L. 3121-47).
+  delaiPrevenanceJours Int @default(7)
+
+  // --- Conges du secteur ----------------------------------------------------
+  /// Conges trimestriels : 18 jours pour le personnel educatif de la CCN 66,
+  /// 9 pour l'administratif, 9 en CHRS. Ils reduisent le volume PLANIFIABLE
+  /// sans modifier le seuil de declenchement des heures supplementaires —
+  /// c'est la distinction la plus couteuse a rater.
+  congesTrimestrielsEducatif Int @default(0)
+  congesTrimestrielsAutres   Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
 /// Types d'écrits professionnels que l'assistant sait produire.
 enum AssistantTrame {
@@ -1751,4 +1843,103 @@ enum StatutContratCDD {
   ACTIF
   TERMINE
   ROMPU
+}
+
+
+/// SIGNATURE ELECTRONIQUE — le faisceau de preuves.
+///
+/// Ce que produit ce module est une signature electronique SIMPLE au sens du
+/// reglement eIDAS, assortie d'un faisceau de preuves. Elle est parfaitement
+/// valable : l'article 1367 du code civil reconnait la signature electronique
+/// des lors que le procede identifie son auteur et garantit son lien avec
+/// l'acte. Ce qu'elle n'est pas, et il faut le dire sans detour : une
+/// signature AVANCEE ou QUALIFIEE. La difference ne tient pas a la validite
+/// mais a la charge de la preuve — devant un conseil de prud'hommes, c'est
+/// celui qui invoque la signature simple qui doit demontrer sa fiabilite.
+///
+/// D'ou ce que l'on stocke : l'empreinte du document au moment de la demande,
+/// un code a usage unique envoye par courriel et verifie, l'horodatage,
+/// l'adresse IP, le navigateur, et un journal d'evenements append-only. C'est
+/// exactement ce qu'un juge regarde.
+///
+/// Le champ `prestataire` prepare la delegation a un tiers de confiance
+/// (signature avancee) sans rien changer au reste du logiciel : la variable
+/// d'environnement SIGNATURE_PRESTATAIRE bascule le module.
+model Signature {
+  id           String            @id @default(cuid())
+  documentType TypeDocumentSigne
+  /// Identifiant du document signe : contrat, proposition, devis.
+  documentId   String
+  /// Compte a l'origine de la demande.
+  accountId    String
+  account      Account           @relation("SignatureCompte", fields: [accountId], references: [id], onDelete: Cascade)
+
+  /// Le signataire. `userId` est nul quand la personne n'a pas de compte.
+  userId          String?
+  user            User?    @relation("SignatureSignataire", fields: [userId], references: [id], onDelete: SetNull)
+  signataireNom   String
+  signataireEmail String
+
+  /// Empreinte SHA-256 du document au moment de la demande. C'est elle qui
+  /// prouve qu'on a signe CE texte et pas un autre : toute modification
+  /// ulterieure la rend fausse.
+  empreinte String
+
+  /// Code a usage unique, stocke HACHE — jamais en clair. Meme un acces a la
+  /// base ne permet pas de signer a la place de quelqu'un.
+  codeHache    String?
+  codeExpireLe DateTime?
+  tentatives   Int       @default(0)
+
+  statut  StatutSignature @default(EN_ATTENTE)
+  signeLe DateTime?
+  refuseLe DateTime?
+  motifRefus String?
+
+  /// Elements du faisceau de preuves, releves au moment de la signature.
+  ip        String?
+  userAgent String?
+
+  /// Nul pour la signature interne ; nom du tiers de confiance sinon.
+  prestataire    String?
+  prestataireRef String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  evenements SignatureEvenement[]
+
+  @@index([documentType, documentId])
+  @@index([accountId, statut])
+  @@index([signataireEmail])
+}
+
+/// Journal d'une signature : append-only, jamais modifie ni supprime.
+/// C'est la chronologie que l'on presente en cas de contestation.
+model SignatureEvenement {
+  id          String    @id @default(cuid())
+  signatureId String
+  signature   Signature @relation(fields: [signatureId], references: [id], onDelete: Cascade)
+  /// DEMANDE, CODE_ENVOYE, CODE_ERRONE, SIGNEE, REFUSEE, EXPIREE, ANNULEE.
+  type        String
+  detail      String?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([signatureId, createdAt])
+}
+
+enum TypeDocumentSigne {
+  CONTRAT_CDD
+  PROPOSITION
+  DEVIS
+}
+
+enum StatutSignature {
+  EN_ATTENTE
+  SIGNEE
+  REFUSEE
+  EXPIREE
+  ANNULEE
 }

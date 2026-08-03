@@ -203,6 +203,10 @@ const establishmentNav: NavSection[] = [
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
       { label: 'Mon établissement', href: '/dashboard/account', icon: Building2, hint: 'Coordonnées, préférences et réglages de votre structure' },
       { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' },
+      // Les regles de la convention, reportees une fois. Sans elles, les
+      // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
+      // juridiquement exact mais rarement ce que veut l'etablissement.
+      { label: 'Temps de travail', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Nuit, dimanche, jours fériés, heures supplémentaires, annualisation : les règles de votre convention, appliquées à chaque chiffrage' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.

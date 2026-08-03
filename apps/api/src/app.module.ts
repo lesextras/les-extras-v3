@@ -46,6 +46,7 @@ import { ConformiteModule } from './conformite/conformite.module';
 import { ContratsModule } from './contrats/contrats.module';
 import { DocumentsModule } from './documents/documents.module';
 import { VivierModule } from './vivier/vivier.module';
+import { SignatureModule } from './signature/signature.module';
 
 @Module({
   imports: [
@@ -98,6 +99,7 @@ import { VivierModule } from './vivier/vivier.module';
     ContratsModule,
     DocumentsModule,
     VivierModule,
+    SignatureModule,
 
     // Vitrine publique (non authentifiée).
     PublicModule,

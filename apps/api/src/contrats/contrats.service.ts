@@ -2,6 +2,8 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { PrismaService } from '../prisma/prisma.service';
 import { bornes, page } from '../common/pagination';
 import { chiffrer } from './proposition';
+import { chiffrerVacation } from '../planning/majorations';
+import { ParametresTempsService } from '../planning/parametres-temps.service';
 import { CreateContratDto, DpaeDto, TerminerDto, UpdateContratDto } from './dto/contrat.dto';
 import {
   CauseFinContrat,
@@ -34,7 +36,13 @@ import {
  */
 @Injectable()
 export class ContratsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // Les taux de nuit, de dimanche et de jour ferie viennent de la
+    // convention de l'etablissement, jamais du code : hors 1er mai, aucune
+    // majoration n'est legale dans le medico-social.
+    private readonly parametres: ParametresTempsService,
+  ) {}
 
   /** Le contrat vu comme un projet, pour passer au moteur de règles. */
   private projet(c: {
@@ -233,6 +241,131 @@ export class ContratsService {
         hourlyRate: m.hourlyRate == null ? null : Number(m.hourlyRate),
         headcount: m.headcount,
       }),
+      /**
+       * Le détail des sujétions : combien d'heures tombent la nuit, le
+       * dimanche, un jour férié. C'est ce qui manquait au chiffrage — un
+       * internat qui remplace une nuit du samedi au dimanche de Pentecôte ne
+       * paie pas le même prix qu'une journée de semaine, et personne ne fait
+       * ce découpage juste à la main.
+       *
+       * Les taux viennent des paramètres de l'établissement, jamais du code :
+       * hors 1er mai, aucune majoration n'est légale dans le médico-social.
+       */
+      sujetions: await this.sujetions(m.accountId, m),
+    };
+  }
+
+  /**
+   * Découpe la période de la mission en heures de nuit, de dimanche et de
+   * férié, et applique les taux de l'établissement.
+   *
+   * On raisonne jour par jour sur la vacation type, car une mission de
+   * remplacement se décrit par un horaire répété — pas par une liste de
+   * créneaux. C'est une estimation, et elle est annoncée comme telle.
+   */
+  private async sujetions(
+    accountId: string,
+    m: {
+      startDate: Date;
+      endDate: Date | null;
+      startTime: string | null;
+      endTime: string | null;
+      hourlyRate: unknown;
+      headcount: number;
+    },
+  ) {
+    if (!m.startTime || !m.endTime) return null;
+
+    const p = await this.parametres.lire(accountId);
+    const majorations = {
+      nuitDebutHeure: p.nuitDebutHeure,
+      nuitFinHeure: p.nuitFinHeure,
+      nuitPct: p.nuitPct,
+      dimanchePct: p.dimanchePct,
+      feriePct: p.feriePct,
+      cumulDimancheEtFerie: p.cumulDimancheEtFerie,
+      droitLocal: p.droitLocal,
+      vendrediSaint: p.vendrediSaint,
+    };
+
+    const enMinutes = (h: string): number | null => {
+      const x = h.trim().match(/^(\d{1,2})\s*[h:]\s*(\d{0,2})$/i);
+      if (!x) return null;
+      const heures = Number(x[1]);
+      const min = x[2] ? Number(x[2]) : 0;
+      if (heures > 23 || min > 59) return null;
+      return heures * 60 + min;
+    };
+    const d1 = enMinutes(m.startTime);
+    const d2 = enMinutes(m.endTime);
+    if (d1 === null || d2 === null) return null;
+
+    const taux = m.hourlyRate == null ? null : Number(m.hourlyRate);
+    const jourMs = 86_400_000;
+    const debutJour = new Date(
+      Date.UTC(
+        m.startDate.getUTCFullYear(),
+        m.startDate.getUTCMonth(),
+        m.startDate.getUTCDate(),
+      ),
+    );
+    const finJour = m.endDate
+      ? new Date(
+          Date.UTC(m.endDate.getUTCFullYear(), m.endDate.getUTCMonth(), m.endDate.getUTCDate()),
+        )
+      : debutJour;
+
+    // Une mission longue se chiffre par échantillon : au-delà de quatre-vingt-
+    // douze jours, la boucle coûterait plus qu'elle n'apporte de précision.
+    const jours = Math.min(
+      92,
+      Math.max(1, Math.round((finJour.getTime() - debutJour.getTime()) / jourMs) + 1),
+    );
+
+    const cumul = { total: 0, nuit: 0, dimanche: 0, ferie: 0, premierMai: 0 };
+    let surcout = 0;
+    const feries = new Map<string, { nom: string; libelle: string; date: string }>();
+
+    for (let i = 0; i < jours; i++) {
+      const jour = new Date(debutJour.getTime() + i * jourMs);
+      const debut = new Date(jour.getTime() + d1 * 60_000);
+      // Une fin antérieure au début désigne un service qui passe minuit.
+      const fin = new Date(jour.getTime() + (d2 > d1 ? d2 : d2 + 24 * 60) * 60_000);
+      const c = chiffrerVacation({ debut, fin }, majorations, taux);
+      cumul.total += c.heures.total;
+      cumul.nuit += c.heures.nuit;
+      cumul.dimanche += c.heures.dimanche;
+      cumul.ferie += c.heures.ferie;
+      cumul.premierMai += c.heures.premierMai;
+      surcout += c.totalMajorations ?? 0;
+      c.heures.feriesRencontres.forEach((f) =>
+        feries.set(f.date, { nom: f.nom, libelle: f.libelle, date: f.date }),
+      );
+    }
+
+    const postes = Math.max(1, m.headcount ?? 1);
+    const arrondi = (v: number) => Math.round(v * postes * 100) / 100;
+
+    return {
+      joursCouverts: jours,
+      postes,
+      heures: {
+        total: arrondi(cumul.total),
+        nuit: arrondi(cumul.nuit),
+        dimanche: arrondi(cumul.dimanche),
+        ferie: arrondi(cumul.ferie),
+        premierMai: arrondi(cumul.premierMai),
+      },
+      feriesRencontres: [...feries.values()].sort((a, b) => a.date.localeCompare(b.date)),
+      surcoutEstime: taux === null ? null : arrondi(surcout),
+      tauxAppliques: {
+        nuitPct: p.nuitPct,
+        dimanchePct: p.dimanchePct,
+        feriePct: p.feriePct,
+        source: p.renseigne
+          ? 'Taux renseignés par votre établissement d’après sa convention.'
+          : "Aucun taux n'est renseigné. Ce n'est pas un oubli du logiciel : hors 1er mai, la loi n'impose aucune majoration de nuit, de dimanche ni de jour férié dans le médico-social. Renseignez ceux de votre convention dans les réglages du temps de travail.",
+      },
     };
   }
 
