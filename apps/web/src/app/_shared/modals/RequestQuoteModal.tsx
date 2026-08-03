@@ -1,7 +1,8 @@
 "use client";
 
 // Modale « Demander un devis » — l'établissement décrit son besoin, l'intervenant
-// chiffrera ensuite. POST /quotes?accountId=... -> Quote en statut REQUESTED.
+// chiffrera ensuite. POST /quotes -> Quote en statut REQUESTED. Le compte
+// demandeur est celui du garde, il n'est plus transmis par le client.
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -44,7 +45,7 @@ export function RequestQuoteModal({
     const scheduledAt = String(form.get("scheduledAt") || "");
     try {
       const quote = await apiRequest<{ id: string }>(
-        `/quotes?accountId=${accountId}`,
+        "/quotes",
         {
           method: "POST",
           body: {

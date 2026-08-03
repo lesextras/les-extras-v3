@@ -25,16 +25,25 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { Field } from "../form-fields";
-import { ACCOUNT_ROLE_LABEL } from "../format";
+import { ACCOUNT_ROLE_DESCRIPTION, ACCOUNT_ROLE_LABEL } from "../format";
 
 const ROLES = ["ADMIN", "MANAGER", "MEMBER"] as const;
+
+const SANS_SERVICE = "__aucun__";
 
 export function InviteMemberModal({
   accountId,
   trigger,
+  services = [],
 }: {
   accountId: string;
   trigger?: React.ReactNode;
+  /**
+   * Les services de l'établissement. Choisir ici évite l'oubli : sans
+   * rattachement, l'arrivant n'apparaît dans le planning d'aucun chef de
+   * service, et personne ne s'en aperçoit avant qu'il manque quelque part.
+   */
+  services?: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -42,6 +51,7 @@ export function InviteMemberModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<string>("MEMBER");
+  const [service, setService] = useState<string>(SANS_SERVICE);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,7 +61,11 @@ export function InviteMemberModal({
     try {
       await apiRequest(`/invitations`, {
         method: "POST",
-        body: { email: String(fd.get("email") || ""), role },
+        body: {
+          email: String(fd.get("email") || ""),
+          role,
+          ...(service !== SANS_SERVICE ? { orgUnitId: service } : {}),
+        },
         accountId,
       });
       toast({
@@ -81,7 +95,7 @@ export function InviteMemberModal({
           <Field label="Adresse email" htmlFor="email" required>
             <Input id="email" name="email" type="email" required placeholder="collegue@structure.fr" />
           </Field>
-          <Field label="Rôle dans le compte">
+          <Field label="Rôle dans l’établissement" hint={ACCOUNT_ROLE_DESCRIPTION[role]}>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger>
                 <SelectValue />
@@ -95,6 +109,26 @@ export function InviteMemberModal({
               </SelectContent>
             </Select>
           </Field>
+          {services.length > 0 ? (
+            <Field
+              label="Service"
+              hint="Rattacher dès maintenant évite d’y penser plus tard — et fait apparaître la personne dans le planning de son équipe dès son arrivée."
+            >
+              <Select value={service} onValueChange={setService}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Aucun pour l’instant" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SANS_SERVICE}>Aucun pour l’instant</SelectItem>
+                  {services.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          ) : null}
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
