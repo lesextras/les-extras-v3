@@ -40,9 +40,47 @@ const prisma = new PrismaClient();
 // Mot de passe commun à tous les comptes de démo (à ne jamais utiliser en prod).
 const DEMO_PASSWORD = 'Password123!';
 
+/**
+ * GARDE-FOU DE PRODUCTION.
+ *
+ * Ce fichier crée une dizaine de comptes partageant le même mot de passe connu.
+ * En développement c'est exactement ce qu'on veut ; sur la base de production
+ * ce serait une porte d'entrée ouverte, avec des adresses en @example.com dans
+ * l'annuaire des intervenants.
+ *
+ * Le seed n'est pas lancé au déploiement — le conteneur exécute `prisma db
+ * push` puis l'application, rien d'autre. Mais rien n'empêchait quelqu'un de
+ * taper la commande à la main en visant la mauvaise base. Maintenant si.
+ *
+ * Pour semer volontairement un environnement de démonstration hébergé :
+ * `SEED_AUTORISE=oui pnpm --filter @lesextras/api prisma:seed`.
+ */
+function refuserSiProduction() {
+  const url = process.env.DATABASE_URL ?? '';
+  const local = /@(localhost|127\.0\.0\.1|host\.docker\.internal|db|postgres)[:/]/.test(url);
+  const forceParEnv = process.env.NODE_ENV === 'production';
+  if ((forceParEnv || !local) && process.env.SEED_AUTORISE !== 'oui') {
+    console.error(
+      [
+        '',
+        '  Seed refusé.',
+        '',
+        "  Cette base ne ressemble pas à une base locale, et ce fichier crée des comptes",
+        "  de démonstration partageant tous le mot de passe « " + DEMO_PASSWORD + " ».",
+        '',
+        '  Si vous voulez vraiment semer cet environnement :',
+        '      SEED_AUTORISE=oui pnpm --filter @lesextras/api prisma:seed',
+        '',
+      ].join('\n'),
+    );
+    process.exit(1);
+  }
+}
+
 const days = (n: number) => new Date(Date.now() + n * 24 * 60 * 60 * 1000);
 
 async function main() {
+  refuserSiProduction();
   const password = await bcrypt.hash(DEMO_PASSWORD, 10);
 
   // ---- Fabriques -----------------------------------------------------------

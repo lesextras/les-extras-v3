@@ -571,6 +571,12 @@ model Subscription {
   updatedAt            DateTime @updatedAt
 }
 
+/// OBSOLÈTE — la monnaie interne a été abandonnée au profit du paiement à la
+/// prestation. Plus aucun code ne lit ni n'écrit ce modèle. La table est
+/// CONSERVÉE volontairement : elle porte la trace d'achats réellement payés,
+/// et une écriture comptable ne se supprime pas parce que la fonctionnalité
+/// a changé. À supprimer par une migration dédiée, après export, le jour où
+/// le délai de conservation sera écoulé.
 model CreditPurchase {
   id              String   @id @default(cuid())
   accountId       String
@@ -608,6 +614,11 @@ model CreditLedger {
   @@index([accountId])
 }
 
+/// OBSOLÈTE — le dépôt de fichiers passe désormais par FileAsset et
+/// ComplianceDocument. Ce modèle n'est plus qu'effacé lors d'une suppression
+/// de compte (RGPD). La table est CONSERVÉE tant que d'anciens comptes
+/// peuvent encore y avoir des pièces : la vider serait effacer des documents
+/// que des utilisateurs croient déposés.
 model Document {
   id         String   @id @default(cuid())
   userId     String
