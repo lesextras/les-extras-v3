@@ -29,6 +29,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Mes réservations", href: "/dashboard/reservations", group: "Navigation", keywords: "reservations bookings renfort atelier formation inscriptions contrat" },
   { label: "Devis & factures", href: "/dashboard/facturation", group: "Navigation", keywords: "devis facture chiffrage paiement reglement finance revenus depenses" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
+  { label: "Contrats CDD", href: "/dashboard/contrats", group: "Établissement", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat" },
   { label: "Adhésion", href: "/dashboard/adhesion", group: "Établissement", keywords: "stripe paiement adhésion adhérent lex abonnement" },
   { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres équipe" },
