@@ -166,11 +166,31 @@ export function serviceBadgeVariant(status: string): BadgeVariant {
   }
 }
 
+/**
+ * Les rôles, dits dans la langue du secteur.
+ *
+ * « Propriétaire », « Manager », « Membre » sont des mots de logiciel : ils
+ * décrivent une place dans une base de données, pas une fonction dans un
+ * établissement. Personne, dans une MECS, ne dit « je suis le manager ».
+ * On nomme donc les rôles par ce que la personne fait réellement.
+ */
 export const ACCOUNT_ROLE_LABEL: Record<string, string> = {
-  OWNER: "Propriétaire",
-  ADMIN: "Administrateur",
-  MANAGER: "Manager",
-  MEMBER: "Membre",
+  OWNER: "Direction",
+  ADMIN: "Administration",
+  MANAGER: "Chef de service",
+  MEMBER: "Équipe",
+};
+
+/** Ce que chaque rôle peut faire, en une phrase — affiché à côté du choix. */
+export const ACCOUNT_ROLE_DESCRIPTION: Record<string, string> = {
+  OWNER:
+    "Tout, y compris l’adhésion, la facturation et la suppression de la structure. Un seul par établissement.",
+  ADMIN:
+    "Tout sauf l’adhésion et la facturation : équipe, services, plannings, contrats, conformité.",
+  MANAGER:
+    "Son service : plannings et créneaux, publication de renforts, validation des congés, contrats et pièces de son équipe.",
+  MEMBER:
+    "Son propre planning, ses disponibilités, ses demandes de congés et ses documents. Ne voit pas l’équipe.",
 };
 
 export const INVITATION_STATUS_LABEL: Record<string, string> = {

@@ -268,7 +268,12 @@ function DocRow({
   );
 }
 
-function MemberDocuments({
+/**
+ * Les pièces d'UNE personne. Exporté parce que la fiche individuelle s'en
+ * sert telle quelle : le coffre-fort n'est plus un écran, c'est un onglet
+ * de la personne, et il n'existe qu'une seule implémentation des pièces.
+ */
+export function MemberDocuments({
   userId,
   accountId,
   canEdit,

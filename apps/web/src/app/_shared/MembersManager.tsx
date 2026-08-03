@@ -47,12 +47,19 @@ export function MembersManager({
   canManage,
   members,
   invitations,
+  afficher = "tout",
 }: {
   accountId: string;
   currentUserId: string;
   canManage: boolean;
   members: Membership[];
   invitations: Invitation[];
+  /**
+   * La liste des membres a déménagé sur son propre écran, paginé et
+   * cherchable. Les invitations, elles, sont peu nombreuses par nature :
+   * on les garde ici, sous la liste. D'où ce réglage.
+   */
+  afficher?: "tout" | "invitations";
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -114,6 +121,7 @@ export function MembersManager({
 
   return (
     <div className="space-y-8">
+      {afficher === "tout" ? (
       <section className="space-y-3">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Membres ({members.length})
@@ -201,6 +209,7 @@ export function MembersManager({
           </div>
         )}
       </section>
+      ) : null}
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
