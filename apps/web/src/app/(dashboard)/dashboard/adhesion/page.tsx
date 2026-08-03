@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle, ErrorState } from "../../../_shared/ui";
 import { CheckoutButton } from "../../../_shared/BillingActions";
+import { EssaiLexButton } from "../../../_shared/EssaiLexButton";
 import { formatDate } from "../../../_shared/format";
 
 export const metadata: Metadata = { title: "LEX — Crédits & abonnement" };
@@ -40,6 +41,9 @@ interface Subscription {
 interface Overview {
   credits: number;
   illimite: boolean;
+  essai?: { finLe: string; actif: boolean } | null;
+  essaiJours?: number;
+  essaiCreditsParJour?: number;
   subscription?: Subscription | null;
   plans: Plan[];
   packs: Pack[];
@@ -76,6 +80,7 @@ const MOTIF: Record<string, string> = {
   LEX_FICHE: "Fiche pré-remplie",
   LEX_GAPISTE: "Tour de GAPiste",
   ACHAT_PACK: "Achat d'un pack de crédits",
+  ESSAI_DECOUVERTE: "Essai Découverte (gratuit)",
   RECHARGE_QUOTIDIENNE: "Recharge quotidienne (abonnement)",
   REMBOURSEMENT_LEX_ECRIT: "Remboursement — génération échouée",
   REMBOURSEMENT_LEX_ACTIVITE: "Remboursement — génération échouée",
@@ -105,7 +110,8 @@ export default async function LexCreditsPage({
     );
   }
 
-  const { credits, illimite, subscription, plans, packs, configured } = resOverview.data;
+  const { credits, illimite, essai, essaiJours, essaiCreditsParJour, subscription, plans, packs, configured } =
+    resOverview.data;
   const utilisation = resUtilisation.data;
   const retour = searchParams.paiement;
   const active = subscription?.status === "active";
@@ -205,6 +211,36 @@ export default async function LexCreditsPage({
           ) : null}
         </CardContent>
       </Card>
+
+      {/* ── Essai Découverte : gratuit, une fois, 7 jours ── */}
+      {!illimite && !active && !essai ? (
+        <Card className="border-primary/30 bg-primary-soft/30">
+          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold text-foreground">
+                Pack Découverte — gratuit, {essaiJours ?? 7} jours
+              </p>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                Essayez LEX sans rien payer : {essaiCreditsParJour ?? 10} crédits rechargés chaque
+                matin pendant {essaiJours ?? 7} jours, sans carte bancaire ni engagement. Une seule
+                fois par compte.
+              </p>
+            </div>
+            <div className="shrink-0">
+              <EssaiLexButton accountId={accountId} />
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+      {essai?.actif ? (
+        <Card className="border-success/30 bg-success/10">
+          <CardContent className="p-4 text-sm text-foreground">
+            <span className="font-semibold">Essai Découverte en cours</span> — recharge quotidienne
+            gratuite jusqu&apos;au {formatDate(essai.finLe)}. Ensuite, rechargez par pack ou
+            prenez un abonnement.
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* ── Recharger : packs en une fois ── */}
       {!illimite ? (

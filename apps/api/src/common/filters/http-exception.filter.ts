@@ -7,10 +7,15 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import * as Sentry from '@sentry/node';
 
 /**
  * Filtre global : normalise toutes les erreurs en réponse JSON cohérente
  * et évite de divulguer des stack traces au client en cas d'erreur 500.
+ *
+ * Monitoring : les erreurs SERVEUR (5xx et exceptions inattendues) partent
+ * vers Sentry quand SENTRY_DSN est configurée — jamais les 4xx, qui sont
+ * des refus normaux (validation, droits, quota), pas des pannes.
  */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -39,6 +44,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     } else if (exception instanceof Error) {
       // Log complet côté serveur uniquement.
       this.logger.error(exception.message, exception.stack);
+    }
+
+    if (status >= 500 && process.env.SENTRY_DSN) {
+      Sentry.captureException(exception, {
+        extra: { path: request.url, method: request.method },
+      });
     }
 
     // Normalisation du libellé d'erreur par statut (ex: 429 -> Too Many Requests).

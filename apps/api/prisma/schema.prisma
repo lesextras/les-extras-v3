@@ -138,10 +138,13 @@ model Account {
   /// messagerie de l'employeur.
   contactEmail String?
   logoUrl     String?
-  // Facturation / crédits (packs établissement)
+  // Crédits LEX : un crédit = une génération (voir CreditsService).
   credits     Int          @default(0)
-  /// Adhérent : abonnement actif -> accès au niveau 2 (LEX, services externes).
+  /// Accès LEX illimité accordé à la main (exonération de crédits).
   isMember    Boolean      @default(false)
+  /// Essai Découverte : recharge quotidienne gratuite jusqu'à cette date.
+  /// Non nul = l'essai a été utilisé (il ne se réclame qu'une fois).
+  lexTrialEndsAt DateTime?
   /// Taux de commission ADéPA appliqué aux prestations externes de ce compte
   /// (null = taux par défaut de la plateforme). Modèle prestataire : ADéPA
   /// facture l'établissement, l'intervenant facture ADéPA.

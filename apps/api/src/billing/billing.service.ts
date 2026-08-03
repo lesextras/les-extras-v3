@@ -22,34 +22,44 @@ import { PrismaService } from '../prisma/prisma.service';
  * Montants en centimes d'euro — AJUSTABLES avant mise en production réelle,
  * repris de la grille historique de la plateforme.
  */
+// « Pack Découverte » désigne désormais l'ESSAI GRATUIT de 7 jours (voir
+// TRIAL_DAYS ci-dessous) : les packs payants portent des noms descriptifs.
 export const CREDIT_PACKS = [
-  { id: 'pack-10', label: 'Pack Découverte', credits: 10, amountCents: 9000 },
-  { id: 'pack-25', label: 'Pack Équipe', credits: 25, amountCents: 20000 },
-  { id: 'pack-60', label: 'Pack Établissement', credits: 60, amountCents: 42000 },
+  { id: 'pack-10', label: 'Pack 10 crédits', credits: 10, amountCents: 9000 },
+  { id: 'pack-25', label: 'Pack 25 crédits', credits: 25, amountCents: 20000 },
+  { id: 'pack-60', label: 'Pack 60 crédits', credits: 60, amountCents: 42000 },
 ] as const;
 
 /**
  * Abonnements LEX (Stripe Checkout mode=subscription). Un abonnement actif
  * remet chaque jour le solde de crédits au niveau de `dailyCredits` (recharge
  * quotidienne, sans cumul — voir CreditsService).
- * Montants en centimes d'euro — AJUSTABLES avant mise en production réelle.
+ * Montants DÉFINITIFS, fixés par la fondatrice le 3 août 2026.
  */
 export const SUBSCRIPTION_PLANS = [
   {
     id: 'plan-essentiel',
-    label: 'LEX Essentiel',
-    amountCents: 14900,
+    label: 'LEX',
+    amountCents: 4900,
     dailyCredits: 10,
     perks: '10 crédits rechargés chaque jour — écriture, activités, remplissage de fiches, GAPiste',
   },
   {
     id: 'plan-pro',
     label: 'LEX Pro',
-    amountCents: 29900,
+    amountCents: 14000,
     dailyCredits: 30,
     perks: 'Recharge quotidienne de 30 crédits + support prioritaire et accompagnement',
   },
 ] as const;
+
+/**
+ * Essai Découverte : GRATUIT, une seule fois par compte, limité à 7 jours.
+ * Pendant l'essai, le compte reçoit la même recharge quotidienne qu'un
+ * abonné (TRIAL_DAILY_CREDITS remis à niveau chaque matin), puis plus rien.
+ */
+export const TRIAL_DAYS = 7;
+export const TRIAL_DAILY_CREDITS = 10;
 
 const STRIPE_API = 'https://api.stripe.com/v1';
 /** Tolérance sur l'horodatage de la signature webhook (anti-rejeu). */
@@ -112,13 +122,18 @@ export class BillingService {
     const [account, subscription] = await this.prisma.$transaction([
       this.prisma.account.findUniqueOrThrow({
         where: { id: accountId },
-        select: { credits: true, isMember: true },
+        select: { credits: true, isMember: true, lexTrialEndsAt: true },
       }),
       this.prisma.subscription.findUnique({ where: { accountId } }),
     ]);
     return {
       credits: account.credits,
       illimite: account.isMember,
+      essai: account.lexTrialEndsAt
+        ? { finLe: account.lexTrialEndsAt, actif: account.lexTrialEndsAt > new Date() }
+        : null,
+      essaiJours: TRIAL_DAYS,
+      essaiCreditsParJour: TRIAL_DAILY_CREDITS,
       subscription,
       plans: this.listPlans(),
       packs: this.listPacks(),

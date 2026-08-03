@@ -46,6 +46,8 @@ export interface AdminAccount {
   postalCode?: string | null;
   phone?: string | null;
   credits?: number;
+  /** Accès LEX illimité accordé à la main (exonération de crédits). */
+  isMember?: boolean;
   owner?: { email?: string; firstName?: string | null; lastName?: string | null } | null;
   memberships?: AdminMembership[];
   _count?: { memberships?: number; reliefMissions?: number; services?: number; bookings?: number };
@@ -127,6 +129,30 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
       router.refresh();
     } catch (err) {
       toast({ title: "Suppression impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  /**
+   * Accorde ou retire l'accès LEX ILLIMITÉ (exonération de crédits) — pour
+   * les comptes partenaires, les tests, les gestes commerciaux. La route
+   * existait côté API sans aucun bouton pour l'appeler.
+   */
+  async function basculerLexIllimite(a: AdminAccount) {
+    setBusy(a.id);
+    try {
+      await apiRequest(`/admin/accounts/${a.id}/adhesion`, {
+        method: "PATCH",
+        body: { isMember: !a.isMember },
+      });
+      toast({
+        title: a.isMember ? "Accès LEX illimité retiré" : "Accès LEX illimité accordé",
+        description: a.name,
+      });
+      router.refresh();
+    } catch (err) {
+      toast({ title: "Bascule impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
     } finally {
       setBusy(null);
     }
@@ -240,13 +266,27 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                             {[a.city, a.owner?.email].filter(Boolean).join(" · ") || "—"}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            {a._count?.reliefMissions ?? 0} mission(s) · {a._count?.services ?? 0} atelier(s) · {a.credits ?? 0} crédit(s)
+                            {a._count?.reliefMissions ?? 0} mission(s) · {a._count?.services ?? 0} atelier(s) ·{" "}
+                            {a.isMember ? "LEX illimité" : `${a.credits ?? 0} crédit(s) LEX`}
                           </p>
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <Button asChild size="sm" variant="outline">
                           <a href={`/admin/etablissements/${a.id}`}>Fiche</a>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={a.isMember ? "primary" : "outline"}
+                          disabled={busy === a.id}
+                          title={
+                            a.isMember
+                              ? "Ce compte utilise LEX sans consommer de crédits — cliquer pour retirer"
+                              : "Exonérer ce compte de crédits LEX (partenaire, test) — cliquer pour accorder"
+                          }
+                          onClick={() => basculerLexIllimite(a)}
+                        >
+                          {a.isMember ? "LEX ∞" : "LEX ∞ ?"}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
                         <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>

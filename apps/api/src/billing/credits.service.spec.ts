@@ -18,13 +18,21 @@ function fabrique(soldeInitial = 5, isMember = false) {
   const etat = {
     credits: soldeInitial,
     isMember,
+    lexTrialEndsAt: null as Date | null,
     ledger: [] as Array<{ delta: number; balanceAfter: number; reason: string }>,
     subscriptions: [] as Array<{ accountId: string; planId: string }>,
   };
 
   const account = {
     findUnique: jest.fn(async () => ({ credits: etat.credits, isMember: etat.isMember })),
-    findUniqueOrThrow: jest.fn(async () => ({ credits: etat.credits, isMember: etat.isMember })),
+    findUniqueOrThrow: jest.fn(async () => ({
+      credits: etat.credits,
+      isMember: etat.isMember,
+      lexTrialEndsAt: etat.lexTrialEndsAt,
+    })),
+    findMany: jest.fn(async () =>
+      etat.lexTrialEndsAt && etat.lexTrialEndsAt > new Date() ? [{ id: 'acc1' }] : [],
+    ),
     update: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
       if (typeof data.credits === 'number') {
         etat.credits = data.credits;
@@ -36,9 +44,20 @@ function fabrique(soldeInitial = 5, isMember = false) {
       return { credits: etat.credits };
     }),
     updateMany: jest.fn(
-      async ({ where, data }: { where: { credits?: { gte: number } }; data: { credits: { decrement: number } } }) => {
+      async ({
+        where,
+        data,
+      }: {
+        where: { credits?: { gte: number }; lexTrialEndsAt?: null };
+        data: { credits?: { decrement: number }; lexTrialEndsAt?: Date };
+      }) => {
         if (where.credits && etat.credits < where.credits.gte) return { count: 0 };
-        etat.credits -= data.credits.decrement;
+        // Réclamation d'essai : ne passe que si jamais réclamé (null).
+        if ('lexTrialEndsAt' in where && where.lexTrialEndsAt === null && etat.lexTrialEndsAt !== null) {
+          return { count: 0 };
+        }
+        if (data.credits?.decrement) etat.credits -= data.credits.decrement;
+        if (data.lexTrialEndsAt) etat.lexTrialEndsAt = data.lexTrialEndsAt;
         return { count: 1 };
       },
     ),
@@ -166,5 +185,32 @@ describe('CreditsService — recharge quotidienne', () => {
     etat.subscriptions.push({ accountId: 'acc1', planId: 'plan-disparu' });
     await expect(credits.rechargeQuotidienne()).resolves.toBeUndefined();
     expect(etat.credits).toBe(1);
+  });
+
+  it('recharge aussi les comptes en essai Découverte, sans abonnement', async () => {
+    const { credits, etat } = fabrique(0);
+    etat.lexTrialEndsAt = new Date(Date.now() + 3 * 86_400_000); // essai en cours
+    await credits.rechargeQuotidienne();
+    expect(etat.credits).toBe(10);
+    expect(etat.ledger[0].reason).toBe('RECHARGE_QUOTIDIENNE');
+  });
+});
+
+describe('CreditsService — essai Découverte', () => {
+  it("accorde l'essai une première fois : date de fin + première ration", async () => {
+    const { credits, etat } = fabrique(0);
+    const r = await credits.reclamerEssai('acc1');
+    expect(etat.lexTrialEndsAt).not.toBeNull();
+    expect(r.finLe.getTime()).toBeGreaterThan(Date.now() + 6 * 86_400_000);
+    expect(etat.credits).toBe(10);
+    expect(etat.ledger[0].reason).toBe('ESSAI_DECOUVERTE');
+  });
+
+  it("refuse une seconde réclamation : l'essai ne se prend qu'une fois", async () => {
+    const { credits, etat } = fabrique(0);
+    await credits.reclamerEssai('acc1');
+    await expect(credits.reclamerEssai('acc1')).rejects.toThrow(/déjà été utilisé/);
+    // Et surtout : pas de seconde ration.
+    expect(etat.ledger).toHaveLength(1);
   });
 });

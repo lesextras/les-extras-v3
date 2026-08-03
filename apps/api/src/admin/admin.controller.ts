@@ -187,6 +187,12 @@ export class AdminController {
     return this.admin.updateAccount(id, dto);
   }
 
+  /** Tableau de bord LEX : ventes, consommation, abonnements, essais. */
+  @Get('lex')
+  lexStats() {
+    return this.admin.lexStats();
+  }
+
   /** Accorde ou retire l'accès LEX ILLIMITÉ d'un compte (exonération de crédits). */
   @Patch('accounts/:id/adhesion')
   async toggleAdhesion(@Param('id') id: string, @Body() body: { isMember: boolean }) {

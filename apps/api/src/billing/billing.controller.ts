@@ -81,6 +81,17 @@ export class BillingController {
     return this.credits.utilisation(account.id);
   }
 
+  /**
+   * Essai Découverte : gratuit, une fois par compte, 7 jours de recharge
+   * quotidienne. Pas de paiement, donc pas de tunnel Stripe — juste un clic.
+   */
+  @Post('essai')
+  @UseGuards(JwtAuthGuard, AccountGuard)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  essai(@CurrentAccount() account: RequestAccount) {
+    return this.credits.reclamerEssai(account.id);
+  }
+
   /** Webhook Stripe — public, authentifié par signature HMAC sur le corps brut. */
   @Post('webhook')
   webhook(

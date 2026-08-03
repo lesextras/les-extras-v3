@@ -3,9 +3,20 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
+import * as Sentry from '@sentry/node';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
+  // Monitoring d'erreurs : actif seulement si SENTRY_DSN est posée — sans
+  // elle, Sentry est un no-op et l'API tourne exactement comme avant.
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV ?? 'production',
+      // Pas de traçage de performance : on ne veut que les erreurs.
+      tracesSampleRate: 0,
+    });
+  }
   const app = await NestFactory.create(AppModule, { bufferLogs: false, rawBody: true });
   const config = app.get(ConfigService);
   const logger = new Logger('Bootstrap');

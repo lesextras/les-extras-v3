@@ -295,6 +295,7 @@ const adminNav: NavSection[] = [
     title: 'Facturation',
     items: [
       { label: 'Factures', href: '/admin/factures', icon: Receipt, hint: 'Facturation de la plateforme' },
+      { label: 'LEX · Crédits & abonnements', href: '/admin/lex', icon: Sparkles, hint: 'Ventes de packs, consommation de crédits, abonnements actifs et essais en cours' },
     ],
   },
   {

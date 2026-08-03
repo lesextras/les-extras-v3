@@ -47,6 +47,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Admin — Centre de formation", href: "/admin/formations", group: "Admin", keywords: "formations qualiopi certifiant interne" },
   { label: "Admin — Coffre-fort conformité", href: "/admin/conformite", group: "Admin", keywords: "conformité pièces obligatoires intervenants cni casier permis iban urssaf établissement" },
   { label: "Admin — Factures", href: "/admin/factures", group: "Admin", keywords: "invoices" },
+  { label: "Admin — LEX Crédits", href: "/admin/lex", group: "Admin", keywords: "lex credits ventes consommation abonnements essais stripe" },
   { label: "Admin — Statistiques", href: "/admin/statistiques", group: "Admin", keywords: "kpi" },
 ];
 

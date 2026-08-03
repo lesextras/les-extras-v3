@@ -1554,6 +1554,93 @@ export class AdminService {
 
 
   /**
+   * Tableau de bord LEX : ce qui se vend, ce qui se consomme, qui est
+   * abonné. Les chiffres viennent des écritures (CreditPurchase, ledger),
+   * jamais d'un compteur parallèle — pas de double vérité.
+   */
+  async lexStats() {
+    const maintenant = new Date();
+    const il30Jours = new Date(maintenant.getTime() - 30 * 86_400_000);
+    const [
+      ventes,
+      ventes30j,
+      conso,
+      conso30j,
+      abonnements,
+      essaisActifs,
+      soldes,
+      illimites,
+      derniersAchats,
+    ] = await this.prisma.$transaction([
+      this.prisma.creditPurchase.aggregate({
+        where: { status: 'PAID' },
+        _sum: { credits: true, amountCents: true },
+        _count: true,
+      }),
+      this.prisma.creditPurchase.aggregate({
+        where: { status: 'PAID', updatedAt: { gte: il30Jours } },
+        _sum: { credits: true, amountCents: true },
+        _count: true,
+      }),
+      this.prisma.creditLedger.aggregate({
+        where: { delta: { lt: 0 } },
+        _sum: { delta: true },
+        _count: true,
+      }),
+      this.prisma.creditLedger.aggregate({
+        where: { delta: { lt: 0 }, createdAt: { gte: il30Jours } },
+        _sum: { delta: true },
+        _count: true,
+      }),
+      this.prisma.subscription.groupBy({
+        by: ['planId'],
+        where: { status: 'active' },
+        orderBy: { planId: 'asc' },
+        _count: true,
+      }),
+      this.prisma.account.count({ where: { lexTrialEndsAt: { gt: maintenant } } }),
+      this.prisma.account.aggregate({ _sum: { credits: true } }),
+      this.prisma.account.count({ where: { isMember: true } }),
+      this.prisma.creditPurchase.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 15,
+        select: {
+          id: true,
+          packId: true,
+          credits: true,
+          amountCents: true,
+          status: true,
+          createdAt: true,
+          account: { select: { id: true, name: true, type: true } },
+        },
+      }),
+    ]);
+    return {
+      ventes: {
+        total: {
+          achats: ventes._count,
+          credits: ventes._sum.credits ?? 0,
+          montantCents: ventes._sum.amountCents ?? 0,
+        },
+        trenteJours: {
+          achats: ventes30j._count,
+          credits: ventes30j._sum.credits ?? 0,
+          montantCents: ventes30j._sum.amountCents ?? 0,
+        },
+      },
+      consommation: {
+        total: { generations: conso._count, credits: Math.abs(conso._sum.delta ?? 0) },
+        trenteJours: { generations: conso30j._count, credits: Math.abs(conso30j._sum.delta ?? 0) },
+      },
+      abonnements: abonnements.map((a) => ({ planId: a.planId, actifs: a._count })),
+      essaisActifs,
+      creditsEnCirculation: soldes._sum.credits ?? 0,
+      comptesIllimites: illimites,
+      derniersAchats,
+    };
+  }
+
+  /**
    * Accès LEX illimité accordé (ou retiré) à la main — compte partenaire,
    * test, geste commercial. Le drapeau `isMember` exonère le compte de la
    * consommation de crédits ; l'accès normal, lui, passe par les crédits.
