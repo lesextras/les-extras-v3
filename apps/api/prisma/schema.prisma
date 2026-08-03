@@ -881,6 +881,14 @@ model Shift {
   status         ShiftStatus @default(PLANNED)
   notes          String?
   recurrenceRule String?     // RRULE iCal optionnel (récurrence)
+
+  // Dérogation aux plafonds de durée du travail. Renseignée uniquement quand
+  // un responsable a choisi de passer outre un constat bloquant : c'est la
+  // trace qui le couvre en cas de contrôle URSSAF ou inspection du travail.
+  derogationMotif String?
+  derogationCodes String[]   @default([])
+  derogationLe    DateTime?
+
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
