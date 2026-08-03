@@ -48,6 +48,19 @@ export class DocumentsController {
     res.end(pdf);
   }
 
+  @Get('proposition/:bookingId.pdf')
+  @Header('Content-Type', 'application/pdf')
+  async proposition(
+    @CurrentAccount() account: RequestAccount,
+    @Param('bookingId') bookingId: string,
+    @Res() res: Response,
+  ) {
+    const { pdf, nom } = await this.documents.proposition(account.id, bookingId);
+    if (!pdf) throw new NotFoundException('Proposition introuvable.');
+    res.setHeader('Content-Disposition', `inline; filename="${nom}"`);
+    res.end(pdf);
+  }
+
   @Get('facture/:id.pdf')
   @Header('Content-Type', 'application/pdf')
   async facture(

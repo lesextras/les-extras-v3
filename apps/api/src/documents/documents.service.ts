@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ContratsService } from '../contrats/contrats.service';
 import { contratCddPdf } from './contrat-cdd.pdf';
 import { facturePdf } from './facture.pdf';
+import { propositionPdf } from './proposition.pdf';
 
 /**
  * Assemble les données puis délègue le dessin.
@@ -53,6 +54,17 @@ export class DocumentsService {
       synthese: synthese as never,
     });
     return { pdf, nom: this.nomFichier('contrat-cdd', id.slice(-8)) };
+  }
+
+  /**
+   * La proposition d'engagement d'un renfort pourvu. Elle réutilise le même
+   * chiffrage que l'écran : il n'existe qu'un calcul, donc le papier et
+   * l'écran ne peuvent pas diverger.
+   */
+  async proposition(accountId: string, bookingId: string) {
+    const donnees = await this.contrats.proposition(accountId, bookingId);
+    const pdf = await propositionPdf(donnees as never);
+    return { pdf, nom: this.nomFichier('proposition', bookingId.slice(-8)) };
   }
 
   async facture(accountId: string, id: string) {
