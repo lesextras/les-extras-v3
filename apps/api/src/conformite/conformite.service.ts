@@ -166,6 +166,124 @@ export class ConformiteService {
     };
   }
 
+  /**
+   * Complétude du dossier de plusieurs personnes d'un coup.
+   *
+   * Écrit pour être appelé sur UNE PAGE de résultats, pas sur tout le compte :
+   * la liste d'équipe affiche vingt-cinq personnes, elle demande la complétude
+   * de ces vingt-cinq-là. C'est ce qui permet d'afficher une colonne
+   * « conformité » sans charger le coffre-fort entier à chaque affichage.
+   */
+  async completenessForUsers(
+    accountId: string,
+    userIds: string[],
+  ): Promise<Map<string, Completeness>> {
+    const parUtilisateur = new Map<string, Completeness>();
+    if (userIds.length === 0) return parUtilisateur;
+
+    const docs = await this.prisma.complianceDocument.findMany({
+      where: { accountId, userId: { in: userIds } },
+      select: { userId: true, type: true, status: true, expiresAt: true, issuedAt: true },
+    });
+
+    const groupes = new Map<string, typeof docs>();
+    for (const doc of docs) {
+      const liste = groupes.get(doc.userId) ?? [];
+      liste.push(doc);
+      groupes.set(doc.userId, liste);
+    }
+    for (const id of userIds) {
+      parUtilisateur.set(id, this.computeCompleteness(groupes.get(id) ?? []));
+    }
+    return parUtilisateur;
+  }
+
+  /**
+   * LES DOSSIERS EN DÉFAUT, triés par urgence.
+   *
+   * L'ancien écran listait tout le monde, du plus conforme au moins conforme,
+   * et laissait le responsable chercher. Or ce qu'il vient chercher, c'est
+   * l'inverse : qui n'est pas en règle, et pour quoi. On ne renvoie donc que
+   * les dossiers incomplets ou proches de l'échéance, le pire en premier.
+   *
+   * L'urgence est calculée ainsi : une pièce obligatoire manquante pèse plus
+   * qu'une pièce qui expire bientôt, et le casier judiciaire pèse plus que le
+   * reste — c'est la pièce qu'une inspection regarde d'abord quand des mineurs
+   * sont accompagnés.
+   */
+  async alertes(
+    accountId: string,
+    filtres: { page?: number; perPage?: number; orgUnitId?: string } = {},
+  ) {
+    await this.refreshExpired(accountId);
+    const page = Math.max(1, Math.trunc(Number(filtres.page) || 1));
+    const perPage = Math.min(100, Math.max(1, Math.trunc(Number(filtres.perPage) || 25)));
+
+    const memberships = await this.prisma.membership.findMany({
+      where: {
+        accountId,
+        status: MembershipStatus.ACTIVE,
+        ...(filtres.orgUnitId ? { orgUnitId: filtres.orgUnitId } : {}),
+      },
+      select: {
+        role: true,
+        orgUnit: { select: { id: true, name: true } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+            profile: { select: { job: true } },
+          },
+        },
+      },
+    });
+
+    const completudes = await this.completenessForUsers(
+      accountId,
+      memberships.map((m) => m.user.id),
+    );
+
+    const enDefaut = memberships
+      .map((m) => {
+        const c = completudes.get(m.user.id) ?? {
+          total: this.requiredTypes.length,
+          valid: 0,
+          pct: 0,
+          expiringSoon: 0,
+          missing: this.requiredTypes.length,
+        };
+        return {
+          user: {
+            id: m.user.id,
+            email: m.user.email,
+            firstName: m.user.firstName,
+            lastName: m.user.lastName,
+            avatarUrl: m.user.avatarUrl,
+            job: m.user.profile?.job ?? null,
+          },
+          membershipRole: m.role,
+          orgUnit: m.orgUnit,
+          completeness: c,
+          urgence: c.missing * 10 + c.expiringSoon,
+        };
+      })
+      .filter((l) => l.completeness.missing > 0 || l.completeness.expiringSoon > 0)
+      .sort((a, b) => b.urgence - a.urgence);
+
+    return {
+      items: enDefaut.slice((page - 1) * perPage, page * perPage),
+      total: enDefaut.length,
+      page,
+      perPage,
+      pages: Math.max(1, Math.ceil(enDefaut.length / perPage)),
+      membresActifs: memberships.length,
+      requiredTypes: this.requiredTypes,
+    };
+  }
+
   /** Détail des pièces d'un membre, avec entrées virtuelles MISSING pour les types requis absents. */
   async listForUser(accountId: string, userId: string) {
     await this.refreshExpired(accountId, userId);

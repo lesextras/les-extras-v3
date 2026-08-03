@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
@@ -24,6 +24,25 @@ export class ConformiteController {
   }
 
   /** Détail des pièces d'un intervenant. */
+  /**
+   * Les dossiers en défaut, du plus urgent au moins urgent.
+   * Déclaré AVANT `:userId` : sans cela Nest prendrait « alertes » pour un
+   * identifiant d'utilisateur et la route ne serait jamais atteinte.
+   */
+  @Get('alertes')
+  alertes(
+    @CurrentAccount() account: RequestAccount,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('orgUnitId') orgUnitId?: string,
+  ) {
+    return this.conformite.alertes(account.id, {
+      page: page ? Number(page) : undefined,
+      perPage: perPage ? Number(perPage) : undefined,
+      orgUnitId,
+    });
+  }
+
   @Get(':userId')
   listForUser(@CurrentAccount() account: RequestAccount, @Param('userId') userId: string) {
     return this.conformite.listForUser(account.id, userId);
