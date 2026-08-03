@@ -62,7 +62,7 @@ export default async function AdhesionPage({
 }) {
   const session = await requireSession();
   const accountId = session.account.id;
-  const res = await fetchApi<Overview>(session, `/billing/overview?accountId=${accountId}`);
+  const res = await fetchApi<Overview>(session, "/billing/overview");
 
   if (res.error || !res.data) {
     return (
