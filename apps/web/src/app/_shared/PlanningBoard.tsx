@@ -285,8 +285,11 @@ export function PlanningBoard({
     try {
       const data = await apiRequest<Availability[]>("/availability", { accountId });
       setAvailability(data ?? []);
+      setPanne(false);
     } catch {
-      /* noop */
+      // Les disponibilités décident des missions qu'on vous propose : les
+      // croire vides alors qu'elles n'ont pas chargé, c'est disparaître.
+      setPanne(true);
     }
   }, [accountId]);
 

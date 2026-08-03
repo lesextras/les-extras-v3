@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { BandeauPanne } from "./BandeauPanne";
 import { Field, Textarea } from "./form-fields";
 
 interface Qualification {
@@ -26,6 +27,7 @@ export function CvManager({ accountId }: { accountId: string }) {
   const { toast } = useToast();
   const [quals, setQuals] = useState<Qualification[]>([]);
   const [exps, setExps] = useState<Experience[]>([]);
+  const [panne, setPanne] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function load() {
@@ -36,8 +38,11 @@ export function CvManager({ accountId }: { accountId: string }) {
       );
       setQuals(cv.qualifications ?? []);
       setExps(cv.experiences ?? []);
+      setPanne(false);
     } catch {
-      /* silencieux */
+      // Un CV vide et un CV qui n'a pas chargé se ressemblent trop : c'est ce
+      // que les établissements consultent pour décider de vous retenir.
+      setPanne(true);
     }
   }
   useEffect(() => {
@@ -101,6 +106,7 @@ export function CvManager({ accountId }: { accountId: string }) {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {panne ? <BandeauPanne quoi="votre CV" onReessayer={() => void load()} /> : null}
       {/* Diplômes & formations */}
       <section className="rounded-xl border border-border bg-card p-5">
         <h3 className="text-sm font-semibold text-foreground">Diplômes &amp; formations</h3>

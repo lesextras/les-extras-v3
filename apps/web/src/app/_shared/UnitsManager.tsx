@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { BandeauPanne } from "./BandeauPanne";
 
 interface Unit {
   id: string;
@@ -26,17 +27,23 @@ export function UnitsManager({ accountId, canManage }: { accountId: string; canM
   const [units, setUnits] = useState<Unit[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [busy, setBusy] = useState(false);
+  const [panne, setPanne] = useState(false);
 
   async function load() {
     try {
       const [u, m] = await Promise.all([
         apiRequest<Unit[]>("/units", { accountId }),
-        apiRequest<Member[]>("/memberships", { accountId }),
+        // La liste des membres est paginée depuis qu'elle peut être longue :
+        // elle renvoie une page, plus un tableau. Le garde `Array.isArray`
+        // qui traînait ici la rendait vide en silence — on ne pouvait plus
+        // rattacher personne à un service, et rien ne le disait.
+        apiRequest<{ items: Member[] }>("/memberships?perPage=200", { accountId }),
       ]);
       setUnits(Array.isArray(u) ? u : []);
-      setMembers(Array.isArray(m) ? m : []);
+      setMembers(m?.items ?? []);
+      setPanne(false);
     } catch {
-      /* silencieux */
+      setPanne(true);
     }
   }
   useEffect(() => {
@@ -97,6 +104,7 @@ export function UnitsManager({ accountId, canManage }: { accountId: string; canM
 
   return (
     <div className="space-y-6">
+        {panne ? <BandeauPanne quoi="les services et les membres" onReessayer={() => void load()} /> : null}
       <section className="rounded-xl border border-border bg-card p-5">
         <h3 className="text-sm font-semibold text-foreground">Unités &amp; services</h3>
         <p className="text-xs text-muted-foreground">

@@ -1,6 +1,18 @@
 "use client";
 
-// Contrat de mission de renfort (A4 présentationnel) + impression + signature en ligne.
+// PROPOSITION D'ENGAGEMENT (A4 présentationnel).
+//
+// Ce document s'appelait « contrat de mission de renfort ». Le mot était faux,
+// et le faux mot portait un risque : un document signé par les deux parties
+// via la plateforme, fixant une rémunération et annonçant une facturation,
+// ressemble à une mise à disposition de personnel. Le Conseil d'État, le
+// 11 février 2025, a jugé qu'un indépendant intervenant dans les horaires,
+// les locaux et sous l'encadrement d'un établissement est en lien de
+// subordination.
+//
+// Ce que la plateforme fait, elle le dit donc : elle a trouvé quelqu'un, elle
+// chiffre, elle s'arrête. L'établissement embauche lui-même — et le bouton
+// « Établir le CDD » le conduit là où l'outil l'accompagne vraiment.
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -79,7 +91,10 @@ export function ContractDocument({
       // Le compte actif (freelance ou établissement) signe ; l'API détermine le côté.
       const signingAccountId = side === "freelance" ? contract.accountId : est?.id;
       await apiRequest(`/bookings/${contract.id}/sign`, { method: "PATCH", accountId: signingAccountId });
-      toast({ title: "Contrat signé", description: "Votre signature a bien été enregistrée." });
+      toast({
+        title: "Proposition acceptée",
+        description: "Votre accord est enregistré. Le contrat de travail reste à établir par l'établissement.",
+      });
       router.refresh();
     } catch (err) {
       toast({ title: "Signature impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
@@ -93,15 +108,32 @@ export function ContractDocument({
       <div className="mb-6 flex items-start justify-between">
         <div>
           <div className="text-lg font-bold text-[#156d6b]">LES EXTRAS</div>
-          <div className="text-xs text-neutral-500">Contrat de mission de renfort médico-social</div>
+          <div className="text-xs text-neutral-500">Proposition d’engagement — renfort médico-social</div>
         </div>
         <div className="flex gap-2 print:hidden">
-          <PrintButton label="Imprimer / PDF" />
+          <Button asChild variant="outline" size="sm">
+            <a
+              href={`/api/proxy/documents/proposition/${contract.id}.pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Télécharger le PDF
+            </a>
+          </Button>
+          <PrintButton label="Imprimer" />
         </div>
       </div>
 
-      <h1 className="mb-1 text-xl font-semibold">{m?.title ?? "Mission de renfort"}</h1>
-      <p className="mb-6 text-xs text-neutral-500">Référence : {contract.id}</p>
+      <h1 className="mb-1 text-xl font-semibold">{m?.title ?? "Besoin de renfort"}</h1>
+      <p className="mb-4 text-xs text-neutral-500">Référence : {contract.id}</p>
+
+      <p className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-3 text-[12px] leading-relaxed text-neutral-800">
+        <strong>Ce document n’est pas un contrat de travail.</strong> Il présente la personne
+        trouvée pour votre besoin et chiffre ce que représenterait son engagement. Si vous
+        l’acceptez, votre établissement conclut directement un CDD avec elle : vous en êtes
+        l’employeur, et la plateforme n’intervient ni dans la rémunération ni dans le lien de
+        subordination.
+      </p>
 
       <div className="mb-6 grid grid-cols-2 gap-4">
         <section className="rounded-lg border border-neutral-200 p-3">
@@ -111,7 +143,7 @@ export function ContractDocument({
           <p>{[est?.address, est?.city].filter(Boolean).join(", ") || "—"}</p>
         </section>
         <section className="rounded-lg border border-neutral-200 p-3">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Intervenant (freelance)</h2>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Personne proposée</h2>
           <p className="font-medium">{fullName(fl, contract.account?.name)}</p>
           {fl?.profile?.job ? <p>{fl.profile.job}</p> : null}
           {fl?.profile?.siret ? <p>SIRET : {fl.profile.siret}</p> : null}
@@ -126,7 +158,7 @@ export function ContractDocument({
           <Line label="Date" value={formatDate(m?.startDate)} />
           <Line label="Horaires" value={m?.startTime || m?.endTime ? `${m?.startTime ?? "?"} – ${m?.endTime ?? "?"}` : "—"} />
           <Line label="Lieu" value={`${m?.city ?? "—"}${m?.postalCode ? ` (${m.postalCode})` : ""}`} />
-          <Line label="Rémunération" value={m?.hourlyRate ? formatRate(m.hourlyRate) : "à convenir"} />
+          <Line label="Taux horaire brut" value={m?.hourlyRate ? formatRate(m.hourlyRate) : "à convenir"} />
           <Line label="Postes" value={String(m?.headcount ?? 1)} />
         </div>
         {m?.description ? (
@@ -135,27 +167,29 @@ export function ContractDocument({
       </section>
 
       <section className="mb-8 text-[12px] text-neutral-600">
-        <p className="mb-1 font-semibold text-neutral-700">Conditions</p>
+        <p className="mb-1 font-semibold text-neutral-700">Ce qui se passe ensuite</p>
         <p>
-          Le présent contrat formalise la mission de renfort ci-dessus entre l'établissement et l'intervenant indépendant,
-          via la plateforme Les Extras (ADéPA77). L'intervenant s'engage à réaliser la mission aux dates et conditions
-          indiquées et à disposer des habilitations requises (pièces de conformité à jour). La rémunération est celle
-          mentionnée ; la facturation est émise à l'issue de la mission. Chaque partie signe électroniquement ci-dessous.
+          Le montant indiqué est une rémunération brute estimée : les cotisations patronales s’y
+          ajoutent et dépendent de votre convention collective, de votre effectif et des
+          exonérations dont vous bénéficiez. Une fois cette proposition acceptée par les deux
+          parties, votre établissement établit le contrat à durée déterminée — les éléments
+          ci-dessus y sont repris automatiquement, et l’outil vérifie qu’aucune mention
+          obligatoire ne manque avant de vous laisser le transmettre au salarié.
         </p>
       </section>
 
       <div className="grid grid-cols-2 gap-6">
-        <SignBlock title="Pour l'établissement" signedAt={contract.signedEstablishmentAt} name={est?.name} />
-        <SignBlock title="Pour l'intervenant" signedAt={contract.signedFreelanceAt} name={fullName(fl, contract.account?.name)} />
+        <SignBlock title="Accord de l'établissement" signedAt={contract.signedEstablishmentAt} name={est?.name} />
+        <SignBlock title="Accord de la personne" signedAt={contract.signedFreelanceAt} name={fullName(fl, contract.account?.name)} />
       </div>
 
       {side !== "none" ? (
         <div className="mt-6 print:hidden">
           {mySigned ? (
-            <p className="text-sm font-medium text-[#156d6b]">✓ Vous avez signé ce contrat.</p>
+            <p className="text-sm font-medium text-[#156d6b]">✓ Vous avez accepté cette proposition.</p>
           ) : (
             <Button disabled={loading} onClick={sign}>
-              {loading ? "…" : "Signer le contrat"}
+              {loading ? "…" : "Accepter la proposition"}
             </Button>
           )}
         </div>
