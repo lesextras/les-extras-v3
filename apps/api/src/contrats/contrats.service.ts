@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { bornes, page } from '../common/pagination';
 import { CreateContratDto, DpaeDto, TerminerDto, UpdateContratDto } from './dto/contrat.dto';
 import {
   CauseFinContrat,
@@ -172,19 +173,39 @@ export class ContratsService {
     return this.get(accountId, contrat.id);
   }
 
-  async list(accountId: string) {
-    const contrats = await this.prisma.contratCDD.findMany({
-      where: { accountId },
-      orderBy: { dateDebut: 'desc' },
-      include: {
-        user: { select: { id: true, firstName: true, lastName: true } },
-        mission: { select: { id: true, title: true } },
-      },
-    });
-    return contrats.map((c) => ({
-      ...c,
-      emissible: mentionsManquantes(this.projet(c)).length === 0,
-    }));
+  /**
+   * Les contrats du compte, page par page. Un établissement qui embauche
+   * régulièrement en accumule des centaines par an : la liste entière n'a
+   * jamais été une réponse, et `userId` permet d'ouvrir directement ceux
+   * d'une personne depuis sa fiche, sans tout charger pour en filtrer trois.
+   */
+  async list(accountId: string, filtres: { page?: number; perPage?: number; userId?: string } = {}) {
+    const { page: p, perPage, skip, take } = bornes(filtres);
+    const where = { accountId, ...(filtres.userId ? { userId: filtres.userId } : {}) };
+
+    const [contrats, total] = await Promise.all([
+      this.prisma.contratCDD.findMany({
+        where,
+        orderBy: { dateDebut: 'desc' },
+        skip,
+        take,
+        include: {
+          user: { select: { id: true, firstName: true, lastName: true } },
+          mission: { select: { id: true, title: true } },
+        },
+      }),
+      this.prisma.contratCDD.count({ where }),
+    ]);
+
+    return page(
+      contrats.map((c) => ({
+        ...c,
+        emissible: mentionsManquantes(this.projet(c)).length === 0,
+      })),
+      total,
+      p,
+      perPage,
+    );
   }
 
   /**

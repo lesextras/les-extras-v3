@@ -1,13 +1,23 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
+import { AccountRolesGuard } from '../common/guards/account-roles.guard';
+import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import type { RequestAccount } from '../common/types/request-context';
 import { ContratsService } from './contrats.service';
 import { CreateContratDto, DpaeDto, TerminerDto, UpdateContratDto } from './dto/contrat.dto';
 
+/**
+ * Un contrat de travail porte une rémunération, une qualification et parfois
+ * le nom de la personne remplacée. Ce n'est pas une information d'équipe :
+ * l'accès entier — lecture comprise — est réservé aux responsables.
+ * Le menu retire l'entrée aux autres ; ce garde-ci fait que l'adresse tapée
+ * à la main ne suffit pas non plus.
+ */
 @Controller('contrats')
-@UseGuards(JwtAuthGuard, AccountGuard)
+@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
+@AccountRoles('OWNER', 'ADMIN', 'MANAGER')
 export class ContratsController {
   constructor(private readonly contrats: ContratsService) {}
 
@@ -24,8 +34,17 @@ export class ContratsController {
   }
 
   @Get()
-  list(@CurrentAccount() a: RequestAccount) {
-    return this.contrats.list(a.id);
+  list(
+    @CurrentAccount() a: RequestAccount,
+    @Query('page') p?: string,
+    @Query('perPage') perPage?: string,
+    @Query('userId') userId?: string,
+  ) {
+    return this.contrats.list(a.id, {
+      page: p ? Number(p) : undefined,
+      perPage: perPage ? Number(perPage) : undefined,
+      userId,
+    });
   }
 
   @Get(':id')
