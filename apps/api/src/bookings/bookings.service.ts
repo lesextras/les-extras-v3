@@ -52,9 +52,15 @@ export class BookingsService {
     };
     if (query.status) where.status = query.status;
 
+    // Borne dure : cette liste alimente des écrans, jamais un export. Sans
+    // elle, le tableau de bord chargeait tout l'historique du compte pour en
+    // afficher cinq lignes.
+    const take = Math.min(200, Math.max(1, Math.trunc(Number(query.take) || 50)));
+
     return this.prisma.booking.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take,
       include: {
         mission: { select: { id: true, title: true, accountId: true, startDate: true } },
         service: { select: { id: true, title: true, accountId: true } },
