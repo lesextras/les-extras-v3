@@ -22,7 +22,7 @@ export default async function ContratsPage() {
   if (session.account.type !== "ESTABLISHMENT") redirect("/dashboard");
 
   const [liste, motifs, salaries] = await Promise.all([
-    fetchApi<Contrat[]>(session, "/contrats"),
+    fetchApi<{ items: Contrat[]; total: number }>(session, "/contrats?perPage=50"),
     fetchApi<MotifRecoursOption[]>(session, "/contrats/motifs"),
     fetchApi<SalariePossible[]>(session, "/contrats/salaries"),
   ]);
@@ -37,7 +37,8 @@ export default async function ContratsPage() {
         <ErrorState retryHref="/dashboard/contrats" />
       ) : (
         <ContratsListe
-          initialContrats={liste.data ?? []}
+          initialContrats={liste.data?.items ?? []}
+          total={liste.data?.total ?? 0}
           motifs={motifs.data ?? []}
           salaries={salaries.data ?? []}
         />
