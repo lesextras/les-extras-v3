@@ -5,6 +5,7 @@ import { ServicesController } from '../services/services.controller';
 import { MembershipsController } from '../memberships/memberships.controller';
 import { InvitationsController } from '../invitations/invitations.controller';
 import { InvoicesController } from '../invoices/invoices.controller';
+import { ContratsController } from '../contrats/contrats.controller';
 import { ConformiteController } from '../conformite/conformite.controller';
 
 /**
@@ -82,13 +83,21 @@ describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
     });
   });
 
-  describe('Coffre-fort de conformité', () => {
-    it('éditer une pièce : Direction, Administrateur, Responsable', () => {
+  describe('Conformité', () => {
+    it('éditer une pièce : Direction, Administration, Chef de service', () => {
       expect(rolesOf(ConformiteController, 'upsertDocument')).toEqual(MANAGER);
     });
-    it('consulter la complétude : tout membre actif', () => {
-      expect(rolesOf(ConformiteController, 'summary')).toBeUndefined();
-      expect(rolesOf(ConformiteController, 'listForUser')).toBeUndefined();
+
+    /**
+     * La lecture était ouverte à tout membre actif, et ce test le vérifiait.
+     * C'était l'erreur : ces pièces comprennent le casier judiciaire et les
+     * diplômes de chacun. Un moniteur-éducateur n'a pas à consulter le dossier
+     * de ses collègues. La restriction porte désormais sur le contrôleur
+     * entier, ce qui la rend visible ici au niveau de la classe.
+     */
+    it('consulter : réservé aux responsables, comme l’écriture', () => {
+      expect(Reflect.getMetadata(ACCOUNT_ROLES_KEY, ConformiteController)).toEqual(MANAGER);
+      expect(Reflect.getMetadata(ACCOUNT_ROLES_KEY, ContratsController)).toEqual(MANAGER);
     });
   });
 });
