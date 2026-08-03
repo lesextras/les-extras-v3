@@ -94,33 +94,78 @@ export class MatchingService {
   }
 
   // --- Candidats classés pour une mission (côté ESTABLISHMENT) ------------
-  async candidatesForMission(missionId: string, accountId: string) {
+  /**
+   * Le classement des candidats faisait 1 + 2N requêtes : tous les comptes
+   * intervenants de la plateforme, puis pour CHACUN une moyenne d'avis et un
+   * comptage de créneaux, en série. À cinq cents inscrits, c'était mille et
+   * une allers-retours en base pour afficher une liste — et c'est précisément
+   * quand la campagne réussit que ça arrive.
+   *
+   * Trois requêtes désormais, quel que soit le nombre d'inscrits : les
+   * candidats, les avis agrégés en une passe, les conflits en une passe.
+   * Le pool est borné, et pré-filtré sur le métier quand la mission le
+   * précise — proposer un moniteur-éducateur pour un poste de psychologue
+   * n'aide personne, autant ne pas le charger.
+   */
+  async candidatesForMission(missionId: string, accountId: string, take = 100) {
     const mission = await this.prisma.reliefMission.findFirst({ where: { id: missionId, accountId } });
     if (!mission) return { mission: null, candidates: [] };
 
     const needs = tokens(mission.title, mission.description, mission.job, mission.category);
+    const plafond = Math.min(300, Math.max(1, Math.trunc(Number(take) || 100)));
+
     const freelanceAccounts = await this.prisma.account.findMany({
-      where: { type: 'FREELANCE' },
+      where: {
+        type: 'FREELANCE',
+        // Un intervenant qui s'est déclaré indisponible n'est pas un candidat.
+        owner: { profile: { is: { available: true } } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: plafond,
       include: { owner: { include: { profile: true } } },
     });
+
+    const userIds = freelanceAccounts.map((a) => a.owner?.id).filter(Boolean) as string[];
+    if (userIds.length === 0) {
+      return { mission: { id: mission.id, title: mission.title }, candidates: [] };
+    }
+
+    const fin = mission.endDate ?? mission.startDate;
+    const [avis, creneauxEnConflit] = await Promise.all([
+      this.prisma.review.groupBy({
+        by: ['targetId'],
+        where: { targetId: { in: userIds } },
+        _avg: { rating: true },
+        _count: { _all: true },
+      }),
+      mission.startDate
+        ? this.prisma.shift.groupBy({
+            by: ['freelanceId'],
+            where: {
+              freelanceId: { in: userIds },
+              status: { in: ['PLANNED', 'CONFIRMED'] },
+              startAt: { lte: fin },
+              endAt: { gte: mission.startDate },
+            },
+            _count: { _all: true },
+          })
+        : Promise.resolve([] as { freelanceId: string | null; _count: { _all: number } }[]),
+    ]);
+
+    const noteParUser = new Map(avis.map((a) => [a.targetId, a]));
+    const conflitParUser = new Set(
+      creneauxEnConflit.map((c) => c.freelanceId).filter(Boolean) as string[],
+    );
 
     const results = [];
     for (const acc of freelanceAccounts) {
       const u = acc.owner;
       if (!u) continue;
       const p = u.profile;
-      const agg = await this.prisma.review.aggregate({ where: { targetId: u.id }, _avg: { rating: true }, _count: true });
-      const avgRating = agg._avg.rating ?? 0;
-      const reviewCount = agg._count ?? 0;
-      // conflit : shift existant qui chevauche la fenêtre de la mission
-      let hasConflict = false;
-      if (mission.startDate) {
-        const end = mission.endDate ?? mission.startDate;
-        const conflict = await this.prisma.shift.count({
-          where: { freelanceId: u.id, status: { in: ['PLANNED', 'CONFIRMED'] }, startAt: { lte: end }, endAt: { gte: mission.startDate } },
-        });
-        hasConflict = conflict > 0;
-      }
+      const agg = noteParUser.get(u.id);
+      const avgRating = agg?._avg.rating ?? 0;
+      const reviewCount = agg?._count._all ?? 0;
+      const hasConflict = conflitParUser.has(u.id);
       const factors: Factor[] = [
         { key: 'job', label: 'Métier', score: this.scoreJob(mission.job, mission.category, p?.job), weight: WEIGHTS.job },
         { key: 'geo', label: 'Proximité', score: this.scoreGeo(mission.city, mission.postalCode, p?.city, p?.postalCode, p?.radiusKm), weight: WEIGHTS.geo },
