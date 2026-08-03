@@ -164,12 +164,30 @@ export class PlanningService {
 
     // 2. Réservations : renforts et ateliers, dans les deux sens (le compte a
     //    réservé, ou c'est lui qui intervient).
+    // Le filtre de date se fait EN BASE, pas en mémoire. La version précédente
+    // chargeait tout l'historique des réservations du compte pour n'en garder
+    // que le mois affiché : invisible la première année, insoutenable ensuite.
+    // Une réservation entre dans la fenêtre par sa date de mission ou, à
+    // défaut, par sa date programmée — on couvre les deux.
     const bookings = await this.prisma.booking.findMany({
       where: {
         status: { in: ['ACCEPTED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED'] },
         OR: [{ accountId }, { mission: { accountId } }, { service: { accountId } }],
+        ...(debut || fin
+          ? {
+              AND: [
+                {
+                  OR: [
+                    { mission: { startDate: range } },
+                    { AND: [{ missionId: null }, { scheduledAt: range }] },
+                  ],
+                },
+              ],
+            }
+          : {}),
       },
       orderBy: { createdAt: 'desc' },
+      take: 500,
       include: {
         mission: { select: { id: true, title: true, accountId: true, startDate: true, endDate: true } },
         service: { select: { id: true, title: true, accountId: true, durationMinutes: true } },
