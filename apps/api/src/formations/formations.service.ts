@@ -9,9 +9,11 @@ import {
   FinancingType,
   FormationStatus,
   FormationType,
+  InscriptionStatus,
   InvoiceStatus,
   MembershipStatus,
   Prisma,
+  SessionStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { bornes, page } from '../common/pagination';
@@ -23,6 +25,7 @@ import { UpdateSessionDto } from './dto/update-session.dto';
 import { CreateInscriptionDto } from './dto/create-inscription.dto';
 import { UpdateInscriptionDto } from './dto/update-inscription.dto';
 import { SignEmargementDto } from './dto/sign-emargement.dto';
+import { EvaluationChaudDto, EvaluationFroidDto } from './dto/evaluation.dto';
 import { QueryFormationsDto } from './dto/query-formations.dto';
 
 /** Génère un slug URL-safe + suffixe court pour garantir l'unicité. */
@@ -93,6 +96,34 @@ export class FormationsService {
     return page(items, total, p, perPage);
   }
 
+  /**
+   * Les sessions dont j'ai la charge : celles que j'anime en tant que
+   * formateur, celles que ma structure accueille, celles issues d'un programme
+   * qui m'appartient. Les trois cas mènent aux mêmes gestes — émarger, suivre
+   * les apprenants, délivrer les attestations — et `canManageSession` les
+   * autorise déjà tous les trois. Seule la liste manquait.
+   */
+  async mesSessions(accountId: string, userId: string) {
+    return this.prisma.formationSession.findMany({
+      where: {
+        OR: [
+          { trainerId: userId },
+          { hostAccountId: accountId },
+          { formation: { ownerAccountId: accountId } },
+        ],
+      },
+      orderBy: { startDate: 'desc' },
+      take: 200,
+      include: {
+        formation: {
+          select: { id: true, title: true, slug: true, type: true, certifying: true },
+        },
+        trainer: { select: { id: true, firstName: true, lastName: true } },
+        _count: { select: { inscriptions: true } },
+      },
+    });
+  }
+
   /** Catalogue : programmes PUBLIÉS + filtres type/catégorie/recherche. */
   async findCatalog(query: QueryFormationsDto) {
     const where: Prisma.FormationWhereInput = { status: FormationStatus.PUBLISHED };
@@ -145,11 +176,21 @@ export class FormationsService {
     // inscription (exigence Qualiopi, indicateur 30). On l'agrège ici pour en
     // faire une note affichable — sans elle, une formation n'a aucune preuve
     // sociale alors qu'un atelier en a une.
-    const agg = await this.prisma.inscription.aggregate({
-      where: { session: { formationId: id }, satisfaction: { not: null } },
-      _avg: { satisfaction: true },
-      _count: { satisfaction: true },
-    });
+    const [agg, aggFroid] = await Promise.all([
+      this.prisma.inscription.aggregate({
+        where: { session: { formationId: id }, satisfaction: { not: null } },
+        _avg: { satisfaction: true },
+        _count: { satisfaction: true },
+      }),
+      // L'évaluation à froid mérite d'être affichée à part : une formation bien
+      // vécue le jour même et sans effet trois mois après n'est pas la même
+      // chose qu'une formation dont les acquis tiennent.
+      this.prisma.inscription.aggregate({
+        where: { session: { formationId: id }, coldRating: { not: null } },
+        _avg: { coldRating: true },
+        _count: { coldRating: true },
+      }),
+    ]);
     const enrichie = {
       ...formation,
       rating:
@@ -158,6 +199,11 @@ export class FormationsService {
           : null,
       ratingCount: agg._count.satisfaction,
       ratingSource: agg._count.satisfaction > 0 ? ('learners' as const) : null,
+      coldRating:
+        aggFroid._count.coldRating > 0 && aggFroid._avg.coldRating != null
+          ? Math.round(aggFroid._avg.coldRating * 10) / 10
+          : null,
+      coldRatingCount: aggFroid._count.coldRating,
     };
 
     if (accountId && formation.ownerAccountId === accountId) return enrichie;
@@ -369,6 +415,15 @@ export class FormationsService {
       throw new BadRequestException('Précisez un apprenant (membre) ou son nom.');
     }
 
+    // Une session close ou annulée n'accueille plus personne. Sans ce contrôle,
+    // on pouvait inscrire un salarié à une session terminée la semaine passée.
+    if (session.status === SessionStatus.CANCELLED) {
+      throw new BadRequestException('Cette session est annulée.');
+    }
+    if (session.status === SessionStatus.DONE) {
+      throw new BadRequestException('Cette session est terminée.');
+    }
+
     // Financement : forcé INTERNE pour l'interne ; CPF interdit sur l'interne.
     let financing = dto.financing ?? (isInternal ? FinancingType.INTERNE : FinancingType.ESTABLISHMENT);
     if (isInternal) financing = FinancingType.INTERNE;
@@ -376,16 +431,84 @@ export class FormationsService {
       financing = FinancingType.ESTABLISHMENT;
     }
 
-    return this.prisma.inscription.create({
-      data: {
-        sessionId,
-        learnerId: dto.learnerId ?? undefined,
-        learnerName: dto.learnerName,
-        learnerEmail: dto.learnerEmail,
-        payerAccountId: accountId,
-        financing,
-      },
+    /**
+     * LE NOMBRE DE PLACES.
+     *
+     * `maxSeats` était saisi à la création de la session, affiché sur la page
+     * publique en « places restantes » — et jamais vérifié. On pouvait inscrire
+     * quinze personnes à une session de huit, et personne ne s'en apercevait
+     * avant le jour même. Le statut FULL, lui, existait dans l'énumération sans
+     * qu'aucune ligne de code ne le pose.
+     *
+     * Le comptage et la création se font dans une seule transaction : deux
+     * inscriptions simultanées sur la dernière place ne peuvent pas passer
+     * toutes les deux. Les inscriptions annulées ne comptent pas — une place
+     * libérée est une place disponible.
+     */
+    return this.prisma.$transaction(async (tx) => {
+      const occupees =
+        session.maxSeats === null
+          ? 0
+          : await tx.inscription.count({
+              where: { sessionId, status: { not: InscriptionStatus.CANCELLED } },
+            });
+
+      if (session.maxSeats !== null && occupees >= session.maxSeats) {
+        throw new BadRequestException(
+          `Session complète : les ${session.maxSeats} places sont prises. Contactez l'organisme pour ouvrir une autre date.`,
+        );
+      }
+
+      const creee = await tx.inscription.create({
+        data: {
+          sessionId,
+          learnerId: dto.learnerId ?? undefined,
+          learnerName: dto.learnerName,
+          learnerEmail: dto.learnerEmail,
+          payerAccountId: accountId,
+          financing,
+        },
+      });
+
+      // Dernière place prise : la session bascule en COMPLÈTE, ce qui la retire
+      // des inscriptions ouvertes sur le catalogue public.
+      if (
+        session.maxSeats !== null &&
+        occupees + 1 >= session.maxSeats &&
+        session.status !== SessionStatus.FULL
+      ) {
+        await tx.formationSession.update({
+          where: { id: sessionId },
+          data: { status: SessionStatus.FULL },
+        });
+      }
+
+      return creee;
     });
+  }
+
+  /**
+   * Une place se libère : la session complète redevient ouverte.
+   * Sans cela, annuler une inscription laissait la session bloquée en COMPLÈTE
+   * avec une place vide — et le remplaçant restait à la porte.
+   */
+  private async rouvrirSiPlaceLiberee(sessionId: string): Promise<void> {
+    const session = await this.prisma.formationSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true, maxSeats: true, status: true },
+    });
+    if (!session || session.maxSeats === null) return;
+    if (session.status !== SessionStatus.FULL) return;
+
+    const occupees = await this.prisma.inscription.count({
+      where: { sessionId, status: { not: InscriptionStatus.CANCELLED } },
+    });
+    if (occupees < session.maxSeats) {
+      await this.prisma.formationSession.update({
+        where: { id: sessionId },
+        data: { status: SessionStatus.OPEN },
+      });
+    }
   }
 
   async updateInscription(
@@ -402,7 +525,7 @@ export class FormationsService {
     if (!this.canManageSession(inscription.session, accountId, userId)) {
       throw new ForbiddenException('Accès à cette inscription refusé.');
     }
-    return this.prisma.inscription.update({
+    const misAJour = await this.prisma.inscription.update({
       where: { id: inscriptionId },
       data: {
         status: dto.status,
@@ -410,6 +533,161 @@ export class FormationsService {
         evalResult: dto.evalResult,
       },
     });
+
+    if (dto.status === InscriptionStatus.CANCELLED) {
+      await this.rouvrirSiPlaceLiberee(inscription.sessionId);
+    }
+
+    return misAJour;
+  }
+
+  // --- Évaluations (référentiel national qualité) --------------------------
+
+  /**
+   * Qui a le droit de renseigner une évaluation : celui qui gère la session,
+   * ou l'apprenant lui-même. Le second cas est le plus important — une
+   * appréciation saisie par le formateur à la place du stagiaire n'a aucune
+   * valeur probante, et c'est exactement ce qu'un auditeur cherche à écarter.
+   */
+  private async chargerInscriptionPourEvaluation(
+    inscriptionId: string,
+    accountId: string,
+    userId: string,
+  ) {
+    const inscription = await this.prisma.inscription.findUnique({
+      where: { id: inscriptionId },
+      include: { session: { include: { formation: true } } },
+    });
+    if (!inscription) throw new NotFoundException('Inscription introuvable.');
+
+    const estApprenant = Boolean(inscription.learnerId) && inscription.learnerId === userId;
+    if (!estApprenant && !this.canManageSession(inscription.session, accountId, userId)) {
+      throw new ForbiddenException('Accès à cette évaluation refusé.');
+    }
+    return inscription;
+  }
+
+  /** Évaluation à chaud — recueillie en fin de session. */
+  async evaluationChaud(
+    inscriptionId: string,
+    accountId: string,
+    userId: string,
+    dto: EvaluationChaudDto,
+  ) {
+    const inscription = await this.chargerInscriptionPourEvaluation(
+      inscriptionId,
+      accountId,
+      userId,
+    );
+
+    // Une évaluation de fin de session avant la session n'évalue rien. On
+    // laisse passer le jour même : les formations d'une journée se clôturent
+    // avant minuit.
+    const debut = new Date(inscription.session.startDate);
+    const finDuJour = new Date(debut);
+    finDuJour.setHours(0, 0, 0, 0);
+    if (Date.now() < finDuJour.getTime()) {
+      throw new BadRequestException(
+        "La session n'a pas encore commencé : l'évaluation de fin ne peut pas être recueillie.",
+      );
+    }
+
+    return this.prisma.inscription.update({
+      where: { id: inscriptionId },
+      data: {
+        satisfaction: dto.satisfaction,
+        satisfactionComment: dto.commentaire?.trim() || null,
+        satisfactionAt: new Date(),
+        ...(dto.resultat !== undefined ? { evalResult: dto.resultat.trim() || null } : {}),
+      },
+    });
+  }
+
+  /** Évaluation à froid — quelques mois après, sur le poste de travail. */
+  async evaluationFroid(
+    inscriptionId: string,
+    accountId: string,
+    userId: string,
+    dto: EvaluationFroidDto,
+  ) {
+    await this.chargerInscriptionPourEvaluation(inscriptionId, accountId, userId);
+
+    return this.prisma.inscription.update({
+      where: { id: inscriptionId },
+      data: {
+        coldRating: dto.note,
+        coldTransfer: dto.miseEnOeuvre,
+        coldComment: dto.commentaire?.trim() || null,
+        coldAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * LE BILAN QUALITÉ D'UNE SESSION.
+   *
+   * Ce qu'un auditeur demande, dans cet ordre : combien de personnes inscrites,
+   * combien ont répondu, quelle note, et surtout — que reste-t-il quelques mois
+   * après. Un taux de réponse est aussi parlant qu'une moyenne : cinq sur cinq
+   * à 4,8 ne vaut pas la même chose qu'une réponse sur vingt à 5.
+   */
+  async bilanSession(sessionId: string, accountId: string, userId: string) {
+    const session = await this.loadSession(sessionId);
+    if (!this.canManageSession(session, accountId, userId)) {
+      throw new ForbiddenException('Accès à cette session refusé.');
+    }
+
+    const inscriptions = await this.prisma.inscription.findMany({
+      where: { sessionId, status: { not: InscriptionStatus.CANCELLED } },
+      select: {
+        satisfaction: true,
+        satisfactionComment: true,
+        coldRating: true,
+        coldTransfer: true,
+        coldComment: true,
+        evalResult: true,
+      },
+    });
+
+    const moyenne = (valeurs: number[]) =>
+      valeurs.length === 0
+        ? null
+        : Math.round((valeurs.reduce((a, b) => a + b, 0) / valeurs.length) * 10) / 10;
+
+    const chauds = inscriptions.map((i) => i.satisfaction).filter((n): n is number => n !== null);
+    const froids = inscriptions.map((i) => i.coldRating).filter((n): n is number => n !== null);
+    const transferts = inscriptions
+      .map((i) => i.coldTransfer)
+      .filter((t): t is string => Boolean(t));
+
+    const inscrits = inscriptions.length;
+    const taux = (n: number) => (inscrits === 0 ? 0 : Math.round((n / inscrits) * 100));
+
+    return {
+      inscrits,
+      chaud: {
+        reponses: chauds.length,
+        tauxReponse: taux(chauds.length),
+        moyenne: moyenne(chauds),
+        commentaires: inscriptions
+          .map((i) => i.satisfactionComment)
+          .filter((c): c is string => Boolean(c)),
+      },
+      froid: {
+        reponses: froids.length,
+        tauxReponse: taux(froids.length),
+        moyenne: moyenne(froids),
+        miseEnOeuvre: {
+          oui: transferts.filter((t) => t === 'OUI').length,
+          partiellement: transferts.filter((t) => t === 'PARTIELLEMENT').length,
+          non: transferts.filter((t) => t === 'NON').length,
+        },
+        commentaires: inscriptions
+          .map((i) => i.coldComment)
+          .filter((c): c is string => Boolean(c)),
+      },
+      acquis: inscriptions.map((i) => i.evalResult).filter((r): r is string => Boolean(r)),
+    };
   }
 
   // --- Émargement ---------------------------------------------------------

@@ -58,13 +58,28 @@ export default async function AteliersPage() {
             {pending.map((b) => (
               <div
                 key={b.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4"
+                id={b.id}
+                className="flex flex-wrap items-start justify-between gap-3 scroll-mt-24 rounded-lg border border-border bg-card p-4"
               >
-                <div>
+                {/* Répondre à une demande sans savoir combien de personnes on
+                    accueille ni pour quel public, c'est répondre à l'aveugle.
+                    L'établissement le saisissait déjà ; personne ne le lisait. */}
+                <div className="min-w-0 space-y-1">
                   <p className="text-sm font-medium text-foreground">{b.service?.title ?? "Atelier"}</p>
                   <p className="text-xs text-muted-foreground">
                     Demandé par {b.account?.name ?? "un établissement"}
+                    {b.scheduledAt
+                      ? ` · pour le ${new Date(b.scheduledAt).toLocaleDateString("fr-FR")}`
+                      : " · date à convenir"}
+                    {b.participants
+                      ? ` · ${b.participants} participant${b.participants > 1 ? "s" : ""}`
+                      : ""}
                   </p>
+                  {b.requestNote ? (
+                    <p className="max-w-prose whitespace-pre-line rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                      {b.requestNote}
+                    </p>
+                  ) : null}
                 </div>
                 <BookingActions bookingId={b.id} accountId={session.account.id} status={b.status} />
               </div>

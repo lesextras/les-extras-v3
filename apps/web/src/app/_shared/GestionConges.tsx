@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { ExportPaie } from "./ExportPaie";
 import { BandeauPanne } from "./BandeauPanne";
 
 interface Conge {
@@ -179,13 +180,10 @@ export function GestionConges({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <h2 className="text-base font-semibold text-foreground">Demandes</h2>
-          {canDecide ? (
-            <Button asChild size="sm" variant="outline">
-              <a href="/api/proxy/gta/export/evp.csv" download>
-                Exporter les éléments de paie (CSV)
-              </a>
-            </Button>
-          ) : null}
+          {/* L'export sortait toujours le mois EN COURS — exactement le
+              mauvais mois quand on prépare la paie du précédent. Le choix du
+              mois vit désormais dans le composant. */}
+          {canDecide ? <ExportPaie compact /> : null}
         </CardHeader>
         <CardContent>
           {conges.length === 0 ? (

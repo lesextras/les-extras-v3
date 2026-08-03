@@ -160,7 +160,7 @@ export class MailService {
           year: 'numeric',
         })
       : null;
-    const url = `${this.webUrl}/dashboard/bookings`;
+    const url = `${this.webUrl}/dashboard/reservations`;
     await this.send(
       to,
       'Votre réservation est confirmée',

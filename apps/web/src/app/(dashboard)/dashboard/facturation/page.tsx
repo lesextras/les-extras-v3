@@ -54,6 +54,71 @@ interface FinanceSummary {
   paid?: number;
   pending?: number;
   invoiceCount?: number;
+  /** Les douze derniers mois, du plus ancien au plus récent. */
+  parMois?: { mois: string; facture: number; regle: number }[];
+}
+
+/**
+ * L'HISTOGRAMME DES DOUZE DERNIERS MOIS.
+ *
+ * Trois totaux cumulés ne disent rien de la tendance : quelqu'un qui a facturé
+ * 9 000 € l'an dernier et 200 € ce trimestre lit le même chiffre que quelqu'un
+ * qui monte. Or c'est exactement la question qu'on se pose en ouvrant cet
+ * écran — est-ce que ça marche, en ce moment ?
+ *
+ * Barres en CSS pur : pas de bibliothèque de graphiques pour douze valeurs.
+ */
+function CourbeMensuelle({ parMois }: { parMois: { mois: string; facture: number; regle: number }[] }) {
+  const max = Math.max(1, ...parMois.map((m) => m.facture));
+  const total = parMois.reduce((s, m) => s + m.facture, 0);
+  if (total === 0) return null;
+
+  const libelle = (cle: string) => {
+    const [annee, mois] = cle.split("-");
+    return new Date(Number(annee), Number(mois) - 1, 1)
+      .toLocaleDateString("fr-FR", { month: "short" })
+      .replace(".", "");
+  };
+
+  return (
+    <Card>
+      <CardContent className="space-y-3 p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-semibold text-foreground">Les douze derniers mois</h3>
+          <span className="text-xs text-muted-foreground">
+            La partie pleine est ce qui a été réglé.
+          </span>
+        </div>
+        <div className="flex h-32 items-end gap-1.5">
+          {parMois.map((m) => {
+            const hauteur = Math.round((m.facture / max) * 100);
+            const partReglee = m.facture > 0 ? Math.round((m.regle / m.facture) * 100) : 0;
+            return (
+              <div key={m.mois} className="flex flex-1 flex-col items-center gap-1">
+                <div
+                  className="flex w-full flex-col justify-end overflow-hidden rounded-t bg-muted"
+                  style={{ height: `${Math.max(hauteur, m.facture > 0 ? 4 : 0)}%` }}
+                  title={`${libelle(m.mois)} : ${formatMoney(m.facture)} facturé, ${formatMoney(m.regle)} réglé`}
+                >
+                  <div className="w-full bg-primary" style={{ height: `${partReglee}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex gap-1.5">
+          {parMois.map((m) => (
+            <span
+              key={m.mois}
+              className="flex-1 text-center text-[10px] uppercase text-muted-foreground"
+            >
+              {libelle(m.mois)}
+            </span>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 const DEVIS_STATUS: Record<string, string> = {
@@ -217,6 +282,8 @@ export default async function FacturationPage({
             <StatCard label="En attente" value={formatMoney(s.pending ?? 0)} />
             <StatCard label="Factures" value={s.invoiceCount ?? listeFactures.length} />
           </div>
+
+          {s.parMois && s.parMois.length > 0 ? <CourbeMensuelle parMois={s.parMois} /> : null}
 
           {invoices.error ? (
             <ErrorState retryHref="/dashboard/facturation?vue=factures" />

@@ -14,6 +14,7 @@ import { BookingActions } from "../../../_shared/BookingActions";
 import { MatchingPanel } from "../../../_shared/MatchingPanel";
 import { ApprouverMission } from "../../../_shared/ApprouverMission";
 import { RepublierMission } from "../../../_shared/RepublierMission";
+import { RetenirIntervenant } from "../../../_shared/VivierActions";
 import {
   MISSION_CATEGORY_LABEL,
   MISSION_STATUS_LABEL,
@@ -170,10 +171,23 @@ export default async function RenfortsPage() {
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
                                 <Badge variant={bookingBadgeVariant(b.status)}>
                                   {BOOKING_STATUS_LABEL[b.status]}
                                 </Badge>
+                                {/* Le bon moment pour retenir quelqu'un, c'est
+                                    ici : on vient de travailler avec lui et on
+                                    sait déjà si on veut le revoir. Le renvoyer
+                                    vers un autre écran, c'est ne jamais le
+                                    faire. */}
+                                {b.accountId && b.accountId !== session.account.id ? (
+                                  <RetenirIntervenant
+                                    intervenantAccountId={b.accountId}
+                                    nom={fullName(b.applicant?.firstName, b.applicant?.lastName)}
+                                    accountId={session.account.id}
+                                    retenu={false}
+                                  />
+                                ) : null}
                                 <BookingActions
                                   bookingId={b.id}
                                   accountId={session.account.id}

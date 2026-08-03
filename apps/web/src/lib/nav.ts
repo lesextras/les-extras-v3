@@ -133,6 +133,10 @@ const freelanceNav: NavSection[] = [
   {
     title: 'Mon espace',
     items: [
+      // Le coffre-fort etait unilateral : l'etablissement documentait
+      // l'intervenant, l'intervenant n'y avait aucun acces. Il ne pouvait ni
+      // voir ce qui manquait, ni deposer sa carte d'identite.
+      { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces obligatoires : identité, diplôme, casier judiciaire, IBAN, attestation URSSAF. Un dossier complet vous fait passer devant.' },
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures — au même endroit' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
@@ -169,6 +173,10 @@ const establishmentNav: NavSection[] = [
       // Une fiche par personne, et la conformité comme propriété de cette
       // personne — pas comme un annuaire parallèle qu'il faut recouper.
       { label: 'Équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
+      // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
+      // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
+      // Les uns sont salariés, les autres viennent en renfort.
+      { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
       { label: 'Conformité', href: '/dashboard/conformite', icon: ShieldAlert, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires qui manquent ou arrivent à échéance : identité, diplôme, casier judiciaire, permis' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
       { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },

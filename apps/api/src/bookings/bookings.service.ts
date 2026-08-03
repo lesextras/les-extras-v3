@@ -235,7 +235,7 @@ export class BookingsService {
         type: 'BOOKING_STATUS',
         title: 'Réservation mise à jour',
         body: `« ${label} » est désormais ${next}.`,
-        link: `/dashboard/bookings/${id}`,
+        link: `/dashboard/reservations#${id}`,
       });
     }
 

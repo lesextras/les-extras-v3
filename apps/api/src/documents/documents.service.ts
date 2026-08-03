@@ -4,6 +4,8 @@ import { ContratsService } from '../contrats/contrats.service';
 import { contratCddPdf } from './contrat-cdd.pdf';
 import { facturePdf } from './facture.pdf';
 import { propositionPdf } from './proposition.pdf';
+import { emargementPdf, formationPdf } from './formation.pdf';
+import { FormationsService } from '../formations/formations.service';
 
 /**
  * Assemble les données puis délègue le dessin.
@@ -20,6 +22,7 @@ export class DocumentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly contrats: ContratsService,
+    private readonly formations: FormationsService,
   ) {}
 
   /** Nom de fichier lisible et triable : type, référence, date. */
@@ -129,5 +132,68 @@ export class DocumentsService {
       mentionTva: 'TVA non applicable, article 293 B du code général des impôts',
     });
     return { pdf, nom: this.nomFichier('facture', facture.number) };
+  }
+
+  /**
+   * Attestation d'assiduité et certificat de réalisation.
+   *
+   * Le contrôle d'accès n'est pas réécrit ici : on passe par
+   * `FormationsService.getInscription`, qui applique déjà la règle exacte —
+   * propriétaire du programme, structure hôte, ou formateur désigné. Dupliquer
+   * cette règle aurait garanti qu'elle diverge un jour.
+   */
+  async formation(
+    accountId: string,
+    userId: string,
+    inscriptionId: string,
+    genre: 'attestation' | 'certificat',
+  ) {
+    const inscription = await this.formations.getInscription(inscriptionId, accountId, userId);
+    const session = inscription.session;
+    const programme = session.formation;
+
+    // Un certificat de réalisation ne se délivre que pour un programme
+    // certifiant. En produire un pour une formation interne fabriquerait une
+    // pièce fausse — et c'est le genre de pièce qui se retourne en contrôle.
+    if (genre === 'certificat' && !programme.certifying) {
+      throw new NotFoundException(
+        "Cette formation n'est pas certifiante : seule l'attestation d'assiduité peut être délivrée.",
+      );
+    }
+
+    const pdf = await formationPdf(
+      {
+        inscription: inscription as never,
+        session: session as never,
+        formation: programme as never,
+      },
+      genre,
+    );
+    return { pdf, nom: this.nomFichier(genre, inscriptionId.slice(-8)) };
+  }
+
+  /** Feuille d'émargement d'une session : cases à signer + récapitulatif. */
+  async emargement(accountId: string, userId: string, sessionId: string) {
+    // Même principe : `getSession` porte déjà le contrôle d'accès.
+    const session = await this.formations.getSession(sessionId, accountId, userId);
+
+    // `getSession` renvoie la formation en projection réduite ; la feuille a
+    // besoin de la durée et de l'organisme émetteur.
+    const programme = await this.prisma.formation.findUnique({
+      where: { id: session.formation.id },
+      select: {
+        title: true,
+        durationHours: true,
+        ownerAccount: { select: { name: true, city: true } },
+      },
+    });
+    if (!programme) throw new NotFoundException('Programme introuvable.');
+
+    const pdf = await emargementPdf({
+      session: { ...session, formation: programme } as never,
+      inscriptions: session.inscriptions as never,
+      emargements: session.emargements as never,
+    });
+    return { pdf, nom: this.nomFichier('emargement', sessionId.slice(-8)) };
   }
 }

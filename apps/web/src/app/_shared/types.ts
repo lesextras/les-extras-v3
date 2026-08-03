@@ -151,6 +151,18 @@ export interface Service {
   price?: string | number | null;
   city?: string | null;
   status: ServiceStatus;
+  /**
+   * Le contenu pédagogique. Ces champs existent en base depuis le début mais
+   * n'étaient remplis que par l'import de catalogue : le formulaire de création
+   * ne les proposait pas.
+   */
+  objectives?: string | null;
+  methodology?: string | null;
+  evaluation?: string | null;
+  prerequisites?: string | null;
+  material?: string | null;
+  publicTargets?: string[] | null;
+  timeSlots?: string[] | null;
   /** Consultations de la fiche publique. */
   views?: number;
   /** Demandes de devis reçues sur cette fiche. */
@@ -169,6 +181,10 @@ export interface Booking {
   applicant?: PublicUser | null;
   status: BookingStatus;
   scheduledAt?: string | null;
+  /** Effectif annoncé à la demande de réservation d'un atelier. */
+  participants?: number | null;
+  /** Précisions du demandeur : public accueilli, objectifs, contraintes. */
+  requestNote?: string | null;
   totalAmount?: string | number | null;
   cancelReason?: string | null;
   createdAt: string;

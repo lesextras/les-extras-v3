@@ -367,6 +367,15 @@ export class MissionsService {
    * C'est le « vivier réservé » du palier RESERVED.
    */
   private async intervenantsConnus(accountId: string): Promise<string[]> {
+    // Le vivier CHOISI compte autant que le vivier déduit. C'est même là toute
+    // la valeur du geste : quand un chef de service retient quelqu'un, il faut
+    // que cela produise un effet — recevoir les offres en priorité. Sans cela,
+    // ajouter au vivier ne serait qu'un signet.
+    const retenus = await this.prisma.poolMember.findMany({
+      where: { accountId },
+      select: { intervenantAccountId: true },
+    });
+
     const [surMissions, surAteliers] = await this.prisma.$transaction([
       this.prisma.booking.findMany({
         where: {
@@ -386,6 +395,7 @@ export class MissionsService {
       }),
     ]);
     const ids = new Set<string>();
+    retenus.forEach((r) => r.intervenantAccountId !== accountId && ids.add(r.intervenantAccountId));
     surMissions.forEach((b) => b.accountId !== accountId && ids.add(b.accountId));
     surAteliers.forEach((b) => b.service?.accountId && ids.add(b.service.accountId));
     return [...ids];
@@ -416,7 +426,10 @@ export class MissionsService {
       where: { accountId: mission.accountId, status: 'ACTIVE' },
       select: { userId: true },
     });
-    const lien = `/dashboard/missions/${mission.id}`;
+    // Les salariés doivent atterrir là où l'on accepte : la fiche mission de la
+    // marketplace porte le bouton. Le board /dashboard/renforts, lui, sert à
+    // celui qui publie, pas à celui qui se propose.
+    const lien = `/marketplace/missions/${mission.id}`;
     await Promise.allSettled(
       membres.map((m) =>
         this.notifications.create(m.userId, {
@@ -663,7 +676,7 @@ export class MissionsService {
       type: 'MISSION_CANDIDATE',
       title: 'Nouvelle candidature',
       body: `Une candidature a été reçue pour « ${mission.title} ».`,
-      link: `/dashboard/missions/${missionId}`,
+      link: `/dashboard/renforts#${missionId}`,
     });
 
     return booking;

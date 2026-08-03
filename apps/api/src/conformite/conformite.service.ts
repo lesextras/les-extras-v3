@@ -334,6 +334,27 @@ export class ConformiteService {
     });
   }
 
+  /**
+   * DÉPÔT PAR L'INTÉRESSÉ LUI-MÊME.
+   *
+   * La règle est simple et ne souffre pas d'exception : **la personne fournit,
+   * l'établissement valide**. Un intervenant peut déposer sa carte d'identité,
+   * son diplôme, son bulletin n°3 — il ne peut pas décréter que sa pièce est
+   * en règle. Le statut est donc forcé à « en attente », quoi que la requête
+   * demande.
+   *
+   * Sans cette contrainte, la route ouvrirait une porte franche : n'importe
+   * quel membre pourrait marquer son propre casier judiciaire comme valide
+   * sans jamais rien téléverser, et le tableau de conformité de la structure
+   * afficherait un vert qui ne veut plus rien dire.
+   */
+  async deposerSonDocument(accountId: string, userId: string, dto: UpsertComplianceDto) {
+    return this.upsertDocument(accountId, userId, {
+      ...dto,
+      status: ComplianceStatus.PENDING,
+    });
+  }
+
   // --- ADMIN plateforme -----------------------------------------------------
 
   /**

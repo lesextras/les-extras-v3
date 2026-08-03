@@ -45,6 +45,7 @@ import { TutoratModule } from './tutorat/tutorat.module';
 import { ConformiteModule } from './conformite/conformite.module';
 import { ContratsModule } from './contrats/contrats.module';
 import { DocumentsModule } from './documents/documents.module';
+import { VivierModule } from './vivier/vivier.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { DocumentsModule } from './documents/documents.module';
     ConformiteModule,
     ContratsModule,
     DocumentsModule,
+    VivierModule,
 
     // Vitrine publique (non authentifiée).
     PublicModule,

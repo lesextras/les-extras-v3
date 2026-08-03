@@ -28,6 +28,8 @@ interface Booking {
   accountId: string;
   status: string;
   scheduledAt?: string | null;
+  participants?: number | null;
+  requestNote?: string | null;
   totalAmount?: string | number | null;
   createdAt: string;
   mission?: { id: string; title: string; accountId: string; startDate?: string | null } | null;
@@ -78,6 +80,7 @@ const euros = (v: string | number | null | undefined) =>
 
 /** Une ligne de réservation, quel que soit le type. */
 function Ligne({
+  ancre,
   titre,
   href,
   statut,
@@ -85,7 +88,16 @@ function Ligne({
   contrepartie,
   montant,
   role,
+  participants,
+  note,
 }: {
+  /**
+   * Identifiant de la réservation, posé en ancre HTML. Les notifications et les
+   * mails pointent vers `/dashboard/reservations#<id>` : sans cette ancre, le
+   * lien ouvre bien la page mais laisse le lecteur chercher sa ligne dans la
+   * liste. Avec elle, le navigateur l'amène dessus.
+   */
+  ancre?: string;
   titre: string;
   href?: string;
   statut: string;
@@ -93,9 +105,11 @@ function Ligne({
   contrepartie?: string | null;
   montant?: string | null;
   role: "client" | "prestataire";
+  participants?: number | null;
+  note?: string | null;
 }) {
   return (
-    <Card>
+    <Card id={ancre} className="scroll-mt-24 target:ring-2 target:ring-primary">
       <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
         <div className="min-w-0">
           <p className="truncate font-semibold">
@@ -113,7 +127,16 @@ function Ligne({
             {/* Dire de quel côté on est évite la confusion des comptes qui
                 achètent ET vendent : un établissement peut faire les deux. */}
             {role === "prestataire" ? " · vous intervenez" : " · vous réservez"}
+            {participants ? ` · ${participants} participant${participants > 1 ? "s" : ""}` : ""}
           </p>
+          {/* Les précisions du demandeur — public accueilli, objectifs,
+              contraintes — décident souvent de l'acceptation. Les saisir puis
+              ne jamais les montrer revenait à les perdre. */}
+          {note ? (
+            <p className="mt-2 max-w-prose whitespace-pre-line rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+              {note}
+            </p>
+          ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {montant && <span className="text-sm font-semibold">{montant}</span>}
@@ -182,6 +205,7 @@ export default async function ReservationsPage() {
           {renforts.map((b) => (
             <Ligne
               key={b.id}
+              ancre={b.id}
               titre={b.mission?.title ?? "Renfort"}
               href={`/documents/contrat/${b.id}`}
               statut={b.status}
@@ -200,6 +224,9 @@ export default async function ReservationsPage() {
           {ateliers.map((b) => (
             <Ligne
               key={b.id}
+              ancre={b.id}
+              participants={b.participants ?? null}
+              note={b.requestNote ?? null}
               titre={b.service?.title ?? "Atelier"}
               href={`/documents/contrat/${b.id}`}
               statut={b.status}
@@ -225,6 +252,7 @@ export default async function ReservationsPage() {
             return (
               <Ligne
                 key={i.id}
+                ancre={i.id}
                 titre={i.session?.formation?.title ?? "Formation"}
                 href={i.session?.formation?.slug ? `/formations/${i.session.formation.slug}` : undefined}
                 statut={i.status}

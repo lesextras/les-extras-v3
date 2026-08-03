@@ -23,6 +23,30 @@ interface FormationRow {
   _count?: { sessions?: number };
 }
 
+interface SessionRow {
+  id: string;
+  title?: string | null;
+  startDate: string;
+  endDate?: string | null;
+  location?: string | null;
+  maxSeats?: number | null;
+  status: string;
+  formation?: { id: string; title: string; certifying: boolean } | null;
+  _count?: { inscriptions?: number };
+}
+
+const SESSION_ETAT: Record<string, { label: string; variant: "success" | "outline" | "muted" | "soft" }> = {
+  SCHEDULED: { label: "Programmée", variant: "outline" },
+  OPEN: { label: "Inscriptions ouvertes", variant: "success" },
+  FULL: { label: "Complète", variant: "soft" },
+  RUNNING: { label: "En cours", variant: "success" },
+  DONE: { label: "Terminée", variant: "muted" },
+  CANCELLED: { label: "Annulée", variant: "muted" },
+};
+
+const jour = (d: string) =>
+  new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+
 function statusBadge(status: string) {
   switch (status) {
     case "PUBLISHED":
@@ -38,11 +62,22 @@ function statusBadge(status: string) {
 export default async function DashboardFormationsPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
-  const res = await fetchApi<{ items: FormationRow[]; total: number }>(
-    session,
-    "/formations?perPage=100",
-  );
+  const [res, resSessions] = await Promise.all([
+    fetchApi<{ items: FormationRow[]; total: number }>(session, "/formations?perPage=100"),
+    // Les sessions dont on a la charge — y compris celles d'un programme qui
+    // ne nous appartient pas. C'est le cas normal du formateur intervenant
+    // désigné par un établissement.
+    fetchApi<SessionRow[]>(session, "/formations/mes-sessions"),
+  ]);
   const formations = res.data?.items ?? [];
+  const sessions = resSessions.data ?? [];
+  const aujourdhui = Date.now();
+  const aVenir = sessions.filter(
+    (s) => new Date(s.endDate ?? s.startDate).getTime() >= aujourdhui && s.status !== "CANCELLED",
+  );
+  const passees = sessions.filter(
+    (s) => new Date(s.endDate ?? s.startDate).getTime() < aujourdhui || s.status === "CANCELLED",
+  );
 
   return (
     <div className="space-y-8">
@@ -99,6 +134,65 @@ export default async function DashboardFormationsPage() {
               />
             </CardContent>
           </Card>
+        </div>
+      ) : null}
+
+      {/* LES SESSIONS DONT J'AI LA CHARGE.
+          Placées avant la liste des programmes, parce que c'est là que se
+          trouve le travail du jour : émarger, suivre les apprenants, délivrer
+          les attestations. Un programme se consulte ; une session se tient. */}
+      {sessions.length > 0 ? (
+        <div className="space-y-4">
+          <SectionTitle
+            title={`Sessions à animer — ${aVenir.length}`}
+            action={
+              passees.length > 0 ? (
+                <span className="text-xs text-muted-foreground">
+                  {passees.length} session{passees.length > 1 ? "s" : ""} passée
+                  {passees.length > 1 ? "s" : ""}
+                </span>
+              ) : undefined
+            }
+          />
+          <div className="space-y-3">
+            {[...aVenir, ...passees].slice(0, 20).map((s) => {
+              const etat = SESSION_ETAT[s.status] ?? { label: s.status, variant: "outline" as const };
+              const inscrits = s._count?.inscriptions ?? 0;
+              const complet = s.maxSeats != null && inscrits >= s.maxSeats;
+              return (
+                <Card key={s.id}>
+                  <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
+                    <div className="min-w-0 space-y-1">
+                      <p className="truncate font-semibold text-foreground">
+                        {s.formation?.title ?? s.title ?? "Session"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {jour(s.startDate)}
+                        {s.endDate && s.endDate.slice(0, 10) !== s.startDate.slice(0, 10)
+                          ? ` → ${jour(s.endDate)}`
+                          : ""}
+                        {s.location ? ` · ${s.location}` : ""}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {inscrits} inscrit{inscrits > 1 ? "s" : ""}
+                        {s.maxSeats != null
+                          ? complet
+                            ? ` · complet (${s.maxSeats} places)`
+                            : ` · ${s.maxSeats - inscrits} place${s.maxSeats - inscrits > 1 ? "s" : ""} restante${s.maxSeats - inscrits > 1 ? "s" : ""}`
+                          : ""}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <Badge variant={etat.variant}>{etat.label}</Badge>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/dashboard/formations/${s.id}`}>Ouvrir la session</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       ) : null}
 

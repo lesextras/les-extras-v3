@@ -76,6 +76,53 @@ export class InvoicesService {
     const nombre = (v: unknown) => Number(v ?? 0);
     const enAttente = nombre(emises._sum.amount);
     const paye = nombre(reglees._sum.amount);
+
+    /**
+     * LES DOUZE DERNIERS MOIS.
+     *
+     * Trois totaux cumulés ne disent rien de la tendance : un intervenant qui
+     * a facturé 9 000 € l'an dernier et 200 € ce trimestre lit le même chiffre
+     * que celui qui monte. Or c'est précisément la question qu'on se pose en
+     * ouvrant cet écran — est-ce que ça marche, en ce moment ?
+     *
+     * On borne à douze mois et on ne charge que deux colonnes : la date et le
+     * montant. Le regroupement se fait ici parce que Prisma ne sait pas
+     * grouper par mois sans requête brute, et douze mois de factures d'un
+     * compte tiennent largement en mémoire.
+     */
+    const debut = new Date();
+    debut.setMonth(debut.getMonth() - 11);
+    debut.setDate(1);
+    debut.setHours(0, 0, 0, 0);
+
+    const lignes = await this.prisma.invoice.findMany({
+      where: {
+        accountId,
+        status: { not: InvoiceStatus.CANCELLED },
+        createdAt: { gte: debut },
+      },
+      select: { createdAt: true, amount: true, status: true },
+      take: 5000,
+    });
+
+    const cumul = new Map<string, { facture: number; regle: number }>();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(debut);
+      d.setMonth(debut.getMonth() + i);
+      cumul.set(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, {
+        facture: 0,
+        regle: 0,
+      });
+    }
+    for (const l of lignes) {
+      const cle = `${l.createdAt.getFullYear()}-${String(l.createdAt.getMonth() + 1).padStart(2, '0')}`;
+      const c = cumul.get(cle);
+      if (!c) continue;
+      const montant = nombre(l.amount);
+      c.facture += montant;
+      if (l.status === InvoiceStatus.PAID) c.regle += montant;
+    }
+
     return {
       // Le total facturé comprend ce qui est réglé et ce qui reste dû ; les
       // factures annulées n'y figurent pas, elles n'ont jamais été dues.
@@ -83,6 +130,11 @@ export class InvoicesService {
       paid: Math.round(paye * 100) / 100,
       pending: Math.round(enAttente * 100) / 100,
       invoiceCount: total,
+      parMois: [...cumul.entries()].map(([mois, v]) => ({
+        mois,
+        facture: Math.round(v.facture * 100) / 100,
+        regle: Math.round(v.regle * 100) / 100,
+      })),
     };
   }
 

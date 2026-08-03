@@ -260,6 +260,8 @@ export class ServicesService {
           serviceId,
           status: BookingStatus.REQUESTED,
           scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+          participants: dto.participants ?? undefined,
+          requestNote: dto.message?.trim() || undefined,
           totalAmount: service.price ?? undefined,
         },
       });
@@ -267,11 +269,21 @@ export class ServicesService {
       return created;
     });
 
+    // La notification dit ce qu'il faut pour décider sans ouvrir l'écran : le
+    // nombre de participants, et s'il dépasse ce que la fiche annonce. Un
+    // atelier prévu pour huit et demandé pour vingt, c'est un refus ou une
+    // renégociation — pas une surprise le jour même.
+    const effectif = dto.participants ?? null;
+    const depasse =
+      effectif !== null && service.maxParticipants !== null && effectif > service.maxParticipants;
+    const precision = effectif === null ? '' : ` pour ${effectif} participant${effectif > 1 ? 's' : ''}`;
+    const alerte = depasse ? ` — au-delà des ${service.maxParticipants} annoncés sur votre fiche` : '';
+
     await this.notifications.create(service.account.ownerId, {
       type: 'SERVICE_BOOKING',
       title: 'Nouvelle réservation',
-      body: `Votre atelier « ${service.title} » a été réservé.`,
-      link: `/dashboard/bookings/${booking.id}`,
+      body: `Votre atelier « ${service.title} » a été réservé${precision}${alerte}.`,
+      link: `/dashboard/reservations`,
     });
 
     return booking;

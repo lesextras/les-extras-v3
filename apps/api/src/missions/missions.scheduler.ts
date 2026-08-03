@@ -210,7 +210,7 @@ export class MissionsScheduler {
     });
     for (const r of reservations) {
       try {
-        const lien = `/dashboard/bookings/${r.id}`;
+        const lien = `/dashboard/reservations#${r.id}`;
         const deja = await this.prisma.notification.findFirst({
           where: { type: 'RAPPEL_J1', link: lien },
           select: { id: true },
@@ -312,7 +312,7 @@ export class MissionsScheduler {
       return bilan;
     }
 
-    const lien = `/dashboard/missions/${mission.id}`;
+    const lien = `/dashboard/renforts#${mission.id}`;
     const publieeLe = mission.publishedAt ?? mission.createdAt;
     const heuresDepuisPublication = this.heuresEntre(publieeLe, maintenant);
     const heuresDepuisMaj = this.heuresEntre(mission.updatedAt, maintenant);
@@ -337,7 +337,7 @@ export class MissionsScheduler {
 
     const palierCourant = mission.visibility;
     const typeRepere = `${TYPE_RELANCE}${palierCourant}`;
-    if (await this.repereExiste(proprietaireId, typeRepere, lien)) {
+    if (await this.repereExiste(proprietaireId, typeRepere, mission.id)) {
       // Déjà relancée pour ce palier : on ne relance jamais deux fois.
       return bilan;
     }
@@ -391,7 +391,7 @@ export class MissionsScheduler {
     lien: string,
     heuresAvantDebut: number,
   ): Promise<boolean> {
-    if (await this.repereExiste(proprietaireId, TYPE_ALERTE, lien)) return false;
+    if (await this.repereExiste(proprietaireId, TYPE_ALERTE, mission.id)) return false;
 
     const quand = this.formatDateFr(mission.startDate);
     const heures = Math.max(0, Math.round(heuresAvantDebut));
@@ -418,9 +418,16 @@ export class MissionsScheduler {
    * (établissement, type d'action, mission). Sa présence signifie que l'action
    * a déjà été effectuée : on ne la rejoue pas.
    */
-  private async repereExiste(userId: string, type: string, lien: string): Promise<boolean> {
+  /**
+   * Le repère anti-doublon se cherche sur l'identifiant de la mission, pas sur
+   * l'URL complète. La nuance compte : le jour où l'on corrige un lien — ce qui
+   * vient d'arriver, `/dashboard/missions/:id` n'ayant jamais existé — les
+   * repères déjà posés continuent de compter. Sans cela, toutes les missions en
+   * cours auraient été relancées une fois de plus le lendemain du correctif.
+   */
+  private async repereExiste(userId: string, type: string, missionId: string): Promise<boolean> {
     const existant = await this.prisma.notification.findFirst({
-      where: { userId, type, link: lien },
+      where: { userId, type, link: { contains: missionId } },
       select: { id: true },
     });
     return existant !== null;

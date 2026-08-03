@@ -34,6 +34,22 @@ const CATEGORIES = [
   { value: "PREVENTION", label: "Prévention" },
 ];
 
+/**
+ * Publics visés, en cases à cocher plutôt qu'en texte libre. C'est ce qui rend
+ * le filtre du catalogue utilisable : un chef de service qui cherche « handicap
+ * adulte » ne trouve rien si chacun a écrit sa propre formulation.
+ */
+const PUBLICS = [
+  "Enfants",
+  "Adolescents",
+  "Adultes",
+  "Séniors",
+  "Handicap",
+  "Protection de l'enfance",
+  "Insertion",
+  "Professionnels",
+];
+
 /** Fiche existante, quand la modale sert à modifier. */
 export interface FicheExistante {
   id: string;
@@ -47,6 +63,13 @@ export interface FicheExistante {
   price?: string | number | null;
   city?: string | null;
   status?: string | null;
+  objectives?: string | null;
+  methodology?: string | null;
+  evaluation?: string | null;
+  prerequisites?: string | null;
+  material?: string | null;
+  publicTargets?: string[] | null;
+  timeSlots?: string[] | null;
 }
 
 export function ServiceModal({
@@ -79,6 +102,11 @@ export function ServiceModal({
   const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
   const [brief, setBrief] = useState("");
   const [statut, setStatut] = useState<string>(fiche?.status ?? "PUBLISHED");
+  const [publics, setPublics] = useState<string[]>(fiche?.publicTargets ?? []);
+  // Le bloc pédagogique est replié à la création pour ne pas décourager, mais il
+  // s'ouvre dès que l'IA y écrit quelque chose : un champ rempli qu'on ne voit
+  // pas est pire qu'un champ vide.
+  const [detailOuvert, setDetailOuvert] = useState(Boolean(fiche));
   const intitule = edition
     ? "Modifier la fiche"
     : categorieInitiale === "FORMATION"
@@ -104,8 +132,13 @@ export function ServiceModal({
         if (el && v) el.value = v;
       };
       set("title", f.title);
-      const desc = [f.description, f.objectifs?.length ? `\nObjectifs :\n- ${f.objectifs.join("\n- ")}` : ""].filter(Boolean).join("\n");
-      set("description", desc);
+      set("description", f.description);
+      // Les objectifs ont désormais leur champ : les recopier dans la
+      // description les rendait invisibles au filtre comme à l'audit.
+      if (f.objectifs?.length) {
+        set("objectives", f.objectifs.join("\n"));
+        setDetailOuvert(true);
+      }
       set("publicTarget", f.publicTarget);
       set("duration", f.duration);
       toast({ title: "Fiche pré-remplie", description: "Relisez et ajustez chaque champ avant de publier." });
@@ -134,15 +167,35 @@ export function ServiceModal({
     setLoading(true);
     setError(null);
     const fd = new FormData(e.currentTarget);
+    const texte = (nom: string) => String(fd.get(nom) || "").trim() || undefined;
+    // Les créneaux se saisissent en une ligne — « 9h-12h, 14h-17h » — et se
+    // rangent en tableau. Demander un formulaire répétable pour deux valeurs
+    // aurait été plus lourd à remplir qu'à lire.
+    const creneaux = String(fd.get("timeSlots") || "")
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean);
     const corps = {
       title: String(fd.get("title") || ""),
       description: String(fd.get("description") || ""),
       ...(usingDb ? { categoryId: category } : { category }),
-      duration: String(fd.get("duration") || "") || undefined,
+      duration: texte("duration"),
       maxParticipants: fd.get("maxParticipants") ? Number(fd.get("maxParticipants")) : undefined,
-      publicTarget: String(fd.get("publicTarget") || "") || undefined,
+      publicTarget: texte("publicTarget"),
       price: fd.get("price") ? Number(fd.get("price")) : undefined,
-      city: String(fd.get("city") || "") || undefined,
+      city: texte("city"),
+      // Le contenu pédagogique : ces champs existaient en base et dans l'API
+      // depuis le début, mais seul l'import de catalogue les remplissait. Une
+      // fiche créée à la main sortait donc systématiquement plus pauvre qu'une
+      // fiche importée — et c'est précisément ce détail qui décide un chef de
+      // service à réserver ou à passer son chemin.
+      objectives: texte("objectives"),
+      methodology: texte("methodology"),
+      evaluation: texte("evaluation"),
+      prerequisites: texte("prerequisites"),
+      material: texte("material"),
+      publicTargets: publics.length ? publics : undefined,
+      timeSlots: creneaux.length ? creneaux : undefined,
     };
     try {
       if (edition && fiche) {
@@ -265,6 +318,129 @@ export function ServiceModal({
               <Input id="city" name="city" defaultValue={fiche?.city ?? ""} placeholder="Melun" />
             </Field>
           </div>
+
+          <Field
+            label="Publics concernés"
+            hint="Sert au filtre du catalogue : cochez tout ce qui s'applique."
+          >
+            <div className="flex flex-wrap gap-2">
+              {PUBLICS.map((p) => {
+                const actif = publics.includes(p);
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    aria-pressed={actif}
+                    onClick={() =>
+                      setPublics((liste) =>
+                        actif ? liste.filter((x) => x !== p) : [...liste, p],
+                      )
+                    }
+                    className={
+                      actif
+                        ? "rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                        : "rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    }
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          {/* LE CONTENU PÉDAGOGIQUE.
+              Replié par défaut : ces champs ne sont pas obligatoires pour
+              publier, mais ce sont eux qui font la différence entre une fiche
+              qu'on parcourt et une fiche qu'on réserve. Les laisser hors du
+              formulaire, comme c'était le cas, revenait à condamner toute fiche
+              saisie à la main à rester plus pauvre qu'une fiche importée. */}
+          <details
+            className="rounded-xl border border-border p-3"
+            open={detailOuvert}
+            onToggle={(e) => setDetailOuvert((e.currentTarget as HTMLDetailsElement).open)}
+          >
+            <summary className="cursor-pointer text-sm font-semibold text-foreground">
+              Contenu pédagogique
+              <span className="ml-2 font-normal text-muted-foreground">
+                — objectifs, méthode, évaluation
+              </span>
+            </summary>
+            <div className="mt-3 space-y-4">
+              <Field
+                label="Objectifs"
+                htmlFor="objectives"
+                hint="Ce que les participants savent faire à la fin. Un objectif par ligne."
+              >
+                <Textarea
+                  id="objectives"
+                  name="objectives"
+                  rows={3}
+                  defaultValue={fiche?.objectives ?? ""}
+                  placeholder={"Exprimer une émotion sans passer par la violence\nCoopérer sur une tâche commune"}
+                />
+              </Field>
+              <Field
+                label="Déroulé et méthode"
+                htmlFor="methodology"
+                hint="Comment la séance se passe concrètement."
+              >
+                <Textarea
+                  id="methodology"
+                  name="methodology"
+                  rows={3}
+                  defaultValue={fiche?.methodology ?? ""}
+                  placeholder="Accueil et cadre (15 min), mise en situation (1 h), reprise collective (30 min)…"
+                />
+              </Field>
+              <Field
+                label="Évaluation"
+                htmlFor="evaluation"
+                hint="Comment vous mesurez ce qui a été atteint. Attendu en audit Qualiopi."
+              >
+                <Textarea
+                  id="evaluation"
+                  name="evaluation"
+                  rows={2}
+                  defaultValue={fiche?.evaluation ?? ""}
+                  placeholder="Grille d'observation remplie avec l'équipe éducative, bilan oral en fin de cycle…"
+                />
+              </Field>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Prérequis" htmlFor="prerequisites">
+                  <Textarea
+                    id="prerequisites"
+                    name="prerequisites"
+                    rows={2}
+                    defaultValue={fiche?.prerequisites ?? ""}
+                    placeholder="Aucun. Tenue souple conseillée."
+                  />
+                </Field>
+                <Field label="Matériel et lieu" htmlFor="material">
+                  <Textarea
+                    id="material"
+                    name="material"
+                    rows={2}
+                    defaultValue={fiche?.material ?? ""}
+                    placeholder="Salle de 40 m² au sol souple. Matériel fourni par l'intervenant."
+                  />
+                </Field>
+              </div>
+              <Field
+                label="Créneaux proposés"
+                htmlFor="timeSlots"
+                hint="Séparés par des virgules. Laissez vide si tout se convient au cas par cas."
+              >
+                <Input
+                  id="timeSlots"
+                  name="timeSlots"
+                  defaultValue={(fiche?.timeSlots ?? []).join(", ")}
+                  placeholder="9h-12h, 14h-17h"
+                />
+              </Field>
+            </div>
+          </details>
+
           <Field label="Visibilité">
             <Select value={statut} onValueChange={setStatut}>
               <SelectTrigger>

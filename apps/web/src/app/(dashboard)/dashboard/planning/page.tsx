@@ -7,6 +7,8 @@ import { PageHeader, ErrorState } from "../../../_shared/ui";
 import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { RepeterSemaine } from "../../../_shared/RepeterSemaine";
 import { PlanningBoard, type Shift, type Availability } from "../../../_shared/PlanningBoard";
+import { InterrupteurDisponibilite } from "../../../_shared/InterrupteurDisponibilite";
+import { ExportPaie } from "../../../_shared/ExportPaie";
 import type { Mission } from "../../../_shared/types";
 import type { Repartition } from "../../../_shared/EquipeTable";
 
@@ -32,6 +34,10 @@ function startOfMonthGrid(d = new Date()): Date {
 export default async function PlanningPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
+  // L'export de paie porte les heures et les soldes de congés de toute
+  // l'équipe : ce n'est pas une information d'équipe.
+  const peutExporter =
+    isEstablishment && ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
 
   // Premier affichage : le mois courant, exactement la grille que le
   // calendrier montrera côté client (6 semaines à partir du lundi précédant le 1er).
@@ -63,9 +69,17 @@ export default async function PlanningPage() {
 
   // Disponibilités (freelance).
   let availability: Availability[] = [];
+  // L'interrupteur global « je prends des missions / je suis en pause ». Le
+  // champ pesait déjà 15 % dans le score de matching, mais rien ne permettait
+  // de le changer : on continuait de solliciter les gens en arrêt.
+  let disponible = true;
   if (!isEstablishment) {
-    const res = await fetchApi<Availability[]>(session, "/availability");
+    const [res, moi] = await Promise.all([
+      fetchApi<Availability[]>(session, "/availability"),
+      fetchApi<{ profile?: { available?: boolean | null } | null }>(session, "/users/me"),
+    ]);
     availability = res.data ?? [];
+    disponible = moi.data?.profile?.available ?? true;
   }
 
   return (
@@ -81,13 +95,20 @@ export default async function PlanningPage() {
           // Un trou dans le planning -> on publie le renfort sans changer
           // d'outil ; une semaine type se deroule en cycle sans ressaisie.
           isEstablishment ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* La paie se prépare depuis les heures : c'est ici qu'on la
+                  cherche, pas sous l'onglet Congés où l'export était rangé. */}
+              {peutExporter ? <ExportPaie compact /> : null}
               <RepeterSemaine accountId={session.account.id} />
               <RenfortModal accountId={session.account.id} />
             </div>
           ) : undefined
         }
       />
+
+      {!isEstablishment ? (
+        <InterrupteurDisponibilite accountId={session.account.id} disponible={disponible} />
+      ) : null}
 
       {error ? (
         <ErrorState retryHref="/dashboard/planning" />

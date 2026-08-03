@@ -78,6 +78,8 @@ model User {
   pushSubscriptions PushSubscription[]
   leaveRequests    LeaveRequest[] @relation("LeaveUser")
   contratsCDD    ContratCDD[] @relation("ContratSalarie")
+  /// Ajouts au vivier effectues par cette personne.
+  ajoutsAuVivier PoolMember[] @relation("PoolAjoutePar")
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -170,6 +172,10 @@ model Account {
   complianceDocuments ComplianceDocument[]
   orgUnits         OrgUnit[]
   auditLogs        AuditLog[]         @relation("AuditAccount")
+  /// Le vivier de cet etablissement : les intervenants qu'il veut revoir.
+  vivier           PoolMember[]       @relation("PoolEtablissement")
+  /// Les etablissements qui ont place cet intervenant dans leur vivier.
+  vivierDe         PoolMember[]       @relation("PoolIntervenant")
 
   @@index([type])
   @@index([slug])
@@ -430,6 +436,12 @@ model Booking {
   service       Service?      @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   status        BookingStatus @default(REQUESTED)
   scheduledAt   DateTime?
+  /// Nombre de participants annonce a la demande. L'intervenant en a besoin
+  /// pour dire oui ou non : un atelier prevu pour huit ne se tient pas a vingt.
+  participants  Int?
+  /// Precisions ecrites par le demandeur : public accueilli, objectifs,
+  /// contraintes. Sans ce champ, le formulaire les jetait a la poubelle.
+  requestNote   String?
   /// Date de fin effective : ouvre la fenetre d'ajustement de 72 h du pointage.
   completedAt   DateTime?
   totalAmount   Decimal?      @db.Decimal(10, 2)
@@ -1021,8 +1033,22 @@ model Inscription {
   payerAccount   Account?          @relation("InscriptionPayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
   financing      FinancingType     @default(ESTABLISHMENT)
   status         InscriptionStatus @default(PENDING)
+  /// EVALUATION A CHAUD — recueillie en fin de session.
+  /// Indicateur 30 du referentiel national qualite : l'organisme recueille les
+  /// appreciations des beneficiaires. Le champ existait ; rien ne le remplissait.
   satisfaction   Int?
+  satisfactionComment String?
+  satisfactionAt DateTime?
+  /// Resultat de l'evaluation des acquis (indicateur 11).
   evalResult     String?
+  /// EVALUATION A FROID — recueillie quelques mois apres, sur le terrain.
+  /// C'est elle qui distingue un organisme audite d'un organisme qui remplit
+  /// des cases : elle mesure ce qui reste une fois la salle quittee.
+  coldRating     Int?
+  /// Mise en oeuvre des acquis : OUI / PARTIELLEMENT / NON.
+  coldTransfer   String?
+  coldComment    String?
+  coldAt         DateTime?
   attestationUrl String?
   certificatUrl  String?
   invoiceId      String?           @unique
@@ -1371,6 +1397,50 @@ model Favorite {
   @@unique([userId, serviceId])
   @@index([userId])
   @@index([serviceId])
+}
+
+/// LE VIVIER D'UN ETABLISSEMENT.
+///
+/// Ce qu'un chef de service veut d'abord, ce n'est pas trouver quelqu'un :
+/// c'est retrouver la personne qui connait deja le groupe, les habitudes de la
+/// maison et le prenom des jeunes. Le remplacement le moins couteux est celui
+/// qu'on n'a pas a expliquer.
+///
+/// La plateforme savait deja calculer ce vivier — `intervenantsConnus()` liste
+/// les comptes ayant deja travaille pour l'etablissement — mais uniquement en
+/// interne, pour decider a qui diffuser une offre. Rien ne l'affichait, rien ne
+/// permettait de l'enrichir, et surtout rien ne permettait de rappeler
+/// quelqu'un directement.
+///
+/// Cette table porte la partie choisie du vivier : les intervenants qu'un
+/// responsable a explicitement retenus, avec une note de service. Les habitues
+/// detectes automatiquement s'y ajoutent a la lecture, sans etre stockes.
+///
+/// Choix assume : il n'existe PAS de liste noire symetrique. Un registre
+/// d'intervenants « a eviter », invisible de l'interesse, serait un fichier de
+/// reputation — lourd de consequences pour un professionnel dont c'est le
+/// gagne-pain, et redevable du droit d'acces. Ne pas rappeler quelqu'un se
+/// fait tres bien sans l'ecrire.
+model PoolMember {
+  id                   String   @id @default(cuid())
+  /// L'etablissement qui tient le vivier.
+  accountId            String
+  account              Account  @relation("PoolEtablissement", fields: [accountId], references: [id], onDelete: Cascade)
+  /// Le compte intervenant retenu.
+  intervenantAccountId String
+  intervenantAccount   Account  @relation("PoolIntervenant", fields: [intervenantAccountId], references: [id], onDelete: Cascade)
+  /// Note de service : « connait le groupe des ados », « dispo le mercredi ».
+  /// Visible de l'etablissement seul.
+  note                 String?
+  /// Qui l'a ajoute : utile quand plusieurs chefs de service partagent le compte.
+  addedById            String?
+  addedBy              User?    @relation("PoolAjoutePar", fields: [addedById], references: [id], onDelete: SetNull)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([accountId, intervenantAccountId])
+  @@index([accountId])
+  @@index([intervenantAccountId])
 }
 
 

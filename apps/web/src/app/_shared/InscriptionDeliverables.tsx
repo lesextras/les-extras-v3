@@ -47,15 +47,22 @@ export function InscriptionDeliverables({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
+      {/* Les pièces sont désormais fabriquées par le serveur.
+          Une page HTML avec un bouton « Imprimer » suffit pour regarder ; elle
+          ne suffit pas pour un organisme de formation. Le certificat de
+          réalisation est la pièce qu'un OPCO ou la Caisse des dépôts exige en
+          PDF pour libérer les fonds, et deux stagiaires de la même session
+          repartaient jusqu'ici avec deux documents différents selon les marges
+          réglées dans leur navigateur. */}
       <Button asChild size="sm" variant="outline">
-        <a href={`/documents/attestation/${inscriptionId}`} target="_blank" rel="noopener">
-          Attestation
+        <a href={`/api/proxy/documents/attestation/${inscriptionId}.pdf`} target="_blank" rel="noopener">
+          Attestation PDF
         </a>
       </Button>
       {certifying ? (
         <Button asChild size="sm" variant="outline">
-          <a href={`/documents/certificat/${inscriptionId}`} target="_blank" rel="noopener">
-            Certificat
+          <a href={`/api/proxy/documents/certificat/${inscriptionId}.pdf`} target="_blank" rel="noopener">
+            Certificat PDF
           </a>
         </Button>
       ) : null}
