@@ -196,6 +196,7 @@ model OrgUnit {
 
   memberships Membership[]
   missions    ReliefMission[]
+  shifts      Shift[]
 
   @@index([accountId])
 }
@@ -876,6 +877,12 @@ model Shift {
   freelance      User?       @relation("ShiftFreelance", fields: [freelanceId], references: [id], onDelete: SetNull)
   missionId      String?
   mission        ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  /// SERVICE (unité) concerné par le créneau. C'est ce qui permet à un chef
+  /// de service de voir son planning et non celui de tout l'établissement.
+  /// Renseigné à la main, ou déduit du service auquel l'intervenant est
+  /// rattaché quand on ne le précise pas.
+  orgUnitId      String?
+  orgUnit        OrgUnit?    @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   bookingId      String?     @unique
   booking        Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   title          String
@@ -897,6 +904,7 @@ model Shift {
 
   @@index([accountId, startAt])
   @@index([freelanceId, startAt])
+  @@index([orgUnitId, startAt])
 }
 
 enum AvailabilityType {
