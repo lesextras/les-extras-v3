@@ -34,6 +34,8 @@ import {
   UserPlus,
   MessagesSquare,
   FileSignature,
+  ShieldAlert,
+  UsersRound,
 } from 'lucide-react';
 import type { NavRole, AccountType } from './types';
 
@@ -154,6 +156,11 @@ const establishmentNav: NavSection[] = [
       // calcule — essai, précarité, carence — et refuse de transmettre un
       // contrat auquel il manque une mention obligatoire.
       { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, essentiel: true, hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' },
+      // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
+      // Une fiche par personne, et la conformité comme propriété de cette
+      // personne — pas comme un annuaire parallèle qu'il faut recouper.
+      { label: 'Équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
+      { label: 'Conformité', href: '/dashboard/conformite', icon: ShieldAlert, essentiel: true, hint: 'Les pièces obligatoires qui manquent ou arrivent à échéance : identité, diplôme, casier judiciaire, permis' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
       { label: 'Le GAP', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Groupe d’Analyse de Pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
@@ -177,7 +184,7 @@ const establishmentNav: NavSection[] = [
     title: 'Mon établissement',
     items: [
       { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
-      { label: 'Équipe & invitations', href: '/dashboard/account', icon: Users, hint: 'Gérez les membres et les accès de votre structure' },
+      { label: 'Mon établissement', href: '/dashboard/account', icon: Building2, hint: 'Coordonnées, préférences et réglages de votre structure' },
       { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
