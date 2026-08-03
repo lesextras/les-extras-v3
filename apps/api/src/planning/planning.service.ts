@@ -97,7 +97,33 @@ export class PlanningService {
    * intervention depuis le planning, on change sa date là où elle engage les
    * deux parties.
    */
-  async getPlanning(accountId: string, accountType: string, userId: string, from?: string, to?: string) {
+  /**
+   * Déduit le service d'un créneau quand on ne l'a pas précisé : celui auquel
+   * l'intervenant est rattaché dans ce compte. On ne devine rien de plus —
+   * si la personne n'est rattachée à aucun service, le créneau reste sans
+   * service et apparaît dans le filtre « Sans service », ce qui est une
+   * information utile plutôt qu'une affectation inventée.
+   */
+  private async serviceDeLIntervenant(
+    accountId: string,
+    freelanceId?: string | null,
+  ): Promise<string | null> {
+    if (!freelanceId) return null;
+    const m = await this.prisma.membership.findUnique({
+      where: { userId_accountId: { userId: freelanceId, accountId } },
+      select: { orgUnitId: true },
+    });
+    return m?.orgUnitId ?? null;
+  }
+
+  async getPlanning(
+    accountId: string,
+    accountType: string,
+    userId: string,
+    from?: string,
+    to?: string,
+    orgUnitId?: string,
+  ) {
     if ((from && Number.isNaN(Date.parse(from))) || (to && Number.isNaN(Date.parse(to)))) {
       throw new BadRequestException('Dates de période invalides.');
     }
@@ -114,12 +140,21 @@ export class PlanningService {
     // 1. Créneaux saisis à la main (réunions, astreintes, affectations).
     const whereShift: any = estFreelance ? { freelanceId: userId } : { accountId };
     if (debut || fin) whereShift.startAt = range;
+    // Un chef de service pilote SON service. Le filtre porte sur les créneaux
+    // saisis ; les réservations et les sessions de formation ne sont pas
+    // rattachées à un service, on les masque donc quand un service est
+    // demandé plutôt que de les faire apparaître à tort partout.
+    const filtreService = !estFreelance && Boolean(orgUnitId);
+    if (filtreService) {
+      whereShift.orgUnitId = orgUnitId === 'sans-service' ? null : orgUnitId;
+    }
     const shifts = await this.prisma.shift.findMany({
       where: whereShift,
       orderBy: { startAt: 'asc' },
       include: {
         freelance: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
         mission: { select: { id: true, title: true } },
+        orgUnit: { select: { id: true, name: true } },
       },
     });
 
@@ -214,6 +249,12 @@ export class PlanningService {
       lien: null as string | null,
     }));
 
+    if (filtreService) {
+      return manuels.sort(
+        (a: any, b: any) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+      );
+    }
+
     return [...manuels, ...entreesReservations, ...entreesFormations].sort(
       (a: any, b: any) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
     );
@@ -240,6 +281,10 @@ export class PlanningService {
     this.exigerDerogation(constats, dto.derogationMotif);
     const derogeA = constats.filter((c) => c.gravite === 'BLOQUANT');
 
+    // Le service : celui qu'on précise, sinon celui de l'intervenant.
+    const orgUnitId =
+      dto.orgUnitId ?? (await this.serviceDeLIntervenant(accountId, dto.freelanceId));
+
     const shift = await this.prisma.shift.create({
       data: {
         accountId,
@@ -247,6 +292,7 @@ export class PlanningService {
         startAt, endAt,
         freelanceId: dto.freelanceId ?? null,
         missionId: dto.missionId ?? null,
+        orgUnitId,
         bookingId: dto.bookingId ?? null,
         notes: dto.notes ?? null,
         recurrenceRule: dto.recurrenceRule ?? null,
@@ -290,6 +336,14 @@ export class PlanningService {
         title: dto.title ?? existing.title,
         startAt, endAt,
         freelanceId: dto.freelanceId ?? existing.freelanceId,
+        // Changer d'intervenant peut changer de service : on suit, sauf si le
+        // service a été fixé explicitement — auquel cas on ne le défait pas.
+        orgUnitId:
+          dto.orgUnitId !== undefined
+            ? dto.orgUnitId
+            : dto.freelanceId && dto.freelanceId !== existing.freelanceId
+              ? await this.serviceDeLIntervenant(accountId, dto.freelanceId)
+              : existing.orgUnitId,
         notes: dto.notes ?? existing.notes,
         derogationMotif: derogeA.length ? (dto.derogationMotif ?? existing.derogationMotif) : null,
         derogationCodes: derogeA.map((c) => c.code),

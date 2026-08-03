@@ -48,8 +48,12 @@ export class GtaController {
   }
 
   @Get('compteurs')
-  compteurs(@CurrentAccount() a: RequestAccount, @Query('mois') mois?: string) {
-    return this.gta.compteurs(a.id, mois);
+  compteurs(
+    @CurrentAccount() a: RequestAccount,
+    @Query('mois') mois?: string,
+    @Query('orgUnitId') orgUnitId?: string,
+  ) {
+    return this.gta.compteurs(a.id, mois, orgUnitId);
   }
 
   @Post('cycles')

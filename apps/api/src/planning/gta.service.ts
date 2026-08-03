@@ -137,15 +137,30 @@ export class GtaService {
    * conges approuves sur l'annee, solde restant (base 25 j), alerte si une
    * semaine du mois depasse 48 h planifiees.
    */
-  async compteurs(accountId: string, mois?: string) {
+  /**
+   * Compteurs du mois. Le filtre par service existe pour la même raison que
+   * dans le planning : un chef de service répond de son équipe, pas de
+   * l'établissement. Sans lui, l'écran des compteurs lui demande de repérer
+   * ses douze personnes au milieu de deux cents.
+   */
+  async compteurs(accountId: string, mois?: string, orgUnitId?: string) {
     const reference = mois && /^\d{4}-\d{2}$/.test(mois) ? new Date(`${mois}-01T00:00:00Z`) : new Date();
     const debutMois = new Date(Date.UTC(reference.getUTCFullYear(), reference.getUTCMonth(), 1));
     const finMois = new Date(Date.UTC(reference.getUTCFullYear(), reference.getUTCMonth() + 1, 1));
     const debutAnnee = new Date(Date.UTC(reference.getUTCFullYear(), 0, 1));
 
     const membres = await this.prisma.membership.findMany({
-      where: { accountId, status: 'ACTIVE' },
-      include: { user: { select: { id: true, firstName: true, lastName: true } } },
+      where: {
+        accountId,
+        status: 'ACTIVE',
+        ...(orgUnitId
+          ? { orgUnitId: orgUnitId === 'sans-service' ? null : orgUnitId }
+          : {}),
+      },
+      include: {
+        user: { select: { id: true, firstName: true, lastName: true } },
+        orgUnit: { select: { id: true, name: true } },
+      },
     });
     const userIds = membres.map((m) => m.user.id);
 

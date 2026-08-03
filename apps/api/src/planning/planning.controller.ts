@@ -14,8 +14,9 @@ export class PlanningController {
 
   @Get('planning')
   planningRange(@CurrentAccount() a: RequestAccount, @CurrentUser() u: RequestUser,
-    @Query('from') from?: string, @Query('to') to?: string) {
-    return this.planning.getPlanning(a.id, a.type, u.id, from, to);
+    @Query('from') from?: string, @Query('to') to?: string,
+    @Query('orgUnitId') orgUnitId?: string) {
+    return this.planning.getPlanning(a.id, a.type, u.id, from, to, orgUnitId);
   }
 
   @Post('shifts')
