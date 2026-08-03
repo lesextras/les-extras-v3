@@ -43,6 +43,7 @@ import { FormationsModule } from './formations/formations.module';
 import { QualiopiModule } from './qualiopi/qualiopi.module';
 import { TutoratModule } from './tutorat/tutorat.module';
 import { ConformiteModule } from './conformite/conformite.module';
+import { ContratsModule } from './contrats/contrats.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { ConformiteModule } from './conformite/conformite.module';
 
     // Coffre-fort de conformité (pièces obligatoires des intervenants).
     ConformiteModule,
+    ContratsModule,
 
     // Vitrine publique (non authentifiée).
     PublicModule,
