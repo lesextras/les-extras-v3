@@ -41,8 +41,8 @@ export class MissionsController {
   /** Missions du compte établissement actif. */
   @Get()
   @UseGuards(AccountGuard)
-  findMine(@CurrentAccount() account: AccountCtx) {
-    return this.missions.findAllByAccount(account.id);
+  findMine(@CurrentAccount() account: AccountCtx, @Query('take') take?: string) {
+    return this.missions.findAllByAccount(account.id, take ? Number(take) : undefined);
   }
 
   @Get(':id')

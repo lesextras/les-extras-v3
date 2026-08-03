@@ -82,10 +82,17 @@ export class MissionsService {
   }
 
   /** Missions appartenant au compte actif (back-office établissement). */
-  async findAllByAccount(accountId: string) {
+  /**
+   * `take` borne la liste. Le tableau de bord demandait déjà `?take=4`, mais
+   * le paramètre n'était lu nulle part : après quelques mois d'activité, le
+   * widget « Mes renforts » chargeait tout l'historique du compte pour en
+   * afficher quatre lignes. Plafond dur à 200 : au-delà, on pagine ailleurs.
+   */
+  async findAllByAccount(accountId: string, take?: number) {
     return this.prisma.reliefMission.findMany({
       where: { accountId },
       orderBy: { createdAt: 'desc' },
+      take: Math.min(200, Math.max(1, Math.trunc(Number(take) || 50))),
       include: {
         _count: { select: { bookings: true } },
         categoryRef: { select: { id: true, title: true } },
