@@ -1,4 +1,10 @@
-// Compte : profil / paramètres + gestion des sous-comptes (membres & invitations).
+// Mon établissement : profil, services et réglages.
+//
+// La liste des membres a déménagé sur son propre écran (/dashboard/equipe),
+// paginé et cherchable : la garder ici obligeait à charger tout le monde à
+// chaque ouverture de la fiche compte, pour une information qu'on ne vient
+// pas y chercher. Restent ici les services — la structure de l'établissement
+// — et les réglages.
 import type { Metadata } from "next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -10,11 +16,10 @@ import { BasculeNotifications } from "../../../_shared/BasculeNotifications";
 import { ProfileForm } from "../../../_shared/ProfileForm";
 import { CvManager } from "../../../_shared/CvManager";
 import { UnitsManager } from "../../../_shared/UnitsManager";
-import { MembersManager } from "../../../_shared/MembersManager";
-import { InviteMemberModal } from "../../../_shared/modals/InviteMemberModal";
-import { ImportEquipeCsv } from "../../../_shared/ImportEquipeCsv";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
-import type { Invitation, Membership, Profile } from "../../../_shared/types";
+import type { Profile } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Mon compte" };
 
@@ -24,14 +29,10 @@ export default async function AccountPage() {
   const canManage = session.account.role === "OWNER" || session.account.role === "ADMIN";
   const accountId = session.account.id;
 
-  const [profileRes, membersRes, invitesRes] = await Promise.all([
-    fetchApi<{ user: typeof session.user & { phone?: string | null }; profile?: Profile | null }>(
-      session,
-      "/users/me",
-    ),
-    fetchApi<Membership[]>(session, `/memberships`),
-    fetchApi<Invitation[]>(session, `/invitations?status=PENDING`),
-  ]);
+  const profileRes = await fetchApi<{
+    user: typeof session.user & { phone?: string | null };
+    profile?: Profile | null;
+  }>(session, "/users/me");
 
   const user = profileRes.data?.user ?? session.user;
   const profile = profileRes.data?.profile ?? null;
@@ -39,7 +40,7 @@ export default async function AccountPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Mon compte"
+        title={isFreelance ? "Mon compte" : "Mon établissement"}
         subtitle={`${session.account.name} · Votre rôle : ${ACCOUNT_ROLE_LABEL[session.account.role]}`}
       />
 
@@ -50,14 +51,7 @@ export default async function AccountPage() {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Profil</TabsTrigger>
-          <TabsTrigger value="team">
-            Équipe
-            {membersRes.data ? (
-              <Badge variant="secondary" className="ml-2">
-                {membersRes.data.length}
-              </Badge>
-            ) : null}
-          </TabsTrigger>
+          {!isFreelance ? <TabsTrigger value="services">Services</TabsTrigger> : null}
           <TabsTrigger value="settings">Paramètres</TabsTrigger>
         </TabsList>
 
@@ -79,38 +73,21 @@ export default async function AccountPage() {
           ) : null}
         </TabsContent>
 
-        <TabsContent value="team" className="space-y-4">
-          <div className="flex items-center justify-between">
+        <TabsContent value="services" className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Membres du compte</h2>
-              <p className="text-sm text-muted-foreground">
-                Gérez les sous-comptes et les invitations de {session.account.name}.
+              <h2 className="text-lg font-semibold text-foreground">Services et unités</h2>
+              <p className="max-w-xl text-sm text-muted-foreground">
+                Découpez votre établissement en services. C&apos;est ce découpage qui permet
+                à chaque chef de service de ne voir que son équipe, son planning et ses
+                dossiers — plutôt que la structure entière.
               </p>
             </div>
-            {canManage ? (
-              <div className="flex items-center gap-2">
-                <ImportEquipeCsv accountId={accountId} />
-                <InviteMemberModal accountId={accountId} />
-              </div>
-            ) : null}
+            <Button asChild variant="outline" className="shrink-0">
+              <Link href="/dashboard/equipe">Gérer l&apos;équipe</Link>
+            </Button>
           </div>
-          <MembersManager
-            accountId={accountId}
-            currentUserId={session.user.id}
-            canManage={canManage}
-            members={membersRes.data ?? []}
-            invitations={invitesRes.data ?? []}
-          />
-          {!canManage ? (
-            <p className="text-xs text-muted-foreground">
-              Seuls les propriétaires et administrateurs peuvent modifier l'équipe.
-            </p>
-          ) : null}
-          {!isFreelance ? (
-            <div className="pt-2">
-              <UnitsManager accountId={accountId} canManage={canManage} />
-            </div>
-          ) : null}
+          {!isFreelance ? <UnitsManager accountId={accountId} canManage={canManage} /> : null}
         </TabsContent>
 
         <TabsContent value="settings">
