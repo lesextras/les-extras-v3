@@ -38,7 +38,9 @@ export function CheckoutButton({
     try {
       const res = await apiRequest<{ url: string }>("/billing/checkout", {
         method: "POST",
-        body: { accountId, kind, packId, planId, invoiceId },
+        // Le compte payeur n'est plus transmis : c'est le garde serveur qui
+        // le détermine, à partir du compte actif dont il a vérifié l'accès.
+        body: { kind, packId, planId, invoiceId },
       });
       if (res?.url) {
         window.location.href = res.url;
