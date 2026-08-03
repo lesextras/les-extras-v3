@@ -1,8 +1,13 @@
 "use client";
 
-// Actions sur une candidature/réservation (côté ESTABLISHMENT).
-// Flow SOS Renfort — étape 3 : accepter -> confirmer (booking) une candidature.
-//   PATCH /bookings/:id { status }
+// Actions sur une candidature de renfort (côté ESTABLISHMENT).
+//
+// Ces boutons appelaient `PATCH /bookings/:id { status }` — une route qui
+// n'a jamais existé. Chaque clic partait donc en 404, et le message affiché
+// ressemblait à une panne alors que c'était un lien mort. Le serveur expose
+// une route PAR transition, parce que chaque transition fait autre chose
+// que changer un champ : confirmer crée le créneau de planning, terminer
+// ouvre la fenêtre de pointage de 72 h. On appelle donc la bonne.
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -23,12 +28,28 @@ export function BookingActions({
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
 
+  /** Chaque statut visé a sa route : c'est là que vit sa logique métier. */
+  const ROUTE: Partial<Record<BookingStatus, string>> = {
+    ACCEPTED: "accept",
+    CONFIRMED: "confirm",
+    IN_PROGRESS: "start",
+    COMPLETED: "complete",
+    CANCELLED: "cancel",
+  };
+
   async function setStatus(next: BookingStatus, okMsg: string) {
+    const action = ROUTE[next];
+    if (!action) return;
     setLoading(next);
     try {
-      await apiRequest(`/bookings/${bookingId}`, {
+      await apiRequest(`/bookings/${bookingId}/${action}`, {
         method: "PATCH",
-        body: { status: next },
+        // Décliner exige un motif : il est transmis à la personne. Celui-ci
+        // est neutre et vrai ; un échange détaillé passe par la messagerie,
+        // qui est le bon endroit pour ça.
+        ...(action === "cancel"
+          ? { body: { reason: "Candidature non retenue par l’établissement." } }
+          : {}),
         accountId,
       });
       toast({ title: okMsg });
