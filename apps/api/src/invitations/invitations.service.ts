@@ -64,6 +64,7 @@ export class InvitationsService {
           where: { id: existingInvite.id },
           data: {
             role: dto.role,
+            orgUnitId: dto.orgUnitId ?? null,
             token,
             status: InvitationStatus.PENDING,
             invitedById: inviter.id,
@@ -76,6 +77,7 @@ export class InvitationsService {
             email,
             accountId: account.id,
             role: dto.role,
+            orgUnitId: dto.orgUnitId ?? null,
             token,
             invitedById: inviter.id,
             expiresAt,
@@ -175,11 +177,18 @@ export class InvitationsService {
           userId: user.id,
           accountId: invitation.accountId,
           role: invitation.role,
+          // Le service choisi à l'invitation suit jusqu'au rattachement : la
+          // personne apparaît dans le planning de son équipe dès son arrivée,
+          // sans qu'un responsable ait à y penser.
+          orgUnitId: invitation.orgUnitId,
           status: MembershipStatus.ACTIVE,
         },
         update: {
           // Réactive un accès précédemment suspendu et applique le rôle invité.
           role: invitation.role,
+          // On ne défait pas un rattachement existant si l'invitation n'en
+          // précisait aucun : réactiver un accès n'est pas repartir de zéro.
+          ...(invitation.orgUnitId ? { orgUnitId: invitation.orgUnitId } : {}),
           status: MembershipStatus.ACTIVE,
         },
       });
