@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { bornes, page } from '../common/pagination';
+import { chiffrer } from './proposition';
 import { CreateContratDto, DpaeDto, TerminerDto, UpdateContratDto } from './dto/contrat.dto';
 import {
   CauseFinContrat,
@@ -152,6 +153,140 @@ export class ContratsService {
     return [...parId.values()].sort((a, b) =>
       `${a.lastName ?? ''}${a.firstName ?? ''}`.localeCompare(`${b.lastName ?? ''}${b.firstName ?? ''}`, 'fr'),
     );
+  }
+
+  /**
+   * LA PROPOSITION D'ENGAGEMENT liée à un renfort pourvu.
+   *
+   * Ce que la plateforme produit après avoir trouvé quelqu'un n'est pas un
+   * contrat : c'est un chiffrage. L'établissement s'en sert pour établir SON
+   * contrat de travail. Cette méthode assemble tout ce que le document doit
+   * dire — qui, quoi, quand, combien — sans rien inventer sur les charges.
+   */
+  async proposition(accountId: string, bookingId: string) {
+    const booking = await this.prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        OR: [{ accountId }, { mission: { accountId } }, { service: { accountId } }],
+      },
+      include: {
+        mission: {
+          include: {
+            account: {
+              select: {
+                id: true,
+                name: true,
+                legalName: true,
+                siret: true,
+                address: true,
+                postalCode: true,
+                city: true,
+              },
+            },
+          },
+        },
+        account: {
+          select: {
+            id: true,
+            name: true,
+            owner: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+                profile: { select: { job: true, city: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!booking?.mission) {
+      throw new NotFoundException('Proposition introuvable pour ce renfort.');
+    }
+
+    const m = booking.mission;
+    return {
+      booking: { id: booking.id, status: booking.status, createdAt: booking.createdAt },
+      etablissement: m.account,
+      candidat: booking.account?.owner ?? null,
+      mission: {
+        id: m.id,
+        title: m.title,
+        description: m.description,
+        job: m.job,
+        startDate: m.startDate,
+        endDate: m.endDate,
+        startTime: m.startTime,
+        endTime: m.endTime,
+        city: m.city,
+        postalCode: m.postalCode,
+        headcount: m.headcount,
+      },
+      chiffrage: chiffrer({
+        startDate: m.startDate,
+        endDate: m.endDate,
+        startTime: m.startTime,
+        endTime: m.endTime,
+        hourlyRate: m.hourlyRate == null ? null : Number(m.hourlyRate),
+        headcount: m.headcount,
+      }),
+    };
+  }
+
+  /**
+   * Le pont : une proposition acceptée devient un brouillon de CDD.
+   *
+   * On reprend ce que l'on sait déjà — la personne, le poste, les dates, le
+   * taux — et on laisse vides les mentions que seul l'employeur connaît :
+   * convention collective, caisse de retraite, prévoyance. C'est là que la
+   * plateforme s'arrête et que l'établissement prend la main.
+   *
+   * Idempotent : rappeler la méthode sur le même renfort renvoie le brouillon
+   * déjà créé plutôt qu'un doublon — un directeur qui clique deux fois ne doit
+   * pas se retrouver avec deux contrats pour la même personne.
+   */
+  async depuisRenfort(accountId: string, accountType: string, bookingId: string) {
+    if (accountType !== 'ESTABLISHMENT') {
+      throw new ForbiddenException(
+        "Seul un établissement peut embaucher : c'est lui l'employeur du contrat.",
+      );
+    }
+    const p = await this.proposition(accountId, bookingId);
+    if (!p.candidat) {
+      throw new BadRequestException(
+        "Ce renfort n'identifie aucune personne : impossible d'en tirer un contrat.",
+      );
+    }
+
+    const existant = await this.prisma.contratCDD.findFirst({
+      where: { accountId, missionId: p.mission.id, userId: p.candidat.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (existant) return this.get(accountId, existant.id);
+
+    const brut = p.chiffrage.brutEstime;
+    const cree = await this.prisma.contratCDD.create({
+      data: {
+        accountId,
+        userId: p.candidat.id,
+        missionId: p.mission.id,
+        // Un renfort couvre presque toujours une absence. Le motif reste
+        // modifiable : c'est une proposition de départ, pas une décision.
+        motif: 'REMPLACEMENT_SALARIE_ABSENT',
+        dateDebut: p.mission.startDate,
+        dateFin: p.mission.endDate,
+        poste: p.mission.job ?? p.mission.title,
+        qualification: p.candidat.profile?.job ?? null,
+        remunerationBrute: brut,
+        remunerationDetail: p.chiffrage.tauxHoraire
+          ? `Sur la base de ${p.chiffrage.tauxHoraire} € brut de l'heure, ${p.chiffrage.heuresTotales ?? '?'} heures estimées.`
+          : null,
+      } as never,
+    });
+    return this.get(accountId, cree.id);
   }
 
   async create(accountId: string, accountType: string, dto: CreateContratDto) {

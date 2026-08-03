@@ -52,6 +52,18 @@ export class ContratsController {
     return this.contrats.get(a.id, id);
   }
 
+  /** La proposition chiffrée liée à un renfort pourvu. */
+  @Get('proposition/:bookingId')
+  proposition(@CurrentAccount() a: RequestAccount, @Param('bookingId') bookingId: string) {
+    return this.contrats.proposition(a.id, bookingId);
+  }
+
+  /** Transforme une proposition acceptée en brouillon de CDD. */
+  @Post('depuis-renfort/:bookingId')
+  depuisRenfort(@CurrentAccount() a: RequestAccount, @Param('bookingId') bookingId: string) {
+    return this.contrats.depuisRenfort(a.id, a.type, bookingId);
+  }
+
   @Post()
   create(@CurrentAccount() a: RequestAccount, @Body() dto: CreateContratDto) {
     return this.contrats.create(a.id, a.type, dto);
