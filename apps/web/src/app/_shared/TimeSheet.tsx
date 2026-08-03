@@ -51,14 +51,20 @@ const STATUS_LABEL: Record<Entry["status"], string> = {
 export function TimeSheet({ bookingId, accountId }: { bookingId: string; accountId: string }) {
   const { toast } = useToast();
   const [data, setData] = useState<Payload | null>(null);
+  const [panne, setPanne] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function load() {
     try {
       const d = await apiRequest<Payload>(`/bookings/${bookingId}/time-entries`, { accountId });
       setData(d);
+      setPanne(false);
     } catch {
-      /* silencieux */
+      // Une panne ne doit pas ressembler à une absence de fonctionnalité :
+      // c'est ici qu'on déclare ses heures, donc qu'on est payé. Faire
+      // disparaître le bloc en silence, c'est laisser croire qu'il n'y a
+      // rien à déclarer.
+      setPanne(true);
     }
   }
   useEffect(() => {
@@ -115,6 +121,24 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
     }
   }
 
+  if (panne) {
+    return (
+      <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
+        <p className="font-medium text-destructive">Le pointage n’a pas pu être chargé</p>
+        <p className="mt-1 text-muted-foreground">
+          Vos heures ne sont pas perdues — c’est l’affichage qui a échoué. Vérifiez votre
+          connexion et réessayez.
+        </p>
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="mt-3 text-sm font-medium text-primary underline underline-offset-4"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
   if (!data || data.side === "none") return null;
   const isFreelance = data.side === "freelance";
   const isEstablishment = data.side === "establishment";

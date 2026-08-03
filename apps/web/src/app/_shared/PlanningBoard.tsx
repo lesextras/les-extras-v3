@@ -191,6 +191,7 @@ export function PlanningBoard({
   initialShifts,
   missions,
   initialAvailability,
+  services = [],
 }: {
   accountType: AccountType;
   accountId: string;
@@ -200,6 +201,11 @@ export function PlanningBoard({
   initialShifts: Shift[];
   missions: MissionOption[];
   initialAvailability: Availability[];
+  /**
+   * Les services de l'établissement. Dès qu'il y en a un, le filtre apparaît :
+   * un chef de service pilote son service, pas la structure entière.
+   */
+  services?: { id: string; name: string }[];
 }) {
   const { toast } = useToast();
   const isEstablishment = accountType === "ESTABLISHMENT";
@@ -210,6 +216,8 @@ export function PlanningBoard({
 
   // Navigation dans le temps : la vue et la date de référence font la fenêtre.
   const [vue, setVue] = useState<Vue>("mois");
+  /** Filtre par service. « __tous__ » = pas de filtre. */
+  const [service, setService] = useState<string>("__tous__");
   const [curseur, setCurseur] = useState<Date>(() => debutJour(new Date()));
   const [jourOuvert, setJourOuvert] = useState<string | null>(() => cleJour(new Date()));
 
@@ -229,27 +237,28 @@ export function PlanningBoard({
   const fromISO = plage.debut.toISOString();
   const toISO = plage.fin.toISOString();
 
+  /** L'adresse de la période affichée, filtre de service compris. */
+  const urlPlanning = useMemo(() => {
+    const p = new URLSearchParams({ from: fromISO, to: toISO });
+    if (service !== "__tous__") p.set("orgUnitId", service);
+    return `/planning?${p.toString()}`;
+  }, [fromISO, toISO, service]);
+
   const reloadShifts = useCallback(async () => {
     try {
-      const data = await apiRequest<Shift[]>(
-        `/planning?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`,
-        { accountId },
-      );
+      const data = await apiRequest<Shift[]>(urlPlanning, { accountId });
       setShifts(data ?? []);
     } catch {
       /* on garde l'état courant */
     }
-  }, [accountId, fromISO, toISO]);
+  }, [accountId, urlPlanning]);
 
   // À chaque changement de fenêtre, on recharge : le calendrier montre toujours
   // la période affichée, jamais un reste de la précédente.
   useEffect(() => {
     let annule = false;
     setChargement(true);
-    apiRequest<Shift[]>(
-      `/planning?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`,
-      { accountId },
-    )
+    apiRequest<Shift[]>(urlPlanning, { accountId })
       .then((d) => {
         if (!annule) setShifts(d ?? []);
       })
@@ -260,7 +269,7 @@ export function PlanningBoard({
     return () => {
       annule = true;
     };
-  }, [accountId, fromISO, toISO]);
+  }, [accountId, urlPlanning]);
 
   const reloadAvailability = useCallback(async () => {
     try {
@@ -407,6 +416,22 @@ export function PlanningBoard({
           ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {isEstablishment && services.length > 0 ? (
+            <Select value={service} onValueChange={setService}>
+              <SelectTrigger className="h-9 w-52" aria-label="Filtrer par service">
+                <SelectValue placeholder="Tous les services" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__tous__">Tous les services</SelectItem>
+                {services.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.name}
+                  </SelectItem>
+                ))}
+                <SelectItem value="sans-service">Sans service</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : null}
           <div
             className="inline-flex overflow-hidden rounded-lg border border-input"
             role="group"
