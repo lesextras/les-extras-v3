@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireSession, fetchApi } from "../../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../../_shared/ui";
 import { FichePersonne, type ContratResume } from "../../../../_shared/FichePersonne";
-import type { MembreListe, PageMembres, Repartition } from "../../../../_shared/EquipeTable";
+import type { MembreListe, Repartition } from "../../../../_shared/EquipeTable";
 
 export const metadata: Metadata = { title: "Fiche personne" };
 
@@ -32,7 +32,7 @@ export default async function FichePersonnePage({
   // sur elle : une seule forme de données, donc un seul enrichissement à
   // maintenir (service, interne/externe, complétude du dossier).
   const [liste, repartition, contrats] = await Promise.all([
-    fetchApi<PageMembres>(session, `/memberships?perPage=100`),
+    fetchApi<MembreListe>(session, `/memberships/personne/${userId}`),
     fetchApi<Repartition>(session, "/memberships/repartition"),
     fetchApi<ContratListe[]>(session, "/contrats"),
   ]);
@@ -46,7 +46,7 @@ export default async function FichePersonnePage({
     );
   }
 
-  const membre: MembreListe | undefined = liste.data?.items.find((m) => m.user.id === userId);
+  const membre = liste.data;
   if (!membre) notFound();
 
   const siens: ContratResume[] = (contrats.data ?? [])
