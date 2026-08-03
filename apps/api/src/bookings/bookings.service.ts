@@ -14,6 +14,7 @@ import { AuditService } from '../common/audit/audit.service';
 import { CommunityService } from '../community/community.service';
 import { CreateTimeEntryDto } from './dto/time-entry.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
+import { Constat, evaluerCreneau, PLAFONDS } from '../planning/conformite-horaire';
 
 /** Transitions autorisées du cycle de vie d'un booking. */
 const TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
@@ -355,8 +356,9 @@ export class BookingsService {
       side,
       validatedMinutes,
       pendingMinutes,
-      // Garde-fous temps de travail (informatifs, jamais bloquants) :
-      // amplitude d'un creneau > 12 h, repos entre deux creneaux < 11 h.
+      // Garde-fous temps de travail sur les heures REELLEMENT pointees, tous
+      // employeurs confondus : memes regles que le planning previsionnel
+      // (module conformite-horaire), donc une seule verite dans le produit.
       alertes: await this.alertesTempsDeTravail(booking.accountId, entries),
       ajustement: {
         limite: limite ? limite.toISOString() : null,
@@ -365,24 +367,39 @@ export class BookingsService {
     };
   }
 
-  private static readonly AMPLITUDE_MAX_H = 12;
-  private static readonly REPOS_MIN_H = 11;
-
   /**
-   * Signale les situations a risque, tous bookings confondus pour le meme
-   * intervenant : creneau de plus de 12 h, repos de moins de 11 h entre deux
-   * creneaux. Informations affichees telles quelles — la decision reste humaine.
+   * Garde-fous sur les heures REELLEMENT pointees, tous employeurs confondus.
+   *
+   * Le pointage ne verifiait que deux regles (amplitude 12 h, repos 11 h) et
+   * les calculait a part, avec son propre code. Il partage desormais le module
+   * `conformite-horaire` du planning : memes plafonds, memes messages, meme
+   * lecture du droit. Deux moteurs de regles auraient fini par se contredire,
+   * et c'est le genre de contradiction qu'un controleur remarque.
+   *
+   * Ce que ca ajoute au pointage : le plafond de 48 h sur une semaine isolee,
+   * la moyenne de 44 h sur 12 semaines consecutives, le repos hebdomadaire de
+   * 35 h. Le plafond legal porte sur le travail EFFECTIF : c'est ici qu'il se
+   * constate, pas dans le previsionnel.
+   *
+   * La fenetre couvre 12 semaines de part et d'autre, faute de quoi la moyenne
+   * glissante est sous-estimee. Le filtre porte sur le compte de l'intervenant
+   * et non sur l'etablissement : les plafonds se cumulent (art. L. 8261-1).
+   *
+   * Ces alertes restent informatives : un pointage constate un fait passe, le
+   * bloquer n'y changerait rien. Le blocage a sa place a l'affectation.
    */
   private async alertesTempsDeTravail(
     freelanceAccountId: string,
     entries: { id: string; startedAt: Date; endedAt: Date | null }[],
   ): Promise<Record<string, string[]>> {
     const resultat: Record<string, string[]> = {};
-    const dates = entries.filter((e) => e.endedAt);
-    if (dates.length === 0) return resultat;
-    const min = new Date(Math.min(...dates.map((e) => e.startedAt.getTime())) - 24 * 3_600_000);
-    const max = new Date(Math.max(...dates.map((e) => e.endedAt!.getTime())) + 24 * 3_600_000);
-    // Tous les creneaux du meme intervenant dans la fenetre, autres missions comprises.
+    const clos = entries.filter((e) => e.endedAt);
+    if (clos.length === 0) return resultat;
+
+    const marge = PLAFONDS.fenetreSemaines * 7 * 86_400_000;
+    const min = new Date(Math.min(...clos.map((e) => e.startedAt.getTime())) - marge);
+    const max = new Date(Math.max(...clos.map((e) => e.endedAt!.getTime())) + marge);
+
     const voisins = await this.prisma.timeEntry.findMany({
       where: {
         booking: { accountId: freelanceAccountId },
@@ -392,26 +409,21 @@ export class BookingsService {
       orderBy: { startedAt: 'asc' },
       select: { id: true, startedAt: true, endedAt: true },
     });
-    const ajouter = (id: string, message: string) => {
-      if (!resultat[id]) resultat[id] = [];
-      if (!resultat[id].includes(message)) resultat[id].push(message);
-    };
-    const ids = new Set(entries.map((e) => e.id));
-    for (let i = 0; i < voisins.length; i++) {
-      const v = voisins[i];
-      if (!v.endedAt) continue;
-      const heures = (v.endedAt.getTime() - v.startedAt.getTime()) / 3_600_000;
-      if (ids.has(v.id) && heures > BookingsService.AMPLITUDE_MAX_H) {
-        ajouter(v.id, `Créneau de ${heures.toFixed(1).replace('.', ',')} h — au-delà de 12 h d'affilée.`);
-      }
-      const suivant = voisins[i + 1];
-      if (suivant) {
-        const repos = (suivant.startedAt.getTime() - v.endedAt.getTime()) / 3_600_000;
-        if (repos >= 0 && repos < BookingsService.REPOS_MIN_H) {
-          const msg = `Repos de ${repos.toFixed(1).replace('.', ',')} h avant le créneau suivant — moins que les 11 h de repos quotidien.`;
-          if (ids.has(v.id)) ajouter(v.id, msg);
-          if (ids.has(suivant.id)) ajouter(suivant.id, msg);
-        }
+
+    const creneaux = voisins
+      .filter((v) => v.endedAt)
+      .map((v) => ({ id: v.id, startAt: v.startedAt, endAt: v.endedAt! }));
+
+    for (const e of clos) {
+      // On evalue chaque pointage en le retirant du contexte, sinon il serait
+      // compte deux fois et chaque creneau se signalerait lui-meme.
+      const contexte = creneaux.filter((c) => c.id !== e.id);
+      const constats: Constat[] = evaluerCreneau(contexte, {
+        startAt: e.startedAt,
+        endAt: e.endedAt!,
+      });
+      if (constats.length) {
+        resultat[e.id] = constats.map((c) => c.message);
       }
     }
     return resultat;
