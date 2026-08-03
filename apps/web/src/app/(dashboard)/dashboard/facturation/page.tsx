@@ -125,7 +125,7 @@ export default async function FacturationPage({
   const [quotes, summary, invoices] = await Promise.all([
     fetchApi<{ items: QuoteRow[]; total: number }>(
       session,
-      `/quotes?accountId=${accountId}&perPage=100`,
+      "/quotes?perPage=100",
     ),
     fetchApi<FinanceSummary>(session, "/invoices/summary"),
     fetchApi<Invoice[]>(session, "/invoices?scope=account"),
