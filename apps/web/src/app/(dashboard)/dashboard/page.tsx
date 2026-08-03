@@ -29,11 +29,18 @@ export default async function DashboardPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
 
-  const [stats, missions, bookings, services] = await Promise.all([
+  const [stats, missions, bookings, services, repartition] = await Promise.all([
     fetchApi<DashStats>(session, "/dashboard/stats"),
     fetchApi<Mission[]>(session, "/missions?scope=account&take=4"),
     fetchApi<Booking[]>(session, "/bookings?scope=account&take=5"),
     fetchApi<Service[]>(session, "/services?scope=account&take=4"),
+    // La répartition par service dit deux choses d'un coup : combien de
+    // personnes sont rattachées, et si l'établissement est découpé. Ce sont
+    // exactement les deux gestes qui rendent l'outil utilisable — sans eux,
+    // le planning n'a personne dedans et le filtre par service reste vide.
+    isEstablishment
+      ? fetchApi<{ total: number; services: { id: string }[] }>(session, "/memberships/repartition")
+      : Promise.resolve({ data: undefined, error: undefined }),
   ]);
 
   const s = stats.data ?? {};
@@ -72,15 +79,53 @@ export default async function DashboardPage() {
         const hasCatalog = isEstablishment
           ? (missions.data?.length ?? 0) > 0
           : (services.data?.length ?? 0) > 0;
-        const steps = [
-          { done: Boolean(session.user.firstName), label: "Complétez votre profil", href: "/dashboard/account" },
-          isEstablishment
-            ? { done: hasCatalog, label: "Publiez votre premier SOS Renfort", href: "/dashboard/renforts" }
-            : { done: hasCatalog, label: "Créez votre premier atelier", href: "/dashboard/ateliers" },
-          isEstablishment
-            ? { done: (session.account as { credits?: number })?.credits !== undefined && false, label: "Invitez votre équipe", href: "/dashboard/account" }
-            : { done: (s.applications ?? 0) > 0, label: "Candidatez à une première mission", href: "/dashboard/opportunites" },
-        ];
+        // Les étapes disent l'ordre dans lequel l'outil devient utile, pas
+        // l'ordre dans lequel il a été construit. Pour un établissement :
+        // d'abord son découpage, puis ses gens, et seulement ensuite un
+        // renfort — publier un besoin avant d'avoir une équipe, c'est se
+        // priver de la diffusion en cascade qui fait tout l'intérêt.
+        const nbServices = repartition.data?.services.length ?? 0;
+        const nbMembres = repartition.data?.total ?? 0;
+        const steps = isEstablishment
+          ? [
+              {
+                done: Boolean(session.user.firstName),
+                label: "Complétez votre profil",
+                href: "/dashboard/account",
+              },
+              {
+                done: nbServices > 0,
+                label: "Découpez votre établissement en services",
+                href: "/dashboard/account?onglet=services",
+              },
+              {
+                done: nbMembres > 1,
+                label: "Invitez votre équipe",
+                href: "/dashboard/equipe",
+              },
+              {
+                done: hasCatalog,
+                label: "Publiez votre premier SOS Renfort",
+                href: "/dashboard/renforts",
+              },
+            ]
+          : [
+              {
+                done: Boolean(session.user.firstName),
+                label: "Complétez votre profil",
+                href: "/dashboard/account",
+              },
+              {
+                done: hasCatalog,
+                label: "Créez votre premier atelier",
+                href: "/dashboard/ateliers",
+              },
+              {
+                done: (s.applications ?? 0) > 0,
+                label: "Candidatez à une première mission",
+                href: "/dashboard/opportunites",
+              },
+            ];
         const remaining = steps.filter((st) => !st.done).length;
         if (remaining === 0) return null;
         return (
@@ -88,9 +133,13 @@ export default async function DashboardPage() {
             <CardContent className="space-y-3 p-5">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-foreground">Prise en main — {steps.length - remaining}/{steps.length}</p>
-                <span className="text-xs text-muted-foreground">Quelques étapes pour bien démarrer</span>
+                <span className="text-xs text-muted-foreground">
+                  {isEstablishment
+                    ? "Vos services et votre équipe d’abord : c’est ce qui met des gens dans le planning."
+                    : "Quelques étapes pour bien démarrer"}
+                </span>
               </div>
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {steps.map((st) => (
                   <Link
                     key={st.label}
