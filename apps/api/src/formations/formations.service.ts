@@ -14,6 +14,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { bornes, page } from '../common/pagination';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateFormationDto } from './dto/create-formation.dto';
 import { UpdateFormationDto } from './dto/update-formation.dto';
@@ -73,15 +74,23 @@ export class FormationsService {
   }
 
   /** Programmes du compte actif (gestion : ADéPA certifiant OU interne établissement). */
-  async findMine(accountId: string) {
-    return this.prisma.formation.findMany({
-      where: { ownerAccountId: accountId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        categoryRef: { select: { id: true, title: true } },
-        _count: { select: { sessions: true } },
-      },
-    });
+  async findMine(accountId: string, filtres: { page?: number; perPage?: number } = {}) {
+    const { page: p, perPage, skip, take } = bornes(filtres);
+    const where = { ownerAccountId: accountId };
+    const [items, total] = await Promise.all([
+      this.prisma.formation.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        include: {
+          categoryRef: { select: { id: true, title: true } },
+          _count: { select: { sessions: true } },
+        },
+      }),
+      this.prisma.formation.count({ where }),
+    ]);
+    return page(items, total, p, perPage);
   }
 
   /** Catalogue : programmes PUBLIÉS + filtres type/catégorie/recherche. */

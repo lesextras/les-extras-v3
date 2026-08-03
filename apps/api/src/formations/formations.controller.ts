@@ -50,8 +50,15 @@ export class FormationsController {
   /** Programmes gérés par le compte actif. */
   @Get()
   @UseGuards(AccountGuard)
-  findMine(@CurrentAccount() account: RequestAccount) {
-    return this.formations.findMine(account.id);
+  findMine(
+    @CurrentAccount() account: RequestAccount,
+    @Query('page') p?: string,
+    @Query('perPage') perPage?: string,
+  ) {
+    return this.formations.findMine(account.id, {
+      page: p ? Number(p) : undefined,
+      perPage: perPage ? Number(perPage) : undefined,
+    });
   }
 
   @Post()
