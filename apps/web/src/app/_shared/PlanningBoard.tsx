@@ -2,7 +2,8 @@
 
 // Vue agenda des shifts (planning) + gestion.
 //  - ESTABLISHMENT : liste chronologique des créneaux du compte, changement de
-//    statut, suppression, création (modal) avec gestion des CONFLITS (force).
+//    statut, suppression, création (modal) avec gestion des CONFLITS (force)
+//    et des PLAFONDS de durée du travail (dérogation motivée).
 //  - FREELANCE : ses créneaux + section « Mes disponibilités » (ajout/suppression).
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -10,6 +11,7 @@ import {
   Trash2,
   Clock,
   AlertTriangle,
+  ShieldAlert,
   Plus,
   CalendarDays,
   ChevronLeft,
@@ -66,6 +68,20 @@ export interface Shift {
   modifiable?: boolean;
   /** Contrat ou fiche formation, pour aller à la source en un clic. */
   lien?: string | null;
+}
+
+/**
+ * Dépassement d'un plafond de durée du travail renvoyé par l'API à la création
+ * d'un créneau. `BLOQUANT` empêche l'enregistrement tant qu'aucun motif de
+ * dérogation n'est fourni ; `INFO` est purement indicatif.
+ */
+export interface Constat {
+  code: string;
+  gravite: "INFO" | "BLOQUANT";
+  message: string;
+  regle: string;
+  valeur: number;
+  plafond: number;
 }
 
 const ORIGINE_LABEL: Record<string, string> = {
@@ -673,6 +689,8 @@ function NewShiftModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
+  const [constats, setConstats] = useState<Constat[] | null>(null);
+  const [motif, setMotif] = useState("");
   const [pendingBody, setPendingBody] = useState<Record<string, unknown> | null>(null);
   const [missionId, setMissionId] = useState("");
   const [freelanceId, setFreelanceId] = useState("");
@@ -680,6 +698,8 @@ function NewShiftModal({
   function reset() {
     setError(null);
     setConflicts(null);
+    setConstats(null);
+    setMotif("");
     setPendingBody(null);
     setMissionId("");
     setFreelanceId("");
@@ -696,9 +716,22 @@ function NewShiftModal({
       onCreated();
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        const payload = err.payload as { message?: string; conflicts?: Conflict[] } | null;
+        const payload = err.payload as {
+          message?: string;
+          code?: string;
+          conflicts?: Conflict[];
+          constats?: Constat[];
+        } | null;
         if (payload?.conflicts?.length) {
           setConflicts(payload.conflicts);
+          setPendingBody(body);
+          setLoading(false);
+          return;
+        }
+        // Plafond de durée du travail : on ne referme pas la porte, on demande
+        // un motif. Le créneau reste créable, mais la décision est tracée.
+        if (payload?.code === "CONFORMITE_HORAIRE" && payload.constats?.length) {
+          setConstats(payload.constats);
           setPendingBody(body);
           setLoading(false);
           return;
@@ -759,7 +792,84 @@ function NewShiftModal({
           </DialogDescription>
         </DialogHeader>
 
-        {conflicts ? (
+        {constats ? (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                <ShieldAlert className="size-4" />
+                {constats.length === 1
+                  ? "Un plafond de durée du travail serait dépassé"
+                  : `${constats.length} plafonds de durée du travail seraient dépassés`}
+              </div>
+              <ul className="mt-3 space-y-3">
+                {constats.map((c) => (
+                  <li key={c.code}>
+                    <p className="text-sm text-foreground">{c.message}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{c.regle}</p>
+                    {/* Jauge : on voit d'un coup d'oeil de combien on deborde. */}
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-destructive"
+                        style={{
+                          width: `${Math.min(100, Math.round((c.valeur / c.plafond) * 100))}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {c.valeur.toFixed(1).replace(".", ",")} pour un plafond de{" "}
+                      {c.plafond.toFixed(1).replace(".", ",")}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Ces plafonds se calculent sur <strong>tous les employeurs</strong> de
+              l&apos;intervenant, pas seulement sur votre établissement. Vous pouvez passer
+              outre, mais le motif sera enregistré avec votre nom et la date, et restera
+              consultable en cas de contrôle.
+            </p>
+            <Field
+              label="Motif de la dérogation"
+              htmlFor="derogationMotif"
+              required
+              hint="Par exemple : autorisation de l'inspection du travail, accord de branche, circonstances exceptionnelles."
+            >
+              <Textarea
+                id="derogationMotif"
+                value={motif}
+                onChange={(e) => setMotif(e.target.value)}
+                rows={3}
+                placeholder="Pourquoi ce dépassement est-il justifié ?"
+              />
+            </Field>
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setConstats(null);
+                  setMotif("");
+                  setError(null);
+                }}
+              >
+                Modifier le créneau
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                loading={loading}
+                disabled={motif.trim().length < 5}
+                onClick={() =>
+                  pendingBody && post({ ...pendingBody, derogationMotif: motif.trim() })
+                }
+              >
+                Passer outre et créer
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : conflicts ? (
           <div className="space-y-4">
             <div className="rounded-xl border border-warning/40 bg-warning/10 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-warning-foreground">
