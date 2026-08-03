@@ -37,7 +37,7 @@ import {
   ShieldAlert,
   UsersRound,
 } from 'lucide-react';
-import type { NavRole, AccountType } from './types';
+import type { NavRole, AccountType, AccountRole } from './types';
 
 export interface NavItem {
   label: string;
@@ -57,6 +57,16 @@ export interface NavItem {
    * intervenante » n'a pas de sens : c'est à ses salariés que l'on s'adresse.
    */
   sousComptesSeulement?: boolean;
+  /**
+   * Rôles autorisés DANS le compte actif. Absent = tout le monde.
+   *
+   * Un menu qui propose ce que le serveur refusera fait passer une règle pour
+   * une panne. Et certaines entrées ne relèvent pas seulement du droit d'agir
+   * mais du droit de VOIR : les contrats portent des salaires, la conformité
+   * porte des casiers judiciaires, la facturation porte les comptes de la
+   * structure. Ce ne sont pas des informations d'équipe.
+   */
+  roles?: AccountRole[];
 }
 
 export interface NavSection {
@@ -155,12 +165,12 @@ const establishmentNav: NavSection[] = [
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
       // calcule — essai, précarité, carence — et refuse de transmettre un
       // contrat auquel il manque une mention obligatoire.
-      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, essentiel: true, hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' },
+      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' },
       // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
       // Une fiche par personne, et la conformité comme propriété de cette
       // personne — pas comme un annuaire parallèle qu'il faut recouper.
-      { label: 'Équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
-      { label: 'Conformité', href: '/dashboard/conformite', icon: ShieldAlert, essentiel: true, hint: 'Les pièces obligatoires qui manquent ou arrivent à échéance : identité, diplôme, casier judiciaire, permis' },
+      { label: 'Équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
+      { label: 'Conformité', href: '/dashboard/conformite', icon: ShieldAlert, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires qui manquent ou arrivent à échéance : identité, diplôme, casier judiciaire, permis' },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les freelances' },
       { label: 'Le GAP', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Groupe d’Analyse de Pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. Réservé aux adhérents.' },
@@ -183,15 +193,15 @@ const establishmentNav: NavSection[] = [
   {
     title: 'Mon établissement',
     items: [
-      { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, hint: 'Faites former vos équipes par un salarié référent' },
+      { label: 'Formation interne', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Faites former vos équipes par un salarié référent' },
       { label: 'Mon établissement', href: '/dashboard/account', icon: Building2, hint: 'Coordonnées, préférences et réglages de votre structure' },
       { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.
-      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer ou à décider, et vos factures — au même endroit' },
-      { label: 'Adhésion', href: '/dashboard/adhesion', icon: Receipt, hint: 'Adhérer à l’association pour débloquer LEX. Les prestations, elles, se règlent à la facture.' },
-      { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Évaluez les intervenants après leurs missions' },
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures — au même endroit' },
+      { label: 'Adhésion', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER'], hint: 'Adhérer à l’association pour débloquer LEX. Les prestations, elles, se règlent à la facture.' },
+      { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
       { label: 'Points & récompenses', href: '/dashboard/points', icon: Award, hint: '10 points = 1 € de réduction sur vos factures, dans la limite de 30 % du montant' },
@@ -271,15 +281,27 @@ const adminNav: NavSection[] = [
   },
 ];
 
-/** Retourne les sections de navigation adaptées au rôle. */
-export function getNavForRole(role: NavRole): NavSection[] {
-  switch (role) {
-    case 'ADMIN':
-      return adminNav;
-    case 'ESTABLISHMENT':
-      return establishmentNav;
-    case 'FREELANCE':
-    default:
-      return freelanceNav;
-  }
+/**
+ * Les sections de navigation adaptées au rôle.
+ *
+ * `roleCompte` est le rôle DANS le compte actif. Sans lui, tout le monde voyait
+ * le même menu de vingt-six entrées : la direction s'y noyait, et un
+ * moniteur-éducateur y trouvait des boutons qui lui renvoyaient une erreur
+ * d'autorisation, ou pire, des informations qui ne le regardaient pas.
+ * Une entrée sans `roles` reste visible par tout le monde.
+ */
+export function getNavForRole(role: NavRole, roleCompte?: AccountRole): NavSection[] {
+  const base =
+    role === 'ADMIN' ? adminNav : role === 'ESTABLISHMENT' ? establishmentNav : freelanceNav;
+
+  // L'administration de la plateforme n'a pas de rôle « dans un compte » :
+  // on ne lui retire rien.
+  if (role === 'ADMIN' || !roleCompte) return base;
+
+  return base
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !item.roles || item.roles.includes(roleCompte)),
+    }))
+    .filter((section) => section.items.length > 0);
 }
