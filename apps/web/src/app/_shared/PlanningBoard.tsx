@@ -41,6 +41,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest, ApiError } from "@/lib/api";
 import { EmptyState } from "./ui";
+import { BandeauPanne } from "./BandeauPanne";
 import { Field, Textarea } from "./form-fields";
 import { initials, fullName } from "./format";
 import type { BadgeVariant } from "./format";
@@ -213,6 +214,7 @@ export function PlanningBoard({
   const [availability, setAvailability] = useState<Availability[]>(initialAvailability);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [chargement, setChargement] = useState(false);
+  const [panne, setPanne] = useState(false);
 
   // Navigation dans le temps : la vue et la date de référence font la fenêtre.
   const [vue, setVue] = useState<Vue>("mois");
@@ -248,8 +250,11 @@ export function PlanningBoard({
     try {
       const data = await apiRequest<Shift[]>(urlPlanning, { accountId });
       setShifts(data ?? []);
+      setPanne(false);
     } catch {
-      /* on garde l'état courant */
+      // On garde l'état courant, mais on le DIT : un planning figé qu'on croit
+      // à jour, c'est un créneau qu'on oublie de pourvoir.
+      setPanne(true);
     }
   }, [accountId, urlPlanning]);
 
@@ -260,9 +265,14 @@ export function PlanningBoard({
     setChargement(true);
     apiRequest<Shift[]>(urlPlanning, { accountId })
       .then((d) => {
-        if (!annule) setShifts(d ?? []);
+        if (!annule) {
+          setShifts(d ?? []);
+          setPanne(false);
+        }
       })
-      .catch(() => undefined)
+      .catch(() => {
+        if (!annule) setPanne(true);
+      })
       .finally(() => {
         if (!annule) setChargement(false);
       });
@@ -389,6 +399,8 @@ export function PlanningBoard({
   return (
     <div className="space-y-6">
       {/* Barre de navigation du calendrier */}
+      {panne ? <BandeauPanne quoi="le planning" onReessayer={() => void reloadShifts()} /> : null}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button

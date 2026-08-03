@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { BandeauPanne } from "./BandeauPanne";
 
 interface Conge {
   id: string;
@@ -60,6 +61,7 @@ export function GestionConges({
   const [conges, setConges] = useState<Conge[]>([]);
   const [compteurs, setCompteurs] = useState<Compteur[]>([]);
   const [busy, setBusy] = useState(false);
+  const [panne, setPanne] = useState(false);
 
   const charger = useCallback(async () => {
     try {
@@ -69,8 +71,11 @@ export function GestionConges({
       ]);
       setConges(c);
       setCompteurs(k);
+      setPanne(false);
     } catch {
-      /* silencieux : la page reste utilisable */
+      // Zéro demande et zéro compteur, c'est indiscernable d'une panne — sauf
+      // si on le dit. Or on solde des congés sur ces chiffres.
+      setPanne(true);
     }
   }, [accountId]);
 
@@ -127,6 +132,8 @@ export function GestionConges({
 
   return (
     <div className="space-y-6">
+      {panne ? <BandeauPanne quoi="les congés et les compteurs" onReessayer={() => void charger()} /> : null}
+
       {/* Demande */}
       <Card>
         <CardHeader>

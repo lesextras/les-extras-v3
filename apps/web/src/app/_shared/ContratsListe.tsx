@@ -54,14 +54,20 @@ function variante(statut: string): BadgeVariant {
 
 export function ContratsListe({
   initialContrats,
+  total,
   motifs,
   salaries,
 }: {
   initialContrats: Contrat[];
+  /** Nombre total de contrats du compte, toutes pages confondues. */
+  total?: number;
   motifs: MotifRecoursOption[];
   salaries: SalariePossible[];
 }) {
   const contrats = initialContrats;
+  // Une troncature muette est pire qu'une liste longue : on dit combien de
+  // contrats existent quand tous ne tiennent pas sur la page.
+  const tronque = typeof total === "number" && total > contrats.length;
 
   const enCours = useMemo(
     () => contrats.filter((c) => c.statut !== "TERMINE" && c.statut !== "ROMPU"),
@@ -77,6 +83,12 @@ export function ContratsListe({
       <div className="flex justify-end">
         <NouveauContrat motifs={motifs} salaries={salaries} />
       </div>
+
+      {tronque ? (
+        <p className="text-sm text-muted-foreground">
+          {contrats.length} contrats affichés sur {total}. Les plus récents d’abord.
+        </p>
+      ) : null}
 
       {contrats.length === 0 ? (
         <EmptyState

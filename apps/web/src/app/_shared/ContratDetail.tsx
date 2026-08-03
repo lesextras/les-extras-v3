@@ -18,6 +18,7 @@ import {
   CircleAlert,
   Coins,
   Hourglass,
+  Printer,
   Send,
   ShieldAlert,
   Timer,
@@ -173,6 +174,19 @@ export function ContratDetail({
           <Badge variant={clos ? "muted" : contrat.statut === "BROUILLON" ? "outline" : "default"}>
             {STATUT_LABEL[contrat.statut] ?? contrat.statut}
           </Badge>
+          {/* La pièce est produite par le serveur : le même document quel que
+              soit le navigateur, et les mêmes chiffres que l'écran — la
+              synthèse affichée ici est celle qui alimente le PDF. */}
+          <Button asChild variant="outline" className="gap-2">
+            <a
+              href={`/api/proxy/documents/contrat-cdd/${contrat.id}.pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Printer className="h-4 w-4" />
+              Imprimer le contrat
+            </a>
+          </Button>
           {modifiable ? (
             <>
               <Button variant="outline" onClick={enregistrer} loading={enregistrement}>
