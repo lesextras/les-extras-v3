@@ -4,6 +4,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   Min,
   MinLength,
@@ -15,6 +16,9 @@ export class CreateFormationDto {
   @IsString()
   @MinLength(3)
   @MaxLength(160)
+  // Un titre fait de barres ou de symboles (« |||||| ») passait la longueur
+  // minimale et finissait publié sur le site : on exige de vraies lettres.
+  @Matches(/\p{L}{3}/u, { message: 'Le titre doit contenir au moins un mot (trois lettres qui se suivent).' })
   title!: string;
 
   @IsOptional()

@@ -14,11 +14,17 @@ const euros = (n: number) =>
   );
 
 export function CalculateurRemplacement() {
+  // Valeurs par défaut COHÉRENTES entre elles : avec un brut de 14 €/h et un
+  // coefficient d'agence de 1,95, l'heure d'intérim revient à ~27,30 €. Un
+  // tarif d'intervenant par défaut à 26 €/h (ordre de grandeur du secteur,
+  // modifiable) garde la comparaison crédible ; l'ancien défaut à 32 €/h
+  // faisait conclure au premier regard que l'intérim était moins cher — le
+  // contraire de ce que l'outil illustre.
   const [heures, setHeures] = React.useState(35);
   const [semaines, setSemaines] = React.useState(4);
   const [tauxHoraireBrut, setTauxHoraireBrut] = React.useState(14);
   const [coefInterim, setCoefInterim] = React.useState(1.95);
-  const [tarifFreelance, setTarifFreelance] = React.useState(32);
+  const [tarifFreelance, setTarifFreelance] = React.useState(26);
   const [heuresAdmin, setHeuresAdmin] = React.useState(3);
   const [coutHeureAdmin, setCoutHeureAdmin] = React.useState(28);
 

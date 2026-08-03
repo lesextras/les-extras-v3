@@ -143,7 +143,11 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
         </DropdownMenu>
       )}
 
-      <CommandPalette isMember={isMember ?? activeAccount?.isMember} />
+      <CommandPalette
+        isMember={isMember ?? activeAccount?.isMember}
+        role={user.role}
+        accountType={activeAccount?.type}
+      />
 
       <div className="ml-auto flex items-center gap-1.5">
         <IndicateursCompte userId={user.id} accountId={activeAccount?.id} />
@@ -189,7 +193,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
                 <AvatarFallback>{initials(user.name ?? user.email)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">{user.name ?? 'Utilisateur'}</p>
+                <p className="truncate text-sm font-semibold text-foreground">{user.name ?? user.email}</p>
                 <p className="truncate text-xs text-muted-foreground">{user.email}</p>
               </div>
             </div>

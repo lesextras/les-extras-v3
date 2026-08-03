@@ -127,7 +127,9 @@ export function AdminMissionsTable({
                       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                         {formatDate(m.startDate)}
                       </TableCell>
-                      <TableCell>
+                      {/* Sans nowrap, les quatre boutons repliaient et la
+                          colonne se tronquait sur écran standard. */}
+                      <TableCell className="whitespace-nowrap">
                         <ModerateMissionActions
                           missionId={m.id}
                           accountId={accountId}

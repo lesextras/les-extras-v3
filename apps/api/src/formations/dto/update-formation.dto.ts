@@ -4,6 +4,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   Min,
   MinLength,
@@ -16,6 +17,8 @@ export class UpdateFormationDto {
   @IsString()
   @MinLength(3)
   @MaxLength(160)
+  // Même règle qu'à la création : pas de titre fait de symboles.
+  @Matches(/\p{L}{3}/u, { message: 'Le titre doit contenir au moins un mot (trois lettres qui se suivent).' })
   title?: string;
 
   @IsOptional()

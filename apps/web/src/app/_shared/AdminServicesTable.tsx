@@ -125,7 +125,7 @@ export function AdminServicesTable({
                           {SERVICE_STATUS_LABEL[s.status] ?? s.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <ModerateServiceActions
                           serviceId={s.id}
                           accountId={accountId}

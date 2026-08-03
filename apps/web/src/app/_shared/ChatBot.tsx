@@ -7,6 +7,7 @@ import * as React from "react";
 import { MessageCircle, Send, X, Sparkles, Lock } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { RichText } from "./RichText";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -83,10 +84,11 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
                 <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
                   <Lock className="size-5" />
                 </span>
-                <p className="mt-3 font-semibold text-foreground">Crédits LEX épuisés</p>
+                <p className="mt-3 font-semibold text-foreground">Crédits LEX requis</p>
                 <p className="mt-1.5 text-sm text-muted-foreground">
-                  Les générations LEX consomment des crédits. Rechargez par packs ou prenez un
-                  abonnement à recharge quotidienne — le reste de la plateforme reste gratuit.
+                  Les générations LEX consomment des crédits. Activez l&apos;essai Découverte
+                  gratuit, rechargez par packs ou prenez un abonnement à recharge quotidienne —
+                  le reste de la plateforme reste gratuit.
                 </p>
                 <a
                   href="/dashboard/adhesion"
@@ -124,13 +126,15 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
               <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
                 <div
                   className={cn(
-                    "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
+                    "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
                     m.role === "user"
-                      ? "bg-primary text-primary-foreground"
+                      ? "whitespace-pre-wrap bg-primary text-primary-foreground"
                       : "bg-muted text-foreground",
                   )}
                 >
-                  {m.content}
+                  {/* Les réponses du bot arrivent en Markdown : on le met en
+                      forme (gras, listes) au lieu d'afficher les symboles bruts. */}
+                  {m.role === "user" ? m.content : <RichText value={m.content} />}
                 </div>
               </div>
             ))}

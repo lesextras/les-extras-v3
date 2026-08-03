@@ -42,13 +42,16 @@ export function ModaleAdherent({
           <span className="mb-1 grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary">
             <Lock className="size-5" />
           </span>
+          {/* « Épuisés » suggérait une consommation passée — faux pour un
+              compte neuf qui n'a simplement pas encore activé son essai. */}
           <DialogTitle>
-            {fonctionnalite ? `${fonctionnalite} — crédits LEX épuisés` : "Crédits LEX épuisés"}
+            {fonctionnalite ? `${fonctionnalite} — crédits LEX requis` : "Crédits LEX requis"}
           </DialogTitle>
           <DialogDescription>
-            Les outils LEX fonctionnent à crédits : un crédit par génération. Rechargez par packs,
-            ou prenez un abonnement dont la recharge quotidienne remet votre solde à niveau chaque
-            matin.
+            Les outils LEX fonctionnent à crédits : un crédit par génération. Première visite ?
+            L&apos;essai Découverte est gratuit (7 jours, sans carte bancaire). Sinon, rechargez par
+            packs ou prenez un abonnement dont la recharge quotidienne remet votre solde à niveau
+            chaque matin.
           </DialogDescription>
         </DialogHeader>
 

@@ -175,6 +175,7 @@ export function AdminFormationsManager({
   }
 
   async function remove(id: string) {
+    if (!window.confirm("Supprimer définitivement ce programme de formation et ses sessions ? Cette action est irréversible.")) return;
     setBusy(id);
     try {
       await apiRequest(`/admin/formations/${id}`, { method: "DELETE" });

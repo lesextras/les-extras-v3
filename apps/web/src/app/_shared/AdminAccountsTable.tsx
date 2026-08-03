@@ -122,6 +122,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
   }
 
   async function remove(id: string) {
+    if (!window.confirm("Supprimer définitivement ce compte et ses rattachements ? Cette action est irréversible.")) return;
     setBusy(id);
     try {
       await apiRequest(`/admin/accounts/${id}`, { method: "DELETE" });
@@ -140,6 +141,12 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
    * existait côté API sans aucun bouton pour l'appeler.
    */
   async function basculerLexIllimite(a: AdminAccount) {
+    // Accorder un accès illimité est un geste commercial qui a un coût réel :
+    // un clic de confirmation évite l'exonération accidentelle.
+    const question = a.isMember
+      ? `Retirer l'accès LEX illimité de « ${a.name} » ? Le compte repassera sur ses crédits.`
+      : `Accorder l'accès LEX illimité à « ${a.name} » ? Ce compte utilisera LEX sans consommer de crédits.`;
+    if (!window.confirm(question)) return;
     setBusy(a.id);
     try {
       await apiRequest(`/admin/accounts/${a.id}/adhesion`, {
@@ -286,7 +293,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                           }
                           onClick={() => basculerLexIllimite(a)}
                         >
-                          {a.isMember ? "LEX ∞" : "LEX ∞ ?"}
+                          {a.isMember ? "Retirer LEX illimité" : "Accorder LEX illimité"}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
                         <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>

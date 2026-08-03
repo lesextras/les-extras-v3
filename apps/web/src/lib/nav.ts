@@ -253,7 +253,6 @@ const adminNav: NavSection[] = [
       { label: 'Missions', href: '/admin/missions', icon: Megaphone, hint: 'Modérer les missions de renfort' },
       { label: 'Ateliers', href: '/admin/ateliers', icon: Sparkles, hint: 'Modérer le catalogue d’ateliers' },
       { label: 'Réservations', href: '/admin/reservations', icon: CalendarCheck, hint: 'Suivi des réservations et des bookings' },
-      { label: 'Educat’heures', href: '/admin/educatheures', icon: Clock, hint: 'Banque d’heures d’intervention' },
     ],
   },
   {
@@ -281,7 +280,7 @@ const adminNav: NavSection[] = [
       { label: 'Catégories', href: '/admin/categories', icon: Tags, hint: 'Taxonomie des missions et ateliers' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
-      { label: 'Le GAP', href: '/gap', icon: MessagesSquare, hint: 'Groupe d’Analyse de Pratique : modérer et animer les situations déposées' },
+      { label: 'Le GAP', href: '/gap', icon: MessagesSquare, hint: 'Groupe d’Analyse de Pratique : suivre le fil des situations déposées et y répondre' },
     ],
   },
   {

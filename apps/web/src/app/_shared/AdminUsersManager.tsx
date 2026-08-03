@@ -133,6 +133,7 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
   }
 
   async function remove(id: string) {
+    if (!window.confirm("Supprimer définitivement cet utilisateur ? Cette action est irréversible.")) return;
     setBusy(id);
     try {
       await apiRequest(`/admin/users/${id}`, { method: "DELETE" });

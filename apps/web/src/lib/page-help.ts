@@ -264,10 +264,10 @@ const AIDE: Record<string, PageHelpEntry> = {
     texte:
       'Le suivi de toutes les réservations : statut, dates, montant. Vous pouvez confirmer, annuler ou relancer depuis chaque ligne.',
   },
-  '/admin/educatheures': {
-    titre: 'Educat’heures',
+  '/admin/lex': {
+    titre: 'LEX — Crédits & abonnements',
     texte:
-      'La banque d’heures : heures d’intervention acquises par les établissements et leur consommation au fil des interventions.',
+      'Le pilotage de LEX : ventes de packs, consommation de crédits, abonnements actifs et essais Découverte en cours — tiré des écritures réelles.',
   },
   '/admin/etablissements': {
     titre: 'Comptes & sous-comptes',

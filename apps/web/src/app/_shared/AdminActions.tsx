@@ -47,6 +47,9 @@ export function ModerateMissionActions({
   }
 
   async function remove() {
+    // Une suppression est définitive : un clic malheureux dans une liste ne
+    // doit pas suffire à faire disparaître une mission.
+    if (!window.confirm("Supprimer définitivement cette mission ? Cette action est irréversible.")) return;
     setLoading("del");
     try {
       await apiRequest(`/admin/missions/${missionId}`, { method: "DELETE", accountId });
@@ -89,6 +92,26 @@ export function ModerateMissionActions({
           onClick={() => moderate("PUBLISHED", "Mission republiée")}
         >
           {loading === "PUBLISHED" ? "…" : "Republier"}
+        </Button>
+        {delBtn}
+      </div>
+    );
+  }
+
+  // Mission déjà publiée : « Approuver » n'a plus de sens — on ne propose que
+  // la dépublication (et la suppression).
+  if (status === "PUBLISHED" || status === "FILLED") {
+    return (
+      <div className="flex justify-end gap-2">
+        {voirBtn}
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-destructive hover:text-destructive"
+          disabled={loading !== null}
+          onClick={() => moderate("CLOSED", "Mission dépubliée")}
+        >
+          {loading === "CLOSED" ? "…" : "Dépublier"}
         </Button>
         {delBtn}
       </div>
@@ -154,6 +177,7 @@ export function ModerateServiceActions({
   }
 
   async function remove() {
+    if (!window.confirm("Supprimer définitivement cet atelier ? Cette action est irréversible.")) return;
     setLoading("del");
     try {
       await apiRequest(`/admin/services/${serviceId}`, { method: "DELETE", accountId });
@@ -195,6 +219,25 @@ export function ModerateServiceActions({
           onClick={() => moderate("PUBLISHED", "Atelier republié")}
         >
           {loading === "PUBLISHED" ? "…" : "Republier"}
+        </Button>
+        {delBtn}
+      </div>
+    );
+  }
+
+  // Atelier déjà publié : « Approuver » n'a plus de sens — on ne propose que
+  // l'archivage (et la suppression).
+  if (status === "PUBLISHED") {
+    return (
+      <div className="flex justify-end gap-2">
+        {voirBtn}
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={loading !== null}
+          onClick={() => moderate("ARCHIVED", "Atelier archivé")}
+        >
+          {loading === "ARCHIVED" ? "…" : "Archiver"}
         </Button>
         {delBtn}
       </div>
@@ -282,6 +325,12 @@ export function UserStatusActions({
   const [loading, setLoading] = useState<string | null>(null);
 
   async function toggle(action: "ban" | "unban") {
+    if (
+      action === "ban" &&
+      !window.confirm("Bannir cet utilisateur ? Il ne pourra plus se connecter tant qu'il n'est pas réactivé.")
+    ) {
+      return;
+    }
     setLoading(action);
     try {
       await apiRequest(`/admin/users/${userId}/${action}`, {

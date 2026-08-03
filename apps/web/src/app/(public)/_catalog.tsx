@@ -280,8 +280,16 @@ export async function CatalogView({
                       unoptimized
                     />
                   ) : (
-                    <span className="grid h-full place-items-center bg-warm-gradient text-sm text-muted-foreground">
-                      Les Extras
+                    // Sans photo, une vignette qui a l'air « en panne » ne se
+                    // clique pas : on affiche un visuel intentionnel — dégradé
+                    // de marque + catégorie de la fiche.
+                    <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+                      <span className="flex flex-col items-center gap-1.5 text-center">
+                        <Star className="size-6 text-primary/70" aria-hidden />
+                        <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                          {item.categoryRef?.title ?? SERVICE_CATEGORY_LABEL[item.category] ?? "Les Extras"}
+                        </span>
+                      </span>
                     </span>
                   )}
                   {item.categoryRef?.title ? (

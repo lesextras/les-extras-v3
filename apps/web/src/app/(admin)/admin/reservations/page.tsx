@@ -30,6 +30,7 @@ interface AdminBooking {
   account?: { name?: string; type?: string } | null;
   mission?: { title?: string } | null;
   service?: { title?: string } | null;
+  quote?: { reference?: string } | null;
 }
 
 // Statuts proposés dans la barre de filtre (ordre du cycle de vie).
@@ -118,7 +119,9 @@ export default async function AdminReservationsPage({
                         </div>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {b.mission?.title ?? b.service?.title ?? "—"}
+                        {b.mission?.title ??
+                          b.service?.title ??
+                          (b.quote?.reference ? `Devis ${b.quote.reference}` : "—")}
                       </TableCell>
                       <TableCell>
                         <Badge variant={bookingBadgeVariant(b.status)}>

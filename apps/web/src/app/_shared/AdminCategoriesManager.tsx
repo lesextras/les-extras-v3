@@ -94,6 +94,7 @@ export function AdminCategoriesManager({ categories }: { categories: AdminCatego
   }
 
   async function remove(id: string) {
+    if (!window.confirm("Supprimer définitivement cette catégorie ? Les fiches qui l'utilisent perdront leur classement.")) return;
     setBusy(id);
     try {
       await apiRequest(`/admin/categories/${id}`, { method: "DELETE" });

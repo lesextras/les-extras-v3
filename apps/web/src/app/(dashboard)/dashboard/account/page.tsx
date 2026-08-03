@@ -6,7 +6,8 @@
 // pas y chercher. Restent ici les services — la structure de l'établissement
 // — et les réglages.
 import type { Metadata } from "next";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OngletsCompte, ongletDepuisUrl } from "../../../_shared/OngletsCompte";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { BasculeValidationMissions } from "../../../_shared/BasculeValidationMissions";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +24,16 @@ import type { Profile } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Mon compte" };
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams?: { onglet?: string };
+}) {
   const session = await requireSession();
   const isFreelance = session.account.type === "FREELANCE";
+  // Lien profond ?onglet=services|parametres|profil : on ouvre le bon onglet.
+  const ongletDemande = ongletDepuisUrl(searchParams?.onglet);
+  const onglet = ongletDemande === "services" && isFreelance ? "profile" : ongletDemande;
   const canManage = session.account.role === "OWNER" || session.account.role === "ADMIN";
   const accountId = session.account.id;
 
@@ -52,7 +60,7 @@ export default async function AccountPage() {
           l'activer sur le téléphone n'active rien sur l'ordinateur. */}
       <BasculeNotifications />
 
-      <Tabs defaultValue="profile" className="space-y-6">
+      <OngletsCompte defaultValue={onglet} className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Profil</TabsTrigger>
           {!isFreelance ? <TabsTrigger value="services">Services</TabsTrigger> : null}
@@ -124,7 +132,7 @@ export default async function AccountPage() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+      </OngletsCompte>
     </div>
   );
 }

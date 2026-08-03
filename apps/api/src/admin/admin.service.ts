@@ -581,6 +581,9 @@ export class AdminService {
         account: { select: { id: true, name: true, type: true } },
         mission: { select: { id: true, title: true } },
         service: { select: { id: true, title: true } },
+        // Certaines réservations naissent d'un devis sans mission ni atelier
+        // rattaché : sans cette référence, la colonne « Objet » affichait « — ».
+        quote: { select: { id: true, reference: true } },
       },
     });
   }

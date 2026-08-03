@@ -241,8 +241,8 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
                         key={item.href}
                         type="button"
                         onClick={() => setLexBloquee(item.label)}
-                        title="Crédits LEX épuisés — rechargez pour y accéder"
-                        aria-label={`${item.label} — crédits LEX épuisés`}
+                        title="Crédits LEX requis — activez l'essai gratuit ou rechargez"
+                        aria-label={`${item.label} — crédits LEX requis`}
                         className={classes}
                       >
                         {contenu}

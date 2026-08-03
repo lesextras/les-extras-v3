@@ -43,15 +43,29 @@ const DESTINATIONS: Dest[] = [
   { label: "Admin — Missions", href: "/admin/missions", group: "Admin", keywords: "modération" },
   { label: "Admin — Ateliers", href: "/admin/ateliers", group: "Admin", keywords: "services" },
   { label: "Admin — Réservations", href: "/admin/reservations", group: "Admin", keywords: "bookings" },
-  { label: "Admin — Educat’heures", href: "/admin/educatheures", group: "Admin", keywords: "banque heures intervention" },
   { label: "Admin — Centre de formation", href: "/admin/formations", group: "Admin", keywords: "formations qualiopi certifiant interne" },
+  { label: "Admin — Conformité Qualiopi", href: "/admin/qualiopi", group: "Admin", keywords: "qualiopi critères indicateurs preuves audit surveillance" },
+  { label: "Admin — Registre & BPF", href: "/admin/registre", group: "Admin", keywords: "registre bpf bilan pédagogique financier edof export" },
   { label: "Admin — Coffre-fort conformité", href: "/admin/conformite", group: "Admin", keywords: "conformité pièces obligatoires intervenants cni casier permis iban urssaf établissement" },
+  { label: "Admin — Demandes de contact", href: "/admin/contacts", group: "Admin", keywords: "contact messages formulaire public devis" },
   { label: "Admin — Factures", href: "/admin/factures", group: "Admin", keywords: "invoices" },
   { label: "Admin — LEX Crédits", href: "/admin/lex", group: "Admin", keywords: "lex credits ventes consommation abonnements essais stripe" },
   { label: "Admin — Statistiques", href: "/admin/statistiques", group: "Admin", keywords: "kpi" },
+  { label: "Admin — Tunnel d'acquisition", href: "/admin/tunnel", group: "Admin", keywords: "tunnel acquisition conversion vues demandes devis réservations" },
+  { label: "Admin — Journal d'audit", href: "/admin/journal", group: "Admin", keywords: "journal audit traçabilité actions historique modérations" },
 ];
 
-export function CommandPalette({ isMember }: { isMember?: boolean } = {}) {
+export function CommandPalette({
+  isMember,
+  role,
+  accountType,
+}: {
+  isMember?: boolean;
+  /** Rôle global : les entrées Admin ne sont proposées qu'aux administrateurs. */
+  role?: "USER" | "ADMIN";
+  /** Type du compte actif : filtre les groupes Freelance / Établissement. */
+  accountType?: string | null;
+} = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -59,13 +73,22 @@ export function CommandPalette({ isMember }: { isMember?: boolean } = {}) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const results = useMemo(() => {
-    const ouvertes = DESTINATIONS.filter((d) => !d.premium || isMember);
+    // Proposer une page qui répondra « réservé aux freelances » (ou une page
+    // admin à un compte standard) fait perdre un aller-retour : on filtre les
+    // groupes selon le rôle et le type de compte AVANT la recherche.
+    const ouvertes = DESTINATIONS.filter((d) => {
+      if (d.premium && !isMember) return false;
+      if (d.group === "Admin" && role !== "ADMIN") return false;
+      if (d.group === "Freelance" && accountType === "ESTABLISHMENT" && role !== "ADMIN") return false;
+      if (d.group === "Établissement" && accountType === "FREELANCE" && role !== "ADMIN") return false;
+      return true;
+    });
     const needle = q.trim().toLowerCase();
     if (!needle) return ouvertes;
     return ouvertes.filter((d) =>
       `${d.label} ${d.group} ${d.keywords ?? ""}`.toLowerCase().includes(needle),
     );
-  }, [q, isMember]);
+  }, [q, isMember, role, accountType]);
 
   const close = useCallback(() => {
     setOpen(false);

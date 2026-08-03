@@ -222,8 +222,10 @@ export default async function AdminPage() {
                       {m.account?.name ?? "Établissement"} · {formatDate(m.startDate)}
                     </p>
                   </div>
+                  {/* Lien profond vers LA mission cliquée : renvoyer à la liste
+                      générale faisait perdre le contexte du clic. */}
                   <Button asChild size="sm" variant="outline">
-                    <Link href="/admin/missions">Modérer</Link>
+                    <Link href={`/admin/missions/${m.id}`}>Modérer</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -243,7 +245,7 @@ export default async function AdminPage() {
                     </p>
                   </div>
                   <Button asChild size="sm" variant="outline">
-                    <Link href="/admin/ateliers">Modérer</Link>
+                    <Link href={`/admin/ateliers/${sv.id}`}>Modérer</Link>
                   </Button>
                 </CardContent>
               </Card>

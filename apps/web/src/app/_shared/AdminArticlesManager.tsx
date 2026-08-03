@@ -98,6 +98,7 @@ export function AdminArticlesManager({
   }
 
   async function remove(id: string) {
+    if (!window.confirm("Supprimer définitivement cet article ? Cette action est irréversible.")) return;
     setBusy(id);
     try {
       await apiRequest(`/admin/articles/${id}`, { method: "DELETE" });

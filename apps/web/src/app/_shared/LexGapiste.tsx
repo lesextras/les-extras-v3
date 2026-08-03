@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/api";
+import { RichText } from "./RichText";
 
 interface Tour {
   role: "user" | "assistant";
@@ -170,7 +171,12 @@ export function LexGapiste({
                   : "max-w-[92%] rounded-2xl rounded-bl-sm bg-card px-4 py-3 text-sm leading-relaxed shadow-soft"
               }
             >
-              <p className="whitespace-pre-line">{t.content}</p>
+              {/* Le GAPiste répond en Markdown : mise en forme plutôt que symboles bruts. */}
+              {t.role === "user" ? (
+                <p className="whitespace-pre-line">{t.content}</p>
+              ) : (
+                <RichText value={t.content} />
+              )}
             </div>
           ))}
           {chargement ? (

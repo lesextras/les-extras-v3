@@ -14,7 +14,6 @@ const LABELS: Record<string, string> = {
   ateliers: 'Ateliers',
   services: 'Ateliers',
   reservations: 'Réservations',
-  educatheures: 'Educat’heures',
   formations: 'Formations',
   qualiopi: 'Conformité Qualiopi',
   registre: 'Registre & BPF',

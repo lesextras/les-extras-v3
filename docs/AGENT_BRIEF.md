@@ -52,7 +52,7 @@ stats ROI. NOUVEAU : comptes/sous-comptes/invitations.
 
 ## Design "Quietly Bold" (tokens)
 - Primary teal `#0D7377` · Secondary terracotta `#C75B39` · Bg ivoire `#FAF7F2`
-- Surface `#FFFFFF` · Text `#1A1A1A` / `#6B7280`. Light only. Chaleureux, pro, micro-interactions.
+- Surface `#FFFFFF` · Text `#1A1A1A` / `#6B7280`. Thème clair par défaut + mode sombre assumé (bascule dans l'en-tête, `BasculeTheme`). Chaleureux, pro, micro-interactions.
 - Inspiration UX : Hublo (leader remplacement médico-social) + Mediflash, différenciée par notre identité.
 
 ## Répartition (ne PAS écrire hors de ta lane pour éviter les conflits)

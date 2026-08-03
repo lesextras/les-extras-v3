@@ -67,8 +67,9 @@ export default async function AdminMissionDetail({ params }: { params: { id: str
             {m.visibility ? <Badge variant="muted">Diffusion : {m.visibility}</Badge> : null}
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{m.title}</h1>
+          {/* « Publiée par » sur un brouillon contredisait le badge de statut. */}
           <p className="text-sm text-muted-foreground">
-            Publiée par {m.account?.name ?? "—"}
+            {m.status === "DRAFT" ? "Déposée par" : "Publiée par"} {m.account?.name ?? "—"}
             {m.account?.city ? ` · ${m.account.city}` : ""} · {m._count?.bookings ?? 0} candidature(s)
           </p>
         </div>

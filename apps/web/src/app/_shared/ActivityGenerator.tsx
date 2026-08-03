@@ -7,6 +7,7 @@ import * as React from "react";
 import { Lightbulb, Loader2, Copy, Check, ShieldCheck } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { RichText } from "./RichText";
 import { useToast } from "@/components/ui/use-toast";
 
 export function ActivityGenerator() {
@@ -121,8 +122,10 @@ export function ActivityGenerator() {
                 {copie ? "Copié" : "Copier"}
               </Button>
             </div>
-            <div className="prose prose-sm prose-invert max-w-none whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
-              {resultat}
+            {/* Le générateur répond en Markdown (titres, listes) : on le rend
+                mis en forme plutôt qu'avec les symboles bruts. */}
+            <div className="text-[15px] leading-relaxed text-foreground">
+              <RichText value={resultat} />
             </div>
           </div>
         ) : (

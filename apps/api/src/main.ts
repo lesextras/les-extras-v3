@@ -21,6 +21,13 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
+  // Derrière le proxy de Coolify (Traefik), `req.ip` valait l'adresse INTERNE
+  // du réseau Docker (::ffff:10.0.1.x) : le journal d'audit et les traces de
+  // signature enregistraient la même IP pour tout le monde. `trust proxy: 1`
+  // fait lire l'en-tête X-Forwarded-For posé par le proxy — un seul saut de
+  // confiance, pour ne pas croire une en-tête forgée par le client lui-même.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   // Préfixe global : toutes les routes sont servies sous /api
   app.setGlobalPrefix('api');
 

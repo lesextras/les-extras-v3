@@ -66,7 +66,15 @@ export function RenfortModal({
       .then((rows) => {
         if (Array.isArray(rows) && rows.length) {
           setDbCats(rows);
-          setCategory(rows[0].id);
+          // Le bouton s'appelle « SOS Renfort » : la catégorie présélectionnée
+          // doit être le renfort/remplacement, pas la première par ordre
+          // alphabétique (« Analyse des pratiques ») — sinon une mission sur
+          // deux partait mal catégorisée.
+          const defaut =
+            rows.find((r) => /renfort/i.test(r.title)) ??
+            rows.find((r) => /remplacement/i.test(r.title)) ??
+            rows[0];
+          setCategory(defaut.id);
         }
       })
       .catch(() => {});
