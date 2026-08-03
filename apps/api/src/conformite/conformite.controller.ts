@@ -12,8 +12,12 @@ import { UpsertComplianceDto } from './dto/upsert-compliance.dto';
  * Coffre-fort de conformité — pièces obligatoires des intervenants.
  * Isolé au compte actif (header x-account-id) via AccountGuard.
  */
+// Les pièces suivies ici comprennent le casier judiciaire et les diplômes de
+// chacun. La lecture était ouverte à tout membre actif du compte : elle est
+// désormais réservée aux responsables, comme l'écriture l'était déjà.
 @Controller('conformite')
-@UseGuards(JwtAuthGuard, AccountGuard)
+@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
+@AccountRoles('OWNER', 'ADMIN', 'MANAGER')
 export class ConformiteController {
   constructor(private readonly conformite: ConformiteService) {}
 
