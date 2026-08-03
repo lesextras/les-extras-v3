@@ -117,7 +117,7 @@ const PARCOURS: Record<
         icone: FileCheck2,
         titre: "Suivez et payez juste",
         texte:
-          "72 h pour ajuster les heures après chaque mission, alertes amplitude et repos, taux de missions pourvues, export paie en CSV.",
+          "72 h pour ajuster les heures après chaque mission, contrôle des plafonds légaux tous employeurs confondus, taux de missions pourvues, export paie en CSV.",
         probleme:
           "Les heures se contestent des semaines après, au moment de payer.",
         change:
