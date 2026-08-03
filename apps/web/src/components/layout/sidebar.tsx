@@ -57,7 +57,7 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
   // s'adressent à une personne physique — « Proposer mes services » — ne le
   // concernent pas : elles ne s'affichent que pour ses sous-comptes.
   const estTitulaire = roleCompte === 'OWNER';
-  const toutesSections = getNavForRole(role)
+  const toutesSections = getNavForRole(role, roleCompte)
     .map((s) => ({
       ...s,
       items: s.items.filter((it) => !(it.sousComptesSeulement && estTitulaire)),
