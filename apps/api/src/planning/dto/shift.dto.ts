@@ -19,6 +19,13 @@ export class CreateShiftDto {
   @IsOptional() @IsString()
   bookingId?: string;
 
+  /**
+   * Service (unité) concerné. Laissé vide, il est déduit du service auquel
+   * l'intervenant est rattaché — on ne demande pas deux fois la même chose.
+   */
+  @IsOptional() @IsString()
+  orgUnitId?: string | null;
+
   @IsOptional() @IsString() @MaxLength(2000)
   notes?: string;
 
@@ -42,6 +49,7 @@ export class UpdateShiftDto {
   @IsOptional() @IsISO8601() startAt?: string;
   @IsOptional() @IsISO8601() endAt?: string;
   @IsOptional() @IsString() freelanceId?: string;
+  @IsOptional() @IsString() orgUnitId?: string | null;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsOptional() @IsBoolean() force?: boolean;
   @IsOptional() @IsString() @MinLength(5) @MaxLength(500) derogationMotif?: string;
