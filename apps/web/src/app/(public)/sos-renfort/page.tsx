@@ -68,14 +68,17 @@ const ETABLISSEMENT = [
   { icone: Clock, texte: "Publication en trois minutes : métier, dates, horaires, lieu, taux." },
   { icone: Zap, texte: "Marquez « urgent » et le besoin saute directement à la diffusion large." },
   { icone: Users, texte: "Le premier intervenant qui accepte emporte la mission — pas de tri à faire." },
-  { icone: FileCheck2, texte: "Contrat généré automatiquement, puis facturation depuis la plateforme." },
+  // Ce que la plateforme produit est une proposition chiffrée, pas un contrat
+  // de travail : c'est l'établissement qui embauche, en son nom propre. Le
+  // promettre autrement, c'est promettre de l'intérim qu'on ne fait pas.
+  { icone: FileCheck2, texte: "Proposition chiffrée immédiate, puis votre CDD pré-rempli en un clic." },
 ];
 
 const INTERVENANT = [
   { icone: MapPin, texte: "Des missions près de chez vous, filtrées par métier et disponibilité." },
   { icone: Zap, texte: "Vous acceptez, c’est à vous. Pas de candidature à défendre, pas d’attente." },
-  { icone: ShieldCheck, texte: "Structures identifiées, taux horaire annoncé avant d’accepter." },
-  { icone: FileCheck2, texte: "Contrat, pointage des heures et facture au même endroit." },
+  { icone: ShieldCheck, texte: "Structures identifiées, taux horaire brut annoncé avant d’accepter." },
+  { icone: FileCheck2, texte: "Vous êtes embauché en CDD par l’établissement : un vrai bulletin de paie, pas une facture." },
 ];
 
 export default async function SosRenfortPage() {
@@ -102,7 +105,9 @@ export default async function SosRenfortPage() {
             Un arrêt maladie à 21 h. Le poste est couvert avant l’ouverture.
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
-            Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte emporte la mission. Vous n’arbitrez rien.
+            Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte emporte la
+            mission — vous n’arbitrez rien. Et vous l’embauchez vous-même en CDD : moins cher que
+            l’intérim, sans risque de requalification.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button asChild size="lg">
