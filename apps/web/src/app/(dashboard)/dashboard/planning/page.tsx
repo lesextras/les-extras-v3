@@ -8,6 +8,7 @@ import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { RepeterSemaine } from "../../../_shared/RepeterSemaine";
 import { PlanningBoard, type Shift, type Availability } from "../../../_shared/PlanningBoard";
 import type { Mission } from "../../../_shared/types";
+import type { Repartition } from "../../../_shared/EquipeTable";
 
 export const metadata: Metadata = { title: "Planning" };
 
@@ -52,6 +53,14 @@ export default async function PlanningPage() {
     missions = (res.data ?? []).map((m) => ({ id: m.id, title: m.title }));
   }
 
+  // Services de l'établissement : alimentent le filtre du calendrier. Sans
+  // eux, un chef de service voit le planning de toute la structure.
+  let services: { id: string; name: string }[] = [];
+  if (isEstablishment) {
+    const res = await fetchApi<Repartition>(session, "/memberships/repartition");
+    services = (res.data?.services ?? []).map((s) => ({ id: s.id, name: s.name }));
+  }
+
   // Disponibilités (freelance).
   let availability: Availability[] = [];
   if (!isEstablishment) {
@@ -91,6 +100,7 @@ export default async function PlanningPage() {
           initialShifts={shifts ?? []}
           missions={missions}
           initialAvailability={availability}
+          services={services}
         />
       )}
     </div>
