@@ -77,6 +77,7 @@ model User {
   assistantDocuments AssistantDocument[]
   pushSubscriptions PushSubscription[]
   leaveRequests    LeaveRequest[] @relation("LeaveUser")
+  contratsCDD    ContratCDD[] @relation("ContratSalarie")
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -179,6 +180,7 @@ model Account {
   quotesAsClient   Quote[] @relation("QuoteClient")
   quotesAsProvider Quote[] @relation("QuoteProvider")
   assistantDocuments AssistantDocument[]
+  contratsCDD    ContratCDD[]
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
@@ -291,6 +293,7 @@ model ReliefMission {
   @@index([status, visibility])
   @@index([accountId])
   @@index([startDate])
+  contratsCDD    ContratCDD[]
 }
 
 /// Atelier / service proposé par un FREELANCE.
@@ -1577,4 +1580,79 @@ model Reglage {
   cle       String   @id
   valeur    String
   majLe     DateTime @updatedAt
+}
+
+/// CONTRAT À DURÉE DÉTERMINÉE.
+///
+/// Pivot du modèle : l'établissement est l'EMPLOYEUR, la plateforme ne fournit
+/// personne. Ce modèle porte le contrat que l'établissement conclut lui-même
+/// avec l'intervenant — d'où `accountId` = employeur et `userId` = salarié,
+/// sans aucune notion de commission ni de facturation de mission.
+model ContratCDD {
+  id                          String   @id @default(cuid())
+  /// Établissement employeur. C'est lui qui signe et qui est responsable.
+  accountId                   String
+  account                     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  /// Salarié embauché.
+  userId                      String
+  user                        User     @relation("ContratSalarie", fields: [userId], references: [id], onDelete: Cascade)
+  /// Besoin de renfort à l'origine du recrutement, si le contrat en vient.
+  missionId                   String?
+  mission                     ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+
+  // — Mentions obligatoires, art. L. 1242-12 du code du travail —
+  motif                       MotifRecoursCDD
+  salarieRemplaceNom          String?
+  salarieRemplaceQualification String?
+  dateDebut                   DateTime
+  /// Terme précis. Nul quand le contrat est à terme imprécis.
+  dateFin                     DateTime?
+  /// Durée minimale, obligatoire quand le terme est imprécis.
+  dureeMinimaleJours          Int?
+  poste                       String?
+  qualification               String?
+  /// Le poste figure-t-il sur la liste des postes à risques particuliers ?
+  posteARisques               Boolean?
+  conventionCollective        String?  @default("CCN 66")
+  remunerationBrute           Decimal? @db.Decimal(10, 2)
+  remunerationDetail          String?
+  caisseRetraiteComplementaire String?
+  organismePrevoyance         String?
+  periodeEssaiJours           Int?
+
+  // — Cycle de vie —
+  statut                      StatutContratCDD @default(BROUILLON)
+  /// Déclaration préalable à l'embauche : au plus tôt 8 jours avant.
+  dpaeEffectueeLe             DateTime?
+  dpaeReference               String?
+  /// Transmission au salarié : 2 jours ouvrables (art. L. 1242-13).
+  transmisLe                  DateTime?
+  signeSalarieLe              DateTime?
+  signeEmployeurLe            DateTime?
+  /// Cause de fin, qui décide de l'indemnité de précarité (art. L. 1243-10).
+  causeFin                    String?
+  termineLe                   DateTime?
+
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  @@index([accountId, dateDebut])
+  @@index([userId, dateDebut])
+  @@index([statut])
+}
+
+enum MotifRecoursCDD {
+  REMPLACEMENT_SALARIE_ABSENT
+  REMPLACEMENT_ATTENTE_ENTREE
+  REMPLACEMENT_POSTE_SUPPRIME
+  ACCROISSEMENT_TEMPORAIRE
+}
+
+enum StatutContratCDD {
+  BROUILLON
+  TRANSMIS
+  SIGNE
+  ACTIF
+  TERMINE
+  ROMPU
 }
