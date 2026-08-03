@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { bornes } from '../common/pagination';
 import { CommunityService } from '../community/community.service';
 import { PointReason } from '@prisma/client';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -202,20 +203,36 @@ export class ReviewsService {
     return pending;
   }
 
-  /** Avis reçus par un utilisateur + note moyenne. */
-  async findForUser(targetId: string) {
-    const reviews = await this.prisma.review.findMany({
-      where: { targetId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        author: { select: USER_SELECT },
-      },
-    });
-    const average =
-      reviews.length > 0
-        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        : null;
-    return { count: reviews.length, average, reviews };
+  /**
+   * Avis reçus par un utilisateur, page par page.
+   *
+   * La moyenne et le nombre se calculent sur TOUS les avis — c'est la note
+   * publique de la personne, elle ne doit pas dépendre de la page affichée.
+   * Seule la liste est bornée. L'ancienne version chargeait tout pour faire
+   * cette moyenne en mémoire : juste au début, faux dès la centaine d'avis.
+   */
+  async findForUser(targetId: string, filtres: { page?: number; perPage?: number } = {}) {
+    const { page: p, perPage, skip, take } = bornes(filtres);
+    const where = { targetId };
+    const [reviews, agg] = await Promise.all([
+      this.prisma.review.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        include: { author: { select: USER_SELECT } },
+      }),
+      this.prisma.review.aggregate({ where, _avg: { rating: true }, _count: { _all: true } }),
+    ]);
+    const total = agg._count._all;
+    return {
+      count: total,
+      average: total > 0 ? (agg._avg.rating ?? null) : null,
+      reviews,
+      page: p,
+      perPage,
+      pages: Math.max(1, Math.ceil(total / perPage)),
+    };
   }
 
   async findForBooking(bookingId: string) {

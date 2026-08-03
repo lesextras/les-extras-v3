@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -42,8 +42,15 @@ export class ReviewsController {
   }
 
   @Get('user/:userId')
-  findForUser(@Param('userId') userId: string) {
-    return this.reviews.findForUser(userId);
+  findForUser(
+    @Param('userId') userId: string,
+    @Query('page') p?: string,
+    @Query('perPage') perPage?: string,
+  ) {
+    return this.reviews.findForUser(userId, {
+      page: p ? Number(p) : undefined,
+      perPage: perPage ? Number(perPage) : undefined,
+    });
   }
 
   @Get('booking/:bookingId')
