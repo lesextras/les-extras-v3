@@ -33,6 +33,13 @@ export const metadata: Metadata = { title: "SOS Renfort" };
 export default async function RenfortsPage() {
   const session = await requireSession();
 
+  // Publier un renfort engage l'établissement : le serveur le réserve à la
+  // direction, à l'administration et aux chefs de service. L'écran doit dire
+  // la même chose — proposer un bouton qui renverra une erreur d'autorisation,
+  // c'est faire passer une règle pour une panne.
+  const peutPublier = ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
+
+
   if (session.account.type !== "ESTABLISHMENT") {
     return (
       <div className="space-y-6">
@@ -68,7 +75,7 @@ export default async function RenfortsPage() {
                 Exporter les heures validées
               </a>
             </Button>
-            <RenfortModal accountId={session.account.id} />
+            {peutPublier ? <RenfortModal accountId={session.account.id} /> : null}
           </div>
         }
       />
@@ -78,8 +85,12 @@ export default async function RenfortsPage() {
       ) : !missions || missions.length === 0 ? (
         <EmptyState
           title="Aucun renfort publié"
-          description="Créez un SOS Renfort : il sera diffusé en cascade (salariés → réseau réservé → public)."
-          action={<RenfortModal accountId={session.account.id} />}
+          description={
+            peutPublier
+              ? "Créez un SOS Renfort : il sera diffusé en cascade (salariés → réseau réservé → public)."
+              : "Aucun besoin de remplacement n’est ouvert pour le moment. Un responsable de votre établissement peut en publier un."
+          }
+          action={peutPublier ? <RenfortModal accountId={session.account.id} /> : undefined}
         />
       ) : (
         <div className="space-y-5">
