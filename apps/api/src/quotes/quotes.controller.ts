@@ -6,11 +6,23 @@ import {
   SendQuoteDto,
 } from './dto/quote.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AccountGuard } from '../common/guards/account.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { RequestUser } from '../common/types/request-context';
+import { CurrentAccount } from '../common/decorators/current-account.decorator';
+import { RequestAccount, RequestUser } from '../common/types/request-context';
 
+/**
+ * Le compte actif vient du garde, plus de la requête.
+ *
+ * Ce contrôleur recevait l'identifiant du compte en paramètre d'URL, et le
+ * service revérifiait l'appartenance à la main. Cela fonctionnait, mais
+ * reposait sur la vigilance : un point d'entrée ajouté plus tard sans reprendre
+ * cette vérification aurait laissé n'importe qui lire les devis d'un autre
+ * établissement, sans que rien ne le signale. L'isolation appartient au garde,
+ * pas à la mémoire du développeur suivant.
+ */
 @Controller('quotes')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class QuotesController {
   constructor(private readonly quotes: QuotesService) {}
 
@@ -18,11 +30,11 @@ export class QuotesController {
   @Get()
   findAll(
     @CurrentUser() user: RequestUser,
-    @Query('accountId') accountId: string,
+    @CurrentAccount() account: RequestAccount,
     @Query('page') p?: string,
     @Query('perPage') perPage?: string,
   ) {
-    return this.quotes.findAllForAccount(user.id, accountId, {
+    return this.quotes.findAllForAccount(user.id, account.id, {
       page: p ? Number(p) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
     });
@@ -37,10 +49,10 @@ export class QuotesController {
   @Post()
   request(
     @CurrentUser() user: RequestUser,
-    @Query('accountId') accountId: string,
+    @CurrentAccount() account: RequestAccount,
     @Body() dto: CreateQuoteRequestDto,
   ) {
-    return this.quotes.request(user.id, accountId, dto);
+    return this.quotes.request(user.id, account.id, dto);
   }
 
   /** Intervenant : chiffrage et envoi. */
