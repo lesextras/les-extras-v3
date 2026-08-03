@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InvoiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { numeroSuivant, prefixeAnnee } from './numerotation';
 import { MailService } from '../common/mail/mail.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 
@@ -20,19 +21,26 @@ export class InvoicesService {
   ) {}
 
   /** Numéro séquentiel annuel : INV-YYYY-00001. */
+  /**
+   * Le numéro suivant, tiré du DERNIER attribué et non du nombre de factures.
+   * Voir `numerotation.ts` : une facture annulée consomme son numéro, la
+   * séquence doit rester continue.
+   */
   private async nextNumber(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `INV-${year}-`;
-    const count = await this.prisma.invoice.count({
-      where: { number: { startsWith: prefix } },
+    const annee = new Date().getFullYear();
+    const derniere = await this.prisma.invoice.findFirst({
+      where: { number: { startsWith: prefixeAnnee(annee) } },
+      orderBy: { number: 'desc' },
+      select: { number: true },
     });
-    return `${prefix}${String(count + 1).padStart(5, '0')}`;
+    return numeroSuivant(annee, derniere?.number ?? null);
   }
 
-  async findAllByAccount(accountId: string) {
+  async findAllByAccount(accountId: string, take = 100) {
     return this.prisma.invoice.findMany({
       where: { accountId },
       orderBy: { createdAt: 'desc' },
+      take: Math.min(200, Math.max(1, Math.trunc(Number(take) || 100))),
       include: { booking: { select: { id: true, status: true } } },
     });
   }
