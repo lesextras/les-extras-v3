@@ -49,12 +49,15 @@ export class MembershipsService {
       status?: MembershipStatus;
       page?: number;
       perPage?: number;
+      /** Restreint à une adhésion précise — sert à la fiche individuelle. */
+      membershipId?: string;
     } = {},
   ) {
     const page = Math.max(1, Math.trunc(Number(filtres.page) || 1));
     const perPage = Math.min(100, Math.max(1, Math.trunc(Number(filtres.perPage) || 25)));
 
     const where: Prisma.MembershipWhereInput = { accountId: account.id };
+    if (filtres.membershipId) where.id = filtres.membershipId;
     if (filtres.role) where.role = filtres.role;
     if (filtres.status) where.status = filtres.status;
     // « sans-service » est une valeur utile : c'est la liste des gens qu'on a
@@ -134,6 +137,27 @@ export class MembershipsService {
       perPage,
       pages: Math.max(1, Math.ceil(total / perPage)),
     };
+  }
+
+  /**
+   * UNE personne, dans exactement la même forme que la liste.
+   *
+   * La fiche individuelle allait chercher son monde dans la première page de
+   * cent membres : au-delà, elle rendait « introuvable » pour quelqu'un qui
+   * existait pourtant. On interroge donc directement la personne demandée,
+   * en réutilisant la recherche paginée restreinte à elle — une seule
+   * projection à maintenir, et plus de plafond caché.
+   */
+  async parUtilisateur(account: RequestAccount, userId: string) {
+    const existe = await this.prisma.membership.findUnique({
+      where: { userId_accountId: { userId, accountId: account.id } },
+      select: { id: true },
+    });
+    if (!existe) {
+      throw new NotFoundException('Cette personne ne fait pas partie de votre établissement.');
+    }
+    const page = await this.list(account, { perPage: 1, page: 1, membershipId: existe.id });
+    return page.items[0];
   }
 
   /**

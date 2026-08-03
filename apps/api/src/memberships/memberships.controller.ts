@@ -52,6 +52,12 @@ export class MembershipsController {
     });
   }
 
+  /** Une personne précise, pour sa fiche. */
+  @Get('personne/:userId')
+  personne(@CurrentAccount() account: RequestAccount, @Param('userId') userId: string) {
+    return this.memberships.parUtilisateur(account, userId);
+  }
+
   /** Combien de personnes par service — alimente les filtres de la liste. */
   @Get('repartition')
   repartition(@CurrentAccount() account: RequestAccount) {
