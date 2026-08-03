@@ -54,7 +54,10 @@ export default async function EquipePage({
           canManage ? (
             <div className="flex items-center gap-2">
               <ImportEquipeCsv accountId={session.account.id} />
-              <InviteMemberModal accountId={session.account.id} />
+              <InviteMemberModal
+                accountId={session.account.id}
+                services={repartition.data?.services ?? []}
+              />
             </div>
           ) : undefined
         }
