@@ -197,6 +197,7 @@ model OrgUnit {
   memberships Membership[]
   missions    ReliefMission[]
   shifts      Shift[]
+  invitations Invitation[]
 
   @@index([accountId])
 }
@@ -226,6 +227,12 @@ model Invitation {
   accountId  String
   account    Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
   role       AccountRole      @default(MEMBER)
+  /// SERVICE d'affectation, choisi au moment de l'invitation.
+  /// Sans lui, un nouvel arrivant n'apparaissait dans le planning d'aucun chef
+  /// de service tant qu'un responsable ne pensait pas à le rattacher à la main
+  /// — ce que personne ne fait, parce que rien ne le rappelle.
+  orgUnitId  String?
+  orgUnit    OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   token      String           @unique @default(cuid())
   status     InvitationStatus @default(PENDING)
   invitedById String
