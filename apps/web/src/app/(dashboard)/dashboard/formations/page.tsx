@@ -38,8 +38,11 @@ function statusBadge(status: string) {
 export default async function DashboardFormationsPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
-  const res = await fetchApi<FormationRow[]>(session, "/formations");
-  const formations = Array.isArray(res.data) ? res.data : [];
+  const res = await fetchApi<{ items: FormationRow[]; total: number }>(
+    session,
+    "/formations?perPage=100",
+  );
+  const formations = res.data?.items ?? [];
 
   return (
     <div className="space-y-8">
