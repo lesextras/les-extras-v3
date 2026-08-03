@@ -28,6 +28,13 @@ export class CreateShiftDto {
   /** Forcer la création malgré un conflit détecté. */
   @IsOptional() @IsBoolean()
   force?: boolean;
+
+  /**
+   * Motif de dérogation. Obligatoire pour passer outre un plafond de durée du
+   * travail : il est enregistré avec la date, et consultable en cas de contrôle.
+   */
+  @IsOptional() @IsString() @MinLength(5) @MaxLength(500)
+  derogationMotif?: string;
 }
 
 export class UpdateShiftDto {
@@ -37,6 +44,7 @@ export class UpdateShiftDto {
   @IsOptional() @IsString() freelanceId?: string;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsOptional() @IsBoolean() force?: boolean;
+  @IsOptional() @IsString() @MinLength(5) @MaxLength(500) derogationMotif?: string;
 }
 
 export class SetStatusDto {
