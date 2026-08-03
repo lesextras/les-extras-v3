@@ -1,64 +1,69 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShiftDto, UpdateShiftDto } from './dto/shift.dto';
+import { Constat, aUnBloquant, evaluerCreneau, PLAFONDS } from './conformite-horaire';
 
 @Injectable()
 export class PlanningService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Garde-fous reglementaires sur un creneau (informatifs, jamais bloquants) :
-   * amplitude > 12 h, repos < 11 h avec le creneau voisin, semaine > 48 h.
-   * Le seul blocage reste le chevauchement pur (double affectation).
+   * CONTRÔLES RÉGLEMENTAIRES sur un créneau, tous employeurs confondus.
+   *
+   * Ce qui a changé, et pourquoi : les garde-fous étaient calculés APRÈS la
+   * création et renvoyés en simples avertissements. Le créneau illégal était
+   * donc enregistré, et personne n'était couvert. Ils sont maintenant calculés
+   * AVANT, et un dépassement de plafond bloque — sauf dérogation motivée, qui
+   * est tracée. C'est cette trace qui protège le responsable en cas de
+   * contrôle : il a été averti, il a décidé, c'est écrit.
+   *
+   * La fenêtre couvre 12 semaines avant et après : la moyenne glissante de
+   * l'art. L. 3121-22 se calcule sur des fenêtres qui peuvent commencer bien
+   * avant le créneau et se terminer bien après.
+   *
+   * On filtre sur `freelanceId` SANS filtrer sur `accountId` : les plafonds
+   * s'apprécient en cumulant tous les employeurs (art. L. 8261-1).
    */
-  private async alertesReglementaires(
+  private async controlesReglementaires(
     freelanceId: string | null | undefined,
     startAt: Date,
     endAt: Date,
     excludeId?: string,
-  ): Promise<string[]> {
-    const alertes: string[] = [];
-    const heures = (endAt.getTime() - startAt.getTime()) / 3_600_000;
-    if (heures > 12) {
-      alertes.push(`Créneau de ${heures.toFixed(1).replace('.', ',')} h — au-delà de 12 h d'affilée.`);
-    }
-    if (!freelanceId) return alertes;
+  ): Promise<Constat[]> {
+    if (!freelanceId) return [];
+    const marge = PLAFONDS.fenetreSemaines * 7 * 86_400_000;
     const voisins = await this.prisma.shift.findMany({
       where: {
         freelanceId,
         id: excludeId ? { not: excludeId } : undefined,
-        status: { in: ['PLANNED', 'CONFIRMED'] },
-        startAt: { gte: new Date(startAt.getTime() - 7 * 86_400_000) },
-        endAt: { lte: new Date(endAt.getTime() + 86_400_000) },
+        status: { in: ['PLANNED', 'CONFIRMED', 'DONE'] },
+        startAt: { gte: new Date(startAt.getTime() - marge) },
+        endAt: { lte: new Date(endAt.getTime() + marge) },
       },
       select: { startAt: true, endAt: true },
     });
-    for (const v of voisins) {
-      const reposApres = (startAt.getTime() - v.endAt.getTime()) / 3_600_000;
-      const reposAvant = (v.startAt.getTime() - endAt.getTime()) / 3_600_000;
-      const repos = reposApres >= 0 ? reposApres : reposAvant >= 0 ? reposAvant : null;
-      if (repos !== null && repos < 11) {
-        alertes.push(
-          `Repos de ${repos.toFixed(1).replace('.', ',')} h avec un créneau voisin — moins que les 11 h de repos quotidien.`,
-        );
-        break;
-      }
+    return evaluerCreneau(voisins, { startAt, endAt });
+  }
+
+  /**
+   * Lève une 400 lisible si un plafond est franchi sans motif de dérogation.
+   * Le front n'a qu'à afficher `constats` : chaque entrée porte déjà sa phrase,
+   * son article et sa jauge. Renvoie les constats pour qu'ils soient tracés.
+   */
+  private exigerDerogation(constats: Constat[], motif?: string): Constat[] {
+    const bloquants = constats.filter((c) => c.gravite === 'BLOQUANT');
+    if (bloquants.length && !motif?.trim()) {
+      throw new BadRequestException({
+        code: 'CONFORMITE_HORAIRE',
+        message:
+          bloquants.length === 1
+            ? bloquants[0].message
+            : `${bloquants.length} plafonds de durée du travail seraient dépassés.`,
+        aide: "Vous pouvez passer outre en indiquant un motif : il sera enregistré avec votre nom et la date, et restera consultable en cas de contrôle.",
+        constats: bloquants,
+      });
     }
-    // Semaine du creneau : lundi 00:00 -> lundi suivant.
-    const lundi = new Date(startAt);
-    lundi.setUTCHours(0, 0, 0, 0);
-    lundi.setUTCDate(lundi.getUTCDate() - ((lundi.getUTCDay() + 6) % 7));
-    const lundiSuivant = new Date(lundi.getTime() + 7 * 86_400_000);
-    const semaine = voisins.filter((v) => v.startAt >= lundi && v.startAt < lundiSuivant);
-    const totalSemaine =
-      semaine.reduce((acc, v) => acc + (v.endAt.getTime() - v.startAt.getTime()), 0) / 3_600_000 +
-      heures;
-    if (totalSemaine > 48) {
-      alertes.push(
-        `${totalSemaine.toFixed(1).replace('.', ',')} h planifiées sur la semaine — au-delà du plafond de 48 h.`,
-      );
-    }
-    return alertes;
+    return constats;
   }
 
   /** Détecte les chevauchements de créneaux pour un même intervenant. */
@@ -229,6 +234,12 @@ export class PlanningService {
         });
       }
     }
+    // Les plafonds sont vérifiés AVANT d'écrire : un créneau illégal ne doit
+    // pas exister en base, même une seconde, sans décision explicite.
+    const constats = await this.controlesReglementaires(dto.freelanceId, startAt, endAt);
+    this.exigerDerogation(constats, dto.derogationMotif);
+    const derogeA = constats.filter((c) => c.gravite === 'BLOQUANT');
+
     const shift = await this.prisma.shift.create({
       data: {
         accountId,
@@ -239,14 +250,19 @@ export class PlanningService {
         bookingId: dto.bookingId ?? null,
         notes: dto.notes ?? null,
         recurrenceRule: dto.recurrenceRule ?? null,
+        derogationMotif: derogeA.length ? (dto.derogationMotif ?? null) : null,
+        derogationCodes: derogeA.map((c) => c.code),
+        derogationLe: derogeA.length ? new Date() : null,
       },
     });
-    const reglementaires = await this.alertesReglementaires(dto.freelanceId, startAt, endAt);
     return {
       shift,
       warnings:
-        conflicts.length || reglementaires.length
-          ? { conflicts: conflicts.length ? conflicts : undefined, reglementaires: reglementaires.length ? reglementaires : undefined }
+        conflicts.length || constats.length
+          ? {
+              conflicts: conflicts.length ? conflicts : undefined,
+              reglementaires: constats.length ? constats : undefined,
+            }
           : undefined,
     };
   }
@@ -264,15 +280,23 @@ export class PlanningService {
         throw new BadRequestException({ message: 'Conflit de planning.', conflicts });
       }
     }
-    return this.prisma.shift.update({
+    const constats = await this.controlesReglementaires(freelanceId, startAt, endAt, id);
+    this.exigerDerogation(constats, dto.derogationMotif);
+    const derogeA = constats.filter((c) => c.gravite === 'BLOQUANT');
+
+    const shift = await this.prisma.shift.update({
       where: { id },
       data: {
         title: dto.title ?? existing.title,
         startAt, endAt,
         freelanceId: dto.freelanceId ?? existing.freelanceId,
         notes: dto.notes ?? existing.notes,
+        derogationMotif: derogeA.length ? (dto.derogationMotif ?? existing.derogationMotif) : null,
+        derogationCodes: derogeA.map((c) => c.code),
+        derogationLe: derogeA.length ? new Date() : null,
       },
     });
+    return { shift, warnings: constats.length ? { reglementaires: constats } : undefined };
   }
 
   async setStatus(accountId: string, id: string, status: string) {
