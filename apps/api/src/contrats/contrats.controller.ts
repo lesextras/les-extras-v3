@@ -17,6 +17,12 @@ export class ContratsController {
     return this.contrats.motifs();
   }
 
+  /** Personnes embauchables : pool interne, planning, candidatures retenues. */
+  @Get('salaries')
+  salaries(@CurrentAccount() a: RequestAccount) {
+    return this.contrats.salariesPossibles(a.id);
+  }
+
   @Get()
   list(@CurrentAccount() a: RequestAccount) {
     return this.contrats.list(a.id);

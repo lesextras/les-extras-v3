@@ -111,6 +111,48 @@ export class ContratsService {
     return Object.entries(MOTIFS_RECOURS).map(([code, d]) => ({ code, ...d }));
   }
 
+  /**
+   * Les personnes que l'établissement peut embaucher, sans qu'il ait à les
+   * retrouver à la main. Trois provenances, fusionnées et dédoublonnées :
+   * son propre pool (membres du compte), les intervenants déjà positionnés
+   * sur un de ses créneaux, et ceux dont une candidature a été retenue sur
+   * une de ses missions. C'est exactement le geste qu'on lui vend : la
+   * personne a été trouvée par la plateforme, le contrat part d'elle.
+   */
+  async salariesPossibles(accountId: string) {
+    const champs = { id: true, firstName: true, lastName: true, email: true } as const;
+    const [membres, surLePlanning, retenus] = await Promise.all([
+      this.prisma.membership.findMany({
+        where: { accountId, status: 'ACTIVE' },
+        select: { user: { select: champs } },
+      }),
+      this.prisma.shift.findMany({
+        where: { accountId, freelanceId: { not: null } },
+        distinct: ['freelanceId'],
+        select: { freelance: { select: champs } },
+      }),
+      this.prisma.booking.findMany({
+        where: {
+          mission: { accountId },
+          status: { in: ['ACCEPTED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED'] },
+        },
+        select: { account: { select: { owner: { select: champs } } } },
+      }),
+    ]);
+
+    const parId = new Map<string, { id: string; firstName: string | null; lastName: string | null; email: string; origine: string }>();
+    const ajouter = (u: { id: string; firstName: string | null; lastName: string | null; email: string } | null, origine: string) => {
+      if (u && !parId.has(u.id)) parId.set(u.id, { ...u, origine });
+    };
+    membres.forEach((m) => ajouter(m.user, 'Pool interne'));
+    surLePlanning.forEach((s) => ajouter(s.freelance, 'Déjà sur votre planning'));
+    retenus.forEach((b) => ajouter(b.account?.owner ?? null, 'Candidature retenue'));
+
+    return [...parId.values()].sort((a, b) =>
+      `${a.lastName ?? ''}${a.firstName ?? ''}`.localeCompare(`${b.lastName ?? ''}${b.firstName ?? ''}`, 'fr'),
+    );
+  }
+
   async create(accountId: string, accountType: string, dto: CreateContratDto) {
     if (accountType !== 'ESTABLISHMENT') {
       throw new ForbiddenException(
