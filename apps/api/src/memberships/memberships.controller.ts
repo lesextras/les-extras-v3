@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AccountRole, MembershipStatus } from '@prisma/client';
@@ -27,10 +28,34 @@ import { RequestAccount, RequestUser } from '../common/types/request-context';
 export class MembershipsController {
   constructor(private readonly memberships: MembershipsService) {}
 
-  /** Lister les membres : accessible à tout membre actif du compte. */
+  /**
+   * Lister les membres : accessible à tout membre actif du compte.
+   * Paginé et filtrable — voir le service pour le pourquoi.
+   */
   @Get()
-  list(@CurrentAccount() account: RequestAccount) {
-    return this.memberships.list(account);
+  list(
+    @CurrentAccount() account: RequestAccount,
+    @Query('q') q?: string,
+    @Query('orgUnitId') orgUnitId?: string,
+    @Query('role') role?: AccountRole,
+    @Query('status') status?: MembershipStatus,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+  ) {
+    return this.memberships.list(account, {
+      q,
+      orgUnitId,
+      role,
+      status,
+      page: page ? Number(page) : undefined,
+      perPage: perPage ? Number(perPage) : undefined,
+    });
+  }
+
+  /** Combien de personnes par service — alimente les filtres de la liste. */
+  @Get('repartition')
+  repartition(@CurrentAccount() account: RequestAccount) {
+    return this.memberships.repartition(account);
   }
 
   @Patch(':id/role')

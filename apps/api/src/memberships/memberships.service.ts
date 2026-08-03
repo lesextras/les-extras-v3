@@ -4,41 +4,165 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AccountRole, MembershipStatus } from '@prisma/client';
+import { AccountRole, MembershipStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../common/audit/audit.service';
 import { RequestAccount } from '../common/types/request-context';
+import { ConformiteService } from '../conformite/conformite.service';
 
 @Injectable()
 export class MembershipsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly conformite: ConformiteService,
   ) {}
 
-  /** Liste les membres (sous-comptes) du compte actif. */
-  list(account: RequestAccount) {
-    return this.prisma.membership.findMany({
-      where: { accountId: account.id },
-      orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
-      select: {
-        id: true,
-        role: true,
-        status: true,
-        createdAt: true,
-        orgUnitId: true,
-        orgUnit: { select: { id: true, name: true } },
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
+  /**
+   * L'ÉQUIPE, telle qu'on la cherche vraiment.
+   *
+   * Cette liste était renvoyée en entier, sans limite ni recherche. Sur une
+   * association de plusieurs centaines de personnes réparties en services,
+   * l'écran devenait un mur : on ne peut pas retrouver quelqu'un dans une
+   * liste qu'on doit faire défiler. Trois choses ont changé :
+   *
+   *  - on pagine et on cherche côté serveur (nom, prénom, courriel), donc la
+   *    taille de la structure n'influe plus sur le temps d'affichage ;
+   *  - on filtre par SERVICE, parce qu'un chef de service pilote son service
+   *    et pas l'établissement entier. L'unité était déjà en base et déjà
+   *    transportée ; elle n'était simplement jamais utilisée ;
+   *  - on dit qui est interne et qui est externe. Une même personne peut être
+   *    salariée ici et intervenante indépendante ailleurs : ne pas le montrer,
+   *    c'est laisser un responsable croire qu'il a affaire à son salarié quand
+   *    il traite avec un prestataire, ou l'inverse.
+   *
+   * La complétude du dossier de conformité est jointe pour la page affichée
+   * seulement — c'est ce qui permet d'avoir une colonne « pièces » sans
+   * ouvrir le coffre-fort de tout le monde.
+   */
+  async list(
+    account: RequestAccount,
+    filtres: {
+      q?: string;
+      orgUnitId?: string;
+      role?: AccountRole;
+      status?: MembershipStatus;
+      page?: number;
+      perPage?: number;
+    } = {},
+  ) {
+    const page = Math.max(1, Math.trunc(Number(filtres.page) || 1));
+    const perPage = Math.min(100, Math.max(1, Math.trunc(Number(filtres.perPage) || 25)));
+
+    const where: Prisma.MembershipWhereInput = { accountId: account.id };
+    if (filtres.role) where.role = filtres.role;
+    if (filtres.status) where.status = filtres.status;
+    // « sans-service » est une valeur utile : c'est la liste des gens qu'on a
+    // invités et jamais rattachés, et donc ceux qui n'apparaissent dans le
+    // planning d'aucun responsable.
+    if (filtres.orgUnitId === 'sans-service') where.orgUnitId = null;
+    else if (filtres.orgUnitId) where.orgUnitId = filtres.orgUnitId;
+
+    const q = filtres.q?.trim();
+    if (q) {
+      where.user = {
+        OR: [
+          { firstName: { contains: q, mode: 'insensitive' } },
+          { lastName: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    const [memberships, total] = await Promise.all([
+      this.prisma.membership.findMany({
+        where,
+        // Les responsables d'abord : c'est l'ordre dans lequel on lit une
+        // équipe quand on cherche à qui s'adresser.
+        orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
+        skip: (page - 1) * perPage,
+        take: perPage,
+        select: {
+          id: true,
+          role: true,
+          status: true,
+          createdAt: true,
+          orgUnitId: true,
+          orgUnit: { select: { id: true, name: true } },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+              profile: { select: { job: true } },
+              // Un compte intervenant à son nom = la personne travaille aussi
+              // en indépendante. C'est ce qui distingue le salarié du renfort.
+              ownedAccounts: {
+                where: { type: 'FREELANCE' },
+                select: { id: true, slug: true },
+                take: 1,
+              },
+            },
           },
         },
-      },
-    });
+      }),
+      this.prisma.membership.count({ where }),
+    ]);
+
+    const completudes = await this.conformite.completenessForUsers(
+      account.id,
+      memberships.map((m) => m.user.id),
+    );
+
+    return {
+      items: memberships.map((m) => {
+        const { ownedAccounts, profile, ...user } = m.user;
+        const compteIntervenant = ownedAccounts[0] ?? null;
+        return {
+          ...m,
+          user: { ...user, job: profile?.job ?? null },
+          /** Interne = salarié de la structure. Externe = intervenant indépendant. */
+          externe: compteIntervenant !== null,
+          compteIntervenantId: compteIntervenant?.id ?? null,
+          conformite: completudes.get(m.user.id) ?? null,
+        };
+      }),
+      total,
+      page,
+      perPage,
+      pages: Math.max(1, Math.ceil(total / perPage)),
+    };
+  }
+
+  /**
+   * Répartition par service, pour les filtres et l'en-tête de la liste.
+   * Deux requêtes agrégées plutôt qu'un comptage en mémoire : le nombre de
+   * services est petit, le nombre de personnes ne l'est pas.
+   */
+  async repartition(account: RequestAccount) {
+    const [services, parService, sansService, total] = await Promise.all([
+      this.prisma.orgUnit.findMany({
+        where: { accountId: account.id },
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.membership.groupBy({
+        by: ['orgUnitId'],
+        where: { accountId: account.id },
+        _count: { _all: true },
+      }),
+      this.prisma.membership.count({ where: { accountId: account.id, orgUnitId: null } }),
+      this.prisma.membership.count({ where: { accountId: account.id } }),
+    ]);
+
+    const compte = new Map(parService.map((g) => [g.orgUnitId, g._count._all]));
+    return {
+      total,
+      sansService,
+      services: services.map((s) => ({ ...s, membres: compte.get(s.id) ?? 0 })),
+    };
   }
 
   /**
