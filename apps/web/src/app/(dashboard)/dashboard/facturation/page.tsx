@@ -123,12 +123,15 @@ export default async function FacturationPage({
   const vue = searchParams?.vue === "devis" ? "devis" : "factures";
 
   const [quotes, summary, invoices] = await Promise.all([
-    fetchApi<QuoteRow[]>(session, `/quotes?accountId=${accountId}`),
+    fetchApi<{ items: QuoteRow[]; total: number }>(
+      session,
+      `/quotes?accountId=${accountId}&perPage=100`,
+    ),
     fetchApi<FinanceSummary>(session, "/invoices/summary"),
     fetchApi<Invoice[]>(session, "/invoices?scope=account"),
   ]);
 
-  const listeDevis = quotes.data ?? [];
+  const listeDevis = quotes.data?.items ?? [];
   const listeFactures = invoices.data ?? [];
   const s = summary.data ?? {};
 
@@ -258,13 +261,16 @@ export default async function FacturationPage({
                                 label="Payer en ligne"
                               />
                             ) : null}
+                            {/* Le PDF est produit par le serveur : une pièce
+                                comptable identique quel que soit le navigateur,
+                                avec les mentions de l'art. L. 441-9. */}
                             <Button asChild size="sm" variant="outline">
                               <a
-                                href={`/documents/facture/${inv.id}`}
+                                href={`/api/proxy/documents/facture/${inv.id}.pdf`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                Télécharger
+                                Télécharger le PDF
                               </a>
                             </Button>
                           </div>
