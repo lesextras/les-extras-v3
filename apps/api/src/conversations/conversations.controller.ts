@@ -33,6 +33,12 @@ export class ConversationsController {
     return this.conversations.create(user.id, dto);
   }
 
+  /** Une conversation et ses messages — ce que l'écran de fil affiche. */
+  @Get(':id')
+  findOne(@Param('id') id: string, @CurrentUser() user: UserCtx) {
+    return this.conversations.findOne(id, user.id);
+  }
+
   @Get(':id/messages')
   getMessages(@Param('id') id: string, @CurrentUser() user: UserCtx) {
     return this.conversations.getMessages(id, user.id);

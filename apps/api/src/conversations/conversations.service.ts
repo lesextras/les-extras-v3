@@ -57,6 +57,40 @@ export class ConversationsService {
     });
   }
 
+  /**
+   * UNE conversation avec ses messages.
+   *
+   * L'écran de messagerie appelait cette route depuis toujours ; elle
+   * n'existait pas. Le fil restait donc vide en permanence, sans erreur
+   * visible — l'échec était avalé par le chargement tolérant de la page, et
+   * l'utilisateur lisait « Sélectionnez une conversation » quoi qu'il fasse.
+   * L'envoi de message, lui, fonctionnait : on pouvait écrire sans jamais
+   * voir ce qu'on avait écrit.
+   */
+  async findOne(conversationId: string, userId: string) {
+    await this.assertParticipant(conversationId, userId);
+    const [conversation, messages] = await Promise.all([
+      this.prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          mission: { select: { id: true, title: true } },
+        },
+      }),
+      this.prisma.message.findMany({
+        where: { conversationId },
+        orderBy: { createdAt: 'asc' },
+        // Une conversation longue ne se lit pas d'un bloc : on rend les deux
+        // cents derniers messages, l'ordre chronologique étant rétabli après.
+        take: 200,
+        include: {
+          sender: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+        },
+      }),
+    ]);
+    if (!conversation) throw new NotFoundException('Conversation introuvable.');
+    return { conversation, messages };
+  }
+
   /** Crée une conversation avec un premier message. */
   async create(userId: string, dto: CreateConversationDto) {
     return this.prisma.conversation.create({
