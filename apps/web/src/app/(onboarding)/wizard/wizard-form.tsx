@@ -206,16 +206,17 @@ export default function WizardForm({
                     <FileUp className="size-6" />
                   </span>
                   <span className="text-sm font-medium text-foreground">
-                    Déposez vos diplômes et justificatifs
+                    Vos diplômes et justificatifs
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    PDF, JPG ou PNG — 10 Mo max. (Étape facultative, complétable plus tard)
+                    Vous les déposerez depuis votre dossier, une fois votre compte créé —
+                    au moment où un établissement vous les demandera.
                   </span>
-                  <input type="file" multiple className="sr-only" />
                 </label>
                 <div className="rounded-xl bg-accent/60 p-4 text-sm text-accent-foreground">
                   <Sparkles className="mb-1 size-4" />
-                  Vos documents restent privés et sont stockés dans votre coffre-fort conformité.
+                  Vos documents resteront privés : seuls les établissements avec lesquels vous
+                  travaillez y auront accès, et vous pourrez les retirer à tout moment.
                 </div>
               </div>
             )}
