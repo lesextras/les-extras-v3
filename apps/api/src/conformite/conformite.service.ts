@@ -109,63 +109,6 @@ export class ConformiteService {
 
   // --- Vues -----------------------------------------------------------------
 
-  /** Synthèse de conformité pour chaque membre du compte. */
-  async summaryForAccount(accountId: string) {
-    await this.refreshExpired(accountId);
-
-    const memberships = await this.prisma.membership.findMany({
-      where: { accountId, status: MembershipStatus.ACTIVE },
-      orderBy: { createdAt: 'asc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-            profile: { select: { job: true } },
-          },
-        },
-      },
-    });
-
-    const docs = await this.prisma.complianceDocument.findMany({
-      where: { accountId },
-      include: {
-        file: {
-          select: { id: true, originalName: true, mimeType: true, size: true },
-        },
-      }
-    });
-    const docsByUser = new Map<string, typeof docs>();
-    for (const doc of docs) {
-      const list = docsByUser.get(doc.userId) ?? [];
-      list.push(doc);
-      docsByUser.set(doc.userId, list);
-    }
-
-    const members = memberships.map((m) => {
-      const userDocs = docsByUser.get(m.userId) ?? [];
-      const user: ComplianceUser = {
-        id: m.user.id,
-        email: m.user.email,
-        firstName: m.user.firstName,
-        lastName: m.user.lastName,
-        avatarUrl: m.user.avatarUrl,
-        job: m.user.profile?.job ?? null,
-      };
-      return { membershipRole: m.role, user, completeness: this.computeCompleteness(userDocs) };
-    });
-
-    return {
-      accountId,
-      requiredTypes: this.requiredTypes,
-      totalMembers: members.length,
-      members,
-    };
-  }
-
   /**
    * Complétude du dossier de plusieurs personnes d'un coup.
    *
@@ -393,41 +336,76 @@ export class ConformiteService {
 
   // --- ADMIN plateforme -----------------------------------------------------
 
-  /** Complétude agrégée de TOUS les comptes établissements (back-office ADMIN). */
-  async summaryForAllEstablishments() {
-    const accounts = await this.prisma.account.findMany({
-      where: { type: 'ESTABLISHMENT' },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, slug: true, city: true },
+  /**
+   * Complétude agrégée de TOUS les comptes établissements (back-office ADMIN).
+   *
+   * La version précédente appelait, pour CHAQUE établissement, une synthèse qui
+   * chargeait tous ses membres et toutes leurs pièces. Sur mille comptes, cela
+   * faisait deux mille requêtes lancées en parallèle — de quoi saturer la base
+   * depuis un simple écran de back-office. Trois requêtes désormais, quel que
+   * soit le nombre de comptes affichés.
+   */
+  async summaryForAllEstablishments(filtres: { page?: number; perPage?: number } = {}) {
+    const page = Math.max(1, Math.trunc(Number(filtres.page) || 1));
+    const perPage = Math.min(200, Math.max(1, Math.trunc(Number(filtres.perPage) || 50)));
+
+    const [accounts, totalAccounts] = await Promise.all([
+      this.prisma.account.findMany({
+        where: { type: 'ESTABLISHMENT' },
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * perPage,
+        take: perPage,
+        select: { id: true, name: true, slug: true, city: true },
+      }),
+      this.prisma.account.count({ where: { type: 'ESTABLISHMENT' } }),
+    ]);
+
+    const accountIds = accounts.map((a) => a.id);
+    if (accountIds.length === 0) {
+      return { requiredTypes: this.requiredTypes, totalAccounts, page, perPage, accounts: [] };
+    }
+
+    const [membres, docs] = await Promise.all([
+      this.prisma.membership.findMany({
+        where: { accountId: { in: accountIds }, status: MembershipStatus.ACTIVE },
+        select: { accountId: true, userId: true },
+      }),
+      this.prisma.complianceDocument.findMany({
+        where: { accountId: { in: accountIds } },
+        select: { accountId: true, userId: true, type: true, status: true, expiresAt: true, issuedAt: true },
+      }),
+    ]);
+
+    // Les pièces, rangées par compte puis par personne.
+    const parCompte = new Map<string, Map<string, typeof docs>>();
+    for (const d of docs) {
+      const personnes = parCompte.get(d.accountId) ?? new Map();
+      const liste = personnes.get(d.userId) ?? [];
+      liste.push(d);
+      personnes.set(d.userId, liste);
+      parCompte.set(d.accountId, personnes);
+    }
+
+    const rows = accounts.map((account) => {
+      const utilisateurs = membres.filter((m) => m.accountId === account.id);
+      const personnes = parCompte.get(account.id) ?? new Map();
+      const completudes = utilisateurs.map((u) =>
+        this.computeCompleteness(personnes.get(u.userId) ?? []),
+      );
+      const memberCount = completudes.length;
+      return {
+        account,
+        memberCount,
+        pctAvg: memberCount
+          ? Math.round(completudes.reduce((acc, c) => acc + c.pct, 0) / memberCount)
+          : 0,
+        expiringSoon: completudes.reduce((acc, c) => acc + c.expiringSoon, 0),
+        missing: completudes.reduce((acc, c) => acc + c.missing, 0),
+        fullyCompliant: completudes.filter((c) => c.pct === 100).length,
+      };
     });
 
-    const rows = await Promise.all(
-      accounts.map(async (account) => {
-        const summary = await this.summaryForAccount(account.id);
-        const members = summary.members;
-        const memberCount = members.length;
-        const pctAvg = memberCount
-          ? Math.round(members.reduce((acc, m) => acc + m.completeness.pct, 0) / memberCount)
-          : 0;
-        const expiringSoon = members.reduce((acc, m) => acc + m.completeness.expiringSoon, 0);
-        const missing = members.reduce((acc, m) => acc + m.completeness.missing, 0);
-        const fullyCompliant = members.filter((m) => m.completeness.pct === 100).length;
-        return {
-          account,
-          memberCount,
-          pctAvg,
-          expiringSoon,
-          missing,
-          fullyCompliant,
-        };
-      }),
-    );
-
-    return {
-      requiredTypes: this.requiredTypes,
-      totalAccounts: rows.length,
-      accounts: rows,
-    };
+    return { requiredTypes: this.requiredTypes, totalAccounts, page, perPage, accounts: rows };
   }
 
   // --- Helpers de sérialisation --------------------------------------------

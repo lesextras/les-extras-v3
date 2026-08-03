@@ -21,12 +21,6 @@ import { UpsertComplianceDto } from './dto/upsert-compliance.dto';
 export class ConformiteController {
   constructor(private readonly conformite: ConformiteService) {}
 
-  /** Synthèse de complétude pour chaque membre du compte actif. */
-  @Get()
-  summary(@CurrentAccount() account: RequestAccount) {
-    return this.conformite.summaryForAccount(account.id);
-  }
-
   /** Détail des pièces d'un intervenant. */
   /**
    * Les dossiers en défaut, du plus urgent au moins urgent.
