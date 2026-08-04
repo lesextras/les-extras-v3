@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -13,9 +14,18 @@ export class RegisterDto {
   @IsEmail()
   email!: string;
 
+  /**
+   * L'API acceptait « aaaaaaaa » : huit caractères, aucune autre exigence.
+   * Le formulaire d'inscription, lui, réclame déjà une lettre ET un chiffre
+   * (voir apps/web/src/lib/validation.ts). L'interface était donc plus
+   * stricte que le serveur — un appel direct passait sous la règle affichée.
+   * On aligne le serveur sur ce que le site promet déjà.
+   */
   @IsString()
   @MinLength(8, { message: 'Le mot de passe doit contenir au moins 8 caractères.' })
   @MaxLength(72, { message: 'Le mot de passe ne peut dépasser 72 caractères.' })
+  @Matches(/[A-Za-z]/, { message: 'Le mot de passe doit contenir au moins une lettre.' })
+  @Matches(/[0-9]/, { message: 'Le mot de passe doit contenir au moins un chiffre.' })
   password!: string;
 
   @IsString()
