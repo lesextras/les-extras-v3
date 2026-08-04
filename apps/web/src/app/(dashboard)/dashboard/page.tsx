@@ -33,7 +33,17 @@ export default async function DashboardPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
 
-  const [stats, missions, bookings, services, repartition] = await Promise.all([
+  const [moi, stats, missions, bookings, services, repartition] = await Promise.all([
+    // LE PRÉNOM NE VIENT PAS DU JETON.
+    //
+    // Le jeton de session ne porte pas `firstName` : `session.user.firstName`
+    // était donc toujours vide. Deux conséquences visibles dès la première
+    // seconde d'utilisation — l'écran disait « Bonjour MECS Les Tilleuls »,
+    // c'est-à-dire le nom de la structure et non celui de la personne, et la
+    // case « Complétez votre profil » ne pouvait JAMAIS se cocher, quoi qu'on
+    // remplisse. On accueillait le client en lui montrant qu'on n'avait rien
+    // retenu de ce qu'il venait de saisir.
+    fetchApi<{ firstName?: string | null; lastName?: string | null }>(session, "/auth/me"),
     fetchApi<DashStats>(session, "/dashboard/stats"),
     fetchApi<Mission[]>(session, "/missions?scope=account&take=4"),
     fetchApi<Booking[]>(session, "/bookings?scope=account&take=5"),
@@ -57,10 +67,23 @@ export default async function DashboardPage() {
 
   const s = stats.data ?? {};
 
+  // « Salarié » n'est pas un type de compte en base : à l'inscription, la
+  // tuile crée un compte individuel comme pour un indépendant. Ce qui
+  // distingue les deux dans les faits, c'est la demande de rattachement — un
+  // indépendant n'en fait jamais. C'est donc elle qu'on lit, plutôt que
+  // d'ajouter un champ que rien ne remplirait de façon fiable.
+  const demandesRattachement = rattachements.data ?? [];
+  const estSalarie = demandesRattachement.length > 0;
+  const rattachementApprouve = demandesRattachement.some((d) => d.status === "APPROVED");
+
   return (
     <div className="space-y-8">
       <PageHeader
         title={(() => {
+          // Le prénom seul : on se dit bonjour, on ne s'appelle pas par son
+          // état civil complet.
+          const prenom = moi.data?.firstName?.trim() || session.user.firstName?.trim();
+          if (prenom) return `Bonjour ${prenom}`;
           const who = fullName(session.user.firstName, session.user.lastName);
           const name = who !== "Utilisateur" ? who : (session.account?.name ?? "");
           return name ? `Bonjour ${name}` : "Bonjour";
@@ -77,11 +100,9 @@ export default async function DashboardPage() {
               accountType={session.account.type}
               role={session.account.role}
             />
-            {!isEstablishment ? (
-              <Button asChild variant="outline">
-                <Link href="/marketplace">Explorer les missions</Link>
-              </Button>
-            ) : null}
+            {/* « Explorer les missions » doublonnait l'entrée « Opportunités »
+                du menu, qui fait la même chose en mieux (les missions y sont
+                triées par correspondance avec le profil). */}
           </div>
         }
       />
@@ -108,7 +129,7 @@ export default async function DashboardPage() {
         const steps = isEstablishment
           ? [
               {
-                done: Boolean(session.user.firstName),
+                done: Boolean(moi.data?.firstName ?? session.user.firstName),
                 label: "Complétez votre profil",
                 href: "/dashboard/account",
               },
@@ -128,9 +149,37 @@ export default async function DashboardPage() {
                 href: "/dashboard/renforts",
               },
             ]
-          : [
+          : estSalarie
+            ? [
+                // UN SALARIÉ N'EST PAS UN INDÉPENDANT QUI S'IGNORE.
+                //
+                // Techniquement, « Salarié » et « Professionnel » créent le
+                // même compte : les étapes de prise en main étaient donc les
+                // mêmes. On demandait à un éducateur venu simplement rejoindre
+                // sa maison de créer un atelier et de candidater à des
+                // missions — le métier d'un autre. C'est le profil qui arrive
+                // en volume derrière chaque établissement signé, et celui qui
+                // décroche le plus vite si le premier écran ne le reconnaît
+                // pas. Il n'a qu'une chose à faire : se rattacher.
+                {
+                  done: Boolean(moi.data?.firstName ?? session.user.firstName),
+                  label: "Complétez votre profil",
+                  href: "/dashboard/account",
+                },
+                {
+                  done: rattachementApprouve,
+                  label: "Rejoignez votre établissement",
+                  href: "/dashboard",
+                },
+                {
+                  done: (s.applications ?? 0) > 0,
+                  label: "Répondez à un renfort de votre équipe",
+                  href: "/dashboard/opportunites",
+                },
+              ]
+            : [
               {
-                done: Boolean(session.user.firstName),
+                done: Boolean(moi.data?.firstName ?? session.user.firstName),
                 label: "Complétez votre profil",
                 href: "/dashboard/account",
               },
@@ -198,7 +247,7 @@ export default async function DashboardPage() {
               <>
                 <StatCard label="Renforts actifs" value={s.activeMissions ?? 0} accent="teal" />
                 <StatCard label="Candidatures reçues" value={s.applications ?? 0} accent="terracotta" />
-                <StatCard label="Missions à venir" value={s.upcomingBookings ?? 0} />
+                <StatCard label="Interventions à venir" value={s.upcomingBookings ?? 0} />
                 <StatCard
                   label="Taux de couverture"
                   value={`${s.fillRate ?? 0}%`}
@@ -212,7 +261,7 @@ export default async function DashboardPage() {
             ) : (
               <>
                 <StatCard label="Candidatures en cours" value={s.applications ?? 0} accent="teal" />
-                <StatCard label="Missions à venir" value={s.upcomingBookings ?? 0} accent="terracotta" />
+                <StatCard label="Interventions à venir" value={s.upcomingBookings ?? 0} accent="terracotta" />
                 <StatCard label="Ateliers publiés" value={services.data?.length ?? 0} />
                 <StatCard
                   label="Revenus du mois"
