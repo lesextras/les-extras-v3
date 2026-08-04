@@ -11,6 +11,7 @@ import { getNavForRole, compterOutilsAvances } from '@/lib/nav';
 import type { NavRole, AccountRole } from '@/lib/types';
 import { Logo } from '@/components/brand/logo';
 import { Badge } from '@/components/ui/badge';
+import { InfoHint } from '@/components/ui/info-hint';
 
 export interface SidebarProps {
   role: NavRole;
@@ -234,7 +235,7 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
                   const Icon = item.icon;
                   const verrouille = Boolean(item.premium) && !isMember;
                   const classes = cn(
-                    'group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-200',
+                    'group relative flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-200',
                     active
                       ? 'bg-primary-soft font-semibold text-accent-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.08)] before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-primary'
                       : 'text-muted-foreground hover:bg-accent hover:text-foreground',
@@ -259,36 +260,51 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
                     </>
                   );
 
+                  // Le « i » explique l'entrée au clic — repère visuel constant,
+                  // plutôt qu'un simple `title` qu'il faut deviner de survoler.
+                  // Rendu comme un bouton FRÈRE du lien (pas un enfant) : un
+                  // bouton imbriqué dans un <a> ou un autre <button> est
+                  // invalide en HTML et casse le DOM au parsing.
+                  const info = item.hint ? (
+                    <span className="flex shrink-0 items-center pr-2">
+                      <InfoHint>{item.hint}</InfoHint>
+                    </span>
+                  ) : null;
+
                   // Sans crédits, l'entrée n'est plus un lien : la navigation
                   // n'a pas lieu du tout. Laisser la page s'ouvrir pour y
                   // afficher un refus, c'est faire perdre un aller-retour à
                   // quelqu'un à qui on va dire non de toute façon.
                   if (verrouille) {
                     return (
-                      <button
-                        key={item.href}
-                        type="button"
-                        onClick={() => setLexBloquee(item.label)}
-                        title="Crédits LEX requis — activez l'essai gratuit ou rechargez"
-                        aria-label={`${item.label} — crédits LEX requis`}
-                        className={classes}
-                      >
-                        {contenu}
-                      </button>
+                      <div key={item.href} className="flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => setLexBloquee(item.label)}
+                          title="Crédits LEX requis — activez l'essai gratuit ou rechargez"
+                          aria-label={`${item.label} — crédits LEX requis`}
+                          className={classes}
+                        >
+                          {contenu}
+                        </button>
+                        {info}
+                      </div>
                     );
                   }
 
                   return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={onNavigate}
-                      title={item.hint ?? item.label}
-                      aria-current={active ? 'page' : undefined}
-                      className={classes}
-                    >
-                      {contenu}
-                    </Link>
+                    <div key={item.href} className="flex items-center">
+                      <Link
+                        href={item.href}
+                        onClick={onNavigate}
+                        title={item.hint ?? item.label}
+                        aria-current={active ? 'page' : undefined}
+                        className={classes}
+                      >
+                        {contenu}
+                      </Link>
+                      {info}
+                    </div>
                   );
                 })}
               </div>
