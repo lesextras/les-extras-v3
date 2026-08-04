@@ -178,7 +178,17 @@ export class MatchingService {
       results.push({
         freelanceId: u.id,
         accountId: acc.id,
-        email: u.email,
+        // PAS D'ADRESSE E-MAIL ICI.
+        //
+        // Cette liste part dès qu'un établissement publie une mission : elle
+        // renvoyait l'adresse de chaque intervenant du réseau en clair. Un
+        // compte créé en trente secondes, avec une adresse jamais vérifiée,
+        // repartait donc avec un annuaire d'e-mails — démarchage possible, et
+        // donnée personnelle diffusée sans nécessité.
+        //
+        // L'établissement n'en a pas besoin pour choisir : prénom, métier,
+        // ville et note suffisent, et il contacte par la messagerie de la
+        // plateforme. L'adresse ne circule qu'après mise en relation acceptée.
         name: [u.firstName, u.lastName].filter(Boolean).join(' ') || acc.name,
         job: p?.job ?? null,
         city: p?.city ?? null,
