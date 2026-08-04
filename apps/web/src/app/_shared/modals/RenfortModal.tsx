@@ -571,7 +571,7 @@ export function RenfortModal({
             <span>
               <span className="font-medium text-foreground">Mission urgente</span>
               <span className="block text-xs text-muted-foreground">
-                À la publication, tous les freelances dont le profil correspond (métier, zone, disponibilité) sont notifiés par e-mail. Premier arrivé, premier servi.
+                À la publication, tous les intervenants dont le profil correspond (métier, zone, disponibilité) sont notifiés par e-mail. Premier arrivé, premier servi.
               </span>
             </span>
           </label>
