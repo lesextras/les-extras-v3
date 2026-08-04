@@ -11,6 +11,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { messageRoleInsuffisant } from '../common/guards/account-roles.guard';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -39,9 +40,7 @@ export class AccountsService {
     }
 
     if (roles && roles.length > 0 && !roles.includes(membership.role)) {
-      throw new ForbiddenException(
-        `Rôle insuffisant (requis : ${roles.join(' | ')}).`,
-      );
+      throw new ForbiddenException(messageRoleInsuffisant(roles));
     }
 
     return membership;
