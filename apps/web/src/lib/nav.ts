@@ -102,7 +102,7 @@ export function resolveNavRole(params: {
 const freelanceNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter', essentiel: true },
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true },
     ],
   },
   {
@@ -113,8 +113,8 @@ const freelanceNav: NavSection[] = [
       // du travail engagé, avec une date et un contrat — au même rang que le
       // planning, comme côté établissement.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
-      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos interventions confirmées' },
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les établissements' },
+      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true },
       { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
@@ -137,7 +137,7 @@ const freelanceNav: NavSection[] = [
   {
     title: 'Mon offre',
     items: [
-      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true, hint: 'Créez et gérez vos interventions' },
+      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
     ],
@@ -167,7 +167,11 @@ const freelanceNav: NavSection[] = [
 const establishmentNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, hint: 'Vue d’ensemble et actions à traiter', essentiel: true },
+      // Pas de `hint` : « Tableau de bord » se comprend sans explication, et
+      // un « i » sur chaque ligne finit par former une colonne de bruit qui
+      // concurrence les icônes de gauche. On les garde pour les entrées dont
+      // le nom seul ne suffit pas (Conformité, Vivier, Analyse de pratique…).
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true },
     ],
   },
   // L'ancienne section « Mon activité » empilait douze entrées, presque
@@ -181,14 +185,18 @@ const establishmentNav: NavSection[] = [
       // Le suivi de ce qu'on a commandé manquait complètement : renforts,
       // ateliers et inscriptions en formation étaient enregistrés mais
       // invisibles hors du back-office administrateur.
-      { label: 'Renforts et interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Vos renforts pourvus, ateliers commandés et inscriptions en formation — internes comme externes' },
-      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Vos créneaux et interventions' },
+      //
+      // Libellé raccourci : « Renforts et interventions » était tronqué en
+      // « Renforts et interv… » dans la barre latérale. Une entrée qu'on ne
+      // peut pas lire est une entrée sur laquelle on ne clique pas.
+      { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Vos renforts pourvus, ateliers commandés et inscriptions en formation — internes comme externes' },
+      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
       // Le pendant contractuel du planning : on a trouvé quelqu'un, on
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
       // calcule — essai, précarité, carence — et refuse de transmettre un
       // contrat auquel il manque une mention obligatoire.
       { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' , avance: true },
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les intervenants' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true },
     ],
   },
   {
@@ -218,7 +226,7 @@ const establishmentNav: NavSection[] = [
   {
     title: 'Mon établissement',
     items: [
-      { label: 'Mon établissement', href: '/dashboard/account', icon: Building2, hint: 'Coordonnées, préférences et réglages de votre structure' },
+      { label: 'Mon établissement', href: '/dashboard/account', icon: Building2 },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.
