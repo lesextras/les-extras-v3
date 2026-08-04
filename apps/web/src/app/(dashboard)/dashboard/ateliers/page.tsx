@@ -22,7 +22,7 @@ export default async function AteliersPage() {
       <div className="space-y-6">
         <PageHeader title="Mes ateliers" />
         <EmptyState
-          title="Réservé aux freelances"
+          title="Réservé aux intervenants"
           description="La gestion des ateliers est disponible depuis un compte freelance. Vous pouvez réserver des ateliers dans le marketplace."
           action={
             <Button asChild>
