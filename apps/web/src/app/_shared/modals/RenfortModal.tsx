@@ -356,7 +356,11 @@ export function RenfortModal({
             <Field label="Date de début" htmlFor="startDate" required>
               <Input id="startDate" name="startDate" type="date" required />
             </Field>
-            <Field label="Date de fin" htmlFor="endDate">
+            <Field
+              label="Date de fin"
+              htmlFor="endDate"
+              hint="Laissez vide si la date de fin n'est pas encore connue."
+            >
               <Input id="endDate" name="endDate" type="date" />
             </Field>
           </div>
@@ -377,15 +381,27 @@ export function RenfortModal({
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Taux horaire (€)" htmlFor="hourlyRate">
+            <Field
+              label="Taux horaire (€)"
+              htmlFor="hourlyRate"
+              hint="Affiché aux intervenants comme rémunération de la mission."
+            >
               <Input id="hourlyRate" name="hourlyRate" type="number" step="0.5" placeholder="24" />
             </Field>
-            <Field label="Postes" htmlFor="headcount">
+            <Field
+              label="Postes"
+              htmlFor="headcount"
+              hint="Nombre de personnes recherchées pour ce même besoin."
+            >
               <Input id="headcount" name="headcount" type="number" min={1} defaultValue={1} />
             </Field>
           </div>
           {units.length > 0 && cible !== "UNITE" ? (
-            <Field label="Unité / service concerné" htmlFor="orgUnitId">
+            <Field
+              label="Unité / service concerné"
+              htmlFor="orgUnitId"
+              hint="Rattache la mission à un service, pour le filtrage interne."
+            >
               <select
                 id="orgUnitId"
                 name="orgUnitId"

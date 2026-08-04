@@ -301,7 +301,7 @@ export function ServiceModal({
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Durée" htmlFor="duration">
+            <Field label="Durée" htmlFor="duration" hint="Format libre, ex. 2H, une demi-journée.">
               <Input id="duration" name="duration" defaultValue={fiche?.duration ?? ""} placeholder="2H" />
             </Field>
           </div>
@@ -309,12 +309,20 @@ export function ServiceModal({
             <Field label="Participants max" htmlFor="maxParticipants">
               <Input id="maxParticipants" name="maxParticipants" type="number" min={1} defaultValue={fiche?.maxParticipants ?? ""} placeholder="10" />
             </Field>
-            <Field label="Prix (€)" htmlFor="price">
+            <Field
+              label="Prix (€)"
+              htmlFor="price"
+              hint="Le tarif que vous demandez ; les frais de gestion s'ajoutent pour l'établissement."
+            >
               <Input id="price" name="price" type="number" step="0.5" defaultValue={fiche?.price != null ? String(fiche.price) : ""} placeholder="250" />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Public visé" htmlFor="publicTarget">
+            <Field
+              label="Public visé"
+              htmlFor="publicTarget"
+              hint="Description libre, en complément des cases à cocher ci-dessous."
+            >
               <Input id="publicTarget" name="publicTarget" defaultValue={fiche?.publicTarget ?? ""} placeholder="Adultes en situation de handicap" />
             </Field>
             <Field label="Ville" htmlFor="city">
