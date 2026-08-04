@@ -303,16 +303,31 @@ export default async function FacturationPage({
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <StatCard
-              label={isEstablishment ? "Total dépensé" : "Total facturé"}
-              value={formatMoney(s.total ?? 0)}
-              accent="teal"
-            />
-            <StatCard label="Réglé" value={formatMoney(s.paid ?? 0)} accent="terracotta" />
-            <StatCard label="En attente" value={formatMoney(s.pending ?? 0)} />
-            <StatCard label="Factures" value={s.invoiceCount ?? listeFactures.length} />
-          </div>
+          {/* Quatre zéros ne disent rien de plus que l'état vide juste en
+              dessous. Un compte neuf affichait « Total dépensé 0,00 € · Réglé
+              0,00 € · En attente 0,00 € · Factures 0 » PUIS « Aucune
+              facture » : cinq façons d'annoncer qu'il ne s'est rien passé.
+              Le tableau de bord applique déjà cette règle ; on l'applique ici
+              aussi. Les compteurs reviennent à la première facture. */}
+          {(() => {
+            const total = Number(s.total ?? 0);
+            const regle = Number(s.paid ?? 0);
+            const attente = Number(s.pending ?? 0);
+            const nb = s.invoiceCount ?? listeFactures.length;
+            if (!total && !regle && !attente && !nb) return null;
+            return (
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <StatCard
+                  label={isEstablishment ? "Total dépensé" : "Total facturé"}
+                  value={formatMoney(s.total ?? 0)}
+                  accent="teal"
+                />
+                <StatCard label="Réglé" value={formatMoney(s.paid ?? 0)} accent="terracotta" />
+                <StatCard label="En attente" value={formatMoney(s.pending ?? 0)} />
+                <StatCard label="Factures" value={nb} />
+              </div>
+            );
+          })()}
 
           {s.parMois && s.parMois.length > 0 ? <CourbeMensuelle parMois={s.parMois} /> : null}
 
