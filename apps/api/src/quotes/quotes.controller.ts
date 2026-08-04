@@ -5,8 +5,11 @@ import {
   RefuseQuoteDto,
   SendQuoteDto,
 } from './dto/quote.dto';
+import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
+import { AccountRolesGuard } from '../common/guards/account-roles.guard';
+import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -20,9 +23,19 @@ import { RequestAccount, RequestUser } from '../common/types/request-context';
  * cette vérification aurait laissé n'importe qui lire les devis d'un autre
  * établissement, sans que rien ne le signale. L'isolation appartient au garde,
  * pas à la mémoire du développeur suivant.
+ *
+ * ET LE DEVIS EST UN ENGAGEMENT FINANCIER, PAS UNE INFORMATION D'ÉQUIPE.
+ *
+ * L'appartenance au compte suffisait ici : un éducateur simple membre de la
+ * MECS lisait donc toute la facturation prévisionnelle de sa structure — et,
+ * bien pire, pouvait ACCEPTER un devis à 900 €, ce qui crée une réservation
+ * confirmée et engage l'établissement. Le menu lui cachait pourtant déjà
+ * « Devis & factures » (voir nav.ts) et le contrôleur des factures posait
+ * déjà cette limite : les devis avaient simplement été oubliés. On aligne.
  */
 @Controller('quotes')
-@UseGuards(JwtAuthGuard, AccountGuard)
+@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
+@AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
 export class QuotesController {
   constructor(private readonly quotes: QuotesService) {}
 
