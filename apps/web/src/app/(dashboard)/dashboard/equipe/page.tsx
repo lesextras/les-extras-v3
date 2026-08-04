@@ -16,7 +16,7 @@ import {
   type PageMembres,
   type Repartition,
 } from "../../../_shared/EquipeTable";
-import type { Invitation } from "../../../_shared/types";
+import type { AttachmentRequest, Invitation } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Équipe" };
 
@@ -39,10 +39,11 @@ export default async function EquipePage({
     if (typeof v === "string" && v) p.set(clef, v);
   }
 
-  const [liste, repartition, invitations] = await Promise.all([
+  const [liste, repartition, invitations, attachmentRequests] = await Promise.all([
     fetchApi<PageMembres>(session, `/memberships?${p.toString()}`),
     fetchApi<Repartition>(session, "/memberships/repartition"),
     fetchApi<Invitation[]>(session, "/invitations?status=PENDING"),
+    fetchApi<AttachmentRequest[]>(session, "/attachment-requests"),
   ]);
 
   return (
@@ -78,6 +79,9 @@ export default async function EquipePage({
               canManage={canManage}
               members={[]}
               invitations={invitations.data ?? []}
+              attachmentRequests={(attachmentRequests.data ?? []).filter(
+                (r) => r.status === "PENDING",
+              )}
             />
           ) : null}
         </>
