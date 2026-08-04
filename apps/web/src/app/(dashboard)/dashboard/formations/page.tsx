@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormationInterneModal } from "../../../_shared/FormationInterneModal";
+import { ProposerFormationModal } from "../../../_shared/ProposerFormationModal";
 
 export const metadata: Metadata = { title: "Formations" };
 
@@ -90,9 +91,15 @@ export default async function DashboardFormationsPage() {
         }
         actions={
           !isEstablishment ? (
-            <Button asChild variant="outline">
-              <Link href="/marketplace/formations">Voir le catalogue</Link>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Un intervenant peut proposer son propre programme : ADéPA le
+                  relit et le publie sous sa certification Qualiopi. Jusqu'ici
+                  seuls les établissements pouvaient créer une formation. */}
+              <ProposerFormationModal accountId={session.account.id} />
+              <Button asChild variant="outline">
+                <Link href="/marketplace/formations">Voir le catalogue</Link>
+              </Button>
+            </div>
           ) : undefined
         }
       />
@@ -218,15 +225,13 @@ export default async function DashboardFormationsPage() {
             description={
               isEstablishment
                 ? "Créez votre première formation interne et désignez un salarié formateur, ou inscrivez vos équipes au catalogue certifiant."
-                : "Vous n’animez encore aucune session. Elles apparaîtront ici une fois programmées."
+                : "Vous n’animez encore aucune session. Proposez votre propre programme : ADéPA le relit, puis le publie au catalogue sous sa certification Qualiopi."
             }
             action={
               isEstablishment ? (
                 <FormationInterneModal accountId={session.account.id} />
               ) : (
-                <Button asChild variant="outline">
-                  <Link href="/marketplace/formations">Voir le catalogue</Link>
-                </Button>
+                <ProposerFormationModal accountId={session.account.id} />
               )
             }
           />
