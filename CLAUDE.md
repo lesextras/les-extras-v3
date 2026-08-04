@@ -87,6 +87,26 @@ Points structurants :
     ou à une civilité sont masqués (`Kevin MARTIN`), MAIS les intitulés de
     sections et les sigles métier (`MECS`, `SESSAD`, `IDENTIFICATION`) sont
     préservés — sinon le squelette appris devient illisible.
+  - **Jetons PARLANTS (août 2026)** : `[LE JEUNE]`, `[LA MÈRE]`,
+    `[L'ÉDUCATRICE RÉFÉRENTE]`… au lieu de `[PERSONNE-A]`. Le moteur écrit
+    nettement mieux avec un rôle qu'avec une lettre, et la protection est
+    inchangée (un rôle ne désigne personne hors de la maison). Règle d'or :
+    on n'étiquette QUE si le rôle est certain — deux personnes de même
+    patronyme (père et mère DUBOIS) gardent la lettre, car inverser deux rôles
+    dans un rapport lu par un juge coûte bien plus cher. « la mère de X » est
+    ignoré (c'est X qui est nommé). La civilité est conservée (`Mme [X]`) :
+    avant, « Mme Martin » revenait « Martin ». `restaurer()` tolère casse et
+    espaces. `resume()` renvoie `roles[]`, affichés dans le studio — la preuve
+    plutôt que la promesse. Nettoyage des jetons résiduels centralisé dans
+    `nettoyerJetonsResiduels()` (4 copies auparavant) + `estJetonRole()` réutilisé
+    par le GAP.
+  - **NON à « garder les prénoms »** (question de Siham, 4/8/2026) : un prénom
+    + un contexte d'établissement identifie une personne (individualisation,
+    corrélation, inférence — les 3 critères CNIL). Ce serait de la
+    pseudonymisation, pas de l'anonymisation, et cela rendrait FAUSSE la page
+    /confiance-lex (« les noms ne sortent jamais d'ici »), qui est le seul vrai
+    différenciateur face à ChatGPT. Aucun gain non plus : les vrais prénoms sont
+    déjà rétablis localement dans le document rendu.
   - 3 nouvelles trames : `COURRIER_AUTORITE_PARENTALE` (avec coupon-réponse ;
     garde-fous : jamais d'argumentaire CONTRE un parent, pas de pression, note
     sur l'acte non usuel), `COURRIER_PARTENAIRE`, `BILAN_FIN_ACCOMPAGNEMENT`.

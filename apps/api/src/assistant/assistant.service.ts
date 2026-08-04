@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AssistantTrame } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { PseudonymiseurService } from './pseudonymiseur.service';
+import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
 import { MistralService } from './mistral.service';
 import { TRAMES, trouverTrame } from './trames';
 
@@ -51,10 +51,7 @@ export class AssistantService {
     let brouillon = this.pseudo.restaurer(brouillonMasque, table);
     // Le modèle invente parfois des jetons absents de la table ([DATE-9]…) :
     // on les remplace par une mention neutre à compléter par l'auteur.
-    brouillon = brouillon
-      .replace(/\[DATE-\d+\]/g, '[date à préciser]')
-      .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
-      .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]');
+    brouillon = nettoyerJetonsResiduels(brouillon);
 
     return {
       brouillon,
@@ -139,10 +136,7 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
       maxTokens: 950,
     });
     let activite = this.pseudo.restaurer(reponseMasquee, table);
-    activite = activite
-      .replace(/\[DATE-\d+\]/g, '[date à préciser]')
-      .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
-      .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]');
+    activite = nettoyerJetonsResiduels(activite);
     return { activite, protection: this.pseudo.resume(table) };
   }
 
@@ -235,11 +229,7 @@ Jamais de conseil clinique ou juridique individualisé. N'invente rien : si la f
       temperature: 0.5,
     });
 
-    let activite = this.pseudo
-      .restaurer(reponseMasquee, table)
-      .replace(/\[DATE-\d+\]/g, '[date à préciser]')
-      .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
-      .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]');
+    let activite = nettoyerJetonsResiduels(this.pseudo.restaurer(reponseMasquee, table));
 
     const tronque = activite.length > AssistantService.DEMO_MAX_RENDU;
     if (tronque) {
@@ -372,11 +362,7 @@ Déjà tenté : ${contexte.tente}` : ''
       temperature: 0.55,
     });
 
-    const reponse = this.pseudo
-      .restaurer(reponseMasquee, table)
-      .replace(/\[DATE-\d+\]/g, '[date à préciser]')
-      .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
-      .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]');
+    const reponse = nettoyerJetonsResiduels(this.pseudo.restaurer(reponseMasquee, table));
 
     return { reponse, protection: this.pseudo.resume(table) };
   }

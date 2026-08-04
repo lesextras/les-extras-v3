@@ -214,7 +214,12 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   const [notes, setNotes] = React.useState("");
   const [brouillon, setBrouillon] = React.useState("");
   const [titre, setTitre] = React.useState("");
-  const [protection, setProtection] = React.useState<{ personnes: number; dates: number; contacts: number } | null>(null);
+  const [protection, setProtection] = React.useState<{
+    personnes: number;
+    dates: number;
+    contacts: number;
+    roles?: string[];
+  } | null>(null);
   const [enCours, setEnCours] = React.useState(false);
   const [enregistre, setEnregistre] = React.useState(false);
   const [avisDonne, setAvisDonne] = React.useState(false);
@@ -512,6 +517,23 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   {protection.dates > 0 ? `${protection.personnes > 0 ? ", " : ""}${protection.dates} date${protection.dates > 1 ? "s" : ""}` : ""}
                   {protection.contacts > 0 ? ` et ${protection.contacts} coordonnée${protection.contacts > 1 ? "s" : ""}` : ""}
                   {" "}ont été masqués au service d'IA, puis rétablis ici, sur nos serveurs.
+                </p>
+              ) : null}
+
+              {/* La preuve plutôt que la promesse : on montre littéralement ce
+                  que le moteur a lu à la place des noms. C'est ce qu'un
+                  professionnel peut ouvrir devant sa direction. */}
+              {protection?.roles && protection.roles.length > 0 ? (
+                <p className="rounded-lg border border-border bg-muted/40 px-4 py-2.5 text-xs text-muted-foreground">
+                  À la place des prénoms, le service d&apos;IA a lu :{" "}
+                  {protection.roles.map((r) => (
+                    <span
+                      key={r}
+                      className="mr-1 inline-block rounded bg-background px-1.5 py-0.5 font-mono text-[11px] text-foreground"
+                    >
+                      {r}
+                    </span>
+                  ))}
                 </p>
               ) : null}
 

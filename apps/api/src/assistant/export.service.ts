@@ -32,10 +32,11 @@ type Bloc =
   | { type: 'trait' }
   | { type: 'paragraphe'; texte: string };
 
-/** Un fragment de texte, avec ou sans gras. */
+/** Un fragment de texte, avec sa mise en forme. */
 interface Fragment {
   texte: string;
   gras: boolean;
+  italique: boolean;
 }
 
 @Injectable()
@@ -81,21 +82,32 @@ export class ExportService {
     return blocs;
   }
 
-  /** Sépare le gras `**…**` du reste, sans toucher au contenu. */
+  /**
+   * Sépare le gras `**…**` et l'italique `*…*` du reste, sans toucher au
+   * contenu. Le gras est cherché en premier, sinon `**` serait lu comme deux
+   * italiques vides — et les astérisques finissaient imprimées dans le
+   * document, ce qu'un professionnel ne peut évidemment pas envoyer en l'état.
+   */
   private fragments(texte: string): Fragment[] {
     const sortie: Fragment[] = [];
-    const motif = /\*\*(.+?)\*\*/g;
+    const motif = /\*\*(.+?)\*\*|\*(.+?)\*/g;
     let curseur = 0;
     let m: RegExpExecArray | null;
     while ((m = motif.exec(texte)) !== null) {
       if (m.index > curseur) {
-        sortie.push({ texte: texte.slice(curseur, m.index), gras: false });
+        sortie.push({ texte: texte.slice(curseur, m.index), gras: false, italique: false });
       }
-      sortie.push({ texte: m[1], gras: true });
+      sortie.push({
+        texte: m[1] ?? m[2],
+        gras: m[1] !== undefined,
+        italique: m[1] === undefined,
+      });
       curseur = m.index + m[0].length;
     }
-    if (curseur < texte.length) sortie.push({ texte: texte.slice(curseur), gras: false });
-    return sortie.length ? sortie : [{ texte, gras: false }];
+    if (curseur < texte.length) {
+      sortie.push({ texte: texte.slice(curseur), gras: false, italique: false });
+    }
+    return sortie.length ? sortie : [{ texte, gras: false, italique: false }];
   }
 
   // ── Word ─────────────────────────────────────────────────────────────────
@@ -128,7 +140,7 @@ export class ExportService {
                     : HeadingLevel.HEADING_3,
               spacing: { before: 240, after: 120 },
               children: this.fragments(bloc.texte).map(
-                (f) => new TextRun({ text: f.texte, bold: true }),
+                (f) => new TextRun({ text: f.texte, bold: true, italics: f.italique }),
               ),
             }),
           );
@@ -139,7 +151,7 @@ export class ExportService {
               bullet: { level: 0 },
               spacing: { after: 60 },
               children: this.fragments(bloc.texte).map(
-                (f) => new TextRun({ text: f.texte, bold: f.gras }),
+                (f) => new TextRun({ text: f.texte, bold: f.gras, italics: f.italique }),
               ),
             }),
           );
@@ -150,7 +162,7 @@ export class ExportService {
               numbering: { reference: 'lex-numerotation', level: 0 },
               spacing: { after: 60 },
               children: this.fragments(bloc.texte).map(
-                (f) => new TextRun({ text: f.texte, bold: f.gras }),
+                (f) => new TextRun({ text: f.texte, bold: f.gras, italics: f.italique }),
               ),
             }),
           );
@@ -170,7 +182,7 @@ export class ExportService {
               spacing: { after: 140 },
               alignment: AlignmentType.JUSTIFIED,
               children: this.fragments(bloc.texte).map(
-                (f) => new TextRun({ text: f.texte, bold: f.gras }),
+                (f) => new TextRun({ text: f.texte, bold: f.gras, italics: f.italique }),
               ),
             }),
           );
@@ -230,7 +242,9 @@ export class ExportService {
 
       const ecrire = (fragments: Fragment[], options: PDFKit.Mixins.TextOptions = {}) => {
         fragments.forEach((f, i) => {
-          doc.font(f.gras ? 'Helvetica-Bold' : 'Helvetica');
+          doc.font(
+            f.gras ? 'Helvetica-Bold' : f.italique ? 'Helvetica-Oblique' : 'Helvetica',
+          );
           doc.text(f.texte, { ...options, continued: i < fragments.length - 1 });
         });
         if (fragments.length === 0) doc.text('');
@@ -251,13 +265,13 @@ export class ExportService {
             doc.fontSize(10.5);
             // pdfkit ne dessine de puce que via `list()`, qui ne sait pas
             // mélanger gras et normal : on pose la puce nous-mêmes.
-            ecrire([{ texte: '•  ', gras: false }, ...this.fragments(bloc.texte)], {
+            ecrire([{ texte: '•  ', gras: false, italique: false }, ...this.fragments(bloc.texte)], {
               indent: 14,
             });
             break;
           case 'numero':
             doc.fontSize(10.5);
-            ecrire([{ texte: `${bloc.rang}.  `, gras: false }, ...this.fragments(bloc.texte)], {
+            ecrire([{ texte: `${bloc.rang}.  `, gras: false, italique: false }, ...this.fragments(bloc.texte)], {
               indent: 14,
             });
             break;

@@ -135,3 +135,89 @@ describe('PseudonymiseurService — noms de famille en capitales', () => {
     expect(service.restaurer(texte, table)).toBe(original);
   });
 });
+
+/**
+ * JETONS PARLANTS.
+ *
+ * Le moteur écrit nettement mieux quand il sait qui est l'enfant, qui est la
+ * mère et qui est la collègue. La règle d'or : on n'étiquette QUE lorsqu'on est
+ * sûr. Inverser deux rôles dans un rapport lu par un juge coûte infiniment plus
+ * cher que d'y laisser une lettre.
+ */
+describe('PseudonymiseurService — jetons par rôle', () => {
+  const service = new PseudonymiseurService();
+
+  it('nomme le rôle quand la phrase le donne avant le nom', () => {
+    const { texte } = service.masquer(
+      "Le jeune Kevin a refusé de se lever. Sa mère, Mme Martin, avait annulé la visite.",
+    );
+    expect(texte).toContain('[LE JEUNE]');
+    expect(texte).not.toContain('Kevin');
+    expect(texte).not.toContain('Martin');
+  });
+
+  it('nomme le rôle quand il vient après le nom', () => {
+    const { texte } = service.masquer('Entretien ce matin. Lina, sa sœur, attendait dehors.');
+    expect(texte).toContain('[LA SŒUR]');
+    expect(texte).not.toContain('Lina');
+  });
+
+  it('reconnaît un rôle introduit par une apostrophe', () => {
+    const { texte } = service.masquer(
+      "Point de service. L'éducatrice Sarah est intervenue vers 9h.",
+    );
+    expect(texte).toContain("[L'ÉDUCATRICE]");
+    expect(texte).not.toContain('Sarah');
+  });
+
+  it("n'étiquette pas quand deux personnes partagent le même nom", () => {
+    // Père et mère portent le même patronyme : leur donner un rôle
+    // reviendrait à en attribuer un faux à l'un des deux.
+    const { texte } = service.masquer(
+      'Entretien avec Mme DUBOIS, sa mère, et M. DUBOIS, son père.',
+    );
+    expect(texte).not.toContain('[LA MÈRE]');
+    expect(texte).not.toContain('[LE PÈRE]');
+    expect(texte).toMatch(/\[PERSONNE-[A-Z]+\]/);
+    expect(texte).not.toContain('DUBOIS');
+  });
+
+  it("n'inverse pas les rôles sur « la mère de X »", () => {
+    // Ici c'est l'ENFANT qui est nommé, pas la mère.
+    const { texte } = service.masquer("Rendez-vous manqué. La mère de Kevin n'est pas venue.");
+    expect(texte).not.toContain('[LA MÈRE]');
+    expect(texte).not.toContain('Kevin');
+  });
+
+  it('donne deux jetons distincts à deux personnes de même rôle', () => {
+    const { texte, table } = service.masquer(
+      'Fratrie présente. Le frère Yanis et le frère Medhi étaient là.',
+    );
+    expect(texte).toContain('[LE FRÈRE]');
+    expect(texte).toContain('[LE FRÈRE 2]');
+    expect(table.vers.get('[LE FRÈRE]')).not.toBe(table.vers.get('[LE FRÈRE 2]'));
+  });
+
+  it('conserve la civilité et restitue le nom complet', () => {
+    // Avant correction, « Mme Martin » revenait « Martin » — dans un courrier
+    // adressé à une famille, la faute se voit immédiatement.
+    const original = 'Suite à notre échange. Mme Martin a confirmé sa venue.';
+    const { texte, table } = service.masquer(original);
+    expect(texte).toContain('Mme [');
+    expect(service.restaurer(texte, table)).toBe(original);
+  });
+
+  it('restitue même si le moteur a changé la casse ou les espaces du jeton', () => {
+    const { table } = service.masquer('Point du soir. Le jeune Kevin a bien mangé.');
+    expect(service.restaurer('Ce midi, [le  jeune] a mangé seul.', table)).toBe(
+      'Ce midi, Kevin a mangé seul.',
+    );
+  });
+
+  it("un aller-retour rend le texte intact, rôles compris", () => {
+    const original =
+      "Le jeune Kevin a refusé de se lever. Sarah, l'éducatrice, est intervenue. Sa mère, Mme Martin, avait annulé la visite. Lina, sa sœur, attendait.";
+    const { texte, table } = service.masquer(original);
+    expect(service.restaurer(texte, table)).toBe(original);
+  });
+});

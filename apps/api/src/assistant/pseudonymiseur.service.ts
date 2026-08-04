@@ -22,13 +22,125 @@ export interface TablePseudo {
   depuis: Map<string, string>;
 }
 
+/**
+ * JETONS PARLANTS — le rôle plutôt qu'une lettre.
+ *
+ * Un moteur qui lit « [PERSONNE-A] a refusé de se lever, [PERSONNE-B] est
+ * intervenue » ne sait pas qui est l'enfant, qui est la mère, qui est la
+ * collègue. Il produit alors des tournures maladroites et confond parfois les
+ * rôles — un défaut qu'un éducateur repère immédiatement et qui lui coûte une
+ * relecture entière.
+ *
+ * Remplacer la lettre par le rôle règle cela sans rien céder sur la
+ * protection : « la mère » ne désigne personne en dehors de la maison, et le
+ * vrai prénom revient de toute façon dans le texte rendu au professionnel.
+ * C'est le seul endroit du dispositif où l'on gagne en qualité ET en clarté
+ * pour l'utilisateur, qui comprend enfin ce qu'il lit dans l'aperçu masqué.
+ *
+ * L'ordre compte : les libellés les plus longs d'abord, sinon « chef » avale
+ * « chef de service » et « mère » avale « grand-mère ».
+ */
+const ROLES: { cue: string; jeton: string }[] = [
+  { cue: "assistante sociale", jeton: "L'ASSISTANTE SOCIALE" },
+  { cue: 'assistant social', jeton: "L'ASSISTANT SOCIAL" },
+  { cue: 'cheffe de service', jeton: 'LA CHEFFE DE SERVICE' },
+  { cue: 'chef de service', jeton: 'LE CHEF DE SERVICE' },
+  { cue: 'grand-mère', jeton: 'LA GRAND-MÈRE' },
+  { cue: 'grand-père', jeton: 'LE GRAND-PÈRE' },
+  { cue: 'belle-mère', jeton: 'LA BELLE-MÈRE' },
+  { cue: 'beau-père', jeton: 'LE BEAU-PÈRE' },
+  { cue: 'éducatrice référente', jeton: "L'ÉDUCATRICE RÉFÉRENTE" },
+  { cue: 'éducateur référent', jeton: "L'ÉDUCATEUR RÉFÉRENT" },
+  { cue: 'éducatrice', jeton: "L'ÉDUCATRICE" },
+  { cue: 'éducateur', jeton: "L'ÉDUCATEUR" },
+  { cue: 'référente', jeton: 'LA RÉFÉRENTE' },
+  { cue: 'référent', jeton: 'LE RÉFÉRENT' },
+  { cue: 'psychologue', jeton: 'LE PSYCHOLOGUE' },
+  { cue: 'psychiatre', jeton: 'LE PSYCHIATRE' },
+  { cue: 'infirmière', jeton: "L'INFIRMIÈRE" },
+  { cue: 'infirmier', jeton: "L'INFIRMIER" },
+  { cue: 'directrice', jeton: 'LA DIRECTRICE' },
+  { cue: 'directeur', jeton: 'LE DIRECTEUR' },
+  { cue: 'enseignante', jeton: "L'ENSEIGNANTE" },
+  { cue: 'enseignant', jeton: "L'ENSEIGNANT" },
+  { cue: 'professeure', jeton: 'LA PROFESSEURE' },
+  { cue: 'professeur', jeton: 'LE PROFESSEUR' },
+  { cue: 'stagiaire', jeton: 'LE STAGIAIRE' },
+  { cue: 'collègue', jeton: 'LE COLLÈGUE' },
+  { cue: 'avocate', jeton: "L'AVOCATE" },
+  { cue: 'avocat', jeton: "L'AVOCAT" },
+  { cue: 'médecin', jeton: 'LE MÉDECIN' },
+  { cue: 'juge', jeton: 'LE JUGE' },
+  { cue: 'tutrice', jeton: 'LA TUTRICE' },
+  { cue: 'tuteur', jeton: 'LE TUTEUR' },
+  { cue: 'résidente', jeton: 'LA RÉSIDENTE' },
+  { cue: 'résident', jeton: 'LE RÉSIDENT' },
+  { cue: 'usagère', jeton: "L'USAGÈRE" },
+  { cue: 'usager', jeton: "L'USAGER" },
+  { cue: 'maman', jeton: 'LA MÈRE' },
+  { cue: 'papa', jeton: 'LE PÈRE' },
+  { cue: 'mère', jeton: 'LA MÈRE' },
+  { cue: 'père', jeton: 'LE PÈRE' },
+  { cue: 'frère', jeton: 'LE FRÈRE' },
+  { cue: 'sœur', jeton: 'LA SŒUR' },
+  { cue: 'soeur', jeton: 'LA SŒUR' },
+  { cue: 'enfant', jeton: "L'ENFANT" },
+  { cue: 'jeune', jeton: 'LE JEUNE' },
+];
+
+/**
+ * Déterminants et possessifs qui précèdent un rôle. « l' » est collé au mot
+ * qui suit, les autres en sont séparés par une espace : les deux formes sont
+ * dans le motif, sinon « l'éducatrice » n'est jamais reconnu.
+ */
+const DETERMINANTS =
+  "(?:(?:le|la|les|un|une|des|son|sa|ses|leur|leurs|notre|nos|votre|vos|mon|ma|mes)\\s+|[ld]')";
+
+/** Tous les libellés de rôle, pour repérer un jeton inventé par le moteur. */
+const JETONS_ROLES = new Set(ROLES.map((r) => r.jeton));
+
+/**
+ * Un jeton produit par la pseudonymisation ? Sert partout où l'on doit
+ * neutraliser ce qui resterait de masqué dans un texte publié.
+ */
+export function estJetonRole(jetonAvecCrochets: string): boolean {
+  const corps = jetonAvecCrochets
+    .replace(/^\[|\]$/g, '')
+    .replace(/\s+\d+$/, '')
+    .trim();
+  return JETONS_ROLES.has(corps);
+}
+
+/** Échappe une chaîne destinée à une expression régulière. */
+function echapper(valeur: string): string {
+  return valeur.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Remplace les jetons qu'un modèle a inventés et que la table ne connaît pas
+ * (« [DATE-9] » alors qu'aucune date n'a été masquée) par une mention neutre
+ * que l'auteur complétera. Rassemblé ici parce que les quatre générateurs de
+ * LEX en avaient chacun leur copie, et qu'une copie oubliée laisse passer un
+ * jeton brut dans un rapport destiné à un juge.
+ */
+export function nettoyerJetonsResiduels(texte: string): string {
+  return texte
+    .replace(/\[DATE-\d+\]/g, '[date à préciser]')
+    .replace(/\[CONTACT-\d+\]/g, '[contact à préciser]')
+    .replace(/\[PERSONNE-[A-Z]+\]/g, '[personne à préciser]')
+    .replace(/\[([A-ZÀ-ÜŒ' -]{3,40}?)(?:\s+\d+)?\]/g, (m, corps: string) =>
+      JETONS_ROLES.has(corps.trim()) ? '[personne à préciser]' : m,
+    );
+}
+
 /** Mots en tête de phrase qu'il ne faut pas prendre pour des prénoms. */
 const MOTS_COURANTS = new Set([
   'le', 'la', 'les', 'un', 'une', 'des', 'ce', 'cette', 'ces', 'il', 'elle',
   'ils', 'elles', 'nous', 'vous', 'je', 'tu', 'on', 'mais', 'donc', 'or',
   'car', 'ni', 'que', 'qui', 'quand', 'lors', 'apres', 'après', 'avant',
   'pendant', 'depuis', 'aujourd', 'hier', 'demain', 'matin', 'soir', 'nuit',
-  'monsieur', 'madame', 'docteur', 'lundi', 'mardi', 'mercredi', 'jeudi',
+  'monsieur', 'madame', 'docteur', 'mme', 'mlle', 'mr', 'dr', 'pr', 'maitre',
+  'maître', 'lundi', 'mardi', 'mercredi', 'jeudi',
   'vendredi', 'samedi', 'dimanche', 'janvier', 'fevrier', 'février', 'mars',
   'avril', 'mai', 'juin', 'juillet', 'aout', 'août', 'septembre', 'octobre',
   'novembre', 'decembre', 'décembre', 'bonjour', 'merci', 'suite', 'objet',
@@ -106,10 +218,15 @@ export class PseudonymiseurService {
       (m) => jetonPour(m, 'DATE'),
     );
 
-    // 3. « M. Dupont », « Mme Martin », « Dr Leroy » — civilité + nom.
+    // 3. « M. Dupont », « Mme MARTIN », « Dr Leroy » — civilité + nom.
+    //    La civilité est CONSERVÉE : elle n'identifie personne, et la faire
+    //    disparaître cassait l'aller-retour — « Mme Martin » revenait
+    //    « Martin » dans un courrier adressé à une famille.
+    //    Le patronyme est accepté en capitales : c'est la forme la plus
+    //    fréquente dans les écrits d'établissement.
     resultat = resultat.replace(
-      /\b(M\.|Mr|Mme|Mlle|Dr|Pr)\s+([A-ZÀ-Ü][a-zà-ÿ'-]+(?:\s+[A-ZÀ-Ü][a-zà-ÿ'-]+)?)/g,
-      (_m, _civ, nom) => jetonPour(nom, 'PERSONNE'),
+      /\b(M\.|Mr|Mme|Mlle|Dr|Pr)\s+([A-ZÀ-Ü][A-Za-zÀ-ÿ'-]+(?:\s+[A-ZÀ-Ü][A-Za-zÀ-ÿ'-]+)?)/g,
+      (_m, civ: string, nom: string) => `${civ} ${jetonPour(nom, 'PERSONNE')}`,
     );
 
     // 4. Prénoms/noms : mot capitalisé qui n'ouvre pas la phrase et n'est pas
@@ -167,6 +284,14 @@ export class PseudonymiseurService {
         estNomEnCapitales(mot) ? `${civ}${espace}${jetonPour(mot, 'PERSONNE')}` : m,
     );
 
+    // 4 quater. RÔLES — on remplace la lettre par ce que la phrase dit de la
+    //    personne : « le jeune Kevin » devient [LE JEUNE], « sa mère Mme
+    //    Martin » devient [LA MÈRE]. Le moteur écrit nettement mieux avec un
+    //    rôle qu'avec une lettre, et l'aperçu masqué devient enfin lisible
+    //    pour le professionnel. La protection est inchangée : un rôle ne
+    //    désigne personne hors de l'établissement.
+    resultat = this.etiqueterLesRoles(resultat, table);
+
     // 5. Seconde passe : toute valeur déjà identifiée est masquée PARTOUT,
     //    y compris en tête de phrase (« Kevin s'est calmé. Kevin a mangé. »).
     //    Sans elle, un prénom qui ouvre une phrase passerait au travers.
@@ -182,23 +307,111 @@ export class PseudonymiseurService {
     return { texte: resultat, table };
   }
 
-  /** Réinjecte les valeurs réelles dans le texte produit par le modèle. */
+  /**
+   * Renomme les jetons personne en fonction du rôle que la phrase leur donne.
+   *
+   * On travaille sur le texte DÉJÀ masqué : les noms ont été repérés, on ne
+   * cherche donc plus qu'à savoir qui est qui. Deux tournures couvrent
+   * l'essentiel de ce qu'écrit un éducateur : le rôle avant le nom (« le jeune
+   * Kevin », « sa mère, Mme Martin ») et le rôle après (« Kevin, son frère »).
+   *
+   * « la mère de Kevin » est volontairement ignoré : le mot « de » sépare le
+   * rôle du nom, et c'est l'enfant qui est nommé, pas la mère. Confondre les
+   * deux inverserait les rôles dans tout le document — bien pire que de garder
+   * une lettre.
+   */
+  private etiqueterLesRoles(texte: string, table: TablePseudo): string {
+    const cues = ROLES.map((r) => echapper(r.cue)).join('|');
+    const parCue = new Map(ROLES.map((r) => [r.cue, r.jeton]));
+
+    // On RELÈVE d'abord, on renomme ensuite. Deux personnes peuvent porter le
+    // même patronyme — « Mme DUBOIS, sa mère, et M. DUBOIS, son père » — et
+    // partagent alors un seul jeton. Étiqueter à la volée donnerait au père le
+    // rôle de la mère : on préfère laisser la lettre plutôt qu'inverser deux
+    // rôles dans tout un rapport.
+    const roleObserve = new Map<string, string | null>();
+    const relever = (jeton: string, base: string) => {
+      if (!table.vers.has(jeton)) return;
+      const connu = roleObserve.get(jeton);
+      if (connu === undefined) roleObserve.set(jeton, base);
+      else if (connu !== base) roleObserve.set(jeton, null); // rôles en conflit
+    };
+
+    // Rôle AVANT le nom : « le jeune [PERSONNE-A] », « sa mère, [PERSONNE-B] ».
+    const avant = new RegExp(`${DETERMINANTS}?(${cues})\\s*,?\\s+(\\[PERSONNE-[A-Z]+\\])`, 'gi');
+    for (const m of texte.matchAll(avant)) {
+      const base = parCue.get(m[1].toLowerCase());
+      if (base) relever(m[2], base);
+    }
+
+    // Rôle APRÈS le nom : « [PERSONNE-A], son frère », « [PERSONNE-B], la référente ».
+    const apres = new RegExp(`(\\[PERSONNE-[A-Z]+\\])\\s*,\\s*${DETERMINANTS}?(${cues})\\b`, 'gi');
+    for (const m of texte.matchAll(apres)) {
+      const base = parCue.get(m[2].toLowerCase());
+      if (base) relever(m[1], base);
+    }
+
+    let resultat = texte;
+    for (const [ancien, base] of roleObserve) {
+      if (!base) continue;
+      const valeur = table.vers.get(ancien);
+      if (!valeur) continue;
+      // Unicité : deux frères doivent porter deux jetons distincts, sinon la
+      // restauration rendrait le même prénom aux deux.
+      let nouveau = `[${base}]`;
+      let n = 2;
+      while (table.vers.has(nouveau)) nouveau = `[${base} ${n++}]`;
+      table.vers.delete(ancien);
+      table.vers.set(nouveau, valeur);
+      table.depuis.set(valeur.toLowerCase(), nouveau);
+      resultat = resultat.split(ancien).join(nouveau);
+    }
+
+    return resultat;
+  }
+
+  /**
+   * Réinjecte les valeurs réelles dans le texte produit par le modèle.
+   *
+   * Tolérant à dessein sur la casse et l'espacement : un modèle réécrit
+   * volontiers « [la mère] » ou « [LA  MÈRE] », et une correspondance stricte
+   * laisserait alors un jeton brut dans un document destiné à un juge ou à une
+   * famille. On reste en revanche strict sur les crochets et sur le libellé.
+   */
   restaurer(texte: string, table: TablePseudo): string {
     let resultat = texte;
     for (const [jeton, valeur] of table.vers) {
-      resultat = resultat.split(jeton).join(valeur);
+      const corps = echapper(jeton.slice(1, -1)).replace(/\s+/g, '\\s+');
+      resultat = resultat.replace(new RegExp(`\\[\\s*${corps}\\s*\\]`, 'gi'), valeur);
     }
     return resultat;
   }
 
-  /** Résumé anonyme de ce qui a été masqué (affiché à l'utilisateur). */
-  resume(table: TablePseudo): { personnes: number; dates: number; contacts: number } {
+  /**
+   * Résumé anonyme de ce qui a été masqué (affiché à l'utilisateur).
+   *
+   * `roles` liste les étiquettes réellement employées. C'est la contrepartie
+   * de la promesse : plutôt que d'affirmer « c'est protégé », on montre
+   * exactement ce que le moteur a vu à la place des noms. Un professionnel qui
+   * lit « [LE JEUNE], [LA MÈRE], [L'ÉDUCATRICE] » comprend le dispositif en
+   * une seconde, et peut le montrer à sa direction.
+   */
+  resume(table: TablePseudo): {
+    personnes: number;
+    dates: number;
+    contacts: number;
+    roles: string[];
+  } {
     let personnes = 0, dates = 0, contacts = 0;
+    const roles: string[] = [];
     for (const jeton of table.vers.keys()) {
-      if (jeton.startsWith('[PERSONNE')) personnes++;
-      else if (jeton.startsWith('[DATE')) dates++;
-      else contacts++;
+      if (jeton.startsWith('[DATE')) dates++;
+      else if (jeton.startsWith('[CONTACT')) contacts++;
+      else {
+        personnes++;
+        if (!jeton.startsWith('[PERSONNE-')) roles.push(jeton);
+      }
     }
-    return { personnes, dates, contacts };
+    return { personnes, dates, contacts, roles };
   }
 }

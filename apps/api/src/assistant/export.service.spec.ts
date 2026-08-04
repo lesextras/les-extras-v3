@@ -55,6 +55,22 @@ describe('ExportService', () => {
     expect(relu).not.toContain('## ');
   });
 
+  it("l'italique est une mise en forme, pas des astérisques imprimées", async () => {
+    // « *La cheffe de service* » ressortait avec ses astérisques en bas du
+    // courrier : impossible à envoyer tel quel à une famille.
+    const buffer = await service.docx(
+      'Courrier à la famille',
+      "Madame, Monsieur,\n\nNous vous remercions de votre retour concernant le séjour organisé par l'établissement au mois de février prochain.\n\n*La cheffe de service*",
+    );
+    const relu = await lecteur.extraire(
+      buffer,
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'sortie.docx',
+    );
+    expect(relu).toContain('La cheffe de service');
+    expect(relu).not.toContain('*');
+  });
+
   it('produit un PDF valide', async () => {
     const buffer = await service.pdf('Demande parentale', CONTENU);
     expect(buffer.subarray(0, 4).toString('latin1')).toBe('%PDF');

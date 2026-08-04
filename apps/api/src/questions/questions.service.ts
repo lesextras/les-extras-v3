@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PointReason, Prisma, QuestionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { PseudonymiseurService } from '../assistant/pseudonymiseur.service';
+import { PseudonymiseurService, estJetonRole } from '../assistant/pseudonymiseur.service';
 import { CommunityService } from '../community/community.service';
 import {
   CreateAnswerDto,
@@ -42,6 +42,11 @@ export class QuestionsService {
     const { texte: masque } = this.pseudo.masquer(texte);
     return masque
       .replace(/\[PERSONNE-[A-Z]+\]/g, '[prénom masqué]')
+      // Les jetons par rôle ([LA MÈRE], [L'ÉDUCATRICE]) doivent tomber ici
+      // aussi : une question du GAP est publiée devant tout le réseau.
+      .replace(/\[[A-ZÀ-ÜŒ' -]{3,40}(?:\s+\d+)?\]/g, (m) =>
+        estJetonRole(m) ? '[personne masquée]' : m,
+      )
       .replace(/\[CONTACT-\d+\]/g, '[coordonnée masquée]')
       // Les dates ne sont pas identifiantes dans un récit de situation : on
       // les laisse, sinon le contexte devient incompréhensible.
