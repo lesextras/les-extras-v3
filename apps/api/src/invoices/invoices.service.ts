@@ -222,21 +222,62 @@ export class InvoicesService {
     return invoice;
   }
 
-  /** Génère une facture (statut DRAFT) avec numéro unique. */
+  /**
+   * Génère une facture (statut DRAFT) avec numéro unique.
+   *
+   * ON NE FACTURE QUE CE QU'ON A SOI-MÊME RÉALISÉ.
+   *
+   * `create` ne vérifiait qu'une chose : qu'aucune facture n'existait déjà
+   * pour cette réservation. N'importe quel compte pouvait donc facturer la
+   * prestation d'un autre. Deux dégâts, et le second est le pire : le nom du
+   * client d'autrui apparaissait sur un document comptable étranger, et
+   * surtout le titulaire légitime se retrouvait DÉFINITIVEMENT empêché de
+   * facturer sa propre mission, puisque le verrou d'unicité était déjà pris.
+   *
+   * On rétablit aussi le PAYEUR. Sur une mission de renfort, la réservation
+   * appartient à l'intervenant : `booking.accountId` et `invoice.accountId`
+   * étaient donc égaux, le client était déduit comme nul, et la facture
+   * sortait avec un bloc « Facturé à » vide — non conforme à l'article
+   * 242 nonies A du CGI — sans jamais parvenir à l'établissement.
+   */
   async create(accountId: string, dto: CreateInvoiceDto) {
+    let payerAccountId: string | undefined;
+
     if (dto.bookingId) {
-      const existing = await this.prisma.invoice.findUnique({
-        where: { bookingId: dto.bookingId },
+      const booking = await this.prisma.booking.findUnique({
+        where: { id: dto.bookingId },
+        select: {
+          accountId: true,
+          invoice: { select: { id: true } },
+          mission: { select: { accountId: true } },
+          service: { select: { accountId: true } },
+        },
       });
-      if (existing) {
-        throw new BadRequestException('Une facture existe déjà pour ce booking.');
+      // Un identifiant inconnu renvoyait une erreur 500 (violation de clé
+      // étrangère remontée brute). On répond ce qu'il en est.
+      if (!booking) throw new NotFoundException('Réservation introuvable.');
+      if (booking.invoice) {
+        throw new BadRequestException('Une facture existe déjà pour cette réservation.');
       }
+      if (booking.accountId !== accountId) {
+        throw new ForbiddenException(
+          'Cette réservation ne relève pas de votre compte : vous ne pouvez pas la facturer.',
+        );
+      }
+
+      // Renfort : la réservation est celle de l'intervenant, le payeur est
+      // l'établissement qui a publié la mission. Atelier : la réservation est
+      // celle de l'établissement, le payeur est donc ce compte-là.
+      payerAccountId = booking.mission?.accountId ?? booking.service?.accountId;
+      if (payerAccountId === accountId) payerAccountId = undefined;
     }
+
     const number = await this.nextNumber(accountId);
     return this.prisma.invoice.create({
       data: {
         accountId,
         bookingId: dto.bookingId,
+        payerAccountId,
         number,
         amount: dto.amount,
         status: InvoiceStatus.DRAFT,
