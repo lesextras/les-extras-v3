@@ -37,7 +37,7 @@ import {
   initials,
   timeAgo,
 } from "./format";
-import type { Invitation, Membership } from "./types";
+import type { AttachmentRequest, Invitation, Membership } from "./types";
 
 const ASSIGNABLE_ROLES = ["ADMIN", "MANAGER", "MEMBER"] as const;
 
@@ -47,6 +47,7 @@ export function MembersManager({
   canManage,
   members,
   invitations,
+  attachmentRequests,
   afficher = "tout",
 }: {
   accountId: string;
@@ -54,6 +55,12 @@ export function MembersManager({
   canManage: boolean;
   members: Membership[];
   invitations: Invitation[];
+  /**
+   * Demandes envoyées par des comptes « salarié » qui souhaitent se
+   * rattacher à cet établissement (voir attachment-requests côté API).
+   * Optionnel : absent tant que l'appelant ne les a pas chargées.
+   */
+  attachmentRequests?: AttachmentRequest[];
   /**
    * La liste des membres a déménagé sur son propre écran, paginé et
    * cherchable. Les invitations, elles, sont peu nombreuses par nature :
@@ -117,6 +124,28 @@ export function MembersManager({
           accountId,
         }),
       "Invitation annulée",
+    );
+
+  const approveAttachment = (req: AttachmentRequest) =>
+    run(
+      req.id,
+      () =>
+        apiRequest(`/attachment-requests/${req.id}/approve`, {
+          method: "POST",
+          accountId,
+        }),
+      "Demande approuvée — la personne est maintenant membre de l’établissement",
+    );
+
+  const rejectAttachment = (req: AttachmentRequest) =>
+    run(
+      req.id,
+      () =>
+        apiRequest(`/attachment-requests/${req.id}/reject`, {
+          method: "POST",
+          accountId,
+        }),
+      "Demande refusée",
     );
 
   return (
@@ -270,6 +299,70 @@ export function MembersManager({
           </div>
         )}
       </section>
+      {attachmentRequests ? (
+        <section className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Demandes de rattachement ({attachmentRequests.length})
+          </h3>
+          {attachmentRequests.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucune demande en attente. Un « salarié » qui vous a indiqué comme employeur lors de
+              son inscription apparaîtra ici.
+            </p>
+          ) : (
+            <div className="rounded-xl border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Personne</TableHead>
+                    <TableHead>Message</TableHead>
+                    <TableHead>Reçue</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {attachmentRequests.map((req) => (
+                    <TableRow key={req.id}>
+                      <TableCell className="font-medium">
+                        {req.requesterUser?.email ?? "—"}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
+                        {req.message ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-xs text-muted-foreground">{timeAgo(req.createdAt)}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {canManage ? (
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={busyId === req.id}
+                              onClick={() => approveAttachment(req)}
+                            >
+                              Approuver
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                              disabled={busyId === req.id}
+                              onClick={() => rejectAttachment(req)}
+                            >
+                              Refuser
+                            </Button>
+                          </div>
+                        ) : null}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+      ) : null}
       {pending ? <p className="text-xs text-muted-foreground">Mise à jour…</p> : null}
     </div>
   );

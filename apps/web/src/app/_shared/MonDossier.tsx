@@ -155,7 +155,11 @@ function Piece({
                 defaultValue={doc.issuedAt?.slice(0, 10) ?? ""}
               />
             </Field>
-            <Field label="Valable jusqu'au" htmlFor={`expiresAt-${doc.type}`}>
+            <Field
+              label="Valable jusqu'au"
+              htmlFor={`expiresAt-${doc.type}`}
+              hint="Passé cette date, la pièce passe automatiquement en « Périmée »."
+            >
               <Input
                 id={`expiresAt-${doc.type}`}
                 name="expiresAt"

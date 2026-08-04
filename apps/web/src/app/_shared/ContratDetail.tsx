@@ -271,7 +271,11 @@ export function ContratDetail({
 
             {motifChoisi?.exigeSalarieRemplace ? (
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Personne remplacée" required>
+                <Field
+                  label="Personne remplacée"
+                  required
+                  hint="Obligatoire pour un CDD de remplacement : identifie le salarié absent."
+                >
                   <Input
                     value={contrat.salarieRemplaceNom ?? ""}
                     disabled={!modifiable}
@@ -279,7 +283,11 @@ export function ContratDetail({
                     placeholder="Camille Roy"
                   />
                 </Field>
-                <Field label="Sa qualification" required>
+                <Field
+                  label="Sa qualification"
+                  required
+                  hint="Qualification du salarié remplacé, telle qu’elle doit figurer au contrat."
+                >
                   <Input
                     value={contrat.salarieRemplaceQualification ?? ""}
                     disabled={!modifiable}
@@ -359,7 +367,11 @@ export function ContratDetail({
               </Select>
             </Field>
 
-            <Field label="Convention collective applicable" required>
+            <Field
+              label="Convention collective applicable"
+              required
+              hint="La convention collective qui s’applique au poste (ex. CCN 66)."
+            >
               <Input
                 value={contrat.conventionCollective ?? ""}
                 disabled={!modifiable}
@@ -390,7 +402,11 @@ export function ContratDetail({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Caisse de retraite complémentaire" required>
+              <Field
+                label="Caisse de retraite complémentaire"
+                required
+                hint="L’organisme qui gère la retraite complémentaire du salarié."
+              >
                 <Input
                   value={contrat.caisseRetraiteComplementaire ?? ""}
                   disabled={!modifiable}
@@ -398,7 +414,11 @@ export function ContratDetail({
                   placeholder="AG2R La Mondiale"
                 />
               </Field>
-              <Field label="Organisme de prévoyance" required>
+              <Field
+                label="Organisme de prévoyance"
+                required
+                hint="L’organisme qui couvre la prévoyance (arrêt de travail, invalidité, décès)."
+              >
                 <Input
                   value={contrat.organismePrevoyance ?? ""}
                   disabled={!modifiable}
@@ -650,7 +670,11 @@ function TerminerDialog({ contrat }: { contrat: Contrat }) {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Field label="Cause de la fin" required>
+          <Field
+            label="Cause de la fin"
+            required
+            hint="Détermine si l’indemnité de fin de contrat est due (voir ci-dessous)."
+          >
             <Select value={cause} onValueChange={(v) => setCause(v as CauseFinContrat)}>
               <SelectTrigger>
                 <SelectValue />

@@ -273,6 +273,20 @@ export interface Invitation {
   createdAt: string;
 }
 
+/**
+ * Demande de rattachement envoyée par un compte « salarié » (créé en solo,
+ * droits freelance en attendant) vers un établissement. Sens inverse d'une
+ * Invitation : ici, c'est la personne qui a fait la démarche.
+ */
+export interface AttachmentRequest {
+  id: string;
+  message: string | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+  requesterUser?: { id: string; email: string } | null;
+  requesterAccount?: { id: string; name: string } | null;
+}
+
 export interface Review {
   id: string;
   authorId: string;

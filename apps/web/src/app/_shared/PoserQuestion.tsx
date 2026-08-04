@@ -171,7 +171,11 @@ export function PoserQuestion({
       <Card>
         <CardContent className="space-y-5 pt-6">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Votre métier" htmlFor="metier">
+            <Field
+              label="Votre métier"
+              htmlFor="metier"
+              hint="Sert de filtre : c'est ce qui permet aux bons collègues de vous retrouver."
+            >
               <select
                 id="metier"
                 value={metier}
@@ -186,7 +190,11 @@ export function PoserQuestion({
                 ))}
               </select>
             </Field>
-            <Field label="Public accompagné" htmlFor="public">
+            <Field
+              label="Public accompagné"
+              htmlFor="public"
+              hint="Sert aussi de filtre pour qui verra votre situation."
+            >
               <select
                 id="public"
                 value={publicVise}

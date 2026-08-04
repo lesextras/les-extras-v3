@@ -312,7 +312,11 @@ export function FilReponses({
                 </p>
               </div>
               <form onSubmit={repondre} className="space-y-4">
-                <Field label="Votre réponse" htmlFor="reponse">
+                <Field
+                  label="Votre réponse"
+                  htmlFor="reponse"
+                  hint="Rapporte 15 points, et 40 de plus si l'auteur la retient."
+                >
                   <Textarea
                     id="reponse"
                     rows={5}

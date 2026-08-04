@@ -136,7 +136,11 @@ export function AdminFormationForm({
         </Field>
       </div>
 
-      <Field label="Résumé" htmlFor="f-summary">
+      <Field
+        label="Résumé"
+        htmlFor="f-summary"
+        hint="Affiché en « Présentation » sur la page publique de la formation."
+      >
         <Textarea
           id="f-summary"
           rows={2}
@@ -231,7 +235,11 @@ export function AdminFormationForm({
             Formation certifiante
           </label>
           {v.certifying ? (
-            <Field label="Nom de la certification" htmlFor="f-certname">
+            <Field
+              label="Nom de la certification"
+              htmlFor="f-certname"
+              hint="Le code et l'intitulé officiels de la certification, ex. RS1234."
+            >
               <Input
                 id="f-certname"
                 value={v.certificationName}
