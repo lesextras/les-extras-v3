@@ -187,6 +187,22 @@ export default async function FacturationPage({
   const accountId = session.account.id;
   const isEstablishment = session.account.type === "ESTABLISHMENT";
   const vue = searchParams?.vue === "devis" ? "devis" : "factures";
+
+  // La comptabilité n'est pas une information d'équipe : le menu cache déjà
+  // cette entrée aux simples membres, et l'API la refuse désormais aussi. Sans
+  // ce garde, un membre qui arrive par l'URL tombait sur une page vide, sans
+  // rien pour comprendre pourquoi. On le lui dit.
+  if (!["OWNER", "ADMIN", "MANAGER"].includes(session.account.role)) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Devis & factures" />
+        <EmptyState
+          title="Réservé aux responsables"
+          description="La facturation de votre structure est consultable par la direction, l’administration et les chefs de service. Si vous avez besoin d’un devis ou d’une facture, demandez-la à un responsable de votre établissement."
+        />
+      </div>
+    );
+  }
   // Retour de Stripe. Sans ce bandeau, le client revenait de la banque sur une
   // page inchangée, sans savoir si son règlement était passé.
   const retourPaiement = searchParams?.paiement;
