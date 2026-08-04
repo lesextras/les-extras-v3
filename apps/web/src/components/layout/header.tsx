@@ -28,6 +28,7 @@ import { IndicateursCompte } from './indicateurs-compte';
 import { SupportModal } from '@/app/_shared/modals/SupportModal';
 import { BasculeTheme } from '@/app/_shared/BasculeTheme';
 import { PastilleNotifications } from './PastilleNotifications';
+import { ACCOUNT_ROLE_LABEL } from '@/app/_shared/format';
 import { cn, initials } from '@/lib/utils';
 import type { SessionUser, SessionAccount } from '@/lib/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -112,9 +113,16 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
               <span className="truncate text-sm font-semibold text-foreground">
                 {activeAccount?.name ?? 'Sélectionner un compte'}
               </span>
+              {/* « Freelance · OWNER » : un anglicisme et un code technique,
+                  affichés en permanence sous le nom du compte. Le produit
+                  possédait déjà la traduction métier (ACCOUNT_ROLE_LABEL) ;
+                  elle n'était simplement pas employée ici. « Professionnel ·
+                  Direction » se lit, et se dit à voix haute. */}
               <span className="truncate text-xs text-muted-foreground">
-                {activeAccount?.type === 'ESTABLISHMENT' ? 'Établissement' : 'Freelance'}
-                {activeAccount?.role ? ` · ${activeAccount.role}` : ''}
+                {activeAccount?.type === 'ESTABLISHMENT' ? 'Établissement' : 'Professionnel'}
+                {activeAccount?.role
+                  ? ` · ${ACCOUNT_ROLE_LABEL[activeAccount.role] ?? activeAccount.role}`
+                  : ''}
               </span>
             </span>
             <ChevronsUpDown className="size-4 text-muted-foreground" />

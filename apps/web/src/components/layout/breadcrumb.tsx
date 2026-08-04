@@ -6,6 +6,16 @@ import { usePathname } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
 
 // Libellés lisibles pour les segments connus.
+//
+// ILS DOIVENT DIRE EXACTEMENT CE QUE DIT LE MENU DE GAUCHE.
+//
+// Le fil d'Ariane annonçait « Réservations » là où le menu dit « Mes
+// interventions », « Coffre-fort conformité » là où il dit « Conformité »,
+// « Mon compte » là où il dit « Mon établissement ». Et pour les segments
+// absents de cette table, le libellé était fabriqué à partir de l'adresse :
+// d'où « Equipe » sans accent et « Mon-dossier » avec son trait d'union,
+// affichés tels quels. Trois noms pour la même page, c'est ce qui donne
+// l'impression qu'il y a « beaucoup de choses » alors qu'il y en a une.
 const LABELS: Record<string, string> = {
   admin: 'Administration',
   dashboard: 'Mon espace',
@@ -13,11 +23,11 @@ const LABELS: Record<string, string> = {
   missions: 'Missions',
   ateliers: 'Ateliers',
   services: 'Ateliers',
-  reservations: 'Réservations',
+  reservations: 'Mes interventions',
   formations: 'Formations',
   qualiopi: 'Conformité Qualiopi',
   registre: 'Registre & BPF',
-  conformite: 'Coffre-fort conformité',
+  conformite: 'Conformité',
   etablissements: 'Comptes & sous-comptes',
   utilisateurs: 'Utilisateurs',
   invitations: 'Invitations',
@@ -34,7 +44,19 @@ const LABELS: Record<string, string> = {
   credits: 'LEX — Crédits',
   adhesion: 'LEX — Crédits & abonnement',
   devis: 'Devis',
-  account: 'Mon compte',
+  account: 'Mon établissement',
+  // Segments qui manquaient : le fil les fabriquait depuis l'URL.
+  equipe: 'Équipe',
+  'mon-dossier': 'Mon dossier',
+  vivier: 'Mon vivier',
+  facturation: 'Devis & factures',
+  ideas: 'Boîte à idées',
+  'temps-de-travail': 'Temps de travail',
+  conges: 'Congés & compteurs',
+  contrats: 'Contrats',
+  progression: 'Ma progression',
+  signer: 'Signature',
+  assistant: 'Assistant',
   tutorat: 'Tutorat',
 };
 
