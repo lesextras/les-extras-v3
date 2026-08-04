@@ -85,6 +85,13 @@ export class ServicesService {
     const where: Prisma.ServiceWhereInput = { status: ServiceStatus.PUBLISHED };
     if (query.category) where.category = query.category;
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
+    const recherche = query.search?.trim();
+    if (recherche) {
+      where.OR = [
+        { title: { contains: recherche, mode: 'insensitive' } },
+        { description: { contains: recherche, mode: 'insensitive' } },
+      ];
+    }
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.service.findMany({
