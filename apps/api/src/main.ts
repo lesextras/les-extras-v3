@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import helmet from 'helmet';
 import * as Sentry from '@sentry/node';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { exceptionValidationFr } from './common/validation/messages-fr';
 
 async function bootstrap() {
   // Monitoring d'erreurs : actif seulement si SENTRY_DSN est posée — sans
@@ -31,13 +32,17 @@ async function bootstrap() {
   // Préfixe global : toutes les routes sont servies sous /api
   app.setGlobalPrefix('api');
 
-  // Validation stricte des DTO (class-validator / class-transformer)
+  // Validation stricte des DTO (class-validator / class-transformer).
+  // `exceptionFactory` traduit les messages : sans elle, l'utilisateur d'une
+  // interface entièrement en français recevait « title must be longer than or
+  // equal to 3 characters » dès qu'un champ était mal rempli.
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
+      exceptionFactory: exceptionValidationFr,
     }),
   );
 
