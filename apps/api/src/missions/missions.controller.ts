@@ -83,6 +83,22 @@ export class MissionsController {
   }
 
   /**
+   * Clôturer un renfort : il sort de la diffusion, les candidatures en
+   * attente sont classées et leurs auteurs prévenus. C'est la sortie que le
+   * refus de suppression annonçait sans qu'elle existe.
+   */
+  @Post(':id/cloturer')
+  @UseGuards(AccountGuard, AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  cloturer(
+    @Param('id') id: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto?: { motif?: string },
+  ) {
+    return this.missions.cloturer(id, account.id, dto?.motif);
+  }
+
+  /**
    * Publier : DRAFT -> PUBLISHED. Démarre la cascade au palier le plus
    * restreint utile ; `visibility` permet de forcer (ex. urgence -> PUBLIC).
    *

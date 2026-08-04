@@ -197,6 +197,62 @@ export class CiblageService {
 
     throw new BadRequestException(MESSAGE_HORS_CIBLE[mission.cibleDiffusion]);
   }
+
+  /**
+   * LE SEUL POINT DE PASSAGE POUR RÉPONDRE À UNE MISSION.
+   *
+   * Il y a trois façons de répondre — candidater, accepter directement,
+   * prendre rang dans la file d'engagement — et les règles n'avaient été
+   * écrites que dans la première. Résultat constaté en production : une
+   * mission publiée « réservée à mon équipe » était refusée à un inconnu sur
+   * /candidate, et acceptée sur /accept et /sengager, contrat émis à l'appui.
+   * La restriction que l'établissement croyait avoir posée ne tenait que sur
+   * la voie qu'on avait pensé à protéger.
+   *
+   * Trois règles, appliquées ensemble et une seule fois :
+   *  1. le ciblage nominatif (à qui l'annonce a été adressée) ;
+   *  2. la cascade de diffusion (salariés, puis réseau connu, puis public) ;
+   *  3. le garde-fou juridique : un salarié ne se facture pas en indépendant
+   *     à son propre employeur — c'est du travail dissimulé, et la plateforme
+   *     ne doit pas en être l'instrument.
+   *
+   * Toute nouvelle voie de réponse doit appeler CETTE méthode. Ne recopiez
+   * pas les contrôles ailleurs : c'est précisément la recopie incomplète qui
+   * avait ouvert la brèche.
+   */
+  async assertReponseAutorisee(mission: MissionCiblee, accountId: string): Promise<void> {
+    await this.assertCiblageRespecte(mission, accountId);
+
+    if (mission.visibility === MissionVisibility.SALARIES) {
+      throw new BadRequestException(
+        "Cette mission est encore réservée aux salariés de l'établissement.",
+      );
+    }
+    if (mission.visibility === MissionVisibility.RESERVED) {
+      const connus = await this.intervenantsConnus(mission.accountId);
+      if (!connus.includes(accountId)) {
+        throw new BadRequestException(
+          "Cette mission est réservée au réseau de l'établissement pour l'instant. Elle s'ouvrira plus largement si elle n'est pas pourvue.",
+        );
+      }
+    }
+
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { ownerId: true },
+    });
+    if (compte?.ownerId) {
+      const salarie = await this.prisma.membership.findFirst({
+        where: { accountId: mission.accountId, userId: compte.ownerId },
+        select: { id: true },
+      });
+      if (salarie) {
+        throw new BadRequestException(
+          "Vous êtes rattaché à cet établissement : vous ne pouvez pas y répondre en tant qu'indépendant.",
+        );
+      }
+    }
+  }
 }
 
 /** Ce qu'on dit à quelqu'un qui n'était pas destinataire. Sans jargon. */

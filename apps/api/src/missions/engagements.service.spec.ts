@@ -122,7 +122,12 @@ function monter(overrides: { mission?: Record<string, unknown>; file?: any[] } =
     sendMissionFilledEstablishment: jest.fn().mockResolvedValue(undefined),
   };
   const community = { crediter: jest.fn().mockResolvedValue(null) };
-  const ciblage = { assertCiblageRespecte: jest.fn().mockResolvedValue(undefined) };
+  const ciblage = {
+    assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
+    // Le point de passage unique des trois voies de réponse (ciblage +
+    // cascade de diffusion + garde-fou salarié/employeur).
+    assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
+  };
 
   const service = new EngagementsService(
     prisma as any,
@@ -174,9 +179,9 @@ describe('EngagementsService — sengager', () => {
     expect(payload.presente).toBe(false);
   });
 
-  it('applique le ciblage nominatif : un hors-cible ne peut pas s’engager', async () => {
+  it('applique les règles d’accès : un hors-cible ne peut pas s’engager', async () => {
     const { service, ciblage } = monter();
-    ciblage.assertCiblageRespecte.mockRejectedValue(new BadRequestException('hors cible'));
+    ciblage.assertReponseAutorisee.mockRejectedValue(new BadRequestException('hors cible'));
     await expect(service.sengager('m1', 'f9', 'FREELANCE')).rejects.toBeInstanceOf(
       BadRequestException,
     );

@@ -37,6 +37,7 @@ function ciblageMock() {
     intervenantsAutorises: jest.fn().mockResolvedValue(null),
     salariesDestinataires: jest.fn().mockResolvedValue([]),
     assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
+    assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -392,6 +393,7 @@ describe('MissionsService — diffusion nominative', () => {
       intervenantsAutorises: jest.fn().mockResolvedValue(autorises),
       salariesDestinataires: jest.fn().mockResolvedValue(salaries),
       assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
+    assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
     };
     const service = new MissionsService(
       prisma as any,

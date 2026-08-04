@@ -426,6 +426,66 @@ export class MissionsService {
   }
 
   /**
+   * CLÔTURER — la sortie que le message ci-dessus promettait.
+   *
+   * `remove()` disait « Clôturez-le » depuis le début, mais aucune route ne
+   * permettait de le faire : ni `close`, ni `cancel`, et `UpdateMissionDto`
+   * n'accepte pas `status`. Seul le back-office de la plateforme savait
+   * dépublier. Une annonce annulée, pourvue par téléphone ou publiée par
+   * erreur restait donc indéfiniment dans le tableau de bord, et l'outil
+   * renvoyait l'établissement vers une action inexistante.
+   *
+   * La clôture ne détruit rien : la mission sort de la diffusion, les
+   * candidatures encore en attente sont classées sans suite — et leurs
+   * auteurs prévenus, parce que quelqu'un qui a pris le temps de répondre
+   * mérite de savoir que c'est terminé — et tout l'historique reste lisible.
+   * Ce qui a été confirmé (contrat, planning, facture) n'est pas touché.
+   */
+  async cloturer(id: string, accountId: string, motif?: string) {
+    const mission = await this.assertOwned(id, accountId);
+    if (mission.status === MissionStatus.CLOSED) {
+      throw new BadRequestException('Ce renfort est déjà clôturé.');
+    }
+
+    const enAttente = await this.prisma.booking.findMany({
+      where: { missionId: id, status: BookingStatus.REQUESTED },
+      select: { id: true, account: { select: { ownerId: true } } },
+    });
+
+    await this.prisma.$transaction([
+      this.prisma.reliefMission.update({
+        where: { id },
+        data: { status: MissionStatus.CLOSED },
+      }),
+      this.prisma.booking.updateMany({
+        where: { missionId: id, status: BookingStatus.REQUESTED },
+        data: {
+          status: BookingStatus.CANCELLED,
+          cancelReason: motif?.trim() || 'Le renfort a été clôturé par l’établissement.',
+        },
+      }),
+    ]);
+
+    // Une candidature laissée sans réponse, c'est ce qui fait qu'on ne revient
+    // pas. On prévient, même quand la nouvelle est mauvaise.
+    for (const b of enAttente) {
+      if (!b.account?.ownerId) continue;
+      await this.notifications
+        .create(b.account.ownerId, {
+          type: 'MISSION_CLOSED',
+          title: 'Renfort clôturé',
+          body: `« ${mission.title} » a été clôturé par l’établissement${
+            motif?.trim() ? ` : ${motif.trim()}` : ''
+          }. Votre candidature n’a pas de suite.`,
+          link: '/dashboard/opportunites',
+        })
+        .catch(() => undefined);
+    }
+
+    return { closed: true, candidaturesClassees: enAttente.length };
+  }
+
+  /**
    * Publie une mission : DRAFT -> PUBLISHED et démarre la cascade au palier
    * le plus restreint utile (SALARIES si vivier interne, sinon PUBLIC).
    * L'établissement peut forcer un palier ; /broaden élargit ensuite, et le
@@ -775,13 +835,15 @@ export class MissionsService {
     if (mission.accountId === freelanceAccountId) {
       throw new BadRequestException('Vous ne pouvez pas accepter votre propre mission.');
     }
+    // Les règles d'accès s'appliquent à la RÉPONSE autant qu'à l'envoi : sans
+    // ce contrôle, n'importe qui muni du lien contournait la restriction et la
+    // promesse faite à l'établissement ne valait rien. Vérifié AVANT le
+    // renvoi vers la file d'engagement, qui referait sinon le même contrôle
+    // trop tard.
+    await this.ciblage.assertReponseAutorisee(mission, freelanceAccountId);
     if (mission.modeAttribution === ModeAttribution.FILE_ENGAGEMENT) {
       return this.engagements.sengager(missionId, freelanceAccountId, accountType);
     }
-    // Un ciblage nominatif s'applique à la RÉPONSE autant qu'à l'envoi : sans
-    // ce contrôle, n'importe qui muni du lien contournerait la restriction et
-    // la promesse faite à l'établissement ne vaudrait rien.
-    await this.ciblage.assertCiblageRespecte(mission, freelanceAccountId);
 
     // Verrou : passe PUBLISHED -> FILLED uniquement si personne ne l'a déjà prise.
     const claim = await this.prisma.reliefMission.updateMany({
@@ -1021,49 +1083,15 @@ export class MissionsService {
     if (mission.accountId === freelanceAccountId) {
       throw new BadRequestException('Vous ne pouvez pas candidater à votre propre mission.');
     }
-    // Le ciblage nominatif vaut aussi pour la candidature.
-    await this.ciblage.assertCiblageRespecte(mission, freelanceAccountId);
+    // Qui a le droit de répondre : ciblage, cascade de diffusion et garde-fou
+    // salarié/employeur. Vérifié AVANT de renvoyer vers l'autre mode : sinon
+    // on confirmerait à un inconnu l'existence d'une mission qu'il n'a pas le
+    // droit de voir (`GET /missions/:id` lui répond « introuvable »).
+    await this.ciblage.assertReponseAutorisee(mission, freelanceAccountId);
     if (mission.modeAttribution === ModeAttribution.FILE_ENGAGEMENT) {
       throw new BadRequestException(
         'Sur cette mission, on ne candidate pas : cliquez sur « Je prends la mission ». Votre profil sera présenté à l’établissement pour validation.',
       );
-    }
-
-    // La cascade s'applique aussi a la candidature. Une mission encore
-    // reservee aux salaries n'est pas candidatable de l'exterieur ; une
-    // mission au palier « reseau reserve » n'est ouverte qu'aux intervenants
-    // deja connus de l'etablissement (vivier ou historique).
-    if (mission.visibility === MissionVisibility.SALARIES) {
-      throw new BadRequestException(
-        "Cette mission est encore réservée aux salariés de l'établissement.",
-      );
-    }
-    if (mission.visibility === MissionVisibility.RESERVED) {
-      const connus = await this.intervenantsConnus(mission.accountId);
-      if (!connus.includes(freelanceAccountId)) {
-        throw new BadRequestException(
-          "Cette mission est réservée au réseau de l'établissement pour l'instant. Elle s'ouvrira plus largement si elle n'est pas pourvue.",
-        );
-      }
-    }
-
-    // Garde-fou juridique : un salarié de l'établissement ne peut pas s'y
-    // facturer en indépendant (requalification / travail dissimulé). Il reste
-    // libre d'intervenir dans tous les autres établissements.
-    const compteFreelance = await this.prisma.account.findUnique({
-      where: { id: freelanceAccountId },
-      select: { ownerId: true },
-    });
-    if (compteFreelance?.ownerId) {
-      const salarie = await this.prisma.membership.findFirst({
-        where: { accountId: mission.accountId, userId: compteFreelance.ownerId },
-        select: { id: true },
-      });
-      if (salarie) {
-        throw new BadRequestException(
-          "Vous êtes rattaché à cet établissement : vous ne pouvez pas y candidater en tant qu'indépendant.",
-        );
-      }
     }
 
     const existing = await this.prisma.booking.findFirst({
