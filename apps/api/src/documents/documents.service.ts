@@ -102,6 +102,7 @@ export class DocumentsService {
         postalCode: true,
         city: true,
         contactEmail: true,
+        vatMention: true,
       },
     });
     if (!emetteur) throw new NotFoundException('Émetteur introuvable.');
@@ -134,10 +135,14 @@ export class DocumentsService {
       facture: facture as never,
       emetteur,
       client,
-      // Mention par défaut, vraie pour une association non assujettie. À rendre
-      // configurable par compte le jour où un émetteur assujetti facture ici :
-      // afficher un taux faux serait pire que ne rien afficher.
-      mentionTva: 'TVA non applicable, article 293 B du code général des impôts',
+      // Mention propre à l'émetteur si renseignée (voir Account.vatMention) ;
+      // sinon le défaut ci-dessous, vrai pour la grande majorité des comptes
+      // (franchise en base, association non assujettie). Un émetteur assujetti
+      // à la TVA doit la renseigner lui-même — afficher un taux faux serait
+      // pire que ne rien afficher.
+      mentionTva:
+        emetteur.vatMention?.trim() ||
+        'TVA non applicable, article 293 B du code général des impôts',
     });
     return { pdf, nom: this.nomFichier('facture', facture.number) };
   }
