@@ -335,13 +335,15 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
             type="button"
             onClick={basculerAvances}
             aria-pressed={outilsAvances}
+            title="Contrats CDD, temps de travail, congés et compteurs"
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <Wrench aria-hidden="true" className="size-3.5 shrink-0" />
+            {/* Le libellé long était coupé en « Outils avancés (contrats,
+                temp… » : illisible, donc jamais cliqué. Court dans le bouton,
+                détaillé dans l'infobulle au survol. */}
             <span className="truncate text-left">
-              {outilsAvances
-                ? 'Masquer les outils avancés'
-                : `Outils avancés (contrats, temps de travail)`}
+              {outilsAvances ? 'Masquer les outils avancés' : 'Outils avancés'}
             </span>
           </button>
         ) : null}
