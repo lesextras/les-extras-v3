@@ -203,14 +203,56 @@ export class SignatureService {
       });
     }
 
-    await this.envoyerCode(signature.id);
+    // Appel interne : la demande vient d'être créée par un responsable de ce
+    // compte, l'autorisation est donc déjà acquise.
+    await this.envoyerCode(signature.id, {
+      accountId,
+      userEmail: signature.signataireEmail,
+      role: 'OWNER',
+    });
     return this.lire(accountId, signature.id);
   }
 
-  /** Génère un code, le hache, l'enregistre et l'envoie par courriel. */
-  async envoyerCode(signatureId: string) {
+  /**
+   * QUI A LE DROIT DE TOUCHER À CETTE SIGNATURE.
+   *
+   * Trois routes — le dossier de preuve, le renvoi du code, le geste de
+   * signature — ne recevaient que l'identifiant de la demande. N'importe quel
+   * compte pouvait donc lire le nom, l'adresse, l'IP et le navigateur d'un
+   * signataire qui ne le concernait pas, et déclencher à volonté des envois
+   * de code vers la boîte de cette personne. Seul le code à six chiffres
+   * protégeait l'acte, et le renvoi remettait le compteur de tentatives à
+   * zéro : la protection s'affaiblissait à chaque appel d'un inconnu.
+   *
+   * Deux personnes seulement sont concernées par une demande de signature :
+   * celle à qui elle est adressée, et un responsable du compte qui l'a émise.
+   */
+  private async signatureConcernee(
+    signatureId: string,
+    ctx: { accountId: string; userEmail: string; role: string },
+  ) {
     const s = await this.prisma.signature.findUnique({ where: { id: signatureId } });
     if (!s) throw new NotFoundException('Demande de signature introuvable.');
+
+    const responsable =
+      s.accountId === ctx.accountId && ['OWNER', 'ADMIN', 'MANAGER'].includes(ctx.role);
+    const destinataire =
+      s.signataireEmail === (ctx.userEmail ?? '').toLowerCase().trim();
+
+    // On répond « introuvable » et non « interdit » : à quelqu'un qui n'est
+    // pas concerné, on ne confirme même pas que la demande existe.
+    if (!responsable && !destinataire) {
+      throw new NotFoundException('Demande de signature introuvable.');
+    }
+    return s;
+  }
+
+  /** Génère un code, le hache, l'enregistre et l'envoie par courriel. */
+  async envoyerCode(
+    signatureId: string,
+    ctx: { accountId: string; userEmail: string; role: string },
+  ) {
+    const s = await this.signatureConcernee(signatureId, ctx);
     if (s.statut !== StatutSignature.EN_ATTENTE) {
       throw new BadRequestException("Cette demande n'est plus en attente de signature.");
     }
@@ -261,9 +303,9 @@ export class SignatureService {
     signatureId: string,
     code: string,
     trace: { ip?: string | null; userAgent?: string | null },
+    ctx: { accountId: string; userEmail: string; role: string },
   ) {
-    const s = await this.prisma.signature.findUnique({ where: { id: signatureId } });
-    if (!s) throw new NotFoundException('Demande de signature introuvable.');
+    const s = await this.signatureConcernee(signatureId, ctx);
 
     const texte = await this.texteCanonique(s.documentType, s.documentId);
     if (!texte) throw new NotFoundException('Document introuvable.');
@@ -317,7 +359,8 @@ export class SignatureService {
     // écrans existants la voient sans interroger ce module.
     await this.reporterSurLeDocument(s.documentType, s.documentId, s.userId, s.accountId);
 
-    return this.dossier(signatureId);
+    // La personne vient de signer : elle est par définition concernée.
+    return this.dossier(signatureId, ctx);
   }
 
   /**
@@ -361,9 +404,13 @@ export class SignatureService {
   }
 
   /** Le signataire renonce. C'est un refus, pas une annulation. */
-  async refuser(signatureId: string, motif: string | undefined, trace: { ip?: string | null; userAgent?: string | null }) {
-    const s = await this.prisma.signature.findUnique({ where: { id: signatureId } });
-    if (!s) throw new NotFoundException('Demande de signature introuvable.');
+  async refuser(
+    signatureId: string,
+    motif: string | undefined,
+    trace: { ip?: string | null; userAgent?: string | null },
+    ctx: { accountId: string; userEmail: string; role: string },
+  ) {
+    const s = await this.signatureConcernee(signatureId, ctx);
     if (s.statut !== StatutSignature.EN_ATTENTE) {
       throw new BadRequestException("Cette demande n'est plus en attente.");
     }
@@ -458,7 +505,8 @@ export class SignatureService {
   }
 
   /** Le dossier de preuve complet, tel qu'il sera imprimé. */
-  async dossier(signatureId: string) {
+  async dossier(signatureId: string, ctx: { accountId: string; userEmail: string; role: string }) {
+    await this.signatureConcernee(signatureId, ctx);
     const s = await this.prisma.signature.findUnique({
       where: { id: signatureId },
       include: { evenements: { orderBy: { createdAt: 'asc' } } },

@@ -81,6 +81,16 @@ class RefuserDto {
 export class SignatureController {
   constructor(private readonly signature: SignatureService) {}
 
+  /**
+   * Qui appelle : le compte actif, l'adresse de la personne connectée et son
+   * rôle. Ces trois éléments décident si la demande de signature la concerne
+   * (voir SignatureService.signatureConcernee).
+   */
+  private qui(req: Request, a: RequestAccount) {
+    const user = (req as Request & { user?: { email?: string } }).user;
+    return { accountId: a.id, userEmail: user?.email ?? '', role: a.role };
+  }
+
   /** L'adresse d'origine, derrière le proxy inverse s'il y en a un. */
   private trace(req: Request) {
     const entete = (req.headers['x-forwarded-for'] as string | undefined) ?? '';
@@ -118,31 +128,49 @@ export class SignatureController {
     return this.signature.lirePourSignataire(a.id, id, user?.email ?? '', a.role);
   }
 
-  /** Le dossier de preuve complet. */
+  /** Le dossier de preuve complet — signataire et responsables seulement. */
   @Get(':id/dossier')
   @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
-  dossier(@Param('id') id: string) {
-    return this.signature.dossier(id);
+  dossier(
+    @CurrentAccount() a: RequestAccount,
+    @Req() req: Request,
+    @Param('id') id: string,
+  ) {
+    return this.signature.dossier(id, this.qui(req, a));
   }
 
   /** Renvoie un code : le premier a pu se perdre ou expirer. */
   @Post(':id/code')
   @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
-  renvoyerCode(@Param('id') id: string) {
-    return this.signature.envoyerCode(id);
+  renvoyerCode(
+    @CurrentAccount() a: RequestAccount,
+    @Req() req: Request,
+    @Param('id') id: string,
+  ) {
+    return this.signature.envoyerCode(id, this.qui(req, a));
   }
 
-  /** Le geste lui-même. Ouvert à toute personne authentifiée. */
+  /** Le geste lui-même. Réservé au signataire désigné. */
   @Post(':id/signer')
   @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
-  signer(@Param('id') id: string, @Body() dto: SignerDto, @Req() req: Request) {
-    return this.signature.signer(id, dto.code, this.trace(req));
+  signer(
+    @CurrentAccount() a: RequestAccount,
+    @Param('id') id: string,
+    @Body() dto: SignerDto,
+    @Req() req: Request,
+  ) {
+    return this.signature.signer(id, dto.code, this.trace(req), this.qui(req, a));
   }
 
   @Post(':id/refuser')
   @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
-  refuser(@Param('id') id: string, @Body() dto: RefuserDto, @Req() req: Request) {
-    return this.signature.refuser(id, dto.motif, this.trace(req));
+  refuser(
+    @CurrentAccount() a: RequestAccount,
+    @Param('id') id: string,
+    @Body() dto: RefuserDto,
+    @Req() req: Request,
+  ) {
+    return this.signature.refuser(id, dto.motif, this.trace(req), this.qui(req, a));
   }
 
   /** L'établissement retire sa demande. Une signature recueillie, jamais. */
