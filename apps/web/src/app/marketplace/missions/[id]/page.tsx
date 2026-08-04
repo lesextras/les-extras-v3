@@ -114,7 +114,7 @@ export default async function MissionDetailPage({ params }: { params: { id: stri
                 </Button>
               ) : !isFreelance ? (
                 <p className="text-center text-xs text-muted-foreground">
-                  Seuls les freelances peuvent accepter une mission de renfort.
+                  Seuls les intervenants peuvent accepter une mission de renfort.
                 </p>
               ) : (
                 <Button className="w-full" disabled>
