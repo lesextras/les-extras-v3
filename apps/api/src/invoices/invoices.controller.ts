@@ -26,7 +26,20 @@ interface AccountCtx {
 export class InvoicesController {
   constructor(private readonly invoices: InvoicesService) {}
 
+  /**
+   * LA COMPTABILITÉ N'EST PAS UNE INFORMATION D'ÉQUIPE.
+   *
+   * La LECTURE des factures était ouverte à tout membre du compte : un
+   * éducateur rattaché à la MECS pouvait lister l'intégralité de la
+   * facturation de sa structure. Il ne pouvait rien modifier — ça, c'était
+   * bien verrouillé — mais le menu lui cachait déjà l'entrée « Devis &
+   * factures » (voir nav.ts, roles OWNER/ADMIN/MANAGER) : l'interface
+   * promettait une restriction que le serveur n'appliquait pas. On aligne le
+   * serveur sur ce que le site affiche déjà.
+   */
   @Get()
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   findAll(@CurrentAccount() account: AccountCtx) {
     return this.invoices.findAllByAccount(account.id);
   }
@@ -36,11 +49,15 @@ export class InvoicesController {
    * identifiant de facture et la route ne serait jamais atteinte.
    */
   @Get('summary')
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   summary(@CurrentAccount() account: AccountCtx) {
     return this.invoices.summary(account.id);
   }
 
   @Get(':id')
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   findOne(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.invoices.findOne(id, account.id);
   }
