@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   MissionStatus,
+  MissionVisibility,
   Prisma,
   QuestionStatus,
   ServiceCategory,
@@ -492,7 +493,12 @@ export class PublicService {
     take?: number;
     skip?: number;
   }) {
-    const where: Prisma.FormationWhereInput = { status: 'PUBLISHED' };
+    // INTERNE exclu : une formation montée par un établissement pour ses
+    // propres salariés n'a rien à faire sur le site public (même filtre que
+    // FormationsService.findCatalog). C'était aussi la porte dérobée du
+    // verrou de publication : créer en INTERNE, publier, repasser en
+    // CERTIFIANTE — et se retrouver au catalogue sans relecture d'ADéPA.
+    const where: Prisma.FormationWhereInput = { status: 'PUBLISHED', type: 'CERTIFIANTE' };
     if (query.category) where.categoryRef = { is: { title: query.category } };
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
     if (query.cpf === 'true') where.cpfEligible = true;
@@ -649,8 +655,15 @@ export class PublicService {
   async missions(query: { take?: number; skip?: number }) {
     const take = Math.min(query.take ?? 50, 100);
     const skip = query.skip ?? 0;
+    // Seules les missions réellement OUVERTES sortent ici.
+    //
+    // Le palier de diffusion (SALARIES → RESERVED → PUBLIC) n'était pas
+    // regardé : un établissement qui cochait « je réserve d'abord à mon
+    // équipe » voyait quand même son annonce partir sur le web ouvert, et
+    // dans le sitemap. La promesse faite à l'écran n'était pas tenue.
     const where = {
       status: MissionStatus.PUBLISHED,
+      visibility: MissionVisibility.PUBLIC,
       OR: [{ endDate: { gte: new Date() } }, { endDate: null }],
     };
     const [items, total] = await this.prisma.$transaction([
@@ -678,7 +691,10 @@ export class PublicService {
 
   async missionDetail(id: string) {
     const mission = await this.prisma.reliefMission.findFirst({
-      where: { id, status: MissionStatus.PUBLISHED },
+      // Même règle que la liste : une mission réservée à l'équipe ne se lit
+      // pas non plus par son adresse directe, sinon la restriction ne vaut
+      // rien dès que l'identifiant circule.
+      where: { id, status: MissionStatus.PUBLISHED, visibility: MissionVisibility.PUBLIC },
       select: {
         id: true,
         title: true,
