@@ -67,7 +67,9 @@ export default function LoginPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required>Adresse e-mail</FormLabel>
+                <FormLabel required hint="L’adresse utilisée à la création de votre compte.">
+                  Adresse e-mail
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
@@ -88,7 +90,9 @@ export default function LoginPage() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel required>Mot de passe</FormLabel>
+                  <FormLabel required hint="Le mot de passe choisi à la création de votre compte.">
+                    Mot de passe
+                  </FormLabel>
                   <Link href="/login" className="text-xs font-medium text-primary hover:underline">
                     Mot de passe oublié ?
                   </Link>
