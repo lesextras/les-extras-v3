@@ -129,10 +129,24 @@ export class FormationsService {
     });
   }
 
-  /** Catalogue : programmes PUBLIÉS + filtres type/catégorie/recherche. */
+  /**
+   * Catalogue : programmes PUBLIÉS + filtres type/catégorie/recherche.
+   *
+   * Les formations INTERNE sont exclues d'office. Une formation interne est
+   * montée par un établissement pour ses propres salariés — elle peut décrire
+   * ses pratiques, son organisation, ses difficultés. Elle n'a rien à faire
+   * dans un catalogue ouvert. Le filtre manquait : publier une formation
+   * interne la faisait apparaître sur le site public, et c'était aussi la
+   * porte dérobée du verrou de publication (créer en INTERNE, publier, puis
+   * repasser en CERTIFIANTE).
+   */
   async findCatalog(query: QueryFormationsDto) {
-    const where: Prisma.FormationWhereInput = { status: FormationStatus.PUBLISHED };
-    if (query.type) where.type = query.type;
+    const where: Prisma.FormationWhereInput = {
+      status: FormationStatus.PUBLISHED,
+      type: FormationType.CERTIFIANTE,
+    };
+    // Le filtre de type reste bloqué sur CERTIFIANTE : demander « INTERNE »
+    // dans l'URL ne doit pas rouvrir ce qu'on vient de fermer.
     if (query.category) where.categoryRef = { is: { title: query.category } };
     if (query.search) {
       where.OR = [
@@ -249,6 +263,25 @@ export class FormationsService {
       throw new ForbiddenException(
         'Une formation certifiante est diffusée sous la certification Qualiopi d’ADéPA : ' +
           'votre programme reste en brouillon jusqu’à sa validation par l’équipe ADéPA.',
+      );
+    }
+
+    /**
+     * Et on ne devient pas certifiant APRÈS COUP.
+     *
+     * Le contrôle ci-dessus ne regardait que le moment de la mise en ligne. Il
+     * suffisait donc de créer la formation en INTERNE, de la publier (autorisé,
+     * puisque l'interne ne sort pas de l'établissement), puis de repasser le
+     * type sur CERTIFIANTE une fois en ligne : le verrou ne se redéclenchait
+     * jamais. Une formation déjà publiée ne peut plus changer de nature sans
+     * repasser par ADéPA.
+     */
+    const changeDeNature = dto.type != null && dto.type !== current.type;
+    const dejaEnLigne = current.status === FormationStatus.PUBLISHED;
+    if (changeDeNature && dejaEnLigne && !isInternal && !estAdminPlateforme) {
+      throw new ForbiddenException(
+        'Un programme déjà en ligne ne peut pas devenir certifiant sans repasser par ADéPA : ' +
+          'repassez-le en brouillon, puis soumettez-le à l’équipe.',
       );
     }
     // Même logique pour les mentions qui engagent la certification : on ne se
