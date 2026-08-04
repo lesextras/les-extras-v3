@@ -55,5 +55,13 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
   CMD node -e "require('http').get('http://127.0.0.1:'+(process.env.API_PORT||3001)+'/api/health',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
 
 # Migrations appliquées au démarrage, puis lancement de l'API.
+#
+# --accept-data-loss : sans lui, db push s'arrête sur toute modification jugée
+# « risquée » et le conteneur ne démarre plus (constaté le 4/8/2026 : l'ajout
+# de la contrainte unique (accountId, number) sur Invoice — pourtant sans
+# danger, l'ancien schéma garantissait déjà l'unicité globale des numéros —
+# a bloqué le déploiement). Contrepartie assumée : les changements de schéma
+# destructifs s'appliquent désormais sans confirmation au démarrage. Toute
+# suppression de colonne/table doit donc être réfléchie AVANT le push git.
 ENTRYPOINT ["tini", "--"]
-CMD ["sh", "-c", "pnpm exec prisma db push --schema ./prisma/schema.prisma --skip-generate && node dist/main.js"]
+CMD ["sh", "-c", "pnpm exec prisma db push --schema ./prisma/schema.prisma --skip-generate --accept-data-loss && node dist/main.js"]
