@@ -5,6 +5,7 @@ import { getSession } from '@/lib/session';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfettisArrivee } from '../../_shared/ConfettisArrivee';
+import { PasserOnboarding } from '../../_shared/PasserOnboarding';
 
 export default async function WelcomePage({
   searchParams,
@@ -63,9 +64,7 @@ export default async function WelcomePage({
             <ArrowRight />
           </Link>
         </Button>
-        <Button asChild size="lg" variant="ghost">
-          <Link href="/dashboard">Passer pour l’instant</Link>
-        </Button>
+        <PasserOnboarding>Passer pour l’instant</PasserOnboarding>
       </div>
     </div>
   );
