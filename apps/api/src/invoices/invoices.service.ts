@@ -25,11 +25,18 @@ export class InvoicesService {
    * Le numéro suivant, tiré du DERNIER attribué et non du nombre de factures.
    * Voir `numerotation.ts` : une facture annulée consomme son numéro, la
    * séquence doit rester continue.
+   *
+   * SCOPÉ PAR ÉMETTEUR (`accountId`) : la séquence légale (art. 242 nonies A
+   * de l'annexe II au CGI) doit être continue PROPRE À CHAQUE ÉMETTEUR, pas
+   * partagée entre tous les comptes de la plateforme. Un ancien comportement
+   * global aurait mélangé les factures de personnes morales distinctes sous
+   * une même suite de numéros — deux émetteurs différents ne peuvent
+   * légalement pas partager une séquence.
    */
-  private async nextNumber(): Promise<string> {
+  private async nextNumber(accountId: string): Promise<string> {
     const annee = new Date().getFullYear();
     const derniere = await this.prisma.invoice.findFirst({
-      where: { number: { startsWith: prefixeAnnee(annee) } },
+      where: { accountId, number: { startsWith: prefixeAnnee(annee) } },
       orderBy: { number: 'desc' },
       select: { number: true },
     });
@@ -155,10 +162,32 @@ export class InvoicesService {
             mission: { select: { title: true } },
             // Le compte à l'origine de la réservation : c'est lui le client
             // quand la facture naît d'un atelier, faute de payeur explicite.
-            account: { select: { id: true, owner: { select: { email: true } } } },
+            account: {
+              select: {
+                id: true,
+                name: true,
+                legalName: true,
+                address: true,
+                city: true,
+                postalCode: true,
+                siret: true,
+                owner: { select: { email: true } },
+              },
+            },
           },
         },
-        payer: { select: { id: true, name: true, owner: { select: { email: true } } } },
+        payer: {
+          select: {
+            id: true,
+            name: true,
+            legalName: true,
+            address: true,
+            city: true,
+            postalCode: true,
+            siret: true,
+            owner: { select: { email: true } },
+          },
+        },
         account: {
           select: {
             id: true,
@@ -168,6 +197,7 @@ export class InvoicesService {
             city: true,
             postalCode: true,
             siret: true,
+            vatMention: true,
             owner: { select: { email: true } },
           },
         },
@@ -202,7 +232,7 @@ export class InvoicesService {
         throw new BadRequestException('Une facture existe déjà pour ce booking.');
       }
     }
-    const number = await this.nextNumber();
+    const number = await this.nextNumber(accountId);
     return this.prisma.invoice.create({
       data: {
         accountId,

@@ -45,6 +45,7 @@ function monter(f = facture()) {
       findFirst: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
       update: jest.fn((args: any) => Promise.resolve({ ...f, ...args.data })),
+      create: jest.fn((args: any) => Promise.resolve({ id: 'nouvelle', ...args.data })),
       count: jest.fn().mockResolvedValue(0),
     },
   };
@@ -125,5 +126,30 @@ describe('Numérotation — la règle que le module formations ignorait', () => 
   it('la séquence est annuelle', () => {
     expect(numeroSuivant(2027, 'INV-2026-00987')).toBe('INV-2027-00001');
     expect(prefixeAnnee(2027)).toBe('INV-2027-');
+  });
+});
+
+describe('Numérotation — scopée par émetteur', () => {
+  // Une séquence globale mélangeait les factures de personnes morales
+  // distinctes : deux établissements sans aucun lien recevaient des numéros
+  // qui se suivaient dans la MÊME suite — non conforme à l'art. 242 nonies A
+  // de l'annexe II au CGI, qui exige une séquence continue PAR ÉMETTEUR.
+  it('interroge le dernier numéro filtré sur le compte émetteur', async () => {
+    const { service, prisma } = monter();
+    await service.create(EMETTEUR, { amount: 100 });
+    expect(prisma.invoice.findFirst).toHaveBeenCalledTimes(1);
+    expect(prisma.invoice.findFirst.mock.calls[0][0].where).toMatchObject({
+      accountId: EMETTEUR,
+    });
+  });
+
+  it('deux émetteurs différents peuvent chacun avoir leur propre INV-2026-00001', async () => {
+    const { service: serviceA } = monter();
+    const { service: serviceB } = monter();
+    // Aucun des deux comptes n'a encore de facture cette année : chacun
+    // reçoit légitimement le même premier numéro, dans sa propre séquence.
+    const a: any = await serviceA.create('compte-a', { amount: 50 });
+    const b: any = await serviceB.create('compte-b', { amount: 50 });
+    expect(a.number).toBe(b.number);
   });
 });
