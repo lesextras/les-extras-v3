@@ -11,6 +11,7 @@ import {
 } from 'react-hook-form';
 import { cn } from '@/lib/utils';
 import { Label } from './label';
+import { InfoHint } from './info-hint';
 
 /**
  * Intégration React Hook Form <-> design system (inspiration shadcn/ui, sans
@@ -73,8 +74,11 @@ FormItem.displayName = 'FormItem';
 
 const FormLabel = React.forwardRef<
   HTMLLabelElement,
-  React.ComponentPropsWithoutRef<typeof Label>
->(({ className, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof Label> & {
+    /** Explication courte affichée dans une bulle au clic sur un « i ». */
+    hint?: React.ReactNode;
+  }
+>(({ className, hint, children, ...props }, ref) => {
   const { error, formItemId } = useFormField();
   return (
     <Label
@@ -82,7 +86,10 @@ const FormLabel = React.forwardRef<
       htmlFor={formItemId}
       className={cn(error && 'text-destructive', className)}
       {...props}
-    />
+    >
+      {children}
+      {hint && <InfoHint>{hint}</InfoHint>}
+    </Label>
   );
 });
 FormLabel.displayName = 'FormLabel';
