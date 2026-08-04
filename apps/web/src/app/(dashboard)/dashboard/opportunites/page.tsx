@@ -21,7 +21,7 @@ export default async function OpportunitesPage() {
         <PageHeader title="Opportunités" />
         <EmptyState
           icon={<Target />}
-          title="Réservé aux freelances"
+          title="Réservé aux intervenants"
           description="Les recommandations de missions sont calculées pour les comptes freelance."
           action={
             <Button asChild>
