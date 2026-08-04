@@ -64,3 +64,74 @@ describe('PseudonymiseurService — prénom en tête de phrase', () => {
     expect(texte).toContain('Surveiller');
   });
 });
+
+/**
+ * NOMS EN CAPITALES.
+ *
+ * Presque toutes les trames d'établissement écrivent le patronyme en
+ * capitales : « Nom et prénom : Kevin MARTIN ». Avant correction, le prénom
+ * était masqué et le nom de famille partait en clair juste à côté — la fuite
+ * la plus visible qu'on puisse imaginer sur un rapport d'enfant placé.
+ *
+ * L'équilibre à tenir : masquer ces patronymes SANS toucher aux intitulés de
+ * sections ni aux sigles métier, qui sont eux aussi en capitales et qui sont
+ * précisément ce qu'on cherche à apprendre d'un modèle d'écrit.
+ */
+describe('PseudonymiseurService — noms de famille en capitales', () => {
+  const service = new PseudonymiseurService();
+
+  it('masque le patronyme accolé à un prénom', () => {
+    const { texte } = service.masquer('Le jeune Kevin MARTIN est arrivé en septembre.');
+    expect(texte).not.toContain('MARTIN');
+    expect(texte).not.toContain('Kevin');
+  });
+
+  it('masque le patronyme après une civilité', () => {
+    const { texte } = service.masquer("Entretien avec Mme DUBOIS, la mère, au sujet du séjour.");
+    expect(texte).not.toContain('DUBOIS');
+  });
+
+  it("ne touche PAS aux intitulés de sections d'une trame", () => {
+    const modele = [
+      'RAPPORT DE SITUATION',
+      'I. IDENTIFICATION',
+      'II. RAPPEL DE LA MESURE',
+      'III. VIE QUOTIDIENNE ET SOCIALISATION',
+      'VII. SYNTHESE ET PRECONISATIONS',
+    ].join('\n');
+    const { texte } = service.masquer(modele);
+    expect(texte).toContain('RAPPORT DE SITUATION');
+    expect(texte).toContain('IDENTIFICATION');
+    expect(texte).toContain('VIE QUOTIDIENNE ET SOCIALISATION');
+  });
+
+  it('conserve les sigles du métier', () => {
+    const { texte } = service.masquer(
+      'Orientation vers un SESSAD étudiée avec la MDPH ; retour ASE attendu. Le jeune Kevin MARTIN est concerné.',
+    );
+    expect(texte).toContain('SESSAD');
+    expect(texte).toContain('MDPH');
+    expect(texte).toContain('ASE');
+    expect(texte).not.toContain('MARTIN');
+  });
+
+  it("garde lisibles les étiquettes de formulaire d'une trame", () => {
+    const { texte } = service.masquer(
+      'Nom et prénom du jeune : Kevin MARTIN\nDate de naissance : 12/03/2011\nRéférent éducatif : Sarah DUBOIS',
+    );
+    // Les intitulés doivent survivre, sinon le squelette appris est illisible.
+    expect(texte).toContain('Nom et prénom du jeune');
+    expect(texte).toContain('Date de naissance');
+    expect(texte).toContain('Référent éducatif');
+    // Mais aucune identité ne doit passer.
+    for (const nom of ['Kevin', 'MARTIN', 'Sarah', 'DUBOIS', '12/03/2011']) {
+      expect(texte).not.toContain(nom);
+    }
+  });
+
+  it('un aller-retour rend le texte intact', () => {
+    const original = 'Nom : Kevin MARTIN. Référente : Mme DUBOIS. Né le 12/03/2011.';
+    const { texte, table } = service.masquer(original);
+    expect(service.restaurer(texte, table)).toBe(original);
+  });
+});

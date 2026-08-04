@@ -25,12 +25,15 @@ import {
   Trash2,
   Loader2,
   Info,
+  Download,
+  FileType2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { ChoixTrameMaison, TramesMaisonPanel, type TrameMaison } from "./TramesMaison";
 
 // ── Types alignés sur l'API ──────────────────────────────────────────────────
 
@@ -63,6 +66,38 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error(Array.isArray(d.message) ? d.message[0] : (d.message ?? "Erreur inattendue"));
   }
   return (await res.json()) as T;
+}
+
+/**
+ * Télécharge l'écrit en Word ou en PDF.
+ *
+ * Le contenu part du navigateur, donc APRÈS la relecture : le fichier contient
+ * exactement ce que l'auteur a validé, corrections comprises. Rien n'est
+ * renvoyé au moteur au passage — l'API ne fait que mettre en page.
+ */
+async function telecharger(titre: string, contenu: string, format: "docx" | "pdf") {
+  const res = await fetch("/api/proxy/assistant/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ titre, contenu, format }),
+  });
+  if (!res.ok) {
+    const d = (await res.json().catch(() => ({}))) as { message?: string | string[] };
+    throw new Error(Array.isArray(d.message) ? d.message[0] : (d.message ?? "Export impossible"));
+  }
+  const blob = await res.blob();
+  // Le nom proposé vient de l'API (Content-Disposition) ; on le relit ici pour
+  // que le fichier arrive nommé, daté, et pas « download ».
+  const entete = res.headers.get("content-disposition") ?? "";
+  const trouve = /filename="([^"]+)"/.exec(entete);
+  const url = URL.createObjectURL(blob);
+  const lien = document.createElement("a");
+  lien.href = url;
+  lien.download = trouve?.[1] ?? `ecrit.${format}`;
+  document.body.appendChild(lien);
+  lien.click();
+  lien.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ── Dictée vocale (API du navigateur — rien ne part sur un serveur) ─────────
@@ -166,9 +201,11 @@ function FilEtapes({ etape }: { etape: Etape }) {
 
 // ── Composant principal ─────────────────────────────────────────────────────
 
-export function AssistantStudio() {
+export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean }) {
   const { toast } = useToast();
   const [trames, setTrames] = React.useState<Trame[]>([]);
+  const [tramesMaison, setTramesMaison] = React.useState<TrameMaison[]>([]);
+  const [trameMaisonId, setTrameMaisonId] = React.useState("");
   const [disponible, setDisponible] = React.useState(true);
   const [documents, setDocuments] = React.useState<DocumentResume[]>([]);
 
@@ -190,6 +227,13 @@ export function AssistantStudio() {
       .then((d) => { setTrames(d.trames); setDisponible(d.disponible); })
       .catch(() => setDisponible(false));
     api<DocumentResume[]>("/assistant/documents").then(setDocuments).catch(() => undefined);
+    chargerTrames();
+  }, []);
+
+  const chargerTrames = React.useCallback(() => {
+    api<TrameMaison[]>("/assistant/trames-maison")
+      .then(setTramesMaison)
+      .catch(() => undefined);
   }, []);
 
   const libelleTrame = React.useMemo(() => {
@@ -206,7 +250,11 @@ export function AssistantStudio() {
     try {
       const r = await api<{ brouillon: string; protection: typeof protection }>("/assistant/generer", {
         method: "POST",
-        body: JSON.stringify({ trame: trame.id, notes }),
+        body: JSON.stringify({
+          trame: trame.id,
+          notes,
+          ...(trameMaisonId ? { trameMaisonId } : {}),
+        }),
       });
       setBrouillon(r.brouillon);
       setProtection(r.protection ?? null);
@@ -227,7 +275,12 @@ export function AssistantStudio() {
     try {
       await api("/assistant/documents", {
         method: "POST",
-        body: JSON.stringify({ trame: trame.id, title: titre, content: brouillon }),
+        body: JSON.stringify({
+          trame: trame.id,
+          title: titre,
+          content: brouillon,
+          ...(trameMaisonId ? { trameMaisonId } : {}),
+        }),
       });
       setEnregistre(true);
       api<DocumentResume[]>("/assistant/documents").then(setDocuments).catch(() => undefined);
@@ -236,6 +289,14 @@ export function AssistantStudio() {
       toast({ title: "Enregistrement impossible", description: (err as Error).message, variant: "error" });
     } finally {
       setEnCours(false);
+    }
+  }
+
+  async function exporter(format: "docx" | "pdf") {
+    try {
+      await telecharger(titre || "Écrit professionnel", brouillon, format);
+    } catch (err) {
+      toast({ title: "Téléchargement impossible", description: (err as Error).message, variant: "error" });
     }
   }
 
@@ -362,6 +423,12 @@ export function AssistantStudio() {
                 </p>
               </div>
 
+              <ChoixTrameMaison
+                trames={tramesMaison.filter((t) => !t.genre || t.genre === trame.id)}
+                valeur={trameMaisonId}
+                onChange={setTrameMaisonId}
+              />
+
               <ul className="space-y-1.5 rounded-xl bg-primary-soft/60 p-4 text-sm text-foreground">
                 {trame.conseils.map((c) => (
                   <li key={c} className="flex gap-2">
@@ -467,9 +534,17 @@ export function AssistantStudio() {
                   {enregistre ? <Check className="size-4" /> : <FileText className="size-4" />}
                   {enregistre ? "Enregistré" : "Valider et enregistrer"}
                 </Button>
-                <Button variant="outline" onClick={copier}>
+                <Button variant="outline" onClick={() => exporter("docx")}>
+                  <Download className="size-4" />
+                  Télécharger (Word)
+                </Button>
+                <Button variant="outline" onClick={() => exporter("pdf")}>
+                  <FileType2 className="size-4" />
+                  PDF
+                </Button>
+                <Button variant="ghost" onClick={copier}>
                   <Copy className="size-4" />
-                  Copier le texte
+                  Copier
                 </Button>
                 <Button variant="ghost" onClick={() => setEtape("ecrire")}>
                   <ArrowLeft className="size-4" />
@@ -497,6 +572,13 @@ export function AssistantStudio() {
         </CardContent>
       </Card>
 
+      <TramesMaisonPanel
+        trames={tramesMaison}
+        onChange={chargerTrames}
+        peutPublier={peutPublier}
+        genres={trames.map((t) => ({ id: t.id, titre: t.titre }))}
+      />
+
       {/* MES DOCUMENTS */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-foreground">Mes documents</h2>
@@ -517,6 +599,22 @@ export function AssistantStudio() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const doc = await api<{ content: string }>(`/assistant/documents/${d.id}`);
+                        await telecharger(d.title, doc.content, "docx");
+                      } catch (err) {
+                        toast({ title: "Téléchargement impossible", description: (err as Error).message, variant: "error" });
+                      }
+                    }}
+                    aria-label={`Télécharger ${d.title} au format Word`}
+                    title="Télécharger en Word"
+                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    <Download className="size-4" />
+                  </button>
                   <button
                     type="button"
                     onClick={async () => {

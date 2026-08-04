@@ -71,6 +71,30 @@ Points structurants :
   bout dans `bookings/parcours.spec.ts` (réservation→contrat→signature).
 - Cascade de diffusion missions : SALARIES → RESERVED (vivier + historique,
   `intervenantsConnus()`) → PUBLIC — appliquée à l'écriture ET à la lecture.
+- **LEX — trame maison, courriers et export (août 2026).**
+  - `TrameMaison` : le professionnel dépose un écrit déjà rendu (Word, PDF ou
+    collé) ; `ExtractionService` en lit le texte (lecteur ZIP maison via le
+    CATALOGUE CENTRAL — LibreOffice laisse les en-têtes locaux à zéro),
+    `PseudonymiseurService` masque, PUIS le moteur rend un JSON
+    `{squelette, style, extrait}`. Seul ce squelette est renvoyé au moteur à
+    chaque génération : apprendre sa trame ne renchérit pas l'usage.
+    `portee` = PERSONNELLE (défaut) ou ETABLISSEMENT (publication réservée
+    OWNER/ADMIN/MANAGER — c'est l'argument de l'offre établissement).
+    L'import est GRATUIT ; les générations restent à 1 crédit.
+    Le document d'origine est conservé (choix de Siham, 3/8/2026) en
+    `FileKind.TRAME`, supprimé avec la trame.
+  - Pseudonymiseur renforcé : les patronymes EN CAPITALES accolés à un prénom
+    ou à une civilité sont masqués (`Kevin MARTIN`), MAIS les intitulés de
+    sections et les sigles métier (`MECS`, `SESSAD`, `IDENTIFICATION`) sont
+    préservés — sinon le squelette appris devient illisible.
+  - 3 nouvelles trames : `COURRIER_AUTORITE_PARENTALE` (avec coupon-réponse ;
+    garde-fous : jamais d'argumentaire CONTRE un parent, pas de pression, note
+    sur l'acte non usuel), `COURRIER_PARTENAIRE`, `BILAN_FIN_ACCOMPAGNEMENT`.
+    L'information préoccupante reste HORS catalogue : la rédiger, c'est
+    qualifier un danger.
+  - `ExportService` : Word (lib `docx`) et PDF (`pdfkit`), depuis le markdown
+    RELU par l'auteur — rien ne repasse par le moteur. Route
+    `POST /assistant/export`, gratuite.
 - **SOS Renfort — ciblage et attribution (août 2026).** Deux réglages
   indépendants, choisis par l'établissement à la publication (`RenfortModal`) :
   - `ReliefMission.cibleDiffusion` = QUI reçoit. `RESEAU` (cascade normale,

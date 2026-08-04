@@ -20,7 +20,8 @@ export default async function AssistantPage() {
         description="Vos notes brutes deviennent des écrits professionnels : notes d'observation, rapports de situation, transmissions, comptes rendus. Trois minutes au lieu de trente."
         benefices={[
           "Noms masqués avant tout traitement, notes jamais stockées",
-          "5 trames professionnelles avec cadre déontologique",
+          "8 trames professionnelles avec cadre déontologique, dont les courriers aux parents",
+          "Votre trame maison apprise depuis un de vos écrits, export Word et PDF",
           "Vous relisez et validez : vous restez l'auteur",
           "Inclus aussi : générateur d'activités et bot d'aide LEX",
         ]}
@@ -32,9 +33,11 @@ export default async function AssistantPage() {
     <div className="space-y-6">
       <PageHeader
         title="LEX · Assistant d'écriture"
-        subtitle="Vos notes brutes deviennent des écrits professionnels — notes d'observation, rapports, transmissions, comptes rendus. Vous dictez ou tapez, l'assistant met en forme, vous relisez et validez. Comptez trois minutes au lieu de trente."
+        subtitle="Vos notes brutes deviennent des écrits professionnels — notes, rapports, transmissions, courriers aux parents et aux partenaires. Déposez un de vos écrits : LEX apprend votre trame et rédige dedans, puis vous téléchargez en Word ou en PDF."
       />
-      <AssistantStudio />
+      <AssistantStudio
+        peutPublier={["OWNER", "ADMIN", "MANAGER"].includes(session.account.role)}
+      />
     </div>
   );
 }

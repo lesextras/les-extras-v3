@@ -75,6 +75,7 @@ model User {
   @@index([role, status])
   favorites          Favorite[]
   assistantDocuments AssistantDocument[]
+  tramesMaison      TrameMaison[]
   pushSubscriptions PushSubscription[]
   leaveRequests    LeaveRequest[] @relation("LeaveUser")
   contratsCDD    ContratCDD[] @relation("ContratSalarie")
@@ -187,6 +188,8 @@ model Account {
   signatures       Signature[]        @relation("SignatureCompte")
   /// Les missions que ce compte intervenant s'est engage a prendre.
   engagements      MissionEngagement[] @relation("EngagementIntervenant")
+  /// Les modeles d'ecrits appris dans ce compte.
+  tramesMaison     TrameMaison[]
 
   @@index([type])
   @@index([slug])
@@ -1465,6 +1468,10 @@ enum FileKind {
   /// Illustration d'une actualité. Seule famille lisible sans authentification :
   /// un article public doit afficher ses images à un visiteur non connecté.
   ARTICLE
+  /// Modèle d'écrit déposé pour apprendre une trame maison. Contient de vrais
+  /// noms de personnes accompagnées : accès restreint à son déposant et aux
+  /// responsables du compte, jamais d'URL publique.
+  TRAME
 }
 
 /// Un fichier réellement stocké (objet dans le dépôt privé), avec sa fiche
@@ -1492,6 +1499,7 @@ model FileAsset {
   createdAt    DateTime  @default(now())
 
   complianceDocuments ComplianceDocument[]
+  tramesMaison        TrameMaison[]        @relation("TrameSource")
   missions            ReliefMission[]
   documents           Document[]
   avatarOf            User[]               @relation("UserAvatar")
@@ -1657,6 +1665,73 @@ enum AssistantTrame {
   TRANSMISSION
   SYNTHESE_REUNION
   COMPTE_RENDU_ATELIER
+  /// Courrier aux titulaires de l'autorité parentale : demande d'autorisation
+  /// (sortie, séjour, soins, droit à l'image) motivée et assortie d'un
+  /// coupon-réponse. L'écrit que les équipes repoussent le plus.
+  COURRIER_AUTORITE_PARENTALE
+  /// Courrier à un partenaire : référent ASE, MDPH, établissement scolaire,
+  /// service de soin. Point de situation factuel et daté.
+  COURRIER_PARTENAIRE
+  /// Bilan de fin d'accompagnement : parcours, acquis, points de vigilance,
+  /// relais proposés.
+  BILAN_FIN_ACCOMPAGNEMENT
+}
+
+/// À qui profite une trame importée.
+enum PorteeTrame {
+  /// Visible de son seul auteur. Le cas de l'intervenant indépendant.
+  PERSONNELLE
+  /// Publiée par un responsable : toute l'équipe du compte la voit et
+  /// l'utilise. C'est le levier d'homogénéité des écrits d'un établissement.
+  ETABLISSEMENT
+}
+
+/// LA TRAME MAISON — le modèle d'écrit propre à un professionnel ou à un
+/// établissement, appris à partir d'un document réel qu'il a déjà rendu.
+///
+/// Raison d'être : chaque MECS, chaque IME a ses intitulés, son ordre, ses
+/// formules — imposés par la direction, par l'ASE ou par le juge. Un assistant
+/// qui rend un texte dans SA structure à lui oblige à tout reprendre pour le
+/// faire rentrer dans le modèle de la maison ; autant écrire directement.
+/// C'est cette friction-là qui fait qu'un outil est essayé une fois puis
+/// abandonné.
+///
+/// Ce qui est appris est un SQUELETTE : les intitulés de sections, leur ordre,
+/// la longueur habituelle de chacune, le registre. Il est extrait du document
+/// après pseudonymisation, et il est le seul élément renvoyé au modèle à
+/// chaque génération — ce qui le rend court, donc peu coûteux.
+model TrameMaison {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  nom       String
+  /// Genre d'écrit auquel la trame se rattache (facultatif : une trame peut
+  /// servir à plusieurs genres).
+  genre     AssistantTrame?
+  portee    PorteeTrame     @default(PERSONNELLE)
+  /// Les intitulés et l'ordre des sections, tels qu'appris du modèle.
+  squelette String
+  /// Le registre : personne, temps, formules d'usage, longueurs attendues.
+  style     String
+  /// Court extrait ANONYMISÉ du modèle, pour que le moteur « entende » le ton.
+  /// Jamais de nom : la pseudonymisation est passée avant l'extraction.
+  extrait   String?
+  /// Document d'origine, conservé dans le compte. Il porte de vrais noms :
+  /// son accès suit les mêmes règles que le reste du dépôt (jamais d'URL
+  /// publique, contrôle des droits à chaque téléchargement).
+  sourceFileId String?
+  sourceFile   FileAsset? @relation("TrameSource", fields: [sourceFileId], references: [id], onDelete: SetNull)
+  /// Compteur d'usage : sert à trier les trames utiles et à repérer les mortes.
+  usages    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents AssistantDocument[]
+
+  @@index([accountId, portee])
+  @@index([authorId])
 }
 
 /// Écrit professionnel VALIDÉ par son auteur.
@@ -1670,6 +1745,9 @@ model AssistantDocument {
   authorId  String
   author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   trame     AssistantTrame
+  /// Trame maison utilisée pour produire ce document, le cas échéant.
+  trameMaisonId String?
+  trameMaison   TrameMaison? @relation(fields: [trameMaisonId], references: [id], onDelete: SetNull)
   title     String
   /// Contenu final, relu et validé par l'auteur (les vrais noms y figurent :
   /// il reste dans le compte de l'établissement, jamais envoyé à un tiers).

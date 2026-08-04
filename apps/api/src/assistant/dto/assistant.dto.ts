@@ -1,5 +1,5 @@
-import { AssistantTrame } from '@prisma/client';
-import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { AssistantTrame, PorteeTrame } from '@prisma/client';
+import { IsBoolean, IsEnum, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 /** Demande de génération : les notes brutes ne sont JAMAIS persistées. */
 export class GenererDto {
@@ -10,6 +10,12 @@ export class GenererDto {
   @MinLength(20, { message: 'Donnez un peu plus de matière : quelques phrases suffisent.' })
   @MaxLength(8000)
   notes!: string;
+
+  /** Trame maison à appliquer. Absente = la structure standard du genre. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  trameMaisonId?: string;
 }
 
 /** Enregistrement d'un document APRÈS relecture et validation par l'auteur. */
@@ -26,6 +32,11 @@ export class EnregistrerDocumentDto {
   @MinLength(20)
   @MaxLength(20000)
   content!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  trameMaisonId?: string;
 }
 
 export class ModifierDocumentDto {
@@ -117,4 +128,60 @@ export class FicheDto {
 
   @IsString() @MinLength(15) @MaxLength(3000)
   brief!: string;
+}
+
+/** Import d'un modèle d'écrit : fichier déposé OU texte collé. */
+export class ImporterTrameDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  nom!: string;
+
+  /** Genre d'écrit auquel la trame se rattache (facultatif). */
+  @IsOptional()
+  @IsEnum(AssistantTrame)
+  genre?: AssistantTrame;
+
+  /** PERSONNELLE par défaut ; ETABLISSEMENT réservé aux responsables. */
+  @IsOptional()
+  @IsEnum(PorteeTrame)
+  portee?: PorteeTrame;
+
+  /** Le modèle collé, quand la personne préfère ne pas déposer de fichier. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(24000)
+  texte?: string;
+}
+
+export class ModifierTrameDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  nom?: string;
+
+  @IsOptional()
+  @IsEnum(AssistantTrame)
+  genre?: AssistantTrame;
+
+  @IsOptional()
+  @IsEnum(PorteeTrame)
+  portee?: PorteeTrame;
+}
+
+/** Export d'un écrit vers un fichier téléchargeable. */
+export class ExporterDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(160)
+  titre!: string;
+
+  @IsString()
+  @MinLength(20)
+  @MaxLength(20000)
+  contenu!: string;
+
+  @IsIn(['docx', 'pdf'])
+  format!: 'docx' | 'pdf';
 }

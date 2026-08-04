@@ -35,6 +35,34 @@ const MOTS_COURANTS = new Set([
   'note', 'rapport', 'synthese', 'synthèse', 'transmission', 'observation',
   'atelier', 'mission', 'equipe', 'équipe', 'service', 'groupe', 'unite',
   'unité', 'foyer', 'mecs', 'ime', 'itep', 'sessad', 'ehpad', 'ase', 'mdph',
+  // Étiquettes des trames d'établissement : « Nom : », « Date de naissance : »,
+  // « Référent éducatif : ». Sans elles, l'import d'un modèle masquait
+  // l'intitulé au lieu du nom — et le squelette appris devenait illisible.
+  'nom', 'noms', 'prenom', 'prénom', 'prenoms', 'prénoms', 'date', 'dates',
+  'naissance', 'admission', 'referent', 'référent', 'referente', 'référente',
+  'educateur', 'éducateur', 'educatrice', 'éducatrice', 'adresse', 'telephone',
+  'téléphone', 'courriel', 'mail', 'identification', 'situation', 'contexte',
+  'faits', 'elements', 'éléments', 'analyse', 'perspectives', 'sante', 'santé',
+  'scolarite', 'scolarité', 'liens', 'familiaux', 'famille', 'mesure',
+  'placement', 'accompagnement', 'periode', 'période', 'cadre', 'signature',
+  'fonction', 'etablissement', 'établissement', 'structure', 'destinataire',
+  'copie', 'reference', 'référence', 'dossier', 'jeune', 'enfant', 'personne',
+  'usager', 'resident', 'résident', 'beneficiaire', 'bénéficiaire',
+]);
+
+/**
+ * Sigles et intitulés qu'on rencontre en capitales dans une trame et qui ne
+ * sont PAS des noms de famille. Sans cette liste, masquer les capitales
+ * détruirait les intitulés de sections — c'est-à-dire précisément ce qu'on
+ * cherche à apprendre d'un modèle d'écrit.
+ */
+const CAPITALES_METIER = new Set([
+  'MECS', 'IME', 'ITEP', 'IEM', 'SESSAD', 'DITEP', 'EHPAD', 'ESAT', 'MAS',
+  'FAM', 'CHRS', 'CCAS', 'PJJ', 'CEF', 'AEMO', 'ASE', 'MDPH', 'CAF', 'CMP',
+  'CMPP', 'SAVS', 'SAMSAH', 'ARS', 'HAS', 'CNIL', 'RGPD', 'PPE', 'DIPC',
+  'PPA', 'GAP', 'APP', 'CAP', 'BEP', 'SEGPA', 'ULIS', 'ITT', 'TISF', 'AES',
+  'AMP', 'EJE', 'CIP', 'RAS', 'SAS', 'RDV', 'SAMU', 'CHU', 'CHS', 'TDAH',
+  'TSA', 'MDA', 'JAF', 'TGI', 'OPP', 'AED', 'IP', 'CRIP', 'PMI', 'CESF',
 ]);
 
 @Injectable()
@@ -107,6 +135,36 @@ export class PseudonymiseurService {
         if (!PRENOMS_COURANTS.has(normaliser(mot))) return m;
         return `${avant}${jetonPour(mot, 'PERSONNE')}`;
       },
+    );
+
+    // 4 ter. NOMS DE FAMILLE EN CAPITALES — « Kevin MARTIN », « Mme DUBOIS ».
+    //    C'est la convention de presque toutes les trames d'établissement, et
+    //    la fuite constatée sur le premier vrai modèle importé : le prénom
+    //    était masqué, le patronyme restait en clair juste à côté. On ne
+    //    masque que les capitales ACCOLÉES à un jeton personne déjà posé ou à
+    //    une civilité — jamais les capitales isolées, qui sont des intitulés
+    //    de section (« IDENTIFICATION », « VIE QUOTIDIENNE ») ou des sigles
+    //    métier qu'il faut conserver pour que le squelette reste lisible.
+    const estNomEnCapitales = (mot: string) =>
+      mot.length >= 3 && !CAPITALES_METIER.has(mot) && !MOTS_COURANTS.has(mot.toLowerCase());
+
+    // Après un jeton personne : « [PERSONNE-B] MARTIN ».
+    resultat = resultat.replace(
+      /(\[PERSONNE-[A-Z]+\]\s+)([A-ZÀ-Ü][A-ZÀ-Ü'-]{2,})\b/g,
+      (m, jeton: string, mot: string) =>
+        estNomEnCapitales(mot) ? `${jeton}${jetonPour(mot, 'PERSONNE')}` : m,
+    );
+    // Avant un jeton personne : « MARTIN [PERSONNE-B] ».
+    resultat = resultat.replace(
+      /\b([A-ZÀ-Ü][A-ZÀ-Ü'-]{2,})(\s+\[PERSONNE-[A-Z]+\])/g,
+      (m, mot: string, jeton: string) =>
+        estNomEnCapitales(mot) ? `${jetonPour(mot, 'PERSONNE')}${jeton}` : m,
+    );
+    // Après une civilité : « Mme MARTIN », « M. DUBOIS ».
+    resultat = resultat.replace(
+      /\b(M\.|Mr|Mme|Mlle|Dr|Pr)(\s+)([A-ZÀ-Ü][A-ZÀ-Ü'-]{2,})\b/g,
+      (m, civ: string, espace: string, mot: string) =>
+        estNomEnCapitales(mot) ? `${civ}${espace}${jetonPour(mot, 'PERSONNE')}` : m,
     );
 
     // 5. Seconde passe : toute valeur déjà identifiée est masquée PARTOUT,

@@ -45,6 +45,13 @@ export const REGLES: Record<FileKind, RegleFamille> = {
     types: ['image/jpeg', 'image/png', 'image/webp'],
     libelle: 'photo de profil',
   },
+  TRAME: {
+    tailleMax: 10 * Mo,
+    // Un modèle d'écrit est un document, jamais une image : accepter un scan
+    // ici n'aurait aucun sens puisqu'on ne saurait pas le lire.
+    types: ['application/pdf', DOCX, 'text/plain', 'text/markdown'],
+    libelle: "modèle d'écrit",
+  },
   FORMATION: {
     tailleMax: 20 * Mo,
     types: [
@@ -99,6 +106,14 @@ export function typeReel(buffer: Buffer, typeDeclare: string): string | null {
     buffer.subarray(8, 12).toString('latin1') === 'WEBP'
   ) {
     return 'image/webp';
+  }
+  // Texte brut : aucun nombre magique. On ne l'accepte que s'il est déclaré
+  // comme tel ET qu'il ne commence pas par une signature binaire connue —
+  // sinon n'importe quel exécutable passerait en se disant « text/plain ».
+  if (typeDeclare === 'text/plain' || typeDeclare === 'text/markdown') {
+    const debut = buffer.subarray(0, 512);
+    const binaire = debut.includes(0x00);
+    return binaire ? null : typeDeclare;
   }
   // ZIP (docx / pptx) : 50 4B 03 04
   if (
