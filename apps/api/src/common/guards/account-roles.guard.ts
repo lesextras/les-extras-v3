@@ -36,22 +36,31 @@ export class AccountRolesGuard implements CanActivate {
     }
 
     if (!required.includes(account.role)) {
-      // Le message part vers un écran, pas vers un journal : il doit être lisible
-      // par la personne qui vient de cliquer. Les codes internes ne lui disent rien.
-      const LIBELLE: Record<string, string> = {
-        OWNER: 'la direction',
-        ADMIN: "l'administration",
-        MANAGER: 'un chef de service',
-        MEMBER: "l'équipe",
-      };
-      const qui = required.map((r) => LIBELLE[r] ?? r);
-      const liste =
-        qui.length === 1 ? qui[0] : `${qui.slice(0, -1).join(', ')} ou ${qui[qui.length - 1]}`;
-      throw new ForbiddenException(
-        `Cette action est réservée à ${liste}. Demandez à un responsable de votre établissement de la faire pour vous.`,
-      );
+      throw new ForbiddenException(messageRoleInsuffisant(required));
     }
 
     return true;
   }
+}
+
+/**
+ * Ce qu'on dit à quelqu'un dont le rôle ne suffit pas.
+ *
+ * Le message part vers un écran, pas vers un journal : il doit être lisible
+ * par la personne qui vient de cliquer. « Rôle insuffisant (requis : OWNER |
+ * ADMIN) » ne veut rien dire pour une directrice de MECS. Exporté pour que
+ * les contrôles écrits à la main dans les services disent exactement la même
+ * chose — c'était le cas d'AccountsService, qui affichait encore les codes.
+ */
+export function messageRoleInsuffisant(required: readonly string[]): string {
+  const LIBELLE: Record<string, string> = {
+    OWNER: 'la direction',
+    ADMIN: "l'administration",
+    MANAGER: 'un chef de service',
+    MEMBER: "l'équipe",
+  };
+  const qui = required.map((r) => LIBELLE[r] ?? r);
+  const liste =
+    qui.length === 1 ? qui[0] : `${qui.slice(0, -1).join(', ')} ou ${qui[qui.length - 1]}`;
+  return `Cette action est réservée à ${liste}. Demandez à un responsable de votre établissement de la faire pour vous.`;
 }
