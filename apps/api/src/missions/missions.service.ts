@@ -334,12 +334,22 @@ export class MissionsService {
     if (!mission) throw new NotFoundException('Mission introuvable.');
     // Propriétaire : détail complet (avec candidatures).
     if (accountId && mission.accountId === accountId) return mission;
-    // Non-propriétaire : uniquement les missions publiées, SANS le pipeline de candidatures.
-    if (mission.status === MissionStatus.PUBLISHED) {
+    // Non-propriétaire : uniquement les missions publiées ET réellement
+    // ouvertes, SANS le pipeline de candidatures.
+    //
+    // Une mission encore réservée à l'équipe interne (palier SALARIES) se
+    // lisait intégralement par son adresse directe — description, taux
+    // horaire, nom de l'établissement — alors que l'écran promet le contraire
+    // à celui qui la publie. Seule la candidature était bloquée ; la lecture,
+    // non. On traite désormais ce cas comme un brouillon : introuvable.
+    if (
+      mission.status === MissionStatus.PUBLISHED &&
+      mission.visibility !== MissionVisibility.SALARIES
+    ) {
       const { bookings: _bookings, ...publicView } = mission as any;
       return publicView;
     }
-    // Brouillon/fermée d'un autre compte : on ne révèle pas son existence.
+    // Brouillon, fermée, ou réservée à l'équipe : on ne révèle pas son existence.
     throw new NotFoundException('Mission introuvable.');
   }
 
