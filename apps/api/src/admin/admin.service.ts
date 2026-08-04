@@ -26,6 +26,7 @@ import {
   CreateFormationAdminDto,
   UpdateFormationAdminDto,
   CreateSessionAdminDto,
+  UpdateSessionAdminDto,
 } from './dto/formation-admin.dto';
 
 /**
@@ -863,6 +864,34 @@ export class AdminService {
         formation: { connect: { id: formationId } },
         title: dto.title,
         startDate: new Date(dto.startDate),
+        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        location: dto.location,
+        maxSeats: dto.maxSeats,
+        priceHt: dto.priceHt !== undefined ? new Prisma.Decimal(dto.priceHt) : undefined,
+        trainer: dto.trainerId ? { connect: { id: dto.trainerId } } : undefined,
+        status: dto.status,
+      },
+      include: {
+        trainer: { select: { id: true, firstName: true, lastName: true } },
+        _count: { select: { inscriptions: true } },
+      },
+    });
+  }
+
+  /**
+   * Correction d'une session existante par l'administration plateforme.
+   * Symétrique de createFormationSession : l'admin pouvait créer une session
+   * mais jamais la corriger — une erreur de prix ou de date publiée restait
+   * figée, sauf à être membre du compte organisme propriétaire.
+   */
+  async updateFormationSession(sessionId: string, dto: UpdateSessionAdminDto) {
+    const session = await this.prisma.formationSession.findUnique({ where: { id: sessionId } });
+    if (!session) throw new NotFoundException('Session introuvable.');
+    return this.prisma.formationSession.update({
+      where: { id: sessionId },
+      data: {
+        title: dto.title,
+        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
         location: dto.location,
         maxSeats: dto.maxSeats,

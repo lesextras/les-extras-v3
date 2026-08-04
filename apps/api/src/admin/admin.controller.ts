@@ -27,6 +27,7 @@ import {
   CreateFormationAdminDto,
   UpdateFormationAdminDto,
   CreateSessionAdminDto,
+  UpdateSessionAdminDto,
 } from './dto/formation-admin.dto';
 import { UpdateBookingStatusDto } from './dto/booking-admin.dto';
 import { UpdateServiceAdminDto } from './dto/service-admin.dto';
@@ -348,6 +349,15 @@ export class AdminController {
   @Post('formations/:id/sessions')
   createFormationSession(@Param('id') id: string, @Body() dto: CreateSessionAdminDto) {
     return this.admin.createFormationSession(id, dto);
+  }
+
+  /** Correction d'une session existante (prix, dates, statut…) par l'admin. */
+  @Patch('formations/sessions/:sessionId')
+  updateFormationSession(
+    @Param('sessionId') sessionId: string,
+    @Body() dto: UpdateSessionAdminDto,
+  ) {
+    return this.admin.updateFormationSession(sessionId, dto);
   }
 
   // ── Demandes de contact (formulaire public) ──────────────────────────────
