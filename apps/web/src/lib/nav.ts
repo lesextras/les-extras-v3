@@ -211,27 +211,10 @@ const establishmentNav: NavSection[] = [
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
     ],
   },
-  {
-    title: 'LEX & pratique',
-    items: [
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
-      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
-    ],
-  },
-  {
-    title: 'Catalogue',
-    items: [
-      { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
-      // Comme l'Édublog : on envoie sur la vitrine publique, pas sur un double
-      // interne. Le catalogue de l'accueil est le plus complet et le mieux
-      // présenté ; entretenir une seconde liste dans le tableau de bord, c'est
-      // entretenir deux vérités et en laisser une vieillir.
-      { label: 'Annuaire des intervenants', href: '/intervenants', icon: Users, hint: 'Parcourez les profils publics des intervenants du réseau' },
-      { label: 'Ateliers', href: '/ateliers', icon: Sparkles, essentiel: true, hint: 'Catalogue d’ateliers à réserver — la mise en relation est gratuite' },
-      { label: 'Formations', href: '/formations', icon: GraduationCap, essentiel: true, hint: 'Catalogue certifiant ADéPA — inscrivez vos salariés' },
-    ],
-  },
+  // « LEX & pratique » et « Catalogue » ont été retirés du menu de gauche
+  // le 4/8/2026 (demande Siham) : ces deux sections vivent désormais en haut
+  // du header, à côté du sélecteur de compte (voir header.tsx), pour rester
+  // accessibles à tout moment sans occuper la sidebar.
   {
     title: 'Mon établissement',
     items: [
