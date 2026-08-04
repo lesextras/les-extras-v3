@@ -29,17 +29,22 @@ export function ActionsPublication({
 
   const etablissement = accountType === "ESTABLISHMENT";
 
-  // Une couleur par nature d'action, pour qu'on la reconnaisse sans lire :
-  //   framboise  = renfort   (l'urgence, la couleur d'alerte de la marque)
-  //   bleu nuit  = atelier   (la prestation posée, préparée à l'avance)
-  //   vert forêt = formation (le certifiant, le durable)
-  // L'ordre, lui, suit le besoin dominant du profil : un établissement cherche
-  // d'abord à couvrir une absence, un intervenant à vendre une prestation.
+  // UNE SEULE ACTION PRINCIPALE.
+  //
+  // Les trois publications avaient chacune leur couleur pleine — framboise,
+  // bleu nuit, vert forêt — alignées et de même poids. Trois boutons qui
+  // crient aussi fort, c'est aucune priorité : la personne qui arrive ne sait
+  // pas par où commencer. On garde donc UN bouton plein, celui du besoin
+  // dominant du profil (couvrir une absence pour un établissement, vendre une
+  // prestation pour un intervenant), et les deux autres passent en retrait.
+  // Rien n'est retiré : tout reste à un clic, mais l'œil sait où aller.
   const renfort = (
     <RenfortModal
       key="renfort"
       accountId={accountId}
-      trigger={<Button variant="primary">Publier un renfort</Button>}
+      trigger={
+        <Button variant={etablissement ? 'primary' : 'outline'}>Publier un renfort</Button>
+      }
     />
   );
   const atelier = (
@@ -47,7 +52,9 @@ export function ActionsPublication({
       key="atelier"
       accountId={accountId}
       categorieInitiale="ATELIER"
-      trigger={<Button variant="nuit">Publier un atelier</Button>}
+      trigger={
+        <Button variant={etablissement ? 'outline' : 'primary'}>Publier un atelier</Button>
+      }
     />
   );
   const formation = (
@@ -55,7 +62,7 @@ export function ActionsPublication({
       key="formation"
       accountId={accountId}
       categorieInitiale="FORMATION"
-      trigger={<Button variant="foret">Publier une formation</Button>}
+      trigger={<Button variant="outline">Publier une formation</Button>}
     />
   );
 
