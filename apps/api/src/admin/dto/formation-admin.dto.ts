@@ -63,3 +63,20 @@ export class CreateSessionAdminDto {
   @IsOptional() @IsString() trainerId?: string;
   @IsOptional() @IsEnum(SessionStatus) status?: SessionStatus;
 }
+
+/**
+ * Correction d'une session existante par l'administration plateforme.
+ * L'admin pouvait créer une session mais jamais la corriger ensuite : une
+ * erreur de prix ou de date publiée restait figée, sauf à être membre du
+ * compte organisme propriétaire — ce que l'administration n'est pas.
+ */
+export class UpdateSessionAdminDto {
+  @IsOptional() @IsString() title?: string;
+  @IsOptional() @IsDateString() startDate?: string;
+  @IsOptional() @IsDateString() endDate?: string;
+  @IsOptional() @IsString() location?: string;
+  @IsOptional() @IsInt() @Min(1) maxSeats?: number;
+  @IsOptional() @IsNumber() priceHt?: number;
+  @IsOptional() @IsString() trainerId?: string;
+  @IsOptional() @IsEnum(SessionStatus) status?: SessionStatus;
+}
