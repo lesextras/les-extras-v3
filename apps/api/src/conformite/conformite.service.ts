@@ -32,19 +32,33 @@ export interface Completeness {
 export class ConformiteService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Pièces obligatoires suivies pour tout intervenant (médico-social). */
+  /**
+   * Pièces OBLIGATOIRES pour intervenir (médico-social).
+   *
+   * Le permis de conduire et l'attestation d'auto-entrepreneur en faisaient
+   * partie. Résultat à l'écran : une art-thérapeute qui ne conduit pas, et un
+   * salarié qui n'est pas auto-entrepreneur, apparaissaient tous deux en
+   * « dossier incomplet » pour des pièces qu'ils n'ont aucune raison de
+   * fournir. Une obligation qui ne s'applique pas à tout le monde n'est pas
+   * une obligation : c'est un reproche adressé au hasard.
+   *
+   * On garde les quatre qui valent pour quiconque intervient auprès de
+   * publics vulnérables et se fait payer : identité, diplôme, casier
+   * judiciaire (bulletin n° 3, art. L. 133-6 CASF) et coordonnées bancaires.
+   * Les deux autres restent suivies, mais selon la situation.
+   */
   static readonly REQUIRED_TYPES: ComplianceDocType[] = [
     ComplianceDocType.IDENTITY,
     ComplianceDocType.DIPLOMA,
     ComplianceDocType.CRIMINAL_RECORD,
-    ComplianceDocType.DRIVING_LICENSE,
     ComplianceDocType.IBAN,
-    ComplianceDocType.AUTOENTREPRENEUR,
   ];
 
-  /** Ordre d'affichage complet (obligatoires puis optionnelles). */
+  /** Ordre d'affichage complet (obligatoires puis selon la situation). */
   static readonly ALL_TYPES: ComplianceDocType[] = [
     ...ConformiteService.REQUIRED_TYPES,
+    ComplianceDocType.DRIVING_LICENSE,
+    ComplianceDocType.AUTOENTREPRENEUR,
     ComplianceDocType.VITALE,
     ComplianceDocType.OTHER,
   ];
