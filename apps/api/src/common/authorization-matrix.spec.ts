@@ -78,8 +78,17 @@ describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
     it('annuler : Direction + Administrateur', () => {
       expect(rolesOf(InvoicesController, 'cancel')).toEqual(ADMINS);
     });
-    it('consulter : tout membre actif', () => {
-      expect(rolesOf(InvoicesController, 'findAll')).toBeUndefined();
+    /**
+     * La LECTURE était ouverte à tout membre actif, et ce test l'entérinait.
+     * Un éducateur rattaché à la MECS pouvait donc lister l'intégralité de la
+     * facturation de sa structure — alors même que le menu lui cachait déjà
+     * l'entrée « Devis & factures » (voir nav.ts). L'interface promettait une
+     * restriction que le serveur n'appliquait pas ; on aligne le serveur.
+     */
+    it('consulter : Direction, Administrateur, Responsable — jamais un simple membre', () => {
+      for (const m of ['findAll', 'summary', 'findOne']) {
+        expect(rolesOf(InvoicesController, m)).toEqual(MANAGER);
+      }
     });
   });
 
