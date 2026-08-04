@@ -11,8 +11,10 @@ const sections = [
     id: 'mentions',
     title: 'Mentions légales',
     body: [
-      'LES EXTRAS est un service édité par l’association ADéPA. Le site met en relation les établissements médico-sociaux et les professionnels indépendants du secteur.',
-      'Pour toute question relative à l’éditeur, à l’hébergement ou à la direction de la publication, contactez-nous à l’adresse de support indiquée dans votre espace.',
+      'LES EXTRAS est un service édité par ADEPA — Association pour le Développement de l’Éducation par l’Animation, association loi 1901, SIRET 820 051 852 00011, dont le siège est situé 7 rue André Malraux, 77000 Melun (adresse administrative : 30 rue Nouvelle, 77190 Dammarie-lès-Lys). Le site met en relation les établissements médico-sociaux et les professionnels indépendants du secteur.',
+      'Directeur de la publication : le/la Président(e) en exercice de l’association ADEPA. Contact : contact@les-extras.fr.',
+      'Organisme de formation enregistré sous le numéro de déclaration d’activité 11 77 01011 77 (préfecture d’Île-de-France) — cet enregistrement ne vaut pas agrément de l’État. Certification Qualiopi au titre des actions de formation.',
+      'Hébergement : Hostinger International Ltd., 61 Lordou Vironos Street, 6023 Larnaca, Chypre.',
     ],
   },
   {
