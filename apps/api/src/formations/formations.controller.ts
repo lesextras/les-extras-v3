@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AccountRole } from '@prisma/client';
+import { AccountRole, GlobalRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
@@ -65,8 +65,12 @@ export class FormationsController {
   @Post()
   @UseGuards(AccountGuard, AccountRolesGuard)
   @AccountRoles(...MANAGER_ROLES)
-  create(@CurrentAccount() account: RequestAccount, @Body() dto: CreateFormationDto) {
-    return this.formations.create(account.id, dto);
+  create(
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+    @Body() dto: CreateFormationDto,
+  ) {
+    return this.formations.create(account.id, dto, user.role === GlobalRole.ADMIN);
   }
 
   /**
@@ -226,9 +230,10 @@ export class FormationsController {
   update(
     @Param('id') id: string,
     @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
     @Body() dto: UpdateFormationDto,
   ) {
-    return this.formations.update(id, account.id, dto);
+    return this.formations.update(id, account.id, dto, user.role === GlobalRole.ADMIN);
   }
 
   @Delete(':id')

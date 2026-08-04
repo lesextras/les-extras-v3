@@ -50,11 +50,15 @@ export class FormationsService {
 
   // --- Programmes ---------------------------------------------------------
 
-  async create(accountId: string, dto: CreateFormationDto) {
+  async create(accountId: string, dto: CreateFormationDto, estAdminPlateforme = false) {
     const type = dto.type ?? FormationType.CERTIFIANTE;
-    // Parcours interne : jamais de CPF ni de certificat.
-    const cpfEligible = type === FormationType.INTERNE ? false : dto.cpfEligible ?? false;
-    const certifying = type === FormationType.INTERNE ? false : dto.certifying ?? false;
+    // Parcours interne : jamais de CPF ni de certificat. Et hors administration
+    // plateforme, on ne se déclare pas soi-même certifiant ni éligible au CPF :
+    // ces mentions engagent la certification Qualiopi d'ADéPA, qui les pose
+    // elle-même à la validation du programme (voir update()).
+    const peutCertifier = type !== FormationType.INTERNE && estAdminPlateforme;
+    const cpfEligible = peutCertifier ? dto.cpfEligible ?? false : false;
+    const certifying = peutCertifier ? dto.certifying ?? false : false;
 
     return this.prisma.formation.create({
       data: {
@@ -221,17 +225,45 @@ export class FormationsService {
     return formation;
   }
 
-  async update(id: string, accountId: string, dto: UpdateFormationDto) {
+  async update(id: string, accountId: string, dto: UpdateFormationDto, estAdminPlateforme = false) {
     const current = await this.assertOwned(id, accountId);
     const type = dto.type ?? current.type;
     const isInternal = type === FormationType.INTERNE;
+
+    /**
+     * PUBLIER UNE FORMATION CERTIFIANTE N'APPARTIENT PAS À SON AUTEUR.
+     *
+     * Une formation certifiante est diffusée sous la certification Qualiopi
+     * d'ADéPA : la mettre en ligne engage l'association, pas seulement celui
+     * qui l'a rédigée. N'importe quel intervenant pouvait jusqu'ici publier
+     * son propre programme — et se déclarer certifiant et éligible au CPF —
+     * sans que personne ne l'ait relu.
+     *
+     * Le programme reste donc en brouillon jusqu'à validation par ADéPA
+     * (back-office : PATCH /admin/formations/:id). Une formation INTERNE
+     * n'est pas concernée : elle ne sort pas de l'établissement qui la porte.
+     */
+    const veutPublier =
+      dto.status === FormationStatus.PUBLISHED && current.status !== FormationStatus.PUBLISHED;
+    if (veutPublier && !isInternal && !estAdminPlateforme) {
+      throw new ForbiddenException(
+        'Une formation certifiante est diffusée sous la certification Qualiopi d’ADéPA : ' +
+          'votre programme reste en brouillon jusqu’à sa validation par l’équipe ADéPA.',
+      );
+    }
+    // Même logique pour les mentions qui engagent la certification : on ne se
+    // déclare pas soi-même certifiant ni éligible au CPF.
+    const peutCertifier = estAdminPlateforme;
+    const cpfDemande = dto.cpfEligible ?? current.cpfEligible;
+    const certifDemande = dto.certifying ?? current.certifying;
+
     return this.prisma.formation.update({
       where: { id },
       data: {
         ...dto,
         // Cohérence des deux parcours, quel que soit le payload.
-        cpfEligible: isInternal ? false : dto.cpfEligible ?? current.cpfEligible,
-        certifying: isInternal ? false : dto.certifying ?? current.certifying,
+        cpfEligible: isInternal ? false : peutCertifier ? cpfDemande : current.cpfEligible,
+        certifying: isInternal ? false : peutCertifier ? certifDemande : current.certifying,
       },
     });
   }
