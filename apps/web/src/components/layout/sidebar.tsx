@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SupportModal } from '@/app/_shared/modals/SupportModal';
 import { ModaleAdherent } from '@/app/_shared/modals/ModaleAdherent';
-import { ChevronDown, LayoutList, Lock } from 'lucide-react';
+import { ChevronDown, LayoutList, Lock, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getNavForRole } from '@/lib/nav';
+import { getNavForRole, compterOutilsAvances } from '@/lib/nav';
 import type { NavRole, AccountRole } from '@/lib/types';
 import { Logo } from '@/components/brand/logo';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +35,9 @@ const STORAGE_PREFIX = 'lx.sidebar.collapsed.';
 /** Clé de persistance du mode d'affichage (essentiel / complet). */
 const MODE_PREFIX = 'lx.sidebar.mode.';
 
+/** Clé de persistance de l'affichage des outils avancés (gestion RH). */
+const AVANCES_PREFIX = 'lx.sidebar.avances.';
+
 /**
  * Navigation latérale, contenu piloté par le rôle (FREELANCE / ESTABLISHMENT /
  * ADMIN). Les sections titrées sont des accordéons dépliables : la section
@@ -57,7 +60,12 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
   // s'adressent à une personne physique — « Proposer mes services » — ne le
   // concernent pas : elles ne s'affichent que pour ses sous-comptes.
   const estTitulaire = roleCompte === 'OWNER';
-  const toutesSections = getNavForRole(role, roleCompte)
+  // Outils avancés (contrats CDD, temps de travail, congés) : masqués par
+  // défaut. Vingt-sept entrées d'emblée, c'est un outil qu'on n'ose pas
+  // ouvrir ; ces modules relèvent d'un autre métier que la mise en relation.
+  const [outilsAvances, setOutilsAvances] = useState(false);
+  const nbAvances = compterOutilsAvances(role, roleCompte);
+  const toutesSections = getNavForRole(role, roleCompte, { outilsAvances })
     .map((s) => ({
       ...s,
       items: s.items.filter((it) => !(it.sousComptesSeulement && estTitulaire)),
@@ -69,6 +77,26 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
   // travaille dans l'outil tous les jours : mode complet par défaut pour lui.
   const [modeEssentiel, setModeEssentiel] = useState(false);
   const [modeCharge, setModeCharge] = useState(false);
+
+  useEffect(() => {
+    try {
+      setOutilsAvances(window.localStorage.getItem(AVANCES_PREFIX + role) === 'oui');
+    } catch {
+      /* stockage indisponible : les outils avancés restent masqués */
+    }
+  }, [role]);
+
+  function basculerAvances() {
+    setOutilsAvances((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(AVANCES_PREFIX + role, next ? 'oui' : 'non');
+      } catch {
+        /* stockage indisponible : le choix vaut pour la session */
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     let valeur = role !== 'ADMIN';
@@ -285,6 +313,22 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
               : 'Vue essentielle'}
           </span>
         </button>
+
+        {nbAvances > 0 || outilsAvances ? (
+          <button
+            type="button"
+            onClick={basculerAvances}
+            aria-pressed={outilsAvances}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Wrench aria-hidden="true" className="size-3.5 shrink-0" />
+            <span className="truncate text-left">
+              {outilsAvances
+                ? 'Masquer les outils avancés'
+                : `Outils avancés (contrats, temps de travail)`}
+            </span>
+          </button>
+        ) : null}
       </div>
 
       <div className="p-4 pt-2">

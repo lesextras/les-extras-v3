@@ -3,8 +3,10 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import {
   BookingStatus,
   MissionStatus,
@@ -23,6 +25,34 @@ import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { QueryMissionsDto } from './dto/query-missions.dto';
 
+/**
+ * DIFFUSION CIBLÉE — les trois vagues de sollicitation.
+ *
+ * Ce réglage est le cœur du dispositif de couverture. Le principe, vérifié
+ * sur les places de marché de remplacement qui ont décollé : mieux vaut
+ * solliciter huit personnes qui se sentent attendues que cent qui se sentent
+ * noyées. On n'élargit que si le besoin reste non pourvu — la portée totale
+ * est identique, mais la probabilité qu'un intervenant réponde est bien plus
+ * élevée sur la première vague.
+ *
+ * `apresMinutes` = délai d'attente avant de déclencher cette vague, compté
+ * depuis la précédente. Une mission urgente divise ces délais par trois :
+ * quand le renfort est pour demain, on ne peut pas attendre huit heures.
+ */
+export const VAGUES = [
+  { taille: 8, seuil: 60, apresMinutes: 0 },
+  { taille: 15, seuil: 50, apresMinutes: 180 },
+  { taille: 100, seuil: 45, apresMinutes: 480 },
+] as const;
+
+/**
+ * « Mission garantie » — délai après la dernière vague au terme duquel une
+ * mission toujours non pourvue déclenche une relance HUMAINE : l'association
+ * est alertée et l'établissement prévenu que quelqu'un reprend la main.
+ * C'est l'engagement qui transforme une annonce incertaine en promesse.
+ */
+export const DELAI_ALERTE_NON_POURVUE_MIN = 720;
+
 /** Ordre de la diffusion en cascade : SALARIES -> RESERVED -> PUBLIC. */
 const CASCADE: MissionVisibility[] = [
   MissionVisibility.SALARIES,
@@ -32,6 +62,8 @@ const CASCADE: MissionVisibility[] = [
 
 @Injectable()
 export class MissionsService {
+  private readonly logger = new Logger(MissionsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
@@ -515,17 +547,40 @@ export class MissionsService {
       if (autorises.size === 0) return 0; // pas de vivier : le planificateur élargira.
     }
 
-    const targets = candidates
-      .filter(
-        (c: any) =>
-          c.available &&
-          !c.hasConflict &&
-          c.total >= 45 &&
-          c.email &&
-          !exclus.has(c.accountId) &&
-          (!autorises || autorises.has(c.accountId)),
-      )
-      .slice(0, 100);
+    const eligibles = candidates.filter(
+      (c: any) =>
+        c.available &&
+        !c.hasConflict &&
+        c.email &&
+        !exclus.has(c.accountId) &&
+        (!autorises || autorises.has(c.accountId)),
+    );
+
+    // ── Diffusion CIBLÉE, par vagues ────────────────────────────────────────
+    // Auparavant : un envoi unique aux 100 premiers profils au-dessus de 45.
+    // Le défaut n'était pas la portée mais la dilution — sollicité en même
+    // temps que quatre-vingt-dix-neuf autres, chacun suppose qu'un collègue
+    // prendra la mission, et le taux d'acceptation s'effondre. On sollicite
+    // désormais peu de monde à la fois, en élargissant seulement si le besoin
+    // reste non pourvu (voir VAGUES et le planificateur `avancerLesVagues`).
+    const vague = Math.min(Math.max(mission.diffusionVague + 1, 1), VAGUES.length);
+    const { taille, seuil } = VAGUES[vague - 1];
+    const dejaSollicites = VAGUES.slice(0, vague - 1).reduce((n, v) => n + v.taille, 0);
+
+    const targets = eligibles
+      .filter((c: any) => c.total >= seuil)
+      .slice(dejaSollicites, dejaSollicites + taille);
+
+    if (targets.length === 0) {
+      // Personne de nouveau à ce palier : on note quand même la vague pour
+      // que le planificateur passe au suivant plutôt que de boucler.
+      await this.prisma.reliefMission.update({
+        where: { id: missionId },
+        data: { diffusionVague: vague, derniereVagueAt: new Date() },
+      });
+      return 0;
+    }
+
     await Promise.allSettled(
       targets.map((c: any) =>
         this.mail.sendMissionMatch(c.email, {
@@ -536,8 +591,18 @@ export class MissionsService {
           rate: mission.hourlyRate ? String(mission.hourlyRate) : null,
           emergency: mission.emergency,
           missionId,
+          retenus: targets.length,
+          vague,
         }),
       ),
+    );
+
+    await this.prisma.reliefMission.update({
+      where: { id: missionId },
+      data: { diffusionVague: vague, derniereVagueAt: new Date() },
+    });
+    this.logger.log(
+      `Mission ${missionId} — vague ${vague}/${VAGUES.length} : ${targets.length} intervenant(s) sollicité(s) (seuil ${seuil}).`,
     );
     return targets.length;
   }
@@ -639,6 +704,108 @@ export class MissionsService {
     }
 
     return { booking, contractUrl };
+  }
+
+  /**
+   * PLANIFICATEUR DE DIFFUSION — toutes les 15 minutes.
+   *
+   * Fait vivre le dispositif ciblé : il déclenche la vague suivante des
+   * missions publiées qui n'ont pas encore trouvé preneur, puis, une fois
+   * les vagues épuisées, honore l'engagement « mission garantie » en
+   * alertant l'association et en prévenant l'établissement.
+   *
+   * Une mission urgente avance trois fois plus vite : quand le renfort est
+   * pour le lendemain, attendre huit heures avant d'élargir n'a pas de sens.
+   */
+  @Cron('*/15 * * * *', { name: 'missions-diffusion-ciblee' })
+  async avancerLesVagues() {
+    const enCours = await this.prisma.reliefMission.findMany({
+      where: {
+        status: MissionStatus.PUBLISHED,
+        visibility: { not: MissionVisibility.SALARIES },
+        derniereVagueAt: { not: null },
+      },
+      select: {
+        id: true,
+        accountId: true,
+        title: true,
+        city: true,
+        startDate: true,
+        emergency: true,
+        diffusionVague: true,
+        derniereVagueAt: true,
+        alerteNonPourvueAt: true,
+        account: { select: { name: true, owner: { select: { email: true } } } },
+      },
+      take: 200,
+    });
+
+    const maintenant = Date.now();
+    let vaguesLancees = 0;
+    let alertes = 0;
+
+    for (const m of enCours) {
+      const facteur = m.emergency ? 3 : 1; // l'urgence comprime les délais
+      const ecouleMin = (maintenant - m.derniereVagueAt!.getTime()) / 60_000;
+
+      try {
+        // ── Vague suivante, s'il en reste une ────────────────────────────
+        if (m.diffusionVague < VAGUES.length) {
+          const attendu = VAGUES[m.diffusionVague].apresMinutes / facteur;
+          if (ecouleMin >= attendu) {
+            const n = await this.broadcastToMatched(m.id, m.accountId);
+            if (n > 0) vaguesLancees += 1;
+          }
+          continue;
+        }
+
+        // ── Vagues épuisées : l'engagement « mission garantie » ──────────
+        if (m.alerteNonPourvueAt) continue;
+        if (ecouleMin < DELAI_ALERTE_NON_POURVUE_MIN / facteur) continue;
+
+        const sollicites = VAGUES.reduce((n, v) => n + v.taille, 0);
+        const destinataires: Promise<unknown>[] = [];
+        const adminEmail = process.env.MAIL_ADMIN ?? process.env.MAIL_FROM_ADDRESS;
+        if (adminEmail) {
+          destinataires.push(
+            this.mail.sendMissionNonPourvue(adminEmail, {
+              title: m.title,
+              city: m.city,
+              date: m.startDate,
+              missionId: m.id,
+              sollicites,
+              pourAdmin: true,
+            }),
+          );
+        }
+        if (m.account?.owner?.email) {
+          destinataires.push(
+            this.mail.sendMissionNonPourvue(m.account.owner.email, {
+              title: m.title,
+              city: m.city,
+              date: m.startDate,
+              missionId: m.id,
+              sollicites,
+            }),
+          );
+        }
+        await Promise.allSettled(destinataires);
+        await this.prisma.reliefMission.update({
+          where: { id: m.id },
+          data: { alerteNonPourvueAt: new Date() },
+        });
+        alertes += 1;
+      } catch (err) {
+        // Une mission en erreur ne doit pas bloquer la tournée des autres.
+        this.logger.error(`Diffusion impossible pour la mission ${m.id}: ${err}`);
+      }
+    }
+
+    if (vaguesLancees || alertes) {
+      this.logger.log(
+        `Diffusion ciblée : ${vaguesLancees} vague(s) lancée(s), ${alertes} alerte(s) « mission garantie ».`,
+      );
+    }
   }
 
   /** Élargit la diffusion d'un cran : SALARIES -> RESERVED -> PUBLIC. */

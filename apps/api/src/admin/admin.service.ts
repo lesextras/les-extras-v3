@@ -1101,14 +1101,41 @@ export class AdminService {
     const vues = services.reduce((t, s) => t + (s.views ?? 0), 0);
     const demandes = services.reduce((t, s) => t + (s.requestsCount ?? 0), 0);
 
-    // Objectif de campagne : CA encaissé (réservations confirmées + factures payées).
+    // Objectif de campagne : CA encaissé (réservations confirmées + factures
+    // payées) — DONNÉES DE DÉMONSTRATION EXCLUES.
+    //
+    // Le cockpit agrégeait jusqu'ici les comptes de démonstration et la
+    // facture du jeu d'essai : on pilotait l'objectif de l'association sur un
+    // chiffre partiellement fictif, ce qui est la pire base de décision. Les
+    // comptes de démo se reconnaissent à leur nom ou à l'adresse de leur
+    // propriétaire ; ce filtre disparaîtra de lui-même quand ces comptes
+    // auront été supprimés.
+    const comptesDemo = await this.prisma.account.findMany({
+      where: {
+        OR: [
+          { name: { contains: '(démo)', mode: 'insensitive' } },
+          { name: { contains: '(demo)', mode: 'insensitive' } },
+          { name: { startsWith: 'QA ' } },
+          { name: { startsWith: 'Verif ' } },
+          { name: { startsWith: 'Audit ' } },
+          { owner: { email: { endsWith: '@example.com' } } },
+          { owner: { email: { endsWith: '@mailinator.com' } } },
+        ],
+      },
+      select: { id: true },
+    });
+    const idsDemo = comptesDemo.map((c) => c.id);
+    const horsDemo = idsDemo.length ? { accountId: { notIn: idsDemo } } : {};
+
     const [reservationsPayees, facturesPayees] = await Promise.all([
       this.prisma.booking.findMany({
-        where: { status: { in: ['CONFIRMED', 'COMPLETED'] } },
+        where: { status: { in: ['CONFIRMED', 'COMPLETED'] }, ...horsDemo },
         select: { totalAmount: true, createdAt: true },
       }),
       this.prisma.invoice.findMany({
-        where: { status: 'PAID' },
+        // La série FAC- est celle du jeu de démonstration ; les factures
+        // réelles sont numérotées INV- (séquence légale continue).
+        where: { status: 'PAID', number: { startsWith: 'INV-' }, ...horsDemo },
         select: { amount: true, issuedAt: true, createdAt: true },
       }),
     ]);
@@ -1134,6 +1161,8 @@ export class AdminService {
       rythmeHebdo: Math.ceil(Math.max(0, OBJECTIF - caEncaisse) / semainesRestantes),
       echeance: echeance.toISOString(),
       detail: { reservations: Math.round(caReservations), factures: Math.round(caFactures) },
+      /// Nombre de comptes de démonstration exclus du calcul (0 = base saine).
+      comptesDemoExclus: idsDemo.length,
     };
 
     // Attribution : d'où viennent les demandes (mécanisme Vesk).

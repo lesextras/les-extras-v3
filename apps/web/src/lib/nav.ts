@@ -67,6 +67,18 @@ export interface NavItem {
    * structure. Ce ne sont pas des informations d'équipe.
    */
   roles?: AccountRole[];
+  /**
+   * Module AVANCÉ, masqué par défaut.
+   *
+   * Vingt-sept entrées proposées à un établissement qui vient publier un
+   * remplacement, c'est un outil qu'on n'ose pas ouvrir. Les modules de
+   * gestion RH (contrats CDD, annualisation du temps de travail, compteurs de
+   * congés) sont aboutis mais relèvent d'un autre métier que la mise en
+   * relation, et engagent lourdement en droit du travail. Ils restent
+   * accessibles — par leur URL, et via le réglage « Afficher les outils
+   * avancés » — mais ne s'imposent plus à qui n'en a pas besoin.
+   */
+  avance?: boolean;
 }
 
 export interface NavSection {
@@ -175,7 +187,7 @@ const establishmentNav: NavSection[] = [
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
       // calcule — essai, précarité, carence — et refuse de transmettre un
       // contrat auquel il manque une mention obligatoire.
-      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' },
+      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' , avance: true },
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true, hint: 'Échanges avec les intervenants' },
     ],
   },
@@ -191,11 +203,11 @@ const establishmentNav: NavSection[] = [
       // Les uns sont salariés, les autres viennent en renfort.
       { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
       { label: 'Conformité', href: '/dashboard/conformite', icon: ShieldAlert, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires qui manquent ou arrivent à échéance : identité, diplôme, casier judiciaire, permis' },
-      { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' },
+      { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' , avance: true },
       // Les regles de la convention, reportees une fois. Sans elles, les
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
       // juridiquement exact mais rarement ce que veut l'etablissement.
-      { label: 'Temps de travail', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Nuit, dimanche, jours fériés, heures supplémentaires, annualisation : les règles de votre convention, appliquées à chaque chiffrage' },
+      { label: 'Temps de travail', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Nuit, dimanche, jours fériés, heures supplémentaires, annualisation : les règles de votre convention, appliquées à chaque chiffrage' , avance: true },
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
     ],
   },
@@ -316,18 +328,41 @@ const adminNav: NavSection[] = [
  * d'autorisation, ou pire, des informations qui ne le regardaient pas.
  * Une entrée sans `roles` reste visible par tout le monde.
  */
-export function getNavForRole(role: NavRole, roleCompte?: AccountRole): NavSection[] {
+export function getNavForRole(
+  role: NavRole,
+  roleCompte?: AccountRole,
+  options?: { outilsAvances?: boolean },
+): NavSection[] {
   const base =
     role === 'ADMIN' ? adminNav : role === 'ESTABLISHMENT' ? establishmentNav : freelanceNav;
 
-  // L'administration de la plateforme n'a pas de rôle « dans un compte » :
-  // on ne lui retire rien.
-  if (role === 'ADMIN' || !roleCompte) return base;
+  // Les outils avancés (gestion RH) restent masqués tant qu'on ne les a pas
+  // demandés — y compris pour l'administration, qui a déjà son propre menu.
+  const sansAvances = (sections: NavSection[]) =>
+    options?.outilsAvances
+      ? sections
+      : sections
+          .map((s) => ({ ...s, items: s.items.filter((i) => !i.avance) }))
+          .filter((s) => s.items.length > 0);
 
-  return base
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) => !item.roles || item.roles.includes(roleCompte)),
-    }))
-    .filter((section) => section.items.length > 0);
+  // L'administration de la plateforme n'a pas de rôle « dans un compte » :
+  // on ne lui retire rien d'autre.
+  if (role === 'ADMIN' || !roleCompte) return sansAvances(base);
+
+  return sansAvances(
+    base
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => !item.roles || item.roles.includes(roleCompte)),
+      }))
+      .filter((section) => section.items.length > 0),
+  );
+}
+
+/** Nombre d'entrées avancées masquées, pour le libellé du réglage. */
+export function compterOutilsAvances(role: NavRole, roleCompte?: AccountRole): number {
+  const complet = getNavForRole(role, roleCompte, { outilsAvances: true });
+  const reduit = getNavForRole(role, roleCompte);
+  const total = (s: NavSection[]) => s.reduce((n, sec) => n + sec.items.length, 0);
+  return total(complet) - total(reduit);
 }

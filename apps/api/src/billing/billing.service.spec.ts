@@ -1,6 +1,6 @@
 import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { createHmac } from 'crypto';
-import { BillingService } from './billing.service';
+import { BillingService, SUBSCRIPTION_PLANS, ESTABLISHMENT_PLAN } from './billing.service';
 
 /**
  * LA FACTURATION EST LE SEUL MODULE QUI MANIPULE DE L'ARGENT RÉEL,
@@ -47,7 +47,15 @@ function service(secretConfigure: string | null = SECRET) {
       clef === 'STRIPE_WEBHOOK_SECRET' ? (secretConfigure ?? undefined) : 'sk_test_x',
     ),
   } as never;
-  return { billing: new BillingService(prisma, config), subscription, invoice };
+  // La dotation de bienvenue part dès l'activation de l'abonnement : on la
+  // capture pour vérifier que l'abonné n'attend pas le 1er du mois.
+  const credits = { amorcerDotation: jest.fn().mockResolvedValue(undefined) };
+  return {
+    billing: new BillingService(prisma, config, credits as never),
+    subscription,
+    invoice,
+    credits,
+  };
 }
 
 const sessionAbonnement = (metadata: Record<string, string>, payment_status = 'paid') => ({
@@ -249,5 +257,31 @@ describe('BillingService — le webhook Stripe est une porte sur Internet', () =
       expect(subscription.updateMany).not.toHaveBeenCalled();
       expect(invoice.updateMany).not.toHaveBeenCalled();
     });
+  });
+});
+
+/**
+ * Personne ne doit payer un abonnement puis attendre le 1er du mois pour
+ * pouvoir s'en servir : l'activation crédite immédiatement l'allocation du
+ * plan. La dotation étant idempotente dans le mois, le cron mensuel ne la
+ * servira pas une seconde fois.
+ */
+describe('BillingService — dotation à la souscription', () => {
+  it("crédite l'allocation du plan dès l'activation de l'abonnement", async () => {
+    const { billing, credits } = service();
+    const { brut, entete } = signe(
+      sessionAbonnement({ kind: 'subscription', accountId: 'acc_1', planId: 'plan-essentiel' }),
+    );
+    await billing.handleWebhook(brut, entete);
+    expect(credits.amorcerDotation).toHaveBeenCalledWith('acc_1', SUBSCRIPTION_PLANS[0].monthlyCredits);
+  });
+
+  it("dote l'établissement au niveau de l'allocation d'équipe", async () => {
+    const { billing, credits } = service();
+    const { brut, entete } = signe(
+      sessionAbonnement({ kind: 'subscription', accountId: 'acc_1', planId: ESTABLISHMENT_PLAN.id }),
+    );
+    await billing.handleWebhook(brut, entete);
+    expect(credits.amorcerDotation).toHaveBeenCalledWith('acc_1', ESTABLISHMENT_PLAN.monthlyCredits);
   });
 });

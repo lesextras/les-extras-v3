@@ -1,7 +1,12 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
-import { SUBSCRIPTION_PLANS, TRIAL_DAYS, TRIAL_DAILY_CREDITS } from './billing.service';
+import {
+  SUBSCRIPTION_PLANS,
+  ESTABLISHMENT_PLAN,
+  FREE_MONTHLY_CREDITS,
+  ROLLOVER_MONTHS,
+} from './billing.service';
 
 /**
  * Crédits LEX — la monnaie de l'assistant IA, et d'elle seule.
@@ -57,58 +62,41 @@ export class CreditsService {
       /// Accès illimité accordé manuellement (compte partenaire, test…).
       illimite: account.isMember,
       consomme30Jours: Math.abs(consomme30j._sum.delta ?? 0),
-      /// Essai Découverte : null = jamais réclamé ; sinon sa date de fin.
+      /// Dotation gratuite mensuelle, désormais permanente et sans date de fin.
+      offreGratuite: { mensuel: FREE_MONTHLY_CREDITS, permanente: true },
+      /// Héritage : ancien essai de 7 jours, conservé pour l'historique des comptes concernés.
       essai: account.lexTrialEndsAt
-        ? {
-            finLe: account.lexTrialEndsAt,
-            actif: account.lexTrialEndsAt > maintenant,
-          }
+        ? { finLe: account.lexTrialEndsAt, actif: account.lexTrialEndsAt > maintenant }
         : null,
       mouvements,
     };
   }
 
   /**
-   * Réclame l'essai Découverte : GRATUIT, UNE SEULE FOIS par compte,
-   * TRIAL_DAYS jours de recharge quotidienne. Le solde est immédiatement
-   * remis au niveau de l'allocation, puis chaque matin par le cron, jusqu'à
-   * la date de fin. La condition `lexTrialEndsAt: null` DANS l'update rend
-   * la réclamation idempotente : deux clics simultanés n'en accordent qu'un.
+   * Active l'offre GRATUITE PERMANENTE du compte.
+   *
+   * L'essai de 7 jours a été supprimé : le cycle de production d'écrits en
+   * médico-social est mensuel à trimestriel, et une semaine ne suffisait pas
+   * à rencontrer un seul cas d'usage à forte valeur. Le compte reçoit
+   * désormais FREE_MONTHLY_CREDITS générations immédiatement, puis chaque
+   * mois, sans date de fin et sans carte bancaire.
+   *
+   * Idempotent : appelable plusieurs fois, la dotation du mois n'est
+   * accordée qu'une fois (voir crediterJusquA).
    */
+  async activerOffreGratuite(accountId: string) {
+    await this.crediterJusquA(accountId, FREE_MONTHLY_CREDITS);
+    const compte = await this.prisma.account.findUniqueOrThrow({
+      where: { id: accountId },
+      select: { credits: true },
+    });
+    this.logger.log(`Offre gratuite LEX activée pour ${accountId} (solde ${compte.credits}).`);
+    return { credits: compte.credits, mensuel: FREE_MONTHLY_CREDITS };
+  }
+
+  /** @deprecated Conservé le temps que les clients appelants soient migrés. */
   async reclamerEssai(accountId: string) {
-    const finLe = new Date(Date.now() + TRIAL_DAYS * 86_400_000);
-    const accorde = await this.prisma.account.updateMany({
-      where: { id: accountId, lexTrialEndsAt: null },
-      data: { lexTrialEndsAt: finLe },
-    });
-    if (accorde.count === 0) {
-      throw new BadRequestException(
-        "L'essai Découverte a déjà été utilisé sur ce compte — il ne se réclame qu'une fois.",
-      );
-    }
-    // Première ration tout de suite : personne n'attend demain matin pour essayer.
-    await this.prisma.$transaction(async (tx) => {
-      const account = await tx.account.findUniqueOrThrow({
-        where: { id: accountId },
-        select: { credits: true },
-      });
-      if (account.credits >= TRIAL_DAILY_CREDITS) return;
-      const delta = TRIAL_DAILY_CREDITS - account.credits;
-      await tx.account.update({
-        where: { id: accountId },
-        data: { credits: TRIAL_DAILY_CREDITS },
-      });
-      await tx.creditLedger.create({
-        data: {
-          accountId,
-          delta,
-          balanceAfter: TRIAL_DAILY_CREDITS,
-          reason: 'ESSAI_DECOUVERTE',
-        },
-      });
-    });
-    this.logger.log(`Essai Découverte accordé à ${accountId} jusqu'au ${finLe.toISOString()}`);
-    return { finLe, credits: TRIAL_DAILY_CREDITS };
+    return this.activerOffreGratuite(accountId);
   }
 
   /**
@@ -124,7 +112,7 @@ export class CreditsService {
       });
       if (debite.count === 0) {
         throw new ForbiddenException(
-          'Votre solde de crédits LEX est épuisé. Rechargez des crédits, ou attendez la recharge quotidienne si vous avez un abonnement.',
+          `Vous avez utilisé toutes vos générations LEX pour ce mois. Votre dotation gratuite de ${FREE_MONTHLY_CREDITS} générations revient le 1er du mois prochain ; un abonnement ou un pack vous rend la main tout de suite.`,
         );
       }
       const account = await tx.account.findUniqueOrThrow({
@@ -190,72 +178,101 @@ export class CreditsService {
   }
 
   /**
-   * Recharge quotidienne des abonnés — 6 h, heure de Paris (le serveur
-   * tourne en UTC : 5 h l'hiver, 4 h l'été ; l'écart est sans enjeu).
+   * Dotation MENSUELLE — le 1er du mois à 5 h UTC.
    *
-   * Le principe est celui d'un forfait, pas d'une tirelire : chaque jour,
-   * le solde d'un abonné actif est REMIS AU NIVEAU de son allocation
-   * quotidienne s'il est en dessous — jamais réduit s'il est au-dessus
-   * (des crédits achetés en pack peuvent dépasser l'allocation, ils ne
-   * s'évaporent pas). Pas de cumul : ne pas utiliser LEX un jour ne donne
-   * pas double ration le lendemain.
+   * Remplace l'ancienne recharge quotidienne, abandonnée après benchmark :
+   * un compteur journalier non reportable est inutilisable exactement les
+   * jours où l'outil a le plus de valeur (période de bilans, de synthèses,
+   * de rapports avant audience) et gaspillé les autres jours. La charge
+   * d'écrits en MECS, IME ou EHPAD est massée, pas régulière.
+   *
+   * Trois populations sont servies, et chacune reçoit le plus généreux de
+   * ses droits :
+   *   • tout compte actif → l'offre GRATUITE permanente ;
+   *   • les abonnés individuels → l'allocation de leur plan ;
+   *   • les établissements abonnés → l'allocation partagée de l'équipe.
+   *
+   * Le crédit s'AJOUTE au solde (report), plafonné à ROLLOVER_MONTHS fois
+   * l'allocation : le report couvre les pics sans devenir une tirelire.
    */
-  @Cron('0 5 * * *', { name: 'lex-recharge-quotidienne' })
-  async rechargeQuotidienne() {
-    // Deux populations reçoivent la ration du matin : les abonnés actifs
-    // (au niveau de leur plan) et les comptes en essai Découverte (au
-    // niveau de l'essai). Un abonné en essai reçoit le plus haut des deux.
-    const [abonnements, essais] = await Promise.all([
+  @Cron('0 5 1 * *', { name: 'lex-dotation-mensuelle' })
+  async dotationMensuelle() {
+    const [abonnements, comptes] = await Promise.all([
       this.prisma.subscription.findMany({
         where: { status: 'active' },
         select: { accountId: true, planId: true },
       }),
-      this.prisma.account.findMany({
-        where: { lexTrialEndsAt: { gt: new Date() } },
-        select: { id: true },
-      }),
+      // L'offre gratuite est un droit d'usage, pas une récompense : tout
+      // compte non banni y a droit, y compris celui qui n'a jamais rien payé.
+      this.prisma.account.findMany({ select: { id: true } }),
     ]);
 
     const allocations = new Map<string, number>();
+    for (const compte of comptes) allocations.set(compte.id, FREE_MONTHLY_CREDITS);
     for (const abo of abonnements) {
-      const plan = SUBSCRIPTION_PLANS.find((p) => p.id === abo.planId);
-      if (plan && plan.dailyCredits > 0) allocations.set(abo.accountId, plan.dailyCredits);
-    }
-    for (const compte of essais) {
-      allocations.set(compte.id, Math.max(allocations.get(compte.id) ?? 0, TRIAL_DAILY_CREDITS));
+      const plan =
+        SUBSCRIPTION_PLANS.find((p) => p.id === abo.planId) ??
+        (abo.planId === ESTABLISHMENT_PLAN.id ? ESTABLISHMENT_PLAN : null);
+      if (!plan) continue;
+      allocations.set(
+        abo.accountId,
+        Math.max(allocations.get(abo.accountId) ?? 0, plan.monthlyCredits),
+      );
     }
 
-    let recharges = 0;
+    let dotes = 0;
     for (const [accountId, allocation] of allocations) {
       try {
-        await this.prisma.$transaction(async (tx) => {
-          const account = await tx.account.findUnique({
-            where: { id: accountId },
-            select: { credits: true },
-          });
-          if (!account || account.credits >= allocation) return;
-          const delta = allocation - account.credits;
-          await tx.account.update({
-            where: { id: accountId },
-            data: { credits: allocation },
-          });
-          await tx.creditLedger.create({
-            data: {
-              accountId,
-              delta,
-              balanceAfter: allocation,
-              reason: 'RECHARGE_QUOTIDIENNE',
-            },
-          });
-          recharges += 1;
-        });
+        await this.crediterJusquA(accountId, allocation);
+        dotes += 1;
       } catch (err) {
-        // Un compte en erreur ne doit pas priver les autres de leur recharge.
-        this.logger.error(`Recharge impossible pour ${accountId}: ${err}`);
+        // Un compte en erreur ne doit pas priver les autres de leur dotation.
+        this.logger.error(`Dotation impossible pour ${accountId}: ${err}`);
       }
     }
-    if (recharges > 0) {
-      this.logger.log(`Recharge quotidienne LEX : ${recharges} compte(s) rechargé(s).`);
-    }
+    this.logger.log(`Dotation mensuelle LEX : ${dotes} compte(s) servi(s).`);
+  }
+
+  /**
+   * Ajoute l'allocation du mois au solde, dans la limite du report autorisé.
+   * Idempotent dans le mois : une seconde exécution ne double pas la dotation
+   * (on vérifie l'absence d'écriture DOTATION_MENSUELLE depuis le 1er).
+   */
+  private async crediterJusquA(accountId: string, allocation: number) {
+    const debutDuMois = new Date();
+    debutDuMois.setUTCDate(1);
+    debutDuMois.setUTCHours(0, 0, 0, 0);
+
+    await this.prisma.$transaction(async (tx) => {
+      const dejaServi = await tx.creditLedger.findFirst({
+        where: { accountId, reason: 'DOTATION_MENSUELLE', createdAt: { gte: debutDuMois } },
+        select: { id: true },
+      });
+      if (dejaServi) return;
+
+      const account = await tx.account.findUnique({
+        where: { id: accountId },
+        select: { credits: true },
+      });
+      if (!account) return;
+
+      const plafond = allocation * ROLLOVER_MONTHS;
+      const cible = Math.min(account.credits + allocation, Math.max(plafond, account.credits));
+      const delta = cible - account.credits;
+      if (delta <= 0) return;
+
+      await tx.account.update({ where: { id: accountId }, data: { credits: cible } });
+      await tx.creditLedger.create({
+        data: { accountId, delta, balanceAfter: cible, reason: 'DOTATION_MENSUELLE' },
+      });
+    });
+  }
+
+  /**
+   * Amorce la dotation d'un compte qui vient d'être créé ou de s'abonner,
+   * sans attendre le 1er du mois — personne ne doit patienter pour essayer.
+   */
+  async amorcerDotation(accountId: string, allocation = FREE_MONTHLY_CREDITS) {
+    await this.crediterJusquA(accountId, allocation);
   }
 }

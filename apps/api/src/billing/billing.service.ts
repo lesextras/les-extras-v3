@@ -9,54 +9,105 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreditsService } from './credits.service';
 
 
 /**
  * Le modèle économique, en une phrase : la mise en relation et l'aide à la
  * contractualisation (renforts, ateliers) sont GRATUITES pour les
- * établissements comme pour les intervenants ; les formations Qualiopi se
- * facturent au devis par l'association ; seul LEX, l'assistant IA, se paie —
- * en crédits. Un crédit = une génération.
+ * intervenants comme pour les établissements ; les formations Qualiopi se
+ * facturent au devis par l'association ; LEX, l'assistant IA, fonctionne au
+ * quota mensuel ; et l'établissement peut s'abonner pour outiller toute son
+ * équipe.
  *
- * Packs de crédits (paiement en une fois, Stripe Checkout mode=payment).
- * Montants en centimes d'euro — AJUSTABLES avant mise en production réelle,
- * repris de la grille historique de la plateforme.
+ * ── Refonte du 3 août 2026, après benchmark international ────────────────
+ * Trois enseignements ont dicté cette grille :
+ *   1. Le prix de référence de l'IA générative est ~20 €/mois en illimité
+ *      (ChatGPT, Claude). Vendre plus cher pour MOINS d'usage est intenable :
+ *      l'abonnement individuel passe de 49 € à 19 €.
+ *   2. Le compteur JOURNALIER est le pire mécanisme pour ce métier : la
+ *      charge d'écrits est massée (bilans, synthèses, rapports avant
+ *      audience). On passe à un quota MENSUEL REPORTABLE, calibré pour que
+ *      la quasi-totalité des utilisateurs ne voie jamais le plafond.
+ *   3. Aucun marketplace viable ne facture le côté offre. L'établissement
+ *      devient le payeur principal (ESTABLISHMENT_PLAN).
  */
-// « Pack Découverte » désigne désormais l'ESSAI GRATUIT de 7 jours (voir
-// TRIAL_DAYS ci-dessous) : les packs payants portent des noms descriptifs.
+
+/**
+ * Offre GRATUITE PERMANENTE — remplace l'essai de 7 jours.
+ * Le cycle de production d'écrits en médico-social est mensuel à
+ * trimestriel : sept jours ne suffisaient pas à rencontrer un seul cas
+ * d'usage à forte valeur. Tout compte reçoit désormais cette dotation
+ * chaque mois, sans carte bancaire et sans date de fin.
+ */
+export const FREE_MONTHLY_CREDITS = 15;
+
+/**
+ * Packs de crédits (Stripe Checkout mode=payment), pour qui ne veut pas
+ * d'abonnement. Réalignés sur le tarif de l'abonnement : le crédit y reste
+ * plus cher (c'est le prix du sans-engagement) mais dans un rapport de 3 à 4,
+ * et non de 40 comme dans la grille historique — un écart que le premier
+ * prospect faisant la division n'aurait pas pardonné.
+ */
 export const CREDIT_PACKS = [
-  { id: 'pack-10', label: 'Pack 10 crédits', credits: 10, amountCents: 9000 },
-  { id: 'pack-25', label: 'Pack 25 crédits', credits: 25, amountCents: 20000 },
-  { id: 'pack-60', label: 'Pack 60 crédits', credits: 60, amountCents: 42000 },
+  { id: 'pack-25', label: 'Pack 25 générations', credits: 25, amountCents: 900 },
+  { id: 'pack-60', label: 'Pack 60 générations', credits: 60, amountCents: 1900 },
+  { id: 'pack-150', label: 'Pack 150 générations', credits: 150, amountCents: 3900 },
 ] as const;
 
 /**
- * Abonnements LEX (Stripe Checkout mode=subscription). Un abonnement actif
- * remet chaque jour le solde de crédits au niveau de `dailyCredits` (recharge
- * quotidienne, sans cumul — voir CreditsService).
- * Montants DÉFINITIFS, fixés par la fondatrice le 3 août 2026.
+ * Abonnements LEX individuels (Stripe Checkout mode=subscription).
+ * `monthlyCredits` est crédité au compte chaque mois et REPORTABLE : le
+ * solde s'accumule jusqu'à ROLLOVER_MONTHS fois l'allocation, ce qui couvre
+ * exactement les pics de bilans sans transformer le quota en tirelire.
  */
 export const SUBSCRIPTION_PLANS = [
   {
     id: 'plan-essentiel',
     label: 'LEX',
-    amountCents: 4900,
-    dailyCredits: 10,
-    perks: '10 crédits rechargés chaque jour — écriture, activités, remplissage de fiches, GAPiste',
+    amountCents: 1900,
+    monthlyCredits: 200,
+    perks: '200 générations par mois, reportables — écriture, activités, fiches, GAPiste',
   },
   {
     id: 'plan-pro',
     label: 'LEX Pro',
-    amountCents: 14000,
-    dailyCredits: 30,
-    perks: 'Recharge quotidienne de 30 crédits + support prioritaire et accompagnement',
+    amountCents: 4900,
+    monthlyCredits: 600,
+    perks: '600 générations par mois, reportables + support prioritaire et accompagnement',
   },
 ] as const;
 
 /**
- * Essai Découverte : GRATUIT, une seule fois par compte, limité à 7 jours.
- * Pendant l'essai, le compte reçoit la même recharge quotidienne qu'un
- * abonné (TRIAL_DAILY_CREDITS remis à niveau chaque matin), puis plus rien.
+ * Abonnement ÉTABLISSEMENT — le virage du modèle économique.
+ *
+ * Le benchmark est sans exception : tous les marketplaces à 0 % de
+ * commission qui vivent (Incredible Health, Hublo, Patchwork, Florence)
+ * sont financés par la DEMANDE, jamais par le professionnel — qui est ici
+ * le côté rare et le moins solvable. L'établissement, lui, a un budget de
+ * remplacement déjà provisionné et compare à un coefficient d'intérim de
+ * 1,8 à 2,5.
+ *
+ * Ce qu'il achète : la plateforme reste gratuite pour ses intervenants et
+ * sans commission sur les vacations ; l'abonnement couvre l'outillage de
+ * l'établissement et donne LEX à toute son équipe.
+ */
+export const ESTABLISHMENT_PLAN = {
+  id: 'plan-etablissement',
+  label: 'Les Extras — Établissement',
+  amountCents: 8900,
+  monthlyCredits: 1000,
+  perks:
+    'SOS Renfort illimité, 0 % de commission, LEX pour toute l’équipe (1 000 générations/mois partagées), coffre-fort de conformité et accompagnement',
+} as const;
+
+/** Nombre de mois de report du quota mensuel (plafond d'accumulation). */
+export const ROLLOVER_MONTHS = 3;
+
+/**
+ * Rétrocompatibilité : `lexTrialEndsAt` reste lu pour les comptes qui ont
+ * connu l'ancien essai de 7 jours, mais plus aucun essai n'est accordé —
+ * l'offre gratuite permanente l'a remplacé.
  */
 export const TRIAL_DAYS = 7;
 export const TRIAL_DAILY_CREDITS = 10;
@@ -72,6 +123,7 @@ export class BillingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly credits: CreditsService,
   ) {}
 
   private get secretKey(): string {
@@ -108,8 +160,24 @@ export class BillingService {
   }
 
 
+  /**
+   * Catalogue d'abonnements. `pour` indique à qui l'offre s'adresse : le
+   * front n'affiche à un établissement que l'offre Établissement, et à un
+   * intervenant que les offres individuelles — proposer les deux à tout le
+   * monde brouillerait la décision d'achat.
+   */
   listPlans() {
-    return SUBSCRIPTION_PLANS.map((p) => ({ ...p, currency: 'eur', interval: 'month' }));
+    return [
+      ...SUBSCRIPTION_PLANS.map((p) => ({ ...p, pour: 'FREELANCE' as const })),
+      { ...ESTABLISHMENT_PLAN, pour: 'ESTABLISHMENT' as const },
+    ].map((p) => ({ ...p, currency: 'eur', interval: 'month' }));
+  }
+
+  /** Tous les plans souscriptibles, individuels et établissement confondus. */
+  private tousLesPlans() {
+    return [...SUBSCRIPTION_PLANS, ESTABLISHMENT_PLAN] as ReadonlyArray<{
+      id: string; label: string; amountCents: number; monthlyCredits: number; perks: string;
+    }>;
   }
 
   listPacks() {
@@ -132,8 +200,8 @@ export class BillingService {
       essai: account.lexTrialEndsAt
         ? { finLe: account.lexTrialEndsAt, actif: account.lexTrialEndsAt > new Date() }
         : null,
-      essaiJours: TRIAL_DAYS,
-      essaiCreditsParJour: TRIAL_DAILY_CREDITS,
+      offreGratuite: { mensuel: FREE_MONTHLY_CREDITS, permanente: true },
+      reportMois: ROLLOVER_MONTHS,
       subscription,
       plans: this.listPlans(),
       packs: this.listPacks(),
@@ -167,7 +235,7 @@ export class BillingService {
    * Un seul abonnement par compte : refuse si un abonnement actif existe déjà.
    */
   async createSubscriptionCheckout(userId: string, accountId: string, planId: string) {
-    const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId);
+    const plan = this.tousLesPlans().find((p) => p.id === planId);
     if (!plan) throw new BadRequestException('Plan inconnu.');
     await this.requireMember(userId, accountId);
 
@@ -381,6 +449,16 @@ export class BillingService {
             stripeSubscriptionId: session.subscription ?? undefined,
           },
         });
+        // Dotation immédiate : on ne fait pas patienter jusqu'au 1er du
+        // mois quelqu'un qui vient de payer. La dotation est idempotente,
+        // le cron mensuel ne la servira donc pas deux fois.
+        const planId = session.metadata?.planId;
+        const plan = this.tousLesPlans().find((p) => p.id === planId);
+        if (plan) {
+          await this.credits
+            .amorcerDotation(accountId, plan.monthlyCredits)
+            .catch((e) => this.logger.error(`Dotation initiale impossible pour ${accountId}: ${e}`));
+        }
         this.logger.log(`Abonnement activé pour ${accountId}`);
       }
       return { received: true };

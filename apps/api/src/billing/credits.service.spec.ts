@@ -1,6 +1,11 @@
 import { ForbiddenException } from '@nestjs/common';
 import { CreditsService } from './credits.service';
-import { SUBSCRIPTION_PLANS } from './billing.service';
+import {
+  SUBSCRIPTION_PLANS,
+  ESTABLISHMENT_PLAN,
+  FREE_MONTHLY_CREDITS,
+  ROLLOVER_MONTHS,
+} from './billing.service';
 
 /**
  * LES CRÉDITS SONT LA MONNAIE DE LEX — le seul produit payant à l'usage.
@@ -8,9 +13,9 @@ import { SUBSCRIPTION_PLANS } from './billing.service';
  * Ce qu'on protège ici : le solde ne passe jamais en négatif (le décrément
  * est conditionnel dans la transaction), chaque mouvement laisse une écriture
  * au grand livre, une génération échouée rembourse son crédit, un compte
- * exonéré ne consomme rien, et la recharge quotidienne remet le solde AU
- * NIVEAU de l'allocation — jamais au-dessus de ce qu'on a déjà, jamais en
- * le réduisant.
+ * exonéré ne consomme rien, et la dotation MENSUELLE s'ajoute au solde
+ * (report des générations non utilisées), plafonnée à ROLLOVER_MONTHS mois,
+ * idempotente dans le mois, et servie à tous — y compris à qui ne paie pas.
  */
 
 /** Prisma en mémoire : un compte, un grand livre, des abonnements. */
@@ -30,9 +35,8 @@ function fabrique(soldeInitial = 5, isMember = false) {
       isMember: etat.isMember,
       lexTrialEndsAt: etat.lexTrialEndsAt,
     })),
-    findMany: jest.fn(async () =>
-      etat.lexTrialEndsAt && etat.lexTrialEndsAt > new Date() ? [{ id: 'acc1' }] : [],
-    ),
+    // La dotation mensuelle sert TOUS les comptes (offre gratuite permanente).
+    findMany: jest.fn(async () => [{ id: 'acc1' }]),
     update: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
       if (typeof data.credits === 'number') {
         etat.credits = data.credits;
@@ -68,6 +72,11 @@ function fabrique(soldeInitial = 5, isMember = false) {
       return data;
     }),
     findMany: jest.fn(async () => etat.ledger),
+    // Idempotence de la dotation : une écriture DOTATION_MENSUELLE déjà
+    // présente dans le mois bloque une seconde dotation.
+    findFirst: jest.fn(async ({ where }: { where: { reason?: string } }) =>
+      etat.ledger.some((l) => l.reason === where.reason) ? { id: 'x' } : null,
+    ),
     aggregate: jest.fn(async () => ({ _sum: { delta: null } })),
   };
   const subscription = {
@@ -147,70 +156,78 @@ describe('CreditsService — avecCredit', () => {
   });
 });
 
-describe('CreditsService — recharge quotidienne', () => {
+describe('CreditsService — dotation mensuelle', () => {
   const plan = SUBSCRIPTION_PLANS[0];
 
-  it("remet le solde au niveau de l'allocation quand il est en dessous", async () => {
+  it("ajoute l'allocation du plan au solde (report, pas remise à niveau)", async () => {
     const { credits, etat } = fabrique(2);
     etat.subscriptions.push({ accountId: 'acc1', planId: plan.id });
-    await credits.rechargeQuotidienne();
-    expect(etat.credits).toBe(plan.dailyCredits);
-    expect(etat.ledger).toEqual([
-      {
-        delta: plan.dailyCredits - 2,
-        balanceAfter: plan.dailyCredits,
-        reason: 'RECHARGE_QUOTIDIENNE',
-      },
-    ]);
+    await credits.dotationMensuelle();
+    // Le report est le cœur de la refonte : les 2 crédits restants ne sont
+    // pas effacés, ils s'ajoutent — c'est ce qui couvre les pics de bilans.
+    expect(etat.credits).toBe(2 + plan.monthlyCredits);
+    expect(etat.ledger[0]).toEqual({
+      delta: plan.monthlyCredits,
+      balanceAfter: 2 + plan.monthlyCredits,
+      reason: 'DOTATION_MENSUELLE',
+    });
   });
 
-  it('ne touche pas un solde déjà au-dessus (crédits achetés en pack)', async () => {
-    const { credits, etat } = fabrique(plan.dailyCredits + 40);
+  it('sert aussi un compte sans abonnement : offre gratuite permanente', async () => {
+    const { credits, etat } = fabrique(0);
+    await credits.dotationMensuelle();
+    expect(etat.credits).toBe(FREE_MONTHLY_CREDITS);
+    expect(etat.ledger[0].reason).toBe('DOTATION_MENSUELLE');
+  });
+
+  it("est idempotente dans le mois : deux passages ne dotent qu'une fois", async () => {
+    const { credits, etat } = fabrique(0);
     etat.subscriptions.push({ accountId: 'acc1', planId: plan.id });
-    await credits.rechargeQuotidienne();
-    expect(etat.credits).toBe(plan.dailyCredits + 40);
+    await credits.dotationMensuelle();
+    await credits.dotationMensuelle();
+    expect(etat.credits).toBe(plan.monthlyCredits);
+    expect(etat.ledger).toHaveLength(1);
+  });
+
+  it("plafonne le report à ROLLOVER_MONTHS fois l'allocation", async () => {
+    const dejaPlein = plan.monthlyCredits * ROLLOVER_MONTHS;
+    const { credits, etat } = fabrique(dejaPlein);
+    etat.subscriptions.push({ accountId: 'acc1', planId: plan.id });
+    await credits.dotationMensuelle();
+    // Le quota est un droit d'usage, pas une tirelire : au plafond, on n'ajoute rien.
+    expect(etat.credits).toBe(dejaPlein);
     expect(etat.ledger).toHaveLength(0);
   });
 
-  it('ne cumule pas : deux recharges de suite ne donnent pas double ration', async () => {
+  it('ignore un plan inconnu sans priver le compte de son offre gratuite', async () => {
     const { credits, etat } = fabrique(0);
-    etat.subscriptions.push({ accountId: 'acc1', planId: plan.id });
-    await credits.rechargeQuotidienne();
-    await credits.rechargeQuotidienne();
-    expect(etat.credits).toBe(plan.dailyCredits);
-  });
-
-  it('ignore un plan inconnu sans casser la tournée', async () => {
-    const { credits, etat } = fabrique(1);
     etat.subscriptions.push({ accountId: 'acc1', planId: 'plan-disparu' });
-    await expect(credits.rechargeQuotidienne()).resolves.toBeUndefined();
-    expect(etat.credits).toBe(1);
+    await expect(credits.dotationMensuelle()).resolves.toBeUndefined();
+    expect(etat.credits).toBe(FREE_MONTHLY_CREDITS);
   });
 
-  it('recharge aussi les comptes en essai Découverte, sans abonnement', async () => {
+  it("dote l'établissement abonné au niveau de son allocation d'équipe", async () => {
     const { credits, etat } = fabrique(0);
-    etat.lexTrialEndsAt = new Date(Date.now() + 3 * 86_400_000); // essai en cours
-    await credits.rechargeQuotidienne();
-    expect(etat.credits).toBe(10);
-    expect(etat.ledger[0].reason).toBe('RECHARGE_QUOTIDIENNE');
+    etat.subscriptions.push({ accountId: 'acc1', planId: ESTABLISHMENT_PLAN.id });
+    await credits.dotationMensuelle();
+    expect(etat.credits).toBe(ESTABLISHMENT_PLAN.monthlyCredits);
   });
 });
 
-describe('CreditsService — essai Découverte', () => {
-  it("accorde l'essai une première fois : date de fin + première ration", async () => {
+describe('CreditsService — offre gratuite permanente', () => {
+  it('accorde la dotation immédiatement, sans attendre le 1er du mois', async () => {
     const { credits, etat } = fabrique(0);
-    const r = await credits.reclamerEssai('acc1');
-    expect(etat.lexTrialEndsAt).not.toBeNull();
-    expect(r.finLe.getTime()).toBeGreaterThan(Date.now() + 6 * 86_400_000);
-    expect(etat.credits).toBe(10);
-    expect(etat.ledger[0].reason).toBe('ESSAI_DECOUVERTE');
+    const r = await credits.activerOffreGratuite('acc1');
+    expect(r.mensuel).toBe(FREE_MONTHLY_CREDITS);
+    expect(etat.credits).toBe(FREE_MONTHLY_CREDITS);
+    expect(etat.ledger[0].reason).toBe('DOTATION_MENSUELLE');
   });
 
-  it("refuse une seconde réclamation : l'essai ne se prend qu'une fois", async () => {
+  it("ne double pas la dotation si elle a déjà été servie ce mois-ci", async () => {
     const { credits, etat } = fabrique(0);
-    await credits.reclamerEssai('acc1');
-    await expect(credits.reclamerEssai('acc1')).rejects.toThrow(/déjà été utilisé/);
-    // Et surtout : pas de seconde ration.
+    await credits.activerOffreGratuite('acc1');
+    await credits.activerOffreGratuite('acc1');
+    expect(etat.credits).toBe(FREE_MONTHLY_CREDITS);
     expect(etat.ledger).toHaveLength(1);
   });
 });

@@ -304,6 +304,16 @@ model ReliefMission {
   /// Diffusion en cascade : SALARIES -> RESERVED -> PUBLIC
   visibility   MissionVisibility @default(PUBLIC)
   publishedAt  DateTime?
+  /// Diffusion ciblée en vagues (voir MissionsService.broadcastToMatched).
+  /// 0 = pas encore diffusée · 1 = les profils les plus proches · 2 = élargie
+  /// · 3 = tout le réseau. On sollicite peu de monde à la fois, à dessein :
+  /// un envoi de masse dilue la responsabilité et personne ne répond.
+  diffusionVague    Int       @default(0)
+  /// Horodatage de la dernière vague, pour savoir quand déclencher la suivante.
+  derniereVagueAt   DateTime?
+  /// « Mission garantie » : date à laquelle l'alerte de relance manuelle a été
+  /// envoyée (non nul = déjà alerté, l'alerte ne part qu'une fois).
+  alerteNonPourvueAt DateTime?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 

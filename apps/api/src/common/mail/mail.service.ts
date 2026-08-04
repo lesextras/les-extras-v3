@@ -320,23 +320,95 @@ export class MailService {
     );
   }
 
+  /**
+   * SOS Renfort — sollicitation d'un intervenant.
+   *
+   * `retenus` et `vague` personnalisent le message. C'est le levier le moins
+   * coûteux et le plus efficace du dispositif : un e-nvoi de masse à cent
+   * personnes fait supposer à chacune qu'une autre prendra la mission, et
+   * personne ne répond. Dire « vous êtes l'un des 8 profils retenus » rétablit
+   * le sentiment d'être personnellement attendu, ce qui remonte le taux
+   * d'acceptation — et donc la couverture, à effectif de vivier constant.
+   */
   async sendMissionMatch(
     to: string,
-    data: { title: string; city?: string | null; date?: string | Date | null; job?: string | null; rate?: string | number | null; emergency?: boolean; missionId: string },
+    data: {
+      title: string;
+      city?: string | null;
+      date?: string | Date | null;
+      job?: string | null;
+      rate?: string | number | null;
+      emergency?: boolean;
+      missionId: string;
+      /** Nombre d'intervenants sollicités dans cette vague. */
+      retenus?: number;
+      /** 1 = profils les plus proches, 2 = élargissement, 3 = tout le réseau. */
+      vague?: number;
+    },
   ): Promise<void> {
     const when = this.frDate(data.date);
     const url = `${this.webUrl}/marketplace/missions/${data.missionId}`;
     const tag = data.emergency ? '🚨 <b>Mission urgente</b> — ' : '';
+
+    // Le contexte de sélection, dit simplement et honnêtement.
+    let selection = '';
+    if (data.vague === 1 && data.retenus) {
+      selection = `<br><br>Vous faites partie des <b>${data.retenus} intervenants</b> dont le profil correspond le mieux à ce besoin — métier, secteur géographique et disponibilité. Nous ne l'avons proposée qu'à vous pour l'instant.`;
+    } else if (data.vague === 2) {
+      selection = `<br><br>Cette mission n'a pas encore trouvé preneur auprès des premiers profils sollicités : nous élargissons la recherche, et votre profil correspond.`;
+    } else if (data.vague === 3) {
+      selection = `<br><br>Cette mission reste ouverte et nous la proposons maintenant à l'ensemble du réseau.`;
+    }
+
     await this.send(
       to,
-      `${data.emergency ? '🚨 ' : ''}Une mission de renfort pour vous : ${data.title}`,
+      `${data.emergency ? '🚨 ' : ''}${data.vague === 1 ? 'Vous êtes retenu·e pour une mission' : 'Une mission de renfort pour vous'} : ${data.title}`,
       this.layout(
-        'Une mission qui vous correspond',
+        data.vague === 1 ? 'Une mission pour vous, en priorité' : 'Une mission qui vous correspond',
         `${tag}Un établissement recherche un renfort <b>« ${data.title} »</b>${data.job ? ` (${data.job})` : ''}${
           data.city ? ` à <b>${data.city}</b>` : ''
-        }${when ? ` le <b>${when}</b>` : ''}${data.rate ? `, rémunéré ${data.rate} €/h` : ''}.
+        }${when ? ` le <b>${when}</b>` : ''}${data.rate ? `, rémunéré ${data.rate} €/h` : ''}.${selection}
         <br><br><b>Premier arrivé, premier servi</b> : la mission est attribuée au premier intervenant qui l'accepte.`,
         { label: 'Voir et accepter la mission', url },
+      ),
+    );
+  }
+
+  /**
+   * SOS Renfort — « mission garantie » : le dispositif a épuisé ses vagues
+   * sans trouver preneur. L'établissement est prévenu qu'un humain reprend
+   * la main, et l'association reçoit l'alerte pour appeler le vivier.
+   */
+  async sendMissionNonPourvue(
+    to: string,
+    data: { title: string; city?: string | null; date?: string | Date | null; missionId: string; sollicites: number; pourAdmin?: boolean },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = `${this.webUrl}${data.pourAdmin ? '/admin/missions/' : '/dashboard/renforts?mission='}${data.missionId}`;
+    if (data.pourAdmin) {
+      await this.send(
+        to,
+        `⚠️ Mission non pourvue à relancer : ${data.title}`,
+        this.layout(
+          'Une mission demande une relance manuelle',
+          `La mission <b>« ${data.title} »</b>${data.city ? ` à ${data.city}` : ''}${when ? ` du <b>${when}</b>` : ''}
+          n'a pas trouvé preneur après ${data.sollicites} sollicitation(s).
+          <br><br>C'est l'engagement « mission garantie » : il faut maintenant appeler le vivier à la main.`,
+          { label: 'Ouvrir la mission', url },
+        ),
+      );
+      return;
+    }
+    await this.send(
+      to,
+      `Votre mission « ${data.title} » — nous reprenons la main`,
+      this.layout(
+        'Nous nous en occupons personnellement',
+        `Votre mission <b>« ${data.title} »</b>${when ? ` du <b>${when}</b>` : ''} n'a pas encore trouvé preneur
+        après avoir été proposée à ${data.sollicites} intervenant(s).
+        <br><br>Comme promis, nous ne vous laissons pas avec une annonce sans réponse : notre équipe contacte
+        maintenant le réseau directement et revient vers vous.`,
+        { label: 'Suivre ma mission', url },
       ),
     );
   }
