@@ -4,6 +4,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { MissionsController } from './missions.controller';
 import { DashboardController } from './dashboard.controller';
 import { MissionsService } from './missions.service';
+import { CiblageService } from './ciblage.service';
+import { EngagementsService } from './engagements.service';
 import { MissionsScheduler } from './missions.scheduler';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { MatchingModule } from '../matching/matching.module';
@@ -22,7 +24,7 @@ import { UsersModule } from '../users/users.module';
     ScheduleModule.forRoot(),
   ],
   controllers: [MissionsController, DashboardController],
-  providers: [MissionsService, MissionsScheduler],
-  exports: [MissionsService],
+  providers: [MissionsService, CiblageService, EngagementsService, MissionsScheduler],
+  exports: [MissionsService, CiblageService, EngagementsService],
 })
 export class MissionsModule {}

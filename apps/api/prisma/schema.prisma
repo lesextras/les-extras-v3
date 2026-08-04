@@ -185,6 +185,8 @@ model Account {
   parametresTemps  ParametresTemps?
   /// Demandes de signature electronique emises par ce compte.
   signatures       Signature[]        @relation("SignatureCompte")
+  /// Les missions que ce compte intervenant s'est engage a prendre.
+  engagements      MissionEngagement[] @relation("EngagementIntervenant")
 
   @@index([type])
   @@index([slug])
@@ -303,6 +305,15 @@ model ReliefMission {
   recurrence   String?
   /// Diffusion en cascade : SALARIES -> RESERVED -> PUBLIC
   visibility   MissionVisibility @default(PUBLIC)
+  /// Mode d'attribution choisi par l'établissement à la publication.
+  modeAttribution ModeAttribution @default(AUTOMATIQUE)
+  /// Destinataires de l'offre. RESEAU = cascade normale ; toute autre valeur
+  /// verrouille la diffusion (pas d'élargissement, pas de marketplace).
+  cibleDiffusion  CibleDiffusion  @default(RESEAU)
+  /// Cible SELECTION : identifiants des SALARIÉS (User.id) désignés.
+  destinatairesSalaries String[] @default([])
+  /// Cible SELECTION : identifiants des COMPTES intervenants désignés.
+  destinatairesIntervenants String[] @default([])
   publishedAt  DateTime?
   /// Diffusion ciblée en vagues (voir MissionsService.broadcastToMatched).
   /// 0 = pas encore diffusée · 1 = les profils les plus proches · 2 = élargie
@@ -318,6 +329,7 @@ model ReliefMission {
   updatedAt    DateTime       @updatedAt
 
   bookings     Booking[]
+  engagements  MissionEngagement[]
   reviews      Review[]      @relation("MissionReviews")
   conversations Conversation[]
   shifts       Shift[]
@@ -476,6 +488,7 @@ model Booking {
   quote         Quote?
   shift         Shift?
   timeEntries   TimeEntry[]
+  engagement    MissionEngagement?
 
   @@index([status])
   @@index([missionId])
@@ -826,6 +839,94 @@ enum MissionVisibility {
   SALARIES
   RESERVED
   PUBLIC
+}
+
+/// COMMENT la mission est attribuée. Le choix appartient à l'établissement,
+/// mission par mission — les deux modèles ont leur usage.
+///
+/// AUTOMATIQUE : premier arrivé, premier servi. Le premier intervenant qui
+/// accepte a la mission, immédiatement, sans validation. C'est le plus rapide
+/// et c'est ce qu'il faut pour un renfort de dernière minute.
+///
+/// FILE_ENGAGEMENT : l'intervenant s'engage (« je prends la mission »), son
+/// profil est présenté à l'établissement qui accepte ou refuse. En cas de
+/// refus, le suivant de la file est présenté, et ainsi de suite. Plus lent,
+/// mais l'établissement garde la main sur QUI entre dans sa structure — ce qui
+/// permet en retour de diffuser BEAUCOUP plus largement sans crainte.
+enum ModeAttribution {
+  AUTOMATIQUE
+  FILE_ENGAGEMENT
+}
+
+/// À QUI l'offre est envoyée à la publication. Distinct de `visibility` :
+/// la visibilité dit jusqu'où la cascade peut aller, la cible dit qui est
+/// nommément destinataire. Toute cible autre que RESEAU VERROUILLE la
+/// diffusion : ni élargissement automatique, ni apparition sur la marketplace.
+enum CibleDiffusion {
+  /// Diffusion normale en cascade (salariés -> réseau réservé -> public).
+  RESEAU
+  /// Uniquement les intervenants déjà venus ici ou retenus au vivier.
+  CONNUS
+  /// Uniquement les salariés rattachés à l'unité/service désigné.
+  UNITE
+  /// Uniquement les personnes explicitement cochées à la publication.
+  SELECTION
+}
+
+/// Étapes d'un engagement dans la file (mode FILE_ENGAGEMENT).
+enum EngagementStatut {
+  /// L'intervenant s'est engagé, il attend son tour dans la file.
+  EN_ATTENTE
+  /// Son profil est actuellement soumis à l'établissement.
+  PRESENTE
+  /// L'établissement l'a retenu : la mission lui est attribuée.
+  ACCEPTE
+  /// L'établissement a écarté ce profil ; on passe au suivant.
+  REFUSE
+  /// L'intervenant s'est retiré de lui-même.
+  RETIRE
+  /// La mission a été attribuée à quelqu'un d'autre (ou annulée).
+  CADUC
+}
+
+/// FILE D'ENGAGEMENT — un intervenant a dit « je prends la mission ».
+///
+/// Ce n'est pas une candidature (Booking REQUESTED) : la candidature est une
+/// manifestation d'intérêt, l'engagement est une PRISE de la mission, dans
+/// l'ordre d'arrivée. L'établissement ne trie pas un tas de dossiers, il
+/// répond oui ou non à une personne à la fois — ce qui est à la fois beaucoup
+/// plus rapide pour lui, et beaucoup plus respectueux pour les intervenants,
+/// qui savent exactement où ils en sont.
+model MissionEngagement {
+  id         String        @id @default(cuid())
+  missionId  String
+  mission    ReliefMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  /// Compte intervenant qui s'engage.
+  accountId  String
+  account    Account       @relation("EngagementIntervenant", fields: [accountId], references: [id], onDelete: Cascade)
+  /// Ordre d'arrivée dans la file. 1 = le premier à s'être engagé.
+  rang       Int
+  statut     EngagementStatut @default(EN_ATTENTE)
+  /// Mot de l'intervenant à l'établissement (facultatif).
+  message    String?
+  /// Horodatage de la présentation du profil à l'établissement.
+  presenteAt DateTime?
+  /// Relance envoyée à l'établissement qui n'a pas tranché (une seule fois).
+  relanceAt  DateTime?
+  /// Horodatage de la décision (acceptation ou refus).
+  decideAt   DateTime?
+  /// Motif de refus, transmis tel quel à l'intervenant. On dit pourquoi :
+  /// un refus sans raison démobilise plus sûrement qu'une mission perdue.
+  motifRefus String?
+  /// Réservation créée en cas d'acceptation.
+  bookingId  String?       @unique
+  booking    Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([missionId, accountId])
+  @@index([missionId, statut])
+  @@index([accountId])
 }
 
 enum ServiceCategory {

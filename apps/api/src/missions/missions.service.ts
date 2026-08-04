@@ -9,8 +9,10 @@ import {
 import { Cron } from '@nestjs/schedule';
 import {
   BookingStatus,
+  CibleDiffusion,
   MissionStatus,
   MissionVisibility,
+  ModeAttribution,
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -24,6 +26,8 @@ import { MailService } from '../common/mail/mail.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { QueryMissionsDto } from './dto/query-missions.dto';
+import { CiblageService, SELECT_CIBLAGE } from './ciblage.service';
+import { EngagementsService } from './engagements.service';
 
 /**
  * DIFFUSION CIBLÉE — les trois vagues de sollicitation.
@@ -44,6 +48,35 @@ export const VAGUES = [
   { taille: 15, seuil: 50, apresMinutes: 180 },
   { taille: 100, seuil: 45, apresMinutes: 480 },
 ] as const;
+
+/**
+ * MATCHING ÉLARGI — réservé au mode « file d'engagement ».
+ *
+ * Le dosage ci-dessus vient d'un arbitrage imposé par l'attribution
+ * automatique : comme le premier qui accepte a la mission, solliciter très
+ * largement revient à confier sa structure au plus rapide. On restreignait
+ * donc, et on couvrait moins.
+ *
+ * Quand l'établissement valide chaque profil, cet arbitrage disparaît. On peut
+ * alors ouvrir en grand — vagues plus larges, seuils de correspondance plus
+ * bas, délais plus courts — sans lui faire courir le moindre risque : la file
+ * se remplit, et il choisit. C'est le vrai gain du mode, et c'est ce qui
+ * transforme un vivier étroit en couverture réelle.
+ */
+export const VAGUES_LARGES = [
+  { taille: 25, seuil: 40, apresMinutes: 0 },
+  { taille: 60, seuil: 30, apresMinutes: 120 },
+  { taille: 300, seuil: 20, apresMinutes: 360 },
+] as const;
+
+/** Le jeu de vagues applicable à une mission, selon son mode d'attribution. */
+export function vaguesPour(mode: ModeAttribution): ReadonlyArray<{
+  taille: number;
+  seuil: number;
+  apresMinutes: number;
+}> {
+  return mode === ModeAttribution.FILE_ENGAGEMENT ? VAGUES_LARGES : VAGUES;
+}
 
 /**
  * « Mission garantie » — délai après la dernière vague au terme duquel une
@@ -71,6 +104,8 @@ export class MissionsService {
     private readonly mail: MailService,
     private readonly community: CommunityService,
     private readonly progression: ProgressionService,
+    private readonly ciblage: CiblageService,
+    private readonly engagements: EngagementsService,
   ) {}
 
   /** Crée une mission (statut DRAFT) rattachée au compte établissement actif. */
@@ -109,8 +144,37 @@ export class MissionsService {
         attachmentUrl: dto.attachmentUrl,
         attachmentId: dto.attachmentId ?? null,
         orgUnitId: dto.orgUnitId,
+        modeAttribution: dto.modeAttribution ?? ModeAttribution.AUTOMATIQUE,
+        ...this.normaliserCiblage(dto),
       },
     });
+  }
+
+  /**
+   * Nettoie le ciblage demandé pour qu'il soit cohérent tout seul, sans que
+   * l'écran ait à y veiller. Une cible « unité » sans unité désignée, ou une
+   * cible « sélection » sans personne cochée, ne restreindrait rien du tout :
+   * on retombe alors sur la diffusion normale plutôt que de publier une
+   * mission que personne ne recevrait.
+   */
+  private normaliserCiblage(dto: {
+    cibleDiffusion?: CibleDiffusion;
+    orgUnitId?: string | null;
+    destinatairesSalaries?: string[];
+    destinatairesIntervenants?: string[];
+  }) {
+    const salaries = [...new Set(dto.destinatairesSalaries ?? [])];
+    const intervenants = [...new Set(dto.destinatairesIntervenants ?? [])];
+    let cible = dto.cibleDiffusion ?? CibleDiffusion.RESEAU;
+    if (cible === CibleDiffusion.UNITE && !dto.orgUnitId) cible = CibleDiffusion.RESEAU;
+    if (cible === CibleDiffusion.SELECTION && salaries.length + intervenants.length === 0) {
+      cible = CibleDiffusion.RESEAU;
+    }
+    return {
+      cibleDiffusion: cible,
+      destinatairesSalaries: cible === CibleDiffusion.SELECTION ? salaries : [],
+      destinatairesIntervenants: cible === CibleDiffusion.SELECTION ? intervenants : [],
+    };
   }
 
   /** Missions appartenant au compte actif (back-office établissement). */
@@ -293,10 +357,31 @@ export class MissionsService {
     if (mission.status === MissionStatus.CLOSED || mission.status === MissionStatus.CANCELLED) {
       throw new BadRequestException('Mission clôturée : édition impossible.');
     }
+    // Le ciblage n'est retouché que s'il est explicitement demandé : sinon une
+    // simple correction de titre remettrait la mission en diffusion ouverte.
+    const ciblageDemande =
+      dto.cibleDiffusion !== undefined ||
+      dto.destinatairesSalaries !== undefined ||
+      dto.destinatairesIntervenants !== undefined;
+    const {
+      cibleDiffusion: _c,
+      destinatairesSalaries: _s,
+      destinatairesIntervenants: _i,
+      ...reste
+    } = dto;
     return this.prisma.reliefMission.update({
       where: { id },
       data: {
-        ...dto,
+        ...reste,
+        ...(ciblageDemande
+          ? this.normaliserCiblage({
+              cibleDiffusion: dto.cibleDiffusion ?? mission.cibleDiffusion,
+              orgUnitId: dto.orgUnitId ?? mission.orgUnitId,
+              destinatairesSalaries: dto.destinatairesSalaries ?? mission.destinatairesSalaries,
+              destinatairesIntervenants:
+                dto.destinatairesIntervenants ?? mission.destinatairesIntervenants,
+            })
+          : {}),
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
       },
@@ -345,12 +430,20 @@ export class MissionsService {
       // Un OWNER/ADMIN qui publie vaut approbation.
       await this.prisma.reliefMission.update({ where: { id }, data: { attenteValidation: false } });
     }
+    // Un ciblage nominatif IMPOSE le palier : une mission adressée au seul
+    // SESSAD, ou aux trois intervenants qu'on connaît, ne doit jamais se
+    // retrouver sur la marketplace publique. La restriction demandée est une
+    // promesse faite à l'établissement — elle prime sur tout le reste, y
+    // compris sur une visibilité explicitement demandée par l'écran.
+    const impose = CiblageService.palierImpose(mission);
     // Palier de départ : « mon équipe d'abord » si le compte a effectivement
     // un vivier interne (salariés ou intervenants déjà venus), sinon on
     // publierait dans le vide → diffusion publique immédiate.
     const demande = visibiliteDemandee ?? null;
     const palierDepart =
-      demande ?? ((await this.aUnViverInterne(accountId)) ? MissionVisibility.SALARIES : MissionVisibility.PUBLIC);
+      impose ??
+      demande ??
+      ((await this.aUnViverInterne(accountId)) ? MissionVisibility.SALARIES : MissionVisibility.PUBLIC);
 
     const published = await this.prisma.reliefMission.update({
       where: { id },
@@ -439,39 +532,11 @@ export class MissionsService {
    * ils ont soit accepté une de ses missions, soit animé un de ses ateliers.
    * C'est le « vivier réservé » du palier RESERVED.
    */
-  private async intervenantsConnus(accountId: string): Promise<string[]> {
-    // Le vivier CHOISI compte autant que le vivier déduit. C'est même là toute
-    // la valeur du geste : quand un chef de service retient quelqu'un, il faut
-    // que cela produise un effet — recevoir les offres en priorité. Sans cela,
-    // ajouter au vivier ne serait qu'un signet.
-    const retenus = await this.prisma.poolMember.findMany({
-      where: { accountId },
-      select: { intervenantAccountId: true },
-    });
-
-    const [surMissions, surAteliers] = await this.prisma.$transaction([
-      this.prisma.booking.findMany({
-        where: {
-          status: { in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED] },
-          mission: { accountId },
-        },
-        select: { accountId: true },
-        distinct: ['accountId'],
-      }),
-      this.prisma.booking.findMany({
-        where: {
-          accountId,
-          status: { in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED] },
-          service: { isNot: null },
-        },
-        select: { service: { select: { accountId: true } } },
-      }),
-    ]);
-    const ids = new Set<string>();
-    retenus.forEach((r) => r.intervenantAccountId !== accountId && ids.add(r.intervenantAccountId));
-    surMissions.forEach((b) => b.accountId !== accountId && ids.add(b.accountId));
-    surAteliers.forEach((b) => b.service?.accountId && ids.add(b.service.accountId));
-    return [...ids];
+  private intervenantsConnus(accountId: string): Promise<string[]> {
+    // Le calcul vit désormais dans CiblageService : il sert au palier RESERVED
+    // comme à la cible « personnes déjà connues », et une seule définition du
+    // vivier évite que les deux divergent.
+    return this.ciblage.intervenantsConnus(accountId);
   }
 
   /** Le compte a-t-il de quoi alimenter un palier interne (équipe ou habitués) ? */
@@ -486,34 +551,44 @@ export class MissionsService {
 
   /**
    * Palier SALARIES : on ne sort pas de la structure. L'offre est poussée aux
-   * membres actifs du compte (l'équipe), à charge pour l'établissement de
-   * couvrir le créneau en interne avant d'ouvrir à l'extérieur.
+   * salariés DESTINATAIRES — toute l'équipe en diffusion normale, les seuls
+   * membres de l'unité désignée quand l'établissement a ciblé un service, les
+   * seules personnes cochées quand il a fait une sélection nominative.
+   *
+   * Jusqu'ici, ce calcul ignorait l'unité : le champ existait sur la mission,
+   * l'écran le proposait, et l'internat recevait les créneaux du SESSAD.
    */
   private async notifierEquipeInterne(mission: {
     id: string;
     title: string;
     accountId: string;
     startDate: Date;
+    orgUnitId: string | null;
+    visibility: MissionVisibility;
+    cibleDiffusion: CibleDiffusion;
+    destinatairesSalaries: string[];
+    destinatairesIntervenants: string[];
   }): Promise<number> {
-    const membres = await this.prisma.membership.findMany({
-      where: { accountId: mission.accountId, status: 'ACTIVE' },
-      select: { userId: true },
-    });
+    const destinataires = await this.ciblage.salariesDestinataires(mission);
+    const cible = mission.cibleDiffusion !== CibleDiffusion.RESEAU;
     // Les salariés doivent atterrir là où l'on accepte : la fiche mission de la
     // marketplace porte le bouton. Le board /dashboard/renforts, lui, sert à
     // celui qui publie, pas à celui qui se propose.
     const lien = `/marketplace/missions/${mission.id}`;
+    const quand = mission.startDate.toLocaleDateString('fr-FR');
     await Promise.allSettled(
-      membres.map((m) =>
-        this.notifications.create(m.userId, {
+      destinataires.map((userId) =>
+        this.notifications.create(userId, {
           type: 'MISSION_INTERNE',
-          title: 'Créneau à couvrir en interne',
-          body: `« ${mission.title} » du ${mission.startDate.toLocaleDateString('fr-FR')} est proposé à l'équipe avant d'être ouvert aux intervenants extérieurs.`,
+          title: cible ? 'Un créneau vous est proposé' : 'Créneau à couvrir en interne',
+          body: cible
+            ? `« ${mission.title} » du ${quand} vous est proposé directement par votre établissement.`
+            : `« ${mission.title} » du ${quand} est proposé à l'équipe avant d'être ouvert aux intervenants extérieurs.`,
           link: lien,
         }),
       ),
     );
-    return membres.length;
+    return destinataires.length;
   }
 
   private async broadcastToMatched(
@@ -532,6 +607,43 @@ export class MissionsService {
 
     const { candidates } = await this.matching.candidatesForMission(missionId, accountId);
     const exclus = new Set(options?.excludeAccountIds ?? []);
+
+    // ── Ciblage nominatif : il prime sur la cascade ─────────────────────────
+    // « Uniquement les gens que je connais » ou « uniquement ces personnes-là »
+    // ne se négocie pas : on envoie à cette liste, une seule fois, et on
+    // n'élargit jamais tout seul.
+    const nominatif = await this.ciblage.intervenantsAutorises(mission);
+    if (nominatif) {
+      const destinataires = candidates.filter(
+        (c: any) => c.email && nominatif.has(c.accountId) && !exclus.has(c.accountId),
+      );
+      // La cible « unité » et une sélection de seuls salariés n'ont personne à
+      // l'extérieur : la diffusion est purement interne.
+      const internes = await this.notifierEquipeInterne(mission);
+      await Promise.allSettled(
+        destinataires.map((c: any) =>
+          this.mail.sendMissionMatch(c.email, {
+            title: mission.title,
+            city: mission.city,
+            date: mission.startDate,
+            job: mission.job,
+            rate: mission.hourlyRate ? String(mission.hourlyRate) : null,
+            emergency: mission.emergency,
+            missionId,
+            retenus: destinataires.length,
+            vague: 1,
+          }),
+        ),
+      );
+      await this.prisma.reliefMission.update({
+        where: { id: missionId },
+        data: { diffusionVague: 1, derniereVagueAt: new Date() },
+      });
+      this.logger.log(
+        `Mission ${missionId} — diffusion ciblée (${mission.cibleDiffusion}) : ${destinataires.length} intervenant(s) + ${internes} salarié(s).`,
+      );
+      return destinataires.length + internes;
+    }
 
     // Palier RESERVED : uniquement les intervenants déjà venus dans la structure.
     let autorises: Set<string> | null = null;
@@ -563,9 +675,12 @@ export class MissionsService {
     // prendra la mission, et le taux d'acceptation s'effondre. On sollicite
     // désormais peu de monde à la fois, en élargissant seulement si le besoin
     // reste non pourvu (voir VAGUES et le planificateur `avancerLesVagues`).
-    const vague = Math.min(Math.max(mission.diffusionVague + 1, 1), VAGUES.length);
-    const { taille, seuil } = VAGUES[vague - 1];
-    const dejaSollicites = VAGUES.slice(0, vague - 1).reduce((n, v) => n + v.taille, 0);
+    // Le mode d'attribution décide de l'ampleur : quand l'établissement valide
+    // chaque profil, on peut ouvrir en grand sans lui faire courir de risque.
+    const vagues = vaguesPour(mission.modeAttribution);
+    const vague = Math.min(Math.max(mission.diffusionVague + 1, 1), vagues.length);
+    const { taille, seuil } = vagues[vague - 1];
+    const dejaSollicites = vagues.slice(0, vague - 1).reduce((n, v) => n + v.taille, 0);
 
     const targets = eligibles
       .filter((c: any) => c.total >= seuil)
@@ -602,7 +717,7 @@ export class MissionsService {
       data: { diffusionVague: vague, derniereVagueAt: new Date() },
     });
     this.logger.log(
-      `Mission ${missionId} — vague ${vague}/${VAGUES.length} : ${targets.length} intervenant(s) sollicité(s) (seuil ${seuil}).`,
+      `Mission ${missionId} — vague ${vague}/${vagues.length} : ${targets.length} intervenant(s) sollicité(s) (seuil ${seuil}).`,
     );
     return targets.length;
   }
@@ -610,6 +725,12 @@ export class MissionsService {
   /**
    * SOS Renfort — un FREELANCE accepte la mission (premier arrivé, premier servi).
    * Verrou atomique : la mission ne peut être remportée que par un seul intervenant.
+   *
+   * En mode « file d'engagement », l'attribution n'appartient plus à
+   * l'intervenant : on redirige vers `sengager()` plutôt que de renvoyer une
+   * erreur. Un bouton qui échoue sur une règle métier légitime se lit comme
+   * une panne, et les anciens clients (e-mails déjà partis, pages ouvertes)
+   * continuent d'appeler cette route.
    */
   async accept(missionId: string, freelanceAccountId: string, accountType?: string) {
     if (accountType === 'ESTABLISHMENT') {
@@ -623,6 +744,13 @@ export class MissionsService {
     if (mission.accountId === freelanceAccountId) {
       throw new BadRequestException('Vous ne pouvez pas accepter votre propre mission.');
     }
+    if (mission.modeAttribution === ModeAttribution.FILE_ENGAGEMENT) {
+      return this.engagements.sengager(missionId, freelanceAccountId, accountType);
+    }
+    // Un ciblage nominatif s'applique à la RÉPONSE autant qu'à l'envoi : sans
+    // ce contrôle, n'importe qui muni du lien contournerait la restriction et
+    // la promesse faite à l'établissement ne vaudrait rien.
+    await this.ciblage.assertCiblageRespecte(mission, freelanceAccountId);
 
     // Verrou : passe PUBLISHED -> FILLED uniquement si personne ne l'a déjà prise.
     const claim = await this.prisma.reliefMission.updateMany({
@@ -735,10 +863,16 @@ export class MissionsService {
         diffusionVague: true,
         derniereVagueAt: true,
         alerteNonPourvueAt: true,
+        modeAttribution: true,
+        cibleDiffusion: true,
         account: { select: { name: true, owner: { select: { email: true } } } },
       },
       take: 200,
     });
+
+    // Les établissements qui laissent un profil sans réponse bloquent toute la
+    // file : on les relance avant d'examiner les vagues.
+    const relances = await this.engagements.relancerDecisionsEnAttente().catch(() => 0);
 
     const maintenant = Date.now();
     let vaguesLancees = 0;
@@ -748,10 +882,16 @@ export class MissionsService {
       const facteur = m.emergency ? 3 : 1; // l'urgence comprime les délais
       const ecouleMin = (maintenant - m.derniereVagueAt!.getTime()) / 60_000;
 
+      const vagues = vaguesPour(m.modeAttribution);
+      // Une mission adressée nominativement n'a QU'UNE vague, par définition :
+      // élargir reviendrait à trahir la restriction demandée. Elle passe donc
+      // directement à l'engagement « mission garantie » si personne ne répond.
+      const verrouillee = CiblageService.estVerrouillee(m.cibleDiffusion);
+
       try {
         // ── Vague suivante, s'il en reste une ────────────────────────────
-        if (m.diffusionVague < VAGUES.length) {
-          const attendu = VAGUES[m.diffusionVague].apresMinutes / facteur;
+        if (!verrouillee && m.diffusionVague < vagues.length) {
+          const attendu = vagues[m.diffusionVague].apresMinutes / facteur;
           if (ecouleMin >= attendu) {
             const n = await this.broadcastToMatched(m.id, m.accountId);
             if (n > 0) vaguesLancees += 1;
@@ -763,7 +903,9 @@ export class MissionsService {
         if (m.alerteNonPourvueAt) continue;
         if (ecouleMin < DELAI_ALERTE_NON_POURVUE_MIN / facteur) continue;
 
-        const sollicites = VAGUES.reduce((n, v) => n + v.taille, 0);
+        const sollicites = verrouillee
+          ? m.diffusionVague
+          : vagues.reduce((n, v) => n + v.taille, 0);
         const destinataires: Promise<unknown>[] = [];
         const adminEmail = process.env.MAIL_ADMIN ?? process.env.MAIL_FROM_ADDRESS;
         if (adminEmail) {
@@ -801,9 +943,9 @@ export class MissionsService {
       }
     }
 
-    if (vaguesLancees || alertes) {
+    if (vaguesLancees || alertes || relances) {
       this.logger.log(
-        `Diffusion ciblée : ${vaguesLancees} vague(s) lancée(s), ${alertes} alerte(s) « mission garantie ».`,
+        `Diffusion ciblée : ${vaguesLancees} vague(s) lancée(s), ${alertes} alerte(s) « mission garantie », ${relances} relance(s) de décision.`,
       );
     }
   }
@@ -813,6 +955,11 @@ export class MissionsService {
     const mission = await this.assertOwned(id, accountId);
     if (mission.status !== MissionStatus.PUBLISHED) {
       throw new BadRequestException('La mission doit être publiée pour élargir sa diffusion.');
+    }
+    if (CiblageService.estVerrouillee(mission.cibleDiffusion)) {
+      throw new BadRequestException(
+        "Cette mission a été adressée à des destinataires précis : sa diffusion ne s'élargit pas. Modifiez la mission pour l'ouvrir au réseau.",
+      );
     }
     const idx = CASCADE.indexOf(mission.visibility);
     if (idx >= CASCADE.length - 1) {
@@ -842,6 +989,13 @@ export class MissionsService {
     }
     if (mission.accountId === freelanceAccountId) {
       throw new BadRequestException('Vous ne pouvez pas candidater à votre propre mission.');
+    }
+    // Le ciblage nominatif vaut aussi pour la candidature.
+    await this.ciblage.assertCiblageRespecte(mission, freelanceAccountId);
+    if (mission.modeAttribution === ModeAttribution.FILE_ENGAGEMENT) {
+      throw new BadRequestException(
+        'Sur cette mission, on ne candidate pas : cliquez sur « Je prends la mission ». Votre profil sera présenté à l’établissement pour validation.',
+      );
     }
 
     // La cascade s'applique aussi a la candidature. Une mission encore
@@ -952,6 +1106,8 @@ export class MissionsService {
         startDate: true,
         startTime: true,
         visibility: true,
+        cibleDiffusion: true,
+        modeAttribution: true,
         emergency: true,
         publishedAt: true,
         createdAt: true,

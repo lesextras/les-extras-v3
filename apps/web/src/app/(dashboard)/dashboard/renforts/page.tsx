@@ -16,6 +16,7 @@ import { ApprouverMission } from "../../../_shared/ApprouverMission";
 import { RepublierMission } from "../../../_shared/RepublierMission";
 import { PublierMission } from "../../../_shared/PublierMission";
 import { RetenirIntervenant } from "../../../_shared/VivierActions";
+import { FileEngagement } from "../../../_shared/FileEngagement";
 import {
   MISSION_CATEGORY_LABEL,
   MISSION_STATUS_LABEL,
@@ -31,6 +32,25 @@ import {
 import type { Mission } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "SOS Renfort" };
+
+/**
+ * Ce que l'établissement a demandé, dit avec ses mots. Un ciblage nominatif
+ * prime sur le palier de cascade : afficher « réseau réservé » quand on a
+ * écrit à trois personnes nommément, c'est laisser croire à une portée qui
+ * n'existe pas.
+ */
+function libelleDiffusion(mission: Mission): string {
+  switch (mission.cibleDiffusion) {
+    case "CONNUS":
+      return "personnes déjà connues uniquement";
+    case "UNITE":
+      return "un service, en interne";
+    case "SELECTION":
+      return "destinataires choisis";
+    default:
+      return MISSION_VISIBILITY_LABEL[mission.visibility];
+  }
+}
 
 export default async function RenfortsPage() {
   const session = await requireSession();
@@ -102,6 +122,11 @@ export default async function RenfortsPage() {
         <div className="space-y-5">
           {missions.map((mission) => {
             const bookings = mission.bookings ?? [];
+            // En file d'engagement, on ne trie pas des candidatures : on répond
+            // à une personne à la fois. L'onglet par défaut doit être celui où
+            // l'action se trouve, sinon la file reste bloquée sans qu'on sache
+            // pourquoi.
+            const enFileDEngagement = mission.modeAttribution === "FILE_ENGAGEMENT";
             return (
               <Card key={mission.id} id={mission.id}>
                 <CardHeader className="space-y-3">
@@ -118,8 +143,11 @@ export default async function RenfortsPage() {
                           {MISSION_CATEGORY_LABEL[mission.category]}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          Diffusion : {MISSION_VISIBILITY_LABEL[mission.visibility]}
+                          Diffusion : {libelleDiffusion(mission)}
                         </span>
+                        {enFileDEngagement ? (
+                          <Badge variant="outline">Vous validez chaque profil</Badge>
+                        ) : null}
                       </div>
                       <h3 className="text-lg font-semibold text-foreground">{mission.title}</h3>
                       <p className="text-sm text-muted-foreground">
@@ -150,13 +178,27 @@ export default async function RenfortsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="candidatures">
+                  <Tabs defaultValue={enFileDEngagement ? "engagements" : "candidatures"}>
                     <TabsList>
-                      <TabsTrigger value="candidatures">
-                        Candidatures reçues ({bookings.length})
-                      </TabsTrigger>
+                      {enFileDEngagement ? (
+                        <TabsTrigger value="engagements">Profils à valider</TabsTrigger>
+                      ) : (
+                        <TabsTrigger value="candidatures">
+                          Candidatures reçues ({bookings.length})
+                        </TabsTrigger>
+                      )}
                       <TabsTrigger value="suggeres">Candidats suggérés</TabsTrigger>
                     </TabsList>
+
+                    {enFileDEngagement ? (
+                      <TabsContent value="engagements">
+                        <FileEngagement
+                          missionId={mission.id}
+                          accountId={session.account.id}
+                          peutDecider={peutPublier}
+                        />
+                      </TabsContent>
+                    ) : null}
 
                     <TabsContent value="candidatures">
                       {bookings.length === 0 ? (

@@ -413,6 +413,126 @@ export class MailService {
     );
   }
 
+  // ───────────────────────────────────────────────────────────────────────
+  // FILE D'ENGAGEMENT — l'établissement valide chaque profil
+  //
+  // Toute la valeur de ce mode tient dans la qualité de ces quatre messages.
+  // Un intervenant qui s'engage et n'entend plus parler de rien ne s'engagera
+  // pas une seconde fois ; un établissement qui reçoit un profil sans savoir
+  // qu'on l'attend laisse la file bloquée. On dit donc à chacun, à chaque
+  // étape, exactement où il en est.
+  // ───────────────────────────────────────────────────────────────────────
+
+  /** L'intervenant s'est engagé : accusé de réception, avec sa place réelle. */
+  async sendEngagementEnregistre(
+    to: string,
+    data: { title: string; missionId: string; rang: number; presente: boolean; date?: string | Date | null },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = `${this.webUrl}/marketplace/missions/${data.missionId}`;
+    const situation = data.presente
+      ? `Votre profil vient d'être <b>transmis à l'établissement</b>, qui doit maintenant le valider. Vous recevrez sa réponse ici même — et le contrat d'engagement dès qu'elle sera positive.`
+      : `Vous êtes <b>${data.rang}<sup>e</sup> dans la file</b>. Une personne s'est engagée avant vous : son profil est en cours de validation. Si l'établissement ne la retient pas, c'est le vôtre qui sera présenté.`;
+    await this.send(
+      to,
+      `Engagement enregistré : ${data.title}`,
+      this.layout(
+        data.presente ? 'Votre profil part à l’établissement' : 'Vous êtes dans la file',
+        `Vous vous êtes engagé·e sur la mission <b>« ${data.title} »</b>${when ? ` du <b>${when}</b>` : ''}.
+        <br><br>${situation}
+        <br><br>Tant que la réponse n'est pas arrivée, <b>rien ne vous engage juridiquement</b> : vous pouvez vous retirer à tout moment depuis la fiche de la mission.`,
+        { label: 'Suivre ma mission', url },
+      ),
+    );
+  }
+
+  /** Un profil est présenté à l'établissement : c'est à lui de trancher. */
+  async sendProfilAValider(
+    to: string,
+    data: {
+      title: string;
+      freelanceName: string;
+      freelanceJob?: string | null;
+      city?: string | null;
+      date?: string | Date | null;
+      missionId: string;
+      enAttente: number;
+      message?: string | null;
+      relance?: boolean;
+    },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = `${this.webUrl}/dashboard/renforts#${data.missionId}`;
+    const suite =
+      data.enAttente > 0
+        ? `<br><br>Si vous ne retenez pas ce profil, <b>${data.enAttente} autre(s) intervenant(s)</b> se sont déjà engagés : le suivant vous sera présenté immédiatement.`
+        : `<br><br>C'est pour l'instant la seule personne engagée. Un refus remet la mission en diffusion.`;
+    await this.send(
+      to,
+      data.relance
+        ? `⏳ Un profil attend toujours votre réponse : ${data.title}`
+        : `Un intervenant a pris votre mission : ${data.title}`,
+      this.layout(
+        data.relance ? 'Un intervenant vous attend' : 'Un profil à valider',
+        `<b>${data.freelanceName}</b>${data.freelanceJob ? ` — ${data.freelanceJob}` : ''} s'est engagé·e sur votre mission
+        <b>« ${data.title} »</b>${data.city ? ` à ${data.city}` : ''}${when ? ` du <b>${when}</b>` : ''}.
+        ${data.message ? `<br><br><i>« ${data.message} »</i>` : ''}
+        <br><br>Rien n'est confirmé tant que vous n'avez pas répondu : <b>vous acceptez ou vous refusez</b>, et le contrat n'est
+        émis qu'après votre acceptation.${suite}
+        ${data.relance ? `<br><br>La personne attend depuis un moment — une réponse, même négative, lui permet de se positionner ailleurs.` : ''}`,
+        { label: 'Voir le profil et répondre', url },
+      ),
+    );
+  }
+
+  /** Profil écarté : on le dit clairement, et on dit la suite. */
+  async sendEngagementEcarte(
+    to: string,
+    data: { title: string; motif?: string | null; caduc?: boolean; date?: string | Date | null },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = `${this.webUrl}/marketplace`;
+    await this.send(
+      to,
+      `Mission non retenue : ${data.title}`,
+      this.layout(
+        data.caduc ? 'La mission a été attribuée' : 'L’établissement a retenu un autre profil',
+        data.caduc
+          ? `La mission <b>« ${data.title} »</b>${when ? ` du ${when}` : ''} a été attribuée à un autre intervenant engagé avant vous.
+             <br><br>Votre engagement est donc levé : vous êtes libre sur ce créneau. Merci d'avoir répondu — c'est exactement
+             ce qui fait tenir le réseau.`
+          : `L'établissement n'a pas retenu votre profil pour <b>« ${data.title} »</b>${when ? ` du ${when}` : ''}.
+             ${data.motif ? `<br><br><b>Motif indiqué :</b> ${data.motif}` : ''}
+             <br><br>Ce n'est pas un jugement sur votre travail : les établissements arbitrent souvent sur une contrainte
+             précise (une qualification attendue, une connaissance du groupe). Votre engagement est levé, vous êtes libre
+             sur ce créneau.`,
+        { label: 'Voir les missions ouvertes', url },
+      ),
+    );
+  }
+
+  /** Plus personne dans la file : l'établissement doit le savoir. */
+  async sendFileEpuisee(
+    to: string,
+    data: { title: string; missionId: string; date?: string | Date | null; refuses: number },
+  ): Promise<void> {
+    const when = this.frDate(data.date);
+    const url = `${this.webUrl}/dashboard/renforts#${data.missionId}`;
+    await this.send(
+      to,
+      `Plus personne en file sur « ${data.title} »`,
+      this.layout(
+        'La mission repart en diffusion',
+        `Vous avez écarté ${data.refuses} profil(s) sur <b>« ${data.title} »</b>${when ? ` du ${when}` : ''} et la file est
+        maintenant vide.
+        <br><br>La mission <b>reste publiée</b> et continue d'être proposée. Si les profils reçus ne correspondent pas,
+        il vaut souvent mieux préciser l'annonce (qualification attendue, contraintes du poste) que d'attendre :
+        c'est le meilleur filtre.`,
+        { label: 'Ouvrir la mission', url },
+      ),
+    );
+  }
+
   /** SOS Renfort : e-mail à l'établissement quand la mission est pourvue. */
   async sendMissionFilledEstablishment(
     to: string,

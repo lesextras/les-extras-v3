@@ -97,9 +97,15 @@ export default async function MissionDetailPage({ params }: { params: { id: stri
 
               {canAccept ? (
                 <div className="space-y-2">
-                  <AcceptMissionButton missionId={mission.id} accountId={session.account.id} />
+                  <AcceptMissionButton
+                    missionId={mission.id}
+                    accountId={session.account.id}
+                    mode={mission.modeAttribution}
+                  />
                   <p className="text-center text-xs text-muted-foreground">
-                    Premier arrivé, premier servi : la mission vous est attribuée dès validation.
+                    {mission.modeAttribution === "FILE_ENGAGEMENT"
+                      ? "Votre profil est présenté à l’établissement, qui accepte ou refuse. Le contrat n’est émis qu’après son accord — d’ici là, rien ne vous engage."
+                      : "Premier arrivé, premier servi : la mission vous est attribuée dès validation."}
                   </p>
                 </div>
               ) : mission.status === "FILLED" ? (

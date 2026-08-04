@@ -11,7 +11,8 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { MissionCategory } from '@prisma/client';
+import { ArrayMaxSize, IsArray } from 'class-validator';
+import { CibleDiffusion, MissionCategory, ModeAttribution } from '@prisma/client';
 
 /**
  * Création d'une mission SOS Renfort par un ESTABLISHMENT.
@@ -98,4 +99,32 @@ export class CreateMissionDto {
   @IsOptional()
   @IsString()
   orgUnitId?: string;
+
+  /**
+   * AUTOMATIQUE : le premier qui accepte a la mission (défaut historique).
+   * FILE_ENGAGEMENT : l'établissement valide chaque profil, dans l'ordre
+   * d'arrivée des engagements.
+   */
+  @IsOptional()
+  @IsEnum(ModeAttribution)
+  modeAttribution?: ModeAttribution;
+
+  /** À qui l'offre est adressée. Voir l'enum CibleDiffusion. */
+  @IsOptional()
+  @IsEnum(CibleDiffusion)
+  cibleDiffusion?: CibleDiffusion;
+
+  /** Cible SELECTION : identifiants des salariés (User.id) désignés. */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(500)
+  destinatairesSalaries?: string[];
+
+  /** Cible SELECTION : identifiants des comptes intervenants désignés. */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(500)
+  destinatairesIntervenants?: string[];
 }

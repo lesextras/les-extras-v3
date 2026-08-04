@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsEnum,
   IsInt,
   IsISO8601,
@@ -9,7 +11,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { MissionCategory } from '@prisma/client';
+import { CibleDiffusion, MissionCategory, ModeAttribution } from '@prisma/client';
 
 /** Mise à jour partielle d'une mission (tant qu'elle n'est pas clôturée). */
 export class UpdateMissionDto {
@@ -70,4 +72,32 @@ export class UpdateMissionDto {
   @IsInt()
   @Min(1)
   headcount?: number;
+
+  @IsOptional()
+  @IsString()
+  orgUnitId?: string;
+
+  @IsOptional()
+  @IsEnum(ModeAttribution)
+  modeAttribution?: ModeAttribution;
+
+  /**
+   * Rouvrir une mission trop restreinte, ou au contraire la resserrer. Le
+   * ciblage n'est retouché que si l'un de ces trois champs est envoyé.
+   */
+  @IsOptional()
+  @IsEnum(CibleDiffusion)
+  cibleDiffusion?: CibleDiffusion;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(500)
+  destinatairesSalaries?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(500)
+  destinatairesIntervenants?: string[];
 }

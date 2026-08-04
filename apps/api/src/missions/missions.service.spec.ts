@@ -30,6 +30,16 @@ function createNotificationsMock() {
   };
 }
 
+/** Ciblage neutre : aucune restriction nominative (cible RESEAU). */
+function ciblageMock() {
+  return {
+    intervenantsConnus: jest.fn().mockResolvedValue([]),
+    intervenantsAutorises: jest.fn().mockResolvedValue(null),
+    salariesDestinataires: jest.fn().mockResolvedValue([]),
+    assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
+  };
+}
+
 describe('MissionsService', () => {
   let prisma: ReturnType<typeof createPrismaMock>;
   let notifications: ReturnType<typeof createNotificationsMock>;
@@ -53,6 +63,8 @@ describe('MissionsService', () => {
       mail as any,
       community as any,
       progression as any,
+      ciblageMock() as any,
+      { sengager: jest.fn(), relancerDecisionsEnAttente: jest.fn().mockResolvedValue(0) } as any,
     );
   });
 
@@ -193,6 +205,11 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
     emergency: false,
     visibility: 'PUBLIC',
     diffusionVague: 0,
+    modeAttribution: 'AUTOMATIQUE',
+    cibleDiffusion: 'RESEAU',
+    orgUnitId: null,
+    destinatairesSalaries: [],
+    destinatairesIntervenants: [],
   };
 
   /** 40 candidats au score décroissant : 95, 94, 93… pour couvrir les 3 seuils. */
@@ -206,8 +223,8 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
     }));
   }
 
-  function monter(vagueCourante = 0, liste = candidats()) {
-    const mission = { ...MISSION, diffusionVague: vagueCourante };
+  function monter(vagueCourante = 0, liste = candidats(), extra: Record<string, unknown> = {}) {
+    const mission = { ...MISSION, diffusionVague: vagueCourante, ...extra };
     const prisma = {
       reliefMission: {
         findUnique: jest.fn().mockResolvedValue(mission),
@@ -223,6 +240,8 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
       mail as any,
       { crediter: jest.fn() } as any,
       { superExtrasParmi: jest.fn().mockResolvedValue(new Set()) } as any,
+      ciblageMock() as any,
+      { sengager: jest.fn(), relancerDecisionsEnAttente: jest.fn().mockResolvedValue(0) } as any,
     );
     return { service, prisma, mail };
   }
@@ -295,5 +314,123 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
     const n = await (service as any).broadcastToMatched('m1', 'etab');
     expect(n).toBe(1);
     expect(mail.sendMissionMatch).toHaveBeenCalledWith('c@ex.fr', expect.anything());
+  });
+
+  /**
+   * MATCHING ÉLARGI — le vrai gain du mode « file d'engagement ».
+   *
+   * Le dosage restrictif des vagues n'existe que parce que le premier arrivé
+   * emporte la mission. Dès que l'établissement valide chaque profil, ce
+   * garde-fou n'a plus lieu d'être : on doit ouvrir beaucoup plus large, sinon
+   * le mode ne sert à rien qu'à ralentir.
+   */
+  it('file d’engagement : la première vague sollicite trois fois plus de monde', async () => {
+    const { service, mail } = monter(0, candidats(), { modeAttribution: 'FILE_ENGAGEMENT' });
+    const n = await (service as any).broadcastToMatched('m1', 'etab');
+    expect(n).toBe(25);
+    expect(mail.sendMissionMatch).toHaveBeenCalledTimes(25);
+  });
+
+  it('file d’engagement : le seuil de correspondance descend à 40 dès la vague 1', async () => {
+    const liste = [
+      { accountId: 'a', email: 'a@ex.fr', available: true, hasConflict: false, total: 55 },
+      { accountId: 'b', email: 'b@ex.fr', available: true, hasConflict: false, total: 41 },
+      { accountId: 'c', email: 'c@ex.fr', available: true, hasConflict: false, total: 39 },
+    ];
+    const { service, mail } = monter(0, liste, { modeAttribution: 'FILE_ENGAGEMENT' });
+    // En attribution automatique, seuls les profils >= 60 auraient été retenus :
+    // ici les deux premiers passent, le troisième reste sous le seuil.
+    expect(await (service as any).broadcastToMatched('m1', 'etab')).toBe(2);
+    expect(mail.sendMissionMatch.mock.calls.map((c: any[]) => c[0])).not.toContain('c@ex.fr');
+  });
+});
+
+/**
+ * DIFFUSION CIBLÉE NOMINATIVE — « uniquement les gens que je connais ».
+ *
+ * Ce qu'on protège : une mission adressée à des destinataires précis part à
+ * ceux-là et à personne d'autre, en une seule fois, sans élargissement.
+ */
+describe('MissionsService — diffusion nominative', () => {
+  function monter(mission: Record<string, unknown>, autorises: Set<string> | null, salaries: string[] = []) {
+    const complete = {
+      id: 'm1',
+      accountId: 'etab',
+      title: 'Renfort SESSAD',
+      city: 'Melun',
+      startDate: new Date('2026-09-01'),
+      job: 'AES',
+      hourlyRate: null,
+      emergency: false,
+      visibility: 'RESERVED',
+      diffusionVague: 0,
+      modeAttribution: 'AUTOMATIQUE',
+      cibleDiffusion: 'CONNUS',
+      orgUnitId: null,
+      destinatairesSalaries: [],
+      destinatairesIntervenants: [],
+      ...mission,
+    };
+    const prisma = {
+      reliefMission: {
+        findUnique: jest.fn().mockResolvedValue(complete),
+        update: jest.fn().mockResolvedValue(complete),
+      },
+    };
+    const matching = {
+      candidatesForMission: jest.fn().mockResolvedValue({
+        candidates: [
+          { accountId: 'connu', email: 'connu@ex.fr', available: true, hasConflict: false, total: 90 },
+          { accountId: 'inconnu', email: 'inconnu@ex.fr', available: true, hasConflict: false, total: 99 },
+        ],
+      }),
+    };
+    const mail = { sendMissionMatch: jest.fn().mockResolvedValue(undefined) };
+    const notifications = { create: jest.fn().mockResolvedValue(undefined) };
+    const ciblage = {
+      intervenantsConnus: jest.fn().mockResolvedValue([...(autorises ?? [])]),
+      intervenantsAutorises: jest.fn().mockResolvedValue(autorises),
+      salariesDestinataires: jest.fn().mockResolvedValue(salaries),
+      assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
+    };
+    const service = new MissionsService(
+      prisma as any,
+      notifications as any,
+      matching as any,
+      mail as any,
+      { crediter: jest.fn() } as any,
+      { superExtrasParmi: jest.fn().mockResolvedValue(new Set()) } as any,
+      ciblage as any,
+      { sengager: jest.fn(), relancerDecisionsEnAttente: jest.fn().mockResolvedValue(0) } as any,
+    );
+    return { service, mail, notifications, prisma };
+  }
+
+  it('n’écrit qu’aux intervenants désignés, même si un meilleur profil existe', async () => {
+    const { service, mail } = monter({}, new Set(['connu']));
+    const n = await (service as any).broadcastToMatched('m1', 'etab');
+    expect(n).toBe(1);
+    const destinataires = mail.sendMissionMatch.mock.calls.map((c: any[]) => c[0]);
+    expect(destinataires).toEqual(['connu@ex.fr']);
+  });
+
+  it('cible « unité » : personne à l’extérieur, uniquement les salariés du service', async () => {
+    const { service, mail, notifications } = monter(
+      { cibleDiffusion: 'UNITE', visibility: 'SALARIES', orgUnitId: 'u1' },
+      new Set<string>(),
+      ['user-a', 'user-b'],
+    );
+    const n = await (service as any).broadcastToMatched('m1', 'etab');
+    expect(mail.sendMissionMatch).not.toHaveBeenCalled();
+    expect(notifications.create).toHaveBeenCalledTimes(2);
+    expect(n).toBe(2);
+  });
+
+  it('ne prépare jamais de seconde vague : la restriction est définitive', async () => {
+    const { service, prisma } = monter({}, new Set(['connu']));
+    await (service as any).broadcastToMatched('m1', 'etab');
+    expect(prisma.reliefMission.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ diffusionVague: 1 }) }),
+    );
   });
 });

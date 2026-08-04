@@ -132,10 +132,41 @@ export interface Mission {
   /** Validation hiérarchique : publication demandée, en attente d'approbation. */
   attenteValidation?: boolean;
   visibility: MissionVisibility;
+  /** AUTOMATIQUE : le premier qui accepte. FILE_ENGAGEMENT : l'établissement valide. */
+  modeAttribution?: ModeAttribution;
+  /** À qui l'offre a été adressée (RESEAU = diffusion normale en cascade). */
+  cibleDiffusion?: CibleDiffusion;
+  orgUnitId?: string | null;
   publishedAt?: string | null;
   createdAt: string;
   bookings?: Booking[];
+  engagements?: MissionEngagement[];
   _count?: { bookings?: number };
+}
+
+export type ModeAttribution = "AUTOMATIQUE" | "FILE_ENGAGEMENT";
+export type CibleDiffusion = "RESEAU" | "CONNUS" | "UNITE" | "SELECTION";
+export type EngagementStatut =
+  | "EN_ATTENTE"
+  | "PRESENTE"
+  | "ACCEPTE"
+  | "REFUSE"
+  | "RETIRE"
+  | "CADUC";
+
+/** Une prise de mission dans la file d'engagement. */
+export interface MissionEngagement {
+  id: string;
+  missionId: string;
+  accountId: string;
+  rang: number;
+  statut: EngagementStatut;
+  message?: string | null;
+  presenteAt?: string | null;
+  decideAt?: string | null;
+  motifRefus?: string | null;
+  createdAt: string;
+  account?: Account & { owner?: PublicUser | null };
 }
 
 export interface Service {

@@ -71,6 +71,30 @@ Points structurants :
   bout dans `bookings/parcours.spec.ts` (réservation→contrat→signature).
 - Cascade de diffusion missions : SALARIES → RESERVED (vivier + historique,
   `intervenantsConnus()`) → PUBLIC — appliquée à l'écriture ET à la lecture.
+- **SOS Renfort — ciblage et attribution (août 2026).** Deux réglages
+  indépendants, choisis par l'établissement à la publication (`RenfortModal`) :
+  - `ReliefMission.cibleDiffusion` = QUI reçoit. `RESEAU` (cascade normale,
+    défaut) · `CONNUS` (vivier + historique seuls) · `UNITE` (salariés de
+    `orgUnitId` seuls) · `SELECTION` (`destinatairesSalaries` = User.id,
+    `destinatairesIntervenants` = Account.id). Toute cible ≠ RESEAU
+    **verrouille** : palier imposé (`CiblageService.palierImpose`), jamais
+    de marketplace publique, pas d'élargissement (`broaden()` refuse, les deux
+    planificateurs passent leur tour). Le garde-fou `assertCiblageRespecte()`
+    est appliqué à la RÉPONSE aussi (`candidate`, `accept`, `sengager`) :
+    sinon n'importe qui muni du lien contournerait la restriction.
+  - `ReliefMission.modeAttribution` = COMMENT on attribue. `AUTOMATIQUE`
+    (premier arrivé, premier servi — inchangé) · `FILE_ENGAGEMENT` :
+    « je prends la mission » crée un `MissionEngagement` (rang = ordre
+    d'arrivée), UN profil est présenté à la fois, l'établissement accepte ou
+    refuse, le refus présente aussitôt le suivant, l'acceptation seule pourvoit
+    la mission et émet le contrat. `EngagementsService` — `sengager()`,
+    `retirer()`, `presenterSuivant()`, `decider()`,
+    `relancerDecisionsEnAttente()` (cron, une relance par profil).
+    En file d'engagement, le matching s'élargit (`VAGUES_LARGES` : 25/60/300,
+    seuils 40/30/20) — c'est possible SANS risque puisque l'établissement
+    valide. `accept()` redirige vers `sengager()` si le mode l'exige.
+  - Écrans : `_shared/FileEngagement.tsx` (onglet « Profils à valider » du
+    board `/dashboard/renforts`), `AcceptMissionButton` (libellé selon le mode).
 - Signature électronique simple (art. 1367 cc) : empreinte SHA-256 du texte
   canonique, code 6 chiffres haché salé, 15 min, 3 essais, journal
   append-only, refus si document modifié. Page signataire :

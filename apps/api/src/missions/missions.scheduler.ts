@@ -335,6 +335,12 @@ export class MissionsScheduler {
     const seuil = this.relanceApresHeures;
     if (heuresDepuisPublication < seuil || heuresDepuisMaj < seuil) return bilan;
 
+    // Une mission adressée nominativement ne se relance pas toute seule : ni
+    // élargissement, ni rediffusion. L'établissement a demandé que l'offre
+    // reste entre les personnes qu'il a désignées, et cette demande survit à
+    // l'absence de réponse — c'est à lui, et à lui seul, de l'ouvrir.
+    if (mission.cibleDiffusion !== 'RESEAU') return bilan;
+
     const palierCourant = mission.visibility;
     const typeRepere = `${TYPE_RELANCE}${palierCourant}`;
     if (await this.repereExiste(proprietaireId, typeRepere, mission.id)) {

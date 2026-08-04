@@ -16,6 +16,8 @@ import { AccountRolesGuard } from '../common/guards/account-roles.guard';
 import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { MissionsService } from './missions.service';
+import { EngagementsService } from './engagements.service';
+import { DeciderEngagementDto, SengagerDto } from './dto/engagement.dto';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { PublishMissionDto } from './dto/publish-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
@@ -30,7 +32,10 @@ interface AccountCtx {
 @Controller('missions')
 @UseGuards(JwtAuthGuard)
 export class MissionsController {
-  constructor(private readonly missions: MissionsService) {}
+  constructor(
+    private readonly missions: MissionsService,
+    private readonly engagements: EngagementsService,
+  ) {}
 
   /** Marketplace public (authentifié) : missions publiées + filtres. */
   @Get('marketplace')
@@ -133,10 +138,62 @@ export class MissionsController {
   /**
    * SOS Renfort — accepter la mission (FREELANCE) : premier arrivé, premier servi.
    * La mission passe en « pourvue » et n'est plus disponible ; contrat généré.
+   * En mode « file d'engagement », le service redirige vers /sengager.
    */
   @Post(':id/accept')
   @UseGuards(AccountGuard)
   accept(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.missions.accept(id, account.id, account.type);
+  }
+
+  // ── File d'engagement ────────────────────────────────────────────────────
+
+  /**
+   * « Je prends la mission » (FREELANCE) : l'intervenant s'engage et prend
+   * rang dans la file. Rien n'est confirmé tant que l'établissement n'a pas
+   * validé son profil — et le contrat n'est émis qu'à ce moment-là.
+   */
+  @Post(':id/sengager')
+  @UseGuards(AccountGuard)
+  sengager(
+    @Param('id') id: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto?: SengagerDto,
+  ) {
+    return this.engagements.sengager(id, account.id, account.type, dto?.message);
+  }
+
+  /** Se retirer de la file (FREELANCE) : tant qu'il n'a pas signé, il est libre. */
+  @Delete(':id/sengager')
+  @UseGuards(AccountGuard)
+  seRetirer(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.engagements.retirer(id, account.id);
+  }
+
+  /**
+   * La file d'engagement d'une mission (ESTABLISHMENT propriétaire).
+   * Lisible par tout membre du compte, comme le pipeline de candidatures ;
+   * seule la DÉCISION est réservée aux responsables.
+   */
+  @Get(':id/engagements')
+  @UseGuards(AccountGuard)
+  engagementsDe(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
+    return this.engagements.liste(id, account.id);
+  }
+
+  /**
+   * Accepter ou refuser le profil présenté. L'acceptation pourvoit la mission
+   * et émet le contrat ; le refus présente aussitôt le suivant de la file.
+   */
+  @Post(':id/engagements/:engagementId/decision')
+  @UseGuards(AccountGuard, AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  deciderEngagement(
+    @Param('id') id: string,
+    @Param('engagementId') engagementId: string,
+    @CurrentAccount() account: AccountCtx,
+    @Body() dto: DeciderEngagementDto,
+  ) {
+    return this.engagements.decider(id, engagementId, account.id, dto.decision, dto.motif);
   }
 }
