@@ -398,8 +398,29 @@ export class MissionsService {
     });
   }
 
+  /**
+   * ON NE SUPPRIME PAS CE À QUOI QUELQU'UN S'EST DÉJÀ ENGAGÉ.
+   *
+   * Supprimer une mission effaçait la mission, mais laissait les candidatures
+   * derrière elle : l'intervenant gardait « 1 candidature en cours » sur son
+   * tableau de bord, pour une annonce qui n'existait plus, et sans aucun
+   * moyen de s'en défaire. Du travail engagé de son côté disparaissait sans
+   * un mot.
+   *
+   * Une mission qui a reçu des candidatures se CLÔTURE (les candidats sont
+   * prévenus, l'historique reste). La suppression pure reste possible tant
+   * que personne ne s'est positionné.
+   */
   async remove(id: string, accountId: string) {
     await this.assertOwned(id, accountId);
+    const candidatures = await this.prisma.booking.count({ where: { missionId: id } });
+    if (candidatures > 0) {
+      throw new BadRequestException(
+        candidatures === 1
+          ? 'Une personne a déjà candidaté à ce renfort : il ne peut plus être supprimé. Clôturez-le — elle en sera informée, et l’historique restera consultable.'
+          : `${candidatures} personnes ont déjà candidaté à ce renfort : il ne peut plus être supprimé. Clôturez-le — elles en seront informées, et l’historique restera consultable.`,
+      );
+    }
     await this.prisma.reliefMission.delete({ where: { id } });
     return { deleted: true };
   }

@@ -13,6 +13,7 @@ import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
+import { EmailVerifieGuard } from '../common/guards/email-verifie.guard';
 import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { MissionsService } from './missions.service';
@@ -84,9 +85,13 @@ export class MissionsController {
   /**
    * Publier : DRAFT -> PUBLISHED. Démarre la cascade au palier le plus
    * restreint utile ; `visibility` permet de forcer (ex. urgence -> PUBLIC).
+   *
+   * EmailVerifieGuard : diffuser une annonce engage la plateforme auprès de
+   * tiers. On ne l'exige QU'ICI — consulter, candidater, préparer un brouillon
+   * restent ouverts à un compte non confirmé (voir le commentaire du garde).
    */
   @Post(':id/publish')
-  @UseGuards(AccountGuard, AccountRolesGuard)
+  @UseGuards(AccountGuard, AccountRolesGuard, EmailVerifieGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   publish(
     @Param('id') id: string,
