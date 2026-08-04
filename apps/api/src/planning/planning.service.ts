@@ -3,6 +3,29 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateShiftDto, UpdateShiftDto } from './dto/shift.dto';
 import { Constat, aUnBloquant, evaluerCreneau, PLAFONDS } from './conformite-horaire';
 
+/**
+ * Heure de fin d'une mission d'un seul jour, déduite de son horaire de fin.
+ *
+ * Le champ est saisi librement : « 17h00 », « 17:00 », « 17 h ». On accepte
+ * les trois plutôt que d'imposer une forme à la personne qui remplit le
+ * formulaire. Tout ce qui ne se lit pas renvoie `null`, et l'appelant reprend
+ * son calcul habituel — jamais d'horaire inventé.
+ */
+function finDepuisHoraire(debut: Date | null, horaire: string | null): Date | null {
+  if (!debut || !horaire) return null;
+  const m = horaire.trim().match(/^(\d{1,2})\s*[h:]\s*(\d{2})?$/i);
+  if (!m) return null;
+  const heures = Number(m[1]);
+  const minutes = Number(m[2] ?? 0);
+  if (heures > 23 || minutes > 59) return null;
+
+  const fin = new Date(debut);
+  fin.setUTCHours(heures, minutes, 0, 0);
+  // Une nuit d'internat finit le lendemain matin : 21 h → 7 h.
+  if (fin <= debut) fin.setUTCDate(fin.getUTCDate() + 1);
+  return fin;
+}
+
 @Injectable()
 export class PlanningService {
   constructor(private readonly prisma: PrismaService) {}
@@ -189,7 +212,19 @@ export class PlanningService {
       orderBy: { createdAt: 'desc' },
       take: 500,
       include: {
-        mission: { select: { id: true, title: true, accountId: true, startDate: true, endDate: true } },
+        mission: {
+          select: {
+            id: true,
+            title: true,
+            accountId: true,
+            startDate: true,
+            endDate: true,
+            // Les horaires portent la vraie durée quand la mission tient sur
+            // une seule journée (`endDate` est alors laissée vide).
+            startTime: true,
+            endTime: true,
+          },
+        },
         service: { select: { id: true, title: true, accountId: true, durationMinutes: true } },
         account: { select: { id: true, name: true } },
       },
@@ -202,8 +237,17 @@ export class PlanningService {
         const debutEntree = b.mission?.startDate ?? b.scheduledAt ?? null;
         if (!dansLaPeriode(debutEntree)) return null;
         const minutes = b.service?.durationMinutes ?? DUREE_DEFAUT_MIN;
+        // `endDate` est facultative : une mission de 9 h à 17 h sur une seule
+        // journée ne la renseigne pas. Le planning tombait alors sur le défaut
+        // de deux heures et affichait « 09:00 – 11:00 » pour une journée
+        // entière — pendant que le contrat, lui, comptait bien huit heures.
+        // Deux écrans qui se contredisent sur la même mission, c'est l'outil
+        // qu'on cesse de croire.
+        const finHoraire = finDepuisHoraire(debutEntree, b.mission?.endTime ?? null);
         const finEntree =
-          b.mission?.endDate ?? new Date(debutEntree!.getTime() + minutes * 60_000);
+          b.mission?.endDate ??
+          finHoraire ??
+          new Date(debutEntree!.getTime() + minutes * 60_000);
         return {
           id: `booking:${b.id}`,
           title: b.mission?.title ?? b.service?.title ?? 'Intervention',
