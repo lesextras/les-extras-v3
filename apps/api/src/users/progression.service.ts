@@ -124,7 +124,7 @@ export class ProgressionService {
 
     const criteres = (seuils: (typeof SEUILS)['CONFIRME' | 'SUPER_EXTRA']): Critere[] => [
       {
-        libelle: 'Missions terminees',
+        libelle: 'Missions terminées',
         atteint: s.terminees >= seuils.missions,
         valeur: String(s.terminees),
         cible: `${seuils.missions}`,
@@ -159,10 +159,10 @@ export class ProgressionService {
       prochainPalier: prochain,
       criteresProchainPalier: prochain ? criteres(SEUILS[prochain]) : [],
       avantages: {
-        NOUVEAU: "Acces aux missions publiques du reseau.",
-        CONFIRME: 'Badge « Confirme » visible sur votre profil public.',
+        NOUVEAU: "Accès aux missions publiques du réseau.",
+        CONFIRME: 'Badge « Confirmé » visible sur votre profil public.',
         SUPER_EXTRA:
-          'Badge « Super Extra » + acces prioritaire : vous etes sollicite avant l’ouverture des missions au reseau complet.',
+          'Badge « Super Extra » + accès prioritaire : vous êtes sollicité avant l’ouverture des missions au réseau complet.',
       },
     };
   }
