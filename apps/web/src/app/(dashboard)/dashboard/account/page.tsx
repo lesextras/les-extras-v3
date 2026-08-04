@@ -121,12 +121,13 @@ export default async function AccountPage({
               <SectionTitle title="Préférences" />
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-muted-foreground">
-              <div className="flex items-center justify-between border-b border-border pb-4">
-                <div>
-                  <p className="font-medium text-foreground">Notifications email</p>
-                  <p>Recevez un email pour chaque candidature ou réservation.</p>
-                </div>
-                <Badge variant="outline">Activé</Badge>
+              {/* L'étiquette « Activé » à droite ressemblait à un interrupteur
+                  posé au milieu de vrais réglages : on cliquait, rien ne se
+                  passait. Tant que le choix n'existe pas, on énonce le fait
+                  plutôt que de faire semblant d'offrir une bascule. */}
+              <div className="border-b border-border pb-4">
+                <p className="font-medium text-foreground">Notifications email</p>
+                <p>Vous recevez un e-mail pour chaque candidature ou réservation.</p>
               </div>
               {!isFreelance ? (
                 <BasculeValidationMissions accountId={accountId} canManage={canManage} />
