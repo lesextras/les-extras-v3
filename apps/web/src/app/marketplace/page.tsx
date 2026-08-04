@@ -66,7 +66,10 @@ export default async function MarketplacePage({
     postalCode: searchParams.cp,
     rayonKm: searchParams.cp ? searchParams.rayon : undefined,
   });
-  const servicesQuery = qs({ category: serviceCategory });
+  // La recherche s'applique aux DEUX listes. Elle n'était transmise qu'aux
+  // missions : on tapait « médiation », les ateliers ne bougeaient pas, alors
+  // que la page annonce « missions de renfort et ateliers ».
+  const servicesQuery = qs({ search: searchParams.q, category: serviceCategory });
 
   const [missionsRes, servicesRes] = await Promise.all([
     wantMissions
