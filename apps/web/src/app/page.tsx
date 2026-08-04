@@ -183,7 +183,10 @@ export default async function LandingPage() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{catalogueTotal} interventions</p>
-                    <p className="text-xs text-muted-foreground">au catalogue, notées après mission</p>
+                    {/* « notées après mission » promettait des avis qui n'existent
+                        pas encore : tant que les premières notes ne sont pas là,
+                        on met en avant ce qui est vrai dès aujourd'hui. */}
+                    <p className="text-xs text-muted-foreground">au catalogue, vérifiées par ADéPA</p>
                   </div>
                 </div>
               </Reveal>
@@ -196,8 +199,11 @@ export default async function LandingPage() {
                     <span className="animate-anneau absolute size-2.5 rounded-full bg-success" />
                     <span className="size-2.5 rounded-full bg-success" />
                   </span>
+                  {/* Le réseau réel est aujourd'hui francilien : promettre la
+                      France entière déçoit le premier établissement breton qui
+                      s'inscrit. Assumer le territoire convertit mieux. */}
                   <span className="text-xs font-medium text-foreground">
-                    Réseau actif dans toute la France
+                    Réseau actif — Île-de-France, et bientôt partout
                   </span>
                 </div>
               </Reveal>
@@ -212,7 +218,7 @@ export default async function LandingPage() {
         <section className="border-y border-border/60 bg-card">
           <div className="mx-auto max-w-[1360px] py-7">
             <p className="px-6 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Ils nous font confiance dans toute la France
+              Pensé pour les structures du médico-social
             </p>
             <div
               className="marquee-hover mt-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
@@ -588,8 +594,11 @@ export default async function LandingPage() {
                   <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div className="max-w-2xl">
                       <span className="eyebrow">Sans compte, sans engagement</span>
+                      {/* « les mieux notés » sans aucun avis publié minait la
+                          confiance : « sélection » dit la même mise en avant,
+                          sans promettre une note qui n'existe pas encore. */}
                       <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                        Les ateliers les mieux notés
+                        Notre sélection d’ateliers
                       </h2>
                     </div>
                     <Button asChild variant="outline">
