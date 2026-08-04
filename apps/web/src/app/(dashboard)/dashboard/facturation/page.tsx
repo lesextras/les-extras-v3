@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { CheckoutButton } from "../../../_shared/BillingActions";
+import { FactureActions } from "../../../_shared/FactureActions";
 import { PageHeader, StatCard, EmptyState, ErrorState } from "../../../_shared/ui";
 import {
   INVOICE_STATUS_LABEL,
@@ -180,12 +181,15 @@ function Onglet({
 export default async function FacturationPage({
   searchParams,
 }: {
-  searchParams?: { vue?: string };
+  searchParams?: { vue?: string; paiement?: string };
 }) {
   const session = await requireSession();
   const accountId = session.account.id;
   const isEstablishment = session.account.type === "ESTABLISHMENT";
   const vue = searchParams?.vue === "devis" ? "devis" : "factures";
+  // Retour de Stripe. Sans ce bandeau, le client revenait de la banque sur une
+  // page inchangée, sans savoir si son règlement était passé.
+  const retourPaiement = searchParams?.paiement;
 
   const [quotes, summary, invoices] = await Promise.all([
     fetchApi<{ items: QuoteRow[]; total: number }>(
@@ -222,6 +226,17 @@ export default async function FacturationPage({
         title="Devis & factures"
         subtitle="Le chiffrage et la facturation au même endroit : un devis accepté devient une facture, sans changer de page."
       />
+
+      {retourPaiement === "succes" ? (
+        <p className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-foreground">
+          Votre règlement a bien été enregistré. La facture passe en « réglée » dès que la banque
+          confirme — comptez quelques instants.
+        </p>
+      ) : retourPaiement === "annule" ? (
+        <p className="rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          Paiement interrompu : rien n&apos;a été débité. Vous pouvez réessayer quand vous voulez.
+        </p>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border bg-card p-1">
         <Onglet href="/dashboard/facturation?vue=devis" actif={vue === "devis"} compteur={devisAtraiter}>
@@ -320,7 +335,16 @@ export default async function FacturationPage({
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {isEstablishment && inv.status === "ISSUED" ? (
+                            {/* Le cycle de vie appartient à l'émetteur : c'est
+                                sa séquence de numéros qui est engagée. */}
+                            <FactureActions
+                              invoiceId={inv.id}
+                              accountId={accountId}
+                              statut={inv.status}
+                              estEmetteur={inv.accountId === accountId}
+                              compact
+                            />
+                            {inv.status === "ISSUED" && inv.accountId !== accountId ? (
                               <CheckoutButton
                                 accountId={accountId}
                                 kind="invoice"

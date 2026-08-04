@@ -71,8 +71,12 @@ export class DocumentsService {
   }
 
   async facture(accountId: string, id: string) {
+    // La facture se télécharge des deux côtés : celui qui l'émet et celui à qui
+    // elle est adressée. L'émetteur reste toujours le compte porteur de la
+    // facture — c'est son SIRET qui l'engage — même quand c'est le payeur qui
+    // demande le document.
     const facture = await this.prisma.invoice.findFirst({
-      where: { id, accountId },
+      where: { id, OR: [{ accountId }, { payerAccountId: accountId }] },
       include: {
         booking: {
           select: {
@@ -89,7 +93,7 @@ export class DocumentsService {
     if (!facture) throw new NotFoundException('Facture introuvable.');
 
     const emetteur = await this.prisma.account.findUnique({
-      where: { id: accountId },
+      where: { id: facture.accountId },
       select: {
         name: true,
         legalName: true,
@@ -102,12 +106,16 @@ export class DocumentsService {
     });
     if (!emetteur) throw new NotFoundException('Émetteur introuvable.');
 
-    // Le client est le compte à l'origine de la réservation, quand il diffère
-    // de l'émetteur. Sans réservation rattachée, on ne l'invente pas.
+    // Le client : le payeur désigné en priorité (cas d'une inscription en
+    // formation, où aucune réservation ne relie les deux comptes), sinon le
+    // compte à l'origine de la réservation. Sans l'un ni l'autre, on ne
+    // l'invente pas — une facture sans client vaut mieux qu'un faux client.
     const clientId =
-      facture.booking && facture.booking.accountId !== accountId
-        ? facture.booking.accountId
-        : null;
+      facture.payerAccountId && facture.payerAccountId !== facture.accountId
+        ? facture.payerAccountId
+        : facture.booking && facture.booking.accountId !== facture.accountId
+          ? facture.booking.accountId
+          : null;
     const client = clientId
       ? await this.prisma.account.findUnique({
           where: { id: clientId },

@@ -1,6 +1,7 @@
 // Détail d'une session : inscrits + feuille d'émargement.
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { InvoiceStatus } from "../../../../_shared/types";
 import { requireSession, fetchApi } from "../../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../../_shared/ui";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -35,6 +36,7 @@ interface Inscription {
   status: string;
   financing: string;
   invoiceId?: string | null;
+  invoice?: { id: string; number: string; status: InvoiceStatus; accountId: string } | null;
   satisfaction?: number | null;
   coldRating?: number | null;
 }
@@ -168,6 +170,7 @@ export default async function SessionDetailPage({ params }: { params: { sessionI
                         accountId={session.account.id}
                         certifying={Boolean(s.formation?.certifying)}
                         invoiced={Boolean(i.invoiceId)}
+                        facture={i.invoice ?? null}
                       />
                       {/* Les deux évaluations exigées par le référentiel
                           national qualité. Elles s'ouvrent une fois la session

@@ -36,9 +36,16 @@ export class InvoicesService {
     return numeroSuivant(annee, derniere?.number ?? null);
   }
 
+  /**
+   * Mes factures : celles que j'ai émises ET celles qui me sont adressées.
+   *
+   * Sans le second cas, l'établissement inscrit à une formation ne voyait
+   * jamais la facture qui lui était pourtant destinée — et le bouton « Payer
+   * en ligne », conditionné à son affichage, restait inatteignable.
+   */
   async findAllByAccount(accountId: string, take = 100) {
     return this.prisma.invoice.findMany({
-      where: { accountId },
+      where: { OR: [{ accountId }, { payerAccountId: accountId }] },
       orderBy: { createdAt: 'desc' },
       take: Math.min(200, Math.max(1, Math.trunc(Number(take) || 100))),
       include: { booking: { select: { id: true, status: true } } },
@@ -146,8 +153,12 @@ export class InvoicesService {
           include: {
             service: { select: { title: true } },
             mission: { select: { title: true } },
+            // Le compte à l'origine de la réservation : c'est lui le client
+            // quand la facture naît d'un atelier, faute de payeur explicite.
+            account: { select: { id: true, owner: { select: { email: true } } } },
           },
         },
+        payer: { select: { id: true, name: true, owner: { select: { email: true } } } },
         account: {
           select: {
             id: true,
@@ -163,8 +174,20 @@ export class InvoicesService {
       },
     });
     if (!invoice) throw new NotFoundException('Facture introuvable.');
-    if (invoice.accountId !== accountId) {
+    // Une facture se lit des deux côtés : celui qui l'émet et celui qui la paie.
+    if (invoice.accountId !== accountId && invoice.payerAccountId !== accountId) {
       throw new ForbiddenException('Facture hors de votre compte.');
+    }
+    return invoice;
+  }
+
+  /** Seul l'émetteur dispose du cycle de vie : émettre, encaisser, annuler. */
+  private async assertEmetteur(id: string, accountId: string) {
+    const invoice = await this.findOne(id, accountId);
+    if (invoice.accountId !== accountId) {
+      throw new ForbiddenException(
+        "Cette facture vous est adressée : seul son émetteur peut la modifier.",
+      );
     }
     return invoice;
   }
@@ -196,7 +219,7 @@ export class InvoicesService {
    * avec le lien vers le document imprimable (n'échoue jamais la requête).
    */
   async issue(id: string, accountId: string) {
-    const invoice = await this.findOne(id, accountId);
+    const invoice = await this.assertEmetteur(id, accountId);
     if (invoice.status !== InvoiceStatus.DRAFT) {
       throw new BadRequestException('Seule une facture en brouillon peut être émise.');
     }
@@ -209,7 +232,13 @@ export class InvoicesService {
     });
 
     try {
-      const to = invoice.account?.owner?.email;
+      // Une facture s'annonce à celui qui doit la régler. Elle partait jusqu'ici
+      // à son émetteur, qui la connaissait déjà : personne n'était prévenu.
+      const client =
+        invoice.booking && invoice.booking.accountId !== invoice.accountId
+          ? invoice.booking.account?.owner?.email
+          : null;
+      const to = invoice.payer?.owner?.email ?? client ?? invoice.account?.owner?.email;
       if (to) {
         await this.mail.sendInvoiceIssued(to, {
           number: invoice.number,
@@ -227,7 +256,9 @@ export class InvoicesService {
   }
 
   async markPaid(id: string, accountId: string) {
-    const invoice = await this.findOne(id, accountId);
+    // Constater un règlement est un acte comptable de l'émetteur : c'est sa
+    // séquence de facturation qui l'enregistre, pas celle du payeur.
+    const invoice = await this.assertEmetteur(id, accountId);
     if (invoice.status !== InvoiceStatus.ISSUED) {
       throw new BadRequestException('Seule une facture émise peut être marquée payée.');
     }
@@ -238,7 +269,7 @@ export class InvoicesService {
   }
 
   async cancel(id: string, accountId: string) {
-    const invoice = await this.findOne(id, accountId);
+    const invoice = await this.assertEmetteur(id, accountId);
     if (invoice.status === InvoiceStatus.PAID) {
       throw new BadRequestException('Une facture payée ne peut pas être annulée.');
     }

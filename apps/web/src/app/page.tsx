@@ -92,12 +92,18 @@ export default async function LandingPage() {
                 <Sparkles className="size-3.5" />
                 Le dispositif de l’association ADéPA — depuis 2012
               </span>
+              {/* Le titre nomme le BESOIN, pas la valeur. « Des interventions à
+                  fort impact » ne renseigne pas un directeur qui balaie la page
+                  en trois secondes : c'est le sous-titre qui faisait tout le
+                  travail, deux fois plus petit. On a inversé les deux. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Des interventions à fort impact,{' '}
-                <span className="text-secondary">portées par ceux qui font le terrain.</span>
+                Ateliers, formations Qualiopi et renfort d’équipe{' '}
+                <span className="text-secondary">pour votre établissement.</span>
               </h1>
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Ateliers, formations Qualiopi et renfort d’équipe. Par des indépendants vérifiés du médico-social.
+                Des professionnels indépendants du médico-social, vérifiés, que vous réservez
+                directement. Sans commission : vous payez leur tarif, ils le touchent
+                intégralement.
               </p>
 
               <div className="animate-fade-in-up stagger-3 mt-7 max-w-xl">
@@ -302,7 +308,11 @@ export default async function LandingPage() {
         <section className="border-y border-border bloc-nuit bg-[hsl(222,24%,10%)]">
           <div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-8 px-6 py-12 text-center md:grid-cols-4 md:px-10 md:py-14">
             {[
-              { k: `${catalogueTotal}`, v: 'interventions au catalogue' },
+              // « 14 interventions au catalogue », affiché en premier et en très
+              // gros, annonçait surtout que la plateforme était vide. Un chiffre
+              // de vitrine ne doit pas rétrécir avec le volume : la gratuité,
+              // elle, est vraie dès le premier jour et unique sur ce marché.
+              { k: '0 %', v: 'de commission sur les mises en relation' },
               { k: '2012', v: 'année de création de l’ADéPA' },
               { k: 'Qualiopi', v: 'organisme de formation certifié' },
               { k: '48 h', v: 'pour recevoir votre devis' },

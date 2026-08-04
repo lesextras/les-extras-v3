@@ -150,6 +150,29 @@ Points structurants :
 - Sentry : actif si `SENTRY_DSN` posée (5xx uniquement) — pas encore de DSN.
 - Erreurs API affichées en français côté web (`apps/web/src/lib/api.ts`).
 
+## Facturation — émetteur / payeur (août 2026)
+
+- `Invoice.accountId` = **l'ÉMETTEUR** (celui qui facture, dont le SIRET
+  engage le document) ; `Invoice.payerAccountId` = **le PAYEUR** quand aucun
+  Booking ne relie les deux comptes (cas des inscriptions en formation).
+  Le module formations mettait le PAYEUR comme titulaire : l'organisme ne
+  pouvait ni émettre ni télécharger, et le PDF imprimait l'établissement comme
+  émetteur de sa propre facture.
+- Lecture et PDF ouverts aux DEUX côtés ; `issue` / `pay` / `cancel` réservés à
+  l'émetteur (`assertEmetteur`). L'e-mail d'émission part au PAYEUR (il partait
+  à l'émetteur, qui la connaissait déjà).
+- **Numérotation** : `formations.service.ts` avait sa propre implémentation par
+  `invoice.count()` — celle que `invoices/numerotation.ts` documente comme
+  fautive (art. 242 nonies A ann. II CGI : séquence continue, un numéro annulé
+  reste consommé) et qui produisait une collision sur `Invoice.number @unique`.
+  Tout le monde utilise désormais `numeroSuivant()`.
+- Écran `_shared/FactureActions.tsx` : émettre / marquer réglée / annuler.
+  Branché sur `/dashboard/facturation` et sur la fiche session de formation.
+  Sans lui, aucune facture ne sortait jamais du brouillon.
+- `success_url` du paiement de facture pointe désormais sur
+  `/dashboard/facturation?vue=factures&paiement=succes` : il passait par
+  `/dashboard/finance`, une simple redirection qui perdait le paramètre.
+
 ## Infra / production
 
 - **Coolify** : `http://168.231.86.146:8000/` — projet `gxjl062jb5vsazrtreefl3u7`,

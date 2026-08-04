@@ -9,5 +9,7 @@ import WizardForm from './wizard-form';
 export default async function WizardPage() {
   const session = await getSession();
   const type = session?.activeAccount?.type === 'FREELANCE' ? 'FREELANCE' : 'ESTABLISHMENT';
-  return <WizardForm typeDeCompte={type} />;
+  // Le dépôt de pièces a besoin du compte actif : sans lui, l'étape
+  // « Documents » ne peut rien envoyer — c'était exactement son état.
+  return <WizardForm typeDeCompte={type} accountId={session?.activeAccount?.id ?? null} />;
 }

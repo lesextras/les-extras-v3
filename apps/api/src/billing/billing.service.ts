@@ -298,8 +298,11 @@ export class BillingService {
       'line_items[0][price_data][currency]': 'eur',
       'line_items[0][price_data][unit_amount]': String(amountCents),
       'line_items[0][price_data][product_data][name]': `Les Extras — Facture ${invoice.number}`,
-      success_url: `${webUrl}/dashboard/finance?paiement=succes`,
-      cancel_url: `${webUrl}/dashboard/finance?paiement=annule`,
+      // Pointer directement l'écran des factures : `/dashboard/finance` n'est
+      // qu'une redirection, et elle perdait le paramètre en route — le client
+      // revenait de Stripe sans la moindre confirmation.
+      success_url: `${webUrl}/dashboard/facturation?vue=factures&paiement=succes`,
+      cancel_url: `${webUrl}/dashboard/facturation?vue=factures&paiement=annule`,
       'metadata[kind]': 'invoice',
       'metadata[accountId]': accountId,
       'metadata[invoiceId]': invoice.id,

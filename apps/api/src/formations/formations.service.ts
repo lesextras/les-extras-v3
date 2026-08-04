@@ -16,6 +16,7 @@ import {
   SessionStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { numeroSuivant, prefixeAnnee } from '../invoices/numerotation';
 import { bornes, page } from '../common/pagination';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateFormationDto } from './dto/create-formation.dto';
@@ -333,6 +334,10 @@ export class FormationsService {
           orderBy: { createdAt: 'asc' },
           include: {
             learner: { select: { id: true, firstName: true, lastName: true, email: true } },
+            // La facture, pour que l'écran sache où en est chaque inscription :
+            // sans elle, une facture déjà créée n'offrait plus aucun geste et
+            // restait en brouillon à vie.
+            invoice: { select: { id: true, number: true, status: true, accountId: true } },
           },
         },
         emargements: true,
@@ -756,13 +761,25 @@ export class FormationsService {
     return inscription;
   }
 
+  /**
+   * Le numéro suivant, tiré du DERNIER attribué et non du nombre de factures.
+   *
+   * Ce module s'était fabriqué sa propre numérotation en comptant les factures
+   * existantes — exactement l'implémentation que `numerotation.ts` décrit comme
+   * fautive et que le reste du code a abandonnée. L'article 242 nonies A de
+   * l'annexe II au CGI impose une séquence continue sans rupture : une facture
+   * annulée consomme son numéro, elle ne le rend pas. Et comme `Invoice.number`
+   * est unique en base, compter produisait tôt ou tard une collision — donc une
+   * erreur serveur au moment précis où l'on facture une formation vendue.
+   */
   private async nextInvoiceNumber(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `INV-${year}-`;
-    const count = await this.prisma.invoice.count({
-      where: { number: { startsWith: prefix } },
+    const annee = new Date().getFullYear();
+    const derniere = await this.prisma.invoice.findFirst({
+      where: { number: { startsWith: prefixeAnnee(annee) } },
+      orderBy: { number: 'desc' },
+      select: { number: true },
     });
-    return `${prefix}${String(count + 1).padStart(5, '0')}`;
+    return numeroSuivant(annee, derniere?.number ?? null);
   }
 
   /** Génère (ou renvoie) la facture d'une inscription — payeur = compte inscripteur. */
@@ -782,13 +799,21 @@ export class FormationsService {
     }
     if (inscription.invoice) return inscription.invoice;
 
-    const payerAccountId = inscription.payerAccountId ?? accountId;
+    // ÉMETTEUR et PAYEUR sont deux choses distinctes, et les confondre est une
+    // faute juridique autant que pratique. La facture d'une formation est émise
+    // par l'organisme certifié — c'est son SIRET qui l'engage — et adressée à
+    // l'établissement qui inscrit. Auparavant, le compte de la facture était
+    // celui du PAYEUR : l'organisme ne pouvait ni l'émettre, ni la télécharger,
+    // et le PDF imprimait l'établissement comme émetteur de sa propre facture.
+    const emetteurId = accountId;
+    const payerAccountId = inscription.payerAccountId ?? null;
     const amt = amount ?? Number(inscription.session.priceHt ?? 0);
     const number = await this.nextInvoiceNumber();
 
     const invoice = await this.prisma.invoice.create({
       data: {
-        accountId: payerAccountId,
+        accountId: emetteurId,
+        payerAccountId: payerAccountId === emetteurId ? null : payerAccountId,
         number,
         amount: amt,
         status: InvoiceStatus.DRAFT,

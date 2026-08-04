@@ -20,6 +20,8 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
+import { FileUpload, type FichierDepose } from '../../_shared/FileUpload';
+import { apiRequest } from '@/lib/api';
 
 /**
  * Les étapes dépendent du type de compte. Un établissement n'a aucun diplôme
@@ -32,8 +34,10 @@ const ETAPES_INTERVENANT = ['Profil', 'Documents', 'Finalisation'] as const;
 
 export default function WizardForm({
   typeDeCompte,
+  accountId,
 }: {
   typeDeCompte: 'ESTABLISHMENT' | 'FREELANCE';
+  accountId?: string | null;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -42,6 +46,8 @@ export default function WizardForm({
     typeDeCompte === 'ESTABLISHMENT' ? ETAPES_ETABLISSEMENT : ETAPES_INTERVENANT;
   const etape = STEPS[step];
   const [submitting, setSubmitting] = React.useState(false);
+  // Pièces déjà déposées pendant l'inscription, pour l'accusé de réception.
+  const [piecesDeposees, setPiecesDeposees] = React.useState<string[]>([]);
 
   const form = useForm<OnboardingProfileValues>({
     resolver: zodResolver(onboardingProfileSchema),
@@ -204,18 +210,44 @@ export default function WizardForm({
                     Ajoutez vos justificatifs pour accélérer la validation de votre profil.
                   </p>
                 </div>
-                <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/40 p-8 text-center transition-colors hover:border-primary/40">
-                  <span className="grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">
-                    <FileUp className="size-6" />
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    Vos diplômes et justificatifs
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Vous les déposerez depuis votre dossier, une fois votre compte créé —
-                    au moment où un établissement vous les demandera.
-                  </span>
-                </label>
+                {/* Cette étape affichait une zone de dépôt qui ne contenait
+                    aucun champ de fichier : cliquer ne faisait rien. Or
+                    « intervenants vérifiés » est le premier argument du site.
+                    On dépose donc réellement, ici, au moment où la personne
+                    a ses documents sous la main. Le reste se complète plus
+                    tard depuis « Mon dossier ». */}
+                {accountId ? (
+                  <div className="space-y-3">
+                    <DepotPiece
+                      accountId={accountId}
+                      type="DIPLOMA"
+                      titre="Diplôme d’État"
+                      aide="DEES, DEME, DEAES, DEEJE… C’est la pièce que les établissements regardent en premier."
+                      depose={piecesDeposees.includes('DIPLOMA')}
+                      onDepose={() => setPiecesDeposees((p) => [...p, 'DIPLOMA'])}
+                    />
+                    <DepotPiece
+                      accountId={accountId}
+                      type="IDENTITY"
+                      titre="Pièce d’identité"
+                      aide="Carte nationale d’identité, passeport ou titre de séjour."
+                      depose={piecesDeposees.includes('IDENTITY')}
+                      onDepose={() => setPiecesDeposees((p) => [...p, 'IDENTITY'])}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/40 p-8 text-center">
+                    <span className="grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">
+                      <FileUp className="size-6" />
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      Vos diplômes et justificatifs
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Vous les déposerez depuis « Mon dossier », une fois votre compte finalisé.
+                    </span>
+                  </div>
+                )}
                 <div className="rounded-xl bg-accent/60 p-4 text-sm text-accent-foreground">
                   <Sparkles className="mb-1 size-4" />
                   Vos documents resteront privés : seuls les établissements avec lesquels vous
@@ -261,6 +293,86 @@ export default function WizardForm({
           </form>
         </Form>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Dépôt d'une pièce justificative pendant l'inscription.
+ *
+ * Le fichier part d'abord dans le dépôt privé (famille COMPLIANCE), puis on
+ * rattache son identifiant au dossier de conformité. C'est exactement la
+ * chaîne qu'utilise « Mon dossier » : aucune route nouvelle, aucune règle
+ * dupliquée — la pièce arrive donc « en attente de vérification », comme si
+ * elle avait été déposée plus tard.
+ */
+function DepotPiece({
+  accountId,
+  type,
+  titre,
+  aide,
+  depose,
+  onDepose,
+}: {
+  accountId: string;
+  type: 'DIPLOMA' | 'IDENTITY';
+  titre: string;
+  aide: string;
+  depose: boolean;
+  onDepose: () => void;
+}) {
+  const { toast } = useToast();
+  const [fichier, setFichier] = React.useState<FichierDepose | null>(null);
+  const [envoi, setEnvoi] = React.useState(false);
+
+  async function rattacher(f: FichierDepose | null) {
+    setFichier(f);
+    if (!f) return;
+    setEnvoi(true);
+    try {
+      await apiRequest('/conformite/mes-documents', {
+        method: 'PATCH',
+        accountId,
+        body: { type, fileId: f.id },
+      });
+      onDepose();
+      toast({
+        title: `${titre} déposé`,
+        description: 'La pièce passe en attente de vérification.',
+      });
+    } catch (err) {
+      toast({
+        title: 'Dépôt impossible',
+        description: err instanceof Error ? err.message : undefined,
+        variant: 'error',
+      });
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border p-4">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-foreground">{titre}</p>
+        {depose ? (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+            <Check className="size-3.5" />
+            Déposé
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Facultatif ici</span>
+        )}
+      </div>
+      <FileUpload
+        famille="compliance"
+        accountId={accountId}
+        fichier={fichier}
+        onChange={rattacher}
+        disabled={envoi}
+        label={depose ? 'Remplacer le document' : 'Déposer le document'}
+        aide={aide}
+      />
     </div>
   );
 }

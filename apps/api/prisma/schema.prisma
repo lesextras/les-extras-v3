@@ -169,6 +169,9 @@ model Account {
   services        Service[]        @relation("ServiceAccount")
   bookings        Booking[]
   invoices        Invoice[]
+  /// Les factures adressees a ce compte (formation, prestation) sans qu'il en
+  /// soit l'emetteur.
+  facturesAPayer  Invoice[]        @relation("InvoicePayer")
   creditLedger    CreditLedger[]
   shifts          Shift[]
   formationsOwned  Formation[]        @relation("FormationOwner")
@@ -594,8 +597,18 @@ model Notification {
 
 model Invoice {
   id         String        @id @default(cuid())
+  /// L'ÉMETTEUR : le compte qui facture. C'est lui qui apparaît en tête du
+  /// document, lui seul peut émettre ou annuler, et c'est son identification
+  /// (raison sociale, SIRET) qui engage juridiquement la facture.
   accountId  String
   account    Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  /// LE PAYEUR, quand il n'est pas déductible de la réservation — cas des
+  /// inscriptions en formation, où l'association facture un établissement sans
+  /// qu'aucun Booking ne les relie. Sans ce champ, l'établissement ne voyait
+  /// jamais la facture qui lui était pourtant adressée, et le bouton « Payer
+  /// en ligne » lui restait inatteignable.
+  payerAccountId String?
+  payer      Account?      @relation("InvoicePayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
   bookingId  String?       @unique
   booking    Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   number     String        @unique
@@ -608,6 +621,7 @@ model Invoice {
   inscription Inscription? @relation("InscriptionInvoice")
 
   @@index([accountId])
+  @@index([payerAccountId])
 }
 
 /// GRAND LIVRE DES CRÉDITS : trace chaque variation de solde d'un compte
