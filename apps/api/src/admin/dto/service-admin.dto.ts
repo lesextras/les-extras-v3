@@ -1,4 +1,5 @@
-import { IsArray, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ServiceCategory } from '@prisma/client';
 
 /**
  * Correction éditoriale d'une fiche par l'administrateur.
@@ -14,4 +15,12 @@ export class UpdateServiceAdminDto {
   @IsOptional() @IsString() @MaxLength(120) city?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) images?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) publicTargets?: string[];
+  /**
+   * RECLASSEMENT atelier ↔ formation. C'est la catégorie qui décide du
+   * catalogue d'affichage : FORMATION sort la fiche de /ateliers et la range
+   * avec les formations. Sans ce champ, des formations déposées comme
+   * « atelier » restaient mélangées aux ateliers du réseau, sans aucun moyen
+   * de les remettre au bon endroit autrement qu'en base.
+   */
+  @IsOptional() @IsEnum(ServiceCategory) category?: ServiceCategory;
 }
