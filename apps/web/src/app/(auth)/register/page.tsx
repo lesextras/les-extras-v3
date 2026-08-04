@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, Building2, UserRound, ArrowRight, Check } from 'lucide-react';
+import { Mail, Lock, Building2, UserRound, Briefcase, ArrowRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { registerSchema, type RegisterValues } from '@/lib/validation';
 import { register as registerAccount } from '@/lib/auth-client';
@@ -24,16 +24,24 @@ import {
 
 const accountTypes = [
   {
-    value: 'ESTABLISHMENT' as const,
+    key: 'ESTABLISHMENT' as const,
     icon: Building2,
     title: 'Établissement',
     desc: 'MECS, IME, ITEP, EHPAD, SESSAD… Je recherche du renfort.',
   },
   {
-    value: 'FREELANCE' as const,
+    key: 'FREELANCE' as const,
     icon: UserRound,
     title: 'Professionnel',
-    desc: 'Éducateur, moniteur, thérapeute… Je propose mes services.',
+    desc: 'Éducateur, moniteur, thérapeute… Je propose mes services en indépendant.',
+  },
+  {
+    // Même compte que « Professionnel » côté droits (indépendant tant que le
+    // rattachement n'est pas confirmé) : voir la note dans onSubmit ci-dessous.
+    key: 'SALARIE' as const,
+    icon: Briefcase,
+    title: 'Salarié',
+    desc: 'Je travaille pour un établissement et je veux m’y rattacher.',
   },
 ];
 
@@ -44,6 +52,10 @@ export default function RegisterPage() {
   const params = useSearchParams();
   const { toast } = useToast();
   const [submitting, setSubmitting] = React.useState(false);
+  // « Salarié » crée un compte FREELANCE (mêmes droits qu'un indépendant en
+  // attendant) — ce drapeau ne sert qu'à afficher la bonne tuile et à envoyer
+  // la personne vers l'étape de rattachement après l'inscription.
+  const [profilSalarie, setProfilSalarie] = React.useState(false);
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
@@ -60,6 +72,9 @@ export default function RegisterPage() {
   });
 
   const selectedType = form.watch('accountType');
+  // Tuile affichée comme active : « Salarié » partage la valeur FREELANCE du
+  // formulaire, donc on la distingue via le drapeau plutôt que via le champ.
+  const selectedTile = selectedType === 'FREELANCE' && profilSalarie ? 'SALARIE' : selectedType;
 
   async function onSubmit(values: RegisterValues) {
     setSubmitting(true);
@@ -71,7 +86,9 @@ export default function RegisterPage() {
         variant: 'success',
       });
       const suite = params.get('next');
-      router.push(suite || '/welcome?bienvenue=1');
+      // Un profil « Salarié » est envoyé vers l'étape de rattachement du
+      // wizard ; sauf si une invitation (`next`) l'attend déjà ailleurs.
+      router.push(suite || (profilSalarie ? '/welcome?bienvenue=1&salarie=1' : '/welcome?bienvenue=1'));
       router.refresh();
     } catch (err) {
       toast({
@@ -101,15 +118,28 @@ export default function RegisterPage() {
             name="accountType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required>Je suis…</FormLabel>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <FormLabel
+                  required
+                  hint="Établissement si vous cherchez du renfort, Professionnel ou Salarié si vous proposez vos services. Vous pourrez créer un second compte plus tard si besoin."
+                >
+                  Je suis…
+                </FormLabel>
+                <div className="grid gap-3 sm:grid-cols-3">
                   {accountTypes.map((t) => {
-                    const active = field.value === t.value;
+                    const active = selectedTile === t.key;
                     return (
                       <button
-                        key={t.value}
+                        key={t.key}
                         type="button"
-                        onClick={() => field.onChange(t.value)}
+                        onClick={() => {
+                          if (t.key === 'SALARIE') {
+                            field.onChange('FREELANCE');
+                            setProfilSalarie(true);
+                          } else {
+                            field.onChange(t.key);
+                            setProfilSalarie(false);
+                          }
+                        }}
                         aria-pressed={active}
                         className={cn(
                           'relative flex flex-col gap-2 rounded-xl border-2 p-4 text-left transition-all',
@@ -151,7 +181,9 @@ export default function RegisterPage() {
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Prénom</FormLabel>
+                  <FormLabel required hint="Le vôtre — c’est vous qui créez ce compte.">
+                    Prénom
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Camille" autoComplete="given-name" {...field} />
                   </FormControl>
@@ -164,7 +196,7 @@ export default function RegisterPage() {
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Nom</FormLabel>
+                  <FormLabel required hint="Votre nom de famille.">Nom</FormLabel>
                   <FormControl>
                     <Input placeholder="Durand" autoComplete="family-name" {...field} />
                   </FormControl>
@@ -180,7 +212,12 @@ export default function RegisterPage() {
               name="organizationName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Nom de l’établissement</FormLabel>
+                  <FormLabel
+                    required
+                    hint="Le nom de votre structure (MECS, IME, ITEP, EHPAD…) tel qu’il doit apparaître sur vos documents."
+                  >
+                    Nom de l’établissement
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="MECS Les Tilleuls"
@@ -202,7 +239,9 @@ export default function RegisterPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required>Adresse e-mail</FormLabel>
+                <FormLabel required hint="Elle servira à vous connecter et à recevoir les notifications importantes.">
+                  Adresse e-mail
+                </FormLabel>
                 <FormControl>
                   <Input type="email" autoComplete="email" placeholder="vous@exemple.fr" leftIcon={<Mail />} {...field} />
                 </FormControl>
@@ -217,7 +256,9 @@ export default function RegisterPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Mot de passe</FormLabel>
+                  <FormLabel required hint="8 caractères minimum, avec au moins une lettre et un chiffre.">
+                    Mot de passe
+                  </FormLabel>
                   <FormControl>
                     <Input type="password" autoComplete="new-password" placeholder="••••••••" leftIcon={<Lock />} {...field} />
                   </FormControl>
@@ -231,7 +272,9 @@ export default function RegisterPage() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Confirmation</FormLabel>
+                  <FormLabel required hint="Retapez le même mot de passe, pour éviter une faute de frappe.">
+                    Confirmation
+                  </FormLabel>
                   <FormControl>
                     <Input type="password" autoComplete="new-password" placeholder="••••••••" leftIcon={<Lock />} {...field} />
                   </FormControl>
