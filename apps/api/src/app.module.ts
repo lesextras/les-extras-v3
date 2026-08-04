@@ -17,6 +17,7 @@ import { AccountsModule } from './accounts/accounts.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { UnitsModule } from './units/units.module';
 import { InvitationsModule } from './invitations/invitations.module';
+import { AttachmentRequestsModule } from './attachment-requests/attachment-requests.module';
 
 // --- Marketplace (Backend-Marketplace : dossiers séparés) ---
 import { MissionsModule } from './missions/missions.module';
@@ -67,6 +68,7 @@ import { SignatureModule } from './signature/signature.module';
     MembershipsModule,
     UnitsModule,
     InvitationsModule,
+    AttachmentRequestsModule,
 
     // Marketplace.
     MissionsModule,
