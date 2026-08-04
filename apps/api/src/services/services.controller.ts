@@ -13,6 +13,7 @@ import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
+import { EmailVerifieSiPublicationGuard } from '../common/guards/email-verifie.guard';
 import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { ServicesService } from './services.service';
@@ -56,8 +57,12 @@ export class ServicesController {
     return this.services.create(account.id, dto);
   }
 
+  /**
+   * Modifier — et, quand `status: PUBLISHED` est envoyé, publier. Le garde ne
+   * se déclenche que dans ce second cas (voir EmailVerifieSiPublicationGuard).
+   */
   @Patch(':id')
-  @UseGuards(AccountGuard, AccountRolesGuard)
+  @UseGuards(AccountGuard, AccountRolesGuard, EmailVerifieSiPublicationGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   update(
     @Param('id') id: string,

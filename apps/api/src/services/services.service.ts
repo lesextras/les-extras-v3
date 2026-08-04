@@ -226,8 +226,37 @@ export class ServicesService {
     });
   }
 
+  /**
+   * ON NE SUPPRIME PAS CE QUI A DÉJÀ ÉTÉ VENDU.
+   *
+   * Supprimer un atelier effaçait la fiche mais laissait derrière elle le
+   * devis accepté et la réservation confirmée : un engagement financier sans
+   * objet, un montant de facture qui ne renvoie plus à rien, et un
+   * établissement qui a payé une prestation devenue introuvable.
+   *
+   * Une fiche déjà réservée ou déjà devisée s'ARCHIVE : elle quitte le
+   * catalogue et ne peut plus être réservée, mais tout ce qui a été engagé
+   * garde son objet. La suppression pure reste possible tant que rien n'a
+   * été vendu.
+   */
   async remove(id: string, accountId: string) {
     await this.assertOwned(id, accountId);
+    const [reservations, devis] = await Promise.all([
+      this.prisma.booking.count({ where: { serviceId: id } }),
+      this.prisma.quote.count({ where: { serviceId: id } }),
+    ]);
+    if (reservations > 0 || devis > 0) {
+      await this.prisma.service.update({
+        where: { id },
+        data: { status: ServiceStatus.ARCHIVED },
+      });
+      return {
+        deleted: false,
+        archived: true,
+        message:
+          'Cette fiche a déjà donné lieu à une réservation ou à un devis : elle a été archivée plutôt que supprimée. Elle n’apparaît plus au catalogue et ne peut plus être réservée, mais les engagements en cours gardent leur objet.',
+      };
+    }
     await this.prisma.service.delete({ where: { id } });
     return { deleted: true };
   }
