@@ -10,6 +10,10 @@ import { PageHeader, StatCard, EmptyState, SectionTitle } from "../../_shared/ui
 import { MissionCard, ServiceCard, BookingRow } from "../../_shared/cards";
 import { RenfortModal } from "../../_shared/modals/RenfortModal";
 import { ActionsPublication } from "../../_shared/ActionsPublication";
+import {
+  SuiviRattachement,
+  type DemandeRattachement,
+} from "../../_shared/SuiviRattachement";
 import { fullName } from "../../_shared/format";
 import type { Booking, Mission, Service } from "../../_shared/types";
 
@@ -43,6 +47,14 @@ export default async function DashboardPage() {
       : Promise.resolve({ data: undefined, error: undefined }),
   ]);
 
+  // Demandes de rattachement envoyées par ce compte « salarié » : leur état
+  // n'était visible nulle part après l'envoi depuis le wizard (voir
+  // SuiviRattachement). Comptes individuels uniquement — un établissement
+  // n'envoie jamais de demande, il en reçoit.
+  const rattachements = isEstablishment
+    ? { data: [] as DemandeRattachement[] }
+    : await fetchApi<DemandeRattachement[]>(session, "/attachment-requests/mine");
+
   const s = stats.data ?? {};
 
   return (
@@ -73,6 +85,13 @@ export default async function DashboardPage() {
           </div>
         }
       />
+
+      {!isEstablishment ? (
+        <SuiviRattachement
+          demandes={rattachements.data ?? []}
+          accountId={session.account.id}
+        />
+      ) : null}
 
       {/* Onboarding : guide de démarrage, masqué une fois toutes les étapes faites. */}
       {(() => {

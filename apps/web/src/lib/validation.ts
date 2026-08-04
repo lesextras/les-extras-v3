@@ -49,12 +49,20 @@ export type RegisterValues = z.infer<typeof registerSchema>;
 
 /** Étape 1 du wizard d'onboarding : informations de profil. */
 export const onboardingProfileSchema = z.object({
+  // Un champ vide n'est pas « invalide » : c'est juste vide. Avant, un
+  // téléphone ou un code postal non renseigné affichait « invalide », ce qui
+  // laissait croire que la valeur tapée était rejetée — alors que rien n'avait
+  // été saisi. Un premier refine dédié distingue les deux cas, comme le fait
+  // déjà « Ville requise. » ci-dessous.
   phone: z
     .string()
-    .min(10, 'Numéro de téléphone invalide.')
-    .regex(/^[0-9 +().-]+$/, 'Numéro de téléphone invalide.'),
+    .refine((v) => v.trim().length > 0, 'Téléphone requis.')
+    .refine((v) => v.trim().length >= 10 && /^[0-9 +().-]+$/.test(v.trim()), 'Numéro de téléphone invalide.'),
   city: z.string().min(2, 'Ville requise.'),
-  postalCode: z.string().regex(/^\d{5}$/, 'Code postal invalide (5 chiffres).'),
+  postalCode: z
+    .string()
+    .refine((v) => v.trim().length > 0, 'Code postal requis.')
+    .refine((v) => /^\d{5}$/.test(v.trim()), 'Code postal invalide (5 chiffres).'),
   bio: z.string().max(600, '600 caractères maximum.').optional().or(z.literal('')),
 });
 export type OnboardingProfileValues = z.infer<typeof onboardingProfileSchema>;

@@ -9,13 +9,16 @@ import { ConfettisArrivee } from '../../_shared/ConfettisArrivee';
 export default async function WelcomePage({
   searchParams,
 }: {
-  searchParams?: { bienvenue?: string };
+  searchParams?: { bienvenue?: string; salarie?: string };
 }) {
   const session = await getSession();
   if (!session) redirect('/login');
 
   const isEstablishment = session.activeAccount?.type === 'ESTABLISHMENT';
   const firstName = session.user.name?.split(' ')[0];
+  // Relaie le profil « salarié » choisi à l'inscription jusqu'au wizard, pour
+  // que l'étape « Établissement » y apparaisse (voir register/page.tsx).
+  const hrefWizard = searchParams?.salarie === '1' ? '/wizard?salarie=1' : '/wizard';
 
   return (
     <div className="animate-fade-in">
@@ -55,7 +58,7 @@ export default async function WelcomePage({
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Button asChild size="lg">
-          <Link href="/wizard">
+          <Link href={hrefWizard}>
             Compléter mon profil
             <ArrowRight />
           </Link>

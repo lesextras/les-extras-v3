@@ -71,6 +71,29 @@ export class AccountsService {
     return memberships.map((m) => ({ ...m.account, membershipRole: m.role }));
   }
 
+  /**
+   * Recherche d'établissements par nom — pour un compte « salarié » qui
+   * choisit à qui envoyer sa demande de rattachement. Authentifié (JwtAuthGuard
+   * au niveau du contrôleur) mais volontairement sans restriction de rôle :
+   * une personne doit pouvoir trouver n'importe quel établissement de la
+   * plateforme, pas seulement ceux où elle a déjà un accès. Réponse minimale
+   * (pas d'email, de coordonnées bancaires, etc.) : c'est un annuaire, pas
+   * une fiche complète.
+   */
+  async searchEstablishments(q: string) {
+    const query = q.trim();
+    if (query.length < 2) return [];
+    return this.prisma.account.findMany({
+      where: {
+        type: AccountType.ESTABLISHMENT,
+        name: { contains: query, mode: Prisma.QueryMode.insensitive },
+      },
+      select: { id: true, name: true, city: true, logoUrl: true },
+      orderBy: { name: 'asc' },
+      take: 20,
+    });
+  }
+
   async findOne(userId: string, accountId: string) {
     await this.requireMembership(userId, accountId);
     return this.prisma.account.findUniqueOrThrow({ where: { id: accountId } });

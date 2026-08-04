@@ -50,4 +50,10 @@ export class CreateAccountDto {
   @IsString()
   @MaxLength(500)
   logoUrl?: string;
+
+  /** Mention de TVA affichée sur les factures émises par ce compte. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  vatMention?: string;
 }

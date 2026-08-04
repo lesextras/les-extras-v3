@@ -3,6 +3,18 @@
 import { PrintButton } from "./PrintButton";
 import { INVOICE_STATUS_LABEL } from "./format";
 
+interface IdentitePartie {
+  id?: string;
+  name?: string | null;
+  legalName?: string | null;
+  address?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  siret?: string | null;
+  owner?: { email?: string | null } | null;
+  vatMention?: string | null;
+}
+
 export interface DocInvoice {
   id: string;
   number: string;
@@ -10,17 +22,14 @@ export interface DocInvoice {
   status: string;
   issuedAt?: string | null;
   createdAt: string;
-  account?: {
-    name?: string | null;
-    legalName?: string | null;
-    address?: string | null;
-    city?: string | null;
-    postalCode?: string | null;
-    siret?: string | null;
-  } | null;
+  /** L'ÉMETTEUR : le compte qui facture. Son identité engage le document. */
+  account?: IdentitePartie | null;
+  /** Le payeur désigné, quand il n'est pas déductible de la réservation. */
+  payer?: IdentitePartie | null;
   booking?: {
     service?: { title?: string | null } | null;
     mission?: { title?: string | null } | null;
+    account?: IdentitePartie | null;
   } | null;
 }
 
@@ -41,15 +50,33 @@ function fmt(d?: string | null): string {
 }
 
 export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
-  const acc = invoice.account;
-  const clientName = acc?.legalName || acc?.name || "Client";
+  // L'ÉMETTEUR : c'est son identité (raison sociale, SIRET) qui engage le
+  // document — jamais une marque fixe, puisque n'importe quel compte
+  // (établissement ou freelance) peut émettre sa propre facture depuis cet
+  // outil.
+  const emetteur = invoice.account;
+  const emetteurNom = emetteur?.legalName || emetteur?.name || "Émetteur";
+  // LE DESTINATAIRE : le payeur désigné, sinon l'autre compte de la
+  // réservation quand aucun payeur explicite n'a été renseigné. Ne jamais
+  // retomber sur l'émetteur lui-même — une facture n'a pas deux fois la même
+  // partie.
+  const destinataire =
+    invoice.payer ??
+    (invoice.booking?.account && invoice.booking.account.id !== emetteur?.id
+      ? invoice.booking.account
+      : null);
+  const destinataireNom = destinataire?.legalName || destinataire?.name || "Client";
   const lineLabel =
     invoice.booking?.service?.title ||
     invoice.booking?.mission?.title ||
     "Prestation Les Extras";
   const dateLabel = fmt(invoice.issuedAt ?? invoice.createdAt);
-  // Association ADéPA : non assujettie à la TVA (art. 293 B du CGI).
   const totalLabel = money(invoice.amount);
+  // Mention propre à l'émetteur si renseignée (réglages du compte) ; sinon le
+  // défaut, vrai pour la grande majorité des comptes de la plateforme
+  // (franchise en base, association non assujettie) — jamais un taux inventé.
+  const mentionTva =
+    emetteur?.vatMention?.trim() || "TVA non applicable, art. 293 B du CGI.";
 
   return (
     <div className="min-h-screen bg-neutral-100 py-8 print:bg-white print:py-0">
@@ -64,11 +91,17 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
       <div className="mx-auto flex min-h-[297mm] w-full max-w-[210mm] flex-col bg-white px-16 py-14 shadow-lg print:min-h-0 print:shadow-none">
         <header className="flex items-start justify-between border-b border-neutral-200 pb-6">
           <div>
-            <p className="text-lg font-bold tracking-tight text-neutral-900">ADéPA — Les Extras</p>
+            <p className="text-lg font-bold tracking-tight text-neutral-900">{emetteurNom}</p>
             <p className="mt-1 text-xs leading-relaxed text-neutral-500">
-              Association ADéPA<br />
-              Plateforme Les Extras<br />
-              contact@adepa77.fr
+              {emetteur?.address ? <>{emetteur.address}<br /></> : null}
+              {emetteur?.postalCode || emetteur?.city ? (
+                <>{[emetteur?.postalCode, emetteur?.city].filter(Boolean).join(" ")}<br /></>
+              ) : null}
+              {emetteur?.siret ? <>SIRET : {emetteur.siret}<br /></> : null}
+              {emetteur?.owner?.email ?? "—"}
+            </p>
+            <p className="mt-1 text-[10px] uppercase tracking-widest text-neutral-400">
+              via la plateforme Les Extras
             </p>
           </div>
           <div className="text-right">
@@ -85,14 +118,16 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
         <section className="mt-8 flex justify-end">
           <div className="w-1/2 rounded-lg bg-neutral-50 p-4 text-sm">
             <p className="text-[11px] uppercase tracking-widest text-neutral-400">Facturé à</p>
-            <p className="mt-1 font-semibold text-neutral-900">{clientName}</p>
-            {acc?.address ? <p className="text-neutral-600">{acc.address}</p> : null}
-            {acc?.postalCode || acc?.city ? (
+            <p className="mt-1 font-semibold text-neutral-900">{destinataireNom}</p>
+            {destinataire?.address ? <p className="text-neutral-600">{destinataire.address}</p> : null}
+            {destinataire?.postalCode || destinataire?.city ? (
               <p className="text-neutral-600">
-                {[acc?.postalCode, acc?.city].filter(Boolean).join(" ")}
+                {[destinataire?.postalCode, destinataire?.city].filter(Boolean).join(" ")}
               </p>
             ) : null}
-            {acc?.siret ? <p className="mt-1 text-xs text-neutral-500">SIRET : {acc.siret}</p> : null}
+            {destinataire?.siret ? (
+              <p className="mt-1 text-xs text-neutral-500">SIRET : {destinataire.siret}</p>
+            ) : null}
           </div>
         </section>
 
@@ -128,7 +163,7 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
         </section>
 
         <footer className="mt-auto border-t border-neutral-200 pt-6 text-[11px] leading-relaxed text-neutral-500">
-          <p>TVA non applicable, art. 293 B du CGI — Association ADéPA.</p>
+          <p>{mentionTva}</p>
           <p>
             Règlement à réception de facture. En cas de retard de paiement, des pénalités sont
             exigibles conformément à la réglementation en vigueur.

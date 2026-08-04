@@ -432,7 +432,11 @@ export function AdminFormationsManager({
               <Field label="Places" htmlFor="s-seats">
                 <Input id="s-seats" name="maxSeats" type="number" min={1} placeholder="12" />
               </Field>
-              <Field label="Prix HT (€)" htmlFor="s-price">
+              <Field
+                label="Prix HT (€)"
+                htmlFor="s-price"
+                hint="Montant hors taxes, TVA non comprise."
+              >
                 <Input id="s-price" name="priceHt" type="number" min={0} step="0.01" placeholder="1200" />
               </Field>
             </div>

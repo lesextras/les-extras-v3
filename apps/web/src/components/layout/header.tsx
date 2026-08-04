@@ -14,6 +14,14 @@ import {
   LogOut,
   Settings,
   LifeBuoy,
+  LayoutList,
+  Newspaper,
+  Users,
+  Sparkles,
+  GraduationCap,
+  PenLine,
+  Lightbulb,
+  MessagesSquare,
 } from 'lucide-react';
 import { CommandPalette } from './command-palette';
 import { IndicateursCompte } from './indicateurs-compte';
@@ -141,6 +149,63 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      )}
+
+      {/* Catalogue et LEX & Analyse de pratique : retirés de la sidebar le
+          4/8/2026 (demande Siham) et remontés ici, à côté du sélecteur de
+          compte, pour rester accessibles sans occuper le menu de gauche.
+          Réservé aux comptes établissement : côté freelance, ces entrées
+          restent dans la sidebar (pas de doublon de navigation). */}
+      {activeAccount?.type === 'ESTABLISHMENT' && (
+        <>
+          <DropdownMenu align="start">
+            <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
+              <LayoutList className="size-4 text-muted-foreground" />
+              Catalogue
+              <ChevronsUpDown className="size-3.5 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-60">
+              <DropdownMenuItem onClick={() => router.push('/edublog')}>
+                <Newspaper />
+                Édublog
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/intervenants')}>
+                <Users />
+                Annuaire des intervenants
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/ateliers')}>
+                <Sparkles />
+                Ateliers
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/formations')}>
+                <GraduationCap />
+                Formations
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu align="start">
+            <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
+              <PenLine className="size-4 text-muted-foreground" />
+              LEX &amp; Analyse de pratique
+              <ChevronsUpDown className="size-3.5 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64">
+              <DropdownMenuItem onClick={() => router.push('/dashboard/assistant')}>
+                <PenLine />
+                LEX · Assistant d&apos;écriture
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/dashboard/activites')}>
+                <Lightbulb />
+                LEX · Générateur d&apos;activités
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/gap')}>
+                <MessagesSquare />
+                Analyse de pratique
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
       )}
 
       <CommandPalette

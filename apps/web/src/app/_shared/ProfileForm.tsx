@@ -145,7 +145,11 @@ export function ProfileForm({
               <Field label="Code postal" htmlFor="postalCode">
                 <Input id="postalCode" name="postalCode" defaultValue={profile?.postalCode ?? ""} />
               </Field>
-              <Field label="Taux horaire (€)" htmlFor="hourlyRate">
+              <Field
+                label="Taux horaire (€)"
+                htmlFor="hourlyRate"
+                hint="Le tarif affiché aux établissements sur votre profil."
+              >
                 <Input
                   id="hourlyRate"
                   name="hourlyRate"

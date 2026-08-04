@@ -83,6 +83,11 @@ model User {
   ajoutsAuVivier PoolMember[] @relation("PoolAjoutePar")
   /// Signatures electroniques apposees par cette personne.
   signatures     Signature[]  @relation("SignatureSignataire")
+  /// Demandes de rattachement à un établissement envoyées par cette personne
+  /// (compte « salarié » créé en solo, en attente de confirmation).
+  attachmentRequestsSent    AttachmentRequest[] @relation("AttachmentRequester")
+  /// Demandes de rattachement tranchées (acceptées/refusées) par cette personne.
+  attachmentRequestsDecided AttachmentRequest[] @relation("AttachmentDecider")
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
@@ -133,6 +138,13 @@ model Account {
   city        String?
   postalCode  String?
   phone       String?
+  /// Mention de TVA à afficher sur les factures émises par ce compte (ex.
+  /// « TVA non applicable, art. 293 B du CGI » ou « TVA 20 % — n° FR... »).
+  /// Laissé vide, la mention par défaut (non assujetti) reste affichée : elle
+  /// est vraie pour la grande majorité des comptes (auto-entrepreneurs en
+  /// franchise en base, association ADéPA), mais un émetteur assujetti à la
+  /// TVA doit pouvoir la corriger lui-même plutôt que de laisser un taux faux.
+  vatMention  String?
   /// Adresse de contact publique du compte. Pour un compte intervenant créé
   /// depuis un poste salarié, c'est OBLIGATOIREMENT un contact personnel : les
   /// sollicitations d'activité indépendante ne doivent jamais arriver sur la
@@ -204,6 +216,11 @@ model Account {
   quotesAsProvider Quote[] @relation("QuoteProvider")
   assistantDocuments AssistantDocument[]
   contratsCDD    ContratCDD[]
+  /// Demandes envoyées par CE compte pour se rattacher à un établissement
+  /// (compte individuel « salarié » créé en solo, côté freelance en attendant).
+  attachmentRequestsAsRequester AttachmentRequest[] @relation("AttachmentRequesterAccount")
+  /// Demandes de rattachement reçues par CET établissement (à approuver/refuser).
+  attachmentRequestsReceived    AttachmentRequest[] @relation("AttachmentTarget")
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
@@ -267,6 +284,53 @@ model Invitation {
   @@unique([email, accountId])
   @@index([token])
   @@index([status])
+}
+
+/// DEMANDE DE RATTACHEMENT : le sens inverse de Invitation. Une personne
+/// s'inscrit seule en tant que « salarié » (compte requesterAccount de type
+/// FREELANCE, mêmes droits qu'un intervenant tant que rien n'est confirmé),
+/// puis demande à rejoindre un établissement qu'elle choisit elle-même.
+/// L'établissement voit la demande côté Équipe et l'accepte ou la refuse.
+/// À l'acceptation : création d'un Membership (rôle MEMBER) sur le compte
+/// établissement — la personne garde aussi son compte individuel, comme pour
+/// n'importe quel multi-compte de la plateforme.
+model AttachmentRequest {
+  id     String @id @default(cuid())
+
+  requesterUserId String
+  requesterUser   User   @relation("AttachmentRequester", fields: [requesterUserId], references: [id], onDelete: Cascade)
+
+  /// Le compte FREELANCE personnel de la personne qui demande — pas un
+  /// compte établissement : on ne rattache pas un établissement à un autre.
+  requesterAccountId String
+  requesterAccount   Account @relation("AttachmentRequesterAccount", fields: [requesterAccountId], references: [id], onDelete: Cascade)
+
+  establishmentAccountId String
+  establishmentAccount   Account @relation("AttachmentTarget", fields: [establishmentAccountId], references: [id], onDelete: Cascade)
+
+  /// Mot court, facultatif, affiché à l'établissement (« Je suis moniteur-éducateur à l'internat depuis 2022 »).
+  message String?
+
+  status AttachmentRequestStatus @default(PENDING)
+
+  decidedById String?
+  decidedBy   User?     @relation("AttachmentDecider", fields: [decidedById], references: [id])
+  decidedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Une demande en attente à la fois vers un même établissement : renvoyer un
+  // doublon écrase la précédente plutôt que d'empiler des lignes identiques.
+  @@unique([requesterAccountId, establishmentAccountId])
+  @@index([establishmentAccountId, status])
+  @@index([requesterUserId])
+}
+
+enum AttachmentRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // ---------------------------------------------------------------------------
@@ -611,7 +675,12 @@ model Invoice {
   payer      Account?      @relation("InvoicePayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
   bookingId  String?       @unique
   booking    Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  number     String        @unique
+  /// Numéro de séquence, unique PAR ÉMETTEUR (pas globalement) : l'article 242
+  /// nonies A de l'annexe II au CGI impose une séquence chronologique continue
+  /// et sans rupture PROPRE À CHAQUE ÉMETTEUR. Une séquence globale partagée
+  /// entre tous les comptes de la plateforme (ancien comportement) mélangeait
+  /// les numéros de personnes morales distinctes — non conforme.
+  number     String
   amount     Decimal       @db.Decimal(10, 2)
   status     InvoiceStatus @default(DRAFT)
   pdfUrl     String?
@@ -620,6 +689,7 @@ model Invoice {
 
   inscription Inscription? @relation("InscriptionInvoice")
 
+  @@unique([accountId, number])
   @@index([accountId])
   @@index([payerAccountId])
 }

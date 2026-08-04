@@ -280,7 +280,11 @@ export function ParametresTemps({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Majoration du dimanche (%)" htmlFor="dimanchePct">
+            <Field
+              label="Majoration du dimanche (%)"
+              htmlFor="dimanchePct"
+              hint="Conventionnelle. Aucune n'est imposée par la loi."
+            >
               <Input
                 id="dimanchePct"
                 type="number"
@@ -352,7 +356,7 @@ export function ParametresTemps({
               onChange={(e) => set("majorationHS1Pct", nombre(e.target.value, 25))}
             />
           </Field>
-          <Field label="Second taux (%)" htmlFor="hs2">
+          <Field label="Second taux (%)" htmlFor="hs2" hint="50 % à défaut d'accord">
             <Input
               id="hs2"
               type="number"

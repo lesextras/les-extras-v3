@@ -17,6 +17,7 @@ import { BasculeNotifications } from "../../../_shared/BasculeNotifications";
 import { ProfileForm } from "../../../_shared/ProfileForm";
 import { CvManager } from "../../../_shared/CvManager";
 import { UnitsManager } from "../../../_shared/UnitsManager";
+import { FacturationSettings, type IdentiteFacturation } from "../../../_shared/FacturationSettings";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
@@ -48,6 +49,13 @@ export default async function AccountPage({
 
   const user = profileRes.data ?? session.user;
   const profile = profileRes.data?.profile ?? null;
+
+  // Identité de facturation : sans elle, une facture émise depuis « Devis &
+  // factures » sort sans raison sociale ni SIRET — incomplète au regard de
+  // la loi. Seuls OWNER/ADMIN peuvent la modifier (canManage), mais tout le
+  // monde doit pouvoir la CONSULTER pour comprendre ce qui figure déjà.
+  const compteRes = await fetchApi<IdentiteFacturation>(session, `/accounts/${accountId}`);
+  const identiteFacturation = compteRes.data ?? {};
 
   return (
     <div className="space-y-6">
@@ -102,7 +110,12 @@ export default async function AccountPage({
           {!isFreelance ? <UnitsManager accountId={accountId} canManage={canManage} /> : null}
         </TabsContent>
 
-        <TabsContent value="settings">
+        <TabsContent value="settings" className="space-y-6">
+          <FacturationSettings
+            accountId={accountId}
+            identite={identiteFacturation}
+            canManage={canManage}
+          />
           <Card>
             <CardHeader>
               <SectionTitle title="Préférences" />

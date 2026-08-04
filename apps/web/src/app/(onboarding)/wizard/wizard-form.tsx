@@ -4,7 +4,19 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Phone, MapPin, Hash, ArrowRight, ArrowLeft, Check, FileUp, Sparkles } from 'lucide-react';
+import {
+  Phone,
+  MapPin,
+  Hash,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  FileUp,
+  Sparkles,
+  Search,
+  Building2,
+  Send,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { onboardingProfileSchema, type OnboardingProfileValues } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
@@ -31,19 +43,29 @@ import { apiRequest } from '@/lib/api';
  */
 const ETAPES_ETABLISSEMENT = ['Profil', 'Finalisation'] as const;
 const ETAPES_INTERVENANT = ['Profil', 'Documents', 'Finalisation'] as const;
+// Compte « salarié » : même compte FREELANCE côté droits, mais avec une étape
+// en plus pour demander son rattachement à l'établissement qui l'emploie.
+const ETAPES_SALARIE = ['Profil', 'Établissement', 'Documents', 'Finalisation'] as const;
 
 export default function WizardForm({
   typeDeCompte,
   accountId,
+  estSalarie = false,
 }: {
   typeDeCompte: 'ESTABLISHMENT' | 'FREELANCE';
   accountId?: string | null;
+  /** Compte créé via le profil « Salarié » à l'inscription (voir register/page.tsx). */
+  estSalarie?: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [step, setStep] = React.useState(0);
   const STEPS: readonly string[] =
-    typeDeCompte === 'ESTABLISHMENT' ? ETAPES_ETABLISSEMENT : ETAPES_INTERVENANT;
+    typeDeCompte === 'ESTABLISHMENT'
+      ? ETAPES_ETABLISSEMENT
+      : estSalarie
+        ? ETAPES_SALARIE
+        : ETAPES_INTERVENANT;
   const etape = STEPS[step];
   const [submitting, setSubmitting] = React.useState(false);
   // Pièces déjà déposées pendant l'inscription, pour l'accusé de réception.
@@ -64,6 +86,17 @@ export default function WizardForm({
   }
   function prev() {
     setStep((s) => Math.max(s - 1, 0));
+  }
+  /**
+   * « Passer pour l'instant » : avance sans valider les champs de l'étape.
+   * Les valeurs déjà saisies (même partielles) sont conservées dans le
+   * formulaire et seront envoyées à la fin si elles sont renseignées —
+   * `finish()` n'exige rien, et l'API filtre déjà les champs vides
+   * (voir app/api/onboarding/route.ts). L'utilisateur complète le reste
+   * plus tard depuis son profil.
+   */
+  function skip() {
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
 
   async function finish() {
@@ -142,7 +175,9 @@ export default function WizardForm({
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel required>Téléphone</FormLabel>
+                      <FormLabel required hint="Pour vous joindre rapidement en cas de renfort urgent.">
+                        Téléphone
+                      </FormLabel>
                       <FormControl>
                         <Input placeholder="06 12 34 56 78" leftIcon={<Phone />} {...field} />
                       </FormControl>
@@ -157,7 +192,9 @@ export default function WizardForm({
                     name="city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel required>Ville</FormLabel>
+                        <FormLabel required hint="La ville où vous êtes basé(e) — utile pour les missions proches de chez vous.">
+                          Ville
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="Melun" leftIcon={<MapPin />} {...field} />
                         </FormControl>
@@ -170,7 +207,7 @@ export default function WizardForm({
                     name="postalCode"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel required>Code postal</FormLabel>
+                        <FormLabel required hint="5 chiffres, ex. 77000.">Code postal</FormLabel>
                         <FormControl>
                           <Input placeholder="77000" inputMode="numeric" leftIcon={<Hash />} {...field} />
                         </FormControl>
@@ -185,7 +222,9 @@ export default function WizardForm({
                   name="bio"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Présentation</FormLabel>
+                      <FormLabel hint="Ce que les établissements verront sur votre profil public. Optionnel.">
+                        Présentation
+                      </FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Quelques mots sur votre parcours, vos spécialités…"
@@ -199,6 +238,11 @@ export default function WizardForm({
                   )}
                 />
               </div>
+            )}
+
+            {/* Étape « salarié » : demande de rattachement à un établissement */}
+            {etape === 'Établissement' && accountId && (
+              <RattachementEtablissement accountId={accountId} />
             )}
 
             {/* Étape 2 : documents — intervenants uniquement */}
@@ -278,21 +322,191 @@ export default function WizardForm({
                 <ArrowLeft />
                 Retour
               </Button>
-              {step < STEPS.length - 1 ? (
-                <Button type="button" onClick={next}>
-                  Continuer
-                  <ArrowRight />
-                </Button>
-              ) : (
-                <Button type="button" onClick={finish} loading={submitting}>
-                  Accéder à mon espace
-                  {!submitting && <ArrowRight />}
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {/* Pas de champ obligatoire qu'on ne peut pas remplir tout de
+                    suite : on laisse avancer sans bloquer, à tout moment sauf
+                    à la dernière étape (rien à passer sur « Finalisation »). */}
+                {step < STEPS.length - 1 && (
+                  <Button type="button" variant="ghost" onClick={skip} disabled={submitting}>
+                    Passer pour l’instant
+                  </Button>
+                )}
+                {step < STEPS.length - 1 ? (
+                  <Button type="button" onClick={next}>
+                    Continuer
+                    <ArrowRight />
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={finish} loading={submitting}>
+                    Accéder à mon espace
+                    {!submitting && <ArrowRight />}
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </Form>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Recherche d'établissement + envoi de la demande de rattachement.
+ *
+ * Le compte reste un compte individuel (droits freelance) tant que
+ * l'établissement n'a pas approuvé : cette étape ne fait qu'envoyer la
+ * demande, elle ne change rien aux droits immédiatement. Passer cette étape
+ * n'empêche rien : la demande pourra être envoyée plus tard depuis le profil.
+ */
+function RattachementEtablissement({ accountId }: { accountId: string }) {
+  const { toast } = useToast();
+  const [recherche, setRecherche] = React.useState('');
+  const [resultats, setResultats] = React.useState<
+    Array<{ id: string; name: string; city: string | null }>
+  >([]);
+  const [rechercheEnCours, setRechercheEnCours] = React.useState(false);
+  const [selection, setSelection] = React.useState<{ id: string; name: string } | null>(null);
+  const [envoi, setEnvoi] = React.useState(false);
+  const [envoyee, setEnvoyee] = React.useState(false);
+
+  React.useEffect(() => {
+    const terme = recherche.trim();
+    if (terme.length < 2) {
+      setResultats([]);
+      return;
+    }
+    setRechercheEnCours(true);
+    const t = setTimeout(async () => {
+      try {
+        const data = await apiRequest<Array<{ id: string; name: string; city: string | null }>>(
+          `/accounts/etablissements/recherche?q=${encodeURIComponent(terme)}`,
+          { accountId },
+        );
+        setResultats(data);
+      } catch {
+        setResultats([]);
+      } finally {
+        setRechercheEnCours(false);
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [recherche, accountId]);
+
+  async function envoyerDemande() {
+    if (!selection) return;
+    setEnvoi(true);
+    try {
+      await apiRequest('/attachment-requests', {
+        method: 'POST',
+        accountId,
+        body: { establishmentAccountId: selection.id },
+      });
+      setEnvoyee(true);
+      toast({
+        title: 'Demande envoyée',
+        description: `${selection.name} recevra votre demande de rattachement.`,
+        variant: 'success',
+      });
+    } catch (err) {
+      toast({
+        title: 'Envoi impossible',
+        description: err instanceof Error ? err.message : 'Réessayez.',
+        variant: 'error',
+      });
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  if (envoyee) {
+    return (
+      <div className="space-y-3 text-center">
+        <span className="mx-auto grid size-12 place-items-center rounded-xl bg-success/15 text-success">
+          <Check className="size-6" />
+        </span>
+        <div>
+          <h2 className="text-xl font-semibold">Demande envoyée</h2>
+          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+            {selection?.name} peut désormais l’approuver depuis son espace « Équipe ». En
+            attendant, vous conservez tous les droits d’un compte professionnel indépendant.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-semibold">Votre établissement</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Si vous travaillez pour un établissement, recherchez-le ci-dessous pour lui envoyer une
+          demande de rattachement. Vous gardez vos droits de compte indépendant tant qu’elle n’a
+          pas répondu — et vous pouvez passer cette étape et le faire plus tard.
+        </p>
+      </div>
+
+      <div className="relative">
+        <Input
+          placeholder="Nom de l’établissement (MECS Les Tilleuls…)"
+          leftIcon={<Search />}
+          value={recherche}
+          onChange={(e) => {
+            setRecherche(e.target.value);
+            setSelection(null);
+            setEnvoyee(false);
+          }}
+        />
+      </div>
+
+      {rechercheEnCours && (
+        <p className="text-xs text-muted-foreground">Recherche…</p>
+      )}
+
+      {!rechercheEnCours && recherche.trim().length >= 2 && resultats.length === 0 && (
+        <p className="text-xs text-muted-foreground">Aucun établissement trouvé pour « {recherche} ».</p>
+      )}
+
+      {resultats.length > 0 && !selection && (
+        <ul className="divide-y divide-border rounded-xl border border-border">
+          {resultats.map((r) => (
+            <li key={r.id}>
+              <button
+                type="button"
+                onClick={() => setSelection({ id: r.id, name: r.name })}
+                className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-accent/60"
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
+                  <Building2 className="size-4" />
+                </span>
+                <span>
+                  <span className="block text-sm font-medium">{r.name}</span>
+                  {r.city && <span className="block text-xs text-muted-foreground">{r.city}</span>}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {selection && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary-soft/40 p-4">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Building2 className="size-4 text-primary" />
+            {selection.name}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setSelection(null)} disabled={envoi}>
+              Changer
+            </Button>
+            <Button type="button" size="sm" onClick={envoyerDemande} loading={envoi}>
+              Envoyer la demande
+              {!envoi && <Send />}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

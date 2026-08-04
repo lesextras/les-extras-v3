@@ -625,6 +625,30 @@ export class AdminService {
           include: {
             service: { select: { title: true } },
             mission: { select: { title: true } },
+            account: {
+              select: {
+                id: true,
+                name: true,
+                legalName: true,
+                address: true,
+                city: true,
+                postalCode: true,
+                siret: true,
+                owner: { select: { email: true } },
+              },
+            },
+          },
+        },
+        payer: {
+          select: {
+            id: true,
+            name: true,
+            legalName: true,
+            address: true,
+            city: true,
+            postalCode: true,
+            siret: true,
+            owner: { select: { email: true } },
           },
         },
         account: {
@@ -636,6 +660,7 @@ export class AdminService {
             city: true,
             postalCode: true,
             siret: true,
+            vatMention: true,
             owner: { select: { email: true } },
           },
         },
