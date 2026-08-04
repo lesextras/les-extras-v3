@@ -22,6 +22,16 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 
+/**
+ * L'ORDRE DES TUILES SUIT CELUI DES ARRIVÉES, PAS L'ARCHITECTURE DU CODE.
+ *
+ * « Salarié » et « Professionnel » créent techniquement le même compte, ce qui
+ * les avait fait ranger côte à côte dans cet ordre-là. Mais la personne qui
+ * lit cet écran ne connaît pas cette parenté : elle cherche sa situation. Or
+ * une campagne adressée aux établissements amène d'abord des établissements,
+ * puis leurs équipes salariées — l'indépendant qui démarche seul vient après.
+ * On classe donc du cas le plus fréquent au plus rare.
+ */
 const accountTypes = [
   {
     key: 'ESTABLISHMENT' as const,
@@ -30,18 +40,18 @@ const accountTypes = [
     desc: 'MECS, IME, ITEP, EHPAD, SESSAD… Je recherche du renfort.',
   },
   {
-    key: 'FREELANCE' as const,
-    icon: UserRound,
-    title: 'Professionnel',
-    desc: 'Éducateur, moniteur, thérapeute… Je propose mes services en indépendant.',
-  },
-  {
     // Même compte que « Professionnel » côté droits (indépendant tant que le
     // rattachement n'est pas confirmé) : voir la note dans onSubmit ci-dessous.
     key: 'SALARIE' as const,
     icon: Briefcase,
     title: 'Salarié',
     desc: 'Je travaille pour un établissement et je veux m’y rattacher.',
+  },
+  {
+    key: 'FREELANCE' as const,
+    icon: UserRound,
+    title: 'Professionnel',
+    desc: 'Éducateur, moniteur, thérapeute… Je propose mes services en indépendant.',
   },
 ];
 
@@ -120,7 +130,7 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel
                   required
-                  hint="Établissement si vous cherchez du renfort, Professionnel ou Salarié si vous proposez vos services. Vous pourrez créer un second compte plus tard si besoin."
+                  hint="Établissement si vous cherchez du renfort ; Salarié si vous travaillez déjà pour l’un d’eux ; Professionnel si vous intervenez en indépendant. Vous pourrez créer un second compte plus tard si besoin."
                 >
                   Je suis…
                 </FormLabel>
@@ -181,9 +191,7 @@ export default function RegisterPage() {
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required hint="Le vôtre — c’est vous qui créez ce compte.">
-                    Prénom
-                  </FormLabel>
+                  <FormLabel required>Prénom</FormLabel>
                   <FormControl>
                     <Input placeholder="Camille" autoComplete="given-name" {...field} />
                   </FormControl>
@@ -196,7 +204,7 @@ export default function RegisterPage() {
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required hint="Votre nom de famille.">Nom</FormLabel>
+                  <FormLabel required>Nom</FormLabel>
                   <FormControl>
                     <Input placeholder="Durand" autoComplete="family-name" {...field} />
                   </FormControl>
@@ -212,12 +220,8 @@ export default function RegisterPage() {
               name="organizationName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel
-                    required
-                    hint="Le nom de votre structure (MECS, IME, ITEP, EHPAD…) tel qu’il doit apparaître sur vos documents."
-                  >
-                    Nom de l’établissement
-                  </FormLabel>
+                  {/* La légende sous le champ dit déjà l'essentiel. */}
+                  <FormLabel required>Nom de l’établissement</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="MECS Les Tilleuls"
@@ -239,9 +243,7 @@ export default function RegisterPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required hint="Elle servira à vous connecter et à recevoir les notifications importantes.">
-                  Adresse e-mail
-                </FormLabel>
+                <FormLabel required>Adresse e-mail</FormLabel>
                 <FormControl>
                   <Input type="email" autoComplete="email" placeholder="vous@exemple.fr" leftIcon={<Mail />} {...field} />
                 </FormControl>
@@ -256,9 +258,9 @@ export default function RegisterPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required hint="8 caractères minimum, avec au moins une lettre et un chiffre.">
-                    Mot de passe
-                  </FormLabel>
+                  {/* La règle est écrite en clair sous le champ (FormDescription) :
+                      la répéter dans une bulle n'ajoutait rien. */}
+                  <FormLabel required>Mot de passe</FormLabel>
                   <FormControl>
                     <Input type="password" autoComplete="new-password" placeholder="••••••••" leftIcon={<Lock />} {...field} />
                   </FormControl>
@@ -272,9 +274,7 @@ export default function RegisterPage() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required hint="Retapez le même mot de passe, pour éviter une faute de frappe.">
-                    Confirmation
-                  </FormLabel>
+                  <FormLabel required>Confirmation</FormLabel>
                   <FormControl>
                     <Input type="password" autoComplete="new-password" placeholder="••••••••" leftIcon={<Lock />} {...field} />
                   </FormControl>
