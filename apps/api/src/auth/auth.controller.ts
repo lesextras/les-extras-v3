@@ -13,11 +13,36 @@ import { RequestUser } from '../common/types/request-context';
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  /**
+   * INSCRIPTION — 10 PAR HEURE ET PAR ADRESSE IP.
+   *
+   * Chaque inscription déclenche un e-mail de confirmation, et le quota
+   * d'envoi journalier est partagé avec tout le reste du site. Sans bridage
+   * propre, le plafond global (120 requêtes/minute) autorisait 120
+   * inscriptions par minute : de quoi vider la réserve d'e-mails de la
+   * journée en moins de trois minutes, depuis un seul poste. Or la
+   * confirmation d'adresse conditionne toute publication : un établissement
+   * inscrit ce jour-là se serait retrouvé bloqué sans comprendre pourquoi.
+   *
+   * 10 par heure laisse largement passer une équipe entière qui s'inscrit
+   * depuis le même réseau d'établissement — c'est le cas d'usage réel — et
+   * ferme la porte au pilonnage.
+   */
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
   }
 
+  /**
+   * CONNEXION — 20 TENTATIVES PAR QUART D'HEURE ET PAR ADRESSE IP.
+   *
+   * Aucun bridage propre n'existait : le plafond global autorisait 7 200
+   * essais de mot de passe par heure et par IP, sans verrouillage ni délai.
+   * 20 par quart d'heure couvre très largement quelqu'un qui hésite entre
+   * deux mots de passe, et rend l'essai systématique inopérant.
+   */
+  @Throttle({ default: { limit: 20, ttl: 900_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) {
