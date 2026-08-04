@@ -25,7 +25,11 @@ export function PageHeader({
           <p className="max-w-2xl text-sm text-muted-foreground">{subtitle}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {/* `shrink-0` sans repli de ligne faisait déborder la page sur un
+          téléphone dès qu'il y avait deux boutons (SOS Renfort : « Exporter
+          les heures validées » + « Publier un renfort ») : l'écran se mettait
+          à défiler latéralement. On autorise le retour à la ligne. */}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
   );
 }

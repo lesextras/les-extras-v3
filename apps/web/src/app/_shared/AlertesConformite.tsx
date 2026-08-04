@@ -111,7 +111,7 @@ export function AlertesConformite({
         <StatCard
           label="Dossiers complets"
           value={conformes}
-          hint={`sur ${donnees.membresActifs} personnes actives`}
+          hint={`sur ${donnees.membresActifs} personne${donnees.membresActifs > 1 ? "s" : ""} active${donnees.membresActifs > 1 ? "s" : ""}`}
           icon={<ShieldCheck className="h-4 w-4" />}
           accent="teal"
         />

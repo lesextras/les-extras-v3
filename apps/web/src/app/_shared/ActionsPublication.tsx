@@ -29,46 +29,32 @@ export function ActionsPublication({
 
   const etablissement = accountType === "ESTABLISHMENT";
 
-  // UNE SEULE ACTION PRINCIPALE.
+  // UNE SEULE ACTION PRINCIPALE — CETTE FOIS POUR DE BON.
   //
-  // Les trois publications avaient chacune leur couleur pleine — framboise,
-  // bleu nuit, vert forêt — alignées et de même poids. Trois boutons qui
-  // crient aussi fort, c'est aucune priorité : la personne qui arrive ne sait
-  // pas par où commencer. On garde donc UN bouton plein, celui du besoin
-  // dominant du profil (couvrir une absence pour un établissement, vendre une
-  // prestation pour un intervenant), et les deux autres passent en retrait.
-  // Rien n'est retiré : tout reste à un clic, mais l'œil sait où aller.
-  const renfort = (
-    <RenfortModal
-      key="renfort"
-      accountId={accountId}
-      trigger={
-        <Button variant={etablissement ? 'primary' : 'outline'}>Publier un renfort</Button>
-      }
-    />
-  );
-  const atelier = (
-    <ServiceModal
-      key="atelier"
-      accountId={accountId}
-      categorieInitiale="ATELIER"
-      trigger={
-        <Button variant={etablissement ? 'outline' : 'primary'}>Publier un atelier</Button>
-      }
-    />
-  );
-  const formation = (
-    <ServiceModal
-      key="formation"
-      accountId={accountId}
-      categorieInitiale="FORMATION"
-      trigger={<Button variant="outline">Publier une formation</Button>}
-    />
-  );
+  // Le commentaire disait déjà « une seule action principale », et trois
+  // boutons s'affichaient quand même : un seul plein, deux en retrait. Trois
+  // propositions alignées restent trois propositions — et deux d'entre elles
+  // relèvent du métier d'en face. On proposait à une directrice de MECS de
+  // VENDRE un atelier, et à un éducateur indépendant de RECRUTER un
+  // remplaçant. Ce n'est pas seulement encombrant : c'est déroutant.
+  //
+  // On garde donc le geste du profil, et lui seul. Le reste n'est pas retiré
+  // du produit : atelier et formation restent dans le menu de gauche, à un
+  // clic, pour qui les cherche vraiment.
+  if (etablissement) {
+    return (
+      <RenfortModal
+        accountId={accountId}
+        trigger={<Button variant="primary">Publier un renfort</Button>}
+      />
+    );
+  }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {etablissement ? [renfort, atelier, formation] : [atelier, formation, renfort]}
-    </div>
+    <ServiceModal
+      accountId={accountId}
+      categorieInitiale="ATELIER"
+      trigger={<Button variant="primary">Créer un atelier</Button>}
+    />
   );
 }
