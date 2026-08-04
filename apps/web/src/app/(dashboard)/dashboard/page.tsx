@@ -179,35 +179,50 @@ export default async function DashboardPage() {
         );
       })()}
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {isEstablishment ? (
-          <>
-            <StatCard label="Renforts actifs" value={s.activeMissions ?? 0} accent="teal" />
-            <StatCard label="Candidatures reçues" value={s.applications ?? 0} accent="terracotta" />
-            <StatCard label="Missions à venir" value={s.upcomingBookings ?? 0} />
-            <StatCard
-              label="Taux de couverture"
-              value={`${s.fillRate ?? 0}%`}
-              hint={
-                s.delaiMoyenHeures != null
-                  ? `30 derniers jours · pourvues en ${s.delaiMoyenHeures} h en moyenne`
-                  : "30 derniers jours"
-              }
-            />
-          </>
-        ) : (
-          <>
-            <StatCard label="Candidatures en cours" value={s.applications ?? 0} accent="teal" />
-            <StatCard label="Missions à venir" value={s.upcomingBookings ?? 0} accent="terracotta" />
-            <StatCard label="Ateliers publiés" value={services.data?.length ?? 0} />
-            <StatCard
-              label="Revenus du mois"
-              value={new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(s.revenueMonth ?? 0)}
-            />
-          </>
-        )}
-      </div>
+      {/* KPIs — masqués tant qu'ils sont TOUS à zéro.
+          Quatre compteurs alignés sur « 0 », suivis de « Aucune activité pour
+          le moment », c'était le premier écran d'un compte neuf : trois façons
+          de dire la même chose, et rien à faire. Ces cartes sont faites pour
+          un compte qui vit ; avant, elles volent la place à la prise en main,
+          qui est le seul élément utile ce jour-là. Elles apparaissent d'un
+          coup dès la première activité réelle. */}
+      {(() => {
+        const chiffres = isEstablishment
+          ? [s.activeMissions, s.applications, s.upcomingBookings, s.fillRate]
+          : [s.applications, s.upcomingBookings, services.data?.length, s.revenueMonth];
+        const aDeLActivite = chiffres.some((n) => (n ?? 0) > 0);
+        if (!aDeLActivite) return null;
+        return (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {isEstablishment ? (
+              <>
+                <StatCard label="Renforts actifs" value={s.activeMissions ?? 0} accent="teal" />
+                <StatCard label="Candidatures reçues" value={s.applications ?? 0} accent="terracotta" />
+                <StatCard label="Missions à venir" value={s.upcomingBookings ?? 0} />
+                <StatCard
+                  label="Taux de couverture"
+                  value={`${s.fillRate ?? 0}%`}
+                  hint={
+                    s.delaiMoyenHeures != null
+                      ? `30 derniers jours · pourvues en ${s.delaiMoyenHeures} h en moyenne`
+                      : "30 derniers jours"
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <StatCard label="Candidatures en cours" value={s.applications ?? 0} accent="teal" />
+                <StatCard label="Missions à venir" value={s.upcomingBookings ?? 0} accent="terracotta" />
+                <StatCard label="Ateliers publiés" value={services.data?.length ?? 0} />
+                <StatCard
+                  label="Revenus du mois"
+                  value={new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(s.revenueMonth ?? 0)}
+                />
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* BentoGrid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
