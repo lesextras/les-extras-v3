@@ -67,9 +67,7 @@ export default function LoginPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required hint="L’adresse utilisée à la création de votre compte.">
-                  Adresse e-mail
-                </FormLabel>
+                <FormLabel required>Adresse e-mail</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
@@ -90,10 +88,13 @@ export default function LoginPage() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel required hint="Le mot de passe choisi à la création de votre compte.">
-                    Mot de passe
-                  </FormLabel>
-                  <Link href="/login" className="text-xs font-medium text-primary hover:underline">
+                  <FormLabel required>Mot de passe</FormLabel>
+                  {/* Ce lien pointait vers /login : il rechargeait la page de
+                      connexion et ne menait donc nulle part. La
+                      réinitialisation en autonomie n'existe pas encore ; en
+                      attendant on envoie vers un chemin qui aboutit vraiment.
+                      Un chemin lent vaut mieux qu'un chemin faux. */}
+                  <Link href="/contact" className="text-xs font-medium text-primary hover:underline">
                     Mot de passe oublié ?
                   </Link>
                 </div>
