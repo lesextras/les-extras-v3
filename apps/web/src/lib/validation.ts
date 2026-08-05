@@ -47,6 +47,34 @@ export const registerSchema = z
   );
 export type RegisterValues = z.infer<typeof registerSchema>;
 
+/** Mot de passe oublié — demande du lien. */
+export const motDePasseOublieSchema = z.object({
+  email: z.string().min(1, 'L’e-mail est requis.').email('Adresse e-mail invalide.'),
+});
+export type MotDePasseOublieValues = z.infer<typeof motDePasseOublieSchema>;
+
+/**
+ * Choix du nouveau mot de passe.
+ *
+ * Exactement les mêmes règles qu'à l'inscription — et l'API les applique de
+ * son côté (voir password-reset.dto.ts). Deux exigences qui divergeraient
+ * seraient une porte laissée entrouverte.
+ */
+export const nouveauMotDePasseSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'Au moins 8 caractères.')
+      .regex(/[A-Za-z]/, 'Ajoutez au moins une lettre.')
+      .regex(/[0-9]/, 'Ajoutez au moins un chiffre.'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Les mots de passe ne correspondent pas.',
+    path: ['confirmPassword'],
+  });
+export type NouveauMotDePasseValues = z.infer<typeof nouveauMotDePasseSchema>;
+
 /** Étape 1 du wizard d'onboarding : informations de profil. */
 export const onboardingProfileSchema = z.object({
   // Un champ vide n'est pas « invalide » : c'est juste vide. Avant, un

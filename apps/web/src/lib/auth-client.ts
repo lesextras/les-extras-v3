@@ -77,6 +77,23 @@ export async function login(values: LoginValues): Promise<AuthResult> {
   return result;
 }
 
+/**
+ * Choix du nouveau mot de passe après avoir cliqué le lien reçu par e-mail.
+ *
+ * On enchaîne sur la session : quelqu'un qui vient de prouver qu'il relève
+ * cette adresse ET de choisir un mot de passe n'a aucune raison de le retaper
+ * dans la foulée sur l'écran de connexion.
+ */
+export async function reinitialiserMotDePasse(
+  token: string,
+  password: string,
+): Promise<AuthResult> {
+  const result = await callApi<AuthResult>('/auth/reset-password', { token, password });
+  const { token: jeton, accountId } = extractAuth(result);
+  if (jeton) await persistSession(jeton, accountId);
+  return result;
+}
+
 export async function register(values: RegisterValues): Promise<AuthResult> {
   // Origine de la visite, mémorisée à l'arrivée sur le site : c'est ici
   // qu'elle quitte le navigateur, et nulle part ailleurs.
