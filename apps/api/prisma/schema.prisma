@@ -75,6 +75,8 @@ model User {
   @@index([role, status])
   favorites          Favorite[]
   assistantDocuments AssistantDocument[]
+  /// Générations LEX imputées à cette personne (journal de /confiance-lex).
+  creditLedger       CreditLedger[]
   tramesMaison      TrameMaison[]
   pushSubscriptions PushSubscription[]
   leaveRequests    LeaveRequest[] @relation("LeaveUser")
@@ -738,18 +740,37 @@ enum CreditPurchaseStatus {
   CANCELED
 }
 
+/// GRAND LIVRE DES CRÉDITS — et journal des générations.
+///
+/// `userId` répond à une promesse faite sur /confiance-lex : « qui a généré
+/// quoi, quand ». Sans lui, une direction ne pouvait rien vérifier, et la
+/// page promettait un export qui n'existait pas.
+///
+/// Il est NULLABLE et le restera : les écritures antérieures n'ont pas
+/// d'auteur connu, et les mouvements automatiques (dotation mensuelle,
+/// remboursement, webhook Stripe) n'en ont pas non plus. Le déduire
+/// après coup serait inventer une trace, exactement ce qu'un journal de
+/// conformité ne doit jamais faire.
+///
+/// `label` porte le titre de l'écrit quand il y en a un, pour qu'une ligne
+/// dise « Rapport de situation — janvier » et non seulement « LEX_ECRIT ».
 model CreditLedger {
   id           String   @id @default(cuid())
   accountId    String
   account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   delta        Int
   balanceAfter Int
   reason       String
+  label        String?
   bookingId    String?
   invoiceId    String?
   createdAt    DateTime @default(now())
 
   @@index([accountId])
+  @@index([accountId, createdAt])
+  @@index([userId])
 }
 
 /// OBSOLÈTE — le dépôt de fichiers passe désormais par FileAsset et
