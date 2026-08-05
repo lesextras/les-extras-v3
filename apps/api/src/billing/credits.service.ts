@@ -1,12 +1,12 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
+import { SUBSCRIPTION_PLANS, ESTABLISHMENT_PLAN } from './billing.service';
 import {
-  SUBSCRIPTION_PLANS,
-  ESTABLISHMENT_PLAN,
   FREE_MONTHLY_CREDITS,
   ROLLOVER_MONTHS,
-} from './billing.service';
+  MOTIF_DOTATION,
+} from './credits.constants';
 
 /**
  * Crédits LEX — la monnaie de l'assistant IA, et d'elle seule.
@@ -22,6 +22,19 @@ import {
  * Chaque mouvement passe par le grand livre (CreditLedger) : le solde du
  * compte n'est jamais modifié sans écriture, et jamais hors transaction.
  */
+/**
+ * Qui a demandé la génération, et sur quoi.
+ *
+ * Facultatif partout : les mouvements automatiques (dotation du mois,
+ * remboursement, encaissement Stripe) n'ont pas d'auteur, et il vaut mieux
+ * une case vide qu'un nom inventé dans un journal qu'une direction lira.
+ */
+export interface Auteur {
+  userId: string;
+  /** Titre de l'écrit, quand il y en a un. Jamais de contenu, jamais de nom. */
+  label?: string;
+}
+
 @Injectable()
 export class CreditsService {
   private readonly logger = new Logger(CreditsService.name);
@@ -104,7 +117,7 @@ export class CreditsService {
    * Le décrément est conditionnel DANS la transaction : deux requêtes
    * simultanées ne peuvent pas faire passer le solde en négatif.
    */
-  async consommer(accountId: string, montant: number, reason: string) {
+  async consommer(accountId: string, montant: number, reason: string, auteur?: Auteur) {
     return this.prisma.$transaction(async (tx) => {
       const debite = await tx.account.updateMany({
         where: { id: accountId, credits: { gte: montant } },
@@ -125,6 +138,8 @@ export class CreditsService {
           delta: -montant,
           balanceAfter: account.credits,
           reason,
+          userId: auteur?.userId ?? null,
+          label: auteur?.label ?? null,
         },
       });
       return account.credits;
@@ -156,14 +171,19 @@ export class CreditsService {
    * Un compte marqué `isMember` (accès illimité accordé à la main) ne
    * consomme rien : le drapeau sert d'interrupteur d'exonération.
    */
-  async avecCredit<T>(accountId: string, reason: string, fn: () => Promise<T>): Promise<T> {
+  async avecCredit<T>(
+    accountId: string,
+    reason: string,
+    fn: () => Promise<T>,
+    auteur?: Auteur,
+  ): Promise<T> {
     const compte = await this.prisma.account.findUnique({
       where: { id: accountId },
       select: { isMember: true },
     });
     if (compte?.isMember) return fn();
 
-    await this.consommer(accountId, 1, reason);
+    await this.consommer(accountId, 1, reason, auteur);
     try {
       return await fn();
     } catch (err) {
@@ -234,6 +254,56 @@ export class CreditsService {
   }
 
   /**
+   * JOURNAL DES GÉNÉRATIONS — la promesse de /confiance-lex, tenue.
+   *
+   * La page annonçait à une direction « qui a généré quoi, quand », et un
+   * export. Ni l'un ni l'autre n'existait : le grand livre ne portait aucun
+   * auteur. C'est réparé, mais avec une limite qu'il faut assumer plutôt que
+   * masquer — les écritures antérieures à ce correctif n'ont pas d'auteur,
+   * et rien ne permet de le reconstituer. Elles sortent avec une case vide
+   * et une mention explicite, parce qu'un journal de conformité qui comble
+   * ses trous ne vaut rien.
+   *
+   * Seules les GÉNÉRATIONS sont journalisées ici (delta négatif) : les
+   * dotations, achats et remboursements sont des mouvements comptables, ils
+   * restent dans l'écran « Utilisation ».
+   */
+  async journal(accountId: string, options: { depuis?: Date; limite?: number } = {}) {
+    const lignes = await this.prisma.creditLedger.findMany({
+      where: {
+        accountId,
+        delta: { lt: 0 },
+        ...(options.depuis ? { createdAt: { gte: options.depuis } } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: options.limite ?? 500,
+      select: {
+        id: true,
+        createdAt: true,
+        reason: true,
+        label: true,
+        delta: true,
+        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+      },
+    });
+
+    return lignes.map((l) => ({
+      id: l.id,
+      date: l.createdAt,
+      outil: l.reason,
+      intitule: l.label,
+      credits: Math.abs(l.delta),
+      auteur: l.user
+        ? {
+            id: l.user.id,
+            nom: [l.user.firstName, l.user.lastName].filter(Boolean).join(' ').trim() || l.user.email,
+            email: l.user.email,
+          }
+        : null,
+    }));
+  }
+
+  /**
    * Ajoute l'allocation du mois au solde, dans la limite du report autorisé.
    * Idempotent dans le mois : une seconde exécution ne double pas la dotation
    * (on vérifie l'absence d'écriture DOTATION_MENSUELLE depuis le 1er).
@@ -245,7 +315,7 @@ export class CreditsService {
 
     await this.prisma.$transaction(async (tx) => {
       const dejaServi = await tx.creditLedger.findFirst({
-        where: { accountId, reason: 'DOTATION_MENSUELLE', createdAt: { gte: debutDuMois } },
+        where: { accountId, reason: MOTIF_DOTATION, createdAt: { gte: debutDuMois } },
         select: { id: true },
       });
       if (dejaServi) return;
@@ -263,7 +333,7 @@ export class CreditsService {
 
       await tx.account.update({ where: { id: accountId }, data: { credits: cible } });
       await tx.creditLedger.create({
-        data: { accountId, delta, balanceAfter: cible, reason: 'DOTATION_MENSUELLE' },
+        data: { accountId, delta, balanceAfter: cible, reason: MOTIF_DOTATION },
       });
     });
   }

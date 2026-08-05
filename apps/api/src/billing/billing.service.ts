@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreditsService } from './credits.service';
+import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
 
 
 /**
@@ -34,13 +35,12 @@ import { CreditsService } from './credits.service';
  */
 
 /**
- * Offre GRATUITE PERMANENTE — remplace l'essai de 7 jours.
- * Le cycle de production d'écrits en médico-social est mensuel à
- * trimestriel : sept jours ne suffisaient pas à rencontrer un seul cas
- * d'usage à forte valeur. Tout compte reçoit désormais cette dotation
- * chaque mois, sans carte bancaire et sans date de fin.
+ * Offre gratuite permanente et report : les deux valeurs vivent désormais
+ * dans `credits.constants.ts`, pour que la création d'un compte puisse les
+ * lire sans importer tout le module de facturation. Réexportées ici, car
+ * beaucoup d'appelants les importent depuis ce fichier.
  */
-export const FREE_MONTHLY_CREDITS = 15;
+export { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
 
 /**
  * Packs de crédits (Stripe Checkout mode=payment), pour qui ne veut pas
@@ -100,9 +100,6 @@ export const ESTABLISHMENT_PLAN = {
   perks:
     'SOS Renfort illimité, 0 % de commission, LEX pour toute l’équipe (1 000 générations/mois partagées), coffre-fort de conformité et accompagnement',
 } as const;
-
-/** Nombre de mois de report du quota mensuel (plafond d'accumulation). */
-export const ROLLOVER_MONTHS = 3;
 
 /**
  * Rétrocompatibilité : `lexTrialEndsAt` reste lu pour les comptes qui ont
