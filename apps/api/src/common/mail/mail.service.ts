@@ -87,6 +87,32 @@ export class MailService {
   }
 
   /**
+   * Mot de passe oublié.
+   *
+   * Le message dit trois choses, et rien d'autre : le lien, sa durée de vie,
+   * et quoi faire si la demande ne vient pas de vous. Ce dernier point n'est
+   * pas une formule de politesse — c'est la seule information qui permette à
+   * quelqu'un de comprendre qu'on essaie peut-être d'entrer chez lui.
+   */
+  async sendPasswordReset(to: string, token: string, prenom?: string | null): Promise<void> {
+    const url = `${this.webUrl}/reinitialiser-mot-de-passe?token=${encodeURIComponent(token)}`;
+    await this.send(
+      to,
+      'Réinitialiser votre mot de passe — LES EXTRAS',
+      this.layout(
+        `Nouveau mot de passe${prenom ? `, ${prenom}` : ''}`,
+        `Vous avez demandé à changer votre mot de passe. Le bouton ci-dessous vous mène à
+         l'écran pour en choisir un nouveau.
+         <br><br><strong>Ce lien est valable une heure et ne fonctionne qu'une fois.</strong>
+         <br><br>Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : votre mot
+         de passe actuel reste valable et personne n'a accédé à votre compte. Si cela se
+         reproduit, écrivez-nous.`,
+        { label: 'Choisir un nouveau mot de passe', url },
+      ),
+    );
+  }
+
+  /**
    * Bienvenue — envoyé UNE FOIS, à la confirmation de l'adresse.
    *
    * Ce n'est pas un accusé de réception : c'est le moment où l'on dit à
