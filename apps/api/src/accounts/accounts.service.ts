@@ -15,6 +15,7 @@ import { messageRoleInsuffisant } from '../common/guards/account-roles.guard';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { FREE_MONTHLY_CREDITS, MOTIF_DOTATION } from '../billing/credits.constants';
 
 @Injectable()
 export class AccountsService {
@@ -116,6 +117,20 @@ export class AccountsService {
           phone: dto.phone,
           logoUrl: dto.logoUrl,
           ownerId: userId,
+          // Dotation d'accueil : voir auth.service.ts. Un second compte créé
+          // par la même personne (bascule salarié → intervenant, par exemple)
+          // a sa propre dotation, parce que les crédits vivent sur le compte
+          // et non sur la personne.
+          credits: FREE_MONTHLY_CREDITS,
+        },
+      });
+
+      await tx.creditLedger.create({
+        data: {
+          accountId: account.id,
+          delta: FREE_MONTHLY_CREDITS,
+          balanceAfter: FREE_MONTHLY_CREDITS,
+          reason: MOTIF_DOTATION,
         },
       });
 
