@@ -19,6 +19,7 @@ import { MailService } from '../common/mail/mail.service';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { FREE_MONTHLY_CREDITS, MOTIF_DOTATION } from '../billing/credits.constants';
 
 const BCRYPT_ROUNDS = 12;
 const EMAIL_VERIFY_PURPOSE = 'email-verify';
@@ -99,6 +100,30 @@ export class AuthService {
                   })
                 )?.id ?? null
               : null,
+        },
+      });
+
+      // DOTATION D'ACCUEIL — la première chose qu'on peut faire, c'est travailler.
+      //
+      // Jusqu'ici un compte naissait à zéro crédit et devait aller cliquer un
+      // bouton d'activation sur un écran de facturation : un salarié tombait
+      // sur une page qui ne lui était pas ouverte et repartait sans avoir rien
+      // essayé. La dotation du mois est donc posée ici, dans la transaction
+      // qui crée le compte.
+      //
+      // Le motif est le MÊME que celui de la dotation mensuelle : c'est la clé
+      // d'idempotence du 1er du mois, et s'en écarter doterait deux fois le
+      // compte le mois de son inscription.
+      await tx.account.update({
+        where: { id: account.id },
+        data: { credits: FREE_MONTHLY_CREDITS },
+      });
+      await tx.creditLedger.create({
+        data: {
+          accountId: account.id,
+          delta: FREE_MONTHLY_CREDITS,
+          balanceAfter: FREE_MONTHLY_CREDITS,
+          reason: MOTIF_DOTATION,
         },
       });
 
