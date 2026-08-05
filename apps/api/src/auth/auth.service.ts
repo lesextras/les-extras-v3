@@ -13,6 +13,7 @@ import {
   UserStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { createHash } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
@@ -21,6 +22,7 @@ import { LoginDto } from './dto/login.dto';
 
 const BCRYPT_ROUNDS = 12;
 const EMAIL_VERIFY_PURPOSE = 'email-verify';
+const PASSWORD_RESET_PURPOSE = 'password-reset';
 
 @Injectable()
 export class AuthService {
@@ -324,5 +326,138 @@ export class AuthService {
       { sub: userId, email, purpose: EMAIL_VERIFY_PURPOSE },
       { expiresIn: '2d' as unknown as number },
     );
+  }
+
+  // ── Mot de passe oublié ───────────────────────────────────────────────────
+
+  /**
+   * LE LIEN NE SERT QU'UNE FOIS, SANS TABLE DE JETONS.
+   *
+   * Un jeton signé ne s'annule pas : tant qu'il n'a pas expiré, il vaut. Un
+   * lien de réinitialisation qui reste valable une heure après avoir servi,
+   * c'est une clé qui traîne dans une boîte mail — et les boîtes mail se
+   * partagent, s'oublient ouvertes, se font compromettre bien après coup.
+   *
+   * Plutôt que d'ajouter une table de jetons à révoquer (et la migration qui
+   * va avec, la veille d'un lancement), on scelle dans le jeton une empreinte
+   * du mot de passe ACTUEL. Dès que le mot de passe change, l'empreinte ne
+   * correspond plus : le lien meurt de lui-même, et tous les liens émis avant
+   * lui aussi. La condition « une seule utilisation » devient une propriété
+   * mathématique, pas une ligne de code qu'on peut oublier d'écrire.
+   *
+   * On ne stocke évidemment pas le haché du mot de passe dans le jeton : on
+   * en prend une empreinte tronquée, suffisante pour détecter un changement,
+   * inutilisable pour remonter au mot de passe.
+   */
+  private empreinteMotDePasse(hache: string): string {
+    return createHash('sha256').update(hache).digest('hex').slice(0, 16);
+  }
+
+  private signPasswordResetToken(userId: string, hache: string): Promise<string> {
+    return this.jwt.signAsync(
+      { sub: userId, purpose: PASSWORD_RESET_PURPOSE, mdp: this.empreinteMotDePasse(hache) },
+      // Une heure : le temps d'aller relever ses mails, pas celui d'oublier
+      // qu'on a demandé quelque chose.
+      { expiresIn: '1h' as unknown as number },
+    );
+  }
+
+  /**
+   * Demande de réinitialisation.
+   *
+   * Réponse rigoureusement identique que l'adresse existe ou non — sinon ce
+   * point d'entrée devient un annuaire : il suffirait d'essayer des adresses
+   * pour savoir quels établissements sont clients.
+   */
+  async demanderReinitialisation(email: string) {
+    const propre = email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email: propre },
+      select: { id: true, email: true, firstName: true, password: true, status: true },
+    });
+
+    if (user && user.status !== UserStatus.BANNED) {
+      const token = await this.signPasswordResetToken(user.id, user.password);
+      await this.mail
+        .sendPasswordReset(user.email, token, user.firstName)
+        .catch(() => undefined);
+    }
+
+    return {
+      ok: true,
+      message:
+        'Si cette adresse correspond à un compte, un lien de réinitialisation vient d’être envoyé. Pensez à regarder dans vos indésirables.',
+    };
+  }
+
+  /**
+   * Réinitialisation effective.
+   *
+   * Trois conséquences volontaires, au-delà du changement lui-même :
+   *  - l'adresse est considérée comme confirmée. Cliquer un lien reçu à cette
+   *    adresse prouve qu'on la relève — c'est exactement ce que démontre le
+   *    lien de confirmation d'inscription. Refuser de le reconnaître ici
+   *    laisserait quelqu'un bloqué à la publication après avoir pourtant fait
+   *    la preuve demandée.
+   *  - tous les autres liens de réinitialisation en circulation deviennent
+   *    caducs (voir l'empreinte ci-dessus).
+   *  - on renvoie un jeton de session : la personne enchaîne sur son espace
+   *    au lieu de retaper le mot de passe qu'elle vient de choisir.
+   */
+  async reinitialiserMotDePasse(token: string, nouveauMotDePasse: string) {
+    let payload: { sub: string; purpose: string; mdp?: string };
+    try {
+      payload = await this.jwt.verifyAsync(token, {
+        secret: this.config.get<string>('JWT_SECRET'),
+      });
+    } catch {
+      throw new BadRequestException(
+        'Ce lien n’est plus valable : il expire au bout d’une heure. Demandez-en un nouveau depuis la page de connexion.',
+      );
+    }
+
+    if (payload.purpose !== PASSWORD_RESET_PURPOSE) {
+      throw new BadRequestException('Ce lien n’est pas un lien de réinitialisation.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, email: true, password: true, status: true },
+    });
+    if (!user) throw new BadRequestException('Compte introuvable.');
+    if (user.status === UserStatus.BANNED) {
+      throw new UnauthorizedException('Ce compte est suspendu.');
+    }
+
+    if (payload.mdp !== this.empreinteMotDePasse(user.password)) {
+      throw new BadRequestException(
+        'Ce lien a déjà servi. Si vous avez besoin d’en changer à nouveau, demandez un nouveau lien depuis la page de connexion.',
+      );
+    }
+
+    // Changer pour le même mot de passe donnerait l'illusion d'avoir agi
+    // alors que rien n'aurait bougé — et le lien resterait valable.
+    if (await bcrypt.compare(nouveauMotDePasse, user.password)) {
+      throw new BadRequestException(
+        'C’est déjà votre mot de passe actuel. Choisissez-en un autre.',
+      );
+    }
+
+    const hache = await bcrypt.hash(nouveauMotDePasse, BCRYPT_ROUNDS);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hache,
+        emailVerified: true,
+        status: UserStatus.VERIFIED,
+      },
+    });
+
+    const complet = await this.prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+      select: { email: true, role: true },
+    });
+    const accessToken = await this.signAccessToken(user.id, complet.email, complet.role);
+    return { ok: true, accessToken, user: await this.buildMe(user.id) };
   }
 }
