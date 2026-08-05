@@ -29,32 +29,51 @@ export function ActionsPublication({
 
   const etablissement = accountType === "ESTABLISHMENT";
 
-  // UNE SEULE ACTION PRINCIPALE — CETTE FOIS POUR DE BON.
+  // UNE ACTION PRINCIPALE, ET CE QUI RELÈVE VRAIMENT DU PROFIL.
   //
-  // Le commentaire disait déjà « une seule action principale », et trois
-  // boutons s'affichaient quand même : un seul plein, deux en retrait. Trois
-  // propositions alignées restent trois propositions — et deux d'entre elles
-  // relèvent du métier d'en face. On proposait à une directrice de MECS de
-  // VENDRE un atelier, et à un éducateur indépendant de RECRUTER un
-  // remplaçant. Ce n'est pas seulement encombrant : c'est déroutant.
+  // Trois boutons de même poids, c'était trop : « Publier un atelier » et
+  // « Publier un renfort » s'affichaient des DEUX côtés de la place de
+  // marché. On proposait à une directrice de MECS de vendre un atelier, et à
+  // un éducateur indépendant de recruter un remplaçant — le métier d'en face,
+  // à chaque fois.
   //
-  // On garde donc le geste du profil, et lui seul. Le reste n'est pas retiré
-  // du produit : atelier et formation restent dans le menu de gauche, à un
-  // clic, pour qui les cherche vraiment.
+  // Mais j'étais allé trop loin en ne gardant qu'un seul bouton : un
+  // établissement ORGANISE des formations en interne, animées par un salarié
+  // référent, et c'est un geste courant, pas une exception. Le retirer de
+  // l'en-tête revenait à le cacher. Il revient donc, en second.
+  //
+  // Un bouton plein pour le geste dominant du profil, un bouton en retrait
+  // pour l'autre. Les deux appartiennent bien à la personne qui les voit.
   if (etablissement) {
     return (
-      <RenfortModal
-        accountId={accountId}
-        trigger={<Button variant="primary">Publier un renfort</Button>}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        <RenfortModal
+          accountId={accountId}
+          trigger={<Button variant="primary">Publier un renfort</Button>}
+        />
+        <ServiceModal
+          accountId={accountId}
+          categorieInitiale="FORMATION"
+          trigger={<Button variant="outline">Organiser une formation</Button>}
+        />
+      </div>
     );
   }
 
+  // Côté intervenant : son atelier d'abord, et la formation qu'il peut
+  // proposer à la validation d'ADéPA juste après.
   return (
-    <ServiceModal
-      accountId={accountId}
-      categorieInitiale="ATELIER"
-      trigger={<Button variant="primary">Créer un atelier</Button>}
-    />
+    <div className="flex flex-wrap items-center gap-2">
+      <ServiceModal
+        accountId={accountId}
+        categorieInitiale="ATELIER"
+        trigger={<Button variant="primary">Créer un atelier</Button>}
+      />
+      <ServiceModal
+        accountId={accountId}
+        categorieInitiale="FORMATION"
+        trigger={<Button variant="outline">Proposer une formation</Button>}
+      />
+    </div>
   );
 }

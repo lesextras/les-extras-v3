@@ -97,7 +97,9 @@ export function TutoratPanel({
           ) : (
             jalons.map((j) => (
               <div key={j.id} className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2">
-                <span className={`text-sm ${j.status === "DONE" ? "text-muted-foreground line-through" : "text-foreground"}`}>{j.label}</span>
+                {/* Même règle qu'au tableau de bord : un jalon atteint n'est pas raturé.
+                    La couleur atténuée suffit à le distinguer. */}
+                <span className={`text-sm ${j.status === "DONE" ? "text-muted-foreground" : "text-foreground"}`}>{j.label}</span>
                 <Button
                   size="sm"
                   variant={j.status === "DONE" ? "ghost" : "outline"}
