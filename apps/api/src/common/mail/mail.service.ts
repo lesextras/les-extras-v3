@@ -1,15 +1,94 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 /**
- * Envoi d'emails transactionnels via l'API Brevo (HTTP, pas de SMTP requis).
- * Si BREVO_API_KEY est absent, on retombe sur un log (mode dev).
+ * ENVOI DES E-MAILS TRANSACTIONNELS.
+ *
+ * ── Pourquoi on est passé de Brevo au SMTP du domaine ────────────────────
+ *
+ * Les e-mails partaient par l'API Brevo, avec `contact@adepa77.fr` en
+ * expéditeur. Brevo les acceptait (le crédit était bien décompté) et une
+ * partie n'arrivait jamais — ni boîte de réception, ni indésirables. Ce
+ * n'était pas un caprice de Gmail : l'enregistrement SPF des deux domaines
+ * n'autorise QUE Hostinger.
+ *
+ *   les-extras.fr  TXT  v=spf1 include:_spf.mail.hostinger.com ~all
+ *   adepa77.fr     TXT  v=spf1 include:_spf.mail.hostinger.com ~all
+ *
+ * Un message émis depuis les serveurs de Brevo au nom de ces domaines échoue
+ * donc l'authentification SPF, et n'est signé par aucune clé DKIM du domaine.
+ * Avec un DMARC à `p=none` il n'est pas rejeté franchement — il est pénalisé,
+ * silencieusement, au cas par cas. D'où des envois qui passent et d'autres
+ * qui disparaissent sans laisser de trace.
+ *
+ * En passant par `smtp.hostinger.com`, authentifié comme la boîte du domaine,
+ * SPF est aligné et Hostinger signe en DKIM (sélecteur `mail`). C'est la
+ * correction de fond, pas un contournement.
+ *
+ * ── Ordre de préférence ──────────────────────────────────────────────────
+ *
+ *  1. SMTP, dès que SMTP_HOST / SMTP_USER / SMTP_PASSWORD sont renseignés ;
+ *  2. l'API Brevo, si une clé subsiste — filet pour ne pas perdre les envois
+ *     le temps d'une bascule, et rien de plus ;
+ *  3. un log, en développement, pour ne jamais bloquer un parcours faute de
+ *     serveur d'envoi.
+ *
+ * Aucun mot de passe n'est écrit dans ce dépôt : tout vient des variables
+ * d'environnement.
  */
 @Injectable()
-export class MailService {
+export class MailService implements OnModuleDestroy {
   private readonly logger = new Logger(MailService.name);
+  /** Créé à la première utilisation, puis réutilisé (pool de connexions). */
+  private transporter: Transporter | null = null;
 
   constructor(private readonly config: ConfigService) {}
+
+  onModuleDestroy() {
+    this.transporter?.close();
+  }
+
+  /** Le SMTP est-il configuré ? Les trois valeurs sont nécessaires. */
+  private get smtp() {
+    const host = (this.config.get<string>('SMTP_HOST') ?? '').trim();
+    const user = (this.config.get<string>('SMTP_USER') ?? '').trim();
+    const pass = this.config.get<string>('SMTP_PASSWORD') ?? '';
+    if (!host || !user || !pass) return null;
+
+    // 465 = TLS implicite (le canal est chiffré dès la connexion), 587 =
+    // STARTTLS. On prend 465 par défaut : moins de surprises derrière un
+    // pare-feu, et pas de fenêtre en clair même brève.
+    const port = Number(this.config.get<string>('SMTP_PORT') ?? 465);
+    return { host, port, secure: port === 465, user, pass };
+  }
+
+  private get transport(): Transporter | null {
+    if (this.transporter) return this.transporter;
+    const smtp = this.smtp;
+    if (!smtp) return null;
+
+    this.transporter = nodemailer.createTransport({
+      host: smtp.host,
+      port: smtp.port,
+      secure: smtp.secure,
+      auth: { user: smtp.user, pass: smtp.pass },
+      // Une inscription ne doit pas rester suspendue parce qu'un serveur de
+      // messagerie met deux minutes à répondre.
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
+      // La boîte est plafonnée (50 envois par heure sur l'offre de base
+      // Hostinger) : on garde une seule connexion et on sérialise, plutôt que
+      // d'ouvrir dix canaux et de se faire fermer la porte.
+      pool: true,
+      maxConnections: 1,
+      maxMessages: 50,
+    });
+    this.logger.log(`[MAIL] transport SMTP ${smtp.host}:${smtp.port} (${smtp.user})`);
+    return this.transporter;
+  }
 
   private get webUrl(): string {
     return (
@@ -22,7 +101,11 @@ export class MailService {
   private get sender() {
     return {
       name: this.config.get<string>('MAIL_FROM_NAME') ?? 'LES EXTRAS',
-      email: this.config.get<string>('MAIL_FROM_EMAIL') ?? 'contact@adepa77.fr',
+      // L'ADRESSE D'EXPÉDITION DOIT APPARTENIR AU DOMAINE QUI SIGNE.
+      // On s'authentifie sur le SMTP de les-extras.fr : envoyer au nom d'un
+      // autre domaine casserait l'alignement DKIM/DMARC et nous remettrait
+      // exactement dans la situation qu'on vient de corriger.
+      email: this.config.get<string>('MAIL_FROM_EMAIL') ?? 'contact@les-extras.fr',
     };
   }
 
@@ -43,10 +126,42 @@ export class MailService {
       </div></body></html>`;
   }
 
+  /**
+   * Envoi effectif. Ne lève jamais : un e-mail qui ne part pas ne doit pas
+   * faire échouer l'inscription, la candidature ou la facture qui l'a
+   * déclenché. En revanche il LAISSE UNE TRACE dans les journaux — c'est ce
+   * qui manquait pour comprendre pourquoi certains messages disparaissaient.
+   */
   private async send(to: string, subject: string, html: string): Promise<void> {
+    const transport = this.transport;
+    if (transport) {
+      try {
+        const info = await transport.sendMail({
+          from: { name: this.sender.name, address: this.sender.email },
+          to,
+          subject,
+          html,
+          // Une version texte accompagne toujours le HTML : un message qui
+          // n'en a pas est un signal négatif pour les filtres anti-spam, et
+          // il reste illisible dans les clients en mode texte.
+          text: versionTexte(html),
+          // Les réponses arrivent à l'association, pas dans une boîte muette.
+          replyTo: this.config.get<string>('MAIL_REPLY_TO') || undefined,
+        });
+        this.logger.log(`[MAIL:smtp] envoyé to=${to} id=${info.messageId} subject="${subject}"`);
+        return;
+      } catch (e) {
+        // On tombe sur Brevo si une clé existe encore : mieux vaut un message
+        // moins bien authentifié qu'aucun message.
+        this.logger.error(`[MAIL:smtp] échec to=${to}: ${(e as Error).message}`);
+      }
+    }
+
     const apiKey = this.config.get<string>('BREVO_API_KEY');
     if (!apiKey) {
-      this.logger.log(`[MAIL:log] to=${to} subject="${subject}" (BREVO_API_KEY absent)`);
+      this.logger.log(
+        `[MAIL:log] to=${to} subject="${subject}" (ni SMTP ni BREVO_API_KEY configurés)`,
+      );
       return;
     }
     try {
@@ -64,7 +179,10 @@ export class MailService {
         const body = await res.text();
         this.logger.error(`[MAIL:brevo] échec ${res.status} to=${to}: ${body.slice(0, 200)}`);
       } else {
-        this.logger.log(`[MAIL:brevo] envoyé to=${to} subject="${subject}"`);
+        this.logger.warn(
+          `[MAIL:brevo] envoyé to=${to} subject="${subject}" — repli sur Brevo : ` +
+            `SPF n'autorise pas Brevo pour ce domaine, la délivrabilité est incertaine.`,
+        );
       }
     } catch (e) {
       this.logger.error(`[MAIL:brevo] exception to=${to}: ${(e as Error).message}`);
@@ -655,4 +773,36 @@ export class MailService {
       ),
     );
   }
+}
+
+/**
+ * Une version texte lisible, dérivée du HTML.
+ *
+ * Ce n'est pas de la mise en forme : c'est ce que lisent les filtres
+ * anti-spam (un message HTML seul est suspect) et ce que voient les clients
+ * en mode texte. On garde les URL, qui sont l'essentiel de nos messages —
+ * sans elles la version texte ne servirait à rien.
+ */
+export function versionTexte(html: string): string {
+  return html
+    // Le lien du bouton disparaîtrait avec les balises : on le fait ressortir.
+    .replace(/<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (_m, url, texte) => {
+      const libelle = String(texte).replace(/<[^>]+>/g, '').trim();
+      return libelle ? `${libelle} : ${url}` : String(url);
+    })
+    .replace(/<\/(p|div|h1|h2|h3|tr|li)>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n\s*\n+/g, '\n\n')
+    .split('\n')
+    .map((l) => l.trim())
+    .join('\n')
+    .trim();
 }
