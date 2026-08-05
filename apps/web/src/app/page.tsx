@@ -804,10 +804,10 @@ export default async function LandingPage() {
                   prix: 'À crédits',
                   prixSous: 'Essai gratuit de 7 jours, puis un crédit par génération — tarifs dans votre espace',
                   points: [
-                    'Pack Découverte : 7 jours d’essai gratuit, sans carte bancaire',
+                    '15 générations offertes chaque mois, à vie, sans carte bancaire',
                     'Assistant d’écriture : notes brutes → écrits professionnels',
                     'Générateur d’activités éducatives et thérapeutiques',
-                    'Packs de crédits, ou abonnement à recharge quotidienne',
+                    'Au-delà : packs de crédits, ou abonnement à dotation mensuelle',
                   ],
                   href: '/register',
                   action: 'Découvrir LEX',
