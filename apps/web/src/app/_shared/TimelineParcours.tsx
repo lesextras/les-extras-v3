@@ -128,7 +128,7 @@ const PARCOURS: Record<
         icone: PenLine,
         titre: "Rechargez LEX quand vous en avez besoin",
         texte:
-          "Assistant d’écriture, générateur d’activités, GAPiste. Un crédit par génération : packs ou abonnement à recharge quotidienne.",
+          "Assistant d’écriture, générateur d’activités, GAPiste. 15 générations offertes chaque mois ; au-delà, packs ou abonnement.",
         probleme:
           "Les écrits se rédigent le soir, après le service.",
         change:
@@ -221,7 +221,7 @@ const PARCOURS: Record<
         icone: PenLine,
         titre: "Rechargez LEX quand vous en avez besoin",
         texte:
-          "Assistant d’écriture, générateur d’activités, GAPiste. Un crédit par génération : packs ou abonnement à recharge quotidienne.",
+          "Assistant d’écriture, générateur d’activités, GAPiste. 15 générations offertes chaque mois ; au-delà, packs ou abonnement.",
         probleme:
           "Comptes rendus et projets d’activité sur votre temps personnel.",
         change:

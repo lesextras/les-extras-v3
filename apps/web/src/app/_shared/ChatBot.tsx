@@ -87,7 +87,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
                 <p className="mt-3 font-semibold text-foreground">Crédits LEX requis</p>
                 <p className="mt-1.5 text-sm text-muted-foreground">
                   Les générations LEX consomment des crédits. Activez l&apos;essai Découverte
-                  gratuit, rechargez par packs ou prenez un abonnement à recharge quotidienne —
+                  gratuit, rechargez par packs ou prenez un abonnement à dotation mensuelle —
                   le reste de la plateforme reste gratuit.
                 </p>
                 <a
