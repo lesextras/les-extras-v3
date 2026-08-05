@@ -192,10 +192,19 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* LEX RESTE VISIBLE SUR MOBILE — et c'est le point important.
+              Les entrées LEX ont quitté la sidebar le 4/8/2026 pour venir ici ;
+              comme ce déclencheur était `hidden md:flex`, un établissement
+              consultant la plateforme depuis un téléphone n'avait PLUS AUCUN
+              accès à LEX, ni même l'indice que le produit existait. Sur petit
+              écran on garde donc le bouton et on n'escamote que son libellé. */}
           <DropdownMenu align="start">
-            <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
+            <DropdownMenuTrigger
+              aria-label="LEX et analyse de pratique"
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:px-3"
+            >
               <PenLine className="size-4 text-muted-foreground" />
-              LEX &amp; Analyse de pratique
+              <span className="hidden md:inline">LEX &amp; Analyse de pratique</span>
               <ChevronsUpDown className="size-3.5 text-muted-foreground" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-64">
