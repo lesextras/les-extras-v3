@@ -90,11 +90,12 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between">
                   <FormLabel required>Mot de passe</FormLabel>
                   {/* Ce lien pointait vers /login : il rechargeait la page de
-                      connexion et ne menait donc nulle part. La
-                      réinitialisation en autonomie n'existe pas encore ; en
-                      attendant on envoie vers un chemin qui aboutit vraiment.
-                      Un chemin lent vaut mieux qu'un chemin faux. */}
-                  <Link href="/contact" className="text-xs font-medium text-primary hover:underline">
+                      connexion et ne menait donc nulle part. Il mène désormais
+                      à la vraie réinitialisation. */}
+                  <Link
+                    href="/mot-de-passe-oublie"
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
                     Mot de passe oublié ?
                   </Link>
                 </div>
