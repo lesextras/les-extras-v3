@@ -98,16 +98,53 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
+  /**
+   * L'EXPÉDITEUR EST IMPOSÉ PAR LA BOÎTE QUI ENVOIE, PAS PAR UNE VARIABLE.
+   *
+   * C'est toute la leçon de la panne : on envoyait au nom de
+   * `contact@adepa77.fr` depuis une infrastructure que ce domaine n'autorise
+   * pas, et les messages disparaissaient. Le même piège se reproduirait au
+   * premier oubli de configuration — une variable d'environnement laissée sur
+   * l'ancienne valeur suffit.
+   *
+   * Alors on ne s'en remet plus à la configuration : dès que le SMTP est
+   * actif, l'expéditeur doit être du MÊME DOMAINE que la boîte authentifiée.
+   * Si ce n'est pas le cas, on utilise l'adresse de la boîte elle-même et on
+   * le signale dans les journaux. Une adresse d'affichage flatteuse ne vaut
+   * pas un e-mail qui n'arrive jamais.
+   *
+   * `MAIL_FROM_EMAIL` reste utile : elle permet d'expédier depuis une autre
+   * adresse du même domaine (par exemple `ne-pas-repondre@les-extras.fr`).
+   */
   private get sender() {
-    return {
-      name: this.config.get<string>('MAIL_FROM_NAME') ?? 'LES EXTRAS',
-      // L'ADRESSE D'EXPÉDITION DOIT APPARTENIR AU DOMAINE QUI SIGNE.
-      // On s'authentifie sur le SMTP de les-extras.fr : envoyer au nom d'un
-      // autre domaine casserait l'alignement DKIM/DMARC et nous remettrait
-      // exactement dans la situation qu'on vient de corriger.
-      email: this.config.get<string>('MAIL_FROM_EMAIL') ?? 'contact@les-extras.fr',
-    };
+    const name = this.config.get<string>('MAIL_FROM_NAME') ?? 'LES EXTRAS';
+    const smtp = this.smtp;
+    const demandee = (this.config.get<string>('MAIL_FROM_EMAIL') ?? '').trim();
+
+    if (!smtp) {
+      return { name, email: demandee || 'contact@les-extras.fr' };
+    }
+
+    const domaineBoite = smtp.user.split('@')[1]?.toLowerCase();
+    const domaineDemande = demandee.split('@')[1]?.toLowerCase();
+
+    if (demandee && domaineDemande === domaineBoite) {
+      return { name, email: demandee };
+    }
+
+    if (demandee && !this.alerteExpediteur) {
+      this.alerteExpediteur = true;
+      this.logger.warn(
+        `[MAIL] MAIL_FROM_EMAIL (${demandee}) n'est pas du domaine de la boîte d'envoi ` +
+          `(${smtp.user}) : SPF et DKIM ne seraient pas alignés et les messages risqueraient ` +
+          `d'être écartés silencieusement. On expédie depuis ${smtp.user}.`,
+      );
+    }
+    return { name, email: smtp.user };
   }
+
+  /** N'avertir qu'une fois, pas à chaque e-mail. */
+  private alerteExpediteur = false;
 
   private layout(title: string, bodyHtml: string, cta?: { label: string; url: string }): string {
     const button = cta

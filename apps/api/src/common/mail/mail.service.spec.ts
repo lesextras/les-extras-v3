@@ -110,6 +110,50 @@ describe('MailService — choix du transport', () => {
     });
   });
 
+  /**
+   * C'EST EXACTEMENT LA PANNE QU'ON A VÉCUE.
+   *
+   * `MAIL_FROM_EMAIL` était resté sur l'ancien domaine. Si on lui obéissait,
+   * on repartirait envoyer au nom d'un domaine que l'infrastructure d'envoi
+   * n'est pas autorisée à représenter — et les messages disparaîtraient de
+   * nouveau, sans erreur, sans trace.
+   */
+  it('IGNORE une adresse d’expédition d’un autre domaine que la boîte d’envoi', async () => {
+    const sendMail = jest.fn().mockResolvedValue({});
+    CREER.mockReturnValue({ sendMail, close: jest.fn() });
+
+    await envoyer(
+      new MailService(
+        config({
+          SMTP_HOST: 'smtp.hostinger.com',
+          SMTP_USER: 'contact@les-extras.fr',
+          SMTP_PASSWORD: 'secret',
+          MAIL_FROM_EMAIL: 'contact@adepa77.fr',
+        }),
+      ),
+    );
+
+    expect(sendMail.mock.calls[0][0].from.address).toBe('contact@les-extras.fr');
+  });
+
+  it('accepte une autre adresse DU MÊME domaine', async () => {
+    const sendMail = jest.fn().mockResolvedValue({});
+    CREER.mockReturnValue({ sendMail, close: jest.fn() });
+
+    await envoyer(
+      new MailService(
+        config({
+          SMTP_HOST: 'smtp.hostinger.com',
+          SMTP_USER: 'contact@les-extras.fr',
+          SMTP_PASSWORD: 'secret',
+          MAIL_FROM_EMAIL: 'ne-pas-repondre@les-extras.fr',
+        }),
+      ),
+    );
+
+    expect(sendMail.mock.calls[0][0].from.address).toBe('ne-pas-repondre@les-extras.fr');
+  });
+
   it('joint toujours une version texte au HTML', async () => {
     const sendMail = jest.fn().mockResolvedValue({});
     CREER.mockReturnValue({ sendMail, close: jest.fn() });
