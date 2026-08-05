@@ -35,7 +35,7 @@ const PAYANT = [
     titre: "Vous utilisez LEX, l’assistant IA",
     prix: "À crédits — un crédit par génération",
     detail:
-      "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. Essai Découverte gratuit de 7 jours pour commencer, puis packs ou abonnement à recharge quotidienne. Les tarifs sont affichés dans votre espace ; le bot d’aide reste gratuit.",
+      "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. 15 générations offertes chaque mois, sans carte bancaire et sans date de fin ; au-delà, packs ou abonnement à dotation mensuelle. Les tarifs sont affichés dans votre espace ; le bot d’aide reste gratuit.",
   },
 ];
 
