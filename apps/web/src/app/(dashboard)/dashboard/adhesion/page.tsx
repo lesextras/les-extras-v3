@@ -5,17 +5,23 @@
 // GRATUITES pour tout le monde ; les formations Qualiopi se facturent au
 // devis par l'association ; LEX, l'assistant IA, est le produit payant —
 // un crédit par génération. On recharge par packs, ou par un abonnement
-// dont l'allocation quotidienne remet le solde à niveau chaque matin.
+// une dotation MENSUELLE reportable, gratuite et permanente pour tout compte,
+// que l'on peut relever par un pack ou un abonnement.
+//
+// Cet écran a longtemps décrit un autre produit : une « recharge quotidienne »
+// et un « Pack Découverte de 7 jours » supprimés côté API il y a longtemps. Il
+// affichait donc « undefined crédits » et proposait une offre qui n'existait
+// plus — sur la page où l'on paie. Tout ce qui est lu ici vient désormais du
+// contrat réel de /billing/overview.
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, Sparkles, Receipt } from "lucide-react";
+import { Check, Sparkles, Receipt, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle, ErrorState } from "../../../_shared/ui";
 import { CheckoutButton } from "../../../_shared/BillingActions";
-import { EssaiLexButton } from "../../../_shared/EssaiLexButton";
 import { formatDate } from "../../../_shared/format";
 
 export const metadata: Metadata = { title: "LEX — Crédits & abonnement" };
@@ -24,8 +30,10 @@ interface Plan {
   id: string;
   label: string;
   amountCents: number;
-  dailyCredits: number;
+  monthlyCredits: number;
   perks: string;
+  /** À qui la formule s'adresse : on ne propose pas 89 €/mois à un indépendant. */
+  pour: "FREELANCE" | "ESTABLISHMENT";
 }
 interface Pack {
   id: string;
@@ -41,9 +49,10 @@ interface Subscription {
 interface Overview {
   credits: number;
   illimite: boolean;
+  /** Héritage : ancien essai de 7 jours, encore lu pour les comptes concernés. */
   essai?: { finLe: string; actif: boolean } | null;
-  essaiJours?: number;
-  essaiCreditsParJour?: number;
+  offreGratuite: { mensuel: number; permanente: boolean };
+  reportMois: number;
   subscription?: Subscription | null;
   plans: Plan[];
   packs: Pack[];
@@ -80,8 +89,8 @@ const MOTIF: Record<string, string> = {
   LEX_FICHE: "Fiche pré-remplie",
   LEX_GAPISTE: "Tour de GAPiste",
   ACHAT_PACK: "Achat d'un pack de crédits",
-  ESSAI_DECOUVERTE: "Essai Découverte (gratuit)",
-  RECHARGE_QUOTIDIENNE: "Recharge quotidienne (abonnement)",
+  DOTATION_MENSUELLE: "Dotation mensuelle (offre gratuite)",
+  ESSAI_DECOUVERTE: "Essai Découverte (ancienne offre)",
   REMBOURSEMENT_LEX_ECRIT: "Remboursement — génération échouée",
   REMBOURSEMENT_LEX_ACTIVITE: "Remboursement — génération échouée",
   REMBOURSEMENT_LEX_FICHE: "Remboursement — génération échouée",
@@ -110,15 +119,19 @@ export default async function LexCreditsPage({
     );
   }
 
-  const { credits, illimite, essai, essaiJours, essaiCreditsParJour, subscription, plans, packs, configured } =
+  const { credits, illimite, essai, offreGratuite, reportMois, subscription, plans, packs, configured } =
     resOverview.data;
   const utilisation = resUtilisation.data;
   const retour = searchParams.paiement;
   const active = subscription?.status === "active";
   const planActif = active ? plans.find((p) => p.id === subscription?.planId) : null;
-  // Jauge : par rapport à l'allocation quotidienne si abonné, sinon au plus
-  // gros pack — un repère visuel, pas une limite.
-  const repere = planActif?.dailyCredits ?? Math.max(...packs.map((p) => p.credits), 1);
+  // Jauge : par rapport à l'allocation mensuelle si abonné, sinon à la
+  // dotation gratuite du mois — un repère visuel, pas une limite.
+  const repere = planActif?.monthlyCredits ?? offreGratuite.mensuel;
+  // Les formules d'établissement ne sont montrées qu'aux établissements, et
+  // réciproquement : afficher les deux transformait un tarif en énigme.
+  const formules = plans.filter((p) => p.pour === session.account.type);
+  const pilote = ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
   const pct = Math.max(0, Math.min(100, Math.round((credits / repere) * 100)));
 
   return (
@@ -168,8 +181,8 @@ export default async function LexCreditsPage({
                   {illimite
                     ? "Accès illimité accordé à votre compte"
                     : planActif
-                      ? `Abonnement ${planActif.label} — solde remis à ${planActif.dailyCredits} crédits chaque matin`
-                      : "Solde disponible — 1 crédit = 1 génération LEX"}
+                      ? `Abonnement ${planActif.label} — ${planActif.monthlyCredits} générations créditées chaque mois`
+                      : `Solde disponible — 1 crédit = 1 génération LEX, ${offreGratuite.mensuel} offertes chaque mois`}
                 </p>
               </div>
             </div>
@@ -197,8 +210,8 @@ export default async function LexCreditsPage({
                 </span>
                 <span>
                   {planActif
-                    ? `Allocation quotidienne : ${planActif.dailyCredits}`
-                    : `Repère : ${repere} crédits`}
+                    ? `Allocation mensuelle : ${planActif.monthlyCredits}`
+                    : `Dotation du mois : ${offreGratuite.mensuel}`}
                 </span>
               </div>
             </div>
@@ -212,32 +225,19 @@ export default async function LexCreditsPage({
         </CardContent>
       </Card>
 
-      {/* ── Essai Découverte : gratuit, une fois, 7 jours ── */}
-      {!illimite && !active && !essai ? (
+      {/* ── L'offre gratuite : permanente, mensuelle, déjà active ── */}
+      {!illimite && !active ? (
         <Card className="border-primary/30 bg-primary-soft/30">
-          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-semibold text-foreground">
-                Pack Découverte — gratuit, {essaiJours ?? 7} jours
-              </p>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                Essayez LEX sans rien payer : {essaiCreditsParJour ?? 10} crédits rechargés chaque
-                matin pendant {essaiJours ?? 7} jours, sans carte bancaire ni engagement. Une seule
-                fois par compte.
-              </p>
-            </div>
-            <div className="shrink-0">
-              <EssaiLexButton accountId={accountId} />
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
-      {essai?.actif ? (
-        <Card className="border-success/30 bg-success/10">
-          <CardContent className="p-4 text-sm text-foreground">
-            <span className="font-semibold">Essai Découverte en cours</span> — recharge quotidienne
-            gratuite jusqu&apos;au {formatDate(essai.finLe)}. Ensuite, rechargez par pack ou
-            prenez un abonnement.
+          <CardContent className="p-5">
+            <p className="font-semibold text-foreground">
+              {offreGratuite.mensuel} générations offertes chaque mois, sans carte bancaire
+            </p>
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+              Rien à activer : la dotation est créditée à l&apos;ouverture du compte, puis le 1er de
+              chaque mois. Ce qui n&apos;est pas consommé se reporte, jusqu&apos;à{" "}
+              {offreGratuite.mensuel * reportMois} crédits — de quoi absorber une période de bilans
+              sans avoir à payer. Les formules ci-dessous ne servent qu&apos;au-delà.
+            </p>
           </CardContent>
         </Card>
       ) : null}
@@ -278,17 +278,17 @@ export default async function LexCreditsPage({
       ) : null}
 
       {/* ── S'abonner : recharge quotidienne ── */}
-      {!illimite && !active ? (
+      {!illimite && !active && formules.length > 0 ? (
         <section className="space-y-4">
           <div>
-            <SectionTitle title="S'abonner — recharge quotidienne" />
+            <SectionTitle title="S'abonner — dotation mensuelle" />
             <p className="mt-1 text-sm text-muted-foreground">
-              Chaque matin, votre solde est remis au niveau de votre allocation quotidienne.
-              Pour un usage régulier, c&apos;est plus simple qu&apos;un pack.
+              Chaque mois, votre allocation est créditée et se reporte jusqu&apos;à{" "}
+              {reportMois} mois. Pour un usage régulier, c&apos;est plus simple qu&apos;un pack.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            {plans.map((plan) => (
+            {formules.map((plan) => (
               <Card key={plan.id}>
                 <CardContent className="space-y-3 p-5">
                   <div className="flex items-baseline justify-between">
@@ -322,6 +322,23 @@ export default async function LexCreditsPage({
               Les 50 derniers mouvements de votre compte de crédits.
             </p>
           </div>
+          {pilote ? (
+            <Card className="border-primary/20 bg-primary-soft/20">
+              <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">Journal des générations</span> — qui
+                  a produit quel écrit, et quand. Utile pour un protocole d&apos;équipe ou une
+                  évaluation HAS.
+                </p>
+                <Button asChild variant="outline" size="sm" className="shrink-0">
+                  <a href="/api/proxy/billing/journal.csv" download>
+                    <Download className="size-4" aria-hidden />
+                    Exporter en CSV
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
           <Card>
             <CardContent className="divide-y p-0">
               {utilisation.mouvements.map((m) => (
