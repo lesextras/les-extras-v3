@@ -855,6 +855,88 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* ============ AIDE ============ */}
+        {/*
+          « Aide » a quitté la barre de navigation le 5/8/2026 : sept entrées,
+          c'était trop. Elle n'est pas pour autant enterrée dans le pied de
+          page — elle vit ici, juste après les tarifs, à l'endroit exact où
+          quelqu'un qui vient de lire les prix se pose ses dernières
+          questions. Les six rubriques mènent directement au centre d'aide.
+        */}
+        <section id="aide" className="section scroll-mt-24">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <span className="eyebrow">Centre d’aide</span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              Une question avant de vous lancer&nbsp;?
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Les réponses sont écrites, en français, sans jargon. Et si la vôtre n’y est pas,
+              écrivez-nous&nbsp;: quelqu’un vous répond.
+            </p>
+          </Reveal>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                slug: 'etablissements',
+                titre: 'Établissements',
+                resume: 'Publier un renfort, réserver un atelier, suivre vos interventions.',
+              },
+              {
+                slug: 'intervenants',
+                titre: 'Intervenants',
+                resume: 'Créer votre profil, recevoir des missions, publier vos ateliers.',
+              },
+              {
+                slug: 'compte-et-facturation',
+                titre: 'Compte & facturation',
+                resume: 'Ce qui est gratuit, ce qui est payant, comment on vous facture.',
+              },
+              {
+                slug: 'formations',
+                titre: 'Formations',
+                resume: 'Qualiopi, financement OPCO, attestations.',
+              },
+              {
+                slug: 'notifications',
+                titre: 'Notifications',
+                resume: 'Être prévenu à temps, sur le bon appareil.',
+              },
+              {
+                slug: 'donnees-et-securite',
+                titre: 'Données & sécurité',
+                resume: 'Ce que nous stockons, ce que nous ne stockons pas.',
+              },
+            ].map((r, i) => (
+              <Reveal key={r.slug} delay={i * 60}>
+                <Link href={`/aide/${r.slug}`} className="block h-full">
+                  <Card className="h-full transition-colors hover:border-primary/40">
+                    <CardContent className="flex h-full flex-col p-6">
+                      <h3 className="font-semibold text-foreground">{r.titre}</h3>
+                      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                        {r.resume}
+                      </p>
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                        Lire les réponses
+                        <ArrowRight className="size-3.5" />
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={120} className="mt-10 flex flex-wrap justify-center gap-3">
+            <Button asChild variant="outline">
+              <Link href="/aide">Tout le centre d’aide</Link>
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href="/contact">Nous écrire</Link>
+            </Button>
+          </Reveal>
+        </section>
+
         {/* ============ PREUVE — bandeau bleu nuit, épuré ============ */}
         <section className="border-y border-border bloc-nuit bg-[hsl(222,24%,10%)]">
           <div className="mx-auto max-w-[1100px] px-6 py-20 text-center md:py-24">
