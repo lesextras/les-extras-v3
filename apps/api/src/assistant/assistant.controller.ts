@@ -40,10 +40,26 @@ export class AssistantController {
     private readonly credits: CreditsService,
   ) {}
 
-  /** Un crédit par génération — sauf ADMIN de la plateforme. */
-  private payer<T>(user: RequestUser, account: RequestAccount, reason: string, fn: () => Promise<T>) {
+  /**
+   * Un crédit par génération — sauf ADMIN de la plateforme.
+   *
+   * L'auteur est transmis au grand livre : c'est ce qui rend vrai le journal
+   * promis sur /confiance-lex (« qui a généré quoi, quand »). `libelle` reste
+   * un intitulé court et jamais le contenu produit — le journal est destiné à
+   * une direction, il ne doit pas devenir une copie des écrits.
+   */
+  private payer<T>(
+    user: RequestUser,
+    account: RequestAccount,
+    reason: string,
+    fn: () => Promise<T>,
+    libelle?: string,
+  ) {
     if (user.role === 'ADMIN') return fn();
-    return this.credits.avecCredit(account.id, reason, fn);
+    return this.credits.avecCredit(account.id, reason, fn, {
+      userId: user.id,
+      label: libelle,
+    });
   }
 
   @Get('trames')
@@ -67,8 +83,12 @@ export class AssistantController {
       account.id,
       user.id,
     );
-    const resultat = await this.payer(user, account, 'LEX_ECRIT', () =>
-      this.assistant.generer(dto.trame, dto.notes, trameMaison),
+    const resultat = await this.payer(
+      user,
+      account,
+      'LEX_ECRIT',
+      () => this.assistant.generer(dto.trame, dto.notes, trameMaison),
+      trameMaison?.nom ?? dto.trame,
     );
     if (trameMaison) await this.tramesMaison.compterUsage(trameMaison.id);
     return resultat;
@@ -209,8 +229,12 @@ export class AssistantController {
     @CurrentAccount() account: RequestAccount,
     @Body() dto: FicheDto,
   ) {
-    return this.payer(user, account, 'LEX_FICHE', () =>
-      this.assistant.remplirFiche(dto.type, dto.brief),
+    return this.payer(
+      user,
+      account,
+      'LEX_FICHE',
+      () => this.assistant.remplirFiche(dto.type, dto.brief),
+      dto.type,
     );
   }
 
