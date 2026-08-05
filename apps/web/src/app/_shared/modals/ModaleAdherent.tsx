@@ -50,7 +50,7 @@ export function ModaleAdherent({
           <DialogDescription>
             Les outils LEX fonctionnent à crédits : un crédit par génération. Première visite ?
             L&apos;essai Découverte est gratuit (7 jours, sans carte bancaire). Sinon, rechargez par
-            packs ou prenez un abonnement dont la recharge quotidienne remet votre solde à niveau
+            packs ou prenez un abonnement dont la dotation mensuelle relève votre solde
             chaque matin.
           </DialogDescription>
         </DialogHeader>
