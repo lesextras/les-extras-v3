@@ -152,7 +152,11 @@ const freelanceNav: NavSection[] = [
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures — au même endroit' },
       // LEX se recharge aussi depuis un compte intervenant : l'assistant IA
       // est ouvert aux deux types de comptes, à crédits pour tout le monde.
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER'], hint: 'Votre solde de crédits LEX, votre consommation et vos recharges. Le reste de la plateforme est gratuit.' },
+      // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
+      // chef de service de toute vue sur la consommation de LEX — et de tout
+      // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
+      // devis et la conformité.
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
@@ -231,7 +235,11 @@ const establishmentNav: NavSection[] = [
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures — au même endroit' },
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER'], hint: 'Votre solde de crédits LEX, votre consommation et vos recharges. Le reste de la plateforme est gratuit.' },
+      // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
+      // chef de service de toute vue sur la consommation de LEX — et de tout
+      // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
+      // devis et la conformité.
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
