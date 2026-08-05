@@ -35,11 +35,41 @@ const CATEGORIES = [
   { value: "FORMATION", label: "Formation" },
 ];
 
-const VISIBILITIES = [
-  { value: "SALARIES", label: "Salariés d'abord (cascade)" },
-  { value: "RESERVED", label: "Réseau réservé" },
-  { value: "PUBLIC", label: "Public (marketplace)" },
-];
+/**
+ * PAR OÙ LA DIFFUSION COMMENCE — et c'est l'établissement qui décide.
+ *
+ * Ce choix existait côté API depuis le début, le centre d'aide le promettait
+ * noir sur blanc (« À la publication, vous choisissez le palier de départ »)…
+ * et l'écran ne l'affichait nulle part. La valeur partait toujours à
+ * `SALARIES`, si bien que l'API démarrait systématiquement par l'équipe
+ * interne dès qu'un vivier existait.
+ *
+ * Or « je ne veux pas solliciter mes salariés, je cherche quelqu'un en CDD »
+ * est un cas parfaitement ordinaire : l'équipe est déjà à flux tendu, le
+ * budget est un budget de remplacement, ou la direction ne veut simplement
+ * pas proposer des heures supplémentaires. L'outil ne peut pas trancher ça à
+ * la place de la personne. Il pose la question.
+ *
+ * Les libellés parlent de gens, pas de paliers : personne dans une MECS ne
+ * dit « je publie en visibilité RESERVED ».
+ */
+const DEPARTS = [
+  {
+    value: "SALARIES",
+    titre: "Mes salariés d'abord",
+    aide: "L'offre est proposée en interne avant de sortir. Si personne ne se positionne, elle s'élargit toute seule aux intervenants que vous connaissez, puis au réseau.",
+  },
+  {
+    value: "RESERVED",
+    titre: "Directement les intervenants que je connais",
+    aide: "Votre équipe n'est pas sollicitée. L'offre part aux intervenants déjà venus chez vous et à votre vivier, puis s'ouvre au réseau si elle reste sans réponse.",
+  },
+  {
+    value: "PUBLIC",
+    titre: "Directement tout le réseau",
+    aide: "Ni vos salariés ni votre vivier ne sont sollicités en priorité : l'offre est visible immédiatement par tous les intervenants du réseau. Le plus rapide.",
+  },
+] as const;
 
 /**
  * QUI reçoit l'offre. C'est le geste qui manquait le plus : un chef de service
@@ -263,7 +293,15 @@ export function RenfortModal({
         try {
           const res = await apiRequest<{ attenteValidation?: boolean }>(
             `/missions/${created.id}/publish`,
-            { method: "POST", accountId },
+            {
+              method: "POST",
+              accountId,
+              // Le palier choisi ci-dessus n'était PAS transmis : l'API
+              // retombait sur sa règle par défaut (les salariés d'abord dès
+              // qu'un vivier interne existe) et le choix de l'établissement
+              // était perdu entre les deux appels.
+              ...(cible === "RESEAU" ? { body: { visibility } } : {}),
+            },
           );
           publiee = true;
           enValidation = Boolean(res?.attenteValidation);
@@ -280,12 +318,16 @@ export function RenfortModal({
       } else if (publiee) {
         toast({
           title: "Renfort publié",
+          // Le message dit PAR OÙ ça part : c'est la seule chose qu'on ne
+          // peut pas vérifier d'un coup d'œil après avoir fermé la fenêtre.
           description:
-            cible === "RESEAU"
-              ? mode === "FILE_ENGAGEMENT"
-                ? "Votre demande est diffusée largement. Vous validerez chaque profil qui s'engage."
-                : "Votre demande est diffusée. Vous serez notifié des candidatures."
-              : "Votre demande est partie aux seules personnes désignées. Elle n'apparaîtra pas sur la marketplace.",
+            cible !== "RESEAU"
+              ? "Votre demande est partie aux seules personnes désignées. Elle n'apparaîtra pas sur la marketplace."
+              : visibility === "SALARIES"
+                ? "Vos salariés sont prévenus les premiers. Sans réponse de leur part, l'offre s'élargira toute seule."
+                : visibility === "RESERVED"
+                  ? "Votre équipe n'a pas été sollicitée : l'offre est partie aux intervenants que vous connaissez."
+                  : "L'offre est visible immédiatement par tout le réseau — ni vos salariés ni votre vivier n'ont été sollicités en priorité.",
         });
       } else {
         toast({
@@ -473,6 +515,39 @@ export function RenfortModal({
                   l&apos;écran Équipe pour pouvoir cibler un service précis.
                 </p>
               )
+            ) : null}
+
+            {/* Le palier de départ n'a de sens que pour la cascade : les trois
+                autres cibles désignent déjà précisément les destinataires. */}
+            {cible === "RESEAU" ? (
+              <div className="space-y-2 rounded-lg border border-dashed border-border p-3">
+                <p className="text-sm font-semibold text-foreground">Par où commencer ?</p>
+                {DEPARTS.map((d) => (
+                  <label
+                    key={d.value}
+                    className={`flex cursor-pointer gap-3 rounded-lg border p-3 text-sm transition ${
+                      visibility === d.value
+                        ? "border-primary bg-primary-soft/40"
+                        : "border-border hover:bg-muted/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="visibility"
+                      value={d.value}
+                      checked={visibility === d.value}
+                      onChange={() => setVisibility(d.value)}
+                      className="mt-1 h-4 w-4 accent-primary"
+                    />
+                    <span>
+                      <span className="font-medium text-foreground">{d.titre}</span>
+                      <span className="block text-xs leading-relaxed text-muted-foreground">
+                        {d.aide}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
             ) : null}
 
             {cible === "SELECTION" ? (
