@@ -137,7 +137,7 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "adhesion",
         question: "Comment fonctionnent les crédits LEX ?",
         reponse: [
-          "LEX, l'assistant IA (écriture professionnelle, générateur d'activités, fiches pré-remplies, GAPiste), fonctionne à crédits : un crédit par génération. Le Pack Découverte offre 7 jours d'essai gratuit, sans carte bancaire ; ensuite vous rechargez par packs, ou par un abonnement dont la recharge quotidienne remet votre solde à niveau chaque matin.",
+          "LEX, l'assistant IA (écriture professionnelle, générateur d'activités, fiches pré-remplies, GAPiste), fonctionne à crédits : un crédit par génération. Chaque compte reçoit 15 générations offertes à son ouverture puis le 1er de chaque mois, sans carte bancaire et sans date de fin ; ce qui n'est pas consommé se reporte jusqu'à trois mois. Au-delà, vous rechargez par packs ou par un abonnement à dotation mensuelle.",
           "Votre consommation, votre solde et les tarifs sont visibles dans votre espace, page « LEX — Crédits & abonnement ». Le bot d'aide, lui, reste gratuit. Les recettes soutiennent les actions de l'association.",
         ],
       },
