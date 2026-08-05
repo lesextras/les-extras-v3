@@ -67,7 +67,7 @@ const GARANTIES = [
     icone: ScrollText,
     titre: "Traçabilité complète",
     texte:
-      "Chaque génération est journalisée : qui a généré quoi, quand, et qui a validé. Le journal est consultable et exportable par la direction — utile pour un protocole d’équipe comme pour une évaluation HAS.",
+      "Chaque génération est journalisée : qui l’a demandée, sur quel modèle d’écrit, et quand. La direction consulte ce journal depuis son espace et l’exporte en tableur — utile pour un protocole d’équipe comme pour une évaluation HAS. Le journal enregistre la demande, pas le contenu produit : ce que vous écrivez ne s’y retrouve jamais.",
   },
 ];
 
