@@ -219,7 +219,14 @@ export default async function DashboardPage() {
                     <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs ${st.done ? "bg-success/20 text-success" : "border border-primary text-primary"}`}>
                       {st.done ? "✓" : ""}
                     </span>
-                    <span className={st.done ? "line-through" : "font-medium text-foreground"}>{st.label}</span>
+                    {/* PAS DE TEXTE BARRÉ SUR UNE ÉTAPE RÉUSSIE.
+                        Trois lignes barrées au premier écran, ça se lit
+                        « annulé » ou « indisponible », jamais « accompli » —
+                        c'est la convention typographique de la rature, et
+                        elle joue contre nous ici. La coche verte et la
+                        couleur atténuée disent déjà que c'est fait ; le trait
+                        ne fait qu'ajouter une négation. */}
+                    <span className={st.done ? "" : "font-medium text-foreground"}>{st.label}</span>
                   </Link>
                 ))}
               </div>
