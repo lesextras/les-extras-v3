@@ -11,7 +11,7 @@ function siteUrl(): string {
   return (
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.WEB_PUBLIC_URL ??
-    "https://app.les-extras.fr"
+    "https://les-extras.fr"
   ).replace(/\/$/, "");
 }
 

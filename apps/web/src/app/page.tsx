@@ -266,21 +266,21 @@ export default async function LandingPage() {
                 titre: 'Les ateliers de notre réseau',
                 texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant vérifié.',
                 href: '/ateliers',
-                image: 'https://les-extras.fr/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg',
+                image: 'https://app.les-extras.fr/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg',
                 action: 'Parcourir les ateliers',
               },
               {
                 titre: 'Nos parcours de formations certifiés Qualiopi',
                 texte: 'Montée en compétences des équipes, finançable par votre OPCO.',
                 href: '/formations',
-                image: 'https://les-extras.fr/wp-content/uploads/2025/02/lever-vous-400x400.jpeg',
+                image: 'https://app.les-extras.fr/wp-content/uploads/2025/02/lever-vous-400x400.jpeg',
                 action: 'Voir les formations',
               },
               {
                 titre: 'Le renfort d’équipe et parental',
                 texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
                 href: '/sos-renfort',
-                image: 'https://les-extras.fr/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg',
+                image: 'https://app.les-extras.fr/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg',
                 action: 'Comprendre le renfort',
               },
             ].map((d, i) => (
@@ -389,7 +389,7 @@ export default async function LandingPage() {
                   </div>
                   <div className="relative min-h-52 bg-muted">
                     <Image
-                      src="https://les-extras.fr/wp-content/uploads/2025/02/musicotherapie.jpg"
+                      src="https://app.les-extras.fr/wp-content/uploads/2025/02/musicotherapie.jpg"
                       alt=""
                       fill
                       sizes="(max-width: 640px) 100vw, 33vw"
@@ -451,7 +451,7 @@ export default async function LandingPage() {
                 >
                   <div className="relative order-2 min-h-52 bg-muted sm:order-1">
                     <Image
-                      src="https://les-extras.fr/wp-content/uploads/2026/04/school.jpeg"
+                      src="https://app.les-extras.fr/wp-content/uploads/2026/04/school.jpeg"
                       alt=""
                       fill
                       sizes="(max-width: 640px) 100vw, 33vw"

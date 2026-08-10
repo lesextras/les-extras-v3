@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ??
       process.env.WEB_PUBLIC_URL ??
-      'https://app.les-extras.fr',
+      'https://les-extras.fr',
   ),
   title: {
     default: 'LES EXTRAS — Ateliers et formations pour le médico-social',

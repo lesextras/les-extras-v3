@@ -27,7 +27,13 @@ export function BlocParrainage({ accountId }: { accountId: string }) {
   }, [accountId]);
 
   if (!data) return null;
-  const lien = `https://app.les-extras.fr/register?parrain=${data.accountId}`;
+  // L'origine vient du navigateur, jamais d'une constante : le domaine du site
+  // a déjà changé une fois, et un lien de parrainage figé sur l'ancien nom se
+  // serait mis à envoyer les filleuls sur le mauvais site sans que personne ne
+  // le voie. Repli sur le domaine principal pour le rendu serveur.
+  const origine =
+    typeof window !== "undefined" ? window.location.origin : "https://les-extras.fr";
+  const lien = `${origine}/register?parrain=${data.accountId}`;
 
   return (
     <Card>
