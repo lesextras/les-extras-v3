@@ -56,18 +56,14 @@ const DEJA_EN_LIGNE = {
 };
 
 /**
- * Les liens internes pointaient vers les pages WordPress de l'ancien domaine.
- * Comme le SaaS reprend `les-extras.fr`, ces adresses n'y existent plus : on
- * les fait suivre WordPress sur `app.les-extras.fr`, où elles continueront de
- * répondre. Un lien mort dans un article de blog coûte plus cher qu'un lien
- * qui sort du site.
+ * LES LIENS SONT LAISSÉS TELS QUELS, sur `les-extras.fr`, parce que c'est là
+ * que WordPress répond aujourd'hui. Les faire pointer par anticipation sur
+ * `app.les-extras.fr` casse toutes les couvertures du blog tant que le DNS n'a
+ * pas bougé — l'erreur a été commise le 10/08/2026 et corrigée dans la foulée.
+ *
+ * La bascule se fait le jour de l'inversion des domaines, en une commande :
+ *   node prisma/nettoyer-edublog.js --wordpress=app.les-extras.fr --appliquer
  */
-function reecrireLiens(html) {
-  return html.replace(
-    /https:\/\/(?:www\.)?les-extras\.fr\//g,
-    'https://app.les-extras.fr/',
-  );
-}
 
 /** Le résumé affiché en liste : celui de WordPress, nettoyé de ses entités. */
 function nettoyerExtrait(brut) {
@@ -139,7 +135,7 @@ async function main() {
         title: a.title,
         kind: ArticleKind.ARTICLE,
         excerpt: nettoyerExtrait(a.excerpt),
-        content: reecrireLiens(a.contentHtml),
+        content: a.contentHtml,
         coverUrl: a.coverUrl,
         status: enBrouillon ? ArticleStatus.DRAFT : ArticleStatus.PUBLISHED,
         // La date d'origine, pas celle de l'import : c'est elle qui ordonne le
