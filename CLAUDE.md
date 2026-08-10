@@ -342,6 +342,83 @@ avant le 10/08/2026 (vérification de compte, contrats, factures) pointaient sur
 `app.les-extras.fr` et ne fonctionnent plus. Les e-mails émis depuis le
 basculement pointent sur `les-extras.fr`.
 
+## Audit des quatre sites — 10 août 2026
+
+Notes : **Les-Extras 82/100**, **Toulali 72**, **ADéPA 63**, **A2PA 62**.
+L'artefact complet est chez Siham (« audit-sites-adepa »).
+
+### Faits établis par le certificat Qualiopi (PDF fourni par Siham)
+
+Ces valeurs font foi, elles viennent du certificat lui-même — plusieurs
+pages du réseau portaient des variantes fausses :
+
+- **Numéro de déclaration d'activité : `11771011677`.** La variante
+  `11 77 01011 77` qui circulait sur l'accueil, les mentions légales et
+  a2pa.fr est FAUSSE. Corrigée sur adepa77.fr ; **reste à corriger sur
+  a2pa.fr**.
+- **Siège social : 7 rue André Malraux, 77000 Melun.** Dammarie-lès-Lys est
+  l'adresse administrative. a2pa.fr et toulali.fr déclarent Dammarie comme
+  siège : à corriger.
+- SIRET `82005185200011`, certificat `QNW0132`, QUALIPRO CERTIFICATION,
+  délivré le 10/03/2026, fin de validité 09/03/2029, COFRAC `5-0681`,
+  périmètre : actions de formation **et** bilans de compétences.
+
+### Quatre alertes ÉCARTÉES après vérification en direct
+
+À ne pas ressortir : elles venaient de notes internes périmées.
+
+1. **Aucun écart de prix Toulali / Teachizy.** Vérifié dans le navigateur :
+   Essentielle **1 500 €**, Accompagnement **2 890 €** des deux côtés, et les
+   échéanciers concordent (2 × 750 € et 4 × 722,50 €). Les valeurs 790 € et
+   2 200 € du skill `adepa-context` sont PÉRIMÉES.
+2. Les 8 ancres de menu de toulali.fr existent bien.
+3. Le catalogue de formations de Les-Extras n'est pas vide (3 en ligne).
+4. Aucun compte de démonstration visible dans l'annuaire public.
+
+### Corrections appliquées le 10/08/2026
+
+**adepa77.fr** — dispositifs réécrits sur l'accueil, bilan de compétences mis
+en avant, titre `STUDIO A2PA` aligné sur `LES EXTRAS` (règle CSS ajoutée en
+fin de widget : `body .dcard .wm-a2`), lien Édublog réparé, **certificat
+Qualiopi téléversé** (`/wp-content/uploads/2026/08/certificat-qualiopi-adepa.pdf`)
+et son lien réparé, liens `kimi.com` et `adepa.fr` retirés des CGU, NDA
+corrigé sur l'accueil et les mentions légales, bouton « Devenir adhérent » de
+la boîte à outils repointé.
+
+**Redirections** : le module de Rank Math ne répond pas (ses points REST sont
+injoignables). Elles passent par un extrait **WPCode PHP nommé « Redirections
+des anciennes pages de don et d'adhesion » (id 5056)**, actif, qui renvoie en
+301 `/adhesion/` → `/devenir-adherent/`, `/dons/` et
+`/campaigns/soutenez-les-projets-de-lassociation-adepa/` → `/faire-un-don/`.
+Désactivable d'un clic depuis WPCode.
+
+**Le programme du bilan de compétences en PDF n'existe pas.** Les deux liens
+qui le proposaient sont devenus « Demander le programme » en `mailto:`. Le
+document reste à produire — c'est un attendu Qualiopi (indicateur 1).
+
+**les-extras.fr** (commit `3387b32`) — lien « Ateliers » du pied de page vers
+`/ateliers`, `/freelances/[id]` transformée en redirection permanente vers
+`/intervenants/[id]`, objectif de campagne sorti du code
+(`OBJECTIF_CAMPAGNE` et `OBJECTIF_ECHEANCE`, échéance affichée depuis l'API,
+plus de rythme hebdomadaire sur une campagne échue), ajout de
+`(public)/error.tsx` et `global-error.tsx`, sitemap déclaré dans `robots.txt`.
+
+### Ce que je ne peux PAS faire seule
+
+- **a2pa.fr n'est pas WordPress** : c'est une application Next.js servie par
+  le serveur Coolify (168.231.86.146). Son dépôt n'est pas cloné ici. Les
+  16 ancres mortes de `/don` et `/adhesion`, la phrase de brouillon de
+  `/confidentialite` et le tunnel Pro manquant demandent un accès au code.
+- **toulali.fr demande une connexion** — jamais de mot de passe saisi par
+  Claude. Deux boutons `href="#"` sur l'accueil (« Réserve un appel »,
+  « Besoin d'un financement ? ») à repointer sur
+  `/conseil-financement-formation/` ; le reste est de la conformité Qualiopi
+  (indicateurs de résultats, durées, prérequis, évaluation, réclamation).
+- **Décisions qui lui appartiennent** : montant d'adhésion (25 € sur a2pa.fr
+  contre 150 € sur adepa77.fr), statut fiscal des dons (RNA, intérêt général,
+  article 200 du CGI — la promesse « 66 % » est affichée sans base publiée),
+  nom du directeur de publication.
+
 ## Ce qui reste (rien de bloquant)
 
 - Siham : créer un projet Sentry et poser `SENTRY_DSN` (optionnel).
