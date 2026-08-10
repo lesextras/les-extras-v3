@@ -1198,13 +1198,23 @@ export class AdminService {
     const caFactures = facturesPayees.reduce((t, f) => t + nombre(f.amount), 0);
     const caEncaisse = Math.round(caReservations + caFactures);
 
-    const OBJECTIF = 4000;
-    const echeance = new Date('2026-09-30T23:59:59Z');
+    // La cible et l'échéance étaient écrites en dur. Passé la date, le cockpit
+    // affichait « 0 jour restant » pour toujours, et il fallait un déploiement
+    // pour lancer la campagne suivante. Elles se règlent désormais par variable
+    // d'environnement — sans rien poser, les valeurs d'origine s'appliquent.
+    const OBJECTIF = Number(process.env.OBJECTIF_CAMPAGNE) || 4000;
+    const echeanceBrute = process.env.OBJECTIF_ECHEANCE ?? '2026-09-30T23:59:59Z';
+    const echeanceLue = new Date(echeanceBrute);
+    const echeance = Number.isNaN(echeanceLue.getTime())
+      ? new Date('2026-09-30T23:59:59Z')
+      : echeanceLue;
     const maintenant = new Date();
     const joursRestants = Math.max(
       0,
       Math.ceil((echeance.getTime() - maintenant.getTime()) / 86_400_000),
     );
+    // Une campagne échue ne doit pas afficher un rythme hebdomadaire absurde.
+    const echue = joursRestants === 0;
     const semainesRestantes = Math.max(1, Math.ceil(joursRestants / 7));
     const objectif = {
       cible: OBJECTIF,
@@ -1212,7 +1222,10 @@ export class AdminService {
       reste: Math.max(0, OBJECTIF - caEncaisse),
       pourcentage: Math.min(100, Math.round((caEncaisse / OBJECTIF) * 100)),
       joursRestants,
-      rythmeHebdo: Math.ceil(Math.max(0, OBJECTIF - caEncaisse) / semainesRestantes),
+      echue,
+      rythmeHebdo: echue
+        ? 0
+        : Math.ceil(Math.max(0, OBJECTIF - caEncaisse) / semainesRestantes),
       echeance: echeance.toISOString(),
       detail: { reservations: Math.round(caReservations), factures: Math.round(caFactures) },
       /// Nombre de comptes de démonstration exclus du calcul (0 = base saine).

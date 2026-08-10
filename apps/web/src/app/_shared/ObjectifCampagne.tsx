@@ -11,6 +11,10 @@ export interface ObjectifData {
   pourcentage: number;
   joursRestants: number;
   rythmeHebdo: number;
+  /// Date de fin de campagne, renvoyée par l'API (ISO). Sert au titre.
+  echeance?: string;
+  /// Vrai quand l'échéance est passée : on cesse d'afficher un rythme.
+  echue?: boolean;
   detail?: { reservations: number; factures: number };
 }
 
@@ -57,7 +61,17 @@ export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSou
             <Target className="size-5" />
           </span>
           <div>
-            <h2 className="text-lg font-semibold">Objectif {euros(objectif.cible)} — 30 septembre</h2>
+            {/* L'échéance était écrite en dur dans le titre : elle suit
+                maintenant la valeur renvoyée par l'API. */}
+            <h2 className="text-lg font-semibold">
+              Objectif {euros(objectif.cible)}
+              {objectif.echeance
+                ? ` — ${new Date(objectif.echeance).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                  })}`
+                : null}
+            </h2>
             <p className="text-sm text-muted-foreground">
               Réservations confirmées et factures payées, en temps réel.
             </p>
