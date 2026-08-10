@@ -26,6 +26,36 @@ const { ArticleKind, ArticleStatus, PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 /**
+ * SIX DES QUATORZE ARTICLES ÉTAIENT DÉJÀ DANS L'APPLICATION, sous un autre
+ * slug : ils avaient été repris à la main lors d'une session antérieure, et
+ * portent en plus leur image de couverture. Le slug ne suffit donc pas à
+ * détecter le doublon — d'où cette table de correspondance.
+ *
+ * On garde la version déjà en ligne : c'est elle qui a une couverture, c'est
+ * elle que Google a indexée, et changer une URL déjà référencée coûte plus
+ * cher que tout ce que le nouveau relevé apporterait.
+ *
+ *   slug WordPress → slug déjà présent dans l'application
+ */
+const DEJA_EN_LIGNE = {
+  'atelier-individuel-ou-collectif':
+    'atelier-individuel-ou-collectif-comment-choisir-en-e-tablissement',
+  'atelier-socio-esthetique-2':
+    'l-atelier-socio-esthe-tique-en-e-tablissement-me-dico-social',
+  'atelier-theatre-medico-social':
+    'l-atelier-the-a-tre-en-e-tablissement-me-dico-social',
+  'recrutement-educateur-freelance':
+    'recrutement-e-ducateur-freelance-bien-cadrer-un-renfort-d-e-quipe',
+  'atelier-socio-esthetique':
+    'atelier-socio-esthe-tique-redonner-une-image-positive-de-soi',
+  'bilan-competences-educateur':
+    'bilan-de-compe-tences-e-ducateur-pourquoi-l-envisager-pour-votre-e-quipe',
+  // WordPress lui-même hébergeait ce billet en double.
+  'bilan-competences-educateur-2':
+    'bilan-de-compe-tences-e-ducateur-pourquoi-l-envisager-pour-votre-e-quipe',
+};
+
+/**
  * Les liens internes pointaient vers les pages WordPress de l'ancien domaine.
  * Comme le SaaS reprend `les-extras.fr`, ces adresses n'y existent plus : on
  * les fait suivre WordPress sur `app.les-extras.fr`, où elles continueront de
@@ -65,8 +95,25 @@ async function main() {
   let crees = 0;
   let ignores = 0;
   let sansContenu = 0;
+  let doublons = 0;
 
   for (const a of articles) {
+    const autreSlug = DEJA_EN_LIGNE[a.slug];
+    if (autreSlug) {
+      const garde = await prisma.article.findUnique({
+        where: { slug: autreSlug },
+        select: { id: true },
+      });
+      if (garde) {
+        console.log(`  = ${a.slug} — déjà en ligne sous « ${autreSlug} », ignoré.`);
+        doublons += 1;
+        continue;
+      }
+      // La version historique a disparu : on importe, plutôt que de perdre
+      // l'article. Mieux vaut un slug inattendu qu'un trou dans le blog.
+      console.warn(`  ⚠ ${a.slug} — « ${autreSlug} » introuvable, import quand même.`);
+    }
+
     if (!a.contentHtml) {
       // Le relevé a explicitement laissé un trou : on ne publie pas un article
       // vide, et on ne comble surtout pas avec du texte inventé.
@@ -106,7 +153,8 @@ async function main() {
   }
 
   console.log(
-    `\nÉdublog : ${crees} article(s) importé(s), ${ignores} déjà présent(s), ${sansContenu} sans contenu.`,
+    `\nÉdublog : ${crees} importé(s), ${ignores} déjà présent(s), `
+      + `${doublons} déjà en ligne sous un autre slug, ${sansContenu} sans contenu.`,
   );
 }
 
