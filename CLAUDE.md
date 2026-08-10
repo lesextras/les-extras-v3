@@ -232,6 +232,68 @@ historique, essai, recharge), `/admin/lex` (ventes/consommation/abonnés),
 bouton « LEX ∞ » sur `/admin/etablissements`, `/dashboard/notifications`,
 `/dashboard/signer/[id]`, `/dashboard/vivier`, `/dashboard/temps-de-travail`.
 
+## Édublog rapatrié depuis WordPress (10 août 2026)
+
+Les quatorze articles de `les-extras.fr/edublog` ont été relevés fidèlement via
+l'API REST de WordPress (`apps/api/prisma/edublog-wordpress.json`) et importés
+par `prisma/importer-edublog.js` (idempotent, dates d'origine conservées — c'est
+elles qui portent l'antériorité SEO).
+
+- **Six d'entre eux existaient déjà** dans l'application sous un slug différent
+  (repris à la main en session antérieure, AVEC leur image de couverture). On
+  garde la version en ligne : elle a une couverture et une URL déjà indexée.
+  L'importeur connaît la correspondance (`DEJA_EN_LIGNE`) et ne les recrée plus.
+  Les sept doublons créés au premier passage sont **ARCHIVÉS**, jamais supprimés.
+  **Bilan : 20 articles publiés + 1 actualité.**
+- **Les images restent servies par WordPress.** Le conteneur ne peut pas
+  télécharger de binaires ; les rapatrier demande l'export de `wp-content/uploads`
+  par Siham. Tant que WordPress répond, les couvertures s'affichent.
+- **`prisma/nettoyer-edublog.js`** — trois actions, aucune écriture sans
+  `--appliquer` :
+  `--doublons` (archivage) · `--entites` (décodage des résumés) ·
+  `--wordpress=<hôte>` (bascule des liens, réversible, ne touche que
+  `wp-content/`, `listing/`, `devenir-freelance` — jamais une URL du SaaS).
+- **Deux défauts d'affichage corrigés au passage**, tous deux antérieurs à
+  l'import et visibles sur les vingt articles :
+  1. `RichText` ne lisait que du Markdown : le blog affichait ses `<p>` et `<h2>`
+     en clair. Il lit désormais aussi le HTML, **par liste blanche**, en
+     construisant des éléments React — toujours zéro `dangerouslySetInnerHTML`,
+     donc un article reste une donnée. `javascript:` et `data:` refusés.
+     16 tests, dont six d'injection.
+  2. Le chapô est affiché tel quel (contrairement au corps) : les entités
+     WordPress y restaient visibles (`l&#039;agressivité`). La table d'entités
+     est maintenant **engendrée** depuis l'ordre des points de code 0xC0–0xFF
+     plutôt qu'énumérée, et respecte la casse (`&Eacute;` ≠ `&eacute;`).
+
+**⚠ Piège rencontré, à ne pas refaire :** les liens ont d'abord été repointés sur
+`app.les-extras.fr` par anticipation de l'inversion. WordPress répondant encore
+sur `les-extras.fr`, **toutes les couvertures du blog ont cassé en direct**
+(remis en état dans la foulée). L'ordre est : **DNS d'abord, script ensuite.**
+
+## Inversion des domaines — ce qui est prêt, ce qui attend Siham
+
+Le CODE est poussé (commit `64ffde8`) : `metadataBase`, `sitemap.ts` et les sept
+images de la page d'accueil pointent déjà comme il faut. **Rien n'a été touché
+sur les domaines Coolify** — les changer avant le DNS mettrait le SaaS hors
+ligne.
+
+Ordre obligatoire (le SaaS n'est jamais coupé ; WordPress l'est brièvement) :
+
+1. **Siham** — DNS : `les-extras.fr` + `www` en A vers `168.231.86.146`
+   (retirer les enregistrements Hostinger CDN 147.79.72.161 / 88.223.87.146).
+2. **Claude** — Coolify, app web : ajouter `les-extras.fr` et `www.les-extras.fr`
+   en gardant `app.les-extras.fr` ; mettre à jour `APP_WEB_URL`, `CORS_ORIGINS`,
+   `NEXT_PUBLIC_SITE_URL`, `WEB_PUBLIC_URL` ; redéployer.
+3. **Siham** — Hostinger : rattacher `app.les-extras.fr` au site WordPress + SSL.
+4. **Siham** — DNS : `app.les-extras.fr` vers Hostinger.
+5. **Claude** — retirer `app.les-extras.fr` de l'app web Coolify, puis
+   `node prisma/nettoyer-edublog.js --wordpress=app.les-extras.fr --appliquer`.
+
+**À dire franchement à Siham** : tous les liens déjà envoyés par e-mail
+(vérification de compte, contrats, factures) pointent sur `app.les-extras.fr` et
+cesseront de fonctionner le jour de l'étape 4. C'est le prix de l'inversion, elle
+l'a acceptée en connaissance de cause.
+
 ## Ce qui reste (rien de bloquant)
 
 - Siham : créer un projet Sentry et poser `SENTRY_DSN` (optionnel).
