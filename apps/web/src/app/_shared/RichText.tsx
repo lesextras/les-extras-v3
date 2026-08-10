@@ -13,13 +13,26 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 
-/** Entités HTML rencontrées dans les exports WordPress. */
+// Entités HTML rencontrées dans les exports WordPress. Les lettres accentuées
+// portent des noms qui suivent exactement l'ordre des points de code 0xC0 à
+// 0xFF : les énumérer une à une invite l'oubli, la table est donc engendrée.
+const LATIN1 =
+  "Agrave Aacute Acirc Atilde Auml Aring AElig Ccedil Egrave Eacute Ecirc Euml "
+  + "Igrave Iacute Icirc Iuml ETH Ntilde Ograve Oacute Ocirc Otilde Ouml times "
+  + "Oslash Ugrave Uacute Ucirc Uuml Yacute THORN szlig "
+  + "agrave aacute acirc atilde auml aring aelig ccedil egrave eacute ecirc euml "
+  + "igrave iacute icirc iuml eth ntilde ograve oacute ocirc otilde ouml divide "
+  + "oslash ugrave uacute ucirc uuml yacute thorn yuml";
+
 const ENTITES: Record<string, string> = {
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
-  rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“",
-  hellip: "…", mdash: "—", ndash: "–", laquo: "«", raquo: "»",
-  eacute: "é", egrave: "è", agrave: "à", ccedil: "ç", ecirc: "ê", euro: "€",
+  rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", sbquo: "‚", bdquo: "„",
+  hellip: "…", mdash: "—", ndash: "–", laquo: "«", raquo: "»", euro: "€",
+  bull: "•", middot: "·", deg: "°", copy: "©", reg: "®", trade: "™",
 };
+LATIN1.split(" ").forEach((nom, i) => {
+  ENTITES[nom] = String.fromCharCode(0xc0 + i);
+});
 
 export function decoderEntites(texte: string): string {
   return texte.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (brut, corps: string) => {
@@ -33,7 +46,8 @@ export function decoderEntites(texte: string): string {
         ? String.fromCodePoint(code)
         : brut;
     }
-    return ENTITES[corps.toLowerCase()] ?? brut;
+    // Casse respectée d'abord : `&Eacute;` n'est pas `&eacute;`.
+    return ENTITES[corps] ?? ENTITES[corps.toLowerCase()] ?? brut;
   });
 }
 

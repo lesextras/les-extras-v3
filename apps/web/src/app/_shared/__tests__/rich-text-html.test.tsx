@@ -124,6 +124,16 @@ describe('decoderEntites', () => {
   it('lit le décimal et l’hexadécimal', () => {
     expect(decoderEntites('&#8217;&#x2019;')).toBe('’’');
   });
+
+  it('couvre les lettres accentuées, majuscule comprise', () => {
+    expect(decoderEntites('&Eacute;chec &agrave; l&#039;&eacute;cole, co&ucirc;t 0 &euro;')).toBe(
+      "Échec à l'école, coût 0 €",
+    );
+  });
+
+  it('distingue la casse : &Eacute; n’est pas &eacute;', () => {
+    expect(decoderEntites('&Eacute;&eacute;')).toBe('Éé');
+  });
 });
 
 describe('texteBrut', () => {

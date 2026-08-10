@@ -65,19 +65,50 @@ const DEJA_EN_LIGNE = {
  *   node prisma/nettoyer-edublog.js --wordpress=app.les-extras.fr --appliquer
  */
 
+/**
+ * Le résumé est AFFICHÉ TEL QUEL — en tête d'article et sur les vignettes du
+ * blog — contrairement au corps, qui passe par un lecteur. La liste d'entités
+ * nommées ne suffisait donc pas : WordPress écrit l'apostrophe `&#039;`, en
+ * décimal, et « l&#039;agressivité » s'affichait en clair sur la vitrine.
+ */
+// Les lettres accentuées portent des noms d'entité qui suivent exactement
+// l'ordre des points de code 0xC0 à 0xFF : les énumérer une à une invite
+// l'oubli (`&eacute;` manquait au premier jet), la table est donc engendrée.
+const LATIN1 =
+  'Agrave Aacute Acirc Atilde Auml Aring AElig Ccedil Egrave Eacute Ecirc Euml '
+  + 'Igrave Iacute Icirc Iuml ETH Ntilde Ograve Oacute Ocirc Otilde Ouml times '
+  + 'Oslash Ugrave Uacute Ucirc Uuml Yacute THORN szlig '
+  + 'agrave aacute acirc atilde auml aring aelig ccedil egrave eacute ecirc euml '
+  + 'igrave iacute icirc iuml eth ntilde ograve oacute ocirc otilde ouml divide '
+  + 'oslash ugrave uacute ucirc uuml yacute thorn yuml';
+
+const ENTITES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', sbquo: '‚', bdquo: '„',
+  hellip: '…', mdash: '—', ndash: '–', laquo: '«', raquo: '»', euro: '€',
+  bull: '•', middot: '·', deg: '°', copy: '©', reg: '®', trade: '™' };
+LATIN1.split(' ').forEach((nom, i) => { ENTITES[nom] = String.fromCharCode(0xc0 + i); });
+
+function decoderEntites(texte) {
+  return texte.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (brut, corps) => {
+    if (corps[0] === '#') {
+      const code = corps[1] === 'x' || corps[1] === 'X'
+        ? Number.parseInt(corps.slice(2), 16)
+        : Number.parseInt(corps.slice(1), 10);
+      // Point de code hors plage : on laisse l'entité visible plutôt que
+      // d'émettre un caractère de contrôle.
+      return Number.isFinite(code) && code > 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : brut;
+    }
+    // Casse respectée d'abord : `&Eacute;` n'est pas `&eacute;`.
+    return ENTITES[corps] ?? ENTITES[corps.toLowerCase()] ?? brut;
+  });
+}
+
 /** Le résumé affiché en liste : celui de WordPress, nettoyé de ses entités. */
 function nettoyerExtrait(brut) {
   if (!brut) return null;
-  const texte = brut
-    .replace(/<[^>]+>/g, '')
-    .replace(/&rsquo;/g, '’')
-    .replace(/&lsquo;/g, '‘')
-    .replace(/&hellip;/g, '…')
-    .replace(/&mdash;/g, '—')
-    .replace(/&ndash;/g, '–')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
+  const texte = decoderEntites(brut.replace(/<[^>]+>/g, ''))
     .replace(/\s+/g, ' ')
     .trim();
   return texte ? texte.slice(0, 400) : null;

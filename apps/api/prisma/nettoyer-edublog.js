@@ -62,6 +62,59 @@ const HOTES = ['les-extras.fr', 'app.les-extras.fr'];
  */
 const CHEMINS_WORDPRESS = ['wp-content/', 'listing/', 'devenir-freelance'];
 
+/**
+ * Les résumés relevés sur WordPress gardent leurs entités HTML. Le corps de
+ * l'article passe par un lecteur qui les décode ; le chapô, lui, est affiché
+ * tel quel — d'où le « l&#039;agressivité » visible en tête d'article et sur
+ * les vignettes du blog.
+ */
+const LATIN1 =
+  'Agrave Aacute Acirc Atilde Auml Aring AElig Ccedil Egrave Eacute Ecirc Euml '
+  + 'Igrave Iacute Icirc Iuml ETH Ntilde Ograve Oacute Ocirc Otilde Ouml times '
+  + 'Oslash Ugrave Uacute Ucirc Uuml Yacute THORN szlig '
+  + 'agrave aacute acirc atilde auml aring aelig ccedil egrave eacute ecirc euml '
+  + 'igrave iacute icirc iuml eth ntilde ograve oacute ocirc otilde ouml divide '
+  + 'oslash ugrave uacute ucirc uuml yacute thorn yuml';
+
+const ENTITES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', sbquo: '‚', bdquo: '„',
+  hellip: '…', mdash: '—', ndash: '–', laquo: '«', raquo: '»', euro: '€',
+  bull: '•', middot: '·', deg: '°', copy: '©', reg: '®', trade: '™' };
+LATIN1.split(' ').forEach((nom, i) => { ENTITES[nom] = String.fromCharCode(0xc0 + i); });
+
+function decoderEntites(texte) {
+  return texte.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (brut, corps) => {
+    if (corps[0] === '#') {
+      const code = corps[1] === 'x' || corps[1] === 'X'
+        ? Number.parseInt(corps.slice(2), 16)
+        : Number.parseInt(corps.slice(1), 10);
+      return Number.isFinite(code) && code > 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : brut;
+    }
+    return ENTITES[corps] ?? ENTITES[corps.toLowerCase()] ?? brut;
+  });
+}
+
+async function decoderLesResumes(appliquer) {
+  const articles = await prisma.article.findMany({
+    select: { id: true, slug: true, excerpt: true },
+  });
+
+  let touches = 0;
+  for (const a of articles) {
+    if (typeof a.excerpt !== 'string') continue;
+    const apres = decoderEntites(a.excerpt);
+    if (apres === a.excerpt) continue;
+    if (appliquer) {
+      await prisma.article.update({ where: { id: a.id }, data: { excerpt: apres } });
+    }
+    console.log(`  ⇢ ${a.slug}`);
+    touches += 1;
+  }
+  return touches;
+}
+
 function motifWordpress() {
   const hotes = HOTES.map((h) => h.replace(/\./g, '\\.')).join('|');
   const chemins = CHEMINS_WORDPRESS.map((c) => c.replace(/\//g, '\\/')).join('|');
@@ -146,12 +199,13 @@ async function basculerLesLiens(hote, appliquer) {
 async function main() {
   const appliquer = process.argv.includes('--appliquer');
   const doublons = process.argv.includes('--doublons');
+  const entites = process.argv.includes('--entites');
   const bascule = process.argv.find((x) => x.startsWith('--wordpress='));
   const hote = bascule ? bascule.split('=')[1] : null;
 
-  if (!doublons && !hote) {
+  if (!doublons && !hote && !entites) {
     console.error(
-      'Rien à faire. Préciser --doublons et/ou --wordpress=<hôte>.\n'
+      'Rien à faire. Préciser --doublons, --entites et/ou --wordpress=<hôte>.\n'
         + `Hôtes attendus : ${HOTES.join(' | ')}`,
     );
     process.exitCode = 1;
@@ -172,6 +226,13 @@ async function main() {
       `\n${archives} doublon(s) archivé(s), ${intacts} laissé(s) en ligne par précaution.`;
   }
 
+  let resumeEntites = '';
+  if (entites) {
+    console.log('\nEntités HTML dans les résumés :');
+    const touches = await decoderLesResumes(appliquer);
+    resumeEntites = `\n${touches} résumé(s) décodé(s).`;
+  }
+
   let resumeLiens = '';
   if (hote) {
     console.log(`\nLiens WordPress → ${hote} :`);
@@ -183,7 +244,10 @@ async function main() {
     where: { status: ArticleStatus.PUBLISHED },
   });
 
-  console.log(`${resumeDoublons}${resumeLiens}\n${publies} article(s) publié(s) au total.`);
+  console.log(
+    `${resumeDoublons}${resumeEntites}${resumeLiens}`
+      + `\n${publies} article(s) publié(s) au total.`,
+  );
 }
 
 main()
