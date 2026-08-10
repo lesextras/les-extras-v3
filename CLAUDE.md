@@ -270,29 +270,77 @@ elles qui portent l'antériorité SEO).
 sur `les-extras.fr`, **toutes les couvertures du blog ont cassé en direct**
 (remis en état dans la foulée). L'ordre est : **DNS d'abord, script ensuite.**
 
-## Inversion des domaines — ce qui est prêt, ce qui attend Siham
+## Inversion des domaines — FAITE le 10 août 2026
 
-Le CODE est poussé (commit `64ffde8`) : `metadataBase`, `sitemap.ts` et les sept
-images de la page d'accueil pointent déjà comme il faut. **Rien n'a été touché
-sur les domaines Coolify** — les changer avant le DNS mettrait le SaaS hors
-ligne.
+`les-extras.fr` sert désormais le SaaS, `app.les-extras.fr` sert WordPress.
+Vérifié en direct : le SaaS n'a jamais été coupé.
 
-Ordre obligatoire (le SaaS n'est jamais coupé ; WordPress l'est brièvement) :
+État final constaté :
 
-1. **Siham** — DNS : `les-extras.fr` + `www` en A vers `168.231.86.146`
-   (retirer les enregistrements Hostinger CDN 147.79.72.161 / 88.223.87.146).
-2. **Claude** — Coolify, app web : ajouter `les-extras.fr` et `www.les-extras.fr`
-   en gardant `app.les-extras.fr` ; mettre à jour `APP_WEB_URL`, `CORS_ORIGINS`,
-   `NEXT_PUBLIC_SITE_URL`, `WEB_PUBLIC_URL` ; redéployer.
-3. **Siham** — Hostinger : rattacher `app.les-extras.fr` au site WordPress + SSL.
-4. **Siham** — DNS : `app.les-extras.fr` vers Hostinger.
-5. **Claude** — retirer `app.les-extras.fr` de l'app web Coolify, puis
-   `node prisma/nettoyer-edublog.js --wordpress=app.les-extras.fr --appliquer`.
+| Adresse | Sert | Certificat |
+|---|---|---|
+| `les-extras.fr` | SaaS (Coolify, 168.231.86.146) | émis |
+| `www.les-extras.fr` | SaaS | émis |
+| `api.les-extras.fr` | API (inchangée) | émis, `/api/health` vert |
+| `app.les-extras.fr` | WordPress (CDN Hostinger) | Hostinger |
 
-**À dire franchement à Siham** : tous les liens déjà envoyés par e-mail
-(vérification de compte, contrats, factures) pointent sur `app.les-extras.fr` et
-cesseront de fonctionner le jour de l'étape 4. C'est le prix de l'inversion, elle
-l'a acceptée en connaissance de cause.
+Ce qui a été fait, dans cet ordre — **l'ordre compte** :
+
+1. Coolify AVANT le DNS. Ajouter le domaine à Coolify d'abord ; l'inverse fait
+   tomber les visiteurs sur une erreur de certificat le temps que Traefik
+   rattrape. Le certificat n'est émis qu'une fois le DNS en place : un
+   redéploiement après la bascule DNS le déclenche.
+2. **Le `www` doit être listé EXPLICITEMENT** dans le champ Domaines de Coolify.
+   Le réglage « Autoriser www et non-www » ne suffit pas : sans
+   `https://www.les-extras.fr` dans la liste, `www` répond en erreur de
+   certificat.
+3. DNS chez Hostinger (zone gérée par `ns1/ns2.dns-parking.com`, TTL 300) :
+   `@` et `www` en A vers `168.231.86.146`. Hostinger **refuse A et ALIAS/CNAME
+   sur le même nom** : il faut SUPPRIMER l'ALIAS `@` (vers
+   `les-extras.fr.cdn.hstgr.net`) et le CNAME `www` avant de créer les A.
+4. `APP_WEB_URL` et `WEB_ORIGIN` de l'app API passées à `https://les-extras.fr`.
+   (`CORS_ORIGINS` n'est pas posée : l'API reflète alors toute origine, donc
+   rien à changer de ce côté.)
+5. WordPress : `app.les-extras.fr` ajouté en **domaine parqué** sur le site
+   les-extras.fr. Hostinger a alors remplacé de lui-même l'enregistrement A de
+   `app` par un ALIAS vers son CDN.
+6. `node prisma/nettoyer-edublog.js --wordpress=app.les-extras.fr --appliquer`
+   — 36 liens réécrits sur 28 articles, images du blog vérifiées en direct.
+
+### ⚠ Deux pièges rencontrés, à ne pas refaire
+
+- **NE JAMAIS utiliser le bouton Hostinger « Changer de domaine »** sur un site.
+  Il annonce noir sur blanc : « Votre plan d'email gratuit sera réinitialisé et
+  toutes les boîtes mail liées seront supprimées », plus la perte des
+  sous-domaines et des sauvegardes. `les-extras.fr` porte des MX et du DKIM
+  Hostinger : cela aurait détruit la messagerie. Le domaine parqué fait le même
+  travail sans rien supprimer.
+- **Les images du blog ont été coupées deux fois** : elles sont servies par
+  WordPress. Tant que le DNS n'a pas bougé, les liens doivent rester sur
+  l'ancien hôte ; ils ne basculent qu'APRÈS. C'est tout l'objet du drapeau
+  `--wordpress=<hôte>`, qui marche dans les deux sens.
+
+### Ce qui reste à faire sur WordPress (décision de Siham)
+
+Les FICHIERS de WordPress répondent sur `app.les-extras.fr`
+(`/wp-content/uploads/…` sert les images du blog), mais ses PAGES redirigent
+encore vers `les-extras.fr` : l'adresse du site est enregistrée dans WordPress
+lui-même. Deux façons de le corriger, l'une ou l'autre :
+
+- Admin WordPress → Réglages → Général → mettre les deux champs d'adresse sur
+  `https://app.les-extras.fr` ;
+- ou ajouter dans `public_html/wp-config.php`, avant la ligne
+  « That's all, stop editing » :
+  `define('WP_HOME','https://app.les-extras.fr');`
+  `define('WP_SITEURL','https://app.les-extras.fr');`
+
+Tant que ce n'est pas fait, le blog de la plateforme fonctionne parfaitement —
+seule la navigation dans l'ancien site WordPress est indisponible.
+
+**Conséquence assumée de l'inversion** : tous les liens déjà envoyés par e-mail
+avant le 10/08/2026 (vérification de compte, contrats, factures) pointaient sur
+`app.les-extras.fr` et ne fonctionnent plus. Les e-mails émis depuis le
+basculement pointent sur `les-extras.fr`.
 
 ## Ce qui reste (rien de bloquant)
 
