@@ -28,7 +28,6 @@ const PORTES = [
     texte: "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue, zéro commission.",
     reperes: ["0 % de commission", "Contrat et facture générés", "Profil vérifié une fois"],
     href: "/register",
-    secondaire: { libelle: "Devenir intervenant", href: "/intervenants" },
     teinte: "text-secondary",
     fond: "bg-secondary/10",
     anneau: "ring-secondary/25",
@@ -100,7 +99,7 @@ export function DeuxPortes() {
         {/* Les liens secondaires sortent des cartes : un lien dans un lien n'est
             pas cliquable, et c'est un piège classique. */}
         <div className="mt-5 grid gap-5 md:grid-cols-2">
-          {PORTES.map((p) => (
+          {PORTES.filter((p: any) => p.secondaire).map((p: any) => (
             <p key={p.secondaire.href} className="text-center text-sm text-muted-foreground md:text-left md:pl-8">
               ou{" "}
               <Link href={p.secondaire.href} className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
