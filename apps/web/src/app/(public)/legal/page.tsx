@@ -12,7 +12,7 @@ const sections = [
     title: 'Mentions légales',
     body: [
       'LES EXTRAS est un service édité par ADEPA — Association pour le Développement de l’Éducation par l’Animation, association loi 1901, SIRET 820 051 852 00011, dont le siège est situé 7 rue André Malraux, 77000 Melun (adresse administrative : 30 rue Nouvelle, 77190 Dammarie-lès-Lys). Le site met en relation les établissements médico-sociaux et les professionnels indépendants du secteur.',
-      'Directrice de la publication : Sihame Younous, présidente de l’association ADEPA. Contact : contact@les-extras.fr.',
+      'Directeur de la publication : Christophe Renaud. Contact : contact@les-extras.fr.',
       // Le numéro ci-dessous est celui du certificat Qualiopi lui-même. La
       // variante « 11 77 01011 77 » qui circulait sur plusieurs pages du
       // réseau est fausse — vérifié sur le certificat le 10/08/2026.
