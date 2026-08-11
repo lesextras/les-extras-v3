@@ -14,6 +14,7 @@ const nextConfig = {
     // Liste blanche stricte : un joker sur le hostname transforme
     // l'optimiseur d'images en proxy ouvert exploitable par n'importe qui.
     remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'les-extras.fr' },
       { protocol: 'https', hostname: 'www.les-extras.fr' },
       { protocol: 'https', hostname: 'app.les-extras.fr' },
