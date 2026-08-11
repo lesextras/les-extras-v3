@@ -47,13 +47,12 @@ export default function IntervenantIndependantPage() {
           Intervenant indépendant
         </span>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground text-balance md:text-4xl">
-          Vos interventions, sans intermédiaire qui se sert au passage
+          Vendez vos ateliers et vos formations aux établissements, sans intermédiaire
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          Les Extras est la marketplace de l’association ADéPA. Elle relie les établissements
+          Les Extras est la plateforme de l’association ADéPA. Elle rassemble les établissements
           médico-sociaux - MECS, IME, ITEP, SESSAD, EHPAD - aux professionnels indépendants du
-          secteur. Le réseau se constitue : s’y référencer aujourd’hui ne coûte rien et vous place
-          devant les établissements au moment où ils publient leurs premiers besoins.
+          secteur. Vous y publiez vos ateliers et vos formations, les établissements réservent en ligne, et vous facturez votre tarif sans qu’aucune commission soit prélevée.
         </p>
       </div>
 
