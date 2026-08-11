@@ -33,6 +33,7 @@ const nextConfig = {
   // liens déjà partagés.
   async redirects() {
     return [
+      { source: "/intervenants", destination: "/intervenant-independant", permanent: true },
       { source: '/actualites', destination: '/edublog', permanent: true },
       { source: '/actualites/:slug', destination: '/edublog/:slug', permanent: true },
     ];

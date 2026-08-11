@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check, Coins, FileText, Globe, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Coins, FileText, Sparkles, X } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Intervenant indépendant - rejoindre le réseau Les Extras",
@@ -95,21 +95,6 @@ export default function IntervenantIndependantPage() {
           </p>
         </section>
       </div>
-
-      <section className="mt-6 rounded-2xl border bg-card p-6 md:p-7">
-        <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          <Globe className="size-4" aria-hidden />
-          Votre profil est public
-        </p>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          Vos ateliers et votre présentation apparaissent sur la page{" "}
-          <Link href="/intervenants" className="underline underline-offset-2">
-            Les intervenants du réseau
-          </Link>
-          , consultable par les établissements et indexée par les moteurs de recherche. Si vous n’avez
-          pas de site, cette page en tient lieu.
-        </p>
-      </section>
 
       <section className="mt-6 rounded-2xl border bg-card p-6 md:p-7">
         <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

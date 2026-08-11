@@ -28,7 +28,7 @@ const PORTES = [
     texte: "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue, zéro commission.",
     reperes: ["0 % de commission", "Contrat et facture générés", "Profil vérifié une fois"],
     href: "/register",
-    secondaire: { libelle: "Voir les intervenants", href: "/intervenants" },
+    secondaire: { libelle: "Devenir intervenant", href: "/intervenants" },
     teinte: "text-secondary",
     fond: "bg-secondary/10",
     anneau: "ring-secondary/25",

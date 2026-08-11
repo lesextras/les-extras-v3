@@ -127,7 +127,6 @@ const freelanceNav: NavSection[] = [
     title: 'Catalogue',
     items: [
       { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
-      { label: 'Annuaire des intervenants', href: '/intervenants', icon: Users, hint: 'Les profils publics des intervenants du réseau' },
       { label: 'Ateliers', href: '/ateliers', icon: Sparkles, hint: 'Le catalogue public, tel que le voient les établissements' },
       { label: 'Formations', href: '/formations', icon: GraduationCap, hint: 'Le catalogue certifiant ADéPA, côté public' },
     ],

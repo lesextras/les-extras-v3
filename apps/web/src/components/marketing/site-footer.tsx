@@ -19,7 +19,6 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: 'MECS & foyers', href: '/#renfort' },
       { label: 'IME · ITEP · SESSAD', href: '/#renfort' },
       { label: 'EHPAD', href: '/#renfort' },
-      { label: 'Les intervenants', href: '/intervenants' },
       { label: 'Renfort par métier', href: '/renfort' },
       { label: 'Intervenant indépendant', href: '/intervenant-independant' },
     ],
