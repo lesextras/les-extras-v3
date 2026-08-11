@@ -10,7 +10,8 @@ Version du 3 août 2026 — à relire à chaque évolution fonctionnelle du logi
 
 | | |
 |---|---|
-| Responsable de traitement | Association ADéPA77 (loi 1901) |
+| Responsable de traitement | Association ADéPA77 (loi 1901), SIRET 820 051 852 00011 |
+| Siège social | 7 rue André Malraux, 77000 Melun |
 | Adresse administrative | 30 rue Nouvelle, 77190 Dammarie-lès-Lys |
 | Représentante | La présidente de l'association |
 | Contact données personnelles | assoc.adepa@gmail.com |

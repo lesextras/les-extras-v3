@@ -13,7 +13,11 @@ const sections = [
     body: [
       'LES EXTRAS est un service édité par ADEPA — Association pour le Développement de l’Éducation par l’Animation, association loi 1901, SIRET 820 051 852 00011, dont le siège est situé 7 rue André Malraux, 77000 Melun (adresse administrative : 30 rue Nouvelle, 77190 Dammarie-lès-Lys). Le site met en relation les établissements médico-sociaux et les professionnels indépendants du secteur.',
       'Directeur de la publication : le/la Président(e) en exercice de l’association ADEPA. Contact : contact@les-extras.fr.',
-      'Organisme de formation enregistré sous le numéro de déclaration d’activité 11 77 01011 77 (préfecture d’Île-de-France) — cet enregistrement ne vaut pas agrément de l’État. Certification Qualiopi au titre des actions de formation.',
+      // Le numéro ci-dessous est celui du certificat Qualiopi lui-même. La
+      // variante « 11 77 01011 77 » qui circulait sur plusieurs pages du
+      // réseau est fausse — vérifié sur le certificat le 10/08/2026.
+      'Organisme de formation enregistré sous le numéro de déclaration d’activité 11771011677 (préfecture d’Île-de-France) — cet enregistrement ne vaut pas agrément de l’État.',
+      'Certification Qualiopi n° QNW0132, délivrée le 10 mars 2026 par QUALIPRO CERTIFICATION (accréditation COFRAC n° 5-0681), valable jusqu’au 9 mars 2029, au titre des actions de formation et des bilans de compétences.',
       'Hébergement : Hostinger International Ltd., 61 Lordou Vironos Street, 6023 Larnaca, Chypre.',
     ],
   },
