@@ -5,11 +5,20 @@ import Link from "next/link";
 import { Cookie, ShieldCheck, HardDrive, Ban, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "../../../_shared/ui";
+import { ChoixMesure } from "../../../_shared/ChoixMesure";
+
+/**
+ * La page décrit ce que le site fait RÉELLEMENT : elle bascule sur la même
+ * variable que le bandeau. Impossible de poser le tag et d'oublier de mettre
+ * cette page à jour — c'était le risque principal de cette évolution.
+ */
+const MESURE_ACTIVE = (process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "").trim().length > 0;
 
 export const metadata: Metadata = {
   title: "Cookies et stockage local",
-  description:
-    "Ce que Les Extras dépose sur votre navigateur : uniquement des cookies indispensables au fonctionnement. Aucun traceur publicitaire, aucune mesure d'audience.",
+  description: MESURE_ACTIVE
+    ? "Ce que Les Extras dépose sur votre navigateur : les cookies indispensables au fonctionnement, et un cookie de mesure de campagne soumis à votre accord."
+    : "Ce que Les Extras dépose sur votre navigateur : uniquement des cookies indispensables au fonctionnement. Aucun traceur publicitaire, aucune mesure d'audience.",
   alternates: { canonical: "/legal/cookies" },
 };
 
@@ -56,25 +65,57 @@ export default function CookiesPage() {
         subtitle="Ce que Les Extras dépose réellement sur votre navigateur — la liste complète, pas un texte type."
       />
 
-      <Card className="border-success/30 bg-success/5">
-        <CardContent className="flex gap-4 pt-6">
-          <Ban className="mt-0.5 size-6 shrink-0 text-success" aria-hidden />
-          <div>
-            <h2 className="font-semibold">Ce que nous n&apos;utilisons pas</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Aucun cookie publicitaire. Aucun outil de mesure d&apos;audience — pas de Google
-              Analytics, pas de Matomo, pas de pixel de réseau social. Aucun partage de données de
-              navigation avec un tiers. Aucun profilage.
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              C&apos;est la raison pour laquelle vous ne trouverez pas de bouton « Refuser » : il
-              n&apos;y a rien à refuser. Les seuls cookies déposés sont indispensables au
-              fonctionnement, et la réglementation les dispense de consentement — elle impose en
-              revanche de vous en informer, ce que fait cette page.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {MESURE_ACTIVE ? (
+        <>
+          <Card className="border-secondary/30 bg-secondary/5">
+            <CardContent className="flex gap-4 pt-6">
+              <Ban className="mt-0.5 size-6 shrink-0 text-secondary" aria-hidden />
+              <div>
+                <h2 className="font-semibold">Un seul cookie non essentiel, et seulement si vous l&apos;acceptez</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  L&apos;association finance sa visibilité par de la publicité en ligne. Pour savoir
+                  quelle annonce amène réellement des inscriptions — et arrêter celles qui ne
+                  servent à rien — nous utilisons la mesure de conversion de Google Ads.
+                  <strong className="text-foreground">
+                    {" "}
+                    Rien n&apos;est chargé tant que vous n&apos;avez pas répondu
+                  </strong>
+                  , et refuser est aussi simple qu&apos;accepter.
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Ce qui remonte : le fait qu&apos;une inscription a eu lieu, et s&apos;il
+                  s&apos;agit d&apos;un établissement ou d&apos;un intervenant. Ce qui ne remonte
+                  jamais : votre nom, votre adresse e-mail, le nom de votre structure, et rien
+                  absolument rien de ce que vous écrivez dans la plateforme. Toujours aucun pixel de
+                  réseau social, aucun Matomo, aucun profilage publicitaire.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <ChoixMesure />
+        </>
+      ) : (
+        <Card className="border-success/30 bg-success/5">
+          <CardContent className="flex gap-4 pt-6">
+            <Ban className="mt-0.5 size-6 shrink-0 text-success" aria-hidden />
+            <div>
+              <h2 className="font-semibold">Ce que nous n&apos;utilisons pas</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Aucun cookie publicitaire. Aucun outil de mesure d&apos;audience — pas de Google
+                Analytics, pas de Matomo, pas de pixel de réseau social. Aucun partage de données de
+                navigation avec un tiers. Aucun profilage.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                C&apos;est la raison pour laquelle vous ne trouverez pas de bouton « Refuser » : il
+                n&apos;y a rien à refuser. Les seuls cookies déposés sont indispensables au
+                fonctionnement, et la réglementation les dispense de consentement — elle impose en
+                revanche de vous en informer, ce que fait cette page.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <section className="space-y-4">
         <div className="flex items-center gap-2">
@@ -142,9 +183,9 @@ export default function CookiesPage() {
       </section>
 
       <p className="text-xs text-muted-foreground">
-        Cette page décrit l&apos;état du site au moment de sa dernière mise à jour. Si un outil de
-        mesure d&apos;audience venait à être ajouté, un véritable choix de consentement serait mis
-        en place avant tout dépôt.
+        {MESURE_ACTIVE
+          ? "Cette page est engendrée depuis la configuration réelle du site : elle ne peut pas décrire un état qui ne serait plus le sien. Si un autre outil venait à être ajouté, un choix vous serait demandé avant tout dépôt, comme pour celui-ci."
+          : "Cette page décrit l’état du site au moment de sa dernière mise à jour. Si un outil de mesure d’audience venait à être ajouté, un véritable choix de consentement serait mis en place avant tout dépôt."}
       </p>
     </div>
   );

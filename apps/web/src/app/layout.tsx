@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers';
 import { PwaRegister } from './_shared/PwaRegister';
 import { BandeauCookies } from './_shared/BandeauCookies';
 import { CaptureSource } from './_shared/CaptureSource';
+import { MesureAudience } from './_shared/MesureAudience';
 import { InstallPrompt } from './_shared/InstallPrompt';
 
 const inter = Inter({
@@ -127,6 +128,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <InstallPrompt />
           <BandeauCookies />
           <CaptureSource />
+          <MesureAudience />
         </Providers>
       </body>
     </html>

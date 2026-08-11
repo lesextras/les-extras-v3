@@ -4,6 +4,7 @@ import { getPublicApiBaseUrl } from './api';
 import type { LoginValues, RegisterValues } from './validation';
 import type { SessionAccount } from './types';
 import { sourceComplete } from './source';
+import { signalerInscription } from './conversion';
 
 /**
  * Fonctions d'authentification côté navigateur : appellent l'API NestJS, puis
@@ -119,6 +120,9 @@ export async function register(values: RegisterValues): Promise<AuthResult> {
   if (token) {
     await persistSession(token, accountId);
   }
+  // Signalé APRÈS la réussite : une conversion ne se compte pas sur une
+  // tentative. Sans consentement ou sans identifiant Ads, l'appel ne fait rien.
+  signalerInscription(values.accountType);
   return result;
 }
 
