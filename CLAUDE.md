@@ -428,3 +428,176 @@ plus de rythme hebdomadaire sur une campagne échue), ajout de
 - adepa.fr : PDF bilan de compétences 404, vidéo SMP Teachizy.
 - Premier paiement réel Stripe à surveiller sur `/admin/lex` (le circuit est
   testé par signature/idempotence, pas encore par un vrai paiement).
+
+## Conformité Qualiopi et Teachizy — 11 août 2026
+
+### Teachizy : les 12 formations sont conformes (12/12)
+
+Avant ce passage, **cinq formations n'avaient ni public visé, ni objectifs, ni
+prérequis** (champs `target` / `goals` / `requirements` à `null`), et **CM
+Mobile (190 €) comme le Workshop A2PA étaient publiés avec une page de
+description entièrement VIDE**. La page de vente d'Essentielle était par
+ailleurs rédigée sans aucun accent (« maitrise les reseaux sociaux augmentes
+par l'IA »). Tout est corrigé et vérifié en direct.
+
+Chaque formation porte désormais : description, public visé, objectifs
+(verbes d'action évaluables), prérequis, durée, format, mention
+d'accessibilité handicap. **Les 129 leçons ont une `min_complete_duration`**
+(10 min en général, 15 min pour les parcours 101 et l'Accompagnement, 20 min
+pour un projet fil rouge) : c'est la trace d'assiduité qu'un financeur demande.
+
+Les huit leçons d'Essentielle ont reçu, en tête, une carte « Repères du
+module » (durée, prérequis, modalité, évaluation) et, en pied, « Avant de
+passer au module suivant » (trois critères de réussite vérifiables). Filets de
+séparation avant chaque titre. Le « carnet de séance » en lignes de pointillés
+a été remplacé par une consigne lisible à l'écran.
+
+**⚠ Durée : j'ai publié 14 h puis corrigé à 7 h le même jour.** Le volume réel
+mesuré (≈ 540 mots de cours par leçon, soit ~3 min de lecture) ne soutenait pas
+14 h. Les 7 h annoncées = lecture + les exercices que les leçons chronomètrent
+elles-mêmes + quiz. **Règle : une durée annoncée s'adosse au contenu mesuré,
+jamais à une intuition** — elle part dans les conventions et les dossiers de
+financement.
+
+Volumes relevés (à savoir avant de promettre quoi que ce soit) : Essentielle
+8 leçons ≈ 4 300 mots pour 1 500 € ; Accompagnement 19 leçons, dont 8 portent
+« Durée indicative » dans le texte, total 32 h ; les six parcours 101 annoncent
+« 4 à 6 h/semaine sur 8 semaines » dans Web 101 — **cette phrase n'existe que
+dans Web 101, je l'ai étendue à ses cinq jumeaux** (même gabarit, 12 leçons +
+4 quiz) : à revoir si l'un d'eux est plus léger.
+
+### Teachizy — l'API, et comment écrire dedans
+
+L'administration est une **application Vue 2** sur `app.teachizy.fr`, mais les
+données viennent de **`api.teachizy.fr`** — d'où l'échec des appels à
+`app.teachizy.fr/api/v1/...`, qui renvoient la page HTML de l'application.
+
+```js
+// jeton : localStorage.tzauth (ne JAMAIS l'afficher)
+GET  /api/v1/trainings?per_page=50
+GET  /api/v1/trainings/{uuid}
+PUT  /api/v1/trainings/{uuid}                       // partiel accepté
+GET  /api/v1/trainings/{uuid}/training_items/{id}
+PUT  /api/v1/trainings/{uuid}/training_items/{id}   // partiel accepté
+```
+
+- **`content` doit être une CHAÎNE JSON**, pas un objet : sinon 422
+  « Le champ content doit être un JSON valide ».
+- Le PUT partiel est sûr : `{min_complete_duration: 15}` seul ne touche pas au
+  contenu (vérifié).
+- Le richtext accepte les **styles en ligne** (`<div style=…>`, `<hr style=…>`)
+  et les conserve : c'est ce qui permet de vraies cartes et de vrais filets.
+- Sans style, un `<hr>` est invisible (hauteur 2 px, aucune bordure) mais
+  apporte quand même 24 px de marge de chaque côté.
+
+Passage par l'application quand l'API ne suffit pas (Vue 2 expose `__vue__`) :
+
+```js
+let r = document.querySelector('.cblock').__vue__;
+while (r && !('trainingItemContent' in (r._data||{}))) r = r.$parent;
+r.saveBlock(bloc, {...bloc.data, text: NOUVEAU});  // marque isDirty
+r.save();                                          // = bouton « Sauvegarder »
+```
+
+**Piège d'outillage :** l'onglet Chrome gèle au bout de ~10 min d'usage — les
+promesses `fetch` ne se résolvent plus, sans erreur. Symptôme : `window.__st`
+reste vide. Remède : **onglet neuf**, et tout enchaîner dans un seul
+`browser_batch` (navigate → wait → script → wait → lecture).
+
+### toulali.fr — page réglementaire créée
+
+Il manquait la **procédure de réclamation**, les **indicateurs de résultats**
+et les **prérequis publiés** : ce sont les premiers points qu'un OPCO ou France
+Travail contrôle. Créée : **`/informations-reglementaires/` (page 235)**, avec
+identité de l'organisme, tableau durée/modalité/tarif des cinq formations
+publiées, prérequis, délais d'accès, modalités d'évaluation et sanction,
+accessibilité, indicateurs et procédure de réclamation (accusé sous 5 jours
+ouvrés, réponse motivée sous 15 jours, recours devant la présidence sous 1 mois).
+
+**Indicateurs de résultats : aucun chiffre publié, et c'est volontaire.** La
+première session ouvre le 1er septembre 2026, aucune n'est terminée. La page le
+dit explicitement. **Dès la fin de la première session, il faut y porter les
+taux réels** — c'est un attendu, pas une option.
+
+**Le fichier `footer.php` du thème `business-moon-theme` n'est pas
+inscriptible** : l'éditeur de thème charge le fichier, accepte la modification,
+n'affiche aucune erreur, et n'enregistre rien. Le pied de page est du HTML en
+dur, il n'y a qu'un seul menu WordPress (`Menu Principal`, emplacement
+`primary`). Contournement retenu : un encart en tête des six pages qui comptent
+(Se faire financer, Conseil financement, CGV, CGU, Mentions légales, Accès
+handicap) — quatre d'entre elles étant déjà dans le pied de page, la page
+réglementaire est à deux clics de n'importe où.
+
+**Correction d'une erreur de l'audit du 10/08 :** les boutons « Réserve un
+appel » et « Besoin d'un financement ? » ne sont PAS morts. Ce sont des
+`href="#"` avec `onclick="openCmiaCallModal()"` / `openCmiaFinancementModal()`,
+et les fenêtres s'ouvrent correctement. Ne pas les « réparer ».
+
+### adepa77.fr — réseaux sociaux remis d'aplomb
+
+Trois défauts sur toutes les pages, tous corrigés dans le personnalisateur
+(`astra-settings[header-social-icons-1]` et `[footer-social-icons-1]`) :
+
+1. Les **deux liens du pied de page** (Instagram, Facebook) avaient une `url`
+   vide : deux boutons morts sur chaque page.
+2. Les icônes de l'en-tête étaient **mélangées** — le champ `id` d'Astra pilote
+   la classe CSS, le champ `icon` pilote le pictogramme : on avait
+   `id:instagram / icon:linkedin / url:LinkedIn`, `id:behance / url:Facebook`,
+   `id:facebook / icon:instagram / url:Instagram`.
+3. L'URL LinkedIn de l'en-tête contenait un **accent encodé**
+   (`association-ad%C3%A9pa-…`), donc était fausse ; celle du pied de page
+   était la bonne.
+
+Les quatre réseaux sont maintenant identiques en tête et en pied :
+Instagram · Facebook · LinkedIn · TikTok, `id`/`icon`/`label`/`url` cohérents.
+
+**Comptes officiels retenus** (vérifiés en ouvrant les profils) :
+
+| Réseau | Compte | Pourquoi |
+|---|---|---|
+| Instagram | `association.adepa` | bio ADéPA, mention Qualiopi. `adepa77` a pour bio « Shades Good » : **ce n'est pas l'association**. |
+| Facebook | `profile.php?id=61590194680357` | le seul de la page d'accueil du thème |
+| LinkedIn | `in/association-adepa-b98ba5405` | version sans accent, la seule qui répond |
+| TikTok | `@association_adepa` | bio ADéPA à jour |
+
+L'accueil (widget Elementor `778f086`, page 4883) pointait encore vers
+`adepa77` sur les trois réseaux : réécrit. Les trois occurrences restantes de
+`adepa77` dans ce widget sont des **contrôles de même-origine en JavaScript**
+(`/(^|\.)adepa77\.fr$/`) — ne pas y toucher.
+
+**Point à trancher par Siham :** sur TikTok, `@adepa77` a 1 175 abonnés contre
+23 pour `@association_adepa`. J'ai aligné sur le compte de marque par
+cohérence ; si elle préfère pousser l'ancien, c'est un seul réglage à changer.
+
+### les-extras.fr
+
+Contrôle statique complet : **117 routes, 79 liens internes distincts, zéro
+lien mort** (`/home/claude/verif-liens.js`). Les mentions légales portaient
+encore le faux NDA : corrigé, avec les références du certificat et son
+périmètre réel — commit `a5a5342`.
+
+### a2pa.fr — refait depuis l'audit, deux défauts restants
+
+Le site a été refondu (« 30 secondes de vocal par semaine ») : la page d'accueil
+n'a plus aucun lien vide ni ancre morte, les 16 ancres mortes de l'audit ont
+disparu. Restent, et cela demande le dépôt **`lesextras/adepa_app`** (Symfony /
+Twig, pas Next.js — l'audit du 10/08 se trompait) :
+
+- `/don` et `/adhesion` portent quatre ancres qui n'existent que sur l'accueil :
+  `#fonctionnement #offres #soutenir #faq` → à préfixer par `/`.
+- `/mentions-legales` et `/confidentialite` déclarent **Dammarie** comme siège,
+  alors que le certificat dit **Melun** (l'accueil, `/don` et `/adhesion` disent
+  déjà Melun).
+
+### Ce qui reste chez Siham
+
+- **Indicateurs de résultats** à publier dès la fin de la première session
+  (`/informations-reglementaires/`).
+- **Médiateur de la consommation** : vendre une formation à un particulier
+  oblige à nommer un médiateur dans les CGV (art. L612-1 code de la
+  consommation). Rien n'est nommé aujourd'hui — je ne peux pas inventer.
+- **Volume horaire du coaching** de la formule Accompagnement : annoncé sans
+  chiffre. Un financeur le demandera.
+- Décider du compte TikTok à pousser.
+- Nommer le référent handicap sur `/acces-handicap/` (la fonction et l'adresse
+  y sont, pas la personne).
