@@ -272,8 +272,17 @@ export class PublicService {
    * mise en avant puis par consultations, jamais au hasard.
    */
   async highlights() {
+    // Le bloc « ateliers » de l'accueil prenait TOUTES les fiches publiées,
+    // y compris celles rangées en `FORMATION`. Trois d'entre elles existent
+    // aussi comme Formation : le visiteur voyait donc la même prestation deux
+    // fois sur la même page, et des « ateliers » affichés de 50 € à 1 600 €.
+    // Un catalogue qui se contredit ne se vend pas — on ne montre ici que ce
+    // qui est réellement un atelier.
     const ateliers = await this.prisma.service.findMany({
-      where: { status: ServiceStatus.PUBLISHED },
+      where: {
+        status: ServiceStatus.PUBLISHED,
+        category: { not: ServiceCategory.FORMATION },
+      },
       orderBy: [{ featured: 'desc' }, { views: 'desc' }, { createdAt: 'desc' }],
       take: 30,
       select: PUBLIC_SELECT,

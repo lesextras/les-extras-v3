@@ -17,7 +17,10 @@ const CARTES = [
   {
     cle: "catalogue" as const,
     titre: "Recevoir notre catalogue",
-    texte: "Les 15 interventions détaillées — publics, objectifs, tarifs — dans votre boîte mail.",
+    // Le nombre était écrit en dur (« 15 ») et divergeait du compteur réel
+    // affiché plus haut sur la même page. Deux chiffres différents pour la
+    // même chose, c'est le genre de détail qui fait douter du reste.
+    texte: "Toutes nos interventions détaillées — publics, objectifs, tarifs — dans votre boîte mail.",
     action: "Demander le catalogue",
     image: "https://app.les-extras.fr/wp-content/uploads/2025/02/lever-vous.jpeg",
     icone: Mail,

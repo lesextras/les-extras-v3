@@ -37,6 +37,10 @@ function Fenetre({ url, children }: { url: string; children: React.ReactNode }) 
 }
 
 /** La cascade de diffusion, l'idée la plus difficile à expliquer par écrit. */
+// L'adresse de la fausse barre d'URL datait d'avant l'inversion des domaines
+// du 10/08 : `app.les-extras.fr` sert désormais l'ancien WordPress. Montrer
+// une adresse qui n'est plus la bonne, sur la capture censée prouver que le
+// produit existe, c'est se tirer une balle dans le pied.
 function EcranCascade() {
   const paliers = [
     { titre: "Votre équipe", detail: "4 salariés prévenus", etat: "Sans réponse", icone: Users, actif: false },
@@ -45,7 +49,7 @@ function EcranCascade() {
   ];
 
   return (
-    <Fenetre url="app.les-extras.fr/dashboard/renforts">
+    <Fenetre url="les-extras.fr/dashboard/renforts">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-foreground">Éducateur spécialisé — nuit</p>

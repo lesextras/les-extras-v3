@@ -60,6 +60,15 @@ export default async function LandingPage() {
   );
   const catalogueTotal = featured?.total ?? featured?.items?.length ?? 0;
 
+  // Nombre d'ATELIERS seuls — la page annonçait « Quinze médiations » en dur
+  // alors que le catalogue en compte dix, le reste étant des formations. Un
+  // chiffre faux sur la première page est le plus cher de tous : il se
+  // vérifie en un clic, et c'est le clic suivant.
+  const { data: catalogueAteliers } = await fetchPublic<{ total?: number; items?: CatalogItem[] }>(
+    '/public/catalog?type=service&take=1',
+  );
+  const ateliersTotal = catalogueAteliers?.total ?? 0;
+
   // Marketplace visible sans compte : les mieux notés, directement en accueil.
   const { data: unes } = await fetchPublic<{ ateliers: OfferCard[]; formations: OfferCard[] }>(
     '/public/highlights',
@@ -380,7 +389,9 @@ export default async function LandingPage() {
                     </span>
                     <h3 className="mt-4 text-xl font-semibold">Les ateliers éducatifs</h3>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                      Quinze médiations clés en main : psycho-boxe, slam, théâtre, musicothérapie. Réservables en ligne, compte rendu après chaque séance.
+                      {ateliersTotal > 0 ? `${ateliersTotal} médiations` : 'Des médiations'} clés en
+                      main : psycho-boxe, slam, théâtre, musicothérapie. Réservables en ligne,
+                      compte rendu après chaque séance.
                     </p>
                     <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
                       Parcourir le catalogue
