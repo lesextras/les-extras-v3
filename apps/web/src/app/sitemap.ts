@@ -44,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // et un sitemap qui pointe une redirection gaspille le budget de crawl.
     "/gap",
     "/sos-renfort",
+    "/intervenant-independant",
     "/outils",
     "/outils/cout-remplacement",
     "/outils/budget-ateliers",
@@ -159,6 +160,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Pages intervenants : preuve sociale et maillage interne vers les fiches.
   for (const id of vendorIds) {
     dynamic.push({
+      url: `${base}/intervenants/${id}`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.6,
