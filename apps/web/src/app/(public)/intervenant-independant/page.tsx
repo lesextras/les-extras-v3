@@ -51,8 +51,7 @@ export default function IntervenantIndependantPage() {
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
           Les Extras est la plateforme de l’association ADéPA. Elle rassemble les établissements
-          médico-sociaux - MECS, IME, ITEP, SESSAD, EHPAD - aux professionnels indépendants du
-          secteur. Vous y publiez vos ateliers et vos formations, les établissements réservent en ligne, et vous facturez votre tarif sans qu’aucune commission soit prélevée.
+          médico-sociaux - MECS, IME, ITEP, SESSAD, EHPAD - et les professionnels indépendants du secteur. Vous y publiez vos ateliers et vos formations, les établissements réservent en ligne, et vous facturez votre tarif sans qu’aucune commission soit prélevée.
         </p>
       </div>
 
