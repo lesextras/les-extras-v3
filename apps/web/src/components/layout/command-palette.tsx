@@ -30,7 +30,13 @@ const DESTINATIONS: Dest[] = [
   { label: "Devis & factures", href: "/dashboard/facturation", group: "Navigation", keywords: "devis facture chiffrage paiement reglement finance revenus depenses" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
   { label: "Contrats CDD", href: "/dashboard/contrats", group: "Établissement", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
-  { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat" },
+  { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat conversation" },
+  // Retirées du menu de gauche le 12/08/2026 pour l'alléger : la palette
+  // devient leur chemin d'accès, avec des mots-clés larges pour qu'on les
+  // trouve sans connaître leur nom exact.
+  { label: "Conformité", href: "/dashboard/conformite", group: "Établissement", keywords: "pièces obligatoires cni casier judiciaire diplôme permis échéance manquant" },
+  { label: "Mes données personnelles", href: "/dashboard/donnees-personnelles", group: "Mon espace", keywords: "rgpd export suppression effacement vie privée confidentialité" },
+  { label: "Boîte à idées", href: "/dashboard/idees", group: "Mon espace", keywords: "idée suggestion amélioration vote proposition" },
   { label: "LEX · Crédits & abonnement", href: "/dashboard/adhesion", group: "Établissement", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },
   { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres équipe" },
   { label: "Admin — Vue d’ensemble", href: "/admin", group: "Admin", keywords: "back-office" },

@@ -8,7 +8,6 @@ import {
   CalendarCheck,
   Clock,
   GraduationCap,
-  MessageSquare,
   Receipt,
   FileText,
   ShieldCheck,
@@ -26,7 +25,6 @@ import {
   Target,
   Star,
   ScrollText,
-  ShieldQuestion,
   Newspaper,
   PenLine,
   Lightbulb,
@@ -99,6 +97,30 @@ export function resolveNavRole(params: {
   return 'FREELANCE';
 }
 
+/**
+ * QUATRE ENTRÉES RETIRÉES DU MENU LE 12/08/2026 (demande de Siham).
+ *
+ * « À la connexion, il y a trop de choses et c'est compliqué à comprendre. »
+ * Un menu ne se juge pas au nombre de portes qu'il ouvre mais au temps qu'il
+ * faut pour trouver la bonne. Retirées : Messagerie, Boîte à idées, Mes
+ * données personnelles, et Conformité (côté établissement).
+ *
+ * RIEN N'EST SUPPRIMÉ — ni page, ni donnée, ni route. Chacune reste servie à
+ * son adresse, présente dans la palette ⌘K, et atteinte par le chemin qui la
+ * concerne :
+ *
+ *   Messagerie             le tableau de bord affiche « N messages non lus »
+ *                          et y conduit ; c'est là qu'on la cherche vraiment.
+ *   Mes données perso.     la politique cookies y renvoie, et le bandeau de
+ *                          consentement mène à cette politique — le droit
+ *                          d'accès et d'effacement reste donc exerçable sans
+ *                          passer par le menu (art. 12 RGPD).
+ *   Boîte à idées          l'administration garde la sienne, pour arbitrer.
+ *   Conformité             les pièces manquantes remontent déjà sur la fiche
+ *                          de chaque personne, dans « Équipe ».
+ *
+ * Remettre une entrée au menu = remettre sa ligne. Rien d'autre à défaire.
+ */
 const freelanceNav: NavSection[] = [
   {
     items: [
@@ -114,7 +136,6 @@ const freelanceNav: NavSection[] = [
       // planning, comme côté établissement.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true },
       { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
@@ -158,11 +179,9 @@ const freelanceNav: NavSection[] = [
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
-      { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
       // « Mon compte » n'est plus listé ici : il vit dans le menu de l'avatar,
       // en haut à droite, et dans la palette ⌘K. Deux chemins vers la même
       // page allongeaient le menu sans rien apporter.
-      { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
   },
 ];
@@ -173,7 +192,7 @@ const establishmentNav: NavSection[] = [
       // Pas de `hint` : « Tableau de bord » se comprend sans explication, et
       // un « i » sur chaque ligne finit par former une colonne de bruit qui
       // concurrence les icônes de gauche. On les garde pour les entrées dont
-      // le nom seul ne suffit pas (Conformité, Vivier, Analyse de pratique…).
+      // le nom seul ne suffit pas (Vivier, Analyse de pratique…).
       { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true },
     ],
   },
@@ -199,7 +218,6 @@ const establishmentNav: NavSection[] = [
       // calcule — essai, précarité, carence — et refuse de transmettre un
       // contrat auquel il manque une mention obligatoire.
       { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' , avance: true },
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessageSquare, essentiel: true },
     ],
   },
   {
@@ -213,7 +231,6 @@ const establishmentNav: NavSection[] = [
       // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
       // Les uns sont salariés, les autres viennent en renfort.
       { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
-      { label: 'Conformité', href: '/dashboard/conformite', icon: ShieldAlert, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires qui manquent ou arrivent à échéance : identité, diplôme, casier judiciaire, permis' },
       { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' , avance: true },
       // Les regles de la convention, reportees une fois. Sans elles, les
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
@@ -242,8 +259,6 @@ const establishmentNav: NavSection[] = [
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
-      { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Proposez une amélioration et votez pour celles des autres' },
-      { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldQuestion, hint: 'Exporter vos données ou demander leur suppression (RGPD)' },
     ],
   },
 ];
