@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AccountType, BookingStatus, Prisma, ServiceStatus } from '@prisma/client';
+import { BookingStatus, Prisma, ServiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CommunityService } from '../community/community.service';
 import { PointReason } from '@prisma/client';
@@ -12,6 +12,11 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { QueryServicesDto } from './dto/query-services.dto';
+import {
+  MESSAGE_HORS_PORTEE,
+  reservableParCompte,
+  visibleParCompte,
+} from './portee-salarie';
 import { BookServiceDto } from './dto/book-service.dto';
 
 @Injectable()
@@ -80,9 +85,17 @@ export class ServicesService {
     });
   }
 
-  /** Catalogue public : services publiés + filtres catégorie/ville. */
-  async findCatalog(query: QueryServicesDto) {
-    const where: Prisma.ServiceWhereInput = { status: ServiceStatus.PUBLISHED };
+  /**
+   * Catalogue : services publiés + filtres catégorie/ville.
+   *
+   * `lecteurAccountId` décide de la portée : les fiches d'un salarié ne sont
+   * visibles que des établissements qui l'emploient (voir `portee-salarie`).
+   */
+  async findCatalog(query: QueryServicesDto, lecteurAccountId?: string) {
+    const where: Prisma.ServiceWhereInput = {
+      status: ServiceStatus.PUBLISHED,
+      AND: [visibleParCompte(lecteurAccountId)],
+    };
     if (query.category) where.category = query.category;
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
     const recherche = query.search?.trim();
@@ -136,6 +149,12 @@ export class ServicesService {
     if (!service) throw new NotFoundException('Service introuvable.');
     const estProprietaire = Boolean(accountId && service.accountId === accountId);
     if (!estProprietaire && service.status !== 'PUBLISHED') {
+      throw new NotFoundException('Service introuvable.');
+    }
+    // Portée d'un salarié : sa fiche n'existe que pour les établissements qui
+    // l'emploient. « Introuvable » et non « interdit » — l'existence même de
+    // la fiche ne regarde pas les autres.
+    if (!estProprietaire && !(await reservableParCompte(this.prisma, id, accountId ?? ''))) {
       throw new NotFoundException('Service introuvable.');
     }
 
@@ -283,6 +302,12 @@ export class ServicesService {
     }
     if (service.accountId === bookingAccountId) {
       throw new BadRequestException('Vous ne pouvez pas réserver votre propre service.');
+    }
+    // On rejoue la portée à la réservation. Une règle qui ne vit que dans la
+    // liste se contourne avec une URL — et c'est l'engagement, pas l'affichage,
+    // qui compte ici.
+    if (!(await reservableParCompte(this.prisma, serviceId, bookingAccountId))) {
+      throw new ForbiddenException(MESSAGE_HORS_PORTEE);
     }
 
     // Paiement à la prestation : aucune monnaie interne. La réservation est

@@ -32,10 +32,18 @@ interface AccountCtx {
 export class ServicesController {
   constructor(private readonly services: ServicesService) {}
 
-  /** Catalogue public (authentifié) des ateliers publiés. */
+  /**
+   * Catalogue (authentifié) des ateliers publiés.
+   *
+   * `AccountGuard` est nécessaire ici, et pas seulement pour la forme : les
+   * fiches publiées par un salarié ne s'adressent qu'aux établissements
+   * auxquels il est rattaché. Sans savoir QUI regarde, on ne peut pas trancher
+   * — et on montrerait à tout le monde ce qui ne concerne qu'une maison.
+   */
   @Get('catalog')
-  catalog(@Query() query: QueryServicesDto) {
-    return this.services.findCatalog(query);
+  @UseGuards(AccountGuard)
+  catalog(@CurrentAccount() account: AccountCtx, @Query() query: QueryServicesDto) {
+    return this.services.findCatalog(query, account.id);
   }
 
   @Get()

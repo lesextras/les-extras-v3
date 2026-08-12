@@ -14,6 +14,19 @@ import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 
 /**
+ * Vitrine : une fiche publiée qui n'appartient PAS à un salarié.
+ *
+ * Un salarié anime pour la maison qui l'emploie ; sa fiche s'adresse aux
+ * établissements auxquels il est rattaché, jamais au marché ouvert. Toutes les
+ * requêtes publiques partent de là — accueil, détail, fiches liées, devis —
+ * pour qu'aucune ne l'oublie au prochain ajout.
+ */
+const VITRINE = {
+  status: ServiceStatus.PUBLISHED,
+  account: { profilSalarie: false },
+} satisfies Prisma.ServiceWhereInput;
+
+/**
  * Champs exposés publiquement (aucune donnée sensible : pas d'ownerId, pas de
  * bookings, pas d'email). Le compte est réduit à sa vitrine (nom, ville, logo).
  */
@@ -159,9 +172,16 @@ export class PublicService {
     return { ok: true, id: request.id };
   }
 
-  /** Construit le filtre de type (atelier / formation / all). */
+  /**
+   * Construit le filtre de type (atelier / formation / all).
+   *
+   * La vitrine est ouverte à tout le monde : aucune fiche de salarié n'y
+   * paraît. Ce qu'un salarié anime, il l'anime pour la maison qui l'emploie —
+   * l'exposer au marché serait faux, et lui vaudrait des demandes qu'il ne
+   * peut pas honorer. Le filtre vaut aussi pour le sitemap, qui lit d'ici.
+   */
   private typeWhere(type?: string): Prisma.ServiceWhereInput {
-    const where: Prisma.ServiceWhereInput = { status: ServiceStatus.PUBLISHED };
+    const where: Prisma.ServiceWhereInput = { ...VITRINE };
     if (type === 'formation') {
       where.category = ServiceCategory.FORMATION;
     } else if (type === 'atelier') {
@@ -280,7 +300,7 @@ export class PublicService {
     // qui est réellement un atelier.
     const ateliers = await this.prisma.service.findMany({
       where: {
-        status: ServiceStatus.PUBLISHED,
+        ...VITRINE,
         category: { not: ServiceCategory.FORMATION },
       },
       orderBy: [{ featured: 'desc' }, { views: 'desc' }, { createdAt: 'desc' }],
@@ -336,7 +356,7 @@ export class PublicService {
     let objet = 'Demande de devis';
     if (dto.serviceId) {
       const s = await this.prisma.service.findFirst({
-        where: { id: dto.serviceId, status: ServiceStatus.PUBLISHED },
+        where: { id: dto.serviceId, ...VITRINE },
         select: { title: true },
       });
       if (s) objet = `Devis — ${s.title}`;
@@ -397,7 +417,7 @@ export class PublicService {
    */
   async detail(id: string) {
     const service = await this.prisma.service.findFirst({
-      where: { id, status: ServiceStatus.PUBLISHED },
+      where: { id, ...VITRINE },
       select: PUBLIC_DETAIL_SELECT,
     });
     if (!service) throw new NotFoundException('Service introuvable.');
@@ -462,7 +482,7 @@ export class PublicService {
       ? await this.prisma.service.findMany({
           where: {
             id: { not: id },
-            status: ServiceStatus.PUBLISHED,
+            ...VITRINE,
             categoryId: service.categoryRef.id,
           },
           orderBy: { createdAt: 'desc' },
@@ -474,7 +494,7 @@ export class PublicService {
       related = await this.prisma.service.findMany({
         where: {
           id: { not: id },
-          status: ServiceStatus.PUBLISHED,
+          ...VITRINE,
           category: service.category,
         },
         orderBy: { createdAt: 'desc' },
