@@ -170,7 +170,7 @@ export class BookingsService {
    */
   async signContract(id: string, accountId: string) {
     const booking = await this.loadForAccount(id, accountId);
-    const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
+    const offerAccountId = BookingsService.offreurDe(booking);
     const data: Prisma.BookingUpdateInput = {};
     if (accountId === booking.accountId) {
       data.signedFreelanceAt = new Date();
@@ -220,7 +220,7 @@ export class BookingsService {
     });
     if (!booking) throw new NotFoundException('Booking introuvable.');
 
-    const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
+    const offerAccountId = BookingsService.offreurDe(booking);
     const isParticipant = booking.accountId === accountId || offerAccountId === accountId;
     if (!isParticipant) {
       throw new ForbiddenException('Ce booking ne concerne pas votre compte.');
@@ -228,13 +228,62 @@ export class BookingsService {
     return booking;
   }
 
+  /**
+   * Le compte qui PROPOSE la prestation. Les deux flux sont inversés, et c'est
+   * normal : sur un renfort, la mission appartient à l'établissement et c'est
+   * l'intervenant qui candidate ; sur un atelier, la fiche appartient à
+   * l'intervenant et c'est l'établissement qui réserve. Dans les deux cas,
+   * `booking.accountId` est le DEMANDEUR et cette valeur est le SOLLICITÉ.
+   */
+  private static offreurDe(booking: {
+    mission?: { accountId: string } | null;
+    service?: { accountId: string } | null;
+  }): string | null {
+    return booking.mission?.accountId ?? booking.service?.accountId ?? null;
+  }
+
+  /**
+   * Faire avancer une réservation revient à celui qui a été sollicité, jamais
+   * à celui qui sollicite.
+   *
+   * Sans ce contrôle, `loadForAccount` se contentait de vérifier que l'appelant
+   * est PARTIE au contrat — pas de quel côté il se trouve. Un établissement
+   * pouvait donc mener seul sa propre demande d'atelier jusqu'à « terminée »,
+   * et déclencher le brouillon de facture émis au nom d'un intervenant qui
+   * n'avait jamais dit oui. Symétriquement, un intervenant pouvait faire
+   * aboutir seul sa candidature à un renfort. Les écrans ne proposent ces
+   * gestes qu'au bon côté (`BookingActions` n'est monté que sur les écrans de
+   * l'offreur) : le trou n'était visible qu'en appelant l'API directement, ce
+   * qui est précisément le cas contre lequel un garde-fou existe.
+   *
+   * L'annulation, elle, reste ouverte aux deux : retirer sa candidature ou
+   * renoncer à une demande est un droit du demandeur.
+   */
+  private assertOffreur(
+    booking: {
+      mission?: { accountId: string } | null;
+      service?: { accountId: string } | null;
+    },
+    accountId: string,
+  ): void {
+    if (BookingsService.offreurDe(booking) === accountId) return;
+    throw new ForbiddenException(
+      booking.service
+        ? "Seul l'intervenant qui propose cet atelier peut faire avancer la réservation. En tant que demandeur, vous pouvez l'annuler."
+        : "Seul l'établissement qui a publié cette mission peut faire avancer la réservation. En tant que candidat, vous pouvez retirer votre candidature.",
+    );
+  }
+
   private async transition(
     id: string,
     accountId: string,
     next: BookingStatus,
     extra: Prisma.BookingUpdateInput = {},
+    /** `offreur` : réservé au sollicité. `les-deux` : ouvert aux deux parties. */
+    cote: 'offreur' | 'les-deux' = 'offreur',
   ): Promise<Booking> {
     const booking = await this.loadForAccount(id, accountId);
+    if (cote === 'offreur') this.assertOffreur(booking, accountId);
     const allowed = TRANSITIONS[booking.status];
     if (!allowed.includes(next)) {
       throw new BadRequestException(
@@ -347,10 +396,15 @@ export class BookingsService {
     });
   }
 
+  /** Annulation : ouverte aux DEUX parties, jusqu'au bout. */
   cancel(id: string, accountId: string, dto: CancelBookingDto) {
-    return this.transition(id, accountId, BookingStatus.CANCELLED, {
-      cancelReason: dto.reason,
-    });
+    return this.transition(
+      id,
+      accountId,
+      BookingStatus.CANCELLED,
+      { cancelReason: dto.reason },
+      'les-deux',
+    );
   }
 
   // ── Pointage : temps travaillé (freelance déclare, établissement valide) ─────
@@ -400,7 +454,7 @@ export class BookingsService {
   async listTimeEntries(bookingId: string, accountId: string) {
     const booking = await this.loadForAccount(bookingId, accountId);
     await this.validerCreneauxEchus(bookingId, booking);
-    const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
+    const offerAccountId = BookingsService.offreurDe(booking);
     const side =
       accountId === booking.accountId
         ? 'freelance'
@@ -528,7 +582,7 @@ export class BookingsService {
     const entry = await this.prisma.timeEntry.findUnique({ where: { id: entryId } });
     if (!entry) throw new NotFoundException('Créneau introuvable.');
     const booking = await this.loadForAccount(entry.bookingId, accountId);
-    const offerAccountId = booking.mission?.accountId ?? booking.service?.accountId ?? null;
+    const offerAccountId = BookingsService.offreurDe(booking);
     if (accountId !== offerAccountId) {
       throw new ForbiddenException("Seul l'établissement peut valider le temps de travail.");
     }

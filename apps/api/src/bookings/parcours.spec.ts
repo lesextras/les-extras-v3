@@ -20,21 +20,44 @@ import { empreinte, genererCode, hacherCode, codeCorrect, verifier } from '../si
 const ETABLISSEMENT = 'acc-etab';
 const INTERVENANT = 'acc-freelance';
 
-function fabrique() {
+/**
+ * Deux flux, deux orientations — c'est la source du piège corrigé plus bas.
+ *
+ *   renfort : la mission est à l'ÉTABLISSEMENT, l'intervenant candidate ;
+ *   atelier : la fiche est à l'INTERVENANT, l'établissement réserve.
+ *
+ * Dans les deux cas `booking.accountId` est le DEMANDEUR, et c'est le SOLLICITÉ
+ * — le propriétaire de la mission ou de la fiche — qui fait avancer le dossier.
+ */
+function fabrique(flux: 'renfort' | 'atelier' = 'renfort') {
+  const renfort = flux === 'renfort';
   const etat = {
     booking: {
       id: 'bk1',
-      accountId: INTERVENANT, // le candidat crée la réservation
+      // Renfort : le candidat crée la réservation.
+      // Atelier : c'est l'établissement qui réserve.
+      accountId: renfort ? INTERVENANT : ETABLISSEMENT,
       status: BookingStatus.REQUESTED as BookingStatus,
       scheduledAt: null as Date | null,
-      mission: {
-        id: 'm1',
-        title: 'Renfort éducateur — internat',
-        accountId: ETABLISSEMENT,
-        account: { ownerId: 'user-etab' },
-      },
-      service: null,
-      account: { id: INTERVENANT, name: 'Léa Martin', ownerId: 'user-lea' },
+      mission: renfort
+        ? {
+            id: 'm1',
+            title: 'Renfort éducateur — internat',
+            accountId: ETABLISSEMENT,
+            account: { ownerId: 'user-etab' },
+          }
+        : null,
+      service: renfort
+        ? null
+        : {
+            id: 's1',
+            title: 'Atelier socio-esthétique',
+            accountId: INTERVENANT,
+            account: { ownerId: 'user-lea' },
+          },
+      account: renfort
+        ? { id: INTERVENANT, name: 'Léa Martin', ownerId: 'user-lea' }
+        : { id: ETABLISSEMENT, name: 'MECS Les Tilleuls', ownerId: 'user-etab' },
     },
     notifications: [] as { userId: string; type: string }[],
     mails: [] as string[],
@@ -153,5 +176,58 @@ describe('Parcours réservation → contrat → signature', () => {
     const { service, etat } = fabrique();
     await expect(service.accept('bk1', 'acc-intrus')).rejects.toThrow(ForbiddenException);
     expect(etat.booking.status).toBe(BookingStatus.REQUESTED);
+  });
+});
+
+/**
+ * ON NE VALIDE PAS SA PROPRE DEMANDE.
+ *
+ * Être partie au contrat ne suffit pas : encore faut-il être du bon côté.
+ * Le contrôle d'accès historique ne vérifiait que l'appartenance, si bien que
+ * le demandeur pouvait mener seul son dossier jusqu'à « terminée » — et, sur
+ * un atelier, déclencher un brouillon de facture au nom d'un intervenant qui
+ * n'avait jamais dit oui. Les écrans ne l'ont jamais proposé ; l'API le
+ * permettait, et c'est là que se juge un garde-fou.
+ */
+describe('Seul le sollicité fait avancer la réservation', () => {
+  it("renfort : l'intervenant qui a candidaté ne peut pas se retenir lui-même", async () => {
+    const { service, etat } = fabrique('renfort');
+    await expect(service.accept('bk1', INTERVENANT)).rejects.toThrow(ForbiddenException);
+    expect(etat.booking.status).toBe(BookingStatus.REQUESTED);
+  });
+
+  it("atelier : l'établissement qui a réservé ne peut pas accepter à la place de l'intervenant", async () => {
+    const { service, etat } = fabrique('atelier');
+    await expect(service.accept('bk1', ETABLISSEMENT)).rejects.toThrow(ForbiddenException);
+    expect(etat.booking.status).toBe(BookingStatus.REQUESTED);
+  });
+
+  it("atelier : l'intervenant propriétaire de la fiche déroule bien la chaîne", async () => {
+    const { service, etat } = fabrique('atelier');
+    await service.accept('bk1', INTERVENANT);
+    await service.confirm('bk1', INTERVENANT);
+    await service.start('bk1', INTERVENANT);
+    await service.complete('bk1', INTERVENANT);
+    expect(etat.booking.status).toBe(BookingStatus.COMPLETED);
+  });
+
+  it('aucune étape n’échappe au contrôle, pas même la dernière', async () => {
+    const { service } = fabrique('renfort');
+    await service.accept('bk1', ETABLISSEMENT);
+    await expect(service.confirm('bk1', INTERVENANT)).rejects.toThrow(ForbiddenException);
+    await service.confirm('bk1', ETABLISSEMENT);
+    await expect(service.start('bk1', INTERVENANT)).rejects.toThrow(ForbiddenException);
+    await service.start('bk1', ETABLISSEMENT);
+    await expect(service.complete('bk1', INTERVENANT)).rejects.toThrow(ForbiddenException);
+  });
+
+  it('mais le demandeur garde le droit de renoncer, des deux côtés', async () => {
+    const renfort = fabrique('renfort');
+    await renfort.service.cancel('bk1', INTERVENANT, { reason: 'Plus disponible.' } as never);
+    expect(renfort.etat.booking.status).toBe(BookingStatus.CANCELLED);
+
+    const atelier = fabrique('atelier');
+    await atelier.service.cancel('bk1', ETABLISSEMENT, { reason: 'Séjour annulé.' } as never);
+    expect(atelier.etat.booking.status).toBe(BookingStatus.CANCELLED);
   });
 });
