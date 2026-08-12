@@ -179,10 +179,22 @@ export function LexGapiste({
               )}
             </div>
           ))}
+          {/* Deux barres grises ne disaient pas que quelqu'un réfléchit : elles
+              disaient qu'un écran charge. Ici on nomme ce qui se passe, et on
+              montre que ça avance — l'attente devient lisible. */}
           {chargement ? (
-            <div className="max-w-[60%] space-y-2 rounded-2xl bg-card px-4 py-3" aria-live="polite">
-              <div className="h-2.5 w-32 animate-pulse rounded bg-muted" />
-              <div className="h-2.5 w-24 animate-pulse rounded bg-muted" />
+            <div className="flex max-w-[85%] items-center gap-3 rounded-2xl bg-card px-4 py-3" aria-live="polite" role="status">
+              <span className="relative grid size-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                <span className="absolute inset-0 rounded-lg bg-primary/25 animate-anneau" aria-hidden />
+                <Sparkles className="relative size-3.5" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1 space-y-2">
+                <p className="text-sm font-medium text-foreground">LEX réfléchit…</p>
+                <div className="space-y-1.5" aria-hidden>
+                  <div className="h-2.5 w-40 animate-pulse rounded bg-muted" />
+                  <div className="h-2.5 w-28 animate-pulse rounded bg-muted [animation-delay:200ms]" />
+                </div>
+              </div>
             </div>
           ) : null}
           <div ref={finRef} />

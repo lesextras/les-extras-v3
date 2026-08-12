@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { RichText } from "./RichText";
 import { useToast } from "@/components/ui/use-toast";
+import { LexTravaille } from "./LexTravaille";
 
 export function ActivityGenerator() {
   const { toast } = useToast();
@@ -108,7 +109,20 @@ export function ActivityGenerator() {
       </form>
 
       <div className="min-h-[300px]">
-        {resultat ? (
+        {/* Pendant la conception, le panneau d'attente prend la place du vide :
+            un cadre gris de 300 px de haut ne dit pas qu'il se passe quelque
+            chose. Les étapes sont celles de la génération d'activité. */}
+        {loading ? (
+          <LexTravaille
+            titre="LEX conçoit la séance…"
+            etapes={[
+              "Je lis le public et l'objectif",
+              "Je cherche des activités qui tiennent debout",
+              "Je pose le déroulé et le matériel",
+              "J'ajoute les points de vigilance",
+            ]}
+          />
+        ) : resultat ? (
           <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <div className="mb-4 flex items-center justify-between gap-3">
               {protection ? (

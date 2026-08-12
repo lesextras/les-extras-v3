@@ -115,6 +115,10 @@ const nextConfig = {
         destination,
         permanent: true,
       })),
+      // « Congés & compteurs » a fusionné avec « Temps de travail » le
+      // 12/08/2026 : c'était le même sujet à deux adresses. Les liens déjà
+      // envoyés par courriel continuent de fonctionner.
+      { source: '/dashboard/conges', destination: '/dashboard/temps-de-travail', permanent: true },
       { source: '/listing/:slug', destination: '/ateliers', permanent: true },
       { source: '/listing-category/:slug', destination: '/ateliers', permanent: true },
     ];

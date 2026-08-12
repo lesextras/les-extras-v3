@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { ChoixTrameMaison, TramesMaisonPanel, type TrameMaison } from "./TramesMaison";
+import { LexTravaille } from "./LexTravaille";
 
 // ── Types alignés sur l'API ──────────────────────────────────────────────────
 
@@ -490,6 +491,10 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   {enCours ? "Rédaction en cours…" : "Rédiger le document"}
                 </Button>
               </div>
+
+              {/* Le bouton seul ne suffisait pas : pendant quinze secondes,
+                  l'écran ne bougeait plus et l'on croyait à une panne. */}
+              {enCours ? <LexTravaille /> : null}
             </div>
           ) : null}
 

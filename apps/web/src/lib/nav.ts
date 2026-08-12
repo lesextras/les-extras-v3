@@ -47,7 +47,14 @@ export interface NavItem {
   hint?: string;
   /** Fonctionnalité LEX à crédits (badge si le solde est à zéro). */
   premium?: boolean;
-  /** Entrée du « mode essentiel » : visible même quand le menu est replié. */
+  /**
+   * @deprecated Plus lu depuis le 12/08/2026 : la « vue essentielle » a été
+   * retirée du menu. Deux réglages d'affichage se superposaient — l'un cachait
+   * le non-essentiel, l'autre montrait l'avancé — et on ne savait plus lequel
+   * expliquait ce qu'on avait sous les yeux. Le drapeau est conservé sur les
+   * entrées : il documente ce qui relève du quotidien, et resservira si l'on
+   * revient un jour à un menu à deux étages.
+   */
   essentiel?: boolean;
   /**
    * Réservée aux sous-comptes, c'est-à-dire à toute personne rattachée au
@@ -231,11 +238,10 @@ const establishmentNav: NavSection[] = [
       // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
       // Les uns sont salariés, les autres viennent en renfort.
       { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
-      { label: 'Congés & compteurs', href: '/dashboard/conges', icon: CalendarCheck, hint: 'Demandes d\'absence validées par un responsable, heures planifiées, soldes et export paie' , avance: true },
       // Les regles de la convention, reportees une fois. Sans elles, les
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
       // juridiquement exact mais rarement ce que veut l'etablissement.
-      { label: 'Temps de travail', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Nuit, dimanche, jours fériés, heures supplémentaires, annualisation : les règles de votre convention, appliquées à chaque chiffrage' , avance: true },
+      { label: 'Temps de travail & congés', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Le planning d’équipe déjà posé, les demandes d’absence, les soldes, et les règles de votre convention : nuit, dimanche, fériés, heures supplémentaires, annualisation' , avance: true },
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
     ],
   },
@@ -382,14 +388,24 @@ export function getNavForRole(
   const base =
     role === 'ADMIN' ? adminNav : role === 'ESTABLISHMENT' ? establishmentNav : freelanceNav;
 
-  // Les outils avancés (gestion RH) restent masqués tant qu'on ne les a pas
-  // demandés — y compris pour l'administration, qui a déjà son propre menu.
-  const sansAvances = (sections: NavSection[]) =>
-    options?.outilsAvances
-      ? sections
-      : sections
-          .map((s) => ({ ...s, items: s.items.filter((i) => !i.avance) }))
-          .filter((s) => s.items.length > 0);
+  /**
+   * Les outils avancés (gestion RH) sont masqués tant qu'on ne les a pas
+   * demandés — et quand on les demande, ON NE VOIT QU'EUX (12/08/2026).
+   *
+   * Avant, les activer ajoutait quatre entrées au milieu de vingt autres :
+   * on cherchait dans un menu devenu plus long ce qu'on venait précisément
+   * d'ouvrir. Ce sont deux métiers différents — la mise en relation d'un côté,
+   * la gestion du temps de travail de l'autre — et on ne les fait pas en même
+   * temps. Le réglage devient donc un aiguillage, pas un supplément.
+   */
+  const filtrerAvances = (sections: NavSection[]) =>
+    sections
+      .map((s) => ({
+        ...s,
+        items: s.items.filter((i) => (options?.outilsAvances ? i.avance : !i.avance)),
+      }))
+      .filter((s) => s.items.length > 0);
+  const sansAvances = filtrerAvances;
 
   // L'administration de la plateforme n'a pas de rôle « dans un compte » :
   // on ne lui retire rien d'autre.

@@ -1,8 +1,14 @@
 'use client';
 
-// Encart d'aide contextuelle : s'affiche sous le fil d'Ariane sur chaque page
-// connue du dictionnaire lib/page-help. Masquable par page (localStorage),
-// réouvrable via le bouton « ? Aide ».
+// Encart d'aide contextuelle : disponible sous le fil d'Ariane sur chaque page
+// connue du dictionnaire lib/page-help.
+//
+// REPLIÉE PAR DÉFAUT (12/08/2026). Elle s'ouvrait d'office sur chaque page :
+// à la connexion, l'utilisateur recevait un pavé d'explication avant même
+// d'avoir regardé son écran, et sur toutes les pages à la fois. Une aide qui
+// s'impose n'est plus une aide, c'est du bruit — et on finit par la fermer
+// sans la lire. Elle attend maintenant derrière son bouton « ? Aide », et
+// s'ouvre pour qui la demande. Le choix reste mémorisé par page.
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { Info, X, HelpCircle } from 'lucide-react';
@@ -19,9 +25,11 @@ export function PageHelp() {
   React.useEffect(() => {
     if (!match) return;
     try {
-      setVisible(window.localStorage.getItem(STORE_PREFIX + match.key) !== 'off');
+      // Fermée sauf demande explicite : seul un « on » écrit par l'utilisateur
+      // l'ouvre. L'ancienne logique ouvrait tout ce qui n'avait pas été fermé.
+      setVisible(window.localStorage.getItem(STORE_PREFIX + match.key) === 'on');
     } catch {
-      setVisible(true);
+      setVisible(false);
     }
   }, [match?.key]); // eslint-disable-line react-hooks/exhaustive-deps
 

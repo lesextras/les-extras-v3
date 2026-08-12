@@ -34,14 +34,14 @@ const AIDE: Record<string, PageHelpEntry> = {
     ],
   },
 
-  "/dashboard/conges": {
-    titre: "Les congés au même endroit que le planning",
+  "/dashboard/temps-de-travail": {
+    titre: "Le planning, les congés et les règles, au même endroit",
     texte:
-      "Un membre pose sa demande, un responsable l'approuve ou la refuse — chacun est notifié. Une absence approuvée apparaît automatiquement dans le planning, et les compteurs (heures planifiées, congés pris, solde) se mettent à jour tout seuls. L'export CSV donne les éléments de paie du mois, prêt pour votre comptable.",
+      "Déposez le planning d'équipe que vous tenez déjà : il est lu sur votre poste, jamais téléversé, et vous voyez aussitôt les heures planifiées, les jours d'absence posés et ce qui reste sur le plafond annuel. En dessous, les demandes d'absence à trancher et les compteurs ; tout en bas, les règles de votre convention — nuit, dimanche, fériés — qui servent à chaque chiffrage.",
     etapes: [
-      "Posez la demande avec le bon type : congés, RTT, maladie, sans solde.",
-      "Responsables : surveillez la colonne Alertes — elle signale les semaines à plus de 48 h.",
-      "En fin de mois, exportez les éléments de paie et transmettez le fichier tel quel.",
+      "Déposez un CSV avec au minimum les colonnes personne et date.",
+      "Posez ou tranchez les demandes : une absence approuvée entre seule au planning.",
+      "Renseignez vos majorations une fois : seul le 1er mai est majoré par la loi, le reste vient de VOTRE convention.",
     ],
   },
   "/dashboard/progression": {
@@ -204,16 +204,6 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Retenez un intervenant après une mission réussie : il entre au vivier.',
       'Notez ce qui compte (habitudes, unités où il est à l’aise) — visible de vous seul.',
       'Rappelez-le en un clic à la prochaine publication de mission.',
-    ],
-  },
-  '/dashboard/temps-de-travail': {
-    titre: 'Les règles de votre convention, reportées une fois',
-    texte:
-      "Nuit, dimanche, jours fériés, seuil d'heures supplémentaires, annualisation : chaque convention (CCN 66, 51, CHRS…) a ses règles. Reportez-les ici une fois — tous les chiffrages et compteurs de la plateforme les appliquent ensuite.",
-    etapes: [
-      'Seul le 1er mai est majoré par la loi ; le reste vient de VOTRE convention.',
-      'Le plafond de 1 607 h et le plancher de 10 % sur les heures sup. sont verrouillés — ordre public.',
-      'Laissez un champ vide pour appliquer la valeur légale par défaut.',
     ],
   },
   '/dashboard/notifications': {

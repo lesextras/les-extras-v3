@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SupportModal } from '@/app/_shared/modals/SupportModal';
 import { ModaleAdherent } from '@/app/_shared/modals/ModaleAdherent';
-import { ChevronDown, LayoutList, Lock, Wrench } from 'lucide-react';
+import { ChevronDown, Lock, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getNavForRole, compterOutilsAvances } from '@/lib/nav';
 import type { NavRole, AccountRole } from '@/lib/types';
@@ -33,9 +33,6 @@ export interface SidebarProps {
 
 /** Clé de persistance des sections repliées (par rôle). */
 const STORAGE_PREFIX = 'lx.sidebar.collapsed.';
-
-/** Clé de persistance du mode d'affichage (essentiel / complet). */
-const MODE_PREFIX = 'lx.sidebar.mode.';
 
 /** Clé de persistance de l'affichage des outils avancés (gestion RH). */
 const AVANCES_PREFIX = 'lx.sidebar.avances.';
@@ -74,12 +71,6 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
     }))
     .filter((s) => s.items.length > 0);
 
-  // Mode « essentiel » : ne montre que les entrées du quotidien. Il évite qu'un
-  // directeur qui vient une fois par mois se noie dans quinze entrées. L'admin
-  // travaille dans l'outil tous les jours : mode complet par défaut pour lui.
-  const [modeEssentiel, setModeEssentiel] = useState(false);
-  const [modeCharge, setModeCharge] = useState(false);
-
   useEffect(() => {
     try {
       setOutilsAvances(window.localStorage.getItem(AVANCES_PREFIX + role) === 'oui');
@@ -100,46 +91,7 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
     });
   }
 
-  useEffect(() => {
-    let valeur = role !== 'ADMIN';
-    try {
-      const brut = window.localStorage.getItem(MODE_PREFIX + role);
-      if (brut === 'complet') valeur = false;
-      else if (brut === 'essentiel') valeur = true;
-    } catch {
-      /* stockage indisponible : on garde la valeur par défaut du rôle */
-    }
-    setModeEssentiel(valeur);
-    setModeCharge(true);
-  }, [role]);
-
-  function basculerMode() {
-    setModeEssentiel((prev) => {
-      const next = !prev;
-      try {
-        window.localStorage.setItem(MODE_PREFIX + role, next ? 'essentiel' : 'complet');
-      } catch {
-        /* stockage indisponible : le choix vaut pour la session */
-      }
-      return next;
-    });
-  }
-
-  const total = toutesSections.reduce((n, s) => n + s.items.length, 0);
-
-  // Le filtre ne s'applique qu'après lecture du stockage : rendu serveur et
-  // premier rendu client restent identiques (pas de mismatch d'hydratation).
-  const sections =
-    modeCharge && modeEssentiel
-      ? toutesSections
-          .map((s) => ({
-            ...s,
-            items: s.items.filter((it) => it.essentiel || isActiveHref(pathname, it.href)),
-          }))
-          .filter((s) => s.items.length > 0)
-      : toutesSections;
-
-  const masquees = total - sections.reduce((n, s) => n + s.items.length, 0);
+  const sections = toutesSections;
 
   const isActive = (href: string) => isActiveHref(pathname, href);
 
@@ -314,23 +266,12 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
         })}
       </nav>
 
+      {/* La « vue essentielle » a été retirée le 12/08/2026. Deux réglages
+          d'affichage qui se superposaient — l'un cachait le non-essentiel,
+          l'autre montrait l'avancé — faisaient qu'on ne savait plus lequel
+          expliquait ce qu'on voyait. Il n'en reste qu'un, et c'est un
+          aiguillage : le quotidien, ou la gestion RH. */}
       <div className="border-t border-border px-4 pt-3">
-        <button
-          type="button"
-          onClick={basculerMode}
-          aria-pressed={modeEssentiel}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <LayoutList aria-hidden="true" className="size-3.5 shrink-0" />
-          <span className="truncate text-left">
-            {modeEssentiel
-              ? masquees > 0
-                ? `Afficher tout le menu (+${masquees})`
-                : 'Afficher tout le menu'
-              : 'Vue essentielle'}
-          </span>
-        </button>
-
         {nbAvances > 0 || outilsAvances ? (
           <button
             type="button"
@@ -344,7 +285,7 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
                 temp… » : illisible, donc jamais cliqué. Court dans le bouton,
                 détaillé dans l'infobulle au survol. */}
             <span className="truncate text-left">
-              {outilsAvances ? 'Masquer les outils avancés' : 'Outils avancés'}
+              {outilsAvances ? 'Revenir au menu' : 'Outils avancés'}
             </span>
           </button>
         ) : null}

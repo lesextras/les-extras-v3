@@ -21,41 +21,41 @@ import type { ListeQuestions } from "./gap";
 const inputClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3.5 py-2 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
-/** Le cadre du GAP, rappelé en haut de page : c'est lui qui rend la parole
- *  possible. Trois règles, une phrase chacune — on les relit d'un coup d'œil
- *  à chaque visite, ce qui est le but ; un paragraphe, on ne le relit jamais. */
+/**
+ * LE CADRE DU GAP, EN UNE LIGNE.
+ *
+ * C'étaient deux encarts empilés — le cadre en trois cartes, puis LEX dans une
+ * carte à part — qui mangeaient un écran entier avant la première situation.
+ * Or ce cadre se relit à chaque visite : s'il est long, il n'est plus relu, et
+ * il ne protège plus rien. Trois pastilles colorées, une glose de quatre mots
+ * chacune : on le prend d'un coup d'œil, ce qui est exactement le but.
+ */
 const CADRE = [
   {
     icone: EyeOff,
     titre: "Anonyme",
-    texte: "Vous publiez sous « Un·e éducateur spécialisé ». Les prénoms sont masqués tout seuls.",
+    glose: "les prénoms sont masqués",
     teinte: "text-primary",
     fond: "bg-primary/10",
     anneau: "ring-primary/25",
-    halo: "bg-primary/20",
   },
   {
     icone: ShieldCheck,
     titre: "Entre pros",
-    texte: "Rien n'est public, rien n'est indexé. Il faut un compte pour lire comme pour écrire.",
+    glose: "rien n'est public",
     teinte: "text-success",
     fond: "bg-success/10",
     anneau: "ring-success/25",
-    halo: "bg-success/20",
   },
   {
     icone: HeartHandshake,
     titre: "Sans jugement",
-    texte: "On raconte ce qu'on a tenté et ce que ça a donné. Les échecs sont les plus utiles.",
+    glose: "les échecs sont les plus utiles",
     teinte: "text-secondary",
     fond: "bg-secondary/10",
     anneau: "ring-secondary/25",
-    halo: "bg-secondary/20",
   },
 ];
-
-/** Ce que LEX fait, en trois temps — plus lisible qu'un paragraphe de dix lignes. */
-const TEMPS_LEX = ["Il questionne d'abord", "Puis il prend position", "Échange privé"];
 
 /** Les délais d'apparition, écrits en clair : Tailwind ne sait pas deviner une
  *  classe construite par interpolation, elle serait purgée du bundle. */
@@ -91,97 +91,55 @@ export async function GapFil({
         }
       />
 
-      {/* Le cadre — il se rappelle à chaque visite, comme en GAP présentiel.
-          Une phrase de cadrage, trois règles colorées : on doit pouvoir le
-          relire en trois secondes, sinon il ne sera pas relu du tout. */}
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 md:p-8">
+      {/* UN SEUL ENCART, moitié moins haut que les deux qu'il remplace : le
+          cadre et l'issue de secours disent la même chose — comment on parle
+          ici, et à qui, quand personne ne répond. */}
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 md:p-6">
         <span
           className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-primary/10 blur-3xl"
           aria-hidden
         />
 
-        <div className="relative flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h2 className="text-lg font-semibold md:text-xl">Comment ça se passe ici</h2>
-          <span className="text-sm text-muted-foreground">
-            ni un forum, ni une formation
-          </span>
-        </div>
-        <p className="relative mt-2 max-w-2xl text-[15px] leading-relaxed text-foreground/90">
-          Vous posez la situation qui tourne en boucle. D&apos;autres professionnels vous
+        <p className="relative max-w-3xl text-[15px] leading-relaxed text-foreground/90">
+          Vous posez la situation qui tourne en boucle, d&apos;autres professionnels vous
           renvoient leur lecture.{" "}
           <span className="font-medium text-primary">
             Penser à plusieurs, c&apos;est ça qui débloque.
           </span>
         </p>
 
-        <ul className="relative mt-6 grid gap-3 sm:grid-cols-3">
+        <ul className="relative mt-4 flex flex-wrap gap-2">
           {CADRE.map((c, i) => {
             const Icone = c.icone;
             return (
               <li
                 key={c.titre}
-                className={`group animate-fade-in-up ${DELAIS[i]} rounded-xl bg-background/40 p-4 ring-1 ring-inset ${c.anneau} transition-all duration-300 hover:-translate-y-0.5 hover:bg-background/70 hover:shadow-card`}
+                className={`animate-fade-in-up ${DELAIS[i]} inline-flex items-center gap-2 rounded-full ${c.fond} px-3 py-1.5 ring-1 ring-inset ${c.anneau}`}
               >
-                <span className="relative inline-grid size-10 place-items-center">
-                  {/* Le halo respire au survol : la carte répond, elle n'est pas qu'un bloc. */}
-                  <span
-                    className={`absolute inset-0 rounded-xl ${c.halo} opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100`}
-                    aria-hidden
-                  />
-                  <span
-                    className={`relative grid size-10 place-items-center rounded-xl ${c.fond} ${c.teinte} transition-transform duration-300 group-hover:scale-110`}
-                  >
-                    <Icone className="size-5" aria-hidden />
-                  </span>
-                </span>
-                <p className={`mt-3 text-sm font-semibold ${c.teinte}`}>{c.titre}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{c.texte}</p>
+                <Icone className={`size-4 shrink-0 ${c.teinte}`} aria-hidden />
+                <span className={`text-sm font-semibold ${c.teinte}`}>{c.titre}</span>
+                <span className="text-sm text-muted-foreground">— {c.glose}</span>
               </li>
             );
           })}
         </ul>
-      </section>
 
-      {/* LEX le GAPiste — l'issue de secours quand le fil reste silencieux.
-          Trois repères plutôt qu'un paragraphe : on comprend le principe sans
-          lire, et le détail se découvre en l'utilisant. */}
-      <Card className="group relative overflow-hidden border-primary/30 bg-primary-soft/40 transition-colors hover:border-primary/50">
-        <span
-          className="pointer-events-none absolute -left-16 -top-16 size-48 rounded-full bg-primary/15 blur-3xl transition-opacity duration-500 group-hover:opacity-70"
-          aria-hidden
-        />
-        <CardContent className="relative flex flex-wrap items-center justify-between gap-5 pt-6">
-          <div className="flex gap-3.5">
-            <span className="relative mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-              <span className="absolute inset-0 rounded-xl bg-primary/25 animate-anneau" aria-hidden />
-              <Sparkles className="relative size-5" aria-hidden />
-            </span>
-            <div className="max-w-xl">
-              <p className="font-semibold">
-                Personne ne répond ? Appelez <span className="text-primary">LEX le GAPiste</span>
-              </p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                L&apos;animateur IA du GAP, posture de psychologue clinicien. Il ne donne pas la
-                réponse tout de suite : il vous questionne, comme un animateur en séance.
-              </p>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {TEMPS_LEX.map((t, i) => (
-                  <li
-                    key={t}
-                    className={`animate-fade-in-up ${DELAIS[i]} inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary`}
-                  >
-                    <CheckCircle2 className="size-3.5" aria-hidden />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <Button asChild variant="outline" className="shrink-0">
+        <div className="relative mt-5 flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-border pt-4">
+          <span className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <span className="absolute inset-0 rounded-xl bg-primary/25 animate-anneau" aria-hidden />
+            <Sparkles className="relative size-4.5" aria-hidden />
+          </span>
+          <p className="min-w-0 flex-1 text-sm leading-relaxed text-muted-foreground">
+            Personne ne répond ?{" "}
+            <span className="font-semibold text-foreground">LEX le GAPiste</span> vous
+            questionne d&apos;abord, comme un animateur en séance, puis prend position — en
+            privé.
+          </p>
+          <Button asChild className="shrink-0">
             <Link href="/gap/poser">Déposer ma situation</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {error ? <ErrorState description={error} /> : null}
 
