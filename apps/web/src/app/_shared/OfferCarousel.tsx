@@ -4,9 +4,10 @@
 // visuel, catégorie en surimpression, lieu, publics, prix.
 import { useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, MapPin, Megaphone, Star, ShieldCheck, BadgeCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { VisuelCarte } from "./VisuelCarte";
+import { premierVisuel } from "@/lib/media";
 import { formatMoney } from "./format";
 
 export interface OfferCard {
@@ -87,20 +88,11 @@ export function OfferCarousel({
             >
               <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                 <div className="relative aspect-[16/11] bg-muted">
-                  {o.images?.[0] ? (
-                    <Image
-                      src={o.images[0]}
-                      alt={o.title}
-                      fill
-                      sizes="320px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
+                  <VisuelCarte src={premierVisuel(o.images)} alt={o.title} sizes="320px">
                     <div className="grid h-full place-items-center bg-warm-gradient text-sm text-muted-foreground">
                       Les Extras
                     </div>
-                  )}
+                  </VisuelCarte>
                   {o.categoryRef?.title ? (
                     <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
                       {o.categoryRef.title}

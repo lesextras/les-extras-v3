@@ -1,12 +1,13 @@
 // Vue catalogue PUBLIQUE réutilisable (ateliers / formations).
 // Server Component : rendu sans JS client, filtres via <form method="GET">.
 import Link from "next/link";
-import Image from "next/image";
 import { MapPin, Clock, Building2, Search, ArrowRight, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchPublic, fetchApi } from "../_shared/server";
+import { VisuelCarte } from "../_shared/VisuelCarte";
+import { premierVisuel } from "@/lib/media";
 import { getSession } from "@/lib/session";
 import { FavoriteButton } from "../_shared/FavoriteButton";
 import { PageHeader, EmptyState } from "../_shared/ui";
@@ -270,19 +271,15 @@ export async function CatalogView({
               <Card key={item.id} className="group card-interactive relative flex h-full flex-col overflow-hidden">
                 {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
                 <Link href={`/ateliers/${item.id}`} className="relative block aspect-[16/10] bg-muted">
-                  {item.images?.[0] ? (
-                    <Image
-                      src={item.images[0]}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      unoptimized
-                    />
-                  ) : (
-                    // Sans photo, une vignette qui a l'air « en panne » ne se
-                    // clique pas : on affiche un visuel intentionnel — dégradé
-                    // de marque + catégorie de la fiche.
+                  <VisuelCarte
+                    src={premierVisuel(item.images)}
+                    alt={item.title}
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  >
+                    {/* Sans photo, une vignette qui a l'air « en panne » ne se
+                        clique pas : on affiche un visuel intentionnel — dégradé
+                        de marque + catégorie de la fiche. */}
                     <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
                       <span className="flex flex-col items-center gap-1.5 text-center">
                         <Star className="size-6 text-primary/70" aria-hidden />
@@ -291,7 +288,7 @@ export async function CatalogView({
                         </span>
                       </span>
                     </span>
-                  )}
+                  </VisuelCarte>
                   {item.categoryRef?.title ? (
                     <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
                       {item.categoryRef.title}

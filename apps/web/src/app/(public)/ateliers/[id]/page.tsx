@@ -22,6 +22,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
+import { premierVisuel, visuels } from "@/lib/media";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -125,7 +126,7 @@ export async function generateMetadata({
   const desc = resume(
     data.objectives || data.description || "Intervention proposée sur Les Extras.",
   );
-  const image = data.images?.[0];
+  const image = premierVisuel(data.images);
 
   return {
     title: titre,
@@ -152,7 +153,7 @@ export default async function AtelierPublicPage({ params }: { params: { id: stri
   );
   if (!service) notFound();
 
-  const images = service.images ?? [];
+  const images = visuels(service.images);
   const publics = service.publicTargets?.length
     ? service.publicTargets
     : service.publicTarget
@@ -463,10 +464,10 @@ export default async function AtelierPublicPage({ params }: { params: { id: stri
             {service.related.map((r) => (
               <Link key={r.id} href={`/ateliers/${r.id}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
-                  {r.images?.[0] ? (
+                  {premierVisuel(r.images) ? (
                     <div className="relative aspect-[16/10] bg-muted">
                       <Image
-                        src={r.images[0]}
+                        src={premierVisuel(r.images)!}
                         alt={r.title}
                         fill
                         sizes="33vw"

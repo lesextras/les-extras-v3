@@ -1,12 +1,13 @@
 // Catalogue PUBLIC des formations (vraies formations, pas des ateliers).
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import { Clock, MapPin, Search, ArrowRight, ShieldCheck, CalendarClock } from "lucide-react";
+import { Clock, MapPin, Search, ArrowRight, ShieldCheck, CalendarClock, GraduationCap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchPublic } from "../../_shared/server";
+import { VisuelCarte } from "../../_shared/VisuelCarte";
+import { premierVisuel } from "@/lib/media";
 import { PageHeader, EmptyState } from "../../_shared/ui";
 import { formatMoney, formatDate } from "../../_shared/format";
 
@@ -210,18 +211,25 @@ export default async function FormationsCatalogPage({
           {items.map((f) => (
             <Link key={f.id} href={`/formations/${f.slug}`} className="group">
               <Card className="h-full overflow-hidden transition group-hover:shadow-card">
-                {f.images?.[0] ? (
-                  <div className="relative aspect-[16/10] bg-muted">
-                    <Image
-                      src={f.images[0]}
-                      alt={f.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                ) : null}
+                {/* Une carte sans visuel à côté de cartes qui en ont un passe
+                    pour une fiche inachevée : le repli de marque garde la
+                    grille homogène. */}
+                <div className="relative aspect-[16/10] bg-muted">
+                  <VisuelCarte
+                    src={premierVisuel(f.images)}
+                    alt={f.title}
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                  >
+                    <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+                      <span className="flex flex-col items-center gap-1.5 text-center">
+                        <GraduationCap className="size-6 text-primary/70" aria-hidden />
+                        <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                          {f.categoryRef?.title ?? "Formation"}
+                        </span>
+                      </span>
+                    </span>
+                  </VisuelCarte>
+                </div>
                 <CardContent className="space-y-2.5 p-5">
                   <div className="flex flex-wrap gap-1.5">
                     {f.categoryRef?.title ? (

@@ -10,6 +10,7 @@ import {
   Star, Clock, Users, MapPin, CalendarClock, ShieldCheck, BadgeCheck, Eye,
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
+import { premierVisuel, visuels } from "@/lib/media";
 import { formatMoney, formatDate } from "../../../_shared/format";
 import { QrShare } from "../../../_shared/QrShare";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
@@ -56,7 +57,7 @@ export async function generateMetadata({
   const { data } = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
   if (!data) return { title: "Formation introuvable" };
   const desc = resume(data.objectives || data.summary || "Formation proposée sur Les Extras.");
-  const image = data.images?.[0];
+  const image = premierVisuel(data.images);
   return {
     title: data.title,
     description: desc,
@@ -84,7 +85,7 @@ export default async function FormationPubliquePage({
   const { data: f } = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
   if (!f) notFound();
 
-  const images = f.images ?? [];
+  const images = visuels(f.images);
   const faq = Array.isArray(f.faq) ? f.faq : [];
   const sessions = f.sessions ?? [];
 
@@ -257,9 +258,9 @@ export default async function FormationPubliquePage({
             {f.related.map((r) => (
               <Link key={r.id} href={`/formations/${r.slug}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
-                  {r.images?.[0] ? (
+                  {premierVisuel(r.images) ? (
                     <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={r.images[0]} alt={r.title} fill sizes="33vw" className="object-cover" unoptimized />
+                      <Image src={premierVisuel(r.images)!} alt={r.title} fill sizes="33vw" className="object-cover" unoptimized />
                     </div>
                   ) : null}
                   <CardContent className="space-y-1 p-4">
