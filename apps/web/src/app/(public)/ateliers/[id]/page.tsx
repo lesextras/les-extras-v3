@@ -119,7 +119,13 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const { data } = await fetchPublic<ServiceDetail>(`/public/catalog/${params.id}`);
-  if (!data) return { title: "Atelier introuvable" };
+  // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
+  // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
+  // ne s'exécute, et le code de statut est déjà joué. On ne peut plus le
+  // corriger — mais on peut dire aux robots de ne pas indexer : sans cela,
+  // chaque URL périmée ou mal tapée entre au catalogue de Google comme une
+  // page valide.
+  if (!data) return { title: "Atelier introuvable", robots: { index: false, follow: false } };
 
   // Le gabarit racine suffixe deja « · LES EXTRAS ».
   const titre = data.title;

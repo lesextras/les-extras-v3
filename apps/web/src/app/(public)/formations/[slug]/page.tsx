@@ -55,7 +55,13 @@ export async function generateMetadata({
   params: { slug: string };
 }): Promise<Metadata> {
   const { data } = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
-  if (!data) return { title: "Formation introuvable" };
+  // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
+  // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
+  // ne s'exécute, et le code de statut est déjà joué. On ne peut plus le
+  // corriger — mais on peut dire aux robots de ne pas indexer : sans cela,
+  // chaque URL périmée ou mal tapée entre au catalogue de Google comme une
+  // page valide.
+  if (!data) return { title: "Formation introuvable", robots: { index: false, follow: false } };
   const desc = resume(data.objectives || data.summary || "Formation proposée sur Les Extras.");
   const image = premierVisuel(data.images);
   return {
