@@ -12,13 +12,14 @@ import {
 } from "lucide-react";
 import { RUBRIQUES, TOUS_LES_ARTICLES } from "./contenu";
 import { RechercheAide } from "./RechercheAide";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Centre d’aide",
   description:
     "Réponses aux questions les plus fréquentes : publier un renfort, rejoindre le réseau, facturation, notifications, données personnelles.",
-  alternates: { canonical: "/aide" },
-};
+  path: "/aide",
+});
 
 const ICONES = {
   building: Building2,

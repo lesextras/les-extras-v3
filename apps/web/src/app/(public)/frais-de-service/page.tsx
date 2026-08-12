@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check, Coins, Info, Receipt, Sparkles, Users, X } from "lucide-react";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Frais de service — ce qui est gratuit, ce qui est payant",
   description:
     "La mise en relation et la contractualisation sont gratuites, pour les établissements comme pour les intervenants, sans commission. Seuls se paient les formations Qualiopi (au devis, facturées par l’association) et LEX, l’assistant IA à crédits.",
-  alternates: { canonical: "/frais-de-service" },
-};
+  path: "/frais-de-service",
+});
 
 // Une page dédiée plutôt qu'un paragraphe sur l'accueil : « combien ça coûte »
 // est la deuxième question posée, elle mérite une URL qu'on puisse envoyer par

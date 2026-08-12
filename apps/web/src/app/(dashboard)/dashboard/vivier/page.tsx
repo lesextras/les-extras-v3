@@ -211,7 +211,7 @@ export default async function VivierPage() {
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button asChild>
-                <Link href="/intervenants">Parcourir l'annuaire</Link>
+                <Link href="/marketplace?type=services">Parcourir le catalogue</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/dashboard/renforts">Publier un besoin</Link>

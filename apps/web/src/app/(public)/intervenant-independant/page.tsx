@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check, Coins, FileText, Sparkles, X } from "lucide-react";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Intervenant indépendant - rejoindre le réseau Les Extras",
   description:
     "Éducateurs, moniteurs-éducateurs, AES, psychologues, thérapeutes et formateurs indépendants : référencez-vous gratuitement auprès des établissements médico-sociaux. Zéro commission, contrat et facture générés par la plateforme.",
-  alternates: { canonical: "/intervenant-independant" },
-};
+  path: "/intervenant-independant",
+});
 
 const ZERO = [
   "Frais d’inscription",

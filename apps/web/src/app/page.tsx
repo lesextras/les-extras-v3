@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -8,9 +9,6 @@ import {
   ArrowRight,
   CheckCircle2,
   Sparkles,
-  Newspaper,
-  Siren,
-  PenLine,
   FileCheck,
   Clock,
   Search,
@@ -26,11 +24,9 @@ import { fetchPublic } from './_shared/server';
 import type { CatalogItem } from './(public)/_catalog';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { HeroSearch } from './_shared/HeroSearch';
-import { VideoFacade } from './_shared/VideoFacade';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
-import { TimelineParcours } from './_shared/TimelineParcours';
 import { BlocOutils } from './_shared/BlocOutils';
 import { DemoLex } from './_shared/DemoLex';
 import { OffreLex } from './_shared/OffreLex';
@@ -43,6 +39,16 @@ import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
 import { ApercuProduit } from './_shared/ApercuProduit';
+
+/**
+ * L'accueil n'avait aucune canonique : les visites arrivant avec un
+ * paramètre de campagne (?utm_source=…) s'indexaient comme autant de pages
+ * distinctes. Titre, description et carte de partage restent ceux du layout
+ * racine — ils sont écrits pour cette page.
+ */
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 export default async function LandingPage() {
   // Même raison que sur les pages publiques : l'accueil doit reconnaître
@@ -74,12 +80,6 @@ export default async function LandingPage() {
     '/public/highlights',
   );
 
-  // Édublog : trois dernières publications, pour montrer que le réseau vit.
-  const { data: fluxArticles } = await fetchPublic<{
-    items: { id: string; slug: string; title: string; excerpt?: string | null; coverUrl?: string | null; publishedAt?: string | null }[];
-  }>('/articles/feed?take=3');
-  const articles = fluxArticles?.items ?? [];
-
 
   return (
     <div className="theme-sombre flex min-h-screen flex-col bg-background text-foreground">
@@ -104,15 +104,19 @@ export default async function LandingPage() {
               {/* Le titre nomme le BESOIN, pas la valeur. « Des interventions à
                   fort impact » ne renseigne pas un directeur qui balaie la page
                   en trois secondes : c'est le sous-titre qui faisait tout le
-                  travail, deux fois plus petit. On a inversé les deux. */}
+                  travail, deux fois plus petit. On a inversé les deux.
+                  Il disait ensuite « pour votre établissement », ce qui
+                  congédiait l'intervenant dès la première ligne — alors que la
+                  section suivante lui ouvre une porte. Les deux publics sont
+                  désormais nommés, dans l'ordre où ils arrivent. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Ateliers, formations Qualiopi et renfort d’équipe{' '}
-                <span className="text-secondary">pour votre établissement.</span>
+                Établissements et intervenants du médico-social{' '}
+                <span className="text-secondary">se trouvent ici.</span>
               </h1>
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Des professionnels indépendants du médico-social, vérifiés, que vous réservez
-                directement. Sans commission : vous payez leur tarif, ils le touchent
-                intégralement.
+                Un remplacement à couvrir, un atelier à programmer, une formation pour l’équipe.
+                La mise en relation est gratuite et sans commission : l’établissement paie le
+                tarif de l’intervenant, qui le touche intégralement.
               </p>
 
               <div className="animate-fade-in-up stagger-3 mt-7 max-w-xl">
@@ -258,14 +262,18 @@ export default async function LandingPage() {
         <section className="section">
           <Reveal className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <span className="eyebrow">Trois portes d’entrée</span>
+              {/* « Trois portes d'entrée » contredisait, trente lignes plus
+                  haut, le « Par où commencer ? » et ses DEUX portes. Deux
+                  comptages sur le même écran, et le visiteur ne sait plus
+                  lequel lire. Ici on nomme les trois SERVICES, pas des portes. */}
+              <span className="eyebrow">Trois services</span>
               <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Nos domaines d’actions
+                Ce que vous trouvez ici
               </h2>
             </div>
             <Button asChild variant="outline">
               <Link href="/ateliers">
-                Tout explorer <ArrowRight />
+                Voir le catalogue <ArrowRight />
               </Link>
             </Button>
           </Reveal>
@@ -345,202 +353,16 @@ export default async function LandingPage() {
         {/* ============ APERÇU DU PRODUIT ============ */}
         <ApercuProduit />
 
-        {/* ============ TIMELINE PAR PROFIL ============ */}
-        <section id="parcours" className="scroll-mt-24 bg-card">
-          <div className="section">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <span className="eyebrow">Votre parcours</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
-                Étape par étape, selon qui vous êtes
-              </h2>
-              <p className="mt-4 text-muted-foreground">
-                Le problème d’aujourd’hui, ce qui change, ce que ça coûte.
-              </p>
-            </Reveal>
-            <Reveal delay={120} className="mt-10">
-              <TimelineParcours />
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============ BENTO — tout ce que la plateforme fait ============ */}
-        <section id="produits" className="bg-card">
-          <div className="section">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <span className="eyebrow">La plateforme</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
-                Tout ce qu’elle fait pour vous
-              </h2>
-              <p className="mt-4 text-muted-foreground">
-                Six services, un seul compte — du premier devis jusqu’au compte rendu.
-              </p>
-            </Reveal>
-
-            <div className="mt-14 grid gap-5 md:grid-cols-3">
-              {/* Ateliers — grande tuile avec photo */}
-              <Reveal className="md:col-span-2">
-                <Link
-                  href="/ateliers"
-                  className="group grid h-full overflow-hidden rounded-3xl bloc-nuit bg-[hsl(160,30%,13%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
-                >
-                  <div className="flex flex-col p-7 md:p-8">
-                    <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
-                      <Sparkles className="size-5" />
-                    </span>
-                    <h3 className="mt-4 text-xl font-semibold">Les ateliers éducatifs</h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                      {ateliersTotal > 0 ? `${ateliersTotal} médiations` : 'Des médiations'} clés en
-                      main : psycho-boxe, slam, théâtre, musicothérapie. Réservables en ligne,
-                      compte rendu après chaque séance.
-                    </p>
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                      Parcourir le catalogue
-                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </div>
-                  <div className="relative min-h-52 bg-muted">
-                    <Image
-                      src="https://app.les-extras.fr/wp-content/uploads/2025/02/musicotherapie.jpg"
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      unoptimized
-                    />
-                  </div>
-                </Link>
-              </Reveal>
-
-              {/* SOS Renfort — tuile bleu nuit */}
-              <Reveal delay={100}>
-                <div
-                  id="renfort"
-                  className="flex h-full scroll-mt-24 flex-col rounded-3xl bloc-nuit bg-[hsl(14,32%,14%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8"
-                >
-                  <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
-                    <Siren className="size-5" />
-                  </span>
-                  <h3 className="mt-4 text-xl font-semibold">SOS Renfort</h3>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-foreground/75">
-                    Une absence ce soir ? Publiez le besoin. Il descend en cascade : votre équipe, les habitués, le réseau. Le premier qui accepte est engagé.
-                  </p>
-                  <Link
-                    href="/register"
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary hover:underline"
-                  >
-                    Publier un renfort
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </div>
-              </Reveal>
-
-              {/* Formations */}
-              <Reveal>
-                <div className="flex h-full flex-col rounded-3xl bloc-nuit bg-[hsl(217,36%,15%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
-                  <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
-                    <GraduationCap className="size-5" />
-                  </span>
-                  <h3 className="mt-4 text-xl font-semibold">Formations Qualiopi</h3>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    En intra, finançables OPCO. Émargement, attestations et certificats automatiques.
-                  </p>
-                  <Link
-                    href="/formations"
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-secondary"
-                  >
-                    Voir les formations
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </div>
-              </Reveal>
-
-              {/* Assistant IA — grande tuile avec photo */}
-              <Reveal delay={100} className="md:col-span-2">
-                <Link
-                  href="/register"
-                  className="group grid h-full overflow-hidden rounded-3xl bloc-nuit bg-[hsl(266,24%,15%)] shadow-soft transition-shadow duration-300 hover:shadow-card sm:grid-cols-2"
-                >
-                  <div className="relative order-2 min-h-52 bg-muted sm:order-1">
-                    <Image
-                      src="https://app.les-extras.fr/wp-content/uploads/2026/04/school.jpeg"
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      unoptimized
-                    />
-                  </div>
-                  <div className="order-1 flex flex-col p-7 sm:order-2 md:p-8">
-                    <span className="flex items-center gap-2">
-                      <span className="grid size-11 place-items-center rounded-xl bg-card text-primary shadow-soft">
-                        <PenLine className="size-5" />
-                      </span>
-                      <Badge variant="soft">LEX · À crédits</Badge>
-                    </span>
-                    <h3 className="mt-4 text-xl font-semibold">LEX, l’assistant d’écriture</h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                      Vos notes deviennent des écrits professionnels. Noms masqués, rien stocké, relecture obligatoire : vous restez l’auteur.
-                    </p>
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                      Essayer l’assistant
-                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </div>
-                </Link>
-              </Reveal>
-
-              {/* Gestion sans papier */}
-              <Reveal>
-                <div className="flex h-full flex-col rounded-3xl bloc-nuit bg-[hsl(40,26%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card md:p-8">
-                  <span className="grid size-11 place-items-center rounded-xl bg-card text-accent-foreground shadow-soft">
-                    <FileCheck className="size-5" />
-                  </span>
-                  <h3 className="mt-4 text-xl font-semibold">La gestion sans papier</h3>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    Devis, contrats signés, factures PDF, pointage validé. Coffre-fort avec alerte avant échéance.
-                  </p>
-                  <Link
-                    href="/register"
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-                  >
-                    Ouvrir un compte
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </div>
-              </Reveal>
-
-              {/* Édublog */}
-              <Reveal delay={100} className="md:col-span-2">
-                <Link
-                  href="/edublog"
-                  className="group flex h-full flex-col justify-between gap-6 rounded-3xl bloc-nuit bg-[hsl(190,28%,13%)] p-7 shadow-soft transition-shadow duration-300 hover:shadow-card sm:flex-row sm:items-center md:p-8"
-                >
-                  <div>
-                    <span className="grid size-11 place-items-center rounded-xl bg-card text-secondary shadow-soft">
-                      <Newspaper className="size-5" />
-                    </span>
-                    <h3 className="mt-4 text-xl font-semibold">L’Édublog</h3>
-                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                      Le fil public du réseau : retours d’expérience, projets, pratiques. Partage LinkedIn en un clic.
-                    </p>
-                  </div>
-                  <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary">
-                    Lire l’Édublog
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Link>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
         {/* ============ COMMENT ÇA MARCHE — trois grandes étapes ============ */}
         <section id="comment" className="scroll-mt-24">
           <div className="section">
             <Reveal className="mx-auto max-w-2xl text-center">
               <span className="eyebrow">Comment ça marche</span>
+              {/* « Zéro friction » est du vocabulaire de start-up : il ne dit
+                  rien à un directeur de MECS, et il promet sans rien prouver.
+                  Le titre annonce maintenant ce que les trois étapes montrent. */}
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Trois étapes, zéro friction
+                De la recherche à la facture, en trois étapes
               </h2>
               <p className="mt-4 text-muted-foreground">
                 Les Extras est porté par l’association <strong className="font-semibold text-foreground">ADéPA</strong>,
@@ -584,7 +406,7 @@ export default async function LandingPage() {
               <div className="flex flex-col justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg">
                   <Link href="/ateliers">
-                    Explorer le catalogue
+                    Voir le catalogue
                     <ArrowRight />
                   </Link>
                 </Button>
@@ -722,39 +544,6 @@ export default async function LandingPage() {
           </Reveal>
         </section>
 
-        {/* ============ REJOINDRE LE RÉSEAU ============ */}
-        <section className="section">
-          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
-            <Reveal>
-              <span className="eyebrow">Être ou ne pas être ?</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Rejoindre le réseau des Extras
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Éducateurs, moniteurs, AES, psychologues : l’indépendance racontée par ceux qui la vivent.
-              </p>
-              <Button asChild size="lg" className="mt-7">
-                <Link href="/register">
-                  Proposer mes services
-                  <ArrowRight />
-                </Link>
-              </Button>
-            </Reveal>
-            <Reveal delay={120}>
-              <VideoFacade id="8dXRvZU5TQY" titre="Comment rejoindre Les Extras freelances" />
-              <a
-                href="https://youtu.be/8dXRvZU5TQY"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-              >
-                Ouvrir la vidéo sur YouTube
-                <ArrowRight className="size-3.5" />
-              </a>
-            </Reveal>
-          </div>
-        </section>
-
         {/* ============ TARIFS ============ */}
         <section id="tarifs" className="scroll-mt-24 bg-card">
           <div className="section">
@@ -789,7 +578,7 @@ export default async function LandingPage() {
                     'Planning, équipe, conformité et messagerie inclus, sans limite',
                   ],
                   href: '/register',
-                  action: 'Créer un compte gratuit',
+                  action: 'Créer un compte',
                   variant: 'outline' as const,
                   vedette: true,
                 },
@@ -811,14 +600,21 @@ export default async function LandingPage() {
                 },
                 {
                   nom: 'LEX, l’assistant IA',
-                  sous: 'Le second service payant : des crédits, rechargeables quand vous en avez besoin.',
-                  prix: 'À crédits',
-                  prixSous: 'Essai gratuit de 7 jours, puis un crédit par génération — tarifs dans votre espace',
+                  sous: 'Le second service payant — et seulement au-delà de la dotation gratuite.',
+                  // Deux corrections de fond. D'abord « essai gratuit de 7 jours »
+                  // n'existe plus : il a été remplacé par une dotation mensuelle
+                  // permanente (voir credits.constants.ts). Ensuite « tarifs dans
+                  // votre espace » demandait de créer un compte pour connaître un
+                  // prix — la question la plus élémentaire, et la seule à laquelle
+                  // la page ne répondait pas. Les montants viennent de
+                  // SUBSCRIPTION_PLANS, pas d'une estimation.
+                  prix: 'Gratuit, puis 19 €',
+                  prixSous: '15 générations offertes chaque mois, sans carte bancaire. Abonnement à partir de 19 €/mois.',
                   points: [
-                    '15 générations offertes chaque mois, à vie, sans carte bancaire',
+                    '15 générations par mois offertes, reportables, sans date de fin',
                     'Assistant d’écriture : notes brutes → écrits professionnels',
                     'Générateur d’activités éducatives et thérapeutiques',
-                    'Au-delà : packs de crédits, ou abonnement à dotation mensuelle',
+                    'Au-delà : 19 €/mois pour 200 générations, 49 €/mois pour 600',
                   ],
                   href: '/register',
                   action: 'Découvrir LEX',
@@ -866,171 +662,6 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ AIDE ============ */}
-        {/*
-          « Aide » a quitté la barre de navigation le 5/8/2026 : sept entrées,
-          c'était trop. Elle n'est pas pour autant enterrée dans le pied de
-          page — elle vit ici, juste après les tarifs, à l'endroit exact où
-          quelqu'un qui vient de lire les prix se pose ses dernières
-          questions. Les six rubriques mènent directement au centre d'aide.
-        */}
-        <section id="aide" className="section scroll-mt-24">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <span className="eyebrow">Centre d’aide</span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-              Une question avant de vous lancer&nbsp;?
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Les réponses sont écrites, en français, sans jargon. Et si la vôtre n’y est pas,
-              écrivez-nous&nbsp;: quelqu’un vous répond.
-            </p>
-          </Reveal>
-
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                slug: 'etablissements',
-                titre: 'Établissements',
-                resume: 'Publier un renfort, réserver un atelier, suivre vos interventions.',
-              },
-              {
-                slug: 'intervenants',
-                titre: 'Intervenants',
-                resume: 'Créer votre profil, recevoir des missions, publier vos ateliers.',
-              },
-              {
-                slug: 'compte-et-facturation',
-                titre: 'Compte & facturation',
-                resume: 'Ce qui est gratuit, ce qui est payant, comment on vous facture.',
-              },
-              {
-                slug: 'formations',
-                titre: 'Formations',
-                resume: 'Qualiopi, financement OPCO, attestations.',
-              },
-              {
-                slug: 'notifications',
-                titre: 'Notifications',
-                resume: 'Être prévenu à temps, sur le bon appareil.',
-              },
-              {
-                slug: 'donnees-et-securite',
-                titre: 'Données & sécurité',
-                resume: 'Ce que nous stockons, ce que nous ne stockons pas.',
-              },
-            ].map((r, i) => (
-              <Reveal key={r.slug} delay={i * 60}>
-                <Link href={`/aide/${r.slug}`} className="block h-full">
-                  <Card className="h-full transition-colors hover:border-primary/40">
-                    <CardContent className="flex h-full flex-col p-6">
-                      <h3 className="font-semibold text-foreground">{r.titre}</h3>
-                      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                        {r.resume}
-                      </p>
-                      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                        Lire les réponses
-                        <ArrowRight className="size-3.5" />
-                      </span>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal delay={120} className="mt-10 flex flex-wrap justify-center gap-3">
-            <Button asChild variant="outline">
-              <Link href="/aide">Tout le centre d’aide</Link>
-            </Button>
-            <Button asChild variant="ghost">
-              <Link href="/contact">Nous écrire</Link>
-            </Button>
-          </Reveal>
-        </section>
-
-        {/* ============ PREUVE — bandeau bleu nuit, épuré ============ */}
-        <section className="border-y border-border bloc-nuit bg-[hsl(222,24%,10%)]">
-          <div className="mx-auto max-w-[1100px] px-6 py-20 text-center md:py-24">
-            <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-foreground/90">
-                Une association, pas une startup
-              </span>
-              <blockquote className="mx-auto mt-8 max-w-3xl text-2xl font-semibold leading-snug text-foreground text-balance md:text-3xl">
-                « Créer des dispositifs éducatifs innovants pour sécuriser les accompagnements,
-                soutenir les professionnels et renforcer les compétences psychosociales des
-                jeunes. »
-              </blockquote>
-              <p className="mt-4 text-sm text-muted-foreground">La mission de l’ADéPA, depuis 2012</p>
-            </Reveal>
-            <Reveal delay={150}>
-              <Button asChild size="lg" variant="secondary" className="mt-10">
-                <a href="https://adepa77.fr" target="_blank" rel="noopener noreferrer">
-                  Découvrir notre histoire
-                  <ArrowRight />
-                </a>
-              </Button>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============ ÉDUBLOG ============ */}
-        {articles.length > 0 ? (
-          <section className="bg-card">
-            <div className="section">
-              <Reveal className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <span className="eyebrow">
-                    <Newspaper className="size-3.5" />
-                    L’Édublog
-                  </span>
-                  <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                    Ce que publie le réseau
-                  </h2>
-                </div>
-                <Button asChild variant="outline">
-                  <Link href="/edublog">
-                    Tous les articles
-                    <ArrowRight />
-                  </Link>
-                </Button>
-              </Reveal>
-
-              <div className="mt-10 grid gap-5 md:grid-cols-3">
-                {articles.map((a, i) => (
-                  <Reveal key={a.id} delay={i * 110} className="h-full">
-                    <Link href={`/edublog/${a.slug}`} className="group block h-full">
-                      <Card className="h-full overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-card">
-                        {a.coverUrl ? (
-                          <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-                            <Image
-                              src={a.coverUrl}
-                              alt=""
-                              fill
-                              sizes="(max-width: 768px) 100vw, 33vw"
-                              className="object-cover transition-transform duration-700 group-hover:scale-105"
-                              unoptimized
-                            />
-                          </div>
-                        ) : null}
-                        <CardContent className="space-y-2 p-5">
-                          <h3 className="line-clamp-2 font-semibold text-foreground">{a.title}</h3>
-                          {a.excerpt ? (
-                            <p className="line-clamp-3 text-sm text-muted-foreground">{a.excerpt}</p>
-                          ) : null}
-                          <span className="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary">
-                            Lire l’article
-                            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                          </span>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </Reveal>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
         {/* ============ CATALOGUE & CONTACT — les formulaires du site historique ============ */}
         <section id="catalogue-contact" className="scroll-mt-24">
           <div className="section">
@@ -1060,8 +691,10 @@ export default async function LandingPage() {
                 aria-hidden
               />
               <div className="relative mx-auto max-w-2xl">
+                {/* « Sereinement » revenait ici et dans le pied de page : un
+                    adverbe qui ne promet rien et qu'on lit deux fois. */}
                 <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                  Prêt à renforcer vos équipes, sereinement ?
+                  Ouvrez un compte, regardez, décidez ensuite
                 </h2>
                 <p className="mt-4 text-muted-foreground">
                   Compte gratuit, sans engagement. La mise en relation ne se paie pas — seuls les formations Qualiopi et LEX se facturent.

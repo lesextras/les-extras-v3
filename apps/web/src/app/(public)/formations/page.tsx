@@ -11,12 +11,13 @@ import { premierVisuel } from "@/lib/media";
 import { PageHeader, EmptyState } from "../../_shared/ui";
 import { formatMoney, formatDate } from "../../_shared/format";
 
-export const metadata: Metadata = {
+import { metaPublique } from "@/lib/meta";
+export const metadata: Metadata = metaPublique({
   title: "Formations",
   description:
     "Formations pour les professionnels du médico-social : analyse des pratiques, prévention, spécialisations métier. Certifiées Qualiopi, finançables OPCO.",
-  alternates: { canonical: "/formations" },
-};
+  path: "/formations",
+});
 
 export interface FormationCard {
   id: string;
@@ -63,7 +64,7 @@ export default async function FormationsCatalogPage({
   if (searchParams?.certifying === "true") qs.set("certifying", "true");
   qs.set("take", "60");
 
-  const { data } = await fetchPublic<{
+  const { data, error } = await fetchPublic<{
     items: FormationCard[];
     total: number;
     categories: string[];
@@ -197,7 +198,14 @@ export default async function FormationsCatalogPage({
         </div>
       </form>
 
-      {items.length === 0 ? (
+      {/* Le catalogue n'est pas vide : dire « en préparation » parce que l'API
+          n'a pas répondu ferait fuir un visiteur venu de la publicité. */}
+      {error ? (
+        <EmptyState
+          title="Catalogue momentanément indisponible"
+          description="Réessayez dans quelques instants."
+        />
+      ) : items.length === 0 ? (
         <EmptyState
           title={filtree ? "Aucune formation ne correspond" : "Catalogue de formations en préparation"}
           description={

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { metaPublique } from "@/lib/meta";
 import {
   ArrowRight,
   EyeOff,
@@ -13,12 +14,12 @@ import {
   XCircle,
 } from "lucide-react";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Cadre de confiance LEX — IA, déontologie et données",
   description:
     "Comment LEX traite les données des personnes accompagnées : pseudonymisation avant tout envoi, hébergement européen, aucun entraînement sur vos écrits, brouillon toujours relu et validé par le professionnel. Le cadre déontologique complet, écrit noir sur blanc.",
-  alternates: { canonical: "/confiance-lex" },
-};
+  path: "/confiance-lex",
+});
 
 /**
  * Le doute déontologique est la PREMIÈRE objection à l'IA rédactionnelle dans

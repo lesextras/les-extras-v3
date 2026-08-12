@@ -63,10 +63,10 @@ export default function VillePage({ params }: { params: { ville: string } }) {
           Publier un besoin
         </Link>
         <Link
-          href="/intervenants"
+          href="/sos-renfort"
           className="inline-flex h-11 items-center rounded-lg border border-border px-5 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
         >
-          Voir les intervenants
+          Comment ça marche
         </Link>
       </div>
 

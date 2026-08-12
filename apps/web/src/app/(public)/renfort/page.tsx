@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, MapPin, Megaphone, UserRound } from "lucide-react";
 import { METIERS, VILLES } from "./donnees";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Renfort éducatif — par métier et par territoire",
   description:
     "Trouvez un intervenant qualifié pour un remplacement en établissement médico-social : éducateur spécialisé, moniteur-éducateur, AES, psychologue. Île-de-France.",
-  alternates: { canonical: "/renfort" },
-};
+  path: "/renfort",
+});
 
 export default function RenfortIndexPage() {
   return (

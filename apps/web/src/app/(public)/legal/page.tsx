@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: 'Informations légales',
   description:
     'Mentions légales, conditions générales d’utilisation, politique de confidentialité et RGPD de LES EXTRAS.',
-};
+  path: "/legal",
+});
 
 const sections = [
   {

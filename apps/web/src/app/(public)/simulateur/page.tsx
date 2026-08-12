@@ -2,12 +2,14 @@
 // Aucun chiffre de référence inventé — c'est la condition pour rester honnête.
 import type { Metadata } from "next";
 import { Calculateur } from "./Calculateur";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Simulateur d'économies — renfort sans commission",
   description:
     "Calculez ce que vous coûtent la commission de votre intermédiaire actuel et le temps de coordination des remplacements, à partir de vos propres chiffres.",
-};
+  path: "/simulateur",
+});
 
 export default function SimulateurPage() {
   return (

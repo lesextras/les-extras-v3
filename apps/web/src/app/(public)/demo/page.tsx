@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarClock, Check, MonitorPlay, Users } from "lucide-react";
 import { ContactForm } from "../../_shared/ContactForm";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Demander une démonstration",
   description:
     "Vingt minutes en visio pour voir la plateforme sur votre propre besoin : renfort, ateliers, formations, conformité. Sans engagement.",
-  alternates: { canonical: "/demo" },
-};
+  path: "/demo",
+});
 
 // Le parcours d'inscription libre suffit à un chef de service curieux. Un groupe
 // de dix établissements, non : il veut voir tourner l'outil sur son organisation

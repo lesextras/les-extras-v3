@@ -8,13 +8,14 @@ import { Building2, Users, GraduationCap, Sparkles, Siren, ArrowRight } from "lu
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "../../_shared/ui";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Notre histoire",
   description:
     "Le dispositif de mise en relation de l’association ADéPA, créée en 2012 : éducation, prévention et animation auprès des jeunes et des familles.",
-  alternates: { canonical: "/notre-histoire" },
-};
+  path: "/notre-histoire",
+});
 
 const dispositifs = [
   {

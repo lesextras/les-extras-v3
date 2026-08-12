@@ -11,12 +11,13 @@ import { fetchPublic } from "../../_shared/server";
 import { PageHeader, EmptyState } from "../../_shared/ui";
 import { formatDate, initials } from "../../_shared/format";
 
-export const metadata: Metadata = {
+import { metaPublique } from "@/lib/meta";
+export const metadata: Metadata = metaPublique({
   title: "Édublog",
   description:
     "Articles et actualités du médico-social : retours d’expérience, projets d’établissements, publications des intervenants. En accès libre.",
-  alternates: { canonical: "/edublog" },
-};
+  path: "/edublog",
+});
 
 export interface ArticleCard {
   id: string;
@@ -46,7 +47,7 @@ export default async function ActualitesPage({
   const section = searchParams?.section === "reseau" ? "reseau" : "editorial";
   qs.set("section", section);
 
-  const { data } = await fetchPublic<{
+  const { data, error } = await fetchPublic<{
     items: ArticleCard[];
     total: number;
     categories: string[];
@@ -147,7 +148,15 @@ export default async function ActualitesPage({
         <Button type="submit" className="sm:w-auto">Filtrer</Button>
       </form>
 
-      {items.length === 0 ? (
+      {/* Une panne d'API ne doit pas se lire « il n'y a rien à lire ici » : le
+          blog compte une vingtaine d'articles publiés. On distingue donc le
+          vide réel de l'indisponibilité passagère. */}
+      {error ? (
+        <EmptyState
+          title="Articles momentanément indisponibles"
+          description="Réessayez dans quelques instants."
+        />
+      ) : items.length === 0 ? (
         <EmptyState
           title={
             section === "editorial"

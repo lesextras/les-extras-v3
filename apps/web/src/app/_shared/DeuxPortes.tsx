@@ -27,7 +27,12 @@ const PORTES = [
     titre: "Trouver des missions",
     texte: "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue, zéro commission.",
     reperes: ["0 % de commission", "Contrat et facture générés", "Profil vérifié une fois"],
-    href: "/register",
+    // La porte menait droit au formulaire d'inscription : on demandait de
+    // créer un compte avant d'avoir rien expliqué. L'établissement, lui,
+    // avait une page pour comprendre. Les deux portes mènent désormais à
+    // une page qui explique, et l'inscription est le lien secondaire.
+    href: "/intervenant-independant",
+    secondaire: { libelle: "Créer mon compte", href: "/register" },
     teinte: "text-secondary",
     fond: "bg-secondary/10",
     anneau: "ring-secondary/25",

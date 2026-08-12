@@ -1,12 +1,14 @@
 // Page de contact publique.
 import type { Metadata } from "next";
 import { ContactForm } from "../../_shared/ContactForm";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Contact",
   description:
     "Contactez l'équipe ADéPA — Les Extras, la marketplace du renfort médico-social. Établissements, intervenants, formations : écrivez-nous.",
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

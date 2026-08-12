@@ -24,13 +24,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchPublic } from "../../_shared/server";
 import { formatDate } from "../../_shared/format";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "SOS Renfort — remplacement urgent en médico-social",
   description:
     "Un poste à couvrir demain matin ? Publiez le besoin. Il descend en cascade : votre équipe, les habitués, le réseau. Le premier qui accepte emporte la mission.",
-  alternates: { canonical: "/sos-renfort" },
-};
+  path: "/sos-renfort",
+});
 
 interface MissionApercu {
   id: string;

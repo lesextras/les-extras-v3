@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Calculator, PiggyBank, ArrowRight } from "lucide-react";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Outils gratuits pour les établissements médico-sociaux",
   description:
     "Calculateurs gratuits : coût d'un remplacement (intérim vs indépendant), budget annuel d'ateliers éducatifs. Sans inscription.",
-  alternates: { canonical: "/outils" },
-};
+  path: "/outils",
+});
 
 const OUTILS = [
   {

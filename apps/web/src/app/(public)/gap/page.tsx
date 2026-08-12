@@ -9,13 +9,14 @@ import type { Metadata } from "next";
 import { getSession } from "@/lib/session";
 import { GapVitrine } from "../../_shared/GapVitrine";
 import { GapFil } from "../../_shared/GapFil";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Le GAP — Groupe d’Analyse de Pratique en ligne",
   description:
     "Déposez une situation de terrain, recevez les retours de professionnels du médico-social. Anonyme, entre pairs, réservé aux membres.",
-  alternates: { canonical: "/gap" },
-};
+  path: "/gap",
+});
 
 export default async function GapPage({
   searchParams,

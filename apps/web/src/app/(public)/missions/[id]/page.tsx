@@ -35,7 +35,7 @@ export default async function MissionPublicPage({ params }: { params: { id: stri
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="text-sm">
-        <Link href="/marketplace" className="text-muted-foreground hover:text-foreground">
+        <Link href="/renfort" className="text-muted-foreground hover:text-foreground">
           ← Voir toutes les missions
         </Link>
       </div>

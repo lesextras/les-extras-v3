@@ -7,13 +7,14 @@ import { FileText, Mail, ShieldCheck, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "../../_shared/ui";
 import { CatalogueRequestForm } from "../../_shared/CatalogueRequestForm";
+import { metaPublique } from "@/lib/meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = metaPublique({
   title: "Demander le catalogue 2026",
   description:
     "Le catalogue 2026 des ateliers et formations : contenus, durées, publics, tarifs. Un document à partager en réunion.",
-  alternates: { canonical: "/catalogue" },
-};
+  path: "/catalogue",
+});
 
 const arguments_ = [
   { icone: <FileText className="size-5" />, titre: "Toutes les fiches", texte: "Ateliers et formations, objectifs, durées, publics visés et tarifs." },
