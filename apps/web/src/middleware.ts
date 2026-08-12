@@ -30,7 +30,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  // Le chemin courant, pour les layouts serveur : un layout ne le connaît pas,
+  // et le compte salarié en attente de rattachement a besoin de savoir sur
+  // quelle page il se trouve pour décider quoi afficher.
+  const entetes = new Headers(request.headers);
+  entetes.set('x-chemin', pathname);
+  return NextResponse.next({ request: { headers: entetes } });
 }
 
 export const config = {

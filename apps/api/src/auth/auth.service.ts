@@ -89,6 +89,11 @@ export class AuthService {
           sourceMedium: dto.sourceMedium ?? null,
           sourceCampaign: dto.sourceCampaign ?? null,
           sourceLanding: dto.sourceLanding ?? null,
+          // Profil salarié : figé à l'inscription, jamais recalculé ensuite.
+          // Un établissement ne se rattache à personne — le drapeau n'a de
+          // sens que sur un compte personnel.
+          profilSalarie:
+            dto.accountType === AccountType.FREELANCE && dto.profilSalarie === true,
           // Parrainage : uniquement pour un nouveau compte intervenant, et
           // seulement si le parrain existe vraiment (sinon on ignore sans bruit).
           parrainAccountId:
@@ -291,13 +296,37 @@ export class AuthService {
             role: true,
             status: true,
             account: {
-              select: { id: true, name: true, slug: true, type: true, logoUrl: true, isMember: true },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                type: true,
+                logoUrl: true,
+                isMember: true,
+                profilSalarie: true,
+              },
             },
           },
         },
       },
     });
-    return user;
+
+    // Un salarié qu'aucun établissement n'a encore accepté : l'interface a
+    // besoin de le savoir pour n'ouvrir que LEX et lui montrer où en est sa
+    // demande, plutôt que de le laisser buter sur des refus un écran après
+    // l'autre. Un seul rattachement actif suffit, et une même adresse peut en
+    // porter plusieurs.
+    const rattacheAUnEtablissement = user.memberships.some(
+      (m) => m.account.type === AccountType.ESTABLISHMENT,
+    );
+    const aUnProfilSalarie = user.memberships.some(
+      (m) => m.account.type === AccountType.FREELANCE && m.account.profilSalarie,
+    );
+
+    return {
+      ...user,
+      enAttenteRattachement: aUnProfilSalarie && !rattacheAUnEtablissement,
+    };
   }
 
   private async generateUniqueSlug(name: string): Promise<string> {

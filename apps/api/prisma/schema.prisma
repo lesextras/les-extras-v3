@@ -122,6 +122,17 @@ model Account {
   validationMissions Boolean @default(false)
   /// Parrainage : compte intervenant qui a invite celui-ci (fige a l'inscription).
   parrainAccountId String?
+  /// Profil SALARIE, choisi a l'inscription et fige ensuite.
+  ///
+  /// La tuile « Salarie » existait a l'ecran mais ne survivait pas au clic :
+  /// elle creait un compte FREELANCE ordinaire et le drapeau restait dans
+  /// l'etat React. Le compte etait donc, en droits, celui d'un independant.
+  ///
+  /// Un salarie n'exerce pas pour son compte : il travaille pour une maison.
+  /// Tant qu'aucun etablissement ne l'a rattache, son compte n'ouvre que LEX
+  /// et sa demande de rattachement (`AttachmentRequest`). Le rattachement se
+  /// fait par Membership, et une meme adresse peut en avoir plusieurs.
+  profilSalarie Boolean @default(false)
   slug        String       @unique
   /// Attribution — d'où vient ce compte. Renseigné une fois, à l'inscription,
   /// et jamais modifié ensuite : c'est la campagne qui a amené la personne.

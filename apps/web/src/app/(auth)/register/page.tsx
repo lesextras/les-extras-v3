@@ -40,12 +40,13 @@ const accountTypes = [
     desc: 'MECS, IME, ITEP, EHPAD, SESSAD… Je recherche du renfort.',
   },
   {
-    // Même compte que « Professionnel » côté droits (indépendant tant que le
-    // rattachement n'est pas confirmé) : voir la note dans onSubmit ci-dessous.
+    // Compte personnel comme « Professionnel », mais PAS les mêmes droits :
+    // tant qu'aucun établissement ne l'a rattaché, il n'ouvre que LEX. C'est
+    // le sens du métier — un salarié ne publie ni ne facture pour son compte.
     key: 'SALARIE' as const,
     icon: Briefcase,
     title: 'Salarié',
-    desc: 'Je travaille pour un établissement et je veux m’y rattacher.',
+    desc: 'Je travaille pour un établissement et je veux m’y rattacher. Accès complet une fois rattaché.',
   },
   {
     key: 'FREELANCE' as const,
@@ -62,9 +63,8 @@ export default function RegisterPage() {
   const params = useSearchParams();
   const { toast } = useToast();
   const [submitting, setSubmitting] = React.useState(false);
-  // « Salarié » crée un compte FREELANCE (mêmes droits qu'un indépendant en
-  // attendant) — ce drapeau ne sert qu'à afficher la bonne tuile et à envoyer
-  // la personne vers l'étape de rattachement après l'inscription.
+  // « Salarié » crée un compte personnel de type FREELANCE, marqué comme tel
+  // en base : il n'ouvre que LEX tant qu'un établissement ne l'a pas rattaché.
   const [profilSalarie, setProfilSalarie] = React.useState(false);
 
   const form = useForm<RegisterValues>({
@@ -89,7 +89,7 @@ export default function RegisterPage() {
   async function onSubmit(values: RegisterValues) {
     setSubmitting(true);
     try {
-      await registerAccount(values);
+      await registerAccount(values, { profilSalarie });
       toast({
         title: 'Compte créé',
         description: 'Bienvenue ! Finalisons votre profil.',

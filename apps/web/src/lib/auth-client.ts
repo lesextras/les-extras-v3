@@ -95,12 +95,19 @@ export async function reinitialiserMotDePasse(
   return result;
 }
 
-export async function register(values: RegisterValues): Promise<AuthResult> {
+export async function register(
+  values: RegisterValues,
+  options?: { profilSalarie?: boolean },
+): Promise<AuthResult> {
   // Origine de la visite, mémorisée à l'arrivée sur le site : c'est ici
   // qu'elle quitte le navigateur, et nulle part ailleurs.
   const origine = sourceComplete();
   const payload = {
     accountType: values.accountType,
+    // La tuile « Salarié » ne vivait que dans l'état de la page : le compte
+    // créé était celui d'un indépendant. Le choix part maintenant au serveur,
+    // qui le fige — c'est lui qui décide ensuite de ce que le compte ouvre.
+    profilSalarie: options?.profilSalarie === true,
     firstName: values.firstName.trim(),
     lastName: values.lastName.trim(),
     // Un intervenant n'a pas de structure : le compte prend alors son nom.

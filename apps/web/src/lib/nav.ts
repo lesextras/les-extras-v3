@@ -341,11 +341,44 @@ const adminNav: NavSection[] = [
  * d'autorisation, ou pire, des informations qui ne le regardaient pas.
  * Une entrée sans `roles` reste visible par tout le monde.
  */
+/**
+ * Menu d'un salarié qui attend d'être rattaché à un établissement.
+ *
+ * Proposer vingt entrées qui répondront toutes « pas encore » serait une
+ * promesse en trompe-l'œil. On ne montre que ce qui fonctionne vraiment :
+ * LEX, son dossier, ses crédits, et l'écran où sa demande avance.
+ */
+const attenteRattachementNav: NavSection[] = [
+  {
+    items: [
+      { label: 'Mon rattachement', href: '/dashboard', icon: Building2, essentiel: true, hint: 'Où en est votre demande, et à qui l’envoyer' },
+    ],
+  },
+  {
+    title: 'LEX',
+    items: [
+      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, essentiel: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées.' },
+      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées.' },
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation du mois et votre consommation' },
+    ],
+  },
+  {
+    title: 'Mon espace',
+    items: [
+      { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces : identité, diplôme, casier judiciaire. Un dossier prêt le jour du rattachement, c’est autant de gagné.' },
+      { label: 'Mon compte', href: '/dashboard/account', icon: Users },
+    ],
+  },
+];
+
 export function getNavForRole(
   role: NavRole,
   roleCompte?: AccountRole,
-  options?: { outilsAvances?: boolean },
+  options?: { outilsAvances?: boolean; enAttenteRattachement?: boolean },
 ): NavSection[] {
+  // Avant toute chose : un compte qui attend son rattachement n'a qu'un menu.
+  if (options?.enAttenteRattachement) return attenteRattachementNav;
+
   const base =
     role === 'ADMIN' ? adminNav : role === 'ESTABLISHMENT' ? establishmentNav : freelanceNav;
 

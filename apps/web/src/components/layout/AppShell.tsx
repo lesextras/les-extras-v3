@@ -11,7 +11,12 @@ import { AppChrome } from './app-shell';
  *
  * Ne transmet jamais le token au chrome client.
  */
-export type AppShellProps = { children: ReactNode; actionPanel?: ReactNode } & (
+export type AppShellProps = {
+  children: ReactNode;
+  actionPanel?: ReactNode;
+  /** Salarié pas encore rattaché : menu réduit à ce qui fonctionne. */
+  enAttenteRattachement?: boolean;
+} & (
   | { session: Session; variant?: 'app' | 'admin'; user?: never; role?: never }
   | {
       user: SessionUser;
@@ -24,7 +29,7 @@ export type AppShellProps = { children: ReactNode; actionPanel?: ReactNode } & (
 );
 
 export function AppShell(props: AppShellProps) {
-  const { children, actionPanel } = props;
+  const { children, actionPanel, enAttenteRattachement } = props;
 
   let user: SessionUser;
   let accounts: SessionAccount[];
@@ -56,6 +61,7 @@ export function AppShell(props: AppShellProps) {
       accounts={accounts}
       activeAccount={activeAccount}
       role={role}
+      enAttenteRattachement={enAttenteRattachement}
       actionPanel={actionPanel}
     >
       {children}

@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -56,6 +57,16 @@ export class RegisterDto {
   @IsString()
   @MaxLength(160)
   organizationName?: string;
+
+  /**
+   * Profil SALARIÉ : la personne travaille pour un établissement et vient s'y
+   * rattacher. Le compte reste de type FREELANCE — c'est bien un compte
+   * personnel — mais il n'ouvre que LEX tant qu'aucun établissement ne l'a
+   * accepté. Ignoré pour un compte ESTABLISHMENT, qui ne se rattache à rien.
+   */
+  @IsOptional()
+  @IsBoolean()
+  profilSalarie?: boolean;
 
   // --- Attribution ---------------------------------------------------------
   // Envoyés par le navigateur, donc non fiables par nature : on les borne en

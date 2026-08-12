@@ -23,6 +23,7 @@ export interface SidebarProps {
    * personnes physiques — seules concernées par certaines entrées.
    */
   roleCompte?: AccountRole;
+  enAttenteRattachement?: boolean;
   /** Ferme la sidebar (usage mobile en overlay). */
   onNavigate?: () => void;
   className?: string;
@@ -52,7 +53,7 @@ function isActiveHref(pathname: string, href: string) {
   );
 }
 
-export function Sidebar({ role, isMember, roleCompte, onNavigate, className, utilisateur }: SidebarProps) {
+export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onNavigate, className, utilisateur }: SidebarProps) {
   const pathname = usePathname();
   // Entrée LEX cliquée sans crédits : on retient laquelle pour que la modale
   // parle de la fonctionnalité visée, pas d'une restriction abstraite.
@@ -66,7 +67,7 @@ export function Sidebar({ role, isMember, roleCompte, onNavigate, className, uti
   // ouvrir ; ces modules relèvent d'un autre métier que la mise en relation.
   const [outilsAvances, setOutilsAvances] = useState(false);
   const nbAvances = compterOutilsAvances(role, roleCompte);
-  const toutesSections = getNavForRole(role, roleCompte, { outilsAvances })
+  const toutesSections = getNavForRole(role, roleCompte, { outilsAvances, enAttenteRattachement })
     .map((s) => ({
       ...s,
       items: s.items.filter((it) => !(it.sousComptesSeulement && estTitulaire)),

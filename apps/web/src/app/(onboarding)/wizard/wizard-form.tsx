@@ -44,7 +44,8 @@ import { apiRequest } from '@/lib/api';
 const ETAPES_ETABLISSEMENT = ['Profil', 'Finalisation'] as const;
 const ETAPES_INTERVENANT = ['Profil', 'Documents', 'Finalisation'] as const;
 // Compte « salarié » : même compte FREELANCE côté droits, mais avec une étape
-// en plus pour demander son rattachement à l'établissement qui l'emploie.
+// en plus pour demander son rattachement à l'établissement qui l'emploie. Tant
+// qu'aucun établissement ne l'a accepté, son compte n'ouvre que LEX.
 const ETAPES_SALARIE = ['Profil', 'Établissement', 'Documents', 'Finalisation'] as const;
 
 export default function WizardForm({
@@ -429,7 +430,7 @@ function RattachementEtablissement({ accountId }: { accountId: string }) {
           <h2 className="text-xl font-semibold">Demande envoyée</h2>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
             {selection?.name} peut désormais l’approuver depuis son espace « Équipe ». En
-            attendant, vous conservez tous les droits d’un compte professionnel indépendant.
+            attendant, LEX vous est ouvert : vous serez prévenu dès qu’une réponse arrive.
           </p>
         </div>
       </div>
@@ -441,9 +442,10 @@ function RattachementEtablissement({ accountId }: { accountId: string }) {
       <div>
         <h2 className="text-xl font-semibold">Votre établissement</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Si vous travaillez pour un établissement, recherchez-le ci-dessous pour lui envoyer une
-          demande de rattachement. Vous gardez vos droits de compte indépendant tant qu’elle n’a
-          pas répondu — et vous pouvez passer cette étape et le faire plus tard.
+          Recherchez l’établissement qui vous emploie pour lui envoyer une demande de
+          rattachement. Tant qu’aucun établissement ne vous a accepté, LEX vous est ouvert et le
+          reste attend. Vous pouvez passer cette étape : la demande se fait aussi depuis votre
+          tableau de bord, et vous pouvez être rattaché à plusieurs établissements.
         </p>
       </div>
 
