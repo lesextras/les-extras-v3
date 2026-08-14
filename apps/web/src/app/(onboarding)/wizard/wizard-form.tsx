@@ -18,7 +18,8 @@ import {
   Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { onboardingProfileSchema, type OnboardingProfileValues } from '@/lib/validation';
+import { onboardingProfileSchemaPour, type OnboardingProfileValues } from '@/lib/validation';
+import { METIERS_INTERVENANT } from '@/lib/metiers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -72,15 +73,19 @@ export default function WizardForm({
   // Pièces déjà déposées pendant l'inscription, pour l'accusé de réception.
   const [piecesDeposees, setPiecesDeposees] = React.useState<string[]>([]);
 
+  // Un intervenant sans métier ni ville est invisible du moteur de
+  // correspondance : ces deux champs pèsent à eux seuls 55 % du score. Le
+  // parcours établissement, lui, n'a pas de métier — d'où deux exigences.
+  const estIntervenant = typeDeCompte === 'FREELANCE';
   const form = useForm<OnboardingProfileValues>({
-    resolver: zodResolver(onboardingProfileSchema),
-    defaultValues: { phone: '', city: '', postalCode: '', bio: '' },
+    resolver: zodResolver(onboardingProfileSchemaPour(typeDeCompte)),
+    defaultValues: { phone: '', city: '', postalCode: '', job: '', bio: '' },
     mode: 'onTouched',
   });
 
   async function next() {
     if (step === 0) {
-      const ok = await form.trigger(['phone', 'city', 'postalCode', 'bio']);
+      const ok = await form.trigger(['phone', 'city', 'postalCode', 'job', 'bio']);
       if (!ok) return;
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
@@ -218,6 +223,47 @@ export default function WizardForm({
                   />
                 </div>
 
+                {/* LE MÉTIER — premier critère du moteur de correspondance
+                    (30 % du score). Il ne se demandait nulle part dans le
+                    tunnel : la quasi-totalité des intervenants inscrits
+                    partaient donc au score plancher, et ne recevaient
+                    quasiment aucune offre de renfort. Liste fermée : deux
+                    orthographes d'un même métier ne se rapprochent jamais. */}
+                {estIntervenant && (
+                  <FormField
+                    control={form.control}
+                    name="job"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel
+                          required
+                          hint="C’est ce qui décide des missions qui vous sont proposées en priorité."
+                        >
+                          Votre métier
+                        </FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="flex h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="">Choisissez votre métier…</option>
+                            {METIERS_INTERVENANT.map((m) => (
+                              <option key={m.valeur} value={m.valeur}>
+                                {m.libelle}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormDescription>
+                          Vous exercez un métier qui n’est pas dans la liste ? Choisissez le plus
+                          proche : vous pourrez le préciser depuis votre profil.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
                 <FormField
                   control={form.control}
                   name="bio"
@@ -324,10 +370,17 @@ export default function WizardForm({
                 Retour
               </Button>
               <div className="flex items-center gap-2">
-                {/* Pas de champ obligatoire qu'on ne peut pas remplir tout de
-                    suite : on laisse avancer sans bloquer, à tout moment sauf
-                    à la dernière étape (rien à passer sur « Finalisation »). */}
-                {step < STEPS.length - 1 && (
+                {/* Les étapes qui demandent une pièce ou une démarche (dépôt
+                    de documents, rattachement) se passent : on ne bloque
+                    personne sur ce qu'il n'a pas sous la main.
+                    L'étape « Profil » d'un intervenant, elle, ne se passe
+                    plus : métier et ville sont les deux critères qui décident
+                    des offres reçues (55 % du score à eux deux), et ils se
+                    remplissent en dix secondes. Les laisser sauter revenait à
+                    inscrire quelqu'un dans un annuaire où personne ne le
+                    trouve — c'est ce qui s'est produit pour la quasi-totalité
+                    des profils en production. */}
+                {step < STEPS.length - 1 && !(estIntervenant && etape === 'Profil') && (
                   <Button type="button" variant="ghost" onClick={skip} disabled={submitting}>
                     Passer pour l’instant
                   </Button>

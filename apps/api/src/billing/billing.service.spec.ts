@@ -285,3 +285,83 @@ describe('BillingService — dotation à la souscription', () => {
     expect(credits.amorcerDotation).toHaveBeenCalledWith('acc_1', ESTABLISHMENT_PLAN.monthlyCredits);
   });
 });
+
+/**
+ * QUI PEUT PAYER UNE FACTURE EN LIGNE — et ce qu'on refuse d'encaisser.
+ *
+ * Deux règles indépendantes, et les deux comptent :
+ *
+ *  1. Le payeur est celui à qui la facture est ADRESSÉE (`payerAccountId`).
+ *     Le contrôle exigeait l'inverse — être l'émetteur — si bien que le
+ *     destinataire recevait « facture introuvable sur ce compte » et que le
+ *     bouton « Payer en ligne » ne fonctionnait pour personne.
+ *
+ *  2. Une facture émise par un intervenant ne s'encaisse PAS sur le compte
+ *     Stripe de l'association : ce serait recevoir des fonds pour le compte
+ *     d'un tiers, activité réservée aux établissements de paiement agréés
+ *     (art. L. 521-2 et L. 522-1 CMF). On répond 501 avec la marche à suivre,
+ *     plutôt que d'encaisser d'abord et de régulariser ensuite.
+ */
+describe('BillingService — règlement en ligne d’une facture', () => {
+  function contexte(invoiceRow: Record<string, unknown> | null, comptePlateforme = 'compte-adepa') {
+    const prisma = {
+      membership: {
+        findUnique: jest.fn().mockResolvedValue({ status: 'ACTIVE', role: 'OWNER', account: {} }),
+      },
+      invoice: { findUnique: jest.fn().mockResolvedValue(invoiceRow) },
+      account: { findFirst: jest.fn().mockResolvedValue({ id: comptePlateforme }) },
+    } as never;
+    const config = {
+      get: jest.fn((clef: string) => (clef === 'PLATFORM_ACCOUNT_ID' ? undefined : 'sk_test_x')),
+    } as never;
+    return new BillingService(prisma, config, { amorcerDotation: jest.fn() } as never);
+  }
+
+  it('refuse le paiement à l’ÉMETTEUR de la facture', async () => {
+    const billing = contexte({
+      id: 'inv1',
+      accountId: 'compte-intervenant',
+      payerAccountId: 'compte-mecs',
+      status: 'ISSUED',
+      amount: 300,
+      number: 'INV-2026-00001',
+    });
+    await expect(
+      billing.createInvoiceCheckout('u1', 'compte-intervenant', 'inv1'),
+    ).rejects.toThrow(/introuvable sur ce compte/i);
+  });
+
+  it('au payeur d’une facture d’intervenant : 501 et la marche à suivre, pas un encaissement', async () => {
+    const billing = contexte({
+      id: 'inv1',
+      accountId: 'compte-intervenant',
+      payerAccountId: 'compte-mecs',
+      status: 'ISSUED',
+      amount: 300,
+      number: 'INV-2026-00001',
+    });
+    await expect(billing.createInvoiceCheckout('u1', 'compte-mecs', 'inv1')).rejects.toThrow(
+      /arrive bientôt — règle cette facture par virement/i,
+    );
+  });
+
+  it('une facture émise par la plateforme, elle, va bien jusqu’à Stripe', async () => {
+    const billing = contexte({
+      id: 'inv2',
+      accountId: 'compte-adepa',
+      payerAccountId: 'compte-mecs',
+      status: 'ISSUED',
+      amount: 300,
+      number: 'INV-2026-00002',
+    });
+    // On coupe l'appel réseau : ce qui compte est qu'on soit arrivé jusque-là,
+    // c'est-à-dire qu'aucun des deux gardes n'a fermé la porte.
+    const appelStripe = jest
+      .spyOn(billing as never as { stripe: () => Promise<unknown> }, 'stripe')
+      .mockResolvedValue({ url: 'https://checkout.stripe.test/x' });
+    await expect(billing.createInvoiceCheckout('u1', 'compte-mecs', 'inv2')).resolves.toEqual({
+      url: 'https://checkout.stripe.test/x',
+    });
+    appelStripe.mockRestore();
+  });
+});

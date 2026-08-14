@@ -243,7 +243,14 @@ export interface Message {
 
 export interface Invoice {
   id: string;
+  /** Compte ÉMETTEUR : celui dont la séquence de numéros est engagée. */
   accountId: string;
+  /**
+   * Compte PAYEUR : celui à qui la facture est adressée. C'est lui — et lui
+   * seul — qui peut la régler ; l'écran s'appuie sur ce champ pour décider
+   * d'afficher le bouton de paiement.
+   */
+  payerAccountId?: string | null;
   bookingId?: string | null;
   number: string;
   amount: string | number;

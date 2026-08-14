@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   Logger,
+  NotImplementedException,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -267,14 +268,66 @@ export class BillingService {
   }
 
   /**
+   * Le compte de la plateforme (association ADéPA), seul émetteur dont les
+   * factures peuvent être encaissées en ligne — voir `createInvoiceCheckout`.
+   *
+   * Renseigné par `PLATFORM_ACCOUNT_ID` quand il est connu ; à défaut, on
+   * reconnaît le compte établissement de l'association par son nom, comme le
+   * fait déjà l'administration pour rattacher les formations Qualiopi.
+   */
+  private async compteDeLaPlateforme(): Promise<string | null> {
+    const configure = this.config.get<string>('PLATFORM_ACCOUNT_ID');
+    if (configure) return configure;
+    const adepa = await this.prisma.account.findFirst({
+      where: {
+        type: 'ESTABLISHMENT',
+        OR: [
+          { name: { contains: 'adépa', mode: 'insensitive' } },
+          { name: { contains: 'adepa', mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+    return adepa?.id ?? null;
+  }
+
+  /**
    * Paiement en une fois d'une facture émise (mode payment, sans crédits).
    * La facture passe PAID à la réception du webhook.
+   *
+   * QUI PEUT PAYER. Le contrôle était inversé : il exigeait que le compte
+   * actif soit l'ÉMETTEUR de la facture. Autrement dit, seul celui qui envoie
+   * la facture pouvait la régler — c'est-à-dire personne — pendant que le
+   * destinataire, lui, recevait une erreur « facture introuvable sur ce
+   * compte ». Le payeur est `payerAccountId` : c'est ce champ, et lui seul,
+   * qui désigne celui à qui la facture est adressée.
+   *
+   * CE QUI RESTE FERMÉ, ET POURQUOI. Encaisser sur le compte Stripe de
+   * l'association une facture émise par un intervenant indépendant, c'est
+   * recevoir des fonds pour le compte d'un tiers : un service de paiement au
+   * sens de l'article L. 314-1 du code monétaire et financier, dont la
+   * fourniture à titre habituel est réservée aux établissements agréés
+   * (art. L. 521-2 et L. 522-1 CMF). L'association n'a ni agrément
+   * d'établissement de paiement, ni statut d'agent, ni exemption applicable.
+   * Tant que ce cadre n'est pas réglé — Stripe Connect avec comptes connectés,
+   * ou statut d'agent d'un prestataire agréé —, seules les factures émises par
+   * la plateforme elle-même s'encaissent en ligne. Les autres se règlent par
+   * virement, directement d'établissement à intervenant : c'est d'ailleurs ce
+   * que dit le reste du produit (« la plateforme ne perçoit pas les paiements
+   * des missions »).
    */
   async createInvoiceCheckout(userId: string, accountId: string, invoiceId: string) {
     await this.requireMember(userId, accountId);
     const invoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
-    if (!invoice || invoice.accountId !== accountId) {
+    if (!invoice || invoice.payerAccountId !== accountId) {
       throw new BadRequestException('Facture introuvable sur ce compte.');
+    }
+    const plateforme = await this.compteDeLaPlateforme();
+    if (!plateforme || invoice.accountId !== plateforme) {
+      throw new NotImplementedException(
+        "Le règlement en ligne des factures d'intervenants arrive bientôt — règle cette facture par virement (IBAN sur la facture).",
+      );
     }
     if (invoice.status === 'PAID') {
       throw new BadRequestException('Cette facture est déjà payée.');

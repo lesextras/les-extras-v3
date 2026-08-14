@@ -26,8 +26,10 @@ import { MailService } from '../common/mail/mail.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { QueryMissionsDto } from './dto/query-missions.dto';
-import { CiblageService, SELECT_CIBLAGE } from './ciblage.service';
+import { CiblageService } from './ciblage.service';
 import { EngagementsService } from './engagements.service';
+import { AuditService } from '../common/audit/audit.service';
+import type { CandidatMissionInterne } from '../matching/matching.service';
 
 /**
  * DIFFUSION CIBLÉE — les trois vagues de sollicitation.
@@ -106,6 +108,13 @@ export class MissionsService {
     private readonly progression: ProgressionService,
     private readonly ciblage: CiblageService,
     private readonly engagements: EngagementsService,
+    /**
+     * Journal d'audit — une diffusion qui n'atteint personne doit laisser une
+     * trace consultable, pas seulement une ligne dans les logs du serveur.
+     * Optionnel à la construction pour rester injectable dans les tests
+     * unitaires qui n'exercent pas ce chemin.
+     */
+    private readonly audit?: AuditService,
   ) {}
 
   /** Crée une mission (statut DRAFT) rattachée au compte établissement actif. */
@@ -342,15 +351,53 @@ export class MissionsService {
     // horaire, nom de l'établissement — alors que l'écran promet le contraire
     // à celui qui la publie. Seule la candidature était bloquée ; la lecture,
     // non. On traite désormais ce cas comme un brouillon : introuvable.
-    if (
-      mission.status === MissionStatus.PUBLISHED &&
-      mission.visibility !== MissionVisibility.SALARIES
-    ) {
-      const { bookings: _bookings, ...publicView } = mission as any;
-      return publicView;
+    //
+    // Le palier RESERVED souffrait du même trou, une marche plus bas : la
+    // mission « réservée au réseau de l'établissement » se lisait par son
+    // identifiant depuis n'importe quel compte. Le ciblage n'était appliqué
+    // qu'à la RÉPONSE (`assertReponseAutorisee`) ; on l'applique désormais
+    // aussi à la LECTURE, avec exactement la même définition du réseau, pour
+    // qu'une seule règle décide de qui voit quoi.
+    if (mission.status === MissionStatus.PUBLISHED) {
+      const lisible =
+        mission.visibility === MissionVisibility.PUBLIC ||
+        (mission.visibility === MissionVisibility.RESERVED &&
+          Boolean(accountId) &&
+          (await this.lectureReserveeAutorisee(mission, accountId as string)));
+      if (lisible) {
+        const { bookings: _bookings, ...publicView } = mission as any;
+        return publicView;
+      }
     }
-    // Brouillon, fermée, ou réservée à l'équipe : on ne révèle pas son existence.
+    // Brouillon, fermée, réservée à l'équipe ou au réseau d'un autre : on ne
+    // révèle pas son existence.
     throw new NotFoundException('Mission introuvable.');
+  }
+
+  /**
+   * Ce compte fait-il partie du réseau auquel la mission est réservée ?
+   *
+   * Même source que la réponse à une mission (CiblageService) : le ciblage
+   * nominatif quand il y en a un, sinon les intervenants déjà venus dans la
+   * structure. Une règle de lecture qui divergerait de la règle de réponse
+   * finirait par montrer ce qu'on ne peut pas prendre, ou l'inverse.
+   */
+  private async lectureReserveeAutorisee(
+    mission: {
+      id: string;
+      accountId: string;
+      orgUnitId: string | null;
+      visibility: MissionVisibility;
+      cibleDiffusion: CibleDiffusion;
+      destinatairesSalaries: string[];
+      destinatairesIntervenants: string[];
+    },
+    accountId: string,
+  ): Promise<boolean> {
+    const nominatif = await this.ciblage.intervenantsAutorises(mission);
+    if (nominatif) return nominatif.has(accountId);
+    const connus = await this.ciblage.intervenantsConnus(mission.accountId);
+    return connus.includes(accountId);
   }
 
   private async assertOwned(id: string, accountId: string) {
@@ -544,8 +591,36 @@ export class MissionsService {
         publishedAt: new Date(),
       },
     });
-    // Diffusion ciblée selon le palier. N'échoue jamais la publication.
-    this.broadcastToMatched(id, accountId).catch(() => undefined);
+    // Diffusion ciblée selon le palier. N'échoue jamais la publication — mais
+    // ne se tait plus non plus : une diffusion muette, c'est un établissement
+    // qui croit avoir lancé son SOS Renfort alors que personne n'a rien reçu.
+    // On journalise le résultat comme l'échec, et l'audit garde la trace.
+    void this.broadcastToMatched(id, accountId)
+      .then((notifies) => {
+        this.logger.log(
+          `Mission ${id} publiée (${palierDepart}) — ${notifies} destinataire(s) notifié(s).`,
+        );
+        if (notifies === 0) {
+          void this.audit?.log({
+            action: 'mission.diffusion.silencieuse',
+            entityType: 'ReliefMission',
+            entityId: id,
+            accountId,
+            summary: `Mission « ${published.title} » publiée : aucun destinataire notifié.`,
+          });
+        }
+      })
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.error(`Mission ${id} — diffusion en échec après publication : ${message}`);
+        void this.audit?.log({
+          action: 'mission.diffusion.echec',
+          entityType: 'ReliefMission',
+          entityId: id,
+          accountId,
+          summary: `Diffusion en échec pour « ${published.title} » : ${message}`,
+        });
+      });
     return published;
   }
 
@@ -682,6 +757,85 @@ export class MissionsService {
     return destinataires.length;
   }
 
+  /**
+   * Les candidats à qui l'on peut RÉELLEMENT écrire, et l'alerte quand il n'y
+   * en a aucun.
+   *
+   * La diffusion filtre sur l'adresse e-mail — sans adresse, pas d'envoi. Mais
+   * si AUCUN candidat classé n'en porte, ce n'est pas un résultat métier :
+   * c'est une panne. C'est exactement ce qui s'est produit en production, la
+   * source des candidats ayant cessé de renvoyer l'adresse : SOS Renfort ne
+   * prévenait plus personne, sans la moindre erreur visible. On journalise
+   * donc, bruyamment, plutôt que de rendre une liste vide l'air de rien.
+   */
+  private joignables(
+    missionId: string,
+    candidats: CandidatMissionInterne[],
+  ): CandidatMissionInterne[] {
+    const avecAdresse = candidats.filter((c) => Boolean(c.email));
+    if (candidats.length > 0 && avecAdresse.length === 0) {
+      const message =
+        `Mission ${missionId} — diffusion impossible : ${candidats.length} candidat(s) classé(s), ` +
+        `aucun avec adresse e-mail. La source des candidats ne renvoie plus l'adresse ` +
+        `(voir MatchingService.candidatesForMissionInterne).`;
+      this.logger.error(message);
+      void this.audit?.log({
+        action: 'mission.diffusion.aucun_destinataire',
+        entityType: 'ReliefMission',
+        entityId: missionId,
+        summary: message,
+        metadata: { candidats: candidats.length },
+      });
+    }
+    return avecAdresse;
+  }
+
+  /**
+   * Envoi d'une vague, et compte des e-mails RÉELLEMENT partis.
+   *
+   * `Promise.allSettled` n'échoue jamais : sans personne pour lire ses
+   * résultats, un fournisseur d'envoi en panne passait pour un succès. On
+   * compte donc les envois aboutis — et c'est ce nombre, pas la taille de la
+   * liste visée, que la diffusion renvoie et journalise.
+   */
+  private async envoyerOffre(
+    mission: {
+      id: string;
+      title: string;
+      city: string | null;
+      startDate: Date;
+      job: string | null;
+      hourlyRate: unknown;
+      emergency: boolean;
+    },
+    destinataires: CandidatMissionInterne[],
+    vague: number,
+  ): Promise<number> {
+    const resultats = await Promise.allSettled(
+      destinataires.map((c) =>
+        this.mail.sendMissionMatch(c.email as string, {
+          title: mission.title,
+          city: mission.city,
+          date: mission.startDate,
+          job: mission.job,
+          rate: mission.hourlyRate ? String(mission.hourlyRate) : null,
+          emergency: mission.emergency,
+          missionId: mission.id,
+          retenus: destinataires.length,
+          vague,
+        }),
+      ),
+    );
+    const partis = resultats.filter((r) => r.status === 'fulfilled').length;
+    const echecs = resultats.length - partis;
+    if (echecs > 0) {
+      this.logger.error(
+        `Mission ${mission.id} — ${echecs} e-mail(s) de diffusion non partis sur ${resultats.length}.`,
+      );
+    }
+    return partis;
+  }
+
   private async broadcastToMatched(
     missionId: string,
     accountId: string,
@@ -696,7 +850,10 @@ export class MissionsService {
       return this.notifierEquipeInterne(mission);
     }
 
-    const { candidates } = await this.matching.candidatesForMission(missionId, accountId);
+    // Variante INTERNE du classement : elle seule porte l'adresse e-mail, et
+    // elle ne sort jamais par une route HTTP (voir MatchingService).
+    const { candidates } = await this.matching.candidatesForMissionInterne(missionId, accountId);
+    const joignables = this.joignables(missionId, candidates);
     const exclus = new Set(options?.excludeAccountIds ?? []);
 
     // ── Ciblage nominatif : il prime sur la cascade ─────────────────────────
@@ -705,35 +862,21 @@ export class MissionsService {
     // n'élargit jamais tout seul.
     const nominatif = await this.ciblage.intervenantsAutorises(mission);
     if (nominatif) {
-      const destinataires = candidates.filter(
-        (c: any) => c.email && nominatif.has(c.accountId) && !exclus.has(c.accountId),
+      const destinataires = joignables.filter(
+        (c) => nominatif.has(c.accountId) && !exclus.has(c.accountId),
       );
       // La cible « unité » et une sélection de seuls salariés n'ont personne à
       // l'extérieur : la diffusion est purement interne.
       const internes = await this.notifierEquipeInterne(mission);
-      await Promise.allSettled(
-        destinataires.map((c: any) =>
-          this.mail.sendMissionMatch(c.email, {
-            title: mission.title,
-            city: mission.city,
-            date: mission.startDate,
-            job: mission.job,
-            rate: mission.hourlyRate ? String(mission.hourlyRate) : null,
-            emergency: mission.emergency,
-            missionId,
-            retenus: destinataires.length,
-            vague: 1,
-          }),
-        ),
-      );
+      const notifies = await this.envoyerOffre(mission, destinataires, 1);
       await this.prisma.reliefMission.update({
         where: { id: missionId },
         data: { diffusionVague: 1, derniereVagueAt: new Date() },
       });
       this.logger.log(
-        `Mission ${missionId} — diffusion ciblée (${mission.cibleDiffusion}) : ${destinataires.length} intervenant(s) + ${internes} salarié(s).`,
+        `Mission ${missionId} — diffusion ciblée (${mission.cibleDiffusion}) : ${notifies} intervenant(s) notifié(s) sur ${destinataires.length} visé(s) + ${internes} salarié(s).`,
       );
-      return destinataires.length + internes;
+      return notifies + internes;
     }
 
     // Palier RESERVED : uniquement les intervenants déjà venus dans la structure.
@@ -744,17 +887,16 @@ export class MissionsService {
       // note >= 4,5, annulations <= 5 %) sont sollicites des ce palier, avant
       // l'ouverture au reseau complet — c'est leur avantage d'acces prioritaire.
       const superExtras = await this.progression.superExtrasParmi(
-        candidates.map((c: any) => c.accountId).filter((id: string) => !autorises!.has(id)),
+        candidates.map((c) => c.accountId).filter((id) => !autorises!.has(id)),
       );
       for (const id of superExtras) autorises.add(id);
       if (autorises.size === 0) return 0; // pas de vivier : le planificateur élargira.
     }
 
-    const eligibles = candidates.filter(
-      (c: any) =>
+    const eligibles = joignables.filter(
+      (c) =>
         c.available &&
         !c.hasConflict &&
-        c.email &&
         !exclus.has(c.accountId) &&
         (!autorises || autorises.has(c.accountId)),
     );
@@ -774,7 +916,7 @@ export class MissionsService {
     const dejaSollicites = vagues.slice(0, vague - 1).reduce((n, v) => n + v.taille, 0);
 
     const targets = eligibles
-      .filter((c: any) => c.total >= seuil)
+      .filter((c) => c.total >= seuil)
       .slice(dejaSollicites, dejaSollicites + taille);
 
     if (targets.length === 0) {
@@ -787,30 +929,16 @@ export class MissionsService {
       return 0;
     }
 
-    await Promise.allSettled(
-      targets.map((c: any) =>
-        this.mail.sendMissionMatch(c.email, {
-          title: mission.title,
-          city: mission.city,
-          date: mission.startDate,
-          job: mission.job,
-          rate: mission.hourlyRate ? String(mission.hourlyRate) : null,
-          emergency: mission.emergency,
-          missionId,
-          retenus: targets.length,
-          vague,
-        }),
-      ),
-    );
+    const notifies = await this.envoyerOffre(mission, targets, vague);
 
     await this.prisma.reliefMission.update({
       where: { id: missionId },
       data: { diffusionVague: vague, derniereVagueAt: new Date() },
     });
     this.logger.log(
-      `Mission ${missionId} — vague ${vague}/${vagues.length} : ${targets.length} intervenant(s) sollicité(s) (seuil ${seuil}).`,
+      `Mission ${missionId} — vague ${vague}/${vagues.length} : ${notifies} intervenant(s) notifié(s) sur ${targets.length} visé(s) (seuil ${seuil}).`,
     );
-    return targets.length;
+    return notifies;
   }
 
   /**

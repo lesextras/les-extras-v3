@@ -767,6 +767,14 @@ export class PublicService {
     const comptes = await this.prisma.account.findMany({
       where: {
         type: 'FREELANCE',
+        // Un salarié n'exerce pas pour son compte : ce qu'il anime, il l'anime
+        // pour la maison qui l'emploie, et celle-ci le paie en salaire. Sa
+        // fiche s'adresse aux établissements auxquels il est rattaché, jamais
+        // au marché ouvert. Le catalogue appliquait déjà la règle (const
+        // VITRINE) ; l'annuaire, lui, listait ces comptes comme des
+        // indépendants — donc démarchables et « réservables » par n'importe
+        // quel visiteur.
+        profilSalarie: false,
         services: { some: { status: 'PUBLISHED' } },
         ...(query.city ? { OR: [{ city: query.city }, { services: { some: { city: query.city } } }] } : {}),
         ...(query.search
@@ -828,8 +836,14 @@ export class PublicService {
       notes.map((n) => [n.targetId, { moyenne: n._avg.rating, nb: n._count._all }]),
     );
 
+    // Même filtre que la liste : un total qui compterait les salariés
+    // annoncerait une pagination vers des pages vides.
     const total = await this.prisma.account.count({
-      where: { type: 'FREELANCE', services: { some: { status: 'PUBLISHED' } } },
+      where: {
+        type: 'FREELANCE',
+        profilSalarie: false,
+        services: { some: { status: 'PUBLISHED' } },
+      },
     });
 
     // Villes proposées au filtre : celles où il y a réellement quelqu'un.
@@ -928,9 +942,18 @@ export class PublicService {
     };
   }
 
+  /**
+   * Fiche publique d'un intervenant.
+   *
+   * Le filtre vitrine s'applique DEUX FOIS, et il faut les deux : au compte
+   * (la fiche d'un salarié ne se lit pas depuis l'extérieur, même par son
+   * adresse directe) et à ses interventions (VITRINE, la même constante que
+   * le catalogue). Une règle qui ne vivrait que dans la liste se contourne
+   * avec une URL — c'est exactement ce qui se passait ici.
+   */
   async vendorDetail(accountId: string) {
     const account = await this.prisma.account.findFirst({
-      where: { id: accountId, type: 'FREELANCE' },
+      where: { id: accountId, type: 'FREELANCE', profilSalarie: false },
       select: {
         id: true,
         name: true,
@@ -951,7 +974,7 @@ export class PublicService {
 
     const [services, reviews] = await this.prisma.$transaction([
       this.prisma.service.findMany({
-        where: { accountId, status: 'PUBLISHED' },
+        where: { accountId, ...VITRINE },
         orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
         select: {
           id: true,

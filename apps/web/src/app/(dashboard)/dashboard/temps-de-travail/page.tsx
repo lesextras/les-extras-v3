@@ -43,7 +43,12 @@ export default async function TempsDeTravailPage() {
   }
 
   const canDecide = ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
-  const { data, error } = await fetchApi<Parametres>(session, "/temps-travail");
+  // La route s'appelle `/parametres-temps` côté API (ParametresTempsController)
+  // et elle rend exactement la forme `Parametres` attendue plus bas. L'adresse
+  // `/temps-travail` n'a jamais existé : l'appel tombait en 404, `data` restait
+  // nul, et l'écran affichait « aucune règle » à des établissements qui avaient
+  // pourtant saisi leur convention — de quoi croire la saisie perdue.
+  const { data, error } = await fetchApi<Parametres>(session, "/parametres-temps");
 
   return (
     <div className="space-y-8">

@@ -364,12 +364,30 @@ export class BookingsService {
     return booking;
   }
 
-  /** Brouillon de facture pour un atelier termine (idempotent, jamais bloquant). */
+  /**
+   * Brouillon de facture pour un atelier termine (idempotent, jamais bloquant).
+   *
+   * Deux details qui ne sont pas des details :
+   *
+   *  1. LE PAYEUR. Sans `payerAccountId`, la facture sortait avec un bloc
+   *     « Facture a » vide — non conforme a l'article 242 nonies A du CGI —
+   *     et l'etablissement ne la voyait jamais dans son espace : la liste des
+   *     factures qui lui sont adressees se lit sur ce champ, et le bouton de
+   *     reglement en depend. On le renseigne comme le fait `InvoicesService`.
+   *
+   *  2. LE NUMERO, PAR EMETTEUR. Le meme article impose une sequence continue
+   *     PROPRE A CHAQUE EMETTEUR. Ce brouillon tirait son numero de la plus
+   *     grande valeur toutes structures confondues : les factures de personnes
+   *     morales distinctes se retrouvaient melangees dans une suite unique, et
+   *     chaque emetteur avait une sequence trouee. On se scope sur le compte
+   *     emetteur, exactement comme `InvoicesService.nextNumber`.
+   */
   private async preparerFactureAtelier(bookingId: string) {
     const b = await this.prisma.booking.findUnique({
       where: { id: bookingId },
       select: {
         id: true,
+        accountId: true,
         totalAmount: true,
         service: { select: { accountId: true, title: true } },
       },
@@ -380,16 +398,24 @@ export class BookingsService {
     const existante = await this.prisma.invoice.findUnique({ where: { bookingId } });
     if (existante) return;
 
+    const emetteur = b.service.accountId;
+    // Atelier : la reservation est celle de l'etablissement, c'est donc lui
+    // qui paie. Si les deux comptes coincident (une structure qui reserve sa
+    // propre fiche), il n'y a pas de tiers payeur a designer.
+    const payerAccountId = b.accountId !== emetteur ? b.accountId : undefined;
+
+    const annee = new Date().getFullYear();
     const derniere = await this.prisma.invoice.findFirst({
-      where: { number: { startsWith: prefixeAnnee(new Date().getFullYear()) } },
+      where: { accountId: emetteur, number: { startsWith: prefixeAnnee(annee) } },
       orderBy: { number: 'desc' },
       select: { number: true },
     });
     await this.prisma.invoice.create({
       data: {
-        accountId: b.service.accountId,
+        accountId: emetteur,
         bookingId,
-        number: numeroSuivant(new Date().getFullYear(), derniere?.number ?? null),
+        payerAccountId,
+        number: numeroSuivant(annee, derniere?.number ?? null),
         amount: b.totalAmount,
         status: 'DRAFT',
       },

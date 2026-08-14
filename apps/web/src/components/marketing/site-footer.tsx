@@ -42,12 +42,17 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Légal',
     links: [
+      // Les ancres suivent les rubriques réelles de /legal. « Remboursements »,
+      // « Confidentialité » et « RGPD » renvoyaient à des ancres qui n'existent
+      // plus depuis la réécriture : un lien mort dans un pied de page légal se
+      // remarque, et se retient.
       { label: 'Mentions légales', href: '/legal#mentions' },
       { label: 'CGU', href: '/legal#cgu' },
-      { label: 'Remboursements', href: '/legal#remboursements' },
+      { label: 'CGV', href: '/legal#cgv' },
+      { label: 'Paiements et annulations', href: '/legal#paiements' },
       { label: 'Cookies', href: '/legal/cookies' },
-      { label: 'Confidentialité', href: '/legal#confidentialite' },
-      { label: 'RGPD', href: '/legal#rgpd' },
+      { label: 'Données personnelles', href: '/legal#donnees' },
+      { label: 'Médiation', href: '/legal#mediation' },
     ],
   },
 ];

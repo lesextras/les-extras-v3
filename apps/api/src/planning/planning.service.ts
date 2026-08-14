@@ -1,7 +1,10 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShiftDto, UpdateShiftDto } from './dto/shift.dto';
-import { Constat, aUnBloquant, evaluerCreneau, PLAFONDS } from './conformite-horaire';
+// `aUnBloquant` n'est plus importé : `exigerDerogation` a besoin de la LISTE
+// des constats bloquants pour composer son message, pas seulement de savoir
+// qu'elle n'est pas vide — elle fait donc son propre filtre.
+import { Constat, evaluerCreneau, PLAFONDS } from './conformite-horaire';
 
 /**
  * Heure de fin d'une mission d'un seul jour, déduite de son horaire de fin.

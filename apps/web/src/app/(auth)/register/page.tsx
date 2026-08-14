@@ -302,7 +302,10 @@ export default function RegisterPage() {
                       conditions d’utilisation
                     </Link>{' '}
                     et la{' '}
-                    <Link href="/legal#confidentialite" className="font-medium text-primary hover:underline">
+                    {/* La rubrique s'appelle désormais « Protection des données
+                        personnelles » (ancre #donnees) : la case d'acceptation
+                        doit mener au texte réellement accepté. */}
+                    <Link href="/legal#donnees" className="font-medium text-primary hover:underline">
                       politique de confidentialité
                     </Link>
                     .

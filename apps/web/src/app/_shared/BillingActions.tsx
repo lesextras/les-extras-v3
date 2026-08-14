@@ -7,7 +7,7 @@ import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { apiRequest } from "@/lib/api";
+import { ApiError, apiRequest } from "@/lib/api";
 
 type Kind = "credits" | "subscription" | "invoice";
 
@@ -48,6 +48,21 @@ export function CheckoutButton({
       }
       throw new Error("URL de paiement absente.");
     } catch (err) {
+      // 501 = fonctionnalité pas encore ouverte, et non panne. C'est le cas
+      // des factures émises par un intervenant : la plateforme ne les
+      // encaisse pas (elle ne perçoit pas les paiements des missions), le
+      // règlement se fait par virement. Le message du serveur porte déjà la
+      // marche à suivre — on l'affiche tel quel, sans rouge alarmant, et on
+      // le laisse à l'écran le temps de noter l'IBAN.
+      if (err instanceof ApiError && err.status === 501) {
+        toast({
+          title: "Règlement par virement",
+          description: err.message,
+          duration: 12000,
+        });
+        setLoading(false);
+        return;
+      }
       toast({
         title: "Paiement indisponible",
         description:

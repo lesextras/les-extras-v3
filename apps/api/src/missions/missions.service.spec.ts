@@ -1,6 +1,53 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { BookingStatus, MissionStatus } from '@prisma/client';
+import { BookingStatus, MissionStatus, MissionVisibility } from '@prisma/client';
 import { MissionsService } from './missions.service';
+
+/**
+ * LA FORME EXACTE QUE REND LA SOURCE UTILISÉE PAR LA DIFFUSION.
+ *
+ * Ces tests mockaient jusqu'ici des candidats « avec e-mail » alors que la
+ * fonction réellement appelée, elle, n'en renvoyait plus : le vert des tests
+ * a masqué pendant des semaines une production qui ne prévenait plus
+ * personne. Le mock suit désormais `MatchingService.candidatesForMissionInterne`
+ * — la seule variante autorisée à porter l'adresse, et celle que la diffusion
+ * doit appeler.
+ */
+function candidatInterne(over: Record<string, unknown> = {}) {
+  return {
+    freelanceId: 'u1',
+    accountId: 'f1',
+    email: 'f1@ex.fr',
+    name: 'Camille Roux',
+    job: 'Éducateur spécialisé',
+    city: 'Melun',
+    avatarUrl: null,
+    rating: 4.5,
+    reviewCount: 3,
+    available: true,
+    hasConflict: false,
+    total: 90,
+    label: 'Excellent',
+    breakdown: [],
+    ...over,
+  };
+}
+
+/**
+ * Le service de matching vu par la diffusion : deux portes distinctes. La
+ * variante publique ne porte AUCUNE adresse — si la diffusion se trompe de
+ * porte, elle n'écrit à personne, et les tests le voient désormais.
+ */
+function matchingMock(liste: Record<string, unknown>[]) {
+  return {
+    candidatesForMissionInterne: jest.fn().mockResolvedValue({ candidates: liste }),
+    candidatesForMission: jest.fn().mockResolvedValue({
+      candidates: liste.map((c) => {
+        const { email: _email, ...sansEmail } = c;
+        return sansEmail;
+      }),
+    }),
+  };
+}
 
 function createPrismaMock() {
   return {
@@ -49,7 +96,7 @@ describe('MissionsService', () => {
   beforeEach(() => {
     prisma = createPrismaMock();
     notifications = createNotificationsMock();
-    const matching = { candidatesForMission: jest.fn().mockResolvedValue({ candidates: [] }) };
+    const matching = matchingMock([]);
     const mail = {
       sendMissionMatch: jest.fn(),
       sendMissionFilledEstablishment: jest.fn(),
@@ -88,6 +135,10 @@ describe('MissionsService', () => {
         id: 'm1',
         accountId: 'owner-account',
         status: MissionStatus.PUBLISHED,
+        // La visibilité fait partie de la mission (PUBLIC par défaut en base) :
+        // la lecture est désormais une liste blanche — PUBLIC, ou RESERVED
+        // pour le réseau ciblé — et non plus « tout sauf SALARIES ».
+        visibility: MissionVisibility.PUBLIC,
         title: 'Renfort week-end',
         bookings: [{ id: 'b1' }, { id: 'b2' }],
       });
@@ -215,13 +266,14 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
 
   /** 40 candidats au score décroissant : 95, 94, 93… pour couvrir les 3 seuils. */
   function candidats(n = 40) {
-    return Array.from({ length: n }, (_, i) => ({
-      accountId: `f${i}`,
-      email: `f${i}@ex.fr`,
-      available: true,
-      hasConflict: false,
-      total: 95 - i,
-    }));
+    return Array.from({ length: n }, (_, i) =>
+      candidatInterne({
+        freelanceId: `u${i}`,
+        accountId: `f${i}`,
+        email: `f${i}@ex.fr`,
+        total: 95 - i,
+      }),
+    );
   }
 
   function monter(vagueCourante = 0, liste = candidats(), extra: Record<string, unknown> = {}) {
@@ -232,8 +284,9 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
         update: jest.fn().mockResolvedValue(mission),
       },
     };
-    const matching = { candidatesForMission: jest.fn().mockResolvedValue({ candidates: liste }) };
+    const matching = matchingMock(liste);
     const mail = { sendMissionMatch: jest.fn().mockResolvedValue(undefined) };
+    const audit = { log: jest.fn().mockResolvedValue(null) };
     const service = new MissionsService(
       prisma as any,
       { create: jest.fn() } as any,
@@ -243,8 +296,9 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
       { superExtrasParmi: jest.fn().mockResolvedValue(new Set()) } as any,
       ciblageMock() as any,
       { sengager: jest.fn(), relancerDecisionsEnAttente: jest.fn().mockResolvedValue(0) } as any,
+      audit as any,
     );
-    return { service, prisma, mail };
+    return { service, prisma, mail, matching, audit };
   }
 
   it('vague 1 : ne sollicite que les 8 meilleurs profils, pas tout le vivier', async () => {
@@ -284,9 +338,9 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
   it('respecte le seuil de score : un profil trop faible n’est jamais sollicité', async () => {
     // Deux bons profils, le reste sous le seuil de la vague 1 (60).
     const faibles = [
-      { accountId: 'a', email: 'a@ex.fr', available: true, hasConflict: false, total: 90 },
-      { accountId: 'b', email: 'b@ex.fr', available: true, hasConflict: false, total: 61 },
-      { accountId: 'c', email: 'c@ex.fr', available: true, hasConflict: false, total: 50 },
+      candidatInterne({ accountId: 'a', email: 'a@ex.fr', total: 90 }),
+      candidatInterne({ accountId: 'b', email: 'b@ex.fr', total: 61 }),
+      candidatInterne({ accountId: 'c', email: 'c@ex.fr', total: 50 }),
     ];
     const { service, mail } = monter(0, faibles);
     const n = await (service as any).broadcastToMatched('m1', 'etab');
@@ -307,9 +361,9 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
 
   it('ne sollicite ni un indisponible ni un profil en conflit d’agenda', async () => {
     const liste = [
-      { accountId: 'a', email: 'a@ex.fr', available: false, hasConflict: false, total: 95 },
-      { accountId: 'b', email: 'b@ex.fr', available: true, hasConflict: true, total: 94 },
-      { accountId: 'c', email: 'c@ex.fr', available: true, hasConflict: false, total: 93 },
+      candidatInterne({ accountId: 'a', email: 'a@ex.fr', available: false, total: 95 }),
+      candidatInterne({ accountId: 'b', email: 'b@ex.fr', hasConflict: true, total: 94 }),
+      candidatInterne({ accountId: 'c', email: 'c@ex.fr', total: 93 }),
     ];
     const { service, mail } = monter(0, liste);
     const n = await (service as any).broadcastToMatched('m1', 'etab');
@@ -334,15 +388,68 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
 
   it('file d’engagement : le seuil de correspondance descend à 40 dès la vague 1', async () => {
     const liste = [
-      { accountId: 'a', email: 'a@ex.fr', available: true, hasConflict: false, total: 55 },
-      { accountId: 'b', email: 'b@ex.fr', available: true, hasConflict: false, total: 41 },
-      { accountId: 'c', email: 'c@ex.fr', available: true, hasConflict: false, total: 39 },
+      candidatInterne({ accountId: 'a', email: 'a@ex.fr', total: 55 }),
+      candidatInterne({ accountId: 'b', email: 'b@ex.fr', total: 41 }),
+      candidatInterne({ accountId: 'c', email: 'c@ex.fr', total: 39 }),
     ];
     const { service, mail } = monter(0, liste, { modeAttribution: 'FILE_ENGAGEMENT' });
     // En attribution automatique, seuls les profils >= 60 auraient été retenus :
     // ici les deux premiers passent, le troisième reste sous le seuil.
     expect(await (service as any).broadcastToMatched('m1', 'etab')).toBe(2);
     expect(mail.sendMissionMatch.mock.calls.map((c: any[]) => c[0])).not.toContain('c@ex.fr');
+  });
+
+  /**
+   * LA PANNE QUE CES TESTS N'AVAIENT PAS VUE.
+   *
+   * La diffusion lisait la liste des candidats destinée à l'ÉCRAN, dont
+   * l'adresse e-mail avait été retirée à dessein, puis filtrait sur cette
+   * adresse : la liste des destinataires était vide en toutes circonstances.
+   * Aucune erreur, aucun log, aucune alerte — juste un SOS Renfort qui ne
+   * partait plus. Les deux tests ci-dessous ferment la porte des deux côtés :
+   * la bonne source est appelée, et l'absence d'adresse fait du bruit.
+   */
+  it('lit la variante INTERNE du matching, la seule qui porte l’adresse', async () => {
+    const { service, matching } = monter(0);
+    await (service as any).broadcastToMatched('m1', 'etab');
+    expect(matching.candidatesForMissionInterne).toHaveBeenCalledWith('m1', 'etab');
+    // La variante destinée au front n'a rien à faire dans la diffusion : elle
+    // ne porte pas d'adresse, donc elle ne notifie personne.
+    expect(matching.candidatesForMission).not.toHaveBeenCalled();
+  });
+
+  it('des candidats sans e-mail : personne n’est notifié, mais ça ne passe plus en silence', async () => {
+    const sansEmail = candidats(10).map(({ email: _email, ...reste }) => reste);
+    const { service, mail, audit } = monter(0, sansEmail as any);
+    const erreurs = jest
+      .spyOn((service as any).logger, 'error')
+      .mockImplementation(() => undefined);
+
+    const n = await (service as any).broadcastToMatched('m1', 'etab');
+
+    expect(n).toBe(0);
+    expect(mail.sendMissionMatch).not.toHaveBeenCalled();
+    // Le point du test : l'anomalie est signalée, deux fois plutôt qu'une —
+    // dans les logs du serveur ET dans le journal d'audit consultable.
+    expect(erreurs).toHaveBeenCalledWith(expect.stringContaining('aucun avec adresse e-mail'));
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'mission.diffusion.aucun_destinataire' }),
+    );
+    erreurs.mockRestore();
+  });
+
+  it('ne compte que les e-mails réellement partis, pas la liste visée', async () => {
+    const { service, mail } = monter(0);
+    // Le fournisseur d'envoi tombe pour la moitié des destinataires : la
+    // diffusion doit rendre le nombre de personnes VRAIMENT prévenues, sinon
+    // le planificateur croit la vague faite et n'élargit jamais.
+    let appel = 0;
+    mail.sendMissionMatch.mockImplementation(() =>
+      ++appel % 2 === 0 ? Promise.reject(new Error('SMTP indisponible')) : Promise.resolve(undefined),
+    );
+    const n = await (service as any).broadcastToMatched('m1', 'etab');
+    expect(mail.sendMissionMatch).toHaveBeenCalledTimes(8);
+    expect(n).toBe(4);
   });
 });
 
@@ -378,14 +485,10 @@ describe('MissionsService — diffusion nominative', () => {
         update: jest.fn().mockResolvedValue(complete),
       },
     };
-    const matching = {
-      candidatesForMission: jest.fn().mockResolvedValue({
-        candidates: [
-          { accountId: 'connu', email: 'connu@ex.fr', available: true, hasConflict: false, total: 90 },
-          { accountId: 'inconnu', email: 'inconnu@ex.fr', available: true, hasConflict: false, total: 99 },
-        ],
-      }),
-    };
+    const matching = matchingMock([
+      candidatInterne({ accountId: 'connu', email: 'connu@ex.fr', total: 90 }),
+      candidatInterne({ accountId: 'inconnu', email: 'inconnu@ex.fr', total: 99 }),
+    ]);
     const mail = { sendMissionMatch: jest.fn().mockResolvedValue(undefined) };
     const notifications = { create: jest.fn().mockResolvedValue(undefined) };
     const ciblage = {
@@ -404,8 +507,9 @@ describe('MissionsService — diffusion nominative', () => {
       { superExtrasParmi: jest.fn().mockResolvedValue(new Set()) } as any,
       ciblage as any,
       { sengager: jest.fn(), relancerDecisionsEnAttente: jest.fn().mockResolvedValue(0) } as any,
+      { log: jest.fn().mockResolvedValue(null) } as any,
     );
-    return { service, mail, notifications, prisma };
+    return { service, mail, notifications, prisma, matching };
   }
 
   it('n’écrit qu’aux intervenants désignés, même si un meilleur profil existe', async () => {

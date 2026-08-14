@@ -49,10 +49,27 @@ async function bootstrap() {
   // Filtre d'exception uniformisé (réponses JSON normalisées)
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  // CORS : autorise le front (cookie/session + header x-account-id)
+  // CORS : autorise le front (cookie/session + header x-account-id).
+  //
+  // Le repli valait `origin: true` — c'est-à-dire « n'importe quelle origine,
+  // avec les identifiants de session ». Combiné à `credentials: true`, cela
+  // autorise n'importe quel site à appeler l'API au nom d'un utilisateur
+  // connecté, et à en lire la réponse. Une variable d'environnement oubliée au
+  // déploiement suffisait donc à ouvrir la porte. Le repli est désormais la
+  // liste du site de production, et localhost n'y figure que hors production.
   const corsOrigins = config.get<string>('CORS_ORIGINS');
+  const originesParDefaut = [
+    'https://les-extras.fr',
+    'https://www.les-extras.fr',
+    ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000'] : []),
+  ];
   app.enableCors({
-    origin: corsOrigins ? corsOrigins.split(',').map((o) => o.trim()) : true,
+    origin: corsOrigins
+      ? corsOrigins
+          .split(',')
+          .map((o) => o.trim())
+          .filter(Boolean)
+      : originesParDefaut,
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'x-account-id'],
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],

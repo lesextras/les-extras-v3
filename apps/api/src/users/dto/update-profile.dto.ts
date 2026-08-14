@@ -8,6 +8,7 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
 
 /** Champs éditables du User + Profile (fusion identité + données étendues). */
@@ -53,8 +54,22 @@ export class UpdateProfileDto {
   @MaxLength(2000)
   bio?: string;
 
+  /**
+   * MÉTIER — le premier critère du moteur de correspondance (30 % du score).
+   *
+   * Le tunnel d'inscription l'exige désormais des intervenants et le fait
+   * choisir dans la liste des métiers du secteur (`web/src/lib/metiers.ts`) :
+   * « éducateur spé », « ES » et « Éducateur Spécialisé » ne se rapprochent
+   * jamais, et c'est l'intervenant qui en paie le prix en offres non reçues.
+   *
+   * La valeur reste LIBRE ici, à dessein : cette route sert aussi l'écran de
+   * profil, où quelqu'un dont l'intitulé exact ne figure pas dans la liste
+   * doit pouvoir le préciser. On refuse en revanche ce qui n'est pas un
+   * métier — une chaîne d'un caractère dégrade le score sans rien apporter.
+   */
   @IsOptional()
   @IsString()
+  @MinLength(2, { message: 'Indiquez votre métier (2 caractères minimum).' })
   @MaxLength(120)
   job?: string;
 

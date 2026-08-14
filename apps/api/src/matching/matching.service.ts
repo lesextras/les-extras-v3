@@ -13,6 +13,50 @@ const WEIGHTS = {
 
 interface Factor { key: string; label: string; score: number; weight: number; }
 
+/** Le détail chiffré d'un score, tel qu'il s'affiche à l'établissement. */
+export interface CritereCandidat {
+  key: string;
+  label: string;
+  score: number;
+  weight: number;
+  points: number;
+}
+
+/**
+ * Un candidat classé, DANS LA FORME EXPOSÉE AU FRONT : sans adresse e-mail.
+ * C'est la forme que renvoie `candidatesForMission`, et donc celle que voit
+ * l'établissement derrière `GET /matching/missions/:id/candidates`.
+ */
+export interface CandidatMission {
+  freelanceId: string;
+  accountId: string;
+  name: string;
+  job: string | null;
+  city: string | null;
+  avatarUrl: string | null;
+  rating: number;
+  reviewCount: number;
+  available: boolean;
+  hasConflict: boolean;
+  total: number;
+  label: string;
+  breakdown: CritereCandidat[];
+}
+
+/**
+ * Même candidat, PLUS l'adresse e-mail. Réservé aux appels serveur→serveur
+ * (la diffusion SOS Renfort) : cette forme ne doit jamais sortir par une route
+ * HTTP. Voir `candidatesForMissionInterne`.
+ */
+export interface CandidatMissionInterne extends CandidatMission {
+  /**
+   * ABSENTE — et non pas nulle — dès que la sortie est destinée au front :
+   * la clé n'est même pas posée sur l'objet sérialisé. C'est la garantie
+   * qu'aucune route HTTP ne peut laisser filtrer l'adresse par mégarde.
+   */
+  email?: string | null;
+}
+
 function ci(s?: string | null) { return (s ?? '').trim().toLowerCase(); }
 function dept(pc?: string | null) { return (pc ?? '').trim().slice(0, 2); }
 function tokens(...parts: (string | null | undefined)[]) {
@@ -106,8 +150,19 @@ export class MatchingService {
    * Le pool est borné, et pré-filtré sur le métier quand la mission le
    * précise — proposer un moniteur-éducateur pour un poste de psychologue
    * n'aide personne, autant ne pas le charger.
+   *
+   * DEUX FORMES DE SORTIE, UNE SEULE MÉCANIQUE. Le classement sert à deux
+   * usages qui n'ont pas les mêmes droits : l'écran de l'établissement (pas
+   * d'e-mail, voir plus bas) et la diffusion par e-mail (qui, elle, a besoin
+   * de l'adresse pour écrire). On ne duplique pas le calcul : `avecEmail`
+   * décide de ce qui sort, et seul un appel serveur→serveur peut le demander.
    */
-  async candidatesForMission(missionId: string, accountId: string, take = 100) {
+  private async classerCandidats(
+    missionId: string,
+    accountId: string,
+    take: number,
+    avecEmail: boolean,
+  ): Promise<{ mission: { id: string; title: string } | null; candidates: CandidatMissionInterne[] }> {
     const mission = await this.prisma.reliefMission.findFirst({ where: { id: missionId, accountId } });
     if (!mission) return { mission: null, candidates: [] };
 
@@ -157,7 +212,7 @@ export class MatchingService {
       creneauxEnConflit.map((c) => c.freelanceId).filter(Boolean) as string[],
     );
 
-    const results = [];
+    const results: CandidatMissionInterne[] = [];
     for (const acc of freelanceAccounts) {
       const u = acc.owner;
       if (!u) continue;
@@ -178,7 +233,7 @@ export class MatchingService {
       results.push({
         freelanceId: u.id,
         accountId: acc.id,
-        // PAS D'ADRESSE E-MAIL ICI.
+        // PAS D'ADRESSE E-MAIL VERS LE FRONT.
         //
         // Cette liste part dès qu'un établissement publie une mission : elle
         // renvoyait l'adresse de chaque intervenant du réseau en clair. Un
@@ -189,6 +244,13 @@ export class MatchingService {
         // L'établissement n'en a pas besoin pour choisir : prénom, métier,
         // ville et note suffisent, et il contacte par la messagerie de la
         // plateforme. L'adresse ne circule qu'après mise en relation acceptée.
+        //
+        // MAIS la diffusion, elle, écrit des e-mails : lui retirer l'adresse
+        // ne protégeait plus personne, ça éteignait simplement SOS Renfort —
+        // la liste des destinataires était filtrée sur un champ absent, donc
+        // toujours vide, et plus aucun intervenant n'était prévenu. L'adresse
+        // n'est donc jointe que sur demande explicite d'un appel interne.
+        ...(avecEmail ? { email: u.email ?? null } : {}),
         name: [u.firstName, u.lastName].filter(Boolean).join(' ') || acc.name,
         job: p?.job ?? null,
         city: p?.city ?? null,
@@ -202,6 +264,37 @@ export class MatchingService {
     }
     results.sort((a, b) => b.total - a.total);
     return { mission: { id: mission.id, title: mission.title }, candidates: results };
+  }
+
+  /**
+   * Candidats classés POUR L'ÉCRAN de l'établissement. Aucune adresse e-mail
+   * dans la réponse : c'est la seule forme que traverse une route HTTP.
+   */
+  async candidatesForMission(
+    missionId: string,
+    accountId: string,
+    take = 100,
+  ): Promise<{ mission: { id: string; title: string } | null; candidates: CandidatMission[] }> {
+    return this.classerCandidats(missionId, accountId, take, false);
+  }
+
+  /**
+   * Candidats classés POUR LA DIFFUSION, adresse e-mail comprise.
+   *
+   * Usage strictement serveur→serveur (MissionsService.broadcastToMatched).
+   * À n'exposer par aucun contrôleur : le jour où une route en aurait besoin,
+   * c'est qu'il faut se reposer la question de la donnée exposée, pas
+   * brancher celle-ci.
+   */
+  async candidatesForMissionInterne(
+    missionId: string,
+    accountId: string,
+    take = 100,
+  ): Promise<{
+    mission: { id: string; title: string } | null;
+    candidates: CandidatMissionInterne[];
+  }> {
+    return this.classerCandidats(missionId, accountId, take, true);
   }
 
   // --- Opportunités classées pour un freelance ---------------------------

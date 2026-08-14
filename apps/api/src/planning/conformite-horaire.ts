@@ -90,8 +90,10 @@ export function lundiDe(d: Date): Date {
   return l;
 }
 
-/** Durée d'un créneau en heures. */
-const duree = (c: Creneau) => (c.endAt.getTime() - c.startAt.getTime()) / H;
+// La durée brute d'un créneau ne sert plus : tous les calculs passent par
+// `chevauchement`, qui répartit au prorata les services à cheval sur deux
+// jours ou deux semaines. Compter une nuit du dimanche au lundi en entier du
+// côté de son début faisait basculer une semaine au-delà du plafond à tort.
 
 /**
  * Heures d'un créneau qui tombent dans [debut, fin[. Un service de nuit à

@@ -227,28 +227,16 @@ const establishmentNav: NavSection[] = [
       { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' , avance: true },
     ],
   },
-  {
-    title: 'Équipe & conformité',
-    items: [
-      // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
-      // Une fiche par personne, et la conformité comme propriété de cette
-      // personne — pas comme un annuaire parallèle qu'il faut recouper.
-      { label: 'Équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
-      // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
-      // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
-      // Les uns sont salariés, les autres viennent en renfort.
-      { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
-      // Les regles de la convention, reportees une fois. Sans elles, les
-      // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
-      // juridiquement exact mais rarement ce que veut l'etablissement.
-      { label: 'Temps de travail & congés', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Le planning d’équipe déjà posé, les demandes d’absence, les soldes, et les règles de votre convention : nuit, dimanche, fériés, heures supplémentaires, annualisation' , avance: true },
-      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
-    ],
-  },
   // « LEX & pratique » et « Catalogue » ont été retirés du menu de gauche
   // le 4/8/2026 (demande Siham) : ces deux sections vivent désormais en haut
   // du header, à côté du sélecteur de compte (voir header.tsx), pour rester
   // accessibles à tout moment sans occuper la sidebar.
+  //
+  // Le 13/8/2026 (demande Siham) : l'ancienne section « Équipe & conformité »
+  // a été dissoute et repliée à la FIN de « Mon établissement ». Tout ce qui
+  // relève de la gestion interne de la structure — sa fiche, sa facturation,
+  // ses gens, leurs dossiers, son temps de travail — vit désormais sous un
+  // seul chapeau, au lieu de deux sections voisines qu'on hésitait à séparer.
   {
     title: 'Mon établissement',
     items: [
@@ -265,6 +253,24 @@ const establishmentNav: NavSection[] = [
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
+      // ── Repliés ici depuis l'ancienne section « Équipe & conformité » (13/8/2026) ──
+      // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
+      // Une fiche par personne, et la conformité comme propriété de cette
+      // personne — pas comme un annuaire parallèle qu'il faut recouper.
+      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
+      // La conformité existait comme page mais n'était liée nulle part dans le
+      // menu établissement : on la rend visible, juste après l'équipe dont elle
+      // est le prolongement (les pièces obligatoires des intervenants).
+      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants — identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
+      // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
+      // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
+      // Les uns sont salariés, les autres viennent en renfort.
+      { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
+      // Les regles de la convention, reportees une fois. Sans elles, les
+      // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
+      // juridiquement exact mais rarement ce que veut l'etablissement.
+      { label: 'Temps de travail & congés', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Le planning d’équipe déjà posé, les demandes d’absence, les soldes, et les règles de votre convention : nuit, dimanche, fériés, heures supplémentaires, annualisation' , avance: true },
+      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
     ],
   },
 ];

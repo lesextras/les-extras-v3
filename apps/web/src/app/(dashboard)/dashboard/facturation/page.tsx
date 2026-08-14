@@ -375,7 +375,17 @@ export default async function FacturationPage({
                               estEmetteur={inv.accountId === accountId}
                               compact
                             />
-                            {inv.status === "ISSUED" && inv.accountId !== accountId ? (
+                            {/* Le règlement appartient au PAYEUR — le compte à
+                                qui la facture est adressée. « Pas moi
+                                l'émetteur » ne suffisait pas : une facture
+                                sans payeur désigné affichait le bouton à qui
+                                n'avait rien à régler, et le serveur refusait
+                                ensuite. Note : les factures d'intervenants ne
+                                s'encaissent pas encore en ligne (voir
+                                BillingActions) — le bouton reste affiché et
+                                explique la marche à suivre plutôt que de
+                                laisser l'établissement chercher. */}
+                            {inv.status === "ISSUED" && inv.payerAccountId === accountId ? (
                               <CheckoutButton
                                 accountId={accountId}
                                 kind="invoice"

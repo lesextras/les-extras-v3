@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { FREE_MONTHLY_CREDITS, MOTIF_DOTATION } from './credits.constants';
 
 /**
@@ -92,12 +94,7 @@ describe('Le code source lui-même', () => {
    * traverse réellement. Sans cela, quelqu'un pourrait la retirer sans qu'une
    * seule assertion ne tombe — et le mur reviendrait en silence.
    */
-  const lire = (chemin: string) =>
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    (require('fs') as typeof import('fs')).readFileSync(
-      require('path').join(__dirname, chemin),
-      'utf-8',
-    );
+  const lire = (chemin: string) => readFileSync(join(__dirname, chemin), 'utf-8');
 
   it('l’inscription dote le compte', () => {
     const source = lire('../auth/auth.service.ts');

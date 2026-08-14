@@ -4,7 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ServiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { MESSAGE_HORS_PORTEE, reservableParCompte } from '../services/portee-salarie';
 import { bornes, page } from '../common/pagination';
 import { decomposerPrix, COMMISSION_DEFAUT } from '../billing/commission';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -127,6 +129,17 @@ export class QuotesService {
         select: { id: true, title: true, accountId: true, status: true },
       });
       if (!service) throw new NotFoundException('Prestation introuvable.');
+      // La demande de devis est le premier pas d'une réservation : elle doit
+      // obéir aux MÊMES règles que celle-ci, sinon elle devient la porte de
+      // service. Une fiche encore en brouillon, ou celle d'un salarié dont
+      // l'établissement demandeur n'est pas l'employeur, se demandait en devis
+      // par simple identifiant — l'intervenant recevait une sollicitation pour
+      // une prestation qu'il n'a légalement pas le droit de facturer.
+      if (service.status !== ServiceStatus.PUBLISHED) {
+        throw new NotFoundException('Prestation introuvable.');
+      }
+      const reservable = await reservableParCompte(this.prisma, service.id, accountId);
+      if (!reservable) throw new BadRequestException(MESSAGE_HORS_PORTEE);
       providerAccountId = service.accountId;
       title = title || service.title;
     }

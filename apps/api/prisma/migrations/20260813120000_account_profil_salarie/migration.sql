@@ -1,0 +1,14 @@
+-- PROFIL SALARIÉ — la colonne qui n'avait jamais eu de migration.
+--
+-- `Account.profilSalarie` est déclaré dans schema.prisma depuis la mise en
+-- place du parcours « Salarié », mais il est arrivé en production par un
+-- `db push` : aucune migration ne le portait. Conséquence, l'historique ne
+-- reconstruisait plus le schéma courant — une base neuve (CI, poste d'un
+-- nouveau développeur, restauration) démarrait sans la colonne, et toutes les
+-- requêtes qui filtrent dessus (vitrine publique, réservation d'atelier)
+-- tombaient. C'est la seule colonne du schéma dans ce cas.
+--
+-- IF NOT EXISTS parce que la production, elle, possède déjà la colonne : la
+-- migration doit passer sur une base neuve COMME sur celle qui a reçu le
+-- db push, sans jamais échouer ni perdre de donnée.
+ALTER TABLE "Account" ADD COLUMN IF NOT EXISTS "profilSalarie" BOOLEAN NOT NULL DEFAULT false;
