@@ -46,6 +46,7 @@ COPY --from=build /app/apps/api/dist /app/apps/api/dist
 COPY --from=build /app/apps/api/prisma /app/apps/api/prisma
 COPY --from=build /app/apps/api/package.json /app/apps/api/package.json
 COPY --from=build /app/apps/api/tsconfig.json /app/apps/api/tsconfig.json
+COPY --from=build /app/apps/api/docker-entrypoint.sh /app/apps/api/docker-entrypoint.sh
 WORKDIR /app/apps/api
 
 EXPOSE 3001
@@ -56,12 +57,14 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
 
 # Migrations appliquées au démarrage, puis lancement de l'API.
 #
-# --accept-data-loss : sans lui, db push s'arrête sur toute modification jugée
-# « risquée » et le conteneur ne démarre plus (constaté le 4/8/2026 : l'ajout
-# de la contrainte unique (accountId, number) sur Invoice — pourtant sans
-# danger, l'ancien schéma garantissait déjà l'unicité globale des numéros —
-# a bloqué le déploiement). Contrepartie assumée : les changements de schéma
-# destructifs s'appliquent désormais sans confirmation au démarrage. Toute
-# suppression de colonne/table doit donc être réfléchie AVANT le push git.
+# Le détail (et l'historique de la décision) est dans docker-entrypoint.sh.
+# En deux mots : on lançait `prisma db push --accept-data-loss` à chaque
+# démarrage, ce qui appliquait en silence n'importe quelle suppression de
+# colonne dès le boot. On est passé à `migrate deploy`, qui n'applique que
+# des migrations versionnées — le script gère au passage la base actuelle,
+# qui a des tables mais pas encore d'historique de migrations.
+#
+# `sh script` plutôt que `./script` : pas de dépendance au bit d'exécution,
+# que tous les chemins de dépôt ne préservent pas.
 ENTRYPOINT ["tini", "--"]
-CMD ["sh", "-c", "pnpm exec prisma db push --schema ./prisma/schema.prisma --skip-generate --accept-data-loss && node dist/main.js"]
+CMD ["sh", "./docker-entrypoint.sh"]
