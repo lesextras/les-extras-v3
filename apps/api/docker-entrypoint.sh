@@ -15,60 +15,69 @@
 # On repasse sur `migrate deploy` : il n'applique que des migrations écrites,
 # relues et versionnées, et il refuse tout ce qui n'est pas dans l'historique.
 #
-# LE CAS PARTICULIER DE LA BASE ACTUELLE
-# Elle contient toutes les tables mais aucune table `_prisma_migrations`,
-# puisque `db push` n'en crée pas. `migrate deploy` essaierait donc de rejouer
-# la migration initiale sur des tables déjà présentes, et échouerait. On
-# détecte ce cas précis et on inscrit l'historique existant comme appliqué
-# (« baseline », procédure documentée par Prisma) avant de déployer.
+# LES QUATRE ÉTATS POSSIBLES DE LA BASE, ET CE QU'ON EN FAIT
+#   1. vierge (nouvelle instance, restauration à blanc)
+#        → migrate deploy crée tout depuis zéro. Rien d'autre à faire.
+#   2. déjà gérée par les migrations (le cas normal, tous les démarrages)
+#        → migrate deploy n'applique que ce qui manque.
+#   3. schéma présent, aucun historique (héritage du db push)
+#        → migrate deploy refuse (P3005) ; on inscrit l'historique existant
+#          comme appliqué — la procédure de « baseline » documentée par
+#          Prisma — puis on redéploie.
+#   4. schéma présent, historique contenant une migration EN ÉCHEC
+#        → c'est l'état laissé par une tentative de bascule : migrate deploy
+#          refuse tout tant que l'échec n'est pas soldé (P3018). On repasse
+#          les migrations en échec en « rolled back », puis cas 3.
 #
-# Les trois situations possibles, toutes couvertes :
-#   1. base vierge (nouvelle instance, restauration à blanc)
-#        → pas de table Account → deploy direct, qui crée tout depuis zéro
-#   2. base héritée du db push (production au 14/08/2026)
-#        → tables présentes, pas d'historique → baseline puis deploy
-#   3. base déjà gérée par les migrations (tous les démarrages suivants)
-#        → historique présent → deploy direct, n'applique que le nouveau
+# LE GARDE-FOU QUI COMPTE
+# On n'inscrit JAMAIS un historique sans avoir vérifié que les tables sont
+# réellement là. Sinon, une base vide dont le déploiement a échoué pour une
+# raison passagère (base pas encore prête, réseau) serait marquée « migrée »
+# alors qu'elle est vide : Prisma n'y toucherait plus jamais et l'API
+# tournerait sur une base sans tables. Dans le doute, on s'arrête et le
+# conteneur ne démarre pas — Coolify garde alors l'ancien, qui fonctionne.
 # ============================================================================
 set -e
 
 SCHEMA=./prisma/schema.prisma
 
-# Renvoie « baseline » si la base contient déjà le schéma mais pas
-# l'historique des migrations, « deploy » dans tous les autres cas.
-# En cas de doute (base injoignable, erreur inattendue) on renvoie « deploy » :
-# migrate deploy échouera proprement et le conteneur ne démarrera pas, plutôt
-# que d'inscrire un historique faux sur une base qu'on n'a pas su lire.
-diagnostic() {
-  node -e '
-    const { PrismaClient } = require("@prisma/client");
-    const prisma = new PrismaClient();
-    const compte = (table) =>
-      prisma.$queryRaw`
-        SELECT count(*)::int AS n
-        FROM information_schema.tables
-        WHERE table_schema = current_schema() AND table_name = ${table}
-      `.then((r) => Number(r[0].n) > 0);
-
-    Promise.all([compte("Account"), compte("_prisma_migrations")])
-      .then(([schemaPresent, historiquePresent]) => {
-        console.log(schemaPresent && !historiquePresent ? "baseline" : "deploy");
-      })
-      .catch(() => console.log("deploy"))
-      .finally(() => prisma.$disconnect());
-  '
+# Vrai si la base contient déjà le schéma métier (on teste une table centrale).
+schema_deja_present() {
+  echo 'SELECT 1 FROM "Account" LIMIT 1;' \
+    | pnpm exec prisma db execute --stdin --schema "$SCHEMA" >/dev/null 2>&1
 }
 
-if [ "$(diagnostic)" = "baseline" ]; then
-  echo "[entrypoint] base héritée de db push : inscription de l'historique des migrations"
+# Solde une éventuelle migration en échec laissée par une tentative précédente.
+# Sans effet quand il n'y en a pas.
+solder_les_echecs() {
   for dossier in prisma/migrations/*/; do
     nom=$(basename "$dossier")
-    pnpm exec prisma migrate resolve --applied "$nom" --schema "$SCHEMA"
-    echo "[entrypoint]   $nom marquée comme appliquée"
+    pnpm exec prisma migrate resolve --rolled-back "$nom" --schema "$SCHEMA" >/dev/null 2>&1 || true
   done
-  echo "[entrypoint] historique complet, passage à migrate deploy"
-fi
+}
 
-pnpm exec prisma migrate deploy --schema "$SCHEMA"
+# Inscrit l'historique existant comme appliqué (baseline Prisma).
+inscrire_historique() {
+  for dossier in prisma/migrations/*/; do
+    nom=$(basename "$dossier")
+    pnpm exec prisma migrate resolve --applied "$nom" --schema "$SCHEMA" >/dev/null 2>&1 || true
+    echo "[entrypoint]   $nom"
+  done
+}
+
+solder_les_echecs
+
+if ! pnpm exec prisma migrate deploy --schema "$SCHEMA"; then
+  if schema_deja_present; then
+    echo "[entrypoint] base pré-existante sans historique complet : inscription de l'historique"
+    inscrire_historique
+    echo "[entrypoint] historique inscrit, nouvelle tentative"
+    pnpm exec prisma migrate deploy --schema "$SCHEMA"
+  else
+    echo "[entrypoint] les migrations ont échoué sur une base qui n'a pas le schéma :"
+    echo "[entrypoint] on n'inscrit pas d'historique à l'aveugle. Arrêt."
+    exit 1
+  fi
+fi
 
 exec node dist/main.js
