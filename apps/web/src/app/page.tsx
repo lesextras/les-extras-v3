@@ -71,7 +71,7 @@ export default async function LandingPage() {
   // chiffre faux sur la première page est le plus cher de tous : il se
   // vérifie en un clic, et c'est le clic suivant.
   const { data: catalogueAteliers } = await fetchPublic<{ total?: number; items?: CatalogItem[] }>(
-    '/public/catalog?type=service&take=1',
+    '/public/catalog?type=atelier&take=1',
   );
   const ateliersTotal = catalogueAteliers?.total ?? 0;
 

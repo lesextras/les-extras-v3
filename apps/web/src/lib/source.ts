@@ -47,6 +47,24 @@ function lireUrl(): SourceAcquisition | null {
     if (utm) return { source: utm, medium, campaign, landing, parrain };
     if (parrain) return { source: 'parrainage', landing, parrain };
 
+    // Les régies ajoutent leur propre identifiant de clic, PAS d'UTM : une
+    // annonce Facebook publiée sans paramètres de suivi n'arrive qu'avec
+    // `fbclid`. Sans ce rattrapage, tout le trafic payant se comptait en
+    // « direct » — depuis l'application Facebook le référent est vide, et on
+    // ne pouvait plus distinguer une visite achetée d'une visite naturelle.
+    const CLICS: Array<[string, string, string]> = [
+      ['fbclid', 'facebook', 'paid_social'],
+      ['ttclid', 'tiktok', 'paid_social'],
+      ['li_fat_id', 'linkedin', 'paid_social'],
+      ['gclid', 'google', 'cpc'],
+      ['gbraid', 'google', 'cpc'],
+      ['wbraid', 'google', 'cpc'],
+      ['msclkid', 'bing', 'cpc'],
+    ];
+    for (const [param, src, moyen] of CLICS) {
+      if (p.get(param)) return { source: src, medium: moyen, campaign, landing, parrain };
+    }
+
     const ref = document.referrer;
     if (!ref) return { source: 'direct', landing };
     const hote = new URL(ref).hostname.replace(/^www\./, '');
