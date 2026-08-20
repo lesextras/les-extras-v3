@@ -43,7 +43,6 @@ export function VisuelCarte({
       priority={priority}
       className={className}
       onError={() => setCasse(true)}
-      unoptimized
     />
   );
 }

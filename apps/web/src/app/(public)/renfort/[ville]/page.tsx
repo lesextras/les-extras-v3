@@ -15,6 +15,14 @@ export function generateMetadata({ params }: { params: { ville: string } }): Met
     title: `Renfort éducatif ${v.nom} — intervenants qualifiés`,
     description: `Trouver un intervenant qualifié pour un remplacement en établissement médico-social à ${v.nom} et alentours. Profils vérifiés, contrat généré, zéro commission côté intervenant.`,
     alternates: { canonical: `/renfort/${v.slug}` },
+    // Sans `url`, le partage héritait de celui du layout racine (« / ») :
+    // une publicité pointant sur la page Melun s'affichait avec l'adresse
+    // de l'accueil.
+    openGraph: {
+      url: `/renfort/${v.slug}`,
+      title: `Renfort éducatif ${v.nom} — intervenants qualifiés`,
+      description: `Trouver un intervenant qualifié pour un remplacement en établissement médico-social à ${v.nom} et alentours.`,
+    },
   };
 }
 

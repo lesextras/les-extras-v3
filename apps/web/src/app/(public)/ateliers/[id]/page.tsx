@@ -195,7 +195,6 @@ export default async function AtelierPublicPage({ params }: { params: { id: stri
               sizes="(max-width: 640px) 100vw, 66vw"
               className="object-cover"
               priority
-              unoptimized
             />
           </div>
           {images.length > 1 ? (
@@ -211,7 +210,6 @@ export default async function AtelierPublicPage({ params }: { params: { id: stri
                     fill
                     sizes="33vw"
                     className="object-cover"
-                    unoptimized
                   />
                 </div>
               ))}
@@ -478,7 +476,6 @@ export default async function AtelierPublicPage({ params }: { params: { id: stri
                         fill
                         sizes="33vw"
                         className="object-cover"
-                        unoptimized
                       />
                     </div>
                   ) : null}

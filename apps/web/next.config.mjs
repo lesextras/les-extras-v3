@@ -97,6 +97,28 @@ const nextConfig = {
   // liens déjà partagés.
   async redirects() {
     return [
+      /**
+       * www → apex, en 301.
+       *
+       * `www.les-extras.fr` répondait 200 et servait le site ENTIER, avec une
+       * canonique vers l'apex. Google indexe donc l'apex mais garde chaque
+       * adresse www dans son rapport sous « Autre page avec balise canonique
+       * correcte » — c'est le message que remontait la Search Console, et
+       * c'est du budget d'exploration dépensé pour rien : deux fois le site.
+       *
+       * Une canonique est une SUGGESTION ; une 301 est une instruction. On
+       * garde le domaine déclaré dans Coolify (le certificat en dépend), on
+       * cesse simplement d'y servir une copie.
+       *
+       * Pas de boucle possible : la condition ne porte que sur l'hôte `www`,
+       * la destination est absolue sur l'apex.
+       */
+      {
+        source: '/:chemin*',
+        has: [{ type: 'host', value: 'www.les-extras.fr' }],
+        destination: 'https://les-extras.fr/:chemin*',
+        permanent: true,
+      },
       { source: "/intervenants", destination: "/intervenant-independant", permanent: true },
       { source: '/actualites', destination: '/edublog', permanent: true },
       { source: '/actualites/:slug', destination: '/edublog/:slug', permanent: true },

@@ -42,7 +42,11 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    url: '/',
+    // PAS d'`url` ici. Ce champ ne se recalcule pas par page : toute page qui
+    // ne pose pas le sien héritait de « / » et annonçait donc l'accueil comme
+    // adresse canonique de partage — vingt-deux pages le faisaient, dont les
+    // six pages ville et les deux calculateurs, c'est-à-dire précisément
+    // celles qu'on partage. L'accueil pose le sien dans `app/page.tsx`.
     title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     description:
       'Ateliers et formations courtes réservables en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe quand l’urgence arrive.',

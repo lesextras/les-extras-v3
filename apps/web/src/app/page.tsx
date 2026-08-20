@@ -48,6 +48,8 @@ import { ApercuProduit } from './_shared/ApercuProduit';
  */
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
+  // Repris ici depuis le layout racine : voir le commentaire de `layout.tsx`.
+  openGraph: { url: '/' },
 };
 
 export default async function LandingPage() {
@@ -169,7 +171,6 @@ export default async function LandingPage() {
                     priority
                     sizes="(max-width: 1024px) 0px, 45vw"
                     className="animate-panoramique object-cover"
-                    unoptimized
                   />
                   {/* Voile bas : garantit le contraste de la carte posée
                       dessus, quelle que soit la photo qui remplacera celle-ci. */}
@@ -310,7 +311,6 @@ export default async function LandingPage() {
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      unoptimized
                     />
                   </div>
                   <h3 className="mt-4 text-lg font-semibold leading-snug text-foreground group-hover:text-primary">

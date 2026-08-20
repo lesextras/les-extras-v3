@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   title: 'Créer un compte',
   description:
     'Créez votre compte gratuit LES EXTRAS — établissement, professionnel indépendant ou salarié du médico-social.',
+  alternates: { canonical: '/register' },
+  openGraph: { url: '/register', title: 'Créer un compte' },
 };
 
 export default function RegisterLayout({ children }: { children: React.ReactNode }) {

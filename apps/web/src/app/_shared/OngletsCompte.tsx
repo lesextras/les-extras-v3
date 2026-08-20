@@ -9,29 +9,10 @@
 import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Tabs } from "@/components/ui/tabs";
-
-/** Valeur d'onglet interne → segment lisible dans l'URL. */
-const VERS_URL: Record<string, string> = {
-  profile: "profil",
-  services: "services",
-  settings: "parametres",
-};
-
-/** Segment d'URL (ou valeur interne, tolérée) → valeur d'onglet. */
-export function ongletDepuisUrl(brut?: string | null): string {
-  switch ((brut ?? "").toLowerCase()) {
-    case "services":
-      return "services";
-    case "parametres":
-    case "settings":
-      return "settings";
-    case "profil":
-    case "profile":
-      return "profile";
-    default:
-      return "profile";
-  }
-}
+// La table de correspondance vit dans un module NEUTRE : le Server Component
+// de /dashboard/account en a besoin, et il ne peut rien appeler d'un module
+// « use client ». Voir l'en-tête de `onglets-compte.ts`.
+import { VERS_URL } from "./onglets-compte";
 
 export function OngletsCompte({
   defaultValue,

@@ -97,7 +97,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
 
       {a.coverUrl ? (
         <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
-          <Image src={a.coverUrl} alt={a.title} fill sizes="100vw" className="object-cover" priority unoptimized />
+          <Image src={a.coverUrl} alt={a.title} fill sizes="100vw" className="object-cover" priority />
         </div>
       ) : null}
 
@@ -127,7 +127,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                   {r.coverUrl ? (
                     <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={r.coverUrl} alt={r.title} fill sizes="33vw" className="object-cover" unoptimized />
+                      <Image src={r.coverUrl} alt={r.title} fill sizes="33vw" className="object-cover" />
                     </div>
                   ) : null}
                   <CardContent className="p-4">

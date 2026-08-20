@@ -53,9 +53,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { data } = await fetchPublic<Vendor>(`/public/vendors/${params.id}`);
   const nom = fullName(data?.owner?.firstName, data?.owner?.lastName) || data?.name;
+  // Sans canonique, les quatre fiches publiques du sitemap n'en déclaraient
+  // aucune : le moteur choisit alors lui-même l'adresse de référence, et
+  // n'importe quel paramètre ajouté à l'URL devient une page de plus.
+  const description =
+    data?.owner?.profile?.bio?.slice(0, 160) ||
+    `${nom ?? "Intervenant"} — profil vérifié sur Les Extras, ateliers et renfort en établissement médico-social.`;
   return {
     title: nom || "Intervenant",
-    description: data?.owner?.profile?.bio?.slice(0, 160),
+    description,
+    alternates: { canonical: `/intervenants/${params.id}` },
+    openGraph: { url: `/intervenants/${params.id}`, title: nom || "Intervenant", description },
   };
 }
 
@@ -153,7 +161,6 @@ export default async function VendorPage({ params }: { params: { id: string } })
                         fill
                         sizes="(max-width: 640px) 100vw, 33vw"
                         className="object-cover"
-                        unoptimized
                       />
                     </div>
                   ) : null}

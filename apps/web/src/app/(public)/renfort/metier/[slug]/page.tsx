@@ -15,6 +15,11 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
     title: `Remplacement ${m.nom.toLowerCase()} — SOS Renfort`,
     description: m.accroche,
     alternates: { canonical: `/renfort/metier/${m.slug}` },
+    openGraph: {
+      url: `/renfort/metier/${m.slug}`,
+      title: `Remplacement ${m.nom.toLowerCase()} — SOS Renfort`,
+      description: m.accroche,
+    },
   };
 }
 

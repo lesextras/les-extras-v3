@@ -107,7 +107,7 @@ export default async function FormationPubliquePage({
 
       {images.length > 0 ? (
         <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
-          <Image src={images[0]} alt={f.title} fill sizes="100vw" className="object-cover" priority unoptimized />
+          <Image src={images[0]} alt={f.title} fill sizes="100vw" className="object-cover" priority />
         </div>
       ) : null}
 
@@ -266,7 +266,7 @@ export default async function FormationPubliquePage({
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                   {premierVisuel(r.images) ? (
                     <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={premierVisuel(r.images)!} alt={r.title} fill sizes="33vw" className="object-cover" unoptimized />
+                      <Image src={premierVisuel(r.images)!} alt={r.title} fill sizes="33vw" className="object-cover" />
                     </div>
                   ) : null}
                   <CardContent className="space-y-1 p-4">

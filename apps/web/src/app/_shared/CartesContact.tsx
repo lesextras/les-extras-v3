@@ -58,7 +58,6 @@ export function CartesContact() {
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    unoptimized
                   />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <span className="absolute bottom-4 left-5 grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-card">

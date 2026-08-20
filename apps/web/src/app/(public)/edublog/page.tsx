@@ -177,7 +177,7 @@ export default async function ActualitesPage({
               <div className="grid gap-0 md:grid-cols-2">
                 {une.coverUrl ? (
                   <div className="relative aspect-[16/10] bg-muted md:aspect-auto md:min-h-[280px]">
-                    <Image src={une.coverUrl} alt={une.title} fill sizes="50vw" className="object-cover" priority unoptimized />
+                    <Image src={une.coverUrl} alt={une.title} fill sizes="50vw" className="object-cover" priority />
                   </div>
                 ) : null}
                 <CardContent className="flex flex-col justify-center gap-3 p-8">
@@ -199,7 +199,7 @@ export default async function ActualitesPage({
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                   {a.coverUrl ? (
                     <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={a.coverUrl} alt={a.title} fill sizes="33vw" className="object-cover" unoptimized />
+                      <Image src={a.coverUrl} alt={a.title} fill sizes="33vw" className="object-cover" />
                     </div>
                   ) : null}
                   <CardContent className="space-y-2.5 p-5">

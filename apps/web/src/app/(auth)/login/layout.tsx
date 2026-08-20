@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   title: 'Se connecter',
   description:
     'Connectez-vous à votre espace LES EXTRAS : renforts, ateliers, formations et gestion de votre activité.',
+  // /login figure dans le sitemap mais ne déclarait aucune canonique : Google
+  // était libre d'indexer /login?next=… comme autant de pages distinctes.
+  alternates: { canonical: '/login' },
+  openGraph: { url: '/login', title: 'Se connecter' },
 };
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {

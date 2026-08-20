@@ -7,7 +7,12 @@
 // — et les réglages.
 import type { Metadata } from "next";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OngletsCompte, ongletDepuisUrl } from "../../../_shared/OngletsCompte";
+import { OngletsCompte } from "../../../_shared/OngletsCompte";
+// `ongletDepuisUrl` NE DOIT PAS être importée de `OngletsCompte.tsx` : ce
+// fichier porte « use client », donc TOUS ses exports sont des références
+// client. L'appeler ici faisait planter le rendu serveur de la page entière
+// (« Une erreur est survenue », 3 → 20 août 2026). Module neutre désormais.
+import { ongletDepuisUrl } from "../../../_shared/onglets-compte";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { BasculeValidationMissions } from "../../../_shared/BasculeValidationMissions";
 import { Badge } from "@/components/ui/badge";

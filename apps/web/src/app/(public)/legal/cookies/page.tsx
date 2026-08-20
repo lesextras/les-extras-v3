@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     ? "Ce que Les Extras dépose sur votre navigateur : les cookies indispensables au fonctionnement, et un cookie de mesure de campagne soumis à votre accord."
     : "Ce que Les Extras dépose sur votre navigateur : uniquement des cookies indispensables au fonctionnement. Aucun traceur publicitaire, aucune mesure d'audience.",
   alternates: { canonical: "/legal/cookies" },
+  openGraph: { url: "/legal/cookies", title: "Cookies et stockage local" },
 };
 
 const NECESSAIRES = [

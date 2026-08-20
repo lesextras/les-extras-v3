@@ -15,6 +15,7 @@ export function generateMetadata({ params }: { params: { rubrique: string } }): 
     title: `${r.titre} — Centre d’aide`,
     description: r.resume,
     alternates: { canonical: `/aide/${r.slug}` },
+    openGraph: { url: `/aide/${r.slug}`, title: `${r.titre} — Centre d’aide`, description: r.resume },
   };
 }
 

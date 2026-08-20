@@ -8,7 +8,31 @@ import { Button } from "@/components/ui/button";
 import { fetchPublic } from "../../../_shared/server";
 import { MISSION_CATEGORY_LABEL, formatDate, formatRate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Mission de renfort" };
+/**
+ * Les quatre missions publiques portaient TOUTES le titre « Mission de renfort ·
+ * LES EXTRAS » et aucune n'avait de canonique : quatre pages rigoureusement
+ * identiques aux yeux d'un moteur, qui en indexe une et range les autres en
+ * doublon. Le titre est désormais celui de la mission, avec sa ville.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const { data } = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
+  if (!data) return { title: "Mission de renfort", robots: { index: false, follow: true } };
+  const lieu = data.city ? ` — ${data.city}` : "";
+  const titre = `${data.title}${lieu}`;
+  const description =
+    (data.description ?? "").replace(/\s+/g, " ").trim().slice(0, 160) ||
+    `Mission de renfort en établissement médico-social${lieu}. Candidature directe, contrat généré, zéro commission.`;
+  return {
+    title: titre,
+    description,
+    alternates: { canonical: `/missions/${params.id}` },
+    openGraph: { url: `/missions/${params.id}`, title: titre, description },
+  };
+}
 
 interface PublicMission {
   id: string;
