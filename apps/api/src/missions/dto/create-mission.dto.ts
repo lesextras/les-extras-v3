@@ -15,7 +15,7 @@ import { ArrayMaxSize, IsArray } from 'class-validator';
 import { CibleDiffusion, MissionCategory, ModeAttribution } from '@prisma/client';
 
 /**
- * Création d'une mission SOS Renfort par un ESTABLISHMENT.
+ * Création d'une mission RenforTeam par un ESTABLISHMENT.
  * La mission est créée en statut DRAFT ; la diffusion se fait via /publish.
  */
 export class CreateMissionDto {

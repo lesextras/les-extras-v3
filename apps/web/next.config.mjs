@@ -80,7 +80,14 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'les-extras.fr' },
       { protocol: 'https', hostname: 'www.les-extras.fr' },
+      // Médiathèque WordPress. `app.les-extras.fr` est l'hôte sortant,
+      // `ialexia.fr` l'entrant : les DEUX doivent être listés pendant la
+      // bascule, sinon l'optimiseur d'images répond 400 et les visuels
+      // disparaissent — ils ne sont pas juste non optimisés, ils ne
+      // s'affichent plus. L'hôte servi est décidé dans `lib/media.ts`.
       { protocol: 'https', hostname: 'app.les-extras.fr' },
+      { protocol: 'https', hostname: 'ialexia.fr' },
+      { protocol: 'https', hostname: 'www.ialexia.fr' },
       { protocol: 'https', hostname: 'api.les-extras.fr' },
       { protocol: 'https', hostname: 'adepa77.fr' },
       { protocol: 'https', hostname: 'www.adepa77.fr' },
@@ -119,6 +126,17 @@ const nextConfig = {
         destination: 'https://les-extras.fr/:chemin*',
         permanent: true,
       },
+      /**
+       * « SOS Renfort » est devenu « RenforTeam » le 20/08/2026 — le renfort
+       * pour son équipe. L'ancienne adresse est indexée et partagée : elle
+       * redirige en 301, qui transmet l'antériorité à la nouvelle.
+       *
+       * Les pages de mots-clés — /renfort, /renfort/<ville>, /renfort/metier/<slug>
+       * — ne bougent PAS. Ce sont elles qui portent « renfort éducatif »,
+       * « remplacement éducateur spécialisé » ; la page de marque, elle, peut
+       * porter le nom de marque.
+       */
+      { source: '/sos-renfort', destination: '/renforteam', permanent: true },
       { source: "/intervenants", destination: "/intervenant-independant", permanent: true },
       { source: '/actualites', destination: '/edublog', permanent: true },
       { source: '/actualites/:slug', destination: '/edublog/:slug', permanent: true },

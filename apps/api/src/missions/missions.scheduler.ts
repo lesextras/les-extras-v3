@@ -9,7 +9,7 @@ import { MissionsService } from './missions.service';
 /**
  * Relance automatique des missions de renfort non pourvues.
  *
- * Problème traité : une mission SOS Renfort publiée que personne n'accepte
+ * Problème traité : une mission RenforTeam publiée que personne n'accepte
  * restait en l'état indéfiniment — aucun élargissement du périmètre de
  * diffusion, aucun rappel aux intervenants, aucune alerte à l'établissement.
  *

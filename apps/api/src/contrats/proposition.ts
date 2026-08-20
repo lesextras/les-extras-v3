@@ -1,7 +1,7 @@
 /**
  * LA PROPOSITION D'ENGAGEMENT.
  *
- * Ce que produit SOS Renfort n'est pas un contrat de travail — c'est un
+ * Ce que produit RenforTeam n'est pas un contrat de travail — c'est un
  * chiffrage. La plateforme trouve quelqu'un, annonce ce que coûterait son
  * engagement, et s'arrête là : c'est l'établissement qui embauche, en son nom
  * propre, avec son propre contrat.

@@ -11,6 +11,10 @@
 //     cela, l'Édublog affichait ses balises en clair — constaté en direct le
 //     10/08/2026 sur les vingt articles du blog.
 import Image from "next/image";
+// Le corps des articles importés de WordPress porte des URL de médiathèque :
+// `visuel()` réécrit les hôtes hérités, sinon un article de 2023 affiche une
+// image cassée après chaque déménagement de la médiathèque.
+import { visuel } from "@/lib/media";
 import type { ReactNode } from "react";
 
 // Entités HTML rencontrées dans les exports WordPress. Les lettres accentuées
@@ -161,7 +165,7 @@ const SOURCE_IMAGE = /<img\b[^>]*\ssrc\s*=\s*["']([^"']*)["'][^>]*>/i;
 const TEXTE_ALTERNATIF = /\salt\s*=\s*["']([^"']*)["']/i;
 
 function figure(balise: string, cle: string): ReactNode | null {
-  const src = lienSur(SOURCE_IMAGE.exec(balise)?.[1]);
+  const src = visuel(lienSur(SOURCE_IMAGE.exec(balise)?.[1]));
   if (!src) return null;
   const alt = decoderEntites(TEXTE_ALTERNATIF.exec(balise)?.[1] ?? "");
   return (
@@ -179,11 +183,39 @@ function figure(balise: string, cle: string): ReactNode | null {
 }
 
 /** Le HTML des articles importés, relu balise par balise. */
+/**
+ * NIVEAU DE TITRE — pourquoi il se calcule au lieu d'être appliqué.
+ *
+ * La page pose déjà un `<h1>` : le titre de l'article. Les corps importés de
+ * WordPress, eux, commencent souvent directement par un `<h3>` — c'était un
+ * choix de mise en forme dans l'éditeur d'origine, pas une intention de
+ * structure. On obtenait `h1 → h3` sur cinq articles de l'Édublog : un lecteur
+ * d'écran annonce alors un niveau manquant, et un moteur lit un plan troué.
+ *
+ * On ne force pas tout en `h2` pour autant : cela écraserait la hiérarchie des
+ * articles qui, eux, sont correctement structurés en h2 puis h3. On repère le
+ * niveau le plus HAUT réellement présent dans le corps, on le fait
+ * correspondre à `h2`, et tout ce qui est en dessous devient `h3`.
+ *
+ *   corps en h3, h3, h3        → h2, h2, h2
+ *   corps en h2, h3, h3        → h2, h3, h3   (inchangé)
+ *   corps en h3, h4            → h2, h3
+ */
+function faiseurDeTitres(niveaux: number[]): (niveau: number) => "h2" | "h3" {
+  const sommet = niveaux.length ? Math.min(...niveaux) : 2;
+  return (niveau) => (niveau <= sommet ? "h2" : "h3");
+}
+
 function htmlEnBlocs(html: string): ReactNode[] {
   const blocs: ReactNode[] = [];
   let dernier = 0;
   let m: RegExpExecArray | null;
   let k = 0;
+
+  // Pré-lecture des niveaux de titre présents, avant de rendre quoi que ce soit.
+  const titre = faiseurDeTitres(
+    [...html.matchAll(/<h([1-6])[\s>]/gi)].map((t) => Number(t[1])),
+  );
 
   // Du texte hors de toute balise de bloc reste du texte : on ne le perd pas.
   const pousserOrphelin = (fragment: string) => {
@@ -210,8 +242,8 @@ function htmlEnBlocs(html: string): ReactNode[] {
     }
 
     if (/^h[1-6]$/.test(balise)) {
-      const petit = balise >= "h3";
-      const Balise = petit ? "h3" : "h2";
+      const Balise = titre(Number(balise[1]));
+      const petit = Balise === "h3";
       blocs.push(
         <Balise
           key={`h${k}`}
@@ -295,6 +327,11 @@ export function RichText({ value }: { value: string }) {
   let paragraphe: string[] = [];
   let liste: string[] = [];
 
+  // Même règle que pour le HTML : le niveau le plus haut du corps devient h2.
+  const titre = faiseurDeTitres(
+    lignes.map((l) => /^(#{2,6})\s+/.exec(l)?.[1].length).filter((n): n is number => !!n),
+  );
+
   const viderParagraphe = (k: number) => {
     if (!paragraphe.length) return;
     const texte = paragraphe.join(" ");
@@ -333,7 +370,7 @@ export function RichText({ value }: { value: string }) {
       blocs.push(
         <figure key={`f${k}`} className="my-2">
           <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-muted">
-            <Image src={img[2]} alt={img[1] || ""} fill sizes="100vw" className="object-cover" unoptimized />
+            <Image src={visuel(img[2]) ?? img[2]} alt={img[1] || ""} fill sizes="100vw" className="object-cover" unoptimized />
           </div>
           {img[1] ? (
             <figcaption className="mt-1.5 text-center text-xs text-muted-foreground">
@@ -345,21 +382,22 @@ export function RichText({ value }: { value: string }) {
       return;
     }
 
-    const titre = /^(#{2,3})\s+(.*)$/.exec(l);
-    if (titre) {
+    // `entete`, pas `titre` : `titre` est la fonction qui décide du niveau.
+    const entete = /^(#{2,6})\s+(.*)$/.exec(l);
+    if (entete) {
       viderParagraphe(k);
       viderListe(k);
-      const Balise = titre[1].length === 2 ? "h2" : "h3";
+      const Balise = titre(entete[1].length);
       blocs.push(
         <Balise
           key={`h${k}`}
           className={
-            titre[1].length === 2
+            Balise === "h2"
               ? "mt-6 text-xl font-semibold text-foreground"
               : "mt-4 text-lg font-semibold text-foreground"
           }
         >
-          {inline(titre[2], `h${k}`)}
+          {inline(entete[2], `h${k}`)}
         </Balise>,
       );
       return;

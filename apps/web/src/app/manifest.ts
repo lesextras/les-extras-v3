@@ -4,7 +4,7 @@ import type { MetadataRoute } from 'next';
  * Manifeste PWA — LES EXTRAS.
  *
  * Servi par Next.js sur /manifest.webmanifest (App Router, Metadata Files API).
- * Rend l'application installable sur l'écran d'accueil : « SOS Renfort » est
+ * Rend l'application installable sur l'écran d'accueil : « RenforTeam » est
  * urgent par nature — un éducateur reçoit une mission à 7 h et la consulte sur
  * son téléphone, pas devant un ordinateur.
  *
@@ -59,7 +59,7 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       {
         name: 'Missions de renfort',
-        short_name: 'SOS Renfort',
+        short_name: 'RenforTeam',
         description: 'Voir les missions de renfort ouvertes',
         url: '/marketplace?type=missions',
         icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],

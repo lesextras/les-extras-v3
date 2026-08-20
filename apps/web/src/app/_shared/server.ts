@@ -48,9 +48,35 @@ export async function fetchApi<T>(
 }
 
 /** Appel API public (pages non authentifiées) — sans token ni compte. */
-export async function fetchPublic<T>(path: string): Promise<{ data?: T; error?: string }> {
+/**
+ * Appel API public, MIS EN CACHE.
+ *
+ * Les pages publiques appelaient l'API en `no-store` : chaque visiteur, chaque
+ * rechargement, chaque robot déclenchait le même aller-retour pour la même
+ * réponse. C'est le poste principal des 0,44 s à 0,90 s de temps de première
+ * réponse mesurés le 20/08/2026.
+ *
+ * Le catalogue, l'Édublog et le compteur d'ateliers n'ont pas besoin d'être
+ * frais à la seconde : une fenêtre d'une minute suffit, et une modification
+ * faite depuis l'administration apparaît au plus tard une minute après. Passer
+ * `revalidate: 0` pour forcer la fraîcheur là où elle compte vraiment.
+ *
+ * ⚠️ Le cache de DONNÉES de Next est distinct du cache de PAGE : les pages
+ * restent rendues à chaque requête (voir `dynamic` dans les layouts), c'est la
+ * réponse de l'API qui est partagée. C'est voulu : le build Docker n'a pas
+ * accès à l'API, donc pré-rendre les pages à la construction y graverait des
+ * pages vides.
+ */
+export async function fetchPublic<T>(
+  path: string,
+  options?: { revalidate?: number },
+): Promise<{ data?: T; error?: string }> {
+  const revalidate = options?.revalidate ?? 60;
   try {
-    const data = (await apiRequest(path, { method: "GET" })) as T;
+    const data = (await apiRequest(path, {
+      method: "GET",
+      ...(revalidate > 0 ? { next: { revalidate } } : { cache: "no-store" }),
+    })) as T;
     return { data };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur inconnue";

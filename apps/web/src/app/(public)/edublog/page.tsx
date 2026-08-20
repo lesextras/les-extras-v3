@@ -12,6 +12,9 @@ import { PageHeader, EmptyState } from "../../_shared/ui";
 import { formatDate, initials } from "../../_shared/format";
 
 import { metaPublique } from "@/lib/meta";
+// Les couvertures d'articles viennent de la médiathèque WordPress, qui a déjà
+// déménagé deux fois : on passe par `visuel()` pour réécrire les hôtes hérités.
+import { visuel } from "@/lib/media";
 export const metadata: Metadata = metaPublique({
   title: "Édublog",
   description:
@@ -175,9 +178,9 @@ export default async function ActualitesPage({
           <Link href={`/edublog/${une.slug}`} className="group block">
             <Card className="overflow-hidden transition group-hover:shadow-card">
               <div className="grid gap-0 md:grid-cols-2">
-                {une.coverUrl ? (
+                {visuel(une.coverUrl) ? (
                   <div className="relative aspect-[16/10] bg-muted md:aspect-auto md:min-h-[280px]">
-                    <Image src={une.coverUrl} alt={une.title} fill sizes="50vw" className="object-cover" priority />
+                    <Image src={visuel(une.coverUrl)!} alt={une.title} fill sizes="50vw" className="object-cover" priority />
                   </div>
                 ) : null}
                 <CardContent className="flex flex-col justify-center gap-3 p-8">
@@ -197,9 +200,9 @@ export default async function ActualitesPage({
             {suite.map((a) => (
               <Link key={a.id} href={`/edublog/${a.slug}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
-                  {a.coverUrl ? (
+                  {visuel(a.coverUrl) ? (
                     <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={a.coverUrl} alt={a.title} fill sizes="33vw" className="object-cover" />
+                      <Image src={visuel(a.coverUrl)!} alt={a.title} fill sizes="33vw" className="object-cover" />
                     </div>
                   ) : null}
                   <CardContent className="space-y-2.5 p-5">

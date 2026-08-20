@@ -86,7 +86,7 @@ export interface Constat {
 }
 
 const ORIGINE_LABEL: Record<string, string> = {
-  RENFORT: "SOS Renfort",
+  RENFORT: "RenforTeam",
   ATELIER: "Atelier",
   FORMATION: "Formation",
 };
@@ -142,7 +142,7 @@ const COULEUR_ORIGINE: Record<string, string> = {
 
 const LEGENDE: { cle: string; libelle: string }[] = [
   { cle: "MANUEL", libelle: "Créneau ajouté" },
-  { cle: "RENFORT", libelle: "SOS Renfort" },
+  { cle: "RENFORT", libelle: "RenforTeam" },
   { cle: "ATELIER", libelle: "Atelier" },
   { cle: "FORMATION", libelle: "Formation" },
 ];

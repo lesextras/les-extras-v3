@@ -204,7 +204,7 @@ export function RappelerVivier({
               Aucun besoin ouvert au réseau réservé pour l'instant.
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Publiez un SOS Renfort, ou élargissez la diffusion d'un besoin encore réservé à vos
+              Publiez un RenforTeam, ou élargissez la diffusion d'un besoin encore réservé à vos
               salariés.
             </p>
           </div>

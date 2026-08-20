@@ -1,3 +1,7 @@
+// Même raison que dans `(public)/layout.tsx` : le build n'atteint pas l'API,
+// donc pas de pré-rendu. La donnée, elle, est mise en cache par `fetchPublic`.
+export const dynamic = 'force-dynamic';
+
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,13 +18,16 @@ import {
   Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getSession } from '@/lib/session';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { fetchPublic } from './_shared/server';
+// Les visuels de la médiathèque WordPress passent par `wp()` : ils ont déjà
+// déménagé deux fois, et les URL écrites en dur sont celles qui survivent au
+// déménagement puis cassent seules. Voir `lib/media.ts`.
+import { wp } from '@/lib/media';
 import type { CatalogItem } from './(public)/_catalog';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { HeroSearch } from './_shared/HeroSearch';
@@ -53,15 +60,8 @@ export const metadata: Metadata = {
 };
 
 export default async function LandingPage() {
-  // Même raison que sur les pages publiques : l'accueil doit reconnaître
-  // quelqu'un qui est déjà connecté.
-  const sessionEnCours = await getSession();
-  const utilisateurEnTete = sessionEnCours
-    ? {
-        prenom: sessionEnCours.user.firstName ?? null,
-        compte: sessionEnCours.activeAccount?.name ?? sessionEnCours.account?.name ?? null,
-      }
-    : null;
+  // Plus de lecture de session ici : l'en-tête interroge `/api/visiteur`
+  // depuis le navigateur. Voir `app/(public)/layout.tsx`.
   // Compteur réel du catalogue public (affiché dans le hero).
   const { data: featured } = await fetchPublic<{ items: CatalogItem[]; total?: number }>(
     '/public/catalog?type=all&take=3',
@@ -85,7 +85,7 @@ export default async function LandingPage() {
 
   return (
     <div className="theme-sombre flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader utilisateur={utilisateurEnTete} />
+      <SiteHeader />
 
       <main id="main" className="flex-1">
         {/* ============ HERO — scindé, style grande plateforme ============ */}
@@ -284,21 +284,21 @@ export default async function LandingPage() {
                 titre: 'Les ateliers de notre réseau',
                 texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant vérifié.',
                 href: '/ateliers',
-                image: 'https://app.les-extras.fr/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg',
+                image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
                 action: 'Parcourir les ateliers',
               },
               {
                 titre: 'Nos parcours de formations certifiés Qualiopi',
                 texte: 'Montée en compétences des équipes, finançable par votre OPCO.',
                 href: '/formations',
-                image: 'https://app.les-extras.fr/wp-content/uploads/2025/02/lever-vous-400x400.jpeg',
+                image: wp('/wp-content/uploads/2025/02/lever-vous-400x400.jpeg'),
                 action: 'Voir les formations',
               },
               {
                 titre: 'Le renfort d’équipe et parental',
                 texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
-                href: '/sos-renfort',
-                image: 'https://app.les-extras.fr/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg',
+                href: '/renforteam',
+                image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
                 action: 'Comprendre le renfort',
               },
             ].map((d, i) => (
@@ -572,7 +572,7 @@ export default async function LandingPage() {
                   prix: '0 €',
                   prixSous: 'Gratuit, pour toujours — 0 % de commission',
                   points: [
-                    'SOS Renfort : diffusion en cascade, jusqu’au CDD généré',
+                    'RenforTeam : diffusion en cascade, jusqu’au CDD généré',
                     'Ateliers : catalogue, devis sous 48 h, contrat et facture automatiques',
                     'L’établissement paie le tarif de l’intervenant, qui le touche intégralement',
                     'Planning, équipe, conformité et messagerie inclus, sans limite',

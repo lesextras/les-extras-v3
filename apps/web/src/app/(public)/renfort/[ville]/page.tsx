@@ -71,7 +71,7 @@ export default function VillePage({ params }: { params: { ville: string } }) {
           Publier un besoin
         </Link>
         <Link
-          href="/sos-renfort"
+          href="/renforteam"
           className="inline-flex h-11 items-center rounded-lg border border-border px-5 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
         >
           Comment ça marche
@@ -133,7 +133,7 @@ export default function VillePage({ params }: { params: { ville: string } }) {
           contrat se génère tout seul.
         </p>
         <Link
-          href="/sos-renfort"
+          href="/renforteam"
           className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
           Le détail de la cascade

@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // /dashboard/gap n'y a plus sa place : elle redirige vers la connexion,
     // et un sitemap qui pointe une redirection gaspille le budget de crawl.
     "/gap",
-    "/sos-renfort",
+    "/renforteam",
     "/intervenant-independant",
     "/outils",
     "/outils/cout-remplacement",

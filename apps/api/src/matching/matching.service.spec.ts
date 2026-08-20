@@ -6,7 +6,7 @@ import { MatchingService } from './matching.service';
  * Le classement des candidats sert deux usages qui n'ont pas les mêmes
  * droits. L'écran de l'établissement n'a aucun besoin de l'adresse — prénom,
  * métier, ville et note suffisent pour choisir, et le contact passe par la
- * messagerie de la plateforme. La diffusion SOS Renfort, elle, envoie des
+ * messagerie de la plateforme. La diffusion RenforTeam, elle, envoie des
  * e-mails : sans adresse, elle ne prévient personne.
  *
  * Retirer l'adresse des DEUX sorties, comme ce fut le cas, protégeait la

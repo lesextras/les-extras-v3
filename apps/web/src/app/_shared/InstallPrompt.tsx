@@ -1,7 +1,7 @@
 "use client";
 
 // Invitation discrète à installer l'app sur l'écran d'accueil.
-// SOS Renfort se consulte au téléphone : l'icône sur l'écran d'accueil (et le
+// RenforTeam se consulte au téléphone : l'icône sur l'écran d'accueil (et le
 // mode plein écran) fait gagner de vraies secondes le matin.
 //
 // Règles : masqué si déjà installé (display-mode: standalone), masqué si

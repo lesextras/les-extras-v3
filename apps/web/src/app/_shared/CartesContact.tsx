@@ -7,6 +7,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { ArrowRight, Mail, MessageSquare } from "lucide-react";
+import { wp } from "@/lib/media";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -22,7 +23,7 @@ const CARTES = [
     // même chose, c'est le genre de détail qui fait douter du reste.
     texte: "Toutes nos interventions détaillées — publics, objectifs, tarifs — dans votre boîte mail.",
     action: "Demander le catalogue",
-    image: "https://app.les-extras.fr/wp-content/uploads/2025/02/lever-vous.jpeg",
+    image: wp("/wp-content/uploads/2025/02/lever-vous.jpeg"),
     icone: Mail,
     dialogTitre: "Recevoir le catalogue 2026",
     dialogTexte: "Renseignez vos coordonnées : le catalogue complet arrive par e-mail, sans créer de compte.",
@@ -32,7 +33,7 @@ const CARTES = [
     titre: "Nous écrire",
     texte: "Une question sur un atelier, une formation, un renfort ou un partenariat ? L'équipe ADéPA vous répond.",
     action: "Envoyer un message",
-    image: "https://app.les-extras.fr/wp-content/uploads/2026/04/school.jpeg",
+    image: wp("/wp-content/uploads/2026/04/school.jpeg"),
     icone: MessageSquare,
     dialogTitre: "Écrire à l'équipe",
     dialogTexte: "Décrivez votre besoin : nous revenons vers vous sous 48 h ouvrées.",

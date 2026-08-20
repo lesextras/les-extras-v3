@@ -70,7 +70,7 @@ export default function NotreHistoirePage() {
               <span className="grid size-10 place-items-center rounded-xl bg-secondary-soft text-secondary">
                 <Siren className="size-5" />
               </span>
-              <h3 className="pt-2 font-semibold text-foreground">SOS Renfort</h3>
+              <h3 className="pt-2 font-semibold text-foreground">RenforTeam</h3>
               <p className="text-sm text-muted-foreground">
                 Pour les remplacements urgents. Votre équipe d’abord, puis les habitués, puis le réseau.
               </p>

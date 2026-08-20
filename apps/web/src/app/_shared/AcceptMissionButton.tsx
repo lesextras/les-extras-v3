@@ -1,6 +1,6 @@
 "use client";
 
-// SOS Renfort — l'intervenant prend la mission.
+// RenforTeam — l'intervenant prend la mission.
 //
 // Deux modes coexistent, au choix de l'établissement à la publication :
 //

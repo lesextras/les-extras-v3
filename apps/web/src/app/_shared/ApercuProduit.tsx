@@ -179,7 +179,7 @@ export function ApercuProduit() {
               d’accueil, et les alertes arrivent même application fermée.
             </p>
             <Link
-              href="/sos-renfort"
+              href="/renforteam"
               className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
             >
               Comment marche le renfort

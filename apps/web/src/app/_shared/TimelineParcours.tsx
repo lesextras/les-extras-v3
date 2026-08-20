@@ -93,7 +93,7 @@ const PARCOURS: Record<
       {
         niveau: "usage",
         icone: Megaphone,
-        titre: "Publiez un SOS Renfort",
+        titre: "Publiez un RenforTeam",
         texte:
           "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé, jusqu'au CDD généré — la mise en relation et la contractualisation sont gratuites. Rappel automatique la veille, validation hiérarchique en option.",
         probleme:

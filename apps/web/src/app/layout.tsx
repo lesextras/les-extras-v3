@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     images: ['/images/partage-les-extras.jpg'],
   },
   robots: { index: true, follow: true },
-  // PWA — l'app doit être installable sur l'écran d'accueil (SOS Renfort se
+  // PWA — l'app doit être installable sur l'écran d'accueil (RenforTeam se
   // consulte au téléphone). Manifeste servi par src/app/manifest.ts.
   applicationName: 'Les Extras',
   manifest: '/manifest.webmanifest',

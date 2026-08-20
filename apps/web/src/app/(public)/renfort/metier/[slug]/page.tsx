@@ -12,12 +12,12 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   const m = trouverMetier(params.slug);
   if (!m) return { title: "Renfort" };
   return {
-    title: `Remplacement ${m.nom.toLowerCase()} — SOS Renfort`,
+    title: `Remplacement ${m.nom.toLowerCase()} — RenforTeam`,
     description: m.accroche,
     alternates: { canonical: `/renfort/metier/${m.slug}` },
     openGraph: {
       url: `/renfort/metier/${m.slug}`,
-      title: `Remplacement ${m.nom.toLowerCase()} — SOS Renfort`,
+      title: `Remplacement ${m.nom.toLowerCase()} — RenforTeam`,
       description: m.accroche,
     },
   };
@@ -68,7 +68,7 @@ export default function MetierPage({ params }: { params: { slug: string } }) {
           Publier un besoin
         </Link>
         <Link
-          href="/sos-renfort"
+          href="/renforteam"
           className="inline-flex h-11 items-center rounded-lg border border-border px-5 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
         >
           Comment marche la cascade

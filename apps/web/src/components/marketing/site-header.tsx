@@ -6,13 +6,14 @@ import { Menu, X, LayoutDashboard, CircleUserRound } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 import { BasculeTheme } from '@/app/_shared/BasculeTheme';
+import { useVisiteur } from '@/app/_shared/Visiteur';
 
 // Ordre = ordre de la strategie : l'atelier et la formation sont les produits
 // d'appel, le renfort vient ensuite.
 const links = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
-  { label: 'SOS Renfort', href: '/sos-renfort' },
+  { label: 'RenforTeam', href: '/renforteam' },
   { label: 'Le GAP', href: '/gap' },
   { label: 'Édublog', href: '/edublog' },
   // « Tarifs » et « Aide » ont quitté la barre le 5/8/2026 (demande Siham).
@@ -36,12 +37,29 @@ export interface UtilisateurEnTete {
  * session était pourtant intacte, mais l'en-tête ne la lisait pas. Résultat,
  * on croyait avoir été déconnecté en consultant le catalogue.
  *
- * La session est lue côté serveur (layout) et transmise ici : ce composant
- * reste client pour le menu mobile, mais ne devine plus l'état de connexion.
+ * DEPUIS LE 20/08/2026, la session n'est PLUS lue pendant le rendu serveur.
+ * Elle l'était uniquement pour cet en-tête, et cette seule lecture de cookie
+ * rendait toutes les pages publiques personnalisées, donc non cachables
+ * (`cache-control: no-store`) — 0,44 s à 0,90 s de temps de réponse sur chaque
+ * visite. Voir `app/api/visiteur/route.ts`.
+ *
+ * L'état arrive maintenant du navigateur, après l'affichage. Tant qu'il n'est
+ * pas connu, on n'affiche NI le prénom NI « Se connecter » : la place est
+ * réservée, rien ne clignote, et personne ne lit une information fausse
+ * pendant 200 ms. Le prop `utilisateur` reste accepté pour les rendus qui
+ * connaissent déjà la réponse (tests, aperçus) et court-circuite l'attente.
  */
 export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | null }) {
   const [open, setOpen] = React.useState(false);
-  const connecte = Boolean(utilisateur);
+  const visiteur = useVisiteur();
+  // `null` = on ne sait pas encore. Le troisième état est ce qui évite le
+  // clignotement : `undefined` ≠ `false`.
+  const connecte: boolean | null = utilisateur
+    ? true
+    : visiteur === null
+      ? null
+      : visiteur.connecte;
+  const compte = utilisateur?.compte ?? visiteur?.compte ?? null;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -62,16 +80,20 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
 
         <div className="hidden items-center gap-2 md:flex">
           <BasculeTheme />
-          {connecte ? (
+          {connecte === null ? (
+            // Réserve de place pendant qu'on interroge /api/visiteur : la barre
+            // ne doit pas se réorganiser sous le curseur au bout de 200 ms.
+            <div className="h-9 w-[168px]" aria-hidden />
+          ) : connecte ? (
             <>
-              {utilisateur?.compte && (
+              {compte && (
                 // L'icône rend le nom identifiable comme « le compte connecté »
                 // plutôt que comme un mot posé là. `shrink-0` la protège :
                 // sans ça, un nom d'établissement long l'écraserait avant de
                 // se tronquer lui-même.
                 <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <CircleUserRound className="size-4 shrink-0" aria-hidden />
-                  <span className="max-w-[200px] truncate">{utilisateur.compte}</span>
+                  <span className="max-w-[200px] truncate">{compte}</span>
                 </span>
               )}
               <Button asChild size="sm">
@@ -123,7 +145,9 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
               </Link>
             ))}
             <div className="mt-2 flex flex-col gap-2">
-              {connecte ? (
+              {connecte === null ? (
+                <div className="h-10" aria-hidden />
+              ) : connecte ? (
                 <Button asChild>
                   <Link href="/dashboard" onClick={() => setOpen(false)}>
                     <LayoutDashboard />

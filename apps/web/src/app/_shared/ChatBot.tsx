@@ -107,7 +107,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {(mode === "public"
-                    ? ["Combien coûte un atelier ?", "C'est quoi le SOS Renfort ?", "Comment demander un devis ?"]
+                    ? ["Combien coûte un atelier ?", "C'est quoi le RenforTeam ?", "Comment demander un devis ?"]
                     : ["Comment publier un renfort ?", "Où sont mes factures ?", "Comment créer un atelier ?"]
                   ).map((q) => (
                     <button

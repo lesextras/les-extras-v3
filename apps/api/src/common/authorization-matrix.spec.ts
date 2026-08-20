@@ -22,7 +22,7 @@ const MANAGER = ['OWNER', 'ADMIN', 'MANAGER'];
 const ADMINS = ['OWNER', 'ADMIN'];
 
 describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
-  describe('Missions (SOS Renfort)', () => {
+  describe('Missions (RenforTeam)', () => {
     it('créer / éditer / publier / élargir : Direction, Administrateur, Responsable', () => {
       for (const m of ['create', 'update', 'publish', 'broaden']) {
         expect(rolesOf(MissionsController, m)).toEqual(MANAGER);

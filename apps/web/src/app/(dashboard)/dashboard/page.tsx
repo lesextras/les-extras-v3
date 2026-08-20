@@ -145,7 +145,7 @@ export default async function DashboardPage() {
               },
               {
                 done: hasCatalog,
-                label: "Publiez votre premier SOS Renfort",
+                label: "Publiez votre premier RenforTeam",
                 href: "/dashboard/renforts",
               },
             ]
@@ -306,7 +306,7 @@ export default async function DashboardPage() {
                 ) : (
                   <EmptyState
                     title="Aucun renfort publié"
-                    description="Publiez votre premier SOS Renfort pour recevoir des candidatures."
+                    description="Publiez votre premier RenforTeam pour recevoir des candidatures."
                     action={<RenfortModal accountId={session.account.id} />}
                   />
                 )}

@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
  *
  * 1. `openGraph.title` ne descend PAS de `title`. Next reprend celui du
  *    layout racine tant qu'une page n'en pose pas un à elle. Résultat : un
- *    lien vers /sos-renfort partagé sur LinkedIn s'affichait « LES EXTRAS —
+ *    lien vers /renforteam partagé sur LinkedIn s'affichait « LES EXTRAS —
  *    Ateliers et formations », c'est-à-dire à côté du sujet — et c'est
  *    précisément l'aperçu que voit quelqu'un qui clique sur une publicité.
  *
@@ -22,7 +22,7 @@ export function metaPublique(p: {
   /** Titre de la page, sans le suffixe « · LES EXTRAS » (Next l'ajoute). */
   title: string;
   description: string;
-  /** Chemin absolu depuis la racine, ex. « /sos-renfort ». */
+  /** Chemin absolu depuis la racine, ex. « /renforteam ». */
   path: string;
   /** Titre de partage, si l'on veut autre chose que le titre de la page. */
   titrePartage?: string;

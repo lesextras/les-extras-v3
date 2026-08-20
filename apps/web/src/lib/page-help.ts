@@ -161,7 +161,7 @@ const AIDE: Record<string, PageHelpEntry> = {
     etapes: ['Répondez vite : un devis chiffré sous 48 h convertit bien mieux'],
   },
   '/dashboard/renforts': {
-    titre: 'SOS Renfort',
+    titre: 'RenforTeam',
     texte:
       'Publiez un besoin de remplacement urgent. La diffusion se fait en cascade : votre équipe d’abord, puis les intervenants déjà venus, puis la marketplace. Le premier profil compatible qui accepte remporte la mission.',
     etapes: ['Décrivez le besoin et les créneaux', 'Choisissez le palier de diffusion', 'Suivez les candidatures en temps réel'],

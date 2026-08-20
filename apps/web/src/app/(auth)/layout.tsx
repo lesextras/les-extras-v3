@@ -38,7 +38,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Le renfort médico-social, réuni au même endroit.
           </h2>
           <p className="mt-4 text-primary-foreground/80">
-            SOS Renfort, ateliers, planning, messagerie et factures. Un espace clair pour les
+            RenforTeam, ateliers, planning, messagerie et factures. Un espace clair pour les
             établissements et les professionnels indépendants.
           </p>
 

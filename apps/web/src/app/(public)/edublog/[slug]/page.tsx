@@ -12,6 +12,8 @@ import { fetchPublic } from "../../../_shared/server";
 import { formatDate, initials, fullName } from "../../../_shared/format";
 import { RichText, texteBrut } from "../../../_shared/RichText";
 import type { ArticleCard } from "../page";
+// Couvertures d'articles : médiathèque WordPress, hôtes hérités réécrits.
+import { visuel } from "@/lib/media";
 
 interface ArticleDetail extends ArticleCard {
   content?: string | null;
@@ -34,7 +36,7 @@ export async function generateMetadata({
   // page valide.
   if (!data) return { title: "Actualité introuvable", robots: { index: false, follow: false } };
   const desc = resume(data.excerpt || data.content || data.title);
-  const image = data.coverUrl ?? undefined;
+  const image = visuel(data.coverUrl) ?? undefined;
   return {
     title: data.title,
     description: desc,
@@ -95,9 +97,9 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         </div>
       </header>
 
-      {a.coverUrl ? (
+      {visuel(a.coverUrl) ? (
         <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
-          <Image src={a.coverUrl} alt={a.title} fill sizes="100vw" className="object-cover" priority />
+          <Image src={visuel(a.coverUrl)!} alt={a.title} fill sizes="100vw" className="object-cover" priority />
         </div>
       ) : null}
 
@@ -125,9 +127,9 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             {a.related.map((r) => (
               <Link key={r.id} href={`/edublog/${r.slug}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
-                  {r.coverUrl ? (
+                  {visuel(r.coverUrl) ? (
                     <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={r.coverUrl} alt={r.title} fill sizes="33vw" className="object-cover" />
+                      <Image src={visuel(r.coverUrl)!} alt={r.title} fill sizes="33vw" className="object-cover" />
                     </div>
                   ) : null}
                   <CardContent className="p-4">
@@ -152,7 +154,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
               "@type": "NewsArticle",
               headline: a.title.slice(0, 110),
               description: resume(a.excerpt || a.content || a.title, 300),
-              ...(a.coverUrl ? { image: [a.coverUrl] } : {}),
+              ...(visuel(a.coverUrl) ? { image: [visuel(a.coverUrl)!] } : {}),
               datePublished: a.publishedAt ?? undefined,
               author: { "@type": auteur ? "Person" : "Organization", name: auteur || nom },
               publisher: { "@type": "Organization", name: "LES EXTRAS" },

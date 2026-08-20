@@ -1,6 +1,6 @@
 "use client";
 
-// Modale « Candidater » (FREELANCE) — flow SOS Renfort, étape 2.
+// Modale « Candidater » (FREELANCE) — flow RenforTeam, étape 2.
 // POST /missions/:id/apply  -> crée un Booking (status REQUESTED) rattaché au
 // compte freelance actif + ouvre/relie une conversation avec l'établissement.
 import { useState } from "react";

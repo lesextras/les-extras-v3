@@ -1,7 +1,7 @@
 "use client";
 
-// Modale « Publier un SOS Renfort » (ESTABLISHMENT).
-// Flow SOS Renfort — étape 1 : création + publication de la mission.
+// Modale « Publier un RenforTeam » (ESTABLISHMENT).
+// Flow RenforTeam — étape 1 : création + publication de la mission.
 // POST /missions  -> { visibility } pilote la diffusion en cascade côté API.
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -232,7 +232,7 @@ export function RenfortModal({
       .then((rows) => {
         if (Array.isArray(rows) && rows.length) {
           setDbCats(rows);
-          // Le bouton s'appelle « SOS Renfort » : la catégorie présélectionnée
+          // Le bouton s'appelle « RenforTeam » : la catégorie présélectionnée
           // doit être le renfort/remplacement, pas la première par ordre
           // alphabétique (« Analyse des pratiques ») — sinon une mission sur
           // deux partait mal catégorisée.
@@ -333,7 +333,7 @@ export function RenfortModal({
         toast({
           title: "Mission créée en brouillon",
           description:
-            "La diffusion n'a pas pu se faire automatiquement. Ouvrez la mission dans SOS Renfort et cliquez sur « Publier ».",
+            "La diffusion n'a pas pu se faire automatiquement. Ouvrez la mission dans RenforTeam et cliquez sur « Publier ».",
           variant: "error",
         });
       }
@@ -353,7 +353,7 @@ export function RenfortModal({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Publier un SOS Renfort</DialogTitle>
+          <DialogTitle>Publier un RenforTeam</DialogTitle>
           <DialogDescription>
             Décrivez le besoin, puis choisissez qui le reçoit et comment la mission est
             attribuée.

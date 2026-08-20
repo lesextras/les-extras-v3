@@ -13,7 +13,11 @@ export function generateMetadata({ params }: { params: { rubrique: string } }): 
   if (!r) return { title: "Aide" };
   return {
     title: `${r.titre} — Centre d’aide`,
-    description: r.resume,
+    // `resume` fait 41 à 66 caractères : c'est la bonne longueur pour un
+    // chapeau affiché, la mauvaise pour une description de résultat Google,
+    // qui en accepte environ 155 et se retrouvait à moitié vide. On complète
+    // sans toucher au texte visible de la page.
+    description: `${r.resume} Les réponses aux questions des établissements et des intervenants du médico-social.`,
     alternates: { canonical: `/aide/${r.slug}` },
     openGraph: { url: `/aide/${r.slug}`, title: `${r.titre} — Centre d’aide`, description: r.resume },
   };

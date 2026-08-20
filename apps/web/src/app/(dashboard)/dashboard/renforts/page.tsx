@@ -1,5 +1,5 @@
-// Board SOS Renfort (ESTABLISHMENT) : missions publiées + candidatures reçues.
-// Flow SOS Renfort — vue établissement (publier -> voir candidatures -> confirmer).
+// Board RenforTeam (ESTABLISHMENT) : missions publiées + candidatures reçues.
+// Flow RenforTeam — vue établissement (publier -> voir candidatures -> confirmer).
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -31,7 +31,7 @@ import {
 } from "../../../_shared/format";
 import type { Mission } from "../../../_shared/types";
 
-export const metadata: Metadata = { title: "SOS Renfort" };
+export const metadata: Metadata = { title: "RenforTeam" };
 
 /**
  * Ce que l'établissement a demandé, dit avec ses mots. Un ciblage nominatif
@@ -65,7 +65,7 @@ export default async function RenfortsPage() {
   if (session.account.type !== "ESTABLISHMENT") {
     return (
       <div className="space-y-6">
-        <PageHeader title="SOS Renfort" />
+        <PageHeader title="RenforTeam" />
         <EmptyState
           title="Réservé aux établissements"
           description="Le board de publication des renforts est accessible depuis un compte établissement."
@@ -87,7 +87,7 @@ export default async function RenfortsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="SOS Renfort"
+        title="RenforTeam"
         subtitle="Publiez un besoin et suivez les candidatures en temps réel."
         actions={
           <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export default async function RenfortsPage() {
           title="Aucun renfort publié"
           description={
             peutPublier
-              ? "Créez un SOS Renfort : il sera diffusé en cascade (salariés → réseau réservé → public)."
+              ? "Créez un RenforTeam : il sera diffusé en cascade (salariés → réseau réservé → public)."
               : "Aucun besoin de remplacement n’est ouvert pour le moment. Un responsable de votre établissement peut en publier un."
           }
           action={peutPublier ? <RenfortModal accountId={session.account.id} /> : undefined}

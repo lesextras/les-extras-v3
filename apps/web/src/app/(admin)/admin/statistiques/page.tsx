@@ -220,7 +220,7 @@ export default async function AdminStatsPage() {
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-foreground">ROI &amp; performance</h2>
                 <p className="text-sm text-muted-foreground">
-                  Indicateurs de valeur du dispositif SOS Renfort, calculés sur les missions et
+                  Indicateurs de valeur du dispositif RenforTeam, calculés sur les missions et
                   réservations réelles.
                 </p>
               </div>

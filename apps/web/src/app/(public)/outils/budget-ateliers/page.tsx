@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { CalculateurBudget } from "../../../_shared/CalculateurBudget";
 
 export const metadata: Metadata = {
-  title: "Calculateur : budget annuel d'ateliers éducatifs pour un établissement",
+  title: "Calculateur de budget d'ateliers éducatifs",
   description:
-    "Estimez le budget annuel d'ateliers éducatifs de votre MECS, IME ou foyer : coût total, coût par jeune et par mois. Outil gratuit, sans inscription.",
+    "Estimez le budget annuel d'ateliers de votre MECS, IME ou foyer : coût total, coût par jeune, coût par mois. Gratuit, sans inscription.",
   alternates: { canonical: "/outils/budget-ateliers" },
   openGraph: {
     url: "/outils/budget-ateliers",
-    title: "Calculateur : budget annuel d'ateliers éducatifs pour un établissement",
+    title: "Calculateur de budget d'ateliers éducatifs",
     description:
-      "Estimez le budget annuel d'ateliers éducatifs de votre MECS, IME ou foyer : coût total, coût par jeune et par mois. Outil gratuit, sans inscription.",
+      "Estimez le budget annuel d'ateliers de votre MECS, IME ou foyer : coût total, coût par jeune, coût par mois. Gratuit, sans inscription.",
   },
 };
 

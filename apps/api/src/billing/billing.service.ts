@@ -99,7 +99,7 @@ export const ESTABLISHMENT_PLAN = {
   amountCents: 8900,
   monthlyCredits: 1000,
   perks:
-    'SOS Renfort illimité, 0 % de commission, LEX pour toute l’équipe (1 000 générations/mois partagées), coffre-fort de conformité et accompagnement',
+    'RenforTeam illimité, 0 % de commission, LEX pour toute l’équipe (1 000 générations/mois partagées), coffre-fort de conformité et accompagnement',
 } as const;
 
 /**

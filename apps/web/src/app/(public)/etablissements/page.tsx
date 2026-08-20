@@ -12,5 +12,5 @@
 import { redirect } from "next/navigation";
 
 export default function EtablissementsRedirect() {
-  redirect("/sos-renfort");
+  redirect("/renforteam");
 }

@@ -405,7 +405,7 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
    * La diffusion lisait la liste des candidats destinée à l'ÉCRAN, dont
    * l'adresse e-mail avait été retirée à dessein, puis filtrait sur cette
    * adresse : la liste des destinataires était vide en toutes circonstances.
-   * Aucune erreur, aucun log, aucune alerte — juste un SOS Renfort qui ne
+   * Aucune erreur, aucun log, aucune alerte — juste un RenforTeam qui ne
    * partait plus. Les deux tests ci-dessous ferment la porte des deux côtés :
    * la bonne source est appelée, et l'absence d'adresse fait du bruit.
    */

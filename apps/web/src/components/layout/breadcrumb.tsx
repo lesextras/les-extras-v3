@@ -36,7 +36,7 @@ const LABELS: Record<string, string> = {
   categories: 'Catégories',
   factures: 'Factures',
   statistiques: 'Statistiques',
-  renforts: 'SOS Renfort',
+  renforts: 'RenforTeam',
   planning: 'Planning',
   inbox: 'Messagerie',
   opportunites: 'Opportunités',
@@ -48,7 +48,7 @@ const LABELS: Record<string, string> = {
   // Segments qui manquaient : le fil les fabriquait depuis l'URL.
   equipe: 'Équipe',
   'mon-dossier': 'Mon dossier',
-  vivier: 'Mon vivier de CDD',
+  vivier: 'Mon vivier RenforTeam',
   facturation: 'Devis & factures',
   ideas: 'Boîte à idées',
   'temps-de-travail': 'Temps de travail',

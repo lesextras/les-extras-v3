@@ -32,7 +32,7 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "publier-un-renfort",
         question: "Comment publier un besoin de renfort ?",
         reponse: [
-          "Depuis votre tableau de bord, ouvrez SOS Renfort puis « Publier un besoin ». Vous renseignez le métier attendu, l'unité concernée, les dates et le taux horaire.",
+          "Depuis votre tableau de bord, ouvrez RenforTeam puis « Publier un besoin ». Vous renseignez le métier attendu, l'unité concernée, les dates et le taux horaire.",
           "Le besoin n'est pas envoyé à tout le monde d'un coup : il descend palier par palier. Vos propres salariés rattachés au compte d'abord, puis les intervenants déjà venus chez vous, puis le réseau. Il s'arrête dès qu'il est pourvu.",
           "Le premier intervenant qui accepte emporte la mission. Le contrat est généré automatiquement, vous n'avez rien à arbitrer.",
         ],

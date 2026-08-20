@@ -5,7 +5,7 @@
  *
  * Les deux exports existaient déjà côté serveur, et fonctionnaient. Le problème
  * était ailleurs : l'un vivait sous l'onglet « Congés », caché dans l'en-tête
- * d'une carte « Demandes », l'autre dans la barre d'actions de SOS Renfort. Un
+ * d'une carte « Demandes », l'autre dans la barre d'actions de RenforTeam. Un
  * chef de service qui prépare la paie du mois ne les trouvait ni l'un ni
  * l'autre — et surtout, il ne pouvait pas choisir le mois : l'export sortait
  * toujours le mois en cours, ce qui est exactement le mauvais mois quand on

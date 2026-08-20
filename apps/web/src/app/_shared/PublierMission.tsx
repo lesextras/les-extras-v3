@@ -4,7 +4,7 @@
  * Publier une mission restée en brouillon.
  *
  * L'impasse que ce bouton referme : quand la publication échouait au moment de
- * la création, le message disait « Ouvrez la mission dans SOS Renfort et
+ * la création, le message disait « Ouvrez la mission dans RenforTeam et
  * cliquez sur Publier » — et aucun bouton « Publier » n'existait sur aucun
  * écran. Une mission en brouillon était définitivement coincée.
  *

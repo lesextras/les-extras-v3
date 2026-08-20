@@ -210,7 +210,7 @@ const establishmentNav: NavSection[] = [
   {
     title: 'Renfort & prestations',
     items: [
-      { label: 'SOS Renfort', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
+      { label: 'RenforTeam', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
       // Le suivi de ce qu'on a commandé manquait complètement : renforts,
       // ateliers et inscriptions en formation étaient enregistrés mais
       // invisibles hors du back-office administrateur.
@@ -221,7 +221,7 @@ const establishmentNav: NavSection[] = [
       // Une seule entrée « Mes interventions » couvrait trois choses qui ne se
       // décident, ne se paient et ne se suivent pas de la même façon : un
       // renfort pourvu, un atelier commandé, une inscription en formation.
-      // Les renforts restent lisibles sur « SOS Renfort », qui montre chaque
+      // Les renforts restent lisibles sur « RenforTeam », qui montre chaque
       // mission avec son statut et ses candidatures ; les deux autres méritent
       // leur porte. L'adresse nue `/dashboard/reservations` continue de tout
       // afficher — les notifications y pointent avec une ancre.
@@ -271,7 +271,7 @@ const establishmentNav: NavSection[] = [
       // disait pas de quoi il était le vivier, et se confondait avec l'équipe
       // juste au-dessus. Ce sont les gens qu'on rappelle et qu'on embauche
       // soi-même en contrat court — le pendant humain de « Contrats CDD ».
-      { label: 'Mon vivier de CDD', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic pour un contrat court' },
+      { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },

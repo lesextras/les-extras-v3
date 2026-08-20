@@ -157,7 +157,7 @@ export class MissionsController {
   }
 
   /**
-   * SOS Renfort — accepter la mission (FREELANCE) : premier arrivé, premier servi.
+   * RenforTeam — accepter la mission (FREELANCE) : premier arrivé, premier servi.
    * La mission passe en « pourvue » et n'est plus disponible ; contrat généré.
    * En mode « file d'engagement », le service redirige vers /sengager.
    */

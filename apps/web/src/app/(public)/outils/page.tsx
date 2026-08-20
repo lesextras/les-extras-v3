@@ -4,7 +4,7 @@ import { Calculator, PiggyBank, ArrowRight } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Outils gratuits pour les établissements médico-sociaux",
+  title: "Outils gratuits pour le médico-social",
   description:
     "Calculateurs gratuits : coût d'un remplacement (intérim vs indépendant), budget annuel d'ateliers éducatifs. Sans inscription.",
   path: "/outils",

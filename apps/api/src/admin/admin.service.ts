@@ -1146,7 +1146,7 @@ export class AdminService {
         this.prisma.quote.count(),
         // Seules les réservations réellement issues d'un devis appartiennent au
         // tunnel : compter toutes les réservations (dont celles créées à la main
-        // ou par SOS Renfort) produisait des taux absurdes, supérieurs à 100 %.
+        // ou par RenforTeam) produisait des taux absurdes, supérieurs à 100 %.
         this.prisma.quote.count({ where: { bookingId: { not: null } } }),
         this.prisma.booking.count(),
         this.prisma.contactRequest.count(),
@@ -1322,7 +1322,7 @@ export class AdminService {
         demandes,
         devis,
         reservations,
-        /** Réservations toutes origines confondues (SOS Renfort inclus). */
+        /** Réservations toutes origines confondues (RenforTeam inclus). */
         reservationsTotales,
         demandesPubliques,
         tauxVueVersDemande: taux(demandes, vues),

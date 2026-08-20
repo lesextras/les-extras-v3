@@ -284,7 +284,7 @@ export class MailService implements OnModuleDestroy {
     const premiersPas = etab
       ? [
           'Parcourez le catalogue d’ateliers et de formations, et demandez un devis en deux clics.',
-          'Publiez un SOS Renfort quand une absence tombe : il part d’abord à votre équipe interne.',
+          'Publiez un RenforTeam quand une absence tombe : il part d’abord à votre équipe interne.',
           'Invitez vos salariés : la gestion interne (planning, pointage, conformité) est gratuite.',
         ]
       : [
@@ -428,7 +428,7 @@ export class MailService implements OnModuleDestroy {
     return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
   }
 
-  /** SOS Renfort : e-mail envoyé à chaque freelance dont le profil correspond. */
+  /** RenforTeam : e-mail envoyé à chaque freelance dont le profil correspond. */
   /**
    * Le rendez-vous du lundi — un e-mail par semaine, groupé, jamais plus.
    *
@@ -502,7 +502,7 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
-   * SOS Renfort — sollicitation d'un intervenant.
+   * RenforTeam — sollicitation d'un intervenant.
    *
    * `retenus` et `vague` personnalisent le message. C'est le levier le moins
    * coûteux et le plus efficace du dispositif : un e-nvoi de masse à cent
@@ -556,7 +556,7 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
-   * SOS Renfort — « mission garantie » : le dispositif a épuisé ses vagues
+   * RenforTeam — « mission garantie » : le dispositif a épuisé ses vagues
    * sans trouver preneur. L'établissement est prévenu qu'un humain reprend
    * la main, et l'association reçoit l'alerte pour appeler le vivier.
    */
@@ -714,7 +714,7 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
-  /** SOS Renfort : e-mail à l'établissement quand la mission est pourvue. */
+  /** RenforTeam : e-mail à l'établissement quand la mission est pourvue. */
   async sendMissionFilledEstablishment(
     to: string,
     data: { title: string; freelanceName: string; freelanceJob?: string | null; city?: string | null; date?: string | Date | null; contractUrl: string },
@@ -734,7 +734,7 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
-  /** SOS Renfort : e-mail au freelance qui a accepté (contrat + infos). */
+  /** RenforTeam : e-mail au freelance qui a accepté (contrat + infos). */
   async sendMissionAcceptedFreelance(
     to: string,
     data: { title: string; city?: string | null; address?: string | null; date?: string | Date | null; time?: string | null; contractUrl: string },

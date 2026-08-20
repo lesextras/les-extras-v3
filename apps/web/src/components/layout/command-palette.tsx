@@ -24,7 +24,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Freelance", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Freelance", keywords: "services educatheures" },
   { label: "Mes formations", href: "/dashboard/formations", group: "Freelance", keywords: "formation session émargement apprenants attestation" },
-  { label: "SOS Renfort", href: "/dashboard/renforts", group: "Établissement", keywords: "remplacement besoin publier" },
+  { label: "RenforTeam", href: "/dashboard/renforts", group: "Établissement", keywords: "remplacement besoin publier" },
   { label: "Formations", href: "/marketplace/formations", group: "Établissement", keywords: "catalogue certifiant qualiopi inscription salariés" },
   { label: "Mes réservations", href: "/dashboard/reservations", group: "Navigation", keywords: "reservations bookings renfort atelier formation inscriptions contrat tout" },
   { label: "Mes réservations ateliers", href: "/dashboard/reservations/ateliers", group: "Navigation", keywords: "reservations ateliers commandes interventions date statut" },

@@ -5,7 +5,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Produit',
     links: [
-      { label: 'SOS Renfort', href: '/#renfort' },
+      { label: 'RenforTeam', href: '/#renfort' },
       // L'ancre `/#ateliers` n'existe pas sur l'accueil : le lien ne bougeait
       // pas la page. Le catalogue d'ateliers a sa propre route.
       { label: 'Ateliers', href: '/ateliers' },

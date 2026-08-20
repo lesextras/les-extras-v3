@@ -14,7 +14,7 @@ const GLOBAL = [
 // Permissions par rôle DANS un compte (Membership.role).
 const ROWS = [
   { perm: "Voir l'espace de la structure", OWNER: true, ADMIN: true, MANAGER: true, MEMBER: true },
-  { perm: "Publier un SOS Renfort / une mission", OWNER: true, ADMIN: true, MANAGER: true, MEMBER: false },
+  { perm: "Publier un RenforTeam / une mission", OWNER: true, ADMIN: true, MANAGER: true, MEMBER: false },
   { perm: "Créer un atelier / une formation interne", OWNER: true, ADMIN: true, MANAGER: true, MEMBER: false },
   { perm: "Planifier une session / émarger", OWNER: true, ADMIN: true, MANAGER: true, MEMBER: false },
   { perm: "Inscrire des apprenants / facturer", OWNER: true, ADMIN: true, MANAGER: true, MEMBER: false },

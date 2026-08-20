@@ -17,7 +17,7 @@ export default function RenfortIndexPage() {
       <div className="mx-auto max-w-2xl text-center">
         <span className="eyebrow">
           <Megaphone className="size-3.5" aria-hidden />
-          SOS Renfort
+          RenforTeam
         </span>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground text-balance md:text-4xl">
           Un renfort, par métier et par territoire

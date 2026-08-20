@@ -4,13 +4,13 @@ import Link from "next/link";
 import { CalculateurRemplacement } from "../../../_shared/CalculateurRemplacement";
 
 export const metadata: Metadata = {
-  title: "Calculateur : combien coûte un remplacement ? Intérim vs indépendant",
+  title: "Coût d'un remplacement : intérim ou indépendant",
   description:
     "Comparez le coût réel d'un remplacement en médico-social : agence d'intérim (coefficient de facturation) contre intervenant indépendant. Calcul instantané, paramètres ajustables, sans inscription.",
   alternates: { canonical: "/outils/cout-remplacement" },
   openGraph: {
     url: "/outils/cout-remplacement",
-    title: "Calculateur : combien coûte un remplacement ? Intérim vs indépendant",
+    title: "Coût d'un remplacement : intérim ou indépendant",
     description:
       "Comparez le coût réel d'un remplacement en médico-social : agence d'intérim contre intervenant indépendant. Calcul instantané, sans inscription.",
   },

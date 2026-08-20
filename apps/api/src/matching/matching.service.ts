@@ -45,7 +45,7 @@ export interface CandidatMission {
 
 /**
  * Même candidat, PLUS l'adresse e-mail. Réservé aux appels serveur→serveur
- * (la diffusion SOS Renfort) : cette forme ne doit jamais sortir par une route
+ * (la diffusion RenforTeam) : cette forme ne doit jamais sortir par une route
  * HTTP. Voir `candidatesForMissionInterne`.
  */
 export interface CandidatMissionInterne extends CandidatMission {
@@ -246,7 +246,7 @@ export class MatchingService {
         // plateforme. L'adresse ne circule qu'après mise en relation acceptée.
         //
         // MAIS la diffusion, elle, écrit des e-mails : lui retirer l'adresse
-        // ne protégeait plus personne, ça éteignait simplement SOS Renfort —
+        // ne protégeait plus personne, ça éteignait simplement RenforTeam —
         // la liste des destinataires était filtrée sur un champ absent, donc
         // toujours vide, et plus aucun intervenant n'était prévenu. L'adresse
         // n'est donc jointe que sur demande explicite d'un appel interne.

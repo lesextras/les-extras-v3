@@ -4,9 +4,9 @@ import { ArrowRight, Check, Coins, Info, Receipt, Sparkles, Users, X } from "luc
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Frais de service — ce qui est gratuit, ce qui est payant",
+  title: "Ce qui est gratuit, ce qui est payant",
   description:
-    "La mise en relation et la contractualisation sont gratuites, pour les établissements comme pour les intervenants, sans commission. Seuls se paient les formations Qualiopi (au devis, facturées par l’association) et LEX, l’assistant IA à crédits.",
+    "Mise en relation et contractualisation gratuites, sans commission, des deux côtés. Seuls se paient les formations Qualiopi et LEX, l’assistant IA.",
   path: "/frais-de-service",
 });
 
@@ -15,7 +15,7 @@ export const metadata: Metadata = metaPublique({
 // e-mail à une direction, et un contenu qui ne se lit pas entre deux sections.
 
 const GRATUIT = [
-  "SOS Renfort : publication, candidatures, jusqu’au CDD généré",
+  "RenforTeam : publication, candidatures, jusqu’au CDD généré",
   "Ateliers : catalogue, réservation, devis, contrat et facture",
   "Planning partagé, pointage et validation des heures",
   "Messagerie interne rattachée aux missions",

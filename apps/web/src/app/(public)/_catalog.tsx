@@ -5,10 +5,9 @@ import { MapPin, Clock, Building2, Search, ArrowRight, Star } from "lucide-react
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fetchPublic, fetchApi } from "../_shared/server";
+import { fetchPublic } from "../_shared/server";
 import { VisuelCarte } from "../_shared/VisuelCarte";
 import { premierVisuel } from "@/lib/media";
-import { getSession } from "@/lib/session";
 import { FavoriteButton } from "../_shared/FavoriteButton";
 import { PageHeader, EmptyState } from "../_shared/ui";
 import { SERVICE_CATEGORY_LABEL, formatMoney } from "../_shared/format";
@@ -79,13 +78,11 @@ export async function CatalogView({
   const budget = searchParams?.priceMax ?? "";
   const tri = searchParams?.sort ?? "";
 
-  // Favoris de l'utilisateur connecté, s'il y en a un. Le catalogue reste
-  // entièrement public : sans session, on n'appelle simplement pas l'API.
-  const session = await getSession();
-  const { data: favorisIds } = session
-    ? await fetchApi<string[]>(session as never, "/favorites/ids")
-    : { data: undefined as string[] | undefined };
-  const favoris = new Set(favorisIds ?? []);
+  // LES FAVORIS NE SONT PLUS LUS ICI. Ils l'étaient depuis la session, et
+  // cette seule lecture de cookie rendait tout le catalogue non cachable — la
+  // page la plus lourde du site (188 Ko, 0,9 s de temps de réponse) recalculée
+  // à chaque visite pour allumer trois cœurs. `FavoriteButton` lit désormais
+  // son propre état depuis `/api/visiteur`, après l'affichage.
 
   const qs = new URLSearchParams({ type, take: "60" });
   if (search) qs.set("search", search);
@@ -299,12 +296,7 @@ export async function CatalogView({
                 {/* Le cœur est hors du lien : cliquer « mettre de côté » ne doit
                     pas ouvrir la fiche. */}
                 <div className="absolute right-3 top-3 z-10">
-                  <FavoriteButton
-                    serviceId={item.id}
-                    initial={favoris.has(item.id)}
-                    connecte={Boolean(session)}
-                    retour={`/ateliers/${item.id}`}
-                  />
+                  <FavoriteButton serviceId={item.id} retour={`/ateliers/${item.id}`} />
                 </div>
                 <CardContent className="flex flex-1 flex-col gap-3 p-5">
                   <div className="flex items-center justify-between gap-2">

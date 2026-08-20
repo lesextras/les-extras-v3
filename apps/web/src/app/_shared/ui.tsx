@@ -26,7 +26,7 @@ export function PageHeader({
         ) : null}
       </div>
       {/* `shrink-0` sans repli de ligne faisait déborder la page sur un
-          téléphone dès qu'il y avait deux boutons (SOS Renfort : « Exporter
+          téléphone dès qu'il y avait deux boutons (RenforTeam : « Exporter
           les heures validées » + « Publier un renfort ») : l'écran se mettait
           à défiler latéralement. On autorise le retour à la ligne. */}
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

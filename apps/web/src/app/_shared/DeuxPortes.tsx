@@ -14,7 +14,7 @@ const PORTES = [
     titre: "Trouver un intervenant",
     texte: "MECS, IME, ITEP, EHPAD, SESSAD. Un renfort ce soir, un atelier au trimestre, une formation pour l'équipe.",
     reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis sous 48 h"],
-    href: "/sos-renfort",
+    href: "/renforteam",
     secondaire: { libelle: "Voir le catalogue", href: "/ateliers" },
     teinte: "text-primary",
     fond: "bg-primary/10",

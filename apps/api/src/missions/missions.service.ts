@@ -202,7 +202,7 @@ export class MissionsService {
         _count: { select: { bookings: true } },
         categoryRef: { select: { id: true, title: true } },
         // Les candidatures, AVEC la personne derriere chacune. Sans cette
-        // jointure, le board SOS Renfort affichait « Candidatures recues (0) »
+        // jointure, le board RenforTeam affichait « Candidatures recues (0) »
         // a vie : l'ecran attendait mission.bookings, l'API ne l'envoyait
         // jamais. Le coeur du produit etait muet.
         bookings: {
@@ -593,7 +593,7 @@ export class MissionsService {
     });
     // Diffusion ciblée selon le palier. N'échoue jamais la publication — mais
     // ne se tait plus non plus : une diffusion muette, c'est un établissement
-    // qui croit avoir lancé son SOS Renfort alors que personne n'a rien reçu.
+    // qui croit avoir lancé son RenforTeam alors que personne n'a rien reçu.
     // On journalise le résultat comme l'échec, et l'audit garde la trace.
     void this.broadcastToMatched(id, accountId)
       .then((notifies) => {
@@ -764,7 +764,7 @@ export class MissionsService {
    * La diffusion filtre sur l'adresse e-mail — sans adresse, pas d'envoi. Mais
    * si AUCUN candidat classé n'en porte, ce n'est pas un résultat métier :
    * c'est une panne. C'est exactement ce qui s'est produit en production, la
-   * source des candidats ayant cessé de renvoyer l'adresse : SOS Renfort ne
+   * source des candidats ayant cessé de renvoyer l'adresse : RenforTeam ne
    * prévenait plus personne, sans la moindre erreur visible. On journalise
    * donc, bruyamment, plutôt que de rendre une liste vide l'air de rien.
    */
@@ -942,7 +942,7 @@ export class MissionsService {
   }
 
   /**
-   * SOS Renfort — un FREELANCE accepte la mission (premier arrivé, premier servi).
+   * RenforTeam — un FREELANCE accepte la mission (premier arrivé, premier servi).
    * Verrou atomique : la mission ne peut être remportée que par un seul intervenant.
    *
    * En mode « file d'engagement », l'attribution n'appartient plus à

@@ -281,7 +281,7 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
 
       {renforts.length > 0 && (
         <section className="space-y-3">
-          <SectionTitle title={`SOS Renfort — ${renforts.length}`} />
+          <SectionTitle title={`RenforTeam — ${renforts.length}`} />
           {renforts.map((b) => (
             <Ligne
               key={b.id}

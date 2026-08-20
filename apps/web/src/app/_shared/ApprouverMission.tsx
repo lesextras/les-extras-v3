@@ -1,7 +1,7 @@
 "use client";
 
 // Validation hiérarchique : bouton d'approbation d'une mission en attente,
-// visible des OWNER/ADMIN sur le board SOS Renfort.
+// visible des OWNER/ADMIN sur le board RenforTeam.
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
