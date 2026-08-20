@@ -124,6 +124,25 @@ export class FormationsController {
     return this.formations.updateSession(sessionId, account.id, user.id, dto);
   }
 
+  /**
+   * Le formateur émet SA facture à l'organisme pour cette session.
+   *
+   * Aucun rôle de compte n'est exigé, et c'est voulu : ce n'est pas un geste de
+   * gestion mais un acte personnel du prestataire. Le service vérifie lui-même
+   * que l'appelant est bien le formateur de la session et qu'il agit depuis son
+   * propre compte intervenant — la plateforme n'établit aucune facture au nom
+   * d'un tiers.
+   */
+  @Post('sessions/:sessionId/trainer-invoice')
+  @UseGuards(AccountGuard)
+  trainerInvoice(
+    @Param('sessionId') sessionId: string,
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+  ) {
+    return this.formations.trainerInvoice(sessionId, account.id, user.id);
+  }
+
   @Post('sessions/:sessionId/inscriptions')
   @UseGuards(AccountGuard)
   enroll(

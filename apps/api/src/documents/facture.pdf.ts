@@ -57,6 +57,19 @@ export interface DonneesFacturePdf {
     postalCode: string | null;
     city: string | null;
   } | null;
+  /**
+   * Désignation de la prestation, quand elle ne se déduit pas d'une
+   * réservation.
+   *
+   * Les factures de formation n'ont pas de `Booking` — ni celle de
+   * l'inscription vendue par l'organisme, ni celle de l'animation facturée par
+   * le formateur. Le PDF imprimait donc « Prestation » et une date « — » sur
+   * un document comptable. Or la désignation de la prestation et sa date
+   * d'exécution sont deux mentions obligatoires (art. L. 441-9 du code de
+   * commerce, art. 242 nonies A de l'annexe II au CGI) : sans elles, la
+   * facture est incomplète et le client ne sait pas ce qu'il paie.
+   */
+  prestation?: { intitule: string; dateRealisation: Date | null } | null;
   /** Mention de TVA à afficher : une association non assujettie doit le dire. */
   mentionTva: string;
 }
@@ -81,7 +94,18 @@ function adresse(p: {
 export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
   const { facture: f, emetteur, client } = d;
   const montant = Number(f.amount ?? 0);
+  // UN BROUILLON N'A PAS DE DATE D'ÉMISSION, et il ne faut pas lui en inventer
+  // une. Le document affichait « Émise le … » au-dessus de « Brouillon — non
+  // émise » : deux mentions contradictoires sur la même ligne, dont l'une
+  // fausse. La date d'émission est une mention obligatoire (art. L. 441-9 du
+  // code de commerce) ; tant que la facture n'est pas émise, on annonce
+  // seulement la date d'établissement.
+  const emise = f.issuedAt != null;
   const emission = f.issuedAt ?? f.createdAt;
+  // ÉCHÉANCE. Le pavé de bas de page renvoyait le client à « la date
+  // d'échéance » sans que celle-ci figure nulle part. Elle découle du délai
+  // annoncé juste au-dessus : trente jours à compter de l'émission.
+  const echeance = f.issuedAt ? new Date(f.issuedAt.getTime() + 30 * 24 * 3600 * 1000) : null;
 
   const { doc, termine } = nouveauDocument(
     `Facture ${f.number}`,
@@ -91,7 +115,7 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
   enTete(
     doc,
     `Facture ${f.number}`,
-    `Émise le ${dateFr(emission)} · ${STATUT[f.status] ?? f.status}`,
+    `${emise ? 'Émise' : 'Établie'} le ${dateFr(emission)} · ${STATUT[f.status] ?? f.status}`,
   );
 
   titreSection(doc, 'Émetteur');
@@ -109,10 +133,12 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
 
   titreSection(doc, 'Prestation');
   const intitule =
+    d.prestation?.intitule ??
     f.booking?.mission?.title ??
     f.booking?.service?.title ??
     'Prestation';
-  const dateRealisation = f.booking?.completedAt ?? f.booking?.scheduledAt ?? null;
+  const dateRealisation =
+    f.booking?.completedAt ?? f.booking?.scheduledAt ?? d.prestation?.dateRealisation ?? null;
   tableau(
     doc,
     [
@@ -127,6 +153,9 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
   ligne(doc, 'Total', euros(montant));
   ligne(doc, 'TVA', d.mentionTva);
   ligne(doc, 'Net à payer', euros(montant));
+  if (echeance && f.status !== 'PAID' && f.status !== 'CANCELLED') {
+    ligne(doc, "Date d'échéance", dateFr(echeance));
+  }
 
   titreSection(doc, 'Règlement');
   paragraphe(
@@ -138,7 +167,7 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
 
   encadre(
     doc,
-    `Document comptable à conserver. Facture ${f.number}, émise le ${dateFr(emission)} par ${emetteur.legalName ?? emetteur.name}. En cas de désaccord sur son contenu, contactez l'émetteur avant la date d'échéance.`,
+    `Document comptable à conserver. Facture ${f.number}, ${emise ? 'émise' : 'établie'} le ${dateFr(emission)} par ${emetteur.legalName ?? emetteur.name}. En cas de désaccord sur son contenu, contactez l'émetteur${echeance ? ` avant le ${dateFr(echeance)}` : ' sans attendre'}.`,
   );
 
   doc.flushPages();

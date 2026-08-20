@@ -60,6 +60,8 @@ export class CreateSessionAdminDto {
   @IsOptional() @IsString() location?: string;
   @IsOptional() @IsInt() @Min(1) maxSeats?: number;
   @IsOptional() @IsNumber() priceHt?: number;
+  /** Remuneration du formateur, hors taxes — distincte du prix de vente. */
+  @IsOptional() @IsNumber() trainerFeeHt?: number;
   @IsOptional() @IsString() trainerId?: string;
   @IsOptional() @IsEnum(SessionStatus) status?: SessionStatus;
 }
@@ -77,6 +79,8 @@ export class UpdateSessionAdminDto {
   @IsOptional() @IsString() location?: string;
   @IsOptional() @IsInt() @Min(1) maxSeats?: number;
   @IsOptional() @IsNumber() priceHt?: number;
+  /** Remuneration du formateur, hors taxes — distincte du prix de vente. */
+  @IsOptional() @IsNumber() trainerFeeHt?: number;
   @IsOptional() @IsString() trainerId?: string;
   @IsOptional() @IsEnum(SessionStatus) status?: SessionStatus;
 }

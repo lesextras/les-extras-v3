@@ -14,12 +14,18 @@ const AVANTAGES = [
   {
     titre: "Vous gardez 100 % de votre tarif",
     detail:
-      "Les frais de gestion d'ADéPA sont ajoutés au prix payé par l'établissement, jamais prélevés sur vous.",
+      "L'établissement paie exactement votre tarif : rien n'est prélevé sur vous, rien ne lui est ajouté.",
   },
   {
+    // Le texte annonçait « vous facturez l'association, l'association facture
+    // l'établissement ». C'est faux, et un intervenant qui l'aurait suivi
+    // aurait adressé sa facture à une association qui ne l'attend pas : la
+    // contractualisation d'un atelier se noue entre lui et l'établissement, en
+    // direct. La plateforme n'est qu'un outil — elle met le document en forme
+    // et le numérote, sous le SIRET de l'intervenant.
     titre: "Aucune démarche administrative de plus",
     detail:
-      "Vous facturez l'association, l'association facture l'établissement. Contrat et facture sont générés automatiquement.",
+      "Devis, contrat et facture sont préparés depuis votre compte, à votre nom et sous votre SIRET. Vous facturez l'établissement en direct.",
   },
   {
     titre: "Publier est gratuit",

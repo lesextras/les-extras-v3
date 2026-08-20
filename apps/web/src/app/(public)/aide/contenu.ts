@@ -106,7 +106,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Qui s'occupe des contrats et des factures ?",
         reponse: [
           "Tout est généré depuis la mission : contrat à double signature, déclaration d'heures, facture PDF.",
-          "Vous facturez l'association, et l'association facture l'établissement. Vous avez donc un seul payeur au lieu d'un par structure.",
+          "Les documents sont établis à votre nom et sous votre SIRET : vous facturez l'établissement en direct, l'association ne s'interpose pas et ne prend rien au passage.",
         ],
       },
       {
@@ -115,6 +115,7 @@ export const RUBRIQUES: Rubrique[] = [
         reponse: [
           "Oui. Vous intervenez sous la certification Qualiopi portée par l'association : vous apportez le contenu, elle porte le cadre réglementaire.",
           "Vous n'avez ni Qualiopi à obtenir, ni bilan pédagogique et financier à produire.",
+          "C'est le seul cas où l'association s'interpose, et c'est la certification qui l'impose : elle vend la formation à l'établissement et vous la lui facturez ensuite, au montant convenu, depuis votre compte et sous votre SIRET.",
         ],
       },
     ],

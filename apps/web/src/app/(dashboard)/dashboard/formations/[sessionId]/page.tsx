@@ -11,6 +11,7 @@ import { EmargementSheet } from "../../../../_shared/EmargementSheet";
 import { InscribeButton } from "../../../../_shared/InscribeButton";
 import { InscriptionDeliverables } from "../../../../_shared/InscriptionDeliverables";
 import { EvaluationForm } from "../../../../_shared/EvaluationForm";
+import { RemunerationFormateur } from "../../../../_shared/RemunerationFormateur";
 
 export const metadata: Metadata = { title: "Session" };
 
@@ -48,8 +49,18 @@ interface SessionDetail {
   location?: string | null;
   status: string;
   maxSeats?: number | null;
-  formation?: { title?: string | null; type?: string; certifying?: boolean } | null;
-  trainer?: { firstName?: string | null; lastName?: string | null } | null;
+  formation?: {
+    title?: string | null;
+    type?: string;
+    certifying?: boolean;
+    ownerAccountId?: string;
+  } | null;
+  hostAccountId?: string | null;
+  trainer?: { id?: string; firstName?: string | null; lastName?: string | null } | null;
+  /** Rémunération convenue avec le formateur (Decimal sérialisé). */
+  trainerFeeHt?: string | number | null;
+  /** Facture émise par le formateur à l'organisme, s'il l'a déjà fait. */
+  trainerInvoice?: { id: string; number: string; status: InvoiceStatus; accountId: string } | null;
   inscriptions?: Inscription[];
 }
 
@@ -99,6 +110,14 @@ export default async function SessionDetailPage({ params }: { params: { sessionI
   const isInterne = s.formation?.type === "INTERNE";
   const seatsLabel = s.maxSeats ? `${inscriptions.length}/${s.maxSeats}` : `${inscriptions.length}`;
   const trainer = s.trainer ? [s.trainer.firstName, s.trainer.lastName].filter(Boolean).join(" ") : null;
+  // DEUX CÔTÉS D'UNE MÊME PAGE. L'organisme (ou l'établissement hôte) commande
+  // la prestation et en fixe le montant ; le formateur la réalise et la
+  // facture. Personne ne fait les deux : c'est ce qui distingue un outil de
+  // facturation d'un mandat de facturation.
+  const commanditaire =
+    s.formation?.ownerAccountId === session.account.id || s.hostAccountId === session.account.id;
+  const estFormateur = Boolean(s.trainer?.id) && s.trainer?.id === session.user.id;
+  const remuneration = s.trainerFeeHt != null ? Number(s.trainerFeeHt) : null;
   // Deux jalons commandent l'ouverture des évaluations : l'évaluation de fin
   // dès que la session a commencé, l'évaluation à froid une fois qu'elle est
   // close. Avant, il n'y a rien à évaluer.
@@ -229,6 +248,19 @@ export default async function SessionDetailPage({ params }: { params: { sessionI
           </CardContent>
         </Card>
       </div>
+
+      {commanditaire || estFormateur ? (
+        <RemunerationFormateur
+          sessionId={s.id}
+          accountId={session.account.id}
+          montant={Number.isFinite(remuneration as number) ? remuneration : null}
+          facture={s.trainerInvoice ?? null}
+          peutFixer={commanditaire}
+          estFormateur={estFormateur}
+          formateur={trainer}
+          interne={isInterne}
+        />
+      ) : null}
 
       {/* LE BILAN QUALITÉ.
           Un taux de réponse dit autant qu'une moyenne : cinq réponses sur cinq

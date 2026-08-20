@@ -44,6 +44,19 @@ export class UpdateSessionDto {
   @Min(0)
   priceHt?: number;
 
+  /**
+   * Rémunération du formateur, hors taxes.
+   *
+   * Champ RÉSERVÉ à l'organisme et à l'établissement hôte : le service ignore
+   * ce champ quand la requête vient du formateur lui-même (cf.
+   * `updateSession`). Il n'appartient pas au prestataire de fixer, depuis le
+   * compte de son client, ce que ce client lui devra.
+   */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  trainerFeeHt?: number;
+
   @IsOptional()
   @IsEnum(SessionStatus)
   status?: SessionStatus;

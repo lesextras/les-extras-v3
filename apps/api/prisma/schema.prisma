@@ -701,6 +701,10 @@ model Invoice {
   createdAt  DateTime      @default(now())
 
   inscription Inscription? @relation("InscriptionInvoice")
+  /// Session dont cette facture est la remuneration du formateur, le cas
+  /// echeant. Le sens est inverse de `inscription` : ici l'emetteur est le
+  /// formateur et le payeur l'organisme.
+  sessionRemuneree FormationSession? @relation("SessionTrainerInvoice")
 
   @@unique([accountId, number])
   @@index([accountId])
@@ -1247,6 +1251,28 @@ model FormationSession {
   location      String?
   maxSeats      Int?
   priceHt       Decimal?      @db.Decimal(10, 2)
+  /// REMUNERATION DU FORMATEUR, hors taxes.
+  ///
+  /// `priceHt` est ce que l'organisme VEND a l'etablissement ; ce champ-ci est
+  /// ce qu'il ACHETE au formateur. Les deux sont independants et n'ont aucune
+  /// raison d'etre egaux. Le modele ne connaissait que le prix de vente : rien
+  /// dans la base ne savait ce qui etait du au formateur, donc rien ne pouvait
+  /// etre facture de son cote.
+  ///
+  /// Le montant est fixe par l'organisme qui commande la prestation. Le
+  /// formateur ne peut pas l'editer : on ne fixe pas, depuis le compte de son
+  /// client, le prix que ce client vous paiera (cf. `updateSession`).
+  trainerFeeHt  Decimal?      @db.Decimal(10, 2)
+  /// Facture emise PAR LE FORMATEUR a l'organisme pour cette session.
+  ///
+  /// Elle lui appartient : c'est son SIRET qui l'engage, et lui seul l'emet,
+  /// depuis son propre compte. La plateforme ne fait que la mettre en forme et
+  /// la numeroter dans SA sequence a lui — il n'y a aucun mandat de
+  /// facturation, et l'organisme ne peut pas la creer a sa place.
+  ///
+  /// Une seule par session : le lien unique tient lieu de verrou.
+  trainerInvoiceId String?    @unique
+  trainerInvoice   Invoice?   @relation("SessionTrainerInvoice", fields: [trainerInvoiceId], references: [id], onDelete: SetNull)
   status        SessionStatus @default(SCHEDULED)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt

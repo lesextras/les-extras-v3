@@ -868,6 +868,8 @@ export class AdminService {
         location: dto.location,
         maxSeats: dto.maxSeats,
         priceHt: dto.priceHt !== undefined ? new Prisma.Decimal(dto.priceHt) : undefined,
+        trainerFeeHt:
+          dto.trainerFeeHt !== undefined ? new Prisma.Decimal(dto.trainerFeeHt) : undefined,
         trainer: dto.trainerId ? { connect: { id: dto.trainerId } } : undefined,
         status: dto.status,
       },
@@ -896,6 +898,8 @@ export class AdminService {
         location: dto.location,
         maxSeats: dto.maxSeats,
         priceHt: dto.priceHt !== undefined ? new Prisma.Decimal(dto.priceHt) : undefined,
+        trainerFeeHt:
+          dto.trainerFeeHt !== undefined ? new Prisma.Decimal(dto.trainerFeeHt) : undefined,
         trainer: dto.trainerId ? { connect: { id: dto.trainerId } } : undefined,
         status: dto.status,
       },

@@ -41,4 +41,16 @@ export class CreateSessionDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   priceHt?: number;
+
+  /**
+   * Rémunération convenue avec le formateur, hors taxes.
+   *
+   * À ne pas confondre avec `priceHt`, qui est le prix de vente à
+   * l'établissement. C'est ce montant-là, et lui seul, que le formateur
+   * facturera ensuite à l'organisme depuis son propre compte.
+   */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  trainerFeeHt?: number;
 }

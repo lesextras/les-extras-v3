@@ -361,6 +361,7 @@ export class FormationsService {
         location: dto.location,
         maxSeats: dto.maxSeats,
         priceHt: dto.priceHt,
+        trainerFeeHt: dto.trainerFeeHt,
       },
     });
   }
@@ -395,6 +396,9 @@ export class FormationsService {
           select: { id: true, title: true, type: true, certifying: true, ownerAccountId: true },
         },
         trainer: { select: { id: true, firstName: true, lastName: true } },
+        // La facture du formateur, pour que l'écran sache s'il l'a déjà émise
+        // et n'offre pas deux fois le même geste.
+        trainerInvoice: { select: { id: true, number: true, status: true, accountId: true } },
         inscriptions: {
           orderBy: { createdAt: 'asc' },
           include: {
@@ -420,6 +424,19 @@ export class FormationsService {
     if (!this.canManageSession(session, accountId, userId)) {
       throw new ForbiddenException('Accès à cette session refusé.');
     }
+
+    // LE FORMATEUR NE FIXE PAS SA PROPRE RÉMUNÉRATION.
+    //
+    // `canManageSession` ouvre volontairement cette route à trois profils, dont
+    // le formateur — c'est lui qui tient l'émargement et le bilan. Mais le
+    // montant qui lui est dû est une commande passée par l'organisme : le
+    // laisser l'éditer reviendrait à écrire, depuis le compte de son client, le
+    // prix que ce client lui paiera, et la facture qu'il émettra ensuite en
+    // découle directement. On ignore le champ plutôt que de refuser la requête
+    // entière : le formateur garde l'usage normal de l'écran.
+    const cotePrestataire =
+      session.formation.ownerAccountId !== accountId && session.hostAccountId !== accountId;
+
     return this.prisma.formationSession.update({
       where: { id: sessionId },
       data: {
@@ -428,6 +445,7 @@ export class FormationsService {
         location: dto.location,
         maxSeats: dto.maxSeats,
         priceHt: dto.priceHt,
+        trainerFeeHt: cotePrestataire ? undefined : dto.trainerFeeHt,
         status: dto.status,
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
@@ -906,6 +924,99 @@ export class FormationsService {
     await this.prisma.inscription.update({
       where: { id: inscriptionId },
       data: { invoiceId: invoice.id },
+    });
+    return invoice;
+  }
+
+  /**
+   * LA SECONDE MOITIÉ DU CIRCUIT : le formateur facture l'organisme.
+   *
+   * Une formation vendue met en jeu deux factures, et une seule existait :
+   * l'organisme facture l'établissement qui inscrit (`invoiceInscription`),
+   * puis le formateur facture à l'organisme la prestation qu'il a assurée.
+   * Rien dans le modèle ne connaissait le montant dû au formateur, donc cette
+   * seconde facture ne pouvait pas être établie du tout.
+   *
+   * DEUX INVARIANTS, et ils tiennent tout le reste :
+   *
+   * 1. **C'est le formateur qui émet, sous son propre SIRET.** La plateforme
+   *    n'est qu'un outil : elle met le document en forme et lui donne un numéro
+   *    dans SA séquence à lui. Il n'y a aucun mandat de facturation, donc
+   *    l'organisme ne peut pas créer cette facture à sa place — même en étant
+   *    propriétaire du programme, même s'il connaît le montant. C'est pourquoi
+   *    on n'utilise pas `canManageSession()` ici : il ouvrirait la route à
+   *    l'organisme et à l'établissement hôte.
+   * 2. **Le compte qui émet est celui du formateur**, pas n'importe lequel de
+   *    ceux auxquels il appartient. Un formateur salarié d'un établissement est
+   *    membre du compte de cet établissement : émettre depuis ce compte-là
+   *    ferait facturer l'employeur à la place de la personne.
+   */
+  async trainerInvoice(sessionId: string, accountId: string, userId: string) {
+    const session = await this.prisma.formationSession.findUnique({
+      where: { id: sessionId },
+      include: { formation: true, trainerInvoice: true },
+    });
+    if (!session) throw new NotFoundException('Session introuvable.');
+
+    if (!session.trainerId || session.trainerId !== userId) {
+      throw new ForbiddenException(
+        "Seul le formateur de cette session peut émettre sa facture : la plateforme n'établit aucune facture au nom d'un tiers.",
+      );
+    }
+    // Déjà émise : on rend la même, sans jamais en créer une seconde. Le lien
+    // unique en base le garantirait, mais il vaut mieux une réponse qu'une
+    // violation de contrainte.
+    if (session.trainerInvoice) return session.trainerInvoice;
+
+    // Formation INTERNE : l'établissement forme ses propres salariés, le
+    // formateur est l'un d'eux. Il n'y a pas d'achat de prestation, donc pas
+    // de facture — la rémunération passe par la paie.
+    if (session.formation.type === FormationType.INTERNE) {
+      throw new BadRequestException(
+        "Une formation interne ne se facture pas : le formateur est salarié de la structure, sa rémunération relève de la paie.",
+      );
+    }
+
+    const organismeId = session.formation.ownerAccountId;
+    if (accountId === organismeId) {
+      throw new BadRequestException(
+        "Vous ne pouvez pas vous facturer vous-même : émettez cette facture depuis votre compte intervenant.",
+      );
+    }
+
+    // Le compte actif doit être celui du formateur en propre. `AccountGuard` a
+    // déjà vérifié qu'il en est membre ; ici on vérifie que c'est bien SON
+    // compte d'activité indépendante et pas celui d'un employeur.
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { id: true, type: true, ownerId: true },
+    });
+    if (!compte || compte.type !== 'FREELANCE' || compte.ownerId !== userId) {
+      throw new ForbiddenException(
+        'Cette facture doit être émise depuis votre compte intervenant, celui qui porte votre SIRET.',
+      );
+    }
+
+    const montant = Number(session.trainerFeeHt ?? 0);
+    if (!(montant > 0)) {
+      throw new BadRequestException(
+        "Aucune rémunération n'est encore fixée pour cette session : l'organisme doit la renseigner avant que vous puissiez la facturer.",
+      );
+    }
+
+    const number = await this.nextInvoiceNumber(accountId);
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        accountId,
+        payerAccountId: organismeId,
+        number,
+        amount: montant,
+        status: InvoiceStatus.DRAFT,
+      },
+    });
+    await this.prisma.formationSession.update({
+      where: { id: sessionId },
+      data: { trainerInvoiceId: invoice.id },
     });
     return invoice;
   }

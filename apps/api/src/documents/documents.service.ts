@@ -88,6 +88,18 @@ export class DocumentsService {
             service: { select: { title: true, accountId: true } },
           },
         },
+        // Les deux faces d'une formation, dont aucune ne passe par un Booking :
+        // l'inscription que l'organisme vend, et l'animation que le formateur
+        // lui facture en retour. Sans elles, ces factures sortaient avec
+        // « Prestation » pour toute désignation et aucune date d'exécution.
+        inscription: {
+          select: {
+            session: { select: { startDate: true, formation: { select: { title: true } } } },
+          },
+        },
+        sessionRemuneree: {
+          select: { startDate: true, formation: { select: { title: true } } },
+        },
       },
     });
     if (!facture) throw new NotFoundException('Facture introuvable.');
@@ -131,10 +143,27 @@ export class DocumentsService {
         })
       : null;
 
+    // Désignation d'une prestation de formation. L'ordre importe : une facture
+    // porte l'une OU l'autre, jamais les deux, et le sens n'est pas le même.
+    // L'animation est ce que le formateur vend à l'organisme ; l'inscription
+    // est ce que l'organisme vend à l'établissement.
+    const prestation = facture.sessionRemuneree
+      ? {
+          intitule: `Animation de la formation « ${facture.sessionRemuneree.formation.title} »`,
+          dateRealisation: facture.sessionRemuneree.startDate,
+        }
+      : facture.inscription
+        ? {
+            intitule: `Formation « ${facture.inscription.session.formation.title} » — inscription`,
+            dateRealisation: facture.inscription.session.startDate,
+          }
+        : null;
+
     const pdf = await facturePdf({
       facture: facture as never,
       emetteur,
       client,
+      prestation,
       // Mention propre à l'émetteur si renseignée (voir Account.vatMention) ;
       // sinon le défaut ci-dessous, vrai pour la grande majorité des comptes
       // (franchise en base, association non assujettie). Un émetteur assujetti
