@@ -837,10 +837,20 @@ export class FormationsService {
    * est unique en base, compter produisait tôt ou tard une collision — donc une
    * erreur serveur au moment précis où l'on facture une formation vendue.
    */
-  private async nextInvoiceNumber(): Promise<string> {
+  private async nextInvoiceNumber(accountId: string): Promise<string> {
     const annee = new Date().getFullYear();
     const derniere = await this.prisma.invoice.findFirst({
-      where: { number: { startsWith: prefixeAnnee(annee) } },
+      // LE COMPTEUR EST PROPRE À CHAQUE ÉMETTEUR, et le filtre manquait ici.
+      //
+      // La recherche portait sur toute la plateforme : ADéPA en était à
+      // INV-2026-00003, un intervenant émettait sa 113e facture, et la
+      // formation suivante d'ADéPA sortait en INV-2026-00114. Les numéros 4 à
+      // 113 n'existaient dans aucun livre de l'association — c'est exactement
+      // la rupture de séquence que le commentaire ci-dessus dit vouloir
+      // éviter. Les deux autres implémentations (invoices.service.ts,
+      // bookings.service.ts) filtrent bien par `accountId` ; celle-ci l'avait
+      // oublié.
+      where: { accountId, number: { startsWith: prefixeAnnee(annee) } },
       orderBy: { number: 'desc' },
       select: { number: true },
     });
@@ -870,10 +880,19 @@ export class FormationsService {
     // l'établissement qui inscrit. Auparavant, le compte de la facture était
     // celui du PAYEUR : l'organisme ne pouvait ni l'émettre, ni la télécharger,
     // et le PDF imprimait l'établissement comme émetteur de sa propre facture.
-    const emetteurId = accountId;
+    //
+    // L'ÉMETTEUR EST LE PROPRIÉTAIRE DU PROGRAMME, pas l'appelant. Le correctif
+    // précédent avait posé `emetteurId = accountId`, ce qui règle le cas
+    // nominal mais pas les autres : `canManageSession()` ouvre la route à trois
+    // profils — propriétaire du programme, établissement hôte et formateur. Si
+    // l'établissement hôte cliquait sur « facturer », il devenait l'émetteur
+    // d'une facture qui lui était adressée à lui-même, et l'organisme certifié
+    // disparaissait du document. Sur une formation, c'est toujours l'organisme
+    // qui vend et qui facture ; sa qualification Qualiopi ne se délègue pas.
+    const emetteurId = inscription.session.formation.ownerAccountId;
     const payerAccountId = inscription.payerAccountId ?? null;
     const amt = amount ?? Number(inscription.session.priceHt ?? 0);
-    const number = await this.nextInvoiceNumber();
+    const number = await this.nextInvoiceNumber(emetteurId);
 
     const invoice = await this.prisma.invoice.create({
       data: {

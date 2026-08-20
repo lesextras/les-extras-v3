@@ -234,11 +234,15 @@ export class InvoicesService {
    * surtout le titulaire légitime se retrouvait DÉFINITIVEMENT empêché de
    * facturer sa propre mission, puisque le verrou d'unicité était déjà pris.
    *
-   * On rétablit aussi le PAYEUR. Sur une mission de renfort, la réservation
-   * appartient à l'intervenant : `booking.accountId` et `invoice.accountId`
-   * étaient donc égaux, le client était déduit comme nul, et la facture
-   * sortait avec un bloc « Facturé à » vide — non conforme à l'article
-   * 242 nonies A du CGI — sans jamais parvenir à l'établissement.
+   * ET ON FACTURE DANS LE BON SENS. Le sens de la facture d'atelier est fixé
+   * par le modèle économique : l'intervenant contractualise avec
+   * l'établissement en direct, l'association ne prend pas de commission et
+   * n'est partie à rien. L'émetteur est donc le compte de la fiche atelier, le
+   * payeur celui qui a réservé — comme le fait déjà la facturation automatique
+   * de fin de prestation. Cette route manuelle prenait les deux à l'envers.
+   *
+   * Les renforts, eux, sortent complètement du champ : ils se règlent en CDD,
+   * pas en honoraires.
    */
   async create(accountId: string, dto: CreateInvoiceDto) {
     let payerAccountId: string | undefined;
@@ -259,16 +263,50 @@ export class InvoicesService {
       if (booking.invoice) {
         throw new BadRequestException('Une facture existe déjà pour cette réservation.');
       }
-      if (booking.accountId !== accountId) {
-        throw new ForbiddenException(
-          'Cette réservation ne relève pas de votre compte : vous ne pouvez pas la facturer.',
+      // UN RENFORT NE SE FACTURE PAS. Il se conclut en contrat à durée
+      // déterminée entre l'établissement et l'intervenant : la plateforme ne
+      // produit qu'une fiche d'informations — la proposition d'engagement, qui
+      // répète elle-même qu'elle n'est pas un contrat de travail — à charge
+      // pour l'établissement de rédiger le CDD. `bookings.service.ts` exclut
+      // d'ailleurs déjà les renforts de la facturation automatique, avec ce
+      // motif exact.
+      //
+      // Cette route, elle, les acceptait encore : un intervenant embauché en
+      // CDD pouvait émettre, depuis son compte, une facture d'honoraires à
+      // l'établissement qui l'emploie sur la même prestation. Cumul salaire et
+      // honoraires, sur pièces, sans aucun garde-fou. On refuse ici plutôt que
+      // de laisser sortir un document que ni l'un ni l'autre ne saura
+      // justifier devant un contrôle.
+      if (booking.mission) {
+        throw new BadRequestException(
+          "Un renfort ne se facture pas : il donne lieu à un contrat à durée déterminée conclu par l'établissement, pas à une facture d'honoraires.",
         );
       }
 
-      // Renfort : la réservation est celle de l'intervenant, le payeur est
-      // l'établissement qui a publié la mission. Atelier : la réservation est
-      // celle de l'établissement, le payeur est donc ce compte-là.
-      payerAccountId = booking.mission?.accountId ?? booking.service?.accountId;
+      // ATELIER : c'est l'INTERVENANT qui facture l'ÉTABLISSEMENT, en direct,
+      // sans passer par l'association. L'émetteur est donc le compte
+      // propriétaire de la fiche atelier, et le payeur celui qui a réservé.
+      // C'est exactement ce que fait la facturation automatique à la clôture
+      // (`bookings.service.ts` : émetteur = `service.accountId`, payeur =
+      // `booking.accountId`) ; cette route manuelle faisait l'inverse.
+      //
+      // Le garde-fou précédent — « la réservation doit relever de votre
+      // compte » — imposait en effet que l'appelant soit `booking.accountId`,
+      // c'est-à-dire l'ÉTABLISSEMENT sur un atelier, et posait comme payeur
+      // l'intervenant. La facture sortait donc à l'envers : l'établissement
+      // réclamait de l'argent à l'intervenant qu'il venait de réserver. Et
+      // l'intervenant, lui, ne pouvait pas facturer sa propre prestation.
+      if (!booking.service) {
+        throw new BadRequestException(
+          "Cette réservation n'est rattachée à aucun atelier : elle ne peut pas être facturée ici.",
+        );
+      }
+      if (booking.service.accountId !== accountId) {
+        throw new ForbiddenException(
+          "Cet atelier ne relève pas de votre compte : seul l'intervenant qui l'a réalisé peut le facturer.",
+        );
+      }
+      payerAccountId = booking.accountId;
       if (payerAccountId === accountId) payerAccountId = undefined;
     }
 

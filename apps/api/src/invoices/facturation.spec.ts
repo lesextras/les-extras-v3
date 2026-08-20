@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InvoiceStatus } from '@prisma/client';
 import { InvoicesService } from './invoices.service';
 import { numeroSuivant, prefixeAnnee } from './numerotation';
@@ -151,5 +151,90 @@ describe('Numérotation — scopée par émetteur', () => {
     const a: any = await serviceA.create('compte-a', { amount: 50 });
     const b: any = await serviceB.create('compte-b', { amount: 50 });
     expect(a.number).toBe(b.number);
+  });
+});
+
+/**
+ * LE SENS DE LA FACTURE, ET CE QUI NE SE FACTURE PAS DU TOUT.
+ *
+ * Trois flux, trois règles, et le code n'en respectait aucune sur cette route.
+ *
+ *   Atelier   — l'INTERVENANT facture l'ÉTABLISSEMENT, en direct. L'association
+ *               ne prend pas de commission et n'est partie à rien.
+ *   Formation — l'organisme facture l'établissement (traité côté formations).
+ *   Renfort   — personne ne facture personne : la prestation se règle par un
+ *               contrat à durée déterminée conclu par l'établissement.
+ */
+const INTERVENANT = 'compte-intervenant';
+const ETABLISSEMENT = 'compte-etablissement';
+
+function monterAvecBooking(booking: Record<string, unknown> | null) {
+  const prisma: any = {
+    invoice: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      create: jest.fn((args: any) => Promise.resolve({ id: 'nouvelle', ...args.data })),
+    },
+    booking: { findUnique: jest.fn().mockResolvedValue(booking) },
+  };
+  const service = new InvoicesService(prisma, { sendInvoiceIssued: jest.fn() } as any);
+  return { service, prisma };
+}
+
+describe('Création de facture — qui facture qui', () => {
+  it("un atelier se facture de l'intervenant vers l'établissement", async () => {
+    // L'ancienne règle exigeait que l'appelant soit `booking.accountId`,
+    // c'est-à-dire l'ÉTABLISSEMENT sur un atelier, et posait l'intervenant
+    // comme payeur : la facture sortait à l'envers, l'établissement réclamant
+    // de l'argent à l'intervenant qu'il venait de réserver.
+    const { service } = monterAvecBooking({
+      accountId: ETABLISSEMENT,
+      invoice: null,
+      mission: null,
+      service: { accountId: INTERVENANT },
+    });
+    const f: any = await service.create(INTERVENANT, { bookingId: 'b1', amount: 300 });
+    expect(f.accountId).toBe(INTERVENANT);
+    expect(f.payerAccountId).toBe(ETABLISSEMENT);
+  });
+
+  it("l'établissement ne peut pas facturer l'atelier qu'il a réservé", async () => {
+    const { service, prisma } = monterAvecBooking({
+      accountId: ETABLISSEMENT,
+      invoice: null,
+      mission: null,
+      service: { accountId: INTERVENANT },
+    });
+    await expect(
+      service.create(ETABLISSEMENT, { bookingId: 'b1', amount: 300 }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
+  });
+
+  it('un renfort ne se facture pas du tout', async () => {
+    // Sans ce refus, un intervenant embauché en CDD pouvait adresser une
+    // facture d'honoraires à l'établissement qui l'emploie sur la même
+    // prestation : salaire et honoraires cumulés, sur pièces.
+    const { service, prisma } = monterAvecBooking({
+      accountId: INTERVENANT,
+      invoice: null,
+      mission: { accountId: ETABLISSEMENT },
+      service: null,
+    });
+    await expect(
+      service.create(INTERVENANT, { bookingId: 'b1', amount: 300 }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
+  });
+
+  it('une réservation déjà facturée ne se refacture pas', async () => {
+    const { service } = monterAvecBooking({
+      accountId: ETABLISSEMENT,
+      invoice: { id: 'deja' },
+      mission: null,
+      service: { accountId: INTERVENANT },
+    });
+    await expect(
+      service.create(INTERVENANT, { bookingId: 'b1', amount: 300 }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });
