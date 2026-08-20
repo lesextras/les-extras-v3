@@ -23,7 +23,7 @@ const LABELS: Record<string, string> = {
   missions: 'Missions',
   ateliers: 'Ateliers',
   services: 'Ateliers',
-  reservations: 'Mes interventions',
+  reservations: 'Mes réservations',
   formations: 'Formations',
   qualiopi: 'Conformité Qualiopi',
   registre: 'Registre & BPF',
@@ -48,7 +48,7 @@ const LABELS: Record<string, string> = {
   // Segments qui manquaient : le fil les fabriquait depuis l'URL.
   equipe: 'Équipe',
   'mon-dossier': 'Mon dossier',
-  vivier: 'Mon vivier',
+  vivier: 'Mon vivier de CDD',
   facturation: 'Devis & factures',
   ideas: 'Boîte à idées',
   'temps-de-travail': 'Temps de travail',

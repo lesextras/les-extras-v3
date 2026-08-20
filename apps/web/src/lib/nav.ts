@@ -218,7 +218,15 @@ const establishmentNav: NavSection[] = [
       // Libellé raccourci : « Renforts et interventions » était tronqué en
       // « Renforts et interv… » dans la barre latérale. Une entrée qu'on ne
       // peut pas lire est une entrée sur laquelle on ne clique pas.
-      { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Vos renforts pourvus, ateliers commandés et inscriptions en formation — internes comme externes' },
+      // Une seule entrée « Mes interventions » couvrait trois choses qui ne se
+      // décident, ne se paient et ne se suivent pas de la même façon : un
+      // renfort pourvu, un atelier commandé, une inscription en formation.
+      // Les renforts restent lisibles sur « SOS Renfort », qui montre chaque
+      // mission avec son statut et ses candidatures ; les deux autres méritent
+      // leur porte. L'adresse nue `/dashboard/reservations` continue de tout
+      // afficher — les notifications y pointent avec une ancre.
+      { label: 'Mes réservations ateliers', href: '/dashboard/reservations/ateliers', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers que vous avez commandés et ceux que vous animez, avec leur date et leur statut' },
+      { label: 'Mes réservations formation', href: '/dashboard/reservations/formations', icon: GraduationCap, essentiel: true, hint: 'Les inscriptions en formation, nominatives : qui est inscrit, à quelle session, avec quel financement' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
       // Le pendant contractuel du planning : on a trouvé quelqu'un, on
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
@@ -239,8 +247,34 @@ const establishmentNav: NavSection[] = [
   // seul chapeau, au lieu de deux sections voisines qu'on hésitait à séparer.
   {
     title: 'Mon établissement',
+    // ORDRE DEMANDÉ PAR SIHAM LE 20/08/2026 — il suit le quotidien d'une
+    // directrice, pas l'ordre dans lequel les écrans ont été construits :
+    // la fiche de la maison, puis les gens (salariés, puis remplaçants), puis
+    // ce qu'on leur donne (formation), puis ce qu'on montre au dehors
+    // (publications, avis), puis l'argent, puis les pièces à jour.
+    //
+    // Deux entrées ne figurent pas dans cette liste et sont donc restées à la
+    // fin : « Proposer mes services », qui ne s'affiche qu'aux sous-comptes,
+    // et « Temps de travail & congés », marquée avancée. Aucune n'a été
+    // supprimée.
     items: [
       { label: 'Mon établissement', href: '/dashboard/account', icon: Building2 },
+      // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
+      // Une fiche par personne, et la conformité comme propriété de cette
+      // personne — pas comme un annuaire parallèle qu'il faut recouper.
+      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
+      // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
+      // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
+      // Les uns sont salariés, les autres viennent en renfort.
+      //
+      // « de CDD » ajouté au libellé (20/08/2026) : « Mon vivier » seul ne
+      // disait pas de quoi il était le vivier, et se confondait avec l'équipe
+      // juste au-dessus. Ce sont les gens qu'on rappelle et qu'on embauche
+      // soi-même en contrat court — le pendant humain de « Contrats CDD ».
+      { label: 'Mon vivier de CDD', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic pour un contrat court' },
+      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
+      { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.
@@ -250,27 +284,16 @@ const establishmentNav: NavSection[] = [
       // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
       // devis et la conformité.
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
-      { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
-      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
-      // ── Repliés ici depuis l'ancienne section « Équipe & conformité » (13/8/2026) ──
-      // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
-      // Une fiche par personne, et la conformité comme propriété de cette
-      // personne — pas comme un annuaire parallèle qu'il faut recouper.
-      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
       // La conformité existait comme page mais n'était liée nulle part dans le
-      // menu établissement : on la rend visible, juste après l'équipe dont elle
-      // est le prolongement (les pièces obligatoires des intervenants).
+      // menu établissement : on la rend visible. Elle ferme la section — c'est
+      // ce qu'on vérifie, pas ce qu'on fait tous les jours.
       { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants — identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
-      // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
-      // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
-      // Les uns sont salariés, les autres viennent en renfort.
-      { label: 'Mon vivier', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic' },
+      // ── Hors de l'ordre demandé, conservées à la fin ───────────────────────
+      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
       // Les regles de la convention, reportees une fois. Sans elles, les
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
       // juridiquement exact mais rarement ce que veut l'etablissement.
       { label: 'Temps de travail & congés', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Le planning d’équipe déjà posé, les demandes d’absence, les soldes, et les règles de votre convention : nuit, dimanche, fériés, heures supplémentaires, annualisation' , avance: true },
-      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
     ],
   },
 ];
