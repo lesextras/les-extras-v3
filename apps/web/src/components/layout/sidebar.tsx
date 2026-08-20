@@ -201,7 +201,15 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
                           active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
                         )}
                       />
-                      <span className="truncate">{item.label}</span>
+                      {/* `truncate` coupait sur UNE ligne : « Mes réservations
+                          ateliers » et « Mes réservations formation » sortaient
+                          toutes deux en « Mes réservations … », donc
+                          indiscernables — et « Former mes équipes » en « Former
+                          mes équi… ». Une entrée qu'on ne peut pas lire est une
+                          entrée sur laquelle on ne clique pas. Deux lignes
+                          autorisées : seules les entrées qui débordent
+                          s'agrandissent, les autres ne bougent pas. */}
+                      <span className="line-clamp-2 leading-snug">{item.label}</span>
                       {verrouille ? (
                         <Lock className="ml-auto size-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
                       ) : null}
