@@ -5,19 +5,32 @@
 // à l'autre fait douter le visiteur d'avoir changé de site. Toute évolution du
 // menu se fait donc dans SiteHeader, à un seul endroit.
 /**
- * PAS DE PRÉ-RENDU À LA CONSTRUCTION, et ce n'est pas négociable tant que le
- * build Docker n'atteint pas l'API : `API_BASE_URL` est une variable
- * d'EXÉCUTION posée dans Coolify, absente au moment du `next build`. Sans ce
- * garde-fou, Next verrait des pages sans lecture de cookie ni fetch `no-store`,
- * les jugerait statiques, et graverait « aucun contenu » dans le HTML livré.
+ * PAGES PUBLIQUES STATIQUES, RÉGÉNÉRÉES TOUTES LES CINQ MINUTES (ISR).
  *
- * Ce que le travail du 20/08/2026 a changé, ce n'est donc pas le cache de PAGE
- * mais le cache de DONNÉES : la réponse de l'API est désormais partagée entre
- * tous les visiteurs pendant une minute (`fetchPublic`), et plus aucune page
- * publique ne lit la session. Passer au pré-rendu complet ne demande plus de
- * refonte : seulement de fournir `API_BASE_URL` au build.
+ * Jusqu'au 21/08/2026, ce layout était `force-dynamic`, et pour une bonne
+ * raison à l'époque : le build Docker n'atteignait pas l'API, et Next aurait
+ * gravé « aucun contenu » dans du HTML statique. Ce verrou est tombé :
+ * `NEXT_PUBLIC_API_URL` est un argument de BUILD (Dockerfile + Coolify) qui
+ * pointe l'API publique — `next build` pré-rend donc avec de vraies données.
+ *
+ * Conséquences :
+ *  - une page éditoriale (aide, mode d'emploi, frais, vitrines…) se sert
+ *    comme un fichier : plus de rendu serveur par visiteur, plus de
+ *    `no-store` — c'est le temps de première réponse de tout le site public
+ *    qui change, campagne publicitaire comprise ;
+ *  - les pages qui lisent `searchParams` (catalogue filtré, Édublog, GAP)
+ *    redeviennent dynamiques D'ELLES-MÊMES à la requête : Next le déduit,
+ *    rien à déclarer ;
+ *  - les fiches ([id], [slug]) se génèrent à la première visite puis se
+ *    servent statiques, avec la même fenêtre de cinq minutes.
+ *
+ * Si l'API est injoignable pendant un build, `fetchPublic` renvoie une erreur
+ * sans jeter : la page sort dégradée, et la première régénération — au plus
+ * tard cinq minutes après le déploiement, en pratique dès le healthcheck — la
+ * complète. Aucune page publique ne lit la session : c'est la condition de
+ * tout ceci, et elle est documentée plus bas.
  */
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/marketing/site-header";

@@ -1,6 +1,20 @@
-// Même raison que dans `(public)/layout.tsx` : le build n'atteint pas l'API,
-// donc pas de pré-rendu. La donnée, elle, est mise en cache par `fetchPublic`.
-export const dynamic = 'force-dynamic';
+// PAGE STATIQUE, RÉGÉNÉRÉE TOUTES LES CINQ MINUTES (ISR).
+//
+// Jusqu'au 21/08/2026 : `force-dynamic` — le serveur RE-RENDAIT l'accueil à
+// chaque visite et répondait `no-store`. La donnée était cachée une minute
+// (fetchPublic), mais le rendu, lui, était payé par chaque visiteur : le pire
+// réglage possible sous campagne publicitaire, où tout le trafic payant
+// atterrit précisément ici.
+//
+// Le verrou historique (« le build n'atteint pas l'API ») est tombé :
+// `NEXT_PUBLIC_API_URL` est un argument de build (Dockerfile + Coolify) qui
+// pointe l'API PUBLIQUE, joignable pendant `next build`. La page se pré-rend
+// donc avec de vraies données, se sert toute prête (TTFB de fichier statique),
+// et se régénère en arrière-plan. Si l'API est injoignable au build,
+// `fetchPublic` renvoie une erreur sans jeter : la page sort sans la section
+// « sélection », et la première régénération (le healthcheck Docker frappe `/`
+// toutes les 30 s) la complète.
+export const revalidate = 300;
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
