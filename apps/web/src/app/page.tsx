@@ -489,6 +489,72 @@ export default async function LandingPage() {
           </section>
         ) : null}
 
+        {/* ============ INTERVENANT INDÉPENDANT — ZÉRO COMMISSION ============
+            Section ajoutée le 21/08/2026 (demande Siham), en remplacement de
+            l'entrée « Annuaire des intervenants » du menu Catalogue des
+            tableaux de bord : ce message de recrutement s'adresse au public,
+            pas aux établissements connectés. Version condensée de la page
+            /intervenant-independant, qui reste la version détaillée. */}
+        <section id="intervenants" className="scroll-mt-24 border-y border-success/20 bg-success/5">
+          <div className="section">
+            <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+              <Reveal>
+                <span className="eyebrow">
+                  <Sparkles className="size-3.5" aria-hidden />
+                  Intervenant indépendant · zéro commission
+                </span>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                  Vous fixez votre tarif. Vous touchez 100&nbsp;%.
+                </h2>
+                <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+                  Ni frais d&rsquo;inscription, ni abonnement, ni commission sur vos honoraires.
+                  Contrats, planning, pointage et factures sont générés à votre place — le temps
+                  que vous ne passez pas sur un contrat est du temps facturable.
+                </p>
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <Button asChild>
+                    <Link href="/register?type=intervenant">
+                      Créer mon compte intervenant <ArrowRight />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost">
+                    <Link href="/intervenant-independant">Tout le détail</Link>
+                  </Button>
+                </div>
+              </Reveal>
+              <Reveal delay={100}>
+                <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Métiers concernés
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[
+                    'Éducateur spécialisé',
+                    'Moniteur-éducateur',
+                    'AES / AMP',
+                    'Éducateur de jeunes enfants',
+                    'Psychologue',
+                    'Chef de service',
+                    'Animateur',
+                    'Art-thérapeute',
+                    'Formateur',
+                  ].map((m) => (
+                    <span
+                      key={m}
+                      className="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground"
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  Liste non limitative&nbsp;: si vous intervenez auprès d&rsquo;établissements du
+                  secteur, votre métier a sa place dans le réseau.
+                </p>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
         {/* ============ ESSAYER LEX ============ */}
         <section id="lex" className="section scroll-mt-24">
           <Reveal>

@@ -16,7 +16,6 @@ import {
   LifeBuoy,
   LayoutList,
   Newspaper,
-  Users,
   Sparkles,
   GraduationCap,
   PenLine,
@@ -177,10 +176,11 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
                 <Newspaper />
                 Édublog
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/intervenants')}>
-                <Users />
-                Annuaire des intervenants
-              </DropdownMenuItem>
+              {/* « Annuaire des intervenants » retiré le 21/08/2026 (demande
+                  Siham) : /intervenants redirige vers la page publique de
+                  recrutement — proposer « créez votre compte intervenant » à
+                  un établissement connecté n'avait aucun sens. Ce contenu vit
+                  désormais en section de la page d'accueil publique. */}
               <DropdownMenuItem onClick={() => router.push('/ateliers')}>
                 <Sparkles />
                 Ateliers
