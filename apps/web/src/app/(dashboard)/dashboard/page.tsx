@@ -235,19 +235,13 @@ export default async function DashboardPage() {
         );
       })()}
 
-      {/* KPIs — masqués tant qu'ils sont TOUS à zéro.
-          Quatre compteurs alignés sur « 0 », suivis de « Aucune activité pour
-          le moment », c'était le premier écran d'un compte neuf : trois façons
-          de dire la même chose, et rien à faire. Ces cartes sont faites pour
-          un compte qui vit ; avant, elles volent la place à la prise en main,
-          qui est le seul élément utile ce jour-là. Elles apparaissent d'un
-          coup dès la première activité réelle. */}
+      {/* KPIs — les statistiques du compte. */}
       {(() => {
-        const chiffres = isEstablishment
-          ? [s.activeMissions, s.applications, s.upcomingBookings, s.fillRate]
-          : [s.applications, s.upcomingBookings, services.data?.length, s.revenueMonth];
-        const aDeLActivite = chiffres.some((n) => (n ?? 0) > 0);
-        if (!aDeLActivite) return null;
+        // 21/08/2026 (demande Siham) : les statistiques s'affichent TOUJOURS.
+        // Elles n'apparaissaient qu'à partir de la première activité ; un
+        // compte calme n'avait donc AUCUNE statistique sur son tableau de
+        // bord, et rien ne disait qu'elles existaient. Un zéro est une
+        // information — « aucune candidature reçue » se pilote aussi.
         return (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {isEstablishment ? (

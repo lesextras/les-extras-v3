@@ -23,20 +23,25 @@
  *  4. Elle se ferme à l'Échap, au clic à côté et par une croix — c'est le
  *     `Dialog` du produit qui s'en charge, on ne réinvente pas une modale.
  *
+ * ── Le dessin (refonte du 21/08/2026, demande Siham) ──────────────────────
+ *
+ * La première version était un bloc de texte : la récompense se cherchait
+ * dans une phrase, le fonctionnement dans une autre. La fenêtre dit désormais
+ * les choses dans l'ordre où on se les demande :
+ *
+ *   — le GAIN d'abord, en bandeau : « 40 points chacun » n'est pas un détail
+ *     de paragraphe, c'est la seule raison d'ouvrir cette fenêtre ;
+ *   — le COMMENT ensuite, en trois étapes numérotées d'une ligne chacune —
+ *     partager, s'inscrire, terminer une première prestation ;
+ *   — le GESTE enfin : le lien et son bouton Copier, sur la même ligne.
+ *
  * Les confettis ne partent qu'au moment du COPIER : on félicite un geste, pas
  * l'ouverture d'une fenêtre.
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Gift } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Check, Copy, Gift } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { apiRequest } from '@/lib/api';
@@ -73,10 +78,25 @@ function marquerVue(accountId: string) {
   }
 }
 
+/**
+ * Confettis décoratifs du bandeau : quelques rectangles inclinés aux couleurs
+ * de la marque, posés en absolu. Purement ornementaux (aria-hidden) et
+ * IMMOBILES — le mouvement est réservé au vrai geste, et lui seul respecte ou
+ * non prefers-reduced-motion (voir confettis.ts).
+ */
+const DECO = [
+  { left: '56%', top: '16%', rotate: '-18deg', couleur: 'bg-primary/50' },
+  { left: '68%', top: '58%', rotate: '24deg', couleur: 'bg-secondary/60' },
+  { left: '78%', top: '24%', rotate: '8deg', couleur: 'bg-primary/35' },
+  { left: '87%', top: '60%', rotate: '-30deg', couleur: 'bg-secondary/40' },
+  { left: '92%', top: '18%', rotate: '45deg', couleur: 'bg-primary/45' },
+];
+
 export function InvitationParrainage({ accountId }: { accountId: string }) {
   const { toast } = useToast();
   const [ouvert, setOuvert] = useState(false);
   const [data, setData] = useState<Parrainage | null>(null);
+  const [copie, setCopie] = useState(false);
 
   useEffect(() => {
     if (!accountId || dejaVue(accountId)) return;
@@ -114,14 +134,22 @@ export function InvitationParrainage({ accountId }: { accountId: string }) {
 
   if (!data) return null;
 
+  const points = data.pointsParFilleulActif;
+  const euros = Math.round(points / 10);
+
   // L'origine vient du navigateur, jamais d'une constante : le domaine a déjà
   // changé une fois, et un lien figé sur l'ancien nom aurait envoyé les
   // filleuls sur le mauvais site sans que personne ne le voie.
   const lien = `${window.location.origin}/register?parrain=${data.accountId}`;
+  // Sans le protocole à l'écran : « https:// » mange un tiers de la largeur
+  // pour une information que personne ne lit. La copie, elle, emporte le lien
+  // complet.
+  const lienCourt = lien.replace(/^https?:\/\//, '');
 
   async function copier() {
     try {
       await navigator.clipboard.writeText(lien);
+      setCopie(true);
       lancerConfettis();
       toast({
         title: 'Lien copié',
@@ -130,46 +158,92 @@ export function InvitationParrainage({ accountId }: { accountId: string }) {
       marquerVue(accountId);
       // On laisse la fenêtre ouverte un instant : la refermer dans la seconde
       // donnerait l'impression que le clic a raté.
-      window.setTimeout(() => setOuvert(false), 1400);
+      window.setTimeout(() => setOuvert(false), 1600);
     } catch {
       toast({ title: 'Copie impossible', description: lien, variant: 'error' });
     }
   }
 
+  const etapes = [
+    <>Envoyez votre lien à un confrère — établissement ou intervenant, il vaut pour les deux.</>,
+    <>Il crée son compte avec ce lien. Gratuit, comme le vôtre.</>,
+    <>
+      À sa première prestation terminée&nbsp;:{' '}
+      <strong className="font-semibold text-foreground">{points}&nbsp;points chacun</strong>,
+      automatiquement. Jamais à la simple inscription.
+    </>,
+  ];
+
   return (
     <Dialog open={ouvert} onOpenChange={fermer}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="mb-3 inline-flex size-11 items-center justify-center rounded-xl bg-primary/10">
-            <Gift className="size-5 text-primary" aria-hidden />
+      <DialogContent className="max-w-md overflow-hidden p-0">
+        {/* ── Le gain, en bandeau ───────────────────────────────────────── */}
+        <div className="relative border-b border-border bg-gradient-to-br from-primary/15 via-primary/5 to-transparent px-6 pb-5 pt-7">
+          {DECO.map((d) => (
+            <span
+              key={`${d.left}-${d.top}`}
+              aria-hidden
+              className={`absolute h-2 w-3 rounded-[2px] ${d.couleur}`}
+              style={{ left: d.left, top: d.top, transform: `rotate(${d.rotate})` }}
+            />
+          ))}
+          <div className="relative flex items-center gap-4 pr-6">
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-card">
+              <Gift className="size-6" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <DialogTitle className="text-xl">Parrainez un confrère</DialogTitle>
+              <p className="mt-0.5 text-sm font-semibold text-primary">
+                {points}&nbsp;points pour vous, {points} pour lui — {euros}&nbsp;€ de
+                réduction chacun
+              </p>
+            </div>
           </div>
-          <DialogTitle>Parrainez un confrère</DialogTitle>
-          <DialogDescription>
-            Quand votre filleul termine sa première prestation, vous gagnez{' '}
-            <strong className="font-semibold text-foreground">
-              {data.pointsParFilleulActif} points
-            </strong>{' '}
-            — et lui aussi. Soit {Math.round(data.pointsParFilleulActif / 10)} € de
-            réduction chacun, sur vos factures.
-          </DialogDescription>
-        </DialogHeader>
+        </div>
 
-        <p className="text-sm text-muted-foreground">
-          Établissement ou intervenant, peu importe : le lien fonctionne dans les
-          deux sens. Les points tombent à la première prestation terminée, jamais à
-          l&apos;inscription.
-        </p>
+        <div className="space-y-5 px-6 pb-6 pt-5">
+          {/* ── Comment ça marche : trois étapes d'une ligne ─────────────── */}
+          <ol className="space-y-3">
+            {etapes.map((texte, i) => (
+              <li key={`etape-${i + 1}`} className="flex items-start gap-3">
+                <span
+                  aria-hidden
+                  className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary"
+                >
+                  {i + 1}
+                </span>
+                <p className="text-sm leading-relaxed text-muted-foreground">{texte}</p>
+              </li>
+            ))}
+          </ol>
 
-        <code className="mt-1 block overflow-x-auto rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground">
-          {lien}
-        </code>
+          {/* ── Le geste : le lien et son bouton, sur la même ligne ──────── */}
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 p-1.5 pl-3">
+            <code className="min-w-0 flex-1 truncate text-xs text-foreground" title={lien}>
+              {lienCourt}
+            </code>
+            <Button size="sm" onClick={copier} className="shrink-0">
+              {copie ? (
+                <>
+                  <Check className="size-3.5" aria-hidden /> Copié
+                </>
+              ) : (
+                <>
+                  <Copy className="size-3.5" aria-hidden /> Copier mon lien
+                </>
+              )}
+            </Button>
+          </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => fermer(false)}>
-            Plus tard
-          </Button>
-          <Button onClick={copier}>Copier mon lien</Button>
-        </DialogFooter>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              Vous le retrouverez dans «&nbsp;Points &amp; parrainage&nbsp;».
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => fermer(false)}>
+              Plus tard
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

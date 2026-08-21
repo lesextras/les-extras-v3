@@ -265,7 +265,10 @@ const establishmentNav: NavSection[] = [
     // et « Temps de travail & congés », marquée avancée. Aucune n'a été
     // supprimée.
     items: [
-      { label: 'Mon établissement', href: '/dashboard/account', icon: Building2 },
+      // « Mon établissement » (→ /dashboard/account) retiré le 21/08/2026
+      // (demande Siham) : la page reste accessible par le menu de l'avatar en
+      // haut à droite — deux chemins vers la même fiche allongeaient le menu
+      // sans rien apporter, exactement comme « Mon compte » côté intervenant.
       // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
       // Une fiche par personne, et la conformité comme propriété de cette
       // personne — pas comme un annuaire parallèle qu'il faut recouper.
