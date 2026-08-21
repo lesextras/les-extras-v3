@@ -426,9 +426,32 @@ export class SignatureService {
     const c = await this.prisma.contratCDD.findUnique({ where: { id: documentId } });
     if (!c) return;
     const estSalarie = userId !== null && userId === c.userId;
+    const maintenant = new Date();
+    const signeSalarieLe = estSalarie ? maintenant : c.signeSalarieLe;
+    const signeEmployeurLe = estSalarie ? c.signeEmployeurLe : maintenant;
+
+    // LE STATUT NE BOUGEAIT JAMAIS.
+    //
+    // On posait la date de signature, et rien d'autre : un contrat signé par
+    // les deux parties restait affiché « Transmis au salarié », indéfiniment.
+    // Les deux dates n'étaient d'ailleurs relues nulle part — leur seule
+    // occurrence dans tout le produit était cette écriture. L'employeur n'avait
+    // donc aucun moyen de savoir, d'un coup d'œil sur sa liste, où en était un
+    // contrat : c'est pourtant la seule question qu'on pose à cet écran.
+    //
+    // On avance à SIGNE quand les deux signatures sont là, et jamais en
+    // arrière : un contrat déjà ACTIF, TERMINE ou ROMPU a dépassé ce stade, et
+    // le ramener à SIGNE réécrirait son histoire.
+    const lesDeuxOntSigne = signeSalarieLe != null && signeEmployeurLe != null;
+    const avanceAuStatutSigne =
+      lesDeuxOntSigne && (c.statut === 'BROUILLON' || c.statut === 'TRANSMIS');
+
     await this.prisma.contratCDD.update({
       where: { id: documentId },
-      data: estSalarie ? { signeSalarieLe: new Date() } : { signeEmployeurLe: new Date() },
+      data: {
+        ...(estSalarie ? { signeSalarieLe: maintenant } : { signeEmployeurLe: maintenant }),
+        ...(avanceAuStatutSigne ? { statut: 'SIGNE' as const } : {}),
+      },
     });
 
     if (estSalarie) {

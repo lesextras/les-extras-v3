@@ -24,9 +24,28 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 # ---- Build : next build (standalone) ---------------------------------------
 FROM deps AS build
-# L'URL de l'API est inlinée dans le bundle client (NEXT_PUBLIC_*) au build.
+# Les variables NEXT_PUBLIC_* sont INLINÉES DANS LE BUNDLE AU MOMENT DU BUILD :
+# elles doivent donc être connues ici, pas au démarrage du conteneur. Une
+# variable ajoutée côté hébergeur sans être déclarée en ARG n'atteint jamais le
+# build, et le code la lit alors comme `undefined` en production — sans la
+# moindre erreur, ce qui la rend très difficile à repérer.
 ARG NEXT_PUBLIC_API_URL="http://localhost:3001/api"
+# MESURE DES CONVERSIONS PUBLICITAIRES.
+#
+# Vides par défaut, et c'est volontaire : `identifiantAds()` renvoie alors une
+# chaîne vide, `mesureConfiguree()` est faux, et aucun script de mesure n'est
+# chargé. Un environnement de développement ou de recette ne pollue donc pas
+# les statistiques du compte publicitaire.
+#
+# En production, ces deux valeurs doivent être renseignées côté hébergeur AVANT
+# le build (Coolify : variables d'environnement de l'application), faute de
+# quoi la campagne tourne sans qu'aucune conversion ne remonte : on paie des
+# clics sans jamais savoir lesquels ont produit une inscription.
+ARG NEXT_PUBLIC_GOOGLE_ADS_ID=""
+ARG NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_INSCRIPTION=""
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_GOOGLE_ADS_ID=$NEXT_PUBLIC_GOOGLE_ADS_ID \
+    NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_INSCRIPTION=$NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_INSCRIPTION \
     NEXT_TELEMETRY_DISABLED=1
 COPY tsconfig*.json ./
 COPY packages ./packages

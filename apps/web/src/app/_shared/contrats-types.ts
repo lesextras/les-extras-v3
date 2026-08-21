@@ -1,7 +1,11 @@
 // Miroir des contrats renvoyés par /contrats — partagé entre la liste et le
 // détail pour qu'il n'existe qu'une seule définition de la forme des données.
 
-export type StatutContratCDD = 'BROUILLON' | 'TRANSMIS' | 'SIGNE' | 'EN_COURS' | 'TERMINE' | 'ROMPU';
+// `EN_COURS` n'existe pas dans l'enum Prisma : la valeur reelle est `ACTIF`.
+// Le libelle declare ici ne s'affichait donc jamais, et un contrat passe a
+// ACTIF sortait a l'ecran sous la chaine brute « ACTIF », en majuscules, au
+// milieu de libelles en francais. On aligne sur la source de verite.
+export type StatutContratCDD = 'BROUILLON' | 'TRANSMIS' | 'SIGNE' | 'ACTIF' | 'TERMINE' | 'ROMPU';
 
 export type CauseFinContrat =
   | 'TERME_NORMAL'
@@ -86,8 +90,8 @@ export interface SyntheseContrat {
 export const STATUT_LABEL: Record<StatutContratCDD, string> = {
   BROUILLON: 'Brouillon',
   TRANSMIS: 'Transmis au salarié',
-  SIGNE: 'Signé',
-  EN_COURS: 'En cours',
+  SIGNE: 'Signé par les deux parties',
+  ACTIF: 'En cours',
   TERMINE: 'Terminé',
   ROMPU: 'Rompu',
 };
