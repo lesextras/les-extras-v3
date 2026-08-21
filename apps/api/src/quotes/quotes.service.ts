@@ -10,14 +10,19 @@ import { MESSAGE_HORS_PORTEE, reservableParCompte } from '../services/portee-sal
 import { bornes, page } from '../common/pagination';
 import { decomposerPrix, COMMISSION_DEFAUT } from '../billing/commission';
 import { NotificationsService } from '../notifications/notifications.service';
-import { CreateQuoteRequestDto, QuoteLineDto, SendQuoteDto } from './dto/quote.dto';
+import { CreateQuoteRequestDto, SendQuoteDto } from './dto/quote.dto';
+import { totauxDevis } from './totaux';
+import { SELECT_PARTIE, figerPartie } from './parties';
 
-/** Total TTC d'un jeu de lignes, arrondi au centime. */
-function totalOf(lines: QuoteLineDto[]): number {
-  return Math.round(
-    lines.reduce((sum, l) => sum + Number(l.quantity) * Number(l.unitPrice), 0) * 100,
-  ) / 100;
-}
+/**
+ * DURÉE DE VALIDITÉ PAR DÉFAUT, EN JOURS.
+ *
+ * Un devis sans durée de validité est une offre qui engage son auteur sans
+ * terme : l'établissement peut l'accepter dix-huit mois plus tard, au tarif
+ * d'alors. Le champ étant facultatif à la saisie, on pose un horizon
+ * raisonnable plutôt que de laisser le document ouvert indéfiniment.
+ */
+const VALIDITE_DEFAUT_JOURS = 30;
 
 @Injectable()
 export class QuotesService {
@@ -195,22 +200,67 @@ export class QuotesService {
     }
     if (!dto.lines?.length) throw new BadRequestException('Ajoutez au moins une ligne.');
 
-    const amount = totalOf(dto.lines);
-    if (amount <= 0) throw new BadRequestException('Le montant doit être supérieur à 0.');
+    // UN DEVIS SIGNÉ NE SE RECHIFFRE PAS.
+    //
+    // La signature électronique porte sur une empreinte du contenu (voir
+    // SignatureService.texteCanonique). Modifier les lignes après coup ne
+    // « met pas le devis à jour » : cela rend la signature incohérente avec le
+    // document, c'est-à-dire cela détruit la preuve — sans que personne ne
+    // s'en aperçoive avant le jour où elle sert.
+    const signe = await this.prisma.signature.findFirst({
+      where: { documentType: 'DEVIS', documentId: id, statut: 'SIGNEE' },
+      select: { id: true },
+    });
+    if (signe) {
+      throw new BadRequestException(
+        'Ce devis a été signé : il ne peut plus être modifié. Émettez-en un nouveau.',
+      );
+    }
+
+    const totaux = totauxDevis(dto.lines);
+    if (totaux.totalTtc <= 0) throw new BadRequestException('Le montant doit être supérieur à 0.');
+
+    // Identité des deux parties, recopiée maintenant — voir parties.ts.
+    const [provider, client] = await Promise.all([
+      this.prisma.account.findUniqueOrThrow({
+        where: { id: quote.providerAccountId },
+        select: SELECT_PARTIE,
+      }),
+      this.prisma.account.findUniqueOrThrow({
+        where: { id: quote.clientAccountId },
+        select: SELECT_PARTIE,
+      }),
+    ]);
+
+    const validUntil = dto.validUntil
+      ? new Date(dto.validUntil)
+      : new Date(Date.now() + VALIDITE_DEFAUT_JOURS * 24 * 3600 * 1000);
 
     const updated = await this.prisma.quote.update({
       where: { id },
       data: {
         lines: dto.lines as unknown as object,
-        amount,
+        // `amount` reste le TTC : c'est ce que lisent les écrans, les
+        // notifications et la réservation créée à l'acceptation.
+        amount: totaux.totalTtc,
+        totalHt: totaux.totalHt,
+        totalTva: totaux.totalTva,
+        // Le cast traverse le typage JSON de Prisma, qui exige une signature
+        // d'index que nos interfaces nommées n'ont pas. La forme reste
+        // garantie par `figerPartie`, et relue par `relirePartiesFigees`.
+        partiesSnapshot: {
+          provider: figerPartie(provider),
+          client: figerPartie(client),
+        } as unknown as object,
         message: dto.message ?? null,
         title: dto.title ?? quote.title,
         scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : quote.scheduledAt,
-        validUntil: dto.validUntil ? new Date(dto.validUntil) : null,
+        validUntil,
         status: 'SENT',
         sentAt: new Date(),
       },
     });
+    const amount = totaux.totalTtc;
 
     if (quote.clientAccount.ownerId) {
       await this.notifications.create(quote.clientAccount.ownerId, {
@@ -250,6 +300,34 @@ export class QuotesService {
       : COMMISSION_DEFAUT;
     const { prixClientHt } = decomposerPrix(Number(quote.amount ?? 0), taux);
 
+    // « BON POUR ACCORD » — QUI ACCEPTE, ET À QUEL TITRE.
+    //
+    // Ce n'est pas « l'établissement » qui accepte : c'est une personne
+    // physique qui l'engage. Son nom et sa qualité sont ce qui rend
+    // l'acceptation opposable, et c'est exactement ce qu'on écrit à la main
+    // sous la mention « bon pour accord » sur un devis papier. On les relève
+    // au moment du clic, et on les imprime ensuite sur le document.
+    const signataire = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        firstName: true,
+        lastName: true,
+        profile: { select: { job: true } },
+      },
+    });
+    const membre = await this.prisma.membership.findUnique({
+      where: { userId_accountId: { userId, accountId: quote.clientAccountId } },
+      select: { role: true },
+    });
+    const acceptedByName =
+      [signataire?.firstName, signataire?.lastName].filter(Boolean).join(' ').trim() ||
+      signataire?.email ||
+      null;
+    // La fonction déclarée dans le profil dit mieux la qualité du signataire
+    // que son rôle applicatif ; à défaut, le rôle dans le compte fait foi.
+    const acceptedByRole = signataire?.profile?.job ?? membre?.role ?? null;
+
     const result = await this.prisma.$transaction(async (tx) => {
       const booking = await tx.booking.create({
         data: {
@@ -263,7 +341,13 @@ export class QuotesService {
       });
       const accepted = await tx.quote.update({
         where: { id },
-        data: { status: 'ACCEPTED', decidedAt: new Date(), bookingId: booking.id },
+        data: {
+          status: 'ACCEPTED',
+          decidedAt: new Date(),
+          bookingId: booking.id,
+          acceptedByName,
+          acceptedByRole,
+        },
       });
       return { accepted, booking };
     });

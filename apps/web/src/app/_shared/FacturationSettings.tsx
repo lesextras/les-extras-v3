@@ -1,8 +1,9 @@
 "use client";
 
 // Identité de facturation du compte — c'est elle qui apparaît sur les
-// factures émises depuis cet outil (en-tête + mention de TVA).
-//   PATCH /accounts/:id  { legalName, siret, address, city, postalCode, phone, vatMention }
+// factures émises depuis cet outil (en-tête, mention de TVA, coordonnées de
+// règlement).
+//   PATCH /accounts/:id  { legalName, siret, address, city, postalCode, phone, vatMention, iban, bic }
 //
 // Avant ce formulaire, seul un administrateur de la plateforme pouvait saisir
 // ces champs (back-office) : un établissement ou un freelance qui émettait sa
@@ -26,6 +27,9 @@ export interface IdentiteFacturation {
   postalCode?: string | null;
   phone?: string | null;
   vatMention?: string | null;
+  /** Coordonnées de règlement, imprimées sur les factures émises par ce compte. */
+  iban?: string | null;
+  bic?: string | null;
 }
 
 export function FacturationSettings({
@@ -54,6 +58,8 @@ export function FacturationSettings({
         postalCode: String(fd.get("postalCode") || "") || undefined,
         phone: String(fd.get("phone") || "") || undefined,
         vatMention: String(fd.get("vatMention") || "") || undefined,
+        iban: String(fd.get("iban") || "") || undefined,
+        bic: String(fd.get("bic") || "") || undefined,
       };
       await apiRequest(`/accounts/${accountId}`, { method: "PATCH", body, accountId });
       toast({ title: "Identité de facturation mise à jour" });
@@ -135,6 +141,39 @@ export function FacturationSettings({
               disabled={!canManage}
             />
           </Field>
+          {/* COORDONNÉES DE RÈGLEMENT. Le produit annonce un règlement par
+              virement, mais rien ne permettait de saisir l'IBAN : la facture
+              partait sans le moyen de la payer. Rien n'est pré-rempli ni
+              suggéré — des coordonnées bancaires ne s'inventent pas. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[2fr_1fr]">
+            <Field
+              label="IBAN"
+              htmlFor="iban"
+              hint="Apparaît dans la section « Règlement » des factures que vous émettez, pour que votre client puisse vous payer par virement. Laissez vide si vous préférez communiquer votre RIB autrement : la facture sortira alors sans coordonnées bancaires."
+            >
+              <Input
+                id="iban"
+                name="iban"
+                defaultValue={identite.iban ?? ""}
+                placeholder="FR76 …"
+                autoComplete="off"
+                disabled={!canManage}
+              />
+            </Field>
+            <Field
+              label="BIC"
+              htmlFor="bic"
+              hint="Facultatif : il n'est plus exigé pour un virement en zone SEPA."
+            >
+              <Input
+                id="bic"
+                name="bic"
+                defaultValue={identite.bic ?? ""}
+                autoComplete="off"
+                disabled={!canManage}
+              />
+            </Field>
+          </div>
           {canManage ? (
             <div className="flex justify-end">
               <Button type="submit" loading={loading}>

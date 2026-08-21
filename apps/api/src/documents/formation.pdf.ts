@@ -35,6 +35,22 @@ import {
  * plus contrôlée de toutes, et elle n'existait sur aucun support imprimable.
  */
 
+/**
+ * Numéro de déclaration d'activité de l'organisme de formation — ADéPA,
+ * enregistré auprès du préfet de région d'Île-de-France. C'est le même que
+ * celui des mentions légales (apps/web/src/app/(public)/legal/page.tsx).
+ *
+ * Il ne figurait nulle part sur les pièces produites : l'en-tête ne portait
+ * que le nom de l'organisme et sa ville. Or c'est exactement ce que le
+ * financeur cherche sur un certificat de réalisation avant de libérer les
+ * fonds ; sans lui, la pièce revient et le règlement attend. Défini ici une
+ * seule fois, pour qu'aucune correction ne soit à faire à deux endroits.
+ *
+ * Le jour où des pièces seraient délivrées sous un autre organisme déclaré,
+ * ce numéro devra venir du compte émetteur et non de cette constante.
+ */
+const NUMERO_DECLARATION_ACTIVITE = '11771011677';
+
 export interface DonneesFormationPdf {
   inscription: {
     id: string;
@@ -91,10 +107,14 @@ export async function formationPdf(
   const titre = certificat ? 'Certificat de réalisation' : "Attestation d'assiduité";
   const { doc, termine } = nouveauDocument(`${titre} — ${f.title}`, organisme);
 
+  // L'en-tête ne disait que le nom de l'organisme et sa ville : impossible,
+  // pour un financeur qui reçoit la pièce seule, de rattacher le document à un
+  // organisme de formation enregistré. Le numéro de déclaration d'activité est
+  // la première chose qu'il y cherche.
   enTete(
     doc,
     titre,
-    `${organisme}${ville ? ` · ${ville}` : ''} · organisme de formation · délivré le ${dateFr(new Date())}`,
+    `${organisme}${ville ? ` · ${ville}` : ''} · organisme de formation · déclaration d'activité n° ${NUMERO_DECLARATION_ACTIVITE} · délivré le ${dateFr(new Date())}`,
   );
 
   doc.moveDown(0.6);
@@ -138,9 +158,14 @@ export async function formationPdf(
   }
 
   if (certificat) {
+    // La mention du numéro de déclaration d'activité, avec la réserve qui
+    // l'accompagne obligatoirement (art. L. 6352-12 du code du travail), est
+    // reprise ici : c'est le bloc que le financeur lit en entier, et le
+    // certificat circule souvent détaché du reste du dossier.
     encadre(
       doc,
-      "Action de formation réalisée conformément aux dispositions de l'article L. 6353-1 du code du travail. Ce certificat de réalisation est la pièce justificative attendue par les financeurs pour le règlement de l'action.",
+      "Action de formation réalisée conformément aux dispositions de l'article L. 6353-1 du code du travail. Ce certificat de réalisation est la pièce justificative attendue par les financeurs pour le règlement de l'action. " +
+        `Organisme de formation enregistré sous le numéro de déclaration d'activité ${NUMERO_DECLARATION_ACTIVITE} auprès du préfet de région d'Île-de-France ; cet enregistrement ne vaut pas agrément de l'État.`,
     );
   } else {
     encadre(

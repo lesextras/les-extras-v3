@@ -15,8 +15,26 @@ import { DecompositionPrix } from "./DecompositionPrix";
 export interface QuoteLine {
   label: string;
   quantity: number;
+  /** Unité de compte : heure, journée, séance, forfait. */
+  unit?: string;
+  /** Prix unitaire HORS TAXES. */
   unitPrice: number;
+  /** Taux de TVA de la ligne, en pourcentage. Absent ou nul : non soumise. */
+  vatRate?: number;
 }
+
+/**
+ * Unités proposées à la saisie. Un devis qui annonce « 3 » sans dire trois
+ * quoi n'engage personne — et c'est pourtant ce que l'établissement signe.
+ */
+const UNITES = ["heure", "demi-journée", "journée", "séance", "forfait"];
+
+/**
+ * Taux de TVA proposés. Zéro d'abord, parce que c'est le cas de la quasi-
+ * totalité des intervenants : franchise en base, article 293 B du code
+ * général des impôts.
+ */
+const TAUX_TVA = [0, 5.5, 10, 20];
 
 const euros = (v: number) =>
   v.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
@@ -36,15 +54,26 @@ export function QuoteEditor({
   const router = useRouter();
   const { toast } = useToast();
   const [lines, setLines] = useState<QuoteLine[]>(
-    initialLines?.length ? initialLines : [{ label: "", quantity: 1, unitPrice: 0 }],
+    initialLines?.length ? initialLines : [{ label: "", quantity: 1, unit: "forfait", unitPrice: 0, vatRate: 0 }],
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const total = lines.reduce(
-    (s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitPrice) || 0),
-    0,
-  );
+  // Totaux calcules ligne par ligne, arrondis au centime avant d'etre sommes,
+  // exactement comme le serveur (apps/api/src/quotes/totaux.ts). Un ecart d'un
+  // centime entre ce que l'intervenant voit ici et ce que porte le document
+  // envoye lui ferait perdre confiance dans les deux.
+  const centimes = (v: number) => Math.round(v * 100);
+  const totalHt =
+    lines.reduce((s, l) => s + centimes((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0)), 0) /
+    100;
+  const totalTva =
+    lines.reduce((s, l) => {
+      const ht = centimes((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0));
+      return s + Math.round((ht * (Number(l.vatRate) || 0)) / 100);
+    }, 0) / 100;
+  const total = Math.round((totalHt + totalTva) * 100) / 100;
+  const soumisTva = lines.some((l) => (Number(l.vatRate) || 0) > 0);
 
   function update(i: number, patch: Partial<QuoteLine>) {
     setLines((prev) => prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
@@ -69,7 +98,9 @@ export function QuoteEditor({
           lines: valides.map((l) => ({
             label: l.label.trim(),
             quantity: Number(l.quantity),
+            unit: (l.unit || "forfait").trim(),
             unitPrice: Number(l.unitPrice),
+            vatRate: Number(l.vatRate) || 0,
           })),
           message: String(form.get("message") || "") || undefined,
           scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
@@ -89,7 +120,10 @@ export function QuoteEditor({
     <form onSubmit={submit} className="space-y-4">
       <div className="space-y-3">
         {lines.map((line, i) => (
-          <div key={i} className="grid gap-2 sm:grid-cols-[1fr_5rem_7rem_2rem] sm:items-end">
+          <div
+            key={i}
+            className="grid gap-2 sm:grid-cols-[1fr_4.5rem_7rem_7rem_5.5rem_2rem] sm:items-end"
+          >
             <Field label={i === 0 ? "Prestation" : ""} htmlFor={`label-${i}`}>
               <Input
                 id={`label-${i}`}
@@ -108,7 +142,16 @@ export function QuoteEditor({
                 onChange={(e) => update(i, { quantity: Number(e.target.value) })}
               />
             </Field>
-            <Field label={i === 0 ? "Prix unitaire" : ""} htmlFor={`pu-${i}`}>
+            <Field label={i === 0 ? "Unité" : ""} htmlFor={`unit-${i}`}>
+              <Input
+                id={`unit-${i}`}
+                list="unites-devis"
+                value={line.unit ?? ""}
+                onChange={(e) => update(i, { unit: e.target.value })}
+                placeholder="forfait"
+              />
+            </Field>
+            <Field label={i === 0 ? "P.U. HT" : ""} htmlFor={`pu-${i}`}>
               <Input
                 id={`pu-${i}`}
                 type="number"
@@ -117,6 +160,20 @@ export function QuoteEditor({
                 value={line.unitPrice}
                 onChange={(e) => update(i, { unitPrice: Number(e.target.value) })}
               />
+            </Field>
+            <Field label={i === 0 ? "TVA" : ""} htmlFor={`tva-${i}`}>
+              <select
+                id={`tva-${i}`}
+                className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
+                value={line.vatRate ?? 0}
+                onChange={(e) => update(i, { vatRate: Number(e.target.value) })}
+              >
+                {TAUX_TVA.map((t) => (
+                  <option key={t} value={t}>
+                    {t === 0 ? "Aucune" : `${String(t).replace(".", ",")} %`}
+                  </option>
+                ))}
+              </select>
             </Field>
             {lines.length > 1 ? (
               <Button
@@ -138,14 +195,49 @@ export function QuoteEditor({
           variant="outline"
           size="sm"
           onClick={() =>
-            setLines((prev) => [...prev, { label: "", quantity: 1, unitPrice: 0 }])
+            setLines((prev) => [...prev, { label: "", quantity: 1, unit: "forfait", unitPrice: 0, vatRate: 0 }])
           }
         >
           + Ajouter une ligne
         </Button>
       </div>
 
+      <datalist id="unites-devis">
+        {UNITES.map((u) => (
+          <option key={u} value={u} />
+        ))}
+      </datalist>
+
+      {/* Le recapitulatif que portera le document. On l'affiche ici pour que
+          l'intervenant valide ce qu'il envoie, pas une approximation. */}
+      <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Total hors taxes</span>
+          <span className="font-medium text-foreground">{euros(totalHt)}</span>
+        </div>
+        {soumisTva ? (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">TVA</span>
+            <span className="font-medium text-foreground">{euros(totalTva)}</span>
+          </div>
+        ) : (
+          <p className="mt-1 text-xs text-muted-foreground">
+            TVA non applicable, article 293 B du code général des impôts. Cette
+            mention figurera sur le devis.
+          </p>
+        )}
+        <div className="mt-2 flex justify-between border-t border-border pt-2">
+          <span className="font-semibold text-foreground">Total à régler</span>
+          <span className="text-lg font-bold text-foreground">{euros(total)}</span>
+        </div>
+      </div>
+
       <DecompositionPrix tarifIntervenant={total} vue="intervenant" />
+
+      <p className="text-xs text-muted-foreground">
+        Sans date de fin de validité, le devis reste valable trente jours à
+        compter de son envoi.
+      </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Date d'intervention" htmlFor="scheduledAt">
@@ -248,9 +340,14 @@ export function QuoteDecision({ quoteId }: { quoteId: string }) {
           </Button>
         </div>
       ) : null}
+      {/* CE QUE VAUT LE CLIC. Accepter un devis n'est pas « valider une
+          demande » : c'est un engagement contractuel, au meme titre que la
+          mention « bon pour accord » portee a la main sur un devis papier.
+          L'ecran doit le dire avant, pas apres. */}
       <p className="text-xs text-muted-foreground">
-        En acceptant, la réservation est créée automatiquement et le contrat
-        devient disponible.
+        Accepter vaut <strong>bon pour accord</strong> : votre nom et votre
+        fonction sont portés sur le devis, la réservation est créée et le
+        contrat devient disponible. Le document reste téléchargeable ensuite.
       </p>
     </div>
   );

@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ContratsService } from '../contrats/contrats.service';
 import { contratCddPdf } from './contrat-cdd.pdf';
 import { facturePdf } from './facture.pdf';
+import { devisPdf } from './devis.pdf';
+import { SELECT_PARTIE, figerPartie, relirePartiesFigees } from '../quotes/parties';
 import { propositionPdf } from './proposition.pdf';
 import { emargementPdf, formationPdf } from './formation.pdf';
 import { FormationsService } from '../formations/formations.service';
@@ -70,6 +72,89 @@ export class DocumentsService {
     return { pdf, nom: this.nomFichier('proposition', bookingId.slice(-8)) };
   }
 
+  /**
+   * LE DEVIS.
+   *
+   * Téléchargeable des deux côtés, comme la facture : celui qui l'émet et
+   * celui qui décide. Le contrôle d'accès tient dans le `where` — un compte
+   * qui n'est ni le prestataire ni le client ne trouve rien, même en devinant
+   * l'identifiant.
+   *
+   * Les identités imprimées viennent de l'instantané pris à l'envoi. Pour les
+   * devis antérieurs, qui n'en ont pas, on retombe sur les profils courants :
+   * c'est ce qui existait, et un document imparfait vaut mieux qu'un document
+   * vide.
+   */
+  async devis(accountId: string, id: string) {
+    const devis = await this.prisma.quote.findFirst({
+      where: { id, OR: [{ providerAccountId: accountId }, { clientAccountId: accountId }] },
+    });
+    if (!devis) throw new NotFoundException('Devis introuvable.');
+
+    const figees = relirePartiesFigees(devis.partiesSnapshot);
+    let prestataire = figees?.provider ?? null;
+    let client = figees?.client ?? null;
+
+    if (!prestataire || !client) {
+      const [p, c] = await Promise.all([
+        this.prisma.account.findUnique({
+          where: { id: devis.providerAccountId },
+          select: SELECT_PARTIE,
+        }),
+        this.prisma.account.findUnique({
+          where: { id: devis.clientAccountId },
+          select: SELECT_PARTIE,
+        }),
+      ]);
+      if (!p || !c) throw new NotFoundException('Parties introuvables.');
+      prestataire = prestataire ?? figerPartie(p);
+      client = client ?? figerPartie(c);
+    }
+
+    // La signature électronique, quand elle existe : elle remplace alors le
+    // cadre à remplir à la main. On n'imprime pas une case à signer sous un
+    // document déjà signé.
+    const signature = await this.prisma.signature.findFirst({
+      where: { documentType: 'DEVIS', documentId: id, statut: 'SIGNEE' },
+      orderBy: { signeLe: 'desc' },
+      select: { signataireNom: true, signataireEmail: true, signeLe: true, empreinte: true },
+    });
+
+    const pdf = await devisPdf({
+      devis: {
+        reference: devis.reference,
+        title: devis.title,
+        request: devis.request,
+        message: devis.message,
+        lines: (Array.isArray(devis.lines) ? devis.lines : []) as never,
+        amount: devis.amount,
+        totalHt: devis.totalHt,
+        totalTva: devis.totalTva,
+        status: devis.status,
+        scheduledAt: devis.scheduledAt,
+        validUntil: devis.validUntil,
+        sentAt: devis.sentAt,
+        createdAt: devis.createdAt,
+        decidedAt: devis.decidedAt,
+        acceptedByName: devis.acceptedByName,
+        acceptedByRole: devis.acceptedByRole,
+        refusalReason: devis.refusalReason,
+      },
+      prestataire,
+      client,
+      signature:
+        signature?.signeLe != null
+          ? {
+              signataireNom: signature.signataireNom,
+              signataireEmail: signature.signataireEmail,
+              signeLe: signature.signeLe,
+              empreinte: signature.empreinte,
+            }
+          : null,
+    });
+    return { pdf, nom: this.nomFichier('devis', devis.reference) };
+  }
+
   async facture(accountId: string, id: string) {
     // La facture se télécharge des deux côtés : celui qui l'émet et celui à qui
     // elle est adressée. L'émetteur reste toujours le compte porteur de la
@@ -86,6 +171,31 @@ export class DocumentsService {
             accountId: true,
             mission: { select: { title: true, accountId: true } },
             service: { select: { title: true, accountId: true } },
+            // LE DEVIS DONT CETTE FACTURE EST LA SUITE.
+            //
+            // C'est le devis accepté qui contractualise ; la facture ne fait
+            // que constater l'exécution de ce qui y était convenu. Sans le
+            // rappel de sa référence, le client qui reçoit la facture n'a
+            // aucun moyen de la rattacher à l'engagement qu'il a signé — et
+            // c'est précisément ce rattachement que réclame un contrôle, ou
+            // un financeur qui reconstitue un dossier.
+            //
+            // ON EMPORTE AUSSI SON CHIFFRAGE. Le devis peut porter de la TVA ;
+            // la facture, elle, n'a qu'un montant unique et imprimait par
+            // defaut « TVA non applicable, art. 293 B ». Elle declarait donc
+            // exoneree une taxe que le devis venait de facturer — une mention
+            // fiscale fausse sur un document comptable. On reprend la
+            // ventilation du devis pour que les deux pieces disent la meme
+            // chose.
+            quote: {
+              select: {
+                reference: true,
+                decidedAt: true,
+                lines: true,
+                totalHt: true,
+                totalTva: true,
+              },
+            },
           },
         },
         // Les deux faces d'une formation, dont aucune ne passe par un Booking :
@@ -115,6 +225,12 @@ export class DocumentsService {
         city: true,
         contactEmail: true,
         vatMention: true,
+        // Coordonnées bancaires de l'émetteur : c'est par elles que la facture
+        // se règle. Le PDF n'est délivré qu'aux parties de la facture (le
+        // contrôle d'accès se fait plus haut), et c'est la seule diffusion
+        // légitime d'un IBAN — il n'a rien à faire ailleurs.
+        iban: true,
+        bic: true,
       },
     });
     if (!emetteur) throw new NotFoundException('Émetteur introuvable.');

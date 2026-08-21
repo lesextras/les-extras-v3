@@ -152,14 +152,42 @@ export class InvoicesService {
     };
   }
 
+  /**
+   * UNE facture, avec de quoi la rendre — c'est cette route que sert la page
+   * imprimable `/documents/facture/:id`, celle vers laquelle pointe l'email
+   * d'émission.
+   *
+   * Les deux faces d'une formation sont chargées ici, et seulement ici (la
+   * liste `findAllByAccount` n'en a pas besoin et ne doit pas payer ces
+   * jointures) : ni l'inscription vendue par l'organisme ni la session
+   * rémunérée du formateur ne passent par un `Booking`. Sans elles, la page
+   * n'avait aucune désignation à afficher et retombait sur un libellé
+   * générique, alors que la désignation de la prestation et sa date
+   * d'exécution sont deux mentions obligatoires (art. L. 441-9 du code de
+   * commerce, art. 242 nonies A de l'annexe II au CGI). Le PDF les charge
+   * déjà de la même façon (`documents.service.ts`) : les deux rendus doivent
+   * partir des mêmes données.
+   */
   async findOne(id: string, accountId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
       include: {
+        inscription: {
+          select: {
+            session: { select: { startDate: true, formation: { select: { title: true } } } },
+          },
+        },
+        sessionRemuneree: {
+          select: { startDate: true, formation: { select: { title: true } } },
+        },
         booking: {
           include: {
             service: { select: { title: true } },
             mission: { select: { title: true } },
+            // Le devis accepté dont cette facture est la suite : sa référence
+            // rattache la facture à l'engagement signé, et son chiffrage porte
+            // la ventilation de la TVA qu'un montant unique ne peut pas dire.
+            quote: { select: { reference: true, decidedAt: true, lines: true } },
             // Le compte à l'origine de la réservation : c'est lui le client
             // quand la facture naît d'un atelier, faute de payeur explicite.
             account: {
@@ -198,6 +226,14 @@ export class InvoicesService {
             postalCode: true,
             siret: true,
             vatMention: true,
+            // Coordonnées bancaires de l'émetteur, sans lesquelles la facture
+            // ne peut pas être réglée. Elles ne sortent que par ici : ce
+            // `findOne` est déjà réservé aux deux parties de la facture (voir
+            // le contrôle juste en dessous), et l'émetteur les a renseignées
+            // pour qu'elles figurent sur ses factures. La liste des factures
+            // et l'annuaire public ne les demandent pas, et ne doivent pas.
+            iban: true,
+            bic: true,
             owner: { select: { email: true } },
           },
         },

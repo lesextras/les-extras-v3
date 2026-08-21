@@ -144,10 +144,17 @@ export const RUBRIQUES: Rubrique[] = [
       },
       {
         slug: "payer-une-facture",
+        // Cette réponse promettait le paiement en ligne par carte pour toutes
+        // les factures, et une ligne de commission sur le document. Ni l'un ni
+        // l'autre n'existe : `createInvoiceCheckout`
+        // (apps/api/src/billing/billing.service.ts) refuse toute facture qui
+        // n'est pas émise par l'association, et la commission vaut zéro
+        // (COMMISSION_DEFAUT = 0), donc aucune ligne de ce type n'est écrite.
+        // Un établissement qui cherchait le bouton « payer » ne le trouvait pas.
         question: "Comment régler une facture ?",
         reponse: [
-          "Chaque facture est téléchargeable en PDF depuis votre espace, et payable en ligne par carte.",
-          "Les mentions légales, la commission et le détail des heures y figurent, pour que votre comptabilité n'ait rien à reconstituer.",
+          "Chaque facture est téléchargeable en PDF depuis votre espace. Une facture émise par un intervenant se règle par virement, directement auprès de lui, dans le délai indiqué sur le document. Seules les factures émises par l'association — formations et crédits LEX — se règlent en ligne par carte.",
+          "Les mentions légales et le détail des heures y figurent, pour que votre comptabilité n'ait rien à reconstituer.",
         ],
       },
     ],
@@ -227,7 +234,14 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Vos formations sont-elles finançables ?",
         reponse: [
           "Oui. Les parcours sont certifiés Qualiopi au titre des actions de formation et des bilans de compétences, donc mobilisables auprès des OPCO et des financeurs publics.",
-          "Le numéro de déclaration d'activité figure sur chaque convention. Cet enregistrement ne vaut pas agrément de l'État.",
+          // « figure sur chaque convention » : le logiciel ne produit aucune
+          // convention de formation. Les seuls documents générés sont
+          // l'attestation d'assiduité, le certificat de réalisation et la
+          // feuille d'émargement (apps/api/src/documents/documents.controller.ts).
+          // Un stagiaire envoyé chercher le numéro sur une convention
+          // inexistante ne le trouvait nulle part ; il est rattaché ici aux
+          // pièces qui le portent réellement.
+          "Le numéro de déclaration d'activité figure dans les mentions légales du site, ainsi que sur l'attestation d'assiduité et le certificat de réalisation délivrés à l'issue de la formation. Cet enregistrement ne vaut pas agrément de l'État.",
         ],
       },
       {

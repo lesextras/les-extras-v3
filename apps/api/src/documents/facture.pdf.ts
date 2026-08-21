@@ -10,6 +10,7 @@ import {
   tableau,
   titreSection,
 } from './pdf';
+import { totauxDevis, type LigneChiffrable } from '../quotes/totaux';
 
 /**
  * LA FACTURE, EN PAPIER.
@@ -38,6 +39,21 @@ export interface DonneesFacturePdf {
       completedAt: Date | null;
       mission?: { title: string } | null;
       service?: { title: string } | null;
+      /**
+       * Le devis accepté dont cette facture est la suite. C'est lui qui
+       * contractualise ; la facture ne fait que constater l'exécution de ce
+       * qui y était convenu. Sa référence est la mention de bon de commande
+       * qu'attend un service comptable, et le fil qui permet de reconstituer
+       * le dossier en contrôle.
+       */
+      quote?: {
+        reference: string;
+        decidedAt: Date | null;
+        /** Lignes chiffrées du devis, pour la ventilation de la TVA. */
+        lines?: unknown;
+        totalHt?: unknown;
+        totalTva?: unknown;
+      } | null;
     } | null;
   };
   emetteur: {
@@ -48,6 +64,14 @@ export interface DonneesFacturePdf {
     postalCode: string | null;
     city: string | null;
     contactEmail: string | null;
+    /**
+     * Coordonnées bancaires de l'émetteur, pour le règlement par virement.
+     * Nullables, et elles le restent : tant qu'un émetteur ne les a pas
+     * renseignées dans les réglages de son compte, le bloc « Coordonnées
+     * bancaires » ne s'imprime pas. On n'invente jamais un IBAN.
+     */
+    iban: string | null;
+    bic: string | null;
   };
   client: {
     name: string;
@@ -132,6 +156,19 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
   }
 
   titreSection(doc, 'Prestation');
+  // RÉFÉRENCE DU DEVIS ACCEPTÉ. Le client qui reçoit la facture doit pouvoir
+  // la rattacher à l'engagement qu'il a validé : c'est ce rattachement que
+  // cherche un service comptable avant de mettre en paiement, et c'est lui
+  // qui manque le jour d'un contrôle.
+  if (f.booking?.quote) {
+    ligne(
+      doc,
+      'Référence du devis',
+      `${f.booking.quote.reference}${
+        f.booking.quote.decidedAt ? ` — accepté le ${dateFr(f.booking.quote.decidedAt)}` : ''
+      }`,
+    );
+  }
   const intitule =
     d.prestation?.intitule ??
     f.booking?.mission?.title ??
@@ -150,9 +187,43 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
   );
 
   doc.moveDown(0.6);
-  ligne(doc, 'Total', euros(montant));
-  ligne(doc, 'TVA', d.mentionTva);
-  ligne(doc, 'Net à payer', euros(montant));
+  // VENTILATION DE LA TVA, REPRISE DU DEVIS.
+  //
+  // La facture ne porte qu'un montant, et elle imprimait sous ce montant la
+  // mention de franchise par défaut. Sur une prestation issue d'un devis
+  // soumis à la TVA, elle déclarait donc exonérée une taxe déjà facturée —
+  // une mention fiscale fausse, et la ventilation par taux qu'impose
+  // l'article 242 nonies A de l'annexe II au CGI manquait avec elle.
+  //
+  // Quand le devis d'origine porte de la taxe, c'est lui qui fait foi : les
+  // deux pièces doivent dire la même chose, sous peine d'être toutes deux
+  // inopposables.
+  const lignesDevis = Array.isArray(f.booking?.quote?.lines)
+    ? (f.booking!.quote!.lines as LigneChiffrable[])
+    : [];
+  const ventile = lignesDevis.length > 0 ? totauxDevis(lignesDevis) : null;
+  const avecTva = ventile != null && ventile.totalTva > 0;
+
+  if (avecTva) {
+    ligne(doc, 'Total hors taxes', euros(ventile.totalHt));
+    for (const v of ventile.ventilation) {
+      if (v.taux === 0) {
+        ligne(doc, 'Base non soumise à TVA', euros(v.baseHt));
+      } else {
+        ligne(
+          doc,
+          `TVA ${String(v.taux).replace('.', ',')} % sur ${euros(v.baseHt)}`,
+          euros(v.tva),
+        );
+      }
+    }
+    ligne(doc, 'Total TVA', euros(ventile.totalTva));
+    ligne(doc, 'Net à payer (TTC)', euros(montant));
+  } else {
+    ligne(doc, 'Total', euros(montant));
+    ligne(doc, 'TVA', d.mentionTva);
+    ligne(doc, 'Net à payer', euros(montant));
+  }
   if (echeance && f.status !== 'PAID' && f.status !== 'CANCELLED') {
     ligne(doc, "Date d'échéance", dateFr(echeance));
   }
@@ -164,6 +235,29 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
       ? 'Cette facture a été réglée. Aucun paiement ne reste dû.'
       : "Règlement à trente jours à compter de la date d'émission. Passé ce délai, des pénalités de retard sont exigibles au taux de trois fois le taux d'intérêt légal, ainsi qu'une indemnité forfaitaire de recouvrement de 40 € (art. L. 441-10 et D. 441-5 du code de commerce). Aucun escompte n'est accordé pour paiement anticipé.",
   );
+
+  // COORDONNÉES BANCAIRES DE L'ÉMETTEUR. Le produit annonce partout un
+  // règlement par virement ; la facture ne portait pourtant aucun IBAN, et le
+  // destinataire n'avait donc aucun moyen de la payer.
+  //
+  // Le bloc ne s'imprime que si l'émetteur a renseigné son IBAN (réglages du
+  // compte, « Identité de facturation ») : on n'invente pas des coordonnées
+  // bancaires, et une facture sans IBAN vaut mieux qu'une facture portant
+  // celui d'un autre. Il ne s'imprime pas non plus sur une facture réglée ou
+  // annulée, qui n'appelle plus de virement — même condition que la date
+  // d'échéance ci-dessus. Le BIC suit s'il est connu : il n'est plus exigé
+  // pour un virement SEPA. Rendu identique côté web (`InvoiceDocument.tsx`).
+  const iban = emetteur.iban?.trim() || null;
+  const bic = emetteur.bic?.trim() || null;
+  if (iban && f.status !== 'PAID' && f.status !== 'CANCELLED') {
+    ligne(doc, 'IBAN', iban);
+    if (bic) ligne(doc, 'BIC', bic);
+    doc.moveDown(0.4);
+    paragraphe(
+      doc,
+      `Virement à l'ordre de ${emetteur.legalName ?? emetteur.name}, en rappelant la référence ${f.number}.`,
+    );
+  }
 
   encadre(
     doc,

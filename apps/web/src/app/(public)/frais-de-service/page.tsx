@@ -154,17 +154,36 @@ export default function FraisPage() {
           <Receipt className="size-4 text-primary" aria-hidden />
           Comment ça arrive dans votre comptabilité
         </h2>
+        {/*
+          Deux affirmations fausses corrigées ici.
+          1. « La commission y figure en clair, sur une ligne distincte » : il n’y a
+             aucune ligne de commission sur les factures, parce qu’il n’y a aucune
+             commission — COMMISSION_DEFAUT vaut 0 (src/lib/commission.ts). Annoncer
+             une ligne qui n’existe pas fait douter du document reçu.
+          2. « payables en ligne » : `createInvoiceCheckout`
+             (apps/api/src/billing/billing.service.ts) refuse les factures émises par
+             un intervenant et ne laisse passer que celles de l’association. Une
+             facture d’atelier se règle par virement, d’établissement à intervenant.
+        */}
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Chaque prestation donne lieu à un contrat à double signature, une déclaration
-          d’heures validée et une facture PDF. La commission y figure en clair, sur une
-          ligne distincte. Les factures sont téléchargeables à tout moment et payables en
-          ligne.
+          d’heures validée et une facture PDF. La facture porte le tarif de l’intervenant,
+          sans ligne de frais : il n’y en a pas. Elle est téléchargeable à tout moment et
+          se règle par virement, directement à l’intervenant qui l’a émise.
         </p>
+        {/*
+          « Le numéro de déclaration d’activité figure sur la convention » : le
+          logiciel ne produit aucune convention de formation. Les seules pièces
+          générées sont l’attestation d’assiduité, le certificat de réalisation et la
+          feuille d’émargement (apps/api/src/documents/documents.controller.ts).
+          Le numéro est rattaché ici à ce qui existe réellement.
+        */}
         <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted-foreground">
           <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
           Les formations portées par la certification Qualiopi de l’association sont
-          finançables par votre OPCO. Le numéro de déclaration d’activité figure sur la
-          convention.
+          finançables par votre OPCO. Le numéro de déclaration d’activité de l’association
+          figure dans les mentions légales du site, ainsi que sur les attestations
+          d’assiduité et les certificats de réalisation délivrés.
         </p>
       </section>
 

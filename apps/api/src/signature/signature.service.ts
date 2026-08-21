@@ -123,6 +123,52 @@ export class SignatureService {
       ].join('\n');
     }
 
+    // LE DEVIS N'ÉTAIT PAS TRAITÉ, ET RIEN NE LE SIGNALAIT.
+    //
+    // `DEVIS` figure dans l'énumération depuis l'origine, mais aucune branche
+    // ne le prenait : la demande de signature tombait sur la recherche de
+    // réservation ci-dessous, cherchait un `Booking` portant l'identifiant
+    // d'un `Quote`, n'en trouvait évidemment aucun, et l'appelant recevait
+    // « Document introuvable. » — un message qui accuse le document alors que
+    // c'est la branche qui manquait. Signer un devis était donc impossible,
+    // silencieusement, alors que c'est la signature du devis qui vaut
+    // contractualisation.
+    //
+    // Le texte canonique doit couvrir TOUT ce qui engage : l'identité des
+    // parties telle qu'elle était à l'envoi, chaque ligne chiffrée, les
+    // totaux, la date d'intervention et la durée de validité. Ce qui n'y
+    // figure pas pourrait être modifié après signature sans que l'empreinte
+    // bouge — et l'empreinte est toute la valeur probante du procédé.
+    if (type === 'DEVIS') {
+      const q = await this.prisma.quote.findUnique({ where: { id } });
+      if (!q) return null;
+      const lignes = Array.isArray(q.lines) ? (q.lines as Record<string, unknown>[]) : [];
+      return [
+        'DEVIS',
+        q.id,
+        q.reference,
+        q.clientAccountId,
+        q.providerAccountId,
+        q.title,
+        JSON.stringify(q.partiesSnapshot ?? null),
+        ...lignes.map((l) =>
+          [
+            String(l.label ?? ''),
+            String(l.quantity ?? ''),
+            String(l.unit ?? ''),
+            String(l.unitPrice ?? ''),
+            String(l.vatRate ?? 0),
+          ].join(' | '),
+        ),
+        String(q.totalHt ?? ''),
+        String(q.totalTva ?? ''),
+        String(q.amount ?? ''),
+        q.scheduledAt?.toISOString() ?? '',
+        q.validUntil?.toISOString() ?? '',
+        q.message ?? '',
+      ].join('\n');
+    }
+
     const b = await this.prisma.booking.findUnique({
       where: { id },
       include: { mission: true, service: true },

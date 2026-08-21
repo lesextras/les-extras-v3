@@ -2,6 +2,19 @@
 // Présentationnel : rendu serveur, bouton d'impression client (PrintButton).
 import { PrintButton } from "./PrintButton";
 
+/**
+ * Numéro de déclaration d'activité de l'organisme de formation (ADéPA,
+ * préfecture d'Île-de-France) — le même que celui des mentions légales et du
+ * générateur PDF (apps/api/src/documents/formation.pdf.ts).
+ *
+ * L'en-tête ne portait que le nom de l'organisme et sa ville. C'est pourtant
+ * ce numéro que le financeur cherche sur un certificat de réalisation avant de
+ * libérer les fonds. Cette page étant le miroir HTML des pièces PDF, elle doit
+ * dire exactement la même chose, sous peine de faire circuler deux versions
+ * différentes du même document.
+ */
+const NUMERO_DECLARATION_ACTIVITE = "11771011677";
+
 export interface DocInscription {
   id: string;
   learnerName?: string | null;
@@ -69,6 +82,9 @@ export function FormationDocument({
           <div>
             <p className="text-lg font-bold tracking-tight text-neutral-900">{org}</p>
             <p className="text-xs text-neutral-500">Organisme de formation{city ? ` · ${city}` : ""}</p>
+            <p className="text-xs text-neutral-500">
+              {`Déclaration d'activité n° ${NUMERO_DECLARATION_ACTIVITE}`}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-[11px] uppercase tracking-widest text-neutral-400">
@@ -134,7 +150,9 @@ export function FormationDocument({
           {isCert ? (
             <p className="mx-auto mt-8 max-w-lg text-xs leading-relaxed text-neutral-500">
               Action de formation réalisée conformément aux dispositions de l'article L.6353-1 du
-              Code du travail.
+              Code du travail. Organisme de formation enregistré sous le numéro de déclaration
+              d'activité {NUMERO_DECLARATION_ACTIVITE} auprès du préfet de région d'Île-de-France ;
+              cet enregistrement ne vaut pas agrément de l'État.
             </p>
           ) : null}
         </div>

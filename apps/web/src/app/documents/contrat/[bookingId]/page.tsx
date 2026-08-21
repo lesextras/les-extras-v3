@@ -18,12 +18,31 @@ export default async function ContratPage({ params }: { params: { bookingId: str
 
   const c = res.data;
   const activeId = session.account.id;
+  // Le côté se lit sur les BLOCS du document, jamais sur `c.accountId`.
+  // Ce champ ne désigne que le demandeur, et le demandeur change de camp
+  // d'un flux à l'autre : intervenant qui candidate à un renfort,
+  // établissement qui réserve un atelier. Sur un atelier, le directeur était
+  // donc rangé du côté « freelance » et l'intervenant du côté
+  // « establishment ». L'API place désormais l'établissement en
+  // `mission.account` et l'intervenant en `account` dans les deux flux : ce
+  // sont ces deux identités-là qu'on compare.
   const side: "freelance" | "establishment" | "none" =
-    activeId === c.accountId ? "freelance" : activeId === c.mission?.account?.id ? "establishment" : "none";
+    activeId === c.mission?.account?.id
+      ? "establishment"
+      : activeId === c.account?.id
+        ? "freelance"
+        : "none";
 
   // Seul l'établissement embauche : le bouton n'apparaît que de son côté, et
   // seulement une fois qu'il a donné son accord sur la proposition.
-  const peutEtablir = side === "establishment" && Boolean(c.signedEstablishmentAt);
+  //
+  // Et seulement sur un RENFORT : un atelier est une prestation facturée par
+  // un indépendant, pas une embauche — il n'y a pas de CDD à en tirer, et
+  // `POST /contrats/depuis-renfort` le refuse (« Proposition introuvable pour
+  // ce renfort »). Le bug masquait ce cas puisque le bouton n'apparaissait
+  // jamais à l'établissement ; le corriger le rendrait visible sans lui.
+  const peutEtablir =
+    side === "establishment" && c.kind !== "service" && Boolean(c.signedEstablishmentAt);
 
   return (
     <>

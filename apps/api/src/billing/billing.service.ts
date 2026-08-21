@@ -325,8 +325,12 @@ export class BillingService {
     }
     const plateforme = await this.compteDeLaPlateforme();
     if (!plateforme || invoice.accountId !== plateforme) {
+      // Le message annonçait « IBAN sur la facture » alors qu'aucun IBAN n'y
+      // figurait : renseigner ses coordonnées bancaires reste facultatif pour
+      // l'émetteur, et beaucoup de factures sortent sans. On dit donc où
+      // regarder sans promettre ce qui s'y trouve.
       throw new NotImplementedException(
-        "Le règlement en ligne des factures d'intervenants arrive bientôt — règle cette facture par virement (IBAN sur la facture).",
+        "Le règlement en ligne des factures d'intervenants arrive bientôt — règle cette facture par virement, selon les coordonnées bancaires indiquées par l'émetteur sur sa facture. Si elles n'y figurent pas, demande-les-lui.",
       );
     }
     if (invoice.status === 'PAID') {

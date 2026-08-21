@@ -104,9 +104,23 @@ export class BookingsService {
    */
   async getContract(id: string, accountId: string) {
     await this.loadForAccount(id, accountId); // contrôle d'accès (participant)
+    // L'établissement figure au document par sa personne morale : raison
+    // sociale, SIRET, adresse. C'est ce que le bloc « Établissement » attend.
     const PARTIE_ETABLISSEMENT = {
       select: { id: true, name: true, legalName: true, siret: true, city: true, address: true },
     };
+    // L'intervenant, lui, y figure comme personne physique : c'est le
+    // propriétaire du compte qui serait embauché ou qui anime l'atelier.
+    const PERSONNE = {
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        profile: { select: { job: true, siret: true, city: true } },
+      },
+    };
+    const PARTIE_INTERVENANT = { select: { id: true, name: true, owner: PERSONNE } };
     const booking = await this.prisma.booking.findUnique({
       where: { id },
       include: {
@@ -119,18 +133,24 @@ export class BookingsService {
         },
         // Un atelier réservé donne lieu au même contrat qu'une mission : c'est
         // le produit d'appel, il ne peut pas être le seul à ne pas être
-        // contractualisable.
+        // contractualisable. Mais la fiche appartient à l'INTERVENANT : son
+        // compte se lit comme une personne, pas comme un établissement.
         service: {
           select: {
             id: true, title: true, description: true, duration: true, durationMinutes: true,
             maxParticipants: true, city: true, price: true,
-            account: PARTIE_ETABLISSEMENT,
+            account: PARTIE_INTERVENANT,
           },
         },
+        // Le compte à l'origine de la réservation change de rôle selon le flux
+        // (intervenant qui candidate à un renfort / établissement qui réserve
+        // un atelier) : on charge donc ce qu'il faut pour l'un ET pour l'autre,
+        // et c'est la nature de la réservation qui décide de sa place au
+        // document, plus bas.
         account: {
           select: {
-            id: true, name: true,
-            owner: { select: { firstName: true, lastName: true, email: true, phone: true, profile: { select: { job: true, siret: true, city: true } } } },
+            id: true, name: true, legalName: true, siret: true, city: true, address: true,
+            owner: PERSONNE,
           },
         },
       },
@@ -141,11 +161,27 @@ export class BookingsService {
 
     // Vue unifiée : le document contractuel parle de « prestation », que
     // l'origine soit une mission de renfort ou un atelier du catalogue.
+    //
+    // LES DEUX PARTIES ÉTAIENT INTERVERTIES ICI. La pseudo-mission reprenait
+    // `account: s.account`, c'est-à-dire le compte PROPRIÉTAIRE DE LA FICHE.
+    // Sur un atelier, ce compte est l'intervenant : il se retrouvait au bloc
+    // « Établissement », et le directeur qui avait réservé au bloc « Personne
+    // proposée » — chacun signant à la place de l'autre.
+    //
+    // Le rôle ne se lit pas sur `booking.accountId`, qui désigne seulement le
+    // DEMANDEUR, et le demandeur change de camp d'un flux à l'autre : sur un
+    // renfort c'est l'intervenant qui candidate, sur un atelier c'est
+    // l'établissement qui réserve. Il se lit sur la NATURE de la réservation.
+    // Atelier : la fiche est à l'intervenant, la demande vient de
+    // l'établissement — donc `booking.account` est l'établissement et
+    // `service.account` est l'intervenant.
     const s = booking.service;
     const debut = booking.scheduledAt ?? new Date();
     return {
       ...booking,
       kind: 'service' as const,
+      // Bloc « Personne proposée » : le titulaire de la fiche atelier.
+      account: { id: s.account.id, name: s.account.name, owner: s.account.owner },
       mission: {
         id: s.id,
         title: s.title,
@@ -159,7 +195,15 @@ export class BookingsService {
         postalCode: null,
         hourlyRate: s.price,
         headcount: s.maxParticipants ?? 1,
-        account: s.account,
+        // Bloc « Établissement » : le compte qui a réservé l'atelier.
+        account: {
+          id: booking.account.id,
+          name: booking.account.name,
+          legalName: booking.account.legalName,
+          siret: booking.account.siret,
+          city: booking.account.city,
+          address: booking.account.address,
+        },
       },
     };
   }
@@ -170,11 +214,19 @@ export class BookingsService {
    */
   async signContract(id: string, accountId: string) {
     const booking = await this.loadForAccount(id, accountId);
-    const offerAccountId = BookingsService.offreurDe(booking);
+    // LA SIGNATURE ATTERRISSAIT DU MAUVAIS CÔTÉ SUR LES ATELIERS. Le code
+    // assimilait `booking.accountId` au freelance et l'offreur à
+    // l'établissement : vrai sur un renfort, faux sur un atelier, où le
+    // demandeur EST l'établissement. L'accord du directeur se rangeait donc
+    // dans `signedFreelanceAt`, et celui de l'intervenant dans
+    // `signedEstablishmentAt`. Les deux champs disent un RÔLE, pas un rang
+    // dans la réservation : on les remplit donc d'après le rôle réel du
+    // signataire, déduit de la nature de la réservation.
+    const { etablissementId, intervenantId } = BookingsService.partiesDe(booking);
     const data: Prisma.BookingUpdateInput = {};
-    if (accountId === booking.accountId) {
+    if (accountId === intervenantId) {
       data.signedFreelanceAt = new Date();
-    } else if (accountId === offerAccountId) {
+    } else if (accountId === etablissementId) {
       data.signedEstablishmentAt = new Date();
     } else {
       throw new ForbiddenException('Signature non autorisée pour ce compte.');
@@ -240,6 +292,44 @@ export class BookingsService {
     service?: { accountId: string } | null;
   }): string | null {
     return booking.mission?.accountId ?? booking.service?.accountId ?? null;
+  }
+
+  /**
+   * QUI EST L'ÉTABLISSEMENT, QUI EST L'INTERVENANT — d'après la NATURE de la
+   * réservation.
+   *
+   * `offreurDe` répond à « qui a été sollicité » ; ce n'est pas la même
+   * question que « qui est l'employeur ». Confondre les deux marchait par
+   * accident sur les renforts et se trompait systématiquement sur les
+   * ateliers, car les deux flux sont inversés :
+   *
+   *  - RENFORT : la mission appartient à l'établissement, l'intervenant
+   *    candidate. `booking.accountId` = intervenant, offreur = établissement.
+   *  - ATELIER : la fiche appartient à l'intervenant, l'établissement
+   *    réserve. `booking.accountId` = établissement, offreur = intervenant.
+   *
+   * Un booking orphelin (mission ou atelier supprimé, `onDelete: SetNull`)
+   * n'a plus de contrepartie identifiable : on ne devine pas de rôle pour lui,
+   * et `getContract` le déclare déjà introuvable.
+   */
+  private static partiesDe(booking: {
+    accountId: string;
+    mission?: { accountId: string } | null;
+    service?: { accountId: string } | null;
+  }): { etablissementId: string | null; intervenantId: string | null } {
+    if (booking.mission) {
+      return {
+        etablissementId: booking.mission.accountId,
+        intervenantId: booking.accountId,
+      };
+    }
+    if (booking.service) {
+      return {
+        etablissementId: booking.accountId,
+        intervenantId: booking.service.accountId,
+      };
+    }
+    return { etablissementId: null, intervenantId: null };
   }
 
   /**
@@ -480,11 +570,19 @@ export class BookingsService {
   async listTimeEntries(bookingId: string, accountId: string) {
     const booking = await this.loadForAccount(bookingId, accountId);
     await this.validerCreneauxEchus(bookingId, booking);
-    const offerAccountId = BookingsService.offreurDe(booking);
+    // LE CÔTÉ ÉTAIT INVERSÉ SUR LES ATELIERS. `side` dit un RÔLE (« celui qui
+    // déclare ses heures » / « celui qui les valide »), et le rôle ne se lit
+    // pas sur `booking.accountId` : sur un renfort le demandeur est
+    // l'intervenant qui candidate, sur un atelier c'est l'établissement qui
+    // réserve. L'écran de pointage (`TimeSheet`) montre le formulaire de
+    // déclaration au côté `freelance` et les boutons Valider/Refuser au côté
+    // `establishment` : mal orienté, il faisait déclarer les heures au
+    // directeur et les valider à l'intervenant.
+    const { etablissementId, intervenantId } = BookingsService.partiesDe(booking);
     const side =
-      accountId === booking.accountId
+      accountId === intervenantId
         ? 'freelance'
-        : accountId === offerAccountId
+        : accountId === etablissementId
           ? 'establishment'
           : 'none';
     const entries = await this.prisma.timeEntry.findMany({
@@ -507,7 +605,10 @@ export class BookingsService {
       // Garde-fous temps de travail sur les heures REELLEMENT pointees, tous
       // employeurs confondus : memes regles que le planning previsionnel
       // (module conformite-horaire), donc une seule verite dans le produit.
-      alertes: await this.alertesTempsDeTravail(booking.accountId, entries),
+      // Ces plafonds sont ceux d'une PERSONNE QUI TRAVAILLE : on les calcule
+      // pour l'intervenant, jamais pour l'etablissement (`booking.accountId`
+      // n'est l'intervenant que sur un renfort).
+      alertes: await this.alertesTempsDeTravail(intervenantId, entries),
       ajustement: {
         limite: limite ? limite.toISOString() : null,
         ouverte: this.ajustementOuvert(booking),
@@ -533,14 +634,26 @@ export class BookingsService {
    * glissante est sous-estimee. Le filtre porte sur le compte de l'intervenant
    * et non sur l'etablissement : les plafonds se cumulent (art. L. 8261-1).
    *
+   * Et « le compte de l'intervenant » ne se lit pas sur `booking.accountId` :
+   * ce compte est l'intervenant sur un RENFORT (il candidate), mais
+   * l'etablissement sur un ATELIER (il reserve la fiche de l'intervenant).
+   * Filtrer sur ce seul champ cumulait les heures de tous les intervenants
+   * venus animer chez un meme etablissement — et ignorait, pour un
+   * intervenant, ses propres ateliers. On selectionne donc les deux flux :
+   * renfort ou l'intervenant est le demandeur, atelier dont il est le
+   * proprietaire de la fiche.
+   *
    * Ces alertes restent informatives : un pointage constate un fait passe, le
    * bloquer n'y changerait rien. Le blocage a sa place a l'affectation.
    */
   private async alertesTempsDeTravail(
-    freelanceAccountId: string,
+    intervenantAccountId: string | null,
     entries: { id: string; startedAt: Date; endedAt: Date | null }[],
   ): Promise<Record<string, string[]>> {
     const resultat: Record<string, string[]> = {};
+    // Reservation orpheline (mission ou atelier supprime) : plus d'intervenant
+    // identifiable, donc aucun cumul a constater sur un compte precis.
+    if (!intervenantAccountId) return resultat;
     const clos = entries.filter((e) => e.endedAt);
     if (clos.length === 0) return resultat;
 
@@ -550,7 +663,14 @@ export class BookingsService {
 
     const voisins = await this.prisma.timeEntry.findMany({
       where: {
-        booking: { accountId: freelanceAccountId },
+        booking: {
+          OR: [
+            // Renfort : l'intervenant est le compte qui a candidate.
+            { missionId: { not: null }, accountId: intervenantAccountId },
+            // Atelier : l'intervenant est le proprietaire de la fiche.
+            { service: { accountId: intervenantAccountId } },
+          ],
+        },
         status: { not: 'REJECTED' },
         startedAt: { gte: min, lte: max },
       },
@@ -577,10 +697,16 @@ export class BookingsService {
     return resultat;
   }
 
-  /** Le freelance (titulaire du booking) déclare un créneau travaillé. */
+  /** L'intervenant — celui qui a travaillé — déclare un créneau. */
   async addTimeEntry(bookingId: string, accountId: string, dto: CreateTimeEntryDto) {
     const booking = await this.loadForAccount(bookingId, accountId);
-    if (accountId !== booking.accountId) {
+    // Déclarer ses heures revient à celui qui les a faites. « Titulaire du
+    // booking » n'est pas un synonyme d'intervenant : sur un renfort oui, le
+    // demandeur est l'intervenant qui candidate ; sur un atelier le demandeur
+    // est l'établissement, et l'intervenant est le propriétaire de la fiche.
+    // Le contrôle se fait donc sur le rôle réel, pas sur `booking.accountId`.
+    const { intervenantId } = BookingsService.partiesDe(booking);
+    if (accountId !== intervenantId) {
       throw new ForbiddenException("Seul l'intervenant peut déclarer son temps de travail.");
     }
     if (!this.ajustementOuvert(booking)) {
@@ -608,8 +734,14 @@ export class BookingsService {
     const entry = await this.prisma.timeEntry.findUnique({ where: { id: entryId } });
     if (!entry) throw new NotFoundException('Créneau introuvable.');
     const booking = await this.loadForAccount(entry.bookingId, accountId);
-    const offerAccountId = BookingsService.offreurDe(booking);
-    if (accountId !== offerAccountId) {
+    // Valider les heures revient à celui pour qui elles ont été faites, donc à
+    // l'établissement. `offreurDe` répond à « qui a été sollicité » : c'est
+    // l'établissement sur un renfort, mais l'INTERVENANT sur un atelier — d'où
+    // l'inversion, où l'intervenant validait les heures que l'établissement
+    // avait déclarées à sa place. Le rôle se lit sur la nature de la
+    // réservation.
+    const { etablissementId } = BookingsService.partiesDe(booking);
+    if (accountId !== etablissementId) {
       throw new ForbiddenException("Seul l'établissement peut valider le temps de travail.");
     }
     if (!this.ajustementOuvert(booking)) {
@@ -661,11 +793,25 @@ export class BookingsService {
             id: true,
             account: { select: { name: true } },
             mission: { select: { title: true } },
-            service: { select: { title: true } },
+            // Sur un atelier, l'intervenant n'est pas le compte de la
+            // reservation (c'est l'etablissement qui reserve) mais le
+            // proprietaire de la fiche : il faut son nom pour la colonne.
+            service: { select: { title: true, account: { select: { name: true } } } },
           },
         },
       },
     });
+    // Colonne « Intervenant » : la personne qui a travaille, pas le compte a
+    // l'origine de la reservation. Renfort : c'est le candidat retenu, donc
+    // `booking.account`. Atelier : c'est le titulaire de la fiche, donc
+    // `service.account` — sinon l'export sortait le nom de l'etablissement
+    // sous un intitule « Intervenant », et une paie ou une facturation faite
+    // sur cette base attribuait les heures a la mauvaise personne.
+    const nomIntervenant = (b: {
+      account: { name: string } | null;
+      mission: { title: string } | null;
+      service: { account: { name: string } | null } | null;
+    }) => (b.mission ? (b.account?.name ?? '') : (b.service?.account?.name ?? ''));
     const esc = (v: string) => '"' + v.replace(/"/g, '""') + '"';
     const lignes = [
       ['Intervenant', 'Prestation', 'Debut', 'Fin', 'Duree (h)', 'Reservation'].join(';'),
@@ -675,7 +821,7 @@ export class BookingsService {
       const heures = (e.endedAt.getTime() - e.startedAt.getTime()) / 3_600_000;
       lignes.push(
         [
-          esc(e.booking.account?.name ?? ''),
+          esc(nomIntervenant(e.booking)),
           esc(e.booking.mission?.title ?? e.booking.service?.title ?? ''),
           e.startedAt.toISOString(),
           e.endedAt.toISOString(),
@@ -688,12 +834,16 @@ export class BookingsService {
     return '\ufeff' + lignes.join('\r\n');
   }
 
-  /** Le freelance supprime un de ses créneaux tant qu'il n'est pas validé. */
+  /** L'intervenant supprime un de ses créneaux tant qu'il n'est pas validé. */
   async removeTimeEntry(entryId: string, accountId: string) {
     const entry = await this.prisma.timeEntry.findUnique({ where: { id: entryId } });
     if (!entry) throw new NotFoundException('Créneau introuvable.');
     const booking = await this.loadForAccount(entry.bookingId, accountId);
-    if (accountId !== booking.accountId) {
+    // Pendant de `addTimeEntry` : on ne retire que ses propres heures. Même
+    // inversion que partout ailleurs si l'on s'en remet à `booking.accountId`,
+    // qui désigne l'établissement sur un atelier.
+    const { intervenantId } = BookingsService.partiesDe(booking);
+    if (accountId !== intervenantId) {
       throw new ForbiddenException("Seul l'intervenant peut supprimer son créneau.");
     }
     if (entry.status === 'VALIDATED') {

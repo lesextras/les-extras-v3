@@ -24,6 +24,8 @@ import { formatDate, formatRate } from "./format";
 export interface ContractData {
   id: string;
   accountId: string;
+  /** « service » pour un atelier ; absent pour une mission de renfort. */
+  kind?: "service";
   status: string;
   scheduledAt?: string | null;
   signedFreelanceAt?: string | null;
@@ -79,6 +81,11 @@ export function ContractDocument({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const m = contract.mission;
+  // Les deux parties telles que l'API les livre désormais, dans les DEUX flux :
+  // `mission.account` est l'établissement, `account` est l'intervenant. Sur un
+  // atelier, l'API renvoyait l'inverse — le propriétaire de la fiche, donc
+  // l'intervenant, tenait le bloc « Établissement ». Rien ne se déduit ici de
+  // `contract.accountId`, qui ne dit que le demandeur.
   const est = m?.account;
   const fl = contract.account?.owner;
 
@@ -89,7 +96,10 @@ export function ContractDocument({
     setLoading(true);
     try {
       // Le compte actif (freelance ou établissement) signe ; l'API détermine le côté.
-      const signingAccountId = side === "freelance" ? contract.accountId : est?.id;
+      // On envoie l'identifiant du compte de la PARTIE, pas `contract.accountId` :
+      // sur un atelier, ce dernier est celui de l'établissement, et le côté
+      // « freelance » signait donc au nom du directeur.
+      const signingAccountId = side === "freelance" ? contract.account?.id : est?.id;
       await apiRequest(`/bookings/${contract.id}/sign`, { method: "PATCH", accountId: signingAccountId });
       toast({
         title: "Proposition acceptée",

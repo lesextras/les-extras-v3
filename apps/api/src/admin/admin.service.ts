@@ -385,6 +385,12 @@ export class AdminService {
       where,
       orderBy: { createdAt: 'desc' },
       take: 200,
+      // Cette liste renvoie les colonnes du compte en bloc. Les coordonnées
+      // bancaires n'y ont rien à faire : deux cents IBAN d'un coup, pour un
+      // écran qui n'affiche que le nom, la ville et le SIRET. Elles restent
+      // lisibles là où elles servent — la fiche d'un compte, et la facture
+      // qui les imprime.
+      omit: { iban: true, bic: true },
       include: {
         owner: { select: { id: true, email: true, firstName: true, lastName: true } },
         memberships: {
@@ -662,6 +668,13 @@ export class AdminService {
             postalCode: true,
             siret: true,
             vatMention: true,
+            // Coordonnées bancaires de l'émetteur : l'admin plateforme ouvre
+            // la même facture imprimable que les parties, et sans elles le
+            // document qu'il consulte ne dirait pas la même chose. Réservé au
+            // détail d'UNE facture (`getInvoice`) ; la liste de supervision
+            // au-dessus ne les demande pas.
+            iban: true,
+            bic: true,
             owner: { select: { email: true } },
           },
         },

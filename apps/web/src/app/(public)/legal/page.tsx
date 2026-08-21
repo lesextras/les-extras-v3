@@ -164,7 +164,12 @@ const sections: Section[] = [
       'Une mission de renfort donne lieu à un contrat conclu entre l’établissement et l’intervenant, le plus souvent un contrat à durée déterminée. La rémunération est versée par l’établissement, selon les règles de la paie ou de la facturation, sans intervention de l’association. Un atelier ou une intervention se règle de la même façon : directement, sur la facture émise par l’intervenant.',
       'Les conditions d’annulation d’une intervention relèvent donc de l’accord entre les deux parties et des règles applicables au contrat conclu. La plateforme conserve la trace des échanges, des créneaux et des heures validées : ces éléments restent consultables par chacune des parties et peuvent servir de preuve en cas de désaccord.',
       'Les remboursements que l’association peut effectuer ne concernent que ce qu’elle a elle-même encaissé — crédits et abonnements LEX, formations qu’elle a facturées — dans les conditions de la rubrique précédente.',
-      'Le règlement en ligne n’est proposé que pour les factures émises par l’association. Une facture émise par un intervenant se règle par virement, à l’IBAN qui y figure : la plateforme n’encaisse pas pour le compte d’un tiers.',
+      // La phrase annonçait « l’IBAN qui y figure » : renseigner ses
+      // coordonnées bancaires reste facultatif pour l’émetteur, et une
+      // facture peut donc parfaitement sortir sans. On énonce le principe —
+      // virement, selon ce que l’émetteur indique — sans promettre au lecteur
+      // une mention qui n’est pas garantie.
+      'Le règlement en ligne n’est proposé que pour les factures émises par l’association. Une facture émise par un intervenant se règle par virement, selon les coordonnées bancaires que celui-ci indique sur sa facture ; à défaut, il appartient au destinataire de les lui demander. La plateforme n’encaisse pas pour le compte d’un tiers.',
     ],
   },
   {

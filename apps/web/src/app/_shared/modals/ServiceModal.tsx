@@ -309,10 +309,19 @@ export function ServiceModal({
             <Field label="Participants max" htmlFor="maxParticipants">
               <Input id="maxParticipants" name="maxParticipants" type="number" min={1} defaultValue={fiche?.maxParticipants ?? ""} placeholder="10" />
             </Field>
+            {/*
+              L'ancien libellé annonçait des « frais de gestion » ajoutés au
+              tarif pour l'établissement. Ces frais n'existent pas :
+              COMMISSION_DEFAUT vaut 0 (src/lib/commission.ts, miroir de
+              apps/api/src/billing/commission.ts), et le devis reprend le tarif
+              brut. La phrase incitait donc l'intervenant à baisser son prix
+              pour compenser un prélèvement imaginaire, et laissait croire à
+              l'établissement qu'il paierait davantage que le montant affiché.
+            */}
             <Field
               label="Prix (€)"
               htmlFor="price"
-              hint="Le tarif que vous demandez ; les frais de gestion s'ajoutent pour l'établissement."
+              hint="L'établissement paie exactement ce montant : rien n'est prélevé dessus."
             >
               <Input id="price" name="price" type="number" step="0.5" defaultValue={fiche?.price != null ? String(fiche.price) : ""} placeholder="250" />
             </Field>

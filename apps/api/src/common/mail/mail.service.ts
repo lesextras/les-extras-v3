@@ -226,6 +226,15 @@ export class MailService implements OnModuleDestroy {
     }
   }
 
+  /**
+   * Confirmation d'adresse.
+   *
+   * Le message annonçait « 24 heures » alors que le jeton est signé avec
+   * `expiresIn: '2d'` dans auth.service.ts : il vaut 48 heures. L'écart n'est
+   * pas anodin — quelqu'un qui ouvre son mail le lendemain soir renonçait à
+   * cliquer et redemandait un lien, en croyant le sien périmé. C'est le texte
+   * qui est corrigé, pas la durée du jeton.
+   */
   async sendEmailVerification(to: string, token: string, prenom?: string | null): Promise<void> {
     const url = `${this.webUrl}/verify-email?token=${encodeURIComponent(token)}`;
     await this.send(
@@ -235,7 +244,7 @@ export class MailService implements OnModuleDestroy {
         `Plus qu'une étape${prenom ? `, ${prenom}` : ''}`,
         `Votre compte est créé. Confirmez cette adresse pour l'activer complètement : c'est ce qui
          nous permet de vous joindre quand une mission vous correspond ou qu'un devis arrive.
-         <br><br>Ce lien est valable 24 heures.`,
+         <br><br>Ce lien est valable 48 heures.`,
         { label: 'Confirmer mon adresse', url },
       ),
     );

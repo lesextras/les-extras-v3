@@ -38,7 +38,11 @@ export const TYPE_POURQUOI: Partial<Record<DocType, string>> = {
   CRIMINAL_RECORD:
     "Obligatoire pour intervenir auprès de mineurs ou de majeurs protégés. À renouveler chaque année.",
   DRIVING_LICENSE: "Demandé dès qu'une intervention suppose de transporter des personnes.",
-  IBAN: "Nécessaire au règlement de vos factures.",
+  // La pièce déposée ici sert à l'établissement qui vous règle ; elle ne
+  // s'imprime pas d'elle-même sur vos factures. Le dire, plutôt que de
+  // laisser croire que déposer un RIB suffit à ce que vos factures portent
+  // vos coordonnées : c'est le réglage du compte qui les y met.
+  IBAN: "Permet à l'établissement de vous régler par virement. Pour que vos coordonnées apparaissent aussi sur les factures que vous émettez, renseignez-les dans l'identité de facturation de votre compte.",
   AUTOENTREPRENEUR: "Attestation de vigilance URSSAF, exigée de tout prestataire indépendant.",
 };
 

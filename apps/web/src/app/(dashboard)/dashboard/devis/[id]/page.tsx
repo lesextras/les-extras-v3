@@ -21,6 +21,11 @@ interface Quote {
   message?: string | null;
   lines?: QuoteLine[] | null;
   amount?: string | number | null;
+  totalHt?: string | number | null;
+  totalTva?: string | number | null;
+  acceptedByName?: string | null;
+  acceptedByRole?: string | null;
+  decidedAt?: string | null;
   status: string;
   scheduledAt?: string | null;
   validUntil?: string | null;
@@ -59,6 +64,12 @@ export default async function DevisDetailPage({ params }: { params: { id: string
   }
   const q = res.data!;
   const lines = Array.isArray(q.lines) ? q.lines : [];
+  const soumisTva = lines.some((l) => Number(l.vatRate ?? 0) > 0);
+  // Les devis anterieurs a la structuration n'ont pas de totaux separes en
+  // base : la TVA y valait zero pour tout le monde, donc le hors taxes egalait
+  // le total. On retombe dessus plutot que d'afficher un vide.
+  const totalHt = q.totalHt != null ? Number(q.totalHt) : Number(q.amount ?? 0);
+  const totalTva = q.totalTva != null ? Number(q.totalTva) : 0;
 
   return (
     <div className="space-y-8">
@@ -75,6 +86,16 @@ export default async function DevisDetailPage({ params }: { params: { id: string
         <Badge variant={q.status === "ACCEPTED" ? "default" : "secondary"}>
           {STATUS_LABEL[q.status] ?? q.status}
         </Badge>
+        {/* LE DOCUMENT. C'est le devis signe qui contractualise, pas la
+            facture : un directeur ne debloque pas une depense sur un ecran,
+            il lui faut la piece a porter a son conseil ou a son financeur. */}
+        {q.status !== "REQUESTED" ? (
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/api/proxy/documents/devis/${q.id}.pdf`} target="_blank">
+              Télécharger le devis (PDF)
+            </Link>
+          </Button>
+        ) : null}
         {q.scheduledAt ? (
           <span className="text-sm text-muted-foreground">
             Intervention : {formatDate(q.scheduledAt)}
@@ -108,8 +129,10 @@ export default async function DevisDetailPage({ params }: { params: { id: string
                   <tr>
                     <th className="p-3 font-medium">Prestation</th>
                     <th className="p-3 font-medium">Qté</th>
-                    <th className="p-3 font-medium">P.U.</th>
-                    <th className="p-3 text-right font-medium">Total</th>
+                    <th className="p-3 font-medium">Unité</th>
+                    <th className="p-3 font-medium">P.U. HT</th>
+                    {soumisTva ? <th className="p-3 font-medium">TVA</th> : null}
+                    <th className="p-3 text-right font-medium">Total HT</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -117,17 +140,44 @@ export default async function DevisDetailPage({ params }: { params: { id: string
                     <tr key={i} className="border-b border-border/60 last:border-0">
                       <td className="p-3 text-foreground">{l.label}</td>
                       <td className="p-3 text-muted-foreground">{l.quantity}</td>
+                      <td className="p-3 text-muted-foreground">{l.unit ?? "forfait"}</td>
                       <td className="p-3 text-muted-foreground">{euros(l.unitPrice)}</td>
+                      {soumisTva ? (
+                        <td className="p-3 text-muted-foreground">
+                          {String(Number(l.vatRate ?? 0)).replace(".", ",")} %
+                        </td>
+                      ) : null}
                       <td className="p-3 text-right font-medium text-foreground">
                         {euros(Number(l.quantity) * Number(l.unitPrice))}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot>
-                  <tr className="bg-muted/30">
-                    <td className="p-3 font-semibold text-foreground" colSpan={3}>
-                      Sous-total prestation
+                <tfoot className="bg-muted/30">
+                  <tr>
+                    <td className="p-3 text-muted-foreground" colSpan={soumisTva ? 5 : 4}>
+                      Total hors taxes
+                    </td>
+                    <td className="p-3 text-right font-medium text-foreground">
+                      {euros(totalHt)}
+                    </td>
+                  </tr>
+                  {soumisTva ? (
+                    <tr>
+                      <td className="p-3 text-muted-foreground" colSpan={5}>
+                        TVA
+                      </td>
+                      <td className="p-3 text-right font-medium text-foreground">
+                        {euros(totalTva)}
+                      </td>
+                    </tr>
+                  ) : null}
+                  <tr className="border-t border-border">
+                    <td
+                      className="p-3 font-semibold text-foreground"
+                      colSpan={soumisTva ? 5 : 4}
+                    >
+                      Total à régler
                     </td>
                     <td className="p-3 text-right text-lg font-bold text-foreground">
                       {euros(q.amount)}
@@ -135,6 +185,11 @@ export default async function DevisDetailPage({ params }: { params: { id: string
                   </tr>
                 </tfoot>
               </table>
+              {!soumisTva ? (
+                <p className="border-t border-border p-3 text-xs text-muted-foreground">
+                  TVA non applicable, article 293 B du code général des impôts.
+                </p>
+              ) : null}
             </CardContent>
           </Card>
           <DecompositionPrix
@@ -180,9 +235,16 @@ export default async function DevisDetailPage({ params }: { params: { id: string
       {q.status === "ACCEPTED" ? (
         <Card className="border-success/30 bg-success/10">
           <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <p className="text-sm text-foreground">
-              Devis accepté — la prestation est confirmée et la réservation créée.
-            </p>
+            <div className="text-sm text-foreground">
+              <p>Devis accepté — la prestation est confirmée et la réservation créée.</p>
+              {q.acceptedByName ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Bon pour accord donné par {q.acceptedByName}
+                  {q.acceptedByRole ? `, ${q.acceptedByRole}` : ""}
+                  {q.decidedAt ? ` le ${formatDate(q.decidedAt)}` : ""}.
+                </p>
+              ) : null}
+            </div>
             {q.bookingId ? (
               <Button asChild size="sm" variant="outline">
                 <Link href={`/documents/contrat/${q.bookingId}`} target="_blank">

@@ -158,6 +158,25 @@ model Account {
   /// franchise en base, association ADéPA), mais un émetteur assujetti à la
   /// TVA doit pouvoir la corriger lui-même plutôt que de laisser un taux faux.
   vatMention  String?
+  /// Coordonnées bancaires de l'émetteur, imprimées dans la section
+  /// « Règlement » de ses factures. Le produit annonce un règlement par
+  /// virement, mais aucun champ ne portait l'IBAN : la facture partait donc
+  /// sans le moyen de la payer.
+  ///
+  /// FACULTATIFS, et ils doivent le rester : la plateforme n'a pas à exiger
+  /// un IBAN de tous ses comptes. Un établissement qui ne fait que recevoir
+  /// des factures n'en a pas besoin, un intervenant peut préférer joindre son
+  /// RIB par un autre canal, et les comptes déjà en base n'en ont pas. Quand
+  /// l'IBAN est vide, le bloc « Règlement » ne l'affiche simplement pas — on
+  /// n'invente jamais de coordonnées, et surtout pas celles d'un tiers.
+  ///
+  /// Donnée à diffusion maîtrisée : ne l'exposer que dans les réponses déjà
+  /// réservées aux parties de la facture (émetteur, payeur, administration),
+  /// jamais dans le catalogue public ni dans une liste de comptes.
+  iban        String?
+  /// BIC de la banque. Facultatif même quand l'IBAN est renseigné : il n'est
+  /// plus exigé pour un virement SEPA à l'intérieur de l'Espace européen.
+  bic         String?
   /// Adresse de contact publique du compte. Pour un compte intervenant créé
   /// depuis un poste salarié, c'est OBLIGATOIREMENT un contact personnel : les
   /// sollicitations d'activité indépendante ne doivent jamais arriver sur la
@@ -513,6 +532,34 @@ model Quote {
   /// Lignes du devis : [{ label, quantity, unitPrice }] (JSON pour rester souple).
   lines             Json?
   amount            Decimal?    @db.Decimal(10, 2)
+  /// Totaux figes au moment de l'envoi. `amount` reste le TTC : tous les
+  /// ecrans et le calcul de la reservation le lisent deja sous ce sens, et un
+  /// devis dont le total change de signification au milieu de sa vie n'est
+  /// plus opposable. Ces deux champs-ci ajoutent le detail que la loi attend
+  /// d'un devis chiffre : le hors taxes et la taxe, separement.
+  ///
+  /// Nuls sur les devis anterieurs a cette version : la TVA y valait zero
+  /// pour tout le monde (franchise en base, art. 293 B du CGI), donc le HT
+  /// egalait le TTC et l'information n'est pas perdue, seulement implicite.
+  totalHt           Decimal?    @db.Decimal(10, 2)
+  totalTva          Decimal?    @db.Decimal(10, 2)
+  /// IDENTITE DES DEUX PARTIES, RECOPIEE A L'ENVOI.
+  ///
+  /// Un devis engage celui qui l'emet et celui qui ecrit « bon pour accord »
+  /// dessous. Tant que le document se reconstruisait a la lecture depuis les
+  /// profils courants, corriger une raison sociale ou un SIRET reecrivait
+  /// retroactivement un devis deja accepte — et faisait mentir l'empreinte de
+  /// la signature. On fige donc, au moment ou le devis part : raison sociale,
+  /// adresse, SIRET, mention de TVA, contact, pour l'emetteur et pour le
+  /// client. Forme : { provider: {...}, client: {...} }.
+  partiesSnapshot   Json?
+  /// « BON POUR ACCORD » : qui a accepte, et a quel titre.
+  ///
+  /// Un devis accepte par « l'etablissement » n'est pas signe : une personne
+  /// physique engage la structure, et c'est son nom et sa qualite qui rendent
+  /// l'acceptation opposable. On les releve au moment du clic.
+  acceptedByName    String?
+  acceptedByRole    String?
   status            QuoteStatus @default(REQUESTED)
   /// Date d'intervention souhaitée / retenue.
   scheduledAt       DateTime?
