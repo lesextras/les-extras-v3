@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Cookie, ShieldCheck, HardDrive, Ban, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { SOCLE_OG } from "@/lib/meta";
 import { PageHeader } from "../../../_shared/ui";
 import { ChoixMesure } from "../../../_shared/ChoixMesure";
 
@@ -20,7 +21,10 @@ export const metadata: Metadata = {
     ? "Ce que Les Extras dépose sur votre navigateur : les cookies indispensables au fonctionnement, et un cookie de mesure de campagne soumis à votre accord."
     : "Ce que Les Extras dépose sur votre navigateur : uniquement des cookies indispensables au fonctionnement. Aucun traceur publicitaire, aucune mesure d'audience.",
   alternates: { canonical: "/legal/cookies" },
-  openGraph: { url: "/legal/cookies", title: "Cookies et stockage local" },
+  // `SOCLE_OG` : cet objet remplace celui du layout racine au lieu de le
+  // compléter (fusion en surface), il faut donc y réémettre l'image de
+  // partage, le `siteName`, la locale et le `type`. Voir `lib/meta.ts`.
+  openGraph: { ...SOCLE_OG, url: "/legal/cookies", title: "Cookies et stockage local" },
 };
 
 const NECESSAIRES = [

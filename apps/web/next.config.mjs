@@ -159,6 +159,18 @@ const nextConfig = {
       // 12/08/2026 : c'était le même sujet à deux adresses. Les liens déjà
       // envoyés par courriel continuent de fonctionner.
       { source: '/dashboard/conges', destination: '/dashboard/temps-de-travail', permanent: true },
+      // DEUX PAGES QUI RÉPONDAIENT 200 SUR DU VIDE.
+      //
+      // Elles appelaient `redirect()` depuis un composant prérendu : Next ne
+      // peut alors pas émettre de 3xx et retombe sur un rafraîchissement méta
+      // (`<meta http-equiv="refresh" content="1;url=…">`). Le visiteur voyait
+      // donc une page blanche pendant une seconde pleine avant d'arriver où il
+      // voulait — une seconde payée, un jour de campagne. Et un moteur y lit
+      // une redirection molle, qui ne transmet pas les signaux d'une 301.
+      //
+      // La redirection appartient à la configuration, pas à un composant.
+      { source: '/etablissements', destination: '/renforteam', permanent: true },
+      { source: '/entraide', destination: '/gap', permanent: true },
       { source: '/listing/:slug', destination: '/ateliers', permanent: true },
       { source: '/listing-category/:slug', destination: '/ateliers', permanent: true },
     ];
@@ -176,7 +188,19 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr; frame-src https://www.youtube-nocookie.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+              // MESURE DE CONVERSION : LE TAG ÉTAIT BLOQUÉ PAR NOTRE PROPRE EN-TÊTE.
+            //
+            // `MesureAudience` injecte le script de Google Tag Manager quand le
+            // visiteur a accepté la mesure. Or `script-src` ne listait que
+            // `'self'` : le navigateur refusait le script, silencieusement pour
+            // qui ne regarde pas la console. Une campagne payante tournait donc
+            // sans qu'aucune conversion ne remonte — on achète des clics sans
+            // jamais savoir lesquels ont produit une inscription, et les
+            // enchères automatiques n'ont rien pour apprendre.
+            //
+            // On n'ouvre que les trois domaines nécessaires, et rien d'autre :
+            // le reste de la politique demeure aussi fermé qu'avant.
+            "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.googleadservices.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net; frame-src https://www.youtube-nocookie.com https://td.doubleclick.net; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
           },
         ],
       },

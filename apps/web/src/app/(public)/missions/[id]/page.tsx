@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { metaPublique } from "@/lib/meta";
 import { fetchPublic } from "../../../_shared/server";
 import { MISSION_CATEGORY_LABEL, formatDate, formatRate } from "../../../_shared/format";
 
@@ -26,12 +27,14 @@ export async function generateMetadata({
   const description =
     (data.description ?? "").replace(/\s+/g, " ").trim().slice(0, 160) ||
     `Mission de renfort en établissement médico-social${lieu}. Candidature directe, contrat généré, zéro commission.`;
-  return {
+  // Titre et description de partage étaient déjà ceux de la page : le helper
+  // les produit à l'identique et rétablit la carte de partage, que cet objet
+  // `openGraph` effaçait en remplaçant celui du layout racine.
+  return metaPublique({
     title: titre,
     description,
-    alternates: { canonical: `/missions/${params.id}` },
-    openGraph: { url: `/missions/${params.id}`, title: titre, description },
-  };
+    path: `/missions/${params.id}`,
+  });
 }
 
 interface PublicMission {

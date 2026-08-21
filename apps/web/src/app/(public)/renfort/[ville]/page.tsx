@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Building2, MapPin, Users } from "lucide-react";
+import { SOCLE_OG } from "@/lib/meta";
 import { METIERS, VILLES, trouverVille } from "../donnees";
 
 export function generateStaticParams() {
@@ -18,7 +19,13 @@ export function generateMetadata({ params }: { params: { ville: string } }): Met
     // Sans `url`, le partage héritait de celui du layout racine (« / ») :
     // une publicité pointant sur la page Melun s'affichait avec l'adresse
     // de l'accueil.
+    //
+    // Pas de `metaPublique` ici : la description de partage est volontairement
+    // plus courte que celle des résultats de recherche, et le helper n'en pose
+    // qu'une seule. `SOCLE_OG` réémet ce que la fusion de surface efface —
+    // image, `siteName`, locale, `type`. Voir `lib/meta.ts`.
     openGraph: {
+      ...SOCLE_OG,
       url: `/renfort/${v.slug}`,
       title: `Renfort éducatif ${v.nom} — intervenants qualifiés`,
       description: `Trouver un intervenant qualifié pour un remplacement en établissement médico-social à ${v.nom} et alentours.`,

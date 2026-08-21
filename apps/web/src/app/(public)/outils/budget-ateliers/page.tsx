@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
+import { metaPublique } from "@/lib/meta";
 import { CalculateurBudget } from "../../../_shared/CalculateurBudget";
 
-export const metadata: Metadata = {
+// Titre et description de partage étaient déjà identiques à ceux de la page :
+// le helper les produit à l'identique, et apporte en plus la carte de partage
+// que cet objet `openGraph` effaçait en remplaçant celui du layout racine.
+export const metadata: Metadata = metaPublique({
   title: "Calculateur de budget d'ateliers éducatifs",
   description:
     "Estimez le budget annuel d'ateliers de votre MECS, IME ou foyer : coût total, coût par jeune, coût par mois. Gratuit, sans inscription.",
-  alternates: { canonical: "/outils/budget-ateliers" },
-  openGraph: {
-    url: "/outils/budget-ateliers",
-    title: "Calculateur de budget d'ateliers éducatifs",
-    description:
-      "Estimez le budget annuel d'ateliers de votre MECS, IME ou foyer : coût total, coût par jeune, coût par mois. Gratuit, sans inscription.",
-  },
-};
+  path: "/outils/budget-ateliers",
+});
 
 export default function BudgetAteliersPage() {
   return (

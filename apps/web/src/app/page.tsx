@@ -50,13 +50,32 @@ import { ApercuProduit } from './_shared/ApercuProduit';
 /**
  * L'accueil n'avait aucune canonique : les visites arrivant avec un
  * paramètre de campagne (?utm_source=…) s'indexaient comme autant de pages
- * distinctes. Titre, description et carte de partage restent ceux du layout
- * racine — ils sont écrits pour cette page.
+ * distinctes. Titre et description restent ceux du layout racine — ils sont
+ * écrits pour cette page.
+ *
+ * La carte de partage, en revanche, doit être répétée : Next fusionne les
+ * métadonnées en surface, donc cet objet `openGraph` REMPLACE celui du layout
+ * racine au lieu de le compléter. N'y poser que l'`url` suffisait à effacer
+ * l'image, le `siteName`, la locale et le `type` — sur l'accueil, c'est-à-dire
+ * la page d'atterrissage de la campagne. Valeurs identiques à `layout.tsx`.
  */
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
   // Repris ici depuis le layout racine : voir le commentaire de `layout.tsx`.
-  openGraph: { url: '/' },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    siteName: 'LES EXTRAS',
+    url: '/',
+    images: [
+      {
+        url: '/images/partage-les-extras.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'LES EXTRAS — ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
+      },
+    ],
+  },
 };
 
 export default async function LandingPage() {
@@ -611,7 +630,12 @@ export default async function LandingPage() {
                   prix: 'Gratuit, puis 19 €',
                   prixSous: '15 générations offertes chaque mois, sans carte bancaire. Abonnement à partir de 19 €/mois.',
                   points: [
-                    '15 générations par mois offertes, reportables, sans date de fin',
+                    // « sans date de fin » etait faux : le serveur reporte le
+                    // non-consomme pendant trois mois (ROLLOVER_MONTHS, dans
+                    // apps/api/src/billing/credits.constants.ts), et le centre
+                    // d'aide le disait deja. C'est la page la plus vue qui
+                    // portait l'erreur.
+                    '15 générations par mois offertes, reportables jusqu\'à trois mois',
                     'Assistant d’écriture : notes brutes → écrits professionnels',
                     'Générateur d’activités éducatives et thérapeutiques',
                     'Au-delà : 19 €/mois pour 200 générations, 49 €/mois pour 600',

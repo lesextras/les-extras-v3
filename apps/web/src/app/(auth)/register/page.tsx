@@ -81,6 +81,29 @@ export default function RegisterPage() {
     },
   });
 
+  // LE CTA DES PAGES D'ATTERRISSAGE PASSAIT UN `?type=` QUE PERSONNE NE LISAIT.
+  //
+  // « /register?type=etablissement » arrivait sur un formulaire vierge : le
+  // visiteur venu d'une annonce devait choisir a nouveau ce qu'il venait
+  // pourtant d'indiquer en cliquant. Une etape de plus entre le clic paye et
+  // le compte cree, pour rien.
+  const typeDemande = params.get('type');
+  React.useEffect(() => {
+    if (!typeDemande) return;
+    const t = typeDemande.toLowerCase();
+    if (t === 'etablissement' || t === 'establishment') {
+      form.setValue('accountType', 'ESTABLISHMENT', { shouldValidate: false });
+    } else if (t === 'salarie' || t === 'salarie') {
+      form.setValue('accountType', 'FREELANCE', { shouldValidate: false });
+      setProfilSalarie(true);
+    } else if (t === 'freelance' || t === 'intervenant') {
+      form.setValue('accountType', 'FREELANCE', { shouldValidate: false });
+    }
+    // Une seule fois, a l'arrivee : ensuite c'est le visiteur qui decide, et
+    // reappliquer le parametre annulerait son changement d'avis.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeDemande]);
+
   const selectedType = form.watch('accountType');
   // Tuile affichée comme active : « Salarié » partage la valeur FREELANCE du
   // formulaire, donc on la distingue via le drapeau plutôt que via le champ.

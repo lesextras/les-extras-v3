@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, BadgeCheck } from "lucide-react";
+import { metaPublique } from "@/lib/meta";
 import { fetchPublic } from "../../../_shared/server";
 import { formatMoney, formatDate, fullName, initials } from "../../../_shared/format";
 
@@ -59,12 +60,14 @@ export async function generateMetadata({
   const description =
     data?.owner?.profile?.bio?.slice(0, 160) ||
     `${nom ?? "Intervenant"} — profil vérifié sur Les Extras, ateliers et renfort en établissement médico-social.`;
-  return {
+  // Titre et description de partage étaient déjà ceux de la page : le helper
+  // les produit à l'identique et rétablit la carte de partage, que cet objet
+  // `openGraph` effaçait en remplaçant celui du layout racine.
+  return metaPublique({
     title: nom || "Intervenant",
     description,
-    alternates: { canonical: `/intervenants/${params.id}` },
-    openGraph: { url: `/intervenants/${params.id}`, title: nom || "Intervenant", description },
-  };
+    path: `/intervenants/${params.id}`,
+  });
 }
 
 export default async function VendorPage({ params }: { params: { id: string } }) {

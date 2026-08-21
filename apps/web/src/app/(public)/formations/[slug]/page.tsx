@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
 import { premierVisuel, visuels } from "@/lib/media";
+import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
 import { formatMoney, formatDate } from "../../../_shared/format";
 import { QrShare } from "../../../_shared/QrShare";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
@@ -68,14 +69,21 @@ export async function generateMetadata({
     title: data.title,
     description: desc,
     alternates: { canonical: `/formations/${data.slug}` },
+    // Le visuel de la fiche prime quand il existe ; sinon la carte du site
+    // prend le relais, sans quoi une formation sans image se partageait en
+    // rectangle gris. `SOCLE_OG` / `SOCLE_TWITTER` réémettent au passage le
+    // `siteName`, la locale et le format de carte : déclarer ces deux objets
+    // remplace ceux du layout racine au lieu de les compléter (fusion en
+    // surface). Voir `lib/meta.ts`.
     openGraph: {
+      ...SOCLE_OG,
       title: `${data.title} · LES EXTRAS`,
       description: desc,
       type: "article",
       ...(image ? { images: [{ url: image }] } : {}),
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      ...SOCLE_TWITTER,
       title: `${data.title} · LES EXTRAS`,
       description: desc,
       ...(image ? { images: [image] } : {}),

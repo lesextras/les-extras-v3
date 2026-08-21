@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { SOCLE_OG } from "@/lib/meta";
 import { RUBRIQUES, trouverRubrique } from "../contenu";
 
 export function generateStaticParams() {
@@ -19,7 +20,16 @@ export function generateMetadata({ params }: { params: { rubrique: string } }): 
     // sans toucher au texte visible de la page.
     description: `${r.resume} Les réponses aux questions des établissements et des intervenants du médico-social.`,
     alternates: { canonical: `/aide/${r.slug}` },
-    openGraph: { url: `/aide/${r.slug}`, title: `${r.titre} — Centre d’aide`, description: r.resume },
+    // Pas de `metaPublique` ici : le partage garde le `resume` court, la
+    // description de recherche garde sa version complétée, et le helper n'en
+    // pose qu'une seule. `SOCLE_OG` réémet ce que la fusion de surface efface
+    // — image, `siteName`, locale, `type`. Voir `lib/meta.ts`.
+    openGraph: {
+      ...SOCLE_OG,
+      url: `/aide/${r.slug}`,
+      title: `${r.titre} — Centre d’aide`,
+      description: r.resume,
+    },
   };
 }
 

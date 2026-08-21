@@ -51,7 +51,13 @@ export function CalculateurBudget() {
         </div>
         <Champ label="Prix moyen d'un atelier" valeur={prixAtelier} setValeur={setPrixAtelier} suffixe="€" pas={50} />
         <p className="text-xs text-muted-foreground">
-          Au catalogue Les Extras, les ateliers vont d'environ 200 € à 1 200 € la demi-journée
+          {/* Le plancher annonce etait de 200 €, alors que le catalogue
+              descend en realite bien plus bas : on surestimait le budget du
+              prospect des la premiere phrase, ce qui fait fuir exactement
+              ceux qu'on cherche. On renvoie desormais au catalogue plutot
+              que de figer une fourchette qui vieillit mal. */}
+          Les tarifs des ateliers sont libres : chaque intervenant fixe le sien, et le catalogue
+          en donne le detail fiche par fiche
           selon la médiation et le nombre d'intervenants.
         </p>
       </div>

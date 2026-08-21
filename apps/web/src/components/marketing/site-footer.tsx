@@ -5,7 +5,10 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Produit',
     links: [
-      { label: 'RenforTeam', href: '/#renfort' },
+      // L'ancre `#renfort` n'existe sur aucune page : ces quatre liens ne
+      // bougeaient pas d'un pixel, sur toutes les pages du site. RenforTeam a
+      // sa propre route depuis le changement de nom.
+      { label: 'RenforTeam', href: '/renforteam' },
       // L'ancre `/#ateliers` n'existe pas sur l'accueil : le lien ne bougeait
       // pas la page. Le catalogue d'ateliers a sa propre route.
       { label: 'Ateliers', href: '/ateliers' },
@@ -16,9 +19,9 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Secteur',
     links: [
-      { label: 'MECS & foyers', href: '/#renfort' },
-      { label: 'IME · ITEP · SESSAD', href: '/#renfort' },
-      { label: 'EHPAD', href: '/#renfort' },
+      { label: 'MECS & foyers', href: '/renforteam' },
+      { label: 'IME · ITEP · SESSAD', href: '/renforteam' },
+      { label: 'EHPAD', href: '/renforteam' },
       { label: 'Renfort par métier', href: '/renfort' },
       { label: 'Intervenant indépendant', href: '/intervenant-independant' },
     ],

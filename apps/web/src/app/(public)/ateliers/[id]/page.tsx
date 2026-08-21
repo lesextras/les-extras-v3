@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
 import { premierVisuel, visuels } from "@/lib/media";
+import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -138,14 +139,21 @@ export async function generateMetadata({
     title: titre,
     description: desc,
     alternates: { canonical: `/ateliers/${data.id}` },
+    // Le visuel de la fiche prime quand il existe ; sinon la carte du site
+    // prend le relais, sans quoi un atelier sans image se partageait en
+    // rectangle gris. `SOCLE_OG` / `SOCLE_TWITTER` réémettent au passage le
+    // `siteName`, la locale et le format de carte : déclarer ces deux objets
+    // remplace ceux du layout racine au lieu de les compléter (fusion en
+    // surface). Voir `lib/meta.ts`.
     openGraph: {
+      ...SOCLE_OG,
       title: `${titre} · LES EXTRAS`,
       description: desc,
       type: "article",
       ...(image ? { images: [{ url: image }] } : {}),
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      ...SOCLE_TWITTER,
       title: `${titre} · LES EXTRAS`,
       description: desc,
       ...(image ? { images: [image] } : {}),

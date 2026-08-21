@@ -1,6 +1,7 @@
 // Outil public gratuit — aimant d'acquisition et argument de vente.
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SOCLE_OG } from "@/lib/meta";
 import { CalculateurRemplacement } from "../../../_shared/CalculateurRemplacement";
 
 export const metadata: Metadata = {
@@ -8,7 +9,12 @@ export const metadata: Metadata = {
   description:
     "Comparez le coût réel d'un remplacement en médico-social : agence d'intérim (coefficient de facturation) contre intervenant indépendant. Calcul instantané, paramètres ajustables, sans inscription.",
   alternates: { canonical: "/outils/cout-remplacement" },
+  // Pas de `metaPublique` ici : la description de partage est volontairement
+  // plus courte que celle des résultats de recherche, et le helper n'en pose
+  // qu'une seule. `SOCLE_OG` réémet ce que la fusion de surface efface —
+  // image, `siteName`, locale, `type`. Voir `lib/meta.ts`.
   openGraph: {
+    ...SOCLE_OG,
     url: "/outils/cout-remplacement",
     title: "Coût d'un remplacement : intérim ou indépendant",
     description:

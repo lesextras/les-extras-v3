@@ -14,6 +14,7 @@ import { RichText, texteBrut } from "../../../_shared/RichText";
 import type { ArticleCard } from "../page";
 // Couvertures d'articles : médiathèque WordPress, hôtes hérités réécrits.
 import { visuel } from "@/lib/media";
+import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
 
 interface ArticleDetail extends ArticleCard {
   content?: string | null;
@@ -41,7 +42,14 @@ export async function generateMetadata({
     title: data.title,
     description: desc,
     alternates: { canonical: `/edublog/${data.slug}` },
+    // La couverture de l'article prime quand elle existe ; sinon la carte du
+    // site prend le relais, sans quoi un article sans couverture se partageait
+    // en rectangle gris. `SOCLE_OG` / `SOCLE_TWITTER` réémettent au passage le
+    // `siteName`, la locale et le format de carte : déclarer ces deux objets
+    // remplace ceux du layout racine au lieu de les compléter (fusion en
+    // surface). Voir `lib/meta.ts`.
     openGraph: {
+      ...SOCLE_OG,
       title: `${data.title} · LES EXTRAS`,
       description: desc,
       type: "article",
@@ -49,7 +57,7 @@ export async function generateMetadata({
       ...(image ? { images: [{ url: image }] } : {}),
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      ...SOCLE_TWITTER,
       title: `${data.title} · LES EXTRAS`,
       description: desc,
       ...(image ? { images: [image] } : {}),

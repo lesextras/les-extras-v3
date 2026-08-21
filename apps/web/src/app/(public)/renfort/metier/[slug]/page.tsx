@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Check, Clock, MapPin, ShieldCheck } from "lucide-react";
+import { metaPublique } from "@/lib/meta";
 import { METIERS, VILLES, trouverMetier } from "../../donnees";
 
 export function generateStaticParams() {
@@ -11,16 +12,14 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const m = trouverMetier(params.slug);
   if (!m) return { title: "Renfort" };
-  return {
+  // Titre et description de partage étaient déjà ceux de la page : le helper
+  // les produit à l'identique et rétablit la carte de partage, que cet objet
+  // `openGraph` effaçait en remplaçant celui du layout racine.
+  return metaPublique({
     title: `Remplacement ${m.nom.toLowerCase()} — RenforTeam`,
     description: m.accroche,
-    alternates: { canonical: `/renfort/metier/${m.slug}` },
-    openGraph: {
-      url: `/renfort/metier/${m.slug}`,
-      title: `Remplacement ${m.nom.toLowerCase()} — RenforTeam`,
-      description: m.accroche,
-    },
-  };
+    path: `/renfort/metier/${m.slug}`,
+  });
 }
 
 export default function MetierPage({ params }: { params: { slug: string } }) {
