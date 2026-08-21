@@ -15,7 +15,7 @@
 const CLE = 'lx.source.v1';
 
 export interface SourceAcquisition {
-  /** Compte parrain (?parrain=) : lien de parrainage intervenant. */
+  /** Compte parrain (?parrain=) : lien de parrainage, tous types de comptes. */
   parrain?: string;
   /** utm_source, sinon domaine référent, sinon « direct ». */
   source: string;

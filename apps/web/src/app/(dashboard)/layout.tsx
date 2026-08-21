@@ -7,6 +7,7 @@ import { cheminOuvertSansRattachement } from "@/lib/rattachement";
 import { requireSession, fetchApi } from "../_shared/server";
 import { RappelVerification } from "../_shared/RappelVerification";
 import { EnAttenteRattachement } from "../_shared/EnAttenteRattachement";
+import { InvitationParrainage } from "../_shared/InvitationParrainage";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await requireSession();
@@ -45,6 +46,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       role={role}
       enAttenteRattachement={moi?.enAttenteRattachement === true}
     >
+      {/* L'invitation à parrainer, une fois par compte. Montée ici et non sur
+          une page précise : le parrainage ne dépend d'aucun écran, et un
+          composant qui décide seul de ne rien afficher ne coûte rien à celles
+          et ceux qui l'ont déjà vue. Elle ne s'affiche pas à un salarié en
+          attente de rattachement : il n'a pas encore de compte à faire vivre,
+          on ne lui demande pas d'en recruter d'autres. */}
+      {!enAttente ? <InvitationParrainage accountId={session.account.id} /> : null}
+
       {aConfirmer ? (
         <div className="mb-6">
           <RappelVerification email={moi?.email ?? session.user.email} />

@@ -94,17 +94,30 @@ export class AuthService {
           // sens que sur un compte personnel.
           profilSalarie:
             dto.accountType === AccountType.FREELANCE && dto.profilSalarie === true,
-          // Parrainage : uniquement pour un nouveau compte intervenant, et
-          // seulement si le parrain existe vraiment (sinon on ignore sans bruit).
-          parrainAccountId:
-            dto.accountType === AccountType.FREELANCE && dto.parrain
-              ? (
-                  await tx.account.findFirst({
-                    where: { id: dto.parrain, type: AccountType.FREELANCE },
-                    select: { id: true },
-                  })
-                )?.id ?? null
-              : null,
+          // PARRAINAGE OUVERT A TOUS LES COMPTES.
+          //
+          // Il etait reserve aux intervenants, des deux cotes : seul un nouveau
+          // compte FREELANCE pouvait etre parraine, et seul un compte FREELANCE
+          // pouvait parrainer. Un directeur qui recommandait la plateforme a un
+          // confrere n'en tirait donc rien, et l'etablissement qu'il amenait non
+          // plus — alors que c'est exactement le bouche-a-oreille qui fait
+          // vivre ce metier, ou tout le monde se connait.
+          //
+          // On ne verifie plus que ce qui compte vraiment : que le parrain
+          // existe, et que personne ne se parraine soi-meme. Un compte salarie
+          // (FREELANCE marque `profilSalarie`) est couvert par la meme regle,
+          // sans exception a ecrire.
+          //
+          // Un parrain introuvable est ignore SANS BRUIT et sans echec : un
+          // lien mal recopie ne doit jamais empecher quelqu'un de s'inscrire.
+          parrainAccountId: dto.parrain
+            ? (
+                await tx.account.findFirst({
+                  where: { id: dto.parrain },
+                  select: { id: true },
+                })
+              )?.id ?? null
+            : null,
         },
       });
 

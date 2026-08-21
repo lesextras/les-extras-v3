@@ -186,6 +186,13 @@ const freelanceNav: NavSection[] = [
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
+      // POINTS ET PARRAINAGE — la page existait, elle n'était liée nulle part.
+      //
+      // On n'y arrivait que par le compteur de la barre du haut, qui ne
+      // s'affiche qu'à partir du PREMIER point gagné : un compte tout neuf
+      // n'avait donc aucun chemin vers son propre lien de parrainage, et le
+      // programme restait invisible à ceux-là mêmes qui pouvaient le lancer.
+      { label: 'Points & parrainage', href: '/dashboard/points', icon: Award, hint: 'Vos points de fidélité, ce qu\'ils valent en réduction, et votre lien de parrainage : vous gagnez tous les deux quand votre filleul termine sa première prestation' },
       // « Mon compte » n'est plus listé ici : il vit dans le menu de l'avatar,
       // en haut à droite, et dans la palette ⌘K. Deux chemins vers la même
       // page allongeaient le menu sans rien apporter.
@@ -288,6 +295,13 @@ const establishmentNav: NavSection[] = [
       // menu établissement : on la rend visible. Elle ferme la section — c'est
       // ce qu'on vérifie, pas ce qu'on fait tous les jours.
       { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants — identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
+      // POINTS ET PARRAINAGE — la page existait, elle n'était liée nulle part.
+      //
+      // On n'y arrivait que par le compteur de la barre du haut, qui ne
+      // s'affiche qu'à partir du PREMIER point gagné : un compte tout neuf
+      // n'avait donc aucun chemin vers son propre lien de parrainage, et le
+      // programme restait invisible à ceux-là mêmes qui pouvaient le lancer.
+      { label: 'Points & parrainage', href: '/dashboard/points', icon: Award, hint: 'Vos points de fidélité, ce qu\'ils valent en réduction, et votre lien de parrainage : vous gagnez tous les deux quand votre filleul termine sa première prestation' },
       // ── Hors de l'ordre demandé, conservées à la fin ───────────────────────
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
       // Les regles de la convention, reportees une fois. Sans elles, les

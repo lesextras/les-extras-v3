@@ -300,12 +300,15 @@ export class BookingsService {
     await this.community.crediter(
       compte.parrainAccountId,
       PointReason.PARRAINAGE,
-      `Votre filleul ${compte.name} a terminé sa première mission`,
+      // « Prestation » et non « mission » : depuis que le parrainage est
+      // ouvert a tous les comptes, le filleul peut etre un etablissement, qui
+      // ne fait pas de mission — il en commande.
+      `Votre filleul ${compte.name} a terminé sa première prestation`,
     );
     await this.community.crediter(
       accountId,
       PointReason.PARRAINAGE,
-      'Première mission terminée — bonus de parrainage',
+      'Première prestation terminée — bonus de parrainage',
     );
   }
 
