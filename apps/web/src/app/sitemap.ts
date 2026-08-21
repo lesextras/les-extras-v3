@@ -58,6 +58,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Centre d'aide, démonstration, frais de service et entrées de référencement
     // local : autant de pages qui répondent à une recherche précise.
     "/aide",
+    // Les deux modes d'emploi pas à pas — cibles naturelles d'une campagne
+    // d'acquisition : on y comprend le produit avant le formulaire.
+    "/mode-demploi",
+    "/mode-demploi/etablissement",
+    "/mode-demploi/intervenant",
     "/demo",
     "/frais-de-service",
     "/confiance-lex",

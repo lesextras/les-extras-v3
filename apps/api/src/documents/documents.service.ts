@@ -116,6 +116,14 @@ export class DocumentsService {
       client = client ?? figerPartie(c);
     }
 
+    // Le logo du prestataire, lu sur son compte COURANT : contrairement à
+    // l'identité, figée à l'envoi, l'habillage suit le compte — comme un
+    // papier à en-tête réimprimé. Voir emetteur.ts pour la résolution.
+    const habillage = await this.prisma.account.findUnique({
+      where: { id: devis.providerAccountId },
+      select: { logoUrl: true },
+    });
+
     // La signature électronique, quand elle existe : elle remplace alors le
     // cadre à remplir à la main. On n'imprime pas une case à signer sous un
     // document déjà signé.
@@ -147,6 +155,7 @@ export class DocumentsService {
       },
       prestataire,
       client,
+      logoUrl: habillage?.logoUrl ?? null,
       signature:
         signature?.signeLe != null
           ? {
@@ -250,6 +259,9 @@ export class DocumentsService {
         // légitime d'un IBAN — il n'a rien à faire ailleurs.
         iban: true,
         bic: true,
+        // L'habillage du document : le logo suit le compte courant, seule
+        // l'identité est figée à l'émission. Voir emetteur.ts.
+        logoUrl: true,
       },
     });
     if (!emetteur) throw new NotFoundException('Émetteur introuvable.');
@@ -292,6 +304,7 @@ export class DocumentsService {
       emetteur: emetteurFige,
       client,
       prestation,
+      logoUrl: emetteur.logoUrl,
       // Mention propre à l'émetteur si renseignée (voir Account.vatMention) ;
       // sinon le défaut ci-dessous, vrai pour la grande majorité des comptes
       // (franchise en base, association non assujettie). Un émetteur assujetti

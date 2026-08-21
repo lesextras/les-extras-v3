@@ -30,6 +30,8 @@ export interface IdentiteFacturation {
   /** Coordonnées de règlement, imprimées sur les factures émises par ce compte. */
   iban?: string | null;
   bic?: string | null;
+  /** Logo imprimé en tête des devis et factures émis par ce compte. */
+  logoUrl?: string | null;
 }
 
 export function FacturationSettings({
@@ -60,6 +62,7 @@ export function FacturationSettings({
         vatMention: String(fd.get("vatMention") || "") || undefined,
         iban: String(fd.get("iban") || "") || undefined,
         bic: String(fd.get("bic") || "") || undefined,
+        logoUrl: String(fd.get("logoUrl") || "") || undefined,
       };
       await apiRequest(`/accounts/${accountId}`, { method: "PATCH", body, accountId });
       toast({ title: "Identité de facturation mise à jour" });
@@ -174,6 +177,20 @@ export function FacturationSettings({
               />
             </Field>
           </div>
+          <Field
+            label="Logo (adresse de l'image)"
+            htmlFor="logoUrl"
+            hint="Imprimé en tête de vos devis et factures, à la place de leur en-tête sobre. Une image PNG ou JPEG accessible en ligne (le logo de votre site, par exemple). Laissez vide pour des documents sans logo — c'est très bien aussi."
+          >
+            <Input
+              id="logoUrl"
+              name="logoUrl"
+              type="url"
+              defaultValue={identite.logoUrl ?? ""}
+              placeholder="https://votre-site.fr/logo.png"
+              disabled={!canManage}
+            />
+          </Field>
           {canManage ? (
             <div className="flex justify-end">
               <Button type="submit" loading={loading}>

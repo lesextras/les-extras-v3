@@ -11,7 +11,7 @@ import {
   titreSection,
 } from './pdf';
 import { totauxDevis, type LigneChiffrable } from '../quotes/totaux';
-import { logoDeLEmetteur } from './emetteur';
+import { logoPourEmetteur } from './emetteur';
 
 /**
  * LA FACTURE, EN PAPIER.
@@ -74,6 +74,13 @@ export interface DonneesFacturePdf {
     iban: string | null;
     bic: string | null;
   };
+  /**
+   * Logo déposé par l'émetteur (`Account.logoUrl`), lu sur le compte COURANT :
+   * l'identité imprimée est figée à l'émission, mais un logo n'est pas une
+   * donnée d'identité — c'est l'habillage du moment, comme le papier à
+   * en-tête.
+   */
+  logoUrl?: string | null;
   client: {
     name: string;
     legalName: string | null;
@@ -142,7 +149,11 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
   // qu'elle émet — formations et crédits LEX ; un intervenant qui facture son
   // atelier sous son propre SIRET sort sans logo, et c'est correct. Voir
   // emetteur.ts.
-  const logo = logoDeLEmetteur(emetteur.legalName, emetteur.name);
+  const logo = await logoPourEmetteur({
+    legalName: emetteur.legalName,
+    name: emetteur.name,
+    logoUrl: d.logoUrl,
+  });
   enTeteAvecLogo(
     doc,
     `Facture ${f.number}`,

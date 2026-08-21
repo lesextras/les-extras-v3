@@ -55,6 +55,55 @@ export const SOCLE_TWITTER = {
   images: [CARTE_PARTAGE.url],
 };
 
+/**
+ * TITRE CALIBRÉ POUR LE MOTEUR DE RECHERCHE.
+ *
+ * Google n'affiche qu'environ 65 caractères de la balise `<title>` ; au-delà,
+ * il coupe au milieu d'un mot ou RÉÉCRIT le titre lui-même — et ce qu'il
+ * invente est rarement ce qu'on aurait choisi. Seize articles de l'Édublog et
+ * quatre missions dépassaient, certains à 103 caractères : sur la page de
+ * résultats, leur promesse était tronquée exactement là où elle devenait
+ * intéressante.
+ *
+ * Les titres ÉDITORIAUX ne sont pas touchés : le H1 de la page garde le titre
+ * complet, seule la balise est calibrée. Par étapes, de la moins destructrice
+ * à la plus destructrice :
+ *
+ *  1. Le titre + « · LES EXTRAS » tient en 65 → on ne change rien.
+ *  2. Beaucoup de titres suivent le motif « Sujet : développement ». Le sujet
+ *     seul, s'il est assez consistant (≥ 25 caractères), fait un excellent
+ *     titre court — et il garde la marque.
+ *  3. Le titre seul tient en 65 → on sacrifie le suffixe de marque, pas le
+ *     propos. La marque reste dans l'URL et dans le nom du site.
+ *  4. En dernier recours : coupe au dernier mot entier, avec une ellipse —
+ *     jamais au milieu d'un mot.
+ */
+const LIMITE_TITRE = 65;
+const SUFFIXE_MARQUE = 13; // « · LES EXTRAS » ajouté par le template du layout.
+
+export function titreSeo(titre: string): Metadata['title'] {
+  const plein = titre.trim().replace(/\s+/g, ' ');
+  if (plein.length + SUFFIXE_MARQUE <= LIMITE_TITRE) return plein;
+
+  const deuxPoints = plein.indexOf(' : ');
+  if (deuxPoints >= 25 && deuxPoints + SUFFIXE_MARQUE <= LIMITE_TITRE) {
+    return plein.slice(0, deuxPoints);
+  }
+
+  if (plein.length <= LIMITE_TITRE) return { absolute: plein };
+
+  const coupe = plein.slice(0, LIMITE_TITRE - 1);
+  const dernierEspace = coupe.lastIndexOf(' ');
+  return { absolute: `${coupe.slice(0, dernierEspace > 20 ? dernierEspace : coupe.length)}…` };
+}
+
+/** Le texte du titre, quel que soit le mode retenu par `titreSeo`. */
+export function texteDuTitre(t: Metadata['title']): string {
+  if (typeof t === 'string') return t;
+  if (t && typeof t === 'object' && 'absolute' in t && t.absolute) return t.absolute;
+  return '';
+}
+
 export function metaPublique(p: {
   /** Titre de la page, sans le suffixe « · LES EXTRAS » (Next l'ajoute). */
   title: string;
@@ -66,7 +115,9 @@ export function metaPublique(p: {
 }): Metadata {
   const partage = p.titrePartage ?? p.title;
   return {
-    title: p.title,
+    // La balise est calibrée pour la page de résultats ; le titre de partage,
+    // lui, reste entier — les réseaux sociaux affichent plus long que Google.
+    title: titreSeo(p.title),
     description: p.description,
     alternates: { canonical: p.path },
     openGraph: {

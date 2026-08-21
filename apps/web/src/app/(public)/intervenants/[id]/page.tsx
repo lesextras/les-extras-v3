@@ -54,6 +54,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { data } = await fetchPublic<Vendor>(`/public/vendors/${params.id}`);
   const nom = fullName(data?.owner?.firstName, data?.owner?.lastName) || data?.name;
+  // Un nom seul fait une balise de 18 à 23 caractères : personne ne cherche
+  // « Sophie Martin », on cherche « psychomotricienne à Melun ». Le métier et
+  // la ville existent déjà sur la fiche — on les remonte dans le titre, sans
+  // rien inventer. Le H1 de la page, lui, reste le nom.
+  const metier = data?.owner?.profile?.job?.trim();
+  const ville = data?.city?.trim();
+  const titre = [nom, metier, ville ? `à ${ville}` : null]
+    .filter(Boolean)
+    .join(" — ")
+    .replace(" — à ", " à ");
   // Sans canonique, les quatre fiches publiques du sitemap n'en déclaraient
   // aucune : le moteur choisit alors lui-même l'adresse de référence, et
   // n'importe quel paramètre ajouté à l'URL devient une page de plus.
@@ -64,7 +74,7 @@ export async function generateMetadata({
   // les produit à l'identique et rétablit la carte de partage, que cet objet
   // `openGraph` effaçait en remplaçant celui du layout racine.
   return metaPublique({
-    title: nom || "Intervenant",
+    title: titre || "Intervenant",
     description,
     path: `/intervenants/${params.id}`,
   });

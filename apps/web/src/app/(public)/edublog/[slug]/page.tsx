@@ -14,7 +14,7 @@ import { RichText, texteBrut } from "../../../_shared/RichText";
 import type { ArticleCard } from "../page";
 // Couvertures d'articles : médiathèque WordPress, hôtes hérités réécrits.
 import { visuel } from "@/lib/media";
-import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
+import { SOCLE_OG, SOCLE_TWITTER, titreSeo } from "@/lib/meta";
 
 interface ArticleDetail extends ArticleCard {
   content?: string | null;
@@ -39,7 +39,10 @@ export async function generateMetadata({
   const desc = resume(data.excerpt || data.content || data.title);
   const image = visuel(data.coverUrl) ?? undefined;
   return {
-    title: data.title,
+    // Balise calibrée pour la page de résultats (16 articles dépassaient les
+    // 65 caractères affichés par Google, jusqu'à 103) ; le H1 de l'article et
+    // le titre de partage restent entiers. Voir `titreSeo` dans lib/meta.ts.
+    title: titreSeo(data.title),
     description: desc,
     alternates: { canonical: `/edublog/${data.slug}` },
     // La couverture de l'article prime quand elle existe ; sinon la carte du

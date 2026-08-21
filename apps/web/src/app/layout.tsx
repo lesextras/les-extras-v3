@@ -109,6 +109,58 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+/**
+ * IDENTITÉ STRUCTURÉE DU SITE (schema.org), émise sur TOUTES les pages.
+ *
+ * Aucune page statique n'émettait de données structurées : Google devait
+ * deviner qui édite le site, quel est son logo, et à quel autre site il se
+ * rattache. Ces deux blocs répondent à ces trois questions une fois pour
+ * toutes :
+ *
+ * - `Organization` relie le site à l'association qui le porte — et le champ
+ *   `sameAs` vers adepa77.fr est la version lisible par machine du lien de
+ *   légitimité entre les deux sites : deux propriétés d'un même éditeur, pas
+ *   deux inconnus qui se citent.
+ * - `WebSite` donne le nom canonique du site (c'est lui que Google affiche
+ *   au-dessus du titre dans ses résultats).
+ *
+ * Tout ici est FACTUEL et déjà public sur /legal — rien d'inventé, rien de
+ * promotionnel : les données structurées mensongères valent une pénalité.
+ */
+const IDENTITE_STRUCTUREE = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://les-extras.fr/#organisation',
+      name: 'LES EXTRAS',
+      // Identité telle qu'elle figure sur /legal — ni plus, ni moins.
+      legalName: 'ADéPA',
+      taxID: '82005185200011',
+      url: 'https://les-extras.fr',
+      logo: 'https://les-extras.fr/icons/icon-512.png',
+      email: 'assoc.adepa@gmail.com',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '7 rue André Malraux',
+        addressLocality: 'Melun',
+        postalCode: '77000',
+        addressCountry: 'FR',
+      },
+      areaServed: 'FR',
+      sameAs: ['https://adepa77.fr'],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://les-extras.fr/#site',
+      name: 'LES EXTRAS',
+      url: 'https://les-extras.fr',
+      inLanguage: 'fr-FR',
+      publisher: { '@id': 'https://les-extras.fr/#organisation' },
+    },
+  ],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={inter.variable} suppressHydrationWarning>
@@ -123,6 +175,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
+        {/* Identité schema.org du site — voir IDENTITE_STRUCTUREE ci-dessus. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(IDENTITE_STRUCTUREE) }}
+        />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-card focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"

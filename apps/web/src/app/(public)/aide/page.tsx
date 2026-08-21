@@ -53,6 +53,13 @@ export default function AidePage() {
           {entrees.length} réponses, classées par situation. Et si vous ne trouvez pas,
           l’équipe répond sous 48 h ouvrées.
         </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Vous débutez ? Le{" "}
+          <Link href="/mode-demploi" className="font-medium text-primary underline-offset-4 hover:underline">
+            mode d&rsquo;emploi pas à pas
+          </Link>{" "}
+          déroule le parcours complet, dans l&rsquo;ordre.
+        </p>
       </div>
 
       <RechercheAide entrees={entrees} />

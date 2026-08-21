@@ -15,7 +15,7 @@ import {
 } from './pdf';
 import { totauxDevis, totalLigneHt, type LigneChiffrable } from '../quotes/totaux';
 import type { PartieFigee } from '../quotes/parties';
-import { logoDeLEmetteur } from './emetteur';
+import { logoPourEmetteur } from './emetteur';
 
 /**
  * LE DEVIS, EN PAPIER.
@@ -76,6 +76,13 @@ export interface DonneesDevisPdf {
   };
   prestataire: PartieFigee;
   client: PartieFigee;
+  /**
+   * Logo déposé par le prestataire (`Account.logoUrl`), lu sur le compte
+   * COURANT : l'identité imprimée est figée à l'envoi, mais un logo n'est pas
+   * une donnée d'identité — c'est l'habillage du moment, comme le papier à
+   * en-tête.
+   */
+  logoUrl?: string | null;
   /**
    * Faisceau de preuves, quand le devis a été signé électroniquement. Il
    * remplace alors le cadre à remplir à la main : on n'imprime pas une case à
@@ -152,8 +159,13 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
   );
 
   // Le logo est celui de L'ÉMETTEUR, jamais celui de la plateforme : c'est son
-  // SIRET qui engage le document. Voir emetteur.ts.
-  const logo = logoDeLEmetteur(prestataire.legalName, prestataire.name);
+  // SIRET qui engage le document. Son dépôt (`Account.logoUrl`) prime ; à
+  // défaut, la convention par le nom pour l'association. Voir emetteur.ts.
+  const logo = await logoPourEmetteur({
+    legalName: prestataire.legalName,
+    name: prestataire.name,
+    logoUrl: d.logoUrl,
+  });
   enTeteAvecLogo(
     doc,
     `Devis ${q.reference}`,
