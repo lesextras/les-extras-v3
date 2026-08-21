@@ -16,7 +16,7 @@ import { metaPublique } from "@/lib/meta";
 // déménagé deux fois : on passe par `visuel()` pour réécrire les hôtes hérités.
 import { visuel } from "@/lib/media";
 export const metadata: Metadata = metaPublique({
-  title: "Édublog",
+  title: "Édublog — actualités du médico-social",
   description:
     "Articles et actualités du médico-social : retours d’expérience, projets d’établissements, publications des intervenants. En accès libre.",
   path: "/edublog",

@@ -4,7 +4,7 @@ import { CatalogView } from "../_catalog";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Ateliers",
+  title: "Ateliers éducatifs, médiation et prévention",
   description:
     "Découvrez le catalogue public des ateliers, médiations, art-thérapie et actions de prévention proposés sur Les Extras.",
   path: "/ateliers",

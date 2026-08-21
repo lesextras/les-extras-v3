@@ -38,8 +38,50 @@ function facture(over: Record<string, unknown> = {}) {
   };
 }
 
+/**
+ * Les comptes, tels que la base les rendrait.
+ *
+ * `issue` les relit désormais pour figer l'identité des deux parties sur la
+ * facture émise : sans ce double, le service tomberait sur un `prisma.account`
+ * absent. On leur donne des valeurs DIFFÉRENTES l'une de l'autre pour que le
+ * test puisse vérifier que l'émetteur et le client ne sont pas intervertis.
+ */
+const COMPTES: Record<string, Record<string, unknown>> = {
+  [EMETTEUR]: {
+    name: 'ADéPA',
+    legalName: 'Association ADéPA',
+    siret: '82005185200011',
+    address: '1 rue de l\'Association',
+    postalCode: '77000',
+    city: 'Melun',
+    contactEmail: 'adepa@ex.fr',
+    phone: null,
+    vatMention: null,
+    iban: null,
+    bic: null,
+  },
+  [PAYEUR]: {
+    name: 'MECS',
+    legalName: 'MECS Le Coteau',
+    siret: '11111111100011',
+    address: '3 rue des Tilleuls',
+    postalCode: '77100',
+    city: 'Meaux',
+    contactEmail: 'mecs@ex.fr',
+    phone: null,
+    vatMention: null,
+    iban: null,
+    bic: null,
+  },
+};
+
 function monter(f = facture()) {
   const prisma: any = {
+    account: {
+      findUnique: jest.fn((args: any) =>
+        Promise.resolve(COMPTES[args?.where?.id] ?? null),
+      ),
+    },
     invoice: {
       findUnique: jest.fn().mockResolvedValue(f),
       findFirst: jest.fn().mockResolvedValue(null),
@@ -236,5 +278,46 @@ describe('Création de facture — qui facture qui', () => {
     await expect(
       service.create(INTERVENANT, { bookingId: 'b1', amount: 300 }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+});
+
+/**
+ * L'IDENTITÉ DES PARTIES EST FIGÉE À L'ÉMISSION, ET SEULEMENT LÀ.
+ *
+ * Une facture émise est une pièce comptable : son contenu ne bouge plus. Tant
+ * que le PDF se reconstruisait depuis les profils courants, corriger une
+ * raison sociale ou un IBAN réécrivait rétroactivement une facture déjà
+ * envoyée et déjà archivée par le client — deux exemplaires du même numéro
+ * pouvaient ne pas dire la même chose.
+ */
+describe('Facture — identité figée à l\'émission', () => {
+  it('recopie les deux parties, chacune de son côté', async () => {
+    const { service, prisma } = monter();
+    await service.issue('f1', EMETTEUR);
+
+    const data = prisma.invoice.update.mock.calls[0][0].data;
+    expect(data.partiesSnapshot.emetteur.legalName).toBe('Association ADéPA');
+    expect(data.partiesSnapshot.emetteur.siret).toBe('82005185200011');
+    expect(data.partiesSnapshot.client.legalName).toBe('MECS Le Coteau');
+    expect(data.partiesSnapshot.client.siret).toBe('11111111100011');
+  });
+
+  it('ne fige rien tant que la facture est un brouillon', async () => {
+    const { service, prisma } = monter();
+    // `markPaid` et `cancel` ne touchent pas à l'instantané ; seul `issue` le
+    // pose. Un brouillon doit continuer de suivre le profil : il n'engage
+    // encore personne.
+    await service.markPaid('f1', EMETTEUR).catch(() => undefined);
+    for (const appel of prisma.invoice.update.mock.calls) {
+      expect(appel[0].data.partiesSnapshot).toBeUndefined();
+    }
+  });
+
+  it("sans client identifiable, on ne lui en invente pas un", async () => {
+    const { service, prisma } = monter(facture({ payerAccountId: null, booking: null }));
+    await service.issue('f1', EMETTEUR);
+    const data = prisma.invoice.update.mock.calls[0][0].data;
+    expect(data.partiesSnapshot.client).toBeNull();
+    expect(data.partiesSnapshot.emetteur.legalName).toBe('Association ADéPA');
   });
 });

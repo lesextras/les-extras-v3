@@ -11,7 +11,7 @@ import { PageHeader } from "../../_shared/ui";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Notre histoire",
+  title: "Notre histoire — l’association ADéPA",
   description:
     "Le dispositif de mise en relation de l’association ADéPA, créée en 2012 : éducation, prévention et animation auprès des jeunes et des familles.",
   path: "/notre-histoire",

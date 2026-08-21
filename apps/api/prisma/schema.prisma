@@ -743,6 +743,25 @@ model Invoice {
   number     String
   amount     Decimal       @db.Decimal(10, 2)
   status     InvoiceStatus @default(DRAFT)
+  /// IDENTITE DES DEUX PARTIES, RECOPIEE A L'EMISSION.
+  ///
+  /// Une facture emise est une piece comptable : son contenu ne bouge plus.
+  /// Or le document etait reconstruit a chaque telechargement depuis les
+  /// profils courants — corriger une raison sociale, une adresse ou un IBAN
+  /// reecrivait donc retroactivement une facture deja envoyee, deja payee,
+  /// deja archivee par le client. Deux exemplaires du meme numero de facture
+  /// pouvaient ne pas dire la meme chose.
+  ///
+  /// On fige donc au moment de l'emission — et seulement a ce moment : un
+  /// brouillon doit continuer de suivre le profil, puisqu'il n'engage encore
+  /// personne. Forme : { emetteur: {...}, client: {...} }, la meme que celle
+  /// du devis (voir quotes/parties.ts), pour n'avoir qu'un seul format a
+  /// relire.
+  partiesSnapshot Json?
+  /// Jamais rempli a ce jour : le PDF est regenere a la demande a partir de
+  /// l'instantane ci-dessus, ce qui donne le meme document a chaque fois sans
+  /// imposer un stockage binaire. Le champ reste pour le jour ou l'on
+  /// archivera le fichier lui-meme — signature electronique, Factur-X.
   pdfUrl     String?
   issuedAt   DateTime?
   createdAt  DateTime      @default(now())

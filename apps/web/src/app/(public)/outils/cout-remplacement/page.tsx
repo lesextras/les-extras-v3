@@ -6,8 +6,11 @@ import { CalculateurRemplacement } from "../../../_shared/CalculateurRemplacemen
 
 export const metadata: Metadata = {
   title: "Coût d'un remplacement : intérim ou indépendant",
+  // 160 caractères au maximum, sinon Google coupe la phrase dans ses
+  // résultats. Celle-ci en fait 149 : la parenthèse explicative et « sans
+  // inscription » sont dites juste au-dessus du calculateur, dans la page.
   description:
-    "Comparez le coût réel d'un remplacement en médico-social : agence d'intérim (coefficient de facturation) contre intervenant indépendant. Calcul instantané, paramètres ajustables, sans inscription.",
+    "Comparez le coût réel d'un remplacement en médico-social : agence d'intérim contre intervenant indépendant. Calcul instantané, paramètres ajustables.",
   alternates: { canonical: "/outils/cout-remplacement" },
   // Pas de `metaPublique` ici : la description de partage est volontairement
   // plus courte que celle des résultats de recherche, et le helper n'en pose

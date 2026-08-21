@@ -3,7 +3,7 @@ import {
   LARGEUR_UTILE,
   dateFr,
   encadre,
-  enTete,
+  enTeteAvecLogo,
   euros,
   garderPlace,
   ligne,
@@ -15,6 +15,7 @@ import {
 } from './pdf';
 import { totauxDevis, totalLigneHt, type LigneChiffrable } from '../quotes/totaux';
 import type { PartieFigee } from '../quotes/parties';
+import { logoDeLEmetteur } from './emetteur';
 
 /**
  * LE DEVIS, EN PAPIER.
@@ -150,10 +151,15 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
     prestataire.legalName ?? prestataire.name,
   );
 
-  enTete(
+  // Le logo est celui de L'ÉMETTEUR, jamais celui de la plateforme : c'est son
+  // SIRET qui engage le document. Voir emetteur.ts.
+  const logo = logoDeLEmetteur(prestataire.legalName, prestataire.name);
+  enTeteAvecLogo(
     doc,
     `Devis ${q.reference}`,
     `Établi le ${dateFr(etabliLe)} · ${STATUT[q.status] ?? q.status}`,
+    logo?.image ?? null,
+    logo?.ratio ?? 1,
   );
 
   titreSection(doc, 'Prestataire');
@@ -238,6 +244,28 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
     doc,
     "Règlement à trente jours à compter de la date d'émission de la facture. Passé ce délai, des pénalités de retard sont exigibles au taux de trois fois le taux d'intérêt légal, ainsi qu'une indemnité forfaitaire de recouvrement de 40 € (art. L. 441-10 et D. 441-5 du code de commerce). Aucun escompte n'est accordé pour paiement anticipé.",
   );
+  // COORDONNÉES BANCAIRES DE L'ÉMETTEUR, ET DE LUI SEUL.
+  //
+  // Un devis annonce un règlement ; le destinataire doit savoir à qui virer.
+  // On imprime donc l'IBAN de CELUI QUI ÉMET : l'association sur ses devis de
+  // formation, l'intervenant sur les siens — c'est son SIRET qui figure en
+  // tête, ce sont ses coordonnées qui doivent suivre. Imprimer ici l'IBAN de
+  // la plateforme reviendrait à détourner le paiement d'une prestation qu'elle
+  // ne rend pas.
+  //
+  // Rien ne s'imprime tant que l'émetteur n'a pas renseigné son IBAN : on
+  // n'invente pas des coordonnées bancaires.
+  const iban = prestataire.iban?.trim();
+  if (iban) {
+    ligne(doc, 'IBAN', iban);
+    if (prestataire.bic?.trim()) ligne(doc, 'BIC', prestataire.bic.trim());
+    paragraphe(
+      doc,
+      `Virement à l'ordre de ${prestataire.legalName ?? prestataire.name}, en rappelant la référence ${q.reference}.`,
+      { gris: true },
+    );
+  }
+
   paragraphe(
     doc,
     "L'acceptation de ce devis vaut accord sur la prestation, son contenu, son prix et sa date. Elle engage les deux parties. Toute modification ultérieure fera l'objet d'un nouveau devis.",

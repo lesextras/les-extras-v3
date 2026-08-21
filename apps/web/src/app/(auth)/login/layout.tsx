@@ -5,7 +5,7 @@ import { SOCLE_OG } from '@/lib/meta';
 // metadata. Ce layout minimal porte le titre — sans lui, /login gardait le
 // titre générique du site dans l'onglet, les partages et les résultats Google.
 export const metadata: Metadata = {
-  title: 'Se connecter',
+  title: 'Se connecter à votre espace',
   description:
     'Connectez-vous à votre espace LES EXTRAS : renforts, ateliers, formations et gestion de votre activité.',
   // /login figure dans le sitemap mais ne déclarait aucune canonique : Google
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   // `SOCLE_OG` : cet objet remplace celui du layout racine au lieu de le
   // compléter (fusion en surface), il faut donc y réémettre l'image de
   // partage, le `siteName`, la locale et le `type`. Voir `lib/meta.ts`.
-  openGraph: { ...SOCLE_OG, url: '/login', title: 'Se connecter' },
+  openGraph: { ...SOCLE_OG, url: '/login', title: 'Se connecter à votre espace' },
 };
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {

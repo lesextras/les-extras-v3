@@ -9,14 +9,32 @@ export function generateStaticParams() {
   return METIERS.map((m) => ({ slug: m.slug }));
 }
 
+/**
+ * Le nom du métier passe en minuscules au milieu du titre — sauf les sigles,
+ * qu'un `toLowerCase()` global transformait en « remplacement aes / amp ».
+ */
+function enMinuscules(nom: string): string {
+  return nom
+    .split(" ")
+    .map((mot) => (mot === mot.toUpperCase() ? mot : mot.toLowerCase()))
+    .join(" ");
+}
+
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const m = trouverMetier(params.slug);
   if (!m) return { title: "Renfort" };
   // Titre et description de partage étaient déjà ceux de la page : le helper
   // les produit à l'identique et rétablit la carte de partage, que cet objet
   // `openGraph` effaçait en remplaçant celui du layout racine.
+  //
+  // Le titre racine ajoute « · LES EXTRAS » (13 caractères) : il reste 52 ici
+  // pour tenir sous 65. Pire cas = le métier au nom le plus long,
+  // « Éducateur de jeunes enfants » (27) : « Remplacement  » (13) + 27 = 40,
+  // soit 53 affichés. D'où l'absence du suffixe « — RenforTeam » (13) que les
+  // pages territoire, elles, conservent : 40 + 13 = 53 > 52, et ce métier
+  // sortait à 66. Le dispositif reste nommé dans le corps de la page.
   return metaPublique({
-    title: `Remplacement ${m.nom.toLowerCase()} — RenforTeam`,
+    title: `Remplacement ${enMinuscules(m.nom)}`,
     description: m.accroche,
     path: `/renfort/metier/${m.slug}`,
   });

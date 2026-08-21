@@ -9,12 +9,24 @@ export function generateStaticParams() {
   return VILLES.map((v) => ({ ville: v.slug }));
 }
 
+/**
+ * Le gabarit doit tenir dans 65 caractères SUFFIXE COMPRIS : le titre racine
+ * ajoute « · LES EXTRAS », soit 13 caractères, ce qui laisse 52 ici. Pire cas
+ * = le nom de territoire le plus long, « Seine-Saint-Denis » (17) :
+ * « Renfort éducatif  » (17) + 17 + « — RenforTeam » précédé d'une espace (13)
+ * = 47, donc 60 affichés. L'ancien suffixe « — intervenants qualifiés » (25)
+ * portait le même cas à 72. La promesse n'est pas perdue : « profils vérifiés »
+ * reste dans la description.
+ *
+ * Même arithmétique pour la description, plafonnée à 160 : la partie fixe fait
+ * 138 caractères, plus le nom du territoire (17 au pire) = 155.
+ */
 export function generateMetadata({ params }: { params: { ville: string } }): Metadata {
   const v = trouverVille(params.ville);
   if (!v) return { title: "Renfort" };
   return {
-    title: `Renfort éducatif ${v.nom} — intervenants qualifiés`,
-    description: `Trouver un intervenant qualifié pour un remplacement en établissement médico-social à ${v.nom} et alentours. Profils vérifiés, contrat généré, zéro commission côté intervenant.`,
+    title: `Renfort éducatif ${v.nom} — RenforTeam`,
+    description: `${v.nom} : trouver un intervenant qualifié pour un remplacement en établissement médico-social. Profils vérifiés, contrat généré, zéro commission.`,
     alternates: { canonical: `/renfort/${v.slug}` },
     // Sans `url`, le partage héritait de celui du layout racine (« / ») :
     // une publicité pointant sur la page Melun s'affichait avec l'adresse
@@ -27,7 +39,7 @@ export function generateMetadata({ params }: { params: { ville: string } }): Met
     openGraph: {
       ...SOCLE_OG,
       url: `/renfort/${v.slug}`,
-      title: `Renfort éducatif ${v.nom} — intervenants qualifiés`,
+      title: `Renfort éducatif ${v.nom} — RenforTeam`,
       description: `Trouver un intervenant qualifié pour un remplacement en établissement médico-social à ${v.nom} et alentours.`,
     },
   };

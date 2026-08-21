@@ -15,7 +15,7 @@ import { RechercheAide } from "./RechercheAide";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Centre d’aide",
+  title: "Centre d’aide — questions fréquentes",
   description:
     "Réponses aux questions les plus fréquentes : publier un renfort, rejoindre le réseau, facturation, notifications, données personnelles.",
   path: "/aide",

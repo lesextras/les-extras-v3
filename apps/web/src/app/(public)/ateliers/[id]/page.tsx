@@ -24,6 +24,7 @@ import {
 import { fetchPublic } from "../../../_shared/server";
 import { premierVisuel, visuels } from "@/lib/media";
 import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
+import { titreFiche } from "@/lib/titre-fiche";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -128,8 +129,12 @@ export async function generateMetadata({
   // page valide.
   if (!data) return { title: "Atelier introuvable", robots: { index: false, follow: false } };
 
-  // Le gabarit racine suffixe deja « · LES EXTRAS ».
-  const titre = data.title;
+  // Le gabarit racine suffixe deja « · LES EXTRAS ». `titreFiche` ouvre par le
+  // type de page : sans lui, un atelier et une formation portant le même
+  // intitulé — cela existe — sortaient deux titres identiques, donc deux pages
+  // qui se concurrencent au lieu de se compléter. Il garantit aussi les 65
+  // caractères, suffixe compris. Voir `lib/titre-fiche.ts`.
+  const titre = titreFiche("atelier", data.title);
   const desc = resume(
     data.objectives || data.description || "Intervention proposée sur Les Extras.",
   );

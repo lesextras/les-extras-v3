@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { numeroSuivant, prefixeAnnee } from './numerotation';
 import { MailService } from '../common/mail/mail.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { SELECT_PARTIE, figerPartie } from '../quotes/parties';
 
 @Injectable()
 export class InvoicesService {
@@ -360,6 +361,30 @@ export class InvoicesService {
   }
 
   /**
+   * Le compte à qui la facture est adressée, quand il est identifiable.
+   *
+   * Le payeur désigné d'abord — cas d'une inscription en formation, où aucune
+   * réservation ne relie les deux comptes ; sinon le compte à l'origine de la
+   * réservation. Sans l'un ni l'autre, on ne l'invente pas : une facture sans
+   * client vaut mieux qu'un faux client. Même règle que `DocumentsService`,
+   * et c'est voulu : les deux doivent désigner la même personne.
+   */
+  private async identiteClient(invoice: {
+    accountId: string;
+    payerAccountId: string | null;
+    booking?: { accountId: string } | null;
+  }) {
+    const clientId =
+      invoice.payerAccountId && invoice.payerAccountId !== invoice.accountId
+        ? invoice.payerAccountId
+        : invoice.booking && invoice.booking.accountId !== invoice.accountId
+          ? invoice.booking.accountId
+          : null;
+    if (!clientId) return null;
+    return this.prisma.account.findUnique({ where: { id: clientId }, select: SELECT_PARTIE });
+  }
+
+  /**
    * Émet la facture : DRAFT -> ISSUED, pose issuedAt. Notifie le compte par email
    * avec le lien vers le document imprimable (n'échoue jamais la requête).
    */
@@ -368,11 +393,35 @@ export class InvoicesService {
     if (invoice.status !== InvoiceStatus.DRAFT) {
       throw new BadRequestException('Seule une facture en brouillon peut être émise.');
     }
+    // ON FIGE L'IDENTITÉ DES PARTIES ICI, ET NULLE PART AILLEURS.
+    //
+    // Une facture émise est une pièce comptable : son contenu ne bouge plus.
+    // Or le PDF était reconstruit à chaque téléchargement depuis les profils
+    // courants — corriger une raison sociale, une adresse ou un IBAN
+    // réécrivait donc rétroactivement une facture déjà envoyée, déjà réglée,
+    // déjà archivée par le client. Deux exemplaires du même numéro pouvaient
+    // ne pas dire la même chose, et c'est exactement ce qu'un contrôle
+    // reproche.
+    //
+    // À l'émission et pas avant : un brouillon n'engage encore personne, il
+    // doit continuer de suivre le profil.
+    const client = await this.identiteClient(invoice);
+    const emetteur = await this.prisma.account.findUnique({
+      where: { id: invoice.accountId },
+      select: SELECT_PARTIE,
+    });
+
     const updated = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: InvoiceStatus.ISSUED,
         issuedAt: new Date(),
+        partiesSnapshot: emetteur
+          ? ({
+              emetteur: figerPartie(emetteur),
+              client: client ? figerPartie(client) : null,
+            } as unknown as object)
+          : undefined,
       },
     });
 

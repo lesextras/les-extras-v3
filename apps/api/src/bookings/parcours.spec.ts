@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus, PointReason } from '@prisma/client';
 import { BookingsService } from './bookings.service';
+import { CommunityService } from '../community/community.service';
 import { empreinte, genererCode, hacherCode, codeCorrect, verifier } from '../signature/signature';
 
 /**
@@ -230,4 +231,231 @@ describe('Seul le sollicité fait avancer la réservation', () => {
     await atelier.service.cancel('bk1', ETABLISSEMENT, { reason: 'Séjour annulé.' } as never);
     expect(atelier.etat.booking.status).toBe(BookingStatus.CANCELLED);
   });
+});
+
+/**
+ * PARRAINAGE : LES DEUX PARTIES, ET UN COMPTEUR QUI DIT LA MÊME CHOSE.
+ *
+ * Décision produit : tous les comptes peuvent être récompensés dès lors qu'ils
+ * ont été parrainés. Jusqu'ici seul `booking.accountId` l'était — c'est-à-dire
+ * l'intervenant sur un renfort, mais l'ÉTABLISSEMENT sur un atelier : celui qui
+ * animait l'atelier ne touchait jamais rien.
+ *
+ * Le second enjeu n'est pas le versement mais la COHÉRENCE : l'écran de
+ * parrainage annonce « N filleuls avec une première mission terminée » et
+ * « vous gagnez tous les deux 40 points ». Si le compteur et la récompense ne
+ * comptent pas la même chose, l'écran promet des points qui ne tombent pas.
+ * Les deux tests ci-dessous font donc tourner le VRAI `CommunityService.parrainage`
+ * sur les mêmes données que `complete`, et vérifient qu'ils s'accordent.
+ */
+const PARRAIN = 'acc-parrain';
+
+type FauxBooking = {
+  id: string;
+  accountId: string;
+  status: BookingStatus;
+  totalAmount: null;
+  mission: { accountId: string } | null;
+  service: { accountId: string } | null;
+};
+
+/**
+ * Base en mémoire minimale. Le filtre lit le `where` RÉEL produit par le code
+ * (`prestationsTermineesDe`) : si quelqu'un revient un jour à un critère fondé
+ * sur `accountId` seul, d'un côté ou de l'autre, ces tests le disent.
+ */
+function baseAvec(bookings: FauxBooking[], parrains: Record<string, string | null>) {
+  type Cond = { accountId?: string; mission?: { accountId: string }; service?: { accountId: string } };
+  const correspond = (b: FauxBooking, where: { status?: BookingStatus; OR?: Cond[] }) => {
+    if (where.status && b.status !== where.status) return false;
+    if (!where.OR) return true;
+    return where.OR.some((c) =>
+      c.accountId
+        ? b.accountId === c.accountId
+        : c.mission
+          ? b.mission?.accountId === c.mission.accountId
+          : c.service
+            ? b.service?.accountId === c.service.accountId
+            : false,
+    );
+  };
+  return {
+    booking: {
+      findUnique: jest.fn(async ({ where }: { where: { id: string } }) => {
+        const b = bookings.find((x) => x.id === where.id);
+        return b ? { ...b } : null;
+      }),
+      update: jest.fn(async ({ where, data }: { where: { id: string }; data: { status: BookingStatus } }) => {
+        const b = bookings.find((x) => x.id === where.id)!;
+        b.status = data.status;
+        return { ...b };
+      }),
+      count: jest.fn(async ({ where }: { where: never }) => bookings.filter((b) => correspond(b, where)).length),
+      findMany: jest.fn(async ({ where }: { where: never }) =>
+        bookings.filter((b) => correspond(b, where)).map((b) => ({
+          accountId: b.accountId,
+          mission: b.mission,
+          service: b.service,
+        })),
+      ),
+    },
+    account: {
+      findUnique: jest.fn(async ({ where }: { where: { id: string } }) => ({
+        name: where.id,
+        parrainAccountId: parrains[where.id] ?? null,
+      })),
+      findMany: jest.fn(async ({ where }: { where: { parrainAccountId: string } }) =>
+        Object.entries(parrains)
+          .filter(([, p]) => p === where.parrainAccountId)
+          .map(([id]) => ({ id, name: id, createdAt: new Date() })),
+      ),
+    },
+    user: { findUnique: jest.fn(async () => null) },
+  };
+}
+
+/** Une prestation terminée de bout en bout, avec le vrai service. */
+async function terminer(
+  booking: FauxBooking,
+  parrains: Record<string, string | null>,
+  sollicite: string,
+) {
+  const prisma = baseAvec([booking], parrains);
+  const community = new CommunityService(prisma as never);
+  const credits = jest.spyOn(community, 'crediter').mockResolvedValue(null);
+  const svc = new BookingsService(
+    prisma as never,
+    { create: jest.fn(async () => undefined) } as never,
+    { sendBookingConfirmation: jest.fn(async () => undefined) } as never,
+    { log: jest.fn() } as never,
+    community,
+  );
+  await svc.accept(booking.id, sollicite);
+  await svc.confirm(booking.id, sollicite);
+  await svc.start(booking.id, sollicite);
+  await svc.complete(booking.id, sollicite);
+  // La récompense est volontairement détachée de la requête (jamais bloquante) :
+  // on laisse la boucle d'événements la dérouler avant de conclure.
+  await new Promise((r) => setTimeout(r, 0));
+  return { credits, community };
+}
+
+/** Les comptes crédités d'un bonus de parrainage, sans doublon. */
+const beneficiaires = (credits: { mock: { calls: unknown[][] } }) =>
+  new Set(credits.mock.calls.filter((c) => c[1] === PointReason.PARRAINAGE).map((c) => c[0] as string));
+
+describe('Parrainage : les deux parties d’une prestation terminée', () => {
+  it("atelier : l'INTERVENANT qui a animé est récompensé, pas seulement l'établissement qui a réservé", async () => {
+    // Atelier : la fiche est à l'intervenant, la réservation à l'établissement.
+    // Avant correction, seul `booking.accountId` — l'établissement — comptait.
+    const { credits, community } = await terminer(
+      {
+        id: 'bk1',
+        accountId: ETABLISSEMENT,
+        status: BookingStatus.REQUESTED,
+        totalAmount: null,
+        mission: null,
+        service: { accountId: INTERVENANT },
+      },
+      { [INTERVENANT]: PARRAIN, [ETABLISSEMENT]: PARRAIN, [PARRAIN]: null },
+      INTERVENANT, // le sollicité, ici le propriétaire de la fiche
+    );
+
+    expect(beneficiaires(credits)).toEqual(new Set([PARRAIN, INTERVENANT, ETABLISSEMENT]));
+    // Le parrain est crédité une fois PAR FILLEUL actif, pas une fois par prestation.
+    expect(credits.mock.calls.filter((c) => c[0] === PARRAIN)).toHaveLength(2);
+
+    // Et le compteur affiché au parrain dit exactement la même chose.
+    const vue = await community.parrainage(PARRAIN);
+    expect(vue.actifs).toBe(2);
+  });
+
+  it("renfort : l'ÉTABLISSEMENT porteur de la mission est récompensé lui aussi", async () => {
+    const { credits, community } = await terminer(
+      {
+        id: 'bk1',
+        accountId: INTERVENANT,
+        status: BookingStatus.REQUESTED,
+        totalAmount: null,
+        mission: { accountId: ETABLISSEMENT },
+        service: null,
+      },
+      { [INTERVENANT]: PARRAIN, [ETABLISSEMENT]: PARRAIN, [PARRAIN]: null },
+      ETABLISSEMENT, // le sollicité, ici l'établissement qui a publié la mission
+    );
+
+    expect(beneficiaires(credits)).toEqual(new Set([PARRAIN, INTERVENANT, ETABLISSEMENT]));
+    const vue = await community.parrainage(PARRAIN);
+    expect(vue.actifs).toBe(2);
+  });
+
+  it('une structure qui réserve sa propre fiche n’est créditée qu’une fois', async () => {
+    const { credits, community } = await terminer(
+      {
+        id: 'bk1',
+        accountId: INTERVENANT,
+        status: BookingStatus.REQUESTED,
+        totalAmount: null,
+        mission: null,
+        service: { accountId: INTERVENANT },
+      },
+      { [INTERVENANT]: PARRAIN, [PARRAIN]: null },
+      INTERVENANT,
+    );
+
+    expect(credits.mock.calls.filter((c) => c[0] === INTERVENANT)).toHaveLength(1);
+    expect(credits.mock.calls.filter((c) => c[0] === PARRAIN)).toHaveLength(1);
+    expect((await community.parrainage(PARRAIN)).actifs).toBe(1);
+  });
+
+  /**
+   * LE TEST DE COHÉRENCE PROPREMENT DIT : le filleul n'est PAS celui qui a
+   * réservé. C'est le cas qui sépare les deux critères possibles — compter sur
+   * `booking.accountId` seul ne voit ni l'intervenant d'un atelier ni
+   * l'établissement d'un renfort. Le parrain lirait alors « 0 filleul avec une
+   * première mission terminée » alors que 40 points viennent de lui être
+   * versés pour ce filleul-là.
+   */
+  it('le compteur annonce exactement les comptes crédités, des deux côtés', async () => {
+    // Atelier : le filleul est l'INTERVENANT ; l'établissement qui a réservé
+    // n'est parrainé par personne.
+    const atelier = await terminer(
+      {
+        id: 'bk1',
+        accountId: ETABLISSEMENT,
+        status: BookingStatus.REQUESTED,
+        totalAmount: null,
+        mission: null,
+        service: { accountId: INTERVENANT },
+      },
+      { [INTERVENANT]: PARRAIN, [ETABLISSEMENT]: null, [PARRAIN]: null },
+      INTERVENANT,
+    );
+    expect(beneficiaires(atelier.credits)).toEqual(new Set([PARRAIN, INTERVENANT]));
+    expect((await atelier.community.parrainage(PARRAIN)).actifs).toBe(1);
+
+    // Renfort : le filleul est l'ÉTABLISSEMENT porteur de la mission ;
+    // l'intervenant qui a candidaté n'est parrainé par personne.
+    const renfort = await terminer(
+      {
+        id: 'bk1',
+        accountId: INTERVENANT,
+        status: BookingStatus.REQUESTED,
+        totalAmount: null,
+        mission: { accountId: ETABLISSEMENT },
+        service: null,
+      },
+      { [ETABLISSEMENT]: PARRAIN, [INTERVENANT]: null, [PARRAIN]: null },
+      ETABLISSEMENT,
+    );
+    expect(beneficiaires(renfort.credits)).toEqual(new Set([PARRAIN, ETABLISSEMENT]));
+    expect((await renfort.community.parrainage(PARRAIN)).actifs).toBe(1);
+  });
+
+  // Réservation ORPHELINE (mission ou atelier supprimé) : pas de test de bout
+  // en bout possible, et c'est rassurant — sans offre, `assertOffreur` refuse
+  // déjà toute transition, donc aucune réservation orpheline ne peut être
+  // terminée. Le repli sur le demandeur dans `recompenserParties` ne couvre
+  // que la course : une suppression qui tombe entre la clôture et le calcul
+  // des points, différé parce qu'il n'est jamais bloquant.
 });

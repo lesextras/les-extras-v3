@@ -12,6 +12,7 @@ import {
 import { fetchPublic } from "../../../_shared/server";
 import { premierVisuel, visuels } from "@/lib/media";
 import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
+import { titreFiche } from "@/lib/titre-fiche";
 import { formatMoney, formatDate } from "../../../_shared/format";
 import { QrShare } from "../../../_shared/QrShare";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
@@ -65,8 +66,14 @@ export async function generateMetadata({
   if (!data) return { title: "Formation introuvable", robots: { index: false, follow: false } };
   const desc = resume(data.objectives || data.summary || "Formation proposée sur Les Extras.");
   const image = premierVisuel(data.images);
+  // `titreFiche` ouvre par le type de page : sans lui, une formation et un
+  // atelier portant le même intitulé — cela existe — sortaient deux titres
+  // identiques, donc deux pages qui se concurrencent au lieu de se compléter.
+  // Il garantit aussi les 65 caractères, suffixe « · LES EXTRAS » compris.
+  // Voir `lib/titre-fiche.ts`.
+  const titre = titreFiche("formation", data.title);
   return {
-    title: data.title,
+    title: titre,
     description: desc,
     alternates: { canonical: `/formations/${data.slug}` },
     // Le visuel de la fiche prime quand il existe ; sinon la carte du site
@@ -77,14 +84,14 @@ export async function generateMetadata({
     // surface). Voir `lib/meta.ts`.
     openGraph: {
       ...SOCLE_OG,
-      title: `${data.title} · LES EXTRAS`,
+      title: `${titre} · LES EXTRAS`,
       description: desc,
       type: "article",
       ...(image ? { images: [{ url: image }] } : {}),
     },
     twitter: {
       ...SOCLE_TWITTER,
-      title: `${data.title} · LES EXTRAS`,
+      title: `${titre} · LES EXTRAS`,
       description: desc,
       ...(image ? { images: [image] } : {}),
     },

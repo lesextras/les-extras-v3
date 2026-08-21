@@ -4,7 +4,12 @@ import { ContratsService } from '../contrats/contrats.service';
 import { contratCddPdf } from './contrat-cdd.pdf';
 import { facturePdf } from './facture.pdf';
 import { devisPdf } from './devis.pdf';
-import { SELECT_PARTIE, figerPartie, relirePartiesFigees } from '../quotes/parties';
+import {
+  SELECT_PARTIE,
+  figerPartie,
+  lireInstantaneFacture,
+  relirePartiesFigees,
+} from '../quotes/parties';
 import { propositionPdf } from './proposition.pdf';
 import { emargementPdf, formationPdf } from './formation.pdf';
 import { FormationsService } from '../formations/formations.service';
@@ -214,6 +219,20 @@ export class DocumentsService {
     });
     if (!facture) throw new NotFoundException('Facture introuvable.');
 
+    // L'IDENTITÉ FIGÉE À L'ÉMISSION FAIT FOI.
+    //
+    // Une facture émise ne bouge plus : c'est une pièce comptable. Tant que le
+    // document se reconstruisait depuis les profils courants, corriger une
+    // raison sociale ou un IBAN réécrivait rétroactivement une facture déjà
+    // envoyée et déjà archivée par le client — deux exemplaires du même numéro
+    // pouvaient ne pas dire la même chose.
+    //
+    // Les brouillons et les factures émises avant cette version n'ont pas
+    // d'instantané : on retombe alors sur les profils, ce qui est le
+    // comportement voulu pour un brouillon et le seul possible pour les
+    // anciennes.
+    const figees = lireInstantaneFacture(facture.partiesSnapshot);
+
     const emetteur = await this.prisma.account.findUnique({
       where: { id: facture.accountId },
       select: {
@@ -234,6 +253,7 @@ export class DocumentsService {
       },
     });
     if (!emetteur) throw new NotFoundException('Émetteur introuvable.');
+    const emetteurFige = figees?.emetteur ?? figerPartie(emetteur);
 
     // Le client : le payeur désigné en priorité (cas d'une inscription en
     // formation, où aucune réservation ne relie les deux comptes), sinon le
@@ -245,19 +265,11 @@ export class DocumentsService {
         : facture.booking && facture.booking.accountId !== facture.accountId
           ? facture.booking.accountId
           : null;
-    const client = clientId
-      ? await this.prisma.account.findUnique({
-          where: { id: clientId },
-          select: {
-            name: true,
-            legalName: true,
-            siret: true,
-            address: true,
-            postalCode: true,
-            city: true,
-          },
-        })
+    const clientCourant = clientId
+      ? await this.prisma.account.findUnique({ where: { id: clientId }, select: SELECT_PARTIE })
       : null;
+    const client =
+      figees?.client ?? (clientCourant ? figerPartie(clientCourant) : null);
 
     // Désignation d'une prestation de formation. L'ordre importe : une facture
     // porte l'une OU l'autre, jamais les deux, et le sens n'est pas le même.
@@ -277,7 +289,7 @@ export class DocumentsService {
 
     const pdf = await facturePdf({
       facture: facture as never,
-      emetteur,
+      emetteur: emetteurFige,
       client,
       prestation,
       // Mention propre à l'émetteur si renseignée (voir Account.vatMention) ;
@@ -286,7 +298,7 @@ export class DocumentsService {
       // à la TVA doit la renseigner lui-même — afficher un taux faux serait
       // pire que ne rien afficher.
       mentionTva:
-        emetteur.vatMention?.trim() ||
+        emetteurFige.vatMention?.trim() ||
         'TVA non applicable, article 293 B du code général des impôts',
     });
     return { pdf, nom: this.nomFichier('facture', facture.number) };

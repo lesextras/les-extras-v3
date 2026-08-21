@@ -24,6 +24,16 @@ export interface PartieFigee {
   phone: string | null;
   /** Mention de TVA propre à ce compte, quand il en a déclaré une. */
   vatMention: string | null;
+  /**
+   * Coordonnées bancaires de la partie, figées comme le reste.
+   *
+   * Elles ne s'impriment que du côté de l'ÉMETTEUR, et seulement s'il les a
+   * renseignées : c'est lui qui sera payé, c'est donc son IBAN qui doit
+   * figurer. Les figer avec le reste évite qu'un changement de banque, six
+   * mois plus tard, réécrive le devis qu'on a signé.
+   */
+  iban: string | null;
+  bic: string | null;
 }
 
 export interface PartiesFigees {
@@ -44,6 +54,8 @@ export const SELECT_PARTIE = {
   contactEmail: true,
   phone: true,
   vatMention: true,
+  iban: true,
+  bic: true,
 } as const;
 
 type CompteLisible = {
@@ -56,6 +68,8 @@ type CompteLisible = {
   contactEmail?: string | null;
   phone?: string | null;
   vatMention?: string | null;
+  iban?: string | null;
+  bic?: string | null;
 };
 
 export function figerPartie(compte: CompteLisible): PartieFigee {
@@ -69,6 +83,8 @@ export function figerPartie(compte: CompteLisible): PartieFigee {
     contactEmail: compte.contactEmail ?? null,
     phone: compte.phone ?? null,
     vatMention: compte.vatMention ?? null,
+    iban: compte.iban ?? null,
+    bic: compte.bic ?? null,
   };
 }
 
@@ -86,5 +102,30 @@ export function relirePartiesFigees(valeur: unknown): PartiesFigees | null {
   return {
     provider: figerPartie(v.provider as CompteLisible),
     client: figerPartie(v.client as CompteLisible),
+  };
+}
+
+/**
+ * Relit l'instantané figé sur une FACTURE à son émission.
+ *
+ * Même forme que celui du devis, à ceci près que les rôles s'appellent ici
+ * `emetteur` et `client` : sur un devis, celui qui chiffre est le prestataire ;
+ * sur une facture, c'est l'émetteur, et c'est son SIRET qui l'engage. Le
+ * client peut manquer — une facture sans client identifiable vaut mieux qu'un
+ * faux client, et le format le dit plutôt que de le cacher.
+ *
+ * `null` sur un brouillon (rien n'est encore figé, et c'est voulu : un
+ * brouillon doit suivre le profil) comme sur les factures antérieures à cette
+ * version.
+ */
+export function lireInstantaneFacture(
+  valeur: unknown,
+): { emetteur: PartieFigee; client: PartieFigee | null } | null {
+  if (!valeur || typeof valeur !== 'object') return null;
+  const v = valeur as Record<string, unknown>;
+  if (!v.emetteur) return null;
+  return {
+    emetteur: figerPartie(v.emetteur as CompteLisible),
+    client: v.client ? figerPartie(v.client as CompteLisible) : null,
   };
 }

@@ -4,7 +4,7 @@ import { ContactForm } from "../../_shared/ContactForm";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Contact",
+  title: "Contact — écrire à l’équipe ADéPA",
   description:
     "Contactez l'équipe ADéPA — Les Extras, la marketplace du renfort médico-social. Établissements, intervenants, formations : écrivez-nous.",
   path: "/contact",

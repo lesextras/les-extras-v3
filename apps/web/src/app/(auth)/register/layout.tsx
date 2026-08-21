@@ -5,14 +5,18 @@ import { SOCLE_OG } from '@/lib/meta';
 // metadata. Ce layout minimal porte le titre — sans lui, /register gardait le
 // titre générique du site dans l'onglet, les partages et les résultats Google.
 export const metadata: Metadata = {
-  title: 'Créer un compte',
+  title: 'Créer un compte — établissement ou professionnel',
   description:
     'Créez votre compte gratuit LES EXTRAS — établissement, professionnel indépendant ou salarié du médico-social.',
   alternates: { canonical: '/register' },
   // `SOCLE_OG` : cet objet remplace celui du layout racine au lieu de le
   // compléter (fusion en surface), il faut donc y réémettre l'image de
   // partage, le `siteName`, la locale et le `type`. Voir `lib/meta.ts`.
-  openGraph: { ...SOCLE_OG, url: '/register', title: 'Créer un compte' },
+  openGraph: {
+    ...SOCLE_OG,
+    url: '/register',
+    title: 'Créer un compte — établissement ou professionnel',
+  },
 };
 
 export default function RegisterLayout({ children }: { children: React.ReactNode }) {

@@ -1,7 +1,7 @@
 import {
   dateFr,
   encadre,
-  enTete,
+  enTeteAvecLogo,
   euros,
   ligne,
   nouveauDocument,
@@ -11,6 +11,7 @@ import {
   titreSection,
 } from './pdf';
 import { totauxDevis, type LigneChiffrable } from '../quotes/totaux';
+import { logoDeLEmetteur } from './emetteur';
 
 /**
  * LA FACTURE, EN PAPIER.
@@ -136,10 +137,18 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
     emetteur.legalName ?? emetteur.name,
   );
 
-  enTete(
+  // Le logo est celui de L'ÉMETTEUR, jamais celui de la plateforme : c'est son
+  // SIRET qui engage la facture. L'association en a un pour les documents
+  // qu'elle émet — formations et crédits LEX ; un intervenant qui facture son
+  // atelier sous son propre SIRET sort sans logo, et c'est correct. Voir
+  // emetteur.ts.
+  const logo = logoDeLEmetteur(emetteur.legalName, emetteur.name);
+  enTeteAvecLogo(
     doc,
     `Facture ${f.number}`,
     `${emise ? 'Émise' : 'Établie'} le ${dateFr(emission)} · ${STATUT[f.status] ?? f.status}`,
+    logo?.image ?? null,
+    logo?.ratio ?? 1,
   );
 
   titreSection(doc, 'Émetteur');

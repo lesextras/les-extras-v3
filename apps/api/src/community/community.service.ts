@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { IdeaStatus, PointReason } from '@prisma/client';
+import { BookingStatus, IdeaStatus, PointReason, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 /** 10 points = 1 € de réduction. Constante unique, utilisée partout. */
@@ -36,6 +36,38 @@ export const BAREME = {
   REPONSE_RETENUE: 40,
 } as const;
 
+/**
+ * CRITÈRE UNIQUE DE « PRESTATION TERMINÉE » POUR UN COMPTE.
+ *
+ * Un compte est PARTIE à une prestation ; il n'est pas seulement « celui qui a
+ * réservé ». `booking.accountId` désigne le DEMANDEUR, et le demandeur change
+ * de camp d'un flux à l'autre :
+ *
+ *  - RENFORT : la mission appartient à l'ÉTABLISSEMENT, l'intervenant
+ *    candidate. Parties = `booking.accountId` (intervenant) + `mission.accountId`.
+ *  - ATELIER : la fiche appartient à l'INTERVENANT, l'établissement réserve.
+ *    Parties = `booking.accountId` (établissement) + `service.accountId`.
+ *
+ * Les trois branches couvrent donc exactement les deux parties, dans les deux
+ * flux — et rien d'autre.
+ *
+ * C'est le SEUL endroit où cette règle s'écrit : la récompense de parrainage
+ * (`BookingsService.recompenserParrainage`) et le compteur de filleuls actifs
+ * (`parrainage`, plus bas) s'y réfèrent tous les deux. Deux formulations de la
+ * même règle finiraient par diverger, et l'écran annoncerait alors un nombre de
+ * filleuls actifs sans rapport avec les points réellement crédités.
+ */
+export function prestationsTermineesDe(accountIds: string[]): Prisma.BookingWhereInput {
+  return {
+    status: BookingStatus.COMPLETED,
+    OR: accountIds.flatMap((id) => [
+      { accountId: id },
+      { mission: { accountId: id } },
+      { service: { accountId: id } },
+    ]),
+  };
+}
+
 @Injectable()
 export class CommunityService {
   constructor(private readonly prisma: PrismaService) {}
@@ -43,24 +75,55 @@ export class CommunityService {
   // ── Points ───────────────────────────────────────────────────────────────
 
   /** Crédite des points et met à jour le solde, en une transaction. */
-  /** Filleuls du compte : inscrits, et actifs (au moins une mission terminee). */
+  /** Filleuls du compte : inscrits, et actifs (au moins une prestation terminee). */
   async parrainage(accountId: string) {
     const filleuls = await this.prisma.account.findMany({
       where: { parrainAccountId: accountId },
       select: { id: true, name: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     });
-    const actifs = filleuls.length
-      ? await this.prisma.booking.groupBy({
-          by: ['accountId'],
-          where: { accountId: { in: filleuls.map((f) => f.id) }, status: 'COMPLETED' },
+    const ids = filleuls.map((f) => f.id);
+
+    // « FILLEUL ACTIF » = filleul qui a terminé au moins une prestation, DANS
+    // L'UN OU L'AUTRE RÔLE.
+    //
+    // Le groupBy sur `accountId` d'avant ne comptait que les prestations où le
+    // filleul était le DEMANDEUR. Or le demandeur n'est pas le même selon le
+    // flux : sur un renfort c'est l'intervenant qui candidate, sur un atelier
+    // c'est l'établissement qui réserve. L'intervenant qui n'anime que des
+    // ateliers n'était donc jamais « actif » — et l'écran affichait « 0 avec
+    // une première mission terminée » à un parrain dont le filleul avait
+    // pourtant travaillé. Depuis que les DEUX parties sont récompensées, ce
+    // décalage se serait doublé d'un écart avec les points réellement versés.
+    //
+    // Même critère que la récompense, à la ligne près : `prestationsTermineesDe`.
+    const terminees = ids.length
+      ? await this.prisma.booking.findMany({
+          where: prestationsTermineesDe(ids),
+          select: {
+            accountId: true,
+            mission: { select: { accountId: true } },
+            service: { select: { accountId: true } },
+          },
         })
       : [];
+
+    // Une prestation rend actives ses deux parties : on ne retient que celles
+    // qui sont des filleuls de ce parrain, et un filleul ne compte qu'une fois
+    // quel que soit son nombre de prestations.
+    const estFilleul = new Set(ids);
+    const actifs = new Set<string>();
+    for (const b of terminees) {
+      for (const partie of [b.accountId, b.mission?.accountId, b.service?.accountId]) {
+        if (partie && estFilleul.has(partie)) actifs.add(partie);
+      }
+    }
+
     return {
       accountId,
       filleuls: filleuls.map((f) => ({ nom: f.name, depuis: f.createdAt })),
       inscrits: filleuls.length,
-      actifs: actifs.length,
+      actifs: actifs.size,
       pointsParFilleulActif: BAREME.PARRAINAGE,
     };
   }

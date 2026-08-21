@@ -13,7 +13,7 @@ import { formatMoney, formatDate } from "../../_shared/format";
 
 import { metaPublique } from "@/lib/meta";
 export const metadata: Metadata = metaPublique({
-  title: "Formations",
+  title: "Formations Qualiopi pour le médico-social",
   description:
     "Formations pour les professionnels du médico-social : analyse des pratiques, prévention, spécialisations métier. Certifiées Qualiopi, finançables OPCO.",
   path: "/formations",

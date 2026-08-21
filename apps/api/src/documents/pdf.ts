@@ -52,6 +52,67 @@ export function enTete(doc: Doc, titre: string, sousTitre?: string) {
   doc.moveDown(0.8);
 }
 
+/**
+ * EN-TÊTE AVEC LE LOGO DE L'ÉMETTEUR.
+ *
+ * Le logo de l'association est blanc sur fond transparent — c'est sa forme
+ * d'origine, celle d'un site sombre. Posé tel quel sur un document imprimé, il
+ * disparaîtrait : il ne resterait que l'accent rouge, flottant seul au-dessus
+ * du titre. On le pose donc sur l'aplat sombre qui est son contexte natif,
+ * plutôt que de le recolorer — recolorer le logo d'une association, c'est
+ * toucher à son identité visuelle, et ce n'est pas à un générateur de PDF d'en
+ * décider.
+ *
+ * Sans logo, on retombe sur l'en-tête ordinaire : un émetteur qui n'en a pas
+ * ne doit pas hériter de celui d'un autre.
+ */
+export function enTeteAvecLogo(
+  doc: Doc,
+  titre: string,
+  sousTitre: string | undefined,
+  logo: Buffer | null,
+  ratio = 1,
+) {
+  if (!logo) {
+    enTete(doc, titre, sousTitre);
+    return;
+  }
+
+  const haut = doc.y;
+  const cote = 46;
+  doc.roundedRect(MARGE, haut, cote, cote, 8).fill('#1b2430');
+
+  // Marge intérieure : un logo collé aux bords de sa pastille paraît serré.
+  const marge = 7;
+  const dispo = cote - marge * 2;
+  const largeur = ratio >= 1 ? dispo : dispo * ratio;
+  const hauteur = ratio >= 1 ? dispo / ratio : dispo;
+  doc.image(logo, MARGE + (cote - largeur) / 2, haut + (cote - hauteur) / 2, {
+    width: largeur,
+    height: hauteur,
+  });
+
+  const x = MARGE + cote + 16;
+  const largeurTexte = LARGEUR_UTILE - cote - 16;
+  doc
+    .fillColor(ENCRE)
+    .font('Helvetica-Bold')
+    .fontSize(18)
+    .text(titre, x, haut + 4, { width: largeurTexte });
+  if (sousTitre) {
+    doc
+      .fillColor(GRIS)
+      .font('Helvetica')
+      .fontSize(10)
+      .text(sousTitre, x, doc.y + 2, { width: largeurTexte });
+  }
+
+  doc.y = Math.max(haut + cote, doc.y) + 12;
+  doc.x = MARGE;
+  filet(doc);
+  doc.moveDown(0.8);
+}
+
 /** Un filet horizontal discret, pour séparer sans encombrer. */
 export function filet(doc: Doc) {
   const y = doc.y;

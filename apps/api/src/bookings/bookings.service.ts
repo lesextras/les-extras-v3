@@ -11,7 +11,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { MailService } from '../common/mail/mail.service';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { AuditService } from '../common/audit/audit.service';
-import { CommunityService } from '../community/community.service';
+import { CommunityService, prestationsTermineesDe } from '../community/community.service';
 import { CreateTimeEntryDto } from './dto/time-entry.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
 import { numeroSuivant, prefixeAnnee } from '../invoices/numerotation';
@@ -238,15 +238,63 @@ export class BookingsService {
     });
   }
 
-  /** Premiere mission terminee d'un filleul : points au parrain et au filleul. */
-  private async recompenserParrainage(freelanceAccountId: string) {
+  /**
+   * Parrainage a l'issue d'une prestation terminee : les DEUX parties y ont
+   * droit.
+   *
+   * `booking.accountId` — le seul compte recompense jusqu'ici — ne designe pas
+   * le meme role selon le flux : c'est l'INTERVENANT qui candidate sur un
+   * renfort, mais l'ETABLISSEMENT qui reserve sur un atelier. Un intervenant
+   * qui n'anime que des ateliers n'etait donc JAMAIS recompense, et son parrain
+   * non plus. La proprietaire a tranche : tous les comptes peuvent etre
+   * recompenses des lors qu'ils ont ete parraines, quel que soit leur cote.
+   *
+   * On lit les roles sur la NATURE de la reservation (`partiesDe`), jamais sur
+   * le rang du compte dans la reservation. Jamais bloquant.
+   */
+  private async recompenserParties(bookingId: string) {
+    const b = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: {
+        accountId: true,
+        mission: { select: { accountId: true } },
+        service: { select: { accountId: true } },
+      },
+    });
+    if (!b) return;
+    const { etablissementId, intervenantId } = BookingsService.partiesDe(b);
+    const parties = [etablissementId, intervenantId].filter(
+      (id): id is string => id !== null,
+    );
+    // Deux cas degeneres :
+    //  - reservation ORPHELINE (mission ou atelier supprime, `onDelete:
+    //    SetNull`) : plus aucun role identifiable. Le demandeur reste, lui,
+    //    une partie certaine a la prestation — on le recompense comme avant,
+    //    et c'est aussi a ce titre qu'il compte comme filleul actif ;
+    //  - les deux identifiants EGAUX (une structure qui reserve sa propre
+    //    fiche) : le Set garantit un seul credit pour un seul compte.
+    const beneficiaires = new Set(parties.length ? parties : [b.accountId]);
+    for (const accountId of beneficiaires) {
+      await this.recompenserParrainage(accountId);
+    }
+  }
+
+  /** Premiere prestation terminee d'un filleul : points au parrain et au filleul. */
+  private async recompenserParrainage(accountId: string) {
     const compte = await this.prisma.account.findUnique({
-      where: { id: freelanceAccountId },
+      where: { id: accountId },
       select: { parrainAccountId: true, name: true },
     });
     if (!compte?.parrainAccountId) return;
+    // « Sa premiere prestation terminee » se compte sur les DEUX roles, sans
+    // quoi le declencheur resterait aveugle a la moitie de l'activite : un
+    // atelier anime par l'intervenant est reserve par l'etablissement, un
+    // renfort pourvu chez l'etablissement est reserve par l'intervenant. C'est
+    // aussi, mot pour mot, le critere du compteur de filleuls actifs affiche
+    // au parrain (`CommunityService.parrainage`) : les deux doivent rester la
+    // meme regle, faute de quoi l'ecran promet des points qui ne tombent pas.
     const terminees = await this.prisma.booking.count({
-      where: { accountId: freelanceAccountId, status: BookingStatus.COMPLETED },
+      where: prestationsTermineesDe([accountId]),
     });
     if (terminees !== 1) return; // seulement la toute premiere
     await this.community.crediter(
@@ -255,7 +303,7 @@ export class BookingsService {
       `Votre filleul ${compte.name} a terminé sa première mission`,
     );
     await this.community.crediter(
-      freelanceAccountId,
+      accountId,
       PointReason.PARRAINAGE,
       'Première mission terminée — bonus de parrainage',
     );
@@ -441,9 +489,16 @@ export class BookingsService {
     const booking = await this.transition(id, accountId, BookingStatus.COMPLETED, {
       completedAt: new Date(),
     });
-    // Parrainage : quand un filleul termine sa TOUTE premiere mission, le
-    // parrain et lui recoivent leurs points. Jamais bloquant.
-    void this.recompenserParrainage(booking.accountId).catch(() => undefined);
+    // Parrainage : quand un filleul termine sa TOUTE premiere prestation, le
+    // parrain et lui recoivent leurs points. Les DEUX parties sont examinees,
+    // pas seulement le compte a l'origine de la reservation : sur un atelier,
+    // ce compte est l'ETABLISSEMENT, et l'intervenant qui a anime n'aurait
+    // jamais rien touche. Jamais bloquant.
+    //
+    // On repart de l'identifiant plutot que du booking rendu par `transition` :
+    // celui-ci sort d'un `update` sans relations, et les roles se lisent
+    // precisement sur la mission ou la fiche atelier.
+    void this.recompenserParties(id).catch(() => undefined);
 
     // Aide a la contractualisation, version atelier : quand une intervention
     // facturable se termine, un BROUILLON de facture est prepare pour

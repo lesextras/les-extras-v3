@@ -26,8 +26,11 @@ export const metadata: Metadata = {
     default: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     template: '%s · LES EXTRAS',
   },
+  // Description de l'accueil (et repli des pages qui n'en posent pas) : 160
+  // caractères au maximum, sinon Google coupe la phrase en plein milieu dans
+  // ses résultats. Celle-ci en fait 155 — même offre, dite plus court.
   description:
-    'Le catalogue d’ateliers et de formations courtes pour les établissements médico-sociaux : réservation en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe quand l’urgence arrive.',
+    'Ateliers et formations courtes pour les établissements médico-sociaux : réservation en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe.',
   keywords: [
     'atelier médico-social',
     'formation médico-social',

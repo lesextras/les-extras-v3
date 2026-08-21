@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -34,11 +35,42 @@ const SEUILS = {
 export class ProgressionService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Les prestations de l'INTERVENANT, dans les deux flux.
+   *
+   * `booking.accountId` designe le DEMANDEUR, pas celui qui travaille : sur un
+   * renfort le demandeur est bien l'intervenant qui candidate, mais sur un
+   * atelier c'est l'ETABLISSEMENT qui reserve la fiche. Se fier a ce seul champ
+   * rendait invisibles tous les ateliers animes — un intervenant pouvait en
+   * avoir anime dix et lire « 0 mission terminee » sur sa page Progression,
+   * donc rester NOUVEAU — et comptait a l'inverse comme siens les ateliers
+   * qu'il avait lui-meme RESERVES chez un confrere, ou il n'a pas travaille.
+   *
+   * Le meme critere sert aux missions terminees et aux annulations : une seule
+   * population, sinon le taux d'annulation rapporterait un numerateur et un
+   * denominateur qui ne parlent pas des memes prestations. Il reste que la base
+   * n'enregistre pas QUI a annule (l'annulation est ouverte aux deux parties) :
+   * une prestation annulee par l'etablissement pese sur le taux de
+   * l'intervenant. C'etait deja vrai des renforts ; ce n'est pas ce correctif
+   * qui peut le trancher.
+   */
+  private static prestationsDeLIntervenant(accountId: string): Prisma.BookingWhereInput {
+    return {
+      OR: [
+        // Renfort : l'intervenant est le compte qui a candidate.
+        { missionId: { not: null }, accountId },
+        // Atelier : l'intervenant est le proprietaire de la fiche reservee.
+        { service: { accountId } },
+      ],
+    };
+  }
+
   /** Statistiques brutes d'un compte intervenant. */
   private async stats(accountId: string, ownerId: string) {
+    const siennes = ProgressionService.prestationsDeLIntervenant(accountId);
     const [terminees, annulees, note] = await Promise.all([
-      this.prisma.booking.count({ where: { accountId, status: 'COMPLETED' } }),
-      this.prisma.booking.count({ where: { accountId, status: 'CANCELLED' } }),
+      this.prisma.booking.count({ where: { ...siennes, status: 'COMPLETED' } }),
+      this.prisma.booking.count({ where: { ...siennes, status: 'CANCELLED' } }),
       this.prisma.review.aggregate({
         where: { targetId: ownerId },
         _avg: { rating: true },
