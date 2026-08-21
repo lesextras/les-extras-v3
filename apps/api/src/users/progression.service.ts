@@ -180,6 +180,11 @@ export class ProgressionService {
 
     return {
       palier,
+      // « Plus que 2 missions avant Confirmé » est plus puissant que « vous
+      // êtes Nouveau » : on nomme la distance, pas l'acquis. Null au sommet
+      // (rien à viser) ; 0 quand les missions y sont mais qu'un autre critère
+      // (note, annulations) retient encore le palier.
+      resteMissions: prochain ? Math.max(0, SEUILS[prochain].missions - s.terminees) : null,
       stats: {
         missionsTerminees: s.terminees,
         missionsAnnulees: s.annulees,

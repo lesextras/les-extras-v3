@@ -67,6 +67,10 @@ model User {
   /// Rendez-vous hebdomadaire du lundi. Activé par défaut, désactivable en un
   /// clic : un e-mail non désiré coûte plus cher qu'un e-mail non envoyé.
   hebdoOptIn       Boolean            @default(true)
+  /// E-mail d'activation du lendemain de l'inscription (ActivationScheduler).
+  /// Non nul = la décision d'envoyer (ou de s'abstenir) a été prise : elle ne
+  /// se reprend jamais, ce message n'existe qu'une fois dans la vie du compte.
+  activationMailAt DateTime?
   questionsAsked   Question[]         @relation("QuestionAuthor")
   answersWritten   Answer[]           @relation("AnswerAuthor")
   answerVotes      AnswerVote[]       @relation("AnswerVoter")

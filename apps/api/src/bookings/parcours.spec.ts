@@ -321,7 +321,10 @@ async function terminer(
   sollicite: string,
 ) {
   const prisma = baseAvec([booking], parrains);
-  const community = new CommunityService(prisma as never);
+  const community = new CommunityService(
+    prisma as never,
+    { create: jest.fn(async () => undefined) } as never,
+  );
   const credits = jest.spyOn(community, 'crediter').mockResolvedValue(null);
   const svc = new BookingsService(
     prisma as never,

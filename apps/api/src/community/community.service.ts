@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { BookingStatus, IdeaStatus, PointReason, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 /** 10 points = 1 € de réduction. Constante unique, utilisée partout. */
 export const POINTS_PAR_EURO = 10;
@@ -70,7 +71,10 @@ export function prestationsTermineesDe(accountIds: string[]): Prisma.BookingWher
 
 @Injectable()
 export class CommunityService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // ── Points ───────────────────────────────────────────────────────────────
 
@@ -131,6 +135,19 @@ export class CommunityService {
   async crediter(accountId: string, reason: PointReason, label: string, amount?: number) {
     const montant = amount ?? BAREME[reason as keyof typeof BAREME] ?? 0;
     if (!montant) return null;
+
+    // LE PREMIER POINT SE FÊTE. Le moment le plus important de la vie d'un
+    // compte est celui où son compteur apparaît : jusque-là le programme de
+    // fidélité n'était qu'une promesse, il devient un acquis. On regarde AVANT
+    // de créditer s'il existe déjà un gain — après, la réponse serait toujours
+    // « oui » et la fête n'aurait jamais lieu.
+    const premierGain =
+      montant > 0 &&
+      (await this.prisma.loyaltyPoint.count({
+        where: { accountId, amount: { gt: 0 } },
+        take: 1,
+      })) === 0;
+
     const [ligne] = await this.prisma.$transaction([
       this.prisma.loyaltyPoint.create({
         data: { accountId, amount: montant, reason, label },
@@ -140,7 +157,35 @@ export class CommunityService {
         data: { points: { increment: montant } },
       }),
     ]);
+
+    // Célébration détachée du crédit : une notification qui échoue ne doit
+    // jamais faire échouer — ni retarder — l'action métier qui l'a value.
+    if (premierGain) void this.celebrerPremiersPoints(accountId, montant, label);
+
     return ligne;
+  }
+
+  /**
+   * Notification (cloche + téléphone) des tout premiers points d'un compte.
+   * Un événement comptable devient un souvenir — c'est le seul moment où l'on
+   * notifie un gain de points : les suivants se lisent dans le compteur.
+   */
+  private async celebrerPremiersPoints(accountId: string, montant: number, label: string) {
+    try {
+      const compte = await this.prisma.account.findUnique({
+        where: { id: accountId },
+        select: { ownerId: true },
+      });
+      if (!compte) return;
+      await this.notifications.create(compte.ownerId, {
+        type: 'PREMIERS_POINTS',
+        title: `🎉 Vos ${montant} premiers points !`,
+        body: `${label}. ${POINTS_PAR_EURO} points = 1 € de réduction sur les formations et les crédits LEX.`,
+        link: '/dashboard/points',
+      });
+    } catch {
+      /* la fête est optionnelle, les points ne le sont pas */
+    }
   }
 
   /** Solde + historique + équivalent en euros. */

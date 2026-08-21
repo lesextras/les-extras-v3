@@ -33,6 +33,8 @@ interface Progression {
     membreDepuis: string;
   };
   prochainPalier: Palier | null;
+  /** Missions restantes vers le prochain palier (null au palier le plus haut). */
+  resteMissions: number | null;
   criteresProchainPalier: Critere[];
   avantages: Record<Palier, string>;
 }
@@ -132,12 +134,26 @@ export default async function ProgressionPage() {
         />
       </div>
 
-      {/* Critères vers le palier suivant */}
+      {/* Critères vers le palier suivant.
+          Le titre nomme la DISTANCE, pas l'acquis : « plus que 2 missions
+          avant Confirmé » donne un compte à rebours là où « vous êtes
+          Nouveau » constate un état. Quand les missions y sont mais qu'un
+          autre critère retient le palier, on le dit tel quel. */}
       {data.prochainPalier ? (
         <Card>
           <CardContent className="p-6">
             <h2 className="text-base font-semibold text-foreground">
-              Vers le palier {LIBELLES[data.prochainPalier]}
+              {data.resteMissions != null && data.resteMissions > 0 ? (
+                <>
+                  Plus que{" "}
+                  <span className="text-[#156d6b]">
+                    {data.resteMissions} mission{data.resteMissions > 1 ? "s" : ""}
+                  </span>{" "}
+                  avant {LIBELLES[data.prochainPalier]}
+                </>
+              ) : (
+                <>Vers le palier {LIBELLES[data.prochainPalier]}</>
+              )}
             </h2>
             <ul className="mt-4 space-y-3">
               {data.criteresProchainPalier.map((c) => (

@@ -511,6 +511,66 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * L'e-mail d'activation du lendemain — UN SEUL, jamais répété.
+   *
+   * Le rendez-vous du lundi retient ceux qui sont entrés dans l'habitude ;
+   * rien n'activait ceux qui viennent de s'inscrire. Ce message arrive à J+1,
+   * quand l'inscription est encore fraîche mais que l'élan du premier jour est
+   * retombé, et il ne demande qu'UNE chose — celle qui débloque tout le reste
+   * pour ce type de compte. Trois variantes, un geste chacune. S'il est déjà
+   * fait, le planificateur n'envoie rien du tout (voir ActivationScheduler).
+   */
+  async sendActivationJ1(
+    to: string,
+    data: {
+      prenom?: string | null;
+      variante: 'etablissement' | 'independant' | 'salarie';
+    },
+  ): Promise<void> {
+    const variantes = {
+      etablissement: {
+        sujet: 'Votre premier renfort est à trois champs d’ici',
+        corps:
+          `Votre espace est prêt. La prochaine étape — la seule qui compte — est de
+           <b>publier votre premier besoin</b> : un poste, des dates, un mot de contexte.
+           La diffusion fait le reste, par cercles : vos salariés d'abord, puis vos
+           habitués, puis le réseau. Vous ne payez aucune commission — le tarif de
+           l'intervenant est son tarif.`,
+        cta: { label: 'Publier mon premier besoin', chemin: '/dashboard/renforts' },
+      },
+      independant: {
+        sujet: 'Votre dossier vous fait passer devant',
+        corps:
+          `Votre compte est ouvert. Ce qui décide maintenant de la suite, c'est votre
+           <b>dossier</b> : métier, ville, diplôme. À la publication d'un renfort, les
+           établissements voient d'abord les dossiers complets — un dossier vide est
+           invisible, un dossier complet est sollicité. Dix minutes, une seule fois.`,
+        cta: { label: 'Compléter mon dossier', chemin: '/dashboard/mon-dossier' },
+      },
+      salarie: {
+        sujet: 'Une demande de rattachement, et tout s’ouvre',
+        corps:
+          `Votre compte est ouvert, et LEX — l'assistant d'écrits professionnels — est
+           <b>déjà utilisable</b>, avec votre dotation offerte. Pour le reste, une seule
+           étape : <b>demander votre rattachement</b> à votre établissement. Une fois
+           accepté, ses renforts vous arrivent avant tout le monde.`,
+        cta: { label: 'Ouvrir mon espace', chemin: '/dashboard' },
+      },
+    } as const;
+    const v = variantes[data.variante];
+    await this.send(
+      to,
+      v.sujet,
+      this.layout(
+        `Bonjour${data.prenom ? ` ${data.prenom}` : ''},`,
+        `${v.corps}
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">Vous ne recevrez ce message qu'une seule fois.</div>`,
+        { label: v.cta.label, url: `${this.webUrl}${v.cta.chemin}` },
+      ),
+    );
+  }
+
+  /**
    * RenforTeam — sollicitation d'un intervenant.
    *
    * `retenus` et `vague` personnalisent le message. C'est le levier le moins
