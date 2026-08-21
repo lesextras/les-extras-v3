@@ -30,6 +30,20 @@ export function identifiantAds(): string {
   return (process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? '').trim();
 }
 
+/**
+ * Identifiant de mesure Google Analytics 4 (`G-…`).
+ *
+ * Distinct de celui de Google Ads, et les deux coexistent : le premier
+ * mesure l'audience, le second attribue les conversions payantes. Une même
+ * balise gtag les configure tous les deux — c'est le fonctionnement prévu,
+ * pas un contournement.
+ *
+ * Vide = pas de mesure d'audience, et rien n'est chargé de ce fait.
+ */
+export function identifiantGa4(): string {
+  return (process.env.NEXT_PUBLIC_GA4_ID ?? '').trim();
+}
+
 /** Étiquette de conversion « inscription » fournie par Google Ads. */
 export function etiquetteInscription(): string {
   return (process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_INSCRIPTION ?? '').trim();
@@ -41,7 +55,11 @@ export function etiquetteInscription(): string {
  * le site ne demande jamais un consentement dont il n'a pas l'usage.
  */
 export function mesureConfiguree(): boolean {
-  return identifiantAds().length > 0;
+  // L'un OU l'autre suffit : on peut mesurer l'audience sans campagne, et
+  // faire tourner une campagne sans analyse d'audience. Dans les deux cas il
+  // y a un traceur, donc un consentement à demander — et dans aucun des deux
+  // on ne doit demander un consentement dont on n'a pas l'usage.
+  return identifiantAds().length > 0 || identifiantGa4().length > 0;
 }
 
 export function lireConsentement(): Consentement {

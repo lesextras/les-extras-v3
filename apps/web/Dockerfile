@@ -43,9 +43,14 @@ ARG NEXT_PUBLIC_API_URL="http://localhost:3001/api"
 # clics sans jamais savoir lesquels ont produit une inscription.
 ARG NEXT_PUBLIC_GOOGLE_ADS_ID=""
 ARG NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_INSCRIPTION=""
+# Mesure d'audience (Google Analytics 4, « G-… »). Distincte de l'identifiant
+# Ads : la première mesure l'audience, la seconde attribue les conversions
+# payantes. Les deux coexistent sur une même balise.
+ARG NEXT_PUBLIC_GA4_ID=""
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_GOOGLE_ADS_ID=$NEXT_PUBLIC_GOOGLE_ADS_ID \
     NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_INSCRIPTION=$NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_INSCRIPTION \
+    NEXT_PUBLIC_GA4_ID=$NEXT_PUBLIC_GA4_ID \
     NEXT_TELEMETRY_DISABLED=1
 COPY tsconfig*.json ./
 COPY packages ./packages

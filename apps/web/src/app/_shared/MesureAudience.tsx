@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * CHARGEMENT DU TAG GOOGLE ADS — ET DE LUI SEUL.
+ * CHARGEMENT DU TAG GOOGLE — MESURE D'AUDIENCE ET CONVERSIONS.
  *
  * Le script n'est injecté qu'après un « oui » explicite. Avant cela, la seule
  * chose posée dans la page est le mode consentement de Google, déclaré en
@@ -16,6 +16,7 @@
 import { useEffect, useState } from 'react';
 import {
   identifiantAds,
+  identifiantGa4,
   lireConsentement,
   mesureConfiguree,
   surChangement,
@@ -79,17 +80,29 @@ export function MesureAudience() {
     accorder();
     if (document.getElementById(ID_BALISE)) return; // déjà chargé
 
-    const id = identifiantAds();
+    // UNE SEULE BALISE, DEUX DESTINATIONS.
+    //
+    // La mesure d'audience (GA4, « G-… ») et l'attribution des conversions
+    // payantes (Ads, « AW-… ») sont deux identifiants distincts, et gtag sait
+    // servir les deux : on charge le script une fois, puis on déclare chaque
+    // destination configurée. Charger deux scripts poserait deux fois le même
+    // code et fausserait le comptage des pages vues.
+    const ga4 = identifiantGa4();
+    const ads = identifiantAds();
+    const amorce = ga4 || ads;
+    if (!amorce) return;
+
     const s = document.createElement('script');
     s.id = ID_BALISE;
     s.async = true;
-    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(amorce)}`;
     document.head.appendChild(s);
 
     window.gtag!('js', new Date());
     // `anonymize_ip` n'a plus d'effet sur GA4 mais reste lu par les balises
     // Ads héritées ; le garder ne coûte rien et ne peut que réduire la donnée.
-    window.gtag!('config', id, { anonymize_ip: true });
+    if (ga4) window.gtag!('config', ga4, { anonymize_ip: true });
+    if (ads) window.gtag!('config', ads, { anonymize_ip: true });
   }, [etat]);
 
   return null;
