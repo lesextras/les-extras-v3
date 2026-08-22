@@ -1,9 +1,15 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 
 /**
- * Client Mistral AI — fournisseur choisi pour son hébergement européen,
- * argument décisif auprès des directions d'établissement et des ARS.
+ * Client Mistral AI — hébergement européen.
  * Appel HTTP direct, sans SDK, dans la lignée de Stripe et Brevo.
+ *
+ * DEPUIS AOÛT 2026, CE N'EST PLUS LE MOTEUR PAR DÉFAUT : LEX tourne sur Claude
+ * (ClaudeService). Ce client reste en place et branché comme repli — retirer
+ * ANTHROPIC_API_KEY suffit à revenir ici, sans redéploiement de code. Il n'est
+ * pas supprimé précisément pour que le retour en arrière reste possible ; s'il
+ * redevient le moteur principal, les pages publiques (confiance-lex, legal)
+ * doivent être remises en cohérence dans le même mouvement.
  */
 @Injectable()
 export class MistralService {

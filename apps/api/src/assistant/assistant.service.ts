@@ -1,8 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AssistantTrame } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
-import { MistralService } from './mistral.service';
+import { MOTEUR_LEX, MoteurLex } from './moteur-lex';
 import { TRAMES, trouverTrame } from './trames';
 
 @Injectable()
@@ -10,13 +10,13 @@ export class AssistantService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pseudo: PseudonymiseurService,
-    private readonly mistral: MistralService,
+    @Inject(MOTEUR_LEX) private readonly moteur: MoteurLex,
   ) {}
 
   /** Les trames disponibles + l'état du service (pour l'interface). */
   trames() {
     return {
-      disponible: this.mistral.disponible,
+      disponible: this.moteur.disponible,
       trames: TRAMES.map(({ system: _system, ...publique }) => publique),
     };
   }
@@ -43,7 +43,7 @@ export class AssistantService {
     const def = trouverTrame(trame);
 
     const { texte: notesMasquees, table } = this.pseudo.masquer(notes);
-    const brouillonMasque = await this.mistral.completer({
+    const brouillonMasque = await this.moteur.completer({
       system: trameMaison ? AssistantService.avecTrameMaison(def.system, trameMaison) : def.system,
       user: `Notes brutes du professionnel :\n\n${notesMasquees}`,
       maxTokens: trameMaison ? 1600 : undefined,
@@ -130,7 +130,7 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
       dto.contraintes ? `Contraintes (lieu, matériel, budget) : ${dto.contraintes}` : '',
     ].filter(Boolean).join('\n');
     const { texte: masque, table } = this.pseudo.masquer(brut);
-    const reponseMasquee = await this.mistral.completer({
+    const reponseMasquee = await this.moteur.completer({
       system: AssistantService.CADRE_ACTIVITE,
       user: masque,
       maxTokens: 950,
@@ -168,7 +168,7 @@ Jamais de conseil clinique ou juridique individualisé. N'invente rien : si la f
     const system = (mode === 'public'
       ? AssistantService.CADRE_BOT_PUBLIC
       : AssistantService.CADRE_BOT_DASHBOARD) + '\n' + AssistantService.FAITS_PLATEFORME;
-    const brute = await this.mistral.completer({
+    const brute = await this.moteur.completer({
       system,
       user: masque,
       historique: (historique ?? []).slice(-8).map((h) => ({
@@ -222,7 +222,7 @@ Jamais de conseil clinique ou juridique individualisé. N'invente rien : si la f
       .join('\n');
 
     const { texte: masque, table } = this.pseudo.masquer(brut);
-    const reponseMasquee = await this.mistral.completer({
+    const reponseMasquee = await this.moteur.completer({
       system: AssistantService.CADRE_ACTIVITE,
       user: masque,
       maxTokens: 520,
@@ -350,7 +350,7 @@ Déjà tenté : ${contexte.tente}` : ''
       content: this.pseudo.masquer(m.content).texte,
     }));
 
-    const reponseMasquee = await this.mistral.completer({
+    const reponseMasquee = await this.moteur.completer({
       system: AssistantService.CADRE_GAPISTE,
       user: masque,
       historique: fil,
@@ -381,7 +381,7 @@ Déjà tenté : ${contexte.tente}` : ''
  "duration": "durée suggérée (ex: 2H, 1/2 journée)",
  "objectifs": ["3 objectifs observables"]}
 N'invente ni prix ni diplômes. Reste fidèle au brief : si une information manque, propose une valeur prudente.`;
-    const brute = await this.mistral.completer({ system, user: masque, maxTokens: 900, temperature: 0.4 });
+    const brute = await this.moteur.completer({ system, user: masque, maxTokens: 900, temperature: 0.4 });
     const restauree = this.pseudo.restaurer(brute, table);
     // Extraction JSON tolérante (le modèle entoure parfois de ```json).
     const match = restauree.match(/\{[\s\S]*\}/);

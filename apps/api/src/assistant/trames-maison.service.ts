@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -15,7 +16,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService } from './pseudonymiseur.service';
-import { MistralService } from './mistral.service';
+import { MOTEUR_LEX, MoteurLex } from './moteur-lex';
 import { ExtractionService } from './extraction.service';
 import { FilesService, type FichierRecu } from '../storage/files.service';
 
@@ -87,7 +88,7 @@ export class TramesMaisonService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pseudo: PseudonymiseurService,
-    private readonly mistral: MistralService,
+    @Inject(MOTEUR_LEX) private readonly moteur: MoteurLex,
     private readonly extraction: ExtractionService,
     private readonly files: FilesService,
   ) {}
@@ -132,7 +133,7 @@ export class TramesMaisonService {
     }
 
     const { texte: masque } = this.pseudo.masquer(texteBrut);
-    const reponse = await this.mistral.completer({
+    const reponse = await this.moteur.completer({
       system: SYSTEM_EXTRACTION,
       user: `Modèle d'écrit à analyser :\n\n${masque}`,
       maxTokens: 1200,
