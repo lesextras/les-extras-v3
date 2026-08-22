@@ -36,7 +36,7 @@ function monter(reponseMoteur = ANALYSE) {
       delete: jest.fn().mockResolvedValue({ id: 't1' }),
     },
   };
-  const mistral = { completer: jest.fn().mockResolvedValue(reponseMoteur) };
+  const moteur = { disponible: true, completer: jest.fn().mockResolvedValue(reponseMoteur) };
   const files = {
     deposer: jest.fn().mockResolvedValue({ id: 'f1' }),
     supprimer: jest.fn().mockResolvedValue({ supprime: true }),
@@ -44,23 +44,23 @@ function monter(reponseMoteur = ANALYSE) {
   const service = new TramesMaisonService(
     prisma,
     new PseudonymiseurService(),
-    mistral as any,
+    moteur as any,
     new ExtractionService(),
     files as any,
   );
-  return { service, prisma, mistral, files };
+  return { service, prisma, moteur, files };
 }
 
 describe('TramesMaisonService — import', () => {
   it("ne laisse AUCUN nom partir au moteur : la pseudonymisation passe avant", async () => {
-    const { service, mistral } = monter();
+    const { service, moteur } = monter();
     await service.importer('cpt', 'u1', AccountRole.MEMBER, {
       nom: 'Modèle MECS',
       texte:
         "RAPPORT DE SITUATION\nLe présent rapport concerne Kevin Martin, né le 12/03/2011, accueilli depuis septembre. Sa mère, Sarah Martin, est joignable au 06 12 34 56 78. Contexte : Kevin a intégré le groupe des grands. Faits observés : participation régulière aux activités, scolarité stabilisée depuis novembre.",
     });
 
-    const envoye = mistral.completer.mock.calls[0][0].user as string;
+    const envoye = moteur.completer.mock.calls[0][0].user as string;
     expect(envoye).not.toContain('Kevin');
     expect(envoye).not.toContain('Martin');
     expect(envoye).not.toContain('06 12 34 56 78');
@@ -80,7 +80,7 @@ describe('TramesMaisonService — import', () => {
   });
 
   it("refuse qu'un membre publie une trame pour toute l'équipe", async () => {
-    const { service, mistral } = monter();
+    const { service, moteur } = monter();
     await expect(
       service.importer('cpt', 'u1', AccountRole.MEMBER, {
         nom: 'Modèle imposé',
@@ -89,7 +89,7 @@ describe('TramesMaisonService — import', () => {
       }),
     ).rejects.toBeInstanceOf(ForbiddenException);
     // Court-circuité avant tout appel payant.
-    expect(mistral.completer).not.toHaveBeenCalled();
+    expect(moteur.completer).not.toHaveBeenCalled();
   });
 
   it("l'autorise à un chef de service", async () => {
@@ -105,11 +105,11 @@ describe('TramesMaisonService — import', () => {
   });
 
   it('refuse un import vide, sans appeler le moteur', async () => {
-    const { service, mistral } = monter();
+    const { service, moteur } = monter();
     await expect(
       service.importer('cpt', 'u1', AccountRole.MEMBER, { nom: 'Vide' }),
     ).rejects.toBeInstanceOf(BadRequestException);
-    expect(mistral.completer).not.toHaveBeenCalled();
+    expect(moteur.completer).not.toHaveBeenCalled();
   });
 
   it('refuse un modèle trop court pour livrer une structure', async () => {

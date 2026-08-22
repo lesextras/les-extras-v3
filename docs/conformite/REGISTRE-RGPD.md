@@ -123,7 +123,7 @@ registre du sous-traitant (art. 30 § 2).
 | Hébergeur du serveur (VPS) | Hébergement de l'application et de la base | Union européenne |
 | Stripe | Paiements | Irlande / États-Unis (clauses contractuelles types) |
 | Prestataire d'envoi de courriels | Notifications transactionnelles | Union européenne |
-| Mistral AI | Modèle de langage de l'assistant LEX (données pseudonymisées) | France |
+| Anthropic | Modèle de langage de l'assistant LEX (données pseudonymisées) | États-Unis |
 
 ## Droits des personnes
 

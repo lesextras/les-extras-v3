@@ -17,7 +17,7 @@ import {
 export const metadata: Metadata = metaPublique({
   title: "Cadre de confiance LEX — IA, déontologie et données",
   description:
-    "Comment LEX traite les données des personnes accompagnées : pseudonymisation avant envoi, hébergement européen, aucun entraînement sur vos écrits.",
+    "Comment LEX traite les données des personnes accompagnées : pseudonymisation avant envoi au modèle, aucun entraînement sur vos écrits, notes brutes non conservées.",
   path: "/confiance-lex",
 });
 
@@ -42,9 +42,9 @@ const GARANTIES = [
   },
   {
     icone: MapPin,
-    titre: "Hébergement européen",
+    titre: "Où vont vos données, précisément",
     texte:
-      "Vos données restent hébergées dans l’Union européenne. Nous n’utilisons pas de moteur soumis au CLOUD Act américain pour traiter des contenus relatifs à des personnes accompagnées.",
+      "La plateforme, la base de données et les fichiers que vous déposez sont hébergés dans l’Union européenne. Le modèle de langage qui rédige, lui, est Claude, fourni par la société américaine Anthropic : il ne reçoit que des contenus pseudonymisés, jamais l’identité des personnes accompagnées. Nous préférons vous le dire que vous le laisser découvrir.",
   },
   {
     icone: Lock,
@@ -127,15 +127,17 @@ export default function ConfianceLexPage() {
         </h2>
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/80">
           Beaucoup de professionnels utilisent déjà un assistant d’IA généraliste pour leurs
-          écrits. C’est compréhensible, et c’est le vrai risque : coller une note d’observation
-          nominative dans un outil grand public, c’est transmettre l’identité d’un enfant à un
-          service qui n’a aucune obligation vis-à-vis de votre secteur, et souvent l’envoyer hors
-          d’Europe.
+          écrits. C’est compréhensible, et c’est là qu’est le vrai risque : coller une note
+          d’observation nominative dans un outil grand public, c’est envoyer en clair le prénom,
+          l’âge et l’histoire d’un enfant à un service qui n’a aucune obligation vis-à-vis de
+          votre secteur — sans que l’établissement le sache, sans trace, et sans que personne
+          puisse en rendre compte le jour où la question est posée.
         </p>
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/80">
           LEX ne vous demande pas de renoncer à l’aide à la rédaction. Il vous demande de la faire
-          dans un cadre : noms masqués avant tout envoi, hébergement européen, aucune conservation
-          des notes brutes, et un journal que votre direction peut ouvrir.
+          dans un cadre : noms masqués avant tout envoi au modèle, aucun entraînement sur vos
+          écrits, aucune conservation des notes brutes, et un journal que votre direction peut
+          ouvrir.
         </p>
       </section>
 
@@ -208,7 +210,7 @@ export default function ConfianceLexPage() {
       </section>
 
       <p className="text-xs italic text-muted-foreground">
-        Cette page décrit le fonctionnement de LEX au 3 août 2026. Pour toute question relative au
+        Cette page décrit le fonctionnement de LEX au 21 août 2026. Pour toute question relative au
         traitement des données, écrivez-nous : nous répondons avec les pièces justificatives.
       </p>
     </div>

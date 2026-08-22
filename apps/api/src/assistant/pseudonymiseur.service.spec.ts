@@ -137,6 +137,73 @@ describe('PseudonymiseurService — noms de famille en capitales', () => {
 });
 
 /**
+ * FAUX POSITIFS — LE COMPTEUR QUI DÉTRUIT LA CONFIANCE.
+ *
+ * Sur une saisie qui ne contenait AUCUN prénom (« Public : Adolescents 13-16
+ * ans en MECS… »), LEX annonçait cinq identités protégées : l'heuristique
+ * « mot capitalisé au milieu d'une phrase = nom propre » prenait les étiquettes
+ * de rubrique et le vocabulaire du métier pour des personnes. Un professionnel
+ * qui voit ça cesse de croire au reste du dispositif.
+ *
+ * Ces tests tiennent les DEUX bouts : plus de faux positifs sur le vocabulaire
+ * ordinaire, et pas un prénom de moins masqué qu'avant. Le second bout prime :
+ * mieux vaut mille fois un mot masqué en trop qu'une identité laissée en clair.
+ */
+describe('PseudonymiseurService — faux positifs', () => {
+  const service = new PseudonymiseurService();
+
+  it("ne voit aucune personne dans une demande d'activité qui n'en nomme aucune", () => {
+    const source = [
+      'Public : Adolescents 13-16 ans en MECS, groupe mixte',
+      'Besoins / difficultés à travailler : conflits au repas et au coucher',
+      'Durée disponible : 1h',
+      'Effectif : 8 jeunes',
+    ].join('\n');
+    const { texte, table } = service.masquer(source);
+    expect(texte).toBe(source);
+    expect(service.resume(table).personnes).toBe(0);
+  });
+
+  it('laisse intactes les étiquettes de rubrique et le vocabulaire du métier', () => {
+    const source =
+      'Objectifs souhaités : Autonomie et Coopération. Contraintes : Salle polyvalente, Budget limité. Support : Théâtre le Mercredi.';
+    const { texte, table } = service.masquer(source);
+    expect(texte).toBe(source);
+    expect(service.resume(table).personnes).toBe(0);
+  });
+
+  it('masque toujours un prénom placé exactement là où se produisaient les faux positifs', () => {
+    // Même position qu'« Adolescents » ci-dessus : après l'étiquette d'un champ.
+    const { texte } = service.masquer('Public : Yassine, 14 ans en MECS, conflits au repas');
+    expect(texte).not.toContain('Yassine');
+    expect(texte).toMatch(/\[PERSONNE-[A-Z]+\]/);
+  });
+
+  it("masque un prénom même entouré de vocabulaire ordinaire", () => {
+    const { texte } = service.masquer(
+      'Atelier théâtre : Adolescents en MECS. Kevin et Yanis ont participé au repas.',
+    );
+    expect(texte).toContain('Adolescents');
+    expect(texte).not.toContain('Kevin');
+    expect(texte).not.toContain('Yanis');
+  });
+
+  it('masque le nom que la civilité annonce, même au milieu d’une phrase', () => {
+    // Avant correction, « Monsieur » était reconnu comme mot courant et
+    // emportait le nom avec lui : l'identité repartait en clair.
+    for (const source of [
+      'Rendez-vous pris. Ce matin, Monsieur Kevin a refusé le repas.',
+      'Note du soir. Ce matin, Madame Zoubida est venue.',
+    ]) {
+      const { texte } = service.masquer(source);
+      expect(texte).not.toContain('Kevin');
+      expect(texte).not.toContain('Zoubida');
+      expect(texte).toMatch(/\[PERSONNE-[A-Z]+\]/);
+    }
+  });
+});
+
+/**
  * JETONS PARLANTS.
  *
  * Le moteur écrit nettement mieux quand il sait qui est l'enfant, qui est la

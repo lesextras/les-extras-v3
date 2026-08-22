@@ -163,10 +163,123 @@ const MOTS_COURANTS = new Set([
 ]);
 
 /**
+ * VOCABULAIRE ORDINAIRE QUI S'ÉCRIT AVEC UNE MAJUSCULE.
+ *
+ * L'heuristique « mot capitalisé au milieu d'une phrase = nom propre » se
+ * trompait sur tout ce qui suit une étiquette de formulaire ou ouvre une ligne :
+ * « Public : Adolescents 13-16 ans en MECS » repartait avec deux « personnes »
+ * masquées (« Adolescents », puis « Besoins » en tête de la ligne suivante).
+ * Un professionnel qui voit LEX annoncer cinq identités protégées dans une
+ * saisie qui n'en contient aucune cesse de croire au dispositif entier.
+ *
+ * Cette liste ne relâche RIEN sur les identités : un mot présent dans le
+ * dictionnaire des prénoms l'emporte toujours (voir estMotOrdinaire), et les
+ * patronymes en capitales continuent d'être traités par leurs règles propres.
+ * On n'y met donc que des mots communs du métier et des intitulés de rubrique —
+ * jamais un mot qui pourrait servir de prénom ou de nom de famille isolé.
+ */
+const LEXIQUE_COURANT = new Set([
+  // Étiquettes des formulaires de LEX et des écrits professionnels.
+  'public', 'publics', 'besoin', 'besoins', 'duree', 'durée', 'effectif',
+  'effectifs', 'objectif', 'objectifs', 'contrainte', 'contraintes', 'materiel',
+  'matériel', 'deroule', 'déroulé', 'deroulement', 'déroulement', 'variante',
+  'variantes', 'alternative', 'alternatives', 'titre', 'theme', 'thème',
+  'themes', 'thèmes', 'consigne', 'consignes', 'resume', 'résumé',
+  'commentaire', 'commentaires', 'remarque', 'remarques', 'precision',
+  'précision', 'precisions', 'précisions', 'difficulte', 'difficulté',
+  'difficultes', 'difficultés', 'modalites', 'modalités', 'moyens', 'lieu',
+  'lieux', 'horaire', 'horaires', 'frequence', 'fréquence', 'budget', 'points',
+  'point', 'vigilance', 'indicateur', 'indicateurs', 'evaluation', 'évaluation',
+  'bilan', 'bilans', 'projet', 'projets', 'proposition', 'propositions',
+  'activite', 'activité', 'activites', 'activités', 'seance', 'séance',
+  'seances', 'séances', 'ateliers', 'intervention', 'interventions', 'methode',
+  'méthode', 'methodes', 'méthodes', 'contenu', 'conclusion', 'introduction',
+  'sommaire', 'annexe', 'annexes', 'historique', 'suivi', 'suivis',
+  // Publics accompagnés — les mots qui décrivent un groupe, jamais quelqu'un.
+  'adolescent', 'adolescents', 'adolescente', 'adolescentes', 'ado', 'ados',
+  'adulte', 'adultes', 'enfants', 'jeunes', 'mineur', 'mineurs', 'majeur',
+  'majeurs', 'residents', 'résidents', 'residentes', 'résidentes', 'usagers',
+  'usageres', 'usagères', 'beneficiaires', 'bénéficiaires', 'participant',
+  'participants', 'participante', 'participantes', 'professionnel',
+  'professionnels', 'professionnelle', 'professionnelles', 'equipes', 'équipes',
+  'fratrie', 'parent', 'parents', 'familles', 'groupes', 'collectif', 'mixte',
+  'garcon', 'garçon', 'garcons', 'garçons', 'filles', 'stagiaires',
+  // Quotidien d'un établissement.
+  'repas', 'coucher', 'lever', 'reveil', 'réveil', 'sommeil', 'toilette',
+  'hygiene', 'hygiène', 'douche', 'dejeuner', 'déjeuner', 'gouter', 'goûter',
+  'diner', 'dîner', 'cantine', 'internat', 'externat', 'veillee', 'veillée',
+  'vacances', 'sortie', 'sorties', 'sejour', 'séjour', 'sejours', 'séjours',
+  'transport', 'transports', 'chambre', 'chambres', 'salle', 'salles', 'cour',
+  'jardin', 'cuisine', 'gymnase', 'piscine', 'mediatheque', 'médiathèque',
+  'bibliotheque', 'bibliothèque', 'terrain', 'ecole', 'école', 'college',
+  'collège', 'lycee', 'lycée', 'classe', 'classes', 'scolaire', 'stage',
+  'stages', 'reunion', 'réunion', 'reunions', 'réunions', 'entretien',
+  'entretiens', 'visite', 'visites', 'audience',
+  // Supports et médiations.
+  'theatre', 'théâtre', 'musique', 'danse', 'sport', 'sports', 'dessin',
+  'peinture', 'poterie', 'jeu', 'jeux', 'lecture', 'ecriture', 'écriture',
+  'chant', 'video', 'vidéo', 'photo', 'photos', 'cirque', 'escalade',
+  'randonnee', 'randonnée', 'relaxation', 'respiration', 'mediation',
+  'médiation', 'mediations', 'médiations', 'debat', 'débat', 'discussion',
+  'jardinage', 'bricolage', 'informatique', 'numerique', 'numérique',
+  // Ce qu'on décrit d'une situation.
+  'conflit', 'conflits', 'tension', 'tensions', 'violence', 'violences',
+  'agressivite', 'agressivité', 'angoisse', 'angoisses', 'colere', 'colère',
+  'crise', 'crises', 'refus', 'opposition', 'isolement', 'repli', 'fatigue',
+  'stress', 'emotion', 'émotion', 'emotions', 'émotions', 'confiance',
+  'cooperation', 'coopération', 'autonomie', 'respect', 'regle', 'règle',
+  'regles', 'règles', 'limites', 'sanction', 'sanctions', 'incident',
+  'incidents', 'comportement', 'comportements', 'progres', 'progrès',
+  // Repères de temps.
+  'semaine', 'semaines', 'mois', 'annee', 'année', 'annees', 'années', 'jour',
+  'jours', 'journee', 'journée', 'journees', 'journées', 'heure', 'heures',
+  'minute', 'minutes', 'midi', "apres-midi", 'après-midi', 'week-end',
+  'weekend', "aujourd'hui", 'veille', 'lendemain',
+]);
+
+/**
+ * Civilités et titres : ce qui les suit est un nom, toujours. Sert de
+ * rattrapage quand la civilité a « absorbé » la place du mot capitalisé.
+ */
+const CIVILITES = new Set([
+  'monsieur', 'madame', 'mademoiselle', 'docteur', 'docteure', 'maitre',
+  'professeur', 'professeure', 'mme', 'mlle', 'mr', 'dr', 'pr', 'me',
+]);
+
+/** Lowercase + accents retirés : la comparaison ne dépend ni de l'un ni des autres. */
+function normaliserMot(mot: string): string {
+  return mot.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Ce mot capitalisé est-il un mot ordinaire, qu'il serait absurde de masquer ?
+ *
+ * RÈGLE DE SÉCURITÉ : un prénom du dictionnaire n'est JAMAIS ordinaire. Le
+ * garde-fou vaut pour aujourd'hui comme pour les mots qu'on ajoutera demain —
+ * laisser passer un prénom coûte infiniment plus cher que masquer un mot de
+ * trop.
+ */
+function estMotOrdinaire(mot: string): boolean {
+  const brut = mot.toLowerCase();
+  const n = normaliserMot(mot);
+  if (PRENOMS_COURANTS.has(n)) return false;
+  return (
+    MOTS_COURANTS.has(brut) ||
+    MOTS_COURANTS.has(n) ||
+    LEXIQUE_COURANT.has(brut) ||
+    LEXIQUE_COURANT.has(n)
+  );
+}
+
+/**
  * Sigles et intitulés qu'on rencontre en capitales dans une trame et qui ne
  * sont PAS des noms de famille. Sans cette liste, masquer les capitales
  * détruirait les intitulés de sections — c'est-à-dire précisément ce qu'on
  * cherche à apprendre d'un modèle d'écrit.
+ *
+ * Volontairement séparée de LEXIQUE_COURANT : un mot commun peut très bien être
+ * un patronyme (« Mme JARDIN », « M. BOULANGER »), et les capitales ne sont
+ * traitées ici que lorsqu'elles jouxtent une identité déjà repérée.
  */
 const CAPITALES_METIER = new Set([
   'MECS', 'IME', 'ITEP', 'IEM', 'SESSAD', 'DITEP', 'EHPAD', 'ESAT', 'MAS',
@@ -230,12 +343,25 @@ export class PseudonymiseurService {
     );
 
     // 4. Prénoms/noms : mot capitalisé qui n'ouvre pas la phrase et n'est pas
-    //    un mot courant. Volontairement prudent : mieux vaut masquer un mot de
+    //    un mot ordinaire. Volontairement prudent : mieux vaut masquer un mot de
     //    trop que laisser passer un prénom.
     resultat = resultat.replace(
       /([^.!?\n]\s)([A-ZÀ-Ü][a-zà-ÿ'-]{2,})(\s+[A-ZÀ-Ü][a-zà-ÿ'-]{2,})?/gm,
       (m, avant: string, mot1: string, mot2?: string) => {
-        if (MOTS_COURANTS.has(mot1.toLowerCase())) return m;
+        if (estMotOrdinaire(mot1)) {
+          // Le premier mot est ordinaire, mais le second peut être l'identité
+          // qu'il annonce : « Monsieur Zoubida », « Ce matin, Madame Dubois ».
+          // Sans ce rattrapage, le nom repartait en clair au seul motif qu'il
+          // n'ouvrait pas la phrase — le mot ordinaire l'avait absorbé.
+          const nom2 = mot2?.trim() ?? '';
+          const espace2 = nom2 ? mot2!.slice(0, mot2!.length - nom2.length) : '';
+          const suspect =
+            CIVILITES.has(normaliserMot(mot1)) || PRENOMS_COURANTS.has(normaliserMot(nom2));
+          if (nom2 && suspect) {
+            return `${avant}${mot1}${espace2}${jetonPour(nom2, 'PERSONNE')}`;
+          }
+          return m;
+        }
         const valeur = mot2 ? `${mot1}${mot2}` : mot1;
         return `${avant}${jetonPour(valeur.trim(), 'PERSONNE')}`;
       },

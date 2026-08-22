@@ -210,7 +210,7 @@ const sections: Section[] = [
           'Hostinger — hébergement du serveur applicatif et de la base de données, dans l’Union européenne.',
           'Stripe — paiement en ligne des crédits, abonnements et factures de l’association. Irlande et États-Unis, encadré par les clauses contractuelles types.',
           'Brevo — envoi des courriels transactionnels : notifications, invitations, alertes. Union européenne.',
-          'Mistral AI — modèle de langage de l’assistant LEX, alimenté par des données pseudonymisées. France.',
+          'Anthropic — modèle de langage de l’assistant LEX, alimenté par des données pseudonymisées. Fournisseur établi aux États-Unis : les contenus qui lui sont transmis ne comportent ni les noms, ni les dates de naissance, ni les coordonnées des personnes accompagnées.',
           'Les fichiers déposés (diplômes, justificatifs, pièces jointes) sont stockés sur un serveur MinIO auto-hébergé, sur la même infrastructure : ils ne sont confiés à aucun prestataire tiers.',
           'Aucune donnée n’est vendue, louée ni cédée à des fins publicitaires.',
         ],
@@ -249,7 +249,7 @@ export default function LegalPage() {
           décrit le service tel qu’il fonctionne réellement.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
-          Dernière mise à jour : 13 août 2026. Voir aussi{' '}
+          Dernière mise à jour : 21 août 2026. Voir aussi{' '}
           <Link href="/legal/cookies" className="underline underline-offset-2 hover:text-primary">
             cookies et stockage local
           </Link>{' '}
