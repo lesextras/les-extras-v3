@@ -67,7 +67,7 @@ function splitName(full?: string | null): { firstName: string | null; lastName: 
  * À utiliser dans les Server Components, layouts de garde et Route Handlers.
  */
 export async function getSession(): Promise<Session | null> {
-  const store = cookies();
+  const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
 

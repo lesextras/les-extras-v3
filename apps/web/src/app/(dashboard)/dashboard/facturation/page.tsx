@@ -179,10 +179,11 @@ function Onglet({
 }
 
 export default async function FacturationPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { vue?: string; paiement?: string };
+  searchParams?: Promise<{ vue?: string; paiement?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const accountId = session.account.id;
   const isEstablishment = session.account.type === "ESTABLISHMENT";

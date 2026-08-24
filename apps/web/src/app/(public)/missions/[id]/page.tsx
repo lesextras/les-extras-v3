@@ -16,10 +16,11 @@ import { MISSION_CATEGORY_LABEL, formatDate, formatRate } from "../../../_shared
  * doublon. Le titre est désormais celui de la mission, avec sa ville.
  */
 export async function generateMetadata({
-  params,
+  params: paramsPromesse,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const params = await paramsPromesse;
   const { data } = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
   if (!data) return { title: "Mission de renfort", robots: { index: false, follow: true } };
   const lieu = data.city ? ` — ${data.city}` : "";
@@ -55,7 +56,8 @@ interface PublicMission {
   account?: { id: string; name: string; city?: string | null; logoUrl?: string | null } | null;
 }
 
-export default async function MissionPublicPage({ params }: { params: { id: string } }) {
+export default async function MissionPublicPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const { data: mission } = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
   if (!mission) notFound();
 

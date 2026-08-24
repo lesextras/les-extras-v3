@@ -8,10 +8,11 @@ import { ConfettisArrivee } from '../../_shared/ConfettisArrivee';
 import { PasserOnboarding } from '../../_shared/PasserOnboarding';
 
 export default async function WelcomePage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { bienvenue?: string; salarie?: string };
+  searchParams?: Promise<{ bienvenue?: string; salarie?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await getSession();
   if (!session) redirect('/login');
 

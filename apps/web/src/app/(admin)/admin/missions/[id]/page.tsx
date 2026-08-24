@@ -37,7 +37,8 @@ interface AdminMission {
   _count?: { bookings?: number };
 }
 
-export default async function AdminMissionDetail({ params }: { params: { id: string } }) {
+export default async function AdminMissionDetail({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireAdmin();
   const res = await fetchApi<AdminMission>(session, `/admin/missions/${params.id}`);
   const m = res.data;

@@ -52,7 +52,7 @@ export async function CatalogView({
   subtitle,
   searchPlaceholder,
   emptyTitle,
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
   /** "atelier" | "formation" (filtre côté API). */
   type: "atelier" | "formation";
@@ -62,15 +62,16 @@ export async function CatalogView({
   subtitle: string;
   searchPlaceholder: string;
   emptyTitle: string;
-  searchParams?: {
+  searchParams?: Promise<{
     search?: string;
     category?: string;
     public?: string;
     city?: string;
     priceMax?: string;
     sort?: string;
-  };
+  }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const search = searchParams?.search?.trim() ?? "";
   const category = searchParams?.category ?? "";
   const publicVise = searchParams?.public ?? "";

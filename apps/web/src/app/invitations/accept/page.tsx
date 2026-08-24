@@ -13,11 +13,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AccepterInvitationPage({
-  searchParams,
+export default async function AccepterInvitationPage({
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { token?: string };
+  searchParams?: Promise<{ token?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   return (
     <div className="theme-sombre flex min-h-screen items-center justify-center bg-background px-6 py-16 text-foreground">
       <Suspense>

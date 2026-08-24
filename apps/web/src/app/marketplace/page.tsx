@@ -46,10 +46,11 @@ function asItems<T>(data: T[] | Paginated<T> | undefined): T[] {
 }
 
 export default async function MarketplacePage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams: { q?: string; type?: string; category?: string; cp?: string; rayon?: string };
+  searchParams: Promise<{ q?: string; type?: string; category?: string; cp?: string; rayon?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const type = searchParams.type ?? "";
   const category = searchParams.category || undefined;

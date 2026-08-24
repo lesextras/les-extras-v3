@@ -7,10 +7,11 @@ import WizardForm from './wizard-form';
  * au navigateur, qui n'a aucune raison d'en être la source de vérité.
  */
 export default async function WizardPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { salarie?: string };
+  searchParams?: Promise<{ salarie?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await getSession();
   const type = session?.activeAccount?.type === 'FREELANCE' ? 'FREELANCE' : 'ESTABLISHMENT';
   // Le dépôt de pièces a besoin du compte actif : sans lui, l'étape

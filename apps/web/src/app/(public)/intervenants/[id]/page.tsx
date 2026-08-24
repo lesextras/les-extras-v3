@@ -48,10 +48,11 @@ interface Vendor {
 }
 
 export async function generateMetadata({
-  params,
+  params: paramsPromesse,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const params = await paramsPromesse;
   const { data } = await fetchPublic<Vendor>(`/public/vendors/${params.id}`);
   const nom = fullName(data?.owner?.firstName, data?.owner?.lastName) || data?.name;
   // Un nom seul fait une balise de 18 à 23 caractères : personne ne cherche
@@ -80,7 +81,8 @@ export async function generateMetadata({
   });
 }
 
-export default async function VendorPage({ params }: { params: { id: string } }) {
+export default async function VendorPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const { data: vendor } = await fetchPublic<Vendor>(`/public/vendors/${params.id}`);
   if (!vendor) notFound();
 

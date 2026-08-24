@@ -62,10 +62,11 @@ const CADRE = [
 const DELAIS = ["stagger-1", "stagger-2", "stagger-3"];
 
 export async function GapFil({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { search?: string; metier?: string; publicVise?: string; tri?: string };
+  searchParams?: Promise<{ search?: string; metier?: string; publicVise?: string; tri?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireSession();
 
   const qs = new URLSearchParams({ take: "30" });

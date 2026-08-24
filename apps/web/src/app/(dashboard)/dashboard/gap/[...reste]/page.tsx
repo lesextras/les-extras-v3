@@ -2,10 +2,11 @@
 // continuent de fonctionner, en menant à leur nouvelle adresse sur le site.
 import { redirect } from "next/navigation";
 
-export default function GapDashboardSousPageRedirect({
-  params,
+export default async function GapDashboardSousPageRedirect({
+  params: paramsPromesse,
 }: {
-  params: { reste?: string[] };
+  params: Promise<{ reste?: string[] }>;
 }) {
+  const params = await paramsPromesse;
   redirect(`/gap/${(params.reste ?? []).join("/")}`);
 }

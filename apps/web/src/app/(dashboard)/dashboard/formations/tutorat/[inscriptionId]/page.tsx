@@ -18,7 +18,8 @@ interface InscriptionLite {
   learner?: { firstName?: string | null; lastName?: string | null } | null;
 }
 
-export default async function TutoratPage({ params }: { params: { inscriptionId: string } }) {
+export default async function TutoratPage({ params: paramsPromesse }: { params: Promise<{ inscriptionId: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const [tutoratRes, insRes] = await Promise.all([
     fetchApi<TutoratData | null>(session, `/tutorat/inscription/${params.inscriptionId}`),

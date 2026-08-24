@@ -9,6 +9,7 @@
 // l'historique d'indexation continuent de fonctionner.
 import { permanentRedirect } from 'next/navigation';
 
-export default function AncienneFicheFreelance({ params }: { params: { id: string } }) {
+export default async function AncienneFicheFreelance({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   permanentRedirect(`/intervenants/${params.id}`);
 }

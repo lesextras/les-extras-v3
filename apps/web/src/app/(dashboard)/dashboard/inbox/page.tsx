@@ -13,10 +13,11 @@ import type { Conversation, Message } from "../../../_shared/types";
 export const metadata: Metadata = { title: "Messagerie" };
 
 export default async function InboxPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams: { c?: string };
+  searchParams: Promise<{ c?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const activeId = searchParams.c;
 

@@ -11,10 +11,11 @@ import type { QuestionDetail } from "../../../../_shared/gap";
 export const metadata: Metadata = { title: "Corriger ma situation" };
 
 export default async function ModifierSituationPage({
-  params,
+  params: paramsPromesse,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const { data } = await fetchApi<QuestionDetail>(session, `/gap/${params.id}`);
   if (!data) notFound();

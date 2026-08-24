@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Token manquant.' }, { status: 400 });
   }
 
-  const store = cookies();
+  const store = await cookies();
   const maxAge = 60 * 60 * 24 * 7; // 7 jours
   const secure = (request.headers.get('x-forwarded-proto') ?? '') === 'https';
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
 /** Déconnexion : supprime les cookies de session. */
 export async function DELETE() {
-  const store = cookies();
+  const store = await cookies();
   store.delete(SESSION_COOKIE);
   store.delete(ACTIVE_ACCOUNT_COOKIE);
   return NextResponse.json({ ok: true });

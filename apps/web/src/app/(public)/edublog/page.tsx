@@ -39,10 +39,11 @@ const inputClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3.5 py-2 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
 export default async function ActualitesPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { search?: string; category?: string; section?: string };
+  searchParams?: Promise<{ search?: string; category?: string; section?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const qs = new URLSearchParams({ take: "24" });
   if (searchParams?.search) qs.set("search", searchParams.search);
   if (searchParams?.category) qs.set("category", searchParams.category);

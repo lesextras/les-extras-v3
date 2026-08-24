@@ -13,7 +13,8 @@ export function generateStaticParams() {
 }
 export const dynamicParams = false;
 
-export function generateMetadata({ params }: { params: { guide: string } }): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ guide: string }>}): Metadata {
+  const params = await paramsPromesse;
   const g = trouverGuide(params.guide);
   if (!g) return { title: "Guide introuvable", robots: { index: false, follow: false } };
   return metaPublique({
@@ -47,7 +48,8 @@ function howTo(g: NonNullable<ReturnType<typeof trouverGuide>>) {
   };
 }
 
-export default function GuidePage({ params }: { params: { guide: string } }) {
+export default async function GuidePage({ params: paramsPromesse }: { params: Promise<{ guide: string }>}) {
+  const params = await paramsPromesse;
   const g = trouverGuide(params.guide);
   if (!g) notFound();
 

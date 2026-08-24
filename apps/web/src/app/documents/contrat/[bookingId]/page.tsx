@@ -11,7 +11,8 @@ import { EtablirCdd } from "../../../_shared/EtablirCdd";
 
 export const metadata: Metadata = { title: "Proposition d’engagement" };
 
-export default async function ContratPage({ params }: { params: { bookingId: string } }) {
+export default async function ContratPage({ params: paramsPromesse }: { params: Promise<{ bookingId: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const res = await fetchApi<ContractData>(session, `/bookings/${params.bookingId}/contract`);
   if (res.error || !res.data) notFound();

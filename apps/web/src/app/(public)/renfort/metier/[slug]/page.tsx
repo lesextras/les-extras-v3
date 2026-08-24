@@ -20,7 +20,8 @@ function enMinuscules(nom: string): string {
     .join(" ");
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ slug: string }>}): Metadata {
+  const params = await paramsPromesse;
   const m = trouverMetier(params.slug);
   if (!m) return { title: "Renfort" };
   // Titre et description de partage étaient déjà ceux de la page : le helper
@@ -40,7 +41,8 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   });
 }
 
-export default function MetierPage({ params }: { params: { slug: string } }) {
+export default async function MetierPage({ params: paramsPromesse }: { params: Promise<{ slug: string }>}) {
+  const params = await paramsPromesse;
   const metier = trouverMetier(params.slug);
   if (!metier) notFound();
 

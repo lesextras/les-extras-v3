@@ -6,7 +6,8 @@ import { FormationDocument, type DocInscription } from "../../../_shared/Formati
 
 export const metadata: Metadata = { title: "Certificat de réalisation" };
 
-export default async function CertificatPage({ params }: { params: { inscriptionId: string } }) {
+export default async function CertificatPage({ params: paramsPromesse }: { params: Promise<{ inscriptionId: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const res = await fetchApi<DocInscription>(session, `/formations/inscriptions/${params.inscriptionId}`);
   if (res.error || !res.data) notFound();

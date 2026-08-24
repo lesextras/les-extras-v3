@@ -18,7 +18,8 @@ import type { Mission } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Mission" };
 
-export default async function MissionDetailPage({ params }: { params: { id: string } }) {
+export default async function MissionDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const { data: mission } = await fetchApi<Mission & { alreadyApplied?: boolean }>(
     session,

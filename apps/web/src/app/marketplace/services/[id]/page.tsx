@@ -94,7 +94,8 @@ function dureeLisible(minutes?: number | null, libelle?: string | null) {
   return libelle ?? null;
 }
 
-export default async function ServiceDetailPage({ params }: { params: { id: string } }) {
+export default async function ServiceDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const { data: service } = await fetchApi<ServiceDetail>(session, `/services/${params.id}`);
   if (!service) notFound();

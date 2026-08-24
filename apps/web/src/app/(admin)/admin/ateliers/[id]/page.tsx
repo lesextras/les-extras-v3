@@ -32,7 +32,8 @@ interface AdminService {
   _count?: { bookings?: number };
 }
 
-export default async function AdminServiceDetail({ params }: { params: { id: string } }) {
+export default async function AdminServiceDetail({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireAdmin();
   const res = await fetchApi<AdminService>(session, `/admin/services/${params.id}`);
   const s = res.data;

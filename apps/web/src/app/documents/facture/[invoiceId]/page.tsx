@@ -6,7 +6,8 @@ import { InvoiceDocument, type DocInvoice } from "../../../_shared/InvoiceDocume
 
 export const metadata: Metadata = { title: "Facture" };
 
-export default async function FacturePage({ params }: { params: { invoiceId: string } }) {
+export default async function FacturePage({ params: paramsPromesse }: { params: Promise<{ invoiceId: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
 
   // Route standard : facture du compte actif.

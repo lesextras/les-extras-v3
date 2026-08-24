@@ -99,10 +99,11 @@ const MOTIF: Record<string, string> = {
 };
 
 export default async function LexCreditsPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams: { paiement?: string };
+  searchParams: Promise<{ paiement?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const accountId = session.account.id;
   const [resOverview, resUtilisation] = await Promise.all([

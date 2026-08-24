@@ -86,7 +86,8 @@ function learnerLabel(i: Inscription) {
   return i.learnerName || "Apprenant";
 }
 
-export default async function SessionDetailPage({ params }: { params: { sessionId: string } }) {
+export default async function SessionDetailPage({ params: paramsPromesse }: { params: Promise<{ sessionId: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const [res, resBilan] = await Promise.all([
     fetchApi<SessionDetail>(session, `/formations/sessions/${params.sessionId}`),

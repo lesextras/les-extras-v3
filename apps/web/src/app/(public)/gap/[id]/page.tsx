@@ -15,7 +15,8 @@ import type { QuestionDetail } from "@/app/_shared/gap";
 
 export const metadata: Metadata = { title: "Situation — Le GAP" };
 
-export default async function SituationPage({ params }: { params: { id: string } }) {
+export default async function SituationPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const [{ data }, adherent] = await Promise.all([
     fetchApi<QuestionDetail>(session, `/gap/${params.id}`),

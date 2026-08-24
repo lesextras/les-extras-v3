@@ -31,10 +31,11 @@ import type { Profile } from "../../../_shared/types";
 export const metadata: Metadata = { title: "Mon compte" };
 
 export default async function AccountPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { onglet?: string };
+  searchParams?: Promise<{ onglet?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const isFreelance = session.account.type === "FREELANCE";
   // Lien profond ?onglet=services|parametres|profil : on ouvre le bon onglet.

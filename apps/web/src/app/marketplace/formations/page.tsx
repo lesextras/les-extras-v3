@@ -23,10 +23,11 @@ interface FormationItem {
 }
 
 export default async function MarketplaceFormationsPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { search?: string };
+  searchParams?: Promise<{ search?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const search = searchParams?.search?.trim();
   const q = new URLSearchParams({ type: "CERTIFIANTE" });

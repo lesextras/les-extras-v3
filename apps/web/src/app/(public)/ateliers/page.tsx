@@ -10,11 +10,12 @@ export const metadata: Metadata = metaPublique({
   path: "/ateliers",
 });
 
-export default function AteliersCatalogPage({
-  searchParams,
+export default async function AteliersCatalogPage({
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { search?: string; category?: string };
+  searchParams?: Promise<{ search?: string; category?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   return (
     <CatalogView
       type="atelier"

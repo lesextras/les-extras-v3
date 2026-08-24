@@ -51,10 +51,11 @@ type Filtres = {
 };
 
 export default async function FormationsCatalogPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: Filtres;
+  searchParams?: Promise<Filtres>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const qs = new URLSearchParams();
   for (const cle of ["search", "category", "city", "priceMax", "sort"] as const) {
     const v = searchParams?.[cle];

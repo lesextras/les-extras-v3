@@ -70,7 +70,8 @@ function Pipeline({ certifying }: { certifying: boolean }) {
   );
 }
 
-export default async function FormationDetailPage({ params }: { params: { id: string } }) {
+export default async function FormationDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const res = await fetchApi<FormationDetail>(session, `/formations/${params.id}`);
   const f = res.data;

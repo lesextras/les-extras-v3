@@ -20,7 +20,7 @@ function apiBase(): string {
 }
 
 async function forward(req: NextRequest, path: string[]): Promise<Response> {
-  const store = cookies();
+  const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   const cookieAccount = store.get(ACTIVE_ACCOUNT_COOKIE)?.value;
 
@@ -77,9 +77,9 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
   return new NextResponse(payload, { status: res.status, headers: outHeaders });
 }
 
-type Ctx = { params: { path: string[] } };
-export const GET = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const POST = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const PUT = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const PATCH = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const DELETE = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
+type Ctx = { params: Promise<{ path: string[] }> };
+export const GET = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const POST = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const PUT = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const PATCH = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const DELETE = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);

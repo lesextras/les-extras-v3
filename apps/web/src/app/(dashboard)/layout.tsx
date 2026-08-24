@@ -28,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // Salarié pas encore rattaché : le serveur refuse déjà tout sauf LEX et sa
   // demande. On le lui dit sur la page qu'il ouvre, au lieu de le laisser
   // buter sur une erreur — il n'a rien fait de travers, il attend une réponse.
-  const chemin = headers().get("x-chemin") ?? "/dashboard";
+  const chemin = (await headers()).get("x-chemin") ?? "/dashboard";
   const enAttente =
     moi?.enAttenteRattachement === true && !cheminOuvertSansRattachement(chemin);
 

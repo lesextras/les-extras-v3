@@ -9,7 +9,8 @@ export function generateStaticParams() {
   return RUBRIQUES.map((r) => ({ rubrique: r.slug }));
 }
 
-export function generateMetadata({ params }: { params: { rubrique: string } }): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ rubrique: string }>}): Metadata {
+  const params = await paramsPromesse;
   const r = trouverRubrique(params.rubrique);
   if (!r) return { title: "Aide" };
   return {
@@ -33,7 +34,8 @@ export function generateMetadata({ params }: { params: { rubrique: string } }): 
   };
 }
 
-export default function RubriquePage({ params }: { params: { rubrique: string } }) {
+export default async function RubriquePage({ params: paramsPromesse }: { params: Promise<{ rubrique: string }>}) {
+  const params = await paramsPromesse;
   const rubrique = trouverRubrique(params.rubrique);
   if (!rubrique) notFound();
 

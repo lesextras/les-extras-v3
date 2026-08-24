@@ -39,7 +39,8 @@ function fullName(m: Member) {
   return n || m.user?.email || "—";
 }
 
-export default async function AdminAccountDetailPage({ params }: { params: { id: string } }) {
+export default async function AdminAccountDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireAdmin();
   const res = await fetchApi<AccountDetail>(session, `/admin/accounts/${params.id}`);
   const a = res.data;

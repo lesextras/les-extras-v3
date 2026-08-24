@@ -52,10 +52,11 @@ function resume(t: string, max = 155) {
 }
 
 export async function generateMetadata({
-  params,
+  params: paramsPromesse,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+  const params = await paramsPromesse;
   const { data } = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
   // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
   // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
@@ -99,10 +100,11 @@ export async function generateMetadata({
 }
 
 export default async function FormationPubliquePage({
-  params,
+  params: paramsPromesse,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const params = await paramsPromesse;
   const { data: f } = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
   if (!f) notFound();
 

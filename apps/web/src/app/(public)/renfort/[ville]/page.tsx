@@ -21,7 +21,8 @@ export function generateStaticParams() {
  * Même arithmétique pour la description, plafonnée à 160 : la partie fixe fait
  * 138 caractères, plus le nom du territoire (17 au pire) = 155.
  */
-export function generateMetadata({ params }: { params: { ville: string } }): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ ville: string }>}): Metadata {
+  const params = await paramsPromesse;
   const v = trouverVille(params.ville);
   if (!v) return { title: "Renfort" };
   return {
@@ -45,7 +46,8 @@ export function generateMetadata({ params }: { params: { ville: string } }): Met
   };
 }
 
-export default function VillePage({ params }: { params: { ville: string } }) {
+export default async function VillePage({ params: paramsPromesse }: { params: Promise<{ ville: string }>}) {
+  const params = await paramsPromesse;
   const ville = trouverVille(params.ville);
   if (!ville) notFound();
 

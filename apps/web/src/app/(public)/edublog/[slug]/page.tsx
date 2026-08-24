@@ -24,10 +24,11 @@ interface ArticleDetail extends ArticleCard {
 const resume = (t: string, max = 155) => texteBrut(t, max);
 
 export async function generateMetadata({
-  params,
+  params: paramsPromesse,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+  const params = await paramsPromesse;
   const { data } = await fetchPublic<ArticleDetail>(`/articles/feed/${params.slug}`);
   // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
   // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
@@ -68,7 +69,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
+export default async function ArticlePage({ params: paramsPromesse }: { params: Promise<{ slug: string }>}) {
+  const params = await paramsPromesse;
   const { data: a } = await fetchPublic<ArticleDetail>(`/articles/feed/${params.slug}`);
   if (!a) notFound();
 

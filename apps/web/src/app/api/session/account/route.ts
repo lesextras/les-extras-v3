@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Compte non autorisé.' }, { status: 403 });
   }
 
-  cookies().set(ACTIVE_ACCOUNT_COOKIE, accountId, {
+  (await cookies()).set(ACTIVE_ACCOUNT_COOKIE, accountId, {
     httpOnly: false,
     sameSite: 'lax',
     secure: (request.headers.get('x-forwarded-proto') ?? '') === 'https',

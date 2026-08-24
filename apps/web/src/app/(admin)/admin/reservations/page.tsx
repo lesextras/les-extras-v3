@@ -44,10 +44,11 @@ const FILTERS: BookingStatus[] = [
 ];
 
 export default async function AdminReservationsPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams: { status?: string };
+  searchParams: Promise<{ status?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await requireAdmin();
 
   const active =

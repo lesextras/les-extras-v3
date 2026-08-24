@@ -19,10 +19,11 @@ export const metadata: Metadata = metaPublique({
 });
 
 export default async function GapPage({
-  searchParams,
+  searchParams: searchParamsPromesse,
 }: {
-  searchParams?: { search?: string; metier?: string; publicVise?: string; tri?: string };
+  searchParams?: Promise<{ search?: string; metier?: string; publicVise?: string; tri?: string }>;
 }) {
+  const searchParams = await searchParamsPromesse;
   const session = await getSession();
   if (!session) return <GapVitrine />;
   return <GapFil searchParams={searchParams} />;

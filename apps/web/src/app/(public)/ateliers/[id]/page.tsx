@@ -116,10 +116,11 @@ function resume(texte: string, max = 155) {
 }
 
 export async function generateMetadata({
-  params,
+  params: paramsPromesse,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const params = await paramsPromesse;
   const { data } = await fetchPublic<ServiceDetail>(`/public/catalog/${params.id}`);
   // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
   // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
@@ -166,7 +167,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function AtelierPublicPage({ params }: { params: { id: string } }) {
+export default async function AtelierPublicPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const { data: service } = await fetchPublic<ServiceDetail>(
     `/public/catalog/${params.id}`,
   );

@@ -50,7 +50,8 @@ const STATUS_LABEL: Record<string, string> = {
 const euros = (v: string | number | null | undefined) =>
   v == null ? "—" : Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 
-export default async function DevisDetailPage({ params }: { params: { id: string } }) {
+export default async function DevisDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
+  const params = await paramsPromesse;
   const session = await requireSession();
   const res = await fetchApi<Quote>(session, `/quotes/${params.id}`);
   if (res.error) {
