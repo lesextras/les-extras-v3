@@ -275,59 +275,6 @@ export default async function LandingPage() {
         {/* ============ LES DEUX PORTES ============ */}
         <DeuxPortes />
 
-        {/* ============ ESSAYER LEX ============ */}
-        <section id="lex" className="section scroll-mt-24">
-          <Reveal>
-            <span className="eyebrow">LEX · essai libre</span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-              Décrivez un besoin, LEX construit la séance
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              L’assistant IA conçu pour le médico-social. Un public, un objectif — une séance complète en quinze secondes. Sans compte.
-            </p>
-          </Reveal>
-          <Reveal className="mt-10">
-            <DemoLex />
-          </Reveal>
-
-        </section>
-
-        {/* ============ CE QUE LEX FAIT (respiration claire) ============
-            Toute la page est sur fond charbon. Une bande ivoire au milieu
-            casse l'effet de bloc et sert de repère : c'est ici que l'offre
-            se détaille. */}
-        <section
-          id="offre-lex"
-          className="theme-clair scroll-mt-24 bg-background text-foreground"
-        >
-          <div className="section">
-            <Reveal>
-              <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
-                <div>
-                  <span className="eyebrow">Les quatre outils</span>
-                  <h3 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                    Ce que LEX fait pour vous, au-delà de cet essai
-                  </h3>
-                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                    Quatre outils, un seul compteur de crédits. Moins de paperasse, plus d’accompagnement.
-                  </p>
-                </div>
-                <IllustrationEcrit className="mx-auto w-full max-w-md" />
-              </div>
-            </Reveal>
-            <Reveal className="mt-10">
-              <OffreLex />
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============ LE GAP ============ */}
-        <section id="gap" className="section scroll-mt-24">
-          <Reveal>
-            <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
-          </Reveal>
-        </section>
-
         {/* ============ DOMAINES — cartes photo + texte (style annonce) ============ */}
         <section className="section">
           <Reveal className="flex flex-wrap items-end justify-between gap-4">
@@ -394,6 +341,59 @@ export default async function LandingPage() {
               </Reveal>
             ))}
           </div>
+        </section>
+
+        {/* ============ ESSAYER LEX ============ */}
+        <section id="lex" className="section scroll-mt-24">
+          <Reveal>
+            <span className="eyebrow">LEX · essai libre</span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              Décrivez un besoin, LEX construit la séance
+            </h2>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+              L’assistant IA conçu pour le médico-social. Un public, un objectif — une séance complète en quinze secondes. Sans compte.
+            </p>
+          </Reveal>
+          <Reveal className="mt-10">
+            <DemoLex />
+          </Reveal>
+
+        </section>
+
+        {/* ============ CE QUE LEX FAIT (respiration claire) ============
+            Toute la page est sur fond charbon. Une bande ivoire au milieu
+            casse l'effet de bloc et sert de repère : c'est ici que l'offre
+            se détaille. */}
+        <section
+          id="offre-lex"
+          className="theme-clair scroll-mt-24 bg-background text-foreground"
+        >
+          <div className="section">
+            <Reveal>
+              <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
+                <div>
+                  <span className="eyebrow">Les quatre outils</span>
+                  <h3 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                    Ce que LEX fait pour vous, au-delà de cet essai
+                  </h3>
+                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                    Quatre outils, un seul compteur de crédits. Moins de paperasse, plus d’accompagnement.
+                  </p>
+                </div>
+                <IllustrationEcrit className="mx-auto w-full max-w-md" />
+              </div>
+            </Reveal>
+            <Reveal className="mt-10">
+              <OffreLex />
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ============ LE GAP ============ */}
+        <section id="gap" className="section scroll-mt-24">
+          <Reveal>
+            <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
+          </Reveal>
         </section>
 
         {/* ============ MARKETPLACE EN ACCÈS LIBRE ============ */}
