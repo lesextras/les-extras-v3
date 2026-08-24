@@ -22,8 +22,6 @@ import Image from 'next/image';
 import {
   GraduationCap,
   ShieldCheck,
-  HeartHandshake,
-  Users,
   ArrowRight,
   CheckCircle2,
   Sparkles,
@@ -48,11 +46,9 @@ import { HeroSearch } from './_shared/HeroSearch';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
-import { BlocOutils } from './_shared/BlocOutils';
 import { DemoLex } from './_shared/DemoLex';
 import { OffreLex } from './_shared/OffreLex';
 import {
-  IllustrationCalcul,
   IllustrationEcrit,
   IllustrationReseau,
 } from "./_shared/Illustrations";
@@ -173,6 +169,24 @@ export default async function LandingPage() {
                 ))}
               </div>
 
+              {/* Deuxième porte, dès le premier écran. La barre de recherche
+                  répond à l’établissement qui cherche quelqu’un ; l’éducateur,
+                  lui, ne cherche personne — il cherche à écrire plus vite.
+                  L’essai de LEX vit plus bas dans la page : sans ce bouton, il
+                  faut sept écrans pour le trouver. */}
+              <div className="animate-fade-in-up stagger-4 mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <Link
+                  href="#lex"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  <Sparkles className="size-4" />
+                  Éducateur ? Essayez LEX
+                </Link>
+                <span className="text-xs text-muted-foreground">
+                  3 essais par heure, sans compte
+                </span>
+              </div>
+
               <div className="animate-fade-in-up stagger-4 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <ShieldCheck className="size-4 text-primary" />
@@ -261,35 +275,57 @@ export default async function LandingPage() {
         {/* ============ LES DEUX PORTES ============ */}
         <DeuxPortes />
 
-        {/* ============ CONFIANCE — bande défilante ============ */}
-        <section className="border-y border-border/60 bg-card">
-          <div className="mx-auto max-w-[1360px] py-7">
-            <p className="px-6 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Pensé pour les structures du médico-social
+        {/* ============ ESSAYER LEX ============ */}
+        <section id="lex" className="section scroll-mt-24">
+          <Reveal>
+            <span className="eyebrow">LEX · essai libre</span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              Décrivez un besoin, LEX construit la séance
+            </h2>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+              L’assistant IA conçu pour le médico-social. Un public, un objectif — une séance complète en quinze secondes. Sans compte.
             </p>
-            <div
-              className="marquee-hover mt-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
-              aria-hidden
-            >
-              <div className="animate-marquee flex w-max items-center gap-14 pr-14">
-                {[...Array(2)].flatMap((_, dup) =>
-                  ['MECS', 'IME', 'ITEP', 'EHPAD', 'SESSAD', 'Foyers de vie', 'Protection de l’enfance', 'Prévention spécialisée'].map((t) => (
-                    <span
-                      key={`${dup}-${t}`}
-                      className="flex items-center gap-14 text-lg font-bold tracking-tight text-foreground/55"
-                    >
-                      {t}
-                      <span className="size-1.5 rounded-full bg-secondary/50" />
-                    </span>
-                  )),
-                )}
+          </Reveal>
+          <Reveal className="mt-10">
+            <DemoLex />
+          </Reveal>
+
+        </section>
+
+        {/* ============ CE QUE LEX FAIT (respiration claire) ============
+            Toute la page est sur fond charbon. Une bande ivoire au milieu
+            casse l'effet de bloc et sert de repère : c'est ici que l'offre
+            se détaille. */}
+        <section
+          id="offre-lex"
+          className="theme-clair scroll-mt-24 bg-background text-foreground"
+        >
+          <div className="section">
+            <Reveal>
+              <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
+                <div>
+                  <span className="eyebrow">Les quatre outils</span>
+                  <h3 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                    Ce que LEX fait pour vous, au-delà de cet essai
+                  </h3>
+                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                    Quatre outils, un seul compteur de crédits. Moins de paperasse, plus d’accompagnement.
+                  </p>
+                </div>
+                <IllustrationEcrit className="mx-auto w-full max-w-md" />
               </div>
-            </div>
-            <p className="sr-only">
-              MECS, IME, ITEP, EHPAD, SESSAD, foyers de vie, protection de l’enfance, prévention
-              spécialisée.
-            </p>
+            </Reveal>
+            <Reveal className="mt-10">
+              <OffreLex />
+            </Reveal>
           </div>
+        </section>
+
+        {/* ============ LE GAP ============ */}
+        <section id="gap" className="section scroll-mt-24">
+          <Reveal>
+            <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
+          </Reveal>
         </section>
 
         {/* ============ DOMAINES — cartes photo + texte (style annonce) ============ */}
@@ -360,97 +396,6 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ BANDEAU DE CHIFFRES — fond bleu nuit ============ */}
-        <section className="border-y border-border bloc-nuit bg-[hsl(222,24%,10%)]">
-          <div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-8 px-6 py-12 text-center md:grid-cols-4 md:px-10 md:py-14">
-            {[
-              // « 14 interventions au catalogue », affiché en premier et en très
-              // gros, annonçait surtout que la plateforme était vide. Un chiffre
-              // de vitrine ne doit pas rétrécir avec le volume : la gratuité,
-              // elle, est vraie dès le premier jour et unique sur ce marché.
-              { k: '0 %', v: 'de commission sur les mises en relation' },
-              { k: '2012', v: 'année de création de l’ADéPA' },
-              { k: 'Qualiopi', v: 'organisme de formation certifié' },
-              { k: '48 h', v: 'pour recevoir votre devis' },
-            ].map((st, i) => (
-              <Reveal key={st.v} delay={i * 90}>
-                <p className="text-3xl font-bold tracking-tight text-primary [font-variant-numeric:tabular-nums] md:text-4xl">
-                  {st.k}
-                </p>
-                <p className="mt-1.5 text-sm text-muted-foreground">{st.v}</p>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        {/* ============ APERÇU DU PRODUIT ============ */}
-        <ApercuProduit />
-
-        {/* ============ COMMENT ÇA MARCHE — trois grandes étapes ============ */}
-        <section id="comment" className="scroll-mt-24">
-          <div className="section">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <span className="eyebrow">Comment ça marche</span>
-              {/* « Zéro friction » est du vocabulaire de start-up : il ne dit
-                  rien à un directeur de MECS, et il promet sans rien prouver.
-                  Le titre annonce maintenant ce que les trois étapes montrent. */}
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                De la recherche à la facture, en trois étapes
-              </h2>
-              <p className="mt-4 text-muted-foreground">
-                Les Extras est porté par l’association <strong className="font-semibold text-foreground">ADéPA</strong>,
-                engagée depuis 2012 pour l’insertion sociale par l’éducation, la prévention et
-                l’animation.
-              </p>
-            </Reveal>
-            <div className="mt-14 grid gap-10 md:grid-cols-3">
-              {[
-                {
-                  t: 'Visualisez les offres',
-                  d: 'Parcourez le catalogue et les profils d’experts du réseau — sans compte.',
-                  i: <Users className="size-6" />,
-                },
-                {
-                  t: 'Réservez ou demandez un devis',
-                  d: 'En ligne, en quelques clics. Le devis accepté devient contrat, tout seul.',
-                  i: <HeartHandshake className="size-6" />,
-                },
-                {
-                  t: 'La mission est réalisée',
-                  d: 'Compte rendu, facture et avis vous attendent dans votre espace.',
-                  i: <CheckCircle2 className="size-6" />,
-                },
-              ].map((e, i) => (
-                <Reveal key={e.t} delay={i * 110}>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute -top-6 left-0 text-7xl font-bold text-primary/10">
-                      {i + 1}
-                    </span>
-                    <span className="relative grid size-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-soft">
-                      {e.i}
-                    </span>
-                    <h3 className="relative mt-4 text-lg font-semibold">{e.t}</h3>
-                    <p className="relative mt-2 text-sm leading-relaxed text-muted-foreground">{e.d}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-            <Reveal delay={120} className="mt-12 text-center">
-              <div className="flex flex-col justify-center gap-3 sm:flex-row">
-                <Button asChild size="lg">
-                  <Link href="/ateliers">
-                    Voir le catalogue
-                    <ArrowRight />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link href="/notre-histoire">Découvrir l’association</Link>
-                </Button>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
         {/* ============ MARKETPLACE EN ACCÈS LIBRE ============ */}
         {(unes?.ateliers?.length ?? 0) > 0 || (unes?.formations?.length ?? 0) > 0 ? (
           <section id="marketplace" className="bg-card">
@@ -503,145 +448,8 @@ export default async function LandingPage() {
           </section>
         ) : null}
 
-        {/* ============ INTERVENANT INDÉPENDANT — ZÉRO COMMISSION ============
-            Section ajoutée le 21/08/2026 (demande Siham), en remplacement de
-            l'entrée « Annuaire des intervenants » du menu Catalogue des
-            tableaux de bord : ce message de recrutement s'adresse au public,
-            pas aux établissements connectés. Version condensée de la page
-            /intervenant-independant, qui reste la version détaillée. */}
-        <section id="intervenants" className="scroll-mt-24 border-y border-success/20 bg-success/5">
-          <div className="section">
-            <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-              <Reveal>
-                <span className="eyebrow">
-                  <Sparkles className="size-3.5" aria-hidden />
-                  Intervenant indépendant · zéro commission
-                </span>
-                <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                  Vous fixez votre tarif. Vous touchez 100&nbsp;%.
-                </h2>
-                <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-                  Ni frais d&rsquo;inscription, ni abonnement, ni commission sur vos honoraires.
-                  Contrats, planning, pointage et factures sont générés à votre place — le temps
-                  que vous ne passez pas sur un contrat est du temps facturable.
-                </p>
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <Button asChild>
-                    <Link href="/register?type=intervenant">
-                      Créer mon compte intervenant <ArrowRight />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="ghost">
-                    <Link href="/intervenant-independant">Tout le détail</Link>
-                  </Button>
-                </div>
-              </Reveal>
-              <Reveal delay={100}>
-                <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  Métiers concernés
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {[
-                    'Éducateur spécialisé',
-                    'Moniteur-éducateur',
-                    'AES / AMP',
-                    'Éducateur de jeunes enfants',
-                    'Psychologue',
-                    'Chef de service',
-                    'Animateur',
-                    'Art-thérapeute',
-                    'Formateur',
-                  ].map((m) => (
-                    <span
-                      key={m}
-                      className="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground"
-                    >
-                      {m}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Liste non limitative&nbsp;: si vous intervenez auprès d&rsquo;établissements du
-                  secteur, votre métier a sa place dans le réseau.
-                </p>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ============ ESSAYER LEX ============ */}
-        <section id="lex" className="section scroll-mt-24">
-          <Reveal>
-            <span className="eyebrow">LEX · essai libre</span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-              Décrivez un besoin, LEX construit la séance
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              L’assistant IA conçu pour le médico-social. Un public, un objectif — une séance complète en quinze secondes. Sans compte.
-            </p>
-          </Reveal>
-          <Reveal className="mt-10">
-            <DemoLex />
-          </Reveal>
-
-        </section>
-
-        {/* ============ CE QUE LEX FAIT (respiration claire) ============
-            Toute la page est sur fond charbon. Une bande ivoire au milieu
-            casse l'effet de bloc et sert de repère : c'est ici que l'offre
-            se détaille. */}
-        <section
-          id="offre-lex"
-          className="theme-clair scroll-mt-24 bg-background text-foreground"
-        >
-          <div className="section">
-            <Reveal>
-              <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
-                <div>
-                  <span className="eyebrow">Les quatre outils</span>
-                  <h3 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                    Ce que LEX fait pour vous, au-delà de cet essai
-                  </h3>
-                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                    Quatre outils, un seul compteur de crédits. Moins de paperasse, plus d’accompagnement.
-                  </p>
-                </div>
-                <IllustrationEcrit className="mx-auto w-full max-w-md" />
-              </div>
-            </Reveal>
-            <Reveal className="mt-10">
-              <OffreLex />
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============ LE GAP ============ */}
-        <section id="gap" className="section scroll-mt-24">
-          <Reveal>
-            <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
-          </Reveal>
-        </section>
-
-        {/* ============ OUTILS GRATUITS ============ */}
-        <section id="outils" className="section scroll-mt-24">
-          <Reveal>
-            <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
-              <div>
-                <span className="eyebrow">Gratuit · sans inscription</span>
-                <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                  Des calculateurs pour arbitrer, avant même de nous parler
-                </h2>
-                <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                  Un budget se défend avec des chiffres. Les vôtres en deux minutes, sans compte.
-                </p>
-              </div>
-              <IllustrationCalcul className="mx-auto w-full max-w-sm" />
-            </div>
-          </Reveal>
-          <Reveal className="mt-10">
-            <BlocOutils />
-          </Reveal>
-        </section>
+        {/* ============ APERÇU DU PRODUIT ============ */}
+        <ApercuProduit />
 
         {/* ============ TARIFS ============ */}
         <section id="tarifs" className="scroll-mt-24 bg-card">
@@ -823,6 +631,7 @@ export default async function LandingPage() {
             </div>
           </Reveal>
         </section>
+
       </main>
 
       <SiteFooter />
