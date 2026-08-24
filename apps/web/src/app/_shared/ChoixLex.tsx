@@ -23,10 +23,12 @@ export interface GroupeChoixLex {
   choix: OptionLex[];
 }
 
-type Catalogue = { activite: GroupeChoixLex[]; ecrit: GroupeChoixLex[] };
+type FamilleLex = "activite" | "ecrit" | "appui";
+
+type Catalogue = Record<FamilleLex, GroupeChoixLex[]>;
 
 /** Charge le catalogue une fois. Un échec rend un tableau vide, jamais une erreur. */
-export function useCatalogueLex(quoi: "activite" | "ecrit"): GroupeChoixLex[] {
+export function useCatalogueLex(quoi: FamilleLex): GroupeChoixLex[] {
   const [groupes, setGroupes] = React.useState<GroupeChoixLex[]>([]);
 
   React.useEffect(() => {
