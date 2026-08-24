@@ -17,7 +17,7 @@ interface SelectContextValue {
   setOpen: (v: boolean) => void;
   invalid?: boolean;
   listboxId: string;
-  triggerRef: React.RefObject<HTMLButtonElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
   labelMap: Record<string, string>;
   disabled?: boolean;
 }
