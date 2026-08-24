@@ -341,7 +341,7 @@ describe('BillingService — règlement en ligne d’une facture', () => {
       number: 'INV-2026-00001',
     });
     await expect(billing.createInvoiceCheckout('u1', 'compte-mecs', 'inv1')).rejects.toThrow(
-      /arrive bientôt — règle cette facture par virement/i,
+      /ne se règlent pas en ligne[\s\S]*par virement/i,
     );
   });
 

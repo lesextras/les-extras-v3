@@ -303,19 +303,19 @@ export class BillingService {
    * compte ». Le payeur est `payerAccountId` : c'est ce champ, et lui seul,
    * qui désigne celui à qui la facture est adressée.
    *
-   * CE QUI RESTE FERMÉ, ET POURQUOI. Encaisser sur le compte Stripe de
+   * CE QUI NE PASSERA PAS PAR LA PLATEFORME, ET POURQUOI. Encaisser sur le compte Stripe de
    * l'association une facture émise par un intervenant indépendant, c'est
    * recevoir des fonds pour le compte d'un tiers : un service de paiement au
    * sens de l'article L. 314-1 du code monétaire et financier, dont la
    * fourniture à titre habituel est réservée aux établissements agréés
    * (art. L. 521-2 et L. 522-1 CMF). L'association n'a ni agrément
    * d'établissement de paiement, ni statut d'agent, ni exemption applicable.
-   * Tant que ce cadre n'est pas réglé — Stripe Connect avec comptes connectés,
-   * ou statut d'agent d'un prestataire agréé —, seules les factures émises par
-   * la plateforme elle-même s'encaissent en ligne. Les autres se règlent par
-   * virement, directement d'établissement à intervenant : c'est d'ailleurs ce
-   * que dit le reste du produit (« la plateforme ne perçoit pas les paiements
-   * des missions »).
+   * C'est un choix arrêté, pas une étape : la plateforme n'encaissera pas les
+   * missions. Seules les factures qu'elle émet elle-même — formations et
+   * crédits LEX — s'encaissent en ligne. Les factures d'intervenants se
+   * règlent par virement, directement d'établissement à intervenant, comme le
+   * dit déjà le reste du produit (« la plateforme ne perçoit pas les paiements
+   * des missions »). Ne pas rouvrir ce chemin sans agrément.
    */
   async createInvoiceCheckout(userId: string, accountId: string, invoiceId: string) {
     await this.requireMember(userId, accountId);
@@ -330,7 +330,7 @@ export class BillingService {
       // l'émetteur, et beaucoup de factures sortent sans. On dit donc où
       // regarder sans promettre ce qui s'y trouve.
       throw new NotImplementedException(
-        "Le règlement en ligne des factures d'intervenants arrive bientôt — règle cette facture par virement, selon les coordonnées bancaires indiquées par l'émetteur sur sa facture. Si elles n'y figurent pas, demande-les-lui.",
+        "Les factures d'intervenants ne se règlent pas en ligne : l'établissement paie l'intervenant par virement, selon les coordonnées bancaires indiquées par l'émetteur sur sa facture. Si elles n'y figurent pas, demande-les-lui. Seules les factures de l'association — formations et crédits LEX — se règlent par carte.",
       );
     }
     if (invoice.status === 'PAID') {
