@@ -12,15 +12,24 @@ import { cn } from "@/lib/utils";
 
 export const CLE_THEME = "lesextras-theme";
 
-export function BasculeTheme({ className }: { className?: string }) {
-  const [theme, setTheme] = useState<"clair" | "sombre">("sombre");
+export function BasculeTheme({
+  className,
+  defaut = "sombre",
+}: {
+  className?: string;
+  /** Fond de l’espace où le bouton est posé tant que personne n’a choisi :
+      « sombre » pour l’accueil, « clair » pour l’espace connecté. Sans lui,
+      le bouton proposerait de passer en clair une page déjà claire. */
+  defaut?: "clair" | "sombre";
+}) {
+  const [theme, setTheme] = useState<"clair" | "sombre">(defaut);
   const [monte, setMonte] = useState(false);
 
   useEffect(() => {
     const actuel = document.documentElement.dataset.theme;
-    setTheme(actuel === "clair" ? "clair" : "sombre");
+    setTheme(actuel === "clair" || actuel === "sombre" ? actuel : defaut);
     setMonte(true);
-  }, []);
+  }, [defaut]);
 
   function basculer() {
     const suivant = theme === "clair" ? "sombre" : "clair";

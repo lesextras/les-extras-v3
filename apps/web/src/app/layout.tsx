@@ -167,10 +167,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Le thème est posé AVANT le premier pixel : sans ce script, une
             personne en mode clair verrait la page s'afficher en sombre puis
-            basculer — un clignotement désagréable à chaque navigation. */}
+            basculer — un clignotement désagréable à chaque navigation.
+
+            Tant que personne n'a choisi, on ne pose RIEN : chaque espace garde
+            alors son fond d'origine — charbon pour l'accueil, ivoire pour
+            l'espace connecté. L'attribut n'apparaît qu'après un clic sur la
+            bascule, et il vaut alors pour tout le site. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var c=localStorage.getItem('lesextras-theme');document.documentElement.dataset.theme=(c==='clair')?'clair':'sombre';}catch(e){document.documentElement.dataset.theme='sombre';}})();`,
+            __html: `(function(){try{var c=localStorage.getItem('lesextras-theme');if(c==='clair'||c==='sombre'){document.documentElement.dataset.theme=c;}}catch(e){}})();`,
           }}
         />
       </head>

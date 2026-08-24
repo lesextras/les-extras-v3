@@ -254,7 +254,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
           <Bell className="size-5" />
           <PastilleNotifications />
         </Link>
-        <BasculeTheme />
+        <BasculeTheme defaut="clair" />
 
         {/* Menu utilisateur */}
         <DropdownMenu align="end">

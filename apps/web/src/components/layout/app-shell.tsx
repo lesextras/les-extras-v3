@@ -63,12 +63,15 @@ export function AppChrome({
   const isMember = lexOk || Boolean(activeAccount?.isMember) || role === 'ADMIN';
 
   return (
-    // theme-sombre : l'espace connecté partage l'identité de l'accueil. Toutes
-    // les couleurs de l'application passent par les jetons CSS (--background,
-    // --card, --foreground…), donc un seul conteneur suffit à basculer. Les
-    // documents imprimables (contrat, facture, attestation) ont leur propre
-    // route hors de cette coquille : ils restent clairs, pour le papier.
-    <div className="theme-sombre flex h-screen overflow-hidden bg-background text-foreground">
+    // theme-clair : l'espace connecté s'ouvre en clair, là où l'accueil reste
+    // sombre. On y relit des écrits professionnels des heures durant, souvent
+    // en plein jour. theme-espace marque la coquille pour que le fond charbon
+    // reste atteignable — mais seulement si on le demande (voir globals.css).
+    // Toutes les couleurs passent par les jetons CSS (--background, --card,
+    // --foreground…), donc un seul conteneur suffit à basculer. Les documents
+    // imprimables (contrat, facture, attestation) ont leur propre route hors
+    // de cette coquille : ils restent clairs, pour le papier.
+    <div className="theme-clair theme-espace flex h-screen overflow-hidden bg-background text-foreground">
       {/* Sidebar desktop */}
       <div className="hidden md:block">
         <Sidebar role={role} isMember={isMember} roleCompte={activeAccount?.role} enAttenteRattachement={enAttenteRattachement} utilisateur={user} />
