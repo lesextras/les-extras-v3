@@ -146,6 +146,7 @@ const freelanceNav: NavSection[] = [
       { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
+      { label: 'LEX · Appui scolaire', href: '/dashboard/appui-scolaire', icon: Lightbulb, premium: true, hint: "Un enfant décroche : LEX prépare le support à poser sur la table — fiche mémo, script de déblocage, jeu de révision. 1 crédit LEX par génération." },
     ],
   },
   // Même section, mêmes libellés que côté établissement : ce sont les mêmes
@@ -322,6 +323,7 @@ const adminNav: NavSection[] = [
       { label: 'Mon espace', href: '/dashboard', icon: Home, hint: 'Votre tableau de bord personnel (ateliers, missions, activité)' },
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
+      { label: 'LEX · Appui scolaire', href: '/dashboard/appui-scolaire', icon: Lightbulb, premium: true, hint: "Un enfant décroche : LEX prépare le support à poser sur la table — fiche mémo, script de déblocage, jeu de révision. 1 crédit LEX par génération." },
     ],
   },
   {

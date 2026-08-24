@@ -122,6 +122,41 @@ export class ActiviteDto {
   cadre?: string[];
 }
 
+/**
+ * Appui scolaire : le troisième outil de LEX. On décrit un enfant qui coince,
+ * on repart avec un support utilisable tout de suite.
+ */
+export class AppuiScolaireDto {
+  /** Âge ou classe (ex : « CM1, 9 ans »). */
+  @IsString() @MinLength(2) @MaxLength(120)
+  niveau!: string;
+
+  /** Matière ou domaine concerné. */
+  @IsString() @MinLength(2) @MaxLength(160)
+  matiere!: string;
+
+  /** Ce que le professionnel observe, avec ses mots. */
+  @IsString() @MinLength(10) @MaxLength(3000)
+  difficulte!: string;
+
+  @IsOptional() @IsString() @MaxLength(120)
+  temps?: string;
+
+  @IsOptional() @IsString() @MaxLength(500)
+  moyens?: string;
+
+  @IsOptional() @IsArray() @ArrayMaxSize(12)
+  @IsString({ each: true }) @MaxLength(40, { each: true })
+  supports?: string[];
+
+  @IsOptional() @IsArray() @ArrayMaxSize(12)
+  @IsString({ each: true }) @MaxLength(40, { each: true })
+  obstacles?: string[];
+
+  @IsOptional() @IsString() @MaxLength(40)
+  posture?: string;
+}
+
 /** Bot conversationnel (site public et dashboard). */
 export class ChatDto {
   @IsString() @MinLength(1) @MaxLength(2000)

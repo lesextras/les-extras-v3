@@ -18,7 +18,7 @@ import { ExtractionService } from './extraction.service';
 import { CreditsService } from '../billing/credits.service';
 import { catalogueChoix } from './options';
 import type { FichierRecu } from '../storage/files.service';
-import { ActiviteDto, ChatDto, EnregistrerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
+import { ActiviteDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
@@ -204,6 +204,20 @@ export class AssistantController {
   ) {
     return this.payer(user, account, 'LEX_ACTIVITE', () =>
       this.assistant.genererActivite(dto),
+    );
+  }
+
+  /** Appui scolaire : le support qu'on pose sur la table avec l'enfant. */
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
+  @Post('appui-scolaire')
+  appuiScolaire(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: AppuiScolaireDto,
+  ) {
+    return this.payer(user, account, 'LEX_ACTIVITE', () =>
+      this.assistant.genererAppuiScolaire(dto),
     );
   }
 

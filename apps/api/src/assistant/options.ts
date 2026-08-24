@@ -174,6 +174,64 @@ const LONGUEUR: GroupeChoix = {
 export const GROUPES_ECRIT: readonly GroupeChoix[] = [DESTINATAIRE, REGISTRE, SECTIONS, LONGUEUR];
 
 // ─────────────────────────────────────────────────────────────
+// Appui scolaire
+// ─────────────────────────────────────────────────────────────
+
+const SUPPORTS_APPUI: GroupeChoix = {
+  cle: 'supports',
+  titre: 'Ce qu’on veut en sortir',
+  aide: 'Le livrable, pas la méthode. Un support qu’on peut imprimer et poser sur la table.',
+  multiple: true,
+  max: 3,
+  choix: [
+    { cle: 'fiche-memo', libelle: 'Fiche mémo visuelle' },
+    { cle: 'carte-mentale', libelle: 'Carte mentale' },
+    { cle: 'script-de-deblocage', libelle: 'Script pour débloquer l’enfant' },
+    { cle: 'jeu-de-revision', libelle: 'Jeu de révision' },
+    { cle: 'plan-de-seance', libelle: 'Plan de séance' },
+    { cle: 'exercices-progressifs', libelle: 'Exercices progressifs' },
+    { cle: 'checklist', libelle: 'Checklist d’organisation' },
+    { cle: 'rituel-court', libelle: 'Rituel de 5 minutes' },
+  ],
+};
+
+const OBSTACLES: GroupeChoix = {
+  cle: 'obstacles',
+  titre: 'Ce qui bloque, tel qu’on l’observe',
+  aide: 'Ce que vous voyez, pas un diagnostic : LEX n’en pose aucun et n’en posera jamais.',
+  multiple: true,
+  max: 3,
+  choix: [
+    { cle: 'dechiffrage', libelle: 'Déchiffrage, lecture' },
+    { cle: 'comprehension-consigne', libelle: 'Comprendre la consigne' },
+    { cle: 'memorisation', libelle: 'Mémorisation' },
+    { cle: 'attention', libelle: 'Attention, tenir en place' },
+    { cle: 'motivation', libelle: 'Motivation, sens du travail' },
+    { cle: 'confiance', libelle: 'Confiance, peur de l’erreur' },
+    { cle: 'organisation', libelle: 'Organisation, matériel' },
+    { cle: 'ecriture', libelle: 'Écriture, geste' },
+    { cle: 'calcul', libelle: 'Calcul, nombres' },
+    { cle: 'gestion-du-temps', libelle: 'Gestion du temps' },
+  ],
+};
+
+const POSTURE: GroupeChoix = {
+  cle: 'posture',
+  titre: 'Comment ça se passe',
+  aide: 'Le cadre de l’accompagnement change complètement le support à produire.',
+  multiple: false,
+  max: 1,
+  choix: [
+    { cle: 'individuel', libelle: 'En individuel' },
+    { cle: 'petit-groupe', libelle: 'En petit groupe' },
+    { cle: 'autonomie', libelle: 'L’enfant seul, en autonomie' },
+    { cle: 'avec-la-famille', libelle: 'Avec la famille' },
+  ],
+};
+
+export const GROUPES_APPUI: readonly GroupeChoix[] = [SUPPORTS_APPUI, OBSTACLES, POSTURE];
+
+// ─────────────────────────────────────────────────────────────
 // Du choix coché à la consigne
 // ─────────────────────────────────────────────────────────────
 
@@ -216,6 +274,10 @@ export function consignesDepuisChoix(
 }
 
 /** Ce que l'interface récupère pour dessiner les cases à cocher. */
-export function catalogueChoix(): { activite: readonly GroupeChoix[]; ecrit: readonly GroupeChoix[] } {
-  return { activite: GROUPES_ACTIVITE, ecrit: GROUPES_ECRIT };
+export function catalogueChoix(): {
+  activite: readonly GroupeChoix[];
+  ecrit: readonly GroupeChoix[];
+  appui: readonly GroupeChoix[];
+} {
+  return { activite: GROUPES_ACTIVITE, ecrit: GROUPES_ECRIT, appui: GROUPES_APPUI };
 }

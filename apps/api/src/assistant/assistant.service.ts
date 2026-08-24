@@ -4,7 +4,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
 import { MOTEUR_LEX, MoteurLex } from './moteur-lex';
 import { TRAMES, trouverTrame } from './trames';
-import { GROUPES_ACTIVITE, GROUPES_ECRIT, consignesDepuisChoix } from './options';
+import {
+  GROUPES_ACTIVITE, GROUPES_APPUI, GROUPES_ECRIT, consignesDepuisChoix,
+} from './options';
 
 @Injectable()
 export class AssistantService {
@@ -156,6 +158,65 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
     let activite = this.pseudo.restaurer(reponseMasquee, table);
     activite = nettoyerJetonsResiduels(activite);
     return { activite, protection: this.pseudo.resume(table) };
+  }
+
+
+  // ── Appui scolaire ───────────────────────────────────────────────────────
+
+  private static readonly CADRE_APPUI = `Tu conçois des supports d'appui scolaire pour des professionnels
+de l'éducation et du social français (éducateurs, animateurs de réussite éducative,
+accompagnants) qui aident un enfant en difficulté scolaire.
+
+Règles absolues, sans exception :
+1. Tu ne poses AUCUN diagnostic. Tu ne nommes aucun trouble, aucune pathologie,
+   aucun handicap, même si la description le suggère fortement. Tu travailles
+   sur ce qui est observé, pas sur ce qui pourrait l'expliquer.
+2. Tu ne remplaces ni l'enseignant ni le professionnel : tu produis un support
+   qu'un adulte présent utilisera avec l'enfant.
+3. Tu restes concret. Chaque support doit être utilisable tel quel demain,
+   sans matériel rare, sans préparation longue, sans impression couleur.
+4. Tu adaptes le vocabulaire et la longueur à l'âge indiqué.
+5. Tu n'inventes aucun élément de la situation qui ne t'a pas été donné.
+6. Tu ne donnes jamais de conseil médical, ni d'orientation scolaire.
+
+Réponds en français, en texte structuré avec des titres courts.
+Produis :
+- Le support demandé, prêt à l'emploi.
+- « Comment l'amener » : trois phrases que l'adulte peut dire pour lancer.
+- « Si ça bloque » : deux replis concrets.
+- « Ce qu'on observe » : deux ou trois indices que ça a fonctionné.
+
+Termine toujours par : « Support à ajuster avec l'enseignant de l'enfant et
+l'équipe éducative. Il ne vaut pas évaluation ni orientation. »`;
+
+  async genererAppuiScolaire(dto: {
+    niveau: string; matiere: string; difficulte: string;
+    temps?: string; moyens?: string;
+    supports?: string[]; obstacles?: string[]; posture?: string;
+  }) {
+    // La description peut contenir le prénom de l'enfant : on masque tout.
+    const brut = [
+      `Niveau / âge : ${dto.niveau}`,
+      `Matière ou domaine : ${dto.matiere}`,
+      `Ce que le professionnel observe : ${dto.difficulte}`,
+      dto.temps ? `Temps disponible : ${dto.temps}` : '',
+      dto.moyens ? `Moyens sur place : ${dto.moyens}` : '',
+      ...consignesDepuisChoix(GROUPES_APPUI, {
+        supports: dto.supports,
+        obstacles: dto.obstacles,
+        posture: dto.posture ? [dto.posture] : undefined,
+      }),
+    ].filter(Boolean).join('\n');
+
+    const { texte: masque, table } = this.pseudo.masquer(brut);
+    const reponseMasquee = await this.moteur.completer({
+      system: AssistantService.CADRE_APPUI,
+      user: masque,
+      maxTokens: 1100,
+    });
+    let support = this.pseudo.restaurer(reponseMasquee, table);
+    support = nettoyerJetonsResiduels(support);
+    return { support, protection: this.pseudo.resume(table) };
   }
 
   // ── Bot conversationnel ──────────────────────────────────────────────────
