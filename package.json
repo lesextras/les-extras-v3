@@ -13,6 +13,12 @@
     "prisma:migrate": "pnpm --filter @lesextras/api prisma:migrate",
     "prisma:seed": "pnpm --filter @lesextras/api prisma:seed"
   },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.26",
+      "sharp": "^0.35.3"
+    }
+  },
   "devDependencies": {
     "turbo": "^2.3.3",
     "typescript": "^5.7.3",
