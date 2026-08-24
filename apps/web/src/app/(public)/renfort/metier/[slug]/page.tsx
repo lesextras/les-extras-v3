@@ -20,7 +20,7 @@ function enMinuscules(nom: string): string {
     .join(" ");
 }
 
-export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ slug: string }>}): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ slug: string }>}): Promise<Metadata> {
   const params = await paramsPromesse;
   const m = trouverMetier(params.slug);
   if (!m) return { title: "Renfort" };

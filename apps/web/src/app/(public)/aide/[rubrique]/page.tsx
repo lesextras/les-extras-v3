@@ -9,7 +9,7 @@ export function generateStaticParams() {
   return RUBRIQUES.map((r) => ({ rubrique: r.slug }));
 }
 
-export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ rubrique: string }>}): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ rubrique: string }>}): Promise<Metadata> {
   const params = await paramsPromesse;
   const r = trouverRubrique(params.rubrique);
   if (!r) return { title: "Aide" };

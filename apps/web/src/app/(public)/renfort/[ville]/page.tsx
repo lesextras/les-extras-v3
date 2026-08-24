@@ -21,7 +21,7 @@ export function generateStaticParams() {
  * Même arithmétique pour la description, plafonnée à 160 : la partie fixe fait
  * 138 caractères, plus le nom du territoire (17 au pire) = 155.
  */
-export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ ville: string }>}): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ ville: string }>}): Promise<Metadata> {
   const params = await paramsPromesse;
   const v = trouverVille(params.ville);
   if (!v) return { title: "Renfort" };

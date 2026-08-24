@@ -13,7 +13,7 @@ export function generateStaticParams() {
 }
 export const dynamicParams = false;
 
-export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ guide: string }>}): Metadata {
+export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ guide: string }>}): Promise<Metadata> {
   const params = await paramsPromesse;
   const g = trouverGuide(params.guide);
   if (!g) return { title: "Guide introuvable", robots: { index: false, follow: false } };
