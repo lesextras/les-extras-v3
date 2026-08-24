@@ -1,5 +1,7 @@
 import { AssistantTrame, PorteeTrame } from '@prisma/client';
-import { IsBoolean, IsEnum, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsIn, IsOptional, IsString, MaxLength, MinLength,
+} from 'class-validator';
 
 /** Demande de génération : les notes brutes ne sont JAMAIS persistées. */
 export class GenererDto {
@@ -16,6 +18,24 @@ export class GenererDto {
   @IsString()
   @MaxLength(40)
   trameMaisonId?: string;
+
+  /**
+   * Cases cochées dans l'interface. On ne valide ici que la forme : une clé
+   * inconnue est écartée par le catalogue, jamais renvoyée en erreur — une
+   * interface restée en cache ne doit pas casser une demande.
+   */
+  @IsOptional() @IsString() @MaxLength(40)
+  destinataire?: string;
+
+  @IsOptional() @IsString() @MaxLength(40)
+  registre?: string;
+
+  @IsOptional() @IsString() @MaxLength(40)
+  longueur?: string;
+
+  @IsOptional() @IsArray() @ArrayMaxSize(12)
+  @IsString({ each: true }) @MaxLength(40, { each: true })
+  sections?: string[];
 }
 
 /** Enregistrement d'un document APRÈS relecture et validation par l'auteur. */
@@ -87,6 +107,19 @@ export class ActiviteDto {
 
   @IsOptional() @IsString() @MaxLength(500)
   contraintes?: string;
+
+  /** Cases cochées : supports, compétences visées, contraintes du terrain. */
+  @IsOptional() @IsArray() @ArrayMaxSize(12)
+  @IsString({ each: true }) @MaxLength(40, { each: true })
+  mediations?: string[];
+
+  @IsOptional() @IsArray() @ArrayMaxSize(12)
+  @IsString({ each: true }) @MaxLength(40, { each: true })
+  competences?: string[];
+
+  @IsOptional() @IsArray() @ArrayMaxSize(12)
+  @IsString({ each: true }) @MaxLength(40, { each: true })
+  cadre?: string[];
 }
 
 /** Bot conversationnel (site public et dashboard). */

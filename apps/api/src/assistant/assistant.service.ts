@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
 import { MOTEUR_LEX, MoteurLex } from './moteur-lex';
 import { TRAMES, trouverTrame } from './trames';
+import { GROUPES_ACTIVITE, GROUPES_ECRIT, consignesDepuisChoix } from './options';
 
 @Injectable()
 export class AssistantService {
@@ -39,13 +40,22 @@ export class AssistantService {
       style: string;
       extrait: string | null;
     } | null,
+    /** Cases cochées dans l'interface : destinataire, registre, parties, longueur. */
+    choix?: Readonly<Record<string, readonly string[] | undefined>>,
   ) {
     const def = trouverTrame(trame);
+
+    // Les consignes de forme ne contiennent aucune donnée personnelle : elles
+    // se placent avant les notes masquées, sans passer par la pseudonymisation.
+    const consignes = consignesDepuisChoix(GROUPES_ECRIT, choix ?? {});
+    const cadrage = consignes.length
+      ? `Consignes de forme, à respecter :\n${consignes.map((c) => `- ${c}`).join('\n')}\n\n`
+      : '';
 
     const { texte: notesMasquees, table } = this.pseudo.masquer(notes);
     const brouillonMasque = await this.moteur.completer({
       system: trameMaison ? AssistantService.avecTrameMaison(def.system, trameMaison) : def.system,
-      user: `Notes brutes du professionnel :\n\n${notesMasquees}`,
+      user: `${cadrage}Notes brutes du professionnel :\n\n${notesMasquees}`,
       maxTokens: trameMaison ? 1600 : undefined,
     });
     let brouillon = this.pseudo.restaurer(brouillonMasque, table);
@@ -119,6 +129,7 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
   async genererActivite(dto: {
     publicCible: string; besoins: string; objectifs?: string;
     duree?: string; effectif?: string; contraintes?: string;
+    mediations?: string[]; competences?: string[]; cadre?: string[];
   }) {
     // Les besoins/symptômes peuvent contenir des noms : on masque tout.
     const brut = [
@@ -128,6 +139,13 @@ Termine par : « Proposition générée par IA — à valider en équipe pluridi
       dto.duree ? `Durée disponible : ${dto.duree}` : '',
       dto.effectif ? `Effectif : ${dto.effectif}` : '',
       dto.contraintes ? `Contraintes (lieu, matériel, budget) : ${dto.contraintes}` : '',
+      // Les cases cochées : elles cadrent la proposition sans rien décider
+      // du contenu clinique. Rien de coché, rien d'ajouté.
+      ...consignesDepuisChoix(GROUPES_ACTIVITE, {
+        mediations: dto.mediations,
+        competences: dto.competences,
+        cadre: dto.cadre,
+      }),
     ].filter(Boolean).join('\n');
     const { texte: masque, table } = this.pseudo.masquer(brut);
     const reponseMasquee = await this.moteur.completer({

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RichText } from "./RichText";
 import { useToast } from "@/components/ui/use-toast";
 import { LexTravaille } from "./LexTravaille";
+import { ChoixLex, useCatalogueLex } from "./ChoixLex";
 
 export function ActivityGenerator() {
   const { toast } = useToast();
@@ -17,6 +18,7 @@ export function ActivityGenerator() {
   const [resultat, setResultat] = React.useState<string | null>(null);
   const [protection, setProtection] = React.useState<string | null>(null);
   const [copie, setCopie] = React.useState(false);
+  const groupes = useCatalogueLex("activite");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,6 +41,10 @@ export function ActivityGenerator() {
           duree: String(fd.get("duree") || "") || undefined,
           effectif: String(fd.get("effectif") || "") || undefined,
           contraintes: String(fd.get("contraintes") || "") || undefined,
+          // Cases cochées : le formulaire les rend telles quelles.
+          mediations: fd.getAll("mediations").map(String),
+          competences: fd.getAll("competences").map(String),
+          cadre: fd.getAll("cadre").map(String),
         },
       });
       setResultat(r.activite);
@@ -102,6 +108,7 @@ export function ActivityGenerator() {
           <input id="contraintes" name="contraintes" placeholder="Ex : salle commune, peu de matériel"
             className="mt-1.5 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40" />
         </div>
+        <ChoixLex groupes={groupes} />
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? <Loader2 className="size-4 animate-spin" /> : <Lightbulb className="size-4" />}
           {loading ? "Conception en cours…" : "Proposer des activités"}

@@ -16,6 +16,7 @@ import { TramesMaisonService } from './trames-maison.service';
 import { ExportService } from './export.service';
 import { ExtractionService } from './extraction.service';
 import { CreditsService } from '../billing/credits.service';
+import { catalogueChoix } from './options';
 import type { FichierRecu } from '../storage/files.service';
 import { ActiviteDto, ChatDto, EnregistrerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
 
@@ -67,6 +68,15 @@ export class AssistantController {
     return this.assistant.trames();
   }
 
+  /**
+   * Le catalogue des cases à cocher. L'interface le dessine tel quel : une
+   * seule source de vérité, et une liste qui évolue sans redéployer le web.
+   */
+  @Get('options')
+  options() {
+    return catalogueChoix();
+  }
+
   /** Génération : plafonnée par utilisateur — le poste de coût est ici. */
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @UseGuards(MemberGuard)
@@ -87,7 +97,13 @@ export class AssistantController {
       user,
       account,
       'LEX_ECRIT',
-      () => this.assistant.generer(dto.trame, dto.notes, trameMaison),
+      () =>
+        this.assistant.generer(dto.trame, dto.notes, trameMaison, {
+          destinataire: dto.destinataire ? [dto.destinataire] : undefined,
+          registre: dto.registre ? [dto.registre] : undefined,
+          sections: dto.sections,
+          longueur: dto.longueur ? [dto.longueur] : undefined,
+        }),
       trameMaison?.nom ?? dto.trame,
     );
     if (trameMaison) await this.tramesMaison.compterUsage(trameMaison.id);
