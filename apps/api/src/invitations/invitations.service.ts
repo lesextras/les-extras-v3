@@ -124,7 +124,11 @@ export class InvitationsService {
     return this.sanitize(updated);
   }
 
-  /** Régénère token + expiry et renvoie le mail (stub). */
+  /**
+   * Renvoie une invitation restée en attente : nouveau jeton, nouvelle
+   * échéance, et le mail repart. L'ancien jeton cesse aussitôt de fonctionner,
+   * pour qu'un lien qui aurait traîné dans une boîte mail ne serve plus.
+   */
   async resend(account: RequestAccount, invitationId: string) {
     const invitation = await this.loadInAccount(account, invitationId);
     if (invitation.status !== InvitationStatus.PENDING) {
