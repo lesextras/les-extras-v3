@@ -118,7 +118,7 @@ export default async function AdminLexPage() {
         {s.derniersAchats.length === 0 ? (
           <EmptyState
             title="Aucun achat pour l'instant"
-            description="Les achats de packs de crédits apparaîtront ici dès le premier paiement Stripe."
+            description="Les achats de packs de crédits apparaîtront ici dès le premier paiement en ligne."
           />
         ) : (
           <Card>

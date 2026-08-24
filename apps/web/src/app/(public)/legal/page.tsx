@@ -132,7 +132,7 @@ const sections: Section[] = [
         points: [
           'Les prix en vigueur sont ceux affichés sur la page « Frais de service » et, pour les crédits et abonnements, dans l’espace de votre compte au moment de la commande. Aucun prix ne figure sur la présente page, afin qu’il n’existe qu’une seule source à jour.',
           'Les prix sont exprimés en euros. L’association n’est pas assujettie à la TVA sur ces prestations, sauf mention contraire portée sur la facture.',
-          'Le paiement des crédits et abonnements s’effectue en ligne par carte bancaire via Stripe : les données de carte sont saisies chez Stripe et ne transitent jamais par la plateforme. Les formations sont réglées sur facture, aux conditions du devis accepté.',
+          'Le paiement des crédits et abonnements s’effectue en ligne par carte bancaire, auprès d’un prestataire de paiement agréé : les données de carte sont saisies chez lui et ne transitent jamais par la plateforme. Les formations sont réglées sur facture, aux conditions du devis accepté.',
           'La commande est ferme à la validation du paiement : les crédits sont portés au compte immédiatement, l’abonnement est actif dès l’encaissement.',
         ],
       },
@@ -207,11 +207,13 @@ const sections: Section[] = [
       {
         sous: 'Sous-traitants',
         points: [
-          'Hostinger — hébergement du serveur applicatif et de la base de données, dans l’Union européenne.',
-          'Stripe — paiement en ligne des crédits, abonnements et factures de l’association. Irlande et États-Unis, encadré par les clauses contractuelles types.',
-          'Brevo — envoi des courriels transactionnels : notifications, invitations, alertes. Union européenne.',
-          'Anthropic — modèle de langage de l’assistant LEX, alimenté par des données pseudonymisées. Fournisseur établi aux États-Unis : les contenus qui lui sont transmis ne comportent ni les noms, ni les dates de naissance, ni les coordonnées des personnes accompagnées.',
-          'Les fichiers déposés (diplômes, justificatifs, pièces jointes) sont stockés sur un serveur MinIO auto-hébergé, sur la même infrastructure : ils ne sont confiés à aucun prestataire tiers.',
+          'Hébergement du serveur applicatif et de la base de données : prestataire établi dans l’Union européenne.',
+          'Paiement en ligne des crédits, abonnements et factures : prestataire de paiement agréé.',
+          'Envoi des courriels transactionnels — notifications, invitations, alertes : prestataire établi dans l’Union européenne.',
+          'Moteur d’intelligence artificielle de l’assistant LEX : prestataire spécialisé, alimenté uniquement par des données pseudonymisées. Les contenus qui lui sont transmis ne comportent ni les noms, ni les dates de naissance, ni les coordonnées des personnes accompagnées.',
+          'Certains de ces prestataires sont établis hors de l’Union européenne. Ces transferts sont encadrés par les clauses contractuelles types adoptées par la Commission européenne.',
+          'La liste nominative de nos sous-traitants est communiquée sur simple demande à assoc.adepa@gmail.com.',
+          'Les fichiers déposés (diplômes, justificatifs, pièces jointes) sont stockés sur un serveur auto-hébergé, sur la même infrastructure : ils ne sont confiés à aucun prestataire tiers.',
           'Aucune donnée n’est vendue, louée ni cédée à des fins publicitaires.',
         ],
       },

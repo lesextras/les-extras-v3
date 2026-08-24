@@ -159,8 +159,8 @@ export default async function LexCreditsPage({
       {!configured ? (
         <Card className="border-warning/40 bg-warning/5">
           <CardContent className="p-4 text-sm text-foreground">
-            Le paiement en ligne n&apos;est pas encore activé (clés Stripe en attente). Les boutons
-            ci-dessous seront fonctionnels dès l&apos;activation.
+            Le paiement en ligne n&apos;est pas encore activé. Les boutons ci-dessous seront
+            fonctionnels dès l&apos;activation.
           </CardContent>
         </Card>
       ) : null}

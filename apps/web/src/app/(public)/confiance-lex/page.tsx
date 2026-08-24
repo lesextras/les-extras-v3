@@ -44,7 +44,7 @@ const GARANTIES = [
     icone: MapPin,
     titre: "Où vont vos données, précisément",
     texte:
-      "La plateforme, la base de données et les fichiers que vous déposez sont hébergés dans l’Union européenne. Le modèle de langage qui rédige, lui, est Claude, fourni par la société américaine Anthropic : il ne reçoit que des contenus pseudonymisés, jamais l’identité des personnes accompagnées. Nous préférons vous le dire que vous le laisser découvrir.",
+      "La plateforme, la base de données et les fichiers que vous déposez sont hébergés dans l’Union européenne. Le moteur d’intelligence artificielle qui rédige s’appuie sur un prestataire spécialisé, susceptible d’être établi hors de l’Union européenne dans un cadre contractuel conforme au RGPD : il ne reçoit que des contenus pseudonymisés, jamais l’identité des personnes accompagnées. Nous préférons vous le dire que vous le laisser découvrir.",
   },
   {
     icone: Lock,
