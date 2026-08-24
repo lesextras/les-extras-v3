@@ -12,7 +12,7 @@ import { assignRef } from '@/lib/merge-refs';
 interface DropdownContextValue {
   open: boolean;
   setOpen: (v: boolean) => void;
-  triggerRef: React.RefObject<HTMLButtonElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
   align: 'start' | 'end';
   menuId: string;
 }
