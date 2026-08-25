@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Param, Patch, Post, Res, UploadedFile,
+  BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Res, UploadedFile,
   UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -203,9 +203,21 @@ export class AssistantController {
    * rejoindre une boite. L'adresse est saisie a l'ecran, apres relecture, et
    * n'est pas conservee — comme les notes, elle sert puis elle est oubliee.
    */
-  @Throttle({ default: { limit: 30, ttl: 3_600_000 } })
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
   @Post('envoyer')
-  async envoyer(@Body() dto: EnvoyerDocumentDto) {
+  async envoyer(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: EnvoyerDocumentDto,
+  ) {
+    // L'adresse doit etre la sienne ou celle d'un membre actif du compte :
+    // sans cette borne, la route est un relais de courriel signe par le
+    // domaine. Voir AssistantService.destinataireAutorise.
+    if (!(await this.assistant.destinataireAutorise(account.id, user.id, dto.email))) {
+      throw new BadRequestException(
+        "Vous ne pouvez envoyer un écrit qu'à votre propre adresse ou à celle d'un membre de votre compte.",
+      );
+    }
     const buffer =
       dto.format === 'docx'
         ? await this.exports.docx(dto.titre, dto.contenu)

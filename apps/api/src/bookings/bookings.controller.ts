@@ -59,6 +59,18 @@ export class BookingsController {
   }
 
   /** Signer le contrat (freelance ou établissement selon le compte actif). */
+  //
+  // SIGNER ENGAGE LE COMPTE (25/08/2026).
+  //
+  // La signature cree une obligation contractuelle, et elle n'etait protegee
+  // que par « etes-vous membre » — alors que les devis, les contrats et les
+  // documents exigent deja un role. Un membre invite pour depanner signait
+  // donc au nom de l'etablissement.
+  //
+  // Sur un compte intervenant, la personne est OWNER de son propre compte :
+  // son parcours ne change pas.
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Patch(':id/sign')
   sign(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.bookings.signContract(id, account.id);
@@ -84,6 +96,9 @@ export class BookingsController {
     return this.bookings.complete(id, account.id);
   }
 
+  // Annuler detruit un engagement pris : meme exigence que le signer.
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Patch(':id/cancel')
   cancel(
     @Param('id') id: string,
@@ -111,6 +126,9 @@ export class BookingsController {
   }
 
   /** L'établissement valide / refuse un créneau. */
+  // Valider des heures declenche la facturation : c'est un acte de gestion.
+  @UseGuards(AccountRolesGuard)
+  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Patch('time-entries/:entryId')
   reviewTimeEntry(
     @Param('entryId') entryId: string,

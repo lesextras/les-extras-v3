@@ -71,7 +71,25 @@ export class ConversationsService {
     const conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
       include: {
-        mission: { select: { account: { select: { memberships: { select: { userId: true } } } } } },
+        // SEULS LES MEMBRES ACTIFS (25/08/2026).
+        //
+        // Le filtre sur le statut manquait ici alors qu'il est partout
+        // ailleurs (AccountGuard, requireMembership). Une personne dont
+        // l'adhesion avait ete suspendue — un depart, un conflit — continuait
+        // donc de lire et d'ecrire dans toutes les conversations de
+        // l'etablissement, y compris sur des situations d'usagers.
+        mission: {
+          select: {
+            account: {
+              select: {
+                memberships: {
+                  where: { status: MembershipStatus.ACTIVE },
+                  select: { userId: true },
+                },
+              },
+            },
+          },
+        },
         messages: { select: { senderId: true } },
       },
     });

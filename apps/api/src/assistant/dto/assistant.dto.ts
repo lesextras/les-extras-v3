@@ -1,7 +1,8 @@
 import { AssistantTrame, PorteeTrame } from '@prisma/client';
 import {
-  ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsEnum, IsIn, IsOptional, IsString, MaxLength, MinLength,
+  ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsEnum, IsIn, IsOptional, IsString, MaxLength, MinLength, ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 /** Demande de génération : les notes brutes ne sont JAMAIS persistées. */
 export class GenererDto {
@@ -157,13 +158,31 @@ export class AppuiScolaireDto {
   posture?: string;
 }
 
+/**
+ * UN TOUR DE DIALOGUE — ET IL EST VALIDE (25/08/2026).
+ *
+ * `historique` etait declare `@IsOptional()` seul. Or `@IsOptional()` suffit
+ * a mettre la propriete en liste blanche : elle traversait donc la
+ * validation sans qu'aucune regle ne s'applique. Sur la route publique du
+ * chatbot, `{content: 123}` faisait planter le pseudonymiseur en 500, et un
+ * historique long partait tel quel chez le moteur — a nos frais.
+ */
+export class TourDialogueDto {
+  @IsIn(['user', 'assistant'])
+  role!: 'user' | 'assistant';
+
+  @IsString() @MaxLength(4000)
+  content!: string;
+}
+
 /** Bot conversationnel (site public et dashboard). */
 export class ChatDto {
   @IsString() @MinLength(1) @MaxLength(2000)
   message!: string;
 
-  @IsOptional()
-  historique?: { role: 'user' | 'assistant'; content: string }[];
+  @IsOptional() @IsArray() @ArrayMaxSize(8)
+  @ValidateNested({ each: true }) @Type(() => TourDialogueDto)
+  historique?: TourDialogueDto[];
 
   /** Champ-piège anti-robot (public uniquement). */
   @IsOptional() @IsString()
@@ -175,8 +194,9 @@ export class GapisteDto {
   @IsString() @MinLength(2) @MaxLength(3000)
   message!: string;
 
-  @IsOptional()
-  historique?: { role: 'user' | 'assistant'; content: string }[];
+  @IsOptional() @IsArray() @ArrayMaxSize(8)
+  @ValidateNested({ each: true }) @Type(() => TourDialogueDto)
+  historique?: TourDialogueDto[];
 
   /** Situation du GAP à laquelle le dialogue se rattache (facultatif). */
   @IsOptional()

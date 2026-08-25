@@ -1,5 +1,5 @@
 import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { AssistantTrame } from '@prisma/client';
+import { AssistantTrame, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
 import { RegistrePseudoService } from './registre-pseudo.service';
@@ -55,6 +55,38 @@ export class AssistantService {
     private readonly registre: RegistrePseudoService,
     @Inject(MOTEUR_LEX) private readonly moteur: MoteurLex,
   ) {}
+
+  /**
+   * A QUI PEUT-ON ENVOYER UN ECRIT ? (25/08/2026)
+   *
+   * La route d'envoi acceptait n'importe quelle adresse. Comme l'inscription
+   * est libre, elle constituait un relais de courriel signe par le domaine :
+   * sujet choisi, corps choisi, piece jointe choisie, expedie depuis
+   * les-extras.fr avec SPF et DKIM alignes. De quoi ecrire aux directions du
+   * secteur en se faisant passer pour la plateforme, et bruler la
+   * delivrabilite de tous les courriels du domaine au passage.
+   *
+   * On borne donc a ce qui a du sens : sa propre adresse, ou celle d'un
+   * membre actif du compte courant. Un ecrit professionnel se transmet a son
+   * equipe, pas a l'annuaire.
+   */
+  async destinataireAutorise(accountId: string, userId: string, email: string) {
+    const cible = email.trim().toLowerCase();
+    const moi = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    if (moi?.email.toLowerCase() === cible) return true;
+    const membre = await this.prisma.membership.findFirst({
+      where: {
+        accountId,
+        status: 'ACTIVE',
+        user: { email: { equals: cible, mode: Prisma.QueryMode.insensitive } },
+      },
+      select: { id: true },
+    });
+    return Boolean(membre);
+  }
 
   /** Les trames disponibles + l'état du service (pour l'interface). */
   trames() {
