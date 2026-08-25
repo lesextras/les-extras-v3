@@ -82,6 +82,7 @@ model User {
   /// Générations LEX imputées à cette personne (journal de /confiance-lex).
   creditLedger       CreditLedger[]
   tramesMaison      TrameMaison[]
+  lexPreferences    LexPreference[]
   pushSubscriptions PushSubscription[]
   leaveRequests    LeaveRequest[] @relation("LeaveUser")
   contratsCDD    ContratCDD[] @relation("ContratSalarie")
@@ -241,6 +242,9 @@ model Account {
   engagements      MissionEngagement[] @relation("EngagementIntervenant")
   /// Les modeles d'ecrits appris dans ce compte.
   tramesMaison     TrameMaison[]
+  lexPreferences   LexPreference[]
+  lexMots          LexMot[]
+  lexPseudonymes   LexPseudonyme[]
 
   @@index([type])
   @@index([slug])
@@ -1984,6 +1988,84 @@ model AssistantFeedback {
   createdAt DateTime @default(now())
 
   @@index([trame, utile])
+}
+
+/// LA MEMOIRE DE LEX — CE QU'UNE PERSONNE REPREND A CHAQUE FOIS.
+///
+/// Rien de sensible ici : un destinataire, un registre, une longueur, des
+/// parties. On retient la derniere combinaison retenue, PAR PERSONNE ET PAR
+/// GENRE D'ECRIT, pour que le formulaire s'ouvre deja regle. Trois notes
+/// d'observation « pour l'equipe, factuel, une page » et la quatrieme s'ouvre
+/// ainsi. Un reglage se corrige d'un clic : c'est une proposition, jamais
+/// une contrainte.
+model LexPreference {
+  id            String         @id @default(cuid())
+  accountId     String
+  account       Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trame         AssistantTrame
+  destinataire  String?
+  registre      String?
+  longueur      String?
+  sections      String[]       @default([])
+  /// Trame maison retenue la derniere fois pour ce genre d'ecrit.
+  trameMaisonId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([userId, accountId, trame])
+}
+
+/// LE LEXIQUE DE LA MAISON.
+///
+/// Ce que les gens corrigent dans le brouillon en dit plus long qu'un
+/// questionnaire : si « usager » devient toujours « personne accompagnee »,
+/// c'est le mot de la maison, et LEX doit l'employer. On garde le couple de
+/// mots, jamais la phrase ou il apparaissait — un lexique est une liste de
+/// vocabulaire, pas une archive de situations.
+model LexMot {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  /// Le mot que LEX propose spontanement, normalise (minuscules, sans accent).
+  source    String
+  /// Le mot retenu par la maison, dans sa forme d'origine.
+  retenu    String
+  /// Combien de fois la correction a ete observee. Au-dela du seuil elle entre
+  /// dans la consigne : une correction isolee ne fait pas une regle.
+  vus       Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, source])
+  @@index([accountId, vus])
+}
+
+/// LE REGISTRE DES PSEUDONYMES.
+///
+/// Aujourd'hui le masque change a chaque envoi : « Marie D. » est
+/// [PERSONNE-A] ce matin et [PERSONNE-B] cet apres-midi. Rien ne peut donc se
+/// chainer d'un ecrit a l'autre, et un rapport de situation repart de zero au
+/// lieu d'ecrire une evolution.
+///
+/// Un pseudonyme FIXE, propre au compte, regle cela : « M.D-1 » designe la
+/// meme personne d'un document a l'autre, et aucun nom reel n'est stocke ni
+/// envoye au moteur. C'est la pseudonymisation au sens de l'article 4-5 du
+/// RGPD, et c est ce qui se defend devant un controle.
+///
+/// `empreinte` est un hachage du nom, sale par le compte : on reconnait un nom
+/// deja vu, on ne peut pas le reconstituer depuis la base.
+model LexPseudonyme {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  empreinte String
+  pseudo    String
+  createdAt DateTime @default(now())
+
+  @@unique([accountId, empreinte])
+  @@unique([accountId, pseudo])
 }
 
 /// Motif d'attribution de points de fidélité.
