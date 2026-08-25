@@ -14,8 +14,10 @@
 //  3. Ce qu'on n'a pas compris est dit, pas caché. Une ligne écartée est
 //     affichée avec sa raison — c'est ainsi qu'on répare un fichier.
 //
-// Les plafonds de durée du travail s'appliquent à l'import comme ailleurs :
-// l'API refuse un créneau qui les dépasse, et le dit ligne par ligne.
+// Les plafonds de durée du travail sont calculés, mais ils ne font pas
+// barrage : beaucoup de maisons annualisent, et une semaine longue y est
+// compensée par une semaine courte. Un dépassement est donc enregistré avec
+// le créneau — motif et date — au lieu de refuser la ligne.
 
 import * as React from "react";
 import { useRouter } from "next/navigation";

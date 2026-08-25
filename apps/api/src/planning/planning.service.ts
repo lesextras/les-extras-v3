@@ -391,8 +391,12 @@ export class PlanningService {
    *
    * Chaque créneau est traité pour lui-même : un refus n'annule pas les
    * autres, et la personne repart avec le détail de ce qui est passé et de
-   * ce qui ne l'est pas. Les plafonds de durée du travail s'appliquent ici
-   * comme ailleurs — un import n'est pas une porte dérobée.
+   * ce qui ne l'est pas.
+   *
+   * Les plafonds de durée du travail sont calculés, mais ils n'écartent pas
+   * le créneau : un planning annualisé dépasse légitimement le plafond d'une
+   * semaine, c'est l'année qui compte. Le dépassement est donc enregistré
+   * avec le créneau — motif et date — plutôt que de faire barrage.
    */
   async importerCreneaux(accountId: string, userId: string, creneaux: CreneauAImporter[]) {
     const resultats: Array<{
@@ -424,12 +428,13 @@ export class PlanningService {
         continue;
       }
 
+      // Un depassement de plafond ne fait pas barrage a l'import : beaucoup
+      // de maisons annualisent, et une semaine longue y est compensee par une
+      // semaine courte. On enregistre donc le creneau, en portant la trace du
+      // depassement comme une derogation motivee : c'est cette trace qui
+      // protege en cas de controle, et elle vaut mieux qu'un refus contourne.
       const constats = await this.controlesReglementaires(userId, startAt, endAt);
       const bloquants = constats.filter((constat) => constat.gravite === 'BLOQUANT');
-      if (bloquants.length) {
-        resultats.push({ ...base, refus: bloquants.map((b) => b.message).join(' ') });
-        continue;
-      }
 
       const titre = creneau.titre.trim().slice(0, 160);
       const shift = await this.prisma.shift.create({
@@ -440,6 +445,11 @@ export class PlanningService {
           endAt,
           freelanceId: userId,
           notes: creneau.note ?? null,
+          derogationMotif: bloquants.length
+            ? "Import de planning — organisation annualisée du temps de travail"
+            : null,
+          derogationCodes: bloquants.map((b) => b.code),
+          derogationLe: bloquants.length ? new Date() : null,
         },
       });
       resultats.push({

@@ -220,6 +220,8 @@ export function PlanningBoard({
   const [vue, setVue] = useState<Vue>("mois");
   /** Filtre par service. « __tous__ » = pas de filtre. */
   const [service, setService] = useState<string>("__tous__");
+  /** Filtre par personne. « __toutes__ » = pas de filtre. */
+  const [personne, setPersonne] = useState<string>("__toutes__");
   const [curseur, setCurseur] = useState<Date>(() => debutJour(new Date()));
   const [jourOuvert, setJourOuvert] = useState<string | null>(() => cleJour(new Date()));
 
@@ -296,7 +298,11 @@ export function PlanningBoard({
   /** Créneaux rangés par jour : la structure même du calendrier. */
   const parJour = useMemo(() => {
     const map = new Map<string, Shift[]>();
-    const tries = [...shifts].sort(
+    // Un etablissement qui recoit les heures declarees par ses salaries a
+    // besoin de lire un agenda a la fois, pas la somme de tous.
+    const visibles =
+      personne === "__toutes__" ? shifts : shifts.filter((s) => s.freelance?.id === personne);
+    const tries = [...visibles].sort(
       (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
     );
     for (const s of tries) {
@@ -306,7 +312,7 @@ export function PlanningBoard({
       else map.set(k, [s]);
     }
     return map;
-  }, [shifts]);
+  }, [shifts, personne]);
 
   const jours = useMemo(
     () => Array.from({ length: plage.cases }, (_, i) => ajouterJours(plage.debut, i)),
@@ -444,6 +450,21 @@ export function PlanningBoard({
                   </SelectItem>
                 ))}
                 <SelectItem value="sans-service">Sans service</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : null}
+          {isEstablishment && people.length > 0 ? (
+            <Select value={personne} onValueChange={setPersonne}>
+              <SelectTrigger className="h-9 w-52" aria-label="Filtrer par personne">
+                <SelectValue placeholder="Toutes les personnes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__toutes__">Toutes les personnes</SelectItem>
+                {people.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           ) : null}
