@@ -415,6 +415,18 @@ const attenteRattachementNav: NavSection[] = [
       { label: 'Mon rattachement', href: '/dashboard', icon: Building2, essentiel: true, hint: 'Où en est votre demande, et à qui l’envoyer' },
     ],
   },
+  // OPPORTUNITÉS, MÊME SANS ÉTABLISSEMENT (25/08/2026).
+  //
+  // Un salarié qui vient de s'inscrire et attend son rattachement n'avait
+  // aucun chemin vers ce qui est ouvert : il patientait devant un formulaire.
+  // Or il peut déjà regarder les missions et le catalogue — et c'est même ce
+  // qui donne envie de rester le temps que le rattachement se fasse.
+  {
+    title: 'Trouver du travail',
+    items: [
+      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Les missions ouvertes à la candidature, et le catalogue des ateliers et formations du réseau' },
+    ],
+  },
   {
     title: 'LEX',
     items: [
