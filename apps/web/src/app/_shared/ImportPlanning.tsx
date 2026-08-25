@@ -155,7 +155,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
       toast({
         title: "L'import n'a pas abouti",
         description: e instanceof Error ? e.message : "Réessayez dans un instant.",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setEnvoi(false);

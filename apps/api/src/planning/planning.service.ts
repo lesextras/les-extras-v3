@@ -144,6 +144,40 @@ export class PlanningService {
     return m?.orgUnitId ?? null;
   }
 
+  /**
+   * Les heures qu'un membre saisit ou importe depuis SON espace.
+   *
+   * Elles sont posees sur son compte personnel — c'est son planning, il en
+   * reste maitre, et il les corrige lui-meme. Mais la maison qui l'emploie
+   * doit les voir : c'est elle qui accepte ou refuse des heures
+   * supplementaires, et elle ne peut pas arbitrer ce qu'elle ignore.
+   *
+   * La condition est double, et c'est ce qui empeche la fuite : la personne
+   * doit etre membre actif de CE compte, et le creneau doit etre pose sur son
+   * compte a elle. Ce qu'elle tient pour un autre employeur vit sur le compte
+   * de cet employeur (les creneaux issus d'une reservation y sont crees) et
+   * ne remonte donc jamais ici.
+   */
+  private async heuresDeclareesParLesMembres(accountId: string) {
+    const membres = await this.prisma.membership.findMany({
+      where: { accountId, status: 'ACTIVE' },
+      select: { userId: true },
+    });
+    const ids = membres.map((m) => m.userId);
+    if (!ids.length) return [];
+    const comptesPersonnels = await this.prisma.account.findMany({
+      where: { ownerId: { in: ids }, type: 'FREELANCE' },
+      select: { id: true },
+    });
+    if (!comptesPersonnels.length) return [];
+    return [
+      {
+        freelanceId: { in: ids },
+        accountId: { in: comptesPersonnels.map((c) => c.id) },
+      },
+    ];
+  }
+
   async getPlanning(
     accountId: string,
     accountType: string,
@@ -166,7 +200,13 @@ export class PlanningService {
     const estFreelance = accountType === 'FREELANCE';
 
     // 1. Créneaux saisis à la main (réunions, astreintes, affectations).
-    const whereShift: any = estFreelance ? { freelanceId: userId } : { accountId };
+    // Un etablissement voit les creneaux poses sur son compte, et aussi les
+    // heures que ses salaries declarent depuis leur propre espace : des
+    // heures supplementaires que l'employeur ne voit pas n'existent nulle
+    // part le jour ou il faut les decompter.
+    const whereShift: any = estFreelance
+      ? { freelanceId: userId }
+      : { OR: [{ accountId }, ...(await this.heuresDeclareesParLesMembres(accountId))] };
     if (debut || fin) whereShift.startAt = range;
     // Un chef de service pilote SON service. Le filtre porte sur les créneaux
     // saisis ; les réservations et les sessions de formation ne sont pas
