@@ -3,6 +3,7 @@ import { AssistantController } from './assistant.controller';
 import { PublicChatController, PublicLexDemoController } from './public-chat.controller';
 import { AssistantService } from './assistant.service';
 import { PseudonymiseurService } from './pseudonymiseur.service';
+import { RegistrePseudoService } from './registre-pseudo.service';
 import { ClaudeService } from './claude.service';
 import { MistralService } from './mistral.service';
 import { MOTEUR_LEX } from './moteur-lex';
@@ -16,6 +17,7 @@ import { BillingModule } from '../billing/billing.module';
   imports: [BillingModule],
   controllers: [AssistantController, PublicChatController, PublicLexDemoController],
   providers: [
+    RegistrePseudoService,
     AssistantService,
     PseudonymiseurService,
     ClaudeService,

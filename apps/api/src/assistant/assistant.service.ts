@@ -2,6 +2,7 @@ import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nest
 import { AssistantTrame } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
+import { RegistrePseudoService } from './registre-pseudo.service';
 import { MOTEUR_LEX, MoteurLex } from './moteur-lex';
 import { TRAMES, trouverTrame } from './trames';
 import {
@@ -51,6 +52,7 @@ export class AssistantService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pseudo: PseudonymiseurService,
+    private readonly registre: RegistrePseudoService,
     @Inject(MOTEUR_LEX) private readonly moteur: MoteurLex,
   ) {}
 
@@ -71,6 +73,8 @@ export class AssistantService {
    * l'auteur sera enregistrée, par un appel séparé.
    */
   async generer(
+    /** Le compte : c'est lui qui porte le registre des pseudonymes. */
+    accountId: string,
     trame: AssistantTrame,
     notes: string,
     trameMaison?: {
@@ -93,9 +97,20 @@ export class AssistantService {
       : '';
 
     const { texte: notesMasquees, table } = this.pseudo.masquer(notes);
+
+    // UN PSEUDONYME QUI NE BOUGE PLUS (25/08/2026).
+    //
+    // Le masque jetable donnait [PERSONNE-A] a Marie ce matin et
+    // [PERSONNE-B] cet apres-midi : rien ne pouvait se chainer d'un ecrit a
+    // l'autre. Le registre du compte lui attribue « M.D-1 », une fois pour
+    // toutes. Aucun nom reel ne circule pour autant : le registre ne garde
+    // qu'une empreinte, et la table de restauration vit le temps de l'appel.
+    const stables = await this.registre.stabiliser(accountId, table);
+    const notesPretes = RegistrePseudoService.reecrire(notesMasquees, stables);
+
     const brouillonMasque = await this.moteur.completer({
       system: trameMaison ? AssistantService.avecTrameMaison(def.system, trameMaison) : def.system,
-      user: `${cadrage}Notes brutes du professionnel :\n\n${notesMasquees}`,
+      user: `${cadrage}Notes brutes du professionnel :\n\n${notesPretes}`,
       maxTokens: trameMaison ? 1600 : undefined,
     });
     let brouillon = this.pseudo.restaurer(brouillonMasque, table);
