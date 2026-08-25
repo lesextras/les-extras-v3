@@ -129,9 +129,6 @@ export class CreditsService {
    * simultanées ne peuvent pas faire passer le solde en négatif.
    */
   async consommer(accountId: string, montant: number, reason: string, auteur?: Auteur) {
-    // Ceinture et bretelles : si la génération arrive sans que l'espace ait
-    // été ouvert, la dotation du mois est servie avant le débit.
-    await this.activerOffreGratuite(accountId);
     return this.prisma.$transaction(async (tx) => {
       const debite = await tx.account.updateMany({
         where: { id: accountId, credits: { gte: montant } },
