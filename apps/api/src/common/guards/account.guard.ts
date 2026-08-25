@@ -64,7 +64,7 @@ export class AccountGuard implements CanActivate {
     // contrôle passe APRÈS l'appartenance au compte — être bloqué ici veut
     // dire « pas encore », pas « pas chez vous ».
     if (
-      !routeOuverteSansRattachement(request.url ?? '') &&
+      !routeOuverteSansRattachement(request.url ?? '', request.method) &&
       (await salarieEnAttente(this.prisma, user.id, membership.account))
     ) {
       throw new ForbiddenException(MESSAGE_EN_ATTENTE);

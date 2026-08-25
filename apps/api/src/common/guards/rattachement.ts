@@ -62,8 +62,36 @@ export function racineDuChemin(url: string): string {
 }
 
 /** Cette route est-elle ouverte à un salarié qui attend son rattachement ? */
-export function routeOuverteSansRattachement(url: string): boolean {
-  return OUVERT_SANS_RATTACHEMENT.has(racineDuChemin(url));
+/**
+ * REGARDER, OUI ; AGIR, NON (25/08/2026).
+ *
+ * Un salarié qui attend son rattachement peut voir tout ce que voit un
+ * intervenant — les missions ouvertes, le catalogue des ateliers, l'Édublog,
+ * les avis — mais il ne publie rien et ne candidate à rien. C'est la
+ * différence entre consulter une place de marché et y prendre place.
+ *
+ * D'où une seconde liste, ouverte en LECTURE SEULE : la méthode HTTP fait
+ * foi. Un GET passe, tout le reste attend le rattachement.
+ */
+const LECTURE_SEULE_SANS_RATTACHEMENT = new Set([
+  // Les missions de renfort ouvertes, et leur détail.
+  'missions',
+  // Le catalogue des ateliers et des formations.
+  'services',
+  // Les opportunités classées par correspondance de profil.
+  'matching',
+  // Les avis, qui s'affichent sur les fiches.
+  'reviews',
+  // Points, parrainage, Édublog : ce qui fait vivre la communauté.
+  'community',
+  'articles',
+]);
+
+/** La route est-elle ouverte à un salarié non rattaché ? */
+export function routeOuverteSansRattachement(url: string, methode?: string): boolean {
+  const racine = racineDuChemin(url);
+  if (OUVERT_SANS_RATTACHEMENT.has(racine)) return true;
+  return methode === 'GET' && LECTURE_SEULE_SANS_RATTACHEMENT.has(racine);
 }
 
 /**

@@ -14,6 +14,10 @@ export const CHEMINS_OUVERTS_SANS_RATTACHEMENT = [
   // `/dashboard` n'y figure pas volontairement : c'est LÀ que l'écran
   // d'attente s'affiche. L'y ajouter ouvrirait d'ailleurs tout le reste,
   // puisque la comparaison se fait aussi par préfixe.
+  // Les opportunités : un salarié qui attend peut déjà regarder ce qui est
+  // ouvert — c'est même ce qui donne envie de patienter. Il n'y candidate
+  // pas : le serveur n'ouvre ces routes qu'en lecture (voir le garde-fou).
+  '/dashboard/opportunites',
   '/dashboard/assistant',
   '/dashboard/activites',
   '/dashboard/adhesion',
