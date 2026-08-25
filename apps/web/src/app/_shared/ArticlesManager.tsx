@@ -243,7 +243,7 @@ export function ArticlesManager({
               <p className="text-sm font-medium text-foreground">LinkedIn</p>
               <p className="text-xs text-muted-foreground">
                 {!linkedin.configured
-                  ? "Intégration pas encore activée par l’équipe Les Extras."
+                  ? "Bientôt : publiez vos actualités sur LinkedIn en un clic."
                   : linkedin.connected
                     ? `Connecté${linkedin.name ? ` — ${linkedin.name}` : ""}. Vos actualités peuvent être publiées sur votre profil.`
                     : "Connectez votre compte pour publier vos actualités sur votre profil en un clic."}
