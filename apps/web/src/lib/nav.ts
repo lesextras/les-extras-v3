@@ -314,7 +314,10 @@ const establishmentNav: NavSection[] = [
       // intervenant, l'entrée est épinglée en bas du menu, juste au-dessus du
       // bloc d'aide (voir sidebar.tsx). Même place pour tous les comptes.
       // ── Hors de l'ordre demandé, conservées à la fin ───────────────────────
-      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, sousComptesSeulement: true, hint: 'Salarié ? Créez votre compte intervenant et reprenez vos fiches pour intervenir aussi dans d’autres structures' },
+      // « Proposer mes services » a été retiré du menu des salariés le
+      // 25/08/2026 : un salarié consulte tout — missions, ateliers, catalogue —
+      // mais il ne propose pas d'offre et ne candidate pas. Ce qu'il vend, il
+      // le vend sous le nom de la maison qui l'emploie.
       // Les regles de la convention, reportees une fois. Sans elles, les
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
       // juridiquement exact mais rarement ce que veut l'etablissement.

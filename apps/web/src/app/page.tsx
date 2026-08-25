@@ -130,24 +130,23 @@ export default async function LandingPage() {
             <div>
               <span className="eyebrow animate-fade-in-up inline-flex">
                 <Sparkles className="size-3.5" />
-                Le dispositif de l’association ADéPA — depuis 2012
+                Le dispositif de l’association ADéPA
               </span>
               {/* Le titre nomme le BESOIN, pas la valeur. « Des interventions à
                   fort impact » ne renseigne pas un directeur qui balaie la page
                   en trois secondes : c'est le sous-titre qui faisait tout le
                   travail, deux fois plus petit. On a inversé les deux.
-                  Il disait ensuite « pour votre établissement », ce qui
-                  congédiait l'intervenant dès la première ligne — alors que la
-                  section suivante lui ouvre une porte. Les deux publics sont
-                  désormais nommés, dans l'ordre où ils arrivent. */}
+                  Le titre dit maintenant ce en quoi la maison croit, et non
+                  qui elle sert : ce sont les professionnels de terrain qui
+                  portent les interventions. Le sous-titre, lui, garde le
+                  concret — ce qu'on vient chercher, et à quel prix. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Établissements et intervenants du médico-social{' '}
-                <span className="text-secondary">se trouvent ici.</span>
+                Les interventions doivent être portées{' '}
+                <span className="text-secondary">par ceux qui font le terrain.</span>
               </h1>
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
                 Un remplacement à couvrir, un atelier à programmer, une formation pour l’équipe.
-                La mise en relation est gratuite et sans commission : l’établissement paie le
-                tarif de l’intervenant, qui le touche intégralement.
+                La mise en relation est gratuite et sans commission.
               </p>
 
               <div className="animate-fade-in-up stagger-3 mt-7 max-w-xl">
@@ -157,7 +156,7 @@ export default async function LandingPage() {
               {/* Recherches populaires — vraies catégories du catalogue */}
               <div className="animate-fade-in-up stagger-4 mt-4 flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Populaire :</span>
-                {['Psycho-boxe', 'Slam', 'Théâtre', 'Musicothérapie', 'Socio-esthétique'].map((c) => (
+                {['Psycho-boxe', 'Slam', 'Théâtre', 'Musicothérapie'].map((c) => (
                   <Link
                     key={c}
                     href={`/ateliers?search=${encodeURIComponent(c.toLowerCase())}`}
