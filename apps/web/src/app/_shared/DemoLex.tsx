@@ -4,7 +4,7 @@
 // démontre le mieux la valeur en trente secondes : on décrit un public et ce
 // qu'on veut travailler, on obtient une séance structurée, utilisable telle
 // quelle après validation en équipe. La sortie est tronquée volontairement.
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Sparkles, ShieldCheck, ArrowRight, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,104 @@ const EXEMPLES = [
   },
 ];
 
+type MorceauLex = { texte: string };
+
+// Rendu léger du Markdown que renvoie LEX : titres, gras, listes, séparateurs.
+// Volontairement minimal et sans dépendance : on n'affiche que ce que le
+// modèle produit, et jamais de HTML brut.
+function LigneRiche({ texte }: MorceauLex) {
+  const morceaux = texte.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  return (
+    <>
+      {morceaux.map((m, i) =>
+        m.startsWith("**") && m.endsWith("**") ? (
+          <strong key={i} className="font-semibold text-foreground">
+            {m.slice(2, -2)}
+          </strong>
+        ) : (
+          <span key={i}>{m}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+function SeanceRendue({ texte }: MorceauLex) {
+  const blocs: ReactNode[] = [];
+  let puces: string[] = [];
+
+  function viderPuces(cle: number) {
+    if (puces.length === 0) return;
+    const items = puces;
+    puces = [];
+    blocs.push(
+      <ul
+        key={"liste-" + cle}
+        className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground"
+      >
+        {items.map((el, i) => (
+          <li key={i}>
+            <LigneRiche texte={el} />
+          </li>
+        ))}
+      </ul>,
+    );
+  }
+
+  texte.split("\n").forEach((brute, i) => {
+    const ligne = brute.trim();
+    if (ligne === "") {
+      viderPuces(i);
+      return;
+    }
+    if (/^([-*_])\1{2,}$/.test(ligne)) {
+      viderPuces(i);
+      blocs.push(<hr key={"regle-" + i} className="my-5 border-border" />);
+      return;
+    }
+    const titre = ligne.match(/^(#{1,4})\s+(.*)$/);
+    if (titre) {
+      viderPuces(i);
+      blocs.push(
+        <p
+          key={"titre-" + i}
+          className={
+            titre[1].length <= 2
+              ? "mt-5 text-base font-semibold text-foreground"
+              : "mt-4 text-sm font-semibold text-foreground"
+          }
+        >
+          <LigneRiche texte={titre[2]} />
+        </p>,
+      );
+      return;
+    }
+    const puce = ligne.match(/^[-*]\s+(.*)$/);
+    if (puce) {
+      puces.push(puce[1]);
+      return;
+    }
+    viderPuces(i);
+    const seulementGras = /^\*\*[^*]+\*\*:?$/.test(ligne);
+    blocs.push(
+      <p
+        key={"para-" + i}
+        className={
+          seulementGras
+            ? "mt-4 text-sm font-semibold text-foreground"
+            : "mt-2 text-sm leading-relaxed text-muted-foreground"
+        }
+      >
+        <LigneRiche texte={ligne} />
+      </p>,
+    );
+  });
+
+  viderPuces(-1);
+
+  return <div>{blocs}</div>;
+}
+
 interface Resultat {
   activite?: string;
   tronque?: boolean;
@@ -73,7 +171,6 @@ export function DemoLex() {
     }
     setErreur(null);
     setChargement(true);
-    setRes(null);
     try {
       const r = await fetch("/api/proxy/public/lex-demo", {
         method: "POST",
@@ -233,11 +330,9 @@ export function DemoLex() {
 
         {res?.erreur ? <p className="mt-6 text-sm text-destructive">{res.erreur}</p> : null}
 
-        {res?.activite ? (
+        {res?.activite && !chargement ? (
           <div className="mt-5">
-            <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
-              {res.activite}
-            </p>
+            <SeanceRendue texte={res.activite} />
             {res.tronque ? (
               <p className="mt-4 rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
                 Aperçu tronqué. Dans votre espace : séance complète, variantes et indicateurs d’observation.
