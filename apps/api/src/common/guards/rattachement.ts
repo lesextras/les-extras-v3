@@ -41,6 +41,15 @@ const OUVERT_SANS_RATTACHEMENT = new Set([
   // Déposer ses pièces (carte d'identité, diplôme) pendant l'attente.
   'files',
   'documents',
+  // SON PROPRE AGENDA (25/08/2026).
+  //
+  // Un salarié tient déjà un planning : le sien. Rien n'oblige à attendre un
+  // rattachement pour l'importer — au contraire, un agenda prêt le jour de
+  // l'acceptation, c'est autant de gagné. Ce planning est le sien, il ne
+  // publie rien chez personne.
+  'planning',
+  'shifts',
+  'availability',
   // Vitrine et santé : jamais rattachées à un compte de toute façon.
   'public',
   'health',
@@ -85,6 +94,10 @@ const LECTURE_SEULE_SANS_RATTACHEMENT = new Set([
   // Points, parrainage, Édublog : ce qui fait vivre la communauté.
   'community',
   'articles',
+  // Ce qu'on lui a confié, et les sessions de formation du réseau : il les
+  // consulte, il n'y engage rien tant qu'il n'est pas rattaché.
+  'bookings',
+  'formations',
 ]);
 
 /** La route est-elle ouverte à un salarié non rattaché ? */

@@ -18,6 +18,12 @@ export const CHEMINS_OUVERTS_SANS_RATTACHEMENT = [
   // ouvert — c'est même ce qui donne envie de patienter. Il n'y candidate
   // pas : le serveur n'ouvre ces routes qu'en lecture (voir le garde-fou).
   '/dashboard/opportunites',
+  // Son agenda et ce qu'on lui a confié : il les tient dès le premier jour,
+  // et il peut y importer le planning qu'il a déjà.
+  '/dashboard/planning',
+  '/dashboard/reservations',
+  '/dashboard/ateliers',
+  '/dashboard/formations',
   '/dashboard/assistant',
   '/dashboard/activites',
   '/dashboard/adhesion',

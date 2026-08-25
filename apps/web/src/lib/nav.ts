@@ -416,18 +416,29 @@ const attenteRattachementNav: NavSection[] = [
   {
     items: [
       { label: 'Mon rattachement', href: '/dashboard', icon: Building2, essentiel: true, hint: 'Où en est votre demande, et à qui l’envoyer' },
+      // Pas de titre au-dessus : « Trouver du travail » annoncait une rubrique
+      // pour une seule entree. Les opportunites se lisent directement.
+      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Les missions ouvertes à la candidature, et le catalogue des ateliers et formations du réseau' },
     ],
   },
-  // OPPORTUNITÉS, MÊME SANS ÉTABLISSEMENT (25/08/2026).
+  // CE QUI EXISTE DEJA AVANT LE RATTACHEMENT (25/08/2026).
   //
-  // Un salarié qui vient de s'inscrire et attend son rattachement n'avait
-  // aucun chemin vers ce qui est ouvert : il patientait devant un formulaire.
-  // Or il peut déjà regarder les missions et le catalogue — et c'est même ce
-  // qui donne envie de rester le temps que le rattachement se fasse.
+  // Un salarie tient un planning bien avant qu'un etablissement l'accepte :
+  // c'est le sien. On lui ouvre donc son agenda — import de son planning
+  // compris — et la vue de ce qu'on lui confie, plutot que de lui faire
+  // decouvrir ces ecrans le jour du rattachement.
   {
-    title: 'Trouver du travail',
+    title: 'Mon activité',
     items: [
-      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Les missions ouvertes à la candidature, et le catalogue des ateliers et formations du réseau' },
+      { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
+      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Votre agenda — importez-y le planning que vous avez déjà, en CSV, Excel ou PDF' },
+    ],
+  },
+  {
+    title: 'Mon offre',
+    items: [
+      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles },
+      { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
     ],
   },
   {
@@ -441,8 +452,10 @@ const attenteRattachementNav: NavSection[] = [
   {
     title: 'Mon espace',
     items: [
+      // « Mon compte » a quitte cette liste le 25/08/2026 : le profil est deja
+      // en haut a droite, et deux portes vers le meme ecran font douter qu'il
+      // s'agisse du meme.
       { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces : identité, diplôme, casier judiciaire. Un dossier prêt le jour du rattachement, c’est autant de gagné.' },
-      { label: 'Mon compte', href: '/dashboard/account', icon: Users },
     ],
   },
 ];
