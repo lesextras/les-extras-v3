@@ -9,6 +9,7 @@ import { RepeterSemaine } from "../../../_shared/RepeterSemaine";
 import { PlanningBoard, type Shift, type Availability } from "../../../_shared/PlanningBoard";
 import { InterrupteurDisponibilite } from "../../../_shared/InterrupteurDisponibilite";
 import { ExportPaie } from "../../../_shared/ExportPaie";
+import { ImportPlanning } from "../../../_shared/ImportPlanning";
 import type { Mission } from "../../../_shared/types";
 import type { Repartition } from "../../../_shared/EquipeTable";
 
@@ -94,15 +95,20 @@ export default async function PlanningPage() {
         actions={
           // Un trou dans le planning -> on publie le renfort sans changer
           // d'outil ; une semaine type se deroule en cycle sans ressaisie.
-          isEstablishment ? (
-            <div className="flex flex-wrap items-center gap-2">
-              {/* La paie se prépare depuis les heures : c'est ici qu'on la
-                  cherche, pas sous l'onglet Congés où l'export était rangé. */}
-              {peutExporter ? <ExportPaie compact /> : null}
-              <RepeterSemaine accountId={session.account.id} />
-              <RenfortModal accountId={session.account.id} />
-            </div>
-          ) : undefined
+          // Le planning qu'on tient deja ailleurs entre ici sans ressaisie :
+          // c'est la porte d'entree de l'agenda, et elle est ouverte a tous.
+          <div className="flex flex-wrap items-center gap-2">
+            <ImportPlanning accountId={session.account.id} />
+            {isEstablishment ? (
+              <>
+                {/* La paie se prépare depuis les heures : c'est ici qu'on la
+                    cherche, pas sous l'onglet Congés où l'export était rangé. */}
+                {peutExporter ? <ExportPaie compact /> : null}
+                <RepeterSemaine accountId={session.account.id} />
+                <RenfortModal accountId={session.account.id} />
+              </>
+            ) : null}
+          </div>
         }
       />
 
