@@ -32,14 +32,6 @@ interface DashStats {
 export default async function DashboardPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
-  // CATALOGUE À PORTÉE DE MAIN (25/08/2026).
-  //
-  // Le catalogue a quitté le menu de gauche pour la barre du haut. Or c'est
-  // exactement ce que viennent chercher un intervenant et un salarié : voir
-  // ce que le réseau propose. On leur pose donc le chemin sur le tableau de
-  // bord, en clair, plutôt que de compter sur un menu déroulant.
-  const afficherCatalogue =
-    !isEstablishment || session.account.role === "MEMBER";
 
   const [moi, stats, missions, bookings, services, repartition] = await Promise.all([
     // LE PRÉNOM NE VIENT PAS DU JETON.
@@ -114,35 +106,6 @@ export default async function DashboardPage() {
           </div>
         }
       />
-
-      {/* VOIR LES ATELIERS ET LES FORMATIONS.
-
-          Deux clics, en clair, sur l'écran d'accueil. Un menu déroulant en
-          haut de page se trouve quand on sait qu'il existe ; un intervenant
-          qui ouvre son espace pour la première fois, non. */}
-      {afficherCatalogue ? (
-        <Card className="border-primary/25 bg-primary-soft/20">
-          <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Voir les ateliers et les formations
-              </p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Le catalogue complet : les interventions proposées par le réseau,
-                et les formations certifiantes de l’association.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button asChild size="sm">
-                <Link href="/ateliers">Voir les ateliers</Link>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link href="/formations">Voir les formations</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
 
       {!isEstablishment ? (
         <SuiviRattachement

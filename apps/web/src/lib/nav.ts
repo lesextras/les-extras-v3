@@ -215,7 +215,7 @@ const establishmentNav: NavSection[] = [
       // ni marketplace, qui n'était liée nulle part dans son menu. Il pouvait
       // donc être destinataire d'une diffusion en cascade sans jamais pouvoir
       // aller voir ce qui était ouvert.
-      { label: 'Opportunités', href: '/marketplace', icon: Target, essentiel: true, roles: ['MEMBER'], hint: 'Les missions de renfort et les ateliers ouverts à la candidature' },
+      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, roles: ['MEMBER'], hint: 'Les missions de renfort et les ateliers ouverts à la candidature' },
       // Le suivi de ce qu'on a commandé manquait complètement : renforts,
       // ateliers et inscriptions en formation étaient enregistrés mais
       // invisibles hors du back-office administrateur.
