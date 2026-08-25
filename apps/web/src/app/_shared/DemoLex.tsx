@@ -47,7 +47,7 @@ type MorceauLex = { texte: string };
 // Volontairement minimal et sans dépendance : on n'affiche que ce que le
 // modèle produit, et jamais de HTML brut.
 function LigneRiche({ texte }: MorceauLex) {
-  const morceaux = texte.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  const morceaux = texte.split(/(\*\*[^*]+\*\*|\*[^*\n]+\*)/g).filter(Boolean);
   return (
     <>
       {morceaux.map((m, i) =>
@@ -55,6 +55,10 @@ function LigneRiche({ texte }: MorceauLex) {
           <strong key={i} className="font-semibold text-foreground">
             {m.slice(2, -2)}
           </strong>
+        ) : m.length > 2 && m.startsWith("*") && m.endsWith("*") ? (
+          <em key={i} className="italic">
+            {m.slice(1, -1)}
+          </em>
         ) : (
           <span key={i}>{m}</span>
         ),
