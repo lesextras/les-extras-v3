@@ -1,6 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShiftDto, UpdateShiftDto } from './dto/shift.dto';
+import type { CreneauAImporter } from './dto/import.dto';
+import { lirePlanningCsv } from './import-planning';
 // `aUnBloquant` n'est plus importé : `exigerDerogation` a besoin de la LISTE
 // des constats bloquants pour composer son message, pas seulement de savoir
 // qu'elle n'est pas vide — elle fait donc son propre filtre.
@@ -323,6 +325,95 @@ export class PlanningService {
     return [...manuels, ...entreesReservations, ...entreesFormations].sort(
       (a: any, b: any) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
     );
+  }
+
+  /**
+   * LIRE UN PLANNING DÉPOSÉ, SANS RIEN ÉCRIRE ENCORE.
+   *
+   * On rend ce qu'on a compris ET ce qu'on n'a pas compris, ligne par ligne.
+   * Une ligne écartée en silence, c'est une garde qui manquera au planning
+   * sans que personne ne s'en aperçoive avant le jour même.
+   */
+  analyserImport(contenu: string) {
+    const lecture = lirePlanningCsv(contenu);
+    if (lecture.creneaux.length === 0) {
+      throw new BadRequestException(
+        lecture.refusees.length === 0
+          ? 'Le fichier est vide.'
+          : "Aucune ligne n'a pu être lue. Il faut au minimum une date, une heure de début et une heure de fin par ligne.",
+      );
+    }
+    return lecture;
+  }
+
+  /**
+   * ENREGISTRER LES CRÉNEAUX RELUS.
+   *
+   * Chaque créneau est traité pour lui-même : un refus n'annule pas les
+   * autres, et la personne repart avec le détail de ce qui est passé et de
+   * ce qui ne l'est pas. Les plafonds de durée du travail s'appliquent ici
+   * comme ailleurs — un import n'est pas une porte dérobée.
+   */
+  async importerCreneaux(accountId: string, userId: string, creneaux: CreneauAImporter[]) {
+    const resultats: Array<{
+      titre: string;
+      debut: string;
+      fin: string;
+      cree?: string;
+      refus?: string;
+      avertissements?: Constat[];
+    }> = [];
+
+    for (const creneau of creneaux) {
+      const base = { titre: creneau.titre, debut: creneau.debut, fin: creneau.fin };
+      const startAt = new Date(creneau.debut);
+      const endAt = new Date(creneau.fin);
+
+      if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
+        resultats.push({ ...base, refus: 'Date ou heure illisible.' });
+        continue;
+      }
+      if (endAt <= startAt) {
+        resultats.push({ ...base, refus: 'La fin doit être après le début.' });
+        continue;
+      }
+
+      const conflits = await this.detectConflicts(userId, startAt, endAt);
+      if (conflits.length) {
+        resultats.push({ ...base, refus: 'Un créneau est déjà posé sur cette période.' });
+        continue;
+      }
+
+      const constats = await this.controlesReglementaires(userId, startAt, endAt);
+      const bloquants = constats.filter((constat) => constat.gravite === 'BLOQUANT');
+      if (bloquants.length) {
+        resultats.push({ ...base, refus: bloquants.map((b) => b.message).join(' ') });
+        continue;
+      }
+
+      const titre = creneau.titre.trim().slice(0, 160);
+      const shift = await this.prisma.shift.create({
+        data: {
+          accountId,
+          title: titre === '' ? 'Créneau importé' : titre,
+          startAt,
+          endAt,
+          freelanceId: userId,
+          notes: creneau.note ?? null,
+        },
+      });
+      resultats.push({
+        ...base,
+        cree: shift.id,
+        avertissements: constats.length ? constats : undefined,
+      });
+    }
+
+    return {
+      crees: resultats.filter((r) => r.cree).length,
+      refuses: resultats.filter((r) => r.refus).length,
+      resultats,
+    };
   }
 
   async createShift(accountId: string, dto: CreateShiftDto) {

@@ -8,6 +8,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
 import { PlanningService } from './planning.service';
 import { AvailabilityDto, CreateShiftDto, SetStatusDto, UpdateShiftDto } from './dto/shift.dto';
+import { AnalyserPlanningDto, ImporterPlanningDto } from './dto/import.dto';
 
 @Controller()
 @UseGuards(JwtAuthGuard, AccountGuard)
@@ -19,6 +20,26 @@ export class PlanningController {
     @Query('from') from?: string, @Query('to') to?: string,
     @Query('orgUnitId') orgUnitId?: string) {
     return this.planning.getPlanning(a.id, a.type, u.id, from, to, orgUnitId);
+  }
+
+  /**
+   * Étape 1 : on lit le fichier et on renvoie ce qu'on a compris.
+   * Rien n'est écrit. Ouvert à tous les membres du compte : chacun apporte
+   * son propre planning, y compris un salarié qui déclare ses heures.
+   */
+  @Post('planning/import/analyse')
+  analyserImport(@Body() dto: AnalyserPlanningDto) {
+    return this.planning.analyserImport(dto.contenu);
+  }
+
+  /** Étape 2 : les créneaux relus entrent au planning. */
+  @Post('planning/import')
+  importerPlanning(
+    @CurrentAccount() a: RequestAccount,
+    @CurrentUser() u: RequestUser,
+    @Body() dto: ImporterPlanningDto,
+  ) {
+    return this.planning.importerCreneaux(a.id, u.id, dto.creneaux);
   }
 
   @Post('shifts')
