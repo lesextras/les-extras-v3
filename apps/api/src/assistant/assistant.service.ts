@@ -8,6 +8,44 @@ import {
   GROUPES_ACTIVITE, GROUPES_APPUI, GROUPES_ECRIT, consignesDepuisChoix,
 } from './options';
 
+/**
+ * ENLEVER LE BALISAGE MARKDOWN (25/08/2026).
+ *
+ * La consigne le dit au modele, mais un modele entraine sur du Markdown y
+ * revient : les etoiles reapparaissaient a l'ecran et jusque dans le Word.
+ * On ne discute donc pas, on nettoie — c'est deterministe et ca ne rate pas.
+ *
+ * Un titre en gras seul sur sa ligne devient une ligne en majuscules : c'est
+ * la forme d'un ecrit professionnel imprime. Ailleurs, les marques tombent
+ * et le texte reste.
+ */
+export function sansBalisage(texte: string): string {
+  return texte
+    .split("\n")
+    .map((ligne) => {
+      const nu = ligne.trim();
+      // Une ligne de separation ne veut rien dire sur du papier.
+      if (/^([-*_=]\s*){3,}$/.test(nu)) return "";
+      // Un titre, quelle que soit sa notation, devient une ligne en capitales.
+      const titreDiese = nu.match(/^#{1,6}\s+(.*)$/);
+      if (titreDiese) return titreDiese[1].replace(/[*_`]/g, "").toUpperCase();
+      const titreGras = nu.match(/^\*\*(.+)\*\*:?$/);
+      if (titreGras) return titreGras[1].replace(/[*_`]/g, "").toUpperCase();
+      // Une puce reste une puce, avec un tiret cadratin.
+      let corps = ligne.replace(/^(\s*)[-*+]\s+/, "$1– ");
+      // Le reste du balisage tombe, le texte demeure.
+      corps = corps
+        .replace(/\*\*(.+?)\*\*/g, "$1")
+        .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*(?!\*)/g, "$1$2")
+        .replace(/`([^`\n]+)`/g, "$1");
+      return corps;
+    })
+    .join("\n")
+    // Trois lignes vides ou plus n'apportent rien : on les ramene a deux.
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 @Injectable()
 export class AssistantService {
   constructor(
@@ -63,7 +101,7 @@ export class AssistantService {
     let brouillon = this.pseudo.restaurer(brouillonMasque, table);
     // Le modèle invente parfois des jetons absents de la table ([DATE-9]…) :
     // on les remplace par une mention neutre à compléter par l'auteur.
-    brouillon = nettoyerJetonsResiduels(brouillon);
+    brouillon = sansBalisage(nettoyerJetonsResiduels(brouillon));
 
     return {
       brouillon,
