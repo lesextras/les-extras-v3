@@ -149,17 +149,10 @@ const freelanceNav: NavSection[] = [
       { label: 'LEX · Appui scolaire', href: '/dashboard/appui-scolaire', icon: Lightbulb, premium: true, hint: "Un enfant décroche : LEX prépare le support à poser sur la table — fiche mémo, script de déblocage, jeu de révision. 1 crédit LEX par génération." },
     ],
   },
-  // Même section, mêmes libellés que côté établissement : ce sont les mêmes
-  // pages publiques. Un intervenant les consulte pour voir comment son offre
-  // est présentée, et pour s'inscrire lui-même à une formation.
-  {
-    title: 'Catalogue',
-    items: [
-      { label: 'Édublog', href: '/edublog', icon: Newspaper, hint: 'Le fil public : articles et actualités du médico-social' },
-      { label: 'Ateliers', href: '/ateliers', icon: Sparkles, hint: 'Le catalogue public, tel que le voient les établissements' },
-      { label: 'Formations', href: '/formations', icon: GraduationCap, hint: 'Le catalogue certifiant ADéPA, côté public' },
-    ],
-  },
+  // Le Catalogue (Édublog, Ateliers, Formations) a quitté le menu de
+  // gauche le 25/08/2026 : il vit désormais dans la barre du haut, à droite
+  // du sélecteur de compte, pour tous les comptes. Un menu de gauche sert à
+  // travailler ; un catalogue, à consulter.
   // « Mon offre », c'est ce que je vends et que je pilote — mes fiches, mes
   // sessions. Rien d'autre : les vitrines publiques sont dans Catalogue.
   {
@@ -187,13 +180,9 @@ const freelanceNav: NavSection[] = [
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
-      // POINTS ET PARRAINAGE — la page existait, elle n'était liée nulle part.
-      //
-      // On n'y arrivait que par le compteur de la barre du haut, qui ne
-      // s'affiche qu'à partir du PREMIER point gagné : un compte tout neuf
-      // n'avait donc aucun chemin vers son propre lien de parrainage, et le
-      // programme restait invisible à ceux-là mêmes qui pouvaient le lancer.
-      { label: 'Points & parrainage', href: '/dashboard/points', icon: Award, hint: 'Vos points de fidélité, ce qu\'ils valent en réduction, et votre lien de parrainage : vous gagnez tous les deux quand votre filleul termine sa première prestation' },
+      // « Points & parrainage » n'est plus dans cette liste : il est épinglé
+      // en bas du menu, juste au-dessus du bloc d'aide (voir sidebar.tsx).
+      // Au fond d'une liste défilante, personne ne descendait jusqu'à lui.
       // « Mon compte » n'est plus listé ici : il vit dans le menu de l'avatar,
       // en haut à droite, et dans la palette ⌘K. Deux chemins vers la même
       // page allongeaient le menu sans rien apporter.
@@ -219,6 +208,14 @@ const establishmentNav: NavSection[] = [
     title: 'Renfort & prestations',
     items: [
       { label: 'RenforTeam', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
+      // OPPORTUNITÉS — POUR LES SALARIÉS (25/08/2026).
+      //
+      // Un salarié rattaché à un établissement n'avait aucune entrée vers les
+      // missions ouvertes : ni RenforTeam (réservé à la direction pour publier),
+      // ni marketplace, qui n'était liée nulle part dans son menu. Il pouvait
+      // donc être destinataire d'une diffusion en cascade sans jamais pouvoir
+      // aller voir ce qui était ouvert.
+      { label: 'Opportunités', href: '/marketplace', icon: Target, essentiel: true, roles: ['MEMBER'], hint: 'Les missions de renfort et les ateliers ouverts à la candidature' },
       // Le suivi de ce qu'on a commandé manquait complètement : renforts,
       // ateliers et inscriptions en formation étaient enregistrés mais
       // invisibles hors du back-office administrateur.
@@ -253,6 +250,20 @@ const establishmentNav: NavSection[] = [
   // relève de la gestion interne de la structure — sa fiche, sa facturation,
   // ses gens, leurs dossiers, son temps de travail — vit désormais sous un
   // seul chapeau, au lieu de deux sections voisines qu'on hésitait à séparer.
+  // LEX REDESCEND DANS LE MENU DE GAUCHE (25/08/2026).
+  //
+  // Il était remonté dans un menu déroulant de la barre du haut, à côté du
+  // Catalogue. Mais LEX n'est pas un catalogue qu'on consulte : c'est l'outil
+  // qu'on ouvre plusieurs fois par jour, et le seul produit payant. Un outil
+  // de travail quotidien se pose dans le menu de gauche, à portée d'œil.
+  {
+    title: 'LEX & analyse de pratique',
+    items: [
+      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, essentiel: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
+      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, essentiel: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
+      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
+    ],
+  },
   {
     title: 'Mon établissement',
     // ORDRE DEMANDÉ PAR SIHAM LE 20/08/2026 — il suit le quotidien d'une

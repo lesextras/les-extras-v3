@@ -18,9 +18,7 @@ import {
   Newspaper,
   Sparkles,
   GraduationCap,
-  PenLine,
   Lightbulb,
-  MessagesSquare,
 } from 'lucide-react';
 import { CommandPalette } from './command-palette';
 import { IndicateursCompte } from './indicateurs-compte';
@@ -158,72 +156,42 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
         </DropdownMenu>
       )}
 
-      {/* Catalogue et LEX & Analyse de pratique : retirés de la sidebar le
-          4/8/2026 (demande Siham) et remontés ici, à côté du sélecteur de
-          compte, pour rester accessibles sans occuper le menu de gauche.
-          Réservé aux comptes établissement : côté freelance, ces entrées
-          restent dans la sidebar (pas de doublon de navigation). */}
-      {activeAccount?.type === 'ESTABLISHMENT' && (
-        <>
-          <DropdownMenu align="start">
-            <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
-              <LayoutList className="size-4 text-muted-foreground" />
-              Catalogue
-              <ChevronsUpDown className="size-3.5 text-muted-foreground" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-60">
-              <DropdownMenuItem onClick={() => router.push('/edublog')}>
-                <Newspaper />
-                Édublog
-              </DropdownMenuItem>
-              {/* « Annuaire des intervenants » retiré le 21/08/2026 (demande
-                  Siham) : /intervenants redirige vers la page publique de
-                  recrutement — proposer « créez votre compte intervenant » à
-                  un établissement connecté n'avait aucun sens. Ce contenu vit
-                  désormais en section de la page d'accueil publique. */}
-              <DropdownMenuItem onClick={() => router.push('/ateliers')}>
-                <Sparkles />
-                Ateliers
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/formations')}>
-                <GraduationCap />
-                Formations
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      {/* CATALOGUE, POUR TOUT LE MONDE (25/08/2026).
 
-          {/* LEX RESTE VISIBLE SUR MOBILE — et c'est le point important.
-              Les entrées LEX ont quitté la sidebar le 4/8/2026 pour venir ici ;
-              comme ce déclencheur était `hidden md:flex`, un établissement
-              consultant la plateforme depuis un téléphone n'avait PLUS AUCUN
-              accès à LEX, ni même l'indice que le produit existait. Sur petit
-              écran on garde donc le bouton et on n'escamote que son libellé. */}
-          <DropdownMenu align="start">
-            <DropdownMenuTrigger
-              aria-label="LEX et analyse de pratique"
-              className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:px-3"
-            >
-              <PenLine className="size-4 text-muted-foreground" />
-              <span className="hidden md:inline">LEX &amp; Analyse de pratique</span>
-              <ChevronsUpDown className="size-3.5 text-muted-foreground" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64">
-              <DropdownMenuItem onClick={() => router.push('/dashboard/assistant')}>
-                <PenLine />
-                LEX · Assistant d&apos;écriture
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/dashboard/activites')}>
-                <Lightbulb />
-                LEX · Générateur d&apos;activités
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/gap')}>
-                <MessagesSquare />
-                Analyse de pratique
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </>
-      )}
+          Il était réservé aux comptes établissement ; côté intervenant il
+          occupait une section entière du menu de gauche. Le voici en haut,
+          à droite du sélecteur de compte, pour tous les comptes — un
+          catalogue se consulte, il n'a pas à tenir un tiers du menu.
+
+          LEX, à l'inverse, est redescendu dans le menu de gauche : c'est un
+          outil de travail quotidien, pas un raccourci de barre. */}
+        <DropdownMenu align="start">
+          <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
+            <LayoutList className="size-4 text-muted-foreground" />
+            Catalogue
+            <ChevronsUpDown className="size-3.5 text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-60">
+            <DropdownMenuItem onClick={() => router.push('/edublog')}>
+              <Newspaper />
+              Édublog
+            </DropdownMenuItem>
+            {/* « Annuaire des intervenants » retiré le 21/08/2026 (demande
+                Siham) : /intervenants redirige vers la page publique de
+                recrutement — proposer « créez votre compte intervenant » à
+                un établissement connecté n'avait aucun sens. Ce contenu vit
+                désormais en section de la page d'accueil publique. */}
+            <DropdownMenuItem onClick={() => router.push('/ateliers')}>
+              <Sparkles />
+              Ateliers
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/formations')}>
+              <GraduationCap />
+              Formations
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
 
       <CommandPalette
         isMember={isMember ?? activeAccount?.isMember}
