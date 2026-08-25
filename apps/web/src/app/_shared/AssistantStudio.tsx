@@ -24,6 +24,7 @@ import {
   Loader2,
   Info,
   Download,
+  Mail,
   FileType2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -211,6 +212,8 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   } | null>(null);
   const groupesEcrit = useCatalogueLex("ecrit");
   const [enCours, setEnCours] = React.useState(false);
+  const [adresse, setAdresse] = React.useState("");
+  const [envoi, setEnvoi] = React.useState(false);
   const [enregistre, setEnregistre] = React.useState(false);
   const [avisDonne, setAvisDonne] = React.useState(false);
 
@@ -284,6 +287,35 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
       toast({ title: "Génération impossible", description: (err as Error).message, variant: "error" });
     } finally {
       setEnCours(false);
+    }
+  }
+
+  /**
+   * ENVOYER PLUTOT QUE TELECHARGER (25/08/2026).
+   *
+   * Telecharger suppose qu'on ecrit depuis le poste ou l'on veut le fichier.
+   * Sur un poste partage d'unite, ce n'est pas le cas. L'adresse est saisie
+   * ici, apres relecture, et n'est pas conservee.
+   */
+  async function envoyerParMail(format: "docx" | "pdf") {
+    const cible = adresse.trim();
+    if (!cible) return;
+    setEnvoi(true);
+    try {
+      await api("/assistant/envoyer", {
+        method: "POST",
+        body: JSON.stringify({ titre, contenu: brouillon, format, email: cible }),
+      });
+      toast({ title: "Document envoyé", description: `Il est parti à ${cible}.` });
+      setAdresse("");
+    } catch (err) {
+      toast({
+        title: "Envoi impossible",
+        description: (err as Error).message,
+        variant: "error",
+      });
+    } finally {
+      setEnvoi(false);
     }
   }
 
@@ -613,6 +645,40 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   <Copy className="size-4" />
                   Copier
                 </Button>
+              </div>
+
+              {/* Une adresse, pas un carnet : on l'ecrit, le document part,
+                  et rien n'est retenu. */}
+              <div className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-muted/30 p-3">
+                <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
+                  <span className="font-medium text-foreground">Envoyer le document par e-mail</span>
+                  <input
+                    type="email"
+                    value={adresse}
+                    onChange={(e) => setAdresse(e.target.value)}
+                    placeholder="adresse@etablissement.fr"
+                    className="h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                  />
+                </label>
+                <Button
+                  variant="outline"
+                  disabled={envoi || !adresse.trim()}
+                  onClick={() => void envoyerParMail("docx")}
+                >
+                  <Mail className="size-4" />
+                  Envoyer en Word
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={envoi || !adresse.trim()}
+                  onClick={() => void envoyerParMail("pdf")}
+                >
+                  <Mail className="size-4" />
+                  Envoyer en PDF
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
                 <Button variant="ghost" onClick={() => setEtape("ecrire")}>
                   <ArrowLeft className="size-4" />
                   Reprendre mes notes

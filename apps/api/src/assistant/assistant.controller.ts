@@ -8,6 +8,7 @@ import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { MemberGuard } from '../common/guards/member.guard';
 import { AccountGuard } from '../common/guards/account.guard';
+import { MailService } from '../common/mail/mail.service';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -18,7 +19,7 @@ import { ExtractionService } from './extraction.service';
 import { CreditsService } from '../billing/credits.service';
 import { catalogueChoix } from './options';
 import type { FichierRecu } from '../storage/files.service';
-import { ActiviteDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
+import { ActiviteDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, EnvoyerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
@@ -39,6 +40,7 @@ export class AssistantController {
     private readonly tramesMaison: TramesMaisonService,
     private readonly exports: ExportService,
     private readonly credits: CreditsService,
+    private readonly mail: MailService,
   ) {}
 
   /**
@@ -191,6 +193,38 @@ export class AssistantController {
       'Content-Length': String(buffer.length),
     });
     res.end(buffer);
+  }
+
+  /**
+   * LE MEME FICHIER, MAIS ENVOYE (25/08/2026).
+   *
+   * Telecharger suppose qu'on ecrit depuis le poste ou l'on veut le fichier.
+   * Sur un poste partage d'unite, ce n'est pas le cas : le document doit
+   * rejoindre une boite. L'adresse est saisie a l'ecran, apres relecture, et
+   * n'est pas conservee — comme les notes, elle sert puis elle est oubliee.
+   */
+  @Throttle({ default: { limit: 30, ttl: 3_600_000 } })
+  @Post('envoyer')
+  async envoyer(@Body() dto: EnvoyerDocumentDto) {
+    const buffer =
+      dto.format === 'docx'
+        ? await this.exports.docx(dto.titre, dto.contenu)
+        : await this.exports.pdf(dto.titre, dto.contenu);
+    const nom = this.exports.nomFichier(dto.titre, dto.format);
+    await this.mail.sendDocumentLex({
+      to: dto.email,
+      titre: dto.titre,
+      message: dto.message,
+      piece: {
+        nom,
+        contenu: buffer,
+        type:
+          dto.format === 'docx'
+            ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            : 'application/pdf',
+      },
+    });
+    return { envoye: true, a: dto.email, fichier: nom };
   }
 
   /** Générateur d'activités éducatives & thérapeutiques. */

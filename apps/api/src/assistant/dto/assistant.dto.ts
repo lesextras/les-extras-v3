@@ -1,6 +1,6 @@
 import { AssistantTrame, PorteeTrame } from '@prisma/client';
 import {
-  ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsIn, IsOptional, IsString, MaxLength, MinLength,
+  ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsEnum, IsIn, IsOptional, IsString, MaxLength, MinLength,
 } from 'class-validator';
 
 /** Demande de génération : les notes brutes ne sont JAMAIS persistées. */
@@ -252,4 +252,23 @@ export class ExporterDto {
 
   @IsIn(['docx', 'pdf'])
   format!: 'docx' | 'pdf';
+}
+
+/**
+ * Envoi de l'écrit par courriel, à une adresse choisie par l'auteur.
+ *
+ * Le document part en pièce jointe. Ni l'adresse ni le contenu ne sont
+ * conservés : la route les emploie et les oublie — c'est la même règle que
+ * pour les notes, et elle ne souffre pas d’exception parce qu’un courriel
+ * serait plus commode à tracer.
+ */
+export class EnvoyerDocumentDto extends ExporterDto {
+  @IsEmail({}, { message: 'Adresse e-mail invalide.' })
+  @MaxLength(180)
+  email!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  message?: string;
 }

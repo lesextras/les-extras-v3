@@ -38,6 +38,19 @@ import type { Transporter } from 'nodemailer';
  * Aucun mot de passe n'est écrit dans ce dépôt : tout vient des variables
  * d'environnement.
  */
+/**
+ * Une piece jointe : un fichier deja fabrique, pret a partir.
+ *
+ * Le contenu est un Buffer et non un chemin : rien n'est ecrit sur le disque
+ * du serveur au passage. Un ecrit professionnel qui transiterait par un
+ * fichier temporaire y resterait le jour ou l'envoi echoue.
+ */
+export interface PieceJointe {
+  nom: string;
+  contenu: Buffer;
+  type: string;
+}
+
 @Injectable()
 export class MailService implements OnModuleDestroy {
   private readonly logger = new Logger(MailService.name);
@@ -169,7 +182,12 @@ export class MailService implements OnModuleDestroy {
    * déclenché. En revanche il LAISSE UNE TRACE dans les journaux — c'est ce
    * qui manquait pour comprendre pourquoi certains messages disparaissaient.
    */
-  private async send(to: string, subject: string, html: string): Promise<void> {
+  private async send(
+    to: string,
+    subject: string,
+    html: string,
+    pieces?: PieceJointe[],
+  ): Promise<void> {
     const transport = this.transport;
     if (transport) {
       try {
@@ -184,6 +202,11 @@ export class MailService implements OnModuleDestroy {
           text: versionTexte(html),
           // Les réponses arrivent à l'association, pas dans une boîte muette.
           replyTo: this.config.get<string>('MAIL_REPLY_TO') || undefined,
+          attachments: pieces?.map((p) => ({
+            filename: p.nom,
+            content: p.contenu,
+            contentType: p.type,
+          })),
         });
         this.logger.log(`[MAIL:smtp] envoyé to=${to} id=${info.messageId} subject="${subject}"`);
         return;
@@ -210,6 +233,11 @@ export class MailService implements OnModuleDestroy {
           to: [{ email: to }],
           subject,
           htmlContent: html,
+          // Brevo veut la piece en base64 ; nodemailer la veut en Buffer.
+          attachment: pieces?.map((p) => ({
+            name: p.nom,
+            content: p.contenu.toString('base64'),
+          })),
         }),
       });
       if (!res.ok) {
@@ -855,6 +883,35 @@ export class MailService implements OnModuleDestroy {
         <br><br>La publication est immédiate : si le contenu ne convient pas,
         archivez-le depuis le back-office.`,
       ),
+    );
+  }
+
+  /**
+   * UN ECRIT LEX ENVOYE PAR COURRIEL (25/08/2026).
+   *
+   * Le document part en piece jointe, dans le format que l'auteur a choisi.
+   * Le corps du message ne le recopie pas : un ecrit professionnel se lit
+   * dans son fichier, pas dans un courriel qui traversera peut-etre trois
+   * boites. C'est l'auteur qui decide de l'adresse, apres relecture.
+   */
+  async sendDocumentLex(data: {
+    to: string;
+    titre: string;
+    message?: string;
+    piece: PieceJointe;
+  }): Promise<void> {
+    const echappe = (s: string) => s.replace(/</g, "&lt;");
+    const mot = data.message
+      ? `<br><br>${echappe(data.message).replace(/\n/g, "<br>")}`
+      : "";
+    await this.send(
+      data.to,
+      data.titre,
+      this.layout(
+        data.titre,
+        `Vous trouverez en pièce jointe le document <b>${echappe(data.titre)}</b>, rédigé et relu sur Les Extras.${mot}`,
+      ),
+      [data.piece],
     );
   }
 
