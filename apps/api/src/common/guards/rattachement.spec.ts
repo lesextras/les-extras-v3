@@ -43,6 +43,11 @@ describe('Ce qui reste ouvert pendant l’attente', () => {
       '/api/notifications',
       '/api/files/upload',
       '/api/invitations/accept',
+      // Son dossier de conformite : c'est ce qu'il peut preparer AVANT d'etre
+      // accepte, et c'est autant de gagne le jour ou il l'est. Le controleur
+      // borne chacun a ses propres pieces ; ce garde-fou-ci ne fait qu'ouvrir
+      // la racine.
+      '/api/conformite/mes-documents',
     ]) {
       expect([route, routeOuverteSansRattachement(route)]).toEqual([route, true]);
     }
@@ -58,7 +63,6 @@ describe('Ce qui reste ouvert pendant l’attente', () => {
       '/api/formations',
       '/api/contrats',
       '/api/vivier',
-      '/api/conformite',
       '/api/gap',
       '/api/reviews',
       '/api/conversations',
