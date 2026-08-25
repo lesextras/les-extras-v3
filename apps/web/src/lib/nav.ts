@@ -413,9 +413,23 @@ const adminNav: NavSection[] = [
  * LEX, son dossier, ses crédits, et l'écran où sa demande avance.
  */
 const attenteRattachementNav: NavSection[] = [
+  // MON ESPACE EN PREMIER (25/08/2026).
+  //
+  // Tant qu'un salarie n'est pas rattache, son sujet n'est pas le travail :
+  // c'est sa demande et son dossier. Le menu commence donc par la, et le
+  // rattachement y a sa place — il fait partie de son espace, pas du reste.
   {
+    title: 'Mon espace',
     items: [
       { label: 'Mon rattachement', href: '/dashboard', icon: Building2, essentiel: true, hint: 'Où en est votre demande, et à qui l’envoyer' },
+      // « Mon compte » a quitte cette liste le 25/08/2026 : le profil est deja
+      // en haut a droite, et deux portes vers le meme ecran font douter qu'il
+      // s'agisse du meme.
+      { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces : identité, diplôme, casier judiciaire. Un dossier prêt le jour du rattachement, c’est autant de gagné.' },
+    ],
+  },
+  {
+    items: [
       // Pas de titre au-dessus : « Trouver du travail » annoncait une rubrique
       // pour une seule entree. Les opportunites se lisent directement.
       { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Les missions ouvertes à la candidature, et le catalogue des ateliers et formations du réseau' },
@@ -431,14 +445,11 @@ const attenteRattachementNav: NavSection[] = [
     title: 'Mon activité',
     items: [
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
-      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Votre agenda — importez-y le planning que vous avez déjà, en CSV, Excel ou PDF' },
-    ],
-  },
-  {
-    title: 'Mon offre',
-    items: [
+      // « Mon offre » a disparu le 25/08/2026 : deux entrees ne font pas une
+      // rubrique, et ce qu'on anime releve de son activite comme le reste.
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
+      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Votre agenda — importez-y le planning que vous avez déjà, en CSV, Excel ou PDF' },
     ],
   },
   {
@@ -447,15 +458,6 @@ const attenteRattachementNav: NavSection[] = [
       { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, essentiel: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées.' },
       { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées.' },
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation du mois et votre consommation' },
-    ],
-  },
-  {
-    title: 'Mon espace',
-    items: [
-      // « Mon compte » a quitte cette liste le 25/08/2026 : le profil est deja
-      // en haut a droite, et deux portes vers le meme ecran font douter qu'il
-      // s'agisse du meme.
-      { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces : identité, diplôme, casier judiciaire. Un dossier prêt le jour du rattachement, c’est autant de gagné.' },
     ],
   },
 ];

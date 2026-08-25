@@ -435,7 +435,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
             ) : null}
           </div>
 
-          {/* ÉTAPE 2 — les notes, avec conseils et exemple dépliable */}
+          {/* LE FORMULAIRE — le genre, le cadre, les faits, puis les reglages */}
           {etape === "ecrire" ? (
             <form
               className="space-y-4"
@@ -527,13 +527,6 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   </button>
                 ) : null}
               </div>
-
-              <details className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
-                <summary className="cursor-pointer font-medium text-foreground">
-                  Voir un exemple de notes
-                </summary>
-                <p className="mt-2 whitespace-pre-wrap italic text-muted-foreground">« {trame?.exemple ?? ""} »</p>
-              </details>
 
               {/* Separer les faits de ce qu'on en pense n'est pas une coquetterie :
                   c'est ce qui distingue un ecrit opposable d'un jugement. Le champ

@@ -41,6 +41,13 @@ const OUVERT_SANS_RATTACHEMENT = new Set([
   // Déposer ses pièces (carte d'identité, diplôme) pendant l'attente.
   'files',
   'documents',
+  // SON DOSSIER DE CONFORMITE (25/08/2026).
+  //
+  // L'entree « Mon dossier » existait au menu, et la page rendait une erreur :
+  // la racine `conformite` n'avait jamais ete ouverte. Or c'est precisement ce
+  // qu'un salarie peut preparer avant d'etre accepte — piece d'identite,
+  // diplome, casier. Le controleur borne deja chacun a ses propres documents.
+  'conformite',
   // SON PROPRE AGENDA (25/08/2026).
   //
   // Un salarié tient déjà un planning : le sien. Rien n'oblige à attendre un
