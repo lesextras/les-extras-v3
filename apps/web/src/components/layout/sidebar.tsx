@@ -301,26 +301,24 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
 
       {/* POINTS & PARRAINAGE, ÉPINGLÉ (25/08/2026).
 
-          Chez l'intervenant, l'entrée vivait tout en bas d'une liste qui
+          L'entrée vivait tout en bas d'une liste qui
           défile : personne ne descendait jusque-là, et le programme de
           parrainage restait lettre morte auprès des seuls qui pouvaient le
           faire tourner. On la sort du défilement et on la pose juste
           au-dessus du bloc d'aide — toujours à l'écran, comme lui. */}
-      {role === 'FREELANCE' ? (
-        <div className="px-4 pb-1 pt-2">
-          <Link
-            href="/dashboard/points"
-            onClick={onNavigate}
-            className={cn(
-              'flex items-center gap-2 rounded-xl border border-primary/20 bg-primary-soft/40 px-3 py-2.5 text-xs font-semibold transition-colors hover:bg-primary-soft/70',
-              isActive('/dashboard/points') ? 'text-primary' : 'text-accent-foreground',
-            )}
-          >
-            <Award aria-hidden="true" className="size-4 shrink-0 text-primary" />
-            <span className="truncate">Points &amp; parrainage</span>
-          </Link>
-        </div>
-      ) : null}
+      <div className="px-4 pb-1 pt-2">
+        <Link
+          href="/dashboard/points"
+          onClick={onNavigate}
+          className={cn(
+            'flex items-center gap-2 rounded-xl border border-primary/20 bg-primary-soft/40 px-3 py-2.5 text-xs font-semibold transition-colors hover:bg-primary-soft/70',
+            isActive('/dashboard/points') ? 'text-primary' : 'text-accent-foreground',
+          )}
+        >
+          <Award aria-hidden="true" className="size-4 shrink-0 text-primary" />
+          <span className="truncate">Points &amp; parrainage</span>
+        </Link>
+      </div>
       <div className="p-4 pt-2">
         <div className="rounded-xl bg-primary-soft/60 p-3">
           <p className="text-xs font-semibold text-accent-foreground">Besoin d’aide ?</p>

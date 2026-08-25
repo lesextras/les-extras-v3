@@ -43,6 +43,17 @@ export class CreditsService {
 
   /** Solde + derniers mouvements — l'écran « Utilisation » lit tout ici. */
   async utilisation(accountId: string) {
+    // LA DOTATION GRATUITE SE SERT TOUTE SEULE (25/08/2026).
+    //
+    // Elle n'était créditée que si quelqu'un cliquait quelque part. Un
+    // salarié fraîchement inscrit, pas encore rattaché à une structure,
+    // avait donc zéro crédit — et MemberGuard lui fermait LEX en lui
+    // parlant de recharge, alors que ses quinze générations du mois
+    // l'attendaient. On les lui verse dès qu'il ouvre son espace.
+    //
+    // Sans risque de double service : crediterJusquA refuse s'il existe
+    // déjà une écriture DOTATION_MENSUELLE depuis le 1er du mois.
+    await this.activerOffreGratuite(accountId);
     const [account, mouvements, consomme30j] = await this.prisma.$transaction([
       this.prisma.account.findUniqueOrThrow({
         where: { id: accountId },
@@ -118,6 +129,9 @@ export class CreditsService {
    * simultanées ne peuvent pas faire passer le solde en négatif.
    */
   async consommer(accountId: string, montant: number, reason: string, auteur?: Auteur) {
+    // Ceinture et bretelles : si la génération arrive sans que l'espace ait
+    // été ouvert, la dotation du mois est servie avant le débit.
+    await this.activerOffreGratuite(accountId);
     return this.prisma.$transaction(async (tx) => {
       const debite = await tx.account.updateMany({
         where: { id: accountId, credits: { gte: montant } },
