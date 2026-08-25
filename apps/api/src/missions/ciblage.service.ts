@@ -198,6 +198,15 @@ export class CiblageService {
     throw new BadRequestException(MESSAGE_HORS_CIBLE[mission.cibleDiffusion]);
   }
 
+  /** Le compte qui répond est-il un compte de salarié ? */
+  async estSalarie(accountId: string): Promise<boolean> {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { profilSalarie: true },
+    });
+    return compte?.profilSalarie === true;
+  }
+
   /**
    * LE SEUL POINT DE PASSAGE POUR RÉPONDRE À UNE MISSION.
    *
@@ -239,13 +248,38 @@ export class CiblageService {
 
     const compte = await this.prisma.account.findUnique({
       where: { id: accountId },
-      select: { ownerId: true },
+      select: { ownerId: true, profilSalarie: true },
     });
     if (compte?.ownerId) {
       const salarie = await this.prisma.membership.findFirst({
         where: { accountId: mission.accountId, userId: compte.ownerId },
         select: { id: true },
       });
+
+      // UN SALARIÉ NE RÉPOND QU'AUX BESOINS DE SA PROPRE MAISON.
+      //
+      // Ce qu'il fait là n'est pas de la prestation : ce sont des heures
+      // supplémentaires chez son employeur, que l'établissement accepte ou
+      // refuse ensuite, une par une. La relation de travail ne change pas,
+      // elle s'allonge — et c'est pour cela que le rattachement, ici, ouvre
+      // au lieu de fermer.
+      //
+      // Hors de sa maison, en revanche, il n'a rien à faire sur la place de
+      // marché avec ce compte-là : intervenir ailleurs demande un compte
+      // intervenant, qu'il reste libre d'ouvrir.
+      if (compte.profilSalarie) {
+        if (!salarie) {
+          throw new BadRequestException(
+            "Vous ne pouvez répondre qu'aux besoins de l'établissement qui vous emploie. Pour intervenir ailleurs, ouvrez un compte intervenant.",
+          );
+        }
+        return;
+      }
+
+      // L'INDÉPENDANT, LUI, NE FACTURE PAS SON PROPRE EMPLOYEUR.
+      // Le garde-fou d'origine reste entier pour lui : répondre en
+      // prestataire à la maison qui vous salarie, c'est le terrain de la
+      // requalification, et la plateforme ne doit pas en être l'instrument.
       if (salarie) {
         throw new BadRequestException(
           "Vous êtes rattaché à cet établissement : vous ne pouvez pas y répondre en tant qu'indépendant.",

@@ -973,6 +973,20 @@ export class MissionsService {
       return this.engagements.sengager(missionId, freelanceAccountId, accountType);
     }
 
+    // UN SALARIÉ NE SE SERT PAS TOUT SEUL.
+    //
+    // Prendre la mission directement la passe à POURVUE sans que personne
+    // n'ait rien validé. Pour un salarié, ces heures sont des heures
+    // supplémentaires : elles se demandent, et l'employeur les accorde ou
+    // les refuse. On le renvoie donc vers la candidature, qui est
+    // exactement ce chemin-là. La file d'engagement, elle, présente déjà le
+    // profil à la direction : elle reste ouverte, au-dessus.
+    if (await this.ciblage.estSalarie(freelanceAccountId)) {
+      throw new BadRequestException(
+        "Vous êtes salarié de cet établissement : vous ne prenez pas la mission directement. Candidatez — ce sont des heures supplémentaires, votre établissement doit les accepter.",
+      );
+    }
+
     // Verrou : passe PUBLISHED -> FILLED uniquement si personne ne l'a déjà prise.
     const claim = await this.prisma.reliefMission.updateMany({
       where: { id: missionId, status: MissionStatus.PUBLISHED },
