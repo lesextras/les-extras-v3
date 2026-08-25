@@ -177,8 +177,22 @@ export class AuthService {
     const email = dto.email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({ where: { email } });
 
-    // Message générique : ne pas révéler si l'email existe.
+    // L'ORDRE COMPTE (25/08/2026).
+    //
+    // L'intention etait bonne — « ne pas reveler si l'email existe » — mais
+    // les deux messages de statut la trahissaient : ils partaient AVANT la
+    // verification du mot de passe. Une adresse professionnelle du secteur
+    // suffisait donc a savoir qui est inscrit, et meme qui a ete banni ou a
+    // demande l'effacement de son compte — une donnee personnelle en soi.
+    //
+    // On verifie donc le mot de passe en premier. Les messages de statut ne
+    // sont dus qu'a quelqu'un qui a prouve qui il est.
     if (!user) {
+      throw new UnauthorizedException('Identifiants invalides.');
+    }
+
+    const valid = await bcrypt.compare(dto.password, user.password);
+    if (!valid) {
       throw new UnauthorizedException('Identifiants invalides.');
     }
 
@@ -187,11 +201,6 @@ export class AuthService {
     }
     if (user.status === UserStatus.ANONYMIZED) {
       throw new UnauthorizedException('Ce compte a été supprimé à la demande de son titulaire.');
-    }
-
-    const valid = await bcrypt.compare(dto.password, user.password);
-    if (!valid) {
-      throw new UnauthorizedException('Identifiants invalides.');
     }
 
     await this.prisma.user.update({
@@ -384,6 +393,9 @@ export class AuthService {
       onboardingStep: full?.onboardingStep ?? 0,
       accounts,
       account: accounts[0] ?? null,
+      // Marque de session. Sans elle, un jeton de verification d'e-mail ou
+      // un etat OAuth ouvrirait une session : voir jwt.strategy.ts.
+      typ: 'access',
     };
     return this.jwt.signAsync(payload);
   }

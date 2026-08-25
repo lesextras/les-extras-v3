@@ -16,13 +16,25 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-lesextras}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lesextras}
+      # Plus de repli : un mot de passe par defaut sur une base qui contient
+      # des pieces d'identite, des casiers judiciaires et des IBAN n'est pas
+      # un defaut, c est une porte ouverte. Le deploiement echoue si la
+      # variable manque — et c est ce qu on veut.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD est obligatoire}
       POSTGRES_DB: ${POSTGRES_DB:-lesextras}
     volumes:
       - pg_data:/var/lib/postgresql/data
-    # Exposition locale uniquement (en prod Coolify : ne PAS publier le port)
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # LE PORT N EST PLUS PUBLIE (25/08/2026).
+    #
+    # Le commentaire disait deja « en prod : ne PAS publier le port » — et le
+    # bloc `ports` le publiait quand meme, sur toutes les interfaces. Docker
+    # ecrit ses regles avant UFW : le pare-feu ne protegeait rien.
+    #
+    # L API joint la base par le reseau `lesextras`, elle n a pas besoin de
+    # port hote. Pour un acces local en developpement, decommentez le bloc
+    # ci-dessous : il est borne a la boucle locale.
+    # ports:
+    #   - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     networks:
       - lesextras
     healthcheck:
