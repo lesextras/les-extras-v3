@@ -29,8 +29,10 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Ressources',
     links: [
-      { label: 'Comment ça marche', href: '/#comment' },
-      { label: 'Mode d’emploi pas à pas', href: '/mode-demploi' },
+      // L'ancre `/#comment` n'existe pas sur l'accueil (les sections y sont
+      // #lex, #gap, #marketplace, #tarifs) : le lien ne bougeait pas la page.
+      // La page qui répond vraiment à la question, c'est le mode d'emploi.
+      { label: 'Comment ça marche', href: '/mode-demploi' },
       { label: 'Le GAP', href: '/gap' },
       { label: 'L’Édublog', href: '/edublog' },
       { label: 'Notre histoire', href: '/notre-histoire' },

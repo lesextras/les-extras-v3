@@ -1,15 +1,33 @@
 // Helpers serveur : garde de session + fetch API tolérant aux erreurs.
 // Utilisés par les Server Components des écrans (dashboard, marketplace, admin).
 import "server-only";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { apiRequest } from "@/lib/api";
 import type { Session } from "./types";
 
-/** Renvoie la session ou redirige vers /login. */
+/**
+ * Renvoie la session, ou renvoie vers /login en gardant la page demandée.
+ *
+ * Le middleware pose déjà `?next=` quand le cookie est absent. Ici, on couvre
+ * l'autre cas : le cookie est là mais il ne vaut plus rien (expiré, signature
+ * invalide, secret changé). Sans le `next`, la personne se reconnecte et
+ * atterrit sur le tableau de bord au lieu de la page qu'elle voulait — après
+ * avoir cliqué sur un lien qu'on lui avait envoyé, c'est perdu.
+ *
+ * Le chemin vient de l'en-tête `x-chemin` posé par le middleware. On ne garde
+ * que les chemins internes commençant par « / » et sans « // » : une valeur
+ * d'en-tête reste une entrée, et une redirection ouverte se glisse exactement
+ * là.
+ */
 export async function requireSession(): Promise<Session> {
   const session = (await getSession()) as Session | null;
-  if (!session) redirect("/login");
+  if (!session) {
+    const chemin = (await headers()).get("x-chemin") ?? "";
+    const sur = /^\/(?!\/)[\w\-./[\]]*$/.test(chemin) && chemin !== "/login";
+    redirect(sur ? `/login?next=${encodeURIComponent(chemin)}` : "/login");
+  }
   return session;
 }
 
