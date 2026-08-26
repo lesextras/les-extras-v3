@@ -115,3 +115,24 @@ describe('Qui est en attente', () => {
     );
   });
 });
+
+
+/**
+ * LA REGRESSION DU 26 AOUT 2026.
+ *
+ * Le tableau de bord d'un salarie non rattache affichait « Un probleme est
+ * survenu » sur TOUS ses blocs. Rien n'etait casse : la page appelle
+ * `/dashboard/stats`, et cette racine n'avait jamais ete ouverte. Le
+ * garde-fou refusait a la personne ses propres compteurs.
+ *
+ * Ce test existe pour que ca ne revienne pas.
+ */
+describe('Le tableau de bord d’un salarié en attente', () => {
+  it('lui rend ses propres compteurs', () => {
+    expect(routeOuverteSansRattachement('/api/dashboard/stats', 'GET')).toBe(true);
+  });
+
+  it('mais ne laisse rien y écrire', () => {
+    expect(routeOuverteSansRattachement('/api/dashboard/stats', 'POST')).toBe(false);
+  });
+});

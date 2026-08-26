@@ -105,6 +105,16 @@ const LECTURE_SEULE_SANS_RATTACHEMENT = new Set([
   // consulte, il n'y engage rien tant qu'il n'est pas rattaché.
   'bookings',
   'formations',
+  // SON PROPRE TABLEAU DE BORD (26/08/2026).
+  //
+  // C'est le defaut que ce garde-fou avait cree : la page d'accueil du compte
+  // appelle `/dashboard/stats`, et cette racine n'etait dans aucune des deux
+  // listes. Resultat, un salarie non rattache ouvrait son tableau de bord et
+  // TOUS les blocs affichaient « Un probleme est survenu » — alors que rien
+  // n'etait casse : on lui refusait simplement ses propres compteurs.
+  //
+  // Ce sont ses chiffres a lui, en lecture seule. Rien a proteger ici.
+  'dashboard',
 ]);
 
 /** La route est-elle ouverte à un salarié non rattaché ? */
