@@ -12,7 +12,6 @@ import {
   MISSION_STATUS_LABEL,
   missionBadgeVariant,
   formatDate,
-  formatRate,
 } from "../../../_shared/format";
 import type { Mission } from "../../../_shared/types";
 
@@ -80,9 +79,6 @@ export default async function MissionDetailPage({ params: paramsPromesse }: { pa
                   value={`${mission.city ?? "—"}${mission.postalCode ? ` (${mission.postalCode})` : ""}`}
                 />
                 <Row label="Postes" value={String(mission.headcount)} />
-                {mission.hourlyRate ? (
-                  <Row label="Rémunération" value={formatRate(mission.hourlyRate)} highlight />
-                ) : null}
               </dl>
 
               {mission.attachmentUrl ? (

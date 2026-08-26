@@ -265,9 +265,19 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
                   {vue === "formations" ? "Voir le catalogue de formations" : "Voir le catalogue d’ateliers"}
                 </Link>
               </Button>
+              {/* LE SECOND BOUTON SUIT LA VUE (26/08/2026).
+
+                  Sur « Mes réservations formation », il proposait « Publier un
+                  renfort » : la page parle de sessions de formation, le bouton
+                  renvoyait vers un tout autre objet. Une copie restée d’un
+                  écran à l’autre. */}
               {session.account.type === "ESTABLISHMENT" ? (
                 <Button asChild variant="outline">
-                  <Link href="/dashboard/renforts">Publier un renfort</Link>
+                  {vue === "formations" ? (
+                    <Link href="/dashboard/formations">Organiser une formation</Link>
+                  ) : (
+                    <Link href="/dashboard/renforts">Publier un renfort</Link>
+                  )}
                 </Button>
               ) : (
                 <Button asChild variant="outline">

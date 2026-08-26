@@ -11,7 +11,6 @@ import {
   bookingBadgeVariant,
   formatDate,
   formatMoney,
-  formatRate,
 } from "./format";
 import type { Booking, Mission, Service } from "./types";
 
@@ -22,9 +21,6 @@ export function MissionCard({ mission, href }: { mission: Mission; href?: string
       <CardHeader className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <Badge variant="secondary">{(mission as { categoryRef?: { title?: string } }).categoryRef?.title ?? MISSION_CATEGORY_LABEL[mission.category] ?? mission.category}</Badge>
-          {mission.hourlyRate ? (
-            <span className="text-sm font-semibold text-primary">{formatRate(mission.hourlyRate)}</span>
-          ) : null}
         </div>
         <Link href={link} className="block">
           <h3 className="line-clamp-2 font-semibold text-foreground group-hover:text-primary">

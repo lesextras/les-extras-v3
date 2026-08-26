@@ -223,15 +223,17 @@ const establishmentNav: NavSection[] = [
       // Libellé raccourci : « Renforts et interventions » était tronqué en
       // « Renforts et interv… » dans la barre latérale. Une entrée qu'on ne
       // peut pas lire est une entrée sur laquelle on ne clique pas.
-      // Une seule entrée « Mes interventions » couvrait trois choses qui ne se
-      // décident, ne se paient et ne se suivent pas de la même façon : un
-      // renfort pourvu, un atelier commandé, une inscription en formation.
-      // Les renforts restent lisibles sur « RenforTeam », qui montre chaque
-      // mission avec son statut et ses candidatures ; les deux autres méritent
-      // leur porte. L'adresse nue `/dashboard/reservations` continue de tout
-      // afficher — les notifications y pointent avec une ancre.
-      { label: 'Mes réservations ateliers', href: '/dashboard/reservations/ateliers', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers que vous avez commandés et ceux que vous animez, avec leur date et leur statut' },
-      { label: 'Mes réservations formation', href: '/dashboard/reservations/formations', icon: GraduationCap, essentiel: true, hint: 'Les inscriptions en formation, nominatives : qui est inscrit, à quelle session, avec quel financement' },
+      // DEUX ENTRÉES REDEVENUES UNE (26/08/2026).
+      //
+      // On les avait séparées pour donner sa porte à chaque nature : un
+      // atelier commandé et une inscription en formation ne se décident ni
+      // ne se paient pareil. Mais la page filtre déjà elle-même — Tout /
+      // Ateliers / Formations — et deux entrées qui mènent à deux onglets du
+      // même écran, c'est le menu qui refait le travail de la page.
+      //
+      // Une seule porte, qui ouvre sur « Tout ». Le tri se fait ensuite, là
+      // où on le voit.
+      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers commandés et les inscriptions en formation, au même endroit — filtrables sur la page' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
       // Le pendant contractuel du planning : on a trouvé quelqu'un, on
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne

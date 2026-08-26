@@ -267,7 +267,6 @@ export function RenfortModal({
       endTime: String(fd.get("endTime") || "") || undefined,
       city: String(fd.get("city") || "") || undefined,
       postalCode: String(fd.get("postalCode") || "") || undefined,
-      hourlyRate: fd.get("hourlyRate") ? Number(fd.get("hourlyRate")) : undefined,
       headcount: fd.get("headcount") ? Number(fd.get("headcount")) : 1,
       emergency: fd.get("emergency") === "on",
       attachmentUrl: String(fd.get("attachmentUrl") || "") || undefined,
@@ -423,13 +422,14 @@ export function RenfortModal({
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field
-              label="Taux horaire (€)"
-              htmlFor="hourlyRate"
-              hint="Affiché aux intervenants comme rémunération de la mission."
-            >
-              <Input id="hourlyRate" name="hourlyRate" type="number" step="0.5" placeholder="24" />
-            </Field>
+            {/* LE TAUX HORAIRE A QUITTÉ LE FORMULAIRE (26/08/2026).
+
+                Annoncer un tarif dès la publication fige la négociation avant
+                qu’elle commence, et expose publiquement ce qu’un établissement
+                paie. La rémunération se convient au moment de l’engagement, pas
+                sur une annonce. Le champ reste en base : les missions publiées
+                avant aujourd’hui gardent le leur, et la proposition de contrat
+                sait déjà travailler sans. */}
             <Field
               label="Postes"
               htmlFor="headcount"
