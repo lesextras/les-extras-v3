@@ -63,19 +63,19 @@ const POUR_PROFESSIONNEL = [
 // son vivier de remplacants habituels, et seulement ensuite le reseau.
 const CASCADE = [
   {
-    titre: "1. Vos salariés",
+    titre: "Vos salariés",
     texte:
       "Le besoin part d’abord en interne, vers les personnes qui connaissent déjà la maison et les jeunes. Heures complémentaires proposées en un clic, réponse depuis leur espace.",
     pastille: "bg-primary text-primary-foreground",
   },
   {
-    titre: "2. Votre vivier de CDD",
+    titre: "Votre vivier de CDD",
     texte:
       "Sans réponse, l’offre passe à vos remplaçants habituels — les intervenants déjà venus chez vous, gardés dans votre vivier. Plus besoin de rechercher leurs coordonnées.",
     pastille: "bg-secondary text-secondary-foreground",
   },
   {
-    titre: "3. Le réseau Les Extras",
+    titre: "Le réseau Les Extras",
     texte:
       "En dernier recours seulement, l’offre s’ouvre aux intervenants vérifiés du réseau, filtrés sur le métier, la zone d’intervention et les disponibilités.",
     pastille: "bg-amber-500 text-amber-950",
