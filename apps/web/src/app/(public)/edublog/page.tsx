@@ -1,8 +1,7 @@
 // Fil PUBLIC des actualités : tout compte peut publier, tout le monde peut lire.
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import { Search, Eye, Building2 } from "lucide-react";
+import { Search, Eye, Building2, Newspaper } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import { metaPublique } from "@/lib/meta";
 // Les couvertures d'articles viennent de la médiathèque WordPress, qui a déjà
 // déménagé deux fois : on passe par `visuel()` pour réécrire les hôtes hérités.
 import { visuel } from "@/lib/media";
+import { VisuelCarte } from "../../_shared/VisuelCarte";
 export const metadata: Metadata = metaPublique({
   title: "Édublog — actualités du médico-social",
   description:
@@ -179,11 +179,24 @@ export default async function ActualitesPage({
           <Link href={`/edublog/${une.slug}`} className="group block">
             <Card className="overflow-hidden transition group-hover:shadow-card">
               <div className="grid gap-0 md:grid-cols-2">
-                {visuel(une.coverUrl) ? (
-                  <div className="relative aspect-[16/10] bg-muted md:aspect-auto md:min-h-[280px]">
-                    <Image src={visuel(une.coverUrl)!} alt={une.title} fill sizes="50vw" className="object-cover" priority />
-                  </div>
-                ) : null}
+                {/* UNE CARTE SANS COUVERTURE N EST PAS UNE CARTE VIDE (26/08/2026).
+
+                    Sans visuel, l article a la une perdait la moitie gauche de sa
+                    carte et paraissait inacheve a cote des autres. Le repli de
+                    marque garde la mise en page entiere — meme geste que sur les
+                    formations, avec le meme composant. */}
+                <div className="relative aspect-[16/10] bg-muted md:aspect-auto md:min-h-[280px]">
+                  <VisuelCarte src={visuel(une.coverUrl)} alt={une.title} sizes="50vw" priority>
+                    <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+                      <span className="flex flex-col items-center gap-1.5 text-center">
+                        <Newspaper className="size-6 text-primary/70" aria-hidden />
+                        <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                          {une.category?.title ?? "Édublog"}
+                        </span>
+                      </span>
+                    </span>
+                  </VisuelCarte>
+                </div>
                 <CardContent className="flex flex-col justify-center gap-3 p-8">
                   <div className="flex flex-wrap gap-2">
                     <Badge>À la une</Badge>
@@ -201,11 +214,18 @@ export default async function ActualitesPage({
             {suite.map((a) => (
               <Link key={a.id} href={`/edublog/${a.slug}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
-                  {visuel(a.coverUrl) ? (
-                    <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={visuel(a.coverUrl)!} alt={a.title} fill sizes="33vw" className="object-cover" />
-                    </div>
-                  ) : null}
+                  <div className="relative aspect-[16/10] bg-muted">
+                    <VisuelCarte src={visuel(a.coverUrl)} alt={a.title} sizes="33vw">
+                      <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+                        <span className="flex flex-col items-center gap-1.5 text-center">
+                          <Newspaper className="size-6 text-primary/70" aria-hidden />
+                          <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                            {a.category?.title ?? "Édublog"}
+                          </span>
+                        </span>
+                      </span>
+                    </VisuelCarte>
+                  </div>
                   <CardContent className="space-y-2.5 p-5">
                     {a.category?.title ? <Badge variant="outline">{a.category.title}</Badge> : null}
                     <h2 className="line-clamp-2 font-semibold text-foreground">{a.title}</h2>

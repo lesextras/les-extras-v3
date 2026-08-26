@@ -1,19 +1,19 @@
 // Article public : lisible sans connexion, indexable, partageable.
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, Building2 } from "lucide-react";
+import { Eye, Building2, Newspaper } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
 import { formatDate, initials, fullName } from "../../../_shared/format";
 import { RichText, texteBrut } from "../../../_shared/RichText";
 import type { ArticleCard } from "../page";
 // Couvertures d'articles : médiathèque WordPress, hôtes hérités réécrits.
 import { visuel } from "@/lib/media";
+import { VisuelCarte } from "../../../_shared/VisuelCarte";
 import { SOCLE_OG, SOCLE_TWITTER, titreSeo } from "@/lib/meta";
 
 interface ArticleDetail extends ArticleCard {
@@ -110,11 +110,23 @@ export default async function ArticlePage({ params: paramsPromesse }: { params: 
         </div>
       </header>
 
-      {visuel(a.coverUrl) ? (
-        <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
-          <Image src={visuel(a.coverUrl)!} alt={a.title} fill sizes="100vw" className="object-cover" priority />
-        </div>
-      ) : null}
+      {/* SANS COUVERTURE, L ARTICLE COMMENCAIT DANS LE VIDE (26/08/2026).
+
+          L image d en-tete disparaissait purement et simplement : le titre
+          tombait sur le texte, et l article paraissait bacle a cote de ceux
+          qui ont une photo. Le repli de marque tient la place. */}
+      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+        <VisuelCarte src={visuel(a.coverUrl)} alt={a.title} sizes="100vw" priority>
+          <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+            <span className="flex flex-col items-center gap-1.5 text-center">
+              <Newspaper className="size-6 text-primary/70" aria-hidden />
+              <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                {"Édublog"}
+              </span>
+            </span>
+          </span>
+        </VisuelCarte>
+      </div>
 
       {a.content ? (
         <RichText value={a.content} />
@@ -140,11 +152,18 @@ export default async function ArticlePage({ params: paramsPromesse }: { params: 
             {a.related.map((r) => (
               <Link key={r.id} href={`/edublog/${r.slug}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
-                  {visuel(r.coverUrl) ? (
-                    <div className="relative aspect-[16/10] bg-muted">
-                      <Image src={visuel(r.coverUrl)!} alt={r.title} fill sizes="33vw" className="object-cover" />
-                    </div>
-                  ) : null}
+                  <div className="relative aspect-[16/10] bg-muted">
+                    <VisuelCarte src={visuel(r.coverUrl)} alt={r.title} sizes="33vw">
+                      <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+                        <span className="flex flex-col items-center gap-1.5 text-center">
+                          <Newspaper className="size-6 text-primary/70" aria-hidden />
+                          <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                            {"Édublog"}
+                          </span>
+                        </span>
+                      </span>
+                    </VisuelCarte>
+                  </div>
                   <CardContent className="p-4">
                     <p className="line-clamp-2 text-sm font-medium text-foreground">{r.title}</p>
                     {r.publishedAt ? (

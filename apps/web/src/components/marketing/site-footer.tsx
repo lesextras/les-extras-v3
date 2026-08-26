@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { Logo } from '@/components/brand/logo';
 
 const columns: { title: string; links: { label: string; href: string }[] }[] = [
@@ -93,6 +94,34 @@ export function SiteFooter() {
               </ul>
             </div>
           ))}
+        </div>
+        {/*
+          LE BOUTON « SOURCES PREFEREES » DE GOOGLE (26/08/2026).
+
+          Google laisse une personne epingler un site comme source preferee :
+          ses pages remontent alors davantage dans LES resultats de cette
+          personne. Un directeur qui nous epingle une fois nous retrouve
+          ensuite sans nous chercher — exactement la fidelisation que vise un
+          site de niche comme le notre.
+
+          Le bouton se pose en deux morceaux : le script officiel de Google, et
+          un conteneur vide que ce script remplit lui-meme. On ne dessine rien
+          nous-memes, sinon Google ne le reconnait pas.
+          Reference : developers.google.com/search/docs/appearance/preferred-sources
+
+          L attribut passe par un spread : ecrit tel quel dans le JSX, il
+          n existe dans aucun type React et le typecheck echoue.
+        */}
+        <div className="mt-12 flex flex-col items-center gap-3 border-t border-border pt-8">
+          <p className="text-xs text-muted-foreground">
+            Retrouvez Les Extras en priorite dans vos resultats Google.
+          </p>
+          <Script
+            async
+            src="https://news.google.com/swg/js/v1/publisher.js"
+            strategy="afterInteractive"
+          />
+          <div {...{ 'google-add-preferred-source-btn': '' }} />
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} LES EXTRAS — ADéPA. Tous droits réservés.</p>
