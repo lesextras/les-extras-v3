@@ -55,6 +55,7 @@ import {
 import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
+import { UnSeulFormulaire } from './_shared/UnSeulFormulaire';
 import { ApercuProduit } from './_shared/ApercuProduit';
 
 /**
@@ -273,6 +274,13 @@ export default async function LandingPage() {
 
         {/* ============ LES DEUX PORTES ============ */}
         <DeuxPortes />
+
+        {/* ============ UN SEUL FORMULAIRE ============
+            L’argument central, posé juste après que le visiteur a dit qui il
+            est : ce que déclenche une publication, et ce que LEX prend en
+            charge de l’autre côté. Chaque promesse correspond à un
+            comportement réel du produit. */}
+        <UnSeulFormulaire />
 
         {/* ============ DOMAINES — cartes photo + texte (style annonce) ============ */}
         <section className="section">

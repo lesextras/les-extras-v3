@@ -358,6 +358,24 @@ export function RenfortModal({
             attribuée.
           </DialogDescription>
         </DialogHeader>
+
+        {/* CE QUE LA PUBLICATION DÉCLENCHE (26/08/2026).
+
+            Le formulaire demandait beaucoup sans jamais dire ce qu’il produit.
+            On le dit ici, en trois lignes, avant le premier champ : c’est le
+            geste qui remplace la liste d’appels, autant qu’il se voie. */}
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
+          <span className="block font-semibold text-foreground">Ce que ce formulaire déclenche</span>
+          <span className="mt-1.5 block">
+            L’offre part <strong className="font-medium text-foreground">en cascade</strong> — vos
+            salariés d’abord, puis les intervenants déjà venus chez vous, puis le réseau — et
+            s’élargit toute seule tant que le besoin n’est pas couvert. En mission urgente, chaque
+            profil qui correspond est prévenu{" "}
+            <strong className="font-medium text-foreground">par e-mail dès la publication</strong>.
+            Le premier qui accepte prend la mission et le contrat s’émet dans la foulée — ou vous
+            validez chaque profil, l’un après l’autre.
+          </span>
+        </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <Field label="Intitulé" htmlFor="title" required>
             <Input id="title" name="title" required placeholder="Éducateur spé — internat" />
