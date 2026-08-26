@@ -36,7 +36,7 @@ const POUR_ETABLISSEMENT = [
     pastille: "bg-secondary text-secondary-foreground",
     titre: "En cascade, dans votre ordre",
     texte:
-      "Vos salariés d’abord, puis les intervenants déjà venus chez vous, puis le réseau. La diffusion s’élargit toute seule tant que le besoin n’est pas couvert.",
+      "Vos salariés d’abord, puis votre vivier de CDD habituels, puis le réseau Les Extras. Vous fixez l’ordre une fois : la diffusion s’élargit toute seule tant que le besoin n’est pas couvert.",
   },
   {
     icone: FileSignature,
@@ -59,6 +59,29 @@ const POUR_PROFESSIONNEL = [
   { icone: GraduationCap, titre: "Appui scolaire", texte: "Le soutien construit pour les jeunes que vous accompagnez." },
 ];
 
+// Les trois paliers, nommes avec les mots de l'etablissement : ses salaries,
+// son vivier de remplacants habituels, et seulement ensuite le reseau.
+const CASCADE = [
+  {
+    titre: "1. Vos salariés",
+    texte:
+      "Le besoin part d’abord en interne, vers les personnes qui connaissent déjà la maison et les jeunes. Heures complémentaires proposées en un clic, réponse depuis leur espace.",
+    pastille: "bg-primary text-primary-foreground",
+  },
+  {
+    titre: "2. Votre vivier de CDD",
+    texte:
+      "Sans réponse, l’offre passe à vos remplaçants habituels — les intervenants déjà venus chez vous, gardés dans votre vivier. Plus besoin de rechercher leurs coordonnées.",
+    pastille: "bg-secondary text-secondary-foreground",
+  },
+  {
+    titre: "3. Le réseau Les Extras",
+    texte:
+      "En dernier recours seulement, l’offre s’ouvre aux intervenants vérifiés du réseau, filtrés sur le métier, la zone d’intervention et les disponibilités.",
+    pastille: "bg-amber-500 text-amber-950",
+  },
+];
+
 export function UnSeulFormulaire() {
   return (
     <section id="un-seul-formulaire" className="section scroll-mt-24">
@@ -68,9 +91,10 @@ export function UnSeulFormulaire() {
           Vous publiez une fois. Le réseau est prévenu, la réponse vient toute seule.
         </h2>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Un renfort à couvrir, un atelier à programmer : vous remplissez un formulaire, une seule
-          fois. Le reste ne vous revient plus : qui prévenir, dans quel ordre, qui relancer, quel
-          contrat éditer.
+          Un renfort à couvrir, un atelier à programmer : vous remplissez un seul formulaire.
+          Le logiciel s’occupe de la suite — il prévient les bonnes personnes dans l’ordre que vous
+          avez fixé, relance celles qui n’ont pas répondu, et édite le contrat dès qu’un intervenant
+          accepte.
         </p>
       </Reveal>
 
@@ -106,6 +130,44 @@ export function UnSeulFormulaire() {
           );
         })}
       </Reveal>
+      {/* La cascade, en clair. C’est l’ordre de diffusion qui sépare ce
+          logiciel d’une annonce publiée au hasard — encore fallait-il le dire. */}
+      <Reveal className="mt-8 overflow-hidden rounded-2xl border border-border bg-card/60">
+        <div className="border-b border-border px-6 py-5 md:px-8">
+          <h3 className="text-lg font-bold tracking-tight text-foreground">
+            La cascade : votre équipe d’abord, le réseau en dernier
+          </h3>
+          <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Vous fixez l’ordre une fois. À chaque palier, le logiciel prévient, laisse un délai,
+            relance, puis élargit tout seul tant que le besoin n’est pas couvert.
+          </p>
+        </div>
+        <ol className="grid gap-px bg-border md:grid-cols-3">
+          {CASCADE.map((etape, i) => (
+            <li key={etape.titre} className="bg-card px-6 py-5 md:px-8">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className={
+                    "grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold " +
+                    etape.pastille
+                  }
+                >
+                  {i + 1}
+                </span>
+                <span className="text-sm font-bold text-foreground">{etape.titre}</span>
+              </div>
+              <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{etape.texte}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="border-t border-border px-6 py-5 text-sm leading-relaxed text-muted-foreground md:px-8">
+          Dès qu’un intervenant accepte, la mission bascule dans le logiciel :{" "}
+          <strong className="font-semibold text-foreground">contrat ou CDD édité</strong>, planning à
+          jour, heures suivies, facture générée. Renforts, ateliers et interventions se pilotent au
+          même endroit, sans double saisie.
+        </p>
+      </Reveal>
+
 
       <Reveal className="mt-6">
         <Button asChild size="lg">
