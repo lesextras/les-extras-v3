@@ -71,7 +71,18 @@ export function AppChrome({
     // --foreground…), donc un seul conteneur suffit à basculer. Les documents
     // imprimables (contrat, facture, attestation) ont leur propre route hors
     // de cette coquille : ils restent clairs, pour le papier.
-    <div className="theme-clair theme-espace flex h-screen overflow-hidden bg-background text-foreground">
+    // « relative » N'EST PAS DÉCORATIF (26/08/2026).
+    //
+    // Un champ masqué en `sr-only` — Tailwind le pose en `position:absolute`
+    // — ne trouvait aucun ancêtre positionné : son bloc conteneur devenait
+    // donc la page entière. Il se posait 160 px SOUS le bas de l'écran, la
+    // page prenait cette hauteur, et une bande ivoire — le fond du site
+    // public — apparaissait sous la coquille sombre. Le `overflow-hidden`
+    // ci-dessous n'y pouvait rien : l'élément lui avait échappé.
+    //
+    // Un seul mot suffit : la coquille devient le bloc conteneur, tout ce
+    // qui est absolu reste dedans, et se fait rogner comme prévu.
+    <div className="theme-clair theme-espace relative flex h-screen overflow-hidden bg-background text-foreground">
       {/* Sidebar desktop */}
       <div className="hidden md:block">
         <Sidebar role={role} isMember={isMember} roleCompte={activeAccount?.role} enAttenteRattachement={enAttenteRattachement} utilisateur={user} />
