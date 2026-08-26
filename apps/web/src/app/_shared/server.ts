@@ -4,7 +4,7 @@ import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, ApiError } from "@/lib/api";
 import type { Session } from "./types";
 
 /**
@@ -46,23 +46,56 @@ export async function requireAdmin(): Promise<Session> {
 /** Verbes acceptés par le client API — aligné sur `apiRequest`. */
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+/**
+ * UN JETON REFUSE N’EST PAS UNE PANNE (26/08/2026).
+ *
+ * Le 25/08/2026, les jetons de session ont reçu un champ `typ: access` et
+ * l’API refuse desormais ceux qui ne le portent pas. Toute personne connectee
+ * avant ce jour gardait donc un cookie que le navigateur envoyait fidelement,
+ * que l’API rejetait par un 401, et que chaque bloc de chaque page traduisait
+ * en « Un probleme est survenu ». Le site paraissait casse alors qu’il
+ * demandait seulement qu’on se reconnecte.
+ *
+ * Un 401 renvoie maintenant vers /api/session-expiree, qui efface le cookie
+ * puis ramene au formulaire de connexion — on ne peut pas effacer un cookie
+ * pendant le rendu d’une page, seule une route le peut.
+ *
+ * Et le reste des erreurs est journalise : jusqu’ici le message mourait ici,
+ * si bien qu’aucun journal serveur ne disait ce qui avait echoue.
+ */
 export async function fetchApi<T>(
   session: Session,
   path: string,
   init?: { method?: HttpMethod; body?: unknown },
 ): Promise<{ data?: T; error?: string }> {
+  const methode = init?.method ?? "GET";
+  let jetonRefuse = false;
+  let resultat: { data?: T; error?: string };
+
   try {
     const data = (await apiRequest(path, {
-      method: init?.method ?? "GET",
+      method: methode,
       body: init?.body,
       token: session.token,
       accountId: session.account.id,
     })) as T;
-    return { data };
+    resultat = { data };
   } catch (err) {
+    const status = err instanceof ApiError ? err.status : 0;
     const message = err instanceof Error ? err.message : "Erreur inconnue";
-    return { error: message };
+    console.error(`[api] ${methode} ${path} -> ${status || "reseau"} : ${message}`);
+    jetonRefuse = status === 401;
+    resultat = { error: message };
   }
+
+  // `redirect()` leve une exception : appelee dans le `catch` ci-dessus, elle
+  // serait avalee par ce meme `catch`. On sort d’abord, on redirige ensuite.
+  if (jetonRefuse) {
+    const chemin = (await headers()).get("x-chemin") ?? "";
+    redirect(`/api/session-expiree?next=${encodeURIComponent(chemin)}`);
+  }
+
+  return resultat;
 }
 
 /** Appel API public (pages non authentifiées) — sans token ni compte. */
