@@ -47,7 +47,7 @@ const PRODUITS = [
     lisere: "bg-amber-500",
     pastille: "bg-amber-500 text-amber-950",
     teinte: "text-amber-600",
-    puce: "border-amber-500/30 bg-amber-500/10 text-amber-700",
+    puce: "border-amber-500/40 bg-amber-500/15 text-amber-600",
   },
   {
     icone: MessageCircle,
@@ -59,8 +59,8 @@ const PRODUITS = [
     fond: "bg-gradient-to-br from-emerald-600/[0.18] via-card to-card",
     lisere: "bg-emerald-600",
     pastille: "bg-emerald-600 text-white",
-    teinte: "text-emerald-700",
-    puce: "border-emerald-600/30 bg-emerald-600/10 text-emerald-700",
+    teinte: "text-emerald-600",
+    puce: "border-emerald-600/40 bg-emerald-600/15 text-emerald-600",
   },
 ];
 
@@ -126,25 +126,28 @@ export function OffreLex() {
         })}
       </ul>
 
-      {/* La bande sombre : elle referme le bloc et redonne un sol au regard
-          après quatre cartes claires. */}
-      <div className="overflow-hidden rounded-2xl bg-zinc-900 text-zinc-100 shadow-xl ring-1 ring-black/10">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-white/10 px-6 py-4 md:px-8">
-          <h3 className="text-base font-bold tracking-tight text-zinc-50">Utilisable dans le médico-social</h3>
-          <p className="text-sm text-zinc-400">Trois garanties, pas des intentions.</p>
+      {/* Une barre pleine à la couleur de la maison : elle referme le bloc et
+          tient aussi bien sur fond clair que sur fond sombre, ce qu'un aplat
+          gris ne faisait pas. */}
+      <div className="overflow-hidden rounded-2xl bg-primary text-primary-foreground shadow-xl">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-white/20 px-6 py-4 md:px-8">
+          <h3 className="text-base font-bold tracking-tight text-primary-foreground">
+            Utilisable dans le médico-social
+          </h3>
+          <p className="text-sm text-primary-foreground/75">Trois garanties, pas des intentions.</p>
         </div>
-        <ul className="grid gap-px bg-white/10 md:grid-cols-3">
+        <ul className="grid gap-px bg-white/20 md:grid-cols-3">
           {GARANTIES.map((g) => {
             const Icone = g.icone;
             return (
-              <li key={g.titre} className="bg-zinc-900 px-6 py-5 md:px-8">
+              <li key={g.titre} className="bg-primary px-6 py-5 md:px-8">
                 <div className="flex items-center gap-2.5">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-500/15 text-emerald-400">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/20 text-primary-foreground">
                     <Icone className="size-4" aria-hidden />
                   </span>
                   <span className="text-sm font-bold">{g.titre}</span>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400">{g.texte}</p>
+                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/80">{g.texte}</p>
               </li>
             );
           })}

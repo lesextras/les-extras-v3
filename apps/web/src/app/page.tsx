@@ -419,7 +419,7 @@ export default async function LandingPage() {
             sert déjà de repère au milieu du fond charbon. */}
         <section
           id="lex"
-          className="theme-clair scroll-mt-24 border-y border-border bg-gradient-to-b from-primary/[0.12] via-background to-secondary/[0.08] text-foreground"
+          className="scroll-mt-24 border-y border-border bg-gradient-to-b from-primary/[0.07] via-background to-background"
         >
           <div className="section">
             <Reveal>
