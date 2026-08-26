@@ -272,16 +272,6 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ LES DEUX PORTES ============ */}
-        <DeuxPortes />
-
-        {/* ============ UN SEUL FORMULAIRE ============
-            L’argument central, posé juste après que le visiteur a dit qui il
-            est : ce que déclenche une publication, et ce que LEX prend en
-            charge de l’autre côté. Chaque promesse correspond à un
-            comportement réel du produit. */}
-        <UnSeulFormulaire />
-
         {/* ============ DOMAINES — cartes photo + texte (style annonce) ============ */}
         <section className="section">
           <Reveal className="flex flex-wrap items-end justify-between gap-4">
@@ -349,6 +339,16 @@ export default async function LandingPage() {
             ))}
           </div>
         </section>
+
+        {/* ============ LES DEUX PORTES ============ */}
+        <DeuxPortes />
+
+        {/* ============ UN SEUL FORMULAIRE ============
+            L’argument central, posé juste après que le visiteur a dit qui il
+            est : ce que déclenche une publication, et ce que LEX prend en
+            charge de l’autre côté. Chaque promesse correspond à un
+            comportement réel du produit. */}
+        <UnSeulFormulaire />
 
         {/* ============ ESSAYER LEX ============ */}
         <section id="lex" className="section scroll-mt-24">
