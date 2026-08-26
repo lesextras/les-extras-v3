@@ -18,6 +18,12 @@ import { SESSION_COOKIE, ACTIVE_ACCOUNT_COOKIE } from "@/lib/session";
  * Elle vit sous /api a dessein : le middleware ne s’y applique pas. Ailleurs,
  * il aurait vu le cookie encore present, renvoye vers /login, qui renvoie au
  * tableau de bord quand une session existe — une boucle.
+ *
+ * La redirection est RELATIVE. `NextResponse.redirect()` exige une URL
+ * absolue, et derriere le proxy le conteneur ne connait que son adresse de
+ * bind : le premier essai renvoyait vers https://0.0.0.0:3000/login. Un
+ * en-tete `Location` relatif est valable (RFC 7231) et laisse le navigateur
+ * sur le domaine public.
  */
 export const dynamic = "force-dynamic";
 
@@ -31,11 +37,13 @@ function cheminSur(valeur: string | null): string {
 export async function GET(request: NextRequest) {
   const suite = cheminSur(request.nextUrl.searchParams.get("next"));
 
-  const destination = new URL("/login", request.nextUrl.origin);
-  destination.searchParams.set("expiree", "1");
-  if (suite) destination.searchParams.set("next", suite);
+  const parametres = new URLSearchParams({ expiree: "1" });
+  if (suite) parametres.set("next", suite);
 
-  const reponse = NextResponse.redirect(destination);
+  const reponse = new NextResponse(null, {
+    status: 307,
+    headers: { Location: `/login?${parametres.toString()}` },
+  });
   for (const nom of [SESSION_COOKIE, ACTIVE_ACCOUNT_COOKIE]) {
     reponse.cookies.set(nom, "", { path: "/", maxAge: 0 });
   }
