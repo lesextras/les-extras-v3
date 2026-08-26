@@ -14,24 +14,39 @@ import { Reveal } from "./Reveal";
 const POUR_ETABLISSEMENT = [
   {
     icone: Send,
-    fond: "bg-primary/10 border-primary/25",
-    pastille: "bg-primary/15 text-primary",
+    // Chaque carte porte sa couleur : un liseré en haut, un dégradé qui part
+    // de la teinte et retombe sur le fond de carte, une pastille pleine. Sur
+    // fond charbon, un aplat à 10 % ne se voyait pas — trois cartes
+    // identiques ne se distinguent pas, donc ne se lisent pas.
+    bordure: "border-primary/40",
+    fond: "bg-gradient-to-br from-primary/25 via-card to-card",
+    lisere: "bg-primary",
+    halo: "bg-primary/30",
+    pastille: "bg-primary text-primary-foreground",
     titre: "L’offre part dans la seconde",
     texte:
       "Une case « mission urgente », et chaque intervenant dont le profil correspond (métier, zone, disponibilité) est prévenu par e-mail à la publication. Pas de liste à constituer, pas d’appels.",
   },
   {
     icone: Users,
-    fond: "bg-secondary/10 border-secondary/25",
-    pastille: "bg-secondary/15 text-secondary",
+    bordure: "border-secondary/40",
+    fond: "bg-gradient-to-br from-secondary/25 via-card to-card",
+    lisere: "bg-secondary",
+    halo: "bg-secondary/30",
+    pastille: "bg-secondary text-secondary-foreground",
     titre: "En cascade, dans votre ordre",
     texte:
       "Vos salariés d’abord, puis les intervenants déjà venus chez vous, puis le réseau. La diffusion s’élargit toute seule tant que le besoin n’est pas couvert.",
   },
   {
     icone: FileSignature,
-    fond: "bg-muted/50 border-border",
-    pastille: "bg-foreground/10 text-foreground",
+    // Troisième teinte : le jeu de jetons n’en compte que deux. L’ambre
+    // prolonge la même arche chaude — rose, terracotta, ambre — sans jurer.
+    bordure: "border-amber-500/40",
+    fond: "bg-gradient-to-br from-amber-500/25 via-card to-card",
+    lisere: "bg-amber-500",
+    halo: "bg-amber-500/30",
+    pastille: "bg-amber-500 text-amber-950",
     titre: "La réponse est automatique",
     texte:
       "Le premier qui accepte prend la mission et le contrat s’émet dans la foulée. Ou vous gardez la main et validez chaque profil, l’un après l’autre.",
@@ -65,15 +80,28 @@ export function UnSeulFormulaire() {
           return (
             <div
               key={bloc.titre}
-              className={`rounded-2xl border p-6 shadow-soft ${bloc.fond}`}
+              className={`group relative overflow-hidden rounded-2xl border ${bloc.bordure} ${bloc.fond} p-7 shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl`}
             >
+              {/* Le liseré donne la couleur au premier coup d’œil, avant même
+                  qu’on lise le titre. */}
+              <span className={`absolute inset-x-0 top-0 h-1 ${bloc.lisere}`} aria-hidden />
+              {/* Halo diffus dans l’angle : la carte se décolle du fond. */}
               <span
-                className={`inline-flex size-10 items-center justify-center rounded-xl ${bloc.pastille}`}
+                className={`pointer-events-none absolute -right-10 -top-14 size-36 rounded-full blur-3xl ${bloc.halo}`}
+                aria-hidden
+              />
+
+              <span
+                className={`relative inline-flex size-12 items-center justify-center rounded-2xl shadow-lg ${bloc.pastille}`}
               >
-                <Icone className="size-5" aria-hidden />
+                <Icone className="size-6" aria-hidden />
               </span>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">{bloc.titre}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{bloc.texte}</p>
+              <h3 className="relative mt-5 text-xl font-bold tracking-tight text-foreground">
+                {bloc.titre}
+              </h3>
+              <p className="relative mt-2.5 text-sm leading-relaxed text-muted-foreground">
+                {bloc.texte}
+              </p>
             </div>
           );
         })}
