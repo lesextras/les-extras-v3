@@ -48,10 +48,7 @@ import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
 import { DemoLex } from './_shared/DemoLex';
 import { OffreLex } from './_shared/OffreLex';
-import {
-  IllustrationEcrit,
-  IllustrationReseau,
-} from "./_shared/Illustrations";
+import { IllustrationReseau } from "./_shared/Illustrations";
 import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
@@ -350,59 +347,6 @@ export default async function LandingPage() {
             comportement réel du produit. */}
         <UnSeulFormulaire />
 
-        {/* ============ ESSAYER LEX ============ */}
-        <section id="lex" className="section scroll-mt-24">
-          <Reveal>
-            <span className="eyebrow">LEX · essai libre</span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-              Décrivez un besoin, LEX construit la séance
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              L’assistant IA conçu pour le médico-social. Un public, un objectif — une séance complète en quinze secondes. Sans compte.
-            </p>
-          </Reveal>
-          <Reveal className="mt-10">
-            <DemoLex />
-          </Reveal>
-
-        </section>
-
-        {/* ============ CE QUE LEX FAIT (respiration claire) ============
-            Toute la page est sur fond charbon. Une bande ivoire au milieu
-            casse l'effet de bloc et sert de repère : c'est ici que l'offre
-            se détaille. */}
-        <section
-          id="offre-lex"
-          className="theme-clair scroll-mt-24 bg-background text-foreground"
-        >
-          <div className="section">
-            <Reveal>
-              <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
-                <div>
-                  <span className="eyebrow">Les quatre outils</span>
-                  <h3 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                    Ce que LEX fait pour vous, au-delà de cet essai
-                  </h3>
-                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                    Quatre outils, un seul compteur de crédits. Moins de paperasse, plus d’accompagnement.
-                  </p>
-                </div>
-                <IllustrationEcrit className="mx-auto w-full max-w-md" />
-              </div>
-            </Reveal>
-            <Reveal className="mt-10">
-              <OffreLex />
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============ LE GAP ============ */}
-        <section id="gap" className="section scroll-mt-24">
-          <Reveal>
-            <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
-          </Reveal>
-        </section>
-
         {/* ============ MARKETPLACE EN ACCÈS LIBRE ============ */}
         {(unes?.ateliers?.length ?? 0) > 0 || (unes?.formations?.length ?? 0) > 0 ? (
           <section id="marketplace" className="bg-card">
@@ -454,6 +398,48 @@ export default async function LandingPage() {
             </div>
           </section>
         ) : null}
+
+        {/* ============ LEX & LE GAP — TROIS BLOCS DEVENUS UN ============
+
+            L’essai, le détail de l’offre puis le GAP se suivaient en trois
+            sections : trois titres, trois respirations, trois fois la même
+            promesse. Ensemble ils poussaient le catalogue si bas que plus
+            personne n’y arrivait. Tout tient ici, sur la bande claire qui
+            sert déjà de repère au milieu du fond charbon. */}
+        <section
+          id="lex"
+          className="theme-clair scroll-mt-24 bg-background text-foreground"
+        >
+          <div className="section">
+            <Reveal>
+              <span className="eyebrow">LEX · essai libre, sans compte</span>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                Décrivez un besoin. La séance est écrite en quinze secondes.
+              </h2>
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                L’assistant conçu pour le médico-social : écrits professionnels, séances,
+                appui scolaire, analyse de pratique. Quatre outils, un seul compteur de
+                crédits. Moins de paperasse, plus d’accompagnement.
+              </p>
+            </Reveal>
+
+            <Reveal className="mt-10">
+              <DemoLex />
+            </Reveal>
+
+            <div id="offre-lex" className="mt-12 scroll-mt-24">
+              <Reveal>
+                <OffreLex />
+              </Reveal>
+            </div>
+
+            <div id="gap" className="mt-14 scroll-mt-24">
+              <Reveal>
+                <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
+              </Reveal>
+            </div>
+          </div>
+        </section>
 
         {/* ============ APERÇU DU PRODUIT ============ */}
         <ApercuProduit />
