@@ -130,7 +130,7 @@ export function OffreLex() {
           après quatre cartes claires. */}
       <div className="overflow-hidden rounded-2xl bg-zinc-900 text-zinc-100 shadow-xl ring-1 ring-black/10">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-white/10 px-6 py-4 md:px-8">
-          <h3 className="text-base font-bold tracking-tight">Utilisable dans le médico-social</h3>
+          <h3 className="text-base font-bold tracking-tight text-zinc-50">Utilisable dans le médico-social</h3>
           <p className="text-sm text-zinc-400">Trois garanties, pas des intentions.</p>
         </div>
         <ul className="grid gap-px bg-white/10 md:grid-cols-3">
