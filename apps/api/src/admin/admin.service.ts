@@ -163,7 +163,7 @@ export class AdminService {
     const email = dto.email.toLowerCase().trim();
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) throw new ConflictException('Un utilisateur avec cet e-mail existe déjà.');
-    const password = await bcrypt.hash(dto.password, 10);
+    const password = await bcrypt.hash(dto.password, 12);
     const status = dto.status ?? UserStatus.VERIFIED;
     this.refuseStatutAnonymise(status);
     return this.prisma.user.create({

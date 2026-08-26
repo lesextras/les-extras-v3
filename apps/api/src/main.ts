@@ -7,6 +7,44 @@ import * as Sentry from '@sentry/node';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { exceptionValidationFr } from './common/validation/messages-fr';
 
+/** Valeurs qu'on rencontre dans un fichier d'exemple, jamais en production. */
+const SECRETS_BIDON = new Set([
+  'secret',
+  'changeme',
+  'change-me',
+  'dev',
+  'test',
+  'password',
+  'motdepasse',
+  'lesextras',
+  'les-extras',
+  'votre-secret',
+  'your-secret-here',
+]);
+
+/** Longueur en deca de laquelle un secret ne protege plus grand-chose. */
+const LONGUEUR_MINIMALE = 32;
+
+function verifierLesSecrets(config: ConfigService, logger: Logger): void {
+  for (const nom of ['JWT_SECRET', 'SESSION_SECRET']) {
+    const valeur = config.get<string>(nom)?.trim() ?? '';
+    if (valeur === '') {
+      continue; // Absent : AuthModule s'en charge, avec un message plus precis.
+    }
+    if (SECRETS_BIDON.has(valeur.toLowerCase())) {
+      throw new Error(
+        `${nom} vaut une valeur d'exemple. Posez un vrai secret : openssl rand -hex 32`,
+      );
+    }
+    if (valeur.length < LONGUEUR_MINIMALE) {
+      logger.error(
+        `${nom} ne fait que ${valeur.length} caracteres. En dessous de ${LONGUEUR_MINIMALE}, ` +
+          "un jeton se casse hors ligne. A remplacer des que possible : openssl rand -hex 32",
+      );
+    }
+  }
+}
+
 async function bootstrap() {
   // Monitoring d'erreurs : actif seulement si SENTRY_DSN est posée — sans
   // elle, Sentry est un no-op et l'API tourne exactement comme avant.
@@ -21,6 +59,19 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: false, rawBody: true });
   const config = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
+
+  // LA FORCE DES SECRETS, DITE AU DEMARRAGE.
+  //
+  // Un secret absent fait deja echouer le demarrage (getOrThrow dans
+  // AuthModule). Ce qui passait sans bruit, c'est un secret PRESENT mais
+  // court : « lesextras », « dev », un mot de passe de test oublie. Un jeton
+  // signe avec un secret de huit caracteres se casse hors ligne en quelques
+  // heures, et celui qui y arrive se connecte comme n'importe qui.
+  //
+  // On refuse de demarrer sur une valeur manifestement bidon, et on crie fort
+  // sur une valeur courte — sans bloquer, parce qu'un refus ici couperait le
+  // service en pleine nuit pour un secret qui, lui, existe.
+  verifierLesSecrets(config, logger);
 
   // Derrière le proxy de Coolify (Traefik), `req.ip` valait l'adresse INTERNE
   // du réseau Docker (::ffff:10.0.1.x) : le journal d'audit et les traces de
