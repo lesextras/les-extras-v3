@@ -11,7 +11,7 @@ const PORTES = [
   {
     icone: Building2,
     qui: "Je suis un établissement",
-    titre: "Trouver un intervenant",
+    titre: "Trouver un intervenant et gérer vos remplacements",
     texte: "MECS, IME, ITEP, EHPAD, SESSAD. Un renfort ce soir, un atelier au trimestre, une formation pour l'équipe.",
     reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis sous 48 h"],
     href: "/renforteam",
@@ -24,7 +24,7 @@ const PORTES = [
   {
     icone: UserRound,
     qui: "Je suis un professionnel",
-    titre: "Trouver des missions",
+    titre: "Trouver des missions et proposer vos services",
     texte: "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue, zéro commission.",
     reperes: ["0 % de commission", "Contrat et facture générés", "Profil vérifié une fois"],
     // La porte menait droit au formulaire d'inscription : on demandait de

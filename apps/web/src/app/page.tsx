@@ -33,8 +33,6 @@ import { cn } from '@/lib/utils';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { fetchPublic } from './_shared/server';
 // Les visuels de la médiathèque WordPress passent par `wp()` : ils ont déjà
 // déménagé deux fois, et les URL écrites en dur sont celles qui survivent au
@@ -46,7 +44,6 @@ import { HeroSearch } from './_shared/HeroSearch';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
-import { DemoLex } from './_shared/DemoLex';
 import { OffreLex } from './_shared/OffreLex';
 import { IllustrationReseau } from "./_shared/Illustrations";
 import { BlocGap } from './_shared/BlocGap';
@@ -166,23 +163,6 @@ export default async function LandingPage() {
                 ))}
               </div>
 
-              {/* Deuxième porte, dès le premier écran. La barre de recherche
-                  répond à l’établissement qui cherche quelqu’un ; l’éducateur,
-                  lui, ne cherche personne — il cherche à écrire plus vite.
-                  L’essai de LEX vit plus bas dans la page : sans ce bouton, il
-                  faut sept écrans pour le trouver. */}
-              <div className="animate-fade-in-up stagger-4 mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <Link
-                  href="#lex"
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  <Sparkles className="size-4" />
-                  Éducateur ? Essayez LEX
-                </Link>
-                <span className="text-xs text-muted-foreground">
-                  3 essais par heure, sans compte
-                </span>
-              </div>
 
               <div className="animate-fade-in-up stagger-4 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
@@ -351,6 +331,37 @@ export default async function LandingPage() {
         {(unes?.ateliers?.length ?? 0) > 0 || (unes?.formations?.length ?? 0) > 0 ? (
           <section id="marketplace" className="bg-card">
             <div className="section">
+              {/* Ce que la page ne disait nulle part : l’association ne s’intercale
+                  pas. On réserve l’intervenant, pas un intermédiaire. */}
+              <Reveal className="mx-auto mb-12 max-w-3xl text-center">
+                <span className="eyebrow">Sans intermédiaire, sans commission</span>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-balance md:text-4xl">
+                  Ateliers et formations, en direct avec l’intervenant
+                </h2>
+                <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                  Vous voyez les offres, vous réservez ou vous demandez un devis — sans intermédiaire et
+                  sans frais supplémentaire. La mise en relation est{' '}
+                  <strong className="font-semibold text-foreground">
+                    directe entre l’intervenant et l’établissement
+                  </strong>
+                  , et l’association ne prélève{' '}
+                  <strong className="font-semibold text-foreground">aucune commission</strong> au passage :
+                  ADéPA est une association au service du bon accompagnement.
+                </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  {['0 % de commission', 'Aucun intermédiaire', 'Devis sous 48 h', 'Association loi 1901'].map(
+                    (repere) => (
+                      <span
+                        key={repere}
+                        className="rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground"
+                      >
+                        {repere}
+                      </span>
+                    ),
+                  )}
+                </div>
+              </Reveal>
+
               {(unes?.ateliers?.length ?? 0) > 0 ? (
                 <div className="space-y-6">
                   <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -412,7 +423,7 @@ export default async function LandingPage() {
         >
           <div className="section">
             <Reveal>
-              <span className="eyebrow">LEX · essai libre, sans compte</span>
+              <span className="eyebrow">LEX · l’assistant IA du médico-social</span>
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
                 Décrivez un besoin. La séance est écrite en quinze secondes.
               </h2>
@@ -421,10 +432,6 @@ export default async function LandingPage() {
                 appui scolaire, analyse de pratique. Quatre outils, un seul compteur de
                 crédits. Moins de paperasse, plus d’accompagnement.
               </p>
-            </Reveal>
-
-            <Reveal className="mt-10">
-              <DemoLex />
             </Reveal>
 
             <div id="offre-lex" className="mt-12 scroll-mt-24">
@@ -464,7 +471,7 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            <div className="mt-14 grid gap-6 lg:grid-cols-3">
+            <div className="mt-14 grid items-start gap-6 lg:grid-cols-3">
               {[
                 {
                   nom: 'Mise en relation & contractualisation',
@@ -479,8 +486,14 @@ export default async function LandingPage() {
                   ],
                   href: '/register',
                   action: 'Créer un compte',
-                  variant: 'outline' as const,
-                  vedette: true,
+                  ruban: 'Le cœur du service',
+                  bordure: 'border-primary/45',
+                  fond: 'bg-gradient-to-br from-primary/20 via-card to-card',
+                  lisere: 'bg-primary',
+                  halo: 'bg-primary/30',
+                  pastille: 'bg-primary text-primary-foreground',
+                  puce: 'text-primary',
+                  bouton: 'bg-primary text-primary-foreground hover:bg-primary/90',
                 },
                 {
                   nom: 'Formations Qualiopi',
@@ -495,66 +508,79 @@ export default async function LandingPage() {
                   ],
                   href: '/formations',
                   action: 'Demander un devis',
-                  variant: 'outline' as const,
-                  vedette: false,
+                  ruban: 'Sur devis',
+                  bordure: 'border-secondary/45',
+                  fond: 'bg-gradient-to-br from-secondary/20 via-card to-card',
+                  lisere: 'bg-secondary',
+                  halo: 'bg-secondary/30',
+                  pastille: 'bg-secondary text-secondary-foreground',
+                  puce: 'text-secondary',
+                  bouton: 'bg-secondary text-secondary-foreground hover:bg-secondary/90',
                 },
                 {
                   nom: 'LEX, l’assistant IA',
                   sous: 'Le second service payant — et seulement au-delà de la dotation gratuite.',
-                  // Deux corrections de fond. D'abord « essai gratuit de 7 jours »
-                  // n'existe plus : il a été remplacé par une dotation mensuelle
-                  // permanente (voir credits.constants.ts). Ensuite « tarifs dans
-                  // votre espace » demandait de créer un compte pour connaître un
-                  // prix — la question la plus élémentaire, et la seule à laquelle
-                  // la page ne répondait pas. Les montants viennent de
-                  // SUBSCRIPTION_PLANS, pas d'une estimation.
                   prix: 'Gratuit, puis 19 €',
                   prixSous: '15 générations offertes chaque mois, sans carte bancaire. Abonnement à partir de 19 €/mois.',
                   points: [
-                    // « sans date de fin » etait faux : le serveur reporte le
-                    // non-consomme pendant trois mois (ROLLOVER_MONTHS, dans
-                    // apps/api/src/billing/credits.constants.ts), et le centre
-                    // d'aide le disait deja. C'est la page la plus vue qui
-                    // portait l'erreur.
-                    '15 générations par mois offertes, reportables jusqu\'à trois mois',
+                    '15 générations par mois offertes, reportables jusqu’à trois mois',
                     'Assistant d’écriture : notes brutes → écrits professionnels',
                     'Générateur d’activités éducatives et thérapeutiques',
                     'Au-delà : 19 €/mois pour 200 générations, 49 €/mois pour 600',
                   ],
                   href: '/register',
                   action: 'Découvrir LEX',
-                  variant: 'primary' as const,
-                  vedette: false,
+                  ruban: 'À crédits',
+                  bordure: 'border-amber-500/45',
+                  fond: 'bg-gradient-to-br from-amber-500/20 via-card to-card',
+                  lisere: 'bg-amber-500',
+                  halo: 'bg-amber-500/30',
+                  pastille: 'bg-amber-500 text-amber-950',
+                  puce: 'text-amber-600',
+                  bouton: 'bg-amber-500 text-amber-950 hover:bg-amber-500/90',
                 },
               ].map((offre, i) => (
                 <Reveal key={offre.nom} delay={i * 110} className="h-full">
-                  <Card
+                  <div
                     className={cn(
-                      'flex h-full flex-col transition-shadow duration-300 hover:shadow-card',
-                      offre.vedette && 'border-primary/40 shadow-card',
+                      'group relative flex h-full flex-col overflow-hidden rounded-2xl border p-8 shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl',
+                      offre.bordure,
+                      offre.fond,
                     )}
                   >
-                    <CardContent className="flex flex-1 flex-col p-8">
-                      {offre.vedette ? <Badge className="w-fit">Le plus choisi</Badge> : null}
-                      <h3 className={cn('text-lg font-semibold', offre.vedette && 'mt-3')}>{offre.nom}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{offre.sous}</p>
-                      <p className="mt-6 text-3xl font-bold tracking-tight">{offre.prix}</p>
-                      {offre.prixSous ? (
-                        <p className="mt-1 text-sm text-muted-foreground">{offre.prixSous}</p>
-                      ) : null}
-                      <ul className="mt-6 flex-1 space-y-2.5">
-                        {offre.points.map((f) => (
-                          <li key={f} className="flex items-start gap-2.5 text-sm">
-                            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
-                            <span>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Button asChild variant={offre.variant} className="mt-6 w-full">
-                        <Link href={offre.href}>{offre.action}</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                    <span className={cn('absolute inset-x-0 top-0 h-1', offre.lisere)} aria-hidden />
+                    <span
+                      className={cn(
+                        'pointer-events-none absolute -right-10 -top-14 size-36 rounded-full blur-3xl',
+                        offre.halo,
+                      )}
+                      aria-hidden
+                    />
+                    <span
+                      className={cn(
+                        'relative w-fit rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide',
+                        offre.pastille,
+                      )}
+                    >
+                      {offre.ruban}
+                    </span>
+                    <h3 className="relative mt-5 text-xl font-bold tracking-tight">{offre.nom}</h3>
+                    <p className="relative mt-2 text-sm text-muted-foreground">{offre.sous}</p>
+                    <p className="relative mt-6 text-4xl font-bold tracking-tight">{offre.prix}</p>
+                    <p className="relative mt-1 text-sm text-muted-foreground">{offre.prixSous}</p>
+                    <div className="relative my-6 h-px bg-border" />
+                    <ul className="relative flex-1 space-y-2.5">
+                      {offre.points.map((f) => (
+                        <li key={f} className="flex items-start gap-2.5 text-sm">
+                          <CheckCircle2 className={cn('mt-0.5 size-4 shrink-0', offre.puce)} />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button asChild variant="primary" className={cn('relative mt-8 w-full', offre.bouton)}>
+                      <Link href={offre.href}>{offre.action}</Link>
+                    </Button>
+                  </div>
                 </Reveal>
               ))}
             </div>
