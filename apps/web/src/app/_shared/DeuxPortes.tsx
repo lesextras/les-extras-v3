@@ -44,7 +44,10 @@ export function DeuxPortes() {
   return (
     <section className="border-y border-border bg-card/40">
       <div className="mx-auto max-w-[1360px] px-6 py-14 md:px-10 md:py-16">
-        <p className="text-center text-sm font-medium text-muted-foreground">
+        {/* La question était posée en petit gris, plus discrète que les deux
+            cartes qu’elle annonce : c’est pourtant elle qui oriente toute la
+            lecture de la page. */}
+        <p className="text-center text-2xl font-bold tracking-tight text-foreground md:text-3xl">
           Par où commencer ?
         </p>
 

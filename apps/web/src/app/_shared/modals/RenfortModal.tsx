@@ -367,12 +367,12 @@ export function RenfortModal({
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
           <span className="block font-semibold text-foreground">Ce que ce formulaire déclenche</span>
           <span className="mt-1.5 block">
-            L’offre part <strong className="font-medium text-foreground">en cascade</strong> — vos
-            salariés d’abord, puis les intervenants déjà venus chez vous, puis le réseau — et
+            L’offre part <strong className="font-medium text-foreground">en cascade</strong> : vos
+            salariés d’abord, puis les intervenants déjà venus chez vous, puis le réseau. Elle
             s’élargit toute seule tant que le besoin n’est pas couvert. En mission urgente, chaque
             profil qui correspond est prévenu{" "}
             <strong className="font-medium text-foreground">par e-mail dès la publication</strong>.
-            Le premier qui accepte prend la mission et le contrat s’émet dans la foulée — ou vous
+            Le premier qui accepte prend la mission et le contrat s’émet dans la foulée. Ou vous
             validez chaque profil, l’un après l’autre.
           </span>
         </div>

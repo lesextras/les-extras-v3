@@ -14,18 +14,24 @@ import { Reveal } from "./Reveal";
 const POUR_ETABLISSEMENT = [
   {
     icone: Send,
+    fond: "bg-primary/10 border-primary/25",
+    pastille: "bg-primary/15 text-primary",
     titre: "L’offre part dans la seconde",
     texte:
-      "Une case « mission urgente », et chaque intervenant dont le profil correspond — métier, zone, disponibilité — est prévenu par e-mail à la publication. Pas de liste à constituer, pas d’appels.",
+      "Une case « mission urgente », et chaque intervenant dont le profil correspond (métier, zone, disponibilité) est prévenu par e-mail à la publication. Pas de liste à constituer, pas d’appels.",
   },
   {
     icone: Users,
+    fond: "bg-secondary/10 border-secondary/25",
+    pastille: "bg-secondary/15 text-secondary",
     titre: "En cascade, dans votre ordre",
     texte:
       "Vos salariés d’abord, puis les intervenants déjà venus chez vous, puis le réseau. La diffusion s’élargit toute seule tant que le besoin n’est pas couvert.",
   },
   {
     icone: FileSignature,
+    fond: "bg-muted/50 border-border",
+    pastille: "bg-foreground/10 text-foreground",
     titre: "La réponse est automatique",
     texte:
       "Le premier qui accepte prend la mission et le contrat s’émet dans la foulée. Ou vous gardez la main et validez chaque profil, l’un après l’autre.",
@@ -34,7 +40,7 @@ const POUR_ETABLISSEMENT = [
 
 const POUR_PROFESSIONNEL = [
   { icone: PenLine, titre: "Assistant d’écriture", texte: "Note d’incident, rapport de situation, projet personnalisé." },
-  { icone: Sparkles, titre: "Générateur d’activités", texte: "Un public, un objectif — une séance complète, prête à animer." },
+  { icone: Sparkles, titre: "Générateur d’activités", texte: "Un public, un objectif : une séance complète, prête à animer." },
   { icone: GraduationCap, titre: "Appui scolaire", texte: "Le soutien construit pour les jeunes que vous accompagnez." },
 ];
 
@@ -48,8 +54,8 @@ export function UnSeulFormulaire() {
         </h2>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
           Un renfort à couvrir, un atelier à programmer : vous remplissez un formulaire, une seule
-          fois. Le reste — qui prévenir, dans quel ordre, qui relancer, quel contrat éditer — ne vous
-          revient plus.
+          fois. Le reste ne vous revient plus : qui prévenir, dans quel ordre, qui relancer, quel
+          contrat éditer.
         </p>
       </Reveal>
 
@@ -57,8 +63,13 @@ export function UnSeulFormulaire() {
         {POUR_ETABLISSEMENT.map((bloc) => {
           const Icone = bloc.icone;
           return (
-            <div key={bloc.titre} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-              <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div
+              key={bloc.titre}
+              className={`rounded-2xl border p-6 shadow-soft ${bloc.fond}`}
+            >
+              <span
+                className={`inline-flex size-10 items-center justify-center rounded-xl ${bloc.pastille}`}
+              >
                 <Icone className="size-5" aria-hidden />
               </span>
               <h3 className="mt-4 text-lg font-semibold text-foreground">{bloc.titre}</h3>
@@ -78,7 +89,7 @@ export function UnSeulFormulaire() {
       <Reveal className="mt-14 rounded-2xl border border-border bg-secondary/5 p-7 md:p-9">
         <span className="eyebrow">Et pour l’intervenant de terrain</span>
         <h3 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl text-balance">
-          LEX, le soutien de votre travail — pas seulement des missions
+          LEX, le soutien de votre travail, pas seulement des missions
         </h3>
         <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
           Le métier ne s’arrête pas quand la journée finit : restent les écrits, les séances à
