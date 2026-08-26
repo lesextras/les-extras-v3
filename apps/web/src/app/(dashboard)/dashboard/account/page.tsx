@@ -20,6 +20,7 @@ import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle } from "../../../_shared/ui";
 import { BasculeNotifications } from "../../../_shared/BasculeNotifications";
 import { ProfileForm } from "../../../_shared/ProfileForm";
+import { ChangerEmail } from "../../../_shared/ChangerEmail";
 import { CvManager } from "../../../_shared/CvManager";
 import { UnitsManager } from "../../../_shared/UnitsManager";
 import { FacturationSettings, type IdentiteFacturation } from "../../../_shared/FacturationSettings";
@@ -88,6 +89,12 @@ export default async function AccountPage({
             isFreelance={isFreelance}
             accountId={accountId}
           />
+          {/* L’adresse de connexion se change ici, et nulle part ailleurs :
+              une faute de frappe a l’inscription rendait le compte
+              definitivement non verifiable. */}
+          <div className="mt-6">
+            <ChangerEmail emailActuel={user.email} />
+          </div>
           {isFreelance ? (
             <div className="mt-6 space-y-2">
               <SectionTitle title="Mon CV" />

@@ -289,6 +289,70 @@ export class AuthService {
     };
   }
 
+  /**
+   * CHANGER L’ADRESSE DE SON COMPTE (26/08/2026).
+   *
+   * Une faute de frappe a l’inscription enfermait definitivement : le lien de
+   * confirmation partait vers une boite qui n’existe pas, le compte restait
+   * non verifie — donc incapable de publier quoi que ce soit — et rien ne
+   * permettait de se corriger. Le champ etait desactive dans l’interface et
+   * l’API refusait le champ. Un cul-de-sac, decouvert sur un compte reel le
+   * 26/08/2026 : un « 1 » de trop dans l’adresse.
+   *
+   * Le mot de passe est exige. Sans lui, une session volee suffirait a faire
+   * glisser le compte vers une adresse controlee par quelqu’un d’autre, puis
+   * a en demander la reinitialisation : la prise de compte complete.
+   *
+   * La verification repart de zero et le lien part vers la NOUVELLE adresse.
+   * Tant qu’elle n’est pas confirmee, le compte reste limite comme avant —
+   * on ne gagne pas de droits en changeant d’adresse.
+   */
+  async changerEmail(userId: string, nouvelEmail: string, motDePasse: string) {
+    const propre = nouvelEmail.trim().toLowerCase();
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, password: true, firstName: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException('Session invalide.');
+    }
+
+    const valide = await bcrypt.compare(motDePasse, user.password);
+    if (!valide) {
+      throw new UnauthorizedException('Mot de passe incorrect.');
+    }
+
+    if (propre === user.email) {
+      throw new BadRequestException('C’est déjà l’adresse de votre compte.');
+    }
+
+    const occupee = await this.prisma.user.findUnique({
+      where: { email: propre },
+      select: { id: true },
+    });
+    if (occupee) {
+      throw new ConflictException('Un compte existe déjà avec cette adresse.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { email: propre, emailVerified: false },
+    });
+
+    const token = await this.signEmailVerifyToken(user.id, propre);
+    await this.mail
+      .sendEmailVerification(propre, token, user.firstName)
+      .catch(() => undefined);
+
+    return {
+      ok: true,
+      email: propre,
+      message:
+        'Adresse mise à jour. Un lien de confirmation vient de partir : ouvrez-le depuis cette nouvelle boîte.',
+    };
+  }
+
   async me(userId: string) {
     return this.buildMe(userId);
   }

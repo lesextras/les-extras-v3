@@ -1,9 +1,19 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { ChangeEmailDto } from './dto/change-email.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { Throttle } from '@nestjs/throttler';
@@ -94,6 +104,21 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   resendVerification(@Body() dto: ResendVerificationDto) {
     return this.auth.resendVerification(dto.email);
+  }
+
+  /**
+   * CHANGEMENT D’ADRESSE — 5 PAR HEURE ET PAR ADRESSE IP.
+   *
+   * Chaque appel envoie un e-mail de confirmation, et le quota d’envoi est
+   * partagé avec tout le reste du site. Cinq essais couvrent largement
+   * quelqu’un qui se reprend sur une faute de frappe.
+   */
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
+  @Patch('email')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  changerEmail(@CurrentUser() user: RequestUser, @Body() dto: ChangeEmailDto) {
+    return this.auth.changerEmail(user.id, dto.email, dto.password);
   }
 
   @Get('me')
