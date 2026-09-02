@@ -860,3 +860,124 @@ de vue de l'enfant ET des parents.
   photo de couverture, qui est encore celle d'A2PA. **La Page est membre de 53 groupes** — deux
   d'entre eux interdisent explicitement la promotion de plateformes
   concurrentes, lire le règlement avant chaque publication.
+
+## Mini-formations gratuites — 2 septembre 2026 (soir)
+
+Décision de Siham : **la formation est gratuite, l'attestation coûte 20 €.**
+Une mini-formation = **UNE compétence** précise, acquise et vérifiable. Format
+court (35 à 45 min), suivi en complément d'autres : plusieurs formations
+peuvent porter sur la même thématique sans se répéter.
+
+### Le gabarit, et d'où il vient
+
+Quatre modules, toujours dans le même ordre : **théorie brève → une situation
+qui DÉRAPE → exercice guidé sur sa propre situation → mise en pratique avec
+auto-observation**. La séquence reprend la structure des programmes canadiens
+d'entraînement aux habiletés (composantes recensées par l'avis INSPQ 2013) et
+le **« coping model »** du programme COPE (C. Cunningham, McMaster) : on ne
+montre jamais un modèle parfait, on montre un échec et c'est l'apprenant qui
+trouve pourquoi.
+
+**⚠ CE QU'ON NE REPREND PAS.** Les noms de programme sont des marques
+déposées : Incredible Years®, Ces années incroyables, SNAP®, Triple P®,
+Fluppy, Y'a personne de parfait. On écrit « inspiré de la structure des
+programmes canadiens », **jamais « programme X »**. Ni leurs vignettes, ni
+leurs cahiers, ni la liste ordonnée de leurs modules. On ne redessine pas la
+Parenting Pyramid®, même redessinée.
+
+**⚠ NUANCE ABA OBLIGATOIRE.** Les contenus comportementaux portent tous
+l'encart « ce que cette approche ne doit jamais devenir » — quatre garde-fous
+issus des critiques formulées par des personnes autistes adultes : on n'éteint
+jamais un comportement sans le remplacer ; on travaille sur ce qui coûte à la
+personne, pas sur ce qui gêne l'entourage ; le refus est une communication ;
+ces outils s'inscrivent dans un projet construit avec la personne. La fiche
+publique le porte aussi (`GARDE_FOU` dans le script de seed) — sinon la fiche
+promet autre chose que la formation.
+
+**⚠ VOCABULAIRE : « ATTESTATION DE SUIVI », JAMAIS « CERTIFICAT ».** Un
+certificat évoque une certification professionnelle (RNCP, RS). Vendre 20 € un
+document en l'appelant certificat serait une pratique commerciale trompeuse,
+pour une association par ailleurs certifiée Qualiopi.
+
+### Ce qui est en ligne
+
+- **Teachizy** (école `toulali.teachizy.fr` — c'est le seul compte Teachizy) :
+  trois formations PUBLISHED, prix 0, 4 modules chacune, contenus chargés par
+  l'API. UUID / ids d'items dans `apps/web/public/formations-source/v1.json`.
+- **Les Extras** : trois fiches publiques, créées par
+  `apps/api/prisma/seed-mini-formations.js` (idempotent, le slug fait foi,
+  aucune suppression, une fiche ARCHIVED le reste).
+
+### Le mode « formation gratuite en ligne » (nouveau, dans le code)
+
+La fiche formation avait été conçue pour UNE chose : vendre au devis une action
+Qualiopi animée en présentiel à une date. Publier une mini-formation gratuite
+telle quelle affichait « Tarif sur devis » sur du gratuit et « Demander un
+devis » sur du accessible-en-un-clic. Deux champs basculent la fiche dans un
+second mode :
+
+- `Formation.freeOnline` (défaut `false` — aucune fiche existante n'est touchée)
+- `Formation.enrollUrl` — où la formation se suit réellement
+
+Le mode gratuit affiche « Gratuit », un bouton unique vers `enrollUrl`, la
+mention de l'attestation à 20 € **et** ce qu'elle n'est pas ; ni session, ni
+formulaire de devis. Le JSON-LD passe en `Offer / price 0 / category Free` +
+`CourseInstance courseMode online` — **sans `courseWorkload`** : la durée réelle
+est en minutes, le champ `durationHours` est en heures entières, et arrondir à
+« 1 h » publierait une durée fausse dans un dossier que des financeurs lisent.
+`durationHours` reste donc **null** ; la durée exacte est en toutes lettres dans
+le résumé.
+
+**Garde-fou testé** (`src/admin/formation-gratuite.spec.ts`, 4 tests) :
+`freeOnline` sans `enrollUrl` est refusé à la saisie — la vérification porte sur
+l'ÉTAT RÉSULTANT, donc effacer l'adresse d'une fiche déjà gratuite est refusé
+aussi. Sans cela la page s'affiche normalement mais son unique bouton n'existe
+pas : un défaut qui ne casse rien et ne se découvre que des mois plus tard.
+
+### Couvertures
+
+`apps/web/scripts/couvertures-mini-formations.py` — même palette que
+`carte-partage.py`, images dans `apps/web/public/images/mini-formations/`
+(chemins RELATIFS : elles ne passent pas par la médiathèque WordPress, qui a
+déménagé deux fois en un mois). **Aucune photo de personne**, aucune mention
+« certificat », aucun logo tiers. Le script **refuse** de produire une image
+dont le titre dépasse trois lignes ou dont le texte chevauche le pied — la
+pastille coupée de la carte de partage a servi de leçon.
+
+### Transfert de contenu vers Teachizy — la méthode qui marche
+
+Douze copier-coller à la main pour trois formations, 72 pour dix-huit : non.
+Le contenu est poussé dans le dépôt (`apps/web/public/formations-source/v1.json`),
+`next.config.mjs` ouvre `Access-Control-Allow-Origin: *` **sur ce seul dossier**,
+et un unique appel JavaScript depuis `app.teachizy.fr` lit le fichier et fait
+les PUT. Rappels d'API :
+
+- `POST /api/v1/trainings` → 201 (crée en DRAFT) · `DELETE .../{uuid}` → 204
+- `POST /api/v1/trainings/{uuid}/training_items` → 201, **`type: 'GENERIC'`**
+  (ou `'QUIZ'`) — `'LESSON'` renvoie 422
+- `GET .../training_items` (liste) → **404** : les items ne sortent que sous
+  `data.items` du GET de la formation
+- `content` se lit en OBJET et s'écrit en **CHAÎNE JSON** :
+  `[{"type":"richtext","id":"…","data":{"text":"<html>"}}]`
+- `raw.githubusercontent.com` répond 404 : le dépôt est privé. La vérification
+  passe par le ZIP de la branche, jamais par raw.
+
+### Restes à faire
+
+- **BLOQUANT AVANT DE VENDRE L'ATTESTATION** : nommer un **médiateur de la
+  consommation** (art. L612-1 c. conso), écrire des CGV, traiter le droit de
+  rétractation de 14 jours. Aujourd'hui la fiche annonce le prix et renvoie au
+  contact : les conditions sont communiquées avant tout paiement, il n'y a
+  aucun tunnel d'achat.
+- **Teachizy affiche « Certificat de réussite »** dans l'encadré de TOUTES les
+  formations de l'école (vérifié sur les formations Toulali aussi) : c'est un
+  libellé de la plateforme, pas un réglage de la formation (`is_graduate` vaut
+  bien `false`). Il contredit notre propre texte. À signaler au support
+  Teachizy — ne pas « corriger » en changeant un réglage de formation.
+- **L'école Teachizy s'appelle TOULALI**, pas ADéPA : les mini-formations du
+  médico-social vivent donc sous une marque de reconversion numérique. Choix
+  de Siham (une seule école existe sur ce compte).
+- Reste **15 mini-formations** sur les 18 prévues. Deux sont écrites et prêtes
+  à charger (`/home/claude/catalogue-vague-2.js` : chaînage, environnement
+  prévisible) ; cinq autres existent dans `/home/claude/formations-gratuites.js`
+  et n'ont qu'à être remises au gabarit à quatre modules.

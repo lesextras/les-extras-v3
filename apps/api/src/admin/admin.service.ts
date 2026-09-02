@@ -778,7 +778,22 @@ export class AdminService {
     return formation;
   }
 
+  /**
+   * Mode « mini-formation gratuite en ligne » : le drapeau et l'adresse vont
+   * ensemble. Une fiche `freeOnline` sans `enrollUrl` n'a aucun appel a
+   * l'action — son unique bouton n'a nulle part ou aller — et le defaut ne se
+   * voit qu'en ouvrant la page publique. On le refuse a la saisie.
+   */
+  private assertModeGratuitCoherent(freeOnline?: boolean, enrollUrl?: string | null) {
+    if (freeOnline && !enrollUrl) {
+      throw new BadRequestException(
+        "Une formation gratuite en ligne doit indiquer l'adresse ou elle se suit (enrollUrl).",
+      );
+    }
+  }
+
   async createFormation(dto: CreateFormationAdminDto) {
+    this.assertModeGratuitCoherent(dto.freeOnline, dto.enrollUrl);
     const ownerAccountId = await this.resolveOwnerAccountId(dto.ownerAccountId);
     const type = dto.type ?? FormationType.CERTIFIANTE;
     const isInterne = type === FormationType.INTERNE;
@@ -805,6 +820,8 @@ export class AdminService {
         certificationName: isInterne ? null : dto.certificationName,
         edofRef: isInterne ? null : dto.edofRef,
         status: dto.status ?? FormationStatus.DRAFT,
+        freeOnline: dto.freeOnline ?? false,
+        enrollUrl: dto.enrollUrl ?? null,
         ownerAccount: { connect: { id: ownerAccountId } },
         categoryRef: dto.categoryId ? { connect: { id: dto.categoryId } } : undefined,
       },
@@ -820,6 +837,14 @@ export class AdminService {
     const formation = await this.prisma.formation.findUnique({ where: { id } });
     if (!formation) throw new NotFoundException('Formation introuvable.');
 
+    // La coherence se verifie sur l'ETAT RESULTANT, pas sur le seul DTO : cocher
+    // « gratuite » sur une fiche qui porte deja son adresse est valide, et
+    // effacer l'adresse d'une fiche deja gratuite ne l'est pas.
+    this.assertModeGratuitCoherent(
+      dto.freeOnline ?? formation.freeOnline,
+      dto.enrollUrl !== undefined ? dto.enrollUrl : formation.enrollUrl,
+    );
+
     const data: Prisma.FormationUpdateInput = {};
     if (dto.title !== undefined) data.title = dto.title;
     if (dto.summary !== undefined) data.summary = dto.summary;
@@ -831,6 +856,8 @@ export class AdminService {
     if (dto.edofRef !== undefined) data.edofRef = dto.edofRef;
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.type !== undefined) data.type = dto.type;
+    if (dto.freeOnline !== undefined) data.freeOnline = dto.freeOnline;
+    if (dto.enrollUrl !== undefined) data.enrollUrl = dto.enrollUrl;
 
     // Cohérence type : une formation INTERNE ne peut être ni CPF ni certifiante.
     const nextType = dto.type ?? formation.type;

@@ -139,6 +139,7 @@ export default async function FormationPubliquePage({
                 </Badge>
               ) : null}
               {f.cpfEligible ? <Badge>CPF</Badge> : null}
+              {f.freeOnline ? <Badge className="gap-1">Gratuit · en ligne</Badge> : null}
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               {f.title}
@@ -223,6 +224,63 @@ export default async function FormationPubliquePage({
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          {/* DEUX FICHES EN UNE.
+
+              Le bloc d'achat par défaut vend une action Qualiopi au devis :
+              « Tarif sur devis », « Demander un devis », « Réponse garantie
+              sous 72 h », « Émargement et suivi inclus ». Rien de tout cela
+              n'est vrai d'une mini-formation gratuite suivie en ligne, et
+              l'afficher quand même reviendrait à demander un devis pour un
+              contenu accessible en un clic.
+
+              On bascule donc sur un bloc entièrement distinct — un prix
+              (gratuit), un bouton (commencer), et la mention honnête de
+              l'attestation payante, qui est le seul élément facturé.
+              Aucune formation existante n'est touchée : `freeOnline` vaut
+              `false` partout ailleurs. */}
+          {f.freeOnline ? (
+            <Card>
+              <CardContent className="space-y-4 p-5">
+                <div>
+                  <p className="text-2xl font-bold text-foreground">Gratuit</p>
+                  <p className="text-xs text-muted-foreground">
+                    Du premier au dernier module, sans carte bancaire et sans date de fin
+                  </p>
+                </div>
+                {f.durationHours ? (
+                  <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Clock className="size-4" /> Environ {f.durationHours} h, à votre rythme
+                  </p>
+                ) : null}
+                {f.enrollUrl ? (
+                  <Button asChild className="w-full">
+                    {/* Le parcours est hébergé sur la plateforme pédagogique de
+                        l'association : lien externe assumé, `rel` explicite. */}
+                    <a href={f.enrollUrl} target="_blank" rel="noopener noreferrer">
+                      Commencer la formation
+                    </a>
+                  </Button>
+                ) : null}
+                <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
+                  <p className="flex items-center gap-1.5">
+                    <BadgeCheck className="size-3.5" />
+                    Attestation de suivi nominative : 20 €, facultative
+                  </p>
+                  {/* Dire ce que l'attestation N'EST PAS est aussi important que
+                      son prix : une attestation de suivi n'est ni un diplôme ni
+                      une certification professionnelle, et laisser croire le
+                      contraire pour 20 € serait une pratique trompeuse. */}
+                  <p className="flex items-center gap-1.5">
+                    <ShieldCheck className="size-3.5" />
+                    Ni diplôme, ni certification professionnelle
+                  </p>
+                  <p className="flex items-center gap-1.5">
+                    <Users className="size-3.5" /> Pour les parents comme pour les professionnels
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
           <Card>
             <CardContent className="space-y-4 p-5">
               {f.priceFrom ? (
@@ -264,6 +322,7 @@ export default async function FormationPubliquePage({
               </div>
             </CardContent>
           </Card>
+          )}
 
           <QrShare path={`/formations/${f.slug}`} title={f.title} fileName={f.slug} />
 
@@ -297,7 +356,9 @@ export default async function FormationPubliquePage({
                     {r.durationHours ? (
                       <p className="text-sm text-muted-foreground">{r.durationHours} h</p>
                     ) : null}
-                    {r.priceFrom ? (
+                    {r.freeOnline ? (
+                      <p className="font-semibold text-primary">Gratuit · en ligne</p>
+                    ) : r.priceFrom ? (
                       <p className="font-semibold text-primary">à partir de {formatMoney(r.priceFrom)}</p>
                     ) : null}
                   </CardContent>
@@ -322,7 +383,31 @@ export default async function FormationPubliquePage({
                 "@type": "Organization",
                 name: f.account?.name ?? "Les Extras",
               },
-              ...(f.priceFrom
+              // Une formation gratuite en ligne se déclare comme telle :
+              // `price: "0"` + `category: "Free"`, et le mode de suivi. Sans
+              // cela Google la range parmi les formations sans prix, c'est-à-dire
+              // exactement comme celles qui se vendent au devis — alors que
+              // « gratuit » est ce qui la fait cliquer.
+              ...(f.freeOnline
+                ? {
+                    offers: {
+                      "@type": "Offer",
+                      price: "0",
+                      priceCurrency: "EUR",
+                      category: "Free",
+                      availability: "https://schema.org/InStock",
+                      ...(f.enrollUrl ? { url: f.enrollUrl } : {}),
+                    },
+                    // Pas de `courseWorkload` : la durée exacte varie d'une
+                    // mini-formation à l'autre (36, 39, 45 min) et la fiche ne
+                    // la porte qu'en heures entières. Annoncer une durée
+                    // arrondie à Google serait la publier fausse.
+                    hasCourseInstance: {
+                      "@type": "CourseInstance",
+                      courseMode: "online",
+                    },
+                  }
+                : f.priceFrom
                 ? {
                     offers: {
                       "@type": "Offer",

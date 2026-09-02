@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUrl,
   Min,
 } from 'class-validator';
 import { FormationStatus, FormationType, SessionStatus } from '@prisma/client';
@@ -29,6 +30,23 @@ export class CreateFormationAdminDto {
   @IsOptional() @IsBoolean() certifying?: boolean;
   @IsOptional() @IsString() certificationName?: string;
   @IsOptional() @IsString() edofRef?: string;
+  /**
+   * MINI-FORMATION EN LIGNE ET GRATUITE.
+   *
+   * Le ValidationPipe global est en `forbidNonWhitelisted` : sans ces deux
+   * champs ici, l'ecran d'administration ne peut PAS corriger une fiche
+   * gratuite — la requete part en 400 des qu'elle les contient. Les fiches
+   * sont creees par `prisma/seed-mini-formations.js`, mais elles doivent
+   * rester modifiables a la main : une URL de plateforme qui change ne doit
+   * pas obliger a un commit.
+   *
+   * `enrollUrl` est valide comme une URL http(s) : le seul bouton de la fiche
+   * y mene, et une adresse mal saisie donne un bouton mort sur la page
+   * publique — le genre de defaut que personne ne remarque avant des mois.
+   */
+  @IsOptional() @IsBoolean() freeOnline?: boolean;
+  @IsOptional() @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  enrollUrl?: string;
   @IsOptional() @IsEnum(FormationStatus) status?: FormationStatus;
   /** Compte OF propriétaire (fallback si l'admin ne dispose d'aucun compte). */
   @IsOptional() @IsString() ownerAccountId?: string;
@@ -49,6 +67,23 @@ export class UpdateFormationAdminDto {
   @IsOptional() @IsBoolean() certifying?: boolean;
   @IsOptional() @IsString() certificationName?: string;
   @IsOptional() @IsString() edofRef?: string;
+  /**
+   * MINI-FORMATION EN LIGNE ET GRATUITE.
+   *
+   * Le ValidationPipe global est en `forbidNonWhitelisted` : sans ces deux
+   * champs ici, l'ecran d'administration ne peut PAS corriger une fiche
+   * gratuite — la requete part en 400 des qu'elle les contient. Les fiches
+   * sont creees par `prisma/seed-mini-formations.js`, mais elles doivent
+   * rester modifiables a la main : une URL de plateforme qui change ne doit
+   * pas obliger a un commit.
+   *
+   * `enrollUrl` est valide comme une URL http(s) : le seul bouton de la fiche
+   * y mene, et une adresse mal saisie donne un bouton mort sur la page
+   * publique — le genre de defaut que personne ne remarque avant des mois.
+   */
+  @IsOptional() @IsBoolean() freeOnline?: boolean;
+  @IsOptional() @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  enrollUrl?: string;
   @IsOptional() @IsEnum(FormationStatus) status?: FormationStatus;
 }
 

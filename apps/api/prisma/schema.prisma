@@ -1307,6 +1307,31 @@ model Formation {
   methodology       String?
   evaluation        String?
   faq               Json?
+  /// MINI-FORMATION EN LIGNE, GRATUITE ET SANS SESSION.
+  ///
+  /// Le modele de la fiche formation a ete concu pour une seule chose : vendre
+  /// au devis une action Qualiopi, animee en presentiel, a une date. Toute la
+  /// fiche en decoule — « Tarif sur devis », « Demander un devis »,
+  /// « Prochaines sessions », « Reponse garantie sous 72 h ».
+  ///
+  /// Une mini-formation gratuite suivie en ligne ne coche AUCUNE de ces cases :
+  /// elle n'a pas de date, pas de lieu, pas de devis et pas de prix. Publiee
+  /// telle quelle, elle afficherait « Tarif sur devis » pour quelque chose de
+  /// gratuit et « Demander un devis » pour quelque chose d'accessible tout de
+  /// suite — c'est-a-dire l'exact contraire de la promesse.
+  ///
+  /// Ce drapeau bascule la fiche dans un second mode : prix affiche « Gratuit »,
+  /// bouton unique vers `enrollUrl`, ni session ni formulaire de devis. Il ne
+  /// change RIEN aux formations existantes (defaut `false`).
+  freeOnline        Boolean         @default(false)
+  /// Adresse ou la formation se suit reellement quand elle est en ligne.
+  ///
+  /// L'hebergement du parcours (video, quiz, suivi d'assiduite) est fait par la
+  /// plateforme pedagogique de l'association ; Les Extras porte la fiche
+  /// publique, qui est ce que Google indexe et ce qui se partage. Sans cette
+  /// adresse, `freeOnline` n'a aucun sens : le seul bouton de la fiche n'aurait
+  /// nulle part ou aller.
+  enrollUrl         String?
   /// Compteurs de la fiche (preuve sociale et pilotage du funnel).
   views             Int             @default(0)
   requestsCount     Int             @default(0)

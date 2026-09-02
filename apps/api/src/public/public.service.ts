@@ -101,6 +101,12 @@ const FORMATION_CARD_SELECT = {
   type: true,
   certifying: true,
   cpfEligible: true,
+  // Le mode « gratuite en ligne » se décide dans la carte, pas seulement dans
+  // la fiche : sans ces deux champs ici, le catalogue afficherait
+  // « Tarif sur devis » sur une formation gratuite, et le visiteur ne cliquerait
+  // jamais. Voir le commentaire de `Formation.freeOnline` dans le schéma.
+  freeOnline: true,
+  enrollUrl: true,
   images: true,
   city: true,
   requestsCount: true,
@@ -131,6 +137,8 @@ function carteFormation(f: CarteFormationSource) {
     type: f.type,
     certifying: f.certifying,
     cpfEligible: f.cpfEligible,
+    freeOnline: f.freeOnline,
+    enrollUrl: f.enrollUrl,
     images: f.images,
     city: f.city ?? prochaine?.location ?? f.ownerAccount?.city ?? null,
     requestsCount: f.requestsCount,

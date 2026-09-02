@@ -35,6 +35,10 @@ export interface FormationCard {
   account?: { id: string; name: string; logoUrl?: string | null } | null;
   priceFrom?: string | number | null;
   nextSessionAt?: string | null;
+  /** Mini-formation en ligne et gratuite : ni devis, ni session, ni prix. */
+  freeOnline?: boolean;
+  /** Adresse où la formation se suit réellement (plateforme pédagogique). */
+  enrollUrl?: string | null;
 }
 
 const inputClass =
@@ -273,7 +277,12 @@ export default async function FormationsCatalogPage({
                     ) : null}
                   </div>
                   <div className="flex items-center justify-between pt-1">
-                    {f.priceFrom ? (
+                    {/* « Tarif sur devis » sur une formation gratuite ferait
+                        fuir exactement les gens qu'elle vise. Le mode gratuit
+                        se lit donc dès la carte. */}
+                    {f.freeOnline ? (
+                      <p className="font-semibold text-primary">Gratuit · en ligne</p>
+                    ) : f.priceFrom ? (
                       <p className="font-semibold text-primary">
                         à partir de {formatMoney(f.priceFrom)}
                       </p>
