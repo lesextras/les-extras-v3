@@ -53,10 +53,16 @@ antérieures — demander à Siham l'état courant avant d'y toucher.
   (`TRIAL_DAYS` n'est gardé que pour les comptes qui l'ont connu).
   Abonnements : **LEX 19 €/mois** (200 générations reportables),
   **LEX Pro 49 €/mois** (600). Packs : 25 cr/9 €, 60 cr/19 €, 150 cr/39 €.
-  **Établissement 89 €/mois** (SOS Renfort illimité, 0 % de commission, LEX
-  1 000 générations partagées) — le virage du modèle : c'est la DEMANDE qui
-  finance, jamais l'intervenant. Ce dernier plan n'est PAS annoncé sur le site
-  public : à trancher par Siham avant de l'afficher.
+  **LEX Équipe — établissement, 89 €/mois** : 1 000 générations mensuelles
+  PARTAGÉES par toute l'équipe du compte + trames maison publiables à la
+  portée ETABLISSEMENT. **RECADRÉ LE 2/09/2026, décision de Siham.** Il
+  promettait auparavant « RenforTeam illimité, 0 % de commission, coffre-fort
+  de conformité » : trois choses que le compte GRATUIT contient déjà — il
+  facturait donc du vide, et il contredisait la gratuité du renfort désormais
+  assumée PUBLIQUEMENT comme différenciateur permanent. **Ne jamais remettre
+  quoi que ce soit du renfort, des ateliers ou de la conformité derrière ce
+  paywall** : c'est la promesse publiée sur /comparatif-plateformes-remplacement
+  et sur la page Facebook de l'association.
 - Le site public affiche désormais « Gratuit, puis 19 € » sur la carte LEX
   (il disait « essai gratuit de 7 jours » et « tarifs dans votre espace »,
   c'est-à-dire : créez un compte pour connaître un prix).
@@ -708,3 +714,124 @@ porte aucune variable `S3_*`. Créer le stockage demande une clé d'accès et un
 clé secrète — Siham les saisit elle-même. Les sauvegardes nocturnes (3 h UTC,
 rétention 7) restent vertes, mais elles dorment sur le serveur qu'elles
 protègent.
+
+## Journée du 2 septembre 2026 — concurrence, SEO, crédibilité
+
+Commit `b1477a6`. Né d'un benchmark concurrentiel mené le même jour, dont les
+conclusions sont ci-dessous : elles font foi tant qu'elles ne sont pas
+re-vérifiées, et chacune a été relevée à la source.
+
+### Ce que facturent les autres (relevé le 2/09/2026)
+
+| Acteur | Établissement | Professionnel | Autre |
+|---|---|---|---|
+| **Brigad** | 10 % HT par mission | 15 % TTC (9,9 % infirmier) | aucun abonnement ; annulation < 48 h facturée 25 à 75 % |
+| **Hublo** | **non publié** (CGV → contrat négocié, pas de page tarifs, 404) | gratuit | 2 000 € HT (AS) / 3 000 € HT (IDE) pour recruter un profil du vivier, sauf après 12 mois ou 30 missions ; mission annulée < 48 h facturée |
+| **Les Extras** | 0 | 0 | 0 |
+
+**⚠ NE JAMAIS ÉCRIRE « Hublo affiche 30 € HT / 40 € HT ».** Ces montants
+existent uniquement en dur dans le JavaScript de leur simulateur public
+(`/fr/comparaison-hublo-interim`), sans mention HT ni TTC et sans valeur
+contractuelle. Formulation défendable : « le simulateur public de Hublo retient
+une commission de 30 € par mission pour un aide-soignant et 40 € pour un IDE ».
+
+Le marché du renfort est **consolidé** : Whoog et Permuteo absorbés par Hublo
+(25,2 M€ de CA 2025, 55 M€ levés, ~6 000 établissements, 190 salariés),
+Medelse par Synergie Care, Side par Randstad, Andjaro par Silae. **La cascade
+de diffusion n'est PAS un différenciateur** : Hublo fait exactement la même.
+Le seul avantage réel côté renfort est la gratuité et l'absence de frais de
+recrutement. Le vrai espace vide est ailleurs : **aucune marketplace d'ateliers
+réservables n'existe pour la protection de l'enfance / IME / ITEP / SESSAD** —
+tous les acteurs d'ateliers visent l'EHPAD (LiveArts, Happy Nelly, Neosilver).
+
+Point de droit qui nous sert : **CE 11/02/2025 n° 491128** (un aide-soignant ne
+peut pas exercer sous statut d'indépendant en établissement) + **LFSS 2025
+art. 70** (plafond de dépenses d'intérim étendu aux ESMS publics au 01/07/2025).
+Le CDD direct est le seul montage sécurisé. **Bannir le mot « freelance » pour
+RenforTeam** — c'est le vocabulaire sanctionné : « remplaçant en CDD » pour le
+renfort, « intervenant » pour les ateliers.
+
+### NotaSuivi (notasuivi.fr) — le seul concurrent direct de LEX
+
+Même cible exacte (IME, ITEP, SESSAD, MECS, ESAT, CAMSP, FAM/MAS, ASE),
+périmètre plus large (dossier usager, PPE, transmissions DAR). Grille
+publique : **Essentiel 39 €/mois — 20 générations IA, soit 1,95 € l'écrit** ;
+Équipe 149 €/mois illimité ; Structure dès 499 €/mois + 1 500 à 4 900 € de
+mise en service. LEX à 19 € pour 200 générations = **0,095 €, vingt fois
+moins cher à l'usage**.
+
+Leur crédibilité, en revanche : éditeur **MOVIXO = Morad NATALBA, entreprise
+individuelle, SIREN 945274041, créée le 5/06/2025, code NAF 49.41A transport
+routier, zéro salarié** ; domaine créé le **19/04/2026** ; mentions légales
+sans SIREN ni adresse, contact en gmail ; aucun client nommé, aucune page
+LinkedIn, aucun avis Capterra ; **articles de blog antidatés** (décembre 2024
+sur un domaine d'avril 2026). Leur accueil dit « HDS certifié » quand leur
+propre page conformité dit « certification en cours » et « NOTASUIVI n'est pas
+lui-même conforme ».
+
+**⚠ Ces éléments servent la STRATÉGIE, pas la publication.** Les publier
+serait du dénigrement, que la publicité comparative n'autorise pas
+(art. L122-1 et s. c. conso). Les pages publiques comparent des PRIX publics,
+jamais des personnes ni des sociétés.
+
+**Ce qu'ils font mieux que nous, et qu'il faut rattraper : le SEO.** Ils sont
+en première page sur « écrits professionnels éducateur spécialisé », le cœur
+exact de LEX, avec sept pages sectorielles et des guides de 2 000 mots.
+
+### Ce que le commit a livré
+
+- **`/guides` + six guides des écrits professionnels** (`(public)/guides/`) :
+  pilier « écrits professionnels de l'éducateur spécialisé », rapport de
+  situation, projet personnalisé, ESS/GEVA-Sco, IP vs signalement, bilan de fin
+  d'accompagnement. Statiques, données structurées `Article` + `FAQPage`.
+- **`/comparatif-plateformes-remplacement`** et
+  **`/comparatif-assistants-redaction`** : tableaux tarifaires sourcés, date de
+  relevé affichée, pages nommées pour que le lecteur vérifie.
+- **Pied de page** : SIRET, siège, NDA 11771011677, certificat QNW0132 +
+  COFRAC 5-0681 sur les 93 pages. Et « professionnels indépendants » retiré de
+  l'accroche.
+- **`ESTABLISHMENT_PLAN`** recadré (voir la section modèle économique).
+
+### ⚠ RÉFÉRENCES JURIDIQUES DES GUIDES — vérifiées une par une
+
+Trois erreurs très répandues sont évitées, et documentées en tête de
+`(public)/guides/contenu.ts`. **Ne pas les réintroduire :**
+
+1. Le CASF ne dit **jamais** « projet personnalisé » dans le régime général :
+   il dit « projet d'accueil et d'accompagnement » (L311-3, 7°). L'expression
+   existe pour les ITEP, à l'article D312-59-2. Les délais (15 jours / 1 mois /
+   avenant à 6 mois) sont à l'article **D311**, PAS à L311-4.
+2. Le rapport annuel au juge des enfants vient du **dernier alinéa de
+   l'article 375 du code civil**. L'article **L223-5 du CASF** régit le rapport
+   administratif (annuel, semestriel avant 2 ans — règle issue de la loi du
+   14 mars 2016, **pas** de la loi Taquet). Ce sont deux obligations distinctes.
+3. L'ESS est régie par le **D351-10** du code de l'éducation (D351-12 pour
+   l'enseignant référent). Le D351-16-1 traite de l'aide humaine.
+
+Autres points tenus : l'article **40 al. 2 du CPP** n'oblige que les autorités
+constituées et fonctionnaires, donc **pas** un salarié d'association ;
+l'article 375 du code civil ne fonde **pas** le signalement (un service non
+gardien ne peut pas saisir le juge des enfants) ; la **loi du 17 juillet 1978
+n'est plus citable**, elle est codifiée dans le **CRPA** (art. L311-6) ; et il
+**n'existe aucune recommandation ANESM/HAS consacrée aux écrits
+professionnels** — la règle « faits / interprétation » est présentée comme une
+règle de métier, pas comme une norme. Ce que la HAS exige réellement (cadre
+national de référence de janvier 2021, rendu obligatoire par le décret
+2022-1728) est l'**équilibre** : éléments préoccupants ET points d'appui, point
+de vue de l'enfant ET des parents.
+
+### Restes à faire, hors code
+
+- **L'image de partage `/images/partage-les-extras.jpg` dit encore
+  « Intervenants vérifiés »**, mention retirée du site en neuf endroits parce
+  qu'elle n'était pas soutenable. Elle réapparaît sur chaque partage social.
+  Nouveau visuel à produire.
+- Page Facebook `profile.php?id=61590194680357` : bio, liens, e-mail et trois
+  catégories (Organisation à but non lucratif · Formation · Services sociaux)
+  posés le 2/09. Restent, pour Siham : l'adresse déclarée (**rue Claude
+  Bernard** au lieu du siège **7 rue André Malraux**), les horaires qui
+  affichent « Fermé » en permanence, la destination du bouton « En savoir
+  plus », le nom d'utilisateur (la Page n'en a pas) et la photo de couverture,
+  qui est encore celle d'A2PA. **La Page est membre de 53 groupes** — deux
+  d'entre eux interdisent explicitement la promotion de plateformes
+  concurrentes, lire le règlement avant chaque publication.
