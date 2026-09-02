@@ -977,7 +977,8 @@ les PUT. Rappels d'API :
 - **L'école Teachizy s'appelle TOULALI**, pas ADéPA : les mini-formations du
   médico-social vivent donc sous une marque de reconversion numérique. Choix
   de Siham (une seule école existe sur ce compte).
-- Reste **15 mini-formations** sur les 18 prévues. Deux sont écrites et prêtes
-  à charger (`/home/claude/catalogue-vague-2.js` : chaînage, environnement
-  prévisible) ; cinq autres existent dans `/home/claude/formations-gratuites.js`
-  et n'ont qu'à être remises au gabarit à quatre modules.
+- **Cinq mini-formations en ligne** sur les 18 prévues (la thématique TSA est
+  complète). Cinq autres existent dans `/home/claude/formations-gratuites.js`
+  — consigne, crise, observer, transition, renforcer — et n'ont qu'à être
+  remises au gabarit à quatre modules. Le catalogue prévu et le gabarit sont
+  dans `/home/claude/catalogue-mini-formations.js` et `catalogue-vague-2.js`.

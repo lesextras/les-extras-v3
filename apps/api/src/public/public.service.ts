@@ -140,7 +140,13 @@ function carteFormation(f: CarteFormationSource) {
     freeOnline: f.freeOnline,
     enrollUrl: f.enrollUrl,
     images: f.images,
-    city: f.city ?? prochaine?.location ?? f.ownerAccount?.city ?? null,
+    // Une mini-formation en ligne n'a PAS de lieu. Sans cette exception, la
+    // ville du compte propriétaire remonte par la cascade ci-dessous et la
+    // fiche affiche « Lieu : Melun » sur une formation qui se suit depuis
+    // n'importe où — constaté en direct sur les trois premières fiches.
+    city: f.freeOnline
+      ? null
+      : f.city ?? prochaine?.location ?? f.ownerAccount?.city ?? null,
     requestsCount: f.requestsCount,
     categoryRef: f.categoryRef,
     account: f.ownerAccount,

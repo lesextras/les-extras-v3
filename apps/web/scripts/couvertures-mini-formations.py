@@ -74,6 +74,20 @@ COUVERTURES = [
         "duree": "4 modules · 39 min",
     },
     {
+        "fichier": "decomposer-une-routine-en-etapes.jpg",
+        "surtitre": "TSA, communication et comportement",
+        "titre": "Décomposer une routine en étapes",
+        "sous": "Découper une routine du quotidien et choisir par quelle extrémité l’enseigner",
+        "duree": "4 modules · 36 min",
+    },
+    {
+        "fichier": "rendre-l-environnement-previsible.jpg",
+        "surtitre": "TSA, communication et comportement",
+        "titre": "Rendre l’environnement prévisible",
+        "sous": "Construire un support visuel qui est réellement consulté",
+        "duree": "4 modules · 35 min",
+    },
+    {
         "fichier": "guider-puis-s-effacer.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Guider puis s’effacer",

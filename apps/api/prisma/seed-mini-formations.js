@@ -190,6 +190,61 @@ Module 4 — Mise en pratique et auto-observation. Le protocole sur deux semaine
     targetAudience: `Parents et proches d’une personne avec un trouble du neurodéveloppement ou des difficultés de communication ; professionnels du médico-social confrontés à des comportements-défis ; équipes qui ont déjà identifié la fonction d’un comportement et cherchent la suite.`,
   },
   {
+    slug: 'decomposer-une-routine-en-etapes',
+    image: 'decomposer-une-routine-en-etapes.jpg',
+    slugPlateforme: 'decomposer-une-routine-en-etapes',
+    title: 'Décomposer une routine en étapes',
+    summary: `Thématique : TSA, communication et comportement. Une seule compétence travaillée : découper une routine du quotidien en étapes enseignables et choisir par quelle extrémité commencer.
+
+« Il ne sait pas s’habiller » ne se travaille pas : la phrase ne dit ni ce qui est acquis, ni où exactement ça s’arrête. « Il bloque à l’étape 4 sur 9 » se travaille. Écrire la chaîne, mesurer ce qui est déjà là, choisir par quelle extrémité enseigner — et n’en enseigner qu’une à la fois.
+
+Environ 36 minutes, dont sept minutes de lecture à l’écran.
+
+${GARDE_FOU}`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— écrire la chaîne d’une routine en étapes observables, qui passent le test du témoin ;
+— prendre une ligne de base et dire quelles étapes sont acquises seules, aidées, ou non réussies ;
+— choisir entre chaînage arrière, chaînage avant et chaîne entière à aide dégressive, et justifier ce choix ;
+— fixer un critère de passage à l’avance plutôt qu’au ressenti du jour, et tenir un relevé de dix lignes ;
+— reconnaître qu’une étape est trop grosse — l’aide ne diminue pas — et la découper en deux.`,
+    program: `Module 1 — La théorie, en huit minutes. Une routine n’est pas une compétence, c’est une suite de compétences. Écrire la chaîne, mesurer, puis choisir entre trois façons d’enseigner.
+
+Module 2 — Une situation qui dérape, et pourquoi. Une séance d’habillage qui n’a produit ni apprentissage ni information, et ce qui manquait avant la séance.
+
+Module 3 — Exercice guidé : écrire la chaîne et prendre la ligne de base. Sur une routine que vous accompagnez tous les jours.
+
+Module 4 — Mise en pratique et auto-observation. Dix jours, une seule étape, et trois questions au dixième jour.`,
+    targetAudience: `Parents et proches d’une personne avec un trouble du neurodéveloppement ou une déficience intellectuelle ; professionnels du médico-social et de l’école (éducateurs, moniteurs-éducateurs, AES, AESH) ; équipes qui veulent écrire un objectif d’autonomie vérifiable dans un projet d’accompagnement.`,
+  },
+  {
+    slug: 'rendre-l-environnement-previsible',
+    image: 'rendre-l-environnement-previsible.jpg',
+    slugPlateforme: 'rendre-lenvironnement-previsible',
+    title: 'Rendre l’environnement prévisible',
+    summary: `Thématique : TSA, communication et comportement. Une seule compétence travaillée : construire un support visuel qui est réellement consulté, et rendre le temps qui passe visible.
+
+Tout le monde fabrique des pictogrammes ; presque personne ne s’en sert encore trois semaines plus tard. Un support n’est pas une aide à la compréhension, c’est une aide à l’autonomie : il permet de savoir ce qui vient sans dépendre de la disponibilité d’un adulte. Les cinq raisons qui le font abandonner, et la ligne qui décide s’il existe encore dans un mois.
+
+Environ 35 minutes, dont sept minutes de lecture à l’écran.`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— formuler la question unique à laquelle un support répond, et ne pas en mélanger trois sur le même mur ;
+— choisir le niveau de représentation que la personne reconnaît aujourd’hui, en le testant plutôt qu’en le supposant ;
+— construire un support manipulable, borné à quatre ou six cases, avec une marque de fin ;
+— écrire la ligne de responsabilité — qui met à jour, et quand — sans laquelle aucun support ne survit à un mois ;
+— préparer et roder une carte « changement » avant d’en avoir besoin ;
+— lire un relevé de quatorze jours et décider s’il faut corriger le support, le déplacer ou l’abandonner.`,
+    program: `Module 1 — La théorie, en sept minutes. Ce qu’un support visuel remplace vraiment, les trois objets qu’on confond, les cinq raisons d’un abandon, et comment rendre le temps visible.
+
+Module 2 — Une situation qui dérape, et pourquoi. Un planning plastifié fabriqué en deux après-midi et abandonné en trois semaines — le support n’avait pas échoué.
+
+Module 3 — Exercice guidé : construire un support qui tient. Question, niveau de représentation, trois contraintes, et la ligne de responsabilité.
+
+Module 4 — Mise en pratique et auto-observation. Quatorze jours, trois colonnes, et une décision honnête au bout.`,
+    targetAudience: `Parents et proches d’une personne avec un trouble du spectre de l’autisme ou une anxiété liée à l’imprévu ; professionnels du médico-social et de l’école ; équipes qui ont déjà fabriqué des supports visuels et constatent qu’ils ne servent plus.`,
+  },
+  {
     slug: 'guider-puis-s-effacer',
     image: 'guider-puis-s-effacer.jpg',
     slugPlateforme: 'guider-puis-seffacer',
