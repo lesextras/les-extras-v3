@@ -7,7 +7,7 @@ import { GUIDES } from "./contenu";
 export const metadata: Metadata = metaPublique({
   title: "Mode d'emploi",
   description:
-    "Les deux parcours complets, pas à pas : publier un renfort ou réserver un atelier côté établissement ; profil vérifié, missions et facturation côté intervenant.",
+    "Les deux parcours complets, pas à pas : publier un renfort ou réserver un atelier côté établissement ; dossier de conformité, missions et facturation côté intervenant.",
   path: "/mode-demploi",
 });
 

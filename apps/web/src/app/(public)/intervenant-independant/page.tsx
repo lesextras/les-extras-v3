@@ -1,7 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check, Coins, FileText, Sparkles, X } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Check,
+  Clock,
+  Coins,
+  FileText,
+  MapPin,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { metaPublique } from "@/lib/meta";
+import { VILLES } from "../renfort/donnees";
 
 export const metadata: Metadata = metaPublique({
   title: "Rejoindre le réseau d'intervenants",
@@ -25,6 +36,36 @@ const INCLUS = [
   "Messagerie interne rattachée à chaque mission",
   "Coffre-fort de conformité avec alertes d’échéance",
   "15 générations offertes par mois sur LEX, l’assistant IA",
+];
+
+/**
+ * CE QU'IL FAUT FOURNIR — la question n° 1 d'un professionnel, et elle
+ * n'avait aucune réponse sur cette page.
+ *
+ * On ne l'invente pas : c'est EXACTEMENT la liste que le module de conformité
+ * exige (`ConformiteService.REQUIRED_TYPES`), et la raison de chaque pièce est
+ * celle qui est écrite dans son code. Le permis et l'attestation
+ * d'auto-entrepreneur en ont été retirés à dessein : une obligation qui ne
+ * vaut pas pour tout le monde n'est pas une obligation.
+ */
+const PIECES = [
+  {
+    quoi: "Une pièce d'identité",
+    pourquoi: "Elle est demandée par tout établissement qui vous fait intervenir.",
+  },
+  {
+    quoi: "Votre diplôme d'État",
+    pourquoi: "C'est lui qui vous place devant sur les besoins de votre métier.",
+  },
+  {
+    quoi: "Le bulletin n° 3 de votre casier judiciaire",
+    pourquoi:
+      "Obligatoire pour intervenir auprès de publics vulnérables (art. L. 133-6 du code de l'action sociale et des familles). Il se demande en ligne, gratuitement.",
+  },
+  {
+    quoi: "Un RIB",
+    pourquoi: "Pour être payé, simplement.",
+  },
 ];
 
 const METIERS = [
@@ -113,6 +154,102 @@ export default function IntervenantIndependantPage() {
           Cette liste n’est pas limitative : si vous intervenez auprès d’établissements du secteur,
           votre métier a sa place dans le réseau.
         </p>
+      </section>
+
+      {/* ── Ce qu'il faut fournir, et combien de temps ça prend ────────────
+          Trois questions restaient sans réponse sur cette page, et ce sont
+          les trois seules que se pose un professionnel avant de créer un
+          compte : de quoi ai-je besoin, combien de temps ça me coûte, et
+          où est-ce que ça se passe. Tout ce qui suit est lu dans le produit
+          lui-même — rien n'est annoncé qui ne soit vérifiable. */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+          Ce dont vous avez besoin pour commencer
+        </h2>
+        <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
+          Quatre pièces, déposées une seule fois. Elles ne sont pas exigées pour créer votre
+          compte ni pour publier : elles le deviennent quand un établissement vous engage,
+          et la plateforme suit leurs échéances à votre place.
+        </p>
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+          {PIECES.map((p) => (
+            <li key={p.quoi} className="rounded-xl border border-border bg-card p-5">
+              <p className="flex items-start gap-2 font-semibold text-foreground">
+                <BadgeCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                {p.quoi}
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{p.pourquoi}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="flex items-center gap-2 font-semibold text-foreground">
+              <Clock className="size-4 text-primary" aria-hidden />
+              Le temps que ça prend
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+              Créer le compte : sept champs. Publier une première fiche d’atelier : un titre et
+              une description suffisent — tout le reste (durée, public, tarif, objectifs, matériel)
+              se complète quand vous voulez, et se remplit en repartant d’un brief si vous en avez un.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="flex items-center gap-2 font-semibold text-foreground">
+              <MapPin className="size-4 text-primary" aria-hidden />
+              Où interviennent nos établissements
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+              L’association est basée à Melun, et le réseau se construit d’abord en
+              Île-de-France : {VILLES.map((v) => v.nom).join(", ")}. Vous pouvez vous
+              référencer ailleurs — mais c’est là que les demandes arrivent aujourd’hui.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Les deux dispositifs, et lequel s'applique quand ────────────────
+          RenforTeam promet « un vrai bulletin de paie » ; cette page promet
+          « vous facturez, vous gardez 100 % ». Les deux sont vrais — ce sont
+          deux dispositifs différents — mais rien ne l'expliquait, et un
+          éducateur qui lisait les deux pages ne savait pas ce qu'il signait. */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+          Deux façons de travailler, et elles ne se signent pas pareil
+        </h2>
+        <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
+          C’est la distinction la plus importante du site, et la seule qui change votre statut
+          sur une intervention donnée. Vous pouvez faire les deux.
+        </p>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl border-2 border-primary/30 bg-primary-soft/20 p-6">
+            <p className="text-lg font-semibold text-foreground">Vos ateliers et vos formations</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Vous publiez une offre, un établissement la réserve ou vous demande un devis. Vous
+              intervenez <strong>en tant qu’indépendant</strong>, sous votre SIRET, et vous
+              facturez l’établissement en direct. La plateforme génère le devis, le contrat et la
+              facture — elle ne prend rien au passage.
+            </p>
+            <p className="mt-3 text-sm font-medium text-foreground">
+              Il vous faut donc un statut d’indépendant.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-6">
+            <p className="text-lg font-semibold text-foreground">RenforTeam</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Un établissement a une absence à couvrir. Vous acceptez la mission, et c’est lui
+              qui vous <strong>embauche en CDD</strong> : vous êtes salarié le temps du
+              remplacement, avec un vrai bulletin de paie. Rien à facturer, aucun statut
+              d’indépendant nécessaire.
+            </p>
+            <p className="mt-3 text-sm">
+              <Link href="/renforteam" className="font-medium underline underline-offset-2">
+                Comment fonctionne RenforTeam
+              </Link>
+            </p>
+          </div>
+        </div>
       </section>
 
       <div className="mt-10 flex flex-col items-center gap-3 text-center">

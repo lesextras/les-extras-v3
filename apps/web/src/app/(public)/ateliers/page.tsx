@@ -21,7 +21,7 @@ export default async function AteliersCatalogPage({
       type="atelier"
       basePath="/ateliers"
       title="Nos ateliers"
-      subtitle="Ateliers éducatifs, médiation, art-thérapie, prévention… un catalogue d'interventions clé en main, animées par des intervenants vérifiés."
+      subtitle="Ateliers éducatifs, médiation, art-thérapie, prévention… un catalogue d'interventions clé en main, animées par les intervenants du réseau."
       searchPlaceholder="Rechercher un atelier…"
       emptyTitle="Catalogue d'ateliers en préparation"
       searchParams={searchParams}

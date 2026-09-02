@@ -92,7 +92,7 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
             il lui faut la piece a porter a son conseil ou a son financeur. */}
         {q.status !== "REQUESTED" ? (
           <Button asChild size="sm" variant="outline">
-            <Link href={`/api/proxy/documents/devis/${q.id}.pdf`} target="_blank">
+            <Link href={`/api/proxy/documents/devis/${q.id}.pdf`} target="_blank" rel="noopener noreferrer">
               Télécharger le devis (PDF)
             </Link>
           </Button>
@@ -248,7 +248,7 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
             </div>
             {q.bookingId ? (
               <Button asChild size="sm" variant="outline">
-                <Link href={`/documents/contrat/${q.bookingId}`} target="_blank">
+                <Link href={`/documents/contrat/${q.bookingId}`} target="_blank" rel="noopener noreferrer">
                   Voir le contrat
                 </Link>
               </Button>

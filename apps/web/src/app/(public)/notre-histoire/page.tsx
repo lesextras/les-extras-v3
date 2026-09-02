@@ -58,7 +58,7 @@ export default function NotreHistoirePage() {
       <section className="space-y-5">
         <h2 className="text-2xl font-bold tracking-tight">Pourquoi Les Extras ?</h2>
         <p className="leading-relaxed text-muted-foreground">
-          MECS, IME, ITEP, foyers, SESSAD : absences, remplacements, surcroîts d’activité. Les Extras leur permet de réserver en ligne des intervenants qualifiés et vérifiés.
+          MECS, IME, ITEP, foyers, SESSAD : absences, remplacements, surcroîts d’activité. Les Extras leur permet de réserver en ligne des intervenants du réseau, dont le dossier de conformité est réuni et suivi à échéance.
         </p>
       </section>
 

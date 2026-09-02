@@ -144,7 +144,7 @@ const PARCOURS: Record<
         icone: UserRound,
         titre: "Créez votre profil",
         texte:
-          "Diplômes, expériences, zones d’intervention. Profil vérifié par l’équipe.",
+          "Diplômes, expériences, zones d’intervention. Les pièces obligatoires se déposent une fois, et l’échéance est suivie pour vous.",
         probleme:
           "À chaque structure, on renvoie les mêmes diplômes.",
         change:

@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   // caractères au maximum, sinon Google coupe la phrase en plein milieu dans
   // ses résultats. Celle-ci en fait 155 — même offre, dite plus court.
   description:
-    'Ateliers et formations courtes pour les établissements médico-sociaux : réservation en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe.',
+    'Ateliers et formations courtes pour les établissements médico-sociaux : réservation en ligne, devis en 48 h, dossier de conformité par intervenant. Et le renfort d’équipe.',
   keywords: [
     'atelier médico-social',
     'formation médico-social',
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     // celles qu'on partage. L'accueil pose le sien dans `app/page.tsx`.
     title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     description:
-      'Ateliers et formations courtes réservables en ligne, devis en 48 h, intervenants vérifiés. Et le renfort d’équipe quand l’urgence arrive.',
+      'Ateliers et formations courtes réservables en ligne, devis en 48 h, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
     siteName: 'LES EXTRAS',
     // Carte de partage 1200×630. Sans elle, LinkedIn et Facebook affichent un
     // rectangle gris à la place du lien — le pire format possible pour une
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
     description:
-      'Ateliers et formations courtes réservables en ligne, devis en 48 h, intervenants vérifiés.',
+      'Ateliers et formations courtes réservables en ligne, devis en 48 h, dossier de conformité par intervenant.',
     images: ['/images/partage-les-extras.jpg'],
   },
   robots: { index: true, follow: true },

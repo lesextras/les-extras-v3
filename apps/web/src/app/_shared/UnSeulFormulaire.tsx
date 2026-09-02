@@ -77,7 +77,7 @@ const CASCADE = [
   {
     titre: "Le réseau Les Extras",
     texte:
-      "En dernier recours seulement, l’offre s’ouvre aux intervenants vérifiés du réseau, filtrés sur le métier, la zone d’intervention et les disponibilités.",
+      "En dernier recours seulement, l’offre s’ouvre aux intervenants du réseau, filtrés sur le métier, la zone d’intervention et les disponibilités.",
     pastille: "bg-amber-500 text-amber-950",
   },
 ];

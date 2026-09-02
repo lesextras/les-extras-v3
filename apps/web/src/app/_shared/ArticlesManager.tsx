@@ -494,7 +494,7 @@ export function ArticlesManager({
                 <div className="flex flex-wrap gap-2">
                   {a.status === "PUBLISHED" ? (
                     <Button asChild variant="ghost" size="sm">
-                      <Link href={`/edublog/${a.slug}`} target="_blank">
+                      <Link href={`/edublog/${a.slug}`} target="_blank" rel="noopener noreferrer">
                         <Eye className="size-4" /> Voir
                       </Link>
                     </Button>

@@ -18,11 +18,14 @@ export default async function VerifyEmailPage({
   searchParams?: Promise<{ token?: string }>;
 }) {
   const searchParams = await searchParamsPromesse;
+  // `id="main"` : le lien « Aller au contenu » du gabarit racine ne menait
+  // nulle part sur cette route, qui n'a pas de gabarit propre. Une personne
+  // qui navigue au clavier tombait dans le vide.
   return (
-    <div className="theme-sombre flex min-h-screen items-center justify-center bg-background px-6 py-16 text-foreground">
+    <main id="main" className="theme-sombre flex min-h-screen items-center justify-center bg-background px-6 py-16 text-foreground">
       <Suspense>
         <VerifyEmail token={searchParams?.token} />
       </Suspense>
-    </div>
+    </main>
   );
 }

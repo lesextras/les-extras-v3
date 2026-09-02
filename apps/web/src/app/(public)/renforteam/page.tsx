@@ -313,6 +313,29 @@ export default async function SosRenfortPage() {
               <Link href="/login?next=/dashboard/renforts">Se connecter</Link>
             </Button>
           </div>
+
+          {/* LES DEUX BOUTONS DE FIN DE PAGE S'ADRESSAIENT À L'ÉTABLISSEMENT.
+              La page parle pourtant aux deux publics d'un bout à l'autre, et
+              c'est l'intervenant qu'on cherche à faire venir. Il repartait
+              sans rien à cliquer. */}
+          <div className="border-t border-border/60 pt-6">
+            <p className="text-sm text-muted-foreground">
+              Vous êtes intervenant ? Sur un renfort, c’est l’établissement qui vous embauche en
+              CDD — vous n’avez besoin d’aucun statut d’indépendant.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 pt-4">
+              <Button asChild size="lg" variant="outline">
+                <Link href="/register?next=/dashboard/opportunites">
+                  Créer mon compte intervenant
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost">
+                <Link href="/intervenant-independant">
+                  Proposer aussi mes ateliers
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
     </div>

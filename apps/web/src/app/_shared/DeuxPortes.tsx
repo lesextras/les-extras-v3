@@ -35,7 +35,7 @@ const PORTES = [
     titre: "Trouver des missions et proposer vos services",
     texte:
       "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue, zéro commission.",
-    reperes: ["0 % de commission", "Contrat et facture générés", "Profil vérifié une fois"],
+    reperes: ["0 % de commission", "Contrat et facture générés", "Dossier déposé une fois"],
     // La porte menait droit au formulaire d’inscription : on demandait de
     // créer un compte avant d’avoir rien expliqué. Les deux portes mènent
     // désormais à une page qui explique, l’inscription est le lien secondaire.

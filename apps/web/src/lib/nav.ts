@@ -316,10 +316,26 @@ const establishmentNav: NavSection[] = [
       // intervenant, l'entrée est épinglée en bas du menu, juste au-dessus du
       // bloc d'aide (voir sidebar.tsx). Même place pour tous les comptes.
       // ── Hors de l'ordre demandé, conservées à la fin ───────────────────────
-      // « Proposer mes services » a été retiré du menu des salariés le
+      // « Proposer mes services » avait été retiré du menu des salariés le
       // 25/08/2026 : un salarié consulte tout — missions, ateliers, catalogue —
       // mais il ne propose pas d'offre et ne candidate pas. Ce qu'il vend, il
       // le vend sous le nom de la maison qui l'emploie.
+      //
+      // CETTE RÈGLE EST MAINTENUE, et l'entrée ci-dessous ne la contredit pas
+      // (02/09/2026). La page ne fait pas publier une offre sous le compte de
+      // l'employeur : elle ouvre un compte SÉPARÉ, au nom propre du salarié,
+      // avec une adresse personnelle exigée explicitement — « les demandes
+      // liées à votre activité indépendante ne doivent pas arriver sur la
+      // messagerie de votre employeur ». C'est exactement la frontière que la
+      // règle du 25/08 protège.
+      //
+      // Réservée au rôle MEMBER : un directeur ou un chef de service n'est pas
+      // le public de cette page. Elle ferme la section, après le travail
+      // quotidien — et non au milieu.
+      //
+      // Pour la retirer de nouveau : supprimer la ligne qui suit, rien d'autre
+      // n'en dépend.
+      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, roles: ['MEMBER'], hint: 'Vous intervenez déjà auprès de publics accompagnés : proposez les mêmes interventions à d’autres structures, en votre nom et sous votre SIRET, sans quitter votre poste' },
       // Les regles de la convention, reportees une fois. Sans elles, les
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
       // juridiquement exact mais rarement ce que veut l'etablissement.

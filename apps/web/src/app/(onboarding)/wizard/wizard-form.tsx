@@ -298,12 +298,13 @@ export default function WizardForm({
                 <div>
                   <h2 className="text-xl font-semibold">Vos justificatifs</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Ajoutez vos justificatifs pour accélérer la validation de votre profil.
+                    Déposez-les une fois : les établissements avec qui vous travaillerez les
+                    exigent, et la plateforme suit leurs échéances pour vous.
                   </p>
                 </div>
                 {/* Cette étape affichait une zone de dépôt qui ne contenait
-                    aucun champ de fichier : cliquer ne faisait rien. Or
-                    « intervenants vérifiés » est le premier argument du site.
+                    aucun champ de fichier : cliquer ne faisait rien. Or le
+                    dossier de conformité est le premier argument du site.
                     On dépose donc réellement, ici, au moment où la personne
                     a ses documents sous la main. Le reste se complète plus
                     tard depuis « Mon dossier ». */}

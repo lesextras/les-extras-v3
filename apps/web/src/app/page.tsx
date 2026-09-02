@@ -165,9 +165,17 @@ export default async function LandingPage() {
 
 
               <div className="animate-fade-in-up stagger-4 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                {/* « INTERVENANTS VÉRIFIÉS » N'ÉTAIT PAS VRAI.
+                    Aucune étape de validation n'existe : publier une fiche
+                    suffit à paraître au catalogue. Ce qui EXISTE, et qui est
+                    même le vrai différenciateur face à une plateforme
+                    généraliste, c'est le dossier de conformité — identité,
+                    diplôme, bulletin n° 3 du casier judiciaire (art. L. 133-6
+                    CASF) et coordonnées bancaires, réunis et suivis à
+                    échéance. On annonce ça, qui est mesurable. */}
                 <span className="inline-flex items-center gap-1.5">
                   <ShieldCheck className="size-4 text-primary" />
-                  Intervenants vérifiés
+                  Dossier de conformité par intervenant
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <GraduationCap className="size-4 text-primary" />
@@ -224,7 +232,14 @@ export default async function LandingPage() {
                     {/* « notées après mission » promettait des avis qui n'existent
                         pas encore : tant que les premières notes ne sont pas là,
                         on met en avant ce qui est vrai dès aujourd'hui. */}
-                    <p className="text-xs text-muted-foreground">au catalogue, vérifiées par ADéPA</p>
+                    {/* Même correction : « vérifiées par ADéPA » annonçait une
+                        relecture qui n'a pas lieu. Les FORMATIONS certifiantes,
+                        elles, sont bien relues avant diffusion sous la
+                        certification Qualiopi de l'association — c'est écrit
+                        et verrouillé côté serveur. C'est cela qu'on dit. */}
+                    <p className="text-xs text-muted-foreground">
+                      au catalogue, proposées par le réseau
+                    </p>
                   </div>
                 </div>
               </Reveal>
@@ -272,7 +287,7 @@ export default async function LandingPage() {
             {[
               {
                 titre: 'Les ateliers de notre réseau',
-                texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant vérifié.',
+                texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant du réseau, dossier de conformité à jour.',
                 href: '/ateliers',
                 image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
                 action: 'Parcourir les ateliers',
