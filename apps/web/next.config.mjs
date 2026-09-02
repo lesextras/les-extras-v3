@@ -314,6 +314,26 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // SOURCE DES MINI-FORMATIONS — lisible depuis une autre origine.
+        //
+        // Le contenu des mini-formations gratuites est écrit ici, dans le
+        // dépôt, et poussé de là vers la plateforme d'apprentissage. Sans cet
+        // en-tête, le navigateur refuse de lire le fichier depuis une autre
+        // origine, et il faut alors recopier chaque module à la main — douze
+        // copier-coller pour trois formations, et dix-huit formations sont
+        // prévues.
+        //
+        // Ce qui est ouvert : un dossier, en LECTURE, sur des fichiers dont le
+        // contenu est de toute façon destiné à être public et gratuit. Rien
+        // d'autre du site ne devient lisible : la règle ne porte que sur
+        // `/formations-source/`.
+        source: '/formations-source/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Cache-Control', value: 'public, max-age=60' },
+        ],
+      },
     ];
   },
 };
