@@ -163,7 +163,7 @@ export class AdminService {
     const email = dto.email.toLowerCase().trim();
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) throw new ConflictException('Un utilisateur avec cet e-mail existe déjà.');
-    const password = await bcrypt.hash(dto.password, 12);
+    const password = await bcrypt.hash(dto.password, 10);
     const status = dto.status ?? UserStatus.VERIFIED;
     this.refuseStatutAnonymise(status);
     return this.prisma.user.create({
@@ -385,12 +385,6 @@ export class AdminService {
       where,
       orderBy: { createdAt: 'desc' },
       take: 200,
-      // Cette liste renvoie les colonnes du compte en bloc. Les coordonnées
-      // bancaires n'y ont rien à faire : deux cents IBAN d'un coup, pour un
-      // écran qui n'affiche que le nom, la ville et le SIRET. Elles restent
-      // lisibles là où elles servent — la fiche d'un compte, et la facture
-      // qui les imprime.
-      omit: { iban: true, bic: true },
       include: {
         owner: { select: { id: true, email: true, firstName: true, lastName: true } },
         memberships: {
@@ -668,13 +662,6 @@ export class AdminService {
             postalCode: true,
             siret: true,
             vatMention: true,
-            // Coordonnées bancaires de l'émetteur : l'admin plateforme ouvre
-            // la même facture imprimable que les parties, et sans elles le
-            // document qu'il consulte ne dirait pas la même chose. Réservé au
-            // détail d'UNE facture (`getInvoice`) ; la liste de supervision
-            // au-dessus ne les demande pas.
-            iban: true,
-            bic: true,
             owner: { select: { email: true } },
           },
         },
@@ -881,8 +868,6 @@ export class AdminService {
         location: dto.location,
         maxSeats: dto.maxSeats,
         priceHt: dto.priceHt !== undefined ? new Prisma.Decimal(dto.priceHt) : undefined,
-        trainerFeeHt:
-          dto.trainerFeeHt !== undefined ? new Prisma.Decimal(dto.trainerFeeHt) : undefined,
         trainer: dto.trainerId ? { connect: { id: dto.trainerId } } : undefined,
         status: dto.status,
       },
@@ -911,8 +896,6 @@ export class AdminService {
         location: dto.location,
         maxSeats: dto.maxSeats,
         priceHt: dto.priceHt !== undefined ? new Prisma.Decimal(dto.priceHt) : undefined,
-        trainerFeeHt:
-          dto.trainerFeeHt !== undefined ? new Prisma.Decimal(dto.trainerFeeHt) : undefined,
         trainer: dto.trainerId ? { connect: { id: dto.trainerId } } : undefined,
         status: dto.status,
       },
@@ -931,8 +914,12 @@ export class AdminService {
       orderBy: { startDate: 'desc' },
       include: {
         formation: { select: { title: true, type: true, durationHours: true, certifying: true } },
-        _count: { select: { inscriptions: true, emargements: true } },
-        inscriptions: { select: { financing: true } },
+        _count: { select: { emargements: true } },
+        // Comme pour le BPF : une inscription annulée n'est pas un inscrit.
+        inscriptions: {
+          where: { status: { not: 'CANCELLED' } },
+          select: { financing: true },
+        },
       },
     });
     return sessions.map((s) => {
@@ -947,14 +934,25 @@ export class AdminService {
         certifying: s.formation?.certifying ?? false,
         startDate: s.startDate,
         durationHours: s.formation?.durationHours ?? null,
-        inscrits: s._count.inscriptions,
+        inscrits: s.inscriptions.length,
         emargements: s._count.emargements,
         financements,
       };
     });
   }
 
-  /** Agrégation BPF annuelle (effectifs, heures-stagiaires, produits par financement). */
+  /**
+   * Agrégation BPF annuelle (effectifs, heures-stagiaires, produits par
+   * financement).
+   *
+   * Ce n'est pas un tableau de bord : c'est la matière d'une déclaration
+   * annuelle transmise à la DREETS. Deux règles s'appliquent donc, que le
+   * reste du code respectait déjà partout ailleurs et qui manquaient ici :
+   *   • une inscription ANNULÉE n'est pas un stagiaire — elle gonflait les
+   *     effectifs et les heures-stagiaires déclarés ;
+   *   • un produit ne se déclare que s'il a été FACTURÉ — un brouillon ou une
+   *     facture annulée était compté comme un produit encaissé.
+   */
   async bpf(year?: number) {
     const y = year ?? new Date().getFullYear();
     const start = new Date(`${y}-01-01T00:00:00.000Z`);
@@ -963,7 +961,10 @@ export class AdminService {
       where: { startDate: { gte: start, lt: end } },
       include: {
         formation: { select: { durationHours: true } },
-        inscriptions: { select: { financing: true, invoice: { select: { amount: true } } } },
+        inscriptions: {
+          where: { status: { not: 'CANCELLED' } },
+          select: { financing: true, invoice: { select: { amount: true, status: true } } },
+        },
       },
     });
     let stagiaires = 0;
@@ -976,7 +977,8 @@ export class AdminService {
         stagiaires += 1;
         heuresStagiaires += h;
         parFinancement[i.financing] = (parFinancement[i.financing] ?? 0) + 1;
-        const amt = i.invoice ? Number(i.invoice.amount) : 0;
+        const facturee = i.invoice && i.invoice.status !== 'DRAFT' && i.invoice.status !== 'CANCELLED';
+        const amt = facturee ? Number(i.invoice!.amount) : 0;
         produits[i.financing] = (produits[i.financing] ?? 0) + amt;
       }
     }
@@ -1163,7 +1165,7 @@ export class AdminService {
         this.prisma.quote.count(),
         // Seules les réservations réellement issues d'un devis appartiennent au
         // tunnel : compter toutes les réservations (dont celles créées à la main
-        // ou par RenforTeam) produisait des taux absurdes, supérieurs à 100 %.
+        // ou par SOS Renfort) produisait des taux absurdes, supérieurs à 100 %.
         this.prisma.quote.count({ where: { bookingId: { not: null } } }),
         this.prisma.booking.count(),
         this.prisma.contactRequest.count(),
@@ -1339,7 +1341,7 @@ export class AdminService {
         demandes,
         devis,
         reservations,
-        /** Réservations toutes origines confondues (RenforTeam inclus). */
+        /** Réservations toutes origines confondues (SOS Renfort inclus). */
         reservationsTotales,
         demandesPubliques,
         tauxVueVersDemande: taux(demandes, vues),

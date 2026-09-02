@@ -20,7 +20,7 @@ function apiBase(): string {
 }
 
 async function forward(req: NextRequest, path: string[]): Promise<Response> {
-  const store = await cookies();
+  const store = cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   const cookieAccount = store.get(ACTIVE_ACCOUNT_COOKIE)?.value;
 
@@ -41,6 +41,22 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
   const headerAccount = req.headers.get('x-account-id');
   const accountId = headerAccount || cookieAccount;
   if (accountId) headers['x-account-id'] = accountId;
+
+  // L'ADRESSE DU VISITEUR DOIT SURVIVRE AU PROXY.
+  //
+  // Sans ces deux en-têtes, l'API ne voit que l'adresse du conteneur Next :
+  // tous les visiteurs partagent alors le MÊME seau pour les plafonds
+  // anti-abus. Les cinq réinitialisations de mot de passe par heure, les trois
+  // démonstrations de LEX, les huit demandes de devis : un seul visiteur les
+  // consommait pour toute la plateforme, et la récupération de compte
+  // s'éteignait pour tout le monde. Le commentaire du throttler dit « par
+  // adresse IP » — il faut donc la lui donner.
+  const clientIp =
+    req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? req.ip ?? null;
+  if (clientIp) {
+    headers['x-forwarded-for'] = clientIp;
+    headers['x-real-ip'] = clientIp.split(',')[0].trim();
+  }
 
   const method = req.method.toUpperCase();
   const hasBody = !['GET', 'HEAD'].includes(method);
@@ -77,9 +93,9 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
   return new NextResponse(payload, { status: res.status, headers: outHeaders });
 }
 
-type Ctx = { params: Promise<{ path: string[] }> };
-export const GET = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
-export const POST = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
-export const PUT = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
-export const PATCH = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
-export const DELETE = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+type Ctx = { params: { path: string[] } };
+export const GET = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
+export const POST = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
+export const PUT = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
+export const PATCH = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
+export const DELETE = (req: NextRequest, { params }: Ctx) => forward(req, params.path);

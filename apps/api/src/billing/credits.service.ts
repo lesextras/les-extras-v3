@@ -43,17 +43,6 @@ export class CreditsService {
 
   /** Solde + derniers mouvements — l'écran « Utilisation » lit tout ici. */
   async utilisation(accountId: string) {
-    // LA DOTATION GRATUITE SE SERT TOUTE SEULE (25/08/2026).
-    //
-    // Elle n'était créditée que si quelqu'un cliquait quelque part. Un
-    // salarié fraîchement inscrit, pas encore rattaché à une structure,
-    // avait donc zéro crédit — et MemberGuard lui fermait LEX en lui
-    // parlant de recharge, alors que ses quinze générations du mois
-    // l'attendaient. On les lui verse dès qu'il ouvre son espace.
-    //
-    // Sans risque de double service : crediterJusquA refuse s'il existe
-    // déjà une écriture DOTATION_MENSUELLE depuis le 1er du mois.
-    await this.activerOffreGratuite(accountId);
     const [account, mouvements, consomme30j] = await this.prisma.$transaction([
       this.prisma.account.findUniqueOrThrow({
         where: { id: accountId },
@@ -315,9 +304,20 @@ export class CreditsService {
   }
 
   /**
-   * Ajoute l'allocation du mois au solde, dans la limite du report autorisé.
-   * Idempotent dans le mois : une seconde exécution ne double pas la dotation
-   * (on vérifie l'absence d'écriture DOTATION_MENSUELLE depuis le 1er).
+   * Porte la dotation du mois au niveau dû, dans la limite du report autorisé.
+   *
+   * L'idempotence se joue sur le MONTANT déjà servi ce mois-ci, pas sur la
+   * simple existence d'une écriture. C'est tout l'objet du correctif du
+   * 14/08/2026 : le motif `DOTATION_MENSUELLE` est PARTAGÉ entre l'offre
+   * gratuite et les abonnements. Tout compte a donc déjà une écriture du mois
+   * en cours — celle de ses 15 générations gratuites, posée à la création ou
+   * par le cron du 1er. Un « on est déjà passé, on ne fait rien » privait donc
+   * de TOUT crédit celui qui souscrivait en cours de mois : il payait 19 €,
+   * 49 € ou 89 €, et attendait jusqu'à trente jours pour recevoir quoi que ce
+   * soit. On crédite désormais la DIFFÉRENCE entre ce qui est dû et ce qui a
+   * été servi — ce qui couvre aussi la montée en gamme en cours de mois
+   * (Solo → Pro ne redonne que l'écart), et reste sans effet quand tout a
+   * déjà été versé.
    */
   private async crediterJusquA(accountId: string, allocation: number) {
     const debutDuMois = new Date();
@@ -325,11 +325,13 @@ export class CreditsService {
     debutDuMois.setUTCHours(0, 0, 0, 0);
 
     await this.prisma.$transaction(async (tx) => {
-      const dejaServi = await tx.creditLedger.findFirst({
+      const servi = await tx.creditLedger.aggregate({
         where: { accountId, reason: MOTIF_DOTATION, createdAt: { gte: debutDuMois } },
-        select: { id: true },
+        _sum: { delta: true },
       });
-      if (dejaServi) return;
+      const dejaServi = servi._sum.delta ?? 0;
+      const reste = allocation - dejaServi;
+      if (reste <= 0) return;
 
       const account = await tx.account.findUnique({
         where: { id: accountId },
@@ -338,7 +340,7 @@ export class CreditsService {
       if (!account) return;
 
       const plafond = allocation * ROLLOVER_MONTHS;
-      const cible = Math.min(account.credits + allocation, Math.max(plafond, account.credits));
+      const cible = Math.min(account.credits + reste, Math.max(plafond, account.credits));
       const delta = cible - account.credits;
       if (delta <= 0) return;
 

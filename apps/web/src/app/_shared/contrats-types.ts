@@ -1,10 +1,8 @@
 // Miroir des contrats renvoyés par /contrats — partagé entre la liste et le
 // détail pour qu'il n'existe qu'une seule définition de la forme des données.
 
-// `EN_COURS` n'existe pas dans l'enum Prisma : la valeur reelle est `ACTIF`.
-// Le libelle declare ici ne s'affichait donc jamais, et un contrat passe a
-// ACTIF sortait a l'ecran sous la chaine brute « ACTIF », en majuscules, au
-// milieu de libelles en francais. On aligne sur la source de verite.
+// Le back déclare ACTIF, pas EN_COURS : le libellé « En cours » ne s'affichait
+// donc jamais, et un contrat passé en ACTIF n'aurait eu aucun libellé.
 export type StatutContratCDD = 'BROUILLON' | 'TRANSMIS' | 'SIGNE' | 'ACTIF' | 'TERMINE' | 'ROMPU';
 
 export type CauseFinContrat =

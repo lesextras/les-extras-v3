@@ -8,6 +8,7 @@
 // jamais stockées, noms masqués avant traitement, validation humaine).
 import * as React from "react";
 import {
+  PenLine,
   Mic,
   MicOff,
   ShieldCheck,
@@ -15,6 +16,7 @@ import {
   UserCheck,
   Sparkles,
   ArrowLeft,
+  ArrowRight,
   Check,
   Copy,
   ThumbsUp,
@@ -24,7 +26,6 @@ import {
   Loader2,
   Info,
   Download,
-  Mail,
   FileType2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { ChoixTrameMaison, TramesMaisonPanel, type TrameMaison } from "./TramesMaison";
-import { ChoixLex, useCatalogueLex } from "./ChoixLex";
 import { LexTravaille } from "./LexTravaille";
 
 // ── Types alignés sur l'API ──────────────────────────────────────────────────
@@ -53,7 +53,7 @@ interface DocumentResume {
   createdAt: string;
 }
 
-type Etape = "ecrire" | "relire";
+type Etape = "choisir" | "ecrire" | "relire";
 
 // ── Appels API via le proxy same-origin ─────────────────────────────────────
 
@@ -162,34 +162,45 @@ function Garantie({ icone, titre, texte }: { icone: React.ReactNode; titre: stri
   );
 }
 
+function FilEtapes({ etape }: { etape: Etape }) {
+  const etapes: { id: Etape; n: string; t: string }[] = [
+    { id: "choisir", n: "1", t: "Choisir l'écrit" },
+    { id: "ecrire", n: "2", t: "Poser vos notes" },
+    { id: "relire", n: "3", t: "Relire et garder" },
+  ];
+  const rang = etapes.findIndex((e) => e.id === etape);
+  return (
+    <ol className="flex items-center gap-2" aria-label="Étapes">
+      {etapes.map((e, i) => (
+        <React.Fragment key={e.id}>
+          {i > 0 && <span className={cn("h-px w-6 sm:w-10", i <= rang ? "bg-primary" : "bg-border")} />}
+          <li className="flex items-center gap-2">
+            <span
+              className={cn(
+                "grid size-7 place-items-center rounded-full text-xs font-bold",
+                i < rang && "bg-primary text-primary-foreground",
+                i === rang && "bg-primary text-primary-foreground ring-4 ring-primary/15",
+                i > rang && "bg-muted text-muted-foreground",
+              )}
+            >
+              {i < rang ? <Check className="size-3.5" /> : e.n}
+            </span>
+            <span
+              className={cn(
+                "hidden text-sm sm:block",
+                i === rang ? "font-semibold text-foreground" : "text-muted-foreground",
+              )}
+            >
+              {e.t}
+            </span>
+          </li>
+        </React.Fragment>
+      ))}
+    </ol>
+  );
+}
 
 // ── Composant principal ─────────────────────────────────────────────────────
-
-/**
- * Les reponses du formulaire deviennent des notes ordonnees.
- *
- * Rien n'est invente : un champ laisse vide ne produit aucune ligne. Le
- * modele recoit exactement ce que le professionnel a ecrit, range dans
- * l'ordre ou un ecrit professionnel se lit — le cadre, les faits, puis ce qui
- * releve de l'hypothese, nomme comme tel.
- */
-function avecContexte(fd: FormData, notes: string): string {
-  const champ = (nom: string) => String(fd.get(nom) || "").trim();
-  const cadre: [string, string][] = [
-    ["Quand", champ("quand")],
-    ["Ou", champ("ou")],
-    ["Personnes presentes", champ("presents")],
-  ];
-  const poses = cadre.filter(([, v]) => v);
-  const hypotheses = champ("hypotheses");
-  return [
-    poses.length ? poses.map(([k, v]) => `${k} : ${v}`).join("\n") : "",
-    notes,
-    hypotheses ? `Ce que j'en pense (hypotheses, ressenti) :\n${hypotheses}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-}
 
 export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean }) {
   const { toast } = useToast();
@@ -199,7 +210,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   const [disponible, setDisponible] = React.useState(true);
   const [documents, setDocuments] = React.useState<DocumentResume[]>([]);
 
-  const [etape, setEtape] = React.useState<Etape>("ecrire");
+  const [etape, setEtape] = React.useState<Etape>("choisir");
   const [trame, setTrame] = React.useState<Trame | null>(null);
   const [notes, setNotes] = React.useState("");
   const [brouillon, setBrouillon] = React.useState("");
@@ -210,10 +221,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
     contacts: number;
     roles?: string[];
   } | null>(null);
-  const groupesEcrit = useCatalogueLex("ecrit");
   const [enCours, setEnCours] = React.useState(false);
-  const [adresse, setAdresse] = React.useState("");
-  const [envoi, setEnvoi] = React.useState(false);
   const [enregistre, setEnregistre] = React.useState(false);
   const [avisDonne, setAvisDonne] = React.useState(false);
 
@@ -222,13 +230,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
 
   React.useEffect(() => {
     api<{ disponible: boolean; trames: Trame[] }>("/assistant/trames")
-      .then((d) => {
-        setTrames(d.trames);
-        setDisponible(d.disponible);
-        // Le formulaire s'ouvre deja rempli : le premier genre sert de defaut,
-        // et la liste deroulante reste a portee pour en changer.
-        setTrame((actuelle) => actuelle ?? d.trames[0] ?? null);
-      })
+      .then((d) => { setTrames(d.trames); setDisponible(d.disponible); })
       .catch(() => setDisponible(false));
     api<DocumentResume[]>("/assistant/documents").then(setDocuments).catch(() => undefined);
     chargerTrames();
@@ -248,16 +250,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
 
   // ── Actions ────────────────────────────────────────────────────────────
 
-  /**
-   * Un formulaire, pas une page blanche.
-   *
-   * Une zone de texte seule laissait tout le cadrage au professionnel : il
-   * devait penser a preciser le quand, le ou, les presents, et a separer ce
-   * qu'il a vu de ce qu'il en pense. Quand il l'oubliait, le modele comblait
-   * — et il comblait avec du generique. Les champs posent les questions a sa
-   * place, et ce qui reste vide reste vide.
-   */
-  async function generer(fd?: FormData) {
+  async function generer() {
     if (!trame) return;
     setEnCours(true);
     try {
@@ -265,16 +258,8 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
         method: "POST",
         body: JSON.stringify({
           trame: trame.id,
-          notes: fd ? avecContexte(fd, notes) : notes,
+          notes,
           ...(trameMaisonId ? { trameMaisonId } : {}),
-          ...(fd
-            ? {
-                destinataire: String(fd.get("destinataire") || "") || undefined,
-                registre: String(fd.get("registre") || "") || undefined,
-                longueur: String(fd.get("longueur") || "") || undefined,
-                sections: fd.getAll("sections").map(String),
-              }
-            : {}),
         }),
       });
       setBrouillon(r.brouillon);
@@ -287,35 +272,6 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
       toast({ title: "Génération impossible", description: (err as Error).message, variant: "error" });
     } finally {
       setEnCours(false);
-    }
-  }
-
-  /**
-   * ENVOYER PLUTOT QUE TELECHARGER (25/08/2026).
-   *
-   * Telecharger suppose qu'on ecrit depuis le poste ou l'on veut le fichier.
-   * Sur un poste partage d'unite, ce n'est pas le cas. L'adresse est saisie
-   * ici, apres relecture, et n'est pas conservee.
-   */
-  async function envoyerParMail(format: "docx" | "pdf") {
-    const cible = adresse.trim();
-    if (!cible) return;
-    setEnvoi(true);
-    try {
-      await api("/assistant/envoyer", {
-        method: "POST",
-        body: JSON.stringify({ titre, contenu: brouillon, format, email: cible }),
-      });
-      toast({ title: "Document envoyé", description: `Il est parti à ${cible}.` });
-      setAdresse("");
-    } catch (err) {
-      toast({
-        title: "Envoi impossible",
-        description: (err as Error).message,
-        variant: "error",
-      });
-    } finally {
-      setEnvoi(false);
     }
   }
 
@@ -371,7 +327,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   }
 
   function recommencer() {
-    setEtape("ecrire"); setNotes(""); setBrouillon("");
+    setEtape("choisir"); setTrame(null); setNotes(""); setBrouillon("");
     setProtection(null); setEnregistre(false); setAvisDonne(false);
   }
 
@@ -404,30 +360,28 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
           <CardContent className="flex items-start gap-3 p-5">
             <Info className="mt-0.5 size-5 shrink-0 text-warning-foreground" />
             <div>
-              <p className="font-semibold text-foreground">L'assistant arrive très bientôt</p>
+              {/* Ce bandeau s'affiche quand l'API répond « indisponible ». Il
+                  annonçait un lancement à venir — ce qui est faux pour un
+                  abonné : chez lui, c'est une panne. On dit ce qui se passe,
+                  et ce qui n'est pas consommé. */}
+              <p className="font-semibold text-foreground">
+                La rédaction est momentanément indisponible
+              </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Le service de rédaction est en cours d'activation sur la plateforme. Vous pouvez
-                déjà découvrir les types d'écrits ci-dessous.
+                Le service ne répond pas pour l'instant. Aucune génération n'est décomptée tant
+                qu'il est coupé ; vos trames et vos écrits déjà enregistrés restent accessibles.
+                Vous pouvez consulter les types d'écrits ci-dessous en attendant.
               </p>
             </div>
           </CardContent>
         </Card>
       ) : null}
 
-      {/* LE STYLE MAISON D'ABORD (25/08/2026).
-          Deposer un ecrit deja rendu change tout ce qui suit : autant le
-          proposer avant la saisie, pas apres. */}
-      <TramesMaisonPanel
-        trames={tramesMaison}
-        onChange={chargerTrames}
-        peutPublier={peutPublier}
-        genres={trames.map((t) => ({ id: t.id, titre: t.titre }))}
-      />
-
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            {etape === "relire" ? (
+            <FilEtapes etape={etape} />
+            {etape !== "choisir" ? (
               <Button variant="ghost" size="sm" onClick={recommencer}>
                 <ArrowLeft className="size-4" />
                 Recommencer
@@ -435,45 +389,61 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
             ) : null}
           </div>
 
-          {/* LE FORMULAIRE — le genre, le cadre, les faits, puis les reglages */}
-          {etape === "ecrire" ? (
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void generer(new FormData(e.currentTarget));
-              }}
-            >
-              {/* UNE SEULE PAGE, UN SEUL FORMULAIRE (25/08/2026).
-                  La grille de huit vignettes faisait choisir avant de comprendre,
-                  et repoussait toute la saisie hors de l'ecran. Le genre d'ecrit
-                  est un champ comme les autres. */}
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-foreground">Quel document voulez-vous écrire ?</span>
-                <select
-                  value={trame?.id ?? ""}
-                  onChange={(e) => setTrame(trames.find((x) => x.id === e.target.value) ?? null)}
-                  className="h-11 w-full rounded-lg border border-input bg-card px-3 text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                >
-                  {trames.map((x) => (
-                    <option key={x.id} value={x.id}>
-                      {x.titre}
-                    </option>
-                  ))}
-                </select>
-                {trame ? (
-                  <span className="text-xs text-muted-foreground">{trame.description}</span>
-                ) : null}
-              </label>
+          {/* ÉTAPE 1 — le choix de la trame, avec description claire */}
+          {etape === "choisir" ? (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Quel document voulez-vous écrire ?
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Chaque trame connaît les attendus du métier : structure, ton, distinction entre
+                  faits et hypothèses.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {trames.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => { setTrame(t); setEtape("ecrire"); setTimeout(() => zoneNotes.current?.focus(), 50); }}
+                    className="group rounded-xl border border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="flex items-center justify-between">
+                      <span className="flex items-center gap-2 font-semibold text-foreground">
+                        <PenLine className="size-4 text-primary" />
+                        {t.titre}
+                      </span>
+                      <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                    <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">
+                      {t.description}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* ÉTAPE 2 — les notes, avec conseils et exemple dépliable */}
+          {etape === "ecrire" && trame ? (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">{trame.titre}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Posez vos notes comme elles viennent — phrases incomplètes, style télégraphique,
+                  tout convient. L'assistant s'occupe de la forme.
+                </p>
+              </div>
 
               <ChoixTrameMaison
-                trames={tramesMaison.filter((t) => !t.genre || t.genre === trame?.id)}
+                trames={tramesMaison.filter((t) => !t.genre || t.genre === trame.id)}
                 valeur={trameMaisonId}
                 onChange={setTrameMaisonId}
               />
 
               <ul className="space-y-1.5 rounded-xl bg-primary-soft/60 p-4 text-sm text-foreground">
-                {(trame?.conseils ?? []).map((c) => (
+                {trame.conseils.map((c) => (
                   <li key={c} className="flex gap-2">
                     <Check className="mt-0.5 size-4 shrink-0 text-primary" />
                     {c}
@@ -481,24 +451,6 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                 ))}
               </ul>
 
-              {/* Le cadre : trois questions que tout ecrit professionnel pose,
-                  et qu'une page blanche laissait au hasard de la memoire. */}
-              <div className="grid gap-3 sm:grid-cols-3">
-                <label className="flex min-w-0 flex-col gap-1 text-sm">
-                  <span className="font-medium text-foreground">Quand</span>
-                  <input name="quand" placeholder="Mardi 12, 9h-11h" className="h-11 w-full rounded-lg border border-input bg-card px-3.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40" />
-                </label>
-                <label className="flex min-w-0 flex-col gap-1 text-sm">
-                  <span className="font-medium text-foreground">Où</span>
-                  <input name="ou" placeholder="Salle d’activité, unité 2" className="h-11 w-full rounded-lg border border-input bg-card px-3.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40" />
-                </label>
-                <label className="flex min-w-0 flex-col gap-1 text-sm">
-                  <span className="font-medium text-foreground">Qui était présent</span>
-                  <input name="presents" placeholder="6 jeunes, 2 professionnels" className="h-11 w-full rounded-lg border border-input bg-card px-3.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40" />
-                </label>
-              </div>
-
-              <p className="text-sm font-medium text-foreground">Ce que vous avez vu et entendu</p>
               <div className="relative">
                 <textarea
                   ref={zoneNotes}
@@ -528,30 +480,20 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                 ) : null}
               </div>
 
-              {/* Separer les faits de ce qu'on en pense n'est pas une coquetterie :
-                  c'est ce qui distingue un ecrit opposable d'un jugement. Le champ
-                  existe pour que l'hypothese soit dite, et dite a sa place. */}
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="font-medium text-foreground">
-                  Ce que vous en pensez{" "}
-                  <span className="font-normal text-muted-foreground">— facultatif</span>
-                </span>
-                <textarea
-                  name="hypotheses"
-                  rows={3}
-                  placeholder="Hypothèses, ressenti, ce qui vous interroge. LEX les formulera prudemment, à part des faits."
-                  className="w-full rounded-xl border border-input bg-card p-3 text-sm leading-relaxed text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                />
-              </label>
+              <details className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
+                <summary className="cursor-pointer font-medium text-foreground">
+                  Voir un exemple de notes
+                </summary>
+                <p className="mt-2 whitespace-pre-wrap italic text-muted-foreground">« {trame.exemple} »</p>
+              </details>
 
-              <ChoixLex groupes={groupesEcrit} />
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">
                   {notes.length < 20
                     ? "Encore quelques mots — une vingtaine de caractères minimum."
                     : `${notes.length.toLocaleString("fr-FR")} caractères. Prêt quand vous l'êtes.`}
                 </p>
-                <Button type="submit" disabled={!trame || notes.length < 20 || enCours || !disponible} size="lg">
+                <Button onClick={generer} disabled={notes.length < 20 || enCours || !disponible} size="lg">
                   {enCours ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
                   {enCours ? "Rédaction en cours…" : "Rédiger le document"}
                 </Button>
@@ -560,7 +502,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
               {/* Le bouton seul ne suffisait pas : pendant quinze secondes,
                   l'écran ne bougeait plus et l'on croyait à une panne. */}
               {enCours ? <LexTravaille /> : null}
-            </form>
+            </div>
           ) : null}
 
           {/* ÉTAPE 3 — relecture, édition, validation */}
@@ -638,40 +580,6 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   <Copy className="size-4" />
                   Copier
                 </Button>
-              </div>
-
-              {/* Une adresse, pas un carnet : on l'ecrit, le document part,
-                  et rien n'est retenu. */}
-              <div className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-muted/30 p-3">
-                <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
-                  <span className="font-medium text-foreground">Envoyer le document par e-mail</span>
-                  <input
-                    type="email"
-                    value={adresse}
-                    onChange={(e) => setAdresse(e.target.value)}
-                    placeholder="adresse@etablissement.fr"
-                    className="h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                  />
-                </label>
-                <Button
-                  variant="outline"
-                  disabled={envoi || !adresse.trim()}
-                  onClick={() => void envoyerParMail("docx")}
-                >
-                  <Mail className="size-4" />
-                  Envoyer en Word
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled={envoi || !adresse.trim()}
-                  onClick={() => void envoyerParMail("pdf")}
-                >
-                  <Mail className="size-4" />
-                  Envoyer en PDF
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
                 <Button variant="ghost" onClick={() => setEtape("ecrire")}>
                   <ArrowLeft className="size-4" />
                   Reprendre mes notes
@@ -697,6 +605,13 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
           ) : null}
         </CardContent>
       </Card>
+
+      <TramesMaisonPanel
+        trames={tramesMaison}
+        onChange={chargerTrames}
+        peutPublier={peutPublier}
+        genres={trames.map((t) => ({ id: t.id, titre: t.titre }))}
+      />
 
       {/* MES DOCUMENTS */}
       <section className="space-y-3">

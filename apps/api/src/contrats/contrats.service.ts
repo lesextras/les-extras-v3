@@ -428,6 +428,7 @@ export class ContratsService {
         "Seul un établissement peut embaucher : c'est lui l'employeur du contrat.",
       );
     }
+    await this.assertSalarieDeLetablissement(accountId, dto.userId);
     const champs = this.champsDepuisDto(dto);
     const contrat = await this.prisma.contratCDD.create({
       data: {
@@ -494,12 +495,54 @@ export class ContratsService {
         "Ce contrat a déjà été transmis : il ne se modifie plus. Créez un avenant ou un nouveau contrat.",
       );
     }
+    if (dto.userId) await this.assertSalarieDeLetablissement(accountId, dto.userId);
     const champs = this.champsDepuisDto(dto);
     await this.prisma.contratCDD.update({
       where: { id },
       data: { ...champs, userId: dto.userId ?? undefined } as never,
     });
     return this.get(accountId, id);
+  }
+
+  /**
+   * On n'établit un contrat de travail qu'au nom de quelqu'un que
+   * l'établissement a le droit d'embaucher. Sans ce contrôle, `userId` étant
+   * un simple identifiant reçu du client, un établissement pouvait fabriquer
+   * un CDD nominatif — puis une demande de signature partant vers l'adresse
+   * de son choix — pour n'importe quelle personne de la plateforme, dont
+   * l'identifiant se lit dans une liste de candidats.
+   *
+   * Le périmètre autorisé est exactement celui que l'écran propose
+   * (`salariesPossibles`) : le pool interne, les intervenants déjà au
+   * planning, les candidatures retenues. C'est volontairement la même règle
+   * des deux côtés — une liste qui filtre et un serveur qui ne vérifie pas,
+   * c'est une porte ouverte avec un panneau « entrée interdite ».
+   */
+  private async assertSalarieDeLetablissement(accountId: string, userId: string) {
+    const [membre, auPlanning, retenu] = await Promise.all([
+      this.prisma.membership.findFirst({
+        where: { accountId, userId, status: 'ACTIVE' },
+        select: { id: true },
+      }),
+      this.prisma.shift.findFirst({
+        where: { accountId, freelanceId: userId },
+        select: { id: true },
+      }),
+      this.prisma.booking.findFirst({
+        where: {
+          mission: { accountId },
+          status: { in: ['ACCEPTED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED'] },
+          account: { ownerId: userId },
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!membre && !auPlanning && !retenu) {
+      throw new ForbiddenException(
+        "Vous ne pouvez établir un contrat que pour une personne de votre équipe, déjà présente sur votre planning, ou dont vous avez retenu la candidature.",
+      );
+    }
   }
 
   /**

@@ -126,7 +126,10 @@ function Fiche({ m, accountId }: { m: Membre; accountId: string }) {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button asChild size="sm" variant="ghost">
-            <Link href={`/intervenants/${m.slug}`}>Profil</Link>
+            {/* La fiche publique se résout par l'IDENTIFIANT du compte
+                (`vendorDetail`), pas par le slug : le lien tombait en 404 à
+                chaque clic. Partout ailleurs le lien est construit avec l'id. */}
+            <Link href={`/intervenants/${m.accountId}`}>Profil</Link>
           </Button>
           <RetenirIntervenant
             intervenantAccountId={m.accountId}

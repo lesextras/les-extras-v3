@@ -507,6 +507,34 @@ export class EngagementsService {
     }
   }
 
+  /**
+   * Vide la file quand la mission s'arrête sans être attribuée — clôture par
+   * l'établissement, annulation, suppression du compte.
+   *
+   * L'acceptation d'un profil rendait déjà les autres caducs ; la clôture,
+   * elle, ne touchait que les `Booking` en attente. En file d'engagement les
+   * intervenants ne sont PAS des Booking : ils restaient donc « en attente,
+   * rang 3 » indéfiniment, sans notification, sur une mission qui n'existait
+   * plus. Quelqu'un qui a dit oui mérite qu'on lui dise que c'est fini.
+   */
+  async cloreLaFile(
+    missionId: string,
+    mission: { title: string; startDate: Date },
+  ): Promise<number> {
+    const enLice = await this.prisma.missionEngagement.findMany({
+      where: { missionId, statut: { in: EN_LICE } },
+      include: INCLUDE_PROFIL,
+    });
+    if (enLice.length === 0) return 0;
+
+    await this.prisma.missionEngagement.updateMany({
+      where: { missionId, statut: { in: EN_LICE } },
+      data: { statut: EngagementStatut.CADUC, decideAt: new Date() },
+    });
+    await Promise.allSettled(enLice.map((e) => this.previenirEcarte(e, mission, null, true)));
+    return enLice.length;
+  }
+
   /** Dit à un intervenant que son profil n'a pas été retenu — et pourquoi. */
   private async previenirEcarte(
     engagement: Prisma.MissionEngagementGetPayload<{ include: typeof INCLUDE_PROFIL }>,

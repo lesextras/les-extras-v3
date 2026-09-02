@@ -15,9 +15,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Token manquant.' }, { status: 400 });
   }
 
-  const store = await cookies();
+  const store = cookies();
   const maxAge = 60 * 60 * 24 * 7; // 7 jours
-  const secure = (request.headers.get('x-forwarded-proto') ?? '') === 'https';
+  // Le jeton de session vit sept jours : il ne doit jamais partir en clair.
+  // Se fier au seul `x-forwarded-proto` fait dépendre la sécurité du cookie de
+  // la configuration d'un proxy qu'on ne maîtrise pas toujours ; en production
+  // on l'impose. En développement (http://localhost) le cookie reste posable.
+  const secure =
+    process.env.NODE_ENV === 'production' ||
+    (request.headers.get('x-forwarded-proto') ?? '') === 'https';
 
   store.set(SESSION_COOKIE, body.token, {
     httpOnly: true,
@@ -42,7 +48,7 @@ export async function POST(request: Request) {
 
 /** Déconnexion : supprime les cookies de session. */
 export async function DELETE() {
-  const store = await cookies();
+  const store = cookies();
   store.delete(SESSION_COOKIE);
   store.delete(ACTIVE_ACCOUNT_COOKIE);
   return NextResponse.json({ ok: true });

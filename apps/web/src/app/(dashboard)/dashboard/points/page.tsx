@@ -104,7 +104,7 @@ export default async function PointsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Points & récompenses"
-        subtitle={`Votre participation à la communauté se transforme en réduction : ${data.pointsParEuro} points = 1 €, à valoir sur vos factures.`}
+        subtitle={`Votre participation à la communauté est comptée : ${data.pointsParEuro} points valent 1 € de réduction, dès l'ouverture de la conversion sur vos factures.`}
       />
 
       {session.account.type === "FREELANCE" ? (
@@ -119,21 +119,24 @@ export default async function PointsPage() {
           icon={<Award className="h-5 w-5" aria-hidden />}
           accent="teal"
         />
+        {/* La conversion en réduction n'est pas encore branchée sur la
+            facturation (`reductionApplicable` n'est appelée nulle part) et
+            aucun point n'est périmé par quoi que ce soit. On annonçait
+            pourtant une déduction et une échéance : deux promesses qu'un
+            utilisateur ne peut pas vérifier, et qui ne se réalisent jamais.
+            On dit donc l'état réel — le barème est acquis, la conversion
+            arrive — plutôt qu'une mécanique qui n'existe pas. */}
         <StatCard
           label="Équivalent en euros"
           value={`${data.euros} €`}
-          hint={`Déductible sur une facture, dans la limite de ${plafondPct} % de son montant`}
+          hint={`Barème acquis : ${data.pointsParEuro} points = 1 €, plafonné à ${plafondPct} % d'une facture`}
           accent="terracotta"
         />
         <StatCard
-          label="Validité"
-          value={`${data.validiteMois} mois`}
-          hint={
-            data.bientotPerimes > 0
-              ? `${data.bientotPerimes} points arrivent à échéance dans moins de 2 mois`
-              : "Aucun point n'expire dans les 2 prochains mois"
-          }
-          accent={data.bientotPerimes > 0 ? "warning" : "neutral"}
+          label="Conversion"
+          value="À venir"
+          hint="Vos points sont conservés sans date limite : rien ne se perd en attendant l'ouverture de la déduction."
+          accent="neutral"
         />
       </div>
 
@@ -156,9 +159,10 @@ export default async function PointsPage() {
             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${versPalier}%` }} />
           </div>
           <p className="text-sm text-muted-foreground">
-            La réduction se déduit au moment de la facturation : indiquez-le à l&apos;équipe lors de
-            votre prochaine commande. Elle ne peut jamais dépasser {plafondPct} % du montant d&apos;une
-            facture, et les points non utilisés expirent au bout de {data.validiteMois} mois.
+            Le barème est acquis : {data.pointsParEuro} points valent 1 €, dans la limite de{" "}
+            {plafondPct} % du montant d&apos;une facture. La déduction automatique n&apos;est pas
+            encore ouverte — en attendant, vos points sont conservés sans date limite et
+            l&apos;équipe peut les appliquer à la main sur demande.
           </p>
         </CardContent>
       </Card>
