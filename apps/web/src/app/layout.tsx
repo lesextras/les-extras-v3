@@ -154,14 +154,14 @@ const IDENTITE_STRUCTUREE = {
       // elles — y compris LinkedIn, d'où vient la totalité du trafic social.
       //
       // Chaque adresse ci-dessous a été VÉRIFIÉE en direct : les trois sites
-      // répondent, et le profil LinkedIn est celui que le pied de page
-      // d'adepa77.fr publie déjà. La Page entreprise « Les Extras » manque
-      // encore : son adresse n'est publiée nulle part, et une URL fausse dans
-      // ce champ vaut mieux ne pas exister — à ajouter dès qu'elle est connue.
+      // répondent, le profil LinkedIn est celui que le pied de page
+      // d'adepa77.fr publie déjà, et l'adresse de la Page entreprise a été
+      // relevée depuis son administration (Page 85858241) — pas devinée.
       sameAs: [
         'https://adepa77.fr',
         'https://toulali.fr',
         'https://a2pa.fr',
+        'https://www.linkedin.com/company/les-extras-adepa/',
         'https://www.linkedin.com/in/association-adepa-b98ba5405/',
       ],
     },

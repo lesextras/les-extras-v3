@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { BookingStatus, Prisma, ServiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { slugLibre } from './slug-service';
 import { CommunityService } from '../community/community.service';
 import { PointReason } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -28,9 +29,18 @@ export class ServicesService {
   ) {}
 
   async create(accountId: string, dto: CreateServiceDto) {
+    // L'adresse lisible se pose à la CRÉATION, pas après coup : une fiche
+    // publiée à `/ateliers/cms3it0g…` puis renommée changerait d'adresse en
+    // cours de route. `null` est une réponse acceptable — la fiche reste
+    // alors accessible par son identifiant, comme avant.
+    const slug = await slugLibre(dto.title, async (candidat) =>
+      (await this.prisma.service.count({ where: { slug: candidat } })) > 0,
+    );
+
     const fiche = await this.prisma.service.create({
       data: {
         accountId,
+        slug,
         title: dto.title,
         description: dto.description,
         category: dto.category,

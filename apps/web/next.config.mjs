@@ -27,21 +27,73 @@ const ARTICLES_MEME_SLUG = [
 ];
 
 /**
+ * LES ADRESSES DONT LES ACCENTS ÉTAIENT CASSÉS (02/09/2026).
+ *
+ * Douze articles portaient un slug fabriqué par un découpage qui scindait les
+ * accents : « théâtre » → « the-a-tre », « médico-social » → « me-dico-social ».
+ * La migration `20260902110000_slugs_edublog_accents` corrige la donnée ; ces
+ * redirections permanentes gardent en vie les adresses déjà indexées, déjà
+ * partagées sur LinkedIn et déjà envoyées par courriel.
+ *
+ * ⚠️ Les destinations d'`ARTICLES_RENOMMES` ci-dessous pointaient sur ces mêmes
+ * slugs cassés : elles ont été mises à jour dans le même mouvement. Renommer
+ * les slugs sans y toucher aurait transformé neuf redirections en neuf 404.
+ */
+const SLUGS_ACCENTS_REPARES = {
+  // Atelier individuel ou collectif : comment choisir en établissement ?
+  'atelier-individuel-ou-collectif-comment-choisir-en-e-tablissement':
+    'atelier-individuel-ou-collectif-comment-choisir-en-etablissement',
+  // L’atelier socio-esthétique en établissement médico-social
+  'l-atelier-socio-esthe-tique-en-e-tablissement-me-dico-social':
+    'l-atelier-socio-esthetique-en-etablissement-medico-social',
+  // L’atelier théâtre en établissement médico-social
+  'l-atelier-the-a-tre-en-e-tablissement-me-dico-social':
+    'l-atelier-theatre-en-etablissement-medico-social',
+  // Recrutement éducateur freelance : bien cadrer un renfort d’équipe
+  'recrutement-e-ducateur-freelance-bien-cadrer-un-renfort-d-e-quipe':
+    'recrutement-educateur-freelance-bien-cadrer-un-renfort-d-equipe',
+  // Atelier socio-esthétique : redonner une image positive de soi
+  'atelier-socio-esthe-tique-redonner-une-image-positive-de-soi':
+    'atelier-socio-esthetique-redonner-une-image-positive-de-soi',
+  // Bilan de compétences éducateur : pourquoi l’envisager pour votre équipe
+  'bilan-de-compe-tences-e-ducateur-pourquoi-l-envisager-pour-votre-e-quipe':
+    'bilan-de-competences-educateur-pourquoi-l-envisager-pour-votre-equipe',
+  // La musicothérapie en établissement médico-social
+  'la-musicothe-rapie-en-e-tablissement-me-dico-social':
+    'la-musicotherapie-en-etablissement-medico-social',
+  // Éducateurs, Professeurs, Coachs : Donnez un Nouvel Élan à votre Carrière avec Les Extras !
+  'e-ducateurs-professeurs-coachs-donnez-un-nouvel-e-lan-a-votre-carrie-re-avec-les':
+    'educateurs-professeurs-coachs-donnez-un-nouvel-elan-a-votre-carriere-avec-les-extras',
+  // Échec Scolaire : Lutter Contre Le Décrochage Scolaire
+  'e-chec-scolaire-lutter-contre-le-de-crochage-scolaire':
+    'echec-scolaire-lutter-contre-le-decrochage-scolaire',
+  // Apprendre Le Dessin : Le Matériel Et Les Techniques
+  'apprendre-le-dessin-le-mate-riel-et-les-techniques':
+    'apprendre-le-dessin-le-materiel-et-les-techniques',
+  // Faire Des Fiches De Révision : Optimiser Son Apprentissage
+  'faire-des-fiches-de-re-vision-optimiser-son-apprentissage':
+    'faire-des-fiches-de-revision-optimiser-son-apprentissage',
+  // L’École De La Deuxième Chance
+  'l-e-cole-de-la-deuxie-me-chance':
+    'l-ecole-de-la-deuxieme-chance',
+};
+
+/**
  * Ceux que la reprise a renommés. Six articles avaient été ressaisis à la main
  * en session antérieure, sous un slug engendré depuis le titre accentué ; ce
  * sont eux qui sont restés en ligne, avec leur image de couverture. L'ancienne
  * adresse doit donc pointer vers la nouvelle, pas l'inverse.
  */
 const ARTICLES_RENOMMES = {
-  'atelier-individuel-ou-collectif': 'atelier-individuel-ou-collectif-comment-choisir-en-e-tablissement',
-  'atelier-socio-esthetique': 'l-atelier-socio-esthe-tique-en-e-tablissement-me-dico-social',
-  'atelier-socio-esthetique-2': 'atelier-socio-esthe-tique-redonner-une-image-positive-de-soi',
-  'atelier-theatre-medico-social': 'l-atelier-the-a-tre-en-e-tablissement-me-dico-social',
-  'bilan-competences-educateur': 'bilan-de-compe-tences-e-ducateur-pourquoi-l-envisager-pour-votre-e-quipe',
-  'bilan-competences-educateur-2': 'bilan-de-compe-tences-e-ducateur-pourquoi-l-envisager-pour-votre-e-quipe',
-  'educateurs-professeurs-coachs-donnez-un-nouvel-elan-a-votre-carriere-avec-les-extras': 'e-ducateurs-professeurs-coachs-donnez-un-nouvel-e-lan-a-votre-carrie-re-avec-les',
-  'musicotherapie-etablissement-medico-social': 'la-musicothe-rapie-en-e-tablissement-me-dico-social',
-  'recrutement-educateur-freelance': 'recrutement-e-ducateur-freelance-bien-cadrer-un-renfort-d-e-quipe',
+  'atelier-individuel-ou-collectif': 'atelier-individuel-ou-collectif-comment-choisir-en-etablissement',
+  'atelier-socio-esthetique': 'l-atelier-socio-esthetique-en-etablissement-medico-social',
+  'atelier-socio-esthetique-2': 'atelier-socio-esthetique-redonner-une-image-positive-de-soi',
+  'atelier-theatre-medico-social': 'l-atelier-theatre-en-etablissement-medico-social',
+  'bilan-competences-educateur': 'bilan-de-competences-educateur-pourquoi-l-envisager-pour-votre-equipe',
+  'bilan-competences-educateur-2': 'bilan-de-competences-educateur-pourquoi-l-envisager-pour-votre-equipe',
+  'educateurs-professeurs-coachs-donnez-un-nouvel-elan-a-votre-carriere-avec-les-extras': 'educateurs-professeurs-coachs-donnez-un-nouvel-elan-a-votre-carriere-avec-les-extras',
+  'musicotherapie-etablissement-medico-social': 'la-musicotherapie-en-etablissement-medico-social',
+  'recrutement-educateur-freelance': 'recrutement-educateur-freelance-bien-cadrer-un-renfort-d-equipe',
 };
 
 /**
@@ -143,6 +195,11 @@ const nextConfig = {
       ...ARTICLES_MEME_SLUG.map((slug) => ({
         source: `/${slug}`,
         destination: `/edublog/${slug}`,
+        permanent: true,
+      })),
+      ...Object.entries(SLUGS_ACCENTS_REPARES).map(([casse, propre]) => ({
+        source: `/edublog/${casse}`,
+        destination: `/edublog/${propre}`,
         permanent: true,
       })),
       ...Object.entries(ARTICLES_RENOMMES).map(([ancien, neuf]) => ({

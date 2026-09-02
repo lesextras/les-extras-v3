@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,8 @@ interface RelatedItem {
 }
 interface ServiceDetail {
   id: string;
+  /** Adresse lisible. Absente sur les fiches d'avant la bascule. */
+  slug?: string | null;
   title: string;
   description: string;
   category: keyof typeof SERVICE_CATEGORY_LABEL;
@@ -144,7 +146,9 @@ export async function generateMetadata({
   return {
     title: titre,
     description: desc,
-    alternates: { canonical: `/ateliers/${data.id}` },
+    // La canonique désigne l'adresse LISIBLE dès qu'elle existe : c'est elle
+    // que Google doit retenir, pas celle en identifiant brut.
+    alternates: { canonical: `/ateliers/${data.slug ?? data.id}` },
     // Le visuel de la fiche prime quand il existe ; sinon la carte du site
     // prend le relais, sans quoi un atelier sans image se partageait en
     // rectangle gris. `SOCLE_OG` / `SOCLE_TWITTER` réémettent au passage le
@@ -173,6 +177,18 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
     `/public/catalog/${params.id}`,
   );
   if (!service) notFound();
+
+  // UNE FICHE, UNE ADRESSE.
+  //
+  // L'API résout indifféremment l'identifiant et le slug — c'est ce qui garde
+  // en vie tous les liens déjà partagés par mail, par devis ou sur LinkedIn.
+  // Mais deux adresses qui servent la même page, c'est du contenu dupliqué :
+  // on renvoie donc en 308 vers la forme lisible dès qu'elle existe. La
+  // canonique le dit aussi, mais une canonique est une suggestion quand une
+  // redirection est une instruction.
+  if (service.slug && params.id !== service.slug) {
+    permanentRedirect(`/ateliers/${service.slug}`);
+  }
 
   const images = visuels(service.images);
   const publics = service.publicTargets?.length
@@ -443,7 +459,7 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
           </Card>
 
           <QrShare
-            path={`/ateliers/${service.id}`}
+            path={`/ateliers/${service.slug ?? service.id}`}
             title={service.title}
             fileName={service.id}
           />

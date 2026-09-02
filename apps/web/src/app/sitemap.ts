@@ -109,13 +109,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const PAGE = 60;
   for (let skip = 0; skip < 600; skip += PAGE) {
     const page = await safeJson<{
-      items: { id: string; account?: { id?: string } | null }[];
+      items: { id: string; slug?: string | null; account?: { id?: string } | null }[];
       total?: number;
     }>(`/public/catalog?take=${PAGE}&skip=${skip}`);
     const items = page?.items ?? [];
     for (const it of items) {
       dynamic.push({
-        url: `${base}/ateliers/${it.id}`,
+        // L'adresse lisible dès qu'elle existe : déclarer l'identifiant
+        // enverrait Google sur une 308 depuis notre propre sitemap.
+        url: `${base}/ateliers/${it.slug ?? it.id}`,
         lastModified: now,
         changeFrequency: "weekly",
         priority: 0.8,

@@ -131,15 +131,16 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} LES EXTRAS — ADéPA. Tous droits réservés.</p>
           {/* AUCUN LIEN VERS LINKEDIN N'EXISTAIT SUR LES 93 PAGES DU SITE.
               Tout le trafic social vient de là, et le chemin ne se faisait que
-              dans un sens. Le compte ci-dessous est celui que le pied de page
-              d'adepa77.fr publie déjà — vérifié en direct. */}
+              dans un sens. C'est la PAGE ENTREPRISE qu'on met en avant ici :
+              c'est elle qui porte la marque et que le site doit faire grandir
+              — son adresse a été relevée dans son administration. */}
           <a
-            href="https://www.linkedin.com/in/association-adepa-b98ba5405/"
+            href="https://www.linkedin.com/company/les-extras-adepa/"
             target="_blank"
             rel="me noopener noreferrer"
             className="transition-colors hover:text-primary"
           >
-            LinkedIn
+            Les Extras sur LinkedIn
           </a>
           <p>Fait avec soin pour le secteur médico-social.</p>
         </div>

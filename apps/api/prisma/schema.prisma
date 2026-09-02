@@ -454,6 +454,16 @@ model ReliefMission {
 /// Atelier / service proposé par un FREELANCE.
 model Service {
   id          String        @id @default(cuid())
+  /// Adresse lisible de la fiche publique : `/ateliers/atelier-psycho-boxe`
+  /// au lieu de `/ateliers/cms3it0g70015lt1wyr4sbhqr`. Le mot-clé le plus fort
+  /// de la fiche n'était nulle part dans son adresse, et l'adresse était
+  /// impartageable telle quelle.
+  ///
+  /// NULLABLE À DESSEIN : l'identifiant continue de résoudre la fiche, pour
+  /// toujours. Une fiche sans slug s'affiche exactement comme avant — rien ne
+  /// dépend de ce champ pour fonctionner. En PostgreSQL, une contrainte
+  /// d'unicité laisse passer autant de NULL qu'on veut.
+  slug        String?       @unique
   accountId   String
   account     Account       @relation("ServiceAccount", fields: [accountId], references: [id], onDelete: Cascade)
   title       String

@@ -15,6 +15,8 @@ import type { ServiceCategory } from "../_shared/types";
 
 export interface CatalogItem {
   id: string;
+  /** Adresse lisible de la fiche ; absente sur les fiches d'avant la bascule. */
+  slug?: string | null;
   title: string;
   description: string;
   category: ServiceCategory;
@@ -267,7 +269,7 @@ export async function CatalogView({
             return (
               <Card key={item.id} className="group card-interactive relative flex h-full flex-col overflow-hidden">
                 {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
-                <Link href={`/ateliers/${item.id}`} className="relative block aspect-[16/10] bg-muted">
+                <Link href={`/ateliers/${item.slug ?? item.id}`} className="relative block aspect-[16/10] bg-muted">
                   <VisuelCarte
                     src={premierVisuel(item.images)}
                     alt={item.title}
@@ -296,7 +298,7 @@ export async function CatalogView({
                 {/* Le cœur est hors du lien : cliquer « mettre de côté » ne doit
                     pas ouvrir la fiche. */}
                 <div className="absolute right-3 top-3 z-10">
-                  <FavoriteButton serviceId={item.id} retour={`/ateliers/${item.id}`} />
+                  <FavoriteButton serviceId={item.id} retour={`/ateliers/${item.slug ?? item.id}`} />
                 </div>
                 <CardContent className="flex flex-1 flex-col gap-3 p-5">
                   <div className="flex items-center justify-between gap-2">
@@ -351,7 +353,7 @@ export async function CatalogView({
                         ) : null}
                       </span>
                       <Button asChild size="sm" variant="outline">
-                        <Link href={`/ateliers/${item.id}`}>
+                        <Link href={`/ateliers/${item.slug ?? item.id}`}>
                           Voir
                           <ArrowRight className="size-4" />
                         </Link>

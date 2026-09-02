@@ -19,6 +19,8 @@ import { SOCLE_OG, SOCLE_TWITTER, titreSeo } from "@/lib/meta";
 interface ArticleDetail extends ArticleCard {
   content?: string | null;
   related?: ArticleCard[];
+  /** Dernière modification — sert de `dateModified` aux données structurées. */
+  updatedAt?: string | null;
 }
 
 const resume = (t: string, max = 155) => texteBrut(t, max);
@@ -76,6 +78,21 @@ export default async function ArticlePage({ params: paramsPromesse }: { params: 
 
   const nom = a.account?.name ?? "Les Extras";
   const auteur = fullName(a.author?.firstName, a.author?.lastName);
+
+  // « UTILISATEUR » SIGNAIT DIX-NEUF ARTICLES SUR VINGT-TROIS.
+  //
+  // `fullName()` renvoie le mot « Utilisateur » quand il n'a ni prénom ni nom :
+  // c'est un libellé d'interface, pratique dans une liste, désastreux dans des
+  // données structurées. Le JSON-LD le prenait pour un vrai nom et déclarait
+  // `author: { "@type": "Person", name: "Utilisateur" }` — Google enregistrait
+  // donc une personne nommée « Utilisateur » comme autrice de référence sur des
+  // articles d'accompagnement de jeunes majeurs. Le secteur médico-social est
+  // précisément celui où Google pèse l'identité et l'expertise de l'auteur.
+  //
+  // Rien à inventer et rien à réparer en base : quand aucune personne n'est
+  // rattachée, l'auteur EST l'organisation qui publie. C'est exact, c'est ce
+  // que schema.org prévoit, et c'est ce que la page affiche déjà à l'écran.
+  const auteurPersonne = a.author?.firstName || a.author?.lastName ? auteur : null;
 
   return (
     <article className="mx-auto max-w-3xl space-y-8">
@@ -188,7 +205,13 @@ export default async function ArticlePage({ params: paramsPromesse }: { params: 
               description: resume(a.excerpt || a.content || a.title, 300),
               ...(visuel(a.coverUrl) ? { image: [visuel(a.coverUrl)!] } : {}),
               datePublished: a.publishedAt ?? undefined,
-              author: { "@type": auteur ? "Person" : "Organization", name: auteur || nom },
+              // Aucune date de mise à jour n'était déclarée : pour Google, un
+              // article revu la semaine dernière avait la fraîcheur de sa date
+              // de publication d'origine.
+              dateModified: a.updatedAt ?? a.publishedAt ?? undefined,
+              author: auteurPersonne
+                ? { "@type": "Person", name: auteurPersonne }
+                : { "@type": "Organization", name: nom },
               publisher: { "@type": "Organization", name: "LES EXTRAS" },
             },
             {

@@ -245,7 +245,12 @@ export class ArticlesService {
   async bySlug(slug: string) {
     const article = await this.prisma.article.findFirst({
       where: { slug, status: ArticleStatus.PUBLISHED },
-      select: { ...PUBLIC_SELECT, content: true },
+      // `updatedAt` alimente `dateModified` dans les données structurées de la
+      // page : sans lui, un article revu récemment gardait pour Google la
+      // fraîcheur de sa date de publication d'origine. Il n'entre pas dans
+      // `PUBLIC_SELECT` — la liste n'en a pas l'usage, et une projection sert
+      // à n'exposer que ce qui est nécessaire.
+      select: { ...PUBLIC_SELECT, content: true, updatedAt: true },
     });
     if (!article) throw new NotFoundException('Actualité introuvable.');
 

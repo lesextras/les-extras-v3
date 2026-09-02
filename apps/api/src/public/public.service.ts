@@ -32,6 +32,9 @@ const VITRINE = {
  */
 const PUBLIC_SELECT = {
   id: true,
+  /// Adresse lisible de la fiche. Null sur les fiches d'avant la bascule :
+  /// l'appelant retombe alors sur l'identifiant, comme avant.
+  slug: true,
   title: true,
   description: true,
   category: true,
@@ -415,12 +418,24 @@ export class PublicService {
    * contenu pédagogique, réputation de l'intervenant et fiches de la même
    * famille. Incrémente le compteur de consultations (preuve sociale).
    */
-  async detail(id: string) {
+  /**
+   * Le détail d'une fiche, par ADRESSE LISIBLE **ou** par identifiant.
+   *
+   * Les deux résolvent, et c'est délibéré : toutes les adresses déjà
+   * partagées — mails, devis, messages LinkedIn, favoris — portent
+   * l'identifiant. Elles doivent continuer de fonctionner sans condition ;
+   * c'est la page publique qui redirige ensuite vers la forme lisible.
+   */
+  async detail(identifiant: string) {
     const service = await this.prisma.service.findFirst({
-      where: { id, ...VITRINE },
+      where: { OR: [{ id: identifiant }, { slug: identifiant }], ...VITRINE },
       select: PUBLIC_DETAIL_SELECT,
     });
     if (!service) throw new NotFoundException('Service introuvable.');
+
+    // À partir d'ici on travaille sur l'identifiant réel : la fiche a pu être
+    // trouvée par son slug, et le compteur comme les avis se lisent par id.
+    const id = service.id;
 
     // Best-effort : une erreur de compteur ne doit jamais casser la page.
     this.prisma.service
