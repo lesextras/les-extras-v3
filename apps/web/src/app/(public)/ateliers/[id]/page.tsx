@@ -407,13 +407,24 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 </div>
               ) : null}
 
+              {/* LE PREMIER GESTE PROPOSÉ ÉTAIT DE CRÉER UN COMPTE.
+                  « Réserver cet atelier » mène à /marketplace/services/…, qui
+                  redirige en 307 vers /login. Un visiteur venu de Google ou de
+                  LinkedIn, qui découvre Les Extras et lit sur l'accueil « sans
+                  compte, sans engagement », se heurtait donc à un mur de
+                  connexion — le devis sans compte n'étant qu'un lien discret
+                  en dessous. Les deux chemins existent toujours ; c'est leur
+                  ordre qui change. */}
               <div className="space-y-2">
-                <Button asChild className="w-full">
-                  <Link href={`/marketplace/services/${service.id}`}>Réserver cet atelier</Link>
+                <PublicQuoteForm serviceId={service.id} titre={service.title} principal />
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/marketplace/services/${service.id}`}>
+                    Réserver directement — j&apos;ai un compte
+                  </Link>
                 </Button>
-                <PublicQuoteForm serviceId={service.id} titre={service.title} />
                 <p className="text-center text-xs text-muted-foreground">
-                  Réservation immédiate si vous avez un compte, sinon devis chiffré sous 48 h.
+                  Devis chiffré sous 48 h, sans engagement. Réservation immédiate si vous avez
+                  déjà un compte.
                 </p>
               </div>
 

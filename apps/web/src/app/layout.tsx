@@ -148,7 +148,22 @@ const IDENTITE_STRUCTUREE = {
         addressCountry: 'FR',
       },
       areaServed: 'FR',
-      sameAs: ['https://adepa77.fr'],
+      // `sameAs` est le champ par lequel Google relie une entité à ses comptes
+      // officiels. Tant qu'il ne déclarait qu'adepa77.fr, le site et les autres
+      // propriétés de l'association étaient, pour Google, sans rapport entre
+      // elles — y compris LinkedIn, d'où vient la totalité du trafic social.
+      //
+      // Chaque adresse ci-dessous a été VÉRIFIÉE en direct : les trois sites
+      // répondent, et le profil LinkedIn est celui que le pied de page
+      // d'adepa77.fr publie déjà. La Page entreprise « Les Extras » manque
+      // encore : son adresse n'est publiée nulle part, et une URL fausse dans
+      // ce champ vaut mieux ne pas exister — à ajouter dès qu'elle est connue.
+      sameAs: [
+        'https://adepa77.fr',
+        'https://toulali.fr',
+        'https://a2pa.fr',
+        'https://www.linkedin.com/in/association-adepa-b98ba5405/',
+      ],
     },
     {
       '@type': 'WebSite',

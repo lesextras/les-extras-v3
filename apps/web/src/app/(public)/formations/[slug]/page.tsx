@@ -241,11 +241,17 @@ export default async function FormationPubliquePage({
                 </p>
               ) : null}
 
+              {/* Même inversion que sur les fiches atelier : « S'inscrire »
+                  passe par /marketplace, donc par la connexion. Le devis, lui,
+                  n'exige rien — et c'est de toute façon au devis que se vend
+                  une formation Qualiopi, facturée à l'établissement. */}
               <div className="space-y-2">
-                <Button asChild className="w-full">
-                  <Link href={`/marketplace/formations/${f.id}`}>S’inscrire à une session</Link>
+                <PublicQuoteForm formationSlug={f.slug} titre={f.title} principal />
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/marketplace/formations/${f.id}`}>
+                    S’inscrire à une session — j’ai un compte
+                  </Link>
                 </Button>
-                <PublicQuoteForm formationSlug={f.slug} titre={f.title} />
                 <p className="text-center text-xs text-muted-foreground">
                   Formation intra-établissement possible. Réponse garantie sous 72 h.
                 </p>

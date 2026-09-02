@@ -14,10 +14,20 @@ export function PublicQuoteForm({
   serviceId,
   formationSlug,
   titre,
+  principal = false,
 }: {
   serviceId?: string;
   formationSlug?: string;
   titre: string;
+  /**
+   * Rend le déclencheur en bouton PLEIN plutôt qu'en bouton bordé.
+   *
+   * Sur une fiche publique, c'est ce chemin-là qui doit être le premier :
+   * l'accueil promet « sans compte, sans engagement », et proposer d'abord
+   * « Réserver » — qui redirige vers la connexion — contredit la promesse au
+   * moment précis où le visiteur allait agir.
+   */
+  principal?: boolean;
 }) {
   const { toast } = useToast();
   const [ouvert, setOuvert] = useState(false);
@@ -77,7 +87,11 @@ export function PublicQuoteForm({
 
   if (!ouvert) {
     return (
-      <Button variant="outline" className="w-full" onClick={() => setOuvert(true)}>
+      <Button
+        variant={principal ? "primary" : "outline"}
+        className="w-full"
+        onClick={() => setOuvert(true)}
+      >
         Demander un devis sans créer de compte
       </Button>
     );

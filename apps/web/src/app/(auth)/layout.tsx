@@ -1,8 +1,26 @@
 export const dynamic = 'force-dynamic';
 
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ShieldCheck, Siren, GraduationCap, Star } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
+
+/**
+ * LES FORMULAIRES NE SE RÉFÉRENCENT PAS.
+ *
+ * `/login` (94 mots) et `/register` (157 mots) étaient déclarés dans le
+ * sitemap et marqués `index, follow`. Deux pages sans aucun contenu utile à
+ * une recherche, qui consomment du budget d'exploration et peuvent remonter
+ * À LA PLACE des pages commerciales : quelqu'un qui cherche « remplacement
+ * éducateur 77 » et tombe sur un mur de connexion s'en va.
+ *
+ * `follow` est conservé : les liens de ces pages restent suivis, seule
+ * l'indexation est refusée. Le layout porte la règle pour les quatre pages du
+ * groupe — mot de passe oublié et réinitialisation en font autant partie.
+ */
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
 
 /**
  * Layout des pages d'authentification : panneau de marque à gauche (desktop),

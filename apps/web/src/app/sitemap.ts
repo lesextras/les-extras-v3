@@ -53,8 +53,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // trois 404 depuis notre propre sitemap.
     "/legal",
     "/legal/cookies",
-    "/login",
-    "/register",
+    // `/login` et `/register` ont été RETIRÉS : ce sont des formulaires, pas
+    // des pages de contenu. Elles sont désormais en `noindex` (voir le layout
+    // du groupe `(auth)`) et un sitemap qui déclare une page noindex envoie à
+    // Google deux consignes contradictoires.
     // Centre d'aide, démonstration, frais de service et entrées de référencement
     // local : autant de pages qui répondent à une recherche précise.
     "/aide",

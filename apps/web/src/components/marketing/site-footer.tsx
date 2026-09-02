@@ -113,8 +113,12 @@ export function SiteFooter() {
           n existe dans aucun type React et le typecheck echoue.
         */}
         <div className="mt-12 flex flex-col items-center gap-3 border-t border-border pt-8">
+          {/* La phrase précédente s'adressait au moteur de recherche, pas au
+              lecteur — et avec deux accents manquants, sur les 93 pages du
+              site. Celle-ci dit au visiteur ce que le bouton fait. */}
           <p className="text-xs text-muted-foreground">
-            Retrouvez Les Extras en priorite dans vos resultats Google.
+            Suivez Les Extras dans Google : nos articles remonteront en priorité dans vos
+            résultats.
           </p>
           <Script
             async
@@ -125,6 +129,18 @@ export function SiteFooter() {
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} LES EXTRAS — ADéPA. Tous droits réservés.</p>
+          {/* AUCUN LIEN VERS LINKEDIN N'EXISTAIT SUR LES 93 PAGES DU SITE.
+              Tout le trafic social vient de là, et le chemin ne se faisait que
+              dans un sens. Le compte ci-dessous est celui que le pied de page
+              d'adepa77.fr publie déjà — vérifié en direct. */}
+          <a
+            href="https://www.linkedin.com/in/association-adepa-b98ba5405/"
+            target="_blank"
+            rel="me noopener noreferrer"
+            className="transition-colors hover:text-primary"
+          >
+            LinkedIn
+          </a>
           <p>Fait avec soin pour le secteur médico-social.</p>
         </div>
       </div>
