@@ -213,6 +213,29 @@ export default function ConfianceLexPage() {
         </div>
       </section>
 
+      {/* Les guides ne vivaient que dans le pied de page et le plan du site.
+          Ils ont leur place ici : quelqu'un qui lit cette page se demande si
+          l'outil est sérieux, et six guides qui citent leurs articles de loi
+          un par un répondent mieux que n'importe quelle promesse. */}
+      <section className="rounded-2xl border border-border bg-card p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          Ce qu’on sait du métier, avant même de parler d’outil
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Six guides en accès libre sur les écrits professionnels — rapport de situation,
+          projet personnalisé, ESS et GEVA-Sco, information préoccupante, bilan de fin
+          d’accompagnement. Chaque référence juridique y est citée telle qu’elle se vérifie,
+          et là où aucune norme n’existe, nous le disons plutôt que d’en inventer une.
+        </p>
+        <Link
+          href="/guides"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Lire les guides
+          <ArrowRight className="size-4" aria-hidden />
+        </Link>
+      </section>
+
       <p className="text-xs italic text-muted-foreground">
         Cette page décrit le fonctionnement de LEX au 21 août 2026. Pour toute question relative au
         traitement des données, écrivez-nous : nous répondons avec les pièces justificatives.

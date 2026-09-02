@@ -3,6 +3,7 @@ import { getApiBaseUrl } from "@/lib/api";
 import { METIERS, VILLES } from "./(public)/renfort/donnees";
 import { RUBRIQUES } from "./(public)/aide/contenu";
 import { GUIDES_ECRITS } from "./(public)/guides/contenu";
+import { ETABLISSEMENTS } from "./(public)/ateliers-pour/donnees";
 
 // Sitemap dynamique : pages statiques publiques + catalogue & missions publiés.
 // Régénéré périodiquement (revalidate) et tolérant à une API indisponible.
@@ -95,6 +96,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.5,
+    })),
+    // Une page d'atterrissage par type d'établissement pour les ateliers :
+    // une direction d'IME ne cherche pas « atelier médico-social », elle
+    // cherche « atelier IME ». Ce découpage n'existait que pour le renfort.
+    ...ETABLISSEMENTS.map((e) => ({
+      url: `${base}/ateliers-pour/${e.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     })),
     // Priorité haute : ce sont les pages sur lesquelles on va chercher les
     // professionnels qui rédigent, et donc les futurs utilisateurs de LEX.
