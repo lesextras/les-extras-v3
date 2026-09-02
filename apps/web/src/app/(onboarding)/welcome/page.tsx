@@ -16,6 +16,17 @@ export default async function WelcomePage({
   const session = await getSession();
   if (!session) redirect('/login');
 
+  // L'ACCUEIL NE SE REJOUE PAS INDÉFINIMENT.
+  //
+  // La connexion renvoie ici tant que `onboardingStep < 3`. Or le chemin le
+  // plus naturel — cliquer le lien de confirmation reçu par e-mail — menait
+  // droit au tableau de bord sans passer par le parcours, et l'étape n'était
+  // jamais posée. Résultat : « Bienvenue ! Votre compte est créé » à chaque
+  // connexion, au troisième mois comme au premier jour.
+  //
+  // Le parcours terminé, cette page n'a plus rien à dire : on passe la main.
+  if ((session.user.onboardingStep ?? 0) >= 3) redirect('/dashboard');
+
   const isEstablishment = session.activeAccount?.type === 'ESTABLISHMENT';
   const firstName = session.user.name?.split(' ')[0];
   // Relaie le profil « salarié » choisi à l'inscription jusqu'au wizard, pour
@@ -37,10 +48,16 @@ export default async function WelcomePage({
         {isEstablishment ? 'publier vos premiers renforts' : 'répondre à vos premières missions'}.
       </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className={`mt-8 grid gap-4 ${isEstablishment ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
+        {/* Un établissement ne dépose PAS de justificatifs : son parcours
+            compte deux étapes (voir ETAPES_ETABLISSEMENT dans wizard-form).
+            Annoncer « Documents » à tout le monde promettait trois étapes,
+            puis le compteur du wizard démarrait à « 1/2 ». */}
         {[
           { icon: Sparkles, title: 'Profil', text: 'Complétez vos informations' },
-          { icon: ShieldCheck, title: 'Documents', text: 'Ajoutez vos justificatifs' },
+          ...(isEstablishment
+            ? []
+            : [{ icon: ShieldCheck, title: 'Documents', text: 'Ajoutez vos justificatifs' }]),
           { icon: CalendarClock, title: 'C’est parti', text: 'Accédez à votre espace' },
         ].map((s, i) => (
           <Card key={s.title}>

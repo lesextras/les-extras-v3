@@ -161,6 +161,27 @@ export class AuthService {
     const verifyToken = await this.signEmailVerifyToken(user.id, email);
     await this.mail.sendEmailVerification(email, verifyToken, user.firstName);
 
+    // LE MESSAGE QUI EXPLIQUE QUOI FAIRE PART MAINTENANT, PAS APRÈS UN CLIC.
+    //
+    // Il n'était envoyé qu'à la confirmation de l'adresse, et la relance J+1
+    // s'abstenait elle aussi tant que l'adresse n'était pas confirmée. Une
+    // adresse tombée en indésirables — le cas le plus banal du monde — valait
+    // donc UN SEUL e-mail dans toute la vie du compte : celui qui demande de
+    // cliquer. Aucun accompagnement, aucune relance, et un compte incapable de
+    // publier sans que personne ne le lui dise jamais.
+    //
+    // Il part désormais à l'inscription, dans sa variante « pas encore
+    // confirmée », qui dit les premiers pas ET rappelle le geste qui manque.
+    // Un échec d'envoi ne doit pas faire échouer une inscription : `send()`
+    // ne lève jamais, mais on protège quand même le point d'appel.
+    await this.mail
+      .sendBienvenue(email, {
+        prenom: user.firstName,
+        type: dto.accountType === 'ESTABLISHMENT' ? 'ESTABLISHMENT' : 'FREELANCE',
+        confirme: false,
+      })
+      .catch(() => undefined);
+
     const accessToken = await this.signAccessToken(user.id, email, user.role);
     return {
       accessToken,
@@ -250,14 +271,10 @@ export class AuthService {
       data: { emailVerified: true, status: UserStatus.VERIFIED },
     });
 
-    if (!dejaVerifie) {
-      await this.mail
-        .sendBienvenue(avant.email, {
-          prenom: avant.firstName,
-          type: avant.memberships[0]?.account.type ?? 'FREELANCE',
-        })
-        .catch(() => undefined);
-    }
+    // Plus d'e-mail de bienvenue ici : il est parti à l'inscription (voir
+    // `register`). En renvoyer un second à la confirmation ferait deux
+    // messages de bienvenue pour la même personne — et l'écran de
+    // confirmation dit déjà que c'est fait.
 
     return { verified: true, dejaVerifie };
   }

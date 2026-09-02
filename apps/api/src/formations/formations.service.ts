@@ -60,7 +60,7 @@ export class FormationsService {
     const cpfEligible = peutCertifier ? dto.cpfEligible ?? false : false;
     const certifying = peutCertifier ? dto.certifying ?? false : false;
 
-    return this.prisma.formation.create({
+    const formation = await this.prisma.formation.create({
       data: {
         ownerAccountId: accountId,
         type,
@@ -79,6 +79,48 @@ export class FormationsService {
         edofRef: dto.edofRef,
       },
     });
+
+    // PERSONNE N'ÉTAIT PRÉVENU, NI D'UN CÔTÉ NI DE L'AUTRE.
+    //
+    // L'écran de proposition promet « Vous serez prévenu·e dès sa
+    // publication ». `NotificationsService` était importé et injecté ici, et
+    // jamais appelé : un programme certifiant soumis pouvait dormir
+    // indéfiniment en brouillon, sans que son auteur sache qu'il attend, ni
+    // qu'ADéPA sache qu'il y a quelque chose à relire.
+    //
+    // Un échec de notification ne doit jamais faire échouer la création : on
+    // rend la formation quoi qu'il arrive.
+    if (type !== FormationType.INTERNE && !estAdminPlateforme) {
+      await this.prevenirAdministrationPlateforme(formation.id, formation.title).catch(
+        () => undefined,
+      );
+    }
+
+    return formation;
+  }
+
+  /**
+   * Prévient l'équipe ADéPA qu'un programme certifiant attend d'être relu.
+   *
+   * On notifie les comptes de rôle plateforme ADMIN — ce sont eux qui peuvent
+   * publier sous la certification Qualiopi.
+   */
+  private async prevenirAdministrationPlateforme(formationId: string, titre: string) {
+    const administrateurs = await this.prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+      take: 20,
+    });
+    await Promise.allSettled(
+      administrateurs.map((a) =>
+        this.notifications.create(a.id, {
+          type: 'FORMATION_A_RELIRE',
+          title: 'Un programme attend votre relecture',
+          body: `« ${titre} » a été proposé et reste en brouillon tant qu'il n'est pas validé.`,
+          link: `/admin/formations`,
+        }),
+      ),
+    );
   }
 
   /** Programmes du compte actif (gestion : ADéPA certifiant OU interne établissement). */
@@ -290,7 +332,7 @@ export class FormationsService {
     const cpfDemande = dto.cpfEligible ?? current.cpfEligible;
     const certifDemande = dto.certifying ?? current.certifying;
 
-    return this.prisma.formation.update({
+    const misAJour = await this.prisma.formation.update({
       where: { id },
       data: {
         ...dto,
@@ -298,6 +340,35 @@ export class FormationsService {
         cpfEligible: isInternal ? false : peutCertifier ? cpfDemande : current.cpfEligible,
         certifying: isInternal ? false : peutCertifier ? certifDemande : current.certifying,
       },
+    });
+
+    // L'AUTRE MOITIÉ DE LA PROMESSE : « vous serez prévenu·e dès sa
+    // publication ». C'est ici qu'elle se tient — au moment où ADéPA valide
+    // le programme et le fait passer en ligne.
+    if (veutPublier) {
+      await this.prevenirAuteurPublication(misAJour.ownerAccountId, misAJour).catch(
+        () => undefined,
+      );
+    }
+
+    return misAJour;
+  }
+
+  /** Dit à l'auteur du programme qu'il vient d'être mis en ligne. */
+  private async prevenirAuteurPublication(
+    ownerAccountId: string,
+    formation: { id: string; title: string; slug: string },
+  ) {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: ownerAccountId },
+      select: { ownerId: true },
+    });
+    if (!compte?.ownerId) return;
+    await this.notifications.create(compte.ownerId, {
+      type: 'FORMATION_PUBLIEE',
+      title: 'Votre programme est en ligne',
+      body: `« ${formation.title} » a été validé par ADéPA et figure désormais au catalogue.`,
+      link: `/formations/${formation.slug}`,
     });
   }
 

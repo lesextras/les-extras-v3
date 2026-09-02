@@ -46,8 +46,14 @@ export class ArticlesController {
   @Get('linkedin/callback')
   @Redirect()
   async callback(@Query('code') code: string, @Query('state') state: string) {
-    const web = (this.config.get<string>('WEB_PUBLIC_URL') ?? 'https://app.les-extras.fr')
-      .replace(/\/$/, '');
+    // Même correction que dans `linkedin.service.ts` : `app.les-extras.fr`
+    // sert WordPress depuis l'inversion des domaines, et `WEB_PUBLIC_URL`
+    // n'est posée nulle part. On retombe sur `APP_WEB_URL`, puis sur le SaaS.
+    const web = (
+      this.config.get<string>('WEB_PUBLIC_URL') ??
+      this.config.get<string>('APP_WEB_URL') ??
+      'https://les-extras.fr'
+    ).replace(/\/$/, '');
     try {
       const { sub } = await this.jwt.verifyAsync<{ sub: string }>(state);
       await this.linkedin.exchangeCode(code, sub);

@@ -73,7 +73,7 @@ export class HebdoScheduler {
       }),
     ]);
 
-    const web = process.env.APP_WEB_URL ?? 'https://app.les-extras.fr';
+    const web = process.env.APP_WEB_URL ?? 'https://les-extras.fr';
     const nouveautes = formations.map((f) => ({
       titre: `Nouvelle formation : ${f.title}`,
       lien: `${web}/formations/${f.slug}`,

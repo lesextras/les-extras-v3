@@ -293,6 +293,14 @@ const nextConfig = {
               // MESURE DE CONVERSION : LE TAG ÉTAIT BLOQUÉ PAR NOTRE PROPRE EN-TÊTE.
             //
             // `MesureAudience` injecte le script de Google Tag Manager quand le
+            // AJOUT DU 02/09/2026 : `news.google.com` manquait lui aussi.
+            // Le bouton « source préférée » de Google est posé dans le pied de
+            // page, donc chargé sur les 93 pages du site — et bloqué par notre
+            // propre CSP à chaque fois, en silence. Exactement le même défaut
+            // que celui décrit juste en dessous pour la mesure d'audience :
+            // une fonctionnalité installée, jamais fonctionnelle, et rien qui
+            // le signale à qui ne regarde pas la console.
+            //
             // visiteur a accepté la mesure. Or `script-src` ne listait que
             // `'self'` : le navigateur refusait le script, silencieusement pour
             // qui ne regarde pas la console. Une campagne payante tournait donc
@@ -302,7 +310,7 @@ const nextConfig = {
             //
             // On n'ouvre que les trois domaines nécessaires, et rien d'autre :
             // le reste de la politique demeure aussi fermé qu'avant.
-            "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.googleadservices.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net; frame-src https://www.youtube-nocookie.com https://td.doubleclick.net; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+            "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.googleadservices.com https://news.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net; frame-src https://www.youtube-nocookie.com https://td.doubleclick.net https://news.google.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
           },
         ],
       },

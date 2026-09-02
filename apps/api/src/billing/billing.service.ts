@@ -242,7 +242,7 @@ export class BillingService {
       throw new BadRequestException('Un abonnement est déjà actif sur ce compte.');
     }
 
-    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://app.les-extras.fr';
+    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://les-extras.fr';
     const session = await this.stripe('/checkout/sessions', {
       mode: 'subscription',
       'line_items[0][quantity]': '1',
@@ -344,7 +344,7 @@ export class BillingService {
       throw new BadRequestException('Montant de facture invalide.');
     }
 
-    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://app.les-extras.fr';
+    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://les-extras.fr';
     const session = await this.stripe('/checkout/sessions', {
       mode: 'payment',
       'payment_method_types[0]': 'card',
@@ -377,7 +377,7 @@ export class BillingService {
     if (!pack) throw new BadRequestException('Pack de crédits inconnu.');
     await this.requireMember(userId, accountId);
 
-    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://app.les-extras.fr';
+    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://les-extras.fr';
     const session = await this.stripe('/checkout/sessions', {
       mode: 'payment',
       'payment_method_types[0]': 'card',

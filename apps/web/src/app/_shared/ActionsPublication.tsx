@@ -9,6 +9,7 @@
 // consulte et candidate, il ne publie pas. C'est cette règle, et elle seule,
 // qui est reproduite ici.
 import { RenfortModal } from "./modals/RenfortModal";
+import { ProposerFormationModal } from './ProposerFormationModal';
 import { ServiceModal } from "./modals/ServiceModal";
 import { Button } from "@/components/ui/button";
 import type { AccountRole, AccountType } from "@/lib/types";
@@ -69,9 +70,17 @@ export function ActionsPublication({
         categorieInitiale="ATELIER"
         trigger={<Button variant="primary">Créer un atelier</Button>}
       />
-      <ServiceModal
+      {/* DEUX BOUTONS PORTAIENT LE MÊME LIBELLÉ ET NE FAISAIENT PAS LA MÊME CHOSE.
+          Celui-ci ouvrait `ServiceModal` : il créait une FICHE de service,
+          publiée immédiatement, sans aucun contrôle Qualiopi. Celui de
+          `/dashboard/formations` ouvre `ProposerFormationModal` : il crée un
+          PROGRAMME, en brouillon, relu par ADéPA avant diffusion sous sa
+          certification. Deux tables, deux circuits — un intervenant qui
+          voulait soumettre un programme certifiant depuis son tableau de bord
+          publiait en réalité une fiche atelier sans relecture.
+          C'est le vrai parcours qui est branché ici. */}
+      <ProposerFormationModal
         accountId={accountId}
-        categorieInitiale="FORMATION"
         trigger={<Button variant="outline">Proposer une formation</Button>}
       />
     </div>

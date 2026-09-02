@@ -223,21 +223,53 @@ export function ServiceModal({
         body: corps,
         accountId,
       });
-      // La fiche est créée en brouillon : on applique le statut choisi.
+      // LA FICHE EST CRÉÉE EN BROUILLON, PUIS PUBLIÉE PAR UN SECOND APPEL.
+      //
+      // Ce second appel traverse `EmailVerifieSiPublicationGuard` : tant que
+      // l'adresse n'est pas confirmée, il répond 403. Un `.catch(() => {})`
+      // avalait ce refus et le message annonçait quand même « Atelier publié ».
+      //
+      // C'était le pire défaut du produit, et il tombait sur le compte le plus
+      // fragile : celui qui vient de s'inscrire et n'a pas encore cliqué son
+      // lien de confirmation est exactement celui qui crée son premier atelier.
+      // Il repartait convaincu d'être au catalogue, et attendait des
+      // réservations sur une fiche que personne ne pouvait voir.
+      //
+      // On dit maintenant la vérité : la fiche est enregistrée — elle l'est
+      // réellement, en brouillon — et on explique le geste qui la publie.
+      let publiee = statut !== "PUBLISHED";
+      let motifNonPubliee: string | null = null;
       if ((created as { id?: string })?.id) {
-        await apiRequest(`/services/${(created as { id: string }).id}`, {
-          method: "PATCH",
-          body: { status: statut },
-          accountId,
-        }).catch(() => {});
+        try {
+          await apiRequest(`/services/${(created as { id: string }).id}`, {
+            method: "PATCH",
+            body: { status: statut },
+            accountId,
+          });
+          publiee = true;
+        } catch (e) {
+          motifNonPubliee =
+            e instanceof Error && e.message
+              ? e.message
+              : "La mise en ligne a été refusée.";
+        }
       }
-      toast({
-        title: statut === "PUBLISHED" ? "Atelier publié" : "Brouillon enregistré",
-        description:
-          statut === "PUBLISHED"
-            ? "Il apparaît désormais dans le catalogue."
-            : "Vous le publierez quand il sera prêt.",
-      });
+
+      if (statut === "PUBLISHED" && !publiee) {
+        toast({
+          variant: "warning",
+          title: "Fiche enregistrée, mais pas encore publiée",
+          description: `${motifNonPubliee} Votre fiche est en brouillon dans « Mes ateliers » : elle partira au catalogue dès que ce point sera réglé.`,
+        });
+      } else {
+        toast({
+          title: statut === "PUBLISHED" ? "Atelier publié" : "Brouillon enregistré",
+          description:
+            statut === "PUBLISHED"
+              ? "Il apparaît désormais dans le catalogue."
+              : "Vous le publierez quand il sera prêt.",
+        });
+      }
       setOpen(false);
       router.refresh();
     } catch (err) {

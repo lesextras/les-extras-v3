@@ -38,8 +38,23 @@ export class LinkedinService {
     return `${base.replace(/\/$/, '')}/articles/linkedin/callback`;
   }
 
+  /**
+   * L'ADRESSE PUBLIQUE DU SITE — ET LE PIÈGE QU'ELLE CACHAIT.
+   *
+   * Le repli était `app.les-extras.fr`. Depuis l'inversion des domaines du
+   * 10/08/2026, ce nom sert WORDPRESS : un article partagé sur LinkedIn aurait
+   * donc pointé vers un 404 WordPress, publiquement, sous le nom de
+   * l'association. Et `WEB_PUBLIC_URL` n'est posée nulle part — c'est
+   * `APP_WEB_URL` que le reste du produit utilise (facturation, signature).
+   *
+   * On lit donc les deux, dans cet ordre, et le dernier repli est le SaaS.
+   */
   private get siteUrl(): string {
-    return (this.config.get<string>('WEB_PUBLIC_URL') ?? 'https://app.les-extras.fr').replace(/\/$/, '');
+    const configuree =
+      this.config.get<string>('WEB_PUBLIC_URL') ??
+      this.config.get<string>('APP_WEB_URL') ??
+      'https://les-extras.fr';
+    return configuree.replace(/\/$/, '');
   }
 
   /** Indique si l'intégration est utilisable (clés présentes). */
@@ -146,7 +161,11 @@ export class LinkedinService {
       throw new BadRequestException('Votre connexion LinkedIn a expiré : reconnectez-vous.');
     }
 
-    const url = `${this.siteUrl}/actualites/${article.slug}`;
+    // `/actualites/` n'est plus la route de l'Édublog : elle n'existe que
+    // comme redirection 301. Publier l'ancienne adresse imposait un saut de
+    // plus au robot de LinkedIn, qui lit alors la carte de partage sur la page
+    // d'arrivée — quand il ne renonce pas.
+    const url = `${this.siteUrl}/edublog/${article.slug}`;
     const texte = (comment?.trim() || article.excerpt?.trim() || article.title).slice(0, 2900);
 
     const res = await fetch(`${API}/ugcPosts`, {

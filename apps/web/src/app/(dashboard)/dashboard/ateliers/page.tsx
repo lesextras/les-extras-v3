@@ -17,6 +17,20 @@ export const metadata: Metadata = { title: "Mes ateliers" };
 export default async function AteliersPage() {
   const session = await requireSession();
 
+  // UN SALARIÉ EN ATTENTE PEUT REGARDER, PAS ENCORE PUBLIER.
+  //
+  // Cette page lui est ouverte à dessein (voir CHEMINS_OUVERTS_SANS_RATTACHEMENT) :
+  // il consulte ce qui existe pendant que sa demande chemine. Mais le serveur
+  // n'ouvre `services` qu'en lecture tant qu'aucun établissement ne l'a
+  // accepté — le bouton « Créer un atelier » menait donc droit à un 403.
+  // C'est exactement le « bouton qui mène à un refus » que le reste du produit
+  // s'interdit. On affiche l'explication à la place du bouton.
+  const { data: moi } = await fetchApi<{ enAttenteRattachement?: boolean }>(
+    session,
+    "/auth/me",
+  );
+  const enAttente = moi?.enAttenteRattachement === true;
+
   if (session.account.type !== "FREELANCE") {
     return (
       <div className="space-y-6">
@@ -46,7 +60,7 @@ export default async function AteliersPage() {
       <PageHeader
         title="Mes ateliers"
         subtitle="Gérez votre catalogue d’interventions et vos demandes de réservation."
-        actions={<ServiceModal accountId={session.account.id} />}
+        actions={enAttente ? null : <ServiceModal accountId={session.account.id} />}
       />
 
       {pending.length > 0 ? (
@@ -95,8 +109,20 @@ export default async function AteliersPage() {
         ) : !services.data || services.data.length === 0 ? (
           <EmptyState
             title="Aucun atelier"
-            description="Publiez votre premier atelier pour apparaître dans le catalogue et recevoir des réservations."
-            action={<ServiceModal accountId={session.account.id} />}
+            description={
+              enAttente
+                ? "Vous pourrez publier vos ateliers dès qu’un établissement aura accepté votre rattachement. En attendant, le catalogue et les opportunités vous sont ouverts."
+                : "Publiez votre premier atelier pour apparaître dans le catalogue et recevoir des réservations."
+            }
+            action={
+              enAttente ? (
+                <Button asChild variant="outline">
+                  <Link href="/dashboard">Voir où en est mon rattachement</Link>
+                </Button>
+              ) : (
+                <ServiceModal accountId={session.account.id} />
+              )
+            }
           />
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

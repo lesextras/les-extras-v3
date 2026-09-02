@@ -103,11 +103,21 @@ export class MailService implements OnModuleDestroy {
     return this.transporter;
   }
 
+  /**
+   * L'adresse du site dans TOUS les liens envoyés par e-mail.
+   *
+   * Le dernier repli était `app.les-extras.fr` — le nom qui, depuis
+   * l'inversion des domaines du 10/08/2026, sert WordPress et non le SaaS. Si
+   * `APP_WEB_URL` venait à disparaître des variables d'environnement, chaque
+   * lien de vérification, de contrat et de facture serait parti vers un 404,
+   * sans que rien ne le signale. Un repli doit être une valeur sûre, pas une
+   * valeur historique.
+   */
   private get webUrl(): string {
     return (
       this.config.get<string>('APP_WEB_URL') ??
       this.config.get<string>('WEB_ORIGIN') ??
-      'https://app.les-extras.fr'
+      'https://les-extras.fr'
     );
   }
 
@@ -314,9 +324,23 @@ export class MailService implements OnModuleDestroy {
    */
   async sendBienvenue(
     to: string,
-    data: { prenom?: string | null; type: 'ESTABLISHMENT' | 'FREELANCE' },
+    data: {
+      prenom?: string | null;
+      type: 'ESTABLISHMENT' | 'FREELANCE';
+      /**
+       * L'adresse est-elle déjà confirmée au moment de l'envoi ?
+       *
+       * Ce message part désormais à l'INSCRIPTION, plus à la confirmation :
+       * il était le seul e-mail qui explique quoi faire, et il ne partait
+       * qu'après un clic. Quelqu'un dont le premier message tombait en
+       * indésirables ne recevait donc jamais rien d'autre — ni accompagnement,
+       * ni relance — tout en restant incapable de publier.
+       */
+      confirme?: boolean;
+    },
   ): Promise<void> {
     const etab = data.type === 'ESTABLISHMENT';
+    const confirme = data.confirme ?? true;
 
     const premiersPas = etab
       ? [
@@ -335,7 +359,11 @@ export class MailService implements OnModuleDestroy {
       'Bienvenue dans la communauté LES EXTRAS',
       this.layout(
         `Bienvenue${data.prenom ? `, ${data.prenom}` : ''} 🎉`,
-        `Votre adresse est confirmée : vous faites maintenant partie de la communauté
+        `${
+          confirme
+            ? `Votre adresse est confirmée : vous faites maintenant partie de la communauté`
+            : `Votre compte est créé : vous faites partie de la communauté`
+        }
          <b>LES EXTRAS</b>, le dispositif de l'association <b>ADéPA</b>.
          <br><br>
          ADéPA est une association loi 1901 engagée depuis 2012 dans l'insertion sociale par
@@ -346,9 +374,18 @@ export class MailService implements OnModuleDestroy {
          <ul style="margin:10px 0 0;padding-left:18px">
            ${premiersPas.map((p) => `<li style="margin:6px 0">${p}</li>`).join('')}
          </ul>
+         ${
+           confirme
+             ? ''
+             : `<br><b>Une seule chose à faire d'abord :</b> confirmer votre adresse, avec le lien
+                du message intitulé « Confirmez votre adresse ». Sans cette confirmation, tout
+                reste accessible — mais rien de ce que vous publiez ne devient visible du public.
+                Si vous ne le trouvez pas, regardez dans vos indésirables : c'est là qu'il finit
+                une fois sur trois.<br>`
+         }
          <br>
          Une question ? Répondez simplement à cet e-mail, une vraie personne le lit.`,
-        { label: 'Ouvrir mon espace', url: `${this.webUrl}/dashboard` },
+        { label: 'Ouvrir mon espace', url: `${this.webUrl}/welcome` },
       ),
     );
   }
@@ -867,7 +904,7 @@ export class MailService implements OnModuleDestroy {
   }): Promise<void> {
     const to = this.config.get<string>('CONTACT_INBOX_EMAIL') ?? 'contact@adepa77.fr';
     const site = (
-      this.config.get<string>('WEB_PUBLIC_URL') ?? 'https://app.les-extras.fr'
+      this.config.get<string>('WEB_PUBLIC_URL') ?? 'https://les-extras.fr'
     ).replace(/\/$/, '');
     const url = `${site}/actualites/${data.slug}`;
     await this.send(

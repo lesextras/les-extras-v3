@@ -160,7 +160,7 @@ const freelanceNav: NavSection[] = [
     items: [
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog — vos articles vous font connaître des établissements' },
     ],
   },
   {
@@ -297,7 +297,7 @@ const establishmentNav: NavSection[] = [
       // soi-même en contrat court — le pendant humain de « Contrats CDD ».
       { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog et partagez sur LinkedIn' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog — vos articles vous font connaître des établissements' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le

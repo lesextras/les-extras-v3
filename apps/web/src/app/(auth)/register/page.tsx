@@ -93,7 +93,12 @@ export default function RegisterPage() {
     const t = typeDemande.toLowerCase();
     if (t === 'etablissement' || t === 'establishment') {
       form.setValue('accountType', 'ESTABLISHMENT', { shouldValidate: false });
-    } else if (t === 'salarie' || t === 'salarie') {
+      // La variante accentuée manquait : la condition testait deux fois la
+      // même valeur. Un lien de campagne `?type=salarié` — l'orthographe
+      // naturelle — retombait silencieusement sur « Professionnel », et la
+      // personne créait un compte indépendant en croyant s'inscrire comme
+      // salariée. On normalise les accents plutôt que d'énumérer.
+    } else if (t.normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'salarie') {
       form.setValue('accountType', 'FREELANCE', { shouldValidate: false });
       setProfilSalarie(true);
     } else if (t === 'freelance' || t === 'intervenant') {

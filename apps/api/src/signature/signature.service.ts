@@ -343,7 +343,7 @@ export class SignatureService {
           ? "une proposition d'engagement"
           : 'un devis';
 
-    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://app.les-extras.fr';
+    const webUrl = this.config.get<string>('APP_WEB_URL') ?? 'https://les-extras.fr';
     await this.mail
       .sendCodeSignature(s.signataireEmail, {
         code,
