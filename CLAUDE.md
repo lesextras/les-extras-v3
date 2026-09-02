@@ -820,18 +820,43 @@ national de référence de janvier 2021, rendu obligatoire par le décret
 2022-1728) est l'**équilibre** : éléments préoccupants ET points d'appui, point
 de vue de l'enfant ET des parents.
 
-### Restes à faire, hors code
+### Livré dans la foulée, le même soir
 
-- **L'image de partage `/images/partage-les-extras.jpg` dit encore
-  « Intervenants vérifiés »**, mention retirée du site en neuf endroits parce
-  qu'elle n'était pas soutenable. Elle réapparaît sur chaque partage social.
-  Nouveau visuel à produire.
+- **Six pages d'atterrissage pour les ateliers** : `/ateliers-pour/{ime, itep,
+  mecs, sessad, esat, ehpad}` (`(public)/ateliers-pour/`). Ce découpage
+  n'existait que pour le renfort. **Piège évité, à ne pas défaire :** six pages
+  décrivant le même produit seraient du contenu dupliqué et Google le
+  sanctionne — chacune porte donc ce qui lui est propre, dont une section
+  « contraintes du lieu » que les catalogues ne publient jamais. Le socle
+  réglementaire commun à tous les ESSMS est dans `SOCLE_COMMUN` ; les
+  références propres à un type ne figurent que là où elles s'appliquent, et
+  ESAT et EHPAD n'en citent **aucune** en propre, faute d'article relu.
+- **Maillage** : `/ateliers` ouvre sur les six, `/confiance-lex` renvoie aux
+  guides, chaque page sectorielle renvoie aux cinq autres et aux guides.
+- **Pied de page resserré** (commit `2203b7b`). Il était passé à ~1 400 px :
+  onze liens dans « Ressources » quand les autres colonnes en portaient quatre.
+  **RÈGLE : sept liens par colonne, jamais plus.** Cinq colonnes équilibrées,
+  dont « Combien ça coûte » qui regroupe les pages de prix ; l'identité de
+  l'éditeur tient en un paragraphe ; « Notre histoire », « Nous contacter » et
+  le bouton Google sont dans la barre du bas.
+- **Carte de partage refaite.** Elle portait TROIS défauts, pas un : la
+  pastille « Intervenants vérifiés », la phrase « animés par des indépendants
+  vérifiés du médico-social » (le mot sanctionné par le Conseil d'État **et**
+  « vérifiés » une seconde fois), et « Devis sous 48 h » coupée par le bord.
+  Palette relevée au pixel sur l'original, composition identique.
+  **Le générateur est versionné : `apps/web/scripts/carte-partage.py`** — toute
+  correction future passe par lui, jamais par un éditeur d'images.
+- **Facebook** : les horaires sont passés à « Pas d'horaire disponible ». La
+  Page affichait « Fermé en ce moment » en permanence, ce qui est pire que rien.
+
+### Restes à faire, hors code
 - Page Facebook `profile.php?id=61590194680357` : bio, liens, e-mail et trois
   catégories (Organisation à but non lucratif · Formation · Services sociaux)
-  posés le 2/09. Restent, pour Siham : l'adresse déclarée (**rue Claude
-  Bernard** au lieu du siège **7 rue André Malraux**), les horaires qui
-  affichent « Fermé » en permanence, la destination du bouton « En savoir
-  plus », le nom d'utilisateur (la Page n'en a pas) et la photo de couverture,
-  qui est encore celle d'A2PA. **La Page est membre de 53 groupes** — deux
+  posés le 2/09, horaires neutralisés. Restent, pour Siham : l'adresse déclarée
+  (**rue Claude Bernard** au lieu du siège **7 rue André Malraux**), la
+  destination du bouton « En savoir plus », le nom d'utilisateur (la Page n'en
+  a pas), la zone de service (l'autocomplétion Facebook ne propose que des
+  communes, jamais un département : le choix des villes lui revient) et la
+  photo de couverture, qui est encore celle d'A2PA. **La Page est membre de 53 groupes** — deux
   d'entre eux interdisent explicitement la promotion de plateformes
   concurrentes, lire le règlement avant chaque publication.
