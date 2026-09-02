@@ -38,7 +38,10 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: 'L’Édublog', href: '/edublog' },
       { label: 'Notre histoire', href: '/notre-histoire' },
       { label: 'Centre d’aide', href: '/aide' },
+      { label: 'Guides des écrits professionnels', href: '/guides' },
       { label: 'Frais de service', href: '/frais-de-service' },
+      { label: 'Ce que coûtent les plateformes', href: '/comparatif-plateformes-remplacement' },
+      { label: 'Le prix d’un écrit rédigé par l’IA', href: '/comparatif-assistants-redaction' },
       { label: 'Cadre de confiance LEX', href: '/confiance-lex' },
       { label: "Simulateur d'économies", href: '/simulateur' },
       { label: 'Recevoir le catalogue', href: '/catalogue' },
@@ -72,9 +75,16 @@ export function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
           <div>
             <Logo />
+            {/* « professionnels indépendants » était le mot à ne pas employer.
+                C'est exactement le vocabulaire que le Conseil d'État a
+                sanctionné le 11/02/2025 (n° 491128) pour les plateformes de
+                remplacement en établissement : un aide-soignant ou un
+                éducateur qui remplace ne peut pas être indépendant, il est
+                embauché en CDD. « Intervenant » couvre les deux dispositifs
+                sans les confondre. */}
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-              La marketplace qui relie les établissements médico-sociaux aux professionnels
-              indépendants. Sereinement.
+              Les établissements médico-sociaux et les intervenants qui connaissent leurs
+              publics, reliés sans commission.
             </p>
           </div>
           {columns.map((col) => (
@@ -126,6 +136,73 @@ export function SiteFooter() {
             strategy="afterInteractive"
           />
           <div {...{ 'google-add-preferred-source-btn': '' }} />
+        </div>
+        {/*
+          QUI SOMMES-NOUS, EN CHIFFRES VÉRIFIABLES — sur les 93 pages du site.
+
+          Le concurrent direct de LEX (notasuivi.fr) publie des mentions
+          légales sans SIREN, sans adresse et sans forme juridique, avec un
+          contact en gmail.com, tout en vendant un abonnement à 1 290 €/mois.
+          C'est une faiblesse structurelle qu'on ne peut pas copier — et
+          l'inverse est notre seul avantage gratuit : une direction d'ESMS
+          VÉRIFIE avant de signer, et elle vérifie ici, pas dans un formulaire.
+
+          Chaque valeur ci-dessous vient du certificat Qualiopi lui-même ou de
+          /legal, jamais d'une note interne : le numéro de déclaration
+          d'activité a circulé pendant des mois dans une variante FAUSSE
+          (« 11 77 01011 77 »), et c'est ce genre d'erreur qu'un financeur
+          relève. Si l'un de ces chiffres change, il change ici ET sur /legal.
+        */}
+        <div className="mt-12 border-t border-border pt-8">
+          <p className="text-sm font-semibold text-foreground">Qui édite ce site</p>
+          <dl className="mt-4 grid gap-x-8 gap-y-4 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <dt className="font-medium text-foreground/80">Éditeur</dt>
+              <dd className="mt-1">
+                ADéPA, association loi 1901
+                <br />
+                SIRET 820 051 852 00011
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground/80">Siège social</dt>
+              <dd className="mt-1">
+                7 rue André Malraux
+                <br />
+                77000 Melun
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground/80">Organisme de formation</dt>
+              <dd className="mt-1">
+                Déclaration d’activité n° 11771011677
+                <br />
+                <span className="text-muted-foreground/80">
+                  Cet enregistrement ne vaut pas agrément de l’État.
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground/80">Certification Qualiopi</dt>
+              <dd className="mt-1">
+                N° QNW0132 — QUALIPRO CERTIFICATION
+                <br />
+                Accréditation COFRAC n° 5-0681, valable jusqu’au 9 mars 2029, au titre des
+                actions de formation et des bilans de compétences.
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Le détail figure dans les{' '}
+            <Link href="/legal#mentions" className="underline hover:text-primary">
+              mentions légales
+            </Link>
+            . Écrire à l’association :{' '}
+            <a href="mailto:assoc.adepa@gmail.com" className="underline hover:text-primary">
+              assoc.adepa@gmail.com
+            </a>
+            .
+          </p>
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} LES EXTRAS — ADéPA. Tous droits réservés.</p>

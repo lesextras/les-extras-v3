@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getApiBaseUrl } from "@/lib/api";
 import { METIERS, VILLES } from "./(public)/renfort/donnees";
 import { RUBRIQUES } from "./(public)/aide/contenu";
+import { GUIDES_ECRITS } from "./(public)/guides/contenu";
 
 // Sitemap dynamique : pages statiques publiques + catalogue & missions publiés.
 // Régénéré périodiquement (revalidate) et tolérant à une API indisponible.
@@ -67,6 +68,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/mode-demploi/intervenant",
     "/demo",
     "/frais-de-service",
+    // Les deux comparatifs tarifaires : ce sont des pages de contenu à part
+    // entière, écrites à partir des grilles publiques des autres acteurs, et
+    // elles répondent à une requête très précise (« combien coûte… »).
+    "/comparatif-plateformes-remplacement",
+    "/comparatif-assistants-redaction",
+    // Le carrefour des guides des écrits professionnels. Les guides eux-mêmes
+    // sont ajoutés plus bas, comme les rubriques d'aide.
+    "/guides",
     "/confiance-lex",
     "/simulateur",
     "/renfort",
@@ -86,6 +95,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.5,
+    })),
+    // Priorité haute : ce sont les pages sur lesquelles on va chercher les
+    // professionnels qui rédigent, et donc les futurs utilisateurs de LEX.
+    ...GUIDES_ECRITS.map((g) => ({
+      url: `${base}/guides/${g.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     })),
     ...METIERS.map((m) => ({
       url: `${base}/renfort/metier/${m.slug}`,

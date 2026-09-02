@@ -32,7 +32,9 @@ import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
  *      audience). On passe à un quota MENSUEL REPORTABLE, calibré pour que
  *      la quasi-totalité des utilisateurs ne voie jamais le plafond.
  *   3. Aucun marketplace viable ne facture le côté offre. L'établissement
- *      devient le payeur principal (ESTABLISHMENT_PLAN).
+ *      devient le payeur principal (ESTABLISHMENT_PLAN) — mais il paie pour
+ *      LEX, jamais pour la mise en relation, qui reste gratuite des deux
+ *      côtés (voir le recadrage du 2 septembre 2026 sur ESTABLISHMENT_PLAN).
  */
 
 /**
@@ -80,26 +82,42 @@ export const SUBSCRIPTION_PLANS = [
 ] as const;
 
 /**
- * Abonnement ÉTABLISSEMENT — le virage du modèle économique.
+ * Abonnement ÉTABLISSEMENT — LEX pour toute l'équipe, et RIEN D'AUTRE.
  *
- * Le benchmark est sans exception : tous les marketplaces à 0 % de
- * commission qui vivent (Incredible Health, Hublo, Patchwork, Florence)
- * sont financés par la DEMANDE, jamais par le professionnel — qui est ici
- * le côté rare et le moins solvable. L'établissement, lui, a un budget de
- * remplacement déjà provisionné et compare à un coefficient d'intérim de
- * 1,8 à 2,5.
+ * ── Recadrage du 2 septembre 2026, décidé par Siham ──────────────────────
+ * Ce plan promettait « RenforTeam illimité, 0 % de commission, coffre-fort
+ * de conformité ». C'était un contresens sur notre propre modèle, et une
+ * promesse VIDE : RenforTeam est déjà illimité pour tout le monde, la
+ * commission est déjà à zéro pour tout le monde (`commission.ts`), et le
+ * coffre-fort de conformité est déjà ouvert à tous. Le plan facturait
+ * 89 €/mois des choses que le compte gratuit contient déjà — un directeur
+ * qui compare les deux colonnes le voit en dix secondes et perd confiance.
  *
- * Ce qu'il achète : la plateforme reste gratuite pour ses intervenants et
- * sans commission sur les vacations ; l'abonnement couvre l'outillage de
- * l'établissement et donne LEX à toute son équipe.
+ * Pire : la gratuité du renfort est désormais assumée PUBLIQUEMENT comme
+ * différenciateur permanent face aux plateformes qui prélèvent (Brigad
+ * facture 10 % HT à l'établissement et 15 % TTC au professionnel ; Hublo ne
+ * publie aucun tarif et facture 2 000 à 3 000 € HT le recrutement direct
+ * d'un profil de son vivier). Garder « RenforTeam illimité » derrière un
+ * paywall contredisait cette promesse mot pour mot.
+ *
+ * Ce que l'abonnement achète RÉELLEMENT, et lui seul : LEX partagé par
+ * toute l'équipe du compte (1 000 générations mensuelles mutualisées, là où
+ * chaque professionnel devrait sinon prendre son propre abonnement), et la
+ * PUBLICATION DE TRAMES À PORTÉE ÉTABLISSEMENT — la trame maison d'un chef
+ * de service devient le gabarit de tout le monde (`TrameMaison.portee =
+ * ETABLISSEMENT`, réservée OWNER/ADMIN/MANAGER). C'est le seul avantage que
+ * le compte gratuit ne donne pas, et c'est le vrai argument.
+ *
+ * La mise en relation, les missions, les ateliers, la contractualisation et
+ * la conformité restent gratuits, avec ou sans cet abonnement.
  */
 export const ESTABLISHMENT_PLAN = {
   id: 'plan-etablissement',
-  label: 'Les Extras — Établissement',
+  label: 'LEX Équipe — établissement',
   amountCents: 8900,
   monthlyCredits: 1000,
   perks:
-    'RenforTeam illimité, 0 % de commission, LEX pour toute l’équipe (1 000 générations/mois partagées), coffre-fort de conformité et accompagnement',
+    'LEX pour toute l’équipe : 1 000 générations par mois partagées entre les professionnels du compte, et les trames maison publiables à l’échelle de l’établissement. La mise en relation, les missions et la contractualisation restent gratuites, avec ou sans cet abonnement.',
 } as const;
 
 /**
