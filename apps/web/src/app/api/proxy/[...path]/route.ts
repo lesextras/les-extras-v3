@@ -20,7 +20,7 @@ function apiBase(): string {
 }
 
 async function forward(req: NextRequest, path: string[]): Promise<Response> {
-  const store = cookies();
+  const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   const cookieAccount = store.get(ACTIVE_ACCOUNT_COOKIE)?.value;
 
@@ -42,20 +42,19 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
   const accountId = headerAccount || cookieAccount;
   if (accountId) headers['x-account-id'] = accountId;
 
-  // L'ADRESSE DU VISITEUR DOIT SURVIVRE AU PROXY.
+  // L'IP DU VISITEUR, SANS QUOI TOUT LE MONDE PARTAGE LE MÊME SEAU.
   //
-  // Sans ces deux en-têtes, l'API ne voit que l'adresse du conteneur Next :
-  // tous les visiteurs partagent alors le MÊME seau pour les plafonds
-  // anti-abus. Les cinq réinitialisations de mot de passe par heure, les trois
-  // démonstrations de LEX, les huit demandes de devis : un seul visiteur les
-  // consommait pour toute la plateforme, et la récupération de compte
-  // s'éteignait pour tout le monde. Le commentaire du throttler dit « par
-  // adresse IP » — il faut donc la lui donner.
-  const clientIp =
-    req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? req.ip ?? null;
-  if (clientIp) {
-    headers['x-forwarded-for'] = clientIp;
-    headers['x-real-ip'] = clientIp.split(',')[0].trim();
+  // Ce handler s'exécute sur le serveur Next : vue de l'API, chaque requête
+  // vient de la même machine. Les limiteurs de débit — création de compte,
+  // renvoi de code, mot de passe oublié, génération LEX — comptaient donc
+  // ensemble les appels de TOUS les utilisateurs. Conséquences symétriques et
+  // toutes deux mauvaises : l'établissement qui inscrit son équipe se fait
+  // bloquer par l'activité des autres, et une attaque distribuée passe sous
+  // le seuil en se diluant. On relaie la chaîne telle que le proxy amont l'a
+  // établie ; on ne fabrique jamais d'IP nous-mêmes.
+  for (const nom of ['x-forwarded-for', 'x-real-ip']) {
+    const valeur = req.headers.get(nom);
+    if (valeur) headers[nom] = valeur;
   }
 
   const method = req.method.toUpperCase();
@@ -93,9 +92,9 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
   return new NextResponse(payload, { status: res.status, headers: outHeaders });
 }
 
-type Ctx = { params: { path: string[] } };
-export const GET = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const POST = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const PUT = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const PATCH = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
-export const DELETE = (req: NextRequest, { params }: Ctx) => forward(req, params.path);
+type Ctx = { params: Promise<{ path: string[] }> };
+export const GET = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const POST = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const PUT = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const PATCH = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);
+export const DELETE = async (req: NextRequest, { params }: Ctx) => forward(req, (await params).path);

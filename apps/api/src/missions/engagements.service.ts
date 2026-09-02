@@ -508,14 +508,17 @@ export class EngagementsService {
   }
 
   /**
-   * Vide la file quand la mission s'arrête sans être attribuée — clôture par
-   * l'établissement, annulation, suppression du compte.
+   * Vide la file quand la mission se ferme sans être pourvue.
    *
-   * L'acceptation d'un profil rendait déjà les autres caducs ; la clôture,
-   * elle, ne touchait que les `Booking` en attente. En file d'engagement les
-   * intervenants ne sont PAS des Booking : ils restaient donc « en attente,
-   * rang 3 » indéfiniment, sans notification, sur une mission qui n'existait
-   * plus. Quelqu'un qui a dit oui mérite qu'on lui dise que c'est fini.
+   * La clôture d'un renfort annulait les candidatures classiques (Booking
+   * REQUESTED) et prévenait leurs auteurs — mais laissait les engagements
+   * EN_ATTENTE et PRESENTE tels quels, indéfiniment. Un intervenant qui s'est
+   * engagé sur une mission clôturée restait donc « en lice » sur un besoin qui
+   * n'existe plus : il se croyait tenu de garder le créneau libre, et personne
+   * ne lui disait jamais le contraire. C'est exactement ce qu'on promet de ne
+   * pas faire quand on demande à quelqu'un de s'engager.
+   *
+   * Renvoie le nombre de personnes prévenues.
    */
   async cloreLaFile(
     missionId: string,

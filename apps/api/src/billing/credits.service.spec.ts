@@ -77,19 +77,16 @@ function fabrique(soldeInitial = 5, isMember = false) {
     findFirst: jest.fn(async ({ where }: { where: { reason?: string } }) =>
       etat.ledger.some((l) => l.reason === where.reason) ? { id: 'x' } : null,
     ),
-    // Le double doit savoir SOMMER, pas seulement dire « il y en a » :
-    // l'idempotence de la dotation porte sur le MONTANT déjà servi dans le
-    // mois, parce que le motif DOTATION_MENSUELLE est partagé entre l'offre
-    // gratuite et les abonnements. Un `aggregate` qui renvoyait toujours null
-    // rendait le test aveugle à ce que fait le vrai Prisma.
-    aggregate: jest.fn(async ({ where }: { where?: { reason?: string; delta?: { lt?: number } } } = {}) => {
-      const lignes = etat.ledger.filter((l) => {
-        if (where?.reason && l.reason !== where.reason) return false;
-        if (where?.delta?.lt !== undefined && !(l.delta < where.delta.lt)) return false;
-        return true;
-      });
+    // La dotation ne sert plus « tout ou rien » mais la DIFFÉRENCE entre ce
+    // qui est dû et ce qui a déjà été servi ce mois-ci. Le double emploi ne
+    // se voit que si le faux agrégat sait de quoi on lui parle : un agrégat
+    // qui répondait toujours `null` rendait le test aveugle au bug.
+    aggregate: jest.fn(async ({ where }: { where: { reason?: string; delta?: unknown } }) => {
+      const lignes = etat.ledger.filter((l) =>
+        where.reason ? l.reason === where.reason : (where.delta ? l.delta < 0 : true),
+      );
       if (lignes.length === 0) return { _sum: { delta: null } };
-      return { _sum: { delta: lignes.reduce((t, l) => t + l.delta, 0) } };
+      return { _sum: { delta: lignes.reduce((s, l) => s + l.delta, 0) } };
     }),
   };
   const subscription = {
@@ -225,50 +222,6 @@ describe('CreditsService — dotation mensuelle', () => {
     await credits.dotationMensuelle();
     expect(etat.credits).toBe(ESTABLISHMENT_PLAN.monthlyCredits);
   });
-
-  /**
-   * LE BUG QUI FAISAIT PAYER POUR RIEN (corrigé le 14/08/2026).
-   *
-   * Le motif `DOTATION_MENSUELLE` est partagé entre l'offre gratuite et les
-   * abonnements. Tout compte a donc déjà une écriture du mois en cours — ses
-   * 15 générations gratuites. L'idempotence, qui regardait seulement si une
-   * écriture existait, sortait alors sans rien créditer : celui qui souscrivait
-   * le 12 du mois payait 19 € et attendait le 1er du mois suivant pour recevoir
-   * quoi que ce soit. On sert désormais la DIFFÉRENCE.
-   */
-  it('crédite la différence quand on souscrit après avoir reçu la dotation gratuite', async () => {
-    const { credits, etat } = fabrique(0);
-    const plan = SUBSCRIPTION_PLANS[0];
-
-    // Le 1er du mois : offre gratuite.
-    await credits.activerOffreGratuite('acc1');
-    expect(etat.credits).toBe(FREE_MONTHLY_CREDITS);
-
-    // Le 12 : le compte souscrit. Le webhook amorce la dotation du plan.
-    await credits.amorcerDotation('acc1', plan.monthlyCredits);
-
-    expect(etat.credits).toBe(plan.monthlyCredits);
-    expect(etat.ledger).toHaveLength(2);
-    expect(etat.ledger[1].delta).toBe(plan.monthlyCredits - FREE_MONTHLY_CREDITS);
-  });
-
-  it("ne redonne rien si l'allocation due a déjà été entièrement servie", async () => {
-    const { credits, etat } = fabrique(0);
-    const plan = SUBSCRIPTION_PLANS[0];
-    await credits.amorcerDotation('acc1', plan.monthlyCredits);
-    await credits.amorcerDotation('acc1', plan.monthlyCredits);
-    expect(etat.credits).toBe(plan.monthlyCredits);
-    expect(etat.ledger).toHaveLength(1);
-  });
-
-  it('ne sert que le complément lors du passage à un plan supérieur en cours de mois', async () => {
-    const { credits, etat } = fabrique(0);
-    const [solo, pro] = SUBSCRIPTION_PLANS;
-    await credits.amorcerDotation('acc1', solo.monthlyCredits);
-    await credits.amorcerDotation('acc1', pro.monthlyCredits);
-    expect(etat.credits).toBe(pro.monthlyCredits);
-    expect(etat.ledger[1].delta).toBe(pro.monthlyCredits - solo.monthlyCredits);
-  });
 });
 
 describe('CreditsService — offre gratuite permanente', () => {
@@ -286,5 +239,45 @@ describe('CreditsService — offre gratuite permanente', () => {
     await credits.activerOffreGratuite('acc1');
     expect(etat.credits).toBe(FREE_MONTHLY_CREDITS);
     expect(etat.ledger).toHaveLength(1);
+  });
+});
+
+describe("CreditsService — s'abonner en cours de mois", () => {
+  const plan = SUBSCRIPTION_PLANS[0];
+
+  // LE BUG QUI COÛTAIT DE L'ARGENT RÉEL : le motif DOTATION_MENSUELLE est
+  // partagé par l'offre gratuite et par l'abonnement. Un compte doté le 1er
+  // qui s'abonnait le 8 ne recevait rien jusqu'au mois suivant.
+  it("verse la DIFFÉRENCE quand la dotation gratuite a déjà été servie", async () => {
+    const { credits, etat } = fabrique(0);
+    await credits.activerOffreGratuite('acc1');
+    expect(etat.credits).toBe(FREE_MONTHLY_CREDITS);
+
+    await credits.amorcerDotation('acc1', plan.monthlyCredits);
+
+    expect(etat.credits).toBe(plan.monthlyCredits);
+    expect(etat.ledger).toHaveLength(2);
+    expect(etat.ledger[1]).toEqual({
+      delta: plan.monthlyCredits - FREE_MONTHLY_CREDITS,
+      balanceAfter: plan.monthlyCredits,
+      reason: 'DOTATION_MENSUELLE',
+    });
+  });
+
+  it("ne verse rien de plus si l'allocation due est déjà servie", async () => {
+    const { credits, etat } = fabrique(0);
+    await credits.amorcerDotation('acc1', plan.monthlyCredits);
+    await credits.amorcerDotation('acc1', plan.monthlyCredits);
+    expect(etat.credits).toBe(plan.monthlyCredits);
+    expect(etat.ledger).toHaveLength(1);
+  });
+
+  it("d'un plan à l'autre, ne verse que l'écart", async () => {
+    const superieur = SUBSCRIPTION_PLANS[1] ?? ESTABLISHMENT_PLAN;
+    const { credits, etat } = fabrique(0);
+    await credits.amorcerDotation('acc1', plan.monthlyCredits);
+    await credits.amorcerDotation('acc1', superieur.monthlyCredits);
+    expect(etat.credits).toBe(superieur.monthlyCredits);
+    expect(etat.ledger[1].delta).toBe(superieur.monthlyCredits - plan.monthlyCredits);
   });
 });

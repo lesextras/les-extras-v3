@@ -1,15 +1,15 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { Logo } from '@/components/brand/logo';
 
 const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Produit',
     links: [
-      // `/#renfort` n'existe pas non plus sur l'accueil (ids réels : comment,
-      // marketplace, lex, offre-lex, gap, outils, tarifs). Les quatre entrées
-      // qui l'utilisaient rechargeaient la page sans rien montrer. SOS Renfort
-      // a sa propre page.
-      { label: 'SOS Renfort', href: '/sos-renfort' },
+      // L'ancre `#renfort` n'existe sur aucune page : ces quatre liens ne
+      // bougeaient pas d'un pixel, sur toutes les pages du site. RenforTeam a
+      // sa propre route depuis le changement de nom.
+      { label: 'RenforTeam', href: '/renforteam' },
       // L'ancre `/#ateliers` n'existe pas sur l'accueil : le lien ne bougeait
       // pas la page. Le catalogue d'ateliers a sa propre route.
       { label: 'Ateliers', href: '/ateliers' },
@@ -20,9 +20,9 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Secteur',
     links: [
-      { label: 'MECS & foyers', href: '/sos-renfort' },
-      { label: 'IME · ITEP · SESSAD', href: '/sos-renfort' },
-      { label: 'EHPAD', href: '/sos-renfort' },
+      { label: 'MECS & foyers', href: '/renforteam' },
+      { label: 'IME · ITEP · SESSAD', href: '/renforteam' },
+      { label: 'EHPAD', href: '/renforteam' },
       { label: 'Renfort par métier', href: '/renfort' },
       { label: 'Intervenant indépendant', href: '/intervenant-independant' },
     ],
@@ -30,7 +30,10 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Ressources',
     links: [
-      { label: 'Comment ça marche', href: '/#comment' },
+      // L'ancre `/#comment` n'existe pas sur l'accueil (les sections y sont
+      // #lex, #gap, #marketplace, #tarifs) : le lien ne bougeait pas la page.
+      // La page qui répond vraiment à la question, c'est le mode d'emploi.
+      { label: 'Comment ça marche', href: '/mode-demploi' },
       { label: 'Le GAP', href: '/gap' },
       { label: 'L’Édublog', href: '/edublog' },
       { label: 'Notre histoire', href: '/notre-histoire' },
@@ -91,6 +94,34 @@ export function SiteFooter() {
               </ul>
             </div>
           ))}
+        </div>
+        {/*
+          LE BOUTON « SOURCES PREFEREES » DE GOOGLE (26/08/2026).
+
+          Google laisse une personne epingler un site comme source preferee :
+          ses pages remontent alors davantage dans LES resultats de cette
+          personne. Un directeur qui nous epingle une fois nous retrouve
+          ensuite sans nous chercher — exactement la fidelisation que vise un
+          site de niche comme le notre.
+
+          Le bouton se pose en deux morceaux : le script officiel de Google, et
+          un conteneur vide que ce script remplit lui-meme. On ne dessine rien
+          nous-memes, sinon Google ne le reconnait pas.
+          Reference : developers.google.com/search/docs/appearance/preferred-sources
+
+          L attribut passe par un spread : ecrit tel quel dans le JSX, il
+          n existe dans aucun type React et le typecheck echoue.
+        */}
+        <div className="mt-12 flex flex-col items-center gap-3 border-t border-border pt-8">
+          <p className="text-xs text-muted-foreground">
+            Retrouvez Les Extras en priorite dans vos resultats Google.
+          </p>
+          <Script
+            async
+            src="https://news.google.com/swg/js/v1/publisher.js"
+            strategy="afterInteractive"
+          />
+          <div {...{ 'google-add-preferred-source-btn': '' }} />
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} LES EXTRAS — ADéPA. Tous droits réservés.</p>

@@ -202,7 +202,7 @@ export class MissionsService {
         _count: { select: { bookings: true } },
         categoryRef: { select: { id: true, title: true } },
         // Les candidatures, AVEC la personne derriere chacune. Sans cette
-        // jointure, le board SOS Renfort affichait « Candidatures recues (0) »
+        // jointure, le board RenforTeam affichait « Candidatures recues (0) »
         // a vie : l'ecran attendait mission.bookings, l'API ne l'envoyait
         // jamais. Le coeur du produit etait muet.
         bookings: {
@@ -240,12 +240,14 @@ export class MissionsService {
 
   /** Marketplace : missions publiées filtrées (statut/visibilité/ville/dates). */
   async findMarketplace(query: QueryMissionsDto) {
-    // Le statut n'est PAS pris du client. `?status=DRAFT` renvoyait sinon les
-    // brouillons de tous les établissements — description, taux horaire,
-    // destinataires nominatifs — à n'importe quel compte connecté. La règle
-    // « un brouillon n'existe pas pour les autres », déjà tenue à l'accès
-    // direct (`findOne`), doit l'être aussi à la liste. Le catalogue des
-    // ateliers force `PUBLISHED` de la même façon.
+    // LE STATUT N'EST PAS NÉGOCIABLE PAR LA REQUÊTE.
+    //
+    // Il était pris dans `query.status` avec PUBLISHED pour simple défaut :
+    // `?status=DRAFT` sortait donc les brouillons de TOUS les établissements —
+    // besoins pas encore arbitrés, intitulés de poste, tarifs envisagés. Le
+    // raisonnement est le même que pour `visibility` juste en dessous, qui
+    // était déjà verrouillé : une requête peut restreindre ce qu'elle voit,
+    // jamais l'élargir. La marketplace ne montre que ce qui est publié.
     const where: Prisma.ReliefMissionWhereInput = {
       status: MissionStatus.PUBLISHED,
     };
@@ -535,9 +537,9 @@ export class MissionsService {
         .catch(() => undefined);
     }
 
-    // La file d'engagement n'est pas faite de Booking : sans cet appel, les
-    // intervenants qui avaient « pris la mission » restaient en attente d'une
-    // décision qui ne viendrait jamais.
+    // La file d'engagement se ferme avec la mission. Sans cet appel, les
+    // intervenants EN_ATTENTE ou PRESENTE restaient engagés sur un besoin
+    // clôturé, sans jamais être prévenus.
     const engagementsClos = await this.engagements
       .cloreLaFile(id, { title: mission.title, startDate: mission.startDate })
       .catch(() => 0);
@@ -610,7 +612,7 @@ export class MissionsService {
     });
     // Diffusion ciblée selon le palier. N'échoue jamais la publication — mais
     // ne se tait plus non plus : une diffusion muette, c'est un établissement
-    // qui croit avoir lancé son SOS Renfort alors que personne n'a rien reçu.
+    // qui croit avoir lancé son RenforTeam alors que personne n'a rien reçu.
     // On journalise le résultat comme l'échec, et l'audit garde la trace.
     void this.broadcastToMatched(id, accountId)
       .then((notifies) => {
@@ -781,7 +783,7 @@ export class MissionsService {
    * La diffusion filtre sur l'adresse e-mail — sans adresse, pas d'envoi. Mais
    * si AUCUN candidat classé n'en porte, ce n'est pas un résultat métier :
    * c'est une panne. C'est exactement ce qui s'est produit en production, la
-   * source des candidats ayant cessé de renvoyer l'adresse : SOS Renfort ne
+   * source des candidats ayant cessé de renvoyer l'adresse : RenforTeam ne
    * prévenait plus personne, sans la moindre erreur visible. On journalise
    * donc, bruyamment, plutôt que de rendre une liste vide l'air de rien.
    */
@@ -959,7 +961,7 @@ export class MissionsService {
   }
 
   /**
-   * SOS Renfort — un FREELANCE accepte la mission (premier arrivé, premier servi).
+   * RenforTeam — un FREELANCE accepte la mission (premier arrivé, premier servi).
    * Verrou atomique : la mission ne peut être remportée que par un seul intervenant.
    *
    * En mode « file d'engagement », l'attribution n'appartient plus à
@@ -988,6 +990,20 @@ export class MissionsService {
     await this.ciblage.assertReponseAutorisee(mission, freelanceAccountId);
     if (mission.modeAttribution === ModeAttribution.FILE_ENGAGEMENT) {
       return this.engagements.sengager(missionId, freelanceAccountId, accountType);
+    }
+
+    // UN SALARIÉ NE SE SERT PAS TOUT SEUL.
+    //
+    // Prendre la mission directement la passe à POURVUE sans que personne
+    // n'ait rien validé. Pour un salarié, ces heures sont des heures
+    // supplémentaires : elles se demandent, et l'employeur les accorde ou
+    // les refuse. On le renvoie donc vers la candidature, qui est
+    // exactement ce chemin-là. La file d'engagement, elle, présente déjà le
+    // profil à la direction : elle reste ouverte, au-dessus.
+    if (await this.ciblage.estSalarie(freelanceAccountId)) {
+      throw new BadRequestException(
+        "Vous êtes salarié de cet établissement : vous ne prenez pas la mission directement. Candidatez — ce sont des heures supplémentaires, votre établissement doit les accepter.",
+      );
     }
 
     // Verrou : passe PUBLISHED -> FILLED uniquement si personne ne l'a déjà prise.

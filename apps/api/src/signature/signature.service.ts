@@ -98,6 +98,14 @@ export class SignatureService {
    * jamais deux fois la même. On prend donc les champs qui font le contenu
    * juridique, dans un ordre fixe. Ajouter un champ ici change les empreintes
    * futures, jamais les signatures déjà recueillies.
+   *
+   * CLOISONNEMENT : le compte appelant est exigé et fait partie de CHAQUE
+   * recherche. Sans lui, l'empreinte se calculait sur simple identifiant :
+   * n'importe quel compte pouvait ouvrir une demande de signature sur le CDD,
+   * le devis ou la réservation d'un autre établissement — et le nom du
+   * salarié, sa rémunération et le détail chiffré du devis partaient dans
+   * l'e-mail de demande. Un document qui n'appartient pas à l'appelant est
+   * traité comme inexistant : on ne dit pas à un inconnu qu'il a visé juste.
    */
   private async texteCanonique(
     type: TypeDocumentSigne,
@@ -105,12 +113,6 @@ export class SignatureService {
     accountId: string,
   ): Promise<string | null> {
     if (type === 'CONTRAT_CDD') {
-      // Le compte doit être l'employeur : sans ce filtre, n'importe quel
-      // titulaire de compte ouvrait une demande de signature sur le contrat
-      // d'un autre établissement, recevait le code sur SA propre adresse, et
-      // faisait poser une date de signature sur une pièce qui ne le regarde
-      // pas. Le document est une pièce juridique : le cloisonnement se joue
-      // ici, pas seulement à la lecture.
       const c = await this.prisma.contratCDD.findFirst({ where: { id, accountId } });
       if (!c) return null;
       return [
@@ -133,17 +135,62 @@ export class SignatureService {
       ].join('\n');
     }
 
-    // Une réservation a deux parties : le compte qui a réservé, et celui qui
-    // porte la mission ou l'atelier. L'un ou l'autre peut ouvrir la signature,
-    // personne d'autre.
+    // LE DEVIS N'ÉTAIT PAS TRAITÉ, ET RIEN NE LE SIGNALAIT.
+    //
+    // `DEVIS` figure dans l'énumération depuis l'origine, mais aucune branche
+    // ne le prenait : la demande de signature tombait sur la recherche de
+    // réservation ci-dessous, cherchait un `Booking` portant l'identifiant
+    // d'un `Quote`, n'en trouvait évidemment aucun, et l'appelant recevait
+    // « Document introuvable. » — un message qui accuse le document alors que
+    // c'est la branche qui manquait. Signer un devis était donc impossible,
+    // silencieusement, alors que c'est la signature du devis qui vaut
+    // contractualisation.
+    //
+    // Le texte canonique doit couvrir TOUT ce qui engage : l'identité des
+    // parties telle qu'elle était à l'envoi, chaque ligne chiffrée, les
+    // totaux, la date d'intervention et la durée de validité. Ce qui n'y
+    // figure pas pourrait être modifié après signature sans que l'empreinte
+    // bouge — et l'empreinte est toute la valeur probante du procédé.
+    if (type === 'DEVIS') {
+      // Les deux côtés d'un devis y ont droit — celui qui l'émet comme celui
+      // à qui il est adressé — mais personne d'autre.
+      const q = await this.prisma.quote.findFirst({
+        where: { id, OR: [{ clientAccountId: accountId }, { providerAccountId: accountId }] },
+      });
+      if (!q) return null;
+      const lignes = Array.isArray(q.lines) ? (q.lines as Record<string, unknown>[]) : [];
+      return [
+        'DEVIS',
+        q.id,
+        q.reference,
+        q.clientAccountId,
+        q.providerAccountId,
+        q.title,
+        JSON.stringify(q.partiesSnapshot ?? null),
+        ...lignes.map((l) =>
+          [
+            String(l.label ?? ''),
+            String(l.quantity ?? ''),
+            String(l.unit ?? ''),
+            String(l.unitPrice ?? ''),
+            String(l.vatRate ?? 0),
+          ].join(' | '),
+        ),
+        String(q.totalHt ?? ''),
+        String(q.totalTva ?? ''),
+        String(q.amount ?? ''),
+        q.scheduledAt?.toISOString() ?? '',
+        q.validUntil?.toISOString() ?? '',
+        q.message ?? '',
+      ].join('\n');
+    }
+
+    // Une réservation relie deux comptes : celui qui réserve et celui qui
+    // porte l'offre. Les deux peuvent signer ; un tiers, non.
     const b = await this.prisma.booking.findFirst({
       where: {
         id,
-        OR: [
-          { accountId },
-          { mission: { accountId } },
-          { service: { accountId } },
-        ],
+        OR: [{ accountId }, { mission: { accountId } }, { service: { accountId } }],
       },
       include: { mission: true, service: true },
     });
@@ -404,19 +451,27 @@ export class SignatureService {
     const signeSalarieLe = estSalarie ? maintenant : c.signeSalarieLe;
     const signeEmployeurLe = estSalarie ? c.signeEmployeurLe : maintenant;
 
-    // Le contrat CHANGE D'ÉTAT quand les deux parties ont signé. Sans cela, un
-    // CDD signé par tout le monde restait affiché « Transmis au salarié » pour
-    // toujours : la machine à états déclarait BROUILLON → TRANSMIS → SIGNE →
-    // ACTIF, mais rien n'écrivait jamais SIGNE. On ne touche pas aux contrats
-    // déjà terminés ou rompus : leur état est définitif.
-    const lesDeuxOntSigne = Boolean(signeSalarieLe && signeEmployeurLe);
-    const passeEnSigne = lesDeuxOntSigne && c.statut === 'TRANSMIS';
+    // LE STATUT NE BOUGEAIT JAMAIS.
+    //
+    // On posait la date de signature, et rien d'autre : un contrat signé par
+    // les deux parties restait affiché « Transmis au salarié », indéfiniment.
+    // Les deux dates n'étaient d'ailleurs relues nulle part — leur seule
+    // occurrence dans tout le produit était cette écriture. L'employeur n'avait
+    // donc aucun moyen de savoir, d'un coup d'œil sur sa liste, où en était un
+    // contrat : c'est pourtant la seule question qu'on pose à cet écran.
+    //
+    // On avance à SIGNE quand les deux signatures sont là, et jamais en
+    // arrière : un contrat déjà ACTIF, TERMINE ou ROMPU a dépassé ce stade, et
+    // le ramener à SIGNE réécrirait son histoire.
+    const lesDeuxOntSigne = signeSalarieLe != null && signeEmployeurLe != null;
+    const avanceAuStatutSigne =
+      lesDeuxOntSigne && (c.statut === 'BROUILLON' || c.statut === 'TRANSMIS');
 
     await this.prisma.contratCDD.update({
       where: { id: documentId },
       data: {
         ...(estSalarie ? { signeSalarieLe: maintenant } : { signeEmployeurLe: maintenant }),
-        ...(passeEnSigne ? { statut: 'SIGNE' as never } : {}),
+        ...(avanceAuStatutSigne ? { statut: 'SIGNE' as const } : {}),
       },
     });
 

@@ -83,11 +83,16 @@ const INTERVENANT = [
 ];
 
 export default async function SosRenfortPage() {
-  const { data } = await fetchPublic<{ items: MissionApercu[]; total: number }>(
+  // `error` n'était pas déstructuré : une API muette et une plateforme sans
+  // aucun besoin ouvert donnaient exactement le même écran. C'est la page que
+  // la publicité alimente ; laisser un visiteur conclure « il n'y a rien ici »
+  // à cause d'une panne coûte le visiteur ET la confiance.
+  const { data, error } = await fetchPublic<{ items: MissionApercu[]; total: number }>(
     "/public/missions?take=6",
   );
   const missions = data?.items ?? [];
   const total = data?.total ?? 0;
+  const enPanne = Boolean(error) && missions.length === 0;
 
   return (
     <div className="space-y-20">
@@ -208,6 +213,19 @@ export default async function SosRenfortPage() {
       </section>
 
       {/* Missions ouvertes — aperçu flouté. Section absente s'il n'y en a pas. */}
+      {enPanne ? (
+        <section className="rounded-2xl border border-warning/40 bg-warning/5 px-6 py-5">
+          <p className="font-medium text-foreground">
+            Les missions ouvertes ne s’affichent pas en ce moment
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            C’est un incident technique de notre côté, pas une absence de besoins. Réessayez dans
+            quelques minutes, ou créez votre compte : vous verrez la liste complète depuis votre
+            espace.
+          </p>
+        </section>
+      ) : null}
+
       {missions.length > 0 ? (
         <section className="space-y-6">
           <div className="max-w-2xl space-y-3">

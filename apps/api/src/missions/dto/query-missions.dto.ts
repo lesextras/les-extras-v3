@@ -1,17 +1,15 @@
 import { IsEnum, IsISO8601, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { MissionCategory, MissionVisibility } from '@prisma/client';
+import { MissionCategory, MissionStatus, MissionVisibility } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsNumber } from 'class-validator';
 
-/**
- * Filtres du marketplace des missions (ville / dates / métier / catégorie).
- *
- * Le STATUT n'est volontairement plus un filtre : le marketplace ne montre
- * que les missions publiées, et laisser le client le choisir revenait à
- * ouvrir les brouillons de tous les établissements. La visibilité, elle,
- * reste acceptée mais ne peut que restreindre (voir `findMarketplace`).
- */
+/** Filtres du marketplace des missions (statut / visibilité / ville / dates). */
 export class QueryMissionsDto {
+  // `status` a été RETIRÉ volontairement : la marketplace ne sert que les
+  // missions publiées, et le ValidationPipe global (whitelist +
+  // forbidNonWhitelisted) transforme désormais `?status=DRAFT` en 400 plutôt
+  // qu'en fuite de brouillons. Ne pas le réintroduire « pour la souplesse ».
+
   @IsOptional()
   @IsEnum(MissionVisibility)
   visibility?: MissionVisibility;
