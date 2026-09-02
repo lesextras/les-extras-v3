@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -178,17 +178,19 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
   );
   if (!service) notFound();
 
-  // UNE FICHE, UNE ADRESSE.
+  // UNE FICHE, UNE ADRESSE — MAIS PAS DEPUIS ICI.
   //
-  // L'API résout indifféremment l'identifiant et le slug — c'est ce qui garde
-  // en vie tous les liens déjà partagés par mail, par devis ou sur LinkedIn.
-  // Mais deux adresses qui servent la même page, c'est du contenu dupliqué :
-  // on renvoie donc en 308 vers la forme lisible dès qu'elle existe. La
-  // canonique le dit aussi, mais une canonique est une suggestion quand une
-  // redirection est une instruction.
-  if (service.slug && params.id !== service.slug) {
-    permanentRedirect(`/ateliers/${service.slug}`);
-  }
+  // On a d'abord tenté `permanentRedirect()` à cet endroit. Mesuré en direct :
+  // les deux adresses répondaient 200, la redirection ne partait pas. La cause
+  // est connue et déjà documentée sur ces routes — `(public)/loading.tsx` ouvre
+  // une frontière Suspense, la coquille HTML part AVANT l'exécution du
+  // composant, et le statut est joué. Il n'en restait qu'un saut côté client,
+  // qu'aucun robot ne voit.
+  //
+  // La vraie 308 est donc posée dans `next.config.mjs`
+  // (`redirectionsFichesAtelier`), qui lit le catalogue au démarrage. Ici, on
+  // se contente de servir la page : l'identifiant reste une adresse valide
+  // pour toujours, et la canonique ci-dessus désigne la forme lisible.
 
   const images = visuels(service.images);
   const publics = service.publicTargets?.length

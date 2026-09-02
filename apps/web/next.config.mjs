@@ -114,6 +114,49 @@ const PAGES_WORDPRESS = {
 };
 
 /** @type {import('next').NextConfig} */
+/**
+ * LES FICHES ATELIER : IDENTIFIANT → ADRESSE LISIBLE, EN VRAIE 308.
+ *
+ * On ne peut PAS rediriger depuis la page elle-même. `(public)/loading.tsx`
+ * ouvre une frontière Suspense : la coquille HTML part avant que le composant
+ * ne s'exécute, le statut 200 est déjà joué, et `permanentRedirect()` ne
+ * produit alors qu'un saut côté client — invisible pour un robot. C'est le
+ * même piège que celui déjà rencontré avec `notFound()` sur ces routes.
+ *
+ * `redirects()` est asynchrone et s'évalue au DÉMARRAGE du serveur : on y
+ * interroge le catalogue une fois et on en tire la table des redirections.
+ * Une fiche créée après un démarrage n'y figure pas encore — elle reste
+ * servie sur son identifiant, avec sa canonique vers le slug, jusqu'au
+ * déploiement suivant. C'est une imperfection, pas une panne.
+ *
+ * Si l'API ne répond pas, on rend une liste VIDE : un site qui démarre sans
+ * ces redirections fonctionne parfaitement ; un site qui ne démarre pas, non.
+ */
+async function redirectionsFichesAtelier() {
+  const base = (
+    process.env.API_BASE_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    'https://api.les-extras.fr/api'
+  ).replace(/\/$/, '');
+  try {
+    const reponse = await fetch(`${base}/public/catalog?take=60`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!reponse.ok) return [];
+    const { items } = await reponse.json();
+    return (items ?? [])
+      .filter((f) => f?.id && f?.slug && f.id !== f.slug)
+      .map((f) => ({
+        source: `/ateliers/${f.id}`,
+        destination: `/ateliers/${f.slug}`,
+        permanent: true,
+      }));
+  } catch {
+    // Aucune redirection plutôt qu'un démarrage en échec.
+    return [];
+  }
+}
+
 const nextConfig = {
   output: 'standalone',
   // Le typage et le lint bloquent le build : une régression ne doit jamais
@@ -155,7 +198,9 @@ const nextConfig = {
   // on les redirige définitivement pour ne perdre ni le référencement ni les
   // liens déjà partagés.
   async redirects() {
+    const fiches = await redirectionsFichesAtelier();
     return [
+      ...fiches,
       /**
        * www → apex, en 301.
        *
