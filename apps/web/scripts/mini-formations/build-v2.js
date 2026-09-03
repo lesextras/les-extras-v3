@@ -25,6 +25,7 @@ const f3 = require('./f3-guider.js');
 const f4 = require('./f4-chainage.js');
 const f5 = require('./f5-previsible.js');
 const f6 = require('./f6-crise.js');
+const f7 = require('./f7-consignes.js');
 
 /** ids des items Teachizy, relevés après la création des sections. */
 const IDS = {
@@ -34,12 +35,19 @@ const IDS = {
   'decomposer-une-routine-en-etapes': { lecons: [1470811, 1470812, 1470813, 1470814], annexes: 1470889 },
   'rendre-l-environnement-previsible': { lecons: [1470815, 1470816, 1470817, 1470818], annexes: 1470895 },
   'les-premieres-minutes-d-une-crise': { lecons: [1471071, 1471073, 1471075, 1471077], annexes: 1471079 },
+  'l-enfant-qui-dit-non-a-tout': { lecons: [1471173, 1471175, 1471177, 1471179], annexes: 1471181 },
 };
 
 /**
  * Les formations dont le contenu vient de l'analyse appliquée du comportement
  * portent l'encart de nuance. « Rendre l'environnement prévisible » n'en est
  * pas : y coller l'encart serait aussi faux que de l'omettre ailleurs.
+ *
+ * « L'enfant qui dit non à tout » n'en est pas non plus : elle porte sur la
+ * FORME DE LA CONSIGNE de l'adulte, pas sur le comportement de la personne, et
+ * elle a son propre garde-fou, plus adapté — la colonne « son droit », écrite
+ * au module 3 avant toute technique. Coller l'encart ABA ici laisserait croire
+ * que le contenu en vient, ce qui n'est pas le cas.
  */
 const COMPORTEMENTALES = new Set([
   'les-quatre-fonctions-d-un-comportement',
@@ -60,6 +68,7 @@ const SOURCES = [
   { f: f4, annexes: f4.annexes },
   { f: f5, annexes: f5.annexes },
   { f: f6, annexes: f6.annexes },
+  { f: f7, annexes: f7.annexes },
 ];
 
 const formations = SOURCES.map(({ f, annexes }) => {

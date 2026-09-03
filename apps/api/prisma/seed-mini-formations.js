@@ -310,6 +310,36 @@ Module 3 — Exercice guidé : la fiche à froid en cinq lignes. Les signes, ce 
 Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture en quatre questions, les phrases de compte rendu, et à qui s’adresser quand cela ne suffit plus.`,
     targetAudience: `Parents et proches confrontés à des crises répétées ; professionnels du médico-social et de la protection de l’enfance (MECS, IME, ITEP, SESSAD, ESAT, foyers, ASE) ; AESH, assistants familiaux, animateurs et enseignants ; équipes qui veulent une conduite commune, écrite, tenue de la même façon quel que soit l’adulte présent.`,
   },
+  {
+    slug: 'l-enfant-qui-dit-non-a-tout',
+    image: 'l-enfant-qui-dit-non-a-tout.jpg',
+    slugPlateforme: 'lenfant-qui-dit-non-a-tout',
+    title: 'L’enfant qui dit non à tout',
+    summary: `Thématique : consignes, refus et coopération. Une seule compétence travaillée : formuler une consigne qui peut être exécutée, et savoir lire un « non » avant d’y répondre.
+
+« Il dit non à tout » n’est pas une donnée : c’est une impression, et elle est presque toujours fausse dans les proportions qu’elle annonce. Cette formation travaille l’autre moitié de la scène — la consigne de l’adulte, sa forme, son nombre, son moment. C’est une compétence qui s’exerce sans rien savoir de la personne d’en face, et qui produit des résultats en quelques jours, parce qu’elle ne demande de changer que soi.
+
+Ce n’est pas une méthode pour faire obéir. Une partie des refus sont légitimes et doivent être entendus — sur le corps, l’intimité, les objets personnels, le droit de dire qu’on n’aime pas. Le module 3 fait écrire cette liste avant de travailler la forme des consignes, et c’est l’ordre qui compte.
+
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le module 3 lance un relevé de dix jours, une minute par jour, et le module 4 se lit le dixième jour, ce relevé sous les yeux. Comptez donc une dizaine de jours entre le premier et le dernier module.`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— compter les consignes réellement données sur une heure et en tirer une proportion de refus ;
+— distinguer les cinq choses qu’un « non » peut vouloir dire, et y répondre différemment ;
+— repérer les sept défauts qui rendent une consigne inexécutable, et les corriger ;
+— écrire ce qui est négociable, ce qui ne l’est pas, et ce qui ne vous appartient pas ;
+— réduire un moment difficile à cinq consignes écrites mot pour mot, applicables par un autre adulte ;
+— tenir un relevé de dix jours et en tirer une décision par consigne ;
+— écrire un refus dans un écrit professionnel sans prêter d’intention.`,
+    program: `Module 1 — Les cinq « non », les sept défauts, les cinq secondes. Compter avant de corriger, et cinq façons différentes de dire non.
+
+Module 2 — Une scène qui dérape, consigne par consigne. Six minutes de rangement, six défauts de consigne, une consigne abandonnée — et un seul vrai refus, à la sixième minute.
+
+Module 3 — Exercice guidé : la feuille des cinq consignes. Ce qui est négociable d’abord, le moment ensuite, les cinq consignes mot pour mot, et ce qui se passe au bout des cinq secondes.
+
+Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture ligne par ligne, et les phrases d’écrit professionnel qui ne prêtent aucune intention.`,
+    targetAudience: `Parents et proches qui ont l’impression que « tout est une bataille » ; professionnels du médico-social, de l’école et de la protection de l’enfance (IME, ITEP, SESSAD, MECS, ESAT, foyers, AESH, assistants familiaux) ; équipes qui veulent des consignes communes, formulées de la même façon quel que soit l’adulte présent.`,
+  },
 ];
 
 async function compteProprietaire() {

@@ -100,6 +100,13 @@ COUVERTURES = [
         "duree": "4 modules + annexes · 45 min",
     },
     {
+        "fichier": "l-enfant-qui-dit-non-a-tout.jpg",
+        "surtitre": "Consignes, refus et coopération",
+        "titre": "L’enfant qui dit non à tout",
+        "sous": "Compter ses consignes, en retirer, et rendre exécutables celles qui restent",
+        "duree": "4 modules + annexes · 45 min",
+    },
+    {
         "fichier": "guider-puis-s-effacer.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Guider puis s’effacer",

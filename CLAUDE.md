@@ -982,3 +982,104 @@ les PUT. Rappels d'API :
   — consigne, crise, observer, transition, renforcer — et n'ont qu'à être
   remises au gabarit à quatre modules. Le catalogue prévu et le gabarit sont
   dans `/home/claude/catalogue-mini-formations.js` et `catalogue-vague-2.js`.
+
+## Journée du 3 septembre 2026 — audits appliqués, charge réelle, sixième formation
+
+Commits `284e1df`, `7ae26de`, `e1afcc1`. Tout est déployé et vérifié en direct.
+
+### Les deux audits ont été appliqués jusqu'au bout
+
+Les cinq mini-formations annonçaient en fin de module des annexes qui
+**n'existaient pas** — c'était le premier bloquant de l'audit pédagogique, et le
+motif était systématique : aucune des cinq scènes corrigées n'était écrite, alors
+que c'est le seul endroit où l'apprenant peut comparer sa production à une
+production complète. Écrites depuis : f3 (photo à trois mois, plan d'Inès,
+phrases d'annonce), f4 (grille des cinq absences, phrases de retour, séance de
+Malik corrigée, exemple entièrement chiffré), f5 (support de Léa refait avec son
+coût d'entretien, fiche de lecture aux quatre décisions, phrase d'abandon).
+
+**La charge réelle est enfin annoncée.** Les fiches disaient « 45 minutes » : vrai
+pour la lecture, faux pour le parcours, qui demande de **sept à quinze jours de
+relevé** avant que son module 4 ne soit lisible. C'est dit trois fois maintenant —
+carte « Repères » du module 3 (champ `apres` du gabarit), encadré `pause` en fin
+de ce module, et paragraphe de durée de la fiche publique. **Règle : une durée
+annoncée couvre le CALENDRIER, pas seulement le temps de lecture.**
+
+Ajouté aussi : une section **« Et à la maison »** en fin de module 2 de f1, f2, f4
+et f5 (les cinq scènes se passaient toutes en institution alors que les fiches
+s'adressent d'abord aux parents) ; l'**ordre réel** des formations dans le pied des
+annexes (f1 avant f2, f3 avant f4, f5 autonome — le pied disait « dans l'ordre qui
+vous arrange », c'était faux) ; des **intitulés de modules parlants** pour f2 à f5.
+`catalogue-vague-2.js` porte un en-tête SUPERSÉDÉ : f4 et f5 le remplacent, plus
+rien ne doit y être corrigé.
+
+### ⚠ LE BOGUE À NE JAMAIS REFAIRE — `str.replace` en boucle sur une ancre préfixe
+
+Le script qui ajoutait la phrase de calendrier remplaçait **cinq fois la même
+ancre** par un texte qui **commence par cette ancre**. Chaque remplacement est
+donc retombé sur le premier paragraphe : les cinq phrases se sont empilées sur la
+fiche « Les quatre fonctions d'un comportement », les quatre autres n'ont rien
+reçu — et c'est parti en production avant d'être vu (réparé par `7ae26de`).
+
+**La règle : quand le texte de remplacement contient l'ancre, on ne fait pas de
+`replace` successifs. On découpe (`split`) et on rejoint (`join`) en donnant à
+chaque jointure son propre texte** — on ne peut alors plus re-remplacer ce qu'on
+vient d'écrire. Et on vérifie **slug par slug**, pas seulement le nombre total
+d'occurrences : le compte était juste, le placement était faux.
+
+### Sixième mini-formation : « Les premières minutes d'une crise »
+
+Première de la vague « traction » (recherche menée le 2/09 : c'est le sujet le
+plus cherché du domaine). uuid Teachizy `bfc03048-f280-41a9-82c2-f0a17d7b6bba`,
+leçons `1471071 / 1471073 / 1471075 / 1471077`, annexes `1471079`, slug
+plateforme `les-premieres-minutes-dune-crise`. Source :
+`apps/web/scripts/mini-formations/f6-crise.js` (4 modules de 18 000 à 22 000
+caractères, 11 fiches d'annexes).
+
+**⚠ LE TITRE NE REPREND PAS LA REQUÊTE.** Tout le monde cherche « désamorcer une
+crise en 90 secondes » ; promettre l'arrêt d'une crise en un temps donné est faux,
+et cette promesse se retourne contre la personne le jour où la crise dure sept
+minutes. Le titre nomme la **fenêtre**, et la compétence porte sur ce que l'adulte
+maîtrise vraiment : ce qu'il ajoute, et la préparation à froid.
+
+**⚠ TROIS RÈGLES TENUES DANS CE PARCOURS, à ne jamais assouplir :**
+1. **Aucun geste d'intervention physique n'est enseigné** — ni prise, ni maintien,
+   ni « accompagnement au sol », ni portage. Ces gestes blessent quand ils
+   s'apprennent dans un texte ; ils relèvent d'un protocole d'établissement et
+   d'une formation en présentiel avec mise en situation.
+2. **La sécurité prime sur la pédagogie**, et c'est écrit avant tout le reste, en
+   encadré, dès la première ligne du module 1.
+3. **Contrainte, enfermement et privation** sont nommés comme limites absolues au
+   module 1, au module 3 et dans une fiche d'annexe à afficher en salle d'équipe.
+   La fermeté porte **sur la tâche**, jamais sur le corps de la personne.
+
+### Recettes ajoutées à la boîte à outils
+
+- **Poser une image sur Teachizy sans dépôt public** : créer un `<input type=file>`
+  dans la page `app.teachizy.fr`, y téléverser le fichier local avec l'outil du
+  navigateur, puis `GET /api/v1/presigned?type=image&filename=X` → `PUT` sur l'URL
+  S3 (`x-amz-acl: public-read`) → `PUT /trainings/{uuid} {picture}`. La médiathèque
+  du site ne peut pas servir : seul `/formations-source` porte l'en-tête CORS.
+- **Créer une formation complète par l'API** : `POST /trainings` (DRAFT) →
+  `POST /training_items` type `SECTION` (order 1..5) → `POST` type `GENERIC` avec
+  `parent_id` → contenus par le fichier `v2.json` → `PUT {status:'PUBLISHED'}`.
+- **Section et leçon ne portent plus le même nom** : la SECTION porte
+  « Module N — … », la leçon « Leçon — … ». Le sommaire affichait deux fois la même
+  ligne.
+- **Onglet Chrome** : les promesses `fetch` cessent de se résoudre bien avant les
+  dix minutes annoncées, et **sans erreur**. Dès qu'un `window.__x` reste à sa
+  valeur initiale, c'est l'onglet, pas le code : onglet NEUF, et on relance.
+- **Terminal Coolify** : la première frappe après la navigation est perdue (le
+  terminal se connecte après le rendu). Toujours retaper une seconde fois.
+
+### Restes à faire sur les mini-formations
+
+- **Quatre formations de la vague traction** restent à écrire : l'enfant qui dit
+  non à tout, lire un comportement comme une réaction de survie (enfant placé),
+  aider à démarrer une tâche, préparer une ESS.
+- **Les quiz** : aucun point d'API découvert (404 sur toutes les sondes). Le champ
+  « Évaluation » de chaque module décrit désormais ce qui existe réellement, plus
+  aucun module ne promet de quiz.
+- Toujours chez Siham : médiateur de la consommation, CGV et rétractation avant
+  toute vente de l'attestation ; le libellé « Certificat de réussite » à signaler
+  au support Teachizy ; l'école Teachizy qui s'appelle TOULALI et non ADéPA.
