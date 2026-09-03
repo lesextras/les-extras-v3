@@ -20,6 +20,9 @@ import { VisuelCarte } from "../../_shared/VisuelCarte";
 import { premierVisuel } from "@/lib/media";
 import { PageHeader, EmptyState } from "../../_shared/ui";
 import { formatMoney, formatDate } from "../../_shared/format";
+// Emoji, organisme de la maison et durée lisible : une seule source pour le
+// catalogue, le carrousel d'accueil et les couvertures. Voir le fichier.
+import { EMOJI_PARCOURS, dureeLisible, estMaison } from "@/lib/mini-formations";
 
 import { metaPublique } from "@/lib/meta";
 export const metadata: Metadata = metaPublique({
@@ -70,55 +73,6 @@ type Filtres = {
 };
 
 /**
- * LES FORMATIONS DE LA MAISON, D'ABORD.
- *
- * Le catalogue accueillera des formations conçues par des organismes du
- * réseau. Celles que l'association écrit et tient elle-même n'ont pas à se
- * perdre au milieu : ce sont les seules dont on répond de la ligne à la ligne,
- * et ce sont les seules gratuites. Elles portent donc une marque visible et
- * remontent en tête — sans jamais masquer les autres, qui restent dans la même
- * grille et les mêmes filtres.
- *
- * Le test porte sur le nom du compte propriétaire, seule donnée disponible ici.
- * Le jour où un second organisme s'appellerait « ADéPA quelque chose », il
- * faudra un drapeau en base ; d'ici là, une constante suffit et se lit.
- */
-const ORGANISME_MAISON = "ADéPA";
-
-/**
- * UN EMOJI PAR MINI-FORMATION — les mêmes que sur la couverture et sur la
- * fiche récap A4 (`scripts/couvertures-mini-formations.py`,
- * `scripts/mini-formations/fiches-recap-data.js`). C'est ce qui fait qu'on
- * reconnaît un parcours avant d'avoir lu son titre. Ne pas les changer d'un
- * côté sans les changer partout.
- *
- * Ils sont ici en dur, et c'est assumé : les mettre en base demanderait une
- * colonne de plus pour dix lignes qui ne bougent jamais, et une carte sans
- * emoji reste parfaitement lisible — le `?? null` plus bas s'en charge.
- */
-const EMOJI_PARCOURS: Record<string, string> = {
-  "les-quatre-fonctions-d-un-comportement": "🔍",
-  "apprendre-a-demander-plutot-qu-a-crier": "💬",
-  "guider-puis-s-effacer": "🪜",
-  "decomposer-une-routine-en-etapes": "🔗",
-  "rendre-l-environnement-previsible": "🗓️",
-  "les-premieres-minutes-d-une-crise": "⏱️",
-  "l-enfant-qui-dit-non-a-tout": "🙅",
-  "lire-un-comportement-comme-une-reaction-de-survie": "🧭",
-  "preparer-une-equipe-de-suivi-de-la-scolarisation": "🏫",
-  "aider-a-demarrer-une-tache": "🚀",
-};
-const estMaison = (f: FormationCard) =>
-  Boolean(f.account?.name?.startsWith(ORGANISME_MAISON));
-
-/** « 45 min » ou « 7 h » — on affiche celui des deux champs qui est rempli. */
-function dureeLisible(f: FormationCard): string | null {
-  if (f.durationHours) return `${f.durationHours} h`;
-  if (f.durationMinutes) return `${f.durationMinutes} min`;
-  return null;
-}
-
-/**
  * Une carte de formation — le même gabarit que la carte atelier, à quoi
  * s'ajoutent la pastille emoji des mini-formations et la marque de la maison.
  *
@@ -129,7 +83,7 @@ function dureeLisible(f: FormationCard): string | null {
 function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
   const organisme = f.account?.name;
   const duree = dureeLisible(f);
-  const maison = estMaison(f);
+  const maison = estMaison(f.account?.name);
   const emoji = EMOJI_PARCOURS[f.slug] ?? null;
   const visuel = premierVisuel(f.images);
   const lien = `/formations/${f.slug}`;
@@ -341,8 +295,8 @@ export default async function FormationsCatalogPage({
   // cherche de l'aide tombe sur « à partir de 1 600 € », et le directeur qui
   // cherche une action de formation tombe sur « Gratuit ».
   const tous = data?.items ?? [];
-  const gratuites = tous.filter((f) => f.freeOnline && estMaison(f));
-  const autres = tous.filter((f) => !(f.freeOnline && estMaison(f)));
+  const gratuites = tous.filter((f) => f.freeOnline && estMaison(f.account?.name));
+  const autres = tous.filter((f) => !(f.freeOnline && estMaison(f.account?.name)));
 
   return (
     <div className="space-y-8">

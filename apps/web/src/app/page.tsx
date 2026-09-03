@@ -41,6 +41,7 @@ import { wp } from '@/lib/media';
 import type { CatalogItem } from './(public)/_catalog';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { HeroSearch } from './_shared/HeroSearch';
+import { estMaison } from '@/lib/mini-formations';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { CartesContact } from './_shared/CartesContact';
@@ -104,6 +105,16 @@ export default async function LandingPage() {
   // Marketplace visible sans compte : les mieux notés, directement en accueil.
   const { data: unes } = await fetchPublic<{ ateliers: OfferCard[]; formations: OfferCard[] }>(
     '/public/highlights',
+  );
+
+  // Le même partage que sur /formations : les mini-formations gratuites de la
+  // maison d'un côté, les formations Qualiopi vendues en intra de l'autre.
+  // Voir le commentaire des deux blocs, plus bas.
+  const gratuites = (unes?.formations ?? []).filter(
+    (f) => f.freeOnline && estMaison(f.account?.name),
+  );
+  const payantes = (unes?.formations ?? []).filter(
+    (f) => !(f.freeOnline && estMaison(f.account?.name)),
   );
 
 
@@ -401,13 +412,45 @@ export default async function LandingPage() {
                 </div>
               ) : null}
 
-              {(unes?.formations?.length ?? 0) > 0 ? (
+              {/* DEUX LIGNES, PAS UNE.
+                  Une mini-formation gratuite et une formation Qualiopi vendue
+                  en intra ne s'adressent pas aux mêmes personnes et n'ont pas
+                  le même prix. Dans la même ligne, chacune brouillait l'autre :
+                  le parent tombait sur « à partir de 1 600 € », le directeur
+                  sur « Gratuit ». C'est le même découpage que sur /formations,
+                  et il doit le rester. */}
+              {gratuites.length > 0 ? (
+                <div className="mt-16 space-y-6">
+                  <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="max-w-2xl">
+                      <span className="eyebrow">Conçues et tenues par ADéPA</span>
+                      <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                        Les mini-formations gratuites
+                      </h2>
+                      <p className="mt-2 text-muted-foreground">
+                        Une compétence précise par parcours, quatre modules et une fiche récap A4
+                        à imprimer. Gratuites du premier au dernier module, sans carte bancaire.
+                      </p>
+                    </div>
+                    <Button asChild variant="outline">
+                      <Link href="/formations">
+                        Voir les {gratuites.length} parcours <ArrowRight />
+                      </Link>
+                    </Button>
+                  </Reveal>
+                  <Reveal delay={100}>
+                    <OfferCarousel items={gratuites} basePath="/formations" useSlug />
+                  </Reveal>
+                </div>
+              ) : null}
+
+              {payantes.length > 0 ? (
                 <div className="mt-16 space-y-6">
                   <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div className="max-w-2xl">
                       <span className="eyebrow">Qualiopi · finançable OPCO</span>
                       <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                        Nos formations
+                        Nos formations en intra
                       </h2>
                     </div>
                     <Button asChild variant="outline">
@@ -417,7 +460,7 @@ export default async function LandingPage() {
                     </Button>
                   </Reveal>
                   <Reveal delay={100}>
-                    <OfferCarousel items={unes!.formations} basePath="/formations" useSlug />
+                    <OfferCarousel items={payantes} basePath="/formations" useSlug />
                   </Reveal>
                 </div>
               ) : null}
