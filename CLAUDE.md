@@ -1761,9 +1761,25 @@ Sur une mini-formation, ni `durationHours`, ni `city`, ni `certificationName` ne
 sont renseignés : l'encart « Public visé » restait **seul sur sa ligne** dans
 une grille à deux colonnes, et les prérequis vivaient tout en bas en bloc de
 texte. Ils vont ensemble à la lecture — à qui ça s'adresse, et ce qu'il faut
-avant. `Attribut` reçoit un paramètre `ton` : le second encart prend le fond
-`muted`, plus sourd d'un ton, sans quoi les deux textes longs formaient un seul
-pavé où l'œil ne trouvait plus la séparation.
+avant.
+
+⚠ **Première tentative ratée, et la leçon vaut d'être écrite** : le second
+encart avait reçu un fond `muted/60`, c'est-à-dire une nuance de gris de plus.
+Sur un fond charbon, **elle est invisible** — Siham a répondu « les 2 fonds
+n'ont aucune couleur de fond », et elle avait raison. Une hiérarchie ne se fait
+pas avec deux gris voisins sur du sombre : il faut un aplat TEINTÉ.
+
+`Attribut` porte maintenant trois tons (`TONS` en bas du fichier) :
+- `neutre` pour les attributs courts — durée, lieu, certification. Une valeur
+  de trois mots n'a pas besoin d'être signalée, et douze encarts colorés ne
+  signalent plus rien ;
+- `primaire` (rose) pour « Public visé », `secondaire` (terracotta) pour
+  « Prérequis » : aplat à 10 %, bordure à 35 %.
+
+Le second reproche portait sur les titres, et il était juste aussi : ils
+étaient en `text-xs text-muted-foreground`, donc **moins visibles que le corps
+qu'ils annoncent**. Ils sont désormais en capitales, gras, interlettrés, à la
+couleur de leur encart.
 
 ### ⚠ CE QUE L'ÉCRAN A TROUVÉ DANS LA MINUTE : `SMTP_PASSWORD` EST ABSENTE
 

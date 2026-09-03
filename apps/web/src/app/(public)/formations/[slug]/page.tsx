@@ -164,7 +164,7 @@ export default async function FormationPubliquePage({
 
           <div className="grid gap-3 sm:grid-cols-2">
             {f.durationHours ? <Attribut icon={<Clock className="size-4" />} label="Durée" value={`${f.durationHours} h`} /> : null}
-            {f.targetAudience ? <Attribut icon={<Users className="size-4" />} label="Public visé" value={f.targetAudience} /> : null}
+            {f.targetAudience ? <Attribut icon={<Users className="size-4" />} label="Public visé" value={f.targetAudience} ton="primaire" /> : null}
             {/* LES PRÉREQUIS REMONTENT ICI (03/09/2026, demande Siham).
                 Ils vivaient en bas de page, en bloc de texte, pendant que
                 « Public visé » occupait une demi-colonne et laissait l'autre
@@ -172,7 +172,7 @@ export default async function FormationPubliquePage({
                 certification ne sont renseignées, donc l'encart restait seul
                 sur sa ligne. Les deux vont ensemble à la lecture — à qui ça
                 s'adresse, et ce qu'il faut avant — et ils comblent la ligne. */}
-            {f.prerequisites ? <Attribut icon={<ListChecks className="size-4" />} label="Prérequis" value={f.prerequisites} ton="sourd" /> : null}
+            {f.prerequisites ? <Attribut icon={<ListChecks className="size-4" />} label="Prérequis" value={f.prerequisites} ton="secondaire" /> : null}
             {f.city ? <Attribut icon={<MapPin className="size-4" />} label="Lieu" value={f.city} /> : null}
             {f.certificationName ? <Attribut icon={<BadgeCheck className="size-4" />} label="Certification" value={f.certificationName} /> : null}
           </div>
@@ -559,27 +559,60 @@ export default async function FormationPubliquePage({
  * ils formaient un seul pavé où l'œil ne trouvait plus la séparation. Le
  * second prend donc le fond `muted`, plus sourd d'un ton.
  */
+/**
+ * LES TROIS TONS D'UN ENCART D'ATTRIBUT.
+ *
+ * `neutre` sert aux attributs courts — durée, lieu, certification : une valeur
+ * de trois mots n'a pas besoin d'être signalée, et douze encarts colorés ne
+ * signalent plus rien.
+ *
+ * `primaire` et `secondaire` sont réservés aux DEUX encarts longs qui se
+ * lisent côte à côte, « Public visé » et « Prérequis ». Sur le même fond de
+ * carte, ils formaient un seul pavé de texte : l'œil ne trouvait ni la
+ * séparation, ni le titre de chacun. D'où deux corrections qui vont ensemble —
+ * un aplat teinté (et non une nuance de gris de plus, invisible sur charbon),
+ * et un titre qui se voit : capitales, gras, interlettrage, à la couleur de
+ * l'encart.
+ *
+ * Les aplats sont posés à 10 % : assez pour séparer deux blocs voisins, pas
+ * assez pour concurrencer le texte qu'ils portent.
+ */
+const TONS = {
+  neutre: {
+    cadre: "border-border bg-card",
+    titre: "text-muted-foreground",
+    icone: "text-muted-foreground",
+  },
+  primaire: {
+    cadre: "border-primary/35 bg-primary/10",
+    titre: "text-primary",
+    icone: "text-primary",
+  },
+  secondaire: {
+    cadre: "border-secondary/35 bg-secondary/10",
+    titre: "text-secondary",
+    icone: "text-secondary",
+  },
+} as const;
+
 function Attribut({
   icon,
   label,
   value,
-  ton = "carte",
+  ton = "neutre",
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  ton?: "carte" | "sourd";
+  ton?: keyof typeof TONS;
 }) {
+  const t = TONS[ton];
   return (
-    <div
-      className={`flex items-start gap-3 rounded-xl border p-3 ${
-        ton === "sourd" ? "border-border/70 bg-muted/60" : "border-border bg-card"
-      }`}
-    >
-      <span className="mt-0.5 text-muted-foreground">{icon}</span>
+    <div className={`flex items-start gap-3 rounded-xl border p-4 ${t.cadre}`}>
+      <span className={`mt-0.5 shrink-0 ${t.icone}`}>{icon}</span>
       <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium text-foreground">{value}</p>
+        <p className={`text-[11px] font-bold uppercase tracking-[0.08em] ${t.titre}`}>{label}</p>
+        <p className="mt-1.5 text-sm font-medium leading-relaxed text-foreground">{value}</p>
       </div>
     </div>
   );
