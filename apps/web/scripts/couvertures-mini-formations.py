@@ -14,6 +14,11 @@ La palette est celle de `carte-partage.py`, relevée au pixel sur la carte de
 partage d'origine : les couvertures et l'image de partage viennent du même
 monde, sans que personne ait à s'en souvenir.
 
+⚠ LA DURÉE AFFICHÉE S'ADOSSE AU CONTENU MESURÉ, jamais à une intuition. Elle
+part dans les fiches publiques et, un jour, dans un dossier de financement.
+Après l'enrichissement du 2/09/2026 (modules portés de ~2 500 à ~13 000
+caractères), elle est passée de 36-39 min à 45 min — recalculée, pas estimée.
+
 ⚠ CE QUE CES COUVERTURES N'ONT PAS, VOLONTAIREMENT :
   — aucune photo de personne. Une couverture de formation sur les
     comportements-défis illustrée par un enfant laisse entendre que cet enfant
@@ -64,35 +69,35 @@ COUVERTURES = [
         "surtitre": "TSA, communication et comportement",
         "titre": "Les quatre fonctions d’un comportement",
         "sous": "Identifier à quoi sert un comportement avant de chercher à le modifier",
-        "duree": "4 modules · 39 min",
+        "duree": "4 modules + annexes · 45 min",
     },
     {
         "fichier": "apprendre-a-demander-plutot-qu-a-crier.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Apprendre à demander plutôt qu’à crier",
         "sous": "Construire et enseigner un comportement de remplacement",
-        "duree": "4 modules · 39 min",
+        "duree": "4 modules + annexes · 45 min",
     },
     {
         "fichier": "decomposer-une-routine-en-etapes.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Décomposer une routine en étapes",
         "sous": "Découper une routine du quotidien et choisir par quelle extrémité l’enseigner",
-        "duree": "4 modules · 36 min",
+        "duree": "4 modules + annexes · 45 min",
     },
     {
         "fichier": "rendre-l-environnement-previsible.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Rendre l’environnement prévisible",
         "sous": "Construire un support visuel qui est réellement consulté",
-        "duree": "4 modules · 35 min",
+        "duree": "4 modules + annexes · 45 min",
     },
     {
         "fichier": "guider-puis-s-effacer.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Guider puis s’effacer",
         "sous": "Doser une aide, puis la retirer selon un plan décidé à l’avance",
-        "duree": "4 modules · 36 min",
+        "duree": "4 modules + annexes · 45 min",
     },
 ]
 

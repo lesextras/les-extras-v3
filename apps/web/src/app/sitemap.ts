@@ -77,6 +77,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Le carrefour des guides des écrits professionnels. Les guides eux-mêmes
     // sont ajoutés plus bas, comme les rubriques d'aide.
     "/guides",
+    // Page réglementaire de l'organisme de formation : identité, prérequis,
+    // délais d'accès, évaluation, accessibilité, indicateurs, réclamation.
+    // C'est la première page qu'un OPCO ou un stagiaire cherche, et elle
+    // n'existait que sur toulali.fr.
+    "/informations-reglementaires",
     "/confiance-lex",
     "/simulateur",
     "/renfort",

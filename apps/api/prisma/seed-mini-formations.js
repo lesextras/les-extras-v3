@@ -75,16 +75,22 @@ const COUVERTURES = '/images/mini-formations/';
  */
 const EVALUATION = `La progression est enregistrée module par module : chaque module porte une durée minimale de consultation, et la formation est réputée suivie lorsque les quatre modules ont été parcourus.
 
+Chaque module se termine par trois critères vérifiables — « Avant de passer au module suivant » — que vous cochez vous-même. Ce ne sont pas des questions de connaissance : ce sont des productions (une grille remplie, une phrase écrite, un relevé compté).
+
 Il n’y a ni examen, ni note. Ce qui est évalué, c’est votre propre relevé : chaque formation se termine par une période d’auto-observation avec une grille à remplir, et une lecture guidée de ce que vous y aurez noté.
 
 Attestation de suivi nominative : 20 €, facultative. Elle se demande une fois les modules terminés, et les conditions vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
 
-const METHODOLOGIE = `Quatre modules, toujours dans le même ordre.
+const METHODOLOGIE = `Quatre modules, toujours dans le même ordre, plus une section d’annexes.
+
+Chaque module s’ouvre sur une carte « Repères du module » — durée, prérequis, modalité, évaluation — et se ferme sur « Avant de passer au module suivant », trois critères que vous pouvez cocher vous-même.
 
 1. La théorie, en quelques minutes. Le strict nécessaire pour comprendre ce qu’on va faire, pas un cours.
 2. Une situation qui dérape. On ne vous montre pas un modèle parfait : on vous montre une scène réelle qui échoue, on vous demande de chercher pourquoi, et l’analyse ne vient qu’ensuite. C’est vous qui produisez la réponse — c’est ce qui la rend transposable.
 3. Un exercice guidé, à faire sur votre propre situation, pas sur un cas d’école.
 4. Une mise en pratique avec auto-observation : un protocole court, un relevé de quelques lignes par jour, et la lecture de ce relevé au bout de la période.
+
+La section « Annexes — fiches techniques et exercices » réunit les grilles vierges, les mémos, les exemples corrigés et les tableaux de reformulation. Ils sont écrits en clair, recopiables à la main et imprimables depuis le navigateur : une grille qu’il faut aller chercher dans un ordinateur n’est jamais remplie sur le terrain.
 
 Le format est volontairement court et se suit en complément d’autres : plusieurs mini-formations partagent la même thématique tout en travaillant une compétence différente.`;
 
@@ -113,7 +119,7 @@ const FAQ_COMMUNE = [
   {
     question: 'Combien de temps faut-il y consacrer ?',
     answer:
-      "Moins de quarante minutes à l’écran. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines, à raison de quelques minutes par jour.",
+      "Environ 45 minutes de lecture, que vous pouvez fractionner comme vous voulez : l’accès est illimité et sans date de fin. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines, à raison de quelques minutes par jour.",
   },
   {
     question: 'Puis-je suivre plusieurs mini-formations ?',
@@ -142,7 +148,7 @@ const FICHES = [
 
 Un comportement qui se répète se répète parce qu’il marche : il obtient quelque chose. Tant qu’on ignore quoi, on traite la forme et pas la fonction — et on se trompe de cible. Quatre fonctions possibles, une grille en quatre colonnes pour trancher, et la règle qui évite l’erreur la plus coûteuse.
 
-Environ 39 minutes, dont sept minutes de lecture à l’écran : le reste se passe chez vous ou dans votre service.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
@@ -170,7 +176,7 @@ Module 4 — Mise en pratique et auto-observation. Le protocole, le relevé quot
 
 Retirer un comportement sans en donner un autre, c’est retirer un outil à quelqu’un qui n’en a pas d’autre. La suite logique de la grille des fonctions : une fois qu’on sait ce que le comportement obtient, on enseigne un moyen d’obtenir la même chose — qui doit être plus facile, plus rapide et aussi fiable que celui qu’on veut voir disparaître.
 
-Environ 39 minutes, dont sept minutes de lecture à l’écran.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
@@ -198,7 +204,7 @@ Module 4 — Mise en pratique et auto-observation. Le protocole sur deux semaine
 
 « Il ne sait pas s’habiller » ne se travaille pas : la phrase ne dit ni ce qui est acquis, ni où exactement ça s’arrête. « Il bloque à l’étape 4 sur 9 » se travaille. Écrire la chaîne, mesurer ce qui est déjà là, choisir par quelle extrémité enseigner — et n’en enseigner qu’une à la fois.
 
-Environ 36 minutes, dont sept minutes de lecture à l’écran.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
@@ -226,7 +232,7 @@ Module 4 — Mise en pratique et auto-observation. Dix jours, une seule étape, 
 
 Tout le monde fabrique des pictogrammes ; presque personne ne s’en sert encore trois semaines plus tard. Un support n’est pas une aide à la compréhension, c’est une aide à l’autonomie : il permet de savoir ce qui vient sans dépendre de la disponibilité d’un adulte. Les cinq raisons qui le font abandonner, et la ligne qui décide s’il existe encore dans un mois.
 
-Environ 35 minutes, dont sept minutes de lecture à l’écran.`,
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
 — formuler la question unique à laquelle un support répond, et ne pas en mélanger trois sur le même mur ;
@@ -253,7 +259,7 @@ Module 4 — Mise en pratique et auto-observation. Quatorze jours, trois colonne
 
 L’aide est le seul outil éducatif qui devient nuisible quand il fonctionne trop bien. Une aide efficace et jamais retirée produit une dépendance à l’adulte, et cette dépendance est ensuite reprochée à la personne. Cette formation apprend à choisir le niveau d’aide le plus léger qui marche, et surtout à le retirer selon un plan décidé à l’avance.
 
-Environ 36 minutes, dont sept minutes de lecture à l’écran.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :

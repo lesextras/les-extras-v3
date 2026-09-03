@@ -89,7 +89,13 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: 'Paiements et annulations', href: '/legal#paiements' },
       { label: 'Cookies', href: '/legal/cookies' },
       { label: 'Données personnelles', href: '/legal#donnees' },
-      { label: 'Médiation', href: '/legal#mediation' },
+      // « Médiation » pointait sur une ancre de /legal ; la page réglementaire
+      // couvre le même sujet ET tout ce qu'un OPCO vérifie avant elle (NDA,
+      // Qualiopi, prérequis, délais, évaluation, accessibilité, indicateurs,
+      // réclamation). Elle remplace le lien plutôt que de s'y ajouter : la
+      // règle des SEPT LIENS PAR COLONNE tient, et l'ancre reste atteignable
+      // depuis la page elle-même.
+      { label: 'Informations réglementaires', href: '/informations-reglementaires' },
     ],
   },
 ];
