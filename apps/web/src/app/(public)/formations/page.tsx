@@ -131,6 +131,7 @@ function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
   const duree = dureeLisible(f);
   const maison = estMaison(f);
   const emoji = EMOJI_PARCOURS[f.slug] ?? null;
+  const visuel = premierVisuel(f.images);
   const lien = `/formations/${f.slug}`;
   return (
     <Card
@@ -141,7 +142,7 @@ function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
       {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
       <Link href={lien} className="relative block aspect-[16/10] bg-muted">
         <VisuelCarte
-          src={premierVisuel(f.images)}
+          src={visuel}
           alt={f.title}
           sizes="(max-width: 640px) 100vw, 33vw"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
@@ -155,11 +156,12 @@ function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
             </span>
           </span>
         </VisuelCarte>
-        {/* Le bandeau de thématique n'a de sens que sur les couvertures qui
-            n'en portent pas. Celles des mini-formations l'écrivent déjà, en
-            haut à gauche : deux fois le même mot sur la même vignette, dont
-            l'un masquait le bandeau blanc de la couverture. */}
-        {f.categoryRef?.title && !emoji ? (
+        {/* Le bandeau de thématique n'a de sens que sur les vignettes qui ne
+            l'écrivent pas déjà : la couverture d'une mini-formation le porte
+            en haut à gauche, et le repli de marque (sans photo) l'affiche en
+            son centre. Dans les deux cas, le bandeau redisait le même mot —
+            et sur la couverture, il recouvrait le bandeau blanc du bas. */}
+        {f.categoryRef?.title && !emoji && visuel ? (
           <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
             {f.categoryRef.title}
           </span>
