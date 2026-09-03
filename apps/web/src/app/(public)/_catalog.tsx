@@ -17,7 +17,6 @@ import { VisuelCarte } from "../_shared/VisuelCarte";
 import { premierVisuel } from "@/lib/media";
 import { FavoriteButton } from "../_shared/FavoriteButton";
 import { PageHeader, EmptyState } from "../_shared/ui";
-import { RangeeDefilante } from "../_shared/RangeeDefilante";
 import { SERVICE_CATEGORY_LABEL, formatMoney } from "../_shared/format";
 import type { ServiceCategory } from "../_shared/types";
 
@@ -237,18 +236,22 @@ export async function CatalogView({
     search || category || publicVise || ville || budget || tri,
   );
 
-  // À LA UNE : les cinq dernières fiches publiées.
+  // PLUS DE RANGÉE « À LA UNE » — décision de Siham, 3 septembre 2026.
   //
-  // L'API rend le catalogue déjà trié (les plus récentes d'abord, sauf tri
-  // demandé) : « à la une » n'est donc pas un choix éditorial caché, c'est
-  // simplement ce qui vient d'arriver. Cinq, parce que la rangée en montre
-  // deux à la fois — au-delà, plus personne ne va jusqu'au bout.
+  // Le catalogue s'ouvrait sur les cinq dernières fiches publiées dans une
+  // rangée qui défile, puis affichait « tout le catalogue » en grille en
+  // dessous. Deux raisons de l'avoir retirée, et elles se cumulent :
   //
-  // Le reste s'affiche en grille, entier. Une rangée qui défile met en avant ;
-  // elle ne doit jamais servir à ranger le catalogue, sinon ce qui n'est pas
-  // dans les cinq premiers devient invisible.
-  const aLaUne = items.slice(0, 5);
-  const suite = items.slice(5);
+  //  - le catalogue compte treize fiches. Une rangée de mise en avant n'a de
+  //    sens que quand la grille est trop longue pour être parcourue ; sur
+  //    treize entrées, elle coupe le catalogue en deux pour rien et fait
+  //    passer les cinq premières DEUX fois moins visibles qu'en grille (la
+  //    rangée n'en montre que deux à l'écran, derrière une flèche) ;
+  //  - « à la une » n'était pas un choix éditorial, c'était l'ordre d'arrivée.
+  //    Un libellé qui promet une sélection et livre un tri par date est une
+  //    promesse creuse.
+  //
+  // Tout est désormais dans une seule grille, à la suite, filtre ou pas.
 
   return (
     <div className="space-y-8">
@@ -409,60 +412,26 @@ export async function CatalogView({
             </div>
           ) : null}
 
-          {/* SANS FILTRE : une rangée « à la une », puis tout le reste en
-            grille. AVEC FILTRE : la grille seule — quelqu'un qui vient de
-            filtrer veut voir TOUS ses résultats, pas en découvrir deux à la
-            fois derrière une flèche. */}
-          {hasFilters ? (
+          {/* UNE SEULE GRILLE, filtre ou pas. Quelqu'un qui vient de filtrer
+            veut voir TOUS ses résultats ; quelqu'un qui arrive sans filtre
+            veut voir tout le catalogue. Dans les deux cas, la même grille. */}
+          <section>
+            {!hasFilters ? (
+              <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+                  Tout le catalogue
+                </h2>
+                <span className="text-sm text-muted-foreground">
+                  {items.length} proposition{items.length > 1 ? "s" : ""}
+                </span>
+              </div>
+            ) : null}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((item) => (
                 <CarteCatalogue key={item.id} item={item} />
               ))}
             </div>
-          ) : (
-            <div className="space-y-12">
-              <section>
-                <div className="mb-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                    Les dernières arrivées
-                  </p>
-                  <h2 className="mt-1 text-xl font-bold text-foreground sm:text-2xl">
-                    À la une
-                  </h2>
-                </div>
-                <RangeeDefilante etiquette="À la une">
-                  {aLaUne.map((item) => (
-                    <div
-                      key={item.id}
-                      className="w-[300px] shrink-0 snap-start md:w-[calc((100%-1.25rem)/2)]"
-                    >
-                      <CarteCatalogue item={item} />
-                    </div>
-                  ))}
-                </RangeeDefilante>
-              </section>
-
-              {suite.length > 0 ? (
-                <section>
-                  <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                    <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-                      Tout le catalogue
-                    </h2>
-                    <span className="text-sm text-muted-foreground">
-                      {suite.length} autre{suite.length > 1 ? "s" : ""}{" "}
-                      proposition
-                      {suite.length > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {suite.map((item) => (
-                      <CarteCatalogue key={item.id} item={item} />
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-            </div>
-          )}
+          </section>
         </>
       )}
     </div>

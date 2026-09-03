@@ -134,12 +134,23 @@ export class FilesService {
    * Toute consultation d'une pièce de conformité est journalisée.
    */
   /**
-   * Lecture PUBLIQUE d'une illustration d'actualité. Aucune autre famille n'est
-   * servie ici : une pièce de conformité ne doit jamais sortir sans contrôle.
+   * Familles servies SANS authentification. La liste est fermée et elle le
+   * reste : une pièce de conformité ne doit jamais sortir sans contrôle.
+   *
+   * Les deux qui y figurent illustrent des pages publiques — un article de
+   * l'Édublog, une fiche du catalogue d'ateliers. Elles sont vues par des
+   * visiteurs non connectés par définition ; les servir derrière un jeton
+   * reviendrait à publier une page dont les images répondent 401.
    */
+  private static readonly FAMILLES_PUBLIQUES: ReadonlySet<FileKind> = new Set([
+    FileKind.ARTICLE,
+    FileKind.SERVICE,
+  ]);
+
+  /** Lecture PUBLIQUE d'une illustration, réservée aux familles ci-dessus. */
   async lirePublic(fileId: string) {
     const asset = await this.prisma.fileAsset.findUnique({ where: { id: fileId } });
-    if (!asset || asset.kind !== FileKind.ARTICLE) {
+    if (!asset || !FilesService.FAMILLES_PUBLIQUES.has(asset.kind)) {
       throw new NotFoundException('Image introuvable.');
     }
     const flux = await this.storage.lire(asset.storageKey);

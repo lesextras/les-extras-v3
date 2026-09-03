@@ -25,6 +25,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { Field, Textarea } from "../form-fields";
+import { FileUpload, type FichierDepose } from "../FileUpload";
 
 const CATEGORIES = [
   { value: "ATELIER", label: "Atelier" },
@@ -70,6 +71,7 @@ export interface FicheExistante {
   material?: string | null;
   publicTargets?: string[] | null;
   timeSlots?: string[] | null;
+  images?: string[] | null;
 }
 
 export function ServiceModal({
@@ -125,6 +127,22 @@ export function ServiceModal({
   const [brief, setBrief] = useState("");
   const [statut, setStatut] = useState<string>(fiche?.status ?? "PUBLISHED");
   const [publics, setPublics] = useState<string[]>(fiche?.publicTargets ?? []);
+  /**
+   * PHOTOS DE LA FICHE — au moins une est exigée à la CRÉATION.
+   *
+   * Le formulaire n'en proposait aucune : les seules images du catalogue
+   * venaient de l'import WordPress, et toute fiche créée à la main partait donc
+   * sans photo, avec le dégradé de remplacement de la carte. Le champ manquait,
+   * pas la volonté.
+   *
+   * L'API refuse désormais une création sans image (`CreateServiceDto`). Sans ce
+   * champ, cette règle aurait rendu la création IMPOSSIBLE depuis l'interface —
+   * le « bouton qui mène à un refus » que le reste du produit s'interdit.
+   *
+   * ⚠ En MODIFICATION, rien n'est exigé : trois fiches déjà publiées n'ont pas
+   * de photo, et il ne faut pas empêcher leur auteur d'en corriger le texte.
+   */
+  const [images, setImages] = useState<string[]>(fiche?.images ?? []);
   // Le bloc pédagogique est replié à la création pour ne pas décourager, mais il
   // s'ouvre dès que l'IA y écrit quelque chose : un champ rempli qu'on ne voit
   // pas est pire qu'un champ vide.
@@ -189,6 +207,14 @@ export function ServiceModal({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // AU MOINS UNE PHOTO À LA CRÉATION. Le refus est prononcé ICI, avant
+    // l'envoi, et pas récupéré du 400 de l'API : un formulaire long qui part et
+    // revient en erreur fait perdre la saisie de vue, alors que le champ fautif
+    // est à l'écran. L'API garde la même règle — c'est elle qui fait foi.
+    if (!edition && images.length === 0) {
+      setError("Ajoutez au moins une photo : une fiche sans image se fait deux fois moins ouvrir.");
+      return;
+    }
     setLoading(true);
     setError(null);
     const fd = new FormData(e.currentTarget);
@@ -221,6 +247,7 @@ export function ServiceModal({
       material: texte("material"),
       publicTargets: publics.length ? publics : undefined,
       timeSlots: creneaux.length ? creneaux : undefined,
+      images: images.length ? images : undefined,
     };
     try {
       // MODE ADMINISTRATION — deux appels, et c'est délibéré.
@@ -443,6 +470,55 @@ export function ServiceModal({
                   </button>
                 );
               })}
+            </div>
+          </Field>
+
+          <Field
+            label={edition ? "Photos" : "Photos (au moins une)"}
+            hint={
+              edition
+                ? "Remplacez ou complétez la galerie de la fiche."
+                : "La première photo devient la vignette du catalogue. JPG, PNG ou WebP, 5 Mo maximum."
+            }
+          >
+            <div className="space-y-2">
+              {images.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {images.map((url, i) => (
+                    <div
+                      key={url}
+                      className="relative size-20 overflow-hidden rounded-lg border border-border bg-muted"
+                    >
+                      {/* Vignette locale : `next/image` refuserait une URL
+                          relative servie par le proxy, et on n'a pas besoin
+                          d'optimisation pour un aperçu de 80 px. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="" className="size-full object-cover" />
+                      <button
+                        type="button"
+                        aria-label={`Retirer la photo ${i + 1}`}
+                        onClick={() => setImages((l) => l.filter((x) => x !== url))}
+                        className="absolute right-0.5 top-0.5 rounded-full bg-black/70 px-1.5 text-xs text-white"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <FileUpload
+                famille="service"
+                accountId={accountId}
+                label="Ajouter une photo"
+                aide="ou glissez l'image ici · 5 Mo maximum"
+                onChange={(f: FichierDepose | null) => {
+                  if (!f) return;
+                  // On stocke l'adresse PUBLIQUE : le catalogue est vu par des
+                  // visiteurs non connectés, `/files/:id` leur répondrait 401.
+                  setImages((l) => [...l, `/api/proxy/public/images/${f.id}`]);
+                  setError(null);
+                }}
+              />
             </div>
           </Field>
 

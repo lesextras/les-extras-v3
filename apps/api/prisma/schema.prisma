@@ -1751,9 +1751,14 @@ enum FileKind {
   AVATAR
   /// Support pédagogique, émargement signé, preuve Qualiopi.
   FORMATION
-  /// Illustration d'une actualité. Seule famille lisible sans authentification :
+  /// Illustration d'une actualité. Lisible sans authentification :
   /// un article public doit afficher ses images à un visiteur non connecté.
   ARTICLE
+  /// Photo d'une fiche atelier / service. Lisible sans authentification, pour
+  /// la même raison qu'ARTICLE : le catalogue est public. Ajoutée le 3/09/2026
+  /// avec l'obligation d'au moins une image à la création d'un atelier — sans
+  /// famille publique, la photo déposée aurait répondu 401 au visiteur.
+  SERVICE
   /// Modèle d'écrit déposé pour apprendre une trame maison. Contient de vrais
   /// noms de personnes accompagnées : accès restreint à son déposant et aux
   /// responsables du compte, jamais d'URL publique.

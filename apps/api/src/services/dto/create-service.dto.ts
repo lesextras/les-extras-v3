@@ -1,4 +1,5 @@
 import {
+  ArrayNotEmpty,
   IsArray,
   IsBoolean,
   IsEnum,
@@ -120,11 +121,26 @@ export class CreateServiceDto {
   @Type(() => FaqItemDto)
   faq?: FaqItemDto[];
 
-  /** Galerie : URLs de fichiers déposés ou d'images externes. */
-  @IsOptional()
+  /**
+   * Galerie : URLs de fichiers déposés ou d'images externes.
+   *
+   * ⚠ AU MOINS UNE IMAGE EST OBLIGATOIRE À LA CRÉATION — décision de Siham,
+   * 3 septembre 2026, et c'est une règle de catalogue, pas une préférence.
+   * Une carte sans photo se fait ouvrir nettement moins que ses voisines : sur
+   * une grille, elle a l'air en panne. Le catalogue affichait jusqu'ici un
+   * dégradé de remplacement à sa place — une rustine honnête, mais qui laissait
+   * partir des fiches muettes.
+   *
+   * ⚠ L'OBLIGATION NE VAUT QU'À LA CRÉATION. `UpdateServiceDto` la laisse
+   * facultative, à dessein : trois fiches déjà publiées n'ont pas d'image, et
+   * rendre le champ obligatoire à la modification empêcherait leurs auteurs de
+   * corriger quoi que ce soit d'autre tant qu'ils n'ont pas de photo sous la
+   * main. On ferme la porte d'entrée, on ne mure pas ceux qui sont dedans.
+   */
   @IsArray()
+  @ArrayNotEmpty({ message: 'Ajoutez au moins une photo à votre fiche.' })
   @IsString({ each: true })
-  images?: string[];
+  images!: string[];
 
   @IsOptional()
   @IsArray()

@@ -45,6 +45,14 @@ export const REGLES: Record<FileKind, RegleFamille> = {
     types: ['image/jpeg', 'image/png', 'image/webp'],
     libelle: 'photo de profil',
   },
+  SERVICE: {
+    // 5 Mo comme ARTICLE : c'est le même usage — une photo qui illustre une
+    // page publique. Au-delà, ce n'est plus une photo d'atelier prise au
+    // téléphone, c'est un fichier qui va ralentir le catalogue.
+    tailleMax: 5 * Mo,
+    types: ['image/jpeg', 'image/png', 'image/webp'],
+    libelle: "photo d'atelier",
+  },
   TRAME: {
     tailleMax: 10 * Mo,
     // Un modèle d'écrit est un document, jamais une image : accepter un scan

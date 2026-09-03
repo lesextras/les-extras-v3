@@ -2001,3 +2001,50 @@ fiches depuis son espace, et l'utilité du nouveau chemin admin.
 
 Décision qui lui revient : poser les vraies adresses de Younes, Christophe et
 Jean Léo, et dire si le compte « Siham » doit basculer sur son adresse.
+
+### Le catalogue perd sa rangée « À la une », et une photo devient obligatoire
+
+Deux demandes de Siham dans la foulée, 3/09 au soir.
+
+**1. `/ateliers` : plus de rangée « À la une ».** Le catalogue s'ouvrait sur les
+cinq dernières fiches dans une `RangeeDefilante`, puis « Tout le catalogue » en
+grille. Deux raisons de l'avoir retirée, cumulatives : sur **treize** fiches,
+une rangée de mise en avant coupe le catalogue en deux pour rien et rend les
+cinq premières MOINS visibles qu'en grille (la rangée n'en montre que deux à
+l'écran, derrière une flèche) ; et « à la une » n'était pas une sélection, mais
+l'ordre d'arrivée — un libellé qui promet un choix éditorial et livre un tri par
+date. Une seule grille désormais, filtre ou pas. `_catalog.tsx` n'est utilisé
+que par `/ateliers` : `/formations` a sa propre mise en page, elle n'a pas
+bougé. **La règle générale reste valable** — une rangée met en avant, elle ne
+range pas un catalogue — c'est son application à treize fiches qui ne tenait pas.
+
+**2. Au moins une photo pour créer un atelier.** Trois choses manquaient, et il
+fallait les trois pour que la règle ne soit pas un piège :
+
+- **Le formulaire ne proposait AUCUN champ image.** Les seules photos du
+  catalogue venaient de l'import WordPress ; toute fiche créée à la main partait
+  avec le dégradé de remplacement de la carte. Rendre l'image obligatoire sans
+  ajouter le champ aurait rendu la création **impossible** depuis l'interface —
+  le « bouton qui mène à un refus » que le produit s'interdit partout ailleurs.
+- **Il n'existait pas de famille de fichier PUBLIQUE pour une photo d'atelier.**
+  `GET /files/:id` exige un jeton ; seul `ARTICLE` passait par
+  `GET /public/images/:id`. Une photo déposée en `AVATAR` ou `MISSION` aurait
+  répondu **401 au visiteur du catalogue**. D'où `FileKind.SERVICE`, avec sa
+  règle dans `file-rules.ts` (5 Mo, JPEG/PNG/WebP) et son entrée dans
+  `FilesService.FAMILLES_PUBLIQUES` — une liste fermée, qui doit le rester.
+- L'adresse stockée est **`/api/proxy/public/images/<id>`**, comme pour les
+  couvertures d'articles. `visuel()` laisse passer les chemins relatifs sans y
+  toucher, donc rien à changer dans `lib/media.ts`.
+
+⚠ **L'OBLIGATION NE VAUT QU'À LA CRÉATION**, et c'est délibéré.
+`UpdateServiceDto` laisse `images` facultatif : **trois fiches publiées n'ont
+pas de photo** (celles de Valérie SIMON), et exiger une image à la modification
+empêcherait leur autrice de corriger une virgule tant qu'elle n'en a pas une
+sous la main. On ferme la porte d'entrée, on ne mure pas ceux qui sont dedans.
+C'est la même doctrine que l'indicateur de complétude : sur l'existant, on
+informe.
+
+⚠ Le refus est prononcé **dans le formulaire, avant l'envoi**, et pas récupéré
+du 400 de l'API : un formulaire long qui part et revient en erreur fait perdre
+la saisie de vue alors que le champ fautif est à l'écran. L'API garde la même
+règle — c'est elle qui fait foi, le client n'est qu'une politesse.

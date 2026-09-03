@@ -9,7 +9,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Paperclip, Upload, X, FileText, Loader2 } from "lucide-react";
 
-export type FamilleFichier = "compliance" | "mission" | "avatar" | "formation";
+export type FamilleFichier =
+  | "compliance"
+  | "mission"
+  | "avatar"
+  | "formation"
+  /** Photo d'une fiche atelier. Lisible sans authentification (catalogue public). */
+  | "service";
 
 export interface FichierDepose {
   id: string;
@@ -25,6 +31,7 @@ const ACCEPT: Record<FamilleFichier, string> = {
   mission: ".pdf,.jpg,.jpeg,.png,.webp,.docx",
   avatar: ".jpg,.jpeg,.png,.webp",
   formation: ".pdf,.jpg,.jpeg,.png,.webp,.docx,.pptx",
+  service: ".jpg,.jpeg,.png,.webp",
 };
 
 /** Taille maximale annoncée à l'utilisateur (Mo). Le serveur fait foi. */
@@ -33,6 +40,7 @@ const MAX_MO: Record<FamilleFichier, number> = {
   mission: 10,
   avatar: 3,
   formation: 20,
+  service: 5,
 };
 
 export function poidsLisible(octets: number): string {

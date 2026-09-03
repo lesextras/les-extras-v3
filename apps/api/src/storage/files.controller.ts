@@ -55,7 +55,7 @@ export class FilesController {
     const cle = famille?.toUpperCase();
     if (!cle || !(cle in FileKind)) {
       throw new BadRequestException(
-        'Famille de document inconnue. Attendu : compliance, mission, avatar ou formation.',
+        'Famille de document inconnue. Attendu : compliance, mission, avatar, formation, article ou service.',
       );
     }
     return this.files.deposer({
