@@ -30,7 +30,8 @@
  * chaque entrée dit d'où vient le texte, pour qu'on puisse le vérifier sans
  * relire tout l'historique.
  *
- * ⚠ CE QUI N'EST PAS ÉCRIT, ET NE DOIT PAS L'ÊTRE PAR CE SCRIPT :
+ * ⚠ CE QUE LE BLOC `FICHES` N’ÉCRIT PAS, ET NE DOIT PAS ÉCRIRE (voir `REPERES`
+ * plus bas pour ce que Siham a ensuite arbitré) :
  *   durée · participants maximum · matériel nécessaire · prérequis · créneaux
  *   proposés · modalités d'évaluation.
  *
@@ -207,6 +208,16 @@ const FICHES = [
  * leur place, sur des comptes qu'ils ne peuvent même pas ouvrir pour les
  * corriger (adresses en @intervenants.les-extras.fr, domaine sans MX), ferait
  * vendre par l'association une prestation qu'elle n'a pas négociée.
+ * ⚠ L'ÉVALUATION EST REPRISE DE PSYCHO-BOXE — décision de Siham, « met pour
+ * évaluation comme pour psycho-boxe ». Sa formule : « Mises en situation devant
+ * le groupe, analysées et commentées par l'intervenant/e ». Elle est écrite
+ * telle quelle là où elle est VRAIE — le PAPA et la musicothérapie sont des
+ * ateliers de pratique en groupe, on y fait bien quelque chose devant les
+ * autres. Sur la socio-esthétique, « mises en situation devant le groupe »
+ * décrirait un atelier qui n'existe pas : c'est un temps de soin, pas un jeu de
+ * rôle. La formule y garde sa SECONDE moitié — ce qui est observé est analysé
+ * et commenté par l'intervenante — et perd la première. Même arbitrage que pour
+ * le matériel : on garde la phrase, on ne garde pas ce qui serait faux.
  */
 const REPERES = [
   {
@@ -218,6 +229,8 @@ const REPERES = [
       "Salle dégagée ou gymnase, sol non glissant, point d'eau à proximité. " +
       "Matériel fourni par l'intervenant.",
     timeSlots: ['9h-12h', '14h-17h'],
+    evaluation:
+      "Mises en situation devant le groupe, analysées et commentées par l'intervenant/e.",
   },
   {
     slug: 'atelier-de-musicotherapie',
@@ -228,6 +241,8 @@ const REPERES = [
       "Salle calme avec chaises, à l'écart des passages. " +
       "Instruments et matériel fournis par l'intervenant.",
     timeSlots: ['9h-12h', '14h-17h'],
+    evaluation:
+      "Mises en situation devant le groupe, analysées et commentées par l'intervenant/e.",
   },
   {
     slug: 'atelier-socio-esthetique',
@@ -238,6 +253,8 @@ const REPERES = [
       "Salle avec tables, chaises et point d'eau à proximité. " +
       "Produits et matériel fournis par les intervenantes.",
     timeSlots: ['9h-12h', '14h-17h'],
+    evaluation:
+      "Observation des participants pendant la séance, analysée et commentée par l'intervenante.",
   },
   {
     slug: 'atelier-psycho-boxe',
@@ -275,6 +292,7 @@ const CHAMPS_REPERES = [
   'prerequisites',
   'material',
   'timeSlots',
+  'evaluation',
 ];
 
 async function main() {
