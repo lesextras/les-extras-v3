@@ -19,6 +19,7 @@ import { fetchPublic } from "../../_shared/server";
 import { VisuelCarte } from "../../_shared/VisuelCarte";
 import { premierVisuel } from "@/lib/media";
 import { PageHeader, EmptyState } from "../../_shared/ui";
+import { RangeeDefilante } from "../../_shared/RangeeDefilante";
 import { formatMoney, formatDate } from "../../_shared/format";
 // Emoji, organisme de la maison et durée lisible : une seule source pour le
 // catalogue, le carrousel d'accueil et les couvertures. Voir le fichier.
@@ -499,11 +500,27 @@ export default async function FormationsCatalogPage({
                   {gratuites.length} parcours
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {gratuites.map((f, i) => (
-                  <CarteFormation key={f.id} f={f} rang={i} />
-                ))}
-              </div>
+              {/* SANS FILTRE, ON FAIT DÉFILER ; AVEC FILTRE, ON ÉTALE.
+                  Une rangée qui défile se parcourt à l'œil, comme un rayon —
+                  c'est ce qu'on veut quand on arrive sans idée précise. Mais
+                  dès qu'on a filtré, on veut voir TOUS les résultats d'un
+                  coup : cacher la moitié derrière une flèche, après un
+                  filtrage, c'est laisser croire qu'il n'y en a que trois. */}
+              {filtree ? (
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {gratuites.map((f, i) => (
+                    <CarteFormation key={f.id} f={f} rang={i} />
+                  ))}
+                </div>
+              ) : (
+                <RangeeDefilante etiquette="Mini-formations gratuites">
+                  {gratuites.map((f, i) => (
+                    <div key={f.id} className="w-[300px] shrink-0 snap-start sm:w-[340px]">
+                      <CarteFormation f={f} rang={i} />
+                    </div>
+                  ))}
+                </RangeeDefilante>
+              )}
             </section>
           ) : null}
 
@@ -522,11 +539,21 @@ export default async function FormationsCatalogPage({
                   engagement.
                 </p>
               </div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {autres.map((f, i) => (
-                  <CarteFormation key={f.id} f={f} rang={i} />
-                ))}
-              </div>
+              {filtree ? (
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {autres.map((f, i) => (
+                    <CarteFormation key={f.id} f={f} rang={i} />
+                  ))}
+                </div>
+              ) : (
+                <RangeeDefilante etiquette="Formations en intra">
+                  {autres.map((f, i) => (
+                    <div key={f.id} className="w-[300px] shrink-0 snap-start sm:w-[340px]">
+                      <CarteFormation f={f} rang={i} />
+                    </div>
+                  ))}
+                </RangeeDefilante>
+              )}
             </section>
           ) : null}
         </div>

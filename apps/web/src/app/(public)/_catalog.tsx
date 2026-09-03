@@ -1,7 +1,14 @@
 // Vue catalogue PUBLIQUE réutilisable (ateliers / formations).
 // Server Component : rendu sans JS client, filtres via <form method="GET">.
 import Link from "next/link";
-import { MapPin, Clock, Building2, Search, ArrowRight, Star } from "lucide-react";
+import {
+  MapPin,
+  Clock,
+  Building2,
+  Search,
+  ArrowRight,
+  Star,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +17,7 @@ import { VisuelCarte } from "../_shared/VisuelCarte";
 import { premierVisuel } from "@/lib/media";
 import { FavoriteButton } from "../_shared/FavoriteButton";
 import { PageHeader, EmptyState } from "../_shared/ui";
+import { RangeeDefilante } from "../_shared/RangeeDefilante";
 import { SERVICE_CATEGORY_LABEL, formatMoney } from "../_shared/format";
 import type { ServiceCategory } from "../_shared/types";
 
@@ -31,7 +39,12 @@ export interface CatalogItem {
   rating?: number | null;
   reviewsCount?: number;
   categoryRef?: { id: string; title: string } | null;
-  account?: { id: string; name: string; city?: string | null; logoUrl?: string | null } | null;
+  account?: {
+    id: string;
+    name: string;
+    city?: string | null;
+    logoUrl?: string | null;
+  } | null;
 }
 
 interface CatalogResponse {
@@ -46,6 +59,123 @@ interface CatalogResponse {
 
 const inputClass =
   "h-11 w-full rounded-lg border border-input bg-card px-3.5 py-2 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+
+/**
+ * Une carte du catalogue — visuel, catégorie, durée, concepteur, lieu, public,
+ * prix. Extraite de la grille pour pouvoir servir aussi bien étalée (résultats
+ * filtrés) qu'en rangée qui défile (catalogue sans filtre).
+ */
+function CarteCatalogue({ item }: { item: CatalogItem }) {
+  const organisme = item.account?.name;
+  const ville = item.city ?? item.account?.city;
+  return (
+    <Card className="group card-interactive relative flex h-full flex-col overflow-hidden">
+      {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
+      <Link
+        href={`/ateliers/${item.slug ?? item.id}`}
+        className="relative block aspect-[16/10] bg-muted"
+      >
+        <VisuelCarte
+          src={premierVisuel(item.images)}
+          alt={item.title}
+          sizes="(max-width: 640px) 100vw, 33vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        >
+          {/* Sans photo, une vignette qui a l'air « en panne » ne se
+      clique pas : on affiche un visuel intentionnel — dégradé
+      de marque + catégorie de la fiche. */}
+          <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+            <span className="flex flex-col items-center gap-1.5 text-center">
+              <Star className="size-6 text-primary/70" aria-hidden />
+              <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                {item.categoryRef?.title ??
+                  SERVICE_CATEGORY_LABEL[item.category] ??
+                  "Les Extras"}
+              </span>
+            </span>
+          </span>
+        </VisuelCarte>
+        {item.categoryRef?.title ? (
+          <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+            {item.categoryRef.title}
+          </span>
+        ) : null}
+      </Link>
+
+      {/* Le cœur est hors du lien : cliquer « mettre de côté » ne doit
+  pas ouvrir la fiche. */}
+      <div className="absolute right-3 top-3 z-10">
+        <FavoriteButton
+          serviceId={item.id}
+          retour={`/ateliers/${item.slug ?? item.id}`}
+        />
+      </div>
+      <CardContent className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <Badge variant="soft">
+            {item.categoryRef?.title ?? SERVICE_CATEGORY_LABEL[item.category]}
+          </Badge>
+          {item.duration ? (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="size-3.5" />
+              {item.duration}
+            </span>
+          ) : null}
+        </div>
+
+        <h3 className="text-lg font-semibold leading-snug text-foreground">
+          {item.title}
+        </h3>
+        <p className="line-clamp-3 text-sm text-muted-foreground">
+          {item.description}
+        </p>
+
+        <div className="mt-auto space-y-3 pt-2">
+          <div className="space-y-1 text-sm text-muted-foreground">
+            {organisme ? (
+              <p className="flex items-center gap-1.5">
+                <Building2 className="size-3.5 shrink-0" />
+                <span className="truncate">{organisme}</span>
+              </p>
+            ) : null}
+            {ville ? (
+              <p className="flex items-center gap-1.5">
+                <MapPin className="size-3.5 shrink-0" />
+                <span className="truncate">{ville}</span>
+              </p>
+            ) : null}
+            {(item.publicTargets?.length ?? 0) > 0 ? (
+              <p className="line-clamp-1">
+                <span className="font-medium">Public :</span>{" "}
+                {item.publicTargets!.join(", ")}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border/60 pt-3">
+            <span className="inline-flex items-center gap-2">
+              <span className="text-base font-semibold text-foreground">
+                {formatMoney(item.price)}
+              </span>
+              {item.rating ? (
+                <span className="inline-flex items-center gap-0.5 text-sm text-muted-foreground">
+                  <Star className="size-3.5 fill-current text-amber-500" />
+                  {item.rating.toFixed(1)}
+                </span>
+              ) : null}
+            </span>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/ateliers/${item.slug ?? item.id}`}>
+                Voir
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export async function CatalogView({
   type,
@@ -94,14 +224,34 @@ export async function CatalogView({
   if (budget) qs.set("priceMax", budget);
   if (tri) qs.set("sort", tri);
 
-  const { data, error } = await fetchPublic<CatalogResponse>(`/public/catalog?${qs.toString()}`);
+  const { data, error } = await fetchPublic<CatalogResponse>(
+    `/public/catalog?${qs.toString()}`,
+  );
   const items = data?.items ?? [];
   const categories = data?.categories ?? [];
   const publics = data?.publics ?? [];
   /** Aucun critère actif : on peut proposer les entrées par expertise. */
   const filtree = Boolean(search || category || publicVise || ville || budget);
   const cities = data?.cities ?? [];
-  const hasFilters = Boolean(search || category || publicVise || ville || budget || tri);
+  const hasFilters = Boolean(
+    search || category || publicVise || ville || budget || tri,
+  );
+
+  // LES RAYONS : un par catégorie, dans l'ordre où les fiches arrivent.
+  // `Map` et non un objet : elle conserve l'ordre d'insertion, donc le rayon
+  // le plus fourni du tri de l'API reste en tête, sans qu'on ait à le trier.
+  const rayons = [
+    ...items.reduce((acc, item) => {
+      const titre =
+        item.categoryRef?.title ??
+        SERVICE_CATEGORY_LABEL[item.category] ??
+        "Les Extras";
+      const liste = acc.get(titre) ?? [];
+      liste.push(item);
+      acc.set(titre, liste);
+      return acc;
+    }, new Map<string, CatalogItem[]>()),
+  ];
 
   return (
     <div className="space-y-8">
@@ -219,152 +369,86 @@ export async function CatalogView({
         />
       ) : (
         <>
-        {/* Entrées rapides par expertise — repris du site historique, où l'on
+          {/* Entrées rapides par expertise — repris du site historique, où l'on
             cherchait d'abord « pour qui » puis « comment ». */}
-        {!filtree && (publics.length > 0 || categories.length > 0) ? (
-          <div className="grid gap-5 md:grid-cols-2">
-            {publics.length > 0 ? (
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  Expert d’un public
-                </h2>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {publics.map((pu) => (
-                    <Link
-                      key={pu}
-                      href={`?public=${encodeURIComponent(pu)}`}
-                      className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
-                    >
-                      {pu}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {categories.length > 0 ? (
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  Expert d’une technique
-                </h2>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {categories.map((c) => (
-                    <Link
-                      key={c}
-                      href={`?category=${encodeURIComponent(c)}`}
-                      className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
-                    >
-                      {c}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => {
-            const organisme = item.account?.name;
-            const ville = item.city ?? item.account?.city;
-            return (
-              <Card key={item.id} className="group card-interactive relative flex h-full flex-col overflow-hidden">
-                {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
-                <Link href={`/ateliers/${item.slug ?? item.id}`} className="relative block aspect-[16/10] bg-muted">
-                  <VisuelCarte
-                    src={premierVisuel(item.images)}
-                    alt={item.title}
-                    sizes="(max-width: 640px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  >
-                    {/* Sans photo, une vignette qui a l'air « en panne » ne se
-                        clique pas : on affiche un visuel intentionnel — dégradé
-                        de marque + catégorie de la fiche. */}
-                    <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
-                      <span className="flex flex-col items-center gap-1.5 text-center">
-                        <Star className="size-6 text-primary/70" aria-hidden />
-                        <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
-                          {item.categoryRef?.title ?? SERVICE_CATEGORY_LABEL[item.category] ?? "Les Extras"}
-                        </span>
-                      </span>
-                    </span>
-                  </VisuelCarte>
-                  {item.categoryRef?.title ? (
-                    <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-                      {item.categoryRef.title}
-                    </span>
-                  ) : null}
-                </Link>
-
-                {/* Le cœur est hors du lien : cliquer « mettre de côté » ne doit
-                    pas ouvrir la fiche. */}
-                <div className="absolute right-3 top-3 z-10">
-                  <FavoriteButton serviceId={item.id} retour={`/ateliers/${item.slug ?? item.id}`} />
-                </div>
-                <CardContent className="flex flex-1 flex-col gap-3 p-5">
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="soft">
-                      {item.categoryRef?.title ?? SERVICE_CATEGORY_LABEL[item.category]}
-                    </Badge>
-                    {item.duration ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="size-3.5" />
-                        {item.duration}
-                      </span>
-                    ) : null}
+          {!filtree && (publics.length > 0 || categories.length > 0) ? (
+            <div className="grid gap-5 md:grid-cols-2">
+              {publics.length > 0 ? (
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Expert d’un public
+                  </h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {publics.map((pu) => (
+                      <Link
+                        key={pu}
+                        href={`?public=${encodeURIComponent(pu)}`}
+                        className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
+                      >
+                        {pu}
+                      </Link>
+                    ))}
                   </div>
-
-                  <h3 className="text-lg font-semibold leading-snug text-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="line-clamp-3 text-sm text-muted-foreground">{item.description}</p>
-
-                  <div className="mt-auto space-y-3 pt-2">
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      {organisme ? (
-                        <p className="flex items-center gap-1.5">
-                          <Building2 className="size-3.5 shrink-0" />
-                          <span className="truncate">{organisme}</span>
-                        </p>
-                      ) : null}
-                      {ville ? (
-                        <p className="flex items-center gap-1.5">
-                          <MapPin className="size-3.5 shrink-0" />
-                          <span className="truncate">{ville}</span>
-                        </p>
-                      ) : null}
-                      {(item.publicTargets?.length ?? 0) > 0 ? (
-                        <p className="line-clamp-1">
-                          <span className="font-medium">Public :</span>{" "}
-                          {item.publicTargets!.join(", ")}
-                        </p>
-                      ) : null}
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-border/60 pt-3">
-                      <span className="inline-flex items-center gap-2">
-                        <span className="text-base font-semibold text-foreground">
-                          {formatMoney(item.price)}
-                        </span>
-                        {item.rating ? (
-                          <span className="inline-flex items-center gap-0.5 text-sm text-muted-foreground">
-                            <Star className="size-3.5 fill-current text-amber-500" />
-                            {item.rating.toFixed(1)}
-                          </span>
-                        ) : null}
-                      </span>
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/ateliers/${item.slug ?? item.id}`}>
-                          Voir
-                          <ArrowRight className="size-4" />
-                        </Link>
-                      </Button>
-                    </div>
+                </div>
+              ) : null}
+              {categories.length > 0 ? (
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Expert d’une technique
+                  </h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {categories.map((c) => (
+                      <Link
+                        key={c}
+                        href={`?category=${encodeURIComponent(c)}`}
+                        className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
+                      >
+                        {c}
+                      </Link>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* SANS FILTRE, DES RAYONS QUI DÉFILENT ; AVEC FILTRE, UNE GRILLE.
+            Le visiteur qui arrive sans idée précise parcourt des rayons —
+            c'est la lecture d'un catalogue. Celui qui vient de filtrer veut
+            voir TOUS les résultats d'un coup : en cacher la moitié derrière
+            une flèche lui ferait croire qu'il n'y en a que trois. */}
+          {hasFilters ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((item) => (
+                <CarteCatalogue key={item.id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {rayons.map(([titre, fiches]) => (
+                <section key={titre}>
+                  <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                    <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+                      {titre}
+                    </h2>
+                    <span className="text-sm text-muted-foreground">
+                      {fiches.length} proposition{fiches.length > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <RangeeDefilante etiquette={titre}>
+                    {fiches.map((item) => (
+                      <div
+                        key={item.id}
+                        className="w-[300px] shrink-0 snap-start sm:w-[340px]"
+                      >
+                        <CarteCatalogue item={item} />
+                      </div>
+                    ))}
+                  </RangeeDefilante>
+                </section>
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>
