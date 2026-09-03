@@ -73,7 +73,7 @@ const GARANTIES = [
   {
     icone: Lock,
     titre: "Rien n’est enregistré sans vous",
-    texte: "Ni les notes brutes, ni le brouillon. Seule la version que vous validez est gardée.",
+    texte: "Ni les notes brutes, ni le brouillon. Seule la version validée est gardée.",
   },
   {
     icone: Scale,

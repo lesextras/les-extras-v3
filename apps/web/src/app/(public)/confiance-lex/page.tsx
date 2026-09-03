@@ -38,37 +38,37 @@ const GARANTIES = [
     icone: EyeOff,
     titre: "Les noms ne sortent jamais d’ici",
     texte:
-      "Avant tout envoi au moteur d’IA, LEX remplace automatiquement les prénoms, noms, dates de naissance et coordonnées par des codes. Le service d’IA ne voit jamais l’identité des personnes accompagnées. Les identités sont rétablies ensuite, sur nos serveurs, dans le texte qui vous revient.",
+      "Prénoms, noms, dates de naissance et coordonnées deviennent des codes avant l’envoi. Le service d’IA ne voit jamais l’identité des personnes. Les noms sont rétablis ensuite, sur nos serveurs.",
   },
   {
     icone: MapPin,
     titre: "Où vont vos données, précisément",
     texte:
-      "La plateforme, la base de données et les fichiers que vous déposez sont hébergés dans l’Union européenne. Le moteur d’intelligence artificielle qui rédige s’appuie sur un prestataire spécialisé, susceptible d’être établi hors de l’Union européenne dans un cadre contractuel conforme au RGPD : il ne reçoit que des contenus pseudonymisés, jamais l’identité des personnes accompagnées. Nous préférons vous le dire que vous le laisser découvrir.",
+      "Plateforme, base et fichiers sont hébergés dans l’Union européenne. Le moteur de rédaction s’appuie sur un prestataire spécialisé, possiblement hors UE dans un cadre conforme au RGPD : il ne reçoit que des contenus pseudonymisés. Nous préférons vous le dire.",
   },
   {
     icone: Lock,
     titre: "Aucun entraînement sur vos écrits",
     texte:
-      "Ce que vous écrivez ne sert jamais à entraîner un modèle, ni le nôtre ni celui d’un tiers. Vos notes brutes ne sont pas conservées : seule la version que vous validez est enregistrée, dans votre espace.",
+      "Ce que vous écrivez n’entraîne aucun modèle, ni le nôtre ni celui d’un tiers. Les notes brutes ne sont pas conservées : seule la version validée est enregistrée.",
   },
   {
     icone: PenLine,
     titre: "Un brouillon, jamais un document final",
     texte:
-      "LEX produit une proposition que vous relisez, corrigez et validez. Vous restez l’auteur de l’écrit et le responsable de son contenu. Rien n’est transmis ni archivé sans votre validation explicite.",
+      "LEX propose, vous relisez et validez. Vous restez l’auteur de l’écrit et le responsable de son contenu.",
   },
   {
     icone: XCircle,
     titre: "Aucune décision, aucun diagnostic",
     texte:
-      "LEX n’évalue pas une situation, ne pose pas de diagnostic, n’apprécie pas un danger et ne recommande aucune orientation. L’analyse et la décision restent le travail du professionnel et de l’équipe. C’est une limite volontaire, pas une limite technique.",
+      "Ni évaluation, ni diagnostic, ni appréciation d’un danger, ni orientation. L’analyse reste le travail de l’équipe. C’est une limite volontaire, pas technique.",
   },
   {
     icone: ScrollText,
     titre: "Traçabilité complète",
     texte:
-      "Chaque génération est journalisée : qui l’a demandée, sur quel modèle d’écrit, et quand. La direction consulte ce journal depuis son espace et l’exporte en tableur — utile pour un protocole d’équipe comme pour une évaluation HAS. Le journal enregistre la demande, pas le contenu produit : ce que vous écrivez ne s’y retrouve jamais.",
+      "Qui a demandé, sur quel modèle d’écrit, et quand. La direction consulte et exporte ce journal — utile pour une évaluation HAS. Il enregistre la demande, jamais le contenu produit.",
   },
 ];
 
@@ -97,10 +97,9 @@ export default function ConfianceLexPage() {
           LEX écrit avec vous, jamais à votre place
         </h1>
         <p className="text-lg leading-relaxed text-foreground/75">
-          Utiliser l’intelligence artificielle sur des situations d’enfants placés, de personnes
-          handicapées ou de personnes âgées n’est pas anodin. Voici, sans langue de bois, ce que
-          LEX fait de vos écrits, ce qu’il ne fait pas, et ce que nous nous engageons à vous
-          fournir pour que votre direction puisse trancher en connaissance de cause.
+          Utiliser l’IA sur des situations d’enfants placés ou de personnes vulnérables n’est pas
+          anodin. Voici ce que LEX fait de vos écrits, ce qu’il ne fait pas, et ce que nous
+          fournissons à votre direction pour trancher.
         </p>
       </header>
 
@@ -130,18 +129,14 @@ export default function ConfianceLexPage() {
           La différence avec un assistant grand public
         </h2>
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/80">
-          Beaucoup de professionnels utilisent déjà un assistant d’IA généraliste pour leurs
-          écrits. C’est compréhensible, et c’est là qu’est le vrai risque : coller une note
-          d’observation nominative dans un outil grand public, c’est envoyer en clair le prénom,
-          l’âge et l’histoire d’un enfant à un service qui n’a aucune obligation vis-à-vis de
-          votre secteur — sans que l’établissement le sache, sans trace, et sans que personne
-          puisse en rendre compte le jour où la question est posée.
+Coller une note d’observation nominative dans un outil grand public, c’est envoyer en
+          clair le prénom, l’âge et l’histoire d’un enfant à un service qui n’a aucune obligation
+          envers votre secteur — sans trace, et sans personne pour en rendre compte.
         </p>
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/80">
-          LEX ne vous demande pas de renoncer à l’aide à la rédaction. Il vous demande de la faire
-          dans un cadre : noms masqués avant tout envoi au modèle, aucun entraînement sur vos
-          écrits, aucune conservation des notes brutes, et un journal que votre direction peut
-          ouvrir.
+LEX ne vous demande pas de renoncer à l’aide à la rédaction, mais de la faire dans un
+          cadre : noms masqués, aucun entraînement, aucune note brute conservée, et un journal
+          que votre direction peut ouvrir.
         </p>
       </section>
 
@@ -149,9 +144,8 @@ export default function ConfianceLexPage() {
       <section className="space-y-5">
         <h2 className="text-2xl font-semibold tracking-tight">Ce que nous fournissons à votre direction</h2>
         <p className="max-w-3xl leading-relaxed text-foreground/75">
-          Un usage individuel et clandestin de l’IA est le pire des scénarios pour un
-          établissement. Nous préférons vous outiller pour en faire une décision d’équipe,
-          documentée et opposable.
+Un usage clandestin de l’IA est le pire scénario pour un établissement. De quoi en
+          faire une décision d’équipe, documentée et opposable :
         </p>
         <ul className="grid gap-3 sm:grid-cols-2">
           {ENGAGEMENTS_DIRECTION.map((e) => (
@@ -171,20 +165,17 @@ export default function ConfianceLexPage() {
         <h2 className="text-xl font-semibold tracking-tight">Nos limites, dites franchement</h2>
         <div className="mt-4 space-y-3 leading-relaxed text-foreground/75">
           <p>
-            LEX fait gagner du temps de mise en forme, pas du temps d’analyse. Les études
-            disponibles sur les assistants de rédaction en santé mesurent un gain réel mais
-            modeste, et très variable selon les personnes. Nous ne vous promettrons donc pas
-            « des heures gagnées chaque semaine » : ce serait invérifiable.
+LEX fait gagner du temps de mise en forme, pas d’analyse. Les études disponibles
+            mesurent un gain réel mais modeste et très variable : nous ne promettrons donc pas
+            « des heures gagnées chaque semaine ».
           </p>
           <p>
-            Ce que les professionnels nous rapportent, c’est autre chose : la page blanche est
-            moins lourde, l’écrit du soir se fait le jour, et la charge mentale baisse. C’est un
-            bénéfice réel, et c’est celui que nous revendiquons.
+Ce qu’ils rapportent est autre chose : la page blanche est moins lourde, l’écrit du
+            soir se fait le jour. C’est ce bénéfice-là que nous revendiquons.
           </p>
           <p>
-            Enfin, LEX peut se tromper, mal interpréter une notion métier ou produire une
-            formulation trop normative. C’est exactement pour cette raison que rien ne part sans
-            votre relecture.
+LEX peut aussi se tromper ou produire une formulation trop normative. C’est pour cela
+            que rien ne part sans votre relecture.
           </p>
         </div>
       </section>
@@ -193,8 +184,8 @@ export default function ConfianceLexPage() {
       <section className="rounded-2xl bg-primary p-8 text-primary-foreground">
         <h2 className="text-2xl font-semibold tracking-tight">Essayez avant de décider</h2>
         <p className="mt-2 max-w-2xl text-primary-foreground/85">
-          LEX est gratuit chaque mois, sans carte bancaire et sans date de fin. De quoi le
-          confronter à un vrai rapport de situation avant d’en parler à votre équipe.
+Gratuit chaque mois, sans carte bancaire ni date de fin. De quoi le confronter à un
+          vrai rapport de situation.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -222,10 +213,9 @@ export default function ConfianceLexPage() {
           Ce qu’on sait du métier, avant même de parler d’outil
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Six guides en accès libre sur les écrits professionnels — rapport de situation,
-          projet personnalisé, ESS et GEVA-Sco, information préoccupante, bilan de fin
-          d’accompagnement. Chaque référence juridique y est citée telle qu’elle se vérifie,
-          et là où aucune norme n’existe, nous le disons plutôt que d’en inventer une.
+Six guides en accès libre : rapport de situation, projet personnalisé, ESS et
+          GEVA-Sco, information préoccupante, bilan de fin d’accompagnement. Chaque référence
+          juridique y est citée telle qu’elle se vérifie.
         </p>
         <Link
           href="/guides"
@@ -237,8 +227,8 @@ export default function ConfianceLexPage() {
       </section>
 
       <p className="text-xs italic text-muted-foreground">
-        Cette page décrit le fonctionnement de LEX au 21 août 2026. Pour toute question relative au
-        traitement des données, écrivez-nous : nous répondons avec les pièces justificatives.
+Fonctionnement de LEX au 21 août 2026. Toute question sur le traitement des données :
+        écrivez-nous, nous répondons pièces à l’appui.
       </p>
     </div>
   );

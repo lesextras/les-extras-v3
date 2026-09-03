@@ -9,19 +9,19 @@ const CADRE = [
     icone: EyeOff,
     titre: "Anonyme, toujours",
     texte:
-      "Vous déposez sous « Un·e éducateur spécialisé », jamais sous votre nom. Les prénoms sont masqués automatiquement.",
+      "Vous déposez sous « Un·e éducateur spécialisé ». Les prénoms sont masqués automatiquement.",
   },
   {
     icone: ShieldCheck,
     titre: "Fermé, donc sûr",
     texte:
-      "Rien n'est public, rien n'est indexé. Il faut un compte pour entrer — c'est ce qui permet de déposer une situation sans se surveiller.",
+      "Rien n'est public, rien n'est indexé. Il faut un compte pour entrer.",
   },
   {
     icone: HeartHandshake,
     titre: "Bienveillant et constructif",
     texte:
-      "On ne juge pas la pratique d'un collègue. On raconte ce qu'on a vécu, ce qu'on a tenté, ce que ça a donné — les échecs compris, souvent les plus utiles.",
+      "On ne juge pas la pratique d'un collègue : on raconte ce qu'on a tenté, échecs compris.",
   },
 ];
 
@@ -34,7 +34,8 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
           Un groupe d&apos;analyse de la pratique, en ligne et permanent
         </h2>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          Vous déposez la situation qui tourne en boucle. Des professionnels qui l’ont vécue vous répondent. Penser à plusieurs, c’est ça qui débloque.
+          Vous déposez la situation qui tourne en boucle. Des professionnels qui l’ont vécue
+          vous répondent.
         </p>
 
         <ul className="mt-8 space-y-5">
@@ -91,12 +92,12 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
                 2
               </span>
               <span className="text-muted-foreground">
-                <strong className="text-foreground">Puis il prend position</strong> — son analyse, la posture à tenir avec les mots à dire, deux ou trois activités, et ce qu’il ferait dès lundi.
+                <strong className="text-foreground">Puis il prend position</strong> — son analyse, la posture à tenir, deux ou trois activités, et ce qu’il ferait dès lundi.
               </span>
             </li>
           </ol>
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-            Il n’intervient que si vous le sollicitez, et l’échange reste privé. Un avis franc, jamais un diagnostic — à valider en réunion.
+            Il n’intervient que si vous le sollicitez. Un avis franc, jamais un diagnostic.
           </p>
         </div>
 
@@ -106,7 +107,8 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
               <Users className="size-5 text-primary" aria-hidden />
               <p className="mt-3 font-medium">Filtré par métier et par public accompagné</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                EHPAD et ITEP ne cherchent pas les mêmes retours. Vous ne voyez que ce qui vous concerne. Répondre rapporte 15 points, 40 de plus si votre retour est retenu.
+                EHPAD et ITEP ne cherchent pas les mêmes retours : vous ne voyez que ce qui vous
+                concerne. Répondre rapporte 15 points, 40 de plus si votre retour est retenu.
               </p>
             </div>
             {illustration ? (

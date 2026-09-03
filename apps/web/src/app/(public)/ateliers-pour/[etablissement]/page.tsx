@@ -107,9 +107,8 @@ export default async function AteliersPourPage({
             Ce qu’on vérifie avant la première séance
           </h2>
           <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
-            Sur Les Extras, ces pièces sont déposées une seule fois par l’intervenant et
-            resservent à chaque intervention. C’est le dossier de conformité : vous le
-            consultez avant de réserver, pas après.
+Sur Les Extras, ces pièces sont déposées une fois et resservent à chaque
+            intervention. Vous consultez ce dossier de conformité avant de réserver, pas après.
           </p>
           <ul className="mt-4 space-y-3">
             {e.avantDeFaireEntrer.map((t) => (
@@ -135,8 +134,8 @@ export default async function AteliersPourPage({
             ))}
           </dl>
           <p className="mt-4 border-t border-border pt-4 text-xs text-muted-foreground">
-            Références relues une par une le 2 septembre 2026. Elles situent l’intervention ;
-            elles ne remplacent pas l’avis de votre direction.
+Références relues une par une le 2 septembre 2026. Elles ne remplacent pas l’avis de
+            votre direction.
           </p>
         </aside>
 
@@ -147,8 +146,8 @@ export default async function AteliersPourPage({
           </h2>
           <ol className="mt-4 space-y-3">
             {[
-              'Vous parcourez le catalogue et vous ouvrez les fiches qui correspondent à votre public. Chaque fiche porte le tarif de l’intervenant, sa zone et ses disponibilités.',
-              'Vous demandez un devis. Il est établi sous 48 heures, et il ne comporte aucune commission : vous payez le tarif de l’intervenant, qui le touche en entier.',
+              'Vous ouvrez les fiches qui correspondent à votre public : chaque fiche porte le tarif de l’intervenant, sa zone et ses disponibilités.',
+              'Vous demandez un devis, établi sous 48 heures, sans commission : vous payez le tarif de l’intervenant, qui le touche en entier.',
               'Le contrat est généré et signé en ligne, la facture suit. Rien à ressaisir.',
               'Après l’intervention, ce que l’intervenant observe vous revient par écrit — c’est utilisable dans le projet personnalisé.',
             ].map((t, i) => (
@@ -171,8 +170,8 @@ export default async function AteliersPourPage({
           Le catalogue est consultable sans créer de compte
         </p>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Tarifs, zones et disponibilités sont visibles avant toute inscription. Vous ne créez
-          un compte que si vous demandez un devis.
+Tarifs, zones et disponibilités sont visibles sans compte. Vous n’en créez un que pour
+          demander un devis.
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Button asChild>

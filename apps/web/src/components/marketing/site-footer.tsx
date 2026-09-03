@@ -46,6 +46,9 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: 'IME · ITEP · SESSAD', href: '/renforteam' },
       { label: 'EHPAD', href: '/renforteam' },
       { label: 'Intervenant indépendant', href: '/intervenant-independant' },
+      // Ajouté le 03/09/2026 (demande Siham). Cette colonne en portait
+      // quatre : la règle des sept liens par colonne tient toujours.
+      { label: 'Partenaires associatifs', href: '/partenaires-associatifs' },
     ],
   },
   {

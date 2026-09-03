@@ -80,9 +80,9 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Comment faire entrer un atelier dans un institut médico-éducatif : ce qui fonctionne avec des enfants et adolescents en situation de handicap, les contraintes du lieu, et les pièces à réunir avant la première séance.',
     presentation:
-      'Un institut médico-éducatif accompagne des enfants et des adolescents en situation de handicap, le plus souvent avec une déficience intellectuelle et des troubles associés. Il combine dans un même lieu de l’éducatif, du pédagogique — l’unité d’enseignement — et du thérapeutique. Les journées y sont donc déjà denses, réparties entre plusieurs professionnels qui ne se croisent pas toujours.',
+      'Un IME accompagne des enfants et adolescents en situation de handicap, le plus souvent avec une déficience intellectuelle et des troubles associés. Éducatif, pédagogique et thérapeutique cohabitent dans le même lieu : les journées y sont déjà denses.',
     publicAccueilli:
-      'Des jeunes dont les rythmes, les niveaux de compréhension et les capacités d’attention sont très hétérogènes à l’intérieur d’un même groupe. C’est la donnée qui détermine tout le reste : un atelier conçu pour un niveau moyen ne fonctionne pas ici.',
+      'Des jeunes aux rythmes et aux capacités d’attention très hétérogènes dans un même groupe. Un atelier conçu pour un niveau moyen ne fonctionne pas ici.',
     cequunAtelierApporte: [
       'Un support que l’équipe ne peut pas porter seule — musicothérapie, socio-esthétique, activité physique adaptée : des médiations qui demandent une compétence et un matériel spécifiques.',
       'Un regard extérieur sur des jeunes qui, dans le quotidien, sont d’abord vus à travers leurs difficultés. Une séance où quelqu’un découvre un jeune sans son dossier change souvent ce que l’équipe en dit ensuite.',
@@ -117,9 +117,9 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Faire entrer un atelier en ITEP ou en DITEP : pourquoi les supports indirects fonctionnent mieux que l’entretien, ce que l’intervenant doit savoir avant d’arriver, et les pièces à réunir.',
     presentation:
-      'Un institut thérapeutique, éducatif et pédagogique accompagne des enfants et des adolescents dont les difficultés psychologiques s’expriment par des troubles du comportement qui perturbent gravement la socialisation et l’accès aux apprentissages. Beaucoup fonctionnent aujourd’hui en dispositif — le DITEP —, ce qui veut dire que le même jeune peut passer de l’accueil de jour à l’internat ou au service ambulatoire sans changer d’équipe.',
+      'Un ITEP accompagne des enfants et adolescents dont les difficultés psychologiques s’expriment par des troubles du comportement qui perturbent la socialisation et les apprentissages. Beaucoup fonctionnent en dispositif (DITEP) : le même jeune passe de l’accueil de jour à l’internat sans changer d’équipe.',
     publicAccueilli:
-      'Des jeunes dont l’intelligence n’est pas en cause et qui le savent, ce qui rend l’échec particulièrement coûteux pour eux. La question de la place, du regard des autres et de la réparation après un débordement traverse à peu près toutes les séances.',
+      'Des jeunes dont l’intelligence n’est pas en cause, et qui le savent : l’échec leur coûte cher. La place, le regard des autres et la réparation traversent toutes les séances.',
     cequunAtelierApporte: [
       'Un détour. Ce qui ne peut pas se dire en entretien passe souvent par le corps, le son ou l’image — c’est la raison d’être des médiations dans ce type d’établissement, pas un supplément d’âme.',
       'Un cadre où l’échec est réparable dans la même séance. Une prise ratée en psycho-boxe, un texte qui ne tient pas en slam : on recommence, et c’est exactement ce que le jeune ne peut pas faire à l’école.',
@@ -154,9 +154,9 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Un atelier en maison d’enfants à caractère social : ce qui marche avec des jeunes confiés, ce que l’intervenant doit savoir du cadre judiciaire, et les pièces exigées avant la première séance.',
     presentation:
-      'Une maison d’enfants à caractère social accueille des mineurs, et parfois de jeunes majeurs, dans le cadre de la protection de l’enfance. Certains sont confiés par un juge des enfants au titre de l’assistance éducative, d’autres accueillis dans un cadre administratif avec l’accord des parents. Cette différence, invisible dans le quotidien du groupe, change tout au droit qui s’applique.',
+      'Une MECS accueille des mineurs, parfois de jeunes majeurs, au titre de la protection de l’enfance. Certains sont confiés par un juge, d’autres accueillis avec l’accord des parents : une différence invisible dans le groupe, décisive en droit.',
     publicAccueilli:
-      'Des jeunes séparés de leur famille, souvent depuis longtemps, pour qui l’arrivée d’un adulte de plus est un événement à faible valeur ajoutée — sauf s’il revient. La régularité compte ici davantage que le contenu.',
+      'Des jeunes séparés de leur famille, pour qui un adulte de plus ne compte que s’il revient. La régularité importe plus que le contenu.',
     cequunAtelierApporte: [
       'Un temps qui n’est pas un temps de gestion. Le quotidien d’un foyer est fait de lever, de repas, de devoirs et de conflits ; un atelier est l’un des rares moments où l’adulte présent ne demande rien d’autre que de faire.',
       'Une production qui sort du foyer. Un texte, une photo, une vidéo montrable — la valorisation à l’extérieur est un levier que les équipes n’ont pas les moyens de fabriquer seules.',
@@ -195,7 +195,7 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Organiser un atelier collectif quand le service n’a pas de murs : ce que change l’intervention sur les lieux de vie, les formats qui tiennent, et les pièces à réunir.',
     presentation:
-      'Un service d’éducation spéciale et de soins à domicile accompagne des enfants et des adolescents sur leurs lieux de vie — le domicile, l’école, parfois la crèche ou le lieu de stage. Il n’a pas de collectif permanent : c’est ce qui le distingue de tous les autres établissements de cette liste, et c’est ce qui rend l’organisation d’un atelier plus délicate.',
+      'Un SESSAD accompagne des enfants et adolescents sur leurs lieux de vie : domicile, école, parfois crèche ou stage. Il n’a pas de collectif permanent — seul de cette liste — et c’est ce qui complique l’organisation d’un atelier.',
     publicAccueilli:
       'Des jeunes scolarisés en milieu ordinaire la plupart du temps, souvent seuls de leur situation dans leur classe. Le collectif est précisément ce qui leur manque, et ce qu’un atelier peut leur offrir ponctuellement.',
     cequunAtelierApporte: [
@@ -232,9 +232,9 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Un atelier en ESAT : articuler l’activité de production et le soutien médico-social, choisir un créneau qui ne désorganise pas la chaîne, et réunir les pièces nécessaires.',
     presentation:
-      'Un établissement et service d’aide par le travail accueille des adultes en situation de handicap dans une activité professionnelle en milieu protégé, assortie d’un soutien médico-social. Les deux dimensions coexistent en permanence : c’est un lieu de travail, avec des délais et des clients, et un lieu d’accompagnement.',
+      'Un ESAT accueille des adultes en situation de handicap dans une activité professionnelle en milieu protégé, avec un soutien médico-social. C’est un lieu de travail — avec des délais et des clients — et un lieu d’accompagnement.',
     publicAccueilli:
-      'Des adultes, souvent depuis de nombreuses années dans la même structure, pour qui le statut de travailleur est central. C’est la première chose à respecter : on ne s’adresse pas ici à des personnes accompagnées, mais à des collègues.',
+      'Des adultes pour qui le statut de travailleur est central. On ne s’adresse pas ici à des personnes accompagnées, mais à des collègues.',
     cequunAtelierApporte: [
       'Un temps de soutien qui ne ressemble pas à une réunion. L’activité physique adaptée, la socio-esthétique ou l’expression corporelle sont mieux reçues qu’un temps de parole en salle.',
       'Une occasion de travailler l’image de soi, sujet massif et rarement abordé de front dans un cadre professionnel.',
@@ -264,7 +264,7 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Un atelier en EHPAD qui tienne dans la journée d’un service : formats, contraintes de mobilité et de fatigabilité, et pièces à réunir avant la première séance.',
     presentation:
-      'Un établissement d’hébergement pour personnes âgées dépendantes accompagne des résidents dont l’autonomie et la santé varient fortement d’une personne à l’autre et, pour une même personne, d’un jour à l’autre. Le soin y structure la journée : les créneaux réellement disponibles pour un atelier sont peu nombreux et connus de l’équipe.',
+      'Un EHPAD accompagne des résidents dont l’autonomie varie fortement d’une personne à l’autre, et d’un jour à l’autre. Le soin structure la journée : les créneaux disponibles pour un atelier sont rares, et l’équipe les connaît.',
     publicAccueilli:
       'Des adultes âgés, dont une partie présente des troubles cognitifs. La mémoire de la séance précédente ne peut pas être supposée : chaque séance doit fonctionner seule.',
     cequunAtelierApporte: [

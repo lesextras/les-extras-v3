@@ -104,9 +104,8 @@ export default function ComparatifRemplacementPage() {
           Ce que coûtent les plateformes de remplacement
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          Trois façons de financer le même service. Les chiffres ci-dessous sont ceux que
-          chaque acteur publie lui-même, relevés le {RELEVE_LE} — et là où rien n’est
-          publié, nous l’écrivons plutôt que de l’estimer.
+Trois façons de financer le même service, d’après ce que chaque acteur publie
+          lui-même, relevé le {RELEVE_LE}. Là où rien n’est publié, nous l’écrivons plutôt que de l’estimer.
         </p>
       </div>
 
@@ -154,9 +153,8 @@ export default function ComparatifRemplacementPage() {
           « Gratuit », ça veut dire quoi exactement ?
         </h2>
         <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
-          Une plateforme gratuite sans modèle économique visible inquiète, à juste titre :
-          on cherche où est le piège. Il n’y en a pas, et voici pourquoi. Les Extras est
-          édité par une association loi 1901, pas par une société financée pour croître.
+Une plateforme gratuite sans modèle économique visible inquiète, à juste titre. Il
+          n’y a pas de piège : Les Extras est édité par une association loi 1901, pas par une société financée pour croître.
           Deux choses, et deux seulement, sont payantes — et aucune n’est le renfort.
         </p>
         <ul className="mt-6 space-y-4">
@@ -230,9 +228,8 @@ export default function ComparatifRemplacementPage() {
           ))}
         </ul>
         <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-          Comparaison établie le {RELEVE_LE} à partir des documents publics de chaque
-          acteur, sur le seul terrain du modèle économique. Une grille tarifaire évolue : si
-          vous constatez qu’un chiffre a changé, écrivez-nous et nous corrigerons cette page.
+Comparaison établie le {RELEVE_LE} à partir des documents publics de chaque acteur,
+          sur le seul terrain du modèle économique. Une grille évolue : si vous constatez qu’un chiffre a changé, écrivez-nous et nous corrigerons cette page.
           Nous ne portons aucune appréciation sur la qualité de leurs services.
         </p>
       </section>
@@ -242,8 +239,8 @@ export default function ComparatifRemplacementPage() {
           Publier un besoin de renfort ne vous engage à rien
         </p>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Le compte est gratuit, sans carte bancaire et sans engagement. Vous verrez le
-          fonctionnement avant de décider quoi que ce soit.
+Gratuit, sans carte bancaire ni engagement. Vous verrez le fonctionnement avant de
+          décider.
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Button asChild>

@@ -92,8 +92,9 @@ export default function IntervenantIndependantPage() {
           Vendez vos ateliers et vos formations aux établissements, sans intermédiaire
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          Les Extras est la plateforme de l’association ADéPA. Elle rassemble les établissements
-          médico-sociaux - MECS, IME, ITEP, SESSAD, EHPAD - et les professionnels indépendants du secteur. Vous y publiez vos ateliers et vos formations, les établissements réservent en ligne, et vous facturez votre tarif sans qu’aucune commission soit prélevée.
+La plateforme de l’association ADéPA : MECS, IME, ITEP, SESSAD et EHPAD d’un côté,
+          professionnels indépendants de l’autre. Vous publiez, ils réservent, vous facturez
+          votre tarif — sans commission.
         </p>
       </div>
 
@@ -106,9 +107,8 @@ export default function IntervenantIndependantPage() {
             Vous fixez votre tarif. Vous touchez 100 %.
           </p>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-            C’est le parti pris du modèle associatif : l’association se finance sur les formations
-            Qualiopi qu’elle facture et sur les crédits LEX, jamais sur la rémunération de celui qui
-            fait le travail.
+L’association se finance sur les formations Qualiopi et les crédits LEX, jamais sur la
+            rémunération de celui qui fait le travail.
           </p>
           <ul className="mt-5 space-y-2">
             {ZERO.map((item) => (
@@ -151,8 +151,7 @@ export default function IntervenantIndependantPage() {
           ))}
         </div>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          Cette liste n’est pas limitative : si vous intervenez auprès d’établissements du secteur,
-          votre métier a sa place dans le réseau.
+Liste non limitative : si vous intervenez dans le secteur, votre métier a sa place.
         </p>
       </section>
 
@@ -167,9 +166,8 @@ export default function IntervenantIndependantPage() {
           Ce dont vous avez besoin pour commencer
         </h2>
         <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-          Quatre pièces, déposées une seule fois. Elles ne sont pas exigées pour créer votre
-          compte ni pour publier : elles le deviennent quand un établissement vous engage,
-          et la plateforme suit leurs échéances à votre place.
+Quatre pièces, déposées une fois. Exigées non pas pour créer le compte ou publier,
+          mais quand un établissement vous engage. La plateforme suit leurs échéances.
         </p>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
           {PIECES.map((p) => (
@@ -190,9 +188,8 @@ export default function IntervenantIndependantPage() {
               Le temps que ça prend
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-              Créer le compte : sept champs. Publier une première fiche d’atelier : un titre et
-              une description suffisent — tout le reste (durée, public, tarif, objectifs, matériel)
-              se complète quand vous voulez, et se remplit en repartant d’un brief si vous en avez un.
+Créer le compte : sept champs. Publier une fiche : un titre et une description
+              suffisent, le reste se complète quand vous voulez.
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-5">
@@ -201,9 +198,9 @@ export default function IntervenantIndependantPage() {
               Où interviennent nos établissements
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-              L’association est basée à Melun, et le réseau se construit d’abord en
-              Île-de-France : {VILLES.map((v) => v.nom).join(", ")}. Vous pouvez vous
-              référencer ailleurs — mais c’est là que les demandes arrivent aujourd’hui.
+Melun, et le réseau se construit d’abord en Île-de-France :{" "}
+              {VILLES.map((v) => v.nom).join(", ")}. Vous pouvez vous référencer ailleurs, mais
+              c’est là que les demandes arrivent.
             </p>
           </div>
         </div>
@@ -219,17 +216,16 @@ export default function IntervenantIndependantPage() {
           Deux façons de travailler, et elles ne se signent pas pareil
         </h2>
         <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-          C’est la distinction la plus importante du site, et la seule qui change votre statut
-          sur une intervention donnée. Vous pouvez faire les deux.
+La seule distinction qui change votre statut sur une intervention. Vous pouvez faire
+          les deux.
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-xl border-2 border-primary/30 bg-primary-soft/20 p-6">
             <p className="text-lg font-semibold text-foreground">Vos ateliers et vos formations</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Vous publiez une offre, un établissement la réserve ou vous demande un devis. Vous
-              intervenez <strong>en tant qu’indépendant</strong>, sous votre SIRET, et vous
-              facturez l’établissement en direct. La plateforme génère le devis, le contrat et la
-              facture — elle ne prend rien au passage.
+Un établissement réserve votre offre. Vous intervenez{" "}
+              <strong>en tant qu’indépendant</strong>, sous votre SIRET, et vous facturez en
+              direct. Devis, contrat et facture sont générés — rien n’est prélevé.
             </p>
             <p className="mt-3 text-sm font-medium text-foreground">
               Il vous faut donc un statut d’indépendant.
@@ -238,10 +234,9 @@ export default function IntervenantIndependantPage() {
           <div className="rounded-xl border border-border bg-card p-6">
             <p className="text-lg font-semibold text-foreground">RenforTeam</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Un établissement a une absence à couvrir. Vous acceptez la mission, et c’est lui
-              qui vous <strong>embauche en CDD</strong> : vous êtes salarié le temps du
-              remplacement, avec un vrai bulletin de paie. Rien à facturer, aucun statut
-              d’indépendant nécessaire.
+Vous acceptez une mission et l’établissement vous{" "}
+              <strong>embauche en CDD</strong> : salarié le temps du remplacement, vrai bulletin
+              de paie. Rien à facturer, aucun statut d’indépendant.
             </p>
             <p className="mt-3 text-sm">
               <Link href="/renforteam" className="font-medium underline underline-offset-2">

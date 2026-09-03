@@ -331,7 +331,7 @@ export default async function FormationsCatalogPage({
     <div className="space-y-8">
       <PageHeader
         title="Nos formations"
-        subtitle="Montez en compétences avec des formations pensées pour le médico-social : analyse des pratiques, prévention, spécialisations métier. Certification Qualiopi portée par ADéPA — finançables OPCO."
+        subtitle="Pensées pour le médico-social. Certification Qualiopi portée par ADéPA, finançables OPCO."
       />
 
       <form method="GET" className="space-y-3">
@@ -498,7 +498,7 @@ export default async function FormationsCatalogPage({
           description={
             filtree
               ? "Élargissez vos critères, ou dites-nous ce que vous cherchez : nous montons des sessions sur mesure."
-              : "Nos formations arrivent très prochainement. Contactez-nous pour être informé de l’ouverture des prochaines sessions."
+              : "Contactez-nous pour être informé de l’ouverture des prochaines sessions."
           }
         />
       ) : (
@@ -518,10 +518,8 @@ export default async function FormationsCatalogPage({
                     Les mini-formations gratuites
                   </h2>
                   <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                    Une compétence précise par parcours, quatre modules, une
-                    boîte à outils à imprimer et une fiche récap A4. Gratuites
-                    du premier au dernier module, sans carte bancaire et sans
-                    date de fin.
+                    Une compétence par parcours, quatre modules, une fiche A4 à
+                    imprimer. Sans carte bancaire, sans date de fin.
                   </p>
                 </div>
                 <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold text-foreground shadow-sm">

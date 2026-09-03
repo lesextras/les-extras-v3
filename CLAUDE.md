@@ -1486,3 +1486,73 @@ d'activités, Appui scolaire ; l'Assistant y était déjà), avec `premium: true
 comme les autres. **Toute entrée retirée du menu de gauche au profit de la
 barre du haut doit être vérifiée dans la palette** — sinon on livre une
 fonctionnalité payante que la moitié des visites ne peut plus ouvrir.
+
+---
+
+## Resserrage des textes, et la page « Partenaires associatifs » — 3 septembre 2026
+
+Siham : « il y a beaucoup de texte dans tout le site ! optimise les textes et
+marketing et réduit partout », puis : une page comme
+`place-d.fr/partenaires-associatifs`, sur Les Extras **et** sur adepa77.fr,
+avec un lien au pied de page.
+
+### Le périmètre a été tranché avec elle, et il compte
+
+Mesure faite avant de toucher à quoi que ce soit (rendu réel, URL nues) :
+accueil **2 484 mots**, `/formations` 3 444 (dont les treize cartes),
+`/ateliers` 1 548, les six pages secteur ~900 chacune, les guides ~1 800.
+
+**Choix de Siham : le marketing seulement.** Ne sont PAS touchés, et il ne faut
+pas y revenir sans le lui redemander :
+
+- **les six guides des écrits professionnels.** Leur longueur est l'outil : ils
+  existent pour reprendre la première page de Google à NotaSuivi, qui tient
+  des guides de 2 000 mots sur exactement ces requêtes. Les raccourcir, c'est
+  défaire le seul travail de référencement du site ;
+- **le légal et le réglementaire** — mentions, CGU, CGV, informations
+  réglementaires : ces pages ne raccourcissent pas, elles répondent à des
+  obligations ;
+- **les citations d'articles de loi** des pages secteur, qui sont reproduites
+  au mot près et doivent le rester.
+
+### Ce qui a été resserré, et selon quelle règle
+
+Une seule : **une idée par paragraphe, et le paragraphe s'arrête quand l'idée
+est dite.** Ce qui a sauté, ce sont les redites — la gratuité était réexpliquée
+quatre fois sur l'accueil — et les phrases qui commentent la phrase précédente.
+Aucun fait, aucun chiffre, aucune source n'a été retiré.
+
+Accueil (`page.tsx` + `UnSeulFormulaire`, `ApercuProduit`, `BlocGap`,
+`OffreLex`), `/formations`, `/ateliers`, `/confiance-lex`, `/renforteam`,
+`/intervenant-independant`, les deux comparatifs, et les six pages
+« ateliers pour » (`ateliers-pour/donnees.ts` : les champs `presentation` et
+`publicAccueilli` des six entrées).
+
+⚠ **Ce qui a été gardé intact dans les pages secteur** : les listes
+`cequunAtelierApporte`, `contraintes` et `avantDeFaireEntrer`. C'est là que vit
+le contenu PROPRE à chaque type d'établissement — celui qui empêche Google de
+lire six pages comme du contenu dupliqué. Les raccourcir jusqu'à les rendre
+interchangeables ruinerait ces six pages d'un coup.
+
+### `/partenaires-associatifs`
+
+Reprise de la structure de Place D — pourquoi, valeurs, marche à suivre — avec
+deux écarts assumés :
+
+- **Aucun nom, aucun logo, aucun témoignage.** L'association n'a pas encore de
+  partenariat associatif publié. La section « ils sont déjà partenaires » du
+  modèle est remplacée par un **appel à partenariat** (« vous voulez être la
+  première association partenaire ? ») — décision de Siham. Le jour où des
+  noms existent, c'est ce bloc qu'on remplace.
+- **La convention est décrite comme ce que l'association PROPOSE**, jamais
+  comme un document déjà rédigé : il ne l'est pas.
+
+Les quatre bénéfices annoncés sont tous déjà en ligne et vérifiables :
+publication au catalogue, accès au réseau d'établissements, contrats et
+factures édités par la plateforme + 15 générations LEX offertes par mois,
+écriture partagée sur l'Édublog. **Rien n'y demande une décision qui n'a pas
+été prise.**
+
+Lien ajouté dans la colonne **« Secteur »** du pied de page (elle en portait
+quatre : la règle des sept liens par colonne tient), et la route est déclarée
+au `sitemap.ts` — sans quoi la page n'existe que pour qui connaît son adresse.

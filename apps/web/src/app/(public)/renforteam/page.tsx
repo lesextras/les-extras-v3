@@ -111,9 +111,8 @@ export default async function SosRenfortPage() {
             Un arrêt maladie à 21 h. Le poste est couvert avant l’ouverture.
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
-            Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte emporte la
-            mission — vous n’arbitrez rien. Et vous l’embauchez vous-même en CDD : moins cher que
-            l’intérim, sans risque de requalification.
+Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte emporte la
+            mission. Vous l’embauchez en CDD : moins cher que l’intérim, sans requalification.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button asChild size="lg">
@@ -219,9 +218,8 @@ export default async function SosRenfortPage() {
             Les missions ouvertes ne s’affichent pas en ce moment
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            C’est un incident technique de notre côté, pas une absence de besoins. Réessayez dans
-            quelques minutes, ou créez votre compte : vous verrez la liste complète depuis votre
-            espace.
+Un incident technique de notre côté, pas une absence de besoins. Réessayez dans
+            quelques minutes.
           </p>
         </section>
       ) : null}
@@ -320,8 +318,8 @@ export default async function SosRenfortPage() {
               sans rien à cliquer. */}
           <div className="border-t border-border/60 pt-6">
             <p className="text-sm text-muted-foreground">
-              Vous êtes intervenant ? Sur un renfort, c’est l’établissement qui vous embauche en
-              CDD — vous n’avez besoin d’aucun statut d’indépendant.
+Vous êtes intervenant ? C’est l’établissement qui vous embauche en CDD : aucun statut
+              d’indépendant n’est nécessaire.
             </p>
             <div className="flex flex-wrap justify-center gap-3 pt-4">
               <Button asChild size="lg" variant="outline">

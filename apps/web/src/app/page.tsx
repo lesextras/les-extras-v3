@@ -298,13 +298,13 @@ export default async function LandingPage() {
             {[
               {
                 titre: 'Les ateliers de notre réseau',
-                texte: 'Médiations éducatives clés en main, animées chez vous par un intervenant du réseau, dossier de conformité à jour.',
+                texte: 'Médiations clés en main, animées chez vous par un intervenant du réseau.',
                 href: '/ateliers',
                 image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
                 action: 'Parcourir les ateliers',
               },
               {
-                titre: 'Nos parcours de formations certifiés Qualiopi',
+                titre: 'Nos formations certifiées Qualiopi',
                 texte: 'Montée en compétences des équipes, finançable par votre OPCO.',
                 href: '/formations',
                 image: wp('/wp-content/uploads/2025/02/lever-vous-400x400.jpeg'),
@@ -312,7 +312,7 @@ export default async function LandingPage() {
               },
               {
                 titre: 'Le renfort d’équipe et parental',
-                texte: 'Un professionnel disponible vite, pour absorber l’absence ou le surcroît.',
+                texte: 'Un professionnel disponible vite, pour absorber l’absence.',
                 href: '/renforteam',
                 image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
                 action: 'Comprendre le renfort',
@@ -365,14 +365,12 @@ export default async function LandingPage() {
                   Ateliers et formations, en direct avec l’intervenant
                 </h2>
                 <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                  Vous voyez les offres, vous réservez ou vous demandez un devis — sans intermédiaire et
-                  sans frais supplémentaire. La mise en relation est{' '}
+                  Vous réservez{' '}
                   <strong className="font-semibold text-foreground">
-                    directe entre l’intervenant et l’établissement
+                    directement auprès de l’intervenant
                   </strong>
-                  , et l’association ne prélève{' '}
-                  <strong className="font-semibold text-foreground">aucune commission</strong> au passage :
-                  ADéPA est une association au service du bon accompagnement.
+                  . L’association ne prélève{' '}
+                  <strong className="font-semibold text-foreground">aucune commission</strong>.
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
                   {['0 % de commission', 'Aucun intermédiaire', 'Devis sous 48 h', 'Association loi 1901'].map(
@@ -428,8 +426,8 @@ export default async function LandingPage() {
                         Les mini-formations gratuites
                       </h2>
                       <p className="mt-2 text-muted-foreground">
-                        Une compétence précise par parcours, quatre modules et une fiche récap A4
-                        à imprimer. Gratuites du premier au dernier module, sans carte bancaire.
+                        Une compétence par parcours, quatre modules, une fiche A4 à imprimer.
+                        Sans carte bancaire.
                       </p>
                     </div>
                     <Button asChild variant="outline">
@@ -492,9 +490,8 @@ export default async function LandingPage() {
                 Décrivez un besoin. La séance est écrite en quinze secondes.
               </h2>
               <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                L’assistant conçu pour le médico-social : écrits professionnels, séances,
-                appui scolaire, analyse de pratique. Quatre outils, un seul compteur de
-                crédits. Moins de paperasse, plus d’accompagnement.
+                Écrits professionnels, séances, appui scolaire, analyse de pratique.
+                Quatre outils, un seul compteur de crédits.
               </p>
             </Reveal>
 
@@ -524,14 +521,12 @@ export default async function LandingPage() {
                 La mise en relation est gratuite. Pour tout le monde.
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Publier un renfort, proposer ou réserver un atelier, jusqu’au{" "}
+                Renforts et ateliers, jusqu’au{" "}
                 <strong className="font-semibold text-foreground">contrat</strong> et à la{" "}
-                <strong className="font-semibold text-foreground">facture</strong> : gratuit, pour les
-                établissements comme pour les intervenants, sans commission. Deux services seulement
-                se paient : les <strong className="font-semibold text-foreground">formations
-                Qualiopi</strong>, facturées au devis par l’association, et{" "}
-                <strong className="font-semibold text-foreground">LEX</strong>, l’assistant IA à
-                crédits.
+                <strong className="font-semibold text-foreground">facture</strong> : gratuit des deux
+                côtés, sans commission. Seuls les{" "}
+                <strong className="font-semibold text-foreground">formations Qualiopi</strong> et{" "}
+                <strong className="font-semibold text-foreground">LEX</strong> se paient.
               </p>
             </Reveal>
 
@@ -539,14 +534,14 @@ export default async function LandingPage() {
               {[
                 {
                   nom: 'Mise en relation & contractualisation',
-                  sous: 'Renforts et ateliers, de la publication au contrat signé. Pour les deux côtés.',
+                  sous: 'Renforts et ateliers, de la publication au contrat signé.',
                   prix: '0 €',
                   prixSous: 'Gratuit, pour toujours — 0 % de commission',
                   points: [
                     'RenforTeam : diffusion en cascade, jusqu’au CDD généré',
-                    'Ateliers : catalogue, devis sous 48 h, contrat et facture automatiques',
-                    'L’établissement paie le tarif de l’intervenant, qui le touche intégralement',
-                    'Planning, équipe, conformité et messagerie inclus, sans limite',
+                    'Ateliers : devis sous 48 h, contrat et facture automatiques',
+                    'L’intervenant touche son tarif intégralement',
+                    'Planning, équipe, conformité et messagerie inclus',
                   ],
                   href: '/register',
                   action: 'Créer un compte',
@@ -561,14 +556,14 @@ export default async function LandingPage() {
                 },
                 {
                   nom: 'Formations Qualiopi',
-                  sous: 'Le seul service facturé par l’association, sous sa certification Qualiopi.',
+                  sous: 'Facturées par l’association, sous sa certification.',
                   prix: 'Sur devis',
                   prixSous: 'Facturées par l’association ADéPA — finançables OPCO',
                   points: [
-                    'L’association fait appel aux formateurs du réseau Les Extras',
-                    'Parcours certifiés Qualiopi, finançables par votre OPCO',
-                    'Émargement, attestations et justificatifs générés automatiquement',
-                    'Demande de devis en ligne, réponse sous 48 h',
+                    'Animées par les formateurs du réseau Les Extras',
+                    'Certifiées Qualiopi, finançables par votre OPCO',
+                    'Émargement, attestations et justificatifs automatiques',
+                    'Devis en ligne, réponse sous 48 h',
                   ],
                   href: '/formations',
                   action: 'Demander un devis',
@@ -583,14 +578,14 @@ export default async function LandingPage() {
                 },
                 {
                   nom: 'LEX, l’assistant IA',
-                  sous: 'Le second service payant — et seulement au-delà de la dotation gratuite.',
+                  sous: 'Payant seulement au-delà de la dotation gratuite.',
                   prix: 'Gratuit, puis 19 €',
-                  prixSous: '15 générations offertes chaque mois, sans carte bancaire. Abonnement à partir de 19 €/mois.',
+                  prixSous: '15 générations offertes chaque mois, sans carte bancaire.',
                   points: [
-                    '15 générations par mois offertes, reportables jusqu’à trois mois',
+                    '15 générations par mois, reportables trois mois',
                     'Assistant d’écriture : notes brutes → écrits professionnels',
                     'Générateur d’activités éducatives et thérapeutiques',
-                    'Au-delà : 19 €/mois pour 200 générations, 49 €/mois pour 600',
+                    'Au-delà : 19 €/mois pour 200 générations, 49 € pour 600',
                   ],
                   href: '/register',
                   action: 'Découvrir LEX',
@@ -666,7 +661,7 @@ export default async function LandingPage() {
                 Recevez le catalogue, posez vos questions
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Sans créer de compte. Le catalogue complet par e-mail, et l’équipe répond à vos questions.
+                Sans créer de compte.
               </p>
             </Reveal>
 
@@ -692,7 +687,7 @@ export default async function LandingPage() {
                   Ouvrez un compte, regardez, décidez ensuite
                 </h2>
                 <p className="mt-4 text-muted-foreground">
-                  Compte gratuit, sans engagement. La mise en relation ne se paie pas — seuls les formations Qualiopi et LEX se facturent.
+                  Compte gratuit, sans engagement.
                 </p>
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg" variant="secondary">

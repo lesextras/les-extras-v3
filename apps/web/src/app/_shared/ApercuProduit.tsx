@@ -158,8 +158,7 @@ export function ApercuProduit() {
           Voir avant de créer un compte
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          Un renfort publié à 21 h, la cascade qui descend toute seule, et le téléphone
-          qui sonne chez les bonnes personnes.
+          Un renfort publié à 21 h, la cascade qui descend seule, le téléphone qui sonne.
         </p>
       </div>
 
@@ -175,8 +174,8 @@ export function ApercuProduit() {
               Installable sur le téléphone, notifications comprises
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-              Pas d’application à télécharger sur un magasin : on ajoute Les Extras à l’écran
-              d’accueil, et les alertes arrivent même application fermée.
+              Rien à télécharger : on ajoute Les Extras à l’écran d’accueil, et les alertes
+              arrivent même application fermée.
             </p>
             <Link
               href="/renforteam"
@@ -191,12 +190,12 @@ export function ApercuProduit() {
 
       <div className="mt-12 grid gap-4 sm:grid-cols-3">
         {[
-          { titre: "Planning partagé", texte: "Créneaux, missions récurrentes et heures déclarées au même endroit." },
+          { titre: "Planning partagé", texte: "Créneaux, missions récurrentes et heures au même endroit." },
           { titre: "Coffre-fort de conformité", texte: "Diplômes, casier, URSSAF — alerte avant l’échéance." },
           { titre: "Devis, contrat, facture", texte: "Générés depuis la mission. Rien à ressaisir." },
-          { titre: "Congés & compteurs", texte: "Demandes d’absence, soldes, heures du mois et export paie en CSV." },
-          { titre: "72 h pour ajuster", texte: "Après la mission, chacun vérifie les heures. Passé le délai, tout se valide seul." },
-          { titre: "Progression intervenant", texte: "Nouveau, Confirmé, Super Extra : les plus fiables sont prévenus en premier." },
+          { titre: "Congés & compteurs", texte: "Absences, soldes, heures du mois, export paie en CSV." },
+          { titre: "72 h pour ajuster", texte: "Chacun vérifie les heures ; passé le délai, tout se valide seul." },
+          { titre: "Progression intervenant", texte: "Nouveau, Confirmé, Super Extra : les plus fiables passent en premier." },
         ].map((c, i) => (
           <div
             key={c.titre}

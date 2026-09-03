@@ -25,7 +25,7 @@ export default async function AteliersCatalogPage({
         type="atelier"
         basePath="/ateliers"
         title="Nos ateliers"
-        subtitle="Ateliers éducatifs, médiation, art-thérapie, prévention… un catalogue d'interventions clé en main, animées par les intervenants du réseau."
+        subtitle="Médiation, art-thérapie, prévention. Des interventions clé en main, animées chez vous."
         searchPlaceholder="Rechercher un atelier…"
         emptyTitle="Catalogue d'ateliers en préparation"
         searchParams={searchParams}
@@ -45,10 +45,8 @@ export default async function AteliersCatalogPage({
           Un atelier chez vous, concrètement
         </h2>
         <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-          Ce qui fonctionne dans un ITEP ne fonctionne pas dans un EHPAD, et les contraintes
-          d’un service sans murs n’ont rien à voir avec celles d’un internat. Six pages, une
-          par type de structure : ce qu’un atelier y apporte, ce qui rate, et ce qu’il faut
-          vérifier avant la première séance.
+          Ce qui marche en ITEP ne marche pas en EHPAD. Une page par type de structure : ce
+          qu’un atelier y apporte, ce qui rate, et quoi vérifier avant la première séance.
         </p>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {ETABLISSEMENTS.map((e) => (

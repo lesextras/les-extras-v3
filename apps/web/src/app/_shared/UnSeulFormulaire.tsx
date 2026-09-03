@@ -25,7 +25,7 @@ const POUR_ETABLISSEMENT = [
     pastille: "bg-primary text-primary-foreground",
     titre: "L’offre part dans la seconde",
     texte:
-      "Une case « mission urgente », et chaque intervenant dont le profil correspond (métier, zone, disponibilité) est prévenu par e-mail à la publication. Pas de liste à constituer, pas d’appels.",
+      "Chaque intervenant dont le profil correspond est prévenu par e-mail. Pas de liste à constituer, pas d’appels.",
   },
   {
     icone: Users,
@@ -36,7 +36,7 @@ const POUR_ETABLISSEMENT = [
     pastille: "bg-secondary text-secondary-foreground",
     titre: "En cascade, dans votre ordre",
     texte:
-      "Vos salariés d’abord, puis votre vivier de CDD habituels, puis le réseau Les Extras. Vous fixez l’ordre une fois : la diffusion s’élargit toute seule tant que le besoin n’est pas couvert.",
+      "Vos salariés, puis votre vivier, puis le réseau. Vous fixez l’ordre une fois ; la diffusion s’élargit seule.",
   },
   {
     icone: FileSignature,
@@ -49,7 +49,7 @@ const POUR_ETABLISSEMENT = [
     pastille: "bg-amber-500 text-amber-950",
     titre: "La réponse est automatique",
     texte:
-      "Le premier qui accepte prend la mission et le contrat s’émet dans la foulée. Ou vous gardez la main et validez chaque profil, l’un après l’autre.",
+      "Le premier qui accepte prend la mission, le contrat s’émet dans la foulée. Ou vous validez chaque profil.",
   },
 ];
 
@@ -65,19 +65,19 @@ const CASCADE = [
   {
     titre: "Vos salariés",
     texte:
-      "Le besoin part d’abord en interne, vers les personnes qui connaissent déjà la maison et les jeunes. Heures complémentaires proposées en un clic, réponse depuis leur espace.",
+      "En interne d’abord, vers ceux qui connaissent déjà la maison. Heures complémentaires proposées en un clic.",
     pastille: "bg-primary text-primary-foreground",
   },
   {
     titre: "Votre vivier de CDD",
     texte:
-      "Sans réponse, l’offre passe à vos remplaçants habituels — les intervenants déjà venus chez vous, gardés dans votre vivier. Plus besoin de rechercher leurs coordonnées.",
+      "Sans réponse, l’offre passe à vos remplaçants habituels, déjà venus chez vous. Leurs coordonnées sont là.",
     pastille: "bg-secondary text-secondary-foreground",
   },
   {
     titre: "Le réseau Les Extras",
     texte:
-      "En dernier recours seulement, l’offre s’ouvre aux intervenants du réseau, filtrés sur le métier, la zone d’intervention et les disponibilités.",
+      "En dernier recours, l’offre s’ouvre au réseau — filtré sur le métier, la zone et les disponibilités.",
     pastille: "bg-amber-500 text-amber-950",
   },
 ];
@@ -91,10 +91,8 @@ export function UnSeulFormulaire() {
           Vous publiez une fois. Le réseau est prévenu, la réponse vient toute seule.
         </h2>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Un renfort à couvrir, un atelier à programmer : vous remplissez un seul formulaire.
-          Le logiciel s’occupe de la suite — il prévient les bonnes personnes dans l’ordre que vous
-          avez fixé, relance celles qui n’ont pas répondu, et édite le contrat dès qu’un intervenant
-          accepte.
+          Un renfort, un atelier : un seul formulaire. Le logiciel prévient dans l’ordre que vous
+          avez fixé, relance, et édite le contrat dès qu’un intervenant accepte.
         </p>
       </Reveal>
 
@@ -138,8 +136,7 @@ export function UnSeulFormulaire() {
             La cascade : votre équipe d’abord, le réseau en dernier
           </h3>
           <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            Vous fixez l’ordre une fois. À chaque palier, le logiciel prévient, laisse un délai,
-            relance, puis élargit tout seul tant que le besoin n’est pas couvert.
+            À chaque palier : le logiciel prévient, laisse un délai, relance, puis élargit seul.
           </p>
         </div>
         <ol className="grid gap-px bg-border md:grid-cols-3">
@@ -161,10 +158,9 @@ export function UnSeulFormulaire() {
           ))}
         </ol>
         <p className="border-t border-border px-6 py-5 text-sm leading-relaxed text-muted-foreground md:px-8">
-          Dès qu’un intervenant accepte, la mission bascule dans le logiciel :{" "}
+          Dès qu’un intervenant accepte :{" "}
           <strong className="font-semibold text-foreground">contrat ou CDD édité</strong>, planning à
-          jour, heures suivies, facture générée. Renforts, ateliers et interventions se pilotent au
-          même endroit, sans double saisie.
+          jour, heures suivies, facture générée. Sans double saisie.
         </p>
       </Reveal>
 
@@ -182,8 +178,8 @@ export function UnSeulFormulaire() {
           LEX, le soutien de votre travail, pas seulement des missions
         </h3>
         <p className="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-          Le métier ne s’arrête pas quand la journée finit : restent les écrits, les séances à
-          préparer, le suivi. LEX prend cette part-là.
+          Le métier ne s’arrête pas quand la journée finit : restent les écrits et les séances à
+          préparer. LEX prend cette part-là.
         </p>
         <div className="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {POUR_PROFESSIONNEL.map((bloc) => {

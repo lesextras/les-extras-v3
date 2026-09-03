@@ -106,9 +106,8 @@ export default function ComparatifAssistantsPage() {
           Combien coûte un écrit rédigé avec une IA
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          Les offres du secteur affichent un prix mensuel ; ce qui compte, quand on rédige
-          vraiment, c’est le prix d’une génération. Voici la division faite pour vous, avec
-          les prix relevés le {RELEVE_LE}.
+Les offres affichent un prix mensuel ; ce qui compte, c’est le prix d’une
+          génération. Voici la division faite, avec les prix relevés le {RELEVE_LE}.
         </p>
       </div>
 
@@ -254,8 +253,7 @@ export default function ComparatifAssistantsPage() {
           Quinze générations par mois, gratuitement, sans date de fin
         </p>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Sans carte bancaire. De quoi juger sur pièces avec vos propres écrits avant de
-          payer quoi que ce soit.
+Sans carte bancaire. De quoi juger sur pièces, avec vos propres écrits.
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Button asChild>

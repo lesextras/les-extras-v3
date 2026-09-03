@@ -39,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/formations",
     "/edublog",
     "/notre-histoire",
+    "/partenaires-associatifs",
     "/catalogue",
     "/contact",
     // Les deux dispositifs ont désormais une vitrine publique qui répond 200.
