@@ -379,6 +379,24 @@
     animation: float-soft 7s ease-in-out infinite;
   }
 
+  /* Pastille emoji des mini-formations : elle respire et s'incline très peu.
+     Sept secondes seraient trop lentes pour un objet de la taille d'un pouce —
+     on ne verrait pas qu'il bouge. Chaque carte reçoit un délai différent
+     (`style`), sinon les dix pastilles montent et descendent ensemble et la
+     grille se met à clignoter. */
+  @keyframes flotte-emoji {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-4deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(4deg);
+    }
+  }
+  .animate-emoji {
+    animation: flotte-emoji 3.4s ease-in-out infinite;
+  }
+
   /* ------------------------------------------------------------------
      MOUVEMENT DU HERO
      Trois couches qui bougent à des rythmes différents et jamais en phase :

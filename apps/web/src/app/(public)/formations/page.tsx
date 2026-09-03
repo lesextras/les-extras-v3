@@ -2,7 +2,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  Clock, MapPin, Search, ArrowRight, ShieldCheck, CalendarClock, GraduationCap, Building2, Sparkles,
+  Clock,
+  MapPin,
+  Search,
+  ArrowRight,
+  ShieldCheck,
+  CalendarClock,
+  GraduationCap,
+  Building2,
+  Sparkles,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -76,13 +84,198 @@ type Filtres = {
  * faudra un drapeau en base ; d'ici là, une constante suffit et se lit.
  */
 const ORGANISME_MAISON = "ADéPA";
-const estMaison = (f: FormationCard) => Boolean(f.account?.name?.startsWith(ORGANISME_MAISON));
+
+/**
+ * UN EMOJI PAR MINI-FORMATION — les mêmes que sur la couverture et sur la
+ * fiche récap A4 (`scripts/couvertures-mini-formations.py`,
+ * `scripts/mini-formations/fiches-recap-data.js`). C'est ce qui fait qu'on
+ * reconnaît un parcours avant d'avoir lu son titre. Ne pas les changer d'un
+ * côté sans les changer partout.
+ *
+ * Ils sont ici en dur, et c'est assumé : les mettre en base demanderait une
+ * colonne de plus pour dix lignes qui ne bougent jamais, et une carte sans
+ * emoji reste parfaitement lisible — le `?? null` plus bas s'en charge.
+ */
+const EMOJI_PARCOURS: Record<string, string> = {
+  "les-quatre-fonctions-d-un-comportement": "🔍",
+  "apprendre-a-demander-plutot-qu-a-crier": "💬",
+  "guider-puis-s-effacer": "🪜",
+  "decomposer-une-routine-en-etapes": "🔗",
+  "rendre-l-environnement-previsible": "🗓️",
+  "les-premieres-minutes-d-une-crise": "⏱️",
+  "l-enfant-qui-dit-non-a-tout": "🙅",
+  "lire-un-comportement-comme-une-reaction-de-survie": "🧭",
+  "preparer-une-equipe-de-suivi-de-la-scolarisation": "🏫",
+  "aider-a-demarrer-une-tache": "🚀",
+};
+const estMaison = (f: FormationCard) =>
+  Boolean(f.account?.name?.startsWith(ORGANISME_MAISON));
 
 /** « 45 min » ou « 7 h » — on affiche celui des deux champs qui est rempli. */
 function dureeLisible(f: FormationCard): string | null {
   if (f.durationHours) return `${f.durationHours} h`;
   if (f.durationMinutes) return `${f.durationMinutes} min`;
   return null;
+}
+
+/**
+ * Une carte de formation — le même gabarit que la carte atelier, à quoi
+ * s'ajoutent la pastille emoji des mini-formations et la marque de la maison.
+ *
+ * `rang` ne sert qu'à décaler le flottement de la pastille : sans décalage,
+ * les dix emoji de la grille montent et descendent en même temps, et la page
+ * clignote au lieu de respirer.
+ */
+function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
+  const organisme = f.account?.name;
+  const duree = dureeLisible(f);
+  const maison = estMaison(f);
+  const emoji = EMOJI_PARCOURS[f.slug] ?? null;
+  const lien = `/formations/${f.slug}`;
+  return (
+    <Card
+      className={`group card-interactive relative flex h-full flex-col overflow-hidden ${
+        maison ? "border-primary/40" : ""
+      }`}
+    >
+      {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
+      <Link href={lien} className="relative block aspect-[16/10] bg-muted">
+        <VisuelCarte
+          src={premierVisuel(f.images)}
+          alt={f.title}
+          sizes="(max-width: 640px) 100vw, 33vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        >
+          <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
+            <span className="flex flex-col items-center gap-1.5 text-center">
+              <GraduationCap className="size-6 text-primary/70" aria-hidden />
+              <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
+                {f.categoryRef?.title ?? "Formation"}
+              </span>
+            </span>
+          </span>
+        </VisuelCarte>
+        {f.categoryRef?.title ? (
+          <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+            {f.categoryRef.title}
+          </span>
+        ) : null}
+      </Link>
+
+      {/* La pastille emoji reprend celui de la couverture : sur une grille de
+          dix vignettes, c'est lui qu'on retient, pas le titre. Hors du lien du
+          visuel, donc purement décoratif et masqué aux lecteurs d'écran. */}
+      {emoji ? (
+        <span
+          aria-hidden
+          className="animate-emoji pointer-events-none absolute left-3 top-3 grid size-11 place-items-center rounded-full bg-card/90 text-xl shadow-sm backdrop-blur-sm"
+          style={{ animationDelay: `${(rang % 5) * 0.35}s` }}
+        >
+          {emoji}
+        </span>
+      ) : null}
+
+      <CardContent className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {/* La marque de la maison passe avant les autres : c'est
+      elle qui répond de la ligne à la ligne. */}
+          {maison ? (
+            <Badge className="gap-1">
+              <Sparkles className="size-3" /> Conçue par ADéPA
+            </Badge>
+          ) : null}
+          {f.certifying ? (
+            <Badge variant="secondary" className="gap-1">
+              <ShieldCheck className="size-3" /> Qualiopi
+            </Badge>
+          ) : null}
+          {f.cpfEligible ? <Badge variant="outline">CPF</Badge> : null}
+          {duree ? (
+            <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="size-3.5" />
+              {duree}
+            </span>
+          ) : null}
+        </div>
+
+        <Link href={lien}>
+          <h2 className="text-lg font-semibold leading-snug text-foreground">
+            {f.title}
+          </h2>
+        </Link>
+        {f.summary ? (
+          <p className="line-clamp-3 text-sm text-muted-foreground">
+            {f.summary}
+          </p>
+        ) : null}
+
+        <div className="mt-auto space-y-3 pt-2">
+          {/* Les trois lignes que porte déjà une carte atelier :
+      qui l'a conçue, où ça se passe, pour qui c'est fait.
+      Sans elles, une fiche formation avait l'air inachevée à
+      côté d'une fiche atelier de la même grille. */}
+          <div className="space-y-1 text-sm text-muted-foreground">
+            {organisme ? (
+              <p className="flex items-center gap-1.5">
+                <Building2 className="size-3.5 shrink-0" />
+                <span className="truncate">{organisme}</span>
+              </p>
+            ) : null}
+            {f.city ? (
+              <p className="flex items-center gap-1.5">
+                <MapPin className="size-3.5 shrink-0" />
+                <span className="truncate">{f.city}</span>
+              </p>
+            ) : f.freeOnline ? (
+              <p className="flex items-center gap-1.5">
+                <MapPin className="size-3.5 shrink-0" />
+                <span className="truncate">En ligne, à votre rythme</span>
+              </p>
+            ) : null}
+            {(f.publicTargets?.length ?? 0) > 0 ? (
+              <p className="line-clamp-2">
+                <span className="font-medium">Public :</span>{" "}
+                {f.publicTargets!.join(", ")}
+              </p>
+            ) : null}
+            {f.nextSessionAt ? (
+              <p className="flex items-center gap-1.5">
+                <CalendarClock className="size-3.5 shrink-0" />
+                <span className="truncate">
+                  dès le {formatDate(f.nextSessionAt)}
+                </span>
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border/60 pt-3">
+            {/* « Tarif sur devis » sur une formation gratuite ferait
+        fuir exactement les gens qu'elle vise. Le mode gratuit
+        se lit donc dès la carte. */}
+            {f.freeOnline ? (
+              <span className="text-base font-semibold text-primary">
+                Gratuit · en ligne
+              </span>
+            ) : f.priceFrom ? (
+              <span className="text-base font-semibold text-foreground">
+                dès {formatMoney(f.priceFrom)}
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                Tarif sur devis
+              </span>
+            )}
+            <Button asChild size="sm" variant="outline">
+              <Link href={lien}>
+                Voir
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default async function FormationsCatalogPage({
@@ -92,7 +285,15 @@ export default async function FormationsCatalogPage({
 }) {
   const searchParams = await searchParamsPromesse;
   const qs = new URLSearchParams();
-  for (const cle of ["search", "category", "public", "organisme", "city", "priceMax", "sort"] as const) {
+  for (const cle of [
+    "search",
+    "category",
+    "public",
+    "organisme",
+    "city",
+    "priceMax",
+    "sort",
+  ] as const) {
     const v = searchParams?.[cle];
     if (v) qs.set(cle, v);
   }
@@ -115,20 +316,27 @@ export default async function FormationsCatalogPage({
   const organismes = data?.organismes ?? [];
   const filtree = Boolean(
     searchParams?.search ||
-      searchParams?.category ||
-      searchParams?.public ||
-      searchParams?.organisme ||
-      searchParams?.city ||
-      searchParams?.priceMax ||
-      searchParams?.cpf ||
-      searchParams?.certifying,
+    searchParams?.category ||
+    searchParams?.public ||
+    searchParams?.organisme ||
+    searchParams?.city ||
+    searchParams?.priceMax ||
+    searchParams?.cpf ||
+    searchParams?.certifying,
   );
 
-  // Les formations de la maison remontent, sans changer l'ordre à l'intérieur
-  // de chaque groupe : le tri demandé par le visiteur reste celui de l'API.
-  const items = [...(data?.items ?? [])].sort(
-    (a, b) => Number(estMaison(b)) - Number(estMaison(a)),
-  );
+  // DEUX RAYONS, PAS UNE GRILLE UNIQUE.
+  //
+  // Les mini-formations gratuites de l'association et les formations Qualiopi
+  // vendues en intra ne s'achètent pas de la même façon, ne s'adressent pas
+  // aux mêmes personnes et n'ont pas le même prix — l'une est gratuite et
+  // s'ouvre en trois clics, l'autre se négocie au devis avec un établissement.
+  // Mélangées dans la même grille, chacune brouille l'autre : le parent qui
+  // cherche de l'aide tombe sur « à partir de 1 600 € », et le directeur qui
+  // cherche une action de formation tombe sur « Gratuit ».
+  const tous = data?.items ?? [];
+  const gratuites = tous.filter((f) => f.freeOnline && estMaison(f));
+  const autres = tous.filter((f) => !(f.freeOnline && estMaison(f)));
 
   return (
     <div className="space-y-8">
@@ -271,7 +479,10 @@ export default async function FormationsCatalogPage({
             Certifiante Qualiopi
           </label>
           {filtree ? (
-            <Link href="/formations" className="text-primary underline-offset-4 hover:underline">
+            <Link
+              href="/formations"
+              className="text-primary underline-offset-4 hover:underline"
+            >
               Réinitialiser les filtres
             </Link>
           ) : null}
@@ -288,9 +499,13 @@ export default async function FormationsCatalogPage({
           title="Catalogue momentanément indisponible"
           description="Réessayez dans quelques instants."
         />
-      ) : items.length === 0 ? (
+      ) : tous.length === 0 ? (
         <EmptyState
-          title={filtree ? "Aucune formation ne correspond" : "Catalogue de formations en préparation"}
+          title={
+            filtree
+              ? "Aucune formation ne correspond"
+              : "Catalogue de formations en préparation"
+          }
           description={
             filtree
               ? "Élargissez vos critères, ou dites-nous ce que vous cherchez : nous montons des sessions sur mesure."
@@ -298,137 +513,62 @@ export default async function FormationsCatalogPage({
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((f) => {
-            const organisme = f.account?.name;
-            const duree = dureeLisible(f);
-            const maison = estMaison(f);
-            const lien = `/formations/${f.slug}`;
-            return (
-              <Card
-                key={f.id}
-                className={`group card-interactive relative flex h-full flex-col overflow-hidden ${
-                  maison ? "border-primary/40" : ""
-                }`}
-              >
-                {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
-                <Link href={lien} className="relative block aspect-[16/10] bg-muted">
-                  <VisuelCarte
-                    src={premierVisuel(f.images)}
-                    alt={f.title}
-                    sizes="(max-width: 640px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  >
-                    <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
-                      <span className="flex flex-col items-center gap-1.5 text-center">
-                        <GraduationCap className="size-6 text-primary/70" aria-hidden />
-                        <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
-                          {f.categoryRef?.title ?? "Formation"}
-                        </span>
-                      </span>
-                    </span>
-                  </VisuelCarte>
-                  {f.categoryRef?.title ? (
-                    <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-                      {f.categoryRef.title}
-                    </span>
-                  ) : null}
-                </Link>
+        <div className="space-y-10">
+          {/* LE RAYON DE LA MAISON, EN PREMIER ET SIGNALÉ COMME TEL.
+              C'est le seul dont l'association répond ligne à ligne, et le seul
+              qu'on puisse ouvrir tout de suite. */}
+          {gratuites.length > 0 ? (
+            <section className="rounded-2xl border-2 border-primary/30 bg-primary-soft/30 p-5 sm:p-6">
+              <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                    <Sparkles className="size-3.5" /> Conçues et tenues par
+                    ADéPA
+                  </p>
+                  <h2 className="mt-1.5 text-xl font-bold text-foreground sm:text-2xl">
+                    Les mini-formations gratuites
+                  </h2>
+                  <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                    Une compétence précise par parcours, quatre modules, une
+                    boîte à outils à imprimer et une fiche récap A4. Gratuites
+                    du premier au dernier module, sans carte bancaire et sans
+                    date de fin.
+                  </p>
+                </div>
+                <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold text-foreground shadow-sm">
+                  {gratuites.length} parcours
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {gratuites.map((f, i) => (
+                  <CarteFormation key={f.id} f={f} rang={i} />
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-                <CardContent className="flex flex-1 flex-col gap-3 p-5">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {/* La marque de la maison passe avant les autres : c'est
-                        elle qui répond de la ligne à la ligne. */}
-                    {maison ? (
-                      <Badge className="gap-1">
-                        <Sparkles className="size-3" /> Conçue par ADéPA
-                      </Badge>
-                    ) : null}
-                    {f.certifying ? (
-                      <Badge variant="secondary" className="gap-1">
-                        <ShieldCheck className="size-3" /> Qualiopi
-                      </Badge>
-                    ) : null}
-                    {f.cpfEligible ? <Badge variant="outline">CPF</Badge> : null}
-                    {duree ? (
-                      <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="size-3.5" />
-                        {duree}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <Link href={lien}>
-                    <h2 className="text-lg font-semibold leading-snug text-foreground">
-                      {f.title}
-                    </h2>
-                  </Link>
-                  {f.summary ? (
-                    <p className="line-clamp-3 text-sm text-muted-foreground">{f.summary}</p>
-                  ) : null}
-
-                  <div className="mt-auto space-y-3 pt-2">
-                    {/* Les trois lignes que porte déjà une carte atelier :
-                        qui l'a conçue, où ça se passe, pour qui c'est fait.
-                        Sans elles, une fiche formation avait l'air inachevée à
-                        côté d'une fiche atelier de la même grille. */}
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      {organisme ? (
-                        <p className="flex items-center gap-1.5">
-                          <Building2 className="size-3.5 shrink-0" />
-                          <span className="truncate">{organisme}</span>
-                        </p>
-                      ) : null}
-                      {f.city ? (
-                        <p className="flex items-center gap-1.5">
-                          <MapPin className="size-3.5 shrink-0" />
-                          <span className="truncate">{f.city}</span>
-                        </p>
-                      ) : f.freeOnline ? (
-                        <p className="flex items-center gap-1.5">
-                          <MapPin className="size-3.5 shrink-0" />
-                          <span className="truncate">En ligne, à votre rythme</span>
-                        </p>
-                      ) : null}
-                      {(f.publicTargets?.length ?? 0) > 0 ? (
-                        <p className="line-clamp-2">
-                          <span className="font-medium">Public :</span>{" "}
-                          {f.publicTargets!.join(", ")}
-                        </p>
-                      ) : null}
-                      {f.nextSessionAt ? (
-                        <p className="flex items-center gap-1.5">
-                          <CalendarClock className="size-3.5 shrink-0" />
-                          <span className="truncate">dès le {formatDate(f.nextSessionAt)}</span>
-                        </p>
-                      ) : null}
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-border/60 pt-3">
-                      {/* « Tarif sur devis » sur une formation gratuite ferait
-                          fuir exactement les gens qu'elle vise. Le mode gratuit
-                          se lit donc dès la carte. */}
-                      {f.freeOnline ? (
-                        <span className="text-base font-semibold text-primary">Gratuit · en ligne</span>
-                      ) : f.priceFrom ? (
-                        <span className="text-base font-semibold text-foreground">
-                          dès {formatMoney(f.priceFrom)}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Tarif sur devis</span>
-                      )}
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={lien}>
-                          Voir
-                          <ArrowRight className="size-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {autres.length > 0 ? (
+            <section>
+              <div className="mb-5">
+                <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <ShieldCheck className="size-3.5" /> Certification Qualiopi ·
+                  finançables OPCO
+                </p>
+                <h2 className="mt-1.5 text-xl font-bold text-foreground sm:text-2xl">
+                  Les formations en intra, dans votre établissement
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                  Animées chez vous, pour une équipe. Devis sous 72 h, sans
+                  engagement.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {autres.map((f, i) => (
+                  <CarteFormation key={f.id} f={f} rang={i} />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       )}
     </div>
