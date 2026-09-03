@@ -28,6 +28,7 @@ const f6 = require('./f6-crise.js');
 const f7 = require('./f7-consignes.js');
 const f8 = require('./f8-survie.js');
 const f9 = require('./f9-ess.js');
+const f10 = require('./f10-demarrer.js');
 
 /** ids des items Teachizy, relevés après la création des sections. */
 const IDS = {
@@ -40,6 +41,7 @@ const IDS = {
   'l-enfant-qui-dit-non-a-tout': { lecons: [1471173, 1471175, 1471177, 1471179], annexes: 1471181 },
   'lire-un-comportement-comme-une-reaction-de-survie': { lecons: [1471249, 1471251, 1471253, 1471255], annexes: 1471257 },
   'preparer-une-equipe-de-suivi-de-la-scolarisation': { lecons: [1471320, 1471322, 1471324, 1471326], annexes: 1471328 },
+  'aider-a-demarrer-une-tache': { lecons: [1471644, 1471646, 1471648, 1471650], annexes: 1471652 },
 };
 
 /**
@@ -63,6 +65,11 @@ const COMPORTEMENTALES = new Set([
   // contrainte, et l'encart est le seul endroit qui dise que ces pratiques
   // n'appartiennent pas à cette approche.
   'les-premieres-minutes-d-une-crise',
+  // « Aider quelqu'un à démarrer une tâche » : l'amorçage et son retrait
+  // viennent du même corpus. La fiche publique porte le garde-fou (GARDE_FOU
+  // dans le seed) : les deux doivent dire la même chose, sinon la fiche promet
+  // autre chose que la formation.
+  'aider-a-demarrer-une-tache',
 ]);
 
 const SOURCES = [
@@ -75,6 +82,7 @@ const SOURCES = [
   { f: f7, annexes: f7.annexes },
   { f: f8, annexes: f8.annexes },
   { f: f9, annexes: f9.annexes },
+  { f: f10, annexes: f10.annexes },
 ];
 
 const formations = SOURCES.map(({ f, annexes }) => {

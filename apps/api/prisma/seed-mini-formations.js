@@ -400,6 +400,39 @@ Module 3 — Exercice guidé : la feuille d’une page. Ce qui a changé, deux o
 Module 4 — Relire, compléter, et vérifier à quinze jours. La grille de relecture en quatre passages, le courriel de complément, et la page de la prochaine réunion.`,
     targetAudience: `Parents qui siègent à une ESS et en ressortent avec l’impression que rien n’a été décidé ; professionnels de SESSAD, d’IME et d’ITEP qui y représentent leur service ; AESH, dont l’information sur les créneaux et les volumes est souvent la plus décisive de la réunion ; enseignants et coordonnateurs qui préparent ces réunions.`,
   },
+  {
+    slug: 'aider-a-demarrer-une-tache',
+    image: 'aider-a-demarrer-une-tache.jpg',
+    slugPlateforme: 'aider-quelquun-a-demarrer-une-tache',
+    title: 'Aider quelqu’un à démarrer une tâche',
+    summary: `Thématique : apprentissages et autonomie. Une seule compétence travaillée : réduire le coût du démarrage d’une tâche — identifier ce qui coûte à l’entrée, et agir sur les six leviers correspondants.
+
+Regardez une séance de près, chronomètre en main : ce n’est presque jamais la tâche qui bloque, c’est l’entrée dans la tâche. Une fois la première action faite, la suite s’enchaîne souvent sans difficulté. La conséquence est considérable : tout ce qui porte sur la tâche elle-même — l’expliquer mieux, motiver, encourager — n’a presque aucun effet. Ce qui en a un, c’est de réduire le coût des trente premières secondes.
+
+La scène du module 2 se passe en ESAT, avec un travailleur adulte : l’inertie de démarrage est un des motifs les plus fréquents en ESAT, en foyer de vie et en accompagnement d’adultes, et elle y produit les mêmes phrases de bilan qu’ailleurs.
+
+Environ 40 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le module 3 lance dix jours d’application, avec un relevé de trente secondes par jour — un seul chiffre, le délai avant le premier geste — et le module 4 se lit le dixième jour. Comptez donc une dizaine de jours entre le premier et le dernier module.
+
+${GARDE_FOU}`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— distinguer un blocage à l’entrée d’une difficulté dans l’exécution ;
+— nommer les six coûts du démarrage et repérer ceux qui jouent dans votre situation ;
+— appliquer le levier correspondant à chaque coût, en termes matériels ;
+— amorcer une tâche sans la faire à la place, et savoir prouver la différence ;
+— écrire une fiche de démarrage en cinq lignes, applicable par quelqu’un d’autre ;
+— mesurer un délai avant le premier geste plutôt que d’estimer une motivation ;
+— écrire une phrase de bilan qui décrit le dispositif et non la personne ;
+— reconnaître ce qui n’est pas un problème de démarrage, et vers quel parcours aller.`,
+    program: `Module 1 — Les six coûts du démarrage, et les six leviers. Le blocage est à l’entrée, pas dans l’exécution ; l’amorçage ; et ce qui n’est pas un problème de démarrage.
+
+Module 2 — Une matinée perdue, et le geste arrivé trop tard. Vingt-cinq minutes perdues chaque matin en atelier, un moniteur attentif, et une phrase de bilan qui suivra le travailleur des années.
+
+Module 3 — Exercice guidé : la fiche de démarrage. La préparation avec un nom et une heure, la première action au mot près, la fin visible, et ce qu’on fait si rien ne démarre.
+
+Module 4 — Dix jours, et la phrase de bilan. On mesure un délai, pas une motivation — et une phrase utile contient deux chiffres et une durée.`,
+    targetAudience: `Parents devant les devoirs, l’habillage, la douche, le rangement ; moniteurs d’atelier et professionnels d’ESAT, de foyer de vie et de SAVS ; professionnels du médico-social et de l’école (IME, ITEP, SESSAD, AESH, enseignants) ; toute personne qui accompagne quelqu’un dont on dit qu’il « ne fait rien » alors qu’il travaille très bien une fois lancé.`,
+  },
 ];
 
 async function compteProprietaire() {

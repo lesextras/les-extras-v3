@@ -121,6 +121,13 @@ COUVERTURES = [
         "duree": "4 modules + annexes · 45 min",
     },
     {
+        "fichier": "aider-a-demarrer-une-tache.jpg",
+        "surtitre": "Apprentissages et autonomie",
+        "titre": "Aider quelqu’un à démarrer une tâche",
+        "sous": "Ce n’est presque jamais la tâche qui bloque : c’est l’entrée dans la tâche",
+        "duree": "4 modules + annexes · 40 min",
+    },
+    {
         "fichier": "guider-puis-s-effacer.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Guider puis s’effacer",
