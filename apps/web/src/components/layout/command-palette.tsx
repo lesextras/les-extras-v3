@@ -21,6 +21,12 @@ const DESTINATIONS: Dest[] = [
   // d'entrée comme une autre — la laisser ouverte pendant que le menu est
   // verrouillé serait incohérent.
   { label: "Assistant d'écriture", href: "/dashboard/assistant", group: "Navigation", keywords: "ia rapport note observation transmission redaction", premium: true },
+  // Ajoutés le 03/09/2026, quand les trois outils LEX ont quitté le menu de
+  // gauche pour la barre du haut : ce menu déroulant est `hidden md:flex`,
+  // donc sur téléphone la palette est le SEUL chemin restant. Sans ces deux
+  // lignes, deux outils payants devenaient inatteignables au doigt.
+  { label: "Générateur d'activités", href: "/dashboard/activites", group: "Navigation", keywords: "ia activite atelier seance support animation", premium: true },
+  { label: "Appui scolaire", href: "/dashboard/appui-scolaire", group: "Navigation", keywords: "ia ecole devoirs fiche memo revision decrochage aesh", premium: true },
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Freelance", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Freelance", keywords: "services educatheures" },
   { label: "Mes formations", href: "/dashboard/formations", group: "Freelance", keywords: "formation session émargement apprenants attestation" },

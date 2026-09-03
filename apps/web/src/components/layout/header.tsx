@@ -19,6 +19,7 @@ import {
   Sparkles,
   GraduationCap,
   Lightbulb,
+  PenLine,
 } from 'lucide-react';
 import { CommandPalette } from './command-palette';
 import { IndicateursCompte } from './indicateurs-compte';
@@ -161,10 +162,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
           Il était réservé aux comptes établissement ; côté intervenant il
           occupait une section entière du menu de gauche. Le voici en haut,
           à droite du sélecteur de compte, pour tous les comptes — un
-          catalogue se consulte, il n'a pas à tenir un tiers du menu.
-
-          LEX, à l'inverse, est redescendu dans le menu de gauche : c'est un
-          outil de travail quotidien, pas un raccourci de barre. */}
+          catalogue se consulte, il n'a pas à tenir un tiers du menu. */}
         <DropdownMenu align="start">
           <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
             <LayoutList className="size-4 text-muted-foreground" />
@@ -188,6 +186,44 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
             <DropdownMenuItem onClick={() => router.push('/formations')}>
               <GraduationCap />
               Formations
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+      {/* LEX REMONTE DANS LA BARRE DU HAUT (03/09/2026, demande Siham).
+
+          Troisième position de ce menu en un mois, et il faut l'écrire
+          honnêtement plutôt que de laisser croire à une évidence : LEX était
+          en haut jusqu'au 25/08, il est redescendu dans le menu de gauche ce
+          jour-là au motif que c'est un outil quotidien, il remonte ici
+          aujourd'hui. Le motif de la redescente n'était pas faux, mais il
+          coûtait trois entrées de sidebar répétées dans QUATRE menus
+          (freelance, établissement, admin, salarié en attente) — et sur le
+          compte admin, ces trois entrées poussaient le travail
+          d'administration sous la ligne de flottaison.
+
+          Les trois outils sont ici ; « LEX · Crédits » reste dans le menu de
+          gauche, où il est filtré par rôle (OWNER/ADMIN/MANAGER) : la
+          consommation de l'équipe ne regarde pas tout le monde, et cette
+          barre n'a pas de filtre de rôle. */}
+        <DropdownMenu align="start">
+          <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
+            <PenLine className="size-4 text-muted-foreground" />
+            LEX
+            <ChevronsUpDown className="size-3.5 text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-64">
+            <DropdownMenuItem onClick={() => router.push('/dashboard/assistant')}>
+              <PenLine />
+              Assistant d’écriture
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/dashboard/activites')}>
+              <Lightbulb />
+              Générateur d’activités
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push('/dashboard/appui-scolaire')}>
+              <Lightbulb />
+              Appui scolaire
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

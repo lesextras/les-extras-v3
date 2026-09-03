@@ -1446,3 +1446,43 @@ Le nom affiché venait d'ailleurs encore : c'est `Account.name` (« adépa »), 
 Il reste **deux comptes ADMIN** : celui de Siham et `admin@les-extras.fr`, créé
 par le seed le 23/07/2026. Ce dernier a un mot de passe d'amorçage et personne
 ne relève sa boîte — à désactiver ou à réattribuer quand Siham le décidera.
+
+---
+
+## LEX remonte dans la barre du haut — 3 septembre 2026
+
+Demande de Siham, mot pour mot : « dans le compte admin tu peux mettre LEX
+dans un champs en haut a droit du catalogue et les retirer du menu de gauche ».
+
+**C'est la troisième position de ce menu en un mois, et il faut l'écrire
+honnêtement plutôt que de faire comme si l'évidence avait toujours été là.**
+LEX était en haut jusqu'au 25/08, il est redescendu dans le menu de gauche ce
+jour-là au motif qu'un outil ouvert plusieurs fois par jour se pose à portée
+d'œil. Ce motif n'était pas faux ; il coûtait **trois entrées répétées dans les
+quatre menus** de `lib/nav.ts` (freelance, établissement, admin, salarié en
+attente de rattachement) — et sur le compte admin, ces trois lignes en tête de
+menu repoussaient le travail d'administration sous la ligne de flottaison.
+C'est de là que vient la demande.
+
+- `header.tsx` : un `DropdownMenu` « LEX » (icône `PenLine`) immédiatement à
+  droite de « Catalogue », avec les trois outils — Assistant d'écriture,
+  Générateur d'activités, Appui scolaire.
+- `lib/nav.ts` : les trois entrées retirées des **quatre** menus. Deux sections
+  se sont retrouvées à une seule entrée et ont donc été dissoutes en bloc sans
+  titre, selon la règle déjà écrite dans ce fichier (« deux entrées ne font pas
+  une rubrique ») : « LEX & analyse de pratique » côté établissement ne garde
+  que le GAP, et la section « LEX » du salarié en attente ne garde que le solde.
+- **`LEX · Crédits` reste dans le menu de gauche**, et c'est délibéré : c'est la
+  seule des entrées qui parle d'argent, elle est filtrée par rôle
+  (`OWNER/ADMIN/MANAGER`) sur les menus d'établissement, et **la barre du haut
+  n'a aucun filtre de rôle**. La monter aurait ouvert la consommation de
+  l'équipe à toute personne rattachée.
+
+⚠ **Le piège de cette bascule : le téléphone.** Les deux menus déroulants de la
+barre du haut sont `hidden md:flex`. En retirant les outils du menu de gauche —
+le seul qui existe sur mobile — on les rendait **inatteignables au doigt**.
+Deux lignes ont donc été ajoutées à `command-palette.tsx` (Générateur
+d'activités, Appui scolaire ; l'Assistant y était déjà), avec `premium: true`
+comme les autres. **Toute entrée retirée du menu de gauche au profit de la
+barre du haut doit être vérifiée dans la palette** — sinon on livre une
+fonctionnalité payante que la moitié des visites ne peut plus ouvrir.

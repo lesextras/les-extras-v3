@@ -26,7 +26,6 @@ import {
   Star,
   ScrollText,
   Newspaper,
-  PenLine,
   Lightbulb,
   Award,
   UserPlus,
@@ -144,9 +143,9 @@ const freelanceNav: NavSection[] = [
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
       { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
-      { label: 'LEX · Appui scolaire', href: '/dashboard/appui-scolaire', icon: Lightbulb, premium: true, hint: "Un enfant décroche : LEX prépare le support à poser sur la table — fiche mémo, script de déblocage, jeu de révision. 1 crédit LEX par génération." },
+      // Les trois outils LEX sont remontés dans la barre du haut le
+      // 03/09/2026 (voir header.tsx). Ils occupaient les trois dernières
+      // lignes de cette section dans les QUATRE menus du fichier.
     ],
   },
   // Le Catalogue (Édublog, Ateliers, Formations) a quitté le menu de
@@ -252,17 +251,20 @@ const establishmentNav: NavSection[] = [
   // relève de la gestion interne de la structure — sa fiche, sa facturation,
   // ses gens, leurs dossiers, son temps de travail — vit désormais sous un
   // seul chapeau, au lieu de deux sections voisines qu'on hésitait à séparer.
-  // LEX REDESCEND DANS LE MENU DE GAUCHE (25/08/2026).
+  // LEX EST REMONTÉ DANS LA BARRE DU HAUT (03/09/2026, demande Siham).
   //
-  // Il était remonté dans un menu déroulant de la barre du haut, à côté du
-  // Catalogue. Mais LEX n'est pas un catalogue qu'on consulte : c'est l'outil
-  // qu'on ouvre plusieurs fois par jour, et le seul produit payant. Un outil
-  // de travail quotidien se pose dans le menu de gauche, à portée d'œil.
+  // Il y était déjà avant le 25/08/2026, il en est redescendu ce jour-là au
+  // motif qu'un outil ouvert plusieurs fois par jour se pose à portée d'œil.
+  // Ce motif n'était pas faux ; il coûtait trois entrées répétées dans les
+  // quatre menus de ce fichier, et sur le compte admin il repoussait le
+  // travail d'administration sous la ligne de flottaison. Les trois outils
+  // vivent donc dans un menu déroulant à droite du Catalogue (header.tsx).
+  //
+  // La section « LEX & analyse de pratique » n'a plus qu'une entrée : le GAP.
+  // Une entrée ne fait pas une rubrique — elle rejoint donc le bloc sans
+  // titre, comme les autres cas du fichier.
   {
-    title: 'LEX & analyse de pratique',
     items: [
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, essentiel: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, essentiel: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
       { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
     ],
   },
@@ -349,9 +351,9 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d’ensemble de la plateforme' },
       { label: 'Mon espace', href: '/dashboard', icon: Home, hint: 'Votre tableau de bord personnel (ateliers, missions, activité)' },
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées. 1 crédit LEX par génération.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées, à valider en équipe. 1 crédit LEX par génération.' },
-      { label: 'LEX · Appui scolaire', href: '/dashboard/appui-scolaire', icon: Lightbulb, premium: true, hint: "Un enfant décroche : LEX prépare le support à poser sur la table — fiche mémo, script de déblocage, jeu de révision. 1 crédit LEX par génération." },
+      // C'est ici que la demande est née (03/09/2026) : sur le compte admin,
+      // trois lignes LEX en tête de menu repoussaient le travail
+      // d'administration vers le bas. Elles sont dans la barre du haut.
     ],
   },
   {
@@ -470,11 +472,12 @@ const attenteRattachementNav: NavSection[] = [
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Votre agenda — importez-y le planning que vous avez déjà, en CSV, Excel ou PDF' },
     ],
   },
+  // Les deux outils LEX sont dans la barre du haut depuis le 03/09/2026. Le
+  // solde reste ici : c'est la seule des trois entrées qui parle d'argent, et
+  // un salarié en attente de rattachement a besoin de savoir ce qu'il lui
+  // reste avant d'ouvrir l'outil.
   {
-    title: 'LEX',
     items: [
-      { label: "LEX · Assistant d'écriture", href: '/dashboard/assistant', icon: PenLine, premium: true, essentiel: true, hint: 'Notes brutes → écrit professionnel relu par vous. Noms masqués, notes jamais stockées.' },
-      { label: "LEX · Générateur d'activités", href: '/dashboard/activites', icon: Lightbulb, premium: true, hint: 'Décrivez le public et les besoins : LEX propose des activités structurées.' },
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation du mois et votre consommation' },
     ],
   },
