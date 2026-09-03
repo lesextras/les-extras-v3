@@ -15,6 +15,7 @@ import {
   ClipboardList,
   Home,
   Mail,
+  MessageSquareHeart,
   KeyRound,
   Tags,
   Users,
@@ -414,6 +415,11 @@ const adminNav: NavSection[] = [
       // Ajouté le 03/09/2026. Cinq séquences partent toutes seules et
       // `MailService.send()` ne lève jamais : un envoi raté ne se voyait que
       // dans les journaux du conteneur, autant dire nulle part.
+      // Ajouté le 03/09/2026. L'enquête part toute seule sept jours après la
+      // première fiche mise en ligne d'un compte ; sans écran, ses réponses ne
+      // seraient lues nulle part — et un problème signalé qui n'est pas lu est
+      // pire qu'un problème non signalé.
+      { label: 'Retours d’expérience', href: '/admin/retours', icon: MessageSquareHeart, hint: 'Satisfaction, avis sur le site et sur le dépôt de fiche, problèmes signalés' },
       { label: 'Suivi des e-mails', href: '/admin/emails', icon: Mail, hint: 'Ce qui part, ce qui échoue, et où en sont les inscrits dans la séquence d’accueil' },
       { label: 'Journal d\'audit', href: '/admin/journal', icon: ScrollText, hint: 'Qui a fait quoi, et quand : validations d\'heures, modérations, changements de rôle' },
     ],

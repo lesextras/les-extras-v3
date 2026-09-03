@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { lancerConfettis } from "@/lib/confetti";
 import { apiRequest } from "@/lib/api";
 import { Field, Textarea } from "../form-fields";
 
@@ -315,6 +316,19 @@ export function RenfortModal({
             "Votre compte demande l'approbation d'un responsable avant diffusion : il vient d'être prévenu.",
         });
       } else if (publiee) {
+      // CONFETTIS À LA MISE EN LIGNE.
+      //
+      // Publier une fiche est le geste qui fait vivre la plateforme, et il ne
+      // recevait qu'un bandeau de notification identique à celui d'un
+      // changement de mot de passe. On salue le GESTE, pas l'arrivée sur une
+      // page — même règle que le parrainage.
+      //
+      // ⚠ Rien ne part si la personne a demandé moins d'animations
+      // (`prefers-reduced-motion`), et rien ne part sur un échec ni sur une
+      // mise en brouillon : des confettis sur une fiche qui n'est pas en ligne
+      // feraient croire l'inverse de ce qui vient de se passer. Voir
+      // lib/confetti.ts.
+      lancerConfettis();
         toast({
           title: "Renfort publié",
           // Le message dit PAR OÙ ça part : c'est la seule chose qu'on ne

@@ -107,15 +107,38 @@ export default async function LandingPage() {
     '/public/highlights',
   );
 
+  // TROIS CARTES PAR RAYON, PAS DIX ET SEPT.
+  //
+  // La vitrine affichait dix ateliers, sept mini-formations et trois formations
+  // en intra : vingt cartes produit, soit 44 % du poids de la page (944 mots sur
+  // 2 151). Une page d'accueil qui déroule l'inventaire devient une page de
+  // catégorie — or son travail est de qualifier et d'orienter, pas de lister. Le
+  // catalogue a ses propres pages, et chaque rayon porte déjà son lien vers
+  // elles.
+  //
+  // Trois : c'est ce qui tient sur une ligne sans défilement à partir du grand
+  // écran, et ce qui se lit d'un coup d'œil sur téléphone.
+  const VITRINE = 3;
+
+  // ⚠ L'ORDRE VIENT DE `featured`, PAS DES VUES. `/public/highlights` trie par
+  // `featured` puis par nombre de vues. Sans aucune fiche mise en avant, la
+  // première carte de la vitrine était RE-DESSINE MOI — 243 vues, et une
+  // description qui annonce « un dispositif événement 2025, disponible
+  // uniquement durant l'été 2025 ». Le titre de la section promet « notre
+  // sélection » : il fallait qu'une sélection existe vraiment. Les trois fiches
+  // mises en avant sont posées par `seed-fiches-ateliers.js` (MISE_EN_AVANT) et
+  // se changent depuis l'administration.
+  const ateliersUne = (unes?.ateliers ?? []).slice(0, VITRINE);
+
   // Le même partage que sur /formations : les mini-formations gratuites de la
   // maison d'un côté, les formations Qualiopi vendues en intra de l'autre.
   // Voir le commentaire des deux blocs, plus bas.
-  const gratuites = (unes?.formations ?? []).filter(
-    (f) => f.freeOnline && estMaison(f.account?.name),
-  );
-  const payantes = (unes?.formations ?? []).filter(
-    (f) => !(f.freeOnline && estMaison(f.account?.name)),
-  );
+  const gratuites = (unes?.formations ?? [])
+    .filter((f) => f.freeOnline && estMaison(f.account?.name))
+    .slice(0, VITRINE);
+  const payantes = (unes?.formations ?? [])
+    .filter((f) => !(f.freeOnline && estMaison(f.account?.name)))
+    .slice(0, VITRINE);
 
 
   return (
@@ -239,17 +262,21 @@ export default async function LandingPage() {
                     <GraduationCap className="size-5" />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{catalogueTotal} interventions</p>
-                    {/* « notées après mission » promettait des avis qui n'existent
-                        pas encore : tant que les premières notes ne sont pas là,
-                        on met en avant ce qui est vrai dès aujourd'hui. */}
-                    {/* Même correction : « vérifiées par ADéPA » annonçait une
-                        relecture qui n'a pas lieu. Les FORMATIONS certifiantes,
-                        elles, sont bien relues avant diffusion sous la
-                        certification Qualiopi de l'association — c'est écrit
-                        et verrouillé côté serveur. C'est cela qu'on dit. */}
+                    {/* ⚠ ON N'AFFICHE PLUS LA TAILLE DU CATALOGUE ICI.
+                        Cet encart portait « {n} interventions au catalogue ».
+                        C'était le PREMIER nombre que voyait un visiteur, et
+                        dix-sept se lit comme « petit » sur une place de marché.
+                        Hublo n'a jamais publié son inventaire : il publie son
+                        nombre d'établissements. On publie le chiffre qui est
+                        fort — et le nôtre, celui qu'aucun concurrent ne peut
+                        écrire, ce sont les zéros : Brigad prend 10 % par
+                        mission, Hublo facture 2 000 à 3 000 € HT pour recruter
+                        un profil de son vivier.
+                        Le compte du catalogue reste affiché sur /ateliers, à sa
+                        place : là, il informe au lieu de jauger. */}
+                    <p className="text-sm font-semibold text-foreground">0 % de commission</p>
                     <p className="text-xs text-muted-foreground">
-                      au catalogue, proposées par le réseau
+                      et aucun frais de recrutement
                     </p>
                   </div>
                 </div>
@@ -263,11 +290,18 @@ export default async function LandingPage() {
                     <span className="animate-anneau absolute size-2.5 rounded-full bg-success" />
                     <span className="size-2.5 rounded-full bg-success" />
                   </span>
-                  {/* Le réseau réel est aujourd'hui francilien : promettre la
-                      France entière déçoit le premier établissement breton qui
-                      s'inscrit. Assumer le territoire convertit mieux. */}
+                  {/* Le réseau réel est aujourd'hui francilien, et on continue
+                      de le dire : promettre la France entière déçoit le premier
+                      établissement breton qui s'inscrit.
+                      ⚠ MAIS PLUS « ET BIENTÔT PARTOUT ». Cette fin de phrase
+                      annonçait à tout visiteur hors Île-de-France que ce n'était
+                      pas encore pour lui, et une promesse d'expansion sans date
+                      ne rassure personne — elle avoue seulement qu'on n'y est
+                      pas. Le territoire devient un argument : des intervenants
+                      qui connaissent les établissements dans lesquels ils
+                      interviennent. C'est vrai, et c'est ce qu'on vend. */}
                   <span className="text-xs font-medium text-foreground">
-                    Réseau actif — Île-de-France, et bientôt partout
+                    Réseau actif en Île-de-France
                   </span>
                 </div>
               </Reveal>
@@ -386,7 +420,7 @@ export default async function LandingPage() {
                 </div>
               </Reveal>
 
-              {(unes?.ateliers?.length ?? 0) > 0 ? (
+              {ateliersUne.length > 0 ? (
                 <div className="space-y-6">
                   <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div className="max-w-2xl">
@@ -405,7 +439,7 @@ export default async function LandingPage() {
                     </Button>
                   </Reveal>
                   <Reveal delay={100}>
-                    <OfferCarousel items={unes!.ateliers} basePath="/ateliers" />
+                    <OfferCarousel items={ateliersUne} basePath="/ateliers" />
                   </Reveal>
                 </div>
               ) : null}
@@ -443,7 +477,7 @@ export default async function LandingPage() {
                     </Button>
                   </Reveal>
                   <Reveal delay={100}>
-                    <OfferCarousel items={gratuites} basePath="/formations" useSlug />
+                    <OfferCarousel items={gratuites} basePath="/formations" />
                   </Reveal>
                 </div>
               ) : null}
@@ -464,7 +498,7 @@ export default async function LandingPage() {
                     </Button>
                   </Reveal>
                   <Reveal delay={100}>
-                    <OfferCarousel items={payantes} basePath="/formations" useSlug />
+                    <OfferCarousel items={payantes} basePath="/formations" />
                   </Reveal>
                 </div>
               ) : null}
@@ -566,7 +600,11 @@ export default async function LandingPage() {
                     'Devis en ligne, réponse sous 48 h',
                   ],
                   href: '/formations',
-                  action: 'Demander un devis',
+                  // « Demander un devis » menait au CATALOGUE des formations,
+                  // pas à un formulaire. Le devis se demande depuis la fiche
+                  // d'une formation précise — c'est le bon ordre : on choisit,
+                  // puis on demande. Le libellé dit maintenant ce qu'il fait.
+                  action: 'Voir les formations',
                   ruban: 'Sur devis',
                   bordure: 'border-secondary/45',
                   fond: 'bg-gradient-to-br from-secondary/20 via-card to-card',
@@ -588,7 +626,14 @@ export default async function LandingPage() {
                     'Au-delà : 19 €/mois pour 200 générations, 49 € pour 600',
                   ],
                   href: '/register',
-                  action: 'Découvrir LEX',
+                  // ⚠ MÊME DESTINATION, MÊME LIBELLÉ. Ce bouton disait
+                  // « Découvrir LEX » et menait au formulaire d'inscription :
+                  // il promettait une découverte et livrait un formulaire.
+                  // C'est le motif exact corrigé le 12/08, revenu par la
+                  // porte de derrière. La règle « un libellé par destination »
+                  // n'est pas cosmétique : dix libellés menaient tous à
+                  // /register, et le visiteur croyait à dix destinations.
+                  action: 'Créer un compte',
                   ruban: 'À crédits',
                   bordure: 'border-amber-500/45',
                   fond: 'bg-gradient-to-br from-amber-500/20 via-card to-card',
@@ -692,7 +737,7 @@ export default async function LandingPage() {
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg" variant="secondary">
                     <Link href="/register">
-                      Créer mon compte
+                      Créer un compte
                       <ArrowRight />
                     </Link>
                   </Button>

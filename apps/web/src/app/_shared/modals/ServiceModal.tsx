@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { lancerConfettis } from "@/lib/confetti";
 import { Field, Textarea } from "../form-fields";
 import { FileUpload, type FichierDepose } from "../FileUpload";
 
@@ -279,6 +280,9 @@ export function ServiceModal({
           body: { ...corps, status: statut },
           accountId,
         });
+        // Une fiche remise en ligne après un passage en brouillon est une
+        // publication, elle aussi.
+        if (statut === "PUBLISHED" && fiche.status !== "PUBLISHED") lancerConfettis();
         toast({
           title: statut === "PUBLISHED" ? "Fiche mise à jour" : "Fiche mise en brouillon",
           description:
@@ -334,6 +338,21 @@ export function ServiceModal({
           description: `${motifNonPubliee} Votre fiche est en brouillon dans « Mes ateliers » : elle partira au catalogue dès que ce point sera réglé.`,
         });
       } else {
+        if (statut === "PUBLISHED") {
+        // CONFETTIS À LA MISE EN LIGNE.
+        //
+        // Publier une fiche est le geste qui fait vivre la plateforme, et il ne
+        // recevait qu'un bandeau de notification identique à celui d'un
+        // changement de mot de passe. On salue le GESTE, pas l'arrivée sur une
+        // page — même règle que le parrainage.
+        //
+        // ⚠ Rien ne part si la personne a demandé moins d'animations
+        // (`prefers-reduced-motion`), et rien ne part sur un échec ni sur une
+        // mise en brouillon : des confettis sur une fiche qui n'est pas en ligne
+        // feraient croire l'inverse de ce qui vient de se passer. Voir
+        // lib/confetti.ts.
+          lancerConfettis();
+        }
         toast({
           title: statut === "PUBLISHED" ? "Atelier publié" : "Brouillon enregistré",
           description:

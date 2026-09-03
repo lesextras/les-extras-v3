@@ -41,12 +41,10 @@ export interface OfferCard {
 export function OfferCarousel({
   items,
   basePath,
-  useSlug = false,
 }: {
   items: OfferCard[];
   /** "/ateliers" ou "/formations". */
   basePath: string;
-  useSlug?: boolean;
 }) {
   const piste = useRef<HTMLDivElement>(null);
 
@@ -88,7 +86,14 @@ export function OfferCarousel({
               ? [o.publicTarget]
               : [];
           const prix = o.price ?? o.priceFrom ?? null;
-          const href = `${basePath}/${useSlug ? (o.slug ?? o.id) : o.id}`;
+          // ⚠ L'ADRESSE LISIBLE D'ABORD, PARTOUT. Le drapeau `useSlug` n'était
+          // posé que sur les formations : les cartes d'ateliers de l'accueil
+          // pointaient donc /ateliers/cms3it0g70015lt1wyr4sbhqr alors que
+          // /ateliers/atelier-psycho-boxe existe et fonctionne. Une redirection
+          // de plus à chaque clic, et le bénéfice du lien dispersé entre deux
+          // adresses pour une seule fiche. Le catalogue, lui, faisait déjà
+          // `slug ?? id` — les deux endroits disent maintenant la même chose.
+          const href = `${basePath}/${o.slug ?? o.id}`;
           const emoji = o.slug ? (EMOJI_PARCOURS[o.slug] ?? null) : null;
           const duree = dureeLisible(o);
           const maison = o.freeOnline && estMaison(o.account?.name);

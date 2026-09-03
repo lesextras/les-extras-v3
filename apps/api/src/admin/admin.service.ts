@@ -331,6 +331,71 @@ export class AdminService {
     return { deleted: true };
   }
 
+
+  /**
+   * LES RETOURS D'EXPÉRIENCE — moyennes, tendance, et surtout les problèmes.
+   *
+   * ⚠ LES PROBLÈMES SORTENT EN PREMIER ET SÉPARÉMENT. Un ennui vécu se traite
+   * dans la journée ; un avis se lit quand on a le temps. Noyés dans la même
+   * liste chronologique, les premiers se perdent dans les seconds — c'est
+   * exactement ce que cet écran doit empêcher.
+   */
+  async retoursExperience() {
+    const retours = await this.prisma.retourExperience.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      select: {
+        id: true,
+        createdAt: true,
+        source: true,
+        noteGlobale: true,
+        noteSite: true,
+        noteDepot: true,
+        probleme: true,
+        commentaire: true,
+        account: { select: { id: true, name: true, type: true } },
+        user: { select: { firstName: true, lastName: true, email: true } },
+      },
+    });
+
+    const moyenne = (champ: 'noteGlobale' | 'noteSite' | 'noteDepot') => {
+      const valeurs = retours
+        .map((r) => r[champ])
+        .filter((v): v is number => typeof v === 'number');
+      if (valeurs.length === 0) return null;
+      return {
+        note: Math.round((valeurs.reduce((a, b) => a + b, 0) / valeurs.length) * 10) / 10,
+        reponses: valeurs.length,
+      };
+    };
+
+    const [invitees, repondu] = await Promise.all([
+      this.prisma.account.count({ where: { enqueteAtelierAt: { not: null } } }),
+      this.prisma.retourExperience
+        .findMany({ distinct: ['accountId'], select: { accountId: true } })
+        .then((l) => l.filter((x) => x.accountId).length),
+    ]);
+
+    return {
+      total: retours.length,
+      moyennes: {
+        globale: moyenne('noteGlobale'),
+        site: moyenne('noteSite'),
+        depot: moyenne('noteDepot'),
+      },
+      enquete: {
+        invitees,
+        repondu,
+        // Un taux calculé sur zéro invitation vaut null, pas 0 % : « 0 % de
+        // réponses » sur une enquête qui n'est jamais partie se lit comme un
+        // échec, alors qu'il n'y a rien eu à répondre.
+        taux: invitees > 0 ? Math.round((repondu / invitees) * 100) : null,
+      },
+      problemes: retours.filter((r) => r.probleme && r.probleme.trim()),
+      recents: retours.slice(0, 50),
+    };
+  }
+
   // --- Modération missions ------------------------------------------------
 
   async listMissions() {

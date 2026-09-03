@@ -42,9 +42,24 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Secteur',
     links: [
-      { label: 'MECS & foyers', href: '/renforteam' },
-      { label: 'IME · ITEP · SESSAD', href: '/renforteam' },
-      { label: 'EHPAD', href: '/renforteam' },
+      // ⚠ CES TROIS LIENS POINTAIENT TOUS SUR /renforteam, ET C'ÉTAIT UN TROU
+      // DE RÉFÉRENCEMENT COÛTEUX (corrigé le 3/09/2026).
+      //
+      // Les six pages d'atterrissage sectorielles écrites le 2 septembre —
+      // celles qui doivent reprendre la première page de Google à NotaSuivi —
+      // ne recevaient AUCUN lien depuis ce pied de page, qui est pourtant sur
+      // les 93 pages du site. Elles n'étaient découvrables que par le sitemap
+      // et par /ateliers. Pire, le libellé promettait une page de secteur et
+      // livrait la page générique du renfort : /renforteam/mecs n'existe pas
+      // (404), il n'y a jamais eu de découpage sectoriel côté renfort.
+      //
+      // Un lien de pied de page présent sur tout le site est le signal interne
+      // le plus fort dont on dispose. Le dépenser trois fois sur la même page
+      // générique, quand six pages spécifiques attendent, était l'erreur la
+      // moins chère à corriger de tout l'audit.
+      { label: 'MECS & foyers', href: '/ateliers-pour/mecs' },
+      { label: 'IME · ITEP · SESSAD', href: '/ateliers-pour/ime' },
+      { label: 'EHPAD', href: '/ateliers-pour/ehpad' },
       { label: 'Intervenant indépendant', href: '/intervenant-independant' },
       // Ajouté le 03/09/2026 (demande Siham). Cette colonne en portait
       // quatre : la règle des sept liens par colonne tient toujours.

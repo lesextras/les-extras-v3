@@ -86,6 +86,55 @@ export class CommunityService {
     private readonly notifications: NotificationsService,
   ) {}
 
+
+  // ── Retours d'expérience ─────────────────────────────────────────────────
+
+  /**
+   * Enregistre un retour. Voir `enquete.scheduler.ts` pour la sollicitation.
+   *
+   * ⚠ AUCUNE UNICITÉ IMPOSÉE, ET C'EST VOLONTAIRE. Quelqu'un qui revient six
+   * mois plus tard dire qu'un problème persiste doit pouvoir le faire ; c'est
+   * même le retour le plus utile. L'écran, lui, dit qu'un avis a déjà été
+   * déposé, et propose d'en ajouter un autre — l'information sans l'interdit,
+   * comme partout ailleurs dans ce produit.
+   */
+  async deposerRetour(
+    userId: string,
+    accountId: string | null,
+    dto: {
+      noteGlobale: number;
+      noteSite?: number;
+      noteDepot?: number;
+      probleme?: string;
+      commentaire?: string;
+      source?: string;
+    },
+  ) {
+    return this.prisma.retourExperience.create({
+      data: {
+        userId,
+        accountId: accountId ?? undefined,
+        source: dto.source ?? 'SPONTANE',
+        noteGlobale: dto.noteGlobale,
+        noteSite: dto.noteSite,
+        noteDepot: dto.noteDepot,
+        probleme: dto.probleme,
+        commentaire: dto.commentaire,
+      },
+      select: { id: true, createdAt: true },
+    });
+  }
+
+  /** Les retours déjà déposés par cette personne — pour l'écran, pas pour bloquer. */
+  async mesRetours(userId: string) {
+    return this.prisma.retourExperience.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { id: true, createdAt: true, noteGlobale: true },
+    });
+  }
+
   // ── Points ───────────────────────────────────────────────────────────────
 
   /** Crédite des points et met à jour le solde, en une transaction. */

@@ -2048,3 +2048,124 @@ informe.
 du 400 de l'API : un formulaire long qui part et revient en erreur fait perdre
 la saisie de vue alors que le champ fautif est à l'écran. L'API garde la même
 règle — c'est elle qui fait foi, le client n'est qu'une politesse.
+
+---
+
+## L'audit de l'accueil appliqué, l'enquête de satisfaction, les confettis — 3 septembre 2026 (nuit)
+
+### L'audit de conversion de l'accueil (67/100) et ce qui a été corrigé
+
+Question de Siham : « est-ce que la page d'accueil est parfaite à 100 % ? ».
+Réponse mesurée : non — 2 151 mots, 10 sections, un seul `h1`, hiérarchie
+propre, prix publiés, aucun procédé douteux. **Bien construite, mais elle vend
+comme un annuaire.** Neuf constats, cinq appliqués le soir même.
+
+1. **« 17 interventions au catalogue » → « 0 % de commission ».** C'était le
+   PREMIER nombre que voyait un visiteur, et dix-sept se lit comme « petit » sur
+   une place de marché. Hublo ne publie jamais son inventaire, il publie son
+   nombre d'établissements. On publie le chiffre qui est fort : le nôtre,
+   qu'aucun concurrent ne peut écrire, ce sont les zéros. Le compte du catalogue
+   reste sur `/ateliers`, où il informe au lieu de jauger.
+2. **« Réseau actif — Île-de-France, et bientôt partout » → « Réseau actif en
+   Île-de-France ».** La fin de phrase annonçait à tout visiteur hors IDF que ce
+   n'était pas pour lui, et une promesse d'expansion sans date n'avoue qu'une
+   chose : qu'on n'y est pas.
+3. ⚠ **LE PIED DE PAGE ENVOYAIT TROIS LIENS SECTORIELS SUR `/renforteam`.**
+   « MECS & foyers », « IME · ITEP · SESSAD » et « EHPAD » pointaient tous la
+   page générique du renfort — et `/renforteam/mecs` est en **404**, il n'y a
+   jamais eu de découpage sectoriel côté renfort. Pendant ce temps, les six
+   pages `/ateliers-pour/{ime,itep,mecs,sessad,esat,ehpad}` écrites le 2/09 pour
+   reprendre Google à NotaSuivi ne recevaient **aucun lien** depuis les 93 pages
+   du site. Repointées. C'était la correction la moins chère de tout l'audit.
+4. **Un seul libellé par destination, à nouveau.** `/register` en portait
+   QUATRE : « Créer un compte », « Créer mon compte », « Créer mon compte pour
+   entrer » et **« Découvrir LEX »** — ce dernier promettant une découverte et
+   livrant un formulaire d'inscription, c'est-à-dire exactement le motif corrigé
+   le 12/08, revenu par la porte de derrière. Et « Demander un devis » menait au
+   catalogue des formations, pas à un formulaire : devenu « Voir les
+   formations ». **Cette règle se défait toute seule à chaque ajout de section :
+   la revérifier après chaque passage sur l'accueil.**
+5. **Trois cartes par rayon au lieu de dix et sept** (`VITRINE` dans
+   `page.tsx`). Le catalogue pesait 44 % de la page — 944 mots sur 2 151, vingt
+   cartes produit. Une page d'accueil qui déroule l'inventaire devient une page
+   de catégorie.
+6. **La « sélection d'ateliers » en était enfin une.** `/public/highlights` trie
+   par `featured` puis par vues ; aucune fiche n'étant mise en avant, la
+   première carte était **RE-DESSINE MOI** (243 vues, « disponible uniquement
+   durant l'été 2025 »). `MISE_EN_AVANT` dans `seed-fiches-ateliers.js` pose
+   `featured` sur psycho-boxe, théâtre et musicothérapie — et **remet à false ce
+   qui n'y figure pas** : une vitrine est une liste, pas un cumul.
+7. **Meta description : 171 → 145 caractères.** Le commentaire du fichier
+   annonçait 155 ; la phrase en faisait 171 et Google la coupait en plein
+   milieu. **Le compte se vérifie, il ne se déclare pas.**
+8. **`OfferCarousel` pointe l'adresse lisible partout.** Le drapeau `useSlug`
+   n'était posé que sur les formations : les cartes d'ateliers de l'accueil
+   menaient à `/ateliers/cms3it0g70015lt1wyr4sbhqr`. Drapeau supprimé, `slug ??
+   id` partout, comme le catalogue le faisait déjà.
+
+⚠ **UN CONSTAT DE L'AUDIT ÉTAIT FAUX, ET IL FAUT LE DIRE.** J'avais relevé
+« 5 images sans alt sur 23 ». Vérification faite : **zéro image sans attribut
+`alt`** — les cinq portent `alt=""`, qui est le balisage CORRECT pour une image
+décorative posée à côté d'un lien qui dit déjà la même chose. Leur « corriger »
+un texte alternatif aurait dégradé l'accessibilité en faisant annoncer du bruit
+aux lecteurs d'écran. Rien n'a été touché.
+
+**Restent à faire, et ce sont les deux plus gros :** le `h1` ne dit toujours pas
+ce que fait le site (« Les interventions portées par ceux qui font le terrain »
+est une signature, pas une promesse — la bonne phrase est déjà écrite en dessous
+en gris), et **il n'y a toujours aucune preuve sociale** : pas un nom
+d'établissement, pas un témoignage, pas un chiffre d'usage. Ce dernier point ne
+se code pas, il demande un accord.
+
+### L'enquête de satisfaction — `community/enquete.scheduler.ts`
+
+Demande de Siham : « un questionnaire envoyé à tous ceux ayant envoyé un
+1er atelier pour mesurer la satisfaction et avoir un avis sur le site et la
+procédure pour proposer ses services ».
+
+**Sept jours après la PREMIÈRE fiche publiée**, une fois, jamais deux.
+`Account.enqueteAtelierAt` est le verrou, **posé AVANT l'envoi** — même doctrine
+que le tunnel : un doublon coûte plus cher qu'un message manquant, surtout pour
+un message qui demande un service. Plancher de 60 jours (plus large que les 30
+du tunnel : une expérience de dépôt se raconte encore deux mois après, une
+inscription non). Cron à **10 h 45**, une demi-heure après le tunnel, pour que
+les deux ne tombent jamais dans la même minute.
+
+⚠ **`hebdoOptIn` NE s'applique PAS à cette enquête, et c'est délibéré.** Cette
+case couvre l'éditorial — le rendez-vous du lundi, la séquence d'accueil. Une
+enquête sur un service qu'on vient d'utiliser relève de la relation de service :
+elle part une seule fois et ne propose rien à vendre. `BANNED` et `ANONYMIZED`
+en sont exclus, comme partout.
+
+⚠ **On mesure `Service.createdAt`, pas une date de publication** — le modèle n'en
+porte pas. Pour l'immense majorité des fiches les deux sont à quelques minutes
+d'écart (le formulaire crée puis publie), et l'écart joue dans le bon sens :
+l'enquête part un peu plus tôt, jamais plus tard.
+
+**Quatre questions, une minute, une seule obligatoire.** `RetourExperience`
+porte trois notes SÉPARÉES — globale, **le site**, **la procédure de dépôt** —
+parce qu'une note unique dit qu'on plaît ou qu'on déplaît, jamais où ça coince.
+Et `probleme` est un champ à part de `commentaire` : un ennui vécu se traite
+dans la journée, un avis se lit quand on a le temps ; mélangés, le premier se
+perd dans le second. `/admin/retours` reprend cette séparation — les problèmes
+en haut, avec l'adresse pour répondre.
+
+⚠ **Aucun jeton dans l'URL de l'enquête.** Le courriel mène à
+`/dashboard/mon-avis`, où la personne est identifiée parce qu'elle est
+connectée. Un identifiant de compte glissé dans une adresse se retrouve dans les
+journaux, l'historique du navigateur et le premier partage d'écran venu.
+
+### Les confettis à la mise en ligne
+
+`lancerConfettis()` existait déjà (parrainage, demande de catalogue) : réutilisé,
+aucune dépendance ajoutée. Il part maintenant sur **la publication d'un atelier**
+(création et remise en ligne), **d'un renfort**, **d'une formation**, sur la
+**modération admin vers PUBLISHED** (c'est la mise en ligne des fiches des
+intervenants extérieurs) et à l'envoi d'un avis.
+
+⚠ **Jamais sur un brouillon, jamais sur un échec, jamais sur une
+dépublication.** Des confettis sur une fiche qui n'est pas en ligne feraient
+croire l'inverse de ce qui vient de se passer — et c'est exactement le défaut
+que le message « Atelier publié » sur une publication refusée avait produit en
+août. `lib/confetti.ts` refuse déjà de partir si la personne a demandé moins
+d'animations (`prefers-reduced-motion`).

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { lancerConfettis } from "@/lib/confetti";
 import { EmptyState } from "./ui";
 import { Field } from "./form-fields";
 import {
@@ -161,6 +162,10 @@ export function AdminFormationsManager({
     setBusy(id);
     try {
       await apiRequest(`/admin/formations/${id}`, { method: "PATCH", body });
+      // Confettis à la MISE EN LIGNE seulement — pas sur une dépublication ni
+      // sur un changement de champ. Voir lib/confetti.ts : rien ne part si la
+      // personne a demandé moins d'animations.
+      if (body.status === "PUBLISHED") lancerConfettis();
       toast({ title: label });
       router.refresh();
     } catch (err) {

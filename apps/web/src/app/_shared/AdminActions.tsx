@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { lancerConfettis } from "@/lib/confetti";
 
 export function ModerateMissionActions({
   missionId,
@@ -33,6 +34,7 @@ export function ModerateMissionActions({
         body: { status: next },
         accountId,
       });
+      if (next === "PUBLISHED") lancerConfettis();
       toast({ title: label });
       router.refresh();
     } catch (err) {
@@ -163,6 +165,9 @@ export function ModerateServiceActions({
         body: { status: next },
         accountId,
       });
+      // Approuver un atelier, c'est le mettre en ligne : c'est le geste que
+      // les confettis saluent, pas l'archivage qui passe par le même bouton.
+      if (next === "PUBLISHED") lancerConfettis();
       toast({ title: label });
       router.refresh();
     } catch (err) {

@@ -388,6 +388,12 @@ export class AdminController {
    * Suivi des e-mails : transport, journal des envois, avancement du tunnel.
    * Lecture seule — rien ne se déclenche depuis cet écran, on regarde.
    */
+  /** Retours d'expérience : moyennes, problèmes signalés, derniers avis. */
+  @Get('retours')
+  retoursExperience() {
+    return this.admin.retoursExperience();
+  }
+
   @Get('emails')
   suiviEmails() {
     return this.admin.suiviEmails();

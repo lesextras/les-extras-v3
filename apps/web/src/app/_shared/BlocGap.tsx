@@ -55,8 +55,10 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">
+            {/* Un seul libellé pour /register sur toute la page d'accueil :
+                « Créer mon compte pour entrer » était le quatrième. */}
             <Link href="/register">
-              Créer mon compte pour entrer
+              Créer un compte
               <ArrowRight />
             </Link>
           </Button>

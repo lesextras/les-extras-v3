@@ -1088,6 +1088,58 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * ENQUÊTE DE SATISFACTION — une semaine après la première fiche mise en ligne.
+   *
+   * Demandée par Siham le 3/09/2026 : « on a besoin de feedback pour améliorer
+   * l'expérience client et avoir des retours sur problème rapidement ».
+   *
+   * ── Ce qui tient ce message, et qu'il ne faut pas défaire ─────────────────
+   *
+   * 1. **Il part UNE fois, et il le dit.** Une enquête qui revient est une
+   *    enquête qu'on n'ouvre plus. `Account.enqueteAtelierAt` est le verrou.
+   * 2. **Sept jours, pas le lendemain.** Au lendemain, la personne n'a pas
+   *    encore vu si sa fiche vit ; à un mois, elle a oublié comment elle l'a
+   *    déposée. Une semaine est le moment où elle se souvient ET peut juger.
+   * 3. **On annonce la durée et on la tient : une minute, quatre questions.**
+   *    Annoncer « quelques minutes » sur un formulaire de vingt champs est le
+   *    plus sûr moyen de n'avoir que des réponses de gens polis.
+   * 4. **On demande ce qu'on va corriger, pas une note de satisfaction.** Le
+   *    site, la procédure de dépôt, et l'ennui concret s'il y en a eu. Une
+   *    étoile globale ne dit jamais quoi réparer.
+   * 5. **Aucun jeton dans l'URL.** Le lien mène à l'espace de la personne, qui
+   *    est déjà identifiée en s'y connectant. Un identifiant de compte glissé
+   *    dans une adresse se retrouve dans les journaux, les historiques et les
+   *    partages d'écran.
+   */
+  async sendEnqueteAtelier(
+    to: string,
+    data: { prenom?: string | null; titreFiche?: string | null },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    const bonjour = data.prenom ? `Bonjour ${e(data.prenom)},` : 'Bonjour,';
+    const fiche = data.titreFiche
+      ? `<b>${e(data.titreFiche)}</b> est en ligne depuis une semaine.`
+      : 'Votre première fiche est en ligne depuis une semaine.';
+    await this.send(
+      to,
+      'Votre première mise en ligne : une minute pour nous dire ce qui a coincé',
+      this.layout(
+        'Comment ça s’est passé ?',
+        `${bonjour}
+        <br><br>${fiche} C’est le bon moment pour nous dire ce qui vous a paru
+        simple, et ce qui vous a fait perdre du temps.
+        <br><br><b>Quatre questions, une minute.</b> Le site, la procédure pour
+        proposer vos services, et l’ennui précis si vous en avez rencontré un.
+        <br><br>Nous lisons tout, et un problème signalé se traite dans la
+        journée. C’est le seul moyen que nous ayons de corriger ce que nous ne
+        voyons pas depuis l’intérieur.
+        <br><br>Merci du temps que vous y passerez.`,
+        { label: 'Donner mon avis', url: `${this.webUrl}/dashboard/mon-avis` },
+      ),
+    );
+  }
+
+  /**
    * LE TUNNEL D'ACCUEIL — une séquence, pas un message isolé (03/09/2026).
    *
    * Modèle demandé par Siham : la séquence d'iPhone Photography School qu'elle

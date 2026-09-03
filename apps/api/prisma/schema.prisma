@@ -81,6 +81,7 @@ model User {
   /// Date du dernier message du tunnel. C'est elle qui espace la séquence :
   /// on n'écrit jamais deux fois dans le même intervalle, quoi qu'il arrive.
   tunnelDernierAt           DateTime?
+  retours                   RetourExperience[]
   questionsAsked            Question[]           @relation("QuestionAuthor")
   answersWritten            Answer[]             @relation("AnswerAuthor")
   answerVotes               AnswerVote[]         @relation("AnswerVoter")
@@ -220,6 +221,12 @@ model Account {
   answers            Answer[]       @relation("AccountAnswers")
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
+
+  /// Date d'envoi de l'ENQUÊTE de satisfaction « première mise en ligne ».
+  /// Non nul = déjà partie, on ne redemande pas. Voir `enquete.scheduler.ts` :
+  /// c'est un verrou, pas un calendrier — il est posé AVANT l'envoi.
+  enqueteAtelierAt DateTime?
+  retours          RetourExperience[]
 
   memberships                   Membership[]
   invitations                   Invitation[]
@@ -2499,4 +2506,47 @@ enum StatutSignature {
   REFUSEE
   EXPIREE
   ANNULEE
+}
+
+/// ENQUÊTE DE SATISFACTION — un retour, une semaine après la première mise en
+/// ligne. Demandée par Siham le 3/09/2026 : « on a besoin de feedback pour
+/// améliorer l'expérience client et avoir des retours sur problème rapidement ».
+///
+/// ⚠ TROIS NOTES SÉPARÉES, ET C'EST LE POINT. Une note globale unique dit qu'on
+/// plaît ou qu'on déplaît, jamais où ça coince. Les deux autres portent
+/// exactement sur ce que Siham veut savoir : le SITE (est-il clair, se
+/// trouve-t-on ?) et la PROCÉDURE de dépôt (combien ça coûte de publier sa
+/// première fiche). Ce sont deux problèmes distincts, avec deux réponses
+/// distinctes.
+///
+/// ⚠ `probleme` est traité à part de `commentaire`, à dessein : un ennui vécu
+/// se traite en quelques heures, un avis se lit quand on a le temps. Mélangés,
+/// le premier se perd dans le second.
+model RetourExperience {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  /// D'où vient la sollicitation. PREMIER_ATELIER = l'enquête automatique ;
+  /// SPONTANE = quelqu'un a ouvert la page de lui-même.
+  source String @default("PREMIER_ATELIER")
+
+  /// De 1 à 5. La note globale est la seule obligatoire : un formulaire qui
+  /// exige cinq réponses ne se remplit pas.
+  noteGlobale Int
+  /// Le site : clarté, navigation, ce qu'on trouve et ce qu'on ne trouve pas.
+  noteSite    Int?
+  /// La procédure pour proposer ses services : dépôt de fiche, pièces, délais.
+  noteDepot   Int?
+
+  /// A rencontré un problème concret. Sépare l'incident de l'opinion.
+  probleme    String?
+  commentaire String?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([accountId])
 }

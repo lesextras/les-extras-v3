@@ -295,6 +295,33 @@ const CHAMPS_REPERES = [
   'evaluation',
 ];
 
+/**
+ * ───────────────────────────────────────────────────────────────────────────
+ * LA VITRINE DE L'ACCUEIL — trois fiches mises en avant
+ * ───────────────────────────────────────────────────────────────────────────
+ * `/public/highlights` trie par `featured` décroissant, puis par nombre de
+ * vues. Aucune fiche n'était mise en avant : la première carte de la section
+ * « Notre sélection d'ateliers » était donc **RE-DESSINE MOI**, en tête par ses
+ * 243 vues, avec une description qui annonce « un dispositif événement 2025 […]
+ * disponible uniquement durant l'été 2025 ». Le titre de la section promettait
+ * une sélection ; il n'y en avait aucune.
+ *
+ * Les trois retenues sont les plus complètes des fiches de l'association, et
+ * toutes trois ont des photos : psycho-boxe (objectifs, déroulé, évaluation et
+ * repères), théâtre et musicothérapie. Ce n'est pas un classement de valeur,
+ * c'est un choix de ce qu'on montre en premier — il se change d'un clic depuis
+ * l'administration, et le reste du catalogue est à un lien de là.
+ *
+ * ⚠ Ce bloc REMET À FALSE ce qui n'y figure pas, contrairement au reste du
+ * script : une mise en avant est une liste, pas un cumul. Sans cela, chaque
+ * passage ajouterait une fiche à la vitrine sans jamais en retirer.
+ */
+const MISE_EN_AVANT = [
+  'atelier-psycho-boxe',
+  'atelier-theatre',
+  'atelier-de-musicotherapie',
+];
+
 async function main() {
   const appliquer = process.argv.includes('--appliquer');
   let remplis = 0;
@@ -376,6 +403,20 @@ async function main() {
     console.log(`  +  ${fiche.title} — ${Object.keys(data).join(', ')}`);
     if (appliquer) await prisma.service.update({ where: { id: fiche.id }, data });
     reperes += 1;
+  }
+
+  console.log('\n--- Vitrine de l\'accueil ---');
+  const enAvant = await prisma.service.findMany({
+    where: { OR: [{ slug: { in: MISE_EN_AVANT } }, { featured: true }] },
+    select: { id: true, slug: true, title: true, featured: true },
+  });
+  for (const f of enAvant) {
+    const voulu = MISE_EN_AVANT.includes(f.slug ?? '');
+    if (f.featured === voulu) continue;
+    console.log(`  ${voulu ? '+' : '-'}  ${f.title} — ${voulu ? 'mise en avant' : 'retirée de la vitrine'}`);
+    if (appliquer) {
+      await prisma.service.update({ where: { id: f.id }, data: { featured: voulu } });
+    }
   }
 
   console.log(
