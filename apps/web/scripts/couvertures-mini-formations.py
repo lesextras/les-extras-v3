@@ -93,6 +93,13 @@ COUVERTURES = [
         "duree": "4 modules + annexes · 45 min",
     },
     {
+        "fichier": "les-premieres-minutes-d-une-crise.jpg",
+        "surtitre": "Comportements-défis et situations de crise",
+        "titre": "Les premières minutes d’une crise",
+        "sous": "Réduire ce que l’adulte ajoute pendant, et préparer à froid ce qui suit",
+        "duree": "4 modules + annexes · 45 min",
+    },
+    {
         "fichier": "guider-puis-s-effacer.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Guider puis s’effacer",

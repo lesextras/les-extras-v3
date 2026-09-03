@@ -24,6 +24,7 @@ const f2 = require('./f2-demander.js');
 const f3 = require('./f3-guider.js');
 const f4 = require('./f4-chainage.js');
 const f5 = require('./f5-previsible.js');
+const f6 = require('./f6-crise.js');
 
 /** ids des items Teachizy, relevés après la création des sections. */
 const IDS = {
@@ -32,6 +33,7 @@ const IDS = {
   'guider-puis-s-effacer': { lecons: [1470804, 1470805, 1470806, 1470807], annexes: 1470883 },
   'decomposer-une-routine-en-etapes': { lecons: [1470811, 1470812, 1470813, 1470814], annexes: 1470889 },
   'rendre-l-environnement-previsible': { lecons: [1470815, 1470816, 1470817, 1470818], annexes: 1470895 },
+  'les-premieres-minutes-d-une-crise': { lecons: [1471071, 1471073, 1471075, 1471077], annexes: 1471079 },
 };
 
 /**
@@ -44,6 +46,11 @@ const COMPORTEMENTALES = new Set([
   'apprendre-a-demander-plutot-qu-a-crier',
   'guider-puis-s-effacer',
   'decomposer-une-routine-en-etapes',
+  // Le parcours « crise » porte l'encart pour une raison de plus que les
+  // autres : c'est le seul dont les contenus voisinent avec des pratiques de
+  // contrainte, et l'encart est le seul endroit qui dise que ces pratiques
+  // n'appartiennent pas à cette approche.
+  'les-premieres-minutes-d-une-crise',
 ]);
 
 const SOURCES = [
@@ -52,6 +59,7 @@ const SOURCES = [
   { f: f3, annexes: f3.annexes },
   { f: f4, annexes: f4.annexes },
   { f: f5, annexes: f5.annexes },
+  { f: f6, annexes: f6.annexes },
 ];
 
 const formations = SOURCES.map(({ f, annexes }) => {

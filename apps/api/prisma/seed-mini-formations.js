@@ -278,6 +278,38 @@ Module 3 — Exercice guidé : le plan d’estompage. Niveau de départ, critèr
 Module 4 — Mise en pratique et auto-observation. Le relevé qui suit l’aide plutôt que la réussite.`,
     targetAudience: `Parents et proches ; professionnels du médico-social et de l’école (AESH, AES, éducateurs, enseignants) ; toute équipe qui constate qu’une personne « n’y arrive que si quelqu’un est à côté ».`,
   },
+  {
+    slug: 'les-premieres-minutes-d-une-crise',
+    image: 'les-premieres-minutes-d-une-crise.jpg',
+    slugPlateforme: 'les-premieres-minutes-dune-crise',
+    title: 'Les premières minutes d’une crise',
+    summary: `Thématique : comportements-défis et situations de crise. Une seule compétence travaillée : réduire ce que l’adulte ajoute pendant une crise, et écrire à froid ce qui se passera la prochaine fois.
+
+Une crise ne s’arrête pas sur commande, et cette formation ne le promet nulle part. Ce qui se travaille se travaille vraiment : les six choses que l’adulte ajoute sans le vouloir — les mots, les demandes, le public, la proximité, les menaces, le volume —, la conduite décidée à froid, et le moment de la reprise, où se produisent presque toujours les épisodes les plus graves.
+
+Aucun geste d’intervention physique n’est enseigné : ni prise, ni maintien, ni portage. Ces gestes blessent quand ils s’apprennent dans un texte ; ils relèvent du protocole écrit d’un établissement et d’une formation en présentiel avec mise en situation. La contrainte physique, l’enfermement et la privation ne sont jamais des techniques éducatives, et la formation le redit à chaque module.
+
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le module 3 lance un relevé de dix jours, une minute par épisode, et le module 4 se lit le dixième jour, ce relevé sous les yeux. Comptez donc une dizaine de jours entre le premier et le dernier module.
+
+${GARDE_FOU}`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— décrire une crise en termes observables — horaire, ce qui précédait, ce qui s’est produit, durée — plutôt que de la qualifier ;
+— situer les quatre temps d’une crise et dire ce qui est possible à chacun ;
+— nommer les six ajouts de l’adulte et en retirer au moins un, de façon mesurable ;
+— écrire une fiche de conduite à froid en cinq lignes, applicable par quelqu’un qui n’était pas dans la réunion ;
+— tenir un relevé de dix jours et en tirer une décision datée ;
+— rédiger, après un épisode, un écrit qui tient devant une équipe et devant un dossier ;
+— reconnaître les situations où l’on ne continue pas seul.`,
+    program: `Module 1 — Les quatre temps, les six ajouts, les trois réductions. Ce qu’on appelle « crise » et pourquoi le mot ne décrit rien ; ce qui est possible avant, pendant et après ; les limites absolues.
+
+Module 2 — Une scène qui dérape, et la deuxième crise. Quatorze minutes analysées minute par minute, et la découverte que la blessure n’arrive pas au pic mais à la reprise.
+
+Module 3 — Exercice guidé : la fiche à froid en cinq lignes. Les signes, ce que je retire, ma phrase, la limite de sécurité, la reprise.
+
+Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture en quatre questions, les phrases de compte rendu, et à qui s’adresser quand cela ne suffit plus.`,
+    targetAudience: `Parents et proches confrontés à des crises répétées ; professionnels du médico-social et de la protection de l’enfance (MECS, IME, ITEP, SESSAD, ESAT, foyers, ASE) ; AESH, assistants familiaux, animateurs et enseignants ; équipes qui veulent une conduite commune, écrite, tenue de la même façon quel que soit l’adulte présent.`,
+  },
 ];
 
 async function compteProprietaire() {
