@@ -318,6 +318,59 @@ export default async function FormationPubliquePage({
               </CardContent>
             </Card>
           ) : null}
+
+          {/* LA FICHE RÉCAP — une page A4 qui résume tout le parcours : la
+              notion clé, les quatre modules, le schéma central, l'arbre de
+              décision, la grille de relevé vierge, les erreurs fréquentes.
+
+              Elle est ici, AVANT l'inscription et en libre accès, parce que
+              c'est le meilleur aperçu possible de ce que vaut le parcours :
+              on voit en dix secondes s'il traite bien le problème qu'on a.
+              Les fichiers sont générés par scripts/mini-formations —
+              `fiches-recap.js` — donc ils ne peuvent pas se désynchroniser
+              du contenu des modules.
+
+              Le PDF est vectoriel (~200 Ko) : il s'imprime net en A4. */}
+          {f.freeOnline ? (
+            <Card>
+              <CardContent className="space-y-3 p-5">
+                <p className="text-sm font-semibold text-foreground">
+                  La fiche récap, en une page
+                </p>
+                <Link
+                  href={`/fiches/${f.slug}.pdf`}
+                  target="_blank"
+                  rel="noopener"
+                  className="block overflow-hidden rounded-md border border-border transition hover:opacity-90"
+                >
+                  <Image
+                    src={`/fiches/${f.slug}.jpg`}
+                    alt={`Aperçu de la fiche récapitulative A4 « ${f.title} »`}
+                    width={827}
+                    height={1170}
+                    className="h-auto w-full"
+                  />
+                </Link>
+                <p className="text-xs text-muted-foreground">
+                  Tout le parcours sur une page&nbsp;: la notion clé, les quatre modules,
+                  le schéma, l&apos;arbre de décision et{" "}
+                  <strong className="font-semibold text-foreground">
+                    la grille de relevé à recopier
+                  </strong>
+                  . À imprimer et à garder sous la main.
+                </p>
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/fiches/${f.slug}.pdf`} target="_blank" rel="noopener">
+                    Télécharger la fiche A4 (PDF)
+                  </Link>
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  Libre d&apos;accès, sans inscription.
+                </p>
+              </CardContent>
+            </Card>
+          ) : null}
+
           {f.freeOnline ? null : (
           <Card>
             <CardContent className="space-y-4 p-5">
