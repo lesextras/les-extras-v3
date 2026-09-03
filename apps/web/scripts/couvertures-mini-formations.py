@@ -107,6 +107,13 @@ COUVERTURES = [
         "duree": "4 modules + annexes · 45 min",
     },
     {
+        "fichier": "lire-un-comportement-comme-une-reaction-de-survie.jpg",
+        "surtitre": "Protection de l’enfance et conduites d’adaptation",
+        "titre": "Lire un comportement comme une réaction de survie",
+        "sous": "Relire une conduite, puis en tirer un réglage concret du quotidien",
+        "duree": "4 modules + annexes · 45 min",
+    },
+    {
         "fichier": "guider-puis-s-effacer.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Guider puis s’effacer",

@@ -340,6 +340,36 @@ Module 3 — Exercice guidé : la feuille des cinq consignes. Ce qui est négoci
 Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture ligne par ligne, et les phrases d’écrit professionnel qui ne prêtent aucune intention.`,
     targetAudience: `Parents et proches qui ont l’impression que « tout est une bataille » ; professionnels du médico-social, de l’école et de la protection de l’enfance (IME, ITEP, SESSAD, MECS, ESAT, foyers, AESH, assistants familiaux) ; équipes qui veulent des consignes communes, formulées de la même façon quel que soit l’adulte présent.`,
   },
+  {
+    slug: 'lire-un-comportement-comme-une-reaction-de-survie',
+    image: 'lire-un-comportement-comme-une-reaction-de-survie.jpg',
+    slugPlateforme: 'lire-un-comportement-comme-une-reaction-de-survie',
+    title: 'Lire un comportement comme une réaction de survie',
+    summary: `Thématique : protection de l’enfance et conduites d’adaptation. Une seule compétence travaillée : relire une conduite comme une stratégie qui a été utile ailleurs, et en tirer un réglage concret du quotidien.
+
+La lecture « c’est le traumatisme » est devenue le lieu commun du secteur, et elle produit trois dégâts bien identifiés : elle explique tout, elle excuse tout, et surtout elle remplace l’action — la réunion est excellente, tout le monde est ému, et rien ne change dans la maison le lendemain. Cette formation ne s’arrête donc jamais à la lecture : chaque module la fait aboutir à un réglage du quotidien, écrit et testé quinze jours.
+
+Ce n’est ni un cours sur le psychotraumatisme, ni un outil de repérage clinique, ni une aide au diagnostic. Un éducateur n’écrit pas de diagnostic, et une mini-formation gratuite n’en apprend pas. Le premier module dit ce qui ne se lit pas comme une réaction de survie — douleur, faim, sommeil, vue, audition, effet d’un traitement, trouble du neurodéveloppement non repéré — parce que c’est là que cette grille fait le plus de dégâts quand elle est appliquée à tout.
+
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le module 3 lance un réglage testé pendant quinze jours, avec un relevé de trente secondes par jour, et le module 4 se lit le quinzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module.`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— poser la question « à quoi cela a-t-il pu servir » plutôt que « pourquoi il me fait ça » ;
+— reconnaître sept conduites fréquentes et les contextes où elles étaient adaptées ;
+— nommer les trois pièges de cette lecture, dont le plus fréquent : elle remplace l’action ;
+— distinguer ce qui ne se lit pas comme une réaction de survie, et vérifier le corps avant l’histoire ;
+— écrire une fiche « lecture → réglage » en cinq lignes et la porter en réunion ;
+— tenir un relevé de quinze jours et reconnaître les quatre issues, dont deux sont des réussites ;
+— écrire dans un rapport une hypothèse signalée comme telle, sans poser de diagnostic.`,
+    program: `Module 1 — Changer de question, et les trois pièges. Sept conduites et les contextes où elles étaient adaptées ; ce qui ne se lit pas comme ça ; et pourquoi une lecture qui ne change rien n’a servi qu’aux adultes.
+
+Module 2 — Une réponse raisonnable qui confirme tout. Six semaines d’accueil, une règle fondée, une équipe attentive — et une rupture. Ce que chaque étape a enseigné sans le vouloir.
+
+Module 3 — Exercice guidé : de la lecture au réglage. La fiche en cinq lignes, les huit réglages du quotidien, et les cinq conditions pour qu’un réglage tienne.
+
+Module 4 — Quinze jours, et ce qu’on écrit dans un rapport. Les quatre issues du relevé, dont deux sont des réussites, et les phrases d’écrit professionnel qui ne posent aucun diagnostic.`,
+    targetAudience: `Professionnels de la protection de l’enfance (MECS, foyers, lieux de vie, pôles ASE, AEMO, placement à domicile) ; assistants familiaux et familles d’accueil ; professionnels du médico-social accompagnant des enfants confiés (IME, ITEP, SESSAD) ; enseignants et AESH qui accueillent un élève placé.`,
+  },
 ];
 
 async function compteProprietaire() {
