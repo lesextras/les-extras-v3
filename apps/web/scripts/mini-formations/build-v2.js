@@ -85,6 +85,31 @@ const SOURCES = [
   { f: f10, annexes: f10.annexes },
 ];
 
+/**
+ * LA FICHE RÉCAP, en tête des annexes.
+ *
+ * C'est la page A4 qui résume tout le parcours (voir `fiches-recap.js`). Elle
+ * arrive AVANT les fiches techniques parce que c'est celle qu'on imprime en
+ * premier, et qu'elle porte la grille de relevé vierge.
+ *
+ * ⚠ Un LIEN, pas une image. L'API stocke sans doute une balise <img>, mais le
+ * rendu côté apprenant n'a pas pu être vérifié sans compte élève — et une image
+ * cassée en tête des annexes serait pire que pas d'image du tout. Même règle
+ * que pour le SVG dans `schemas.js`.
+ */
+function ficheRecap(slug) {
+  const url = 'https://les-extras.fr/fiches/' + slug + '.pdf';
+  return `<div style="border:2px solid #cf6f56;border-radius:10px;padding:16px 18px;margin:0 0 22px">
+<h3 style="margin-top:0;color:#8a3a2e">La fiche récap — une page A4, à imprimer</h3>
+<p>Tout le parcours tient sur une page&nbsp;: la notion clé et son test, les quatre
+modules et ce qu'ils produisent, le schéma central, l'arbre de décision du relevé,
+<strong>la grille de relevé vierge à recopier</strong>, les erreurs qui coûtent le
+plus, et l'essentiel à retenir.</p>
+<p style="margin-bottom:0"><strong>Téléchargement direct, sans inscription&nbsp;:</strong><br>
+<a href="${url}" target="_blank" rel="noopener">${url}</a></p>
+</div>`;
+}
+
 const formations = SOURCES.map(({ f, annexes }) => {
   const ids = IDS[f.slug];
   if (!ids) throw new Error('ids manquants pour ' + f.slug);
@@ -105,7 +130,7 @@ const formations = SOURCES.map(({ f, annexes }) => {
       // Le pied obligatoire ne s'ajoute qu'au dernier module.
       html: i === f.modules.length - 1 ? m.html + '\n' + pied : m.html,
     })),
-    annexes: { id: ids.annexes, html: annexes + '\n' + pied },
+    annexes: { id: ids.annexes, html: ficheRecap(f.slug) + '\n' + annexes + '\n' + pied },
   };
 });
 

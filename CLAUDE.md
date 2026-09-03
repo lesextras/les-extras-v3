@@ -1160,3 +1160,99 @@ Dans cet ordre, sinon on redéploie deux fois pour rien :
 6. Pousser, **déployer le web** (v2.json + couverture doivent être en ligne AVANT
    le chargement Teachizy), charger les 5 pages + publier la formation, déposer la
    couverture sur Teachizy, **puis** déployer l'API et lancer le seed.
+
+---
+
+## Les schémas, puis les fiches récap — 3 septembre 2026 (après-midi)
+
+Siham a posé trois questions en une : est-ce que le niveau donne les meilleures
+connaissances **avec des schémas**, est-ce que chaque parcours donne bien **une**
+compétence définie, et est-ce que **le processus est expliqué sur la fiche
+produit**. J'ai répondu en mesurant plutôt qu'en affirmant, et deux réponses sur
+trois étaient non.
+
+### Ce que la mesure a donné
+
+136 tableaux, 810 encadrés — et **zéro schéma** dans les dix parcours. Dix
+compétences distinctes sur six thématiques, avec des renvois explicites entre
+parcours : ce point-là tenait. La fiche produit, elle, décrivait la pédagogie
+mais **ne disait rien de l'inscription**, tout en portant un bouton « Créer un
+compte » qui parle d'autre chose.
+
+### `schemas.js` — trente figures, et pourquoi pas de SVG
+
+`apps/web/scripts/mini-formations/schemas.js` fabrique les figures en
+**table / tr / td / div / span et styles en ligne**. Rien d'autre. L'API Teachizy
+*stocke* bien du SVG (vérifié sur une formation DRAFT jetable, supprimée ensuite
+— 204), mais le rendu côté apprenant n'a pas pu être vérifié sans créer un compte
+élève : on ne publie pas une figure qu'on n'a pas vue s'afficher.
+
+Sept primitives : `flux`, `boucle`, `echelle`, `arbre`, `paires`, `frise`,
+`carte`. **Chaque figure porte une légende en toutes lettres** — une figure sans
+légende est un dessin, pas un support.
+
+Trois figures par parcours, toujours aux mêmes places : la **carte du parcours**
+en tête du module 1 (elle dit la charge réelle, relevé compris), la **figure de
+la notion centrale**, et l'**arbre de décision** du relevé. L'insertion vise le
+premier `<h3 …>1. ` du module, ce qui laisse les encarts de sécurité (f6, f8)
+AVANT la carte.
+
+### « Comment ça se passe » sur la fiche produit
+
+Un bloc de trois lignes sur la fiche (mode gratuit seulement), et la version
+longue en tête de `METHODOLOGIE` dans le seed : on quitte le site, l'accès s'ouvre
+avec un e-mail, **aucune carte bancaire**, quatre modules sans date de fin, le
+relevé entre le module 3 et le module 4, l'attestation demandée ensuite.
+
+### Les fiches récap A4 — `fiches-recap.js` + `fiches-recap-data.js`
+
+Une page A4 par parcours, dense et imprimable, sur le modèle des fiches de
+révision : notion clé et son test, les quatre modules et ce qu'ils produisent, le
+schéma central, l'arbre de décision, **la grille de relevé vierge à recopier**,
+les erreurs qui coûtent le plus, l'à-retenir, trois astuces.
+
+Deux règles tiennent tout le reste :
+
+- **`fiches-recap-data.js` n'invente rien.** Chaque chiffre (sept jours, cinq
+  secondes, l'échelle 0 à 7, les six leviers) vient du module ou de `schemas.js`.
+  Une fiche récap qui promettrait autre chose ferait mentir le catalogue.
+- **La grille du relevé porte exactement les colonnes du module 4**, pas une
+  version simplifiée : sinon le relevé rempli ne se lirait plus avec l'arbre de
+  décision de la même fiche.
+
+La mise en page est calculée dans la page : chaque encadré prend la hauteur de son
+contenu, le reste devient de la respiration entre encadrés, et si ça déborde ce
+sont les encadrés qui se réduisent — jamais la page qui coupe.
+
+Rendu : `node fiches-recap.js` puis Chromium headless. **Deux pièges coûteux :**
+
+1. **`--window-size` n'est pas la hauteur du viewport.** À 1240×1754 le viewport
+   fait 1240×**1667** : la barre du navigateur mange 87 px, et le pied de page
+   disparaît du PNG sans aucune erreur. On rend donc en `--window-size=1240,1841`
+   puis on recadre à 2480×3508.
+2. Le PDF vectoriel demande `@page { size: 1240px 1754px }` — avec `size: A4` la
+   page déborde sur une seconde page. On repasse ensuite chaque PDF en A4 réel
+   (595×842 pt) avec PyMuPDF : ~200 Ko, texte net à l'impression.
+
+Sortie : `apps/web/public/fiches/<slug>.pdf` (vectoriel), `<slug>.jpg` (aperçu),
+et `toutes-les-fiches-recap.pdf` (les dix). La fiche produit gratuite porte
+l'aperçu et le lien, **en libre accès, avant toute inscription** — c'est le
+meilleur aperçu possible de ce que vaut le parcours.
+
+### Polices
+
+Poppins et Lora sont déjà dans le conteneur (`/usr/share/fonts/truetype/
+google-fonts`), Noto Color Emoji aussi. **Caveat** (l'écriture manuscrite des
+rubans et des post-it) a été installée depuis `raw.githubusercontent.com/google/
+fonts` — l'URL `fonts.google.com/download?family=…` renvoie 200 mais pas un zip.
+
+### Coolify — le clic Redeploy, enfin compris
+
+Le clic par `ref` sur « menu item Redeploy » **ouvre le menu sans déclencher
+l'action** : la page reste identique et aucun déploiement ne part. Ce qui marche à
+tous les coups : **un `browser_batch` qui clique « Actions » puis prend une
+capture dans le même aller-retour**, puis un clic aux coordonnées lues sur cette
+capture. Le menu se referme dès qu'un aller-retour s'intercale.
+
+L'onglet Coolify finit aussi par ne plus accepter l'injection de script (« Script
+injection timed out ») : un onglet neuf règle le problème à chaque fois.
