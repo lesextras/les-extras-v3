@@ -1083,3 +1083,80 @@ maîtrise vraiment : ce qu'il ajoute, et la préparation à froid.
 - Toujours chez Siham : médiateur de la consommation, CGV et rétractation avant
   toute vente de l'attestation ; le libellé « Certificat de réussite » à signaler
   au support Teachizy ; l'école Teachizy qui s'appelle TOULALI et non ADéPA.
+
+### La vague « traction » — cinq formations de plus le 3 septembre 2026
+
+Commits `e1afcc1`, puis un par formation. **Dix mini-formations gratuites en ligne**,
+publiées sur Teachizy et fichées sur les-extras.fr. La recherche de traction du
+2/09 donnait un classement des sujets réellement cherchés&nbsp;: il a été suivi,
+mais **aucun titre ne reprend la requête telle quelle** quand elle contient une
+promesse fausse.
+
+| Formation | Compétence | uuid Teachizy |
+|---|---|---|
+| Les premières minutes d'une crise | réduire ce que l'adulte ajoute pendant | `bfc03048-f280-41a9-82c2-f0a17d7b6bba` |
+| L'enfant qui dit non à tout | formuler une consigne exécutable | `6cd59c2e-2fbd-426e-a7d7-02755dbff8dc` |
+| Lire un comportement comme une réaction de survie | relire, puis régler le quotidien | `f365d1de-dd74-4651-ba78-54f340387845` |
+| Préparer une équipe de suivi de la scolarisation | arriver avec trois éléments écrits | `948fad74-0c93-439c-864c-e3c8882d034b` |
+| Aider quelqu'un à démarrer une tâche | réduire le coût du démarrage | `ccb1b2fe-b012-4754-912b-b9a2eb48029a` |
+
+Les ids d'items sont dans `build-v2.js`, les sources dans
+`apps/web/scripts/mini-formations/f6-crise.js` … `f10-demarrer.js`.
+
+**⚠ CE QUI TIENT CES CINQ TEXTES, ET QU'IL NE FAUT PAS DÉFAIRE :**
+
+- **Le titre ne reprend jamais une promesse fausse.** Tout le monde cherche
+  « désamorcer une crise en 90 secondes » ; promettre l'arrêt d'une crise en un
+  temps donné se retourne contre l'enfant le jour où elle dure sept minutes. Le
+  titre nomme la fenêtre, pas le résultat.
+- **Crise : aucun geste d'intervention physique n'est enseigné.** Ni prise, ni
+  maintien, ni portage. Contrainte, enfermement et privation sont nommés comme
+  limites absolues au module 1, au module 3 et dans une fiche d'annexe à
+  afficher. La fermeté porte sur la tâche, jamais sur le corps.
+- **Consignes : la colonne « son droit » s'écrit AVANT toute technique.** Une
+  formation qui rendrait les consignes plus efficaces sans avoir trié ce qui
+  mérite d'être exigé fabriquerait des adultes plus performants à obtenir une
+  obéissance qui ne leur revient pas. Le moyen de communication ne se retire
+  jamais, à aucun titre.
+- **Réaction de survie : la lecture ne remplace jamais l'action.** Chaque module
+  aboutit à un réglage du quotidien, écrit et testé quinze jours. Et le module 1
+  dit ce qui ne se lit PAS comme ça — douleur, faim, sommeil, vue, audition,
+  traitement, TND non repéré — parce que c'est là que cette grille retarde des
+  réponses simples pendant des mois. **Aucun diagnostic sous une signature
+  éducative**, jamais, même repris d'un autre écrit.
+- **ESS : les références juridiques sont exactement celles de
+  `guides/contenu.ts`, et pas une de plus.** D351-10 (évaluation au moins
+  annuelle), D351-11, D351-12 (enseignant référent), et D351-16-1 signalé comme
+  l'article cité À TORT. Ce que les parents peuvent demander en matière
+  d'accompagnement à la réunion est présenté comme **une pratique courante**, pas
+  comme un droit adossé à un article : Légifrance bloque la lecture à la source
+  (403 sur toutes les pages), donc rien n'a été affirmé.
+- **Démarrage : le parcours s'arrête volontairement au démarrage.** Il renvoie
+  explicitement ailleurs pour le retrait de l'aide, la séquence, la consigne et
+  la fonction. C'est ce qui tient la règle « une formation = une compétence ».
+  Sa scène se passe **en ESAT, avec un adulte** : le catalogue ne parlait que
+  d'enfants.
+
+**L'encart de nuance ABA** (`COMPORTEMENTALES` dans `build-v2.js`) est porté par
+crise et démarrage, **pas** par consignes ni par ESS — dont les contenus ne
+viennent pas de l'analyse appliquée du comportement. La règle reste : **la fiche
+publique (`GARDE_FOU` du seed) et la formation disent la même chose**, sinon la
+fiche promet autre chose que le parcours.
+
+### Ce que la chaîne de publication demande, formation par formation
+
+Dans cet ordre, sinon on redéploie deux fois pour rien :
+
+1. `POST /api/v1/trainings` (DRAFT) → uuid + slug plateforme.
+2. `POST /training_items` ×5 SECTION (order 1..5) puis ×5 GENERIC avec
+   `parent_id`. **La SECTION porte « Module N — … », la leçon « Leçon — … »** :
+   le même nom des deux côtés affichait deux fois la même ligne au sommaire.
+3. Couverture : ajouter l'entrée dans `couvertures-mini-formations.py`, lancer le
+   script, **regarder l'image** (le script refuse un titre de plus de 3 lignes,
+   il ne juge pas le reste).
+4. `build-v2.js` : ids, `require`, `SOURCES`, et `COMPORTEMENTALES` si le contenu
+   vient de l'ABA.
+5. Fiche publique dans `seed-mini-formations.js`.
+6. Pousser, **déployer le web** (v2.json + couverture doivent être en ligne AVANT
+   le chargement Teachizy), charger les 5 pages + publier la formation, déposer la
+   couverture sur Teachizy, **puis** déployer l'API et lancer le seed.
