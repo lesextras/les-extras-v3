@@ -275,6 +275,26 @@ export default async function FormationsCatalogPage({
   const cities = data?.cities ?? [];
   const publics = data?.publics ?? [];
   const organismes = data?.organismes ?? [];
+  // COMBIEN DE CHAMPS S'AFFICHENT VRAIMENT.
+  //
+  // Trois listes déroulantes n'apparaissent que si elles ont de quoi choisir
+  // (pas de thématique enregistrée, pas de ville, un seul organisme → le champ
+  // disparaît). Une grille figée à trois colonnes renvoyait donc le quatrième
+  // champ à la ligne, seul, sous les trois autres. On compte ce qui sera
+  // affiché et on demande exactement ce nombre de colonnes.
+  //
+  // Tailwind lit les classes dans le source : elles doivent être écrites en
+  // toutes lettres, d'où la table plutôt qu'un `lg:grid-cols-${n}` calculé,
+  // qui ne produirait aucun style.
+  const COLONNES: Record<number, string> = {
+    1: "lg:grid-cols-1",
+    2: "lg:grid-cols-2",
+    3: "lg:grid-cols-3",
+    4: "lg:grid-cols-4",
+    5: "lg:grid-cols-5",
+    6: "lg:grid-cols-6",
+  };
+
   const filtree = Boolean(
     searchParams?.search ||
     searchParams?.category ||
@@ -285,6 +305,14 @@ export default async function FormationsCatalogPage({
     searchParams?.cpf ||
     searchParams?.certifying,
   );
+
+  // Budget et tri sont toujours là ; les trois autres dépendent des facettes.
+  const nbChamps =
+    2 +
+    (categories.length > 0 ? 1 : 0) +
+    (publics.length > 0 ? 1 : 0) +
+    (organismes.length > 1 ? 1 : 0) +
+    (cities.length > 0 ? 1 : 0);
 
   // DEUX RAYONS, PAS UNE GRILLE UNIQUE.
   //
@@ -324,7 +352,7 @@ export default async function FormationsCatalogPage({
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${COLONNES[nbChamps] ?? "lg:grid-cols-4"}`}>
           {categories.length > 0 ? (
             <select
               name="category"
