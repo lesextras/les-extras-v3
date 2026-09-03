@@ -370,6 +370,36 @@ Module 3 — Exercice guidé : de la lecture au réglage. La fiche en cinq ligne
 Module 4 — Quinze jours, et ce qu’on écrit dans un rapport. Les quatre issues du relevé, dont deux sont des réussites, et les phrases d’écrit professionnel qui ne posent aucun diagnostic.`,
     targetAudience: `Professionnels de la protection de l’enfance (MECS, foyers, lieux de vie, pôles ASE, AEMO, placement à domicile) ; assistants familiaux et familles d’accueil ; professionnels du médico-social accompagnant des enfants confiés (IME, ITEP, SESSAD) ; enseignants et AESH qui accueillent un élève placé.`,
   },
+  {
+    slug: 'preparer-une-equipe-de-suivi-de-la-scolarisation',
+    image: 'preparer-une-equipe-de-suivi-de-la-scolarisation.jpg',
+    slugPlateforme: 'preparer-une-equipe-de-suivi-de-la-scolarisation',
+    title: 'Préparer une équipe de suivi de la scolarisation',
+    summary: `Thématique : scolarité, MDPH et équipe de suivi (ESS). Une seule compétence travaillée : arriver à une ESS avec trois éléments écrits, et formuler ses demandes de façon à ce qu’elles deviennent des décisions écrites.
+
+Le point de départ est un fait que peu de gens connaissent : le compte rendu d’ESS que tout le monde cherche n’existe pas séparément. C’est le GEVA-Sco réexamen, rempli par l’enseignant référent pendant la réunion, qui en tient lieu — et il remonte à la MDPH. On ne travaille donc pas à être entendu : on travaille à ce qui sera écrit.
+
+Ce n’est pas un conseil juridique. Cette formation ne rédige pas de recours et ne dit pas ce qu’une MDPH accordera. Les références citées sont vérifiées et limitées : articles D351-10, D351-11 et D351-12 du code de l’éducation — et le D351-16-1, qui traite de l’aide humaine et qu’on voit partout cité à tort pour l’ESS.
+
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. Le module 3 produit une feuille d’une page à emporter à la réunion ; le module 4 se lit après la réunion, une fois le GEVA-Sco reçu — ou quinze jours après si vous ne l’avez pas reçu, ce qui est en soi une information à traiter.`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— dire qui réunit l’ESS, à quelle fréquence, et sous quels articles ;
+— distinguer ce que l’ESS propose de ce que la CDAPH décide ;
+— transformer une appréciation en fait daté et mesuré (situation, mesure, période, ce qui a été essayé) ;
+— écrire une feuille d’une page : ce qui a changé, deux ou trois faits, une demande recopiable ;
+— formuler les deux phrases qui font écrire, et dire les choses difficiles sans mettre personne en accusation ;
+— relire un GEVA-Sco en quatre passages et écrire un courriel de complément ;
+— vérifier à quinze jours ce qui a été fait, et préparer la réunion suivante.`,
+    program: `Module 1 — Ce qu’est une ESS, et ce qu’elle peut écrire. Les textes, les deux GEVA-Sco, ce que l’ESS ne décide pas, et les cinq raisons pour lesquelles une réunion ne produit rien.
+
+Module 2 — Une réunion cordiale qui ne produit rien. Cinquante minutes, sept personnes, aucune tension — et un document qui ne dit rien. Analyse intervention par intervention.
+
+Module 3 — Exercice guidé : la feuille d’une page. Ce qui a changé, deux ou trois faits mesurés, une demande écrite pour être recopiée, et les trois phrases à ne pas oublier.
+
+Module 4 — Relire, compléter, et vérifier à quinze jours. La grille de relecture en quatre passages, le courriel de complément, et la page de la prochaine réunion.`,
+    targetAudience: `Parents qui siègent à une ESS et en ressortent avec l’impression que rien n’a été décidé ; professionnels de SESSAD, d’IME et d’ITEP qui y représentent leur service ; AESH, dont l’information sur les créneaux et les volumes est souvent la plus décisive de la réunion ; enseignants et coordonnateurs qui préparent ces réunions.`,
+  },
 ];
 
 async function compteProprietaire() {

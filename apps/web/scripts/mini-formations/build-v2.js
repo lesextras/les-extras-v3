@@ -27,6 +27,7 @@ const f5 = require('./f5-previsible.js');
 const f6 = require('./f6-crise.js');
 const f7 = require('./f7-consignes.js');
 const f8 = require('./f8-survie.js');
+const f9 = require('./f9-ess.js');
 
 /** ids des items Teachizy, relevés après la création des sections. */
 const IDS = {
@@ -38,6 +39,7 @@ const IDS = {
   'les-premieres-minutes-d-une-crise': { lecons: [1471071, 1471073, 1471075, 1471077], annexes: 1471079 },
   'l-enfant-qui-dit-non-a-tout': { lecons: [1471173, 1471175, 1471177, 1471179], annexes: 1471181 },
   'lire-un-comportement-comme-une-reaction-de-survie': { lecons: [1471249, 1471251, 1471253, 1471255], annexes: 1471257 },
+  'preparer-une-equipe-de-suivi-de-la-scolarisation': { lecons: [1471320, 1471322, 1471324, 1471326], annexes: 1471328 },
 };
 
 /**
@@ -72,6 +74,7 @@ const SOURCES = [
   { f: f6, annexes: f6.annexes },
   { f: f7, annexes: f7.annexes },
   { f: f8, annexes: f8.annexes },
+  { f: f9, annexes: f9.annexes },
 ];
 
 const formations = SOURCES.map(({ f, annexes }) => {

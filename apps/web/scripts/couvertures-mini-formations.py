@@ -114,6 +114,13 @@ COUVERTURES = [
         "duree": "4 modules + annexes · 45 min",
     },
     {
+        "fichier": "preparer-une-equipe-de-suivi-de-la-scolarisation.jpg",
+        "surtitre": "Scolarité, MDPH et équipe de suivi (ESS)",
+        "titre": "Préparer une équipe de suivi de la scolarisation",
+        "sous": "Arriver avec trois éléments écrits, et obtenir qu’ils figurent au GEVA-Sco",
+        "duree": "4 modules + annexes · 45 min",
+    },
+    {
         "fichier": "guider-puis-s-effacer.jpg",
         "surtitre": "TSA, communication et comportement",
         "titre": "Guider puis s’effacer",
