@@ -1556,3 +1556,29 @@ factures édités par la plateforme + 15 générations LEX offertes par mois,
 Lien ajouté dans la colonne **« Secteur »** du pied de page (elle en portait
 quatre : la règle des sept liens par colonne tient), et la route est déclarée
 au `sitemap.ts` — sans quoi la page n'existe que pour qui connaît son adresse.
+
+### Le vrai poids de /formations était dans les données, pas dans le code
+
+Après le premier passage, `/formations` restait à 3 418 mots. La mesure a montré
+pourquoi : **2 538 de ces mots étaient les dix résumés de mini-formations**, soit
+les trois quarts de la page. Chacun portait un paragraphe de 75 mots qui
+réexpliquait le calendrier du parcours — déjà décrit point par point dans
+`METHODOLOGIE`, sur la même fiche, quelques centimètres plus bas.
+
+Chaque paragraphe tient désormais en une ligne. **Les chiffres exacts sont
+conservés un par un** (sept jours, dix jours, quatorze jours, quinze jours, le
+GEVA-Sco reçu ou quinze jours après) : la règle « une durée annoncée couvre le
+CALENDRIER, pas seulement le temps de lecture » tient toujours, et c'est elle
+qui interdit d'écrire « 45 minutes » tout court.
+
+⚠ **Ce qui n'a pas bougé d'un mot, et ne doit pas bouger :** le `GARDE_FOU`
+(nuance ABA) sur les six fiches qui le portent, et les encarts propres à la
+crise (aucun geste physique enseigné), aux consignes (ce n'est pas une méthode
+pour faire obéir), à la réaction de survie (ni diagnostic ni repérage clinique)
+et à l'ESS (ce n'est pas un conseil juridique). **Ce sont des textes de
+sécurité, pas du marketing** — les raccourcir serait exactement l'erreur que ce
+travail de resserrage rendait tentante.
+
+Mesuré en direct après déploiement et relance du seed (10 fiches mises à jour,
+0 créée, 0 archivée) : `/formations` **3 444 → 3 034**, accueil 2 484 → 2 160,
+`/confiance-lex` 1 036 → 797, `/intervenant-independant` 781 → 669.
