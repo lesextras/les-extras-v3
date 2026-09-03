@@ -952,6 +952,107 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
+  /**
+   * ALERTE À CHAQUE INSCRIPTION (03/09/2026, demande Siham).
+   *
+   * « Il y a un problème quand il y a des inscrits, je veux en être
+   * informée. » Aucun message ne partait à l'association quand un compte se
+   * créait : les inscriptions se découvraient en ouvrant l'administration,
+   * donc quand on y pensait. Un directeur qui s'inscrit un vendredi soir et
+   * que personne ne rappelle est un directeur perdu.
+   *
+   * ⚠ L'adresse par défaut est CELLE DE SIHAM, pas `contact@adepa77.fr`
+   * comme les autres alertes : c'est elle qui a demandé à être prévenue, et
+   * la boîte `contact@` n'est pas relevée tous les jours. `ALERTES_EMAIL` la
+   * remplace si un jour l'association veut router ces messages ailleurs.
+   *
+   * Le message ne porte AUCUNE donnée sensible : nom, adresse, type de
+   * compte et origine. C'est ce qu'il faut pour rappeler quelqu'un, et rien
+   * de plus n'a à voyager par courriel.
+   */
+  async sendAlerteInscription(data: {
+    prenom?: string | null;
+    nom?: string | null;
+    email: string;
+    telephone?: string | null;
+    typeCompte: string;
+    nomCompte: string;
+    origine?: string | null;
+  }): Promise<void> {
+    const to =
+      this.config.get<string>('ALERTES_EMAIL') ??
+      this.config.get<string>('CONTACT_INBOX_EMAIL') ??
+      'assoc.adepa@gmail.com';
+    const e = (s: string) => s.replace(/</g, '&lt;');
+    const qui = [data.prenom, data.nom].filter(Boolean).join(' ') || data.email;
+    const genre =
+      data.typeCompte === 'ESTABLISHMENT' ? 'Établissement' : 'Professionnel';
+    await this.send(
+      to,
+      `Nouvelle inscription — ${qui} (${genre})`,
+      this.layout(
+        'Un compte vient d’être créé',
+        `<b>${e(qui)}</b> vient de s’inscrire sur Les Extras.
+        <br><br><b>Type :</b> ${genre}
+        <br><b>Structure :</b> ${e(data.nomCompte)}
+        <br><b>E-mail :</b> ${e(data.email)}
+        ${data.telephone ? `<br><b>Téléphone :</b> ${e(data.telephone)}` : ''}
+        ${data.origine ? `<br><b>Origine :</b> ${e(data.origine)}` : ''}
+        <br><br>L’adresse n’est pas encore confirmée à cette minute : le message de
+        confirmation vient de partir. La séquence d’accueil prendra le relais les
+        jours suivants.`,
+        { label: 'Voir les comptes', url: `${this.webUrl}/admin/etablissements` },
+      ),
+    );
+  }
+
+  /**
+   * LE TUNNEL D'ACCUEIL — une séquence, pas un message isolé (03/09/2026).
+   *
+   * Modèle demandé par Siham : la séquence d'iPhone Photography School qu'elle
+   * reçoit. Ce qui a été REPRIS de ce modèle : un message court, une seule
+   * idée, une seule chose à cliquer, signé d'une personne, à heure fixe, à
+   * cadence régulière — et un objet qui dit ce qu'on va apprendre, pas ce
+   * qu'on veut vendre.
+   *
+   * ⚠ CE QUI N'A PAS ÉTÉ REPRIS, ET POURQUOI. Leur séquence intercale des
+   * ventes à compte à rebours : « −86 % », « l'accès expire ce soir »,
+   * « désolé, c'est terminé ». Trois raisons de ne pas les copier ici :
+   *  1. l'association n'a rien à vendre à ce stade — la seule chose payante
+   *     du parcours gratuit est l'attestation à 20 €, et elle ne peut PAS
+   *     être vendue tant que le médiateur de la consommation, les CGV et le
+   *     droit de rétractation n'existent pas ;
+   *  2. une échéance annoncée qui n'en est pas une est une pratique
+   *     commerciale trompeuse (art. L121-1 et s. du code de la consommation),
+   *     et l'association est certifiée Qualiopi ;
+   *  3. le lecteur est un professionnel au travail, pas un amateur de photo :
+   *     ce qui le retient, c'est un outil utilisable lundi.
+   *
+   * Chaque message donne donc quelque chose d'utilisable SANS RIEN ACHETER,
+   * et renvoie au parcours gratuit correspondant.
+   */
+  async sendTunnelAccueil(
+    to: string,
+    data: { prenom?: string | null; etape: number },
+  ): Promise<void> {
+    const message = TUNNEL_ACCUEIL[data.etape - 1];
+    if (!message) return;
+    await this.send(
+      to,
+      message.sujet,
+      this.layout(
+        `Bonjour${data.prenom ? ` ${data.prenom}` : ''},`,
+        `${message.corps}
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">
+           Siham, pour l’association ADéPA.<br>
+           Vous recevez ce message parce que vous avez créé un compte sur Les Extras.
+           <a href="${this.webUrl}/dashboard/account?onglet=profil" style="color:#9ca3af">Ne plus recevoir ces e-mails</a>.
+         </div>`,
+        { label: message.bouton, url: `${this.webUrl}${message.chemin}` },
+      ),
+    );
+  }
+
   async sendContactNotification(data: {
     name: string;
     email: string;
@@ -1006,3 +1107,101 @@ export function versionTexte(html: string): string {
     .join('\n')
     .trim();
 }
+
+/**
+ * LA SÉQUENCE D'ACCUEIL — six messages, un tous les trois jours.
+ *
+ * ⚠ RÈGLE DE CE TABLEAU : chaque message donne UNE chose utilisable tout de
+ * suite, et renvoie à un parcours GRATUIT qui existe déjà en ligne. Rien n'y
+ * est promis qui ne soit publié : les dix mini-formations, leurs fiches A4 et
+ * la dotation LEX sont tous vérifiables le jour où le message part.
+ *
+ * L'ordre n'est pas décoratif. Il suit ce qu'un professionnel rencontre dans
+ * l'ordre où il le rencontre : d'abord lire un comportement, puis tenir une
+ * crise, puis les refus, puis remplacer plutôt qu'éteindre, puis le démarrage.
+ * Le sixième message ne vend rien non plus : il donne les fiches A4 et le
+ * catalogue entier, et c'est le seul qui parle de LEX.
+ *
+ * Cadence : TROIS jours, pas deux comme le modèle. Le modèle s'adresse à des
+ * amateurs de photographie le soir ; ici on écrit à des éducateurs pendant
+ * leur journée de travail, et un message tous les deux jours se paie en
+ * désabonnements. La constante est dans le planificateur : elle se change en
+ * une ligne si l'ouverture le justifie.
+ */
+export const TUNNEL_ACCUEIL: {
+  sujet: string;
+  corps: string;
+  bouton: string;
+  chemin: string;
+}[] = [
+  {
+    sujet: 'Un comportement qui se répète, se répète parce qu’il marche',
+    corps: `C’est la phrase qui change le plus de choses dans une équipe, et elle
+      tient en une ligne : <b>un comportement qui dure obtient quelque chose</b>.
+      Tant qu’on ignore quoi, on travaille sur la forme et on se trompe de cible.
+      <br><br>Quatre fonctions possibles, une grille en quatre colonnes pour
+      trancher, et l’erreur qui coûte le plus cher. C’est notre premier parcours
+      gratuit — 45 minutes de lecture, et un relevé d’une minute par jour pendant
+      une semaine.`,
+    bouton: 'Ouvrir le parcours',
+    chemin: '/formations/les-quatre-fonctions-d-un-comportement',
+  },
+  {
+    sujet: 'Ce que l’adulte ajoute pendant une crise',
+    corps: `Une crise ne s’arrête pas sur commande, et nous ne le promettons nulle
+      part. Ce qui se travaille vraiment, c’est <b>ce que l’adulte ajoute pendant</b> :
+      les mots, les demandes, le public, la proximité, les menaces, le volume.
+      <br><br>Six choses, et la conduite décidée à froid. Aucun geste
+      d’intervention physique n’est enseigné dans ce parcours — ces gestes
+      s’apprennent en présentiel, avec mise en situation, jamais dans un texte.`,
+    bouton: 'Lire le parcours',
+    chemin: '/formations/les-premieres-minutes-d-une-crise',
+  },
+  {
+    sujet: '« Il dit non à tout » n’est pas une donnée',
+    corps: `C’est une impression, et elle est presque toujours fausse dans les
+      proportions qu’elle annonce. L’autre moitié de la scène est à portée :
+      <b>la consigne de l’adulte</b> — sa forme, son nombre, son moment.
+      <br><br>Une compétence qui s’exerce sans rien savoir de la personne d’en
+      face, et qui donne des résultats en quelques jours parce qu’elle ne demande
+      de changer que soi. Le parcours fait d’abord écrire ce qui n’a PAS à être
+      exigé : ce n’est pas une méthode pour faire obéir.`,
+    bouton: 'Voir le parcours',
+    chemin: '/formations/l-enfant-qui-dit-non-a-tout',
+  },
+  {
+    sujet: 'Retirer un comportement sans en donner un autre',
+    corps: `…c’est retirer un outil à quelqu’un qui n’en a pas d’autre. La suite
+      logique de la grille des fonctions : une fois qu’on sait ce que le
+      comportement obtient, on <b>enseigne un moyen d’obtenir la même chose</b>.
+      <br><br>Il doit être plus facile, plus rapide et aussi fiable que celui
+      qu’on veut voir disparaître — sinon personne ne l’adopte, et c’est
+      exactement là que la plupart des plans échouent.`,
+    bouton: 'Ouvrir le parcours',
+    chemin: '/formations/apprendre-a-demander-plutot-qu-a-crier',
+  },
+  {
+    sujet: 'Ce n’est presque jamais la tâche qui bloque',
+    corps: `Regardez une séance de près, chronomètre en main : <b>c’est l’entrée
+      dans la tâche</b>. Une fois la première action faite, la suite s’enchaîne
+      souvent seule.
+      <br><br>La conséquence est considérable : expliquer mieux, motiver,
+      encourager n’a presque aucun effet. Ce qui en a un, c’est de réduire le coût
+      des trente premières secondes — et il y a six leviers pour ça.`,
+    bouton: 'Lire le parcours',
+    chemin: '/formations/aider-a-demarrer-une-tache',
+  },
+  {
+    sujet: 'Les dix fiches A4, à imprimer et à afficher',
+    corps: `Chaque parcours a sa <b>fiche récap A4</b> : la notion clé, les quatre
+      modules, le schéma central, l’arbre de décision et la grille de relevé
+      vierge. Elles sont en libre accès, sans compte, et faites pour être
+      imprimées et posées en salle d’équipe.
+      <br><br>Le catalogue complet est ouvert — dix parcours gratuits, du premier
+      au dernier module, sans carte bancaire. Et votre espace comprend
+      <b>15 générations LEX offertes chaque mois</b> pour vos écrits
+      professionnels : elles sont là, elles n’attendent que vous.`,
+    bouton: 'Voir tous les parcours',
+    chemin: '/formations',
+  },
+];

@@ -171,7 +171,7 @@
   --card-foreground: 40 30% 96%;
   --muted-foreground: 222 10% 78%;
   --accent-foreground: 40 30% 92%;
-  --border: 222 14% 26%;
+  --border: 222 13% 31%;
   --primary: 347 80% 60%;
   --primary-foreground: 0 0% 100%;
   --primary-soft: 347 32% 20%;
@@ -185,24 +185,24 @@
 }
 
 .theme-sombre {
-  --background: 222 26% 8%;
+  --background: 222 24% 13%;
   --foreground: 40 30% 96%;
-  --card: 222 22% 12%;
+  --card: 222 20% 17%;
   --card-foreground: 40 30% 96%;
-  --popover: 222 22% 12%;
+  --popover: 222 20% 17%;
   --popover-foreground: 40 30% 96%;
-  --muted: 222 18% 16%;
+  --muted: 222 16% 21%;
   --muted-foreground: 222 10% 70%;
-  --accent: 222 18% 17%;
+  --accent: 222 16% 22%;
   --accent-foreground: 40 30% 92%;
-  --border: 222 14% 22%;
-  --input: 222 14% 24%;
+  --border: 222 13% 27%;
+  --input: 222 13% 29%;
   --primary: 347 80% 57%;
   --primary-foreground: 0 0% 100%;
-  --primary-soft: 347 32% 16%;
+  --primary-soft: 347 30% 21%;
   --secondary: 14 72% 58%;
   --secondary-foreground: 0 0% 100%;
-  --secondary-soft: 14 32% 15%;
+  --secondary-soft: 14 30% 20%;
   --ring: 347 80% 60%;
 
   /* États : les valeurs claires (vert 32 % de luminosité, texte de warning
@@ -224,24 +224,24 @@
    Le fond charbon reste disponible dans l’espace connecté — mais il faut le
    demander : la règle ci-dessous ne répond qu’à un choix explicite. */
 :root[data-theme='sombre'] .theme-espace {
-  --background: 222 26% 8%;
+  --background: 222 24% 13%;
   --foreground: 40 30% 96%;
-  --card: 222 22% 12%;
+  --card: 222 20% 17%;
   --card-foreground: 40 30% 96%;
-  --popover: 222 22% 12%;
+  --popover: 222 20% 17%;
   --popover-foreground: 40 30% 96%;
-  --muted: 222 18% 16%;
+  --muted: 222 16% 21%;
   --muted-foreground: 222 10% 70%;
-  --accent: 222 18% 17%;
+  --accent: 222 16% 22%;
   --accent-foreground: 40 30% 92%;
-  --border: 222 14% 22%;
-  --input: 222 14% 24%;
+  --border: 222 13% 27%;
+  --input: 222 13% 29%;
   --primary: 347 80% 57%;
   --primary-foreground: 0 0% 100%;
-  --primary-soft: 347 32% 16%;
+  --primary-soft: 347 30% 21%;
   --secondary: 14 72% 58%;
   --secondary-foreground: 0 0% 100%;
-  --secondary-soft: 14 32% 15%;
+  --secondary-soft: 14 30% 20%;
   --ring: 347 80% 60%;
 
   /* États : les valeurs claires (vert 32 % de luminosité, texte de warning
@@ -255,23 +255,51 @@
   --destructive-foreground: 0 0% 100%;
 }
 
-/* Reflets roses du thème sombre — halos animés, comme a2pa.fr mais en rose.
-   N'affecte que le thème sombre : le sélecteur exige data-theme="sombre". */
-[data-theme='sombre'] .theme-sombre {
+/* REFLETS MOUVANTS DU FOND SOMBRE (03/09/2026, demande Siham).
+   « Le fond est trop noir » — deux corrections, et elles vont ensemble.
+
+   1. Les jetons du thème sombre ont été remontés de cinq points de luminosité
+      (fond 8 % → 13 %, cartes 12 % → 17 %, et le reste à l'avenant). Un
+      charbon presque noir écrase les cartes, qui n'étaient plus qu'un liseré
+      plus clair sur du noir.
+
+   2. Le sélecteur exigeait `[data-theme='sombre']`, c'est-à-dire un choix
+      EXPLICITE stocké dans le navigateur. Un visiteur qui arrive pour la
+      première fois n'a rien choisi : l'attribut est absent, et il ne voyait
+      donc AUCUN reflet — un aplat noir uniforme, exactement ce que Siham
+      décrit. La règle porte maintenant sur `.theme-sombre` lui-même, et
+      c'est le thème CLAIR qui l'annule.
+
+   Cinq couches au lieu de trois, et une clé d'animation à quatre temps : les
+   couches ne repassent pas par les mêmes positions au même moment, donc elles
+   dérivent les unes par rapport aux autres au lieu de glisser en bloc. La
+   cinquième est une bande diagonale très pâle — le reflet qui traverse. */
+.theme-sombre {
   background-image:
-    radial-gradient(46vw 46vw at 8% 4%, rgba(236, 72, 153, 0.3), transparent 60%),
-    radial-gradient(40vw 40vw at 92% 16%, rgba(244, 63, 94, 0.26), transparent 62%),
-    radial-gradient(42vw 42vw at 58% 94%, rgba(219, 39, 119, 0.2), transparent 64%);
-  background-attachment: fixed, fixed, fixed;
+    radial-gradient(46vw 46vw at 8% 4%, rgba(236, 72, 153, 0.26), transparent 60%),
+    radial-gradient(40vw 40vw at 92% 16%, rgba(244, 63, 94, 0.22), transparent 62%),
+    radial-gradient(42vw 42vw at 58% 94%, rgba(219, 39, 119, 0.18), transparent 64%),
+    radial-gradient(38vw 38vw at 22% 62%, rgba(251, 113, 133, 0.14), transparent 66%),
+    linear-gradient(114deg, transparent 34%, rgba(255, 240, 245, 0.05) 50%, transparent 66%);
+  background-attachment: fixed;
   background-repeat: no-repeat;
-  animation: lexReflets 36s ease-in-out infinite alternate;
+  background-size: auto, auto, auto, auto, 220% 220%;
+  animation: lexReflets 54s ease-in-out infinite alternate;
 }
 @keyframes lexReflets {
-  from { background-position: 0% 0%, 100% 0%, 50% 100%; }
-  to   { background-position: 16% 18%, 82% 10%, 36% 84%; }
+  0%   { background-position:   0% 0%, 100%  0%, 50% 100%,  0% 60%,   0% 50%; }
+  33%  { background-position:  14% 9%,  86% 14%, 38%  86%, 16% 44%,  46% 50%; }
+  66%  { background-position:   6% 22%, 96%  6%, 60%  92%,  4% 72%,  82% 50%; }
+  100% { background-position:  18% 16%, 80% 12%, 34%  82%, 22% 52%, 100% 50%; }
+}
+/* Le thème clair explicite annule tout : sans cela, l'accueil garderait ses
+   halos roses par-dessus l'ivoire. */
+:root[data-theme='clair'] .theme-sombre {
+  background-image: none;
+  animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-theme='sombre'] .theme-sombre { animation: none; }
+  .theme-sombre { animation: none; }
 }
 
 

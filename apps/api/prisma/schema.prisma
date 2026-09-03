@@ -71,6 +71,16 @@ model User {
   /// Non nul = la décision d'envoyer (ou de s'abstenir) a été prise : elle ne
   /// se reprend jamais, ce message n'existe qu'une fois dans la vie du compte.
   activationMailAt          DateTime?
+  /// TUNNEL D'ACCUEIL (TunnelScheduler, 03/09/2026).
+  /// Numéro du dernier message envoyé, de 0 (aucun) à la longueur de la
+  /// séquence. C'est un COMPTEUR, pas une date : il rend l'envoi idempotent
+  /// même si le planificateur passe deux fois, et il survit à un décalage
+  /// (une panne d'un jour reprend là où la séquence s'était arrêtée, elle ne
+  /// saute pas un message).
+  tunnelEtape               Int                  @default(0)
+  /// Date du dernier message du tunnel. C'est elle qui espace la séquence :
+  /// on n'écrit jamais deux fois dans le même intervalle, quoi qu'il arrive.
+  tunnelDernierAt           DateTime?
   questionsAsked            Question[]           @relation("QuestionAuthor")
   answersWritten            Answer[]             @relation("AnswerAuthor")
   answerVotes               AnswerVote[]         @relation("AnswerVoter")

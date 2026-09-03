@@ -1582,3 +1582,95 @@ travail de resserrage rendait tentante.
 Mesuré en direct après déploiement et relance du seed (10 fiches mises à jour,
 0 créée, 0 archivée) : `/formations` **3 444 → 3 034**, accueil 2 484 → 2 160,
 `/confiance-lex` 1 036 → 797, `/intervenant-independant` 781 → 669.
+
+---
+
+## Fond éclairci, alerte d'inscription, tunnel d'accueil — 3 septembre 2026 (soir)
+
+### Le fond sombre était trop noir — et la moitié du problème était un sélecteur
+
+Deux corrections, et elles allaient ensemble.
+
+1. **Les jetons du thème sombre ont été remontés de cinq points** de luminosité :
+   fond `222 26% 8%` → `222 24% 13%`, cartes 12 % → 17 %, `muted` 16 % → 21 %,
+   `accent` 17 % → 22 %, bordures 22 % → 27 %, champs 24 % → 29 %, et les deux
+   `*-soft` à l'avenant. Le bloc est écrit **deux fois** dans `globals.css`
+   (`.theme-sombre` et `:root[data-theme='sombre'] .theme-espace`) : les deux
+   ont été modifiés, et il faut penser aux deux à chaque fois. Les quatre blocs
+   `bg-[hsl(222,22%,13%)]` en dur (`page.tsx`, `BlocOutils`, `DemoLex`,
+   `BlocGap`) sont passés à `hsl(222,20%,18%)` — sinon ils devenaient plus
+   sombres que le fond qui les porte.
+
+2. ⚠ **Les reflets ne s'affichaient jamais pour un nouveau visiteur.** La règle
+   exigeait `[data-theme='sombre']`, c'est-à-dire un choix EXPLICITE mémorisé
+   dans le navigateur. Quelqu'un qui arrive pour la première fois n'a rien
+   choisi : l'attribut est absent, et il voyait un aplat noir uniforme —
+   exactement ce que Siham décrivait. La règle porte maintenant sur
+   `.theme-sombre` lui-même, et c'est `:root[data-theme='clair']` qui l'annule.
+   Cinq couches au lieu de trois, une clé d'animation à quatre temps pour que
+   les couches dérivent les unes par rapport aux autres au lieu de glisser en
+   bloc, et une bande diagonale très pâle qui traverse.
+
+### L'association est prévenue à chaque inscription
+
+`sendAlerteInscription` dans `mail.service.ts`, appelée depuis `register()`.
+⚠ **L'adresse par défaut est `assoc.adepa@gmail.com`**, PAS `contact@adepa77.fr`
+comme les autres alertes : c'est Siham qui a demandé à être prévenue, et la
+boîte `contact@` n'est pas relevée tous les jours. `ALERTES_EMAIL` la remplace
+le jour où l'association veut router ces messages ailleurs. L'appel est protégé
+par un `.catch()` : **une alerte qui n'arrive pas ne doit jamais faire échouer
+l'inscription de quelqu'un.**
+
+### Le tunnel d'accueil — six messages, un tous les trois jours
+
+`community/tunnel.scheduler.ts` + `TUNNEL_ACCUEIL` dans `mail.service.ts`.
+Modèle demandé : la séquence d'iPhone Photography School que Siham reçoit
+(`emil@iphonephotographyschool.com`, relevée dans sa boîte le 3/09).
+
+**Ce que le modèle donne, et qu'on a repris :** un message court, une seule
+idée, une seule chose à cliquer, signé d'une personne, à heure fixe (10 h 15,
+comme eux, depuis des mois à la minute près), à cadence régulière, avec un
+objet qui dit ce qu'on va apprendre.
+
+⚠ **CE QU'ON N'A PAS REPRIS, ET IL NE FAUT PAS LE RAJOUTER.** Leur séquence
+intercale des ventes à compte à rebours : « −86 % », « l'accès expire ce soir »,
+« Désolé 😳 », « ❌ C'est terminé ». Trois raisons :
+1. l'association n'a rien à vendre à ce stade — l'attestation à 20 € **ne peut
+   pas** être vendue tant que le médiateur de la consommation, les CGV et le
+   droit de rétractation n'existent pas ;
+2. une échéance annoncée qui n'en est pas une est une pratique commerciale
+   trompeuse (art. L121-1 et s. c. conso), pour une association certifiée
+   Qualiopi ;
+3. le lecteur est un professionnel au travail, pas un amateur de photographie :
+   ce qui le retient, c'est un outil utilisable lundi.
+
+**Un test le rend impossible par accident** : `tunnel-accueil.spec.ts` refuse
+tout « −N % », « expire », « dernière chance », « offre limitée » dans la
+séquence, vérifie qu'elle compte bien six messages (la longueur que le
+planificateur attend), que chaque chemin est interne et qu'aucun parcours n'est
+proposé deux fois. Cinq tests — un lien mort dans une séquence automatique part
+six fois, à tout le monde, sans que personne ne le voie passer.
+
+**Cadence : trois jours, pas deux comme le modèle.** Eux écrivent à des amateurs
+de photo le soir ; ici on écrit à des éducateurs pendant leur journée. La
+constante `INTERVALLE_JOURS` se change en une ligne si l'ouverture le justifie.
+
+Mécanique : `User.tunnelEtape` (compteur) + `User.tunnelDernierAt` (espacement).
+**C'est un compteur, pas un calendrier** : après une panne de deux jours, le
+compte reçoit le message qu'il attendait, pas celui du jour. L'étape est scellée
+AVANT l'envoi — un doublon dans une boîte coûte plus cher qu'un message manquant
+dans une séquence de six. Adresse non confirmée → rien ; `hebdoOptIn` décoché →
+rien ; plancher de 30 jours pour que les comptes anciens ne reçoivent pas une
+séquence d'accueil des mois trop tard.
+
+### `adepa77.fr/partenaires-associatifs`
+
+Page 5136, publiée par l'API REST de WordPress (le nonce se lit dans
+`wpApiSettings.nonce` depuis n'importe quelle page de l'administration), et
+entrée 5137 du menu **« Footer - Information » (id 22, emplacement
+`footer_menu`)**. LiteSpeed purgé ensuite — le cache est actif au niveau serveur
+et l'extension n'apparaît PAS dans la barre d'administration : elle est à
+`/wp-admin/admin.php?page=litespeed-toolbox`, bouton « Tout purger ».
+
+⚠ La page d'accueil d'adepa77.fr ne montre pas ce lien : elle porte un pied de
+page Elementor qui lui est propre. Toutes les autres pages du site l'affichent.

@@ -182,6 +182,27 @@ export class AuthService {
       })
       .catch(() => undefined);
 
+    // L'ASSOCIATION EST PRÉVENUE (03/09/2026, demande Siham).
+    //
+    // Rien ne remontait à personne quand un compte se créait : les inscriptions
+    // se découvraient en ouvrant l'administration, donc quand on y pensait. Un
+    // directeur qui s'inscrit un vendredi soir et que personne ne rappelle est
+    // un directeur perdu.
+    //
+    // Même protection que ci-dessus, et pour la même raison : une alerte qui
+    // n'arrive pas ne doit JAMAIS faire échouer l'inscription de quelqu'un.
+    await this.mail
+      .sendAlerteInscription({
+        prenom: user.firstName,
+        nom: user.lastName,
+        email,
+        telephone: user.phone,
+        typeCompte: dto.accountType,
+        nomCompte: accountName,
+        origine: dto.source ?? null,
+      })
+      .catch(() => undefined);
+
     const accessToken = await this.signAccessToken(user.id, email, user.role);
     return {
       accessToken,
