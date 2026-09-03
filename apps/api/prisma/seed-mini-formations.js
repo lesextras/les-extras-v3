@@ -81,7 +81,23 @@ Il n’y a ni examen, ni note. Ce qui est évalué, c’est votre propre relevé
 
 Attestation de suivi nominative : 20 €, facultative. Elle se demande une fois les modules terminés, et les conditions vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
 
-const METHODOLOGIE = `Quatre modules, toujours dans le même ordre, plus une section d’annexes.
+/**
+ * ⚠ LE DEROULEMENT VIENT AVANT LA PEDAGOGIE.
+ * La fiche decrivait tres bien la methode et ne disait nulle part ce qui se
+ * passe quand on clique sur « Commencer la formation » : qu'on quitte le site,
+ * qu'on arrive sur un espace de formation qui porte un autre nom, et qu'aucune
+ * carte bancaire n'est demandee. Sur une offre gratuite, c'est exactement la
+ * qu'on perd les gens.
+ */
+const METHODOLOGIE = `Comment ça se passe, concrètement.
+
+1. Vous cliquez sur « Commencer la formation ». Vous quittez le site Les Extras : le parcours est hébergé sur notre espace de formation en ligne.
+2. L’accès s’y ouvre avec une adresse e-mail. Aucune carte bancaire n’est demandée, à aucun moment — la formation est gratuite du premier au dernier module.
+3. Vous suivez les quatre modules dans l’ordre, à votre rythme. L’accès reste ouvert, sans date de fin, et vous pouvez revenir autant de fois que vous voulez.
+4. Le module 3 lance une période de relevé de sept à quinze jours selon la formation, à raison d’une minute par jour, dans votre quotidien. Le module 4 se lit une fois cette période terminée, ce relevé sous les yeux.
+5. L’attestation de suivi, si vous la souhaitez, se demande ensuite : les conditions vous sont communiquées avant tout paiement. Elle est facultative et ne change rien à l’accès.
+
+Quatre modules, toujours dans le même ordre, plus une section d’annexes.
 
 Chaque module s’ouvre sur une carte « Repères du module » — durée, prérequis, modalité, évaluation — et se ferme sur « Avant de passer au module suivant », trois critères que vous pouvez cocher vous-même.
 
@@ -89,6 +105,8 @@ Chaque module s’ouvre sur une carte « Repères du module » — durée, prér
 2. Une situation qui dérape. On ne vous montre pas un modèle parfait : on vous montre une scène réelle qui échoue, on vous demande de chercher pourquoi, et l’analyse ne vient qu’ensuite. C’est vous qui produisez la réponse — c’est ce qui la rend transposable.
 3. Un exercice guidé, à faire sur votre propre situation, pas sur un cas d’école.
 4. Une mise en pratique avec auto-observation : un protocole court, un relevé de quelques lignes par jour, et la lecture de ce relevé au bout de la période.
+
+Chaque parcours porte trois schémas : la carte du parcours, la figure de la notion centrale, et l’arbre de décision qui dit quoi faire selon ce que votre relevé montre. Ils sont en noir et blanc, lisibles à l’impression, et chacun porte sa légende en toutes lettres.
 
 La section « Annexes — fiches techniques et exercices » réunit les grilles vierges, les mémos, les exemples corrigés et les tableaux de reformulation. Ils sont écrits en clair, recopiables à la main et imprimables depuis le navigateur : une grille qu’il faut aller chercher dans un ordinateur n’est jamais remplie sur le terrain.
 

@@ -280,7 +280,45 @@ export default async function FormationPubliquePage({
                 </div>
               </CardContent>
             </Card>
-          ) : (
+          ) : null}
+          {/* COMMENT ÇA SE PASSE — le bloc qui manquait.
+
+              La fiche décrivait très bien la pédagogie (méthodologie,
+              évaluation, prérequis, programme) et ne disait NULLE PART ce qui
+              arrive quand on clique sur « Commencer la formation » : qu'on
+              quitte ce site, qu'on arrive sur un espace de formation qui porte
+              un autre nom, et qu'on n'a aucune carte bancaire à sortir. Sur une
+              offre gratuite, c'est exactement là qu'on perd les gens — d'autant
+              que la page porte par ailleurs un bouton « Créer un compte » qui
+              parle d'autre chose (un compte Les Extras, sans rapport).
+
+              Trois lignes ici, la version longue dans « Méthodologie
+              pédagogique ». */}
+          {f.freeOnline && f.enrollUrl ? (
+            <Card>
+              <CardContent className="space-y-2 p-5">
+                <p className="text-sm font-semibold text-foreground">Comment ça se passe</p>
+                <ol className="list-decimal space-y-1.5 pl-4 text-xs text-muted-foreground">
+                  <li>
+                    Le parcours se suit sur notre espace de formation en ligne&nbsp;: en
+                    cliquant, vous quittez ce site.
+                  </li>
+                  <li>
+                    L&apos;accès s&apos;y ouvre avec une adresse e-mail.{" "}
+                    <strong className="font-semibold text-foreground">
+                      Aucune carte bancaire n&apos;est demandée, à aucun moment.
+                    </strong>
+                  </li>
+                  <li>
+                    Quatre modules dans l&apos;ordre, à votre rythme, sans date de fin. Le
+                    module&nbsp;3 lance une période de relevé dans votre quotidien&nbsp;; le
+                    module&nbsp;4 se lit une fois cette période terminée.
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
+          ) : null}
+          {f.freeOnline ? null : (
           <Card>
             <CardContent className="space-y-4 p-5">
               {f.priceFrom ? (

@@ -10,6 +10,74 @@
  */
 
 const G = require('./gabarit-v3.js');
+const S = require('./schemas.js');
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'la théorie' },
+      { titre: 'Module 2', produit: 'une scène analysée' },
+      { titre: 'Module 3', produit: 'votre grille' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> sept jours de relevé, une minute par jour. Le module 4 se lit le septième jour, la grille sous les yeux.',
+  }),
+  legende:
+    'Le parcours ne se termine pas le jour où vous l’ouvrez : il compte une bonne semaine, dont l’essentiel se passe chez vous et non sur cette page.',
+});
+
+const SCH_CYCLE = S.figure({
+  numero: 2,
+  titre: 'Pourquoi un comportement se répète',
+  corps: S.boucle(
+    [
+      { titre: 'AVANT', detail: 'ce qui se passait juste avant' },
+      { titre: 'COMPORTEMENT', detail: 'ce qui se voit et s’entend' },
+      { titre: 'APRÈS', detail: 'ce que ça a obtenu' },
+    ],
+    'et comme ça a marché, ça recommence',
+  ),
+  legende:
+    'La colonne du milieu est celle qu’on regarde, et c’est la seule qui ne décide de rien. Ce qui fait revenir un comportement est dans la colonne de droite.',
+});
+
+const SCH_FONCTIONS = S.figure({
+  numero: 3,
+  titre: 'Lire la colonne « Après » : les quatre moteurs',
+  corps: S.arbre({
+    question: 'Qu’est-ce que le comportement a obtenu, juste après ?',
+    branches: [
+      {
+        condition: 'Quelqu’un est venu',
+        alors:
+          '<strong>Attention</strong><br><span style="color:#6b6f76;font-size:.94em">regard, parole, contact — même un reproche</span>',
+      },
+      {
+        condition: 'Une demande a cessé',
+        alors:
+          '<strong>Échappée</strong><br><span style="color:#6b6f76;font-size:.94em">la tâche s’arrête, se reporte, s’allège</span>',
+      },
+      {
+        condition: 'Un objet ou une activité est arrivé',
+        alors:
+          '<strong>Obtention</strong><br><span style="color:#6b6f76;font-size:.94em">l’objet, l’écran, le trajet, le tour</span>',
+      },
+      {
+        condition: 'Rien de l’extérieur',
+        alors:
+          '<strong>Sensation</strong><br><span style="color:#6b6f76;font-size:.94em">le comportement se suffit à lui-même</span>',
+      },
+    ],
+  }),
+  legende:
+    'Une hypothèse, pas un verdict : c’est la répétition d’un même « après » sur plusieurs lignes du relevé qui la rend crédible, jamais une seule occurrence.',
+});
 
 const M1 = {
   reperes: {
@@ -25,7 +93,10 @@ const M1 = {
     'Reconnaître les deux erreurs qui font échouer la plupart des plans d’action',
     'Comprendre pourquoi deux comportements identiques peuvent demander deux réponses opposées',
   ],
-  corps: `<h3 style="${G.H3}">1. Un comportement n’est pas un symptôme, c’est une fonction</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. Un comportement n’est pas un symptôme, c’est une fonction</h3>
+${SCH_CYCLE}
 <p>Face à un comportement qui pose problème — crier, frapper, se mordre, fuir la table,
 jeter un objet, s’effondrer au sol —, le premier réflexe est de chercher à le faire
 cesser. C’est le réflexe le plus naturel du monde, et c’est celui qui échoue le plus
@@ -429,6 +500,7 @@ ligne, pas davantage.</p>`,
 )}
 
 <h3 style="${G.H3}">3. Lire le relevé — ce qu’on cherche exactement</h3>
+${SCH_FONCTIONS}
 <p>Au bout de cinq à dix lignes, on ne lit pas le relevé en entier&nbsp;: on lit
 <strong>une colonne à la fois</strong>, et dans cet ordre.</p>
 <ul style="${G.UL}">

@@ -7,6 +7,7 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 const ECHELLE = A.tableau(
   ['Niveau', "L'aide, du plus léger au plus lourd", 'Ce qu’elle coûte à retirer'],
@@ -22,6 +23,56 @@ const ECHELLE = A.tableau(
   ],
 );
 
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'la théorie' },
+      { titre: 'Module 2', produit: 'une scène analysée' },
+      { titre: 'Module 3', produit: 'votre plan en quatre lignes' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> quinze jours de relevé, trente secondes par jour. Le module 4 se lit le quinzième jour.',
+  }),
+  legende:
+    'Quinze jours parce qu’un niveau d’aide se lit en moyenne hebdomadaire : il en faut deux pour qu’une comparaison veuille dire quelque chose.',
+});
+
+const SCH_ECHELLE = S.figure({
+  numero: 2,
+  titre: 'L’échelle des aides, de 0 à 7',
+  corps: S.echelle([
+    { niveau: '7', libelle: 'Guidance physique complète — la main de l’adulte fait le geste' },
+    { niveau: '6', libelle: 'Guidance physique partielle — un contact qui lance le mouvement' },
+    { niveau: '5', libelle: 'Démonstration — l’adulte fait devant, la personne refait' },
+    { niveau: '4', libelle: 'Consigne verbale directe' },
+    { niveau: '3', libelle: 'Indice indirect — une consigne raccourcie, un mot' },
+    { niveau: '2', libelle: 'Geste montré' },
+    { niveau: '1', libelle: 'Indice de position — l’objet est posé devant, prêt' },
+    { niveau: '0', libelle: 'Rien' },
+  ]),
+  legende:
+    'On donne le niveau le plus bas qui débloque, jamais celui qui marche à coup sûr : c’est le coût du retrait qui décide, pas l’efficacité immédiate.',
+});
+
+const SCH_PLAN = S.figure({
+  numero: 3,
+  titre: 'Le plan d’estompage, de bout en bout',
+  corps: S.flux([
+    { titre: 'Niveau de départ', detail: 'celui que vous donnez réellement, mesuré' },
+    { titre: 'Critère de passage', detail: 'ce qui autorise à descendre d’un cran' },
+    { titre: 'Niveau d’arrivée', detail: 'traduit en mots concrets' },
+    { titre: 'Date de revue', detail: 'écrite, et notée quelque part', pointille: true },
+  ]),
+  legende:
+    'Les quatre lignes se décident avant de commencer. Décidé en cours de route, le critère se déplace toujours au moment où l’on est fatigué ou pressé.',
+});
+
 const M1 = {
   reperes: {
     minutes: 12,
@@ -36,7 +87,9 @@ const M1 = {
     'Savoir qu’un plan d’estompage se décide <strong>avant</strong> de commencer — y compris par quelle extrémité de l’échelle on part',
     'Coter une séance réelle : noter le niveau d’aide le plus lourd utilisé, pas le premier',
   ],
-  corps: `<h3 style="${G.H3}">1. Le seul outil éducatif qui devient nuisible quand il marche trop bien</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. Le seul outil éducatif qui devient nuisible quand il marche trop bien</h3>
 <p>L’aide est ce qu’il y a de plus naturel&nbsp;: quelqu’un n’y arrive pas, on l’aide,
 ça marche, tout le monde est content. Le problème n’apparaît pas quand l’aide échoue —
 il apparaît quand elle réussit, longtemps, et que personne ne l’a jamais retirée.</p>
@@ -50,6 +103,7 @@ sollicitation&nbsp;». On reproche à la personne exactement ce que l’organisa
 enseigné.</p>
 
 <h3 style="${G.H3}">2. L’échelle des aides — et pourquoi l’ordre compte</h3>
+${SCH_ECHELLE}
 <p>Toutes les aides ne se valent pas, et surtout&nbsp;: <strong>elles ne coûtent pas la
 même chose à retirer</strong>. C’est ce dernier point qui doit guider le choix, pas
 l’efficacité immédiate.</p>
@@ -332,6 +386,7 @@ const M3 = {
     'Rendre le plan applicable par quelqu’un d’autre que vous',
   ],
   corps: `<h3 style="${G.H3}">1. Quatre lignes, et elles suffisent</h3>
+${SCH_PLAN}
 <div style="${G.GRIS}">
 <ol style="${G.UL}">
 <li style="${G.LI}"><strong>Niveau de départ</strong> — celui que vous donnez

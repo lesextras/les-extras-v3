@@ -26,8 +26,66 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'une conduite relue' },
+      { titre: 'Module 2', produit: 'une réponse analysée' },
+      { titre: 'Module 3', produit: 'votre fiche lecture → réglage' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> quinze jours de réglage, trente secondes de relevé par jour.',
+  }),
+  legende:
+    'Le parcours ne s’arrête jamais à la lecture : chaque module la fait aboutir à un réglage du quotidien. Une lecture qui ne change rien n’a servi qu’aux adultes.',
+});
+
+const SCH_QUESTION = S.figure({
+  numero: 2,
+  titre: 'Deux questions, deux destinations',
+  corps: S.arbre({
+    question: 'Devant une conduite qui déroute, laquelle des deux vous posez-vous ?',
+    branches: [
+      {
+        condition: '«&nbsp;Pourquoi il me fait ça&nbsp;?&nbsp;»',
+        alors:
+          '<strong>Vers l’intention</strong><br><span style="color:#6b6f76;font-size:.94em">donc vers la relation, donc vers l’affrontement — et presque toujours sans réponse</span>',
+      },
+      {
+        condition: '«&nbsp;À quoi cela a-t-il pu servir, là d’où il vient&nbsp;?&nbsp;»',
+        alors:
+          '<strong>Vers une hypothèse</strong><br><span style="color:#6b6f76;font-size:.94em">donc vers quelque chose à essayer, à tester en quinze jours</span>',
+      },
+    ],
+  }),
+  legende:
+    'La seconde question ne prétend rien savoir de l’histoire de l’enfant. Elle demande seulement : dans quel contexte cette conduite serait-elle une bonne idée ? Il y en a presque toujours un.',
+});
+
+const SCH_CONFIRME = S.figure({
+  numero: 3,
+  titre: 'La boucle que personne ne voit',
+  corps: S.boucle(
+    [
+      { titre: 'CE QU’IL A APPRIS', detail: 'ailleurs, et qui était vrai là-bas' },
+      { titre: 'LA CONDUITE', detail: 'qui protégeait, et qui déroute ici' },
+      { titre: 'NOTRE RÉPONSE', detail: 'raisonnable, bien intentionnée' },
+    ],
+    'et elle confirme, sans le vouloir, ce qu’il avait appris',
+  ),
+  legende:
+    'C’est le vrai sujet de ce module : la réponse ordinaire de l’institution redit à l’enfant que la nourriture n’est pas garantie, que les adultes partent, que dire vrai coûte cher. Le réglage sert à casser cette boucle-là.',
+});
 
 const M1 = {
   reperes: {
@@ -57,7 +115,10 @@ ne remplace ni un avis médical, ni un accompagnement thérapeutique, ni une tra
 au cadre.</p>`,
   )}
 
+${CARTE}
+
 <h3 style="${G.H3}">1. Changer de question</h3>
+${SCH_QUESTION}
 <p>Devant une conduite qui déroute, deux questions sont possibles. Elles ne mènent pas au
 même endroit.</p>
 ${A.tableau(
@@ -306,6 +367,7 @@ savait déjà.</p>
 ${G.FILET}
 
 <h3 style="${G.H3}">3. Ce que chaque étape a enseigné</h3>
+${SCH_CONFIRME}
 ${A.tableau(
   ['Ce que fait l’institution', 'Ce que ça vise', 'Ce que ça enseigne'],
   [

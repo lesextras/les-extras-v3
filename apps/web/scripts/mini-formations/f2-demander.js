@@ -11,6 +11,76 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'la théorie' },
+      { titre: 'Module 2', produit: 'une scène analysée' },
+      { titre: 'Module 3', produit: 'votre plan en six lignes' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> quatorze jours d’application, une minute de relevé par jour. Le module 4 se lit le quatorzième jour.',
+  }),
+  legende:
+    'Comptez deux bonnes semaines entre le premier et le dernier module. C’est la partie qui demande le plus, et la seule qui produise un résultat.',
+});
+
+const SCH_REMPLACEMENT = S.figure({
+  numero: 2,
+  titre: 'Ce qu’un remplacement doit faire',
+  corps: S.paires({
+    gauche: 'Le comportement actuel',
+    droite: 'Le comportement de remplacement',
+    lignes: [
+      { g: 'Obtient quelque chose de précis', d: 'Doit obtenir <strong>exactement la même chose</strong>' },
+      { g: 'Marche vite', d: 'Doit marcher <strong>plus vite</strong>' },
+      { g: 'Coûte peu à la personne', d: 'Doit coûter <strong>moins</strong> — moins d’effort, moins d’attente' },
+      { g: 'Marche à tous les coups', d: 'Doit marcher <strong>à tous les coups</strong>, au début' },
+    ],
+  }),
+  legende:
+    'Les quatre lignes sont indispensables ensemble. Un remplacement qui obtient la même chose mais plus lentement ne sera pas choisi — et ce n’est pas un caprice, c’est un calcul juste.',
+});
+
+const SCH_LECTURE = S.figure({
+  numero: 3,
+  titre: 'Lire le relevé au quatorzième jour',
+  corps: S.arbre({
+    question: 'Que montrent les deux colonnes sur quatorze jours ?',
+    branches: [
+      {
+        condition: 'La demande monte, l’ancien baisse',
+        alors:
+          '<strong>Ça marche</strong><br><span style="color:#6b6f76;font-size:.94em">on continue sans rien changer, et on prépare l’espacement</span>',
+      },
+      {
+        condition: 'La demande ne vient pas',
+        alors:
+          '<strong>Trop coûteuse</strong><br><span style="color:#6b6f76;font-size:.94em">on simplifie la forme, ou on aide davantage au départ</span>',
+      },
+      {
+        condition: 'Les deux montent ensemble',
+        alors:
+          '<strong>L’ancien marche encore</strong><br><span style="color:#6b6f76;font-size:.94em">on revoit la ligne 5 : que produit le comportement d’avant ?</span>',
+      },
+      {
+        condition: 'Rien ne bouge du tout',
+        alors:
+          '<strong>Mauvaise fonction</strong><br><span style="color:#6b6f76;font-size:.94em">on reprend la grille des quatre fonctions</span>',
+      },
+    ],
+  }),
+  legende:
+    'Deux de ces quatre issues sont des réussites : celle qui marche, et celle qui élimine une hypothèse en quatorze jours au lieu d’un an.',
+});
 
 const M1 = {
   reperes: {
@@ -27,7 +97,9 @@ const M1 = {
     'Anticiper la remontée passagère du comportement en début d’apprentissage',
     'Reconnaître un remplacement qui ne remplace rien',
   ],
-  corps: `<h3 style="${G.H3}">1. Retirer sans donner, c’est retirer un outil</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. Retirer sans donner, c’est retirer un outil</h3>
 <p>Vous savez maintenant ce que le comportement obtient. La tentation immédiate est de
 l’empêcher&nbsp;: ne plus céder, tenir bon, ignorer. Cela peut fonctionner — et cela
 laisse la personne sans <em>aucun</em> moyen d’obtenir ce qu’elle cherchait.</p>
@@ -65,6 +137,7 @@ au bout de trois semaines que «&nbsp;ça n’a pas marché&nbsp;» alors que le
 à côté.</p>
 
 <h3 style="${G.H3}">3. Les quatre conditions — et elles sont toutes indispensables</h3>
+${SCH_REMPLACEMENT}
 
 <h4 style="margin:26px 0 8px">Condition 1 — Plus facile</h4>
 <p>Le remplacement doit demander <strong>moins d’effort</strong> que le comportement
@@ -637,6 +710,7 @@ progrès considérable.</li>
 </ul>
 
 <h3 style="${G.H3}">4. Quatre lectures, quatre suites</h3>
+${SCH_LECTURE}
 ${A.tableau(
   ['Ce que disent les colonnes', 'Ce que ça veut dire', 'La suite'],
   [

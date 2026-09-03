@@ -26,8 +26,80 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'les six coûts repérés' },
+      { titre: 'Module 2', produit: 'une matinée analysée' },
+      { titre: 'Module 3', produit: 'votre fiche de démarrage' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> dix jours, un seul chiffre par jour — le délai avant le premier geste.',
+  }),
+  legende:
+    'C’est le relevé le plus court du catalogue, et celui qui bouge le plus vite : souvent dès la première semaine.',
+});
+
+const SCH_LEVIERS = S.figure({
+  numero: 2,
+  titre: 'Six coûts, six leviers',
+  corps: S.paires({
+    gauche: 'Ce qui coûte à l’entrée',
+    droite: 'Ce qui le lève',
+    lignes: [
+      { g: 'Le matériel est à réunir', d: 'Il est prêt et visible <strong>avant</strong> qu’on demande' },
+      { g: 'La première action est indéterminée', d: 'Une première action nommée, une seule, au mot près' },
+      { g: 'On ne sait pas quand ça finit', d: 'Une fin visible : un nombre, un bac qui se vide' },
+      { g: 'La page a l’air difficile', d: 'Une première marche très basse : masquer le reste' },
+      { g: 'Il faut arrêter ce qui est en cours', d: 'Une transition annoncée, avec une fin donnée à l’activité' },
+      { g: 'Cette tâche a déjà raté quinze fois', d: 'Le droit à l’imparfait, dit : «&nbsp;on essaie, on efface&nbsp;»' },
+    ],
+  }),
+  legende:
+    'Deux leviers tenus tous les jours valent mieux que six tenus trois jours. Commencez par les deux premiers : à eux seuls, ils règlent la majorité des cas.',
+});
+
+const SCH_ISSUES = S.figure({
+  numero: 3,
+  titre: 'Lire le relevé au dixième jour',
+  corps: S.arbre({
+    question: 'Le délai avant le premier geste a-t-il bougé — et la préparation a-t-elle été faite ?',
+    branches: [
+      {
+        condition: 'Le délai baisse, préparation faite',
+        alors:
+          '<strong>La fiche fonctionne</strong><br><span style="color:#6b6f76;font-size:.94em">on la garde un mois, puis on retire l’amorçage</span>',
+      },
+      {
+        condition: 'Le délai ne bouge pas, préparation faite',
+        alors:
+          '<strong>Ce n’est pas le démarrage</strong><br><span style="color:#6b6f76;font-size:.94em">on change de parcours plutôt que d’insister</span>',
+      },
+      {
+        condition: 'Préparation non faite (&lt; 8 jours sur 10)',
+        alors:
+          '<strong>Rien n’a été testé</strong><br><span style="color:#6b6f76;font-size:.94em">on réduit la préparation jusqu’à ce qu’elle tienne</span>',
+      },
+      {
+        condition: 'Le délai baisse, mais l’amorçage reste nécessaire',
+        alors:
+          '<strong>Une étape, pas un échec</strong><br><span style="color:#6b6f76;font-size:.94em">on garde, et on prépare le retrait</span>',
+      },
+    ],
+  }),
+  legende:
+    'La deuxième colonne du relevé explique tout le reste : un jour sans préparation n’est pas un jour testé. On mesure un délai, jamais une motivation.',
+});
 
 const M1 = {
   reperes: {
@@ -44,7 +116,9 @@ const M1 = {
     'Amorcer une tâche sans la faire à la place',
     'Reconnaître ce qui n’est pas un problème de démarrage, et où aller alors',
   ],
-  corps: `<h3 style="${G.H3}">1. « Il ne fait rien » décrit rarement ce qui se passe</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. « Il ne fait rien » décrit rarement ce qui se passe</h3>
 <p>Regardez une séance de près, chronomètre en main, et vous verrez presque toujours la
 même chose&nbsp;: <strong>ce n’est pas la tâche qui bloque, c’est l’entrée dans la
 tâche</strong>. Une fois la première action faite, la suite s’enchaîne souvent sans
@@ -75,6 +149,7 @@ motiver, encourager — n’a presque aucun effet. Ce qui a un effet, c’est de
 des trente premières secondes.</p>
 
 <h3 style="${G.H3}">2. Les six coûts du démarrage</h3>
+${SCH_LEVIERS}
 <p>Ils se cumulent, et il suffit souvent d’en retirer un ou deux pour que la tâche
 démarre.</p>
 ${A.tableau(
@@ -656,6 +731,7 @@ noté le lendemain est un délai inventé.</li>
 </ul>
 
 <h3 style="${G.H3}">3. La lecture du dixième jour, en quatre issues</h3>
+${SCH_ISSUES}
 <p>Trois nombres d’abord&nbsp;: le délai moyen de la semaine&nbsp;1, celui de la
 semaine&nbsp;2, et le nombre de jours où la préparation a été faite.</p>
 ${A.tableau(

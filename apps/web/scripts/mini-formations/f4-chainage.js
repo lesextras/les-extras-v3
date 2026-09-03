@@ -6,6 +6,7 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 const TROIS_MODES = A.tableau(
   ['Mode', 'Comment ça se passe', 'Quand le choisir', 'Son avantage décisif'],
@@ -31,6 +32,68 @@ const TROIS_MODES = A.tableau(
   ],
 );
 
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'votre chaîne écrite' },
+      { titre: 'Module 2', produit: 'une séance analysée' },
+      { titre: 'Module 3', produit: 'ligne de base et étape cible' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> une observation, puis dix jours d’enseignement avec un relevé d’une minute par jour.',
+  }),
+  legende:
+    'La séance elle-même dure vingt à trente secondes : c’est le relevé, pas la séance, qui demande de la constance.',
+});
+
+const SCH_CHAINE = S.figure({
+  numero: 2,
+  titre: 'Une routine n’est pas un geste, c’est une chaîne',
+  corps: S.flux([
+    { titre: '1', detail: 'poser le manteau à l’endroit' },
+    { titre: '2', detail: 'enfiler le bras droit' },
+    { titre: '3', detail: 'passer derrière le dos' },
+    { titre: '4', detail: 'enfiler le bras gauche' },
+    { titre: '5', detail: 'joindre la fermeture' },
+    { titre: '6', detail: 'la remonter' },
+  ]),
+  legende:
+    'Chaque étape sert de signal à la suivante, et chacune s’apprend séparément. « Il ne sait pas mettre son manteau » devient « il bloque à l’étape 5 » — et une étape, ça se travaille.',
+});
+
+const SCH_REGLE = S.figure({
+  numero: 3,
+  titre: 'Par quelle extrémité enseigner : la règle en trois lignes',
+  corps: S.arbre({
+    question: 'Combien d’étapes sont déjà réussies seules (S) ?',
+    branches: [
+      {
+        condition: 'Les premières sont N, les dernières S',
+        alors:
+          '<strong>Chaînage avant</strong><br><span style="color:#6b6f76;font-size:.94em">étape cible : la première</span>',
+      },
+      {
+        condition: 'S strictement supérieur à la moitié',
+        alors:
+          '<strong>Chaîne entière, aide dégressive</strong><br><span style="color:#6b6f76;font-size:.94em">cible : la première A ou N depuis le début</span>',
+      },
+      {
+        condition: 'Tous les autres cas — la moitié comprise',
+        alors:
+          '<strong>Chaînage arrière</strong><br><span style="color:#6b6f76;font-size:.94em">cible : la première non acquise en remontant depuis la fin</span>',
+      },
+    ],
+  }),
+  legende:
+    'On applique dans cet ordre et on s’arrête à la première ligne qui répond. Ce n’est pas que le seuil de la moitié soit démontré : c’est qu’une règle écrite à froid donne le même choix quel que soit l’adulte, le jour et la fatigue.',
+});
+
 const M1 = {
   reperes: {
     minutes: 12,
@@ -45,7 +108,9 @@ const M1 = {
     'Appliquer la règle de décision en trois lignes ordonnées, et justifier le mode retenu',
     'Comprendre pourquoi on n’enseigne qu’<strong>une seule</strong> étape à la fois',
   ],
-  corps: `<h3 style="${G.H3}">1. « Il ne sait pas s’habiller » ne se travaille pas</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. « Il ne sait pas s’habiller » ne se travaille pas</h3>
 <p>«&nbsp;Il ne sait pas s’habiller.&nbsp;» «&nbsp;Elle n’arrive pas à se laver les
 mains.&nbsp;» «&nbsp;Il faut tout faire à sa place pour le repas.&nbsp;» Ces phrases
 décrivent un résultat. Elles ne disent ni ce qui est déjà acquis, ni où exactement ça
@@ -59,6 +124,7 @@ choses ont bougé.</p>
 seconde.</p>
 
 <h3 style="${G.H3}">2. Une routine est une chaîne</h3>
+${SCH_CHAINE}
 <p>Un geste du quotidien est en réalité une <strong>suite d’étapes</strong> où chacune
 sert de signal à la suivante. Enfiler un pull, ce n’est pas un geste, c’en est six ou
 sept. Se laver les mains, huit. Mettre la table, six. Et la plupart de ces étapes sont
@@ -372,6 +438,7 @@ vous notez alors A.</li>
 servent à rien&nbsp;: à ce stade, la précision compte moins que le fait de commencer.</p>
 
 <h3 style="${G.H3}">2. Compter les S, et laisser le compte décider</h3>
+${SCH_REGLE}
 <div style="${G.GRIS}">
 <ul style="${G.UL}">
 <p style="margin-top:0"><strong>On applique dans cet ordre, et on s’arrête à la première

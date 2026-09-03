@@ -28,8 +28,74 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'la théorie et les limites' },
+      { titre: 'Module 2', produit: 'une scène analysée' },
+      { titre: 'Module 3', produit: 'votre fiche à froid' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> dix jours de relevé, une minute par épisode — et rien les jours sans épisode.',
+  }),
+  legende:
+    'Ce parcours n’arrête pas les crises et ne le promet nulle part. Ce qu’il produit est plus modeste : des crises où l’adulte n’ajoute rien, une récupération plus courte, et un écrit qui tient devant une équipe.',
+});
+
+const SCH_TEMPS = S.figure({
+  numero: 2,
+  titre: 'Les quatre temps, et où l’on a une prise',
+  corps: S.frise([
+    { nom: 'AVANT', largeur: 28, fort: true, quoi: 'Le seul moment où l’on change vraiment quelque chose : alléger, prévenir, offrir une sortie' },
+    { nom: 'MONTÉE', largeur: 20, fort: true, quoi: 'Réduire : moins de mots, moins de demandes, moins de public. Sécuriser l’espace' },
+    { nom: 'PIC', largeur: 16, fort: false, quoi: 'Presque rien. Rester visible, attendre, ne pas ajouter' },
+    { nom: 'DESCENTE et RÉCUPÉRATION', largeur: 36, fort: false, quoi: 'Du temps. Ne rien redemander — c’est ici que naît la deuxième crise' },
+  ]),
+  legende:
+    'La barre pleine marque les deux moments où l’adulte a une prise réelle. Les deux autres se traversent : c’est l’information la plus utile du module, et la plus difficile à tenir.',
+});
+
+const SCH_LECTURE6 = S.figure({
+  numero: 3,
+  titre: 'Lire le relevé au dixième jour',
+  corps: S.arbre({
+    question: 'Que montrent les cinq colonnes sur dix jours ?',
+    branches: [
+      {
+        condition: 'Un horaire ou un moment revient',
+        alors:
+          '<strong>Baliser ce moment</strong><br><span style="color:#6b6f76;font-size:.94em">collation, repère visuel, annonce cinq minutes avant</span>',
+      },
+      {
+        condition: 'Les épisodes suivent une demande, ou un refus',
+        alors:
+          '<strong>Chercher la fonction</strong><br><span style="color:#6b6f76;font-size:.94em">alléger la tâche, enseigner une autre demande</span>',
+      },
+      {
+        condition: 'Les « rien » de la colonne 4 augmentent',
+        alors:
+          '<strong>Vous avez retiré un ajout</strong><br><span style="color:#6b6f76;font-size:.94em">c’est le résultat attendu : on retire le deuxième</span>',
+      },
+      {
+        condition: 'Les épisodes graves suivent les reprises courtes',
+        alors:
+          '<strong>Augmenter le délai de reprise</strong><br><span style="color:#6b6f76;font-size:.94em">décision gratuite, applicable dès demain</span>',
+      },
+    ],
+  }),
+  legende:
+    'La durée du pic n’est pas votre indicateur : elle bouge lentement et dépend de beaucoup de choses. Les colonnes 4 et 5 mesurent ce qui dépend de vous.',
+});
 
 const M1 = {
   reperes: {
@@ -58,6 +124,8 @@ apparaît brutalement chez quelqu’un qui n’en faisait pas, qui change de for
 s’accompagne de signes physiques inhabituels, se signale à un médecin&nbsp;: la douleur
 est une cause fréquente et régulièrement manquée.</p>`,
   )}
+
+${CARTE}
 
 <h3 style="${G.H3}">1. Le mot « crise » ne décrit rien</h3>
 <p>«&nbsp;Il a fait une crise.&nbsp;» La phrase circule en réunion, passe dans le cahier
@@ -92,6 +160,7 @@ qui s’est réellement produit.</strong> Ces quatre éléments tiennent en deux
 sont eux qui rendront le relevé du module&nbsp;4 lisible.</p>
 
 <h3 style="${G.H3}">2. Les quatre temps, et ce qui est possible à chacun</h3>
+${SCH_TEMPS}
 <p>Une crise n’est pas un bloc. Elle a une forme, presque toujours la même chez la même
 personne, et ce qui est possible n’est pas le même à chaque instant.</p>
 ${A.tableau(
@@ -759,6 +828,7 @@ l’impression que tout va mal, ce qui est presque toujours faux et décourage l
 </ul>
 
 <h3 style="${G.H3}">3. La lecture du dixième jour, en quatre questions</h3>
+${SCH_LECTURE6}
 <p>Feuille en main, pas de mémoire. La mémoire garde les deux pires épisodes et efface les
 sept autres.</p>
 

@@ -26,8 +26,79 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'votre comptage d’une heure' },
+      { titre: 'Module 2', produit: 'une scène analysée' },
+      { titre: 'Module 3', produit: 'votre feuille de cinq consignes' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> dix jours, cinq croix par jour à la fin du moment choisi. Une minute.',
+  }),
+  legende:
+    'Le relevé ne mesure pas la personne d’en face : il mesure votre feuille. C’est ce qui le rend supportable à tenir, et efficace.',
+});
+
+const SCH_DEFAUTS = S.figure({
+  numero: 2,
+  titre: 'Ce qui rend une consigne inexécutable',
+  corps: S.paires({
+    gauche: 'La consigne telle qu’elle sort',
+    droite: 'La consigne qui s’exécute',
+    lignes: [
+      { g: '«&nbsp;Tu peux ranger&nbsp;?&nbsp;» <em>— une question autorise un non</em>', d: '«&nbsp;Mets les Lego dans la caisse bleue.&nbsp;»' },
+      { g: '«&nbsp;Ne cours pas&nbsp;» <em>— dit ce qu’il faut arrêter</em>', d: '«&nbsp;Tu marches jusqu’à la porte.&nbsp;»' },
+      { g: '«&nbsp;Range et va te laver&nbsp;» <em>— deux consignes</em>', d: 'Une seule. La suivante quand celle-là est finie.' },
+      { g: '«&nbsp;Sois sage&nbsp;» <em>— ne se filme pas</em>', d: '«&nbsp;Tu restes assis jusqu’au dessert.&nbsp;»' },
+      { g: 'Lancée d’une autre pièce <em>— peut-être jamais entendue</em>', d: 'En face, après le prénom, à portée de voix.' },
+    ],
+  }),
+  legende:
+    'Le test : sauriez-vous filmer quelqu’un en train de l’exécuter ? Si l’image n’existe pas, ce n’est pas encore une consigne. Puis cinq secondes de silence — comptées, pas estimées.',
+});
+
+const SCH_LECTURE7 = S.figure({
+  numero: 3,
+  titre: 'Lire le relevé, ligne par ligne',
+  corps: S.arbre({
+    question: 'Pour UNE consigne : que montrent ses dix jours ?',
+    branches: [
+      {
+        condition: 'Surtout des F',
+        alors:
+          '<strong>Elle est bonne</strong><br><span style="color:#6b6f76;font-size:.94em">on la garde, on peut en ajouter une au cycle suivant</span>',
+      },
+      {
+        condition: 'Surtout des A',
+        alors:
+          '<strong>La tâche est trop grosse</strong><br><span style="color:#6b6f76;font-size:.94em">on la découpe en deux, ou on réduit l’aide d’un cran</span>',
+      },
+      {
+        condition: 'Surtout des N, toujours la même',
+        alors:
+          '<strong>Ce n’est pas l’obéissance</strong><br><span style="color:#6b6f76;font-size:.94em">la réécrire, changer son moment, ou la retirer un mois</span>',
+      },
+      {
+        condition: 'Des N partout, certains jours',
+        alors:
+          '<strong>Ce sont les journées</strong><br><span style="color:#6b6f76;font-size:.94em">fatigue, retour de week-end, douleur : on allège ces jours-là</span>',
+      },
+    ],
+  }),
+  legende:
+    'Une moyenne sur cinq consignes ne dit rien : c’est ligne par ligne que l’information apparaît. Et trois essais sur une consigne, pas davantage.',
+});
 
 const M1 = {
   reperes: {
@@ -44,7 +115,9 @@ const M1 = {
     'Formuler une consigne exécutable : un verbe, une chose, maintenant, en positif',
     'Laisser cinq secondes de silence après une consigne, et savoir pourquoi c’est difficile',
   ],
-  corps: `<h3 style="${G.H3}">1. « Il dit non à tout » n’est pas une donnée</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. « Il dit non à tout » n’est pas une donnée</h3>
 <p>C’est une impression, et elle est presque toujours fausse dans les proportions
 qu’elle annonce. La question utile n’est pas «&nbsp;pourquoi refuse-t-il&nbsp;?&nbsp;»
 mais&nbsp;: <strong>combien de consignes reçoit-il, et combien en refuse-t-il
@@ -119,6 +192,7 @@ pas — <strong>avant</strong> de travailler la forme des consignes.</p>`,
 )}
 
 <h3 style="${G.H3}">3. Les sept défauts d’une consigne</h3>
+${SCH_DEFAUTS}
 <p>Aucun n’est une faute&nbsp;: ce sont des formes de politesse ordinaire, qui marchent
 très bien entre adultes et qui cessent de marcher dès qu’il y a une difficulté de
 compréhension, d’attention ou de langage.</p>
@@ -728,6 +802,7 @@ relevé devient un souvenir — et un souvenir se souvient surtout des mauvais s
 </ul>
 
 <h3 style="${G.H3}">3. La lecture du dixième jour, en quatre questions</h3>
+${SCH_LECTURE7}
 
 <h4 style="margin:26px 0 8px">Question 1 — Consigne par consigne, pas en bloc</h4>
 <p>Comptez les F, les A et les N <strong>pour chaque consigne séparément</strong>. C’est

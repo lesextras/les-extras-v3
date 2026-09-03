@@ -32,8 +32,54 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'les textes, et ce que l’ESS décide' },
+      { titre: 'Module 2', produit: 'une réunion analysée' },
+      { titre: 'Module 3', produit: 'votre feuille d’une page' },
+      { titre: 'Module 4', produit: 'la relecture du GEVA-Sco' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> la réunion, puis quinze jours pour vérifier ce qui a été écrit et ce qui a été fait.',
+  }),
+  legende:
+    'Le module 4 se lit une fois le GEVA-Sco reçu — ou quinze jours après la réunion si vous ne l’avez pas reçu, ce qui est en soi une information à traiter.',
+});
+
+const SCH_CIRCUIT = S.figure({
+  numero: 2,
+  titre: 'Où va ce qui se dit en réunion',
+  corps: S.flux([
+    { titre: 'L’ESS', detail: 'constate, propose, et surtout ÉCRIT' },
+    { titre: 'Le GEVA-Sco réexamen', detail: 'rempli par l’enseignant référent, il vaut compte rendu' },
+    { titre: 'L’équipe pluridisciplinaire', detail: 'à la MDPH, elle évalue sur ce qu’elle lit' },
+    { titre: 'La CDAPH', detail: 'décide les droits : aide humaine, matériel, orientation' },
+  ]),
+  legende:
+    'L’ESS n’attribue aucun droit. Ce qu’on lui demande, c’est d’écrire ce sur quoi la CDAPH décidera — d’où la règle du parcours : on ne travaille pas à être entendu, on travaille à ce qui sera écrit.',
+});
+
+const SCH_FEUILLE = S.figure({
+  numero: 3,
+  titre: 'La feuille d’une page, en trois blocs',
+  corps: S.flux([
+    { titre: '1. Ce qui a changé', detail: 'trois lignes datées, dans les deux sens' },
+    { titre: '2. Deux ou trois faits', detail: 'situation · mesure · période · ce qui a été essayé' },
+    { titre: '3. Une demande', detail: 'écrite pour être recopiée telle quelle' },
+  ]),
+  legende:
+    'Une page recto, lue à voix haute en moins de trois minutes. Le test : chaque phrase des blocs 2 et 3 pourrait-elle être recopiée telle quelle dans un document officiel ?',
+});
 
 const M1 = {
   reperes: {
@@ -50,7 +96,9 @@ const M1 = {
     'Reconnaître les cinq raisons pour lesquelles une ESS ne produit rien',
     'Préparer les trois éléments écrits qui changent une réunion',
   ],
-  corps: `<h3 style="${G.H3}">1. Ce qu’est une ESS, en quatre lignes</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. Ce qu’est une ESS, en quatre lignes</h3>
 <p>L’<strong>équipe de suivi de la scolarisation</strong> réunit, autour d’un élève qui a
 un projet personnalisé de scolarisation (PPS), les personnes qui concourent à sa mise en
 œuvre&nbsp;: la famille, l’enseignant, l’enseignant référent, souvent l’AESH, et les
@@ -108,6 +156,7 @@ entière.</li>
 entendu, on travaille à ce que quelque chose soit écrit.</strong></p>
 
 <h3 style="${G.H3}">3. Ce que l’ESS peut faire, et ce qu’elle ne peut pas</h3>
+${SCH_CIRCUIT}
 ${A.tableau(
   ['Ce que l’ESS fait', 'Ce qu’elle ne fait pas'],
   [
@@ -460,6 +509,7 @@ const M3 = {
     'Décider à l’avance de ce que vous ferez si rien n’est écrit',
   ],
   corps: `<h3 style="${G.H3}">1. Une page, trois blocs</h3>
+${SCH_FEUILLE}
 <p>Pas un dossier&nbsp;: une page recto, lisible en deux minutes, que vous pouvez lire à
 voix haute et laisser sur la table à la fin.</p>
 <div style="${G.GRIS}">

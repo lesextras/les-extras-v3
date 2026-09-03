@@ -9,6 +9,7 @@
 
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
+const S = require('./schemas.js');
 
 const NIVEAUX = A.tableau(
   ['Niveau de représentation', 'Ce que la personne doit déjà savoir', 'Comment le tester en dix secondes'],
@@ -20,6 +21,76 @@ const NIVEAUX = A.tableau(
     ['<strong>Mot écrit</strong>', 'Lecture, même partielle, du mot en question.', 'Deux mots côte à côte, sans image.'],
   ],
 );
+
+
+/* ── FIGURES ─────────────────────────────────────────────────────────────── */
+
+const CARTE = S.figure({
+  numero: 1,
+  titre: 'La carte du parcours',
+  corps: S.carte({
+    modules: [
+      { titre: 'Module 1', produit: 'la théorie' },
+      { titre: 'Module 2', produit: 'un support autopsié' },
+      { titre: 'Module 3', produit: 'votre support fabriqué' },
+      { titre: 'Module 4', produit: 'la lecture du relevé' },
+    ],
+    releve:
+      '<strong>Entre le module 3 et le module 4 :</strong> quatorze jours d’utilisation, trente secondes de relevé par jour.',
+  }),
+  legende:
+    'Quatorze jours parce qu’un support tient presque toujours la première semaine : c’est la deuxième qui dit s’il survivra.',
+});
+
+const SCH_CAUSES = S.figure({
+  numero: 2,
+  titre: 'Les cinq causes d’abandon, et ce qui les lève',
+  corps: S.paires({
+    gauche: 'Ce qui tue un support',
+    droite: 'Ce qui le fait survivre',
+    lignes: [
+      { g: 'Il est affiché, pas manipulé', d: 'Quelque chose s’y déplace : une carte, une pochette « fini »' },
+      { g: 'Il n’a pas de marque de fin', d: 'Une fin visible : la dernière case, le bac vide' },
+      { g: 'Il est trop chargé', d: 'Quatre à six cases, une demi-journée, pas la semaine' },
+      { g: 'Personne n’est chargé de le tenir', d: '<strong>Un nom et un moment</strong>, écrits' },
+      { g: 'Le niveau de représentation est trop abstrait', d: 'Le niveau testé, jamais supposé' },
+    ],
+  }),
+  legende:
+    'La quatrième ligne est celle qui décide de tout. Fabriquer un support est valorisant ; l’entretenir ne l’est pas — c’est pour cela que la ligne de responsabilité s’écrit avant la première case.',
+});
+
+const SCH_LECTURE5 = S.figure({
+  numero: 3,
+  titre: 'Lire le relevé au quatorzième jour',
+  corps: S.arbre({
+    question: 'Que disent les trois colonnes ?',
+    branches: [
+      {
+        condition: 'Colonne 1 souvent « non »',
+        alors:
+          '<strong>Rien n’a été testé</strong><br><span style="color:#6b6f76;font-size:.94em">réduire le nombre de cases, redésigner un responsable</span>',
+      },
+      {
+        condition: '1 oui, 2 non',
+        alors:
+          '<strong>Tenu mais pas consulté</strong><br><span style="color:#6b6f76;font-size:.94em">le rapprocher, puis descendre d’un niveau</span>',
+      },
+      {
+        condition: '1 et 2 oui, 3 « pareil »',
+        alors:
+          '<strong>Ce n’est pas la prévisibilité</strong><br><span style="color:#6b6f76;font-size:.94em">chercher ailleurs : fonction, tâche, avis médical</span>',
+      },
+      {
+        condition: 'Colonne 3 « mieux »',
+        alors:
+          '<strong>Ça fonctionne</strong><br><span style="color:#6b6f76;font-size:.94em">garder tel quel un mois avant d’étendre, et une extension à la fois</span>',
+      },
+    ],
+  }),
+  legende:
+    'La colonne qui compte est la deuxième : la personne va-t-elle voir d’elle-même ? C’est elle qui mesure l’autonomie, qui est l’objectif réel du support.',
+});
 
 const M1 = {
   reperes: {
@@ -35,7 +106,9 @@ const M1 = {
     'Choisir un niveau de représentation par le test, pas par la supposition',
     'Rendre visible une durée pour quelqu’un qui ne lit pas l’heure',
   ],
-  corps: `<h3 style="${G.H3}">1. Ce qu’un support visuel remplace vraiment</h3>
+  corps: `${CARTE}
+
+<h3 style="${G.H3}">1. Ce qu’un support visuel remplace vraiment</h3>
 <p>Une consigne parlée a trois défauts, et ils se cumulent&nbsp;: elle disparaît en une
 seconde&nbsp;; elle exige de comprendre au moment exact où elle est dite&nbsp;; et elle
 oblige à la redemander — ce qui coûte cher à quelqu’un qui a précisément du mal à
@@ -62,6 +135,7 @@ ${A.tableau(
 ou choisissez.</p>
 
 <h3 style="${G.H3}">3. Les cinq raisons d’un abandon</h3>
+${SCH_CAUSES}
 <p>Presque tout le monde fabrique des supports. Presque personne ne s’en sert encore
 trois semaines plus tard. Cinq causes, et elles reviennent toujours dans le même
 ordre.</p>
@@ -517,6 +591,7 @@ ${A.tableau(
 elle mesure l’autonomie, qui est l’objectif réel.</p>
 
 <h3 style="${G.H3}">3. La lecture du quatorzième jour</h3>
+${SCH_LECTURE5}
 ${A.tableau(
   ['Ce que disent les colonnes', 'Ce que ça veut dire', 'La suite'],
   [
