@@ -237,21 +237,18 @@ export async function CatalogView({
     search || category || publicVise || ville || budget || tri,
   );
 
-  // LES RAYONS : un par catégorie, dans l'ordre où les fiches arrivent.
-  // `Map` et non un objet : elle conserve l'ordre d'insertion, donc le rayon
-  // le plus fourni du tri de l'API reste en tête, sans qu'on ait à le trier.
-  const rayons = [
-    ...items.reduce((acc, item) => {
-      const titre =
-        item.categoryRef?.title ??
-        SERVICE_CATEGORY_LABEL[item.category] ??
-        "Les Extras";
-      const liste = acc.get(titre) ?? [];
-      liste.push(item);
-      acc.set(titre, liste);
-      return acc;
-    }, new Map<string, CatalogItem[]>()),
-  ];
+  // À LA UNE : les cinq dernières fiches publiées.
+  //
+  // L'API rend le catalogue déjà trié (les plus récentes d'abord, sauf tri
+  // demandé) : « à la une » n'est donc pas un choix éditorial caché, c'est
+  // simplement ce qui vient d'arriver. Cinq, parce que la rangée en montre
+  // deux à la fois — au-delà, plus personne ne va jusqu'au bout.
+  //
+  // Le reste s'affiche en grille, entier. Une rangée qui défile met en avant ;
+  // elle ne doit jamais servir à ranger le catalogue, sinon ce qui n'est pas
+  // dans les cinq premiers devient invisible.
+  const aLaUne = items.slice(0, 5);
+  const suite = items.slice(5);
 
   return (
     <div className="space-y-8">
@@ -412,11 +409,10 @@ export async function CatalogView({
             </div>
           ) : null}
 
-          {/* SANS FILTRE, DES RAYONS QUI DÉFILENT ; AVEC FILTRE, UNE GRILLE.
-            Le visiteur qui arrive sans idée précise parcourt des rayons —
-            c'est la lecture d'un catalogue. Celui qui vient de filtrer veut
-            voir TOUS les résultats d'un coup : en cacher la moitié derrière
-            une flèche lui ferait croire qu'il n'y en a que trois. */}
+          {/* SANS FILTRE : une rangée « à la une », puis tout le reste en
+            grille. AVEC FILTRE : la grille seule — quelqu'un qui vient de
+            filtrer veut voir TOUS ses résultats, pas en découvrir deux à la
+            fois derrière une flèche. */}
           {hasFilters ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((item) => (
@@ -424,29 +420,47 @@ export async function CatalogView({
               ))}
             </div>
           ) : (
-            <div className="space-y-10">
-              {rayons.map(([titre, fiches]) => (
-                <section key={titre}>
+            <div className="space-y-12">
+              <section>
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                    Les dernières arrivées
+                  </p>
+                  <h2 className="mt-1 text-xl font-bold text-foreground sm:text-2xl">
+                    À la une
+                  </h2>
+                </div>
+                <RangeeDefilante etiquette="À la une">
+                  {aLaUne.map((item) => (
+                    <div
+                      key={item.id}
+                      className="w-[300px] shrink-0 snap-start md:w-[calc((100%-1.25rem)/2)]"
+                    >
+                      <CarteCatalogue item={item} />
+                    </div>
+                  ))}
+                </RangeeDefilante>
+              </section>
+
+              {suite.length > 0 ? (
+                <section>
                   <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                     <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-                      {titre}
+                      Tout le catalogue
                     </h2>
                     <span className="text-sm text-muted-foreground">
-                      {fiches.length} proposition{fiches.length > 1 ? "s" : ""}
+                      {suite.length} autre{suite.length > 1 ? "s" : ""}{" "}
+                      proposition
+                      {suite.length > 1 ? "s" : ""}
                     </span>
                   </div>
-                  <RangeeDefilante etiquette={titre}>
-                    {fiches.map((item) => (
-                      <div
-                        key={item.id}
-                        className="w-[300px] shrink-0 snap-start sm:w-[340px]"
-                      >
-                        <CarteCatalogue item={item} />
-                      </div>
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {suite.map((item) => (
+                      <CarteCatalogue key={item.id} item={item} />
                     ))}
-                  </RangeeDefilante>
+                  </div>
                 </section>
-              ))}
+              ) : null}
             </div>
           )}
         </>

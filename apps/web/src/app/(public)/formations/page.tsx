@@ -515,7 +515,7 @@ export default async function FormationsCatalogPage({
               ) : (
                 <RangeeDefilante etiquette="Mini-formations gratuites">
                   {gratuites.map((f, i) => (
-                    <div key={f.id} className="w-[300px] shrink-0 snap-start sm:w-[340px]">
+                    <div key={f.id} className="w-[300px] shrink-0 snap-start md:w-[calc((100%-1.25rem)/2)]">
                       <CarteFormation f={f} rang={i} />
                     </div>
                   ))}
@@ -539,21 +539,15 @@ export default async function FormationsCatalogPage({
                   engagement.
                 </p>
               </div>
-              {filtree ? (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {autres.map((f, i) => (
-                    <CarteFormation key={f.id} f={f} rang={i} />
-                  ))}
-                </div>
-              ) : (
-                <RangeeDefilante etiquette="Formations en intra">
-                  {autres.map((f, i) => (
-                    <div key={f.id} className="w-[300px] shrink-0 snap-start sm:w-[340px]">
-                      <CarteFormation f={f} rang={i} />
-                    </div>
-                  ))}
-                </RangeeDefilante>
-              )}
+              {/* Pas de rangée qui défile ici : elles se comptent sur les
+                  doigts d'une main et se vendent au devis. Un directeur qui
+                  cherche une action de formation veut les voir toutes, d'un
+                  coup — pas en découvrir une à la fois. */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {autres.map((f, i) => (
+                  <CarteFormation key={f.id} f={f} rang={i} />
+                ))}
+              </div>
             </section>
           ) : null}
         </div>
