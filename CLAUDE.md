@@ -1256,3 +1256,91 @@ capture. Le menu se referme dès qu'un aller-retour s'intercale.
 
 L'onglet Coolify finit aussi par ne plus accepter l'injection de script (« Script
 injection timed out ») : un onglet neuf règle le problème à chaque fois.
+
+---
+
+## Le catalogue des formations rattrape celui des ateliers — 3 septembre 2026 (fin de journée)
+
+Siham a mis les deux catalogues côte à côte : une carte atelier affiche le
+concepteur, la région et le public visé ; une carte formation affichait un
+titre, un résumé et un prix. **La formation avait l'air inachevée à côté de
+l'atelier**, sur la même grille et dans la même charte.
+
+### Ce qui manquait vraiment (mesuré, pas supposé)
+
+`categoryRef` était **null sur les treize formations**, `city` vide, et
+`durationHours` vide sur les dix mini-formations. Les listes déroulantes
+« thématique » et « ville » existaient donc… et étaient vides. Ce n'était pas
+un problème d'affichage, c'était un problème de données.
+
+### Deux colonnes de plus sur `Formation`
+
+- **`publicTargets String[]`** — six étiquettes, vocabulaire **fermé** (parents
+  et proches, professionnels du médico-social, protection de l'enfance, école
+  et AESH, assistants familiaux, encadrement). `targetAudience` est un
+  paragraphe : il se lit, il ne se filtre pas. Chaque affectation se lit dans
+  le `targetAudience` de la fiche — rien n'est ajouté au passage.
+- **`durationMinutes Int?`** — `durationHours` est un entier : 45 minutes y
+  valaient 0 (durée effacée) ou 1 (durée fausse sur une fiche que des financeurs
+  peuvent lire). Les deux champs coexistent, la carte affiche celui qui est
+  rempli.
+
+Migration `20260903130000_formation_publics_et_minutes`, additive et sans perte.
+
+**Les facettes se calculent sur le catalogue entier**, jamais sur le résultat
+filtré : une liste d'options qui rétrécit à mesure qu'on filtre empêche de
+revenir en arrière sans tout vider.
+
+### Deux rayons, pas une grille unique
+
+Une mini-formation gratuite et une formation Qualiopi vendue en intra ne
+s'achètent pas de la même façon. Mélangées, chacune brouille l'autre : le
+parent tombe sur « à partir de 1 600 € », le directeur tombe sur « Gratuit ».
+Le catalogue affiche donc deux sections nommées — les gratuites de la maison
+dans un encadré signalé, les Qualiopi en dessous.
+
+`estMaison()` teste le nom du compte propriétaire (`ORGANISME_MAISON`). Le jour
+où un second organisme s'appellera « ADéPA quelque chose », il faudra un drapeau
+en base ; d'ici là une constante suffit et se lit.
+
+### Les couvertures, reprises en clair
+
+Elles reprenaient la palette de la carte de partage : fond #12151C, presque
+noir. Isolée, cette couverture était juste ; **en grille, sur un catalogue au
+fond crème, dix vignettes noires formaient un bloc opaque** — et les trois
+formations Qualiopi, sans photo, apparaissaient en dégradé clair juste à côté.
+
+Nouvelle version : fond clair franchement coloré, **une couleur par parcours,
+la même que sur sa fiche récap A4**, un grand emoji qui donne à la vignette sa
+silhouette, quatre confettis. Poppins remplace DejaVu (c'est déjà la police des
+fiches récap). Un titre trop long **réduit sa taille** au lieu d'être refusé.
+
+Deux pièges de rendu, notés une fois pour toutes :
+
+- **Noto Color Emoji est une police bitmap** : elle ne se dessine qu'à sa taille
+  native (109 px) avec `embedded_color=True`, puis on redimensionne le calque.
+  Toute autre taille passée à `truetype()` échoue.
+- Pour atténuer un emoji, **on multiplie son canal alpha** ; un voile blanc
+  posé par-dessus laisse un carré gris parfaitement visible.
+
+La pastille emoji est aussi sur la carte du catalogue, en CSS cette fois, avec
+un délai d'animation par carte : sans décalage, les dix emoji montent et
+descendent ensemble et la grille clignote.
+
+### Teachizy : l'école s'appelle enfin ADéPA
+
+Le « Nom de l'espace » est passé de TOULALi à **ADéPA** (Paramètres →
+Informations obligatoires). **L'URL reste `toulali.teachizy.fr`** : la changer
+casserait les dix `enrollUrl` des fiches publiques. Le jour où on la change, il
+faut refaire `PLATEFORME` dans `seed-mini-formations.js` et relancer le seed —
+les deux dans le même mouvement.
+
+### Le téléphone à l'inscription : hors forfait
+
+Les « Questions préliminaires » d'une formation Teachizy (`custom_fields_options`
+dans l'API) sont **réservées au forfait EXPERT** ; le compte est en PRO. On ne
+contourne pas par l'API. Trois voies possibles, dans l'ordre de ce qu'elles
+coûtent : demander le téléphone **au moment de l'attestation** (c'est là que la
+personne a une raison de le donner), le demander sur Les Extras avant la
+redirection (mais c'est de la friction sur un parcours gratuit), ou passer au
+forfait EXPERT.

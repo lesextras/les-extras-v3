@@ -155,7 +155,11 @@ function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
             </span>
           </span>
         </VisuelCarte>
-        {f.categoryRef?.title ? (
+        {/* Le bandeau de thématique n'a de sens que sur les couvertures qui
+            n'en portent pas. Celles des mini-formations l'écrivent déjà, en
+            haut à gauche : deux fois le même mot sur la même vignette, dont
+            l'un masquait le bandeau blanc de la couverture. */}
+        {f.categoryRef?.title && !emoji ? (
           <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
             {f.categoryRef.title}
           </span>
@@ -168,7 +172,7 @@ function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
       {emoji ? (
         <span
           aria-hidden
-          className="animate-emoji pointer-events-none absolute left-3 top-3 grid size-11 place-items-center rounded-full bg-card/90 text-xl shadow-sm backdrop-blur-sm"
+          className="animate-emoji pointer-events-none absolute right-3 top-3 grid size-11 place-items-center rounded-full bg-card/90 text-xl shadow-sm backdrop-blur-sm"
           style={{ animationDelay: `${(rang % 5) * 0.35}s` }}
         >
           {emoji}
