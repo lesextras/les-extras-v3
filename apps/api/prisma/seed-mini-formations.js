@@ -156,6 +156,128 @@ const FAQ_COMMUNE = [
  */
 const GARDE_FOU = `Ce que cette approche ne doit jamais devenir. Les principes enseignés ici viennent de l’analyse appliquée du comportement. Ils sont efficaces, et ils ont été critiqués — notamment par des personnes autistes adultes, dont certaines décrivent des prises en charge vécues comme de la mise en conformité. Quatre garde-fous traversent la formation : on n’éteint jamais un comportement sans le remplacer ; on travaille sur ce qui coûte à la personne, pas sur ce qui gêne l’entourage ; le refus est une communication ; et ces outils s’inscrivent dans un projet construit avec la personne et sa famille.`;
 
+/**
+ * PUBLICS VISES ET THEMATIQUE, par fiche.
+ *
+ * Sur le catalogue des ateliers, on cherche d'abord « pour qui », ensuite
+ * « quoi » : c'est l'entree la plus utilisee du site. Les formations n'avaient
+ * ni etiquette de public ni thematique rattachee — leurs cartes affichaient
+ * donc un titre, un resume et rien d'autre, la ou une carte atelier affiche le
+ * concepteur, le lieu et le public. C'est ce que ce bloc repare.
+ *
+ * ⚠ Le vocabulaire est FERME. Six etiquettes, pas une de plus : une etiquette
+ * qui n'apparait que sur une fiche ne sert a personne, elle allonge seulement
+ * la liste deroulante. Chaque affectation ci-dessous se lit dans le
+ * `targetAudience` de la fiche correspondante — rien n'est ajoute au passage.
+ *
+ * La duree est celle ecrite en toutes lettres dans le resume (« Environ 45
+ * minutes de lecture »). Les deux doivent dire le meme nombre : une carte a 46
+ * et un resume a 45 sur la meme page, c'est une fiche qui se contredit.
+ */
+const PUBLICS = {
+  PARENTS: 'Parents et proches',
+  MEDICO: 'Professionnels du médico-social',
+  ASE: 'Protection de l’enfance',
+  ECOLE: 'École, enseignants et AESH',
+  FAMILLES: 'Assistants familiaux',
+  CADRES: 'Encadrement et direction',
+};
+
+const PROFIL = {
+  'les-quatre-fonctions-d-un-comportement': {
+    minutes: 45,
+    categorie: 'TSA, communication et comportement',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ASE, PUBLICS.ECOLE],
+  },
+  'apprendre-a-demander-plutot-qu-a-crier': {
+    minutes: 45,
+    categorie: 'TSA, communication et comportement',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO],
+  },
+  'guider-puis-s-effacer': {
+    minutes: 45,
+    categorie: 'TSA, communication et comportement',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ECOLE],
+  },
+  'decomposer-une-routine-en-etapes': {
+    minutes: 45,
+    categorie: 'TSA, communication et comportement',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ECOLE],
+  },
+  'rendre-l-environnement-previsible': {
+    minutes: 45,
+    categorie: 'TSA, communication et comportement',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ECOLE],
+  },
+  'les-premieres-minutes-d-une-crise': {
+    minutes: 45,
+    categorie: 'Comportements-défis et situations de crise',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ASE, PUBLICS.ECOLE, PUBLICS.FAMILLES],
+  },
+  'l-enfant-qui-dit-non-a-tout': {
+    minutes: 45,
+    categorie: 'Consignes, refus et coopération',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ASE, PUBLICS.ECOLE, PUBLICS.FAMILLES],
+  },
+  'lire-un-comportement-comme-une-reaction-de-survie': {
+    minutes: 45,
+    categorie: 'Protection de l’enfance et conduites d’adaptation',
+    publics: [PUBLICS.ASE, PUBLICS.FAMILLES, PUBLICS.MEDICO, PUBLICS.ECOLE],
+  },
+  'preparer-une-equipe-de-suivi-de-la-scolarisation': {
+    minutes: 45,
+    categorie: 'Scolarité, MDPH et équipe de suivi (ESS)',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ECOLE],
+  },
+  'aider-a-demarrer-une-tache': {
+    minutes: 40,
+    categorie: 'Apprentissages et autonomie',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ECOLE],
+  },
+};
+
+/**
+ * Les trois formations Qualiopi payantes ne sont pas creees par ce script :
+ * elles ont ete saisies a la main dans le back-office. On ne les recree donc
+ * pas — on complete seulement ce qui leur manquait pour apparaitre dans les
+ * memes filtres que les autres. Une fiche absente est ignoree en silence.
+ */
+const PROFIL_PAYANTES = {
+  'analyse-des-pratiques-professionnelles': {
+    categorie: 'Analyse des pratiques',
+    publics: [PUBLICS.MEDICO, PUBLICS.CADRES],
+  },
+  'accueil-du-public-difficile-et-ou-en-difficulte-sociale': {
+    categorie: 'Accueil et publics en difficulté',
+    publics: [PUBLICS.MEDICO, PUBLICS.ASE],
+  },
+  'gestion-de-la-violence-anticiper-et-ge-rer-les-conflits': {
+    categorie: 'Prévention et gestion de la violence',
+    publics: [PUBLICS.MEDICO, PUBLICS.ASE, PUBLICS.CADRES],
+  },
+};
+
+/**
+ * Retrouve — ou cree — la categorie portant ce titre.
+ *
+ * `Category` est partagee par les articles, les missions, les services et les
+ * formations ; le champ `type` est ce qui les separe. On filtre donc dessus,
+ * sinon une categorie d'atelier du meme nom serait reutilisee par erreur.
+ */
+async function categorie(titre) {
+  const existante = await prisma.category.findFirst({
+    where: { title: titre, type: 'formation' },
+    select: { id: true },
+  });
+  if (existante) return existante.id;
+  const creee = await prisma.category.create({
+    data: { title: titre, type: 'formation' },
+    select: { id: true },
+  });
+  console.log(`  categorie creee : ${titre}`);
+  return creee.id;
+}
+
 const FICHES = [
   {
     slug: 'les-quatre-fonctions-d-un-comportement',
@@ -486,6 +608,8 @@ async function main() {
   let ignores = 0;
 
   for (const f of FICHES) {
+    const profil = PROFIL[f.slug];
+    if (!profil) throw new Error(`profil (publics, duree, categorie) manquant pour ${f.slug}`);
     const donnees = {
       title: f.title,
       summary: f.summary,
@@ -505,6 +629,11 @@ async function main() {
       // fausse sur une fiche que des financeurs peuvent lire. On le laisse
       // vide, et la duree exacte est ecrite en toutes lettres dans le resume.
       durationHours: null,
+      // ... mais la duree en MINUTES, elle, est exacte et affichable : c'est le
+      // nombre ecrit en toutes lettres dans le resume de la meme fiche.
+      durationMinutes: profil.minutes,
+      publicTargets: profil.publics,
+      categoryId: await categorie(profil.categorie),
       freeOnline: true,
       enrollUrl: PLATEFORME + f.slugPlateforme,
       images: [COUVERTURES + f.image],
@@ -550,6 +679,25 @@ async function main() {
   console.log(
     `\n${crees} creee(s), ${majs} mise(s) a jour, ${ignores} archivee(s) laissee(s) en l'etat.`,
   );
+
+  // Les formations Qualiopi payantes : on ne touche QUE les deux champs qui
+  // leur manquaient pour entrer dans les filtres. Ni titre, ni resume, ni
+  // statut — ces fiches sont tenues a la main dans le back-office.
+  let completees = 0;
+  for (const [slug, profil] of Object.entries(PROFIL_PAYANTES)) {
+    const fiche = await prisma.formation.findUnique({ where: { slug }, select: { id: true } });
+    if (!fiche) {
+      console.log(`  absente   ${slug} (ignoree)`);
+      continue;
+    }
+    await prisma.formation.update({
+      where: { id: fiche.id },
+      data: { publicTargets: profil.publics, categoryId: await categorie(profil.categorie) },
+    });
+    completees += 1;
+    console.log(`  completee ${slug}`);
+  }
+  console.log(`${completees} formation(s) payante(s) completee(s).`);
 }
 
 main()

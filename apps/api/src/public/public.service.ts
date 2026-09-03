@@ -98,6 +98,10 @@ const FORMATION_CARD_SELECT = {
   summary: true,
   objectives: true,
   durationHours: true,
+  durationMinutes: true,
+  // Les publics visés font la carte : sans eux, une fiche formation paraît
+  // vide à côté d'une fiche atelier, qui affiche « Public : … ».
+  publicTargets: true,
   type: true,
   certifying: true,
   cpfEligible: true,
@@ -134,6 +138,8 @@ function carteFormation(f: CarteFormationSource) {
     summary: f.summary,
     objectives: f.objectives,
     durationHours: f.durationHours,
+    durationMinutes: f.durationMinutes,
+    publicTargets: f.publicTargets,
     type: f.type,
     certifying: f.certifying,
     cpfEligible: f.cpfEligible,
@@ -543,6 +549,10 @@ export class PublicService {
   async formations(query: {
     search?: string;
     category?: string;
+    /** Étiquette de public visé, telle qu'elle sort de la facette `publics`. */
+    public?: string;
+    /** Nom de l'organisme concepteur, tel qu'il sort de `organismes`. */
+    organisme?: string;
     city?: string;
     cpf?: string;
     certifying?: string;
@@ -559,6 +569,10 @@ export class PublicService {
     const where: Prisma.FormationWhereInput = { status: 'PUBLISHED', type: 'CERTIFIANTE' };
     if (query.category) where.categoryRef = { is: { title: query.category } };
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
+    // « Pour qui » avant « quoi » : c'est l'entrée la plus utilisée du
+    // catalogue des ateliers, et elle manquait ici.
+    if (query.public) where.publicTargets = { has: query.public };
+    if (query.organisme) where.ownerAccount = { is: { name: query.organisme } };
     if (query.cpf === 'true') where.cpfEligible = true;
     if (query.certifying === 'true') where.certifying = true;
     if (query.search) {
@@ -577,7 +591,11 @@ export class PublicService {
     const triEnBase: Prisma.FormationOrderByWithRelationInput =
       query.sort === 'duration-asc' ? { durationHours: 'asc' } : { createdAt: 'desc' };
 
-    const [rows, catRows, villeRows] = await this.prisma.$transaction([
+    // Les facettes se calculent sur le catalogue ENTIER, pas sur le résultat
+    // filtré : une liste d'options qui rétrécit à mesure qu'on filtre empêche
+    // de revenir en arrière sans vider la recherche.
+    const publie: Prisma.FormationWhereInput = { status: 'PUBLISHED', type: 'CERTIFIANTE' };
+    const [rows, catRows, villeRows, publicRows, organismeRows] = await this.prisma.$transaction([
       this.prisma.formation.findMany({
         where,
         orderBy: triEnBase,
@@ -585,14 +603,20 @@ export class PublicService {
         select: FORMATION_CARD_SELECT,
       }),
       this.prisma.formation.findMany({
-        where: { status: 'PUBLISHED' },
+        where: publie,
         distinct: ['categoryId'],
         select: { categoryRef: { select: { title: true } } },
       }),
       this.prisma.formation.findMany({
-        where: { status: 'PUBLISHED', city: { not: null } },
+        where: { ...publie, city: { not: null } },
         distinct: ['city'],
         select: { city: true },
+      }),
+      this.prisma.formation.findMany({ where: publie, select: { publicTargets: true } }),
+      this.prisma.formation.findMany({
+        where: publie,
+        distinct: ['ownerAccountId'],
+        select: { ownerAccount: { select: { name: true } } },
       }),
     ]);
 
@@ -621,8 +645,14 @@ export class PublicService {
     const cities = Array.from(
       new Set(villeRows.map((r) => r.city).filter((c): c is string => Boolean(c))),
     ).sort((a, b) => a.localeCompare(b, 'fr'));
+    const publics = Array.from(new Set(publicRows.flatMap((r) => r.publicTargets))).sort((a, b) =>
+      a.localeCompare(b, 'fr'),
+    );
+    const organismes = Array.from(
+      new Set(organismeRows.map((r) => r.ownerAccount?.name).filter((n): n is string => Boolean(n))),
+    ).sort((a, b) => a.localeCompare(b, 'fr'));
 
-    return { items, total, take, skip, categories, cities };
+    return { items, total, take, skip, categories, cities, publics, organismes };
   }
 
 

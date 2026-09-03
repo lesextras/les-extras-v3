@@ -13,6 +13,18 @@ export class QueryPublicFormationsDto {
   @MaxLength(120)
   search?: string;
 
+  /** Public visé, une étiquette exacte de la facette `publics`. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  public?: string;
+
+  /** Organisme concepteur, un nom exact de la facette `organismes`. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  organisme?: string;
+
   /** Ville de la session ou du site de formation. */
   @IsOptional()
   @IsString()

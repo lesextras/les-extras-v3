@@ -19,114 +19,114 @@ datasource db {
 
 /// Une personne physique (identité de connexion).
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  firstName     String?
-  lastName      String?
-  phone         String?
-  avatarUrl     String?
+  id                  String     @id @default(cuid())
+  email               String     @unique
+  password            String
+  firstName           String?
+  lastName            String?
+  phone               String?
+  avatarUrl           String?
   /// Photo de profil déposée (prioritaire sur avatarUrl quand elle existe).
-  avatarFileId  String?
-  avatarFile    FileAsset? @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
+  avatarFileId        String?
+  avatarFile          FileAsset? @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
   /// Rôle global plateforme (pas le rôle DANS un compte).
-  role          GlobalRole @default(USER)
-  status        UserStatus @default(PENDING)
-  emailVerified Boolean    @default(false)
-  onboardingStep Int       @default(0)
+  role                GlobalRole @default(USER)
+  status              UserStatus @default(PENDING)
+  emailVerified       Boolean    @default(false)
+  onboardingStep      Int        @default(0)
   /// Connexion LinkedIn (partage d'articles). Jeton conservé côté serveur
   /// uniquement, jamais exposé au navigateur.
   linkedinUrn         String?
   linkedinAccessToken String?
   linkedinExpiresAt   DateTime?
   linkedinName        String?
-  lastLoginAt   DateTime?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  lastLoginAt         DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 
-  profile         Profile?
-  memberships     Membership[]
-  sentInvitations Invitation[]   @relation("InvitationInviter")
-  ownedAccounts   Account[]      @relation("AccountOwner")
-  documents       Document[]
-  uploadedFiles   FileAsset[]        @relation("FileUploader")
-  notifications   Notification[]
-  messages        Message[]
-  reviewsAuthored Review[]       @relation("ReviewAuthor")
-  reviewsReceived Review[]       @relation("ReviewTarget")
-  availabilities  Availability[]
-  shiftsAssigned  Shift[]        @relation("ShiftFreelance")
-  authoredArticles Article[]     @relation("ArticleAuthor")
-  sessionsTrained  FormationSession[] @relation("SessionTrainer")
-  inscriptions     Inscription[]      @relation("InscriptionLearner")
-  tutoratsGiven    Tutorat[]          @relation("TutoratTutor")
-  complianceDocuments ComplianceDocument[]
-  qualifications   Qualification[]
-  experiences      Experience[]
-  auditLogs        AuditLog[]         @relation("AuditActor")
+  profile                   Profile?
+  memberships               Membership[]
+  sentInvitations           Invitation[]         @relation("InvitationInviter")
+  ownedAccounts             Account[]            @relation("AccountOwner")
+  documents                 Document[]
+  uploadedFiles             FileAsset[]          @relation("FileUploader")
+  notifications             Notification[]
+  messages                  Message[]
+  reviewsAuthored           Review[]             @relation("ReviewAuthor")
+  reviewsReceived           Review[]             @relation("ReviewTarget")
+  availabilities            Availability[]
+  shiftsAssigned            Shift[]              @relation("ShiftFreelance")
+  authoredArticles          Article[]            @relation("ArticleAuthor")
+  sessionsTrained           FormationSession[]   @relation("SessionTrainer")
+  inscriptions              Inscription[]        @relation("InscriptionLearner")
+  tutoratsGiven             Tutorat[]            @relation("TutoratTutor")
+  complianceDocuments       ComplianceDocument[]
+  qualifications            Qualification[]
+  experiences               Experience[]
+  auditLogs                 AuditLog[]           @relation("AuditActor")
   /// Rendez-vous hebdomadaire du lundi. Activé par défaut, désactivable en un
   /// clic : un e-mail non désiré coûte plus cher qu'un e-mail non envoyé.
-  hebdoOptIn       Boolean            @default(true)
+  hebdoOptIn                Boolean              @default(true)
   /// E-mail d'activation du lendemain de l'inscription (ActivationScheduler).
   /// Non nul = la décision d'envoyer (ou de s'abstenir) a été prise : elle ne
   /// se reprend jamais, ce message n'existe qu'une fois dans la vie du compte.
-  activationMailAt DateTime?
-  questionsAsked   Question[]         @relation("QuestionAuthor")
-  answersWritten   Answer[]           @relation("AnswerAuthor")
-  answerVotes      AnswerVote[]       @relation("AnswerVoter")
+  activationMailAt          DateTime?
+  questionsAsked            Question[]           @relation("QuestionAuthor")
+  answersWritten            Answer[]             @relation("AnswerAuthor")
+  answerVotes               AnswerVote[]         @relation("AnswerVoter")
+  favorites                 Favorite[]
+  assistantDocuments        AssistantDocument[]
+  /// Générations LEX imputées à cette personne (journal de /confiance-lex).
+  creditLedger              CreditLedger[]
+  tramesMaison              TrameMaison[]
+  lexPreferences            LexPreference[]
+  pushSubscriptions         PushSubscription[]
+  leaveRequests             LeaveRequest[]       @relation("LeaveUser")
+  contratsCDD               ContratCDD[]         @relation("ContratSalarie")
+  /// Ajouts au vivier effectues par cette personne.
+  ajoutsAuVivier            PoolMember[]         @relation("PoolAjoutePar")
+  /// Signatures electroniques apposees par cette personne.
+  signatures                Signature[]          @relation("SignatureSignataire")
+  /// Demandes de rattachement à un établissement envoyées par cette personne
+  /// (compte « salarié » créé en solo, en attente de confirmation).
+  attachmentRequestsSent    AttachmentRequest[]  @relation("AttachmentRequester")
+  /// Demandes de rattachement tranchées (acceptées/refusées) par cette personne.
+  attachmentRequestsDecided AttachmentRequest[]  @relation("AttachmentDecider")
 
   @@index([email])
   @@index([role, status])
-  favorites          Favorite[]
-  assistantDocuments AssistantDocument[]
-  /// Générations LEX imputées à cette personne (journal de /confiance-lex).
-  creditLedger       CreditLedger[]
-  tramesMaison      TrameMaison[]
-  lexPreferences    LexPreference[]
-  pushSubscriptions PushSubscription[]
-  leaveRequests    LeaveRequest[] @relation("LeaveUser")
-  contratsCDD    ContratCDD[] @relation("ContratSalarie")
-  /// Ajouts au vivier effectues par cette personne.
-  ajoutsAuVivier PoolMember[] @relation("PoolAjoutePar")
-  /// Signatures electroniques apposees par cette personne.
-  signatures     Signature[]  @relation("SignatureSignataire")
-  /// Demandes de rattachement à un établissement envoyées par cette personne
-  /// (compte « salarié » créé en solo, en attente de confirmation).
-  attachmentRequestsSent    AttachmentRequest[] @relation("AttachmentRequester")
-  /// Demandes de rattachement tranchées (acceptées/refusées) par cette personne.
-  attachmentRequestsDecided AttachmentRequest[] @relation("AttachmentDecider")
 }
 
 /// Données étendues d'un utilisateur (surtout côté FREELANCE).
 model Profile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bio         String?
-  job         String?   // Éducateur spécialisé, Moniteur-éducateur, EJE, AES...
-  skills      String[]  @default([])
-  siret       String?
-  diplomaUrl  String?
-  city        String?
-  postalCode  String?
-  radiusKm    Int?      @default(30)
-  hourlyRate  Decimal?  @db.Decimal(8, 2)
-  available   Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio        String?
+  job        String? // Éducateur spécialisé, Moniteur-éducateur, EJE, AES...
+  skills     String[] @default([])
+  siret      String?
+  diplomaUrl String?
+  city       String?
+  postalCode String?
+  radiusKm   Int?     @default(30)
+  hourlyRate Decimal? @db.Decimal(8, 2)
+  available  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 /// Un COMPTE (tenant). Soit une organisation ESTABLISHMENT (ex: une MECS),
 /// soit le compte individuel d'un FREELANCE. Peut avoir plusieurs membres.
 model Account {
-  id          String       @id @default(cuid())
-  name        String
-  type        AccountType
+  id                 String         @id @default(cuid())
+  name               String
+  type               AccountType
   /// Validation hierarchique : si active, une mission publiee par un MANAGER
   /// attend l'approbation d'un OWNER/ADMIN avant diffusion.
-  validationMissions Boolean @default(false)
+  validationMissions Boolean        @default(false)
   /// Parrainage : compte intervenant qui a invite celui-ci (fige a l'inscription).
-  parrainAccountId String?
+  parrainAccountId   String?
   /// Profil SALARIE, choisi a l'inscription et fige ensuite.
   ///
   /// La tuile « Salarie » existait a l'ecran mais ne survivait pas au clic :
@@ -137,32 +137,32 @@ model Account {
   /// Tant qu'aucun etablissement ne l'a rattache, son compte n'ouvre que LEX
   /// et sa demande de rattachement (`AttachmentRequest`). Le rattachement se
   /// fait par Membership, et une meme adresse peut en avoir plusieurs.
-  profilSalarie Boolean @default(false)
-  slug        String       @unique
+  profilSalarie      Boolean        @default(false)
+  slug               String         @unique
   /// Attribution — d'où vient ce compte. Renseigné une fois, à l'inscription,
   /// et jamais modifié ensuite : c'est la campagne qui a amené la personne.
   /// utm_source, sinon domaine référent, sinon « direct ».
-  source      String?
+  source             String?
   /// utm_medium : cpc, social, email, referral...
-  sourceMedium String?
+  sourceMedium       String?
   /// utm_campaign : nom de l'annonce, pour comparer deux créations.
-  sourceCampaign String?
+  sourceCampaign     String?
   /// Page d'arrivée : sait-on vers quoi l'annonce pointait.
-  sourceLanding  String?
+  sourceLanding      String?
   // Coordonnées structure
-  legalName   String?
-  siret       String?
-  address     String?
-  city        String?
-  postalCode  String?
-  phone       String?
+  legalName          String?
+  siret              String?
+  address            String?
+  city               String?
+  postalCode         String?
+  phone              String?
   /// Mention de TVA à afficher sur les factures émises par ce compte (ex.
   /// « TVA non applicable, art. 293 B du CGI » ou « TVA 20 % — n° FR... »).
   /// Laissé vide, la mention par défaut (non assujetti) reste affichée : elle
   /// est vraie pour la grande majorité des comptes (auto-entrepreneurs en
   /// franchise en base, association ADéPA), mais un émetteur assujetti à la
   /// TVA doit pouvoir la corriger lui-même plutôt que de laisser un taux faux.
-  vatMention  String?
+  vatMention         String?
   /// Coordonnées bancaires de l'émetteur, imprimées dans la section
   /// « Règlement » de ses factures. Le produit annonce un règlement par
   /// virement, mais aucun champ ne portait l'IBAN : la facture partait donc
@@ -178,101 +178,101 @@ model Account {
   /// Donnée à diffusion maîtrisée : ne l'exposer que dans les réponses déjà
   /// réservées aux parties de la facture (émetteur, payeur, administration),
   /// jamais dans le catalogue public ni dans une liste de comptes.
-  iban        String?
+  iban               String?
   /// BIC de la banque. Facultatif même quand l'IBAN est renseigné : il n'est
   /// plus exigé pour un virement SEPA à l'intérieur de l'Espace européen.
-  bic         String?
+  bic                String?
   /// Adresse de contact publique du compte. Pour un compte intervenant créé
   /// depuis un poste salarié, c'est OBLIGATOIREMENT un contact personnel : les
   /// sollicitations d'activité indépendante ne doivent jamais arriver sur la
   /// messagerie de l'employeur.
-  contactEmail String?
-  logoUrl     String?
+  contactEmail       String?
+  logoUrl            String?
   // Crédits LEX : un crédit = une génération (voir CreditsService).
-  credits     Int          @default(0)
+  credits            Int            @default(0)
   /// Accès LEX illimité accordé à la main (exonération de crédits).
-  isMember    Boolean      @default(false)
+  isMember           Boolean        @default(false)
   /// Essai Découverte : recharge quotidienne gratuite jusqu'à cette date.
   /// Non nul = l'essai a été utilisé (il ne se réclame qu'une fois).
-  lexTrialEndsAt DateTime?
+  lexTrialEndsAt     DateTime?
   /// Taux de commission ADéPA appliqué aux prestations externes de ce compte
   /// (null = taux par défaut de la plateforme). Modèle prestataire : ADéPA
   /// facture l'établissement, l'intervenant facture ADéPA.
-  commissionRate  Decimal?  @db.Decimal(5, 4)
+  commissionRate     Decimal?       @db.Decimal(5, 4)
   /// Solde de points de fidélité (10 points = 1 € de réduction).
-  points      Int          @default(0)
-  ownerId     String
-  owner       User         @relation("AccountOwner", fields: [ownerId], references: [id])
-  articles          Article[]        @relation("AccountArticles")
-  loyaltyPoints     LoyaltyPoint[]
-  ideas             Idea[]
-  questions         Question[]       @relation("AccountQuestions")
-  answers           Answer[]         @relation("AccountAnswers")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  points             Int            @default(0)
+  ownerId            String
+  owner              User           @relation("AccountOwner", fields: [ownerId], references: [id])
+  articles           Article[]      @relation("AccountArticles")
+  loyaltyPoints      LoyaltyPoint[]
+  ideas              Idea[]
+  questions          Question[]     @relation("AccountQuestions")
+  answers            Answer[]       @relation("AccountAnswers")
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
-  memberships     Membership[]
-  invitations     Invitation[]
-  reliefMissions  ReliefMission[]  @relation("MissionAccount")
-  leaveRequests   LeaveRequest[]
-  services        Service[]        @relation("ServiceAccount")
-  bookings        Booking[]
-  invoices        Invoice[]
+  memberships                   Membership[]
+  invitations                   Invitation[]
+  reliefMissions                ReliefMission[]      @relation("MissionAccount")
+  leaveRequests                 LeaveRequest[]
+  services                      Service[]            @relation("ServiceAccount")
+  bookings                      Booking[]
+  invoices                      Invoice[]
   /// Les factures adressees a ce compte (formation, prestation) sans qu'il en
   /// soit l'emetteur.
-  facturesAPayer  Invoice[]        @relation("InvoicePayer")
-  creditLedger    CreditLedger[]
-  shifts          Shift[]
-  formationsOwned  Formation[]        @relation("FormationOwner")
-  sessionsHosted   FormationSession[] @relation("SessionHost")
-  inscriptionsPaid Inscription[]      @relation("InscriptionPayer")
-  qualiopiProofs   QualiopiProof[]    @relation("QualiopiOf")
-  complianceDocuments ComplianceDocument[]
-  orgUnits         OrgUnit[]
-  auditLogs        AuditLog[]         @relation("AuditAccount")
+  facturesAPayer                Invoice[]            @relation("InvoicePayer")
+  creditLedger                  CreditLedger[]
+  shifts                        Shift[]
+  formationsOwned               Formation[]          @relation("FormationOwner")
+  sessionsHosted                FormationSession[]   @relation("SessionHost")
+  inscriptionsPaid              Inscription[]        @relation("InscriptionPayer")
+  qualiopiProofs                QualiopiProof[]      @relation("QualiopiOf")
+  complianceDocuments           ComplianceDocument[]
+  orgUnits                      OrgUnit[]
+  auditLogs                     AuditLog[]           @relation("AuditAccount")
   /// Le vivier de cet etablissement : les intervenants qu'il veut revoir.
-  vivier           PoolMember[]       @relation("PoolEtablissement")
+  vivier                        PoolMember[]         @relation("PoolEtablissement")
   /// Les etablissements qui ont place cet intervenant dans leur vivier.
-  vivierDe         PoolMember[]       @relation("PoolIntervenant")
+  vivierDe                      PoolMember[]         @relation("PoolIntervenant")
   /// Les regles de temps de travail lues dans SA convention collective.
-  parametresTemps  ParametresTemps?
+  parametresTemps               ParametresTemps?
   /// Demandes de signature electronique emises par ce compte.
-  signatures       Signature[]        @relation("SignatureCompte")
+  signatures                    Signature[]          @relation("SignatureCompte")
   /// Les missions que ce compte intervenant s'est engage a prendre.
-  engagements      MissionEngagement[] @relation("EngagementIntervenant")
+  engagements                   MissionEngagement[]  @relation("EngagementIntervenant")
   /// Les modeles d'ecrits appris dans ce compte.
-  tramesMaison     TrameMaison[]
-  lexPreferences   LexPreference[]
-  lexMots          LexMot[]
-  lexPseudonymes   LexPseudonyme[]
+  tramesMaison                  TrameMaison[]
+  lexPreferences                LexPreference[]
+  lexMots                       LexMot[]
+  lexPseudonymes                LexPseudonyme[]
+  uploadedFiles                 FileAsset[]          @relation("FileAccount")
+  creditPurchases               CreditPurchase[]
+  subscription                  Subscription?
+  quotesAsClient                Quote[]              @relation("QuoteClient")
+  quotesAsProvider              Quote[]              @relation("QuoteProvider")
+  assistantDocuments            AssistantDocument[]
+  contratsCDD                   ContratCDD[]
+  /// Demandes envoyées par CE compte pour se rattacher à un établissement
+  /// (compte individuel « salarié » créé en solo, côté freelance en attendant).
+  attachmentRequestsAsRequester AttachmentRequest[]  @relation("AttachmentRequesterAccount")
+  /// Demandes de rattachement reçues par CET établissement (à approuver/refuser).
+  attachmentRequestsReceived    AttachmentRequest[]  @relation("AttachmentTarget")
 
   @@index([type])
   @@index([slug])
   @@index([source])
-  uploadedFiles FileAsset[]  @relation("FileAccount")
-  creditPurchases CreditPurchase[]
-  subscription    Subscription?
-  quotesAsClient   Quote[] @relation("QuoteClient")
-  quotesAsProvider Quote[] @relation("QuoteProvider")
-  assistantDocuments AssistantDocument[]
-  contratsCDD    ContratCDD[]
-  /// Demandes envoyées par CE compte pour se rattacher à un établissement
-  /// (compte individuel « salarié » créé en solo, côté freelance en attendant).
-  attachmentRequestsAsRequester AttachmentRequest[] @relation("AttachmentRequesterAccount")
-  /// Demandes de rattachement reçues par CET établissement (à approuver/refuser).
-  attachmentRequestsReceived    AttachmentRequest[] @relation("AttachmentTarget")
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
 /// Ex. « Internat », « Pôle jour », « SESSAD ». Rattache membres et missions.
 model OrgUnit {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   accountId   String
-  account     Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   memberships Membership[]
   missions    ReliefMission[]
@@ -284,17 +284,17 @@ model OrgUnit {
 
 /// SOUS-COMPTE : rattachement d'un User à un Account avec un rôle interne.
 model Membership {
-  id         String        @id @default(cuid())
-  userId     String
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accountId  String
-  account    Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  role       AccountRole   @default(MEMBER)
-  status     MembershipStatus @default(ACTIVE)
-  orgUnitId  String?
-  orgUnit    OrgUnit?      @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  role      AccountRole      @default(MEMBER)
+  status    MembershipStatus @default(ACTIVE)
+  orgUnitId String?
+  orgUnit   OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   @@unique([userId, accountId])
   @@index([accountId, role])
@@ -302,24 +302,24 @@ model Membership {
 
 /// INVITATION à rejoindre un compte (par email), avec rôle cible + token.
 model Invitation {
-  id         String           @id @default(cuid())
-  email      String
-  accountId  String
-  account    Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  role       AccountRole      @default(MEMBER)
+  id          String           @id @default(cuid())
+  email       String
+  accountId   String
+  account     Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  role        AccountRole      @default(MEMBER)
   /// SERVICE d'affectation, choisi au moment de l'invitation.
   /// Sans lui, un nouvel arrivant n'apparaissait dans le planning d'aucun chef
   /// de service tant qu'un responsable ne pensait pas à le rattacher à la main
   /// — ce que personne ne fait, parce que rien ne le rappelle.
-  orgUnitId  String?
-  orgUnit    OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  token      String           @unique @default(cuid())
-  status     InvitationStatus @default(PENDING)
+  orgUnitId   String?
+  orgUnit     OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  token       String           @unique @default(cuid())
+  status      InvitationStatus @default(PENDING)
   invitedById String
-  invitedBy  User             @relation("InvitationInviter", fields: [invitedById], references: [id])
-  expiresAt  DateTime
-  acceptedAt DateTime?
-  createdAt  DateTime         @default(now())
+  invitedBy   User             @relation("InvitationInviter", fields: [invitedById], references: [id])
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime         @default(now())
 
   @@unique([email, accountId])
   @@index([token])
@@ -335,7 +335,7 @@ model Invitation {
 /// établissement — la personne garde aussi son compte individuel, comme pour
 /// n'importe quel multi-compte de la plateforme.
 model AttachmentRequest {
-  id     String @id @default(cuid())
+  id String @id @default(cuid())
 
   requesterUserId String
   requesterUser   User   @relation("AttachmentRequester", fields: [requesterUserId], references: [id], onDelete: Cascade)
@@ -379,81 +379,81 @@ enum AttachmentRequestStatus {
 
 /// Mission de renfort/remplacement publiée par un ESTABLISHMENT.
 model ReliefMission {
-  id           String        @id @default(cuid())
-  accountId    String
-  account      Account       @relation("MissionAccount", fields: [accountId], references: [id], onDelete: Cascade)
-  title        String
-  description  String
-  category     MissionCategory @default(RENFORT)
-  categoryId   String?
-  categoryRef  Category?      @relation("MissionCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
-  job          String?        // métier recherché
-  startDate    DateTime
-  endDate      DateTime?
-  startTime    String?        // "09h00"
-  endTime      String?        // "17h00"
-  city         String?
-  postalCode   String?
+  id                        String            @id @default(cuid())
+  accountId                 String
+  account                   Account           @relation("MissionAccount", fields: [accountId], references: [id], onDelete: Cascade)
+  title                     String
+  description               String
+  category                  MissionCategory   @default(RENFORT)
+  categoryId                String?
+  categoryRef               Category?         @relation("MissionCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
+  job                       String? // métier recherché
+  startDate                 DateTime
+  endDate                   DateTime?
+  startTime                 String? // "09h00"
+  endTime                   String? // "17h00"
+  city                      String?
+  postalCode                String?
   /// Coordonnees geocodees depuis le code postal (geo.api.gouv.fr) —
   /// permettent le filtre « a moins de X km » sur la marketplace.
-  latitude     Float?
-  longitude    Float?
-  hourlyRate   Decimal?       @db.Decimal(8, 2)
-  headcount    Int            @default(1)
-  emergency    Boolean        @default(false)  // mission urgente (renfort de dernière minute)
-  attachmentUrl String?                        // ancien mode : adresse web saisie à la main
-  attachmentId  String?                        // nouveau mode : fichier déposé
-  attachment    FileAsset? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
-  orgUnitId    String?                          // unité/service concerné
-  orgUnit      OrgUnit?       @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  status       MissionStatus  @default(DRAFT)
+  latitude                  Float?
+  longitude                 Float?
+  hourlyRate                Decimal?          @db.Decimal(8, 2)
+  headcount                 Int               @default(1)
+  emergency                 Boolean           @default(false) // mission urgente (renfort de dernière minute)
+  attachmentUrl             String? // ancien mode : adresse web saisie à la main
+  attachmentId              String? // nouveau mode : fichier déposé
+  attachment                FileAsset?        @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+  orgUnitId                 String? // unité/service concerné
+  orgUnit                   OrgUnit?          @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  status                    MissionStatus     @default(DRAFT)
   /// Validation hierarchique : publication demandee par un MANAGER, en
   /// attente d'approbation par un OWNER/ADMIN du compte.
-  attenteValidation Boolean   @default(false)
+  attenteValidation         Boolean           @default(false)
   /// Mission recurrente : 'HEBDO' -> le planificateur cree et publie
   /// automatiquement l'occurrence de la semaine suivante.
-  recurrence   String?
+  recurrence                String?
   /// Diffusion en cascade : SALARIES -> RESERVED -> PUBLIC
-  visibility   MissionVisibility @default(PUBLIC)
+  visibility                MissionVisibility @default(PUBLIC)
   /// Mode d'attribution choisi par l'établissement à la publication.
-  modeAttribution ModeAttribution @default(AUTOMATIQUE)
+  modeAttribution           ModeAttribution   @default(AUTOMATIQUE)
   /// Destinataires de l'offre. RESEAU = cascade normale ; toute autre valeur
   /// verrouille la diffusion (pas d'élargissement, pas de marketplace).
-  cibleDiffusion  CibleDiffusion  @default(RESEAU)
+  cibleDiffusion            CibleDiffusion    @default(RESEAU)
   /// Cible SELECTION : identifiants des SALARIÉS (User.id) désignés.
-  destinatairesSalaries String[] @default([])
+  destinatairesSalaries     String[]          @default([])
   /// Cible SELECTION : identifiants des COMPTES intervenants désignés.
-  destinatairesIntervenants String[] @default([])
-  publishedAt  DateTime?
+  destinatairesIntervenants String[]          @default([])
+  publishedAt               DateTime?
   /// Diffusion ciblée en vagues (voir MissionsService.broadcastToMatched).
   /// 0 = pas encore diffusée · 1 = les profils les plus proches · 2 = élargie
   /// · 3 = tout le réseau. On sollicite peu de monde à la fois, à dessein :
   /// un envoi de masse dilue la responsabilité et personne ne répond.
-  diffusionVague    Int       @default(0)
+  diffusionVague            Int               @default(0)
   /// Horodatage de la dernière vague, pour savoir quand déclencher la suivante.
-  derniereVagueAt   DateTime?
+  derniereVagueAt           DateTime?
   /// « Mission garantie » : date à laquelle l'alerte de relance manuelle a été
   /// envoyée (non nul = déjà alerté, l'alerte ne part qu'une fois).
-  alerteNonPourvueAt DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  alerteNonPourvueAt        DateTime?
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
 
-  bookings     Booking[]
-  engagements  MissionEngagement[]
-  reviews      Review[]      @relation("MissionReviews")
+  bookings      Booking[]
+  engagements   MissionEngagement[]
+  reviews       Review[]            @relation("MissionReviews")
   conversations Conversation[]
-  shifts       Shift[]
-  quotes       Quote[]
+  shifts        Shift[]
+  quotes        Quote[]
+  contratsCDD   ContratCDD[]
 
   @@index([status, visibility])
   @@index([accountId])
   @@index([startDate])
-  contratsCDD    ContratCDD[]
 }
 
 /// Atelier / service proposé par un FREELANCE.
 model Service {
-  id          String        @id @default(cuid())
+  id              String          @id @default(cuid())
   /// Adresse lisible de la fiche publique : `/ateliers/atelier-psycho-boxe`
   /// au lieu de `/ateliers/cms3it0g70015lt1wyr4sbhqr`. Le mot-clé le plus fort
   /// de la fiche n'était nulle part dans son adresse, et l'adresse était
@@ -463,83 +463,83 @@ model Service {
   /// toujours. Une fiche sans slug s'affiche exactement comme avant — rien ne
   /// dépend de ce champ pour fonctionner. En PostgreSQL, une contrainte
   /// d'unicité laisse passer autant de NULL qu'on veut.
-  slug        String?       @unique
-  accountId   String
-  account     Account       @relation("ServiceAccount", fields: [accountId], references: [id], onDelete: Cascade)
-  title       String
-  description String
-  category    ServiceCategory @default(ATELIER)
-  categoryId  String?
-  categoryRef Category?     @relation("ServiceCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
-  duration    String?        // "2H" — libellé libre historique
+  slug            String?         @unique
+  accountId       String
+  account         Account         @relation("ServiceAccount", fields: [accountId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  category        ServiceCategory @default(ATELIER)
+  categoryId      String?
+  categoryRef     Category?       @relation("ServiceCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
+  duration        String? // "2H" — libellé libre historique
   /// Durée normalisée en minutes (480 = 8 h) — sert au tri et aux filtres.
   durationMinutes Int?
   maxParticipants Int?
-  publicTarget String?       // "Adultes en situation de handicap"
+  publicTarget    String? // "Adultes en situation de handicap"
   /// Publics visés, en liste (Adolescent, Enfant, Handicap, Sénior…).
-  publicTargets String[]     @default([])
+  publicTargets   String[]        @default([])
   /// Matériel nécessaire et prérequis, tels qu'annoncés à l'établissement.
-  material     String?
-  prerequisites String?
+  material        String?
+  prerequisites   String?
   /// Contenu pédagogique structuré (modèle des fiches les-extras.fr).
-  objectives   String?
-  methodology  String?
-  evaluation   String?
+  objectives      String?
+  methodology     String?
+  evaluation      String?
   /// Questions fréquentes : [{ question, answer }].
-  faq          Json?
+  faq             Json?
   /// Galerie : URLs (fichier déposé /api/files/... ou image externe).
-  images       String[]      @default([])
+  images          String[]        @default([])
   /// Options facturables en supplément : [{ label, price }].
-  priceExtras  Json?
+  priceExtras     Json?
   /// Mise en avant sur la marketplace et validation par l'équipe.
-  featured    Boolean        @default(false)
-  verified    Boolean        @default(false)
+  featured        Boolean         @default(false)
+  verified        Boolean         @default(false)
   /// Compteur de consultations de la fiche.
-  views       Int            @default(0)
+  views           Int             @default(0)
   /// Identifiant d'origine (import du catalogue historique) : clé d'idempotence.
   /// Index simple et non unique : une contrainte UNIQUE bloquerait `prisma db push`
   /// au démarrage du conteneur (avertissement de perte de données). L'unicité est
   /// garantie applicativement par le `findFirst` de AdminService.importCatalog().
-  sourceId    String?
+  sourceId        String?
   /// Repères affichés sur la fiche (modèle les-extras.fr).
   /// Nombre de demandes reçues : sert la preuve sociale « X demandes / semaine ».
-  requestsCount Int          @default(0)
+  requestsCount   Int             @default(0)
   /// Créneaux horaires proposés à la réservation : ["9h-12h", "14h-17h"].
-  timeSlots     String[]     @default([])
+  timeSlots       String[]        @default([])
   /// Formation couverte par la certification Qualiopi d'ADéPA (finançable OPCO).
-  qualiopi      Boolean      @default(false)
-  price       Decimal?       @db.Decimal(10, 2)
+  qualiopi        Boolean         @default(false)
+  price           Decimal?        @db.Decimal(10, 2)
   /// Coût en crédits d'une réservation de cet atelier par un établissement.
-  creditCost  Int            @default(1)
-  city        String?
-  status      ServiceStatus  @default(DRAFT)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  creditCost      Int             @default(1)
+  city            String?
+  status          ServiceStatus   @default(DRAFT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  bookings    Booking[]
-  quotes      Quote[]
-  reviews     Review[]       @relation("ServiceReviews")
+  bookings  Booking[]
+  quotes    Quote[]
+  reviews   Review[]   @relation("ServiceReviews")
+  favorites Favorite[]
 
   @@index([status])
   @@index([accountId])
   @@index([sourceId])
-  favorites     Favorite[]
 }
 
 /// Réservation : relie un FREELANCE à une mission OU un service.
 /// Devis : chiffrage d'une prestation (atelier, formation, renfort) demandé
 /// par un établissement à un intervenant. Accepté -> réservation + contrat.
 model Quote {
-  id                String      @id @default(cuid())
-  reference         String      @unique
+  id                String         @id @default(cuid())
+  reference         String         @unique
   /// Établissement demandeur.
   clientAccountId   String
-  clientAccount     Account     @relation("QuoteClient", fields: [clientAccountId], references: [id], onDelete: Cascade)
+  clientAccount     Account        @relation("QuoteClient", fields: [clientAccountId], references: [id], onDelete: Cascade)
   /// Intervenant qui chiffre.
   providerAccountId String
-  providerAccount   Account     @relation("QuoteProvider", fields: [providerAccountId], references: [id], onDelete: Cascade)
+  providerAccount   Account        @relation("QuoteProvider", fields: [providerAccountId], references: [id], onDelete: Cascade)
   serviceId         String?
-  service           Service?    @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  service           Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   missionId         String?
   mission           ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
   title             String
@@ -549,7 +549,7 @@ model Quote {
   message           String?
   /// Lignes du devis : [{ label, quantity, unitPrice }] (JSON pour rester souple).
   lines             Json?
-  amount            Decimal?    @db.Decimal(10, 2)
+  amount            Decimal?       @db.Decimal(10, 2)
   /// Totaux figes au moment de l'envoi. `amount` reste le TTC : tous les
   /// ecrans et le calcul de la reservation le lisent deja sous ce sens, et un
   /// devis dont le total change de signification au milieu de sa vie n'est
@@ -559,8 +559,8 @@ model Quote {
   /// Nuls sur les devis anterieurs a cette version : la TVA y valait zero
   /// pour tout le monde (franchise en base, art. 293 B du CGI), donc le HT
   /// egalait le TTC et l'information n'est pas perdue, seulement implicite.
-  totalHt           Decimal?    @db.Decimal(10, 2)
-  totalTva          Decimal?    @db.Decimal(10, 2)
+  totalHt           Decimal?       @db.Decimal(10, 2)
+  totalTva          Decimal?       @db.Decimal(10, 2)
   /// IDENTITE DES DEUX PARTIES, RECOPIEE A L'ENVOI.
   ///
   /// Un devis engage celui qui l'emet et celui qui ecrit « bon pour accord »
@@ -578,7 +578,7 @@ model Quote {
   /// l'acceptation opposable. On les releve au moment du clic.
   acceptedByName    String?
   acceptedByRole    String?
-  status            QuoteStatus @default(REQUESTED)
+  status            QuoteStatus    @default(REQUESTED)
   /// Date d'intervention souhaitée / retenue.
   scheduledAt       DateTime?
   validUntil        DateTime?
@@ -586,10 +586,10 @@ model Quote {
   decidedAt         DateTime?
   refusalReason     String?
   /// Réservation créée à l'acceptation (contrat + facturation en aval).
-  bookingId         String?     @unique
-  booking           Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  bookingId         String?        @unique
+  booking           Booking?       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   @@index([clientAccountId])
   @@index([providerAccountId])
@@ -605,38 +605,38 @@ enum QuoteStatus {
 }
 
 model Booking {
-  id            String        @id @default(cuid())
+  id                    String         @id @default(cuid())
   // Le compte à l'origine de la réservation (établissement ou freelance selon flux)
-  accountId     String
-  account       Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  missionId     String?
-  mission       ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
-  serviceId     String?
-  service       Service?      @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  status        BookingStatus @default(REQUESTED)
-  scheduledAt   DateTime?
+  accountId             String
+  account               Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  missionId             String?
+  mission               ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  serviceId             String?
+  service               Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  status                BookingStatus  @default(REQUESTED)
+  scheduledAt           DateTime?
   /// Nombre de participants annonce a la demande. L'intervenant en a besoin
   /// pour dire oui ou non : un atelier prevu pour huit ne se tient pas a vingt.
-  participants  Int?
+  participants          Int?
   /// Precisions ecrites par le demandeur : public accueilli, objectifs,
   /// contraintes. Sans ce champ, le formulaire les jetait a la poubelle.
-  requestNote   String?
+  requestNote           String?
   /// Date de fin effective : ouvre la fenetre d'ajustement de 72 h du pointage.
-  completedAt   DateTime?
-  totalAmount   Decimal?      @db.Decimal(10, 2)
-  cancelReason  String?
+  completedAt           DateTime?
+  totalAmount           Decimal?       @db.Decimal(10, 2)
+  cancelReason          String?
   // Signature du contrat de mission (double signature établissement + freelance).
-  signedFreelanceAt      DateTime?
-  signedEstablishmentAt  DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  signedFreelanceAt     DateTime?
+  signedEstablishmentAt DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 
-  reviews       Review[]
-  invoice       Invoice?
-  quote         Quote?
-  shift         Shift?
-  timeEntries   TimeEntry[]
-  engagement    MissionEngagement?
+  reviews     Review[]
+  invoice     Invoice?
+  quote       Quote?
+  shift       Shift?
+  timeEntries TimeEntry[]
+  engagement  MissionEngagement?
 
   @@index([status])
   @@index([missionId])
@@ -671,12 +671,12 @@ enum TimeEntryStatus {
 // ---------------------------------------------------------------------------
 
 model Conversation {
-  id         String    @id @default(cuid())
-  missionId  String?
-  mission    ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  messages   Message[]
+  id        String         @id @default(cuid())
+  missionId String?
+  mission   ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  messages  Message[]
 
   @@index([missionId])
 }
@@ -698,24 +698,24 @@ model Message {
 /// intervenant) peut déposer le sien : la contrainte d'unicité porte donc sur
 /// le couple (réservation, auteur) et non sur la seule réservation.
 model Review {
-  id         String   @id @default(cuid())
-  bookingId  String
-  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  authorId   String
-  author     User     @relation("ReviewAuthor", fields: [authorId], references: [id])
-  targetId   String
-  target     User     @relation("ReviewTarget", fields: [targetId], references: [id])
+  id        String         @id @default(cuid())
+  bookingId String
+  booking   Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User           @relation("ReviewAuthor", fields: [authorId], references: [id])
+  targetId  String
+  target    User           @relation("ReviewTarget", fields: [targetId], references: [id])
   /// Prestation notée, déduite de la réservation à la création de l'avis.
   /// Sur une marketplace, la note portée par l'offre pèse plus dans la décision
   /// d'achat que celle du vendeur : deux ateliers d'un même intervenant ne
   /// doivent pas partager la même note.
-  serviceId  String?
-  service    Service? @relation("ServiceReviews", fields: [serviceId], references: [id], onDelete: SetNull)
-  missionId  String?
-  mission    ReliefMission? @relation("MissionReviews", fields: [missionId], references: [id], onDelete: SetNull)
-  rating     Int      // 1..5
-  comment    String?
-  createdAt  DateTime @default(now())
+  serviceId String?
+  service   Service?       @relation("ServiceReviews", fields: [serviceId], references: [id], onDelete: SetNull)
+  missionId String?
+  mission   ReliefMission? @relation("MissionReviews", fields: [missionId], references: [id], onDelete: SetNull)
+  rating    Int // 1..5
+  comment   String?
+  createdAt DateTime       @default(now())
 
   @@index([targetId])
   @@index([bookingId])
@@ -724,43 +724,43 @@ model Review {
 }
 
 model Notification {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type       String
-  title      String
-  body       String?
-  link       String?
-  readAt     DateTime?
-  createdAt  DateTime @default(now())
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([userId, readAt])
 }
 
 model Invoice {
-  id         String        @id @default(cuid())
+  id              String        @id @default(cuid())
   /// L'ÉMETTEUR : le compte qui facture. C'est lui qui apparaît en tête du
   /// document, lui seul peut émettre ou annuler, et c'est son identification
   /// (raison sociale, SIRET) qui engage juridiquement la facture.
-  accountId  String
-  account    Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId       String
+  account         Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
   /// LE PAYEUR, quand il n'est pas déductible de la réservation — cas des
   /// inscriptions en formation, où l'association facture un établissement sans
   /// qu'aucun Booking ne les relie. Sans ce champ, l'établissement ne voyait
   /// jamais la facture qui lui était pourtant adressée, et le bouton « Payer
   /// en ligne » lui restait inatteignable.
-  payerAccountId String?
-  payer      Account?      @relation("InvoicePayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
-  bookingId  String?       @unique
-  booking    Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  payerAccountId  String?
+  payer           Account?      @relation("InvoicePayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
+  bookingId       String?       @unique
+  booking         Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   /// Numéro de séquence, unique PAR ÉMETTEUR (pas globalement) : l'article 242
   /// nonies A de l'annexe II au CGI impose une séquence chronologique continue
   /// et sans rupture PROPRE À CHAQUE ÉMETTEUR. Une séquence globale partagée
   /// entre tous les comptes de la plateforme (ancien comportement) mélangeait
   /// les numéros de personnes morales distinctes — non conforme.
-  number     String
-  amount     Decimal       @db.Decimal(10, 2)
-  status     InvoiceStatus @default(DRAFT)
+  number          String
+  amount          Decimal       @db.Decimal(10, 2)
+  status          InvoiceStatus @default(DRAFT)
   /// IDENTITE DES DEUX PARTIES, RECOPIEE A L'EMISSION.
   ///
   /// Une facture emise est une piece comptable : son contenu ne bouge plus.
@@ -780,11 +780,11 @@ model Invoice {
   /// l'instantane ci-dessus, ce qui donne le meme document a chaque fois sans
   /// imposer un stockage binaire. Le champ reste pour le jour ou l'on
   /// archivera le fichier lui-meme — signature electronique, Factur-X.
-  pdfUrl     String?
-  issuedAt   DateTime?
-  createdAt  DateTime      @default(now())
+  pdfUrl          String?
+  issuedAt        DateTime?
+  createdAt       DateTime      @default(now())
 
-  inscription Inscription? @relation("InscriptionInvoice")
+  inscription      Inscription?      @relation("InscriptionInvoice")
   /// Session dont cette facture est la remuneration du formateur, le cas
   /// echeant. Le sens est inverse de `inscription` : ici l'emetteur est le
   /// formateur et le payeur l'organisme.
@@ -798,16 +798,16 @@ model Invoice {
 /// GRAND LIVRE DES CRÉDITS : trace chaque variation de solde d'un compte
 /// (top-up admin, débit à la réservation d'un atelier). Immuable, append-only.
 model Subscription {
-  id                   String   @id @default(cuid())
-  accountId            String   @unique
-  account              Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(cuid())
+  accountId            String    @unique
+  account              Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
   planId               String
   stripeCustomerId     String?
-  stripeSubscriptionId String?  @unique
-  status               String   @default("pending") // pending | active | past_due | canceled
+  stripeSubscriptionId String?   @unique
+  status               String    @default("pending") // pending | active | past_due | canceled
   currentPeriodEnd     DateTime?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 /// RÉACTIVÉ pour LEX — les crédits ne sont plus une monnaie interne de
@@ -817,18 +817,18 @@ model Subscription {
 /// session Stripe, PAID au webhook — `stripeSessionId @unique` garantit
 /// qu'une relivraison ne crédite pas deux fois.
 model CreditPurchase {
-  id              String   @id @default(cuid())
+  id              String               @id @default(cuid())
   accountId       String
-  account         Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account         Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
   userId          String
   packId          String
   credits         Int
   amountCents     Int
-  currency        String   @default("eur")
-  stripeSessionId String   @unique
+  currency        String               @default("eur")
+  stripeSessionId String               @unique
   status          CreditPurchaseStatus @default(PENDING)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([accountId])
 }
@@ -878,36 +878,36 @@ model CreditLedger {
 /// peuvent encore y avoir des pièces : la vider serait effacer des documents
 /// que des utilisateurs croient déposés.
 model Document {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  kind       String   // avatar, diploma, siret, contract...
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // avatar, diploma, siret, contract...
   /// Ancien mode : adresse web. Vide quand le fichier est déposé (fileId).
-  url        String
-  fileId     String?
-  file       FileAsset? @relation(fields: [fileId], references: [id], onDelete: SetNull)
-  createdAt  DateTime @default(now())
+  url       String
+  fileId    String?
+  file      FileAsset? @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  createdAt DateTime   @default(now())
 
   @@index([userId, kind])
 }
 
 /// CATÉGORIE éditable (taxonomie ateliers / missions / articles). Calque du back-office Symfony.
 model Category {
-  id          String     @id @default(cuid())
-  title       String
-  slug        String?    @unique
-  description String?
-  type        String?    // mission, service, article, educatheure...
-  parentId    String?
-  parent      Category?  @relation("CategoryParent", fields: [parentId], references: [id], onDelete: SetNull)
-  children    Category[] @relation("CategoryParent")
-  archived    Boolean    @default(false)
-  articles    Article[]
-  missionsRef ReliefMission[] @relation("MissionCategoryRef")
-  servicesRef Service[]       @relation("ServiceCategoryRef")
-  formationsRef Formation[]   @relation("FormationCategoryRef")
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            String          @id @default(cuid())
+  title         String
+  slug          String?         @unique
+  description   String?
+  type          String? // mission, service, article, educatheure...
+  parentId      String?
+  parent        Category?       @relation("CategoryParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children      Category[]      @relation("CategoryParent")
+  archived      Boolean         @default(false)
+  articles      Article[]
+  missionsRef   ReliefMission[] @relation("MissionCategoryRef")
+  servicesRef   Service[]       @relation("ServiceCategoryRef")
+  formationsRef Formation[]     @relation("FormationCategoryRef")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([type])
 }
@@ -922,30 +922,30 @@ enum ArticleKind {
 }
 
 model Article {
-  id          String        @id @default(cuid())
-  title       String
-  slug        String        @unique
-  kind        ArticleKind   @default(ACTUALITE)
-  excerpt     String?
-  content     String?
-  coverUrl    String?
-  status      ArticleStatus @default(DRAFT)
-  categoryId  String?
-  category    Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  authorId    String?
-  author      User?         @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  id               String        @id @default(cuid())
+  title            String
+  slug             String        @unique
+  kind             ArticleKind   @default(ACTUALITE)
+  excerpt          String?
+  content          String?
+  coverUrl         String?
+  status           ArticleStatus @default(DRAFT)
+  categoryId       String?
+  category         Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId         String?
+  author           User?         @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
   /// Compte qui publie (établissement ou intervenant). Null = article éditorial
   /// publié par l'équipe Les Extras depuis le back-office.
-  accountId   String?
-  account     Account?      @relation("AccountArticles", fields: [accountId], references: [id], onDelete: Cascade)
+  accountId        String?
+  account          Account?      @relation("AccountArticles", fields: [accountId], references: [id], onDelete: Cascade)
   /// Consultations de l'article (preuve d'audience pour l'auteur).
-  views       Int           @default(0)
+  views            Int           @default(0)
   /// Partage LinkedIn : identifiant de la publication et date d'envoi.
   linkedinUrn      String?
   linkedinSharedAt DateTime?
-  publishedAt DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  publishedAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@index([status, publishedAt])
   @@index([status, kind, publishedAt])
@@ -997,6 +997,7 @@ enum GlobalRole {
   USER
   ADMIN
 }
+
 enum UserStatus {
   PENDING
   VERIFIED
@@ -1010,16 +1011,19 @@ enum AccountType {
   ESTABLISHMENT
   FREELANCE
 }
+
 enum AccountRole {
   OWNER
   ADMIN
   MANAGER
   MEMBER
 }
+
 enum MembershipStatus {
   ACTIVE
   SUSPENDED
 }
+
 enum InvitationStatus {
   PENDING
   ACCEPTED
@@ -1035,6 +1039,7 @@ enum MissionCategory {
   FORMATION
   ANALYSE_PRATIQUES
 }
+
 enum MissionStatus {
   DRAFT
   PUBLISHED
@@ -1042,6 +1047,7 @@ enum MissionStatus {
   CLOSED
   CANCELLED
 }
+
 enum MissionVisibility {
   SALARIES
   RESERVED
@@ -1105,12 +1111,12 @@ enum EngagementStatut {
 /// plus rapide pour lui, et beaucoup plus respectueux pour les intervenants,
 /// qui savent exactement où ils en sont.
 model MissionEngagement {
-  id         String        @id @default(cuid())
+  id         String           @id @default(cuid())
   missionId  String
-  mission    ReliefMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  mission    ReliefMission    @relation(fields: [missionId], references: [id], onDelete: Cascade)
   /// Compte intervenant qui s'engage.
   accountId  String
-  account    Account       @relation("EngagementIntervenant", fields: [accountId], references: [id], onDelete: Cascade)
+  account    Account          @relation("EngagementIntervenant", fields: [accountId], references: [id], onDelete: Cascade)
   /// Ordre d'arrivée dans la file. 1 = le premier à s'être engagé.
   rang       Int
   statut     EngagementStatut @default(EN_ATTENTE)
@@ -1126,10 +1132,10 @@ model MissionEngagement {
   /// un refus sans raison démobilise plus sûrement qu'une mission perdue.
   motifRefus String?
   /// Réservation créée en cas d'acceptation.
-  bookingId  String?       @unique
-  booking    Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  bookingId  String?          @unique
+  booking    Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
   @@unique([missionId, accountId])
   @@index([missionId, statut])
@@ -1143,6 +1149,7 @@ enum ServiceCategory {
   ART_THERAPIE
   PREVENTION
 }
+
 enum ServiceStatus {
   DRAFT
   PUBLISHED
@@ -1157,6 +1164,7 @@ enum BookingStatus {
   COMPLETED
   CANCELLED
 }
+
 enum InvoiceStatus {
   DRAFT
   ISSUED
@@ -1212,26 +1220,26 @@ enum LeaveStatus {
 
 /// Fenêtre de disponibilité d'un intervenant (récurrente hebdo OU date ponctuelle).
 model Availability {
-  id        String            @id @default(cuid())
+  id        String           @id @default(cuid())
   userId    String
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weekday   Int?              // 0=dimanche .. 6=samedi (récurrent hebdo)
-  date      DateTime?         // date précise (ponctuel)
-  startTime String            // "09:00"
-  endTime   String            // "17:00"
-  type      AvailabilityType  @default(AVAILABLE)
-  createdAt DateTime          @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekday   Int? // 0=dimanche .. 6=samedi (récurrent hebdo)
+  date      DateTime? // date précise (ponctuel)
+  startTime String // "09:00"
+  endTime   String // "17:00"
+  type      AvailabilityType @default(AVAILABLE)
+  createdAt DateTime         @default(now())
 
   @@index([userId])
 }
 
 /// Créneau planifié (shift) : gestion du planning côté établissement.
 model Shift {
-  id             String      @id @default(cuid())
+  id             String         @id @default(cuid())
   accountId      String
-  account        Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account        Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
   freelanceId    String?
-  freelance      User?       @relation("ShiftFreelance", fields: [freelanceId], references: [id], onDelete: SetNull)
+  freelance      User?          @relation("ShiftFreelance", fields: [freelanceId], references: [id], onDelete: SetNull)
   missionId      String?
   mission        ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
   /// SERVICE (unité) concerné par le créneau. C'est ce qui permet à un chef
@@ -1239,25 +1247,25 @@ model Shift {
   /// Renseigné à la main, ou déduit du service auquel l'intervenant est
   /// rattaché quand on ne le précise pas.
   orgUnitId      String?
-  orgUnit        OrgUnit?    @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  bookingId      String?     @unique
-  booking        Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  orgUnit        OrgUnit?       @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  bookingId      String?        @unique
+  booking        Booking?       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   title          String
   startAt        DateTime
   endAt          DateTime
-  status         ShiftStatus @default(PLANNED)
+  status         ShiftStatus    @default(PLANNED)
   notes          String?
-  recurrenceRule String?     // RRULE iCal optionnel (récurrence)
+  recurrenceRule String? // RRULE iCal optionnel (récurrence)
 
   // Dérogation aux plafonds de durée du travail. Renseignée uniquement quand
   // un responsable a choisi de passer outre un constat bloquant : c'est la
   // trace qui le couvre en cas de contrôle URSSAF ou inspection du travail.
   derogationMotif String?
-  derogationCodes String[]   @default([])
+  derogationCodes String[]  @default([])
   derogationLe    DateTime?
 
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([accountId, startAt])
   @@index([freelanceId, startAt])
@@ -1293,7 +1301,24 @@ model Formation {
   prerequisites     String?
   program           String?
   targetAudience    String?
+  /// PUBLICS VISES, en etiquettes courtes et filtrables.
+  ///
+  /// `targetAudience` est un paragraphe : il se lit sur la fiche, il ne se
+  /// filtre pas. Le catalogue des ateliers, lui, laisse chercher « pour qui »
+  /// avant « quoi » — c'est l'entree la plus utilisee du site. Les formations
+  /// n'avaient pas l'equivalent, et leurs cartes paraissaient vides a cote de
+  /// celles des ateliers. Meme vocabulaire d'un bout a l'autre du catalogue :
+  /// une etiquette qui n'existe qu'une fois ne sert a personne.
+  publicTargets     String[]        @default([])
   durationHours     Int?
+  /// DUREE EN MINUTES, pour ce qui dure moins d'une heure.
+  ///
+  /// `durationHours` est un entier : une mini-formation de 45 minutes y vaut
+  /// soit 0, soit 1 — l'un fait disparaitre la duree de la carte, l'autre
+  /// ment. Les deux champs coexistent : les formations Qualiopi comptent en
+  /// heures, les mini-formations en minutes, et la carte affiche celui qui est
+  /// renseigne.
+  durationMinutes   Int?
   categoryId        String?
   categoryRef       Category?       @relation("FormationCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
   cpfEligible       Boolean         @default(false)
@@ -1339,7 +1364,7 @@ model Formation {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  sessions          FormationSession[]
+  sessions FormationSession[]
 
   @@index([type, status])
   @@index([ownerAccountId])
@@ -1347,19 +1372,19 @@ model Formation {
 
 /// SESSION : instance datee d'un programme.
 model FormationSession {
-  id            String        @id @default(cuid())
-  formationId   String
-  formation     Formation     @relation(fields: [formationId], references: [id], onDelete: Cascade)
-  trainerId     String?
-  trainer       User?         @relation("SessionTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
-  hostAccountId String?
-  hostAccount   Account?      @relation("SessionHost", fields: [hostAccountId], references: [id], onDelete: SetNull)
-  title         String?
-  startDate     DateTime
-  endDate       DateTime?
-  location      String?
-  maxSeats      Int?
-  priceHt       Decimal?      @db.Decimal(10, 2)
+  id               String        @id @default(cuid())
+  formationId      String
+  formation        Formation     @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  trainerId        String?
+  trainer          User?         @relation("SessionTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
+  hostAccountId    String?
+  hostAccount      Account?      @relation("SessionHost", fields: [hostAccountId], references: [id], onDelete: SetNull)
+  title            String?
+  startDate        DateTime
+  endDate          DateTime?
+  location         String?
+  maxSeats         Int?
+  priceHt          Decimal?      @db.Decimal(10, 2)
   /// REMUNERATION DU FORMATEUR, hors taxes.
   ///
   /// `priceHt` est ce que l'organisme VEND a l'etablissement ; ce champ-ci est
@@ -1371,7 +1396,7 @@ model FormationSession {
   /// Le montant est fixe par l'organisme qui commande la prestation. Le
   /// formateur ne peut pas l'editer : on ne fixe pas, depuis le compte de son
   /// client, le prix que ce client vous paiera (cf. `updateSession`).
-  trainerFeeHt  Decimal?      @db.Decimal(10, 2)
+  trainerFeeHt     Decimal?      @db.Decimal(10, 2)
   /// Facture emise PAR LE FORMATEUR a l'organisme pour cette session.
   ///
   /// Elle lui appartient : c'est son SIRET qui l'engage, et lui seul l'emet,
@@ -1380,11 +1405,11 @@ model FormationSession {
   /// facturation, et l'organisme ne peut pas la creer a sa place.
   ///
   /// Une seule par session : le lien unique tient lieu de verrou.
-  trainerInvoiceId String?    @unique
-  trainerInvoice   Invoice?   @relation("SessionTrainerInvoice", fields: [trainerInvoiceId], references: [id], onDelete: SetNull)
-  status        SessionStatus @default(SCHEDULED)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  trainerInvoiceId String?       @unique
+  trainerInvoice   Invoice?      @relation("SessionTrainerInvoice", fields: [trainerInvoiceId], references: [id], onDelete: SetNull)
+  status           SessionStatus @default(SCHEDULED)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   inscriptions   Inscription[]
   emargements    Emargement[]
@@ -1396,42 +1421,42 @@ model FormationSession {
 
 /// INSCRIPTION : un apprenant sur une session.
 model Inscription {
-  id             String            @id @default(cuid())
-  sessionId      String
-  session        FormationSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  learnerId      String?
-  learner        User?             @relation("InscriptionLearner", fields: [learnerId], references: [id], onDelete: SetNull)
-  learnerName    String?
-  learnerEmail   String?
-  payerAccountId String?
-  payerAccount   Account?          @relation("InscriptionPayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
-  financing      FinancingType     @default(ESTABLISHMENT)
-  status         InscriptionStatus @default(PENDING)
+  id                  String            @id @default(cuid())
+  sessionId           String
+  session             FormationSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  learnerId           String?
+  learner             User?             @relation("InscriptionLearner", fields: [learnerId], references: [id], onDelete: SetNull)
+  learnerName         String?
+  learnerEmail        String?
+  payerAccountId      String?
+  payerAccount        Account?          @relation("InscriptionPayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
+  financing           FinancingType     @default(ESTABLISHMENT)
+  status              InscriptionStatus @default(PENDING)
   /// EVALUATION A CHAUD — recueillie en fin de session.
   /// Indicateur 30 du referentiel national qualite : l'organisme recueille les
   /// appreciations des beneficiaires. Le champ existait ; rien ne le remplissait.
-  satisfaction   Int?
+  satisfaction        Int?
   satisfactionComment String?
-  satisfactionAt DateTime?
+  satisfactionAt      DateTime?
   /// Resultat de l'evaluation des acquis (indicateur 11).
-  evalResult     String?
+  evalResult          String?
   /// EVALUATION A FROID — recueillie quelques mois apres, sur le terrain.
   /// C'est elle qui distingue un organisme audite d'un organisme qui remplit
   /// des cases : elle mesure ce qui reste une fois la salle quittee.
-  coldRating     Int?
+  coldRating          Int?
   /// Mise en oeuvre des acquis : OUI / PARTIELLEMENT / NON.
-  coldTransfer   String?
-  coldComment    String?
-  coldAt         DateTime?
-  attestationUrl String?
-  certificatUrl  String?
-  invoiceId      String?           @unique
-  invoice        Invoice?          @relation("InscriptionInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  coldTransfer        String?
+  coldComment         String?
+  coldAt              DateTime?
+  attestationUrl      String?
+  certificatUrl       String?
+  invoiceId           String?           @unique
+  invoice             Invoice?          @relation("InscriptionInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
-  emargements    Emargement[]
-  tutorat        Tutorat?
+  emargements Emargement[]
+  tutorat     Tutorat?
 
   @@index([sessionId, status])
   @@index([learnerId])
@@ -1556,8 +1581,8 @@ model Tutorat {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  entretiens    Entretien[]
-  jalons        Jalon[]
+  entretiens Entretien[]
+  jalons     Jalon[]
 
   @@index([tutorId])
 }
@@ -1611,26 +1636,26 @@ enum JalonStatus {
 
 /// Piece justificative reglementaire suivie pour un intervenant dans un compte.
 model ComplianceDocument {
-  id         String            @id @default(cuid())
+  id        String            @id @default(cuid())
   /// Le professionnel concerne par la piece.
-  userId     String
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// Le compte qui suit le dossier (etablissement ou freelance).
-  accountId  String
-  account    Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  type       ComplianceDocType
-  label      String?
-  status     ComplianceStatus  @default(MISSING)
+  accountId String
+  account   Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type      ComplianceDocType
+  label     String?
+  status    ComplianceStatus  @default(MISSING)
   /// Ancien mode : adresse web saisie à la main. Conservé pour l'existant.
-  fileUrl    String?
+  fileUrl   String?
   /// Nouveau mode : fichier réellement déposé dans le dépôt privé.
-  fileId     String?
-  file       FileAsset?        @relation(fields: [fileId], references: [id], onDelete: SetNull)
-  issuedAt   DateTime?
-  expiresAt  DateTime?
-  notes      String?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  fileId    String?
+  file      FileAsset?        @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  issuedAt  DateTime?
+  expiresAt DateTime?
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   @@unique([userId, accountId, type])
   @@index([accountId])
@@ -1662,9 +1687,9 @@ model Qualification {
   id           String   @id @default(cuid())
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title        String   // Intitulé du diplôme / de la formation
-  organization String?  // École, organisme
-  year         String?  // Année d'obtention (texte libre)
+  title        String // Intitulé du diplôme / de la formation
+  organization String? // École, organisme
+  year         String? // Année d'obtention (texte libre)
   createdAt    DateTime @default(now())
 
   @@index([userId])
@@ -1675,8 +1700,8 @@ model Experience {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String   // Poste / structure
-  year        String?  // Période (texte libre)
+  title       String // Poste / structure
+  year        String? // Période (texte libre)
   description String?
   createdAt   DateTime @default(now())
 
@@ -1685,16 +1710,16 @@ model Experience {
 
 /// Demande de contact publique (repris de Symfony : Contact / NewRequest).
 model ContactRequest {
-  id        String              @id @default(cuid())
+  id        String               @id @default(cuid())
   name      String
   email     String
   phone     String?
-  type      String?             // Sujet / type de demande
+  type      String? // Sujet / type de demande
   content   String
   status    ContactRequestStatus @default(NEW)
   /// Origine de la demande : utm_source, sinon domaine référent, sinon "direct".
   source    String?
-  createdAt DateTime            @default(now())
+  createdAt DateTime             @default(now())
 
   @@index([status, createdAt])
   @@index([source])
@@ -1729,9 +1754,9 @@ enum FileKind {
 /// d'identité. Aucune URL publique : le téléchargement passe par l'API, qui
 /// vérifie les droits à chaque requête.
 model FileAsset {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   /// Clé de l'objet dans le dépôt. Jamais devinable (identifiant aléatoire).
-  storageKey   String    @unique
+  storageKey   String   @unique
   /// Nom tel que déposé par la personne — sert uniquement à l'affichage
   /// et au nom du fichier téléchargé.
   originalName String
@@ -1743,11 +1768,11 @@ model FileAsset {
   kind         FileKind
   /// Qui a déposé le fichier.
   uploaderId   String?
-  uploader     User?     @relation("FileUploader", fields: [uploaderId], references: [id], onDelete: SetNull)
+  uploader     User?    @relation("FileUploader", fields: [uploaderId], references: [id], onDelete: SetNull)
   /// Compte dans le périmètre duquel le fichier a été déposé.
   accountId    String?
-  account      Account?  @relation("FileAccount", fields: [accountId], references: [id], onDelete: SetNull)
-  createdAt    DateTime  @default(now())
+  account      Account? @relation("FileAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
 
   complianceDocuments ComplianceDocument[]
   tramesMaison        TrameMaison[]        @relation("TrameSource")
@@ -1759,7 +1784,6 @@ model FileAsset {
   @@index([accountId])
   @@index([kind])
 }
-
 
 /// Fiche mise de côté par un utilisateur.
 /// Le cœur du site historique : un directeur repère trois ateliers en réunion
@@ -1843,7 +1867,7 @@ model ParametresTemps {
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   /// Convention appliquee, a titre documentaire : CCN 51, CCN 66, CHRS, autre.
-  convention String?
+  convention       String?
   /// Un accord d'entreprise existe-t-il ? Il commute tout le moteur entre la
   /// branche conventionnelle et la branche suppletive.
   accordEntreprise Boolean @default(false)
@@ -1852,22 +1876,22 @@ model ParametresTemps {
   /// Plage de nuit. A defaut d'accord, la loi retient 21 h - 6 h (L. 3122-20).
   /// L'accord de branche du 17 avril 2002 demande 9 heures continues a
   /// positionner dans l'amplitude 21 h - 7 h.
-  nuitDebutHeure Int @default(21)
-  nuitFinHeure   Int @default(6)
+  nuitDebutHeure Int     @default(21)
+  nuitFinHeure   Int     @default(6)
   /// Majoration de nuit, en pourcentage. Zero par defaut : la loi n'en impose
   /// aucune, et inventer un taux serait pire que ne rien afficher.
   nuitPct        Decimal @default(0) @db.Decimal(5, 2)
 
   // --- Dimanche et feries ---------------------------------------------------
-  dimanchePct Decimal @default(0) @db.Decimal(5, 2)
-  feriePct    Decimal @default(0) @db.Decimal(5, 2)
+  dimanchePct          Decimal @default(0) @db.Decimal(5, 2)
+  feriePct             Decimal @default(0) @db.Decimal(5, 2)
   /// Cumul dimanche + ferie quand un ferie tombe un dimanche. La CCN 51
   /// l'exclut expressement (annexe III, art. A3.3).
   cumulDimancheEtFerie Boolean @default(false)
 
   // --- Droit local ----------------------------------------------------------
   /// Moselle, Bas-Rhin, Haut-Rhin : Saint-Etienne le 26 decembre.
-  droitLocal Boolean @default(false)
+  droitLocal    Boolean @default(false)
   /// Le Vendredi saint n'est pas departemental mais COMMUNAL : l'article
   /// L. 3134-13 le reserve aux communes disposant d'un temple protestant ou
   /// d'une eglise mixte. Un simple drapeau Alsace-Moselle serait faux.
@@ -1889,12 +1913,12 @@ model ParametresTemps {
   /// Limite hebdomadaire haute de la modulation. L'accord de branche du
   /// 1er avril 1999 retient 44 h. Les heures au-dela sont supplementaires
   /// immediatement et NE sont PAS recomptees en fin de periode (L. 3121-44).
-  limiteHebdoHaute Int?
+  limiteHebdoHaute     Int?
   /// Limite basse de la modulation. L'accord de 1999 retient 21 h.
-  limiteHebdoBasse Int?
+  limiteHebdoBasse     Int?
   /// Delai de prevenance d'un changement d'horaire. 7 jours a defaut
   /// d'accord (L. 3121-47).
-  delaiPrevenanceJours Int @default(7)
+  delaiPrevenanceJours Int  @default(7)
 
   // --- Conges du secteur ----------------------------------------------------
   /// Conges trimestriels : 18 jours pour le personnel educatif de la CCN 66,
@@ -1907,7 +1931,6 @@ model ParametresTemps {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 /// Types d'écrits professionnels que l'assistant sait produire.
 enum AssistantTrame {
@@ -1952,32 +1975,32 @@ enum PorteeTrame {
 /// après pseudonymisation, et il est le seul élément renvoyé au modèle à
 /// chaque génération — ce qui le rend court, donc peu coûteux.
 model TrameMaison {
-  id        String   @id @default(cuid())
-  accountId String
-  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  nom       String
+  id           String          @id @default(cuid())
+  accountId    String
+  account      Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  nom          String
   /// Genre d'écrit auquel la trame se rattache (facultatif : une trame peut
   /// servir à plusieurs genres).
-  genre     AssistantTrame?
-  portee    PorteeTrame     @default(PERSONNELLE)
+  genre        AssistantTrame?
+  portee       PorteeTrame     @default(PERSONNELLE)
   /// Les intitulés et l'ordre des sections, tels qu'appris du modèle.
-  squelette String
+  squelette    String
   /// Le registre : personne, temps, formules d'usage, longueurs attendues.
-  style     String
+  style        String
   /// Court extrait ANONYMISÉ du modèle, pour que le moteur « entende » le ton.
   /// Jamais de nom : la pseudonymisation est passée avant l'extraction.
-  extrait   String?
+  extrait      String?
   /// Document d'origine, conservé dans le compte. Il porte de vrais noms :
   /// son accès suit les mêmes règles que le reste du dépôt (jamais d'URL
   /// publique, contrôle des droits à chaque téléchargement).
   sourceFileId String?
-  sourceFile   FileAsset? @relation("TrameSource", fields: [sourceFileId], references: [id], onDelete: SetNull)
+  sourceFile   FileAsset?      @relation("TrameSource", fields: [sourceFileId], references: [id], onDelete: SetNull)
   /// Compteur d'usage : sert à trier les trames utiles et à repérer les mortes.
-  usages    Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  usages       Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   documents AssistantDocument[]
 
@@ -1990,21 +2013,21 @@ model TrameMaison {
 /// dictées par l'éducateur ne sont jamais persistées — c'est la promesse
 /// de confidentialité qui rend l'outil acceptable dans ce secteur.
 model AssistantDocument {
-  id        String         @id @default(cuid())
-  accountId String
-  account   Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  trame     AssistantTrame
+  id            String         @id @default(cuid())
+  accountId     String
+  account       Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  trame         AssistantTrame
   /// Trame maison utilisée pour produire ce document, le cas échéant.
   trameMaisonId String?
-  trameMaison   TrameMaison? @relation(fields: [trameMaisonId], references: [id], onDelete: SetNull)
-  title     String
+  trameMaison   TrameMaison?   @relation(fields: [trameMaisonId], references: [id], onDelete: SetNull)
+  title         String
   /// Contenu final, relu et validé par l'auteur (les vrais noms y figurent :
   /// il reste dans le compte de l'établissement, jamais envoyé à un tiers).
-  content   String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  content       String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([accountId, createdAt])
   @@index([authorId])
@@ -2014,13 +2037,13 @@ model AssistantDocument {
 /// C'est ce qui permet d'améliorer les trames, et une preuve de suivi
 /// sérieuse à présenter aux directions.
 model AssistantFeedback {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   accountId String
   userId    String
   trame     AssistantTrame
   utile     Boolean
   comment   String?
-  createdAt DateTime @default(now())
+  createdAt DateTime       @default(now())
 
   @@index([trame, utile])
 }
@@ -2179,7 +2202,6 @@ model IdeaVote {
   @@unique([ideaId, userId])
 }
 
-
 /// ─────────────────────────────────────────────────────────────────────────
 /// ENTRAIDE — questions de terrain entre professionnels, par métier.
 ///
@@ -2198,30 +2220,30 @@ enum QuestionStatus {
 }
 
 model Question {
-  id          String         @id @default(cuid())
+  id         String         @id @default(cuid())
   /// La situation, formulée en « comment faites-vous quand… ».
-  title       String
+  title      String
   /// Le contexte détaillé : ce qui se passe, depuis quand, avec qui.
-  situation   String
+  situation  String
   /// Ce que le professionnel a déjà tenté — évite les réponses évidentes.
-  tente       String?
+  tente      String?
   /// Métier de l'auteur (éducateur spécialisé, AES, psychologue…).
-  metier      String
+  metier     String
   /// Public accompagné (enfance protégée, handicap, grand âge…).
-  publicVise  String
+  publicVise String
   /// Publication sous pseudonyme : le nom du compte n'est pas affiché.
-  anonyme     Boolean        @default(true)
-  status      QuestionStatus @default(OUVERTE)
-  views       Int            @default(0)
+  anonyme    Boolean        @default(true)
+  status     QuestionStatus @default(OUVERTE)
+  views      Int            @default(0)
 
-  accountId   String
-  account     Account        @relation("AccountQuestions", fields: [accountId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User           @relation("QuestionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account @relation("AccountQuestions", fields: [accountId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User    @relation("QuestionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
 
-  answers     Answer[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  answers   Answer[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
   @@index([metier])
@@ -2229,22 +2251,22 @@ model Question {
 }
 
 model Answer {
-  id          String    @id @default(cuid())
-  questionId  String
-  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  content     String
-  anonyme     Boolean   @default(true)
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  content    String
+  anonyme    Boolean  @default(true)
   /// Désignée comme utile par l'auteur de la question.
-  retenue     Boolean   @default(false)
+  retenue    Boolean  @default(false)
 
-  accountId   String
-  account     Account   @relation("AccountAnswers", fields: [accountId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User      @relation("AnswerAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account @relation("AccountAnswers", fields: [accountId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User    @relation("AnswerAuthor", fields: [authorId], references: [id], onDelete: Cascade)
 
-  votes       AnswerVote[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  votes     AnswerVote[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   @@index([questionId])
 }
@@ -2263,11 +2285,11 @@ model AnswerVote {
 /// Abonnement d'un navigateur aux notifications push (Web Push).
 /// Un utilisateur peut en avoir plusieurs : téléphone, tablette, poste de travail.
 model PushSubscription {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// URL du service de push du navigateur (Google, Mozilla, Apple…). Identifiant unique de l'appareil.
-  endpoint  String   @unique
+  endpoint  String    @unique
   /// Clé publique de l'appareil, pour chiffrer le message.
   p256dh    String
   /// Sel d'authentification fourni par le navigateur.
@@ -2277,8 +2299,8 @@ model PushSubscription {
   /// Dernier envoi réussi : sert à repérer les abonnements morts.
   dernierOk DateTime?
   /// Nombre d'échecs consécutifs. Au-delà d'un seuil, on supprime.
-  echecs    Int      @default(0)
-  createdAt DateTime @default(now())
+  echecs    Int       @default(0)
+  createdAt DateTime  @default(now())
 
   @@index([userId])
 }
@@ -2286,9 +2308,9 @@ model PushSubscription {
 /// Réglages techniques persistés (clés VAPID…). Une ligne par clé.
 /// Évite de dépendre d'une variable d'environnement à poser à la main.
 model Reglage {
-  cle       String   @id
-  valeur    String
-  majLe     DateTime @updatedAt
+  cle    String   @id
+  valeur String
+  majLe  DateTime @updatedAt
 }
 
 /// CONTRAT À DURÉE DÉTERMINÉE.
@@ -2298,52 +2320,52 @@ model Reglage {
 /// avec l'intervenant — d'où `accountId` = employeur et `userId` = salarié,
 /// sans aucune notion de commission ni de facturation de mission.
 model ContratCDD {
-  id                          String   @id @default(cuid())
+  id        String         @id @default(cuid())
   /// Établissement employeur. C'est lui qui signe et qui est responsable.
-  accountId                   String
-  account                     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account        @relation(fields: [accountId], references: [id], onDelete: Cascade)
   /// Salarié embauché.
-  userId                      String
-  user                        User     @relation("ContratSalarie", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation("ContratSalarie", fields: [userId], references: [id], onDelete: Cascade)
   /// Besoin de renfort à l'origine du recrutement, si le contrat en vient.
-  missionId                   String?
-  mission                     ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  missionId String?
+  mission   ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
 
   // — Mentions obligatoires, art. L. 1242-12 du code du travail —
-  motif                       MotifRecoursCDD
-  salarieRemplaceNom          String?
+  motif                        MotifRecoursCDD
+  salarieRemplaceNom           String?
   salarieRemplaceQualification String?
-  dateDebut                   DateTime
+  dateDebut                    DateTime
   /// Terme précis. Nul quand le contrat est à terme imprécis.
-  dateFin                     DateTime?
+  dateFin                      DateTime?
   /// Durée minimale, obligatoire quand le terme est imprécis.
-  dureeMinimaleJours          Int?
-  poste                       String?
-  qualification               String?
+  dureeMinimaleJours           Int?
+  poste                        String?
+  qualification                String?
   /// Le poste figure-t-il sur la liste des postes à risques particuliers ?
-  posteARisques               Boolean?
-  conventionCollective        String?  @default("CCN 66")
-  remunerationBrute           Decimal? @db.Decimal(10, 2)
-  remunerationDetail          String?
+  posteARisques                Boolean?
+  conventionCollective         String?         @default("CCN 66")
+  remunerationBrute            Decimal?        @db.Decimal(10, 2)
+  remunerationDetail           String?
   caisseRetraiteComplementaire String?
-  organismePrevoyance         String?
-  periodeEssaiJours           Int?
+  organismePrevoyance          String?
+  periodeEssaiJours            Int?
 
   // — Cycle de vie —
-  statut                      StatutContratCDD @default(BROUILLON)
+  statut           StatutContratCDD @default(BROUILLON)
   /// Déclaration préalable à l'embauche : au plus tôt 8 jours avant.
-  dpaeEffectueeLe             DateTime?
-  dpaeReference               String?
+  dpaeEffectueeLe  DateTime?
+  dpaeReference    String?
   /// Transmission au salarié : 2 jours ouvrables (art. L. 1242-13).
-  transmisLe                  DateTime?
-  signeSalarieLe              DateTime?
-  signeEmployeurLe            DateTime?
+  transmisLe       DateTime?
+  signeSalarieLe   DateTime?
+  signeEmployeurLe DateTime?
   /// Cause de fin, qui décide de l'indemnité de précarité (art. L. 1243-10).
-  causeFin                    String?
-  termineLe                   DateTime?
+  causeFin         String?
+  termineLe        DateTime?
 
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([accountId, dateDebut])
   @@index([userId, dateDebut])
@@ -2365,7 +2387,6 @@ enum StatutContratCDD {
   TERMINE
   ROMPU
 }
-
 
 /// SIGNATURE ELECTRONIQUE — le faisceau de preuves.
 ///
@@ -2397,7 +2418,7 @@ model Signature {
 
   /// Le signataire. `userId` est nul quand la personne n'a pas de compte.
   userId          String?
-  user            User?    @relation("SignatureSignataire", fields: [userId], references: [id], onDelete: SetNull)
+  user            User?   @relation("SignatureSignataire", fields: [userId], references: [id], onDelete: SetNull)
   signataireNom   String
   signataireEmail String
 
@@ -2412,9 +2433,9 @@ model Signature {
   codeExpireLe DateTime?
   tentatives   Int       @default(0)
 
-  statut  StatutSignature @default(EN_ATTENTE)
-  signeLe DateTime?
-  refuseLe DateTime?
+  statut     StatutSignature @default(EN_ATTENTE)
+  signeLe    DateTime?
+  refuseLe   DateTime?
   motifRefus String?
 
   /// Elements du faisceau de preuves, releves au moment de la signature.
