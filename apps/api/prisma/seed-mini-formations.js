@@ -148,7 +148,7 @@ const FICHES = [
 
 Un comportement qui se répète se répète parce qu’il marche : il obtient quelque chose. Tant qu’on ignore quoi, on traite la forme et pas la fonction — et on se trompe de cible. Quatre fonctions possibles, une grille en quatre colonnes pour trancher, et la règle qui évite l’erreur la plus coûteuse.
 
-Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le plan écrit au module 3 s’applique pendant quinze jours, trente secondes de relevé par jour, et le module 4 se lit le quinzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le support fabriqué au module 3 s’observe pendant quatorze jours, trente secondes de relevé par jour, et le module 4 se lit le quatorzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le module 3 se termine par une observation, puis dix jours d’enseignement avec un relevé d’une minute par jour, et le module 4 se lit le dixième jour. Comptez donc une dizaine de jours entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le module 3 débouche sur quatorze jours d’application du plan, avec un relevé d’une minute par jour, et le module 4 se lit le quatorzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le module 3 lance un relevé de sept jours, une minute par jour, et le module 4 se lit le septième jour, ce relevé sous les yeux. Comptez donc une bonne semaine entre le premier et le dernier module. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le module 3 lance un relevé de sept jours, une minute par jour, et le module 4 se lit le septième jour, ce relevé sous les yeux. Comptez donc une bonne semaine entre le premier et le dernier module. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
@@ -176,7 +176,7 @@ Module 4 — Mise en pratique et auto-observation. Le protocole, le relevé quot
 
 Retirer un comportement sans en donner un autre, c’est retirer un outil à quelqu’un qui n’en a pas d’autre. La suite logique de la grille des fonctions : une fois qu’on sait ce que le comportement obtient, on enseigne un moyen d’obtenir la même chose — qui doit être plus facile, plus rapide et aussi fiable que celui qu’on veut voir disparaître.
 
-Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le module 3 débouche sur quatorze jours d’application du plan, avec un relevé d’une minute par jour, et le module 4 se lit le quatorzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
@@ -204,7 +204,7 @@ Module 4 — Mise en pratique et auto-observation. Le protocole sur deux semaine
 
 « Il ne sait pas s’habiller » ne se travaille pas : la phrase ne dit ni ce qui est acquis, ni où exactement ça s’arrête. « Il bloque à l’étape 4 sur 9 » se travaille. Écrire la chaîne, mesurer ce qui est déjà là, choisir par quelle extrémité enseigner — et n’en enseigner qu’une à la fois.
 
-Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le module 3 se termine par une observation, puis dix jours d’enseignement avec un relevé d’une minute par jour, et le module 4 se lit le dixième jour. Comptez donc une dizaine de jours entre le premier et le dernier module.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
@@ -232,7 +232,7 @@ Module 4 — Mise en pratique et auto-observation. Dix jours, une seule étape, 
 
 Tout le monde fabrique des pictogrammes ; presque personne ne s’en sert encore trois semaines plus tard. Un support n’est pas une aide à la compréhension, c’est une aide à l’autonomie : il permet de savoir ce qui vient sans dépendre de la disponibilité d’un adulte. Les cinq raisons qui le font abandonner, et la ligne qui décide s’il existe encore dans un mois.
 
-Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.`,
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le support fabriqué au module 3 s’observe pendant quatorze jours, trente secondes de relevé par jour, et le module 4 se lit le quatorzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
 — formuler la question unique à laquelle un support répond, et ne pas en mélanger trois sur le même mur ;
@@ -259,7 +259,7 @@ Module 4 — Mise en pratique et auto-observation. Quatorze jours, trois colonne
 
 L’aide est le seul outil éducatif qui devient nuisible quand il fonctionne trop bien. Une aide efficace et jamais retirée produit une dépendance à l’adulte, et cette dépendance est ensuite reprochée à la personne. Cette formation apprend à choisir le niveau d’aide le plus léger qui marche, et surtout à le retirer selon un plan décidé à l’avance.
 
-Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le plan écrit au module 3 s’applique pendant quinze jours, trente secondes de relevé par jour, et le module 4 se lit le quinzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
