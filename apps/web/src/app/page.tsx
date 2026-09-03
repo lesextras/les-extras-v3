@@ -136,7 +136,7 @@ export default async function LandingPage() {
                   portent les interventions. Le sous-titre, lui, garde le
                   concret — ce qu'on vient chercher, et à quel prix. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Les interventions doivent être portées{' '}
+                Les interventions portées{' '}
                 <span className="text-secondary">par ceux qui font le terrain.</span>
               </h1>
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
