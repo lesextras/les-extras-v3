@@ -1945,3 +1945,59 @@ une facture émise autrement que par son statut (art. 242 nonies A ann. II CGI) 
 supprimer un utilisateur qui possède un compte (il faut d'abord transférer ou
 supprimer ses comptes) ; toucher à un compte `ANONYMIZED` (effacé à la demande
 de son titulaire, il n'est plus modifiable).
+
+### Les repères pratiques des ateliers — arbitrage de Siham, 3/09 au soir
+
+Après la mesure ci-dessus, Siham a tranché en deux messages : « prends les
+mêmes infos que pour la fiche atelier psycho-boxe », puis, quand j'ai montré
+que psycho-boxe ne les avait pas non plus : **« ou prendre la fiche qui a ces
+infos et met les mêmes »**.
+
+La fiche qui les a, ce sont celles de **Valérie SIMON** — les seules déposées à
+la main dans l'application. Leurs trois fiches disent la même chose : 1h30 à 2H,
+8 à 10 participants, prérequis « Aucun », « Salle avec tables, chaises et point
+d'eau à proximité. Matériel fourni par l'intervenante », créneaux 9h-12h et
+14h-17h. C'est devenu le **standard maison** (`REPERES` dans
+`seed-fiches-ateliers.js`), appliqué à ses cinq ateliers : 2H, 10 participants,
+« Aucun », créneaux 9h-12h / 14h-17h.
+
+⚠ **CE N'EST PAS UNE DÉDUCTION, C'EST UNE DÉCISION DE LA FONDATRICE.** Une durée
+annoncée est un terme commercial, pas un fait qu'on relève — je ne l'aurais pas
+écrite seul, et c'est écrit dans le script pour qu'on ne le rejoue pas.
+
+⚠ **LE MATÉRIEL EST LE SEUL CHAMP QUI N'EST PAS RECOPIÉ TEL QUEL.** « Salle avec
+tables et chaises » sur un atelier de boxe ou de théâtre fait préparer la
+mauvaise salle : c'est l'atelier annulé le matin même, le risque exact que
+l'indicateur de complétude nomme. La PHRASE de Valérie est conservée (une
+exigence de salle, puis qui fournit le matériel) ; seule l'exigence de salle
+suit l'activité — on ne fait pas de la boxe sur un sol dur.
+
+⚠ **Les quatre fiches des autres intervenants ne reçoivent que « Aucun » en
+prérequis.** Durée et nombre de participants sont les termes commerciaux de
+Younes, Christophe et Jean Léo. Les écrire à leur place, sur des comptes qu'ils
+ne peuvent pas ouvrir pour les corriger, ferait vendre par l'association une
+prestation qu'elle n'a pas négociée.
+
+### ⚠ QUATRE COMPTES INTERVENANTS N'ONT PAS D'ADRESSE RÉELLE — trouvé le 3/09
+
+`siham@`, `younes@`, `christophe@`, `jean-leo@intervenants.les-extras.fr` :
+**ce domaine n'a aucun enregistrement MX**, ces adresses ne peuvent rien
+recevoir. Les quatre comptes sont `PENDING`, `emailVerified` faux, jamais
+connectés depuis leur création par le seed le 27/07/2026. Ils portent
+**14 fiches** (10 + 2 + 1 + 1). Conséquences réelles, vérifiées dans le code :
+
+- ils ne peuvent pas se connecter (le lien de réinitialisation part dans le vide) ;
+- `EmailVerifieSiPublicationGuard` leur interdit toute nouvelle publication ;
+- `bookings.service.ts` envoie la confirmation de réservation à `owner.email` :
+  elle part à une adresse inexistante.
+- **En revanche la demande de devis publique fonctionne** : `createQuoteRequest`
+  passe par `sendContactNotification`, donc elle arrive à l'association. C'est le
+  chemin du bouton « Demander un devis sans créer de compte », le principal.
+
+⚠ **Le compte `assoc.adepa@gmail.com` (ADMIN) ne possède que le compte
+« ADéPA » (ESTABLISHMENT).** Le compte intervenant « Siham » qui porte ses six
+ateliers **n'est pas le sien** — d'où l'impossibilité de compléter ses propres
+fiches depuis son espace, et l'utilité du nouveau chemin admin.
+
+Décision qui lui revient : poser les vraies adresses de Younes, Christophe et
+Jean Léo, et dire si le compte « Siham » doit basculer sur son adresse.

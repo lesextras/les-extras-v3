@@ -172,6 +172,111 @@ const FICHES = [
   //   et c'est une décision, pas une correction.
 ];
 
+/**
+ * ───────────────────────────────────────────────────────────────────────────
+ * LES REPÈRES PRATIQUES — décision de Siham, 3 septembre 2026
+ * ───────────────────────────────────────────────────────────────────────────
+ * « prends les mêmes infos que pour la fiche atelier psycho-boxe […] ou prendre
+ * la fiche qui a ces infos et met les mêmes ».
+ *
+ * Psycho-boxe n'a ni durée, ni participants, ni matériel, ni prérequis, ni
+ * créneaux : la fiche qui les a, ce sont celles de Valérie SIMON, les seules du
+ * catalogue déposées à la main dans l'application. Leurs trois fiches disent la
+ * même chose sur ces cinq points, ce qui en fait un standard maison lisible :
+ *
+ *   durée 1h30 à 2H · 8 à 10 participants · « Aucun » prérequis ·
+ *   « Salle avec tables, chaises et point d'eau à proximité. Matériel fourni
+ *   par l'intervenante » · créneaux 9h-12h et 14h-17h.
+ *
+ * ⚠ CE N'EST PAS UNE DÉDUCTION, C'EST UNE DÉCISION DE LA FONDATRICE, et elle
+ * lui revient : ces cinq fiches sont les siennes, et une durée annoncée est un
+ * terme commercial, pas un fait qu'on relève. Ce qui est écrit ici est ce
+ * qu'elle a arbitré, pas ce que les fiches disaient.
+ *
+ * ⚠ UNE SEULE EXCEPTION, ET ELLE COMPTE : LE MATÉRIEL N'EST PAS RECOPIÉ TEL
+ * QUEL. « Salle avec tables et chaises » sur un atelier de boxe ou de théâtre
+ * fait préparer la mauvaise salle, et c'est l'atelier annulé le matin même —
+ * exactement le risque que l'indicateur de complétude nomme. La PHRASE de
+ * Valérie est conservée (une exigence de salle, puis qui fournit le matériel) ;
+ * seule l'exigence de salle change, et elle ne dit rien de plus que ce que
+ * l'activité impose : on ne fait pas de la boxe sur un sol dur.
+ *
+ * ⚠ LES QUATRE FICHES DES AUTRES INTERVENANTS N'EN REÇOIVENT QUE LES PRÉREQUIS
+ * (« Aucun »), qui n'engagent personne. Une durée et un nombre de participants
+ * sont les termes commerciaux de Younes, Christophe et Jean Léo ; les écrire à
+ * leur place, sur des comptes qu'ils ne peuvent même pas ouvrir pour les
+ * corriger (adresses en @intervenants.les-extras.fr, domaine sans MX), ferait
+ * vendre par l'association une prestation qu'elle n'a pas négociée.
+ */
+const REPERES = [
+  {
+    slug: 'le-papa-plan-d-activite-physique-adapte',
+    duration: '2H',
+    maxParticipants: 10,
+    prerequisites: 'Aucun',
+    material:
+      "Salle dégagée ou gymnase, sol non glissant, point d'eau à proximité. " +
+      "Matériel fourni par l'intervenant.",
+    timeSlots: ['9h-12h', '14h-17h'],
+  },
+  {
+    slug: 'atelier-de-musicotherapie',
+    duration: '2H',
+    maxParticipants: 10,
+    prerequisites: 'Aucun',
+    material:
+      "Salle calme avec chaises, à l'écart des passages. " +
+      "Instruments et matériel fournis par l'intervenant.",
+    timeSlots: ['9h-12h', '14h-17h'],
+  },
+  {
+    slug: 'atelier-socio-esthetique',
+    duration: '2H',
+    maxParticipants: 10,
+    prerequisites: 'Aucun',
+    material:
+      "Salle avec tables, chaises et point d'eau à proximité. " +
+      "Produits et matériel fournis par les intervenantes.",
+    timeSlots: ['9h-12h', '14h-17h'],
+  },
+  {
+    slug: 'atelier-psycho-boxe',
+    duration: '2H',
+    maxParticipants: 10,
+    prerequisites: 'Aucun',
+    material:
+      "Salle dégagée au sol souple, point d'eau à proximité. " +
+      "Matériel fourni par l'intervenant.",
+    timeSlots: ['9h-12h', '14h-17h'],
+  },
+  {
+    slug: 'atelier-theatre',
+    duration: '2H',
+    maxParticipants: 10,
+    prerequisites: 'Aucun',
+    material:
+      "Salle dégagée permettant de se déplacer et de jouer devant le groupe, " +
+      "chaises pour les spectateurs. Matériel fourni par l'intervenant.",
+    timeSlots: ['9h-12h', '14h-17h'],
+  },
+  // Les quatre fiches des autres intervenants : prérequis seulement.
+  { slug: 'atelier-slam', prerequisites: 'Aucun' },
+  { slug: 'atelier-digital-photo-video-montage', prerequisites: 'Aucun' },
+  { slug: 'atelier-estime-de-soi-via-la-photo-video', prerequisites: 'Aucun' },
+  { slug: 'animation-de-soirees-thematiques', prerequisites: 'Aucun' },
+  // RE-DESSINE MOI n'en reçoit aucun : « intervention de 2 personnes, tarifs
+  // selon prestation » pour une fresque sur un mur ne se décrit pas avec une
+  // durée de séance et un nombre de participants. La fiche attend sa décision.
+];
+
+const CHAMPS_REPERES = [
+  'duration',
+  'maxParticipants',
+  'prerequisites',
+  'material',
+  'timeSlots',
+];
+
 async function main() {
   const appliquer = process.argv.includes('--appliquer');
   let remplis = 0;
@@ -209,9 +314,55 @@ async function main() {
     remplis += 1;
   }
 
+  console.log('\n--- Repères pratiques (standard maison) ---');
+  let reperes = 0;
+  for (const r of REPERES) {
+    const fiche = await prisma.service.findUnique({
+      where: { slug: r.slug },
+      select: {
+        id: true,
+        title: true,
+        duration: true,
+        maxParticipants: true,
+        prerequisites: true,
+        material: true,
+        timeSlots: true,
+      },
+    });
+    if (!fiche) {
+      console.log(`  ?  ${r.slug} — introuvable`);
+      introuvables += 1;
+      continue;
+    }
+
+    // Même règle que plus haut : on ne remplit que le vide. Un intervenant qui
+    // a posé sa propre durée garde la sienne — le standard maison est un
+    // défaut, pas une reprise en main.
+    const data = {};
+    for (const champ of CHAMPS_REPERES) {
+      const valeur = r[champ];
+      if (valeur === undefined) continue;
+      const actuel = fiche[champ];
+      const vide =
+        actuel === null ||
+        actuel === undefined ||
+        (typeof actuel === 'string' && actuel.trim() === '') ||
+        (Array.isArray(actuel) && actuel.length === 0);
+      if (vide) data[champ] = valeur;
+    }
+
+    if (Object.keys(data).length === 0) {
+      console.log(`  =  ${fiche.title} — repères déjà posés`);
+      continue;
+    }
+    console.log(`  +  ${fiche.title} — ${Object.keys(data).join(', ')}`);
+    if (appliquer) await prisma.service.update({ where: { id: fiche.id }, data });
+    reperes += 1;
+  }
+
   console.log(
-    `\n${appliquer ? 'Appliqué' : 'APERÇU (rien écrit)'} — ${remplis} fiche(s) à remplir, ` +
-      `${ignores} déjà remplie(s), ${introuvables} introuvable(s).`,
+    `\n${appliquer ? 'Appliqué' : 'APERÇU (rien écrit)'} — ${remplis} fiche(s) de contenu, ` +
+      `${reperes} fiche(s) de repères, ${ignores} déjà remplie(s), ${introuvables} introuvable(s).`,
   );
   if (!appliquer) console.log('Relancer avec --appliquer pour écrire.');
 }
