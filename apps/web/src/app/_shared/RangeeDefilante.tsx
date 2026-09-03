@@ -16,6 +16,11 @@
  * Les flèches n'apparaissent qu'à partir de `md` : au doigt, on fait défiler
  * directement, et deux boutons posés sur les cartes ne feraient que masquer le
  * contenu sur un écran étroit.
+ *
+ * La piste reçoit une marge intérieure (`md:px-14`) exactement là où les
+ * flèches se posent : sans elle, la flèche gauche recouvrait le titre de la
+ * première carte. `scroll-px-14` reporte la même marge sur l'accrochage, sinon
+ * la carte s'arrête sous le bouton au lieu de s'arrêter à côté.
  */
 import { useRef, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -42,7 +47,7 @@ export function RangeeDefilante({
         type="button"
         onClick={() => glisser(-1)}
         aria-label={`${etiquette} — précédentes`}
-        className="absolute -left-3 top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-card transition hover:bg-accent md:grid"
+        className="absolute left-0 top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-card transition hover:bg-accent md:grid"
       >
         <ChevronLeft className="size-5" />
       </button>
@@ -50,14 +55,14 @@ export function RangeeDefilante({
         type="button"
         onClick={() => glisser(1)}
         aria-label={`${etiquette} — suivantes`}
-        className="absolute -right-3 top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-card transition hover:bg-accent md:grid"
+        className="absolute right-0 top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-card transition hover:bg-accent md:grid"
       >
         <ChevronRight className="size-5" />
       </button>
 
       <div
         ref={piste}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-3 md:scroll-px-14 md:px-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </div>
