@@ -194,6 +194,10 @@ export interface Service {
   material?: string | null;
   publicTargets?: string[] | null;
   timeSlots?: string[] | null;
+  /** Durée normalisée en minutes — l'un des deux champs de durée suffit. */
+  durationMinutes?: number | null;
+  images?: string[] | null;
+  categoryId?: string | null;
   /** Consultations de la fiche publique. */
   views?: number;
   /** Demandes de devis reçues sur cette fiche. */

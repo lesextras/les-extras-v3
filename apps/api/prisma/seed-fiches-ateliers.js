@@ -1,0 +1,224 @@
+/* eslint-disable no-console */
+/**
+ * Remplissage des fiches ateliers du catalogue historique.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * POURQUOI CE SCRIPT EXISTE
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Treize ateliers publiés au 3 septembre 2026. Trois d'entre eux (Valérie
+ * SIMON, déposés à la main dans l'application) portent durée, participants,
+ * matériel, prérequis, créneaux, objectifs, déroulé et évaluation. Les dix
+ * autres viennent de l'import du catalogue WordPress : là-bas, une annonce
+ * n'avait qu'un titre, une description, un public, une ville, un prix et des
+ * images. Les champs pédagogiques n'existaient pas — il n'y avait rien à
+ * importer, et rien n'a été perdu.
+ *
+ * Une seule des dix fait exception : ATELIER PSYCHO-BOXE, dont quelqu'un avait
+ * écrit à la main, dans WordPress, « Objectif général de la formation »,
+ * « Méthodologie pédagogique » et « Modalités d'évaluation ». C'est cette fiche
+ * que Siham montre comme modèle. Elle n'a pourtant, elle non plus, ni durée,
+ * ni participants, ni matériel, ni prérequis, ni créneaux.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * CE QUE CE SCRIPT ÉCRIT, ET CE QU'IL N'ÉCRIT PAS
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠ IL N'ÉCRIT QUE CE QUI EST DÉJÀ ÉCRIT AILLEURS SUR LA MÊME FICHE.
+ *
+ * Chaque objectif ci-dessous est une phrase de la description de la fiche,
+ * remise à l'infinitif et sortie du paragraphe. Rien n'est ajouté : ni un
+ * objectif qui ne figurait pas, ni un bénéfice supposé. Le champ `source` de
+ * chaque entrée dit d'où vient le texte, pour qu'on puisse le vérifier sans
+ * relire tout l'historique.
+ *
+ * ⚠ CE QUI N'EST PAS ÉCRIT, ET NE DOIT PAS L'ÊTRE PAR CE SCRIPT :
+ *   durée · participants maximum · matériel nécessaire · prérequis · créneaux
+ *   proposés · modalités d'évaluation.
+ *
+ * Ces six informations n'existent nulle part — ni sur la fiche, ni sur le
+ * WordPress d'origine (vérifié annonce par annonce le 3/09/2026). Les écrire
+ * serait les inventer. Or ce sont exactement les informations sur lesquelles un
+ * établissement engage un budget et bloque un créneau : une durée fausse, c'est
+ * un planning faux ; un matériel faux, c'est l'atelier annulé le matin même ;
+ * une modalité d'évaluation inventée, c'est une promesse que l'intervenant
+ * devra tenir devant un financeur. Elles se demandent à leurs auteurs — et
+ * l'indicateur de complétude (`lib/completude-fiche.ts`) est là pour ça.
+ *
+ * ⚠ AUCUN CHAMP DÉJÀ REMPLI N'EST ÉCRASÉ. Le script ne remplit que le vide.
+ * Si un intervenant a écrit ses propres objectifs entre-temps, ce sont les
+ * siens qui restent — c'est sa fiche.
+ *
+ * Usage :  node prisma/seed-fiches-ateliers.js            (aperçu, n'écrit pas)
+ *          node prisma/seed-fiches-ateliers.js --appliquer
+ */
+
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+/**
+ * Une entrée par fiche. `slug` fait foi (il est unique en base).
+ * `source` : d'où vient chaque texte, pour la relecture.
+ */
+const FICHES = [
+  {
+    slug: 'le-papa-plan-d-activite-physique-adapte',
+    source:
+      "Les quatre phrases de la description de la fiche, remises à l'infinitif. " +
+      'Aucun ajout.',
+    objectives: [
+      'Reprendre une activité physique adaptée pour retrouver la forme et la confiance en soi.',
+      'Mieux connaître les morphologies, et la sienne.',
+      "Travailler l'estime de soi et la confiance en ses capacités d'action.",
+      'Développer sa capacité à parler de son corps.',
+    ].join('\n'),
+  },
+  {
+    slug: 'atelier-de-musicotherapie',
+    source:
+      'Les trois puces de la description de la fiche, reprises sans modification ' +
+      'de sens.',
+    objectives: [
+      "Repérer les bienfaits d'une pause musicale dans son quotidien, ou quand les émotions s'emballent.",
+      "S'éveiller à la musique en pratiquant un instrument.",
+      "Comprendre ses émotions et apprendre à les canaliser par la pratique d'un instrument, pour se réguler et s'apaiser.",
+    ].join('\n'),
+  },
+  {
+    slug: 'atelier-socio-esthetique',
+    source:
+      'La dernière phrase de la description : « Pour permettre de mieux prendre ' +
+      "conscience de son corps, et contribuer à restaurer une image positive de soi ! »",
+    objectives: [
+      'Mieux prendre conscience de son corps.',
+      'Contribuer à restaurer une image positive de soi.',
+      'Prendre un temps pour soi, dans un cadre accompagné.',
+    ].join('\n'),
+  },
+  {
+    slug: 'atelier-theatre',
+    source:
+      'Les deux phrases de la description. La quatrième ligne reprend la mention ' +
+      "« lors d'ateliers personnalisés » telle qu'elle est écrite : ce n'est pas " +
+      "proposé dans l'atelier standard.",
+    objectives: [
+      'Prendre confiance en soi.',
+      'Savoir prendre la parole en public.',
+      "Acquérir des techniques de savoir-être, en s'amusant.",
+      "Travailler sa prise de parole pour une recherche d'emploi ou de stage (proposé en atelier personnalisé).",
+    ].join('\n'),
+  },
+  {
+    slug: 'atelier-slam',
+    source:
+      "La phrase unique de la description : « ateliers d'écriture et de mise en " +
+      "musique textes slam et tournés vers l'expression d'émotions d'expériences " +
+      "personnelles marquantes ».",
+    objectives: [
+      'Écrire un texte de slam.',
+      'Mettre son texte en musique.',
+      "Exprimer une émotion liée à une expérience personnelle marquante.",
+    ].join('\n'),
+  },
+  {
+    slug: 'atelier-digital-photo-video-montage',
+    source:
+      'Les quatre apprentissages nommés dans la description : plans de prise de ' +
+      'vue, champs, technique de prise de vue, petits scénarios.',
+    objectives: [
+      'Réaliser des plans de prise de vue.',
+      'Prendre en compte le champ dans le cadrage.',
+      'Acquérir les techniques de prise de vue photo et vidéo.',
+      'Réaliser de petits scénarios.',
+    ].join('\n'),
+  },
+  {
+    slug: 'atelier-estime-de-soi-via-la-photo-video',
+    source:
+      "Les cinq paragraphes de la description, qui décrivent explicitement une " +
+      "progression théorie → pré-production → production → post-production. Les " +
+      "objectifs et le déroulé sont donc tous deux dans le texte de la fiche — " +
+      "c'est la seule des dix qui porte les deux.",
+    objectives: [
+      "Écrire un scénario et réaliser son découpage technique.",
+      'Comprendre la valeur de plan, la composition et la lumière.',
+      "Utiliser une caméra pour obtenir une image de qualité.",
+      'Concevoir un storyboard et planifier un tournage.',
+      "Assurer la prise de vue, l'enregistrement du son et la direction des acteurs.",
+      "Monter, étalonner et sonoriser un film, et y ajouter titres et transitions.",
+    ].join('\n'),
+    methodology: [
+      "Théorie : les fondamentaux de la création d'un film — écriture du scénario, découpage technique, valeur de plan, composition, éclairage, prise en main de la caméra.",
+      "Pré-production : scénario, storyboard, planification du tournage.",
+      "Production : prise de vue, enregistrement du son, direction d'acteurs.",
+      "Post-production : montage, étalonnage des couleurs, bande sonore, effets, titres et transitions.",
+      "Les participants travaillent en équipe sur leur propre film, encadrés par des professionnels du cinéma.",
+    ].join('\n'),
+  },
+  // ── LES TROIS FICHES VOLONTAIREMENT ABSENTES ──────────────────────────────
+  //
+  // ATELIER PSYCHO-BOXE : ses objectifs, son déroulé et son évaluation sont
+  //   déjà remplis (repris du WordPress). Rien à écrire.
+  //
+  // ANIMATION DE SOIRÉES THÉMATIQUES : ce n'est pas un atelier pédagogique,
+  //   c'est une prestation événementielle (« Soirée clé en mains avec DJ, déco,
+  //   lumières », « Fête avec un Père Noël professionnel »). Elle n'a pas
+  //   d'objectifs d'apprentissage, et lui en inventer en ferait autre chose que
+  //   ce que son auteur vend.
+  //
+  // RE-DESSINE MOI : sa description annonce « UN DISPOSITIF ÉVÉNEMENT 2025 […]
+  //   DISPONIBLE UNIQUEMENT DURANT L'ÉTÉ 2025 » et « TARIFS SELON PRESTATION »,
+  //   alors que la fiche est en ligne en septembre 2026 et affiche 300 €. Ce
+  //   n'est pas un champ à compléter, c'est une fiche à réécrire ou à archiver —
+  //   et c'est une décision, pas une correction.
+];
+
+async function main() {
+  const appliquer = process.argv.includes('--appliquer');
+  let remplis = 0;
+  let ignores = 0;
+  let introuvables = 0;
+
+  for (const f of FICHES) {
+    const fiche = await prisma.service.findUnique({
+      where: { slug: f.slug },
+      select: { id: true, title: true, objectives: true, methodology: true, evaluation: true },
+    });
+    if (!fiche) {
+      console.log(`  ?  ${f.slug} — introuvable`);
+      introuvables += 1;
+      continue;
+    }
+
+    /** Ne remplit que le vide : une fiche écrite par son auteur reste la sienne. */
+    const data = {};
+    for (const champ of ['objectives', 'methodology', 'evaluation']) {
+      const valeur = f[champ];
+      const actuel = fiche[champ];
+      if (valeur && !(actuel && String(actuel).trim())) data[champ] = valeur;
+    }
+
+    if (Object.keys(data).length === 0) {
+      console.log(`  =  ${fiche.title} — déjà rempli, rien à faire`);
+      ignores += 1;
+      continue;
+    }
+
+    console.log(`  +  ${fiche.title} — ${Object.keys(data).join(', ')}`);
+    console.log(`     source : ${f.source}`);
+    if (appliquer) await prisma.service.update({ where: { id: fiche.id }, data });
+    remplis += 1;
+  }
+
+  console.log(
+    `\n${appliquer ? 'Appliqué' : 'APERÇU (rien écrit)'} — ${remplis} fiche(s) à remplir, ` +
+      `${ignores} déjà remplie(s), ${introuvables} introuvable(s).`,
+  );
+  if (!appliquer) console.log('Relancer avec --appliquer pour écrire.');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());

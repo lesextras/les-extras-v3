@@ -1816,3 +1816,132 @@ les cas, l'injection se fait au démarrage.
 
 Le mot de passe n'est ni saisi ni généré ici (règle n° 1) : le champ Coolify a
 été ouvert et pré-rempli avec le NOM, Siham colle la VALEUR et redéploie l'API.
+
+---
+
+## Les fiches ateliers, et ce que l'admin peut vraiment faire — 3 septembre 2026 (nuit)
+
+Deux questions de Siham en une : « les fiches ateliers doivent avoir tout le
+contenu détaillé comme les ateliers à la une, donc remplis tous », et « est-ce
+que l'admin peut modifier, supprimer et avoir tous les droits sur tout ? ».
+
+### ⚠ LA MESURE D'ABORD, ET ELLE CORRIGE UNE MESURE PRÉCÉDENTE
+
+Relevé le 3/09 sur les treize ateliers publiés, fiche par fiche, depuis
+`api.les-extras.fr/api/public/catalog/<slug>` :
+
+| Fiche | Ce qu'elle porte |
+|---|---|
+| Les 3 de Valérie SIMON (déposées à la main) | **tout** : durée, participants, matériel, prérequis, créneaux, objectifs, déroulé, évaluation |
+| ATELIER PSYCHO-BOXE | objectifs, déroulé, évaluation — **mais NI durée, NI participants, NI matériel, NI prérequis, NI créneaux** |
+| Les 9 autres de juillet | description + public + ville + prix + images, **et rien d'autre** |
+
+**Une note antérieure disait « objectives vide sur 13 » : c'était faux**, et
+c'est psycho-boxe qui l'infirme. Ne pas la reprendre.
+
+**D'où vient le trou.** Les dix fiches de juillet viennent de l'import du
+catalogue WordPress. Là-bas, une annonce HivePress n'a qu'un titre, une
+description, un public, une ville, un prix et des images : **les champs
+pédagogiques n'existaient pas**, il n'y avait donc rien à importer et rien n'a
+été perdu. Psycho-boxe fait exception parce que quelqu'un avait écrit ses trois
+blocs À LA MAIN dans le corps de l'annonce WordPress.
+
+⚠ **Les dix annonces WordPress ont été relues une par une le 3/09**
+(`app.les-extras.fr/listing/<slug>/`) : **elles ne portent rien de plus que ce
+qui est déjà en base.** Il n'y a aucune moisson à faire de ce côté — ne pas
+refaire ce chemin.
+
+### « Met partout les mêmes infos que pour psychoboxe » — ce qui était exécutable
+
+Six informations manquent partout et **n'existent nulle part** : durée,
+participants maximum, matériel, prérequis, créneaux, modalités d'évaluation.
+Psycho-boxe ne les a pas non plus : il n'y a rien à recopier. Les écrire, c'est
+les inventer — et ce sont précisément celles sur lesquelles un établissement
+engage un budget et bloque un créneau. **Elles se demandent à leurs auteurs.**
+
+Ce qui était exécutable sans rien inventer, et qui l'a été
+(`prisma/seed-fiches-ateliers.js`, idempotent, **n'écrit jamais par-dessus un
+champ déjà rempli**) : les **objectifs** de sept fiches, tirés des puces et des
+phrases déjà écrites dans leur propre description, remises à l'infinitif.
+Chaque entrée du script porte un champ `source` qui dit d'où vient le texte.
+Une seule fiche a reçu un déroulé — « estime de soi via la Photo-Vidéo » —
+parce que sa description décrit explicitement la progression théorie →
+pré-production → production → post-production.
+
+**Trois fiches sont volontairement absentes du script :**
+- **PSYCHO-BOXE** : déjà remplie ;
+- **ANIMATION DE SOIRÉES THÉMATIQUES** : ce n'est pas un atelier pédagogique
+  mais une prestation événementielle (DJ, déco, Père Noël). Lui inventer des
+  objectifs d'apprentissage en ferait autre chose que ce que son auteur vend ;
+- **RE-DESSINE MOI** : ⚠ **à trancher par Siham.** Sa description annonce « UN
+  DISPOSITIF ÉVÉNEMENT 2025 […] DISPONIBLE UNIQUEMENT DURANT L'ÉTÉ 2025 » et
+  « TARIFS SELON PRESTATION », alors qu'elle est en ligne en septembre 2026 et
+  affiche 300 €. Ce n'est pas un champ à compléter, c'est une fiche à réécrire
+  ou à archiver.
+
+### L'indicateur de complétude — `lib/completude-fiche.ts`
+
+Treize champs, deux niveaux (`socle` / `confort`), et **pour chacun la raison
+de son existence**, affichée à l'auteur : « sans durée, un chef de service ne
+peut pas caler l'atelier dans un planning », « une fiche sans prix ne se
+compare pas, donc ne se choisit pas ». Une liste de champs manquants sans
+raison se lit comme une corvée ; avec la raison, elle se remplit.
+
+Trois points d'affichage — `_shared/CompletudeFiche.tsx` :
+- `/dashboard/ateliers` : un bandeau sous chaque fiche + un rappel en tête de
+  section (sinon l'information reste sous la troisième carte) ;
+- `/admin/ateliers` : une colonne « Fiche » avec le pourcentage et ce qui
+  manque, plus une entrée **« Fiches incomplètes »** dans le filtre de statut ;
+- `/admin/ateliers/[id]` : la liste détaillée, avec les raisons.
+
+⚠ **AUCUN CHAMP N'EST RENDU OBLIGATOIRE.** Bloquer la publication d'une fiche
+incomplète mettrait dehors les dix fiches déjà en ligne et punirait des
+intervenants qui n'ont rien fait de mal. **On informe, on n'interdit pas.**
+
+⚠ **Durée écrite (`duration`, « 2H ») et durée normalisée (`durationMinutes`)
+disent la même chose au lecteur : l'une des deux suffit.** Réclamer les deux
+ferait passer une fiche complète pour incomplète — testé
+(`lib/__tests__/completude-fiche.test.ts`, 7 tests, dont le prix à zéro qui
+reste un prix renseigné : un atelier gratuit existe).
+
+### La réponse à « l'admin peut-il tout ? » — mesurée, et le trou comblé
+
+**Ce qui était vrai avant ce commit :** 58 routes sous `AdminGuard`, dont sept
+`DELETE` (utilisateur, mission, atelier, compte, catégorie, article, formation,
+demande de contact) qui suppriment réellement en base. Mais sur un ATELIER,
+l'administration ne pouvait que **publier, archiver ou supprimer**.
+`UpdateServiceAdminDto` était limité à titre / description / ville / images /
+publics / catégorie, « au motif qu'un administrateur corrige une coquille ».
+Avec dix fiches incomplètes appartenant à quatre intervenants différents, dont
+trois extérieurs à l'association, **la seule façon de compléter une fiche était
+de se connecter au compte de son auteur.** Et `PATCH /admin/services/:id`
+n'avait de toute façon **aucun bouton** dans l'interface.
+
+Ce qui a changé :
+- `UpdateServiceAdminDto` couvre **toute la fiche** — durée, durée en minutes,
+  participants, créneaux, matériel, prérequis, objectifs, déroulé, évaluation,
+  FAQ, prix, options facturables, coût en crédits, mise en avant, Qualiopi.
+  ⚠ **Il portait un champ `summary` qui n'existe pas sur `Service`** : l'envoyer
+  faisait tomber la requête chez Prisma. Retiré.
+- **Trois exceptions assumées, écrites dans le DTO** : `status` reste à la route
+  de modération (qui journalise `atelier.modere` — le fondre ici ferait
+  disparaître la trace) ; `slug` n'est pas modifiable (c'est l'adresse publique,
+  déjà indexée et partagée) ; `accountId` non plus (changer le titulaire d'une
+  fiche, c'est changer qui l'anime).
+- `ServiceModal` prend un mode `admin` : **le même formulaire des deux côtés**,
+  qui écrit sur `/admin/services/:id` sans `accountId` (l'admin n'est membre
+  d'aucun de ces comptes — envoyer le sien ferait refuser la requête par
+  l'`AccountGuard`). Deux formulaires pour une seule fiche divergent toujours au
+  premier champ ajouté. Le statut part **dans un second appel** vers
+  `/moderate`, et seulement s'il change.
+- Bouton « Corriger la fiche » sur `/admin/ateliers/[id]`, qui affiche aussi
+  enfin le contenu pédagogique (objectifs, déroulé, évaluation, prérequis,
+  matériel) — invisible dans l'administration jusqu'ici.
+
+**Ce que l'admin ne peut toujours pas faire, et qu'il faut dire tel quel :**
+modifier le mot de passe de quelqu'un (aucune route, et c'est bien) ; se
+connecter à la place d'un utilisateur (pas d'usurpation d'identité) ; modifier
+une facture émise autrement que par son statut (art. 242 nonies A ann. II CGI) ;
+supprimer un utilisateur qui possède un compte (il faut d'abord transférer ou
+supprimer ses comptes) ; toucher à un compte `ANONYMIZED` (effacé à la demande
+de son titulaire, il n'est plus modifiable).

@@ -8,6 +8,8 @@ import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, EmptyState, ErrorState, SectionTitle } from "../../../_shared/ui";
 import { ServiceCard, BookingRow } from "../../../_shared/cards";
 import { ServiceModal } from "../../../_shared/modals/ServiceModal";
+import { CompletudeBandeau } from "../../../_shared/CompletudeFiche";
+import { completude } from "@/lib/completude-fiche";
 import { BookingActions } from "../../../_shared/BookingActions";
 import { SERVICE_STATUS_LABEL } from "../../../_shared/format";
 import type { Booking, Service } from "../../../_shared/types";
@@ -125,6 +127,29 @@ export default async function AteliersPage() {
             }
           />
         ) : (
+          <>
+            {(() => {
+              // Le rappel en tête de section : sans lui, l'information reste
+              // sous la troisième carte et personne ne descend jusque-là.
+              const aCompleter = services.data.filter((sv) => !completude(sv).socleComplet);
+              if (aCompleter.length === 0) return null;
+              return (
+                <Card className="border-secondary/30 bg-secondary/5">
+                  <CardContent className="p-4">
+                    <p className="text-sm font-semibold text-foreground">
+                      {aCompleter.length === 1
+                        ? "Une de vos fiches est incomplète"
+                        : `${aCompleter.length} de vos fiches sont incomplètes`}
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      Elles restent en ligne — rien n'est retiré. Mais à côté d'une fiche qui
+                      annonce sa durée, son nombre de participants et son déroulé, elles se font
+                      moins ouvrir. Le détail de ce qui manque est sous chaque fiche.
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {services.data.map((sv) => (
               <div key={sv.id} className="relative">
@@ -132,6 +157,13 @@ export default async function AteliersPage() {
                   {SERVICE_STATUS_LABEL[sv.status]}
                 </Badge>
                 <ServiceCard audience service={sv} href={`/marketplace/services/${sv.id}`} />
+                {/* CE QUI MANQUE, ÉCRIT SOUS LA FICHE.
+                    Dix des treize ateliers du catalogue sont publiés sans
+                    durée, sans participants, sans matériel ni créneaux — et
+                    rien ne le disait jamais à leur auteur. La fiche part au
+                    catalogue, elle a l'air normale dans son propre espace, et
+                    c'est le visiteur qui voit la différence. */}
+                <CompletudeBandeau fiche={sv} />
                 {/* Une fiche publiée n'était plus modifiable ni suspendable :
                     la liste n'offrait aucune action, alors que l'API l'a
                     toujours permis. */}
@@ -141,7 +173,7 @@ export default async function AteliersPage() {
                     fiche={sv as never}
                     trigger={
                       <Button size="sm" variant="outline">
-                        Modifier
+                        Compléter la fiche
                       </Button>
                     }
                   />
@@ -149,6 +181,7 @@ export default async function AteliersPage() {
               </div>
             ))}
           </div>
+          </>
         )}
       </section>
 

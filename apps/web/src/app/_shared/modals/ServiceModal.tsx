@@ -77,8 +77,14 @@ export function ServiceModal({
   trigger,
   categorieInitiale = "ATELIER",
   fiche,
+  admin = false,
 }: {
-  accountId: string;
+  /**
+   * Compte propriétaire de la fiche. Inutile en mode administration : l'admin
+   * n'est membre d'aucun des comptes dont il corrige les fiches, et envoyer
+   * son propre `accountId` ferait refuser la requête par l'`AccountGuard`.
+   */
+  accountId?: string;
   trigger?: React.ReactNode;
   /** Pré-sélectionne le type de fiche. Le champ reste modifiable : on ouvre
    *  la bonne porte, on n'enferme pas. */
@@ -89,6 +95,22 @@ export function ServiceModal({
    * toujours permis, c'est le bouton qui manquait.
    */
   fiche?: FicheExistante;
+  /**
+   * MODE ADMINISTRATION — la même fiche, écrite par `PATCH /admin/services/:id`
+   * au lieu de `PATCH /services/:id`.
+   *
+   * Dix des treize ateliers du catalogue viennent de l'import WordPress et
+   * n'ont ni durée, ni participants, ni matériel, ni prérequis, ni créneaux :
+   * ces champs n'existaient pas là-bas. Ils appartiennent à quatre
+   * intervenants différents, dont trois extérieurs à l'association. Sans ce
+   * mode, la seule façon de compléter une de ces fiches était de se connecter
+   * au compte de son auteur — ce qu'on ne fait pas.
+   *
+   * Le formulaire est le MÊME des deux côtés, à dessein : une fiche corrigée
+   * par l'administration doit avoir exactement la forme d'une fiche écrite par
+   * son auteur, sinon les deux divergent au premier champ ajouté.
+   */
+  admin?: boolean;
 }) {
   const edition = Boolean(fiche);
   const router = useRouter();
@@ -152,7 +174,7 @@ export function ServiceModal({
 
   useEffect(() => {
     if (!open) return;
-    apiRequest<{ id: string; title: string }[]>("/categories?type=service", { accountId })
+    apiRequest<{ id: string; title: string }[]>("/categories?type=service", admin ? {} : { accountId })
       .then((rows) => {
         if (Array.isArray(rows) && rows.length) {
           setDbCats(rows);
@@ -163,7 +185,7 @@ export function ServiceModal({
         }
       })
       .catch(() => {});
-  }, [open, accountId]);
+  }, [open, accountId, admin]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -201,6 +223,29 @@ export function ServiceModal({
       timeSlots: creneaux.length ? creneaux : undefined,
     };
     try {
+      // MODE ADMINISTRATION — deux appels, et c'est délibéré.
+      //
+      // Le contenu part sur `PATCH /admin/services/:id`, le statut sur
+      // `PATCH /admin/services/:id/moderate`. Les fondre en un seul appel
+      // aurait fait disparaître la trace de modération (`atelier.modere`), qui
+      // est la seule à dire QUI a retiré une fiche du catalogue et quand. Le
+      // second appel n'est envoyé que si le statut change vraiment.
+      if (admin && fiche) {
+        await apiRequest(`/admin/services/${fiche.id}`, { method: "PATCH", body: corps });
+        if (statut && statut !== fiche.status) {
+          await apiRequest(`/admin/services/${fiche.id}/moderate`, {
+            method: "PATCH",
+            body: { status: statut },
+          });
+        }
+        toast({
+          title: "Fiche corrigée",
+          description: "La correction est journalisée et visible tout de suite dans le catalogue.",
+        });
+        setOpen(false);
+        router.refresh();
+        return;
+      }
       if (edition && fiche) {
         await apiRequest(`/services/${fiche.id}`, {
           method: "PATCH",
