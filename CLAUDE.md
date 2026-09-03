@@ -1764,3 +1764,39 @@ texte. Ils vont ensemble à la lecture — à qui ça s'adresse, et ce qu'il fau
 avant. `Attribut` reçoit un paramètre `ton` : le second encart prend le fond
 `muted`, plus sourd d'un ton, sans quoi les deux textes longs formaient un seul
 pavé où l'œil ne trouvait plus la séparation.
+
+### ⚠ CE QUE L'ÉCRAN A TROUVÉ DANS LA MINUTE : `SMTP_PASSWORD` EST ABSENTE
+
+Premier chargement de `/admin/emails`, bandeau rouge : **« Les messages partent
+par Brevo, pas par le SMTP du domaine »**, expéditeur `contact@adepa77.fr`.
+Vérifié dans le conteneur, noms seulement, jamais les valeurs :
+
+```
+SMTP_HOST DEFINIE · SMTP_USER DEFINIE · SMTP_PORT DEFINIE
+SMTP_PASSWORD ABSENTE          ← une seule variable
+MAIL_FROM_EMAIL DEFINIE · MAIL_FROM_NAME DEFINIE · BREVO_API_KEY DEFINIE
+ALERTES_EMAIL ABSENTE · CONTACT_INBOX_EMAIL ABSENTE (les défauts du code jouent)
+```
+
+`MailService.smtp` exige les TROIS valeurs : sans le mot de passe, le
+transport SMTP n'est jamais construit et **tout bascule sur le repli Brevo** —
+c'est-à-dire exactement la panne de l'été, celle que documente l'en-tête de
+`mail.service.ts` : SPF n'autorise que Hostinger, les messages échouent
+l'authentification et une partie se fait écarter en silence.
+
+Conséquence directe : la confirmation d'adresse, le message de bienvenue,
+l'alerte d'inscription et le tunnel qui démarre demain à 10 h 15 partent tous
+par ce chemin-là. **Le compteur « Envoyés » à 0 n'est pas rassurant : il veut
+dire qu'aucun envoi n'a eu lieu depuis le redémarrage, pas que tout va bien.**
+
+⚠ La liste des variables de Coolify n'affiche que DIX entrées pour l'app API
+(NODE_ENV, JWT_SECRET, DATABASE_URL, SESSION_SECRET, JWT_EXPIRES_IN, API_PORT,
+WEB_ORIGIN, MAIL_DSN, MAIL_FROM, UPLOAD_DIR) alors que le conteneur en porte
+bien davantage — les autres viennent d'ailleurs (image, ou portée non affichée
+par cette page). **Ne pas conclure d'une absence dans cette liste qu'une
+variable n'est pas posée : la seule preuve est `process.env` dans le
+conteneur.** Ajouter `SMTP_PASSWORD` au niveau de l'app fonctionne dans tous
+les cas, l'injection se fait au démarrage.
+
+Le mot de passe n'est ni saisi ni généré ici (règle n° 1) : le champ Coolify a
+été ouvert et pré-rempli avec le NOM, Siham colle la VALEUR et redéploie l'API.
