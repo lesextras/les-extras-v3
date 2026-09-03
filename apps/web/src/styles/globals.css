@@ -171,7 +171,7 @@
   --card-foreground: 40 30% 96%;
   --muted-foreground: 222 10% 78%;
   --accent-foreground: 40 30% 92%;
-  --border: 222 13% 31%;
+  --border: 222 14% 28%;
   --primary: 347 80% 60%;
   --primary-foreground: 0 0% 100%;
   --primary-soft: 347 32% 20%;
@@ -185,24 +185,24 @@
 }
 
 .theme-sombre {
-  --background: 222 24% 13%;
+  --background: 222 25% 10%;
   --foreground: 40 30% 96%;
-  --card: 222 20% 17%;
+  --card: 222 21% 14%;
   --card-foreground: 40 30% 96%;
-  --popover: 222 20% 17%;
+  --popover: 222 21% 14%;
   --popover-foreground: 40 30% 96%;
-  --muted: 222 16% 21%;
+  --muted: 222 17% 18%;
   --muted-foreground: 222 10% 70%;
-  --accent: 222 16% 22%;
+  --accent: 222 17% 19%;
   --accent-foreground: 40 30% 92%;
-  --border: 222 13% 27%;
-  --input: 222 13% 29%;
+  --border: 222 14% 24%;
+  --input: 222 14% 26%;
   --primary: 347 80% 57%;
   --primary-foreground: 0 0% 100%;
-  --primary-soft: 347 30% 21%;
+  --primary-soft: 347 31% 18%;
   --secondary: 14 72% 58%;
   --secondary-foreground: 0 0% 100%;
-  --secondary-soft: 14 30% 20%;
+  --secondary-soft: 14 31% 17%;
   --ring: 347 80% 60%;
 
   /* États : les valeurs claires (vert 32 % de luminosité, texte de warning
@@ -224,24 +224,24 @@
    Le fond charbon reste disponible dans l’espace connecté — mais il faut le
    demander : la règle ci-dessous ne répond qu’à un choix explicite. */
 :root[data-theme='sombre'] .theme-espace {
-  --background: 222 24% 13%;
+  --background: 222 25% 10%;
   --foreground: 40 30% 96%;
-  --card: 222 20% 17%;
+  --card: 222 21% 14%;
   --card-foreground: 40 30% 96%;
-  --popover: 222 20% 17%;
+  --popover: 222 21% 14%;
   --popover-foreground: 40 30% 96%;
-  --muted: 222 16% 21%;
+  --muted: 222 17% 18%;
   --muted-foreground: 222 10% 70%;
-  --accent: 222 16% 22%;
+  --accent: 222 17% 19%;
   --accent-foreground: 40 30% 92%;
-  --border: 222 13% 27%;
-  --input: 222 13% 29%;
+  --border: 222 14% 24%;
+  --input: 222 14% 26%;
   --primary: 347 80% 57%;
   --primary-foreground: 0 0% 100%;
-  --primary-soft: 347 30% 21%;
+  --primary-soft: 347 31% 18%;
   --secondary: 14 72% 58%;
   --secondary-foreground: 0 0% 100%;
-  --secondary-soft: 14 30% 20%;
+  --secondary-soft: 14 31% 17%;
   --ring: 347 80% 60%;
 
   /* États : les valeurs claires (vert 32 % de luminosité, texte de warning

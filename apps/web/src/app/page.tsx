@@ -674,7 +674,7 @@ export default async function LandingPage() {
         {/* ============ CTA FINAL ============ */}
         <section className="section">
           <Reveal>
-            <div className="relative overflow-hidden rounded-3xl bloc-nuit bg-[hsl(222,20%,18%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">
+            <div className="relative overflow-hidden rounded-3xl bloc-nuit bg-[hsl(222,21%,15%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">
               <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
               <div
                 className="absolute -right-16 -top-16 size-64 rounded-full bg-secondary/20 blur-3xl"

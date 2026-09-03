@@ -68,7 +68,7 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
 
       <div className="space-y-4">
         {/* LEX le GAPiste */}
-        <div className="bloc-nuit rounded-3xl bg-[hsl(222,20%,18%)] p-7 ring-1 ring-primary/25 md:p-8">
+        <div className="bloc-nuit rounded-3xl bg-[hsl(222,21%,15%)] p-7 ring-1 ring-primary/25 md:p-8">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
             <Sparkles className="size-3.5" />
             À crédits, comme le reste de LEX

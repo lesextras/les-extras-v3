@@ -1591,15 +1591,20 @@ Mesuré en direct après déploiement et relance du seed (10 fiches mises à jou
 
 Deux corrections, et elles allaient ensemble.
 
-1. **Les jetons du thème sombre ont été remontés de cinq points** de luminosité :
-   fond `222 26% 8%` → `222 24% 13%`, cartes 12 % → 17 %, `muted` 16 % → 21 %,
-   `accent` 17 % → 22 %, bordures 22 % → 27 %, champs 24 % → 29 %, et les deux
-   `*-soft` à l'avenant. Le bloc est écrit **deux fois** dans `globals.css`
+1. **Les jetons du thème sombre ont été remontés, puis rabaissés dans la même
+   soirée.** D'abord de deux tons (+5 points), Siham a regardé et demandé
+   « 1.5 ton plus sombre » : on est redescendu de 3,75 points arrondis à 4.
+   **Bilan net : un demi-ton plus clair qu'avant** — fond `222 26% 8%` →
+   `222 25% 10%`, cartes 12 % → 14 %, `muted` 16 % → 18 %, `accent` 17 % → 19 %,
+   bordures 22 % → 24 %, champs 24 % → 26 %, et les deux `*-soft` à l'avenant.
+   Ce faible écart est le bon enseignement : **ce n'était pas la luminosité du
+   fond qui gênait, c'étaient les reflets absents** (point 2). Une fois qu'ils
+   s'affichent, un fond presque aussi sombre passe très bien. Le bloc est écrit **deux fois** dans `globals.css`
    (`.theme-sombre` et `:root[data-theme='sombre'] .theme-espace`) : les deux
    ont été modifiés, et il faut penser aux deux à chaque fois. Les quatre blocs
    `bg-[hsl(222,22%,13%)]` en dur (`page.tsx`, `BlocOutils`, `DemoLex`,
-   `BlocGap`) sont passés à `hsl(222,20%,18%)` — sinon ils devenaient plus
-   sombres que le fond qui les porte.
+   `BlocGap`) suivent le même mouvement et valent `hsl(222,21%,15%)` — sinon
+   ils deviendraient plus sombres que le fond qui les porte.
 
 2. ⚠ **Les reflets ne s'affichaient jamais pour un nouveau visiteur.** La règle
    exigeait `[data-theme='sombre']`, c'est-à-dire un choix EXPLICITE mémorisé
