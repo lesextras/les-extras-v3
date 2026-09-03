@@ -72,10 +72,22 @@ function pied() {
   return `${G.FILET}
 <h3 style="${G.H3}">Pour aller plus loin dans le catalogue</h3>
 <p>Chaque mini-formation travaille <strong>une seule compétence</strong>. Celles qui
-partagent la même thématique ne se répètent pas&nbsp;: elles se suivent en complément,
-dans l’ordre qui vous arrange. Le catalogue complet est sur
-<strong>les-extras.fr/formations</strong>, et toutes sont gratuites du premier au
-dernier module.</p>
+partagent la même thématique ne se répètent pas&nbsp;: elles se suivent en complément. Le
+catalogue complet est sur <strong>les-extras.fr/formations</strong>, et toutes sont
+gratuites du premier au dernier module.</p>
+<p><strong>Trois d’entre elles s’appuient sur une autre</strong>, et il vaut mieux le
+savoir avant de commencer&nbsp;:</p>
+<ul style="${G.UL}">
+<li style="${G.LI}"><strong>«&nbsp;Les quatre fonctions d’un comportement&nbsp;»</strong>
+vient en premier. «&nbsp;Apprendre à demander plutôt qu’à crier&nbsp;» commence là où elle
+s’arrête&nbsp;: son module&nbsp;1 suppose une fonction déjà identifiée.</li>
+<li style="${G.LI}"><strong>«&nbsp;Guider puis s’effacer&nbsp;»</strong> se suit avant
+<strong>«&nbsp;Décomposer une routine en étapes&nbsp;»</strong>&nbsp;: la seconde utilise
+l’échelle des aides de 0 à 7 que la première installe.</li>
+<li style="${G.LI}"><strong>«&nbsp;Rendre l’environnement prévisible&nbsp;»</strong> se
+suit seule, à n’importe quel moment. Elle renvoie aux quatre fonctions à un seul endroit,
+pour dire quand un support visuel n’est <em>pas</em> la bonne réponse.</li>
+</ul>
 <div style="${G.ALERTE}">
 <h3 style="margin-top:0;color:#8a3a2e">Ce que ces fiches ne sont pas</h3>
 <p style="margin-bottom:0">Ce ne sont ni des outils de diagnostic, ni des grilles

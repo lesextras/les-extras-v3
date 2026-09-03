@@ -249,6 +249,79 @@ bonne première étape. Savoir s’arrêter et passer la main fait partie de la 
 </div>`,
 });
 
+const FICHE_7 = A.fiche({
+  numero: 7,
+  titre: 'La trame « scène qui dérape » — à remplir',
+  quand: 'à chaque fois qu’une situation s’est mal terminée et que vous voulez comprendre.',
+  contenu: `<div style="${G.GRIS}">
+<p style="margin:0"><strong>1. La scène</strong>, au présent, dix à quinze lignes. Interdit&nbsp;:
+«&nbsp;énervé&nbsp;», «&nbsp;provocateur&nbsp;», «&nbsp;caprice&nbsp;», «&nbsp;exprès&nbsp;»,
+«&nbsp;agressif&nbsp;», «&nbsp;crise&nbsp;».</p>
+<p style="margin:14px 0 0">………………………………………………………………………………………………………………<br>
+………………………………………………………………………………………………………………<br>
+………………………………………………………………………………………………………………</p>
+<p style="margin:14px 0 0"><strong>2. Ce qui s’est passé dans les dix secondes suivantes</strong>
+— une phrase, soulignée&nbsp;:<br>………………………………………………………………………………………</p>
+<p style="margin:14px 0 0"><strong>3. La courbe</strong>&nbsp;: par rapport à il y a un mois, ce
+comportement arrive <em>plus tôt · pareil · plus tard</em>.</p>
+<p style="margin:14px 0 0"><strong>4. Ce que j’écarte</strong>&nbsp;: douleur récente&nbsp;?
+traitement modifié&nbsp;? tâche devenue plus dure&nbsp;? ………………………………………</p>
+<p style="margin:14px 0 0"><strong>5. Deux décisions «&nbsp;avant&nbsp;»</strong> — qui portent
+sur la tâche, l’environnement ou une possibilité offerte, jamais sur «&nbsp;mieux réagir&nbsp;»&nbsp;:<br>
+a. ………………………………………………………………………………………<br>
+b. ………………………………………………………………………………………</p>
+</div>`,
+});
+
+const FICHE_8 = A.fiche({
+  numero: 8,
+  titre: 'La scène de Yanis, corrigée ligne à ligne',
+  quand: 'après avoir fait la vôtre. Comparez, ne recopiez pas.',
+  contenu:
+    A.tableau(
+      ['Ce que dit la scène', 'Ce qu’on en tire', 'Ce que ça ne prouve pas'],
+      [
+        [
+          '« Yanis prend l’économe, le repose, se lève et va à la fenêtre. »',
+          'Le comportement arrive <em>après</em> la consigne. La colonne « Avant » contient une demande.',
+          'Rien sur la fonction encore&nbsp;: beaucoup de comportements suivent une consigne.',
+        ],
+        [
+          '« Elle répète, plus fort. Il tape sur le rebord. »',
+          'La pression monte&nbsp;: la valeur de l’échappée augmente en même temps.',
+          'Que le bruit soit dirigé contre l’adulte. Rien ne le dit.',
+        ],
+        [
+          '« Tu sors, tu reviendras quand tu seras calme. » Yanis sort.',
+          '<strong>La tâche a disparu, complètement et immédiatement.</strong> C’est la ligne décisive de la colonne « Après ».',
+          'Que ce soit la seule conséquence&nbsp;: il a aussi reçu trois échanges et l’attention du groupe.',
+        ],
+        [
+          '« Il reste dans le couloir quinze minutes, puis revient. »',
+          'Il s’apaise seul, sans adulte. Cela <em>pèse contre</em> l’attention comme fonction principale.',
+          'Que l’attention n’y soit pour rien&nbsp;: il en a reçu beaucoup <em>avant</em> de sortir.',
+        ],
+        [
+          '« Quatre minutes, puis deux. »',
+          'La courbe raccourcit régulièrement&nbsp;: indice fort d’un comportement renforcé.',
+          'Une preuve&nbsp;: une douleur, un traitement ou une tâche devenue plus dure feraient la même courbe.',
+        ],
+      ],
+    ) +
+    `<div style="${G.GRIS}">
+<p style="margin-top:0"><strong>L’hypothèse, telle qu’elle s’écrit&nbsp;:</strong></p>
+<p style="margin-bottom:0"><em>«&nbsp;Sur trois séances d’atelier cuisine entre le 3 et le
+17 mars, Yanis quitte la table et tape sur le rebord de la fenêtre après la consigne
+d’épluchage. Trois fois sur trois, l’épluchage n’a pas eu lieu. Je fais l’hypothèse d’une
+fonction d’échappement à cette tâche précise, et je propose d’en discuter en réunion du 20.
+Ce qui me ferait changer d’avis&nbsp;: qu’il refuse aussi des tâches faciles qu’il aime, ou
+qu’un examen dentaire ou visuel explique la difficulté motrice.&nbsp;»</em></p>
+</div>
+<p><strong>Ce que l’équipe n’a pas fait, et qui aurait tout changé&nbsp;:</strong> personne
+n’a demandé à Yanis ce qui coinçait. Il a onze ans et il parle. Aucune analyse
+fonctionnelle ne remplace la question posée à la personne concernée.</p>`,
+});
+
 const HTML =
   A.entete('Les quatre fonctions d’un comportement') +
   FICHE_1 +
@@ -257,6 +330,8 @@ const HTML =
   FICHE_4 +
   FICHE_5 +
   FICHE_6 +
+  FICHE_7 +
+  FICHE_8 +
   A.pied();
 
 module.exports = { HTML };

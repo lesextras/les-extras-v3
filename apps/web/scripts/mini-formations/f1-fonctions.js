@@ -16,7 +16,7 @@ const M1 = {
     minutes: 12,
     prerequis: 'aucun. C’est le module d’entrée du parcours.',
     evaluation:
-      'quiz éclair en fin de module, et le livrable «&nbsp;Mon carnet de séance&nbsp;».',
+      'les trois critères «&nbsp;Avant de passer au module suivant&nbsp;», que vous cochez vous-même, et le livrable «&nbsp;Mon carnet de séance&nbsp;». Ni examen, ni note&nbsp;: ce sont des productions, pas des questions de connaissance.',
   },
   objectifs: [
     'Distinguer la <strong>forme</strong> d’un comportement (ce qu’on voit) de sa <strong>fonction</strong> (ce qu’il obtient)',
@@ -36,6 +36,16 @@ souvent. Il échoue parce qu’il traite la <em>forme</em> et laisse intacte la
 produit de façon suffisamment fiable pour valoir la peine d’être refait. Cela n’a rien
 à voir avec la volonté, le caractère ou l’éducation&nbsp;: c’est un mécanisme
 d’apprentissage, le même chez tout le monde, vous compris.</p>
+<p>Un mot va revenir dans tout le parcours&nbsp;: <strong>renforcer</strong>. Il n’a pas
+son sens courant. Renforcer un comportement, ce n’est pas l’encourager ni le récompenser
+exprès&nbsp;: c’est le simple fait qu’après lui, quelque chose se produit qui le rendra un
+peu plus probable la prochaine fois. Cela marche dans les deux sens — quand quelque chose
+<em>apparaît</em> (on vient, on donne, on parle) et quand quelque chose <em>disparaît</em>
+(la consigne est retirée, le bruit s’arrête, on sort de table). Ce second cas porte le nom
+malheureux de «&nbsp;renforcement négatif&nbsp;»&nbsp;: «&nbsp;négatif&nbsp;» veut dire
+«&nbsp;par retrait&nbsp;», pas «&nbsp;punition&nbsp;». C’est le plus fréquent en
+établissement, et le plus difficile à voir. Personne ne renforce volontairement&nbsp;:
+c’est bien pour cela que ce module existe.</p>
 <p>La question utile n’est donc jamais «&nbsp;comment le faire arrêter&nbsp;?&nbsp;».
 Elle est&nbsp;: <strong>«&nbsp;qu’est-ce que ce comportement obtient&nbsp;?&nbsp;»</strong>
 Une fois qu’on le sait, la suite devient presque évidente — et c’est l’objet de la
@@ -96,9 +106,12 @@ visible mais inaccessible, ou quand on vient de l’enlever.</p>
 <h4 style="margin:26px 0 8px">d. Une sensation recherchée en elle-même</h4>
 <p>Le comportement produit une sensation agréable ou fait baisser une sensation
 désagréable, sans que personne d’autre n’y soit pour quelque chose&nbsp;: se balancer,
-se frotter les mains, faire un bruit répétitif. Indice décisif&nbsp;: <strong>il
-continue quand la personne est seule</strong>, et il ne dépend pas de ce que vous
-faites.</p>
+se frotter les mains, faire un bruit répétitif. Indice le plus utile&nbsp;: <strong>il
+continue quand la personne est seule</strong>, et il ne varie pas selon ce que vous
+faites. Ce n’est pas non plus une preuve&nbsp;: un comportement d’abord entretenu par
+l’entourage peut persister un temps sans lui, et un même geste peut apaiser <em>et</em>
+faire venir quelqu’un. Ce qui décide ici n’est pas le classement, c’est ce qu’on en fait —
+voir l’encart ci-dessous.</p>
 
 ${G.alerte(
   'La quatrième fonction n’est pas un problème par défaut',
@@ -114,7 +127,12 @@ souhaite, ou s’il l’isole d’une vie sociale qu’elle recherche. Sinon, on
 colonnes, dans cet ordre&nbsp;:</p>
 <ul style="${G.UL}">
 <li style="${G.LI}"><strong>Avant</strong> — ce qui se passait juste avant. Où, avec
-qui, quelle demande venait d’être faite, quel bruit, quel changement.</li>
+qui, quelle demande venait d’être faite, quel bruit, quel changement. <strong>Et, en un
+mot, l’état de la journée</strong>&nbsp;: nuit courte, douleur signalée, retour de
+week-end, adulte inhabituel, repas sauté, traitement modifié. Ce n’est pas un supplément de
+confort&nbsp;: le même déclencheur ne produit pas le même comportement selon ce que la
+journée a déjà coûté, et un relevé qui ne note que les deux dernières minutes vous fera
+chercher pendant des semaines une cause qui est dans la nuit précédente.</li>
 <li style="${G.LI}"><strong>Comportement</strong> — ce que la caméra aurait vu, décrit
 sans adjectif. Pas «&nbsp;il s’énerve&nbsp;», mais «&nbsp;il pousse la table des deux
 mains et crie pendant environ trente secondes&nbsp;».</li>
@@ -124,8 +142,12 @@ C’est cette colonne qui contient la réponse, et c’est celle qu’on remplit
 </ul>
 <p>Une seule ligne ne prouve rien. Cinq à dix lignes sur une semaine font apparaître un
 motif, et le motif se lit dans la colonne «&nbsp;Après&nbsp;»&nbsp;: si les trois quarts
-des lignes se terminent par «&nbsp;la consigne a été retirée&nbsp;», vous connaissez la
-fonction.</p>
+des lignes se terminent par «&nbsp;la consigne a été retirée&nbsp;», vous tenez une
+<strong>hypothèse sérieuse</strong>. Pas une preuve. Un relevé montre ce qui <em>suit</em>
+le comportement, pas ce qui le <em>cause</em>&nbsp;; démontrer une fonction demanderait de
+faire varier exprès les conséquences, ce qui est un travail de professionnel formé et
+supervisé. Une hypothèse chiffrée est déjà beaucoup&nbsp;: c’est ce qui manque presque
+toujours.</p>
 
 <h3 style="${G.H3}">5. Décrire sans juger — la compétence qui conditionne tout le reste</h3>
 <p>Un relevé écrit avec des mots d’interprétation ne sert à rien&nbsp;: on ne peut pas
@@ -175,11 +197,12 @@ qu’attend un rapport de situation, une note d’observation ou un compte rendu
     '<strong>Attention à l’explication qui arrange.</strong> « Il fait ça pour m’embêter » n’est pas une fonction : c’est une intention prêtée. Aucune des quatre fonctions ne suppose une intention hostile.',
   ],
   annexes:
-    'la <strong>grille Avant / Comportement / Après</strong> à imprimer, un <strong>mémo des quatre fonctions</strong> avec leurs indices, et <strong>trois relevés corrigés</strong> à comparer aux vôtres.',
+    'la <strong>grille Avant / Comportement / Après</strong> à imprimer, un <strong>mémo des quatre fonctions</strong> avec leurs indices, et <strong>deux relevés corrigés</strong> — un exploitable, un inutilisable — à comparer aux vôtres.',
   avant: [
     'Je peux nommer les quatre fonctions sans relire le module.',
     'J’ai écrit UN comportement en termes observables, sans un seul adjectif.',
-    'J’ai une hypothèse de fonction adossée à au moins deux observations, et je sais ce qui la démentirait.',
+    'J’ai une hypothèse de fonction adossée à au moins deux observations.',
+    'J’ai écrit une observation précise qui, si elle se produisait, me ferait abandonner mon hypothèse — une phrase, au futur.',
   ],
 };
 
@@ -238,15 +261,20 @@ ${G.FILET}
 <p><strong>Ce qui s’est passé après&nbsp;: la tâche a disparu.</strong> Yanis n’a pas
 épluché les carottes, et il n’a pas eu à le faire. Le comportement a produit une
 échappée, immédiate et complète. Fonction&nbsp;: <em>échapper à une tâche</em>.</p>
-<p><strong>La preuve est dans la courbe.</strong> Quatre minutes, puis deux. Un
-comportement qui apparaît <em>de plus en plus tôt</em> semaine après semaine est un
-comportement qui a été renforcé — c’est la signature la plus fiable qui soit. S’il
-s’agissait d’un problème d’humeur ou de fatigue, le délai varierait au hasard&nbsp;;
-il ne raccourcirait pas régulièrement.</p>
-<p><strong>Et le détail qui écarte l’attention&nbsp;:</strong> Yanis revient de
-lui-même, aide au rangement, et tout se passe bien. Quelqu’un qui cherche de
-l’attention ne s’apaise pas dans un couloir vide pendant quinze minutes. Ce n’est pas
-l’adulte qu’il fuyait, c’est l’épluchage.</p>
+<p><strong>La courbe est l’indice le plus utile.</strong> Quatre minutes, puis deux. Un
+comportement qui apparaît <em>de plus en plus tôt</em> d’une semaine sur l’autre est le
+plus souvent un comportement que l’environnement a renforcé. Ce n’est pas une preuve — une
+douleur qui s’installe, un traitement qui change, une tâche qui se durcit produisent aussi
+des délais qui raccourcissent régulièrement, et il faudra les écarter. Mais c’est bien plus
+solide qu’une impression, et c’est ce qui distingue un relevé d’un ressenti.</p>
+<p><strong>Et le détail qui pèse contre l’attention seule&nbsp;:</strong> Yanis revient de
+lui-même, aide au rangement, et tout se passe bien. Cela ne prouve pas que l’attention n’y
+est pour rien — il en a reçu beaucoup <em>avant</em> de sortir&nbsp;: trois échanges, une
+voix qui monte, tout le groupe qui regarde. Ce que la scène établit, c’est que la
+conséquence obtenue <em>en dernier</em>, et de façon complète, est la disparition de
+l’épluchage. Retenez la prudence plutôt que la conclusion&nbsp;: l’échappement est solide,
+l’attention n’est pas écartée, et il faudra la surveiller le jour où on lui donnera un
+autre moyen de faire pause.</p>
 
 <h3 style="${G.H3}">5. Les trois erreurs, et elles sont classiques</h3>
 <ul style="${G.UL}">
@@ -284,9 +312,32 @@ propose de la faire à deux, et on n’insiste pas plus de deux fois.</li>
 <li style="${G.LI}"><strong>Donner un moyen de demander une pause</strong> — c’est
 l’objet de la formation «&nbsp;Apprendre à demander plutôt qu’à crier&nbsp;». Une pause
 demandée et accordée coûte trente secondes&nbsp;; une pause arrachée coûte l’atelier.</li>
-</ul>`,
+</ul>
+
+<h3 style="${G.H3}">7. Et à la maison — la même grille, deux difficultés en plus</h3>
+<p>La scène ci-dessus se passe en institution parce que c’est là qu’un observateur
+extérieur existe. À la maison, la méthode ne change pas&nbsp;; deux choses, si.</p>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><em>Théo, 6&nbsp;ans. Tous les soirs, quand on éteint la
+tablette, il crie et se jette au sol. On finit presque toujours par lui accorder
+«&nbsp;cinq minutes de plus&nbsp;» pour que le repas se passe.</em></p>
+<p style="margin-bottom:0"><em>Colonne AVANT&nbsp;: on annonce que c’est fini, sans
+prévenir, au milieu d’une vidéo. Colonne COMPORTEMENT&nbsp;: il crie et se jette au sol,
+deux à trois minutes. Colonne APRÈS&nbsp;: il obtient cinq minutes de plus, quatre soirs
+sur cinq.</em></p>
+</div>
+<p><strong>La première difficulté&nbsp;: vous êtes dans la scène.</strong> Personne ne
+peut noter pendant. Écrivez donc les trois colonnes <em>le soir même</em>, une fois le
+calme revenu — pas le lendemain matin, où l’on ne se rappelle que le cri.</p>
+<p><strong>La seconde&nbsp;: la colonne «&nbsp;Après&nbsp;» met en cause ce que vous avez
+fait.</strong> C’est désagréable, et c’est précisément l’information utile. «&nbsp;J’ai
+cédé&nbsp;» n’est pas un aveu&nbsp;: c’est la donnée qui montre que le comportement
+fonctionne, et donc qu’il n’y a aucune raison qu’il s’arrête. Une grille où la colonne
+«&nbsp;Après&nbsp;» est toujours flatteuse est une grille inutilisable.</p>
+<p>Le reste est identique&nbsp;: cinq lignes suffisent, un seul moment de la journée, et
+le mot exact plutôt que le résumé.</p>`,
   aRetenir:
-    'Un comportement qui apparaît <strong>de plus en plus tôt</strong> d’une fois sur l’autre n’est pas un caprice qui s’aggrave : c’est un comportement que l’environnement a renforcé. La courbe est souvent la preuve la plus solide dont vous disposiez.',
+    'Un comportement qui apparaît <strong>de plus en plus tôt</strong> d’une fois sur l’autre n’est pas un caprice qui s’aggrave : c’est le plus souvent un comportement que l’environnement a renforcé. La courbe est l’indice le plus solide dont vous disposiez — après avoir écarté une douleur, un traitement ou une tâche devenue plus dure.',
   exercice: {
     nom: 'Votre scène qui dérape',
     duree: '12 minutes',
@@ -328,6 +379,8 @@ demandée et accordée coûte trente secondes&nbsp;; une pause arrachée coûte 
 const M3 = {
   reperes: {
     minutes: 12,
+    apres:
+      'sept jours de relevé, environ une minute par jour. Le module&nbsp;4 se lit le septième jour, la grille sous les yeux.',
     prerequis: 'les modules 1 et 2 — la grille et l’analyse d’une scène.',
     evaluation:
       'la grille remplie sur votre propre situation, avec au moins cinq lignes.',
@@ -467,12 +520,18 @@ constat qui ne mène nulle part.</p>`,
     '<strong>Le relevé contient des données sur une personne.</strong> Pas de nom complet, pas de date de naissance sur une feuille volante&nbsp;; des initiales suffisent, et la feuille ne sort pas du service.',
   ],
   annexes:
-    'la <strong>grille en quatre colonnes</strong> prête à imprimer (format poche et format A4), une <strong>feuille de comptage</strong> de la colonne « Après », et <strong>deux relevés d’une semaine entière</strong>, l’un exploitable et l’autre non, avec ce qui les distingue.',
+    'la <strong>grille en quatre colonnes</strong> prête à imprimer (format poche et format A4), une <strong>feuille de comptage</strong> de la colonne « Après », et <strong>deux relevés corrigés</strong>, l’un exploitable et l’autre non, avec ce qui les distingue.',
   avant: [
     'Ma grille est tracée, le comportement est écrit en haut, et la fenêtre d’observation a une heure de début et de fin.',
     'Ma ligne d’essai a pris moins d’une minute.',
     'J’ai prévenu l’équipe ou la famille que j’observe sans rien changer d’autre.',
   ],
+  pause: {
+    jours: 'sept jours',
+    texte: `<p>Le module&nbsp;4 se lit <strong>le septième jour, votre grille sous les yeux</strong>. D’ici là il n’y a rien à lire&nbsp;: il y a une minute par jour à passer sur le relevé.</p>
+<p>Un module&nbsp;4 lu sans relevé se comprend très bien — et ne sert à rien&nbsp;: il demande de compter des lignes que vous n’aurez pas.</p>
+<p style="margin-bottom:0">Notez dès maintenant la date à laquelle vous reviendrez&nbsp;: …… / …… .</p>`,
+  },
 };
 
 const M4 = {
@@ -510,8 +569,12 @@ l’ordre. Écrivez les réponses.</p>
 Moins de cinq lignes&nbsp;: soit la fenêtre est mal choisie, soit le comportement est
 plus rare que ressenti — et cela seul est déjà une information utile à rapporter.</li>
 <li style="${G.LI}"><strong>Que dit la colonne «&nbsp;Après&nbsp;»&nbsp;?</strong>
-Comptez par catégorie. Une catégorie qui rassemble plus de la moitié des lignes
-constitue une hypothèse solide.</li>
+Comptez par catégorie. Une catégorie qui rassemble plus de la moitié des lignes oriente
+l’hypothèse. <strong>Un piège à connaître&nbsp;:</strong> les adultes réagissent à presque
+tout, si bien que «&nbsp;attention reçue&nbsp;» ressort majoritaire dans beaucoup de
+relevés sans être pour autant la fonction. Avant de conclure à l’attention, retournez à la
+colonne «&nbsp;Avant&nbsp;»&nbsp;: si une demande y figure dans presque toutes les lignes,
+c’est l’échappement qui commande, quelle que soit l’attention reçue en prime.</li>
 <li style="${G.LI}"><strong>Que dit la colonne «&nbsp;Avant&nbsp;»&nbsp;?</strong>
 Cherchez ce qui revient&nbsp;: une consigne, une personne, un lieu, une transition, un
 bruit. C’est là que se trouvent les aménagements les moins coûteux.</li>

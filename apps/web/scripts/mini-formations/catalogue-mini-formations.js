@@ -85,6 +85,16 @@ chose. Le passage en force enseigne que son avis ne compte pas — et c'est exac
 lui reprochera plus tard de ne pas savoir exprimer.</p></li>
 <li><p><strong>Ces outils ne remplacent pas un accompagnement.</strong> Ils s'inscrivent dans
 un projet construit avec la personne, sa famille et les professionnels qui la connaissent.</p></li>
+<li><p><strong>On ne contraint jamais un corps.</strong> Rien de ce qui est enseigné ici n'autorise
+à retenir quelqu'un, à barrer une porte, à maintenir quelqu'un assis, à le mettre à l'écart de
+force, ni à le priver d'un repas, d'une boisson, des toilettes ou d'un objet qui lui appartient —
+ni à fabriquer une frustration pour «&nbsp;faire travailler&nbsp;» une demande. Le point est
+concret&nbsp;: quand un comportement sert à échapper à une tâche, «&nbsp;ne pas céder&nbsp;» se
+joue sur <strong>la tâche</strong> — on la réduit, on la reporte, on la fait à deux — jamais sur
+la personne. Si tenir le plan suppose de toucher, de bloquer ou d'enfermer, le plan est devenu
+autre chose et il s'arrête là. La contention et l'isolement relèvent d'un protocole
+d'établissement et d'une traçabilité, pas d'une décision éducative individuelle, et certainement
+pas d'une formation de quarante-cinq minutes.</p></li>
 </ul>`;
 
 const AVERTISSEMENT = `<hr style="height:1px;border:0;background:#e5e0d8;margin:28px 0">

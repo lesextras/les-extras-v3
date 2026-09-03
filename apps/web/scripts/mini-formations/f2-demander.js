@@ -16,13 +16,13 @@ const M1 = {
   reperes: {
     minutes: 12,
     prerequis:
-      'savoir nommer la fonction d’un comportement. La formation « Les quatre fonctions d’un comportement » le fait en 39 minutes.',
+      'savoir nommer la fonction d’un comportement. La formation « Les quatre fonctions d’un comportement » le fait en 45 minutes.',
     evaluation:
-      'quiz éclair en fin de module, et le livrable «&nbsp;Mon carnet de séance&nbsp;».',
+      'les trois critères «&nbsp;Avant de passer au module suivant&nbsp;», que vous cochez vous-même, et le livrable «&nbsp;Mon carnet de séance&nbsp;». Ni examen, ni note&nbsp;: ce sont des productions, pas des questions de connaissance.',
   },
   objectifs: [
     'Expliquer pourquoi un comportement ne se retire pas, mais se remplace',
-    'Vérifier les <strong>trois conditions</strong> sans lesquelles un remplacement échoue',
+    'Vérifier les <strong>quatre conditions</strong> sans lesquelles un remplacement échoue',
     'Choisir une forme de demande adaptée au niveau réel de la personne',
     'Anticiper la remontée passagère du comportement en début d’apprentissage',
     'Reconnaître un remplacement qui ne remplace rien',
@@ -52,6 +52,11 @@ pause.</li>
 doit faire venir quelqu’un. Un signe, un appel, une carte.</li>
 <li style="${G.LI}">Le cri servait à <em>obtenir un objet</em> → le remplacement doit
 donner accès à cet objet.</li>
+<li style="${G.LI}">Et <strong>autant</strong> que le comportement obtenait. Une pause de
+trente secondes ne remplace pas une sortie de vingt minutes&nbsp;: si le remplacement
+rapporte moins, il sera abandonné pour l’ancien dès la première journée difficile. Au
+début, on donne au moins autant. On réduira plus tard — c’est l’objet de l’espacement, au
+module&nbsp;3.</li>
 </ul>
 </div>
 <p>C’est la raison pour laquelle la formation précédente n’est pas facultative&nbsp;:
@@ -59,7 +64,7 @@ un remplacement construit sur la mauvaise fonction ne remplace rien, et l’équ
 au bout de trois semaines que «&nbsp;ça n’a pas marché&nbsp;» alors que le plan visait
 à côté.</p>
 
-<h3 style="${G.H3}">3. Les trois conditions — et elles sont toutes indispensables</h3>
+<h3 style="${G.H3}">3. Les quatre conditions — et elles sont toutes indispensables</h3>
 
 <h4 style="margin:26px 0 8px">Condition 1 — Plus facile</h4>
 <p>Le remplacement doit demander <strong>moins d’effort</strong> que le comportement
@@ -79,9 +84,28 @@ négociation, sans «&nbsp;attends une minute&nbsp;».</p>
 
 <h4 style="margin:26px 0 8px">Condition 3 — Toujours honorée</h4>
 <p>Le remplacement doit marcher <strong>à chaque fois</strong>, au début. Une demande
-honorée neuf fois sur dix enseigne qu’il faut parfois crier — et un renforcement
-intermittent produit des comportements bien plus résistants qu’un renforcement
-systématique. C’est contre-intuitif et c’est massivement documenté.</p>
+honorée neuf fois sur dix n’enseigne pas «&nbsp;il faut demander&nbsp;»&nbsp;: elle enseigne
+«&nbsp;il faut demander, et quand ça ne marche pas, il faut crier&nbsp;». La raison est
+mécanique, et vous la verrez à l’œuvre au module suivant&nbsp;: la fois où la demande
+n’aboutit pas, c’est le comportement ancien qui obtient le résultat — donc c’est lui qui
+est appris ce jour-là. La séquence «&nbsp;demande ignorée, puis cri récompensé&nbsp;» est la
+plus destructrice du parcours, parce qu’elle enseigne directement l’escalade. Retenez-le
+sous cette forme&nbsp;: <strong>ce que vous n’honorez pas, l’ancien comportement
+l’honore.</strong></p>
+
+<h4 style="margin:26px 0 8px">Condition 4 — Le comportement ancien cesse de marcher</h4>
+<p>C’est la condition qu’on oublie, et c’est elle qui décide du sort des trois autres. Les
+trois premières décrivent le nouveau comportement&nbsp;; celle-ci décrit ce qu’il remplace.
+Tant que crier obtient encore la sortie de table, la carte «&nbsp;pause&nbsp;» n’est pas un
+remplacement&nbsp;: c’est une <em>deuxième</em> option, plus lente et moins sûre que la
+première. La personne gardera les deux, et le plus souvent l’ancienne.</p>
+<p>Concrètement&nbsp;: ce que le comportement visait ne doit plus être obtenu <em>par
+lui</em>. C’est la ligne&nbsp;5 du plan que vous écrirez au module&nbsp;3, et c’est la ligne
+la plus souvent laissée vide.</p>
+<p><strong>Sa limite est absolue&nbsp;:</strong> elle se tient en agissant sur la tâche,
+jamais sur la personne. Si la seule façon de tenir la condition&nbsp;4 est de retenir
+quelqu’un ou de l’empêcher de sortir, elle n’est pas tenable&nbsp;: réduisez la tâche
+jusqu’à ce qu’elle le devienne.</p>
 
 ${G.alerte(
   'La condition 3 est celle qui décide, et c’est une décision d’équipe',
@@ -142,9 +166,9 @@ compris. On honore, et on espacera plus tard, une fois le mécanisme solide — 
 avant.</li>
 </ul>`,
   aRetenir:
-    'Un remplacement qui n’est pas <strong>plus facile, plus rapide et toujours honoré</strong> que le comportement qu’il vise n’est pas un remplacement&nbsp;: c’est une consigne de plus, et elle sera perdue.',
+    'Un remplacement doit être <strong>plus facile, plus rapide et toujours honoré</strong> — et il ne remplace vraiment que si <strong>le comportement ancien cesse d’obtenir ce qu’il obtenait</strong>. Trois conditions sur le nouveau, une sur l’ancien&nbsp;: les quatre, ou rien.',
   exercice: {
-    nom: 'Le test des trois conditions',
+    nom: 'Le test des quatre conditions',
     duree: '10 minutes',
     quoi:
       'On teste le remplacement AVANT de le lancer. Un plan qui échoue au test échouera sur le terrain, en trois semaines et avec du découragement en prime.',
@@ -152,11 +176,12 @@ avant.</li>
       'Écrivez la fonction que vous avez identifiée : attention, échappement, objet, ou sensation. Une seule.',
       'Écrivez le remplacement envisagé, en une phrase : « au lieu de ………, la personne pourra ……… pour obtenir ……… ».',
       'Condition 1 — comparez l’effort. Ce que vous demandez coûte-t-il <em>moins</em> que le comportement actuel ? Si vous hésitez, c’est non : descendez d’un cran dans le tableau des formes.',
-      'Condition 2 — comparez la vitesse. Combien de secondes entre la demande et le résultat ? Si c’est plus de trois, dites comment vous allez raccourcir.',
+      'Condition 2 — comparez la vitesse. Combien de secondes entre la demande et le résultat ? Si c’est plus de trois, dites comment vous allez raccourcir. Trois façons, une seule est à votre portée aujourd’hui : rapprocher l’objet, sortir l’adulte de la boucle (la personne obtient sans attendre personne), ou réduire ce qui est demandé. La deuxième est de loin la plus solide — c’est l’objet du module 2.',
       'Condition 3 — écrivez noir sur blanc : « je m’engage à honorer cette demande à chaque fois pendant deux semaines ». Si vous ne pouvez pas l’écrire, changez de remplacement.',
+      'Condition 4 — après le comportement ancien, obtient-il encore ce qu’il visait ? Si oui, écrivez ce que vous changez sur la TÂCHE pour que ce ne soit plus le cas. Jamais sur la personne.',
     ],
     reussi:
-      'les trois conditions sont cochées sans « oui mais ». Un « oui mais » sur la condition 3 est une raison suffisante pour tout recommencer.',
+      'les quatre conditions sont cochées sans « oui mais ». Un « oui mais » sur la condition 3 ou 4 est une raison suffisante pour tout recommencer.',
   },
   carnet: {
     intro:
@@ -164,7 +189,7 @@ avant.</li>
     lignes: [
       '<strong>La fonction identifiée</strong> — une seule des quatre.',
       '<strong>Le remplacement, en une phrase</strong> — au lieu de ………, la personne pourra ……… pour obtenir ……… .',
-      '<strong>Les trois conditions</strong> — cochées, ou la raison pour laquelle j’ai changé de remplacement.',
+      '<strong>Les quatre conditions</strong> — cochées, ou la raison pour laquelle j’ai changé de remplacement.',
       '<strong>Mon engagement</strong> — la phrase de la condition 3, écrite et datée.',
     ],
   },
@@ -178,7 +203,7 @@ avant.</li>
     'la <strong>fiche des trois conditions</strong> à cocher, le <strong>tableau des formes de demande</strong>, et <strong>trois remplacements corrigés</strong> — dont deux qui ne remplacent rien.',
   avant: [
     'Je sais dire quelle fonction mon remplacement vise, et je l’ai écrite.',
-    'Mon remplacement passe les trois conditions sans « oui mais ».',
+    'Mon remplacement passe les quatre conditions sans « oui mais ».',
     'J’ai écrit et daté mon engagement à l’honorer à chaque fois pendant deux semaines.',
   ],
 };
@@ -191,7 +216,7 @@ const M2 = {
       'votre analyse écrite de la scène, comparée à celle du module.',
   },
   objectifs: [
-    'Repérer laquelle des trois conditions a lâché dans une situation réelle',
+    'Repérer laquelle des quatre conditions a lâché dans une situation réelle',
     'Comprendre pourquoi un plan qui marche pendant dix jours peut s’effondrer le onzième',
     'Identifier ce qui, dans une organisation, rend un remplacement intenable',
     'Formuler une version du plan qui tient avec les moyens réellement disponibles',
@@ -222,7 +247,7 @@ en réunion&nbsp;: «&nbsp;la carte pause ne fonctionne pas avec Noé&nbsp;».</
 
 <h3 style="${G.H3}">2. Arrêtez-vous ici — cinq minutes, de quoi écrire</h3>
 <ul style="${G.UL}">
-<li style="${G.LI}">Laquelle des trois conditions a lâché, et quel jour exactement&nbsp;?</li>
+<li style="${G.LI}">Laquelle des quatre conditions a lâché, et quel jour exactement&nbsp;?</li>
 <li style="${G.LI}">Qu’est-ce que Noé a appris le mardi soir&nbsp;?</li>
 <li style="${G.LI}">La conclusion de la réunion du vendredi est-elle juste&nbsp;?</li>
 </ul>
@@ -270,11 +295,77 @@ adultes sont présents. C’est la solution la plus simple, et c’est celle qu�
 moins proposer parce qu’elle touche au planning et non à l’enfant.</li>
 </ul>
 <p>Notez que les trois options changent l’<em>environnement</em>. Aucune ne demande à
-Noé de faire un effort supplémentaire — il en fait déjà.</p>`,
+Noé de faire un effort supplémentaire — il en fait déjà.</p>
+
+<h3 style="${G.H3}">5. La version auto-servie, fonction par fonction</h3>
+<p>La scène de Noé porte sur un échappement. Mais vous êtes peut-être arrivé ici avec une
+autre fonction, et la question «&nbsp;comment rendre la demande auto-servie&nbsp;?&nbsp;» n’a
+pas la même réponse selon les cas.</p>
+${A.tableau(
+  ['Fonction', 'La version auto-servie', 'Ce qu’elle suppose'],
+  [
+    [
+      '<strong>Échapper</strong>',
+      'Un carton retourné, et une place désignée où s’asseoir cinq minutes. L’adulte valide d’un regard, sans se déplacer.',
+      'Une place libre, décidée à l’avance et toujours la même.',
+    ],
+    [
+      '<strong>Obtenir un objet</strong>',
+      'L’objet — ou une portion — dans un bac en libre accès&nbsp;; ou une carte à déposer dans un endroit convenu, et l’objet se prend.',
+      'D’avoir accepté que l’objet soit accessible. C’est souvent là que ça coince, et c’est une décision d’équipe.',
+    ],
+    [
+      '<strong>Obtenir de l’attention</strong>',
+      '<strong>L’auto-service est impossible</strong> — par définition, il faut quelqu’un. On passe donc à un rendez-vous fixe&nbsp;: «&nbsp;je viens te voir à la fin de l’exercice&nbsp;», minuteur visible posé, et on tient l’heure.',
+      'De pouvoir garantir le créneau. Sans cela, ne lancez pas.',
+    ],
+    [
+      '<strong>Sensation</strong>',
+      'Le plus souvent, rien à remplacer&nbsp;: on rend l’activité possible ailleurs ou autrement plutôt qu’on ne l’interdit.',
+      'D’avoir vérifié que le comportement coûte réellement à la personne — voir les garde-fous.',
+    ],
+  ],
+)}
+<p><strong>Sur la fonction attention, la condition 3 ne se tient pas par un dispositif&nbsp;:
+elle se tient par un créneau.</strong> Si vous ne pouvez pas garantir le créneau, ne lancez
+pas le plan — c’est exactement la leçon de la scène de Noé, transposée.</p>
+
+<h3 style="${G.H3}">6. Et à la maison — un seul adulte, et pas de réunion</h3>
+<p>La scène précédente se passe dans un service. À la maison, le plan tient toujours en
+six lignes, mais deux d’entre elles se règlent autrement.</p>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><em>Les devoirs, tous les soirs. Au bout de dix minutes, Lina,
+9&nbsp;ans, déchire sa feuille et quitte la table. On finit par arrêter les devoirs pour
+ce soir-là.</em></p>
+<p style="margin:14px 0 0"><em>Fonction identifiée&nbsp;: échapper à la tâche.
+Remplacement&nbsp;: une carte «&nbsp;pause&nbsp;» posée sur la table, qu’elle peut prendre
+à tout moment et qui donne trois minutes hors de la chaise.</em></p>
+<p style="margin-bottom:0"><em>Ligne&nbsp;5 (ce qu’on fait quand l’ancien comportement
+revient)&nbsp;: la feuille déchirée est remplacée sans commentaire, et la tâche
+reprend&nbsp;— raccourcie&nbsp;: deux lignes au lieu de dix.</em></p>
+</div>
+<ul style="${G.UL}">
+<li style="${G.LI}"><strong>La carte doit être atteignable sans se lever</strong>, sinon
+elle est plus coûteuse que le fait de partir en courant — et c’est le comportement le
+moins coûteux qui gagne, toujours.</li>
+<li style="${G.LI}"><strong>La pause est accordée à chaque fois, les premiers
+jours</strong>, même si elle arrive au bout de trente secondes. Une demande qui ne marche
+qu’une fois sur deux n’est pas encore un remplacement.</li>
+<li style="${G.LI}"><strong>«&nbsp;Ne pas céder&nbsp;» se joue sur la tâche, jamais sur
+l’enfant&nbsp;:</strong> on raccourcit, on aide, on découpe. On ne retient personne à une
+table.</li>
+<li style="${G.LI}"><strong>Le deuxième adulte, quand il existe, doit connaître la
+ligne&nbsp;5 par cœur.</strong> Écrivez-la sur le frigo. Deux réponses différentes au même
+comportement, c’est le seul moyen sûr de le renforcer.</li>
+</ul>
+<p><strong>Et si vous êtes seul&nbsp;?</strong> Le plan tient quand même, à une
+condition&nbsp;: choisir un moment où vous pouvez vraiment donner les trois minutes de
+pause. Un plan lancé le soir où vous êtes seul avec trois enfants et un repas sur le feu
+échouera pour cette raison-là, et pas parce qu’il était mauvais.</p>`,
   aRetenir:
-    'Quand un plan de remplacement s’effondre, la question n’est presque jamais «&nbsp;pourquoi la personne n’y arrive pas&nbsp;». C’est <strong>«&nbsp;laquelle des trois conditions avons-nous cessé de tenir, et pourquoi&nbsp;?&nbsp;»</strong>',
+    'Quand un plan de remplacement s’effondre, la question n’est presque jamais «&nbsp;pourquoi la personne n’y arrive pas&nbsp;». C’est <strong>«&nbsp;laquelle des quatre conditions avons-nous cessé de tenir, et pourquoi&nbsp;?&nbsp;»</strong>',
   exercice: {
-    nom: 'L’audit des trois conditions, sur votre terrain',
+    nom: 'L’audit des quatre conditions, sur votre terrain',
     duree: '12 minutes',
     quoi:
       'Avant de lancer votre plan, on cherche par où il va lâcher. C’est plus rapide et bien moins coûteux que de le découvrir en semaine 2.',
@@ -298,7 +389,7 @@ Noé de faire un effort supplémentaire — il en fait déjà.</p>`,
     ],
   },
   vigilance: [
-    '<strong>Ne conclure jamais « ça ne marche pas avec lui ».</strong> Cette phrase ferme le sujet et désigne la personne. Cherchez d’abord laquelle des trois conditions a lâché.',
+    '<strong>Ne conclure jamais « ça ne marche pas avec lui ».</strong> Cette phrase ferme le sujet et désigne la personne. Cherchez d’abord laquelle des quatre conditions a lâché.',
     '<strong>Un plan individuel qui ignore le planning est un plan mort.</strong> Faites-le valider par ceux qui tiennent l’organisation avant de le lancer, pas après.',
     '<strong>Les remplaçants et les week-ends font tomber les plans.</strong> Une phrase affichée vaut mieux qu’un protocole de trois pages que personne ne lira.',
     '<strong>Ne relancez pas un plan à l’identique après un échec.</strong> Corrigez la condition qui a lâché, sinon vous répéterez l’échec — et l’équipe se démobilisera pour de bon.',
@@ -315,6 +406,8 @@ Noé de faire un effort supplémentaire — il en fait déjà.</p>`,
 const M3 = {
   reperes: {
     minutes: 12,
+    apres:
+      'quatorze jours d’application du plan, avec un relevé à deux colonnes qui prend une minute par jour. Le module&nbsp;4 se lit le quatorzième jour.',
     prerequis: 'les modules 1 et 2, et une fonction identifiée.',
     evaluation: 'votre plan de remplacement écrit, en six lignes.',
   },
@@ -381,13 +474,31 @@ tenaces.</p>
 <ul style="${G.UL}">
 <li style="${G.LI}"><strong>Neutre.</strong> Peu de mots, peu d’émotion, pas de
 sermon. Un long discours est de l’attention, et il fait durer le moment.</li>
-<li style="${G.LI}"><strong>Sans donner ce que le comportement visait</strong>, dans la
-mesure du possible et de la sécurité. Si le cri visait la fuite de la tâche, la tâche
-reste posée — même réduite, même reportée de deux minutes, mais elle ne disparaît pas.</li>
+<li style="${G.LI}"><strong>Sans donner ce que le comportement visait.</strong> Si le cri
+visait la fuite de la tâche, la tâche reste posée — réduite, reportée de deux minutes,
+faite à deux, mais elle ne disparaît pas <em>parce qu’</em>on a crié. <strong>Et la limite
+est absolue</strong>&nbsp;: cela se tient en agissant sur la tâche, jamais sur le corps de
+la personne. Si la seule façon de ne pas céder est de retenir quelqu’un ou de l’empêcher de
+sortir, vous ne tenez pas le plan&nbsp;: vous faites autre chose, et vous vous arrêtez.
+Quand la tâche ne peut pas rester posée sans contrainte, c’est qu’elle est trop
+grosse&nbsp;: réduisez-la jusqu’à ce qu’elle le soit.</li>
 <li style="${G.LI}"><strong>Suivie d’une occasion de demander correctement.</strong>
 Dès que le calme revient, on recrée une occasion facile et on honore. La personne
 termine sur une réussite&nbsp;; c’est ce qu’elle retiendra.</li>
 </ul>
+
+${G.exemple(
+  'Trois lignes 5, mot pour mot',
+  `<p><strong>Échappement</strong> — «&nbsp;Je dis une seule fois&nbsp;: <em>la feuille reste
+là</em>. Je m’éloigne d’un pas et je ne réponds plus. Dès qu’il s’est arrêté, je propose une
+tâche facile et j’honore la carte à la première demande.&nbsp;»</p>
+<p><strong>Attention</strong> — «&nbsp;Je ne commente pas et je ne regarde pas. Je continue
+ce que je faisais. Trente secondes après l’arrêt, je viens de moi-même, je m’assois et je
+donne deux minutes.&nbsp;»</p>
+<p style="margin-bottom:0"><strong>Objet</strong> — «&nbsp;Je dis <em>le gâteau est dans le
+placard, la carte est sur la table</em>. Je ne le sors pas. Dès qu’il prend la carte, je le
+donne.&nbsp;»</p>`,
+)}
 
 ${G.alerte(
   'La sécurité prime sur le plan, toujours',
@@ -411,8 +522,12 @@ consécutives</strong>.</p>
 <li style="${G.LI}">on rend l’attente visible — un sablier, un minuteur — pour qu’elle
 ne soit pas vécue comme un refus.</li>
 </ul>
-<p>Au moindre retour du comportement ancien, on revient au cran précédent. Sans drame&nbsp;:
-c’est une information, pas une rechute.</p>`,
+<p>Au moindre retour du comportement ancien, on revient au cran précédent. Sans drame et
+sans y voir un échec&nbsp;: c’est le mécanisme normal — dès qu’un moyen rapporte un peu
+moins, l’ancien réapparaît pour vérifier. C’est le signe que vous êtes allé d’un cran trop
+loin, pas que le plan ne tient pas. Attendez-vous à le revoir aussi aux changements&nbsp;:
+nouvel adulte, nouveau lieu, retour de vacances, remplaçant du samedi. On ne recommence pas
+depuis le début&nbsp;: on remet le cran précédent quelques jours, et on repart.</p>`,
   aRetenir:
     'La demande s’enseigne <strong>à froid</strong>, dans des situations faciles, cinq à dix fois par jour. Une demande enseignée en pleine crise n’est pas enseignée&nbsp;: elle est subie.',
   exercice: {
@@ -443,7 +558,7 @@ c’est une information, pas une rechute.</p>`,
   },
   vigilance: [
     '<strong>Six lignes, pas sept.</strong> Chaque ligne ajoutée réduit la probabilité que le plan soit appliqué un vendredi soir.',
-    '<strong>La ligne 5 se décide à froid.</strong> Improvisée à chaud, elle sera différente chaque fois — et la variabilité est ce qui installe les comportements les plus résistants.',
+    '<strong>La ligne 5 se décide à froid.</strong> Improvisée à chaud, elle sera différente selon la personne, l’heure et la fatigue — et une réponse qui varie signifie qu’une fois sur deux, le comportement obtient encore ce qu’il visait. C’est cela qui le maintient.',
     '<strong>N’espacez pas trop tôt.</strong> Deux semaines de demande utilisée à la place du comportement ancien, minimum, avant de réduire quoi que ce soit.',
     '<strong>Le plan se partage avec la personne concernée</strong> quand elle peut le comprendre. Un plan appliqué sur quelqu’un sans qu’il le sache est un plan qu’on n’aimerait pas subir.',
   ],
@@ -454,6 +569,12 @@ c’est une information, pas une rechute.</p>`,
     'La ligne 5 — ma réponse au comportement ancien — est écrite, pas seulement pensée.',
     'Quelqu’un qui n’était pas dans la réunion l’a lu et a su quoi faire.',
   ],
+  pause: {
+    jours: 'quatorze jours',
+    texte: `<p>Votre plan est écrit&nbsp;: il se lance maintenant, et il tient <strong>quatorze jours</strong>. Le module&nbsp;4 se lit le quatorzième jour, le relevé sous les yeux.</p>
+<p>C’est la partie du parcours qui demande le plus, et c’est aussi la seule qui produise un résultat. Deux semaines sont un minimum&nbsp;: la remontée des premiers jours et l’installation de la demande ne se lisent pas avant.</p>
+<p style="margin-bottom:0">Date de lancement&nbsp;: …… / …… &nbsp;·&nbsp; date de lecture&nbsp;: …… / …… .</p>`,
+  },
 };
 
 const M4 = {
@@ -506,8 +627,9 @@ déjà une victoire. C’est elle qui dit si le mécanisme s’installe.</p>`,
 <li style="${G.LI}"><strong>Colonne 1 (la demande) — monte-t-elle&nbsp;?</strong> Si
 oui, quelle que soit la colonne 2, le mécanisme fonctionne. Continuez.</li>
 <li style="${G.LI}"><strong>Colonne 2 (le comportement ancien) — après la remontée,
-redescend-elle&nbsp;?</strong> On attend une bosse les jours 1 à 4, puis une baisse. Si
-la baisse n’arrive pas au bout de deux semaines, une condition a lâché.</li>
+redescend-elle&nbsp;?</strong> On attend souvent une bosse dans la première semaine, puis
+une baisse. Si la baisse n’arrive pas au bout de deux semaines, une condition a lâché — ou
+le remplacement ne vise pas la bonne fonction.</li>
 <li style="${G.LI}"><strong>Le rapport entre les deux.</strong> Ce qui compte n’est pas
 que le comportement ancien disparaisse — c’est qu’il devienne <em>minoritaire</em> par
 rapport à la demande. Une personne qui demande quinze fois et crie deux fois a fait un
@@ -612,7 +734,7 @@ const ANNEXES =
   A.entete('Apprendre à demander plutôt qu’à crier') +
   A.fiche({
     numero: 1,
-    titre: 'Les trois conditions — à cocher avant de lancer',
+    titre: 'Les quatre conditions — à cocher avant de lancer',
     quand: 'avant tout lancement, et à chaque fois qu’un plan s’essouffle.',
     contenu:
       A.tableau(
@@ -632,6 +754,11 @@ const ANNEXES =
             '<strong>3. Toujours honorée</strong>',
             'Puis-je l’honorer <em>à chaque fois</em> pendant deux semaines, y compris le samedi et avec un remplaçant&nbsp;?',
             'Changez de remplacement. Ne lancez pas un plan que vous ne tiendrez pas.',
+          ],
+          [
+            '<strong>4. Le comportement ancien cesse de marcher</strong>',
+            'Après le comportement ancien, obtient-il encore ce qu’il visait&nbsp;?',
+            'Réduisez la tâche jusqu’à pouvoir répondre non — jamais en contraignant la personne.',
           ],
         ],
       ) +
@@ -754,10 +881,149 @@ coûte infiniment plus qu’un cri. À remplacer par un mot unique ou une carte.
 
 <h4 style="margin:34px 0 8px">C — «&nbsp;Au lieu de crier, il retourne le carton rouge
 posé sur sa table et va s’asseoir cinq minutes sur la chaise près de la fenêtre&nbsp;»</h4>
-<p><strong>Tient les trois conditions.</strong> Plus facile qu’un cri (un geste). Plus
+<p><strong>Tient les quatre conditions.</strong> Plus facile qu’un cri (un geste). Plus
 rapide (auto-servi, aucune attente). Toujours honoré (aucune disponibilité d’adulte
 requise, donc tenable même à 18&nbsp;h&nbsp;15 avec sept jeunes). C’est la forme à
 viser chaque fois que l’organisation est tendue.</p>`,
+  }) +
+  A.fiche({
+    numero: 7,
+    titre: 'La grille d’audit des moments à risque',
+    quand: 'avant de lancer le plan, une fois par situation.',
+    contenu:
+      A.tableau(
+        ['Moment de la journée', 'Heure', 'Adultes présents', 'Puis-je répondre en < 3 s ?', 'Si non : la version auto-servie'],
+        [
+          ['', '……h……', '……', 'oui / non', ''],
+          ['', '……h……', '……', 'oui / non', ''],
+          ['', '……h……', '……', 'oui / non', ''],
+          ['', '……h……', '……', 'oui / non', ''],
+        ],
+      ) +
+      `<div style="${G.GRIS}">
+<p style="margin-top:0"><strong>La phrase à afficher pour les autres adultes</strong> — les
+remplaçants, le week-end, les personnes qui ne viennent qu’en soirée. Une phrase, là où ils
+passent&nbsp;:</p>
+<p style="margin-bottom:0"><em>«&nbsp;Quand ……………… fait ………………, ça veut dire ………………, et
+il faut ……………… dans les trois secondes. Merci de ne pas ……………… .&nbsp;»</em></p>
+</div>
+<p>Sans cette phrase, un remplaçant bienveillant fait exactement l’inverse du plan, en toute
+bonne foi, et le premier week-end suffit à défaire trois semaines de travail.</p>`,
+  }) +
+  A.fiche({
+    numero: 8,
+    titre: 'La scène de Noé corrigée, et les trois versions praticables',
+    quand: 'après avoir fait votre propre audit. Comparez, ne recopiez pas.',
+    contenu:
+      A.tableau(
+        ['Ce qui s’est passé', 'Ce que ça a produit'],
+        [
+          [
+            'Semaine 1&nbsp;: Noé donne la carte, il obtient cinq minutes, à chaque fois.',
+            'Les quatre conditions tiennent. Les cris tombent presque à zéro. <strong>Le plan fonctionne — c’est mesuré.</strong>',
+          ],
+          [
+            'Semaine 2, mardi&nbsp;: les devoirs passent à 18&nbsp;h&nbsp;15, un adulte pour sept jeunes.',
+            'Rien n’a changé côté Noé. C’est <strong>l’organisation</strong> qui a changé, et personne n’a rejoué le plan contre elle.',
+          ],
+          [
+            '«&nbsp;Attends deux minutes Noé, je reviens.&nbsp;»',
+            '<strong>La condition 3 lâche.</strong> Ce n’est pas un refus, c’est un délai — et pour un mécanisme qui repose sur l’immédiateté, un délai est un échec.',
+          ],
+          [
+            'Noé redonne la carte. «&nbsp;Deux minutes, j’ai dit.&nbsp;»',
+            'Deuxième non-réponse. La demande vient de perdre deux fois de suite.',
+          ],
+          [
+            'Noé jette son cahier et crie. L’éducateur arrive, les devoirs s’arrêtent.',
+            '<strong>La condition 4 lâche à son tour&nbsp;:</strong> le comportement ancien obtient ce que la demande n’a pas obtenu, trois minutes plus tard. C’est la séquence la plus destructrice du parcours.',
+          ],
+          [
+            'Jeudi, Noé ne prend plus la carte.',
+            'Il a appris, et il a bien appris. Ce qu’on lui a enseigné, c’est&nbsp;: la carte ne marche pas, crier si.',
+          ],
+        ],
+      ) +
+      `<p><strong>La conclusion de la réunion du vendredi est fausse.</strong> Ce n’est pas
+«&nbsp;la carte pause ne fonctionne pas avec Noé&nbsp;» — elle a fonctionné, on l’a mesuré
+pendant une semaine. C’est «&nbsp;l’organisation du soir ne permet pas d’honorer la
+carte&nbsp;». La première conclusion enterre l’outil et vise l’enfant&nbsp;; la seconde
+ouvre une discussion sur le créneau et les moyens.</p>
+<h4 style="margin:30px 0 8px">Les trois versions qui tenaient</h4>` +
+      A.tableau(
+        ['La version', 'Coût pour l’éducateur', 'Ce qu’elle suppose'],
+        [
+          [
+            '<strong>Pause auto-servie</strong>&nbsp;: Noé retourne un carton rouge et va s’asseoir cinq minutes sur une chaise désignée. L’adulte valide d’un regard.',
+            '<strong>Zéro seconde.</strong> C’est ce qui la rend tenable à 18&nbsp;h&nbsp;15 avec sept jeunes.',
+            'Une chaise libre, toujours la même, décidée à l’avance.',
+          ],
+          [
+            '<strong>Réduire la tâche</strong>&nbsp;: trois exercices au lieu de dix, avec une fin visible.',
+            'Zéro seconde, et le besoin d’échapper baisse de lui-même.',
+            'D’accepter que la quantité de devoirs se négocie. C’est une décision d’équipe, pas d’éducateur.',
+          ],
+          [
+            '<strong>Revenir à 17&nbsp;h&nbsp;30</strong>, où deux adultes sont présents.',
+            'Zéro seconde.',
+            'De toucher au planning. C’est la solution la plus simple, et c’est celle qu’on ose le moins proposer parce qu’elle ne parle pas de l’enfant.',
+          ],
+        ],
+      ) +
+      `<p>Les trois changent l’<strong>environnement</strong>. Aucune ne demande à Noé un
+effort supplémentaire — il en fait déjà.</p>`,
+  }) +
+  A.fiche({
+    numero: 9,
+    titre: 'Deux plans en six lignes — un bon, un inapplicable',
+    quand: 'juste après avoir écrit le vôtre.',
+    contenu: `<h4 style="margin:26px 0 8px">Plan A — inapplicable, et pourtant il a l’air sérieux</h4>
+<div style="${G.GRIS}">
+<p style="margin:0"><strong>1.</strong> Comportement visé&nbsp;: <em>«&nbsp;crises de
+colère pendant les devoirs&nbsp;»</em></p>
+<p style="margin:8px 0 0"><strong>2.</strong> Fonction&nbsp;: <em>«&nbsp;besoin
+d’attention&nbsp;»</em></p>
+<p style="margin:8px 0 0"><strong>3.</strong> Remplacement&nbsp;: <em>«&nbsp;il demandera
+poliment de l’aide&nbsp;»</em></p>
+<p style="margin:8px 0 0"><strong>4.</strong> Ma réponse&nbsp;: <em>«&nbsp;je viendrai
+l’aider&nbsp;»</em></p>
+<p style="margin:8px 0 0"><strong>5.</strong> Réponse au comportement ancien&nbsp;:
+<em>«&nbsp;je resterai calme et je lui expliquerai&nbsp;»</em></p>
+<p style="margin:8px 0 0"><strong>6.</strong> Relevé&nbsp;: <em>«&nbsp;je noterai comment
+ça se passe&nbsp;»</em></p>
+</div>
+<p><strong>Six défauts, un par ligne.</strong> (1) «&nbsp;crises de colère&nbsp;» n’est pas
+observable et ne se compte pas. (2) la fonction est affirmée sans proportion — d’où
+vient-elle&nbsp;? (3) «&nbsp;poliment&nbsp;» est un jugement, et une phrase polie coûte plus
+cher qu’un cri&nbsp;: condition&nbsp;1 échouée. (4) «&nbsp;je viendrai&nbsp;» sans délai
+chiffré&nbsp;: condition&nbsp;2 invérifiable. (5) «&nbsp;expliquer&nbsp;» est un long
+discours, donc de l’attention — c’est-à-dire exactement ce que le plan dit vouloir
+réduire. (6) «&nbsp;comment ça se passe&nbsp;» ne se compte pas.</p>
+
+<h4 style="margin:34px 0 8px">Plan B — applicable par un remplaçant du samedi</h4>
+<div style="${G.GRIS}">
+<p style="margin:0"><strong>1.</strong> Comportement visé&nbsp;: <em>pousse la table des
+deux mains et crie environ trente secondes.</em></p>
+<p style="margin:8px 0 0"><strong>2.</strong> Fonction&nbsp;: <em>échappement à la tâche
+écrite — 7 fois sur 9 la feuille a été retirée ou reportée.</em></p>
+<p style="margin:8px 0 0"><strong>3.</strong> Remplacement&nbsp;: <em>retourner le carton
+rouge posé en haut à droite de sa table, et aller s’asseoir sur la chaise près de la
+fenêtre.</em></p>
+<p style="margin:8px 0 0"><strong>4.</strong> Ma réponse&nbsp;: <em>rien à faire —
+auto-servi. Je valide d’un regard. Cinq minutes, minuteur visuel posé sur la
+table.</em></p>
+<p style="margin:8px 0 0"><strong>5.</strong> Réponse au comportement ancien&nbsp;:
+<em>je dis une seule fois «&nbsp;la feuille reste là&nbsp;». Je m’éloigne d’un pas et je
+ne réponds plus. Dès qu’il s’est arrêté, je propose deux lignes faciles et j’honore le
+carton à la première demande. Je ne touche pas, je ne bloque pas, je ne fais pas
+sortir.</em></p>
+<p style="margin:8px 0 0"><strong>6.</strong> Relevé&nbsp;: <em>deux colonnes, une croix
+par occurrence. Carton utilisé / comportement ancien.</em></p>
+<p style="margin:16px 0 0">Lancé le 3/03 &nbsp;·&nbsp; Bilan le 17/03 &nbsp;·&nbsp; Affiché
+sur la porte du bureau et dans le classeur de l’unité.</p>
+</div>
+<p><strong>La différence tient en une chose&nbsp;:</strong> chaque ligne du plan B est
+vérifiable par quelqu’un qui n’était pas dans la réunion. C’est le seul test qui compte.</p>`,
   }) +
   A.pied();
 
@@ -765,10 +1031,10 @@ module.exports = {
   slug: 'apprendre-a-demander-plutot-qu-a-crier',
   uuid: '8525da90-543c-424a-bf59-e69f754139c1',
   modules: [
-    { titre: 'Module 1', minutes: 12, html: G.assembler(M1) },
-    { titre: 'Module 2', minutes: 10, html: G.assembler(M2) },
-    { titre: 'Module 3', minutes: 12, html: G.assembler(M3) },
-    { titre: 'Module 4', minutes: 12, html: G.assembler(M4) },
+    { titre: 'Module 1 — Pourquoi un comportement se remplace, et jamais ne s’efface', minutes: 12, html: G.assembler(M1) },
+    { titre: 'Module 2 — Une scène qui dérape, et le plan qui manquait', minutes: 10, html: G.assembler(M2) },
+    { titre: 'Module 3 — Exercice guidé : le plan de remplacement en six lignes', minutes: 12, html: G.assembler(M3) },
+    { titre: 'Module 4 — Quatorze jours d’application, et la lecture du relevé', minutes: 12, html: G.assembler(M4) },
   ],
   annexes: ANNEXES,
 };

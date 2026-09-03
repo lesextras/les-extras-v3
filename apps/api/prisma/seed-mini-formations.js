@@ -119,7 +119,7 @@ const FAQ_COMMUNE = [
   {
     question: 'Combien de temps faut-il y consacrer ?',
     answer:
-      "Environ 45 minutes de lecture, que vous pouvez fractionner comme vous voulez : l’accès est illimité et sans date de fin. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines, à raison de quelques minutes par jour.",
+      "Environ 45 minutes de lecture, que vous pouvez fractionner comme vous voulez : l’accès est illimité et sans date de fin. Mais le parcours ne se termine pas le jour où vous l’ouvrez : le module 3 lance un relevé qui dure de sept à quinze jours selon la formation, à raison d’une minute par jour, et le module 4 se lit ce relevé sous les yeux. Comptez donc une à deux semaines entre le premier et le dernier module — c’est écrit sur chaque fiche, et rappelé dans le module 3 lui-même.",
   },
   {
     question: 'Puis-je suivre plusieurs mini-formations ?',
@@ -148,7 +148,7 @@ const FICHES = [
 
 Un comportement qui se répète se répète parce qu’il marche : il obtient quelque chose. Tant qu’on ignore quoi, on traite la forme et pas la fonction — et on se trompe de cible. Quatre fonctions possibles, une grille en quatre colonnes pour trancher, et la règle qui évite l’erreur la plus coûteuse.
 
-Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines.
+Environ 45 minutes de lecture, réparties sur quatre modules, plus une boîte à outils d’annexes à imprimer. La lecture ne fait pas tout le parcours : le plan écrit au module 3 s’applique pendant quinze jours, trente secondes de relevé par jour, et le module 4 se lit le quinzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le support fabriqué au module 3 s’observe pendant quatorze jours, trente secondes de relevé par jour, et le module 4 se lit le quatorzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le module 3 se termine par une observation, puis dix jours d’enseignement avec un relevé d’une minute par jour, et le module 4 se lit le dixième jour. Comptez donc une dizaine de jours entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le module 3 débouche sur quatorze jours d’application du plan, avec un relevé d’une minute par jour, et le module 4 se lit le quatorzième jour. Comptez donc deux bonnes semaines entre le premier et le dernier module. La lecture ne fait pas tout le parcours : le module 3 lance un relevé de sept jours, une minute par jour, et le module 4 se lit le septième jour, ce relevé sous les yeux. Comptez donc une bonne semaine entre le premier et le dernier module. La mise en pratique, elle, se déroule dans votre quotidien sur une à deux semaines.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :

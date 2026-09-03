@@ -39,13 +39,23 @@ const H3 = 'margin:34px 0 12px';
 const UL = 'margin:14px 0;padding-left:22px';
 const LI = 'margin:7px 0';
 
-/** Carte d'ouverture : ce que l'apprenant doit savoir avant de commencer. */
-function reperes({ minutes, prerequis, evaluation }) {
+/**
+ * Carte d'ouverture : ce que l'apprenant doit savoir avant de commencer.
+ *
+ * ⚠ Le champ `apres` n'est pas décoratif. Ces parcours annoncent 45 minutes de
+ * lecture, et c'est vrai — mais leurs exercices demandent un relevé de sept à
+ * quinze jours AVANT de pouvoir conclure quoi que ce soit. Ne l'écrire nulle
+ * part revenait à laisser croire qu'on termine le parcours dans l'après-midi,
+ * puis à laisser l'apprenant découvrir seul qu'il lui manque deux semaines de
+ * données. On l'annonce donc dans la carte du module concerné, et une seconde
+ * fois en fin de module sous forme d'encadré.
+ */
+function reperes({ minutes, prerequis, evaluation, apres }) {
   return `<div style="${GRIS}">
 <h3 style="margin-top:0">Repères du module</h3>
 <ul style="${UL}">
 <li style="${LI}"><strong>Durée&nbsp;:</strong> ${minutes} minutes de lecture. La mise en pratique, elle, se déroule dans votre quotidien.</li>
-<li style="${LI}"><strong>Prérequis&nbsp;:</strong> ${prerequis}</li>
+${apres ? `<li style="${LI}"><strong>Puis, sur le terrain&nbsp;:</strong> ${apres}</li>\n` : ''}<li style="${LI}"><strong>Prérequis&nbsp;:</strong> ${prerequis}</li>
 <li style="${LI}"><strong>Modalité&nbsp;:</strong> e-learning asynchrone, à votre rythme, accès illimité et sans date de fin.</li>
 <li style="${LI}"><strong>Évaluation&nbsp;:</strong> ${evaluation}</li>
 </ul>
@@ -139,6 +149,18 @@ exercices</strong>, en fin de parcours&nbsp;: ${quoi}</p>`;
 }
 
 /**
+ * L'encadré de fin de module qui dit que le parcours S'ARRÊTE ici.
+ *
+ * Il est plus important qu'il n'en a l'air. Sans lui, l'apprenant enchaîne sur
+ * le module 4, le lit sans avoir de relevé, et la seule chose qu'il en retire
+ * est l'impression d'avoir fini. Le dire noir sur blanc transforme une attente
+ * subie en étape du parcours.
+ */
+function pause({ jours, texte }) {
+  return alerte(`Le parcours s’arrête ici pendant ${jours}`, texte);
+}
+
+/**
  * Assemble un module complet.
  *
  * L'ordre est fixe et il n'est pas négociable : c'est lui qui fait qu'un
@@ -157,6 +179,7 @@ function assembler(m) {
     vigilance(m.vigilance),
     m.annexes ? renvoiAnnexes(m.annexes) : '',
     avantDePasser(m.avant),
+    m.pause ? pause(m.pause) : '',
   ];
   return parties.filter(Boolean).join('\n');
 }
@@ -178,6 +201,7 @@ module.exports = {
   carnet,
   vigilance,
   avantDePasser,
+  pause,
   renvoiAnnexes,
   assembler,
 };

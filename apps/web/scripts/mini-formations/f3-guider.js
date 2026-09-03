@@ -26,14 +26,15 @@ const M1 = {
   reperes: {
     minutes: 12,
     prerequis: 'aucun, mais la formation « Décomposer une routine en étapes » se marie bien avec celle-ci.',
-    evaluation: 'quiz éclair en fin de module, et le livrable «&nbsp;Mon carnet de séance&nbsp;».',
+    evaluation: 'les trois critères «&nbsp;Avant de passer au module suivant&nbsp;», que vous cochez vous-même, et le livrable «&nbsp;Mon carnet de séance&nbsp;». Ni examen, ni note&nbsp;: ce sont des productions, pas des questions de connaissance.',
   },
   objectifs: [
     'Classer les aides du plus léger au plus lourd et nommer celle que vous utilisez <em>réellement</em>',
     'Appliquer la règle du délai : un temps de silence avant toute aide',
     'Comprendre pourquoi une aide efficace jamais retirée produit une dépendance',
     'Distinguer une aide qui enseigne d’une aide qui remplace la personne',
-    'Savoir qu’un plan d’estompage se décide <strong>avant</strong> de commencer, jamais en cours de route',
+    'Savoir qu’un plan d’estompage se décide <strong>avant</strong> de commencer — y compris par quelle extrémité de l’échelle on part',
+    'Coter une séance réelle : noter le niveau d’aide le plus lourd utilisé, pas le premier',
   ],
   corps: `<h3 style="${G.H3}">1. Le seul outil éducatif qui devient nuisible quand il marche trop bien</h3>
 <p>L’aide est ce qu’il y a de plus naturel&nbsp;: quelqu’un n’y arrive pas, on l’aide,
@@ -48,7 +49,6 @@ rapport&nbsp;: «&nbsp;n’a pas acquis l’autonomie&nbsp;», «&nbsp;ne fait r
 sollicitation&nbsp;». On reproche à la personne exactement ce que l’organisation lui a
 enseigné.</p>
 
-${G.aRetenir ? '' : ''}
 <h3 style="${G.H3}">2. L’échelle des aides — et pourquoi l’ordre compte</h3>
 <p>Toutes les aides ne se valent pas, et surtout&nbsp;: <strong>elles ne coûtent pas la
 même chose à retirer</strong>. C’est ce dernier point qui doit guider le choix, pas
@@ -57,6 +57,28 @@ ${ECHELLE}
 <p><strong>La règle&nbsp;: on utilise le niveau le plus bas qui débloque.</strong> Pas
 celui qui marche à coup sûr, pas celui qui va le plus vite — le plus léger. Une aide de
 niveau 6 donnée «&nbsp;pour gagner du temps&nbsp;» se paie pendant des mois.</p>
+<p><strong>Une exception, et elle est décisive.</strong> Cette règle vaut pour une tâche que
+la personne réussit <em>déjà</em>, au moins parfois. Pour une compétence entièrement
+nouvelle — ou quand des échecs répétés ont déjà installé un évitement —, on fait exactement
+l’inverse&nbsp;: on part d’une aide franchement suffisante pour que ça réussisse dès le
+premier essai, et on la retire ensuite cran par cran. On appelle cela «&nbsp;du plus lourd
+au plus léger&nbsp;», ou apprentissage sans erreur. Le choix se pose en une
+question&nbsp;: <em>est-ce que ça réussit parfois tout seul aujourd’hui&nbsp;?</em> Si oui,
+partez du plus léger et remontez si besoin. Si non, partez du niveau qui fait réussir et
+descendez. Dans les deux cas, la suite est la même&nbsp;: un plan de retrait écrit à
+l’avance.</p>
+
+${G.exemple(
+  'Coter une séance, pas un geste',
+  `<p><strong>La règle&nbsp;: on note le niveau le plus lourd utilisé dans la séance.</strong>
+Une séance qui commence par un regard et finit par une main sur le coude se note 6, pas 1.</p>
+<p><em>Exemple.</em> 8&nbsp;h&nbsp;02, consigne «&nbsp;tu te brosses les dents&nbsp;».
+Silence, cinq secondes comptées, rien. Je regarde la brosse <em>(1)</em>. Rien. Je la montre
+du doigt <em>(2)</em>. Rien. Je pose la main sur son coude et j’amorce le geste <em>(6)</em>.
+<strong>Je note 6.</strong></p>
+<p style="margin-bottom:0">Et si le niveau change dans la journée, on note la séance
+choisie — toujours la même, à la même heure.</p>`,
+)}
 
 <h3 style="${G.H3}">3. La règle du délai : cinq secondes de silence</h3>
 <p>C’est la partie la plus simple à énoncer et la plus difficile à tenir&nbsp;: après
@@ -148,7 +170,7 @@ de la fatigue de l’adulte. Écrit à l’avance, il tient.</p>`,
   avant: [
     'Je peux nommer les niveaux d’aide et dire lequel je donne réellement.',
     'J’ai compté mon délai en secondes, deux fois, sur une vraie situation.',
-    'Je sais dire si mon aide, aujourd’hui, enseigne ou remplace.',
+    'J’ai écrit, pour ma tâche, s’il existe aujourd’hui un plan de retrait de l’aide : oui ou non.',
   ],
 };
 
@@ -264,7 +286,7 @@ normale et elle dure quelques jours.</li>
       'Prenez la tâche du module 1. Écrivez le niveau d’aide que vous donnez aujourd’hui.',
       'Cherchez ce que vous donniez il y a trois mois. Fouillez : cahier de liaison, transmissions, compte rendu de réunion, souvenirs d’un collègue.',
       'Si les deux niveaux sont identiques, écrivez-le. C’est le résultat le plus fréquent, et c’est celui qui justifie ce parcours.',
-      'Écrivez la phrase de bilan telle qu’elle serait écrite aujourd’hui — puis réécrivez-la en décrivant le dispositif et non la personne.',
+      'Écrivez la phrase de bilan telle qu’elle serait écrite aujourd’hui — puis réécrivez-la en décrivant le dispositif et non la personne. À la maison, prenez la phrase que vous diriez au médecin, à l’enseignant ou à l’équipe si on vous demandait où vous en êtes.',
       'Comparez les deux phrases. C’est cette réécriture qui fait la différence dans un dossier lu par une MDPH ou un juge.',
     ],
     reussi:
@@ -290,13 +312,15 @@ normale et elle dure quelques jours.</li>
   avant: [
     'Je connais mon niveau d’aide aujourd’hui et, autant que possible, celui d’il y a trois mois.',
     'J’ai réécrit une phrase de bilan pour qu’elle décrive le dispositif et non la personne.',
-    'Je sais que la stabilité d’une aide est un signal d’alerte, même quand tout va bien.',
+    'J’ai daté le dernier changement de niveau d’aide sur ma tâche — ou j’ai écrit « je ne sais pas », ce qui est déjà la réponse.',
   ],
 };
 
 const M3 = {
   reperes: {
     minutes: 12,
+    apres:
+      'quinze jours de relevé du niveau d’aide, environ trente secondes par jour. Le module&nbsp;4 se lit le quinzième jour.',
     prerequis: 'les modules 1 et 2, et un niveau d’aide mesuré.',
     evaluation: 'votre plan d’estompage écrit, en quatre lignes.',
   },
@@ -331,7 +355,9 @@ semaine.&nbsp;» Utile quand la tâche n’a lieu qu’une fois par jour.</li>
 <li style="${G.LI}">«&nbsp;Réussi <strong>deux jours de suite avec deux adultes
 différents</strong>.&nbsp;» Le meilleur des trois, parce qu’il vérifie que
 l’apprentissage n’est pas attaché à une personne — ce qui est précisément le risque de
-cette formation.</li>
+cette formation. <strong>À la maison&nbsp;:</strong> deux moments différents de la journée,
+ou deux jours non consécutifs. Ce n’est pas la personne qui change, c’est le contexte — et
+c’est ce que le critère vérifie.</li>
 </ul>
 <p>Et trois formulations qui ne marchent pas&nbsp;: «&nbsp;quand il sera prêt&nbsp;»,
 «&nbsp;quand ce sera acquis&nbsp;», «&nbsp;quand on sentira que c’est le
@@ -346,9 +372,10 @@ l’avance, il tient — et surtout, il permet à un collègue de prendre le rel
 )}
 
 <h3 style="${G.H3}">3. Prévoir l’échec avant qu’il arrive</h3>
-<p>La personne va rater à un moment ou à un autre. C’est prévu&nbsp;: sans erreur, il
-n’y a pas d’apprentissage, il n’y a que de l’exécution. Ce qui se décide à l’avance,
-c’est <em>ce qu’on fait à ce moment-là</em>&nbsp;:</p>
+<p>La personne va rater à un moment ou à un autre, et il faut l’avoir prévu. Attention en
+revanche à une idée fausse et très répandue&nbsp;: l’erreur n’enseigne rien par elle-même.
+Répétée, elle enseigne surtout à éviter la tâche — c’est le seul vrai danger de ce module.
+Ce qui se décide à l’avance, c’est donc <em>ce qu’on fait au moment où ça rate</em>&nbsp;:</p>
 <ul style="${G.UL}">
 <li style="${G.LI}"><strong>Une fois&nbsp;:</strong> on laisse passer. On aide au
 niveau du jour, on ne commente pas, on continue.</li>
@@ -426,6 +453,12 @@ remplaçant bienveillant fait la tâche à la place et remet le plan à zéro.</
     'Mon critère de passage est vérifiable par quelqu’un d’autre que moi.',
     'J’ai écrit ce que je fais en cas d’échec une, deux et trois fois de suite.',
   ],
+  pause: {
+    jours: 'quinze jours',
+    texte: `<p>Votre plan d’estompage est écrit&nbsp;: il s’applique maintenant, et il demande <strong>quinze jours</strong> avant de pouvoir être lu. Le module&nbsp;4 se lit le quinzième jour.</p>
+<p>Quinze jours, parce qu’un niveau d’aide se lit en moyenne hebdomadaire&nbsp;: il en faut deux pour qu’une comparaison veuille dire quelque chose. Trente secondes par jour suffisent — un chiffre, pas une phrase.</p>
+<p style="margin-bottom:0">Date de lancement&nbsp;: …… / …… &nbsp;·&nbsp; date de lecture&nbsp;: …… / …… .</p>`,
+  },
 };
 
 const M4 = {
@@ -459,6 +492,9 @@ relevé qui demande une phrase par jour n’est pas tenu au-delà du cinquième.
 
 <h3 style="${G.H3}">2. La lecture au quinzième jour</h3>
 <p>On regarde une seule chose&nbsp;: <strong>la colonne du niveau descend-elle&nbsp;?</strong>
+Si la moyenne vous rebute, écrivez le niveau <em>le plus fréquent</em> de la semaine&nbsp;:
+deux modes valent une moyenne, et se comparent aussi bien.</p>
+<p>
 Pas régulièrement — en escalier, avec des paliers et des remontées. C’est la forme
 normale d’un apprentissage.</p>
 ${A.tableau(
@@ -708,16 +744,157 @@ C’est ce qui la rend vérifiable, comparable, et transmissible à une équipe 
       `<p><strong>On relève le niveau d’aide, pas la réussite.</strong> Avec une guidance
 complète, tout est réussi tous les jours — et le relevé ne montre aucun apprentissage.</p>`,
   }) +
+  A.fiche({
+    numero: 7,
+    titre: 'La photo à trois mois',
+    quand: 'une fois par trimestre, et avant tout écrit de bilan.',
+    contenu:
+      `<p>C’est l’exercice le plus court du parcours et celui qui surprend le plus. On
+remplit les deux colonnes, on les compare, et la réponse est là.</p>` +
+      A.tableau(
+        ['', 'Aujourd’hui', 'Il y a trois mois'],
+        [
+          ['Niveau d’aide donné (0-7)', '', ''],
+          ['Secondes attendues avant d’aider', '', ''],
+          ['Qui aide', '', ''],
+          ['Sur quelle partie de la tâche', '', ''],
+          ['Ce que la personne fait sans moi', '', ''],
+        ],
+      ) +
+      `<div style="${G.GRIS}">
+<p style="margin-top:0"><strong>La lecture, en une phrase&nbsp;:</strong></p>
+<ul style="${G.UL}">
+<li style="${G.LI}"><strong>Les deux colonnes sont identiques</strong> → il n’y a pas eu
+d’apprentissage, il y a eu de l’accompagnement. Ce n’est pas une faute&nbsp;: c’est
+l’information qui manquait pour décider d’un plan.</li>
+<li style="${G.LI}"><strong>Le niveau a baissé d’un cran ou plus</strong> → il y a
+apprentissage. Notez la date du changement, c’est elle qui fera la phrase de bilan.</li>
+<li style="${G.LI}"><strong>Le niveau a monté</strong> → cherchez un événement (changement
+d’adulte, de lieu, d’horaire, période difficile) avant de conclure quoi que ce soit sur
+la personne.</li>
+</ul>
+</div>
+<h4 style="margin:30px 0 8px">Si rien n’a été écrit il y a trois mois</h4>
+<p>C’est le cas le plus fréquent, et la colonne de droite se reconstitue quand même —
+imparfaitement, mais assez pour décider&nbsp;:</p>
+<ul style="${G.UL}">
+<li style="${G.LI}">le cahier de liaison, les transmissions, le dernier compte rendu de
+réunion&nbsp;;</li>
+<li style="${G.LI}">le dernier écrit de bilan, même s’il est flou&nbsp;: «&nbsp;a besoin
+d’être accompagné&nbsp;» situe déjà un niveau haut&nbsp;;</li>
+<li style="${G.LI}"><strong>deux personnes de l’équipe interrogées séparément.</strong>
+Séparément&nbsp;: sinon la première réponse emporte la seconde.</li>
+</ul>
+<p>Si vous ne trouvez rien, écrivez «&nbsp;je ne sais pas&nbsp;» dans la colonne de
+droite. C’est une réponse, et elle explique à elle seule pourquoi la question du retrait
+de l’aide ne s’est jamais posée.</p>`,
+  }) +
+  A.fiche({
+    numero: 8,
+    titre: 'Le plan d’Inès, tel qu’il aurait dû être écrit',
+    quand: 'comme modèle, à côté de votre propre plan.',
+    contenu:
+      `<p>Rappel de la situation du module&nbsp;2&nbsp;: en septembre, l’AESH ouvre le
+cartable et met le cahier dans les mains d’Inès. En janvier, elle pose la main sur son
+bras et dit «&nbsp;on sort le cahier&nbsp;». En mars, elle est absente trois jours&nbsp;:
+Inès ne sort rien. Voici la feuille qui aurait tout changé — quatre lignes, écrites en
+octobre, en dix minutes.</p>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><strong>Tâche&nbsp;:</strong> sortir le cahier du cartable au
+début du cours, en CE1.</p>
+<p style="margin:14px 0 0"><strong>1. Niveau de départ&nbsp;: 6</strong> — concrètement&nbsp;:
+main posée sur le bras + consigne «&nbsp;on sort le cahier&nbsp;».</p>
+<p style="margin:14px 0 0"><strong>2. Critère de passage&nbsp;:</strong> trois jours de
+suite où Inès sort le cahier après la consigne seule, sans contact.</p>
+<p style="margin:14px 0 0"><strong>3. Niveau d’arrivée&nbsp;: 1</strong> —
+concrètement&nbsp;: le cartable est posé ouvert sur la table, personne ne dit rien.</p>
+<p style="margin:14px 0 0"><strong>4. Date de revue&nbsp;: 15 décembre</strong>
+&nbsp;·&nbsp; noté dans&nbsp;: le cahier de liaison AESH / enseignante.</p>
+</div>
+<h4 style="margin:30px 0 8px">Les crans prévus entre 6 et 1</h4>
+<p>6 (main sur le bras + consigne) → 4 (consigne seule) → 3 (consigne raccourcie&nbsp;:
+«&nbsp;le cahier&nbsp;») → 2 (l’AESH regarde le cartable sans parler) → 1 (cartable
+ouvert posé sur la table) → 0.</p>
+<h4 style="margin:30px 0 8px">En cas d’échec — décidé en octobre, pas en mars</h4>
+<ul style="${G.UL}">
+<li style="${G.LI}"><strong>Une fois&nbsp;:</strong> on aide au niveau du jour, on ne
+commente pas.</li>
+<li style="${G.LI}"><strong>Deux fois de suite&nbsp;:</strong> on remonte d’un cran pour
+la journée.</li>
+<li style="${G.LI}"><strong>Trois fois de suite&nbsp;:</strong> on remonte durablement, on
+note la date, et on coupe le cran suivant en deux.</li>
+</ul>
+<h4 style="margin:30px 0 8px">La ligne qui aurait évité le mois de mars</h4>
+<p><em>«&nbsp;Toute personne qui remplace l’AESH aide au niveau écrit sur cette fiche,
+jamais plus. La fiche est dans le cahier de liaison.&nbsp;»</em></p>
+<p>Trois jours d’absence n’auraient alors rien révélé de dramatique&nbsp;: ils auraient
+été une vérification, celle que le module&nbsp;4 demande de faire exprès — un
+apprentissage attaché à une seule personne n’est pas un apprentissage.</p>
+<h4 style="margin:30px 0 8px">Et la phrase de bilan de juin</h4>
+${A.tableau(
+  ['Ce qui a été écrit', 'Ce qui aurait pu l’être'],
+  [
+    [
+      'Inès n’a pas acquis l’autonomie dans la préparation de son matériel.',
+      'La sortie du cahier est acquise avec une consigne verbale seule (niveau&nbsp;4) depuis janvier&nbsp;; le passage au niveau&nbsp;2 est l’objectif du premier trimestre, avec l’AESH et l’enseignante.',
+    ],
+  ],
+)}
+<p><strong>La deuxième phrase se compare l’année suivante.</strong> La première suit Inès
+de dossier en dossier sans que personne ne puisse dire ce qui a été tenté.</p>`,
+  }) +
+  A.fiche({
+    numero: 9,
+    titre: 'Annoncer le retrait de l’aide — modèles de phrases',
+    quand: 'la veille du premier changement de niveau.',
+    contenu:
+      `<p>Un retrait d’aide non annoncé se vit comme un abandon. Annoncé, il se vit comme
+une étape. C’est la même chose techniquement, et pas du tout la même chose pour la
+personne.</p>
+<h4 style="margin:26px 0 8px">À la personne accompagnée</h4>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><em>«&nbsp;À partir de demain, je ne mets plus ma main sur ton
+bras. Je dis juste “le cahier”. Si c’est trop dur, tu me fais signe et je t’aide — on
+recommencera plus tard.&nbsp;»</em></p>
+<p style="margin-bottom:0"><em>«&nbsp;Demain, je reste debout à côté et je ne montre plus.
+Tu commences, et je regarde.&nbsp;»</em></p>
+</div>
+<p>Trois ingrédients, toujours les mêmes&nbsp;: <strong>ce qui change exactement</strong>,
+<strong>à partir de quand</strong>, <strong>ce qui se passe si ça ne marche pas</strong>.
+Le troisième est le plus important&nbsp;: sans lui, la personne ne sait pas si elle a le
+droit d’échouer.</p>
+<h4 style="margin:26px 0 8px">À l’équipe</h4>
+<div style="${G.GRIS}">
+<p style="margin:0"><em>«&nbsp;Sur la routine du manteau, on passe du geste montré à
+l’indice de position à partir de lundi. Concrètement&nbsp;: on pose le manteau devant lui
+et on ne montre plus. Si ça bloque deux fois de suite, on remonte au geste montré pour la
+journée et on me le dit. La fiche est dans le classeur.&nbsp;»</em></p>
+</div>
+<h4 style="margin:26px 0 8px">À la famille</h4>
+<div style="${G.GRIS}">
+<p style="margin:0"><em>«&nbsp;En ce moment, on l’aide moins qu’avant sur ce moment-là,
+volontairement&nbsp;: c’est prévu, c’est écrit, et on remonte l’aide si besoin. Il se peut
+qu’il vous dise que c’est plus dur — c’est le signe que le plan est en cours, pas qu’il
+va mal.&nbsp;»</em></p>
+</div>
+${G.alerte(
+  'Ce qu’une annonce ne doit jamais contenir',
+  `<p style="margin-bottom:0">Ni «&nbsp;maintenant tu es grand&nbsp;», ni «&nbsp;tu dois y
+arriver seul&nbsp;», ni «&nbsp;je ne t’aiderai plus&nbsp;». Ces trois formules
+transforment un réglage technique en jugement, et elles rendent l’échec honteux — donc
+invisible, donc impossible à corriger.</p>`,
+)}`,
+  }) +
   A.pied();
 
 module.exports = {
   slug: 'guider-puis-s-effacer',
   uuid: '86b77ee2-8273-4e01-8143-52d5783d4926',
   modules: [
-    { titre: 'Module 1', minutes: 12, html: G.assembler(M1) },
-    { titre: 'Module 2', minutes: 10, html: G.assembler(M2) },
-    { titre: 'Module 3', minutes: 12, html: G.assembler(M3) },
-    { titre: 'Module 4', minutes: 12, html: G.assembler(M4) },
+    { titre: 'Module 1 — L’échelle des aides, et le délai qu’on ne laisse jamais', minutes: 12, html: G.assembler(M1) },
+    { titre: 'Module 2 — Une aide qui n’a jamais été retirée', minutes: 10, html: G.assembler(M2) },
+    { titre: 'Module 3 — Exercice guidé : le plan d’estompage en quatre lignes', minutes: 12, html: G.assembler(M3) },
+    { titre: 'Module 4 — Quinze jours de relevé, et la phrase de bilan', minutes: 12, html: G.assembler(M4) },
   ],
   annexes: ANNEXES,
 };

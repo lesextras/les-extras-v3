@@ -1,4 +1,19 @@
 /**
+ * ⚠ FICHIER SUPERSÉDÉ — CONSERVÉ POUR MÉMOIRE, PLUS UTILISÉ PAR LA CHAÎNE.
+ *
+ * C'est la première écriture des deux formations « chaînage » et « support
+ * visuel », au format v1 : environ 2 500 caractères par module, sans annexes,
+ * sans carte « Repères », sans exercice chronométré. Elles ont été entièrement
+ * réécrites au gabarit v3 dans `f4-chainage.js` et `f5-previsible.js`, qui sont
+ * les seules sources lues par `build-v2.js`.
+ *
+ * Il n'est pas supprimé : les scènes et les tournures d'origine ont servi de
+ * base à la réécriture, et il documente d'où viennent ces deux parcours. Mais
+ * RIEN NE DOIT PLUS ÊTRE CORRIGÉ ICI — une correction faite dans ce fichier ne
+ * partirait nulle part.
+ */
+
+/**
  * VAGUE 2 — les deux compétences qui complètent la thématique TSA.
  *
  * Même gabarit que la vague 1 (théorie brève → situation qui dérape →

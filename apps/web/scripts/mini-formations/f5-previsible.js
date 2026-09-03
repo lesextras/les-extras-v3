@@ -24,8 +24,9 @@ const NIVEAUX = A.tableau(
 const M1 = {
   reperes: {
     minutes: 12,
-    prerequis: 'aucun.',
-    evaluation: 'quiz éclair en fin de module, et le livrable «&nbsp;Mon carnet de séance&nbsp;».',
+    prerequis:
+      'aucun pour les modules 1 à 3. Le module 4 renvoie à la grille des quatre fonctions, enseignée dans « Les quatre fonctions d’un comportement » — utile mais pas indispensable pour suivre celui-ci.',
+    evaluation: 'les trois critères «&nbsp;Avant de passer au module suivant&nbsp;», que vous cochez vous-même, et le livrable «&nbsp;Mon carnet de séance&nbsp;». Ni examen, ni note&nbsp;: ce sont des productions, pas des questions de connaissance.',
   },
   objectifs: [
     'Expliquer ce qu’un support visuel remplace <em>vraiment</em> — et ce n’est pas la compréhension',
@@ -251,7 +252,37 @@ pas découverte un jour de contrariété.</li>
 partir.&nbsp;»</em> Un nom, un moment.</li>
 </ul>
 <p>Coût de fabrication&nbsp;: vingt minutes. Coût d’entretien&nbsp;: trente secondes par
-jour, par une personne désignée. C’est ce rapport-là qui fait qu’un support survit.</p>`,
+jour, par une personne désignée. C’est ce rapport-là qui fait qu’un support survit.</p>
+
+<h3 style="${G.H3}">5. Et à la maison — le frigo plutôt que le mur du couloir</h3>
+<p>Le panneau de l’unité a un équivalent domestique très exact&nbsp;: le grand planning
+familial acheté en septembre, rempli deux semaines, puis figé sur une semaine d’octobre.
+Les cinq causes sont les mêmes, et la quatrième — personne n’est chargé de le tenir —
+frappe encore plus fort à la maison, où il n’y a pas de classeur d’unité pour rappeler la
+règle.</p>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><em>La version qui tient&nbsp;: quatre cases pour la soirée —
+repas · bain · histoire · lit — sur une bande aimantée posée sur le frigo, à hauteur
+d’enfant.</em></p>
+<p style="margin:14px 0 0"><em>Une pochette «&nbsp;fini&nbsp;» scotchée au bout&nbsp;: les
+cartes s’y glissent une à une.</em></p>
+<p style="margin-bottom:0"><em>La règle écrite au dos du frigo&nbsp;: «&nbsp;la bande du
+lendemain est posée par celui qui couche, avant d’éteindre.&nbsp;»</em></p>
+</div>
+<ul style="${G.UL}">
+<li style="${G.LI}"><strong>À hauteur d’enfant, dans la pièce où l’attente a
+lieu.</strong> Un support à 1&nbsp;m&nbsp;60 est un support pour les adultes.</li>
+<li style="${G.LI}"><strong>La soirée, pas la semaine.</strong> Quatre cases se tiennent
+en trente secondes&nbsp;; sept jours de planning familial ne se tiennent pas, et personne
+n’a jamais tenu les siens.</li>
+<li style="${G.LI}"><strong>La carte «&nbsp;changement&nbsp;» se rode les jours où rien ne
+change.</strong> Découverte le soir où la sortie est annulée, elle n’est qu’un carton
+rouge de plus dans un moment déjà difficile.</li>
+<li style="${G.LI}"><strong>Un support faux se retire tout de suite.</strong> Si la bande
+annonce le bain et qu’il n’y a pas de bain, on pose la carte «&nbsp;changement&nbsp;» —
+ou on enlève la case. On ne laisse jamais l’image mentir&nbsp;: c’est la seule erreur qui
+coûte cher, à la maison comme ailleurs.</li>
+</ul>`,
   aRetenir:
     'Un support faux est <strong>pire</strong> qu’un support absent&nbsp;: il enseigne la méfiance. Et la cause de mort la plus fréquente n’est jamais pédagogique — c’est l’absence d’un nom en face de «&nbsp;qui met à jour, et quand&nbsp;».',
   exercice: {
@@ -296,6 +327,8 @@ jour, par une personne désignée. C’est ce rapport-là qui fait qu’un suppo
 const M3 = {
   reperes: {
     minutes: 12,
+    apres:
+      'quatorze jours d’utilisation du support, avec un relevé de trente secondes par jour. Le module&nbsp;4 se lit le quatorzième jour.',
     prerequis: 'les modules 1 et 2, et un niveau de représentation testé.',
     evaluation: 'votre support fabriqué, avec sa ligne de responsabilité.',
   },
@@ -383,7 +416,21 @@ certaines et on met la carte «&nbsp;changement&nbsp;» sur le reste. C’est mi
 ça demande dix secondes de plus.</li>
 </ul>
 <p>Écrivez celle des deux que vous retenez, sur le support, à côté de la ligne de
-responsabilité.</p>`,
+responsabilité.</p>
+
+${G.exemple(
+  'Ce qu’il vous faut, et ce que ça coûte',
+  `<p>Un téléphone — les photos de <em>votre</em> salle de bain battent tout le reste, et
+elles coûtent trente secondes. Une feuille A4 en paysage, pliée en quatre ou en six. Des
+ciseaux. Du scotch double face, des pinces à linge ou du velcro adhésif. Une enveloppe ou
+une boîte à chaussures pour la pochette «&nbsp;fini&nbsp;».</p>
+<p><strong>Pour les pictogrammes&nbsp;:</strong> une banque libre de droits suffit. ARASAAC
+(arasaac.org) est la plus complète en français, sous licence Creative Commons et gratuite
+pour un usage éducatif.</p>
+<p style="margin-bottom:0"><strong>N’achetez rien avant d’avoir tenu un mois.</strong> Le
+module&nbsp;2 de ce parcours existe précisément parce que les supports plastifiés meurent
+plus vite que les supports en papier — et coûtent bien plus cher à refaire.</p>`,
+)}`,
   aRetenir:
     'La ligne <strong>«&nbsp;mis à jour par ……, chaque jour à …… h&nbsp;»</strong> décide de la survie du support. Si personne ne peut y mettre son prénom, le support est trop gros&nbsp;: réduisez-le.',
   exercice: {
@@ -423,6 +470,12 @@ responsabilité.</p>`,
     'Il compte au plus six cases, il porte une marque de fin, et quelque chose s’y manipule.',
     'La ligne de responsabilité porte un prénom et une heure, et la mise à jour prend moins de trente secondes.',
   ],
+  pause: {
+    jours: 'quatorze jours',
+    texte: `<p>Votre support est fabriqué&nbsp;: il se met en service maintenant, et il s’observe pendant <strong>quatorze jours</strong>. Le module&nbsp;4 se lit le quatorzième jour.</p>
+<p>Quatorze jours, parce qu’un support tient presque toujours la première semaine — c’est la deuxième qui dit s’il survivra. Trois croix par jour, trente secondes.</p>
+<p style="margin-bottom:0">Date de mise en service&nbsp;: …… / …… &nbsp;·&nbsp; date de lecture&nbsp;: …… / …… .</p>`,
+  },
 };
 
 const M4 = {
@@ -693,16 +746,154 @@ fin sans suite annoncée est un vide, et c’est le vide qui inquiète.</p>`,
 l’autonomie — la personne va-t-elle voir toute seule&nbsp;? — qui est l’objectif réel du
 support.</p>`,
   }) +
+  A.fiche({
+    numero: 8,
+    titre: 'Le support de Léa, refait — avec son coût d’entretien',
+    quand: 'comme modèle, avant de fabriquer le vôtre.',
+    contenu:
+      `<p>Le panneau du module&nbsp;2 comptait quarante cases, il était au mur du couloir,
+et personne n’était chargé de le mettre à jour. Voici la version qui tient — moins jolie,
+et toujours vivante six mois plus tard.</p>
+<h4 style="margin:26px 0 8px">Ce qu’il est</h4>
+<ul style="${G.UL}">
+<li style="${G.LI}"><strong>Une bande de quatre cases</strong>, pour la matinée
+seulement&nbsp;: arrivée · atelier · récréation · repas.</li>
+<li style="${G.LI}"><strong>Posée sur la table de Léa</strong>, là où l’attente a lieu —
+pas au mur d’un couloir.</li>
+<li style="${G.LI}"><strong>Une pochette «&nbsp;fini&nbsp;»</strong> collée au bout de la
+bande&nbsp;: Léa y glisse chaque carte terminée. Le support se manipule.</li>
+<li style="${G.LI}"><strong>Une carte rouge «&nbsp;changement&nbsp;»</strong> rangée avec
+les autres, rodée les jours où rien ne change.</li>
+<li style="${G.LI}"><strong>Niveau de représentation&nbsp;:</strong> photo de l’objet réel
+du lieu, testée — pas un pictogramme choisi parce qu’il était dans la boîte.</li>
+</ul>
+<h4 style="margin:26px 0 8px">La ligne qui le fait survivre</h4>
+<div style="${G.GRIS}">
+<p style="margin:0"><em>«&nbsp;La bande du lendemain est posée par l’éducateur du soir,
+avant de partir. Si le planning change dans la journée, la personne qui l’apprend pose la
+carte “changement”.&nbsp;»</em></p>
+</div>
+<p>Un nom, un moment, et une règle pour l’imprévu. C’est cette ligne, et rien d’autre, qui
+manquait au panneau de quarante cases.</p>
+<h4 style="margin:26px 0 8px">Le coût, chiffré</h4>
+${A.tableau(
+  ['', 'Le panneau d’origine', 'La bande de quatre cases'],
+  [
+    ['Fabrication', '2 après-midi (≈ 6 h), 40 pictogrammes plastifiés', '20 minutes, 6 cartes'],
+    ['Entretien quotidien', '≈ 5 min si quelqu’un s’en charge — personne ne s’en charge', '30 secondes, par une personne désignée'],
+    ['Entretien sur un mois (20 jours)', '≈ 1 h 40 — jamais faite', '10 minutes'],
+    ['Qui le met à jour', 'Personne (aucun nom écrit)', 'L’éducateur du soir, nommé dans le classeur'],
+    ['Ce qui se passe en cas d’imprévu', 'Rien&nbsp;: le support ment', 'La carte «&nbsp;changement&nbsp;» est posée'],
+    ['Durée de vie observée', '3 semaines', 'Tient tant que la ligne de responsabilité tient'],
+  ],
+)}
+<div style="${G.GRIS}">
+<p style="margin:0"><strong>Le rapport qui décide de tout&nbsp;:</strong> un support
+survit quand son coût d’entretien quotidien tient en moins d’une minute et qu’un nom est
+écrit en face. Six heures de fabrication ne rachètent jamais cinq minutes par jour que
+personne n’a.</p>
+</div>
+<p><strong>Avant de plastifier quoi que ce soit</strong>, écrivez les deux chiffres&nbsp;:
+combien de temps pour le faire, combien de temps par jour pour le tenir. Si le second
+dépasse une minute, réduisez le nombre de cases — pas la fréquence de mise à jour.</p>`,
+  }) +
+  A.fiche({
+    numero: 9,
+    titre: 'La fiche de lecture du quatorzième jour — les quatre décisions',
+    quand: 'le quatorzième jour, le relevé sous les yeux.',
+    contenu:
+      `<p>On compte d’abord, on lit ensuite. Comptez vraiment&nbsp;: relire un relevé donne
+toujours une impression plus favorable que le compter.</p>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><strong>Mes trois comptages&nbsp;:</strong></p>
+<p style="margin:0">Colonne&nbsp;1, support à jour&nbsp;: …… / 14 &nbsp;·&nbsp;
+Colonne&nbsp;2, consulté spontanément&nbsp;: …… / 14 &nbsp;·&nbsp;
+Colonne&nbsp;3&nbsp;: …… mieux · …… pareil · …… moins bien</p>
+</div>` +
+      A.tableau(
+        ['Ce que disent les colonnes', 'Ce que cela signifie', 'La décision'],
+        [
+          [
+            'Colonne&nbsp;1 souvent «&nbsp;non&nbsp;»',
+            'Le support n’a pas été testé&nbsp;: il n’a pas existé assez de jours pour qu’on puisse conclure quoi que ce soit.',
+            '<strong>Corriger l’organisation</strong>, pas le support. Réduire le nombre de cases, redésigner un responsable, refaire quatorze jours.',
+          ],
+          [
+            'Colonne&nbsp;1 «&nbsp;oui&nbsp;», colonne&nbsp;2 «&nbsp;non&nbsp;»',
+            'Le support est tenu, mais il n’intéresse personne.',
+            '<strong>Déplacer</strong> le support là où la question se pose. Si rien ne change en une semaine&nbsp;: <strong>descendre d’un niveau</strong> de représentation.',
+          ],
+          [
+            'Colonnes 1 et 2 «&nbsp;oui&nbsp;», colonne&nbsp;3 «&nbsp;pareil&nbsp;»',
+            'Le support est consulté et le moment reste difficile&nbsp;: ce moment ne pose probablement pas un problème de prévisibilité.',
+            '<strong>Chercher ailleurs</strong>&nbsp;: la grille des quatre fonctions, la décomposition de la tâche, ou un avis médical. Le support peut rester s’il est consulté.',
+          ],
+          [
+            'Colonne&nbsp;3 «&nbsp;mieux&nbsp;»',
+            'Le support fonctionne.',
+            '<strong>Garder tel quel un mois</strong> avant d’étendre — et une extension à la fois. C’est ainsi qu’on évite de refabriquer un mur de quarante cases.',
+          ],
+        ],
+      ) +
+      `<div style="${G.GRIS}">
+<p style="margin-top:0"><strong>Ma décision&nbsp;:</strong> ………………………………………………………………</p>
+<p style="margin:14px 0 0"><strong>Je la vérifie le&nbsp;:</strong> …… / …… /
+……</p>
+</div>
+<p><strong>Une décision sans date n’est pas une décision.</strong> C’est exactement ce qui
+laisse un support mort accroché au mur pendant six mois.</p>`,
+  }) +
+  A.fiche({
+    numero: 10,
+    titre: 'La phrase d’abandon — à écrire et à garder',
+    quand: 'le jour où vous retirez un support.',
+    contenu:
+      `<p>Retirer un support qui ne sert plus n’est pas un échec&nbsp;: c’est le résultat
+d’un test. Ce qui coûte cher, c’est de le laisser au mur — il occupe la place, il donne
+mauvaise conscience, et il enseigne que les supports ne servent à rien.</p>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><strong>Le modèle, en quatre morceaux&nbsp;:</strong></p>
+<p style="margin:0"><em>«&nbsp;Le <strong>[support]</strong>, en place du
+<strong>[date]</strong> au <strong>[date]</strong>, a été retiré. Sur quatorze jours, il
+était à jour <strong>[…]</strong> jours et consulté spontanément <strong>[…]</strong>
+jours. La cause identifiée est <strong>[une des cinq causes]</strong>. Ce qui serait à
+retenter&nbsp;: <strong>[la version plus petite, ou le niveau en dessous]</strong>.&nbsp;»</em></p>
+</div>
+<h4 style="margin:26px 0 8px">Deux exemples</h4>
+<div style="${G.GRIS}">
+<p style="margin-top:0"><em>«&nbsp;Le planning mural de la semaine, en place du 12 janvier
+au 3 février, a été retiré. Sur quatorze jours, il était à jour 4 jours et consulté
+spontanément 1 jour. La cause identifiée est l’absence de responsable de mise à jour, avec
+un nombre de cases hors de portée (40). Ce qui serait à retenter&nbsp;: une bande de quatre
+cases pour la matinée, posée sur la table, mise à jour par l’éducateur du soir.&nbsp;»</em></p>
+<p style="margin:14px 0 0"><em>«&nbsp;La bande de pictogrammes du coucher, en place du 2 au
+16 mai, a été retirée. Elle était à jour 14 jours sur 14 et consultée spontanément 2 jours.
+La cause identifiée est le niveau de représentation&nbsp;: le test des dix secondes n’avait
+pas été fait. Ce qui serait à retenter&nbsp;: les mêmes étapes en photos des objets réels de
+la chambre.&nbsp;»</em></p>
+</div>
+${G.alerte(
+  'Ce qu’une phrase d’abandon ne contient jamais',
+  `<p style="margin-bottom:0">Le nom d’une personne accompagnée comme cause. «&nbsp;Le
+visuel ne marche pas avec elle&nbsp;» ferme le sujet, désigne l’enfant, et suit le dossier
+pendant des années. La cause d’un support abandonné est presque toujours
+organisationnelle&nbsp;: taille, emplacement, responsabilité, niveau, absence de
+manipulation.</p>`,
+)}
+<p><strong>Gardez la phrase</strong> dans le classeur de l’unité ou dans votre carnet. Elle
+vous évitera de refabriquer le même support dans six mois — et elle donnera à l’équipe
+suivante l’information que personne n’écrit jamais.</p>`,
+  }) +
   A.pied();
 
 module.exports = {
   slug: 'rendre-l-environnement-previsible',
   uuid: '5ae97ba7-c347-42f4-8a4e-8c10e6319287',
   modules: [
-    { titre: 'Module 1', minutes: 12, html: G.assembler(M1) },
-    { titre: 'Module 2', minutes: 10, html: G.assembler(M2) },
-    { titre: 'Module 3', minutes: 12, html: G.assembler(M3) },
-    { titre: 'Module 4', minutes: 12, html: G.assembler(M4) },
+    { titre: 'Module 1 — Ce qui rend un support consultable, et les cinq causes d’abandon', minutes: 12, html: G.assembler(M1) },
+    { titre: 'Module 2 — Un support qui fonctionnait, et qu’on a enterré', minutes: 10, html: G.assembler(M2) },
+    { titre: 'Module 3 — Exercice guidé : fabriquer le support et sa ligne de responsabilité', minutes: 12, html: G.assembler(M3) },
+    { titre: 'Module 4 — Quatorze jours d’usage, et la décision honnête', minutes: 12, html: G.assembler(M4) },
   ],
   annexes: ANNEXES,
 };

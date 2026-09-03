@@ -66,6 +66,10 @@ const formations = SOURCES.map(({ f, annexes }) => {
     uuid: f.uuid,
     modules: f.modules.map((m, i) => ({
       id: ids.lecons[i],
+      // Le titre part aussi : les items Teachizy s'appelaient « Leçon — … » et
+      // le sommaire affichait quatre lignes presque identiques. Le chargeur
+      // pose `name` en même temps que le contenu.
+      nom: m.titre,
       minutes: m.minutes,
       // Le pied obligatoire ne s'ajoute qu'au dernier module.
       html: i === f.modules.length - 1 ? m.html + '\n' + pied : m.html,
@@ -74,7 +78,7 @@ const formations = SOURCES.map(({ f, annexes }) => {
   };
 });
 
-const sortie = { genere: '2026-09-02', version: 2, formations };
+const sortie = { genere: '2026-09-03', version: 2, formations };
 const chemin = require('path').join(__dirname, '..', '..', 'public', 'formations-source', 'v2.json');
 fs.writeFileSync(chemin, JSON.stringify(sortie, null, 2));
 
