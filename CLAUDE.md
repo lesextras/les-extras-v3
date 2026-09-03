@@ -1344,3 +1344,50 @@ coûtent : demander le téléphone **au moment de l'attestation** (c'est là que
 personne a une raison de le donner), le demander sur Les Extras avant la
 redirection (mais c'est de la friction sur un parcours gratuit), ou passer au
 forfait EXPERT.
+
+---
+
+## Le carrousel d'accueil, et l'e-mail de l'admin — 3 septembre 2026 (soir)
+
+### « Sur devis » sur dix formations gratuites
+
+Le carrousel de l'accueil (`OfferCarousel`) ne connaissait ni `freeOnline`, ni la
+durée en minutes, ni les publics : il affichait donc **« Sur devis » sur les dix
+mini-formations gratuites** — l'exact contraire de leur promesse, sur la page où
+arrive tout le trafic publicitaire.
+
+Il porte maintenant le même matériel que la carte du catalogue : pastille emoji
+qui flotte, marque « Conçue par ADéPA », durée, « En ligne, à votre rythme », et
+« Gratuit · en ligne » à la place du devis. L'accueil se coupe en **deux lignes**,
+comme `/formations`.
+
+⚠ **`/public/highlights` renvoie une SÉLECTION de dix formations**, pas le
+catalogue. Le bouton de la ligne gratuite dit donc « Tous les parcours
+gratuits », jamais « Voir les N parcours » : N serait le compte du carrousel
+(sept aujourd'hui) et non celui du catalogue (dix). Un chiffre faux sur la
+première page se vérifie en un clic — et c'est le clic suivant.
+
+### `lib/mini-formations.ts`
+
+Emoji du parcours, organisme de la maison et durée lisible sont désormais dans un
+seul fichier. Trois endroits les affichent (catalogue, carrousel, et les scripts
+de couverture / fiche récap côté Python-JS) : dupliqués, deux cartes de la même
+formation finiraient par ne plus porter le même dessin.
+
+### L'accès administrateur
+
+Un seul compte `ADMIN` en base : **admin@les-extras.fr** (statut VERIFIED, créé
+le 23/07/2026). `GlobalRole` ne connaît que `USER` et `ADMIN` — pas de
+SUPERADMIN ni d'OWNER. Le modèle `User` n'a **pas** de champ `name`.
+
+La réinitialisation passe par `/mot-de-passe-oublie`
+(`POST /auth/forgot-password` puis `/auth/reset-password`), et le courrier part :
+`SMTP_HOST`, `SMTP_USER`, `SMTP_PORT`, `MAIL_FROM`, `MAIL_FROM_EMAIL`,
+`MAIL_FROM_NAME`, `MAIL_DSN` et `BREVO_API_KEY` sont tous définis en production.
+Reste la seule question qui compte : **la boîte `admin@les-extras.fr` est-elle
+relevée par Siham ?** Si non, il faut basculer l'e-mail du compte sur son adresse
+avant d'envoyer le lien — et c'est elle qui décide, c'est son identifiant de
+connexion.
+
+⚠ Rappel de la règle : **aucun mot de passe n'est saisi ni généré ici.** On lit
+l'adresse, on ne touche pas au secret.

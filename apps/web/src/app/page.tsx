@@ -434,7 +434,13 @@ export default async function LandingPage() {
                     </div>
                     <Button asChild variant="outline">
                       <Link href="/formations">
-                        Voir les {gratuites.length} parcours <ArrowRight />
+                        {/* Pas « Voir les {n} parcours » : `highlights` renvoie
+                            une SÉLECTION de dix formations, dont sept gratuites
+                            aujourd'hui. Le compte affiché serait celui du
+                            carrousel, pas celui du catalogue — un chiffre faux
+                            sur la première page se vérifie en un clic, et c'est
+                            le clic suivant. */}
+                        Tous les parcours gratuits <ArrowRight />
                       </Link>
                     </Button>
                   </Reveal>
