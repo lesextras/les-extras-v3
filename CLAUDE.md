@@ -1391,3 +1391,58 @@ connexion.
 
 ⚠ Rappel de la règle : **aucun mot de passe n'est saisi ni généré ici.** On lit
 l'adresse, on ne touche pas au secret.
+
+---
+
+## Les rangées qui défilent, et l'accès admin — 3 septembre 2026 (nuit)
+
+### Où une rangée sert, et où elle nuit
+
+`RangeeDefilante` (`app/_shared/RangeeDefilante.tsx`) ne fournit QUE le
+déplacement — flèches, défilement, accrochage — et reçoit les cartes déjà
+faites en enfants. C'est ce qui permet de garder la carte riche des catalogues
+(résumé, concepteur, durée, bouton « Voir ») au lieu de la réduire à celle du
+carrousel d'accueil.
+
+⚠ **Chaque enfant porte sa propre largeur** (`w-[…] shrink-0`) : dans un
+conteneur `flex`, une carte sans largeur se comprime jusqu'à l'illisible.
+Deux cartes par écran : `md:w-[calc((100%-1.25rem)/2)]` — trois ne laissaient
+lire ni le résumé ni le public.
+
+⚠ **La piste porte `md:px-14` ET `md:scroll-px-14`** : sans la marge, la flèche
+gauche recouvre le titre de la première carte ; sans le `scroll-px`, la carte
+s'arrête SOUS le bouton au lieu de s'arrêter à côté.
+
+**Où on en met, et où on n'en met pas** — la règle décidée avec Siham :
+
+- accueil : deux rangées (gratuites, puis intra) ;
+- `/formations` : une rangée pour les mini-formations gratuites ; les
+  formations en intra restent en **grille** — elles se comptent sur les doigts
+  d'une main et se vendent au devis, un directeur veut les voir toutes ;
+- `/ateliers` : une rangée **« À la une »** = les cinq dernières arrivées, puis
+  **tout le reste en grille** ;
+- **dès qu'un filtre est actif, partout : la grille**. Une rangée met en avant ;
+  elle ne doit jamais servir à ranger un catalogue, sinon ce qui n'est pas dans
+  les cinq premiers devient invisible — et après un filtrage, elle laisserait
+  croire qu'il n'y a que deux résultats.
+
+### L'accès administrateur, résolu
+
+Le compte `admin@les-extras.fr` existait, mais Siham n'a jamais eu cette boîte.
+Elle avait déjà **son propre compte** — `assoc.adepa@gmail.com`, qu'elle
+utilisait tous les jours — simplement en rôle `USER`. La bonne réponse n'était
+donc pas de déplacer l'e-mail de l'admin (collision sur la contrainte d'unicité)
+mais de **promouvoir son compte** : elle garde son mot de passe, aucun lien de
+réinitialisation à recevoir.
+
+⚠ **Le rôle est inscrit dans le jeton de connexion** (`lib/session.ts`,
+`payload.role`), pas relu à chaque page : après la promotion, il faut se
+**déconnecter puis se reconnecter**, sinon l'espace reste celui d'un
+établissement. C'est exactement ce qui s'est passé, et ça a coûté un aller-retour.
+
+Le nom affiché venait d'ailleurs encore : c'est `Account.name` (« adépa »), pas
+`User` — passé à « ADéPA ».
+
+Il reste **deux comptes ADMIN** : celui de Siham et `admin@les-extras.fr`, créé
+par le seed le 23/07/2026. Ce dernier a un mot de passe d'amorçage et personne
+ne relève sa boîte — à désactiver ou à réattribuer quand Siham le décidera.
