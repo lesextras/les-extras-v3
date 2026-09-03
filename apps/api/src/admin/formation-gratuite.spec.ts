@@ -32,7 +32,7 @@ function service(formationEnBase?: Record<string, unknown>) {
       update: jest.fn((args: any) => Promise.resolve({ id: 'f1', ...args.data })),
     },
   };
-  return new AdminService(prisma, {} as any, {} as any, {} as any);
+  return new AdminService(prisma, {} as any, {} as any, {} as any, {} as any);
 }
 
 describe('Formation gratuite en ligne : le drapeau et l’adresse vont ensemble', () => {

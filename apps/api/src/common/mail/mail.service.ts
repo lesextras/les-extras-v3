@@ -169,6 +169,81 @@ export class MailService implements OnModuleDestroy {
   /** N'avertir qu'une fois, pas à chaque e-mail. */
   private alerteExpediteur = false;
 
+  /**
+   * JOURNAL DES ENVOIS — pour que l'administration voie ce qui part.
+   *
+   * `send()` ne lève jamais : c'est ce qui protège l'inscription, la
+   * candidature ou la facture qui l'a déclenché. Mais l'effet de bord est
+   * qu'un e-mail qui n'arrive pas **ne se voit nulle part** : il ne restait
+   * qu'une ligne dans les journaux du conteneur, c'est-à-dire rien pour
+   * quelqu'un qui pilote la plateforme depuis le navigateur.
+   *
+   * ⚠ CE JOURNAL VIT EN MÉMOIRE, ET IL EST REMIS À ZÉRO À CHAQUE
+   * REDÉMARRAGE. C'est un choix, pas un oubli : la question à laquelle il
+   * répond est « est-ce que ça part en ce moment ? », et elle se pose sur
+   * les dernières heures. Une table en base pour la même réponse coûterait
+   * une écriture par e-mail, une migration et une purge à écrire — et elle
+   * porterait des adresses, donc une durée de conservation à justifier. Le
+   * jour où il faut l'historique complet, c'est un vrai sujet, pas une
+   * variante de celui-ci.
+   *
+   * Cent lignes au maximum : au-delà, les plus anciennes tombent.
+   */
+  private static readonly JOURNAL_MAX = 100;
+  private journal: {
+    date: string;
+    destinataire: string;
+    sujet: string;
+    voie: 'smtp' | 'brevo' | 'aucune';
+    ok: boolean;
+    erreur?: string;
+  }[] = [];
+  private compteurs = { envoyes: 0, echecs: 0, sansTransport: 0 };
+  /** Date de démarrage : sans elle, les compteurs ne veulent rien dire. */
+  private readonly depuis = new Date().toISOString();
+
+  private noter(
+    destinataire: string,
+    sujet: string,
+    voie: 'smtp' | 'brevo' | 'aucune',
+    ok: boolean,
+    erreur?: string,
+  ) {
+    if (ok) this.compteurs.envoyes += 1;
+    else if (voie === 'aucune') this.compteurs.sansTransport += 1;
+    else this.compteurs.echecs += 1;
+
+    this.journal.unshift({
+      date: new Date().toISOString(),
+      destinataire,
+      sujet,
+      voie,
+      ok,
+      // Un message d'erreur SMTP peut contenir la réponse entière du serveur :
+      // on garde de quoi diagnostiquer, pas de quoi noyer l'écran.
+      erreur: erreur?.slice(0, 300),
+    });
+    if (this.journal.length > MailService.JOURNAL_MAX) {
+      this.journal.length = MailService.JOURNAL_MAX;
+    }
+  }
+
+  /** Ce que l'administration affiche. Lecture seule. */
+  etatEnvois() {
+    const smtp = this.smtp;
+    return {
+      depuis: this.depuis,
+      transport: smtp
+        ? { voie: 'smtp' as const, hote: smtp.host, port: smtp.port, boite: smtp.user }
+        : this.config.get<string>('BREVO_API_KEY')
+          ? { voie: 'brevo' as const }
+          : { voie: 'aucune' as const },
+      expediteur: this.sender,
+      ...this.compteurs,
+      derniers: this.journal.slice(0, 40),
+    };
+  }
+
   private layout(title: string, bodyHtml: string, cta?: { label: string; url: string }): string {
     const button = cta
       ? `<a href="${cta.url}" style="display:inline-block;background:#183767;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600">${cta.label}</a>`
@@ -219,11 +294,13 @@ export class MailService implements OnModuleDestroy {
           })),
         });
         this.logger.log(`[MAIL:smtp] envoyé to=${to} id=${info.messageId} subject="${subject}"`);
+        this.noter(to, subject, 'smtp', true);
         return;
       } catch (e) {
         // On tombe sur Brevo si une clé existe encore : mieux vaut un message
         // moins bien authentifié qu'aucun message.
         this.logger.error(`[MAIL:smtp] échec to=${to}: ${(e as Error).message}`);
+        this.noter(to, subject, 'smtp', false, (e as Error).message);
       }
     }
 
@@ -232,6 +309,7 @@ export class MailService implements OnModuleDestroy {
       this.logger.log(
         `[MAIL:log] to=${to} subject="${subject}" (ni SMTP ni BREVO_API_KEY configurés)`,
       );
+      this.noter(to, subject, 'aucune', false, 'aucun transport configuré');
       return;
     }
     try {
@@ -253,14 +331,17 @@ export class MailService implements OnModuleDestroy {
       if (!res.ok) {
         const body = await res.text();
         this.logger.error(`[MAIL:brevo] échec ${res.status} to=${to}: ${body.slice(0, 200)}`);
+        this.noter(to, subject, 'brevo', false, `${res.status} ${body.slice(0, 200)}`);
       } else {
         this.logger.warn(
           `[MAIL:brevo] envoyé to=${to} subject="${subject}" — repli sur Brevo : ` +
             `SPF n'autorise pas Brevo pour ce domaine, la délivrabilité est incertaine.`,
         );
+        this.noter(to, subject, 'brevo', true);
       }
     } catch (e) {
       this.logger.error(`[MAIL:brevo] exception to=${to}: ${(e as Error).message}`);
+      this.noter(to, subject, 'brevo', false, (e as Error).message);
     }
   }
 

@@ -125,6 +125,23 @@ const sections: Section[] = [
         points: [
           'Les crédits et abonnements LEX, l’assistant d’écriture : une allocation mensuelle est offerte à chaque compte, sans carte bancaire et sans date de fin ; au-delà, un pack de crédits ou un abonnement mensuel peut être souscrit.',
           'Les formations sous certification Qualiopi, commandées à l’association et facturées par elle sur devis, avec convention de formation et financement possible par un OPCO.',
+          'L’attestation de suivi d’une mini-formation en ligne, délivrée à la demande. La mini-formation elle-même est gratuite, du premier au dernier module, sans carte bancaire et sans date de fin : seule l’attestation est payante, et elle est facultative — ne pas la demander ne retire aucun accès.',
+        ],
+      },
+      {
+        // ⚠ CE QUE CETTE RUBRIQUE DIT, ET POURQUOI ELLE LE DIT AINSI.
+        // « Attestation de suivi », jamais « certificat » : un certificat
+        // évoque une certification professionnelle enregistrée (RNCP, RS), et
+        // vendre 20 € un document en l'appelant certificat serait une pratique
+        // commerciale trompeuse — pour une association par ailleurs certifiée
+        // Qualiopi, c'est le genre d'écart qui se paie cher.
+        sous: 'L’attestation de suivi des mini-formations',
+        points: [
+          'Les mini-formations en ligne sont gratuites. L’attestation de suivi est un document distinct, facultatif, délivré à la demande de la personne qui a suivi le parcours, au prix affiché sur la fiche de la formation.',
+          'Ce document atteste que la personne a suivi le parcours. Ce n’est PAS une certification professionnelle : il n’est enregistré ni au répertoire national des certifications professionnelles (RNCP), ni au répertoire spécifique (RS), et il ne confère aucun titre, aucun niveau et aucun droit à exercer.',
+          'La demande se fait après le parcours, par écrit. Les conditions et le prix sont communiqués avant tout paiement ; aucun paiement n’est prélevé automatiquement, et aucun accès au contenu n’en dépend.',
+          'L’attestation est établie et transmise sous quinze jours ouvrés à compter du paiement. Une erreur matérielle (nom, date, intitulé) est rectifiée sans frais sur simple demande.',
+          'Droit de rétractation : le consommateur dispose de quatorze jours à compter de la commande. S’il demande expressément que l’attestation soit établie avant la fin de ce délai, il en est informé et le droit s’éteint une fois le document transmis (articles L. 221-25 et L. 221-28, 1° du code de la consommation). À défaut de cette demande expresse, le délai court normalement.',
         ],
       },
       {
@@ -234,7 +251,7 @@ const sections: Section[] = [
     title: 'Réclamations et médiation',
     body: [
       'Toute réclamation peut être adressée à contact@les-extras.fr. Nous nous engageons à en accuser réception et à y répondre dans un délai raisonnable.',
-      'Conformément à l’article L. 612-1 du code de la consommation, tout consommateur a le droit de recourir gratuitement à un médiateur de la consommation. Le médiateur compétent pour LES EXTRAS est en cours de désignation : ses coordonnées seront publiées ici dès qu’elles seront connues. Dans l’intervalle, écrivez-nous — aucune réclamation ne restera sans réponse au motif que cette désignation est en cours.',
+      'Conformément à l’article L. 612-1 du code de la consommation, tout consommateur a le droit de recourir gratuitement à un médiateur de la consommation. Le médiateur compétent pour LES EXTRAS est en cours de désignation : ses nom et coordonnées seront publiés ici dès qu’il sera référencé, et aucun nom ne figurera sur cette page avant de l’être. Dans l’intervalle, écrivez-nous — aucune réclamation ne restera sans réponse au motif que cette désignation est en cours, et le recours au médiateur reste ouvert dès sa désignation, y compris pour un différend né avant elle.',
       'Le recours à la médiation suppose d’avoir tenté au préalable de résoudre le différend directement avec nous, par une réclamation écrite.',
       'Les litiges entre un établissement et un intervenant relèvent de leur relation contractuelle et, le cas échéant, de la juridiction compétente pour celle-ci : la plateforme n’y est pas partie.',
     ],

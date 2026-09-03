@@ -1679,3 +1679,88 @@ et l'extension n'apparaît PAS dans la barre d'administration : elle est à
 
 ⚠ La page d'accueil d'adepa77.fr ne montre pas ce lien : elle porte un pied de
 page Elementor qui lui est propre. Toutes les autres pages du site l'affichent.
+
+---
+
+## Suivi des e-mails, prérequis, CGV de l'attestation — 3 septembre 2026 (nuit)
+
+### ⚠ LE MÉDIATEUR DE LA CONSOMMATION — CE QUI S'EST PASSÉ, À RELIRE AVANT D'Y REVENIR
+
+Siham a donné un nom : **« le médiateur c'est Sihame YOUNOUS »**, avec pour
+consigne de rédiger les CGV en conséquence. **Je ne l'ai pas écrit, et il ne
+faut pas l'écrire tant que deux choses ne sont pas vérifiées.**
+
+Un médiateur de la consommation ne se nomme pas librement. Il doit être
+**référencé par la CECMC** (liste officielle du ministère de l'Économie) et
+**indépendant** du professionnel — aucun lien hiérarchique, familial ou
+fonctionnel (art. L613-1 à L613-3, R613-1 c. conso). Recherche faite le 3/09
+dans l'annuaire officiel et dans la liste par secteurs d'activité : **aucune
+trace de ce nom**. Et il est à une lettre du prénom de la fondatrice.
+
+Publier ce nom aurait produit une clause de médiation **nulle**, dans les CGV
+d'un organisme certifié Qualiopi — c'est-à-dire pire que pas de clause du tout.
+Siham a répondu **« ne met pas de médiateur pour l'instant »** : la rubrique
+reste donc en « en cours de désignation », avec une phrase de plus qui engage
+l'association à n'y porter aucun nom avant référencement.
+
+**Ce qu'il faut pour débloquer :** soit le numéro de référencement CECMC de la
+personne et la preuve de son indépendance, soit une adhésion à un médiateur
+référencé du secteur formation (CM2C, Medicys, SAS Médiation Solution — ordre
+de grandeur 100 à 200 €/an).
+
+### Les CGV couvrent enfin l'attestation
+
+Les CGV existaient déjà (`(public)/legal/page.tsx`, rubrique `cgv`) et
+couvraient LEX et les formations Qualiopi. **L'attestation à 20 € n'y figurait
+nulle part** — c'est-à-dire la seule chose que Siham veut vendre. Rubrique
+ajoutée : ce qui est vendu (le document, pas la formation, qui reste gratuite),
+ce que ce n'est PAS (ni RNCP ni RS, aucun titre, aucun droit à exercer), le
+délai de délivrance (quinze jours ouvrés), la rectification sans frais, et le
+droit de rétractation avec sa vraie mécanique — l'extinction n'intervient que
+si la personne a **expressément demandé** l'exécution avant la fin des quatorze
+jours (art. L. 221-25 et L. 221-28, 1°).
+
+⚠ **« Attestation de suivi », jamais « certificat »**, y compris dans les CGV.
+La règle vaut partout et elle est ancienne ; elle est maintenant écrite en
+commentaire dans le fichier, à l'endroit où quelqu'un serait tenté de la
+défaire.
+
+### `/admin/emails` — l'écran qui manquait pour piloter
+
+Cinq envois partent tout seuls (confirmation, bienvenue, alerte d'inscription,
+activation J+1, tunnel, rendez-vous du lundi). `MailService.send()` **ne lève
+jamais** — c'est ce qui empêche un serveur de messagerie lent de faire échouer
+une inscription — mais l'effet de bord était qu'**un envoi raté ne se voyait
+nulle part**, sinon dans les journaux du conteneur.
+
+L'écran réunit deux choses de nature différente, et il le dit :
+
+- **l'état du transport et le journal des envois**, tenus en mémoire par
+  `MailService` (`etatEnvois()`, cent lignes au maximum). ⚠ **Remis à zéro à
+  chaque redéploiement, et c'est un choix** : la question est « est-ce que ça
+  part en ce moment ? ». Une table en base coûterait une écriture par e-mail,
+  une migration et une purge, et porterait des adresses — donc une durée de
+  conservation à justifier. Le jour où l'historique complet est nécessaire,
+  c'est un autre sujet, pas une variante de celui-ci ;
+- **l'avancement du tunnel**, lu en base : répartition des comptes sur les sept
+  étapes, envois des sept derniers jours, comptes encore dans la séquence,
+  désabonnés, adresses non confirmées, et les vingt-cinq derniers inscrits
+  ligne à ligne.
+
+Un bandeau s'affiche en tête si le transport n'est pas le SMTP du domaine — le
+repli Brevo échoue SPF et se fait écarter silencieusement, c'est la panne de
+l'été et elle doit se voir tout de suite.
+
+⚠ `AdminService` prend un cinquième paramètre (`MailService`) : les tests qui
+l'instancient à la main doivent être mis à jour, sinon `tsc` casse
+(`formation-gratuite.spec.ts` en a fait les frais).
+
+### Les prérequis remontent à côté du public visé
+
+Sur une mini-formation, ni `durationHours`, ni `city`, ni `certificationName` ne
+sont renseignés : l'encart « Public visé » restait **seul sur sa ligne** dans
+une grille à deux colonnes, et les prérequis vivaient tout en bas en bloc de
+texte. Ils vont ensemble à la lecture — à qui ça s'adresse, et ce qu'il faut
+avant. `Attribut` reçoit un paramètre `ton` : le second encart prend le fond
+`muted`, plus sourd d'un ton, sans quoi les deux textes longs formaient un seul
+pavé où l'œil ne trouvait plus la séparation.

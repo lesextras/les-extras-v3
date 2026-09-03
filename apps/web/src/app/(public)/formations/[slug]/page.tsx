@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Star, Clock, Users, MapPin, CalendarClock, ShieldCheck, BadgeCheck, Eye,
+  Star, Clock, Users, MapPin, CalendarClock, ShieldCheck, BadgeCheck, Eye, ListChecks,
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
 import { premierVisuel, visuels } from "@/lib/media";
@@ -165,6 +165,14 @@ export default async function FormationPubliquePage({
           <div className="grid gap-3 sm:grid-cols-2">
             {f.durationHours ? <Attribut icon={<Clock className="size-4" />} label="Durée" value={`${f.durationHours} h`} /> : null}
             {f.targetAudience ? <Attribut icon={<Users className="size-4" />} label="Public visé" value={f.targetAudience} /> : null}
+            {/* LES PRÉREQUIS REMONTENT ICI (03/09/2026, demande Siham).
+                Ils vivaient en bas de page, en bloc de texte, pendant que
+                « Public visé » occupait une demi-colonne et laissait l'autre
+                vide : sur une mini-formation, ni durée en heures, ni ville, ni
+                certification ne sont renseignées, donc l'encart restait seul
+                sur sa ligne. Les deux vont ensemble à la lecture — à qui ça
+                s'adresse, et ce qu'il faut avant — et ils comblent la ligne. */}
+            {f.prerequisites ? <Attribut icon={<ListChecks className="size-4" />} label="Prérequis" value={f.prerequisites} ton="sourd" /> : null}
             {f.city ? <Attribut icon={<MapPin className="size-4" />} label="Lieu" value={f.city} /> : null}
             {f.certificationName ? <Attribut icon={<BadgeCheck className="size-4" />} label="Certification" value={f.certificationName} /> : null}
           </div>
@@ -174,7 +182,6 @@ export default async function FormationPubliquePage({
           <Bloc titre="Programme" texte={f.program} />
           <Bloc titre="Méthodologie pédagogique" texte={f.methodology} />
           <Bloc titre="Modalités d'évaluation" texte={f.evaluation} />
-          <Bloc titre="Prérequis" texte={f.prerequisites} />
 
           {sessions.length > 0 ? (
             <section className="space-y-3">
@@ -544,9 +551,31 @@ export default async function FormationPubliquePage({
   );
 }
 
-function Attribut({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+/**
+ * Un encart d'attribut de la fiche.
+ *
+ * `ton` distingue deux encarts VOISINS qui portent des textes longs — « Public
+ * visé » et « Prérequis » se lisent côte à côte, et sur le même fond de carte
+ * ils formaient un seul pavé où l'œil ne trouvait plus la séparation. Le
+ * second prend donc le fond `muted`, plus sourd d'un ton.
+ */
+function Attribut({
+  icon,
+  label,
+  value,
+  ton = "carte",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  ton?: "carte" | "sourd";
+}) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
+    <div
+      className={`flex items-start gap-3 rounded-xl border p-3 ${
+        ton === "sourd" ? "border-border/70 bg-muted/60" : "border-border bg-card"
+      }`}
+    >
       <span className="mt-0.5 text-muted-foreground">{icon}</span>
       <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>

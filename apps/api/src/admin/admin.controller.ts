@@ -384,6 +384,15 @@ export class AdminController {
    * Filtres optionnels : action, type/identifiant d'entité, auteur, période.
    * Ex. GET /admin/audit?action=booking.time_entry.validated&from=2026-01-01&page=2
    */
+  /**
+   * Suivi des e-mails : transport, journal des envois, avancement du tunnel.
+   * Lecture seule — rien ne se déclenche depuis cet écran, on regarde.
+   */
+  @Get('emails')
+  suiviEmails() {
+    return this.admin.suiviEmails();
+  }
+
   @Get('audit')
   listAudit(
     @Query('action') action?: string,

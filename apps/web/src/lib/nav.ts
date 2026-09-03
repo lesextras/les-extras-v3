@@ -411,6 +411,10 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, hint: 'KPIs détaillés de la plateforme' },
       { label: "Tunnel d'acquisition", href: '/admin/tunnel', icon: Filter, hint: 'Vue → demande → devis → réservation, fiche par fiche' },
+      // Ajouté le 03/09/2026. Cinq séquences partent toutes seules et
+      // `MailService.send()` ne lève jamais : un envoi raté ne se voyait que
+      // dans les journaux du conteneur, autant dire nulle part.
+      { label: 'Suivi des e-mails', href: '/admin/emails', icon: Mail, hint: 'Ce qui part, ce qui échoue, et où en sont les inscrits dans la séquence d’accueil' },
       { label: 'Journal d\'audit', href: '/admin/journal', icon: ScrollText, hint: 'Qui a fait quoi, et quand : validations d\'heures, modérations, changements de rôle' },
     ],
   },

@@ -16,6 +16,7 @@ import { ImportListingDto } from './dto/import-catalog.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConformiteService } from '../conformite/conformite.service';
+import { MailService } from '../common/mail/mail.service';
 import { QueryUsersDto } from './dto/query-users.dto';
 import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
@@ -56,7 +57,91 @@ export class AdminService {
     private readonly notifications: NotificationsService,
     private readonly conformite: ConformiteService,
     private readonly audit: AuditService,
+    private readonly mail: MailService,
   ) {}
+
+  /**
+   * SUIVI DES E-MAILS — l'écran qui manquait pour piloter.
+   *
+   * Trois séquences partent toutes seules (bienvenue à l'inscription,
+   * activation le lendemain, tunnel d'accueil tous les trois jours) plus le
+   * rendez-vous du lundi et l'alerte d'inscription. `MailService.send()` ne
+   * lève jamais — c'est ce qui protège les parcours — mais du coup **un envoi
+   * qui échoue ne se voyait nulle part**, sinon dans les journaux du
+   * conteneur. Autant dire nulle part pour qui pilote depuis un navigateur.
+   *
+   * Cette méthode réunit deux choses de nature différente, et il faut le
+   * savoir en la lisant :
+   *  - l'état du TRANSPORT et le journal des envois, tenus en mémoire par
+   *    `MailService` : remis à zéro à chaque redémarrage, ils répondent à
+   *    « est-ce que ça part en ce moment ? » ;
+   *  - l'avancement du TUNNEL, lu en base : lui est durable, et répond à
+   *    « où en sont les inscrits ? ».
+   */
+  async suiviEmails() {
+    const jour = 86_400_000;
+    const il7j = new Date(Date.now() - 7 * jour);
+    const il30j = new Date(Date.now() - 30 * jour);
+
+    const [parEtape, envoyes7j, aVenir, optOut, nonConfirmes, recents] =
+      await Promise.all([
+        this.prisma.user.groupBy({
+          by: ['tunnelEtape'],
+          _count: { _all: true },
+          orderBy: { tunnelEtape: 'asc' },
+        }),
+        this.prisma.user.count({ where: { tunnelDernierAt: { gte: il7j } } }),
+        // Ceux qui sont réellement dans la séquence : inscrits depuis moins de
+        // 30 jours (le plancher du planificateur), adresse confirmée, opt-in,
+        // et pas encore au bout des six messages.
+        this.prisma.user.count({
+          where: {
+            emailVerified: true,
+            hebdoOptIn: true,
+            tunnelEtape: { lt: 6 },
+            createdAt: { gte: il30j },
+          },
+        }),
+        this.prisma.user.count({ where: { hebdoOptIn: false } }),
+        this.prisma.user.count({
+          where: { emailVerified: false, createdAt: { gte: il30j } },
+        }),
+        this.prisma.user.findMany({
+          where: { createdAt: { gte: il30j } },
+          orderBy: { createdAt: 'desc' },
+          take: 25,
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            createdAt: true,
+            emailVerified: true,
+            hebdoOptIn: true,
+            activationMailAt: true,
+            tunnelEtape: true,
+            tunnelDernierAt: true,
+          },
+        }),
+      ]);
+
+    return {
+      envois: this.mail.etatEnvois(),
+      tunnel: {
+        // Six étapes + l'étape 0 : on renvoie le tableau complet, y compris
+        // les étapes à zéro, sinon l'écran affiche des trous.
+        parEtape: Array.from({ length: 7 }, (_, i) => ({
+          etape: i,
+          comptes: parEtape.find((p) => p.tunnelEtape === i)?._count._all ?? 0,
+        })),
+        envoyes7j,
+        aVenir,
+        optOut,
+        nonConfirmes,
+      },
+      recents,
+    };
+  }
 
   // --- Coffre-fort de conformité (agrégat plateforme) ---------------------
 
