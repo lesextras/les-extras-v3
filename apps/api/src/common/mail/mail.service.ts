@@ -1,5 +1,6 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
@@ -57,7 +58,16 @@ export class MailService implements OnModuleDestroy {
   /** Créé à la première utilisation, puis réutilisé (pool de connexions). */
   private transporter: Transporter | null = null;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    /**
+     * ⚠ INJECTÉ EN OPTIONNEL, ET C'EST VOLONTAIRE. `MailModule` est global et
+     * chargé très tôt ; exiger Prisma ici ferait dépendre l'envoi d'un courriel
+     * de la disponibilité de la base. Un mail qui ne part pas parce que la base
+     * hoquette serait un très mauvais échange.
+     */
+    @Optional() private readonly prisma?: PrismaService,
+  ) {}
 
   onModuleDestroy() {
     this.transporter?.close();
@@ -212,6 +222,18 @@ export class MailService implements OnModuleDestroy {
     if (ok) this.compteurs.envoyes += 1;
     else if (voie === 'aucune') this.compteurs.sansTransport += 1;
     else this.compteurs.echecs += 1;
+
+    // LE JOURNAL DURABLE, en plus du journal en mémoire.
+    //
+    // Celui en mémoire repart à zéro à chaque redéploiement : il ne répond
+    // jamais à « est-ce que mes mails sont partis cette semaine ? ». Celui-ci
+    // survit. L'écriture ne bloque pas l'envoi et n'échoue jamais bruyamment :
+    // perdre une ligne de journal ne doit pas perdre un courriel.
+    void this.prisma?.emailEnvoye
+      .create({
+        data: { destinataire, sujet: sujet.slice(0, 300), voie, ok, erreur: erreur?.slice(0, 300) },
+      })
+      .catch(() => undefined);
 
     this.journal.unshift({
       date: new Date().toISOString(),

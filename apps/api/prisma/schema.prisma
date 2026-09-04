@@ -2579,3 +2579,30 @@ model RetourExperience {
   @@index([createdAt])
   @@index([accountId])
 }
+
+/// LE JOURNAL DES COURRIELS TRANSACTIONNELS.
+///
+/// ⚠ IL EXISTAIT DÉJÀ, EN MÉMOIRE, ET C'EST POUR ÇA QU'IL NE SERVAIT À RIEN.
+/// `MailService` tenait un compteur et un journal dans le processus : remis à
+/// zéro à chaque redéploiement, c'est-à-dire plusieurs fois par jour. On ne
+/// pouvait donc jamais répondre à « est-ce que mes mails partent ? », qui est
+/// la première question qu'on se pose quand un intervenant dit n'avoir rien
+/// reçu.
+///
+/// Une ligne par envoi, réussi ou non, avec la voie empruntée (SMTP direct ou
+/// repli Brevo) et le motif d'échec. C'est le minimum pour piloter, et ça ne
+/// coûte qu'une écriture par courriel.
+model EmailEnvoye {
+  id           String   @id @default(cuid())
+  destinataire String
+  sujet        String
+  /// 'smtp' | 'brevo' | 'aucune' : par où c'est parti, ou pourquoi pas.
+  voie         String
+  ok           Boolean
+  /// Motif d'échec, tronqué : de quoi diagnostiquer, pas de quoi noyer l'écran.
+  erreur       String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([ok, createdAt])
+}

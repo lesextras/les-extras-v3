@@ -79,6 +79,129 @@ export class AdminService {
    *  - l'avancement du TUNNEL, lu en base : lui est durable, et répond à
    *    « où en sont les inscrits ? ».
    */
+
+  /**
+   * LES COURRIELS, VUS DEPUIS LE PILOTAGE : ce qui est parti, ce qui a échoué,
+   * et ce que les campagnes ont donné.
+   *
+   * ⚠ TROIS SOURCES, ET AUCUNE NE SE SUFFIT.
+   *  - Le journal durable `EmailEnvoye` répond à « est-ce que mes mails
+   *    partent ? ». Il remplace le compteur en mémoire de `MailService`, qui
+   *    repartait à zéro à chaque redéploiement, donc plusieurs fois par jour.
+   *  - Brevo répond à « est-ce qu'ils sont LUS ? ». Un envoi réussi n'est pas
+   *    une ouverture, et c'est exactement la différence entre croire que la
+   *    campagne marche et le savoir.
+   *  - Le tunnel d'accueil garde sa propre lecture, plus bas dans l'écran.
+   *
+   * Brevo est interrogé en direct, sans rien stocker : ses chiffres bougent
+   * pendant des jours après un envoi, et une copie locale serait fausse le
+   * lendemain. Une panne de leur côté n'empêche pas d'afficher le reste.
+   */
+  private async courrielsTransactionnels() {
+    const jour = 86_400_000;
+    const il7j = new Date(Date.now() - 7 * jour);
+    const il30j = new Date(Date.now() - 30 * jour);
+
+    const [envoyes7j, echecs7j, envoyes30j, echecs30j, parVoie, derniersEchecs] =
+      await Promise.all([
+        this.prisma.emailEnvoye.count({ where: { ok: true, createdAt: { gte: il7j } } }),
+        this.prisma.emailEnvoye.count({ where: { ok: false, createdAt: { gte: il7j } } }),
+        this.prisma.emailEnvoye.count({ where: { ok: true, createdAt: { gte: il30j } } }),
+        this.prisma.emailEnvoye.count({ where: { ok: false, createdAt: { gte: il30j } } }),
+        this.prisma.emailEnvoye.groupBy({
+          by: ['voie', 'ok'],
+          where: { createdAt: { gte: il30j } },
+          _count: { _all: true },
+        }),
+        this.prisma.emailEnvoye.findMany({
+          where: { ok: false },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: { id: true, destinataire: true, sujet: true, voie: true, erreur: true, createdAt: true },
+        }),
+      ]);
+
+    return {
+      envoyes7j,
+      echecs7j,
+      envoyes30j,
+      echecs30j,
+      parVoie: parVoie.map((v) => ({ voie: v.voie, ok: v.ok, total: v._count._all })),
+      derniersEchecs,
+    };
+  }
+
+  /** Les campagnes Brevo et ce qu'elles ont donné. Silencieux en cas de panne. */
+  private async campagnesBrevo() {
+    const cle = process.env.BREVO_API_KEY;
+    if (!cle) return { disponible: false, motif: 'BREVO_API_KEY absente', campagnes: [] };
+    try {
+      const res = await fetch(
+        'https://api.brevo.com/v3/emailCampaigns?statistics=globalStats&limit=15&sort=desc',
+        { headers: { 'api-key': cle, accept: 'application/json' } },
+      );
+      if (!res.ok) {
+        return { disponible: false, motif: `Brevo a répondu ${res.status}`, campagnes: [] };
+      }
+      const data = (await res.json()) as {
+        campaigns?: {
+          id: number; name: string; subject?: string; status: string; sentDate?: string;
+          statistics?: { globalStats?: Record<string, number> };
+        }[];
+      };
+      const campagnes = (data.campaigns ?? []).map((c) => {
+        const g = c.statistics?.globalStats ?? {};
+        const livres = g.delivered ?? 0;
+        return {
+          id: c.id,
+          nom: c.name,
+          sujet: c.subject ?? null,
+          statut: c.status,
+          envoyeLe: c.sentDate ?? null,
+          envoyes: g.sent ?? 0,
+          livres,
+          // ⚠ LE TAUX SE CALCULE SUR LES MESSAGES LIVRÉS, pas sur les envoyés.
+          // Rapporté aux envoyés, il compte les rebonds comme des non-ouvertures
+          // et fait paraître mauvaise une campagne qui a bien marché auprès de
+          // ceux qui l'ont reçue.
+          ouvertures: g.uniqueViews ?? 0,
+          tauxOuverture: livres > 0 ? Math.round(((g.uniqueViews ?? 0) / livres) * 1000) / 10 : null,
+          clics: g.uniqueClicks ?? 0,
+          tauxClic: livres > 0 ? Math.round(((g.uniqueClicks ?? 0) / livres) * 1000) / 10 : null,
+          rebondsDurs: g.hardBounces ?? 0,
+          rebondsMous: g.softBounces ?? 0,
+          desabonnements: g.unsubscriptions ?? 0,
+          plaintes: g.complaints ?? 0,
+        };
+      });
+      return { disponible: true, motif: null, campagnes };
+    } catch (e) {
+      return { disponible: false, motif: (e as Error).message, campagnes: [] };
+    }
+  }
+
+  /**
+   * SUR QUEL MOTEUR TOURNE LEX ?
+   *
+   * ⚠ RIEN NE LE DISAIT NULLE PART, et ça a coûté cher : la clé Anthropic était
+   * posée en production sous un autre nom de variable (`lexv3`). Le code
+   * cherchait `ANTHROPIC_API_KEY`, ne trouvait rien, basculait sur Mistral en
+   * silence. On pouvait payer Anthropic pendant des semaines en faisant tourner
+   * autre chose, sans qu'aucun écran ne le montre.
+   */
+  private moteurLex() {
+    const anthropic = Boolean(process.env.ANTHROPIC_API_KEY);
+    const mistral = Boolean(process.env.MISTRAL_API_KEY);
+    return {
+      moteur: anthropic ? 'Claude (Anthropic)' : mistral ? 'Mistral (repli)' : 'aucun',
+      modele: anthropic
+        ? (process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-5')
+        : (process.env.MISTRAL_MODEL ?? 'mistral-large-latest'),
+      surRepli: !anthropic && mistral,
+      indisponible: !anthropic && !mistral,
+    };
+  }
+
   async suiviEmails() {
     const jour = 86_400_000;
     const il7j = new Date(Date.now() - 7 * jour);
@@ -126,8 +249,18 @@ export class AdminService {
         }),
       ]);
 
+    // Les trois lectures sont demandées en parallèle : Brevo répond en
+    // quelques centaines de millisecondes, et l'écran ne doit pas attendre.
+    const [transactionnel, campagnes] = await Promise.all([
+      this.courrielsTransactionnels(),
+      this.campagnesBrevo(),
+    ]);
+
     return {
       envois: this.mail.etatEnvois(),
+      transactionnel,
+      campagnes,
+      moteurLex: this.moteurLex(),
       tunnel: {
         // Six étapes + l'étape 0 : on renvoie le tableau complet, y compris
         // les étapes à zéro, sinon l'écran affiche des trous.

@@ -67,6 +67,29 @@ interface Suivi {
     sansTransport: number;
     derniers: LigneJournal[];
   };
+  /** Le journal DURABLE, celui qui survit aux redéploiements. */
+  transactionnel: {
+    envoyes7j: number;
+    echecs7j: number;
+    envoyes30j: number;
+    echecs30j: number;
+    parVoie: { voie: string; ok: boolean; total: number }[];
+    derniersEchecs: {
+      id: string; destinataire: string; sujet: string; voie: string;
+      erreur?: string | null; createdAt: string;
+    }[];
+  };
+  campagnes: {
+    disponible: boolean;
+    motif: string | null;
+    campagnes: {
+      id: number; nom: string; sujet: string | null; statut: string; envoyeLe: string | null;
+      envoyes: number; livres: number; ouvertures: number; tauxOuverture: number | null;
+      clics: number; tauxClic: number | null; rebondsDurs: number; rebondsMous: number;
+      desabonnements: number; plaintes: number;
+    }[];
+  };
+  moteurLex: { moteur: string; modele: string; surRepli: boolean; indisponible: boolean };
   tunnel: {
     parEtape: { etape: number; comptes: number }[];
     envoyes7j: number;
@@ -104,7 +127,7 @@ export default async function AdminEmailsPage() {
     );
   }
 
-  const { envois, tunnel, recents } = data;
+  const { envois, tunnel, recents, transactionnel, campagnes, moteurLex } = data;
   const transportOk = envois.transport.voie === "smtp";
   const totalTente = envois.envoyes + envois.echecs + envois.sansTransport;
 
@@ -114,6 +137,179 @@ export default async function AdminEmailsPage() {
         title="Suivi des e-mails"
         subtitle="Ce qui part, ce qui échoue, et où en sont les inscrits dans la séquence d’accueil."
       />
+
+      {/* SUR QUEL MOTEUR TOURNE LEX ?
+          ⚠ Rien ne le disait nulle part, et ça a coûté des semaines : la clé
+          Anthropic était posée en production sous le nom « lexv3 », le code
+          cherchait ANTHROPIC_API_KEY, et LEX tournait sur Mistral en silence.
+          Cette ligne existe pour que ça ne puisse plus se reproduire. */}
+      <Card
+        className={
+          moteurLex.indisponible
+            ? "border-destructive/40 bg-destructive/5"
+            : moteurLex.surRepli
+              ? "border-warning/40 bg-warning/5"
+              : "border-success/30 bg-success/5"
+        }
+      >
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Moteur de LEX : {moteurLex.moteur}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Modèle {moteurLex.modele}.{" "}
+              {moteurLex.indisponible
+                ? "Aucune clé n'est posée : LEX ne peut rien produire."
+                : moteurLex.surRepli
+                  ? "ANTHROPIC_API_KEY n'est pas posée : LEX tourne sur le repli."
+                  : "C'est le moteur prévu."}
+            </p>
+          </div>
+          <Badge variant={moteurLex.surRepli || moteurLex.indisponible ? "outline" : "secondary"}>
+            {moteurLex.indisponible ? "à configurer" : moteurLex.surRepli ? "repli" : "nominal"}
+          </Badge>
+        </CardContent>
+      </Card>
+
+      {/* CE QUI EST RÉELLEMENT PARTI, SUR LA DURÉE.
+          Le bloc « envois » juste en dessous vit en mémoire et repart à zéro à
+          chaque redéploiement : il dit ce qui se passe MAINTENANT. Celui-ci est
+          lu en base et répond à « qu'est-ce qui est parti cette semaine ». */}
+      <section className="space-y-4">
+        <SectionTitle title="Courriels transactionnels" />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard label="Partis, 7 jours" value={transactionnel.envoyes7j} accent="teal" icon={<Send />} />
+          <StatCard
+            label="Échecs, 7 jours"
+            value={transactionnel.echecs7j}
+            accent={transactionnel.echecs7j > 0 ? "warning" : undefined}
+            icon={<MailX />}
+          />
+          <StatCard label="Partis, 30 jours" value={transactionnel.envoyes30j} icon={<Mail />} />
+          <StatCard label="Échecs, 30 jours" value={transactionnel.echecs30j} icon={<AlertTriangle />} />
+        </div>
+
+        {transactionnel.derniersEchecs.length > 0 ? (
+          <Card className="border-warning/40">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Quand</TableHead>
+                    <TableHead>Destinataire</TableHead>
+                    <TableHead>Objet</TableHead>
+                    <TableHead>Motif</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactionnel.derniersEchecs.map((e) => (
+                    <TableRow key={e.id}>
+                      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                        {formatDateTime(e.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-sm">{e.destinataire}</TableCell>
+                      <TableCell className="max-w-[18rem] truncate text-sm">{e.sujet}</TableCell>
+                      <TableCell className="max-w-[22rem] truncate text-xs text-destructive">
+                        {e.erreur ?? "motif inconnu"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Aucun échec enregistré. Le journal démarre à la mise en service de cet écran.
+          </p>
+        )}
+      </section>
+
+      {/* LES CAMPAGNES BREVO.
+          ⚠ Un envoi n'est pas une lecture. Le taux d'ouverture se calcule sur
+          les messages LIVRÉS, pas sur les envoyés : rapporté aux envoyés, il
+          compte les rebonds comme des non-ouvertures et fait paraître mauvaise
+          une campagne qui a bien marché auprès de ceux qui l'ont reçue. */}
+      <section className="space-y-4">
+        <SectionTitle title="Campagnes (Brevo)" />
+        {!campagnes.disponible ? (
+          <EmptyState
+            title="Statistiques de campagne indisponibles"
+            description={campagnes.motif ?? "Brevo n'a pas répondu."}
+          />
+        ) : campagnes.campagnes.length === 0 ? (
+          <EmptyState
+            title="Aucune campagne"
+            description="Les campagnes créées dans Brevo apparaîtront ici avec leurs ouvertures."
+          />
+        ) : (
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Campagne</TableHead>
+                    <TableHead className="text-right">Livrés</TableHead>
+                    <TableHead className="text-right">Ouvertures</TableHead>
+                    <TableHead className="text-right">Clics</TableHead>
+                    <TableHead className="text-right">Rebonds</TableHead>
+                    <TableHead className="text-right">Désab.</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {campagnes.campagnes.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell>
+                        <p className="text-sm font-medium text-foreground">{c.nom}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.statut}
+                          {c.envoyeLe ? ` · ${formatDateTime(c.envoyeLe)}` : ""}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">
+                        {c.livres}
+                        {c.envoyes > c.livres ? (
+                          <span className="text-xs text-muted-foreground"> / {c.envoyes}</span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">
+                        {c.ouvertures}
+                        {c.tauxOuverture !== null ? (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            {c.tauxOuverture} %
+                          </span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">
+                        {c.clics}
+                        {c.tauxClic !== null ? (
+                          <span className="ml-1 text-xs text-muted-foreground">{c.tauxClic} %</span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell
+                        className={`text-right text-sm tabular-nums ${
+                          c.rebondsDurs > 0 ? "font-semibold text-secondary" : ""
+                        }`}
+                      >
+                        {c.rebondsDurs + c.rebondsMous}
+                      </TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">
+                        {c.desabonnements}
+                        {c.plaintes > 0 ? (
+                          <span className="ml-1 text-xs font-semibold text-destructive">
+                            +{c.plaintes} plainte{c.plaintes > 1 ? "s" : ""}
+                          </span>
+                        ) : null}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+      </section>
 
       {/* L'ÉTAT DU TRANSPORT EN PREMIER : si le SMTP n'est pas configuré,
           tout le reste de l'écran ne veut rien dire. */}
