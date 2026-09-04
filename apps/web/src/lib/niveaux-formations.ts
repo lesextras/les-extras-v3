@@ -100,7 +100,6 @@ export const NIVEAUX: readonly Niveau[] = [
         slug: 'decrire-un-comportement-sans-le-juger',
         titre: 'Décrire un comportement sans le juger',
         competence: 'Écrire ce qu’on a vu, pas ce qu’on en a pensé.',
-        aVenir: true,
       },
     ],
   },
@@ -128,7 +127,6 @@ export const NIVEAUX: readonly Niveau[] = [
         slug: 'renforcer-ce-qui-va',
         titre: 'Renforcer ce qui va',
         competence: 'Faire augmenter un comportement qui existe déjà.',
-        aVenir: true,
       },
       {
         slug: 'decomposer-une-routine-en-etapes',

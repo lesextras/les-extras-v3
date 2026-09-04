@@ -779,6 +779,162 @@ const FICHES = [
       { i: '🧽', t: '« On essaie, on efface » : le droit à l’imparfait lève la peur d’entrer.' },
     ],
   },
+
+  /* ══════════════════════════════════════════════════════════════════════ 11 */
+  {
+    slug: 'renforcer-ce-qui-va',
+    titre: 'RENFORCER',
+    titre2: 'CE QUI VA',
+    accent: '#0d9488',
+    accentDoux: '#f0fdfa',
+    thematique: 'Comportements-défis et opposition',
+    ruban: 'À l’effet, jamais à l’intention',
+    emoji: '🌱',
+    duree: '4 modules · 46 min de lecture · 10 jours de relevé',
+    competence:
+      'Poser une fiche de renforcement sur un comportement qui existe déjà, la tenir dix jours, lire le relevé et espacer sans tout perdre.',
+    notion: {
+      titre: 'LA NOTION CLÉ',
+      points: [
+        '<b>On ne peut renforcer que ce qui existe déjà.</b> Même rarement, même mal — mais cela doit être apparu. Sinon c’est un objectif d’enseignement, pas de renforcement.',
+        '<b>Est renforçateur ce qui fait augmenter le comportement</b>, et rien d’autre. L’intention de l’adulte n’entre pas dans la définition : cela se constate, cela ne se décide pas.',
+        'Trois réglages décident du résultat, et un seul est gratuit : <b>le délai</b>, le critère, la fréquence.',
+      ],
+      test: 'Est-ce que ce comportement est déjà apparu au moins une fois cette semaine&nbsp;? Si non, ce n’est pas ce parcours.',
+    },
+    parcours: [
+      { quoi: 'La phrase qui trie, la définition, les trois réglages', produit: 'la règle des trois réglages' },
+      { quoi: 'Un tableau qui s’effondre en neuf jours, disséqué', produit: 'un dispositif disséqué' },
+      { quoi: 'La fiche de renforcement, rubrique par rubrique', produit: 'votre fiche de renforcement' },
+      { quoi: 'Dix jours de relevé, la lecture, puis l’espacement', produit: 'une décision, et un plan de retrait' },
+    ],
+    releve: 'Entre le module 3 et le module 4 : <b>dix jours, deux chiffres par jour</b> — combien de fois le comportement est apparu, combien de fois vous l’avez remarqué. Moins de dix jours ne montre aucune tendance.',
+    figure: {
+      titre: 'CE QU’ON CROIT RENFORÇANT, ET CE QUI L’EST',
+      type: 'paires',
+      gauche: 'Ce que l’adulte met en place',
+      droite: 'Ce que ça vaut vraiment',
+      lignes: [
+        { g: '« Bravo&nbsp;! » lancé à la cantonade', d: 'Souvent rien : trop vague pour dire QUEL comportement est visé' },
+        { g: 'Une image en fin de semaine', d: 'Trop tard de plusieurs jours. Ce qui est renforcé, c’est le vendredi' },
+        { g: 'Un compliment devant le groupe', d: 'Renforçateur pour certains, <b>punition pour d’autres</b>. Cela se teste' },
+        { g: 'Un bonbon quand l’adulte y pense', d: 'Irrégulier, donc illisible — et l’effet tombe dès qu’elle n’a plus faim' },
+        { g: 'Nommer le comportement en 3 secondes', d: '<b>Le seul qui marche à tous les coups</b>, et il est gratuit' },
+      ],
+      legende: 'Quatre lignes sur cinq coûtent de l’argent ou du matériel ; la cinquième, gratuite, est la plus efficace.',
+    },
+    arbre: {
+      titre: 'ÇA N’AUGMENTE PAS. DANS QUEL ORDRE CHERCHER',
+      question: 'Après dix jours, la colonne « apparu » ne monte pas. Que regarder, et dans cet ordre&nbsp;?',
+      branches: [
+        { si: '1. Le délai', alors: 'CHRONOMÈTRE EN MAIN', d: 'sur trois occasions. Au-delà de 30 s, le reste ne sert à rien' },
+        { si: '2. Le renforçateur', alors: 'REPRENDRE LA LISTE', d: 'ce que vous donnez n’en est peut-être pas un pour cette personne' },
+        { si: '3. Le critère', alors: 'L’ABAISSER', d: 'jusqu’à ce que le comportement apparaisse au moins une fois par jour' },
+        { si: '« Remarqué » ≪ « apparu »', alors: 'RIEN N’A ÉTÉ TESTÉ', d: 'le dispositif n’a pas été tenu : le relevé ne dit rien de la personne' },
+      ],
+    },
+    erreurs: [
+      '<b>Retirer un point déjà gagné.</b> Le dispositif devient une punition, et la confiance ne revient pas.',
+      'Mettre un besoin fondamental dans le dispositif — repas, sommeil, soins, sortie, lien familial, et surtout <b>le moyen de communication</b>. Ce sont des droits.',
+      'Supposer qu’un compliment public est un renforçateur : il est aversif pour une partie des personnes accompagnées. Cela se teste.',
+      'Ne pas écrire à qui sert le comportement. Si la réponse est « à l’équipe », on renonce.',
+    ],
+    retenir: [
+      'Un renforçateur se reconnaît à l’effet, jamais à l’intention.',
+      'Trois secondes, un critère juste en dessous du niveau observé.',
+      'On espace, on n’arrête jamais net : l’irrégulier est plus solide que le continu.',
+    ],
+    grille: {
+      titre: 'LA GRILLE À RECOPIER — 10 JOURS, DEUX CHIFFRES PAR JOUR',
+      colonnes: ['Jour', 'Apparu (combien de fois)', 'Remarqué (combien de fois)', 'Un mot s’il s’est passé quelque chose'],
+      note:
+        'Les deux colonnes ne disent pas la même chose : la seconde mesure ce que l’équipe a tenu, pas ce que la personne a fait.',
+    },
+    astuces: [
+      { i: '⏱️', t: 'Écrivez la phrase de remarque mot pour mot : improvisée, elle arrive trop tard et trop vague.' },
+      { i: '📋', t: 'Notez les noms de qui tient le dispositif. Tenu par une personne sur trois, il ne produit rien de lisible.' },
+      { i: '🌡️', t: 'Une chute de deux ou trois jours est du bruit. Comparez semaine à semaine, jamais jour à jour.' },
+    ],
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════ 12 */
+  {
+    slug: 'decrire-un-comportement-sans-le-juger',
+    titre: 'DÉCRIRE UN COMPORTEMENT',
+    titre2: 'SANS LE JUGER',
+    accent: '#4f46e5',
+    accentDoux: '#eef2ff',
+    thematique: 'Observer et écrire',
+    ruban: 'Le test de la caméra',
+    emoji: '📹',
+    duree: '4 modules · 46 min de lecture · 7 jours de relevé',
+    competence:
+      'Écrire une observation qu’une caméra aurait pu enregistrer, annoncer ses hypothèses comme telles, et relire un écrit avant qu’il ne circule.',
+    notion: {
+      titre: 'LA NOTION CLÉ',
+      points: [
+        '<b>Le test de la caméra</b> : une caméra posée dans la pièce aurait-elle enregistré ce que je viens d’écrire&nbsp;? Elle ne filme ni les intentions, ni les motivations, ni les diagnostics.',
+        'Penser est le métier. <b>Une hypothèse s’annonce</b> — « je fais l’hypothèse que… » — elle ne se glisse pas au milieu des faits.',
+        'Chaque recopie perd du contexte et garde les adjectifs : <b>seuls les faits survivent au trajet</b> du cahier jusqu’au dossier suivant.',
+      ],
+      test: 'Une caméra aurait-elle filmé cette phrase&nbsp;? Si non, c’est une pensée — elle s’annonce ou elle s’enlève.',
+    },
+    parcours: [
+      { quoi: 'Le test de la caméra, et les mots qui trompent', produit: 'le test de la caméra' },
+      { quoi: 'Comment une phrase du soir devient une orientation', produit: 'un écrit qui a fait dérailler une décision' },
+      { quoi: 'La grille en trois colonnes, et le gabarit en trois lignes', produit: 'votre grille en trois colonnes' },
+      { quoi: 'Sept jours de vos écrits, relus en quatre passes', produit: 'la relecture de vos propres écrits' },
+    ],
+    releve: 'Entre le module 3 et le module 4 : <b>sept jours, une observation écrite par jour, trois lignes</b>. Le seul relevé du catalogue qui porte sur ce que VOUS produisez.',
+    figure: {
+      titre: 'LES MOTS QUI FONT PASSER UNE OPINION POUR UN FAIT',
+      type: 'paires',
+      gauche: 'Ce qui s’écrit spontanément',
+      droite: 'Ce qui a réellement été vu',
+      lignes: [
+        { g: '« Il a été agressif »', d: '« Il a jeté sa chaise contre le mur. » Le lecteur jugera lui-même' },
+        { g: '« Il refuse de participer »', d: '« Il est resté assis pendant les vingt minutes de l’atelier »' },
+        { g: '« Il cherche l’attention »', d: 'Une motivation ne se voit pas. Écrivez ce qu’il a fait, et ce qui a suivi' },
+        { g: '« Il est manipulateur »', d: 'Aucune caméra ne filme une manipulation. Ce mot collera des années' },
+        { g: '« La mère est dans le déni »', d: 'Rapportez ses mots : « Mme X nous a dit ne pas constater… »' },
+        { g: '« Comportement inadapté »', d: 'Inadapté à quoi, et selon qui&nbsp;? Nommez situation et comportement' },
+      ],
+      legende: 'Aucun de ces mots n’est interdit : ils sont à leur place dans une hypothèse annoncée, jamais dans le récit des faits.',
+    },
+    arbre: {
+      titre: 'LE TEST DE LA CAMÉRA, TROIS ISSUES',
+      question: 'Une caméra aurait-elle enregistré ce que vous venez d’écrire&nbsp;?',
+      branches: [
+        { si: 'Oui, elle l’aurait filmé', alors: 'C’EST UN FAIT', d: 'ça s’écrit tel quel, avec l’heure et le lieu' },
+        { si: 'Non, mais je l’ai déduit', alors: 'C’EST UNE HYPOTHÈSE', d: 'elle s’annonce : « je fais l’hypothèse que… »' },
+        { si: 'Non, c’est un mot de métier', alors: 'C’EST UN JUGEMENT', d: '« opposant », « immature », « en demande » : on le remplace par ce qui a été vu' },
+        { si: 'Ce n’est que du négatif', alors: 'C’EST INCOMPLET', d: 'le cadre de 2021 impose l’équilibre : difficultés ET points d’appui' },
+      ],
+    },
+    erreurs: [
+      'Écrire un diagnostic sous une signature éducative. On rapporte un diagnostic existant en citant qui l’a posé ; on n’en formule jamais.',
+      'Oublier ce que l’adulte a fait juste avant : <b>c’est l’élément le plus souvent absent</b>, et un comportement sans antécédent paraît surgir de la personne.',
+      'Croire qu’écrire des faits, c’est écrire sans penser ou écrire froidement. « Il pleurait » est filmable.',
+      'Ne rapporter que les difficultés : un écrit factuel mais à charge reste à charge.',
+    ],
+    retenir: [
+      'Une caméra ne filme ni les intentions ni les diagnostics.',
+      'Ce qui a précédé, écrit à chaque fois — y compris ce que l’adulte a dit.',
+      'La personne a accès à son dossier (art. L311-3 CASF). Écrivez en le sachant.',
+    ],
+    grille: {
+      titre: 'LA GRILLE À RECOPIER — 7 JOURS, TROIS COLONNES',
+      colonnes: ['Ce que j’ai vu (filmable)', 'Ce que j’en ai pensé', 'Ce que j’écris'],
+      note:
+        'On remplit la colonne 2 en premier, puis on cherche ce qui l’a produite. Ce n’est pas une colonne de honte : elle existe pour que la pensée ne se déguise pas en observation.',
+    },
+    astuces: [
+      { i: '🕰️', t: 'Écrivez le jour même. Une observation reconstituée le vendredi est déjà une interprétation.' },
+      { i: '🧾', t: 'Trois lignes suffisent : quand, où, ce qui a précédé, ce qui s’est passé.' },
+      { i: '👀', t: 'Relisez en cherchant les adjectifs : ce sont eux qui survivent aux recopies.' },
+    ],
+  },
+
 ];
 
 module.exports = { FICHES };

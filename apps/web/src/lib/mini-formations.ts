@@ -24,6 +24,8 @@ export const EMOJI_PARCOURS: Record<string, string> = {
   "lire-un-comportement-comme-une-reaction-de-survie": "🧭",
   "preparer-une-equipe-de-suivi-de-la-scolarisation": "🏫",
   "aider-a-demarrer-une-tache": "🚀",
+  "renforcer-ce-qui-va": "🌱",
+  "decrire-un-comportement-sans-le-juger": "📹",
 };
 
 /**

@@ -373,7 +373,7 @@ function page(f, index) {
     </div>
     <div class="hdr">
       <div class="g">GRATUIT · 100 %</div><br>
-      <b style="color:${ENCRE}">Fiche récap ${String(index + 1).padStart(2, '0')}/10</b><br>
+      <b style="color:${ENCRE}">Fiche récap ${String(index + 1).padStart(2, '0')}/${FICHES.length}</b><br>
       ${f.duree}<br>
       Association ADéPA · les-extras.fr
     </div>
