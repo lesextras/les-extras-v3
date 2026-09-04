@@ -359,6 +359,65 @@ ne conditionne jamais un besoin fondamental, quel que soit le résultat espéré
     'Un renforçateur perd son effet quand la personne en a eu son content. Le bonbon du matin ne vaut plus rien à onze heures. C’est normal, ce n’est pas un échec du dispositif, et c’est une raison de plus d’avoir une liste plutôt qu’un seul renforçateur.',
   ],
   annexes: 'la grille de relevé à dix jours, la liste de préférences à faire remplir, et l’affiche des quatre situations où l’on ne pose pas de dispositif.',
+  quiz: {
+    questions: [
+      {
+        enonce: 'Un professionnel félicite chaleureusement un jeune chaque fois qu’il range son matériel. Trois semaines plus tard, il range moins souvent qu’avant. Que peut-on en conclure&nbsp;?',
+        options: [
+          'Le jeune manque de motivation.',
+          'Les félicitations ne sont pas un renforçateur pour lui, et pourraient même être désagréables.',
+          'Il faut féliciter plus fort et plus souvent.',
+          'Le renforcement ne fonctionne pas sur les adolescents.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Un renforçateur se définit par son EFFET : ce qui augmente un comportement. Ici le comportement diminue, donc ce n’est pas un renforçateur pour cette personne — et les félicitations à voix haute sont franchement désagréables pour une partie des gens. La réponse A place le problème hors de portée, la C aggrave, et la D transforme une observation sur une personne en règle générale.',
+      },
+      {
+        enonce: 'Parmi ces trois réglages, lequel regarder EN PREMIER quand un dispositif ne produit rien&nbsp;?',
+        options: ['Le contenu de la récompense.', 'Le critère.', 'Le délai.', 'La durée totale du dispositif.'],
+        bonne: 2,
+        pourquoi:
+          'Le délai d’abord, toujours. Au-delà de trente secondes, le lien entre le comportement et ce qui suit se défait, et corriger la récompense ou le critère ne sert plus à rien. C’est l’ordre de l’arbre du module 3, et le respecter fait gagner des semaines.',
+      },
+      {
+        enonce: 'Une équipe propose de conditionner l’appel hebdomadaire à la famille au fait que la personne participe aux ateliers. Que faire&nbsp;?',
+        options: [
+          'Accepter si l’équipe est unanime.',
+          'Accepter en réduisant à un appel sur deux.',
+          'Refuser : le lien avec la famille est un droit, pas une récompense.',
+          'Accepter à titre d’essai sur deux semaines.',
+        ],
+        bonne: 2,
+        pourquoi:
+          'C’est la première des quatre situations où l’on ne pose pas de dispositif. Le lien familial, comme le repas, les soins, la sortie et le moyen de communication, ne se mérite pas. Un dispositif qui le conditionne est une privation, et elle reste illégitime même si elle « marche » — l’unanimité de l’équipe ou la durée d’essai n’y changent rien.',
+      },
+      {
+        enonce: 'Un enfant n’a jamais demandé d’aide autrement qu’en criant. On veut qu’il lève la main. Ce parcours convient-il&nbsp;?',
+        options: [
+          'Oui, il suffit de renforcer la main levée.',
+          'Non : le comportement n’existe pas encore, il faut d’abord l’enseigner.',
+          'Oui, en renforçant l’absence de cri.',
+          'Oui, si on met un renforçateur assez fort.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'On ne peut renforcer que ce qui existe déjà, même rarement. Ici le comportement n’est jamais apparu : il relève de « Apprendre à demander plutôt qu’à crier ». La réponse C est fausse pour une raison de plus — une absence n’est pas un comportement, elle ne se remarque pas dans les trois secondes.',
+      },
+      {
+        enonce: 'Quelle formulation peut entrer telle quelle dans une fiche de renforcement&nbsp;?',
+        options: [
+          '« Être moins agité pendant l’atelier. »',
+          '« Faire des efforts. »',
+          '« Poser son plateau sur le chariot en sortant. »',
+          '« Ne pas déranger les autres. »',
+        ],
+        bonne: 2,
+        pourquoi:
+          'Un comportement doit être observable et formulé positivement : deux personnes qui regardent la même scène doivent compter pareil. A, B et D décrivent des absences ou des impressions — on ne peut ni les compter, ni les remarquer au moment où elles se produisent.',
+      },
+    ],
+  },
   avant: [
     'Vous pouvez énoncer la définition d’un renforçateur sans employer le mot « plaisir ».',
     'Vous avez au moins un comportement retenu, écrit à la forme positive, et vous savez à qui il sert.',
@@ -495,6 +554,65 @@ d’un acquis met fin au dispositif, quelle qu’en soit la raison.`,
     'Le fait de laisser la personne choisir son renforçateur n’est pas seulement plus efficace : c’est aussi ce qui distingue un accompagnement d’un dressage. Quand le choix n’est pas verbal, il se fait en images, en objets, ou en observant vers quoi la personne va d’elle-même.',
   ],
   annexes: 'la fiche des quatre erreurs, et la liste de préférences avec ses trois modes de passation.',
+  quiz: {
+    questions: [
+      {
+        enonce: 'Le tableau de Malik s’est déclenché trois fois en neuf jours. Quelle est la première conclusion à en tirer&nbsp;?',
+        options: [
+          'Malik n’est pas réceptif au renforcement.',
+          'Le critère était trop haut : le dispositif n’a presque jamais pu agir.',
+          'La récompense n’était pas assez attractive.',
+          'Neuf jours, c’est trop court pour juger.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Un dispositif qui ne se déclenche presque pas n’a rien pu renforcer : il n’y a donc rien à conclure sur la personne. Le critère « rester jusqu’au bout » était hors de portée alors qu’un critère à quinze minutes se serait déclenché seize fois.',
+      },
+      {
+        enonce: 'Pourquoi le retrait d’une gommette déjà acquise est-il plus grave qu’une gommette jamais donnée&nbsp;?',
+        options: [
+          'Parce que cela fait de la peine.',
+          'Parce que cela rend l’acquis incertain : l’effort n’a plus de rapport fiable avec le résultat.',
+          'Parce que cela complique le comptage.',
+          'Parce que la règle n’avait pas été annoncée.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Trois effets se cumulent : le dispositif devient un compteur de fautes, l’acquis cesse d’être un acquis, et des jours de crédit disparaissent d’un coup. Quand l’effort ne prédit plus le résultat, on cesse d’essayer — c’est ce que dit le geste de Malik le vendredi.',
+      },
+      {
+        enonce: 'L’équipe reprend le dispositif. Combien de réglages change-t-elle en même temps&nbsp;?',
+        options: ['Tous, pour repartir à neuf.', 'Deux, pour aller plus vite.', 'Un seul.', 'Aucun, on attend encore.'],
+        bonne: 2,
+        pourquoi:
+          'Un seul à la fois, sinon le résultat est illisible : si on corrige le délai et la récompense la même semaine, on ne saura jamais lequel des deux a agi, et on gardera peut-être le mauvais.',
+      },
+      {
+        enonce: 'Le renforçateur retenu pour Malik a finalement été la musique, pas la sortie au café. Qu’est-ce qui a changé la décision&nbsp;?',
+        options: [
+          'Le budget du service.',
+          'On a présenté six propositions en images et on a regardé ce qu’il désignait.',
+          'L’avis du psychologue.',
+          'La sortie au café était trop compliquée à organiser.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Le café avait été choisi par l’équipe, en réunion, sans lui — c’est la troisième erreur. Laisser la personne choisir n’est pas seulement plus efficace : c’est ce qui distingue un accompagnement d’un dressage. Quand le choix n’est pas verbal, il se fait en images ou en objets.',
+      },
+      {
+        enonce: 'À la maison, un tableau posé en septembre est abandonné en octobre. Les deux causes les plus fréquentes sont&nbsp;:',
+        options: [
+          'Le manque de constance des parents et la fatigue de l’enfant.',
+          'Une récompense lointaine, et un critère fixé sur la version parfaite du comportement.',
+          'Un tableau trop petit et mal placé.',
+          'L’absence de sanction en cas d’échec.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Ce sont les deux mêmes erreurs qu’en institution : le délai et le critère. La réponse A accuse les personnes plutôt que le réglage — c’est le réflexe que ce module cherche justement à défaire.',
+      },
+    ],
+  },
   avant: [
     'Vous pouvez expliquer, en une phrase, pourquoi retirer une gommette acquise coûte plus cher que de ne jamais en avoir donné.',
     'Vous avez disséqué un dispositif réel et nommé ses quatre réglages.',
@@ -630,6 +748,65 @@ Le relevé compte deux choses : ce qu’elle a fait, et ce que vous avez vu.`,
     'Un dispositif se prévient, il ne se cache pas. La personne doit savoir ce qui est observé et pourquoi, dans des termes qu’elle comprend. Un relevé tenu à son insu n’a pas sa place dans un accompagnement.',
   ],
   annexes: 'la fiche de renforcement vierge, la grille de relevé à dix jours, et la liste de préférences avec ses trois modes de passation.',
+  quiz: {
+    questions: [
+      {
+        enonce: 'Une personne reste en moyenne 22 minutes sur l’atelier. À combien règle-t-on le critère&nbsp;?',
+        options: ['À 30 minutes, pour la tirer vers le haut.', 'À 22 minutes, son niveau exact.', 'À 15 minutes.', 'À 45 minutes, l’objectif final.'],
+        bonne: 2,
+        pourquoi:
+          'On règle JUSTE EN DESSOUS du niveau observé, pour que le dispositif se déclenche dès le premier jour. Un critère posé au niveau exact ne se déclenche qu’une fois sur deux ; posé au-dessus, jamais. On monte ensuite par paliers, et le module 4 dit quand.',
+      },
+      {
+        enonce: 'Laquelle de ces phrases de remarque remplit les trois conditions&nbsp;?',
+        options: [
+          '« Bravo, c’est super&nbsp;! » lancé depuis l’autre bout de la salle.',
+          '« Tu es resté un quart d’heure sur l’atelier », dit calmement dans les trois secondes.',
+          '« Tu vois quand tu veux&nbsp;! »',
+          '« On applaudit Malik&nbsp;! »',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Les trois conditions sont : dans les trois secondes, nommer le comportement, ton normal. B les remplit toutes. A ne nomme rien, C est un reproche déguisé, et D ajoute un public — renforçateur pour certains, punition pour d’autres.',
+      },
+      {
+        enonce: 'Que comptent les deux colonnes du relevé&nbsp;?',
+        options: [
+          'Les réussites et les échecs.',
+          'Le comportement, et l’humeur de la personne.',
+          'Combien de fois le comportement est apparu, et combien de fois vous l’avez remarqué.',
+          'Le matin et l’après-midi.',
+        ],
+        bonne: 2,
+        pourquoi:
+          'La seconde colonne est celle qu’on oublie, et la plus instructive : un écart important ne dit rien de la personne, il dit que le dispositif n’est pas tenu. C’est votre régularité qu’elle mesure.',
+      },
+      {
+        enonce: 'La personne désigne « aller voir ma mère » comme sa préférence numéro un. Que fait-on&nbsp;?',
+        options: [
+          'On le met en tête de la liste, puisque c’est son choix.',
+          'On l’écarte de la liste : c’est un droit, pas une récompense.',
+          'On le garde pour les très grandes réussites.',
+          'On le remplace par un appel téléphonique.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Aucun besoin fondamental n’entre dans une liste de préférences, et cela reste vrai quand la personne le désigne elle-même. L’y faire figurer, c’est décider qu’il peut être suspendu. C’est exactement là qu’un outil comportemental devient un moyen de contrainte.',
+      },
+      {
+        enonce: 'Le dispositif ne s’est pas déclenché du tout le premier jour. Que faites-vous&nbsp;?',
+        options: [
+          'Vous poursuivez les dix jours pour avoir des données complètes.',
+          'Vous abaissez le critère le soir même.',
+          'Vous changez de renforçateur.',
+          'Vous en parlez à la prochaine réunion d’équipe.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'Inutile d’attendre dix jours pour constater ce qu’on voit au premier : un dispositif qui ne se déclenche pas n’enseigne rien et use la patience de tout le monde. On abaisse tout de suite. Le renforçateur ne se change qu’après avoir vérifié le délai puis le critère.',
+      },
+    ],
+  },
   avant: [
     'Votre fiche tient sur une page et le critère est chiffré.',
     'La liste de préférences a été établie avec la personne, et ne contient aucun besoin fondamental.',
@@ -786,6 +963,70 @@ comportement solide.`,
     'Ne transportez pas un dispositif d’une personne à l’autre. Le critère, le renforçateur et le délai ont été réglés pour quelqu’un ; recopiés tels quels, ils ne renforcent rien.',
   ],
   annexes: 'la fiche de lecture du relevé, la frise d’espacement, et le modèle de phrase de bilan.',
+  quiz: {
+    questions: [
+      {
+        enonce: 'Le relevé montre « apparu » 40 fois et « remarqué » 9 fois. Que conclure&nbsp;?',
+        options: [
+          'Le comportement progresse bien.',
+          'Le renforçateur a perdu son effet.',
+          'Le dispositif n’a pas été tenu : le relevé ne dit rien de la personne.',
+          'Le critère est trop bas.',
+        ],
+        bonne: 2,
+        pourquoi:
+          'On lit toujours la deuxième colonne en premier. Un écart pareil signale un problème d’organisation, pas de personne : le correctif est de réduire l’ambition et de répartir sur l’équipe, surtout pas de conclure quoi que ce soit sur la personne.',
+      },
+      {
+        enonce: 'La courbe monte pendant huit jours, puis chute les deux derniers. Que faites-vous&nbsp;?',
+        options: [
+          'Vous changez le renforçateur immédiatement.',
+          'Vous abaissez le critère.',
+          'Vous ne changez rien et vous comparez semaine à semaine.',
+          'Vous arrêtez le dispositif.',
+        ],
+        bonne: 2,
+        pourquoi:
+          'Trois jours ne font pas une tendance. Une maladie, une absence, un changement d’emploi du temps suffisent à faire plonger une colonne. On décide sur l’écart entre la deuxième semaine et la première, jamais sur la fin du relevé.',
+      },
+      {
+        enonce: 'Le comportement est acquis, il apparaît tous les jours. Que fait-on du renforcement&nbsp;?',
+        options: [
+          'On l’arrête, l’objectif est atteint.',
+          'On l’espace par paliers, jusqu’à un rythme irrégulier.',
+          'On le maintient identique indéfiniment.',
+          'On le double pour consolider.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'On n’arrête jamais net. Un comportement renforcé irrégulièrement résiste bien mieux qu’un comportement renforcé à chaque fois : quand la conséquence n’est pas certaine, on continue plus longtemps. Arrêter d’un coup est la fin la plus fréquente et la plus bête des dispositifs qui marchaient.',
+      },
+      {
+        enonce: 'On monte le critère de quinze à vingt minutes. Que devient l’ancien niveau&nbsp;?',
+        options: [
+          'Il ne compte plus, c’est le principe du palier.',
+          'On continue de le remarquer les jours difficiles.',
+          'On le sanctionne, pour marquer la progression.',
+          'On revient à quinze une semaine sur deux.',
+        ],
+        bonne: 1,
+        pourquoi:
+          'On garde l’ancien niveau comme filet. Un dispositif qui cesse brutalement de reconnaître ce qui était valorisé hier enseigne surtout que les efforts passés ne comptent plus, et c’est le meilleur moyen de faire retomber la courbe.',
+      },
+      {
+        enonce: 'Laquelle de ces phrases de bilan est utilisable en réunion&nbsp;?',
+        options: [
+          '« Il s’est bien investi ce mois-ci. »',
+          '« On sent une nette amélioration de sa participation. »',
+          '« Sur dix jours, il est resté au moins quinze minutes onze fois, contre trois sur la période précédente. »',
+          '« Le dispositif porte ses fruits. »',
+        ],
+        bonne: 2,
+        pourquoi:
+          'Une phrase de bilan utile contient deux chiffres et une durée : elle se vérifie, elle se compare au bilan suivant, et le collègue qui prendra la suite peut la reprendre sans vous demander d’explication. Les trois autres sont des impressions.',
+      },
+    ],
+  },
   avant: [
     'Vous avez comparé deux moyennes, pas deux impressions.',
     'Votre décision est datée, et ne porte que sur un seul réglage.',

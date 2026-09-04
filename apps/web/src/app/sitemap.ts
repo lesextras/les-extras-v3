@@ -37,6 +37,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/ateliers",
     "/formations",
+    // Le chemin à travers le catalogue gratuit : trois niveaux, l'ordre
+    // conseillé, et ce que chaque niveau apprend à faire. Sans entrée au
+    // sitemap, la page n'existe que pour qui connaît son adresse.
+    "/parcours-de-formation",
     "/edublog",
     "/notre-histoire",
     "/partenaires-associatifs",

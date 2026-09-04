@@ -161,6 +161,60 @@ function pause({ jours, texte }) {
 }
 
 /**
+ * QUIZ D'AUTOCORRECTION DE FIN DE MODULE.
+ *
+ * ⚠ POURQUOI EN HTML ET PAS EN ITEM « QUIZ » TEACHIZY. Le point d'API des quiz
+ * n'a jamais été trouvé (404 sur toutes les sondes, septembre 2026), et le
+ * champ « Évaluation » de chaque module avait donc été réécrit pour ne plus
+ * rien promettre. Un quiz rendu en HTML dans le corps du module contourne le
+ * problème entièrement : il s'affiche partout, il s'imprime, il survit à un
+ * changement de plateforme, et il ne dépend d'aucun point d'API.
+ *
+ * ⚠ LES RÉPONSES SONT EN BAS, PAS EN REGARD. On ne peut pas compter sur
+ * `<details>` : le richtext de Teachizy n'en garantit pas le rendu. La forme
+ * retenue est celle d'un cahier d'exercices papier — les questions, un filet,
+ * puis les réponses commentées. C'est moins joli qu'un quiz interactif et
+ * nettement plus robuste.
+ *
+ * ⚠ CHAQUE RÉPONSE PORTE UN « POURQUOI ». Un quiz qui dit seulement « bonne
+ * réponse : B » n'enseigne rien. C'est le commentaire qui fait le travail, et
+ * il doit expliquer aussi ce qui rend les autres options fausses quand ce
+ * n'est pas évident.
+ */
+function quiz({ titre = 'Vérifiez que c’est acquis', questions }) {
+  const LETTRES = ['A', 'B', 'C', 'D', 'E'];
+  const enonces = questions
+    .map(
+      (q, i) => `<p style="margin:14px 0 6px"><strong>${i + 1}. ${q.enonce}</strong></p>
+<ul style="${UL};list-style:none;padding-left:8px">
+${q.options
+  .map((o, j) => `<li style="${LI}"><strong>${LETTRES[j]}.</strong> ${o}</li>`)
+  .join('\n')}
+</ul>`,
+    )
+    .join('\n');
+
+  const reponses = questions
+    .map(
+      (q, i) =>
+        `<li style="${LI}"><strong>${i + 1}. ${LETTRES[q.bonne]}</strong> — ${q.pourquoi}</li>`,
+    )
+    .join('\n');
+
+  return `${FILET}
+<h3 style="${H3}">${titre}</h3>
+<p><em>${questions.length} questions. Répondez avant de regarder les réponses&nbsp;:
+c’est le fait de chercher, pas celui de lire, qui fixe la notion.</em></p>
+${enonces}
+<div style="${GRIS}">
+<h3 style="margin-top:0">Réponses commentées</h3>
+<ol style="${UL}">
+${reponses}
+</ol>
+</div>`;
+}
+
+/**
  * Assemble un module complet.
  *
  * L'ordre est fixe et il n'est pas négociable : c'est lui qui fait qu'un
@@ -178,6 +232,7 @@ function assembler(m) {
     carnet(m.carnet),
     vigilance(m.vigilance),
     m.annexes ? renvoiAnnexes(m.annexes) : '',
+    m.quiz ? quiz(m.quiz) : '',
     avantDePasser(m.avant),
     m.pause ? pause(m.pause) : '',
   ];
@@ -198,6 +253,7 @@ module.exports = {
   alerte,
   exemple,
   exercice,
+  quiz,
   carnet,
   vigilance,
   avantDePasser,
