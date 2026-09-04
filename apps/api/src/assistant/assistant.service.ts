@@ -1,9 +1,17 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AssistantTrame, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
 import { RegistrePseudoService } from './registre-pseudo.service';
 import { MOTEUR_LEX, MoteurLex } from './moteur-lex';
+import {
+  NOMBRE_ANTERIEURS,
+  blocAnteriorite,
+  extraitUtile,
+  sujetsDuTexte,
+  trameAvecMemoire,
+  type EcritAnterieur,
+} from './anteriorite';
 import { TRAMES, trouverTrame } from './trames';
 import {
   GROUPES_ACTIVITE, GROUPES_APPUI, GROUPES_ECRIT, consignesDepuisChoix,
@@ -54,6 +62,8 @@ export function sansBalisage(texte: string): string {
 
 @Injectable()
 export class AssistantService {
+  private readonly logger = new Logger(AssistantService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly pseudo: PseudonymiseurService,
@@ -101,6 +111,68 @@ export class AssistantService {
     };
   }
 
+
+  /**
+   * LES ÉCRITS DÉJÀ RÉDIGÉS SUR LES MÊMES PERSONNES.
+   *
+   * On cherche par pseudonyme stable, jamais par nom : `AssistantDocument.sujets`
+   * porte « M.D-1 », et le registre garantit que ce code désigne la même
+   * personne d'un écrit à l'autre, dans ce compte et nulle part ailleurs.
+   *
+   * Le contenu enregistré porte les VRAIS noms, puisqu'il vit dans le compte.
+   * Il repasse donc par le masque et par le registre avant de repartir vers le
+   * modèle, exactement comme les notes du jour : le moteur ne relit que des
+   * pseudonymes, et ce sont les mêmes des deux côtés.
+   *
+   * Toute panne ici est silencieuse et sans conséquence : une antériorité qu'on
+   * n'a pas su relire fait un document sans continuité, pas un échec. On ne
+   * bloque jamais une génération pour ça.
+   */
+  private async anteriorite(
+    accountId: string,
+    authorId: string,
+    trame: AssistantTrame,
+    sujets: readonly string[],
+  ): Promise<{ ecrits: EcritAnterieur[]; sources: { id: string; titre: string; date: Date }[] }> {
+    const vide = { ecrits: [], sources: [] };
+    if (!trameAvecMemoire(trame) || sujets.length === 0) return vide;
+
+    try {
+      const precedents = await this.prisma.assistantDocument.findMany({
+        // ⚠ LE CLOISONNEMENT PAR AUTEUR EST VOLONTAIRE, et repris de
+        // `listerDocuments` : un éducateur ne découvre pas par LEX ce qu'un
+        // collègue a écrit sur un jeune.
+        where: { accountId, authorId, sujets: { hasSome: [...sujets] } },
+        orderBy: { createdAt: 'desc' },
+        take: NOMBRE_ANTERIEURS,
+        select: { id: true, title: true, content: true, createdAt: true },
+      });
+      if (precedents.length === 0) return vide;
+
+      const ecrits: EcritAnterieur[] = [];
+      const sources: { id: string; titre: string; date: Date }[] = [];
+      for (const p of precedents) {
+        const { texte, table } = this.pseudo.masquer(p.content);
+        const stables = await this.registre.stabiliser(accountId, table);
+        ecrits.push({
+          titre: p.title,
+          quand: p.createdAt.toLocaleDateString('fr-FR', {
+            day: '2-digit', month: 'long', year: 'numeric',
+          }),
+          extrait: extraitUtile(RegistrePseudoService.reecrire(texte, stables)),
+        });
+        sources.push({ id: p.id, titre: p.title, date: p.createdAt });
+      }
+      // Du plus ancien au plus récent : une évolution se lit dans ce sens.
+      ecrits.reverse();
+      sources.reverse();
+      return { ecrits, sources };
+    } catch (e) {
+      this.logger.error(`[LEX:anteriorite] ${(e as Error).message}`);
+      return vide;
+    }
+  }
+
   /**
    * Génère un brouillon d'écrit professionnel.
    *
@@ -112,6 +184,12 @@ export class AssistantService {
   async generer(
     /** Le compte : c'est lui qui porte le registre des pseudonymes. */
     accountId: string,
+    /**
+     * L'auteur. Il sert à la mémoire des situations, qui ne franchit pas la
+     * frontière posée par `listerDocuments` : on ne relit que ses propres
+     * écrits, jamais ceux d'un collègue.
+     */
+    authorId: string,
     trame: AssistantTrame,
     notes: string,
     trameMaison?: {
@@ -145,10 +223,21 @@ export class AssistantService {
     const stables = await this.registre.stabiliser(accountId, table);
     const notesPretes = RegistrePseudoService.reecrire(notesMasquees, stables);
 
+    // LA MÉMOIRE DES SITUATIONS.
+    //
+    // Les pseudonymes du jour désignent des personnes ; s'il existe déjà des
+    // écrits de synthèse sur elles, LEX les relit avant d'écrire. C'est ce qui
+    // permet à un rapport trimestriel de dire « depuis le précédent rapport »
+    // au lieu de repartir de zéro. Voir `anteriorite.ts` pour les règles.
+    const sujets = sujetsDuTexte(notesPretes);
+    const { ecrits, sources } = await this.anteriorite(accountId, authorId, trame, sujets);
+
     const brouillonMasque = await this.moteur.completer({
       system: trameMaison ? AssistantService.avecTrameMaison(def.system, trameMaison) : def.system,
-      user: `${cadrage}Notes brutes du professionnel :\n\n${notesPretes}`,
-      maxTokens: trameMaison ? 1600 : undefined,
+      user: `${cadrage}${blocAnteriorite(ecrits)}Notes brutes du professionnel :\n\n${notesPretes}`,
+      // Relire deux écrits antérieurs demande de la place pour répondre : un
+      // plafond calculé sur la seule trame produirait un document tronqué.
+      maxTokens: ecrits.length ? 2600 : trameMaison ? 1600 : undefined,
     });
     let brouillon = this.pseudo.restaurer(brouillonMasque, table);
     // Le modèle invente parfois des jetons absents de la table ([DATE-9]…) :
@@ -162,6 +251,17 @@ export class AssistantService {
       trame: def.id,
       trameMaison: trameMaison ? { id: trameMaison.id, nom: trameMaison.nom } : null,
       titrePropose: def.titre,
+      // ⚠ ON DIT TOUJOURS CE QUI A ÉTÉ RELU. Un professionnel doit savoir sur
+      // quoi son brouillon s'appuie : c'est lui qui signe le document, et un
+      // écrit antérieur inexact se propagerait en silence sans cette ligne.
+      anterieurs: sources.map((a) => ({
+        id: a.id,
+        titre: a.titre,
+        date: a.date.toISOString(),
+      })),
+      // Les pseudonymes du jour, pour que l'enregistrement sache de qui parle
+      // le document sans avoir à le remasquer.
+      sujets,
     };
   }
 
@@ -578,6 +678,26 @@ N'invente ni prix ni diplômes. Reste fidèle au brief : si une information manq
       });
       trameMaisonId = existe?.id ?? null;
     }
+    // DE QUI PARLE CE DOCUMENT ? La question se pose ICI, une seule fois, et
+    // la réponse se garde en pseudonymes stables. Sans elle, l'écrit suivant
+    // sur la même personne repart de zéro : c'est exactement la panne que le
+    // registre des pseudonymes annonçait en commentaire depuis le 25/08/2026.
+    //
+    // ⚠ AUCUN NOM RÉEL N'EST ÉCRIT DANS `sujets`. On masque le contenu validé,
+    // on le passe au registre, on ne retient que les codes (« M.D-1 »). Le
+    // document, lui, garde ses vrais noms : il vit dans le compte.
+    //
+    // Un échec ici n'empêche pas d'enregistrer. On perd la continuité pour ce
+    // document, on ne perd pas le travail de la personne.
+    let sujets: string[] = [];
+    try {
+      const { texte, table } = this.pseudo.masquer(dto.content);
+      const stables = await this.registre.stabiliser(accountId, table);
+      sujets = sujetsDuTexte(RegistrePseudoService.reecrire(texte, stables));
+    } catch (e) {
+      this.logger.error(`[LEX:sujets] ${(e as Error).message}`);
+    }
+
     return this.prisma.assistantDocument.create({
       data: {
         accountId,
@@ -586,6 +706,7 @@ N'invente ni prix ni diplômes. Reste fidèle au brief : si une information manq
         title: dto.title,
         content: dto.content,
         trameMaisonId,
+        sujets,
       },
     });
   }

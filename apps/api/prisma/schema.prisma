@@ -2061,11 +2061,27 @@ model AssistantDocument {
   /// Contenu final, relu et validé par l'auteur (les vrais noms y figurent :
   /// il reste dans le compte de l'établissement, jamais envoyé à un tiers).
   content       String
+  /// LES PERSONNES DONT PARLE CE DOCUMENT, EN PSEUDONYMES STABLES.
+  ///
+  /// « M.D-1 », jamais « Marie Dupont » : ce champ est la clé qui permet à LEX
+  /// de retrouver ce qu'il a déjà écrit sur quelqu'un, sans qu'un seul nom réel
+  /// ne s'inscrive ici. Les codes viennent de `LexPseudonyme`, qui ne stocke
+  /// lui-même qu'une empreinte HMAC salée par le compte.
+  ///
+  /// ⚠ SANS CE CHAMP, RIEN NE SE CHAÎNE. Le registre des pseudonymes existait
+  /// depuis le 25/08/2026 et disait déjà, en commentaire, ce qui manquait :
+  /// « un rapport de situation repart de zéro là où il devrait écrire une
+  /// évolution ». Il repartait de zéro parce qu'aucun document ne disait de qui
+  /// il parlait. C'est ce que ce tableau répare.
+  sujets        String[]       @default([])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   @@index([accountId, createdAt])
   @@index([authorId])
+  /// La recherche d'antériorité interroge ce tableau : index GIN, sinon chaque
+  /// génération balaie tous les écrits du compte.
+  @@index([sujets], type: Gin)
 }
 
 /// Retour utilisateur sur une génération (pouce haut/bas + commentaire).

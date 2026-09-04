@@ -100,7 +100,7 @@ export class AssistantController {
       account,
       'LEX_ECRIT',
       () =>
-        this.assistant.generer(account.id, dto.trame, dto.notes, trameMaison, {
+        this.assistant.generer(account.id, user.id, dto.trame, dto.notes, trameMaison, {
           destinataire: dto.destinataire ? [dto.destinataire] : undefined,
           registre: dto.registre ? [dto.registre] : undefined,
           sections: dto.sections,

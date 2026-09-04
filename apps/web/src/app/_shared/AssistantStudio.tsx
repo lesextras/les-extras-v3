@@ -204,6 +204,16 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   const [notes, setNotes] = React.useState("");
   const [brouillon, setBrouillon] = React.useState("");
   const [titre, setTitre] = React.useState("");
+  /**
+   * LES ÉCRITS QUE LEX A RELUS AVANT DE RÉDIGER.
+   *
+   * C'est le professionnel qui signe le document : il doit savoir sur quoi le
+   * brouillon s'appuie. Un rapport antérieur inexact se propagerait sinon en
+   * silence d'un trimestre à l'autre.
+   */
+  const [anterieurs, setAnterieurs] = React.useState<
+    { id: string; titre: string; date: string }[]
+  >([]);
   const [protection, setProtection] = React.useState<{
     personnes: number;
     dates: number;
@@ -261,7 +271,11 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
     if (!trame) return;
     setEnCours(true);
     try {
-      const r = await api<{ brouillon: string; protection: typeof protection }>("/assistant/generer", {
+      const r = await api<{
+        brouillon: string;
+        protection: typeof protection;
+        anterieurs?: { id: string; titre: string; date: string }[];
+      }>("/assistant/generer", {
         method: "POST",
         body: JSON.stringify({
           trame: trame.id,
@@ -279,6 +293,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
       });
       setBrouillon(r.brouillon);
       setProtection(r.protection ?? null);
+      setAnterieurs(r.anterieurs ?? []);
       setTitre(`${trame.titre} : ${new Date().toLocaleDateString("fr-FR")}`);
       setEnregistre(false);
       setAvisDonne(false);
@@ -386,7 +401,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
 
   function recommencer() {
     setEtape("ecrire"); setNotes(""); setBrouillon("");
-    setProtection(null); setEnregistre(false); setAvisDonne(false);
+    setProtection(null); setAnterieurs([]); setEnregistre(false); setAvisDonne(false);
   }
 
   // ── Rendu ──────────────────────────────────────────────────────────────
@@ -610,6 +625,39 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   {protection.contacts > 0 ? ` et ${protection.contacts} coordonnée${protection.contacts > 1 ? "s" : ""}` : ""}
                   {" "}ont été masqués au service d'IA, puis rétablis ici, sur nos serveurs.
                 </p>
+              ) : null}
+
+              {/* CE QUE LEX A RELU, DIT AVANT LE BROUILLON.
+                  Sur un rapport de situation, LEX relit les écrits déjà
+                  rédigés sur la même personne pour écrire l'évolution plutôt
+                  que de repartir de zéro. Le professionnel signe le document :
+                  il doit voir cette source, et pouvoir l'ouvrir. */}
+              {anterieurs.length > 0 ? (
+                <div className="rounded-lg border border-primary/30 bg-primary-soft/20 px-4 py-2.5 text-sm">
+                  <p className="flex items-center gap-2 font-medium text-foreground">
+                    <FileText className="size-4 shrink-0 text-primary" />
+                    Pour écrire l&apos;évolution, LEX a relu{" "}
+                    {anterieurs.length === 1 ? "votre écrit précédent" : "vos écrits précédents"} :
+                  </p>
+                  <ul className="mt-1.5 space-y-1 pl-6">
+                    {anterieurs.map((a) => (
+                      <li key={a.id} className="text-xs text-muted-foreground">
+                        {a.titre}
+                        <span className="text-muted-foreground/70">
+                          {" · "}
+                          {new Date(a.date).toLocaleDateString("fr-FR", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-1.5 pl-6 text-xs text-muted-foreground">
+                    Relisez ce qui en a été repris : c&apos;est vous qui signez.
+                  </p>
+                </div>
               ) : null}
 
               {/* La preuve plutôt que la promesse : on montre littéralement ce
