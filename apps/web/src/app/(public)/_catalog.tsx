@@ -248,6 +248,20 @@ export async function CatalogView({
     search || category || publicVise || territoire || budget || tri,
   );
 
+  // L'ALERTE DE RECHERCHE — le seul geste qui rend une visite sans résultat
+  // utile. Sur dix-sept fiches, la plupart des recherches précises ne trouvent
+  // rien ; sans ce lien, cette personne est perdue, car personne ne revient
+  // vérifier un catalogue chaque semaine. Les critères qu'elle vient de saisir
+  // voyagent dans l'adresse : lui redemander son besoin après qu'elle l'a
+  // exprimé, c'est perdre la plupart de ceux qui ont cliqué. Le tri n'est pas
+  // repris — il ordonne un résultat, il ne décrit pas un besoin.
+  const qsAlerte = new URLSearchParams({ type });
+  if (search) qsAlerte.set("recherche", search);
+  if (category) qsAlerte.set("category", category);
+  if (publicVise) qsAlerte.set("public", publicVise);
+  if (territoire) qsAlerte.set("departement", territoire);
+  const lienAlerte = `/dashboard/alertes?${qsAlerte.toString()}`;
+
   // PLUS DE RANGÉE « À LA UNE » — décision de Siham, 3 septembre 2026.
   //
   // Le catalogue s'ouvrait sur les cinq dernières fiches publiées dans une
@@ -382,9 +396,14 @@ export async function CatalogView({
           }
           action={
             hasFilters ? (
-              <Button asChild variant="outline" size="sm">
-                <Link href={basePath}>Voir tout le catalogue</Link>
-              </Button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button asChild size="sm">
+                  <Link href={lienAlerte}>Me prévenir quand ça arrive</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={basePath}>Voir tout le catalogue</Link>
+                </Button>
+              </div>
             ) : undefined
           }
         />
@@ -452,6 +471,19 @@ export async function CatalogView({
                 <CarteCatalogue key={item.id} item={item} />
               ))}
             </div>
+
+            {/* Une ligne, sous la grille, et seulement quand un filtre est
+                actif : quelqu'un qui parcourt tout le catalogue n'a rien
+                demandé de précis, on n'a donc rien à lui promettre. */}
+            {hasFilters ? (
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                Ce n&apos;est pas tout à fait ce que vous cherchez ?{" "}
+                <Link href={lienAlerte} className="font-medium text-foreground underline">
+                  Recevez un message dès qu&apos;une nouvelle proposition correspond
+                </Link>
+                .
+              </p>
+            ) : null}
           </section>
         </>
       )}

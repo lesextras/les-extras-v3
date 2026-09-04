@@ -34,6 +34,7 @@ import {
   FileSignature,
   ShieldAlert,
   UsersRound,
+  BellRing,
 } from 'lucide-react';
 import type { NavRole, AccountType, AccountRole } from './types';
 
@@ -234,6 +235,10 @@ const establishmentNav: NavSection[] = [
       // Une seule porte, qui ouvre sur « Tout ». Le tri se fait ensuite, là
       // où on le voit.
       { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers commandés et les inscriptions en formation, au même endroit, filtrables sur la page' },
+      // ⚠ CÔTÉ ÉTABLISSEMENT SEULEMENT, et c'est délibéré : c'est lui qui
+      // cherche dans le catalogue et repart bredouille. Un intervenant ne
+      // cherche pas d'atelier, il en publie.
+      { label: 'Mes alertes', href: '/dashboard/alertes', icon: BellRing, hint: 'Dites ce que vous cherchez : on vous écrit le jour où ça arrive au catalogue, jamais plus d’un message par jour' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
       // Le pendant contractuel du planning : on a trouvé quelqu'un, on
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
@@ -405,6 +410,7 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Factures', href: '/admin/factures', icon: Receipt, hint: 'Facturation de la plateforme' },
       { label: 'LEX · Crédits & abonnements', href: '/admin/lex', icon: Sparkles, hint: 'Ventes de packs, consommation de crédits, abonnements actifs et essais en cours' },
+      { label: 'LEX · Qualité', href: '/admin/lex-qualite', icon: Sparkles, hint: 'Sur quel moteur tourne LEX, ce qui est réellement produit, et quelle trame est la moins bien notée' },
     ],
   },
   {

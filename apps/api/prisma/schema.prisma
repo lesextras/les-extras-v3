@@ -82,6 +82,7 @@ model User {
   /// on n'écrit jamais deux fois dans le même intervalle, quoi qu'il arrive.
   tunnelDernierAt           DateTime?
   retours                   RetourExperience[]
+  alertesRecherche          AlerteRecherche[]
   questionsAsked            Question[]           @relation("QuestionAuthor")
   answersWritten            Answer[]             @relation("AnswerAuthor")
   answerVotes               AnswerVote[]         @relation("AnswerVoter")
@@ -227,6 +228,7 @@ model Account {
   /// c'est un verrou, pas un calendrier — il est posé AVANT l'envoi.
   enqueteAtelierAt DateTime?
   retours          RetourExperience[]
+  alertesRecherche AlerteRecherche[]
 
   memberships                   Membership[]
   invitations                   Invitation[]
@@ -2605,4 +2607,45 @@ model EmailEnvoye {
 
   @@index([createdAt])
   @@index([ok, createdAt])
+}
+
+/// L'ALERTE DE RECHERCHE — ce qui ramène un établissement qui n'a rien trouvé.
+///
+/// ⚠ C'EST LA MÉCANIQUE DE RÉTENTION QUI MANQUAIT, et elle vaut plus que
+/// n'importe quel filtre supplémentaire. Un directeur cherche « médiation
+/// animale, Essonne », ne trouve rien, et il est perdu définitivement : il ne
+/// reviendra pas vérifier chaque semaine. Avec une alerte, c'est la plateforme
+/// qui revient vers lui le jour où la fiche existe.
+///
+/// Les critères sont ceux du catalogue, et rien de plus : département,
+/// catégorie, public visé, mots-clés, budget. On ne stocke pas une requête
+/// libre en base pour la rejouer telle quelle — on stocke des champs, qu'on
+/// sait relire, expliquer à la personne et corriger.
+model AlerteRecherche {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Le compte au nom duquel l'alerte a été posée. Sert à l'affichage, pas au
+  /// filtrage : ce qui est public l'est pour tout le monde.
+  accountId    String?
+  account      Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  /// 'atelier' | 'formation' | 'all' — le rayon du catalogue.
+  type         String   @default("all")
+  /// Codes INSEE. Vide = partout. Voir `common/territoires.ts`.
+  departements String[] @default([])
+  categorie    String?
+  publicVise   String?
+  recherche    String?
+  budgetMax    Decimal? @db.Decimal(10, 2)
+  actif        Boolean  @default(true)
+  /// Dernière fois qu'un courriel est parti pour cette alerte. C'est la borne
+  /// qui évite de renvoyer deux fois la même fiche.
+  dernierEnvoiAt DateTime?
+  /// Nombre de fiches déjà signalées, pour la page de gestion.
+  signalees    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([actif])
 }

@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { IdeaStatus } from '@prisma/client';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsEnum,
   IsIn,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -18,6 +21,7 @@ import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
 import { CommunityService } from './community.service';
+import { AlertesService } from './alertes.service';
 
 class CreerIdeeDto {
   @IsString() @MinLength(4) @MaxLength(120) title!: string;
@@ -44,11 +48,71 @@ class DeposerRetourDto {
   @IsOptional() @IsIn(['PREMIER_ATELIER', 'SPONTANE']) source?: string;
 }
 
+/**
+ * Une alerte de recherche. TOUS les champs sont facultatifs : une alerte sans
+ * critère surveille le catalogue entier, et c'est un usage légitime pour un
+ * établissement qui veut simplement savoir quand quelque chose arrive.
+ *
+ * ⚠ Les codes de département ne sont PAS validés ici mais dans le service
+ * (`codesValides`), qui les confronte au référentiel. Un `@IsIn` sur cent un
+ * codes dans un DTO se désynchronise du référentiel au premier ajout.
+ */
+class CreerAlerteDto {
+  @IsOptional() @IsIn(['atelier', 'formation', 'all']) type?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(101)
+  @IsString({ each: true })
+  departements?: string[];
+
+  @IsOptional() @IsString() @MaxLength(120) categorie?: string;
+  @IsOptional() @IsString() @MaxLength(120) publicVise?: string;
+  @IsOptional() @IsString() @MaxLength(120) recherche?: string;
+  @IsOptional() @IsNumber() @Min(0) @Max(100_000) budgetMax?: number;
+}
+
 /** Points de fidélité et boîte à idées — communs à tous les comptes. */
 @Controller('community')
 @UseGuards(JwtAuthGuard, AccountGuard)
 export class CommunityController {
-  constructor(private readonly community: CommunityService) {}
+  constructor(
+    private readonly community: CommunityService,
+    private readonly alertes: AlertesService,
+  ) {}
+
+  // ── Alertes de recherche ─────────────────────────────────────────────────
+
+  /**
+   * ⚠ PLAFONNÉ À DIX PAR HEURE. Chaque alerte est un courriel potentiel par
+   * jour : cent alertes posées en une minute, c'est une adresse qui se
+   * signale en spam et un nom de domaine abîmé pour tout le monde.
+   */
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
+  @Post('alertes')
+  creerAlerte(
+    @Body() dto: CreerAlerteDto,
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+  ) {
+    return this.alertes.creer(user.id, account?.id, dto);
+  }
+
+  @Get('alertes')
+  mesAlertes(@CurrentUser() user: RequestUser) {
+    return this.alertes.mesAlertes(user.id);
+  }
+
+  /** Activer ou suspendre. On ne supprime pas ce qu'un clic peut mettre en pause. */
+  @Patch('alertes/:id')
+  basculerAlerte(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.alertes.basculer(user.id, id);
+  }
+
+  @Delete('alertes/:id')
+  supprimerAlerte(@Param('id') id: string, @CurrentUser() user: RequestUser) {
+    return this.alertes.supprimer(user.id, id);
+  }
 
   @Get('points')
   points(@CurrentAccount() account: RequestAccount) {

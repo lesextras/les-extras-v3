@@ -202,6 +202,117 @@ export class AdminService {
     };
   }
 
+
+  /**
+   * LEX, VU DEPUIS LE PILOTAGE.
+   *
+   * ⚠ LE POUCE HAUT/BAS S'ÉCRIVAIT DEPUIS DES MOIS ET PERSONNE NE LE LISAIT.
+   * `AssistantFeedback` était rempli à chaque avis, et aucune requête ne
+   * l'interrogeait nulle part. C'est le même défaut que les quatre e-mails qui
+   * n'écrivaient qu'une ligne en base : la donnée entre, rien ne la regarde,
+   * et on pilote à l'intuition sur un produit qui coûte un crédit par appel.
+   *
+   * Ce que cet écran répond, et dans cet ordre :
+   *  1. Est-ce que LEX sert ? (générations, écrits gardés, adoption)
+   *  2. Est-ce que ce qu'il rend est bon ? (satisfaction, par trame)
+   *  3. Quelle trame réparer en premier ? (la moins bien notée, pas la moins
+   *     utilisée : une trame peu utilisée mais juste ne coûte rien, une trame
+   *     très utilisée et ratée abîme la confiance à chaque appel.)
+   */
+  async suiviLex() {
+    const jour = 86_400_000;
+    const il30j = new Date(Date.now() - 30 * jour);
+
+    const [
+      avisParTrame,
+      documentsParTrame,
+      documents30j,
+      tramesMaison,
+      pseudonymes,
+      avecMemoire,
+      commentaires,
+    ] = await Promise.all([
+      this.prisma.assistantFeedback.groupBy({
+        by: ['trame', 'utile'],
+        _count: { _all: true },
+      }),
+      this.prisma.assistantDocument.groupBy({
+        by: ['trame'],
+        _count: { _all: true },
+      }),
+      this.prisma.assistantDocument.count({ where: { createdAt: { gte: il30j } } }),
+      this.prisma.trameMaison.count(),
+      this.prisma.lexPseudonyme.count(),
+      // Les écrits qui portent au moins une personne identifiée : ce sont eux
+      // qui alimentent la mémoire des situations.
+      this.prisma.assistantDocument.count({ where: { NOT: { sujets: { isEmpty: true } } } }),
+      this.prisma.assistantFeedback.findMany({
+        where: { comment: { not: null } },
+        orderBy: { createdAt: 'desc' },
+        take: 15,
+        select: { id: true, trame: true, utile: true, comment: true, createdAt: true },
+      }),
+    ]);
+
+    const parTrame = new Map<
+      string,
+      { trame: string; utiles: number; inutiles: number; documents: number }
+    >();
+    const ligne = (t: string) => {
+      if (!parTrame.has(t)) {
+        parTrame.set(t, { trame: t, utiles: 0, inutiles: 0, documents: 0 });
+      }
+      return parTrame.get(t)!;
+    };
+    for (const a of avisParTrame) {
+      const l = ligne(a.trame);
+      if (a.utile) l.utiles += a._count._all;
+      else l.inutiles += a._count._all;
+    }
+    for (const d of documentsParTrame) ligne(d.trame).documents += d._count._all;
+
+    const trames = [...parTrame.values()]
+      .map((l) => {
+        const total = l.utiles + l.inutiles;
+        return {
+          ...l,
+          avis: total,
+          // `null` et non `0` quand personne n'a voté : une trame sans avis
+          // n'est pas une trame mal notée, et l'écran ne doit pas la ranger
+          // parmi les problèmes.
+          satisfaction: total > 0 ? Math.round((l.utiles / total) * 100) : null,
+        };
+      })
+      .sort((a, z) => {
+        if (a.satisfaction === null && z.satisfaction === null) return z.documents - a.documents;
+        if (a.satisfaction === null) return 1;
+        if (z.satisfaction === null) return -1;
+        return a.satisfaction - z.satisfaction;
+      });
+
+    const totalAvis = trames.reduce((t, l) => t + l.avis, 0);
+    const totalUtiles = trames.reduce((t, l) => t + l.utiles, 0);
+    const totalDocuments = trames.reduce((t, l) => t + l.documents, 0);
+
+    return {
+      moteur: this.moteurLex(),
+      usage: {
+        documents: totalDocuments,
+        documents30j,
+        tramesMaison,
+        pseudonymes,
+        avecMemoire,
+      },
+      satisfaction: {
+        avis: totalAvis,
+        utiles: totalUtiles,
+        taux: totalAvis > 0 ? Math.round((totalUtiles / totalAvis) * 100) : null,
+      },
+      trames,
+      commentaires,
+    };
+  }
+
   async suiviEmails() {
     const jour = 86_400_000;
     const il7j = new Date(Date.now() - 7 * jour);

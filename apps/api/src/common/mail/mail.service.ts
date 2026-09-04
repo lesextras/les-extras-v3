@@ -1411,6 +1411,52 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
+
+  /**
+   * L'ALERTE DE RECHERCHE : « voilà ce qui vient d'arriver et qui correspond ».
+   *
+   * ⚠ CE MESSAGE N'ARRIVE QUE S'IL Y A DU NEUF. Le planificateur ne l'appelle
+   * jamais à vide : une alerte qui écrit pour dire qu'il n'y a rien est une
+   * alerte qu'on désactive. Chaque fiche est nommée et cliquable — un courriel
+   * qui renvoie vers « votre recherche » oblige à la refaire.
+   */
+  async sendAlerteRecherche(
+    to: string,
+    data: {
+      prenom?: string | null;
+      fiches: { titre: string; chemin: string; lieu?: string | null; prix?: number | null }[];
+    },
+  ): Promise<void> {
+    if (!data.fiches.length) return;
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    const liste = data.fiches
+      .map((f) => {
+        const details = [f.lieu, f.prix != null ? `${f.prix} €` : null].filter(Boolean).join(' · ');
+        return `<li style="margin-bottom:10px">
+          <a href="${this.webUrl}${f.chemin}" style="color:#183767;font-weight:600">${e(f.titre)}</a>
+          ${details ? `<br><span style="color:#6b7280;font-size:13px">${e(details)}</span>` : ''}
+        </li>`;
+      })
+      .join('');
+    const combien = data.fiches.length;
+    await this.send(
+      to,
+      combien === 1
+        ? 'Une nouvelle fiche correspond à votre alerte'
+        : `${combien} nouvelles fiches correspondent à votre alerte`,
+      this.layout(
+        `Bonjour${data.prenom ? ` ${e(data.prenom)}` : ''},`,
+        `Vous aviez demandé à être prévenu. Voici ce qui vient d'être mis en ligne :
+         <ul style="padding-left:18px;margin:16px 0">${liste}</ul>
+         <div style="margin-top:20px;font-size:12px;color:#9ca3af">
+           Vous recevez ce message parce que vous avez créé une alerte de recherche.
+           <a href="${this.webUrl}/dashboard/alertes" style="color:#9ca3af">Gérer mes alertes</a>.
+         </div>`,
+        { label: 'Voir le catalogue', url: `${this.webUrl}/ateliers` },
+      ),
+    );
+  }
+
   async sendContactNotification(data: {
     name: string;
     email: string;

@@ -399,6 +399,20 @@ export class AdminController {
     return this.admin.suiviEmails();
   }
 
+  /**
+   * LEX vu du métier : usage, satisfaction par trame, commentaires.
+   *
+   * ⚠ DISTINCT DE `GET /admin/lex`, qui traite l'argent (ventes de packs,
+   * consommation de crédits, abonnements). Celui-ci traite la QUALITÉ. Deux
+   * questions différentes, deux écrans, et les confondre sous la même adresse
+   * produisait d'ailleurs une collision de routes silencieuse : Nest garde la
+   * première déclarée et ignore la seconde.
+   */
+  @Get('lex/qualite')
+  suiviLex() {
+    return this.admin.suiviLex();
+  }
+
   @Get('audit')
   listAudit(
     @Query('action') action?: string,

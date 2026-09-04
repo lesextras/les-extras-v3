@@ -5,6 +5,8 @@ import { HebdoScheduler } from './hebdo.scheduler';
 import { ActivationScheduler } from './activation.scheduler';
 import { TunnelScheduler } from './tunnel.scheduler';
 import { EnqueteScheduler } from './enquete.scheduler';
+import { AlertesService } from './alertes.service';
+import { AlertesScheduler } from './alertes.scheduler';
 import { MailModule } from '../common/mail/mail.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
@@ -17,7 +19,9 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ActivationScheduler,
     TunnelScheduler,
     EnqueteScheduler,
+    AlertesService,
+    AlertesScheduler,
   ],
-  exports: [CommunityService],
+  exports: [CommunityService, AlertesService],
 })
 export class CommunityModule {}
