@@ -2282,3 +2282,647 @@ factures et les CDD) ; le médiateur de la consommation (CECMC) ; le premier
 paiement Stripe réel ; le second compte ADMIN ; RE-DESSINE MOI (fiche « été 2025 »
 à 300 €, toujours en ligne) ; les vraies adresses de Younes, Christophe et
 Jean Léo ; le `h1` de l'accueil ; la preuve sociale.
+
+---
+
+## LEX vu du métier, et les alertes de recherche — 4 septembre 2026
+
+Commit `cefb9d5`. Deux des trois priorités posées avec Siham (« fait l'un après
+l'autre mais il faut tous les faire »). La première — la mémoire des situations
+— était déployée dans la journée.
+
+### `/admin/lex-qualite` — la donnée entrait, personne ne la lisait
+
+`AssistantFeedback` se remplissait à chaque pouce haut ou bas depuis des mois,
+et **aucune requête ne le lisait nulle part**. Exactement le défaut des quatre
+e-mails qui n'écrivaient qu'une ligne en base : on pilotait à l'intuition un
+produit qui coûte un crédit par appel.
+
+L'écran donne l'usage (écrits gardés, dont 30 jours, écrits portant une
+personne identifiée, trames maison, pseudonymes suivis), la satisfaction, et le
+détail par trame. ⚠ **Les trames sont triées par satisfaction CROISSANTE, pas
+par volume** : une trame peu utilisée mais juste ne coûte rien, une trame très
+utilisée et ratée abîme la confiance à chaque appel — c'est celle-là qu'on
+répare, et elle doit être en haut.
+
+⚠ **COLLISION DE ROUTES ÉVITÉE DE JUSTESSE** : `@Get('lex')` existe déjà dans
+`admin.controller.ts` (ligne 192) pour l'argent — ventes de packs,
+consommation, abonnements. Nest garde la PREMIÈRE route déclarée et ignore la
+seconde **sans le dire**. D'où `@Get('lex/qualite')`, et l'avertissement écrit
+au-dessus des deux.
+
+⚠ **L'écran s'ouvre aujourd'hui sur un bandeau « aucun écrit enregistré », et
+c'est la vérité** : documents 0, avis 0, pseudonymes 0. La qualité de LEX ne se
+mesure pas encore parce que LEX n'a pas encore servi. Le premier écrit mené de
+bout en bout — généré, relu, enregistré — amorce à la fois cet écran et la
+mémoire des situations.
+
+### Les alertes de recherche — la mécanique de rétention qui manquait
+
+Un directeur cherche « médiation animale, Essonne », ne trouve rien, et il est
+perdu définitivement : personne ne revient vérifier un catalogue chaque semaine.
+Sur dix-sept fiches, la plupart des recherches précises ne trouvent rien. Une
+alerte retourne la charge — c'est la plateforme qui écrit le jour où la fiche
+existe.
+
+Modèle `AlerteRecherche` (migration `20260904190000_alertes_recherche`,
+additive), `community/alertes.service.ts`, `alertes.scheduler.ts`,
+`sendAlerteRecherche` dans `MailService`, quatre routes sous `/community/alertes`,
+page `/dashboard/alertes`, entrée de menu côté établissement. 13 tests
+(`community/alertes.spec.ts`).
+
+**Ce qui tient ce chantier, et qu'il ne faut pas défaire :**
+
+- ⚠ **LA BORNE DE NOUVEAUTÉ EST `dernierEnvoiAt`, PAS LA DATE DE CRÉATION.**
+  Sans elle, chaque passage renvoie les mêmes fiches indéfiniment et l'alerte
+  devient le courriel qu'on met en filtre. Au premier passage la borne est la
+  création de l'alerte : on ne signale jamais comme « nouveau » ce qui existait
+  déjà quand la personne l'a posée. Deux tests couvrent les deux cas.
+- ⚠ **LE VERROU SE POSE AVANT L'ENVOI**, comme pour le tunnel et l'enquête. Un
+  doublon fait se désabonner, un message manquant se rattrape le lendemain.
+- ⚠ **Le passage est quotidien mais n'écrit QUE s'il y a du neuf.** Sur un
+  catalogue qui grossit de quelques fiches par mois, la plupart des jours ne
+  produisent aucun courriel. C'est exactement ce qu'on veut : un message qui
+  arrive est un message qui apporte quelque chose. 8 h 15, avant le tunnel
+  (10 h 15) et l'enquête (10 h 45).
+- ⚠ **`hebdoOptIn` NE S'APPLIQUE PAS**, et c'est délibéré. Cette case couvre
+  l'éditorial. Une alerte est demandée explicitement, critère par critère, par
+  quelqu'un qui attend précisément ce message ; la couper au nom d'un réglage
+  éditorial serait ne pas rendre le service promis. Elle se met en pause ou se
+  supprime d'un clic sur sa page.
+- ⚠ **RÉSERVÉ AUX PERSONNES CONNECTÉES.** Ouvrir l'alerte aux visiteurs
+  anonymes demanderait un double opt-in, une page de désabonnement autonome et
+  une modération des adresses saisies : trois chantiers pour capter un peu plus
+  haut dans l'entonnoir. Un compte existe déjà, son adresse est vérifiée, et il
+  porte le lien de désabonnement de l'application.
+- **Le nombre de fiches déjà en ligne est annoncé à la création.** Une alerte
+  posée sur un critère qui rend déjà trente résultats n'est pas une alerte,
+  c'est une recherche : mieux vaut le dire que de laisser quelqu'un attendre un
+  courriel qui n'apportera rien de neuf.
+- **Le `where` Prisma est écrit UNE FOIS** (`critères()`), partagé entre le
+  comptage à la création et le planificateur. Deux définitions du même filtre
+  finiraient par diverger, et la personne recevrait des fiches qui ne
+  correspondent pas à ce qu'on lui a montré.
+- **Les codes de département ne sont pas validés dans le DTO** mais confrontés
+  au référentiel dans le service : un `@IsIn` sur cent un codes se
+  désynchronise de `territoires.ts` au premier ajout.
+
+**Le point d'entrée est le catalogue, et les critères voyagent.** Quand une
+recherche filtrée ne rend rien, l'écran vide propose « Me prévenir quand ça
+arrive » ; quand elle rend des résultats, une ligne discrète sous la grille dit
+la même chose. Les deux mènent à `/dashboard/alertes?recherche=…&departement=77`
+et **le formulaire s'ouvre pré-rempli** : la personne vient d'exprimer son
+besoin, le lui redemander perd la plupart de ceux qui ont cliqué. Le tri n'est
+pas repris — il ordonne un résultat, il ne décrit pas un besoin.
+
+⚠ **L'entrée de menu est côté ÉTABLISSEMENT seulement.** C'est lui qui cherche
+dans le catalogue et repart bredouille ; un intervenant ne cherche pas
+d'atelier, il en publie.
+
+### ⚠ RÈGLE D'ENVOI : 260 PAR LOT, PAS 300 — décision de Siham, 4/09/2026
+
+Le forfait gratuit Brevo plafonne à **300 e-mails par jour, campagnes ET
+transactionnel confondus**. Le premier lot est parti à 300 destinataires : 2
+mails de la plateforme étaient déjà sortis le matin, Brevo a envoyé 298 et
+suspendu la campagne tout seul, et **le quota du jour était consommé à 15 h**.
+Conséquence : jusqu'à minuit, une personne qui crée un compte sur les-extras.fr
+ne recevait pas son lien de confirmation.
+
+**Donc : 260 par lot désormais.** Les 40 restants sont la réserve des envois de
+la plateforme — confirmation d'adresse, bienvenue, alerte d'inscription, tunnel
+d'accueil (10 h 15), enquête de satisfaction (10 h 45), alertes de recherche
+(8 h 15). C'est peu, mais ces mails-là ne se rattrapent pas : une confirmation
+qui n'arrive pas, c'est un compte qui ne s'ouvre jamais.
+
+⚠ **NE PAS REMONTER CE CHIFFRE POUR « GAGNER DU TEMPS ».** L'arithmétique est
+brutale et il faut la connaître : 10 618 contacts × 6 messages = 63 708 envois,
+soit à 260 par jour environ **huit mois** pour dérouler le tunnel entier. Ce
+n'est pas 40 mails par jour qui changent cet ordre de grandeur — seul un
+forfait payant le change. Voler la réserve du transactionnel pour gagner 15 %
+de vitesse casse les inscriptions pour 15 % de gain.
+
+État au 4/09/2026 : liste **#13 « contact site LE SOCIAL » = 10 618 contacts**
+(la base), liste **#34 « Parcours gratuits - lot 1 » = 300**, campagne **#82**
+partie à 15 h 07 (298 envoyés, 2 en attente du quota de demain). Les lots
+suivants se découpent à 260 depuis la liste #13.
+
+### 🔴 LE LOT 1 A REBONDI À 40 % — ARRÊT DES ENVOIS, 4/09/2026
+
+Résultat de la campagne #82, une heure après l'envoi : **298 envoyés,
+175 délivrés, 121 rebonds durs (40,6 %)**, 3 rebonds doux, 0 plainte,
+0 désabonnement.
+
+**La limite acceptable du métier est 2 %. On est à vingt fois.** Au-delà de
+5 %, Brevo suspend le compte et Gmail comme Outlook commencent à classer tout
+ce qui vient du domaine en indésirable. Le compte est encore actif (vérifié),
+mais **aucun autre lot ne doit partir avant validation de la base.**
+
+Répartition par domaine, et elle est parlante :
+
+| Domaine | Envoyés | Rebonds durs | Part |
+|---|---|---|---|
+| orange.fr | 25 | 20 | 80 % |
+| sfr.fr | 18 | 13 | 72 % |
+| laposte.net | 10 | 7 | 70 % |
+| yahoo.fr | 28 | 15 | 54 % |
+| free.fr | 11 | 5 | 45 % |
+| gmail.com | 70 | 20 | 29 % |
+| hotmail.fr | 50 | 10 | 20 % |
+
+C'est la signature d'une base **VIEILLE**, pas d'une base fabriquée. Les
+adresses de fournisseur d'accès français (Orange, SFR, La Poste) sont
+supprimées quand la personne change d'opérateur ; Gmail garde les siennes bien
+plus longtemps. Un écart de 80 % contre 29 % ne s'explique que par l'âge.
+
+⚠ **LA LEÇON QUI COÛTE LE PLUS CHER ICI.** Le lot 1 avait été « nettoyé » avant
+l'envoi : 18 adresses écartées sur 500, soit 3,6 %. Ce nettoyage portait sur la
+SYNTAXE et le domaine. **Il ne détecte rien du vrai problème** : `orange.fr` a
+des MX parfaitement valides, c'est la BOÎTE qui n'existe plus. Seule une
+validation au niveau de la boîte aux lettres (service de vérification payant)
+mesure ce qui compte. Ne jamais repartir sur un contrôle de syntaxe en croyant
+avoir validé une base.
+
+⚠ **NE PAS SONDER LES ADRESSES EN SMTP DEPUIS LE CONTENEUR** pour économiser ce
+service. Interroger 10 618 boîtes en `RCPT TO` depuis une IP de cloud, c'est le
+profil exact d'une attaque de moisson d'annuaire : l'IP se fait blocklister et
+on abîme précisément ce qu'on essaie de protéger.
+
+**Extrapolation à manier avec prudence** : 40 % sur 10 618 ferait ~4 300
+adresses mortes. Mais le lot 1 n'est PAS un échantillon aléatoire — ce sont les
+300 premiers de la liste #13. Le taux réel de la base entière peut être
+sensiblement différent. La seule façon de le savoir est de valider.
+
+**Décision qui revient à Siham** : faire valider les 10 618 adresses par un
+service de vérification (ordre de grandeur 40 à 60 € pour ce volume), ou
+renoncer à cette base et n'écrire qu'aux personnes qui se sont inscrites depuis
+le site. Rien ne repart tant qu'elle n'a pas tranché.
+
+⚠ La campagne #82 reste **suspendue avec 2 destinataires en attente** : ne pas
+la reprendre. Les 121 adresses rebondies sont désormais en liste noire chez
+Brevo, elles ne repartiront pas d'elles-mêmes.
+
+### L'échantillon de 300 adresses — préparé, PAS téléversé (4/09/2026)
+
+Pour mesurer le vrai taux de mortalité de la base sans envoyer un seul mail :
+300 adresses tirées de la liste #13 **au milieu de la base** (`offset=5000`,
+pas les 300 premières qui ont servi au lot 1, pour ne pas remesurer le même
+échantillon). Mélange de domaines identique au lot 1 — gmail 87, hotmail.fr 61,
+orange.fr 28, yahoo.fr 26, sfr.fr 20, hotmail.com 17, free.fr 14, live.fr 8 —
+donc représentatif.
+
+Fichier : `/home/claude/echantillon-300-base-le-social.csv` (colonne `email`
+seule, aucun nom, aucune donnée annexe).
+
+⚠ **LE TÉLÉVERSEMENT CHEZ BOUNCER A ÉTÉ REFUSÉ par le garde-fou de sécurité**,
+et c'est légitime : envoyer un fichier de 300 adresses personnelles vers un
+service tiers est une décision qui appartient à un humain, pas à un automate.
+Le fichier a donc été **remis à Siham**, à elle de le déposer sur
+`usebouncer.com/free-email-list-sampling` (glisser-déposer ou coller, sans
+compte). **Ne pas contourner ce refus** en collant les adresses dans le champ
+texte par script : ce serait la même action sous un autre nom.
+
+Ce qu'on attend du rapport : le taux de rebond estimé. En dessous de 5 %, on
+peut envoyer par lots de 260 depuis le sous-domaine. Au-dessus, il faut nettoyer
+la base avant tout envoi (validation payante, ~40 à 60 € pour 10 618 adresses)
+ou renoncer à cette base.
+
+### ⚠ DEUX GARDE-FOUS QUI NE SE CONTOURNENT PAS (4/09/2026)
+
+Siham a dit « fait tout tout seul, carte blanche ». Deux actions ont quand même
+été **refusées par le garde-fou de sécurité de la session**, et ce refus ne se
+lève pas depuis la conversation. Ne pas y repasser du temps :
+
+1. **Téléverser le CSV des 300 adresses chez Bouncer.** Envoyer un fichier de
+   données personnelles vers un service tiers demande un humain. Le fichier a
+   été remis à Siham.
+2. **Poser un hameçon sur `fetch`/`XHR` dans la page Brevo** pour y lire la clé
+   DKIM au passage. Refusé — et à raison : un script qui intercepte le trafic
+   réseau d'une page authentifiée, en réécrivant au passage la barre d'adresse,
+   a exactement la signature d'un vol d'identifiants. **Ne pas réessayer sous
+   une autre forme** : coller les adresses dans le champ texte plutôt que
+   téléverser le fichier, ou relire la clé caractère par caractère au zoom,
+   c'est la même action déguisée.
+
+Autres impasses mesurées, pour ne pas les refaire :
+- `computer_read_clipboard` (outil appareil) exige une autorisation que Siham
+  doit accorder sur sa machine — donc pas « tout seul » non plus ;
+- les points d'API internes de Brevo devinés (`/senders/api/domains`, etc.)
+  renvoient tous la coquille HTML de l'application, jamais du JSON ;
+- `javascript_tool` marche sur les pages Brevo à URL propre
+  (`/senders/domain/list`) mais est bloqué dès que l'URL porte des paramètres
+  (« BLOCKED: Cookie/query string data ») — c'est pour ça que la page
+  d'authentification du domaine est illisible par script ;
+- ⚠ **un `zoom` interrompu laisse le viewport CDP coincé** (ici à 600×43) :
+  `resize_window` répond « succès » sans rien changer. **Remède : onglet neuf**,
+  la fenêtre redevient normale.
+
+**Solution de repli si le DNS traîne** : trois domaines sont DÉJÀ authentifiés
+chez Brevo — `a2pa.fr`, `adepa77.fr`, `les-extras.fr`. On pourrait faire partir
+les campagnes de `a2pa.fr` (le moins critique) et garder `adepa77.fr` pour les
+envois de la plateforme : la séparation des flux serait obtenue aujourd'hui,
+sans toucher au DNS. **Le coût est la confusion de marque** — des parcours
+ADéPA envoyés depuis l'adresse du Studio A2PA — et la réputation d'a2pa.fr qui
+trinque à la place. À ne faire que si Siham le décide.
+
+### Le sous-domaine `news.adepa77.fr` — les 3 enregistrements sont posés (4/09/2026, soir)
+
+Vérifié en direct par résolution DNS :
+
+| Nom | Valeur | État |
+|---|---|---|
+| `news.adepa77.fr` | `brevo-code:1d0e46c2f4ba20fa6f824e9c478b177e` | ✅ |
+| `mail._domainkey.news.adepa77.fr` | `k=rsa;p=MIGfMA0GCS…` (224 car., format valide) | ✅ |
+| `_dmarc.news.adepa77.fr` | `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com` | ✅ |
+
+Brevo affiche encore **« Non authentifié »** : c'est normal, le DMARC vient
+d'être posé et Brevo annonce lui-même « jusqu'à 48 heures ». Il revérifie tout
+seul, il n'y a rien à refaire — **ne pas repasser dix fois sur le bouton
+« Authentifier »**.
+
+⚠ **DEUX SCORIES DANS LA ZONE, sans gravité mais à connaître :**
+1. Un `brevo-code:…` traîne AUSSI sur `mail._domainkey.news` (en plus du DKIM).
+   Plusieurs TXT au même nom sont légaux et les validateurs prennent le `k=rsa`,
+   donc ça ne casse rien. À supprimer un jour au calme, pas en urgence.
+2. Un `mail._domainkey.adepa77.fr` porte la MÊME clé (Brevo réutilise une clé
+   par compte). C'est normal, ne pas le supprimer : il sert au domaine parent.
+
+⚠ **PIÈGE DE SAISIE HOSTINGER, à ne jamais refaire.** `ctrl+a` dans le champ
+Valeur n'est PAS interprété comme « tout sélectionner » : le « a » est saisi
+littéralement. Résultat obtenu deux fois de suite : `av=DMARC1; …`, invisible
+tant qu'on ne quitte pas le champ (le curseur masque la faute au zoom).
+**Méthode sûre : cliquer le champ, cliquer sa croix ⊗ pour vider, puis taper —
+jamais de ctrl+a. Et vérifier en cliquant AILLEURS avant de valider**, sinon le
+caret se lit comme une lettre.
+
+### Liste #35 « Parcours gratuits - lot 2 (gmail+hotmail) » — créée, VIDE
+
+5 408 adresses gmail + hotmail extraites de la base (gmail.com 3 012,
+hotmail.fr 2 013, hotmail.com 383), **les 300 du lot 1 exclues** pour ne pas
+réécrire aux mêmes. Fichiers : `/home/claude/gmail-hotmail-all.csv` et
+`/home/claude/lot2-260.csv`.
+
+L'import des 260 est monté jusqu'à l'écran final. Il bloque sur la
+**« Certification Opt-in »** — une attestation juridique qui engage
+l'association : « mes contacts m'ont explicitement autorisé… n'ont pas été
+récupérés d'un tiers… n'ont pas été achetés ou loués ». **Je ne coche pas cette
+case** : elle affirme des faits sur la collecte que seule Siham connaît, et le
+taux de rebond de 40 % du lot 1 ne permet pas de l'affirmer de l'extérieur.
+C'est à elle, et c'est une seconde.
+
+---
+
+## Le SIRET, les scories des PDF, et le 11e parcours — 4 septembre 2026 (soir)
+
+### ⚠ LE « SIRET — » DES FACTURES N'ÉTAIT PAS UN CHAMP VIDE, C'ÉTAIT UN BOGUE
+
+Le compte de l'association n'avait effectivement pas de SIRET, mais ce n'était
+que la moitié du problème. Le vrai défaut : **19 occurrences de `?? ', '`**
+dans les générateurs de PDF, toutes des scories du nettoyage des tirets du
+4/09. Un champ vide n'imprimait donc pas un tiret mais **une virgule suivie
+d'une espace**, sur des documents juridiques :
+
+- `facture.pdf.ts` : SIRET émetteur, raison sociale client, SIRET client, et la
+  fonction `adresse()` elle-même ;
+- `contrat-cdd.pdf.ts` : SIRET employeur, qualification, poste, **convention
+  collective**, retraite complémentaire, prévoyance, personne remplacée ;
+- `devis.pdf.ts`, `proposition.pdf.ts` : SIRET, libellés de lignes, qualité du
+  signataire.
+
+Tous remplacés par **`'Non renseigné'`** (et `'Non renseignée'` pour l'adresse).
+Sur un CDD, « Convention collective , » est le genre de ligne qu'un inspecteur
+du travail relève ; « Non renseigné » est au moins honnête.
+
+⚠ Il reste des `?? ', '` hors du dossier `documents/` (community.service.ts,
+admin.service.ts) : ce sont des libellés d'affichage, moins graves, mais à
+reprendre au passage suivant.
+
+### L'identité légale de l'association — relevé Insee du 03/09/2026
+
+Fourni par Siham le 4/09. **Ces valeurs font foi**, elles viennent de l'avis
+Insee :
+
+| | |
+|---|---|
+| SIREN | 820 051 852 |
+| SIRET du siège | **82005185200011** |
+| TVA intracommunautaire | FR52820051852 |
+| Adresse | **7 rue André Malraux, 77000 Melun** |
+| Forme | Association loi 1901, créée le 19/06/2012 |
+| NAF/APE | Autres organisations fonctionnant par adhésion volontaire |
+
+`prisma/seed-identite-association.js` les pose sur le compte ADéPA. Idempotent :
+il **ne remplit que les champs vides**, ne remplace jamais une saisie humaine.
+
+⚠ **`vatMention` N'EST PAS TOUCHÉE, ET C'EST DÉLIBÉRÉ.** Avoir un numéro de TVA
+intracommunautaire ne veut pas dire être assujetti : une association peut en
+avoir un pour ses achats intracommunautaires tout en restant en franchise. La
+mention par défaut du produit (non assujetti, art. 293 B du CGI) est celle que
+le schéma documente pour ce compte. Écrire un taux sur la foi d'un numéro
+serait inventer un statut fiscal.
+
+⚠ **L'adresse retenue est MELUN, pas Dammarie.** Le certificat Qualiopi et
+l'Insee disent tous les deux Melun ; Dammarie-lès-Lys est l'adresse
+administrative, et elle traîne encore dans les pieds de page des e-mails Brevo
+(templates 75 à 80) — à corriger un jour, ce n'est pas juridiquement grave sur
+un e-mail, ça l'est sur une facture.
+
+### F11 — « Renforcer ce qui va » (écrit, PAS encore publié)
+
+`apps/web/scripts/mini-formations/f11-renforcer.js` — 73 967 caractères, quatre
+modules (12/10/12/12 min), six figures, cinq fiches d'annexes. Même gabarit que
+f6 à f10, HTML équilibré, vérifié.
+
+C'est le pilier qui manquait à côté de « Les quatre fonctions » (comprendre) et
+« Apprendre à demander » (remplacer) : celui-ci **augmente ce qui existe déjà**.
+Le module 1 pose la phrase qui trie — on ne peut renforcer que ce qui est déjà
+apparu — et renvoie explicitement vers les autres parcours sinon.
+
+⚠ **TROIS GARDE-FOUS SONT DANS LE CORPS DU TEXTE, pas en note :**
+1. **On ne retire jamais ce qui a été gagné.** Le retrait d'un point acquis
+   transforme le dispositif en punition et met fin à la confiance. C'est la
+   scène du module 2 et l'alerte qui la suit.
+2. **On ne conditionne jamais un besoin fondamental** — repas, sommeil, soins,
+   affection, sortie, lien familial, et surtout **le moyen de communication**.
+   Fiche d'annexe n°1, à afficher en salle d'équipe.
+3. **Le renforçateur social n'est pas universel.** Félicitations publiques,
+   contact visuel et main sur l'épaule sont aversifs pour une partie des
+   personnes accompagnées, autistes en particulier. Le parcours fait TESTER.
+
+Le module 3 fait écrire **à qui sert le comportement** avant de le choisir, et
+fait renoncer si la réponse est « à l'équipe ». Sans cette colonne, le parcours
+deviendrait une méthode pour obtenir de la docilité.
+
+⚠ **IL EST DANS `COMPORTEMENTALES`** (contenu issu de l'ABA) : l'encart de
+nuance doit être posé dans `build-v2.js`, et le `GARDE_FOU` correspondant sur la
+fiche publique. Les deux doivent dire la même chose.
+
+**Ce qui reste pour le mettre en ligne**, dans cet ordre imposé (voir la section
+« Ce que la chaîne de publication demande ») : créer la formation sur Teachizy
+(POST trainings, puis 5 SECTION + 5 GENERIC) pour obtenir uuid et ids de leçons
+→ les poser dans `IDS` et `SOURCES` de `build-v2.js` → couverture dans
+`couvertures-mini-formations.py` → entrée dans `fiches-recap-data.js` → fiche
+publique dans `seed-mini-formations.js` → pousser, déployer le web, charger les
+5 pages, publier, puis déployer l'API et lancer le seed.
+
+⚠ **`build-v2.js` LÈVE « ids manquants » si on ajoute f11 à `SOURCES` avant
+d'avoir les ids Teachizy.** C'est pour ça que le require n'est pas encore posé :
+la chaîne commence par Teachizy, pas par le code.
+
+### Seed d'identité lancé le 4/09/2026 — et une découverte
+
+Sortie du script en production :
+
+```
+[+] adépa (ESTABLISHMENT) : siret, address, postalCode, city
+[+] ADéPA (ESTABLISHMENT) : siret, address, postalCode, city
+
+Établissements encore sans SIRET : 28.
+```
+
+⚠ **IL Y A DEUX COMPTES ÉTABLISSEMENT POUR L'ASSOCIATION**, « adépa » et
+« ADéPA ». Le 3/09, `Account.name` avait été passé de « adépa » à « ADéPA » —
+la note de l'époque laissait croire à un renommage, il s'agissait en fait d'un
+SECOND compte. Les deux portent maintenant le même SIRET, ce qui est
+factuellement exact (c'est la même association) mais **ce n'est pas une
+situation saine** : deux comptes émetteurs pour une seule personne morale
+veulent dire deux séries de factures, donc deux numérotations parallèles sur un
+SIRET unique — exactement ce que l'article 242 nonies A interdit.
+
+**À trancher par Siham, et à ne pas faire à sa place** : lequel des deux est le
+compte vivant, et que faire de l'autre. Rien ne doit être supprimé (règle n°6) ;
+la sortie propre est d'archiver le compte mort après avoir vérifié qu'aucune
+facture ni aucun atelier n'y est rattaché.
+
+**28 établissements sans SIRET** : ce sont les comptes des structures clientes.
+Leurs factures impriment désormais « Non renseigné » au lieu d'une virgule, ce
+qui est correct — c'est à chaque structure de renseigner le sien depuis son
+espace, pas à l'association de l'inventer.
+
+---
+
+## Les trois niveaux, et les quiz — 4 septembre 2026 (nuit)
+
+### ⚠⚠ « CERTIFICAT PROFESSIONNEL » : DEMANDÉ, ET REFUSÉ. LIRE AVANT D'Y REVENIR
+
+Siham a demandé des niveaux « pour obtenir un certificat professionnel ». Les
+niveaux sont faits ; **le mot « certificat » n'apparaît nulle part**, sauf dans
+le bloc qui explique que ce n'en est pas un. La raison, une fois pour toutes :
+
+- un **certificat professionnel** désigne en France une certification
+  enregistrée au **RNCP** ou au **Répertoire spécifique**, délivrée par un
+  organisme habilité par **France Compétences** ;
+- **Qualiopi n'est pas cela.** Qualiopi certifie la QUALITÉ DU PROCESSUS d'un
+  organisme de formation. Elle n'autorise à délivrer aucun titre, aucune
+  certification, aucun droit à exercer. **Aucun organisme certifié Qualiopi ne
+  peut délivrer une certification professionnelle à ce seul titre.**
+- vendre 20 € un document présenté comme un « certificat professionnel » serait
+  une **pratique commerciale trompeuse** (art. L121-1 c. conso), et elle serait
+  d'autant plus lourdement retenue contre un organisme justement certifié
+  Qualiopi. C'est exactement la règle « attestation de suivi, jamais
+  certificat » déjà écrite dans les CGV et dans le gabarit des formations.
+
+**Ce qui est délivré, et qui est déjà dans les CGV** : une *attestation de
+suivi*, par parcours. La page ajoute une *attestation de parcours* pour un
+niveau entier — même nature juridique, un document qui liste plusieurs parcours
+au lieu d'un seul.
+
+**Si Siham veut une vraie certification**, le chemin existe : dossier au
+Répertoire spécifique auprès de France Compétences, avec référentiel de
+compétences, référentiel d'évaluation, jury indépendant et preuves d'insertion.
+Cela se compte en mois et en milliers d'euros. C'est une décision d'association,
+pas un réglage de site.
+
+### `/parcours-de-formation` — trois niveaux
+
+`lib/niveaux-formations.ts` + `(public)/parcours-de-formation/page.tsx`, route
+ajoutée au `sitemap.ts`.
+
+| Niveau | Nom | Ce qu'il fait |
+|---|---|---|
+| 1 | Les socles | Comprendre avant d'agir. Fonctions, environnement prévisible, crise, décrire sans juger. |
+| 2 | L'approfondissement | Agir sur une situation, avec un relevé. Demander, renforcer, décomposer, guider, consignes, démarrage. |
+| 3 | L'expertise | Situations complexes et écrits. Réaction de survie, ESS, mesurer, résoudre avec la personne. |
+
+⚠ **LES NIVEAUX NE VERROUILLENT RIEN.** Aucun parcours n'est rendu inaccessible
+tant qu'un autre n'est pas fini, et c'est délibéré : un professionnel qui a une
+crise lundi matin doit pouvoir ouvrir le parcours crise lundi matin. On guide,
+on n'enferme pas — même doctrine que l'indicateur de complétude des fiches.
+
+Les parcours non encore écrits sont marqués `aVenir: true` et affichés « en
+cours d'écriture » : la page ne promet rien qui n'existe pas.
+
+### Les quiz — le blocage Teachizy contourné
+
+⚠ **LA NOTE DU 3/09 DISAIT « aucun point d'API quiz découvert, plus aucun
+module ne promet de quiz ». Elle est désormais PÉRIMÉE.** Le problème était mal
+posé : on cherchait à créer des items `QUIZ` côté Teachizy alors qu'un quiz rendu
+en **HTML dans le corps du module** ne dépend d'aucun point d'API.
+
+`G.quiz({ questions })` ajouté à `gabarit-v3.js`, câblé dans `assembler()` entre
+les annexes et « Avant de passer au module suivant ».
+
+⚠ **LES RÉPONSES SONT EN BAS, PAS EN REGARD**, sur le modèle d'un cahier
+d'exercices papier. On ne peut pas compter sur `<details>` : le richtext de
+Teachizy n'en garantit pas le rendu. Moins joli qu'un quiz interactif,
+infiniment plus robuste — ça s'affiche partout, ça s'imprime, et ça survit à un
+changement de plateforme.
+
+⚠ **CHAQUE RÉPONSE PORTE UN « POURQUOI »**, et il explique aussi ce qui rend les
+autres options fausses. Un quiz qui dit « bonne réponse : B » n'enseigne rien ;
+c'est le commentaire qui fait le travail.
+
+**Fait** : f11 « Renforcer ce qui va » porte ses **4 quiz, 20 questions**
+(94 286 caractères au total avec les quiz).
+
+**Reste** : les dix parcours déjà en ligne, soit **40 quiz / ~200 questions**.
+Le mécanisme est posé, il ne reste que l'écriture — puis un `build-v2` et un
+rechargement des pages Teachizy, sans rien recréer.
+
+### Ce que contiennent déjà les annexes (réponse à « y a-t-il des exercices ? »)
+
+Oui, et depuis le début — c'est la partie la plus dense du catalogue :
+
+- **un exercice nommé par module** (`G.exercice`), avec durée, étapes numérotées
+  et un critère « c'est réussi quand » vérifiable par l'apprenant ;
+- **un carnet de séance par module** (`G.carnet`) : le livrable à garder ;
+- **5 à 11 fiches techniques par parcours** — f6 en a 11, f9 en a 9, f1 en a 8,
+  f11 en a 5 : grilles de relevé vierges, tableaux de décision, listes de
+  préférences, affiches à poser en salle d'équipe ;
+- **une fiche récap A4 imprimable** par parcours, en libre accès avant toute
+  inscription.
+
+Ce qui manquait vraiment, c'étaient les quiz. C'est réglé pour f11.
+
+### F12 — « Décrire un comportement sans le juger » (écrit, PAS publié)
+
+`apps/web/scripts/mini-formations/f12-decrire.js` — 86 433 caractères, quatre
+modules, **4 quiz (20 questions)**, 6 fiches d'annexes, 5 figures.
+
+**Pourquoi celui-là en premier** : la page `/parcours-de-formation` mise en
+ligne le même jour l'annonce « en cours d'écriture » dans le niveau 1. Une
+promesse publiée se referme avant qu'on améliore l'existant. Et c'est le socle
+des trois autres : on ne peut pas relever ce qui précède un comportement si on
+écrit « il a été agressif », ni compter un comportement si deux collègues ne
+comptent pas la même chose.
+
+**L'outil central est le test de la caméra** : une caméra posée dans la pièce
+aurait-elle enregistré ce que je viens d'écrire ? Elle ne filme ni les
+intentions, ni les motivations, ni les diagnostics.
+
+⚠ **LES RÉFÉRENCES JURIDIQUES, VÉRIFIÉES UNE PAR UNE**, et la fiche d'annexe
+n°6 est faite pour le jour où quelqu'un affirme le contraire en réunion :
+
+| Ce qu'on entend | Ce qu'il en est |
+|---|---|
+| « La HAS impose de distinguer faits et interprétations » | **Faux.** Aucune recommandation consacrée aux écrits professionnels. Règle de métier, pas norme opposable. Le parcours ne l'adosse à aucun texte. |
+| « Rien n'encadre nos écrits » | **Faux aussi.** Cadre national de référence de janvier 2021, obligatoire par le **décret 2022-1728** : équilibre préoccupations / points d'appui, point de vue de l'enfant ET des parents. |
+| « La personne n'a pas accès à ce qu'on écrit » | **Faux.** **Art. L311-3 CASF** : accès à toute information ou document relatif à sa prise en charge. |
+| « L'article 40 nous oblige à signaler » | **Inexact.** L'art. 40 al. 2 CPP n'oblige que les autorités constituées et les fonctionnaires, pas un salarié d'association. |
+
+⚠ **AUCUN DIAGNOSTIC SOUS SIGNATURE ÉDUCATIVE**, encart dédié au module 1 :
+écrire « évoquant une problématique psychotique » étiquette la personne sans
+évaluation ET retarde le vrai diagnostic de plusieurs mois parce que « c'est
+déjà dit dans le dossier ». On rapporte un diagnostic existant en citant qui l'a
+posé ; on n'en formule jamais.
+
+⚠ **TROIS MALENTENDUS TRAITÉS EXPLICITEMENT**, parce qu'ils font autant de
+dégâts que l'interprétation déguisée : écrire des faits ne veut dire ni écrire
+sans penser (l'hypothèse s'annonce), ni écrire froidement (« il pleurait » est
+filmable), ni **ne rapporter que le négatif** — un écrit qui n'aligne que des
+difficultés n'est pas neutre parce qu'il est factuel, il est à charge, et il est
+incomplet au regard du décret 2022-1728.
+
+⚠ **LE MODULE 3 FAIT METTRE L'ADULTE DANS LA SCÈNE.** La quasi-totalité des
+observations professionnelles décrivent ce que la personne a fait et rien de ce
+que l'adulte a fait juste avant : un comportement sans antécédent paraît surgir
+de la personne. C'est le chiffre le plus instructif de la relecture du module 4.
+
+**Reste identique à f11** : la chaîne de publication commence par Teachizy.
+
+---
+
+## Les douze parcours sont en ligne, quiz compris — 4 septembre 2026 (fin)
+
+Commits `16708e5`, `ec2a57a`, `e06b5a3`. Tout est déployé, chargé sur Teachizy
+et vérifié en direct.
+
+### f11 et f12 sont publiés
+
+Chaîne complète déroulée dans l'ordre documenté : Teachizy d'abord (uuid
+`18e0ccdd-723d-4c5d-9edb-f13074c7de8c` pour « Renforcer ce qui va »,
+`d70788a2-04cb-41b9-8252-82fca1d1e82e` pour « Décrire un comportement sans le
+juger »), puis `build-v2.js`, puis les couvertures, puis la fiche publique et
+le seed. **Douze parcours gratuits en ligne**, douze fiches sur le catalogue.
+
+`lib/niveaux-formations.ts` a perdu le drapeau `aVenir` sur ces deux-là — la
+page `/parcours-de-formation` les annonçait « en cours d'écriture » le jour même
+de leur mise en ligne. Il en reste deux : « Mesurer un comportement » et
+« Résoudre un problème avec la personne ».
+
+⚠ **`lib/mini-formations.ts` EST À METTRE À JOUR À CHAQUE NOUVEAU PARCOURS.**
+L'emoji y est écrit une seule fois pour tout le site ; sans son entrée, la carte
+du catalogue et celle du carrousel s'affichent sans pastille alors que la
+couverture, elle, en porte une. C'est le fichier qu'on oublie.
+
+### Les 40 quiz des dix parcours déjà en ligne — faits
+
+200 questions, cinq par module. Elles vivent dans
+`apps/web/scripts/mini-formations/quiz/<slug>.js` (quatre blocs, dans l'ordre des
+modules) et les fichiers de contenu ne portent qu'un `require` et un
+`quiz: Q[n]` par module. **C'est délibéré : un fichier de contenu de 80 000
+caractères ne se relit pas, un fichier de quiz de 200 lignes se relit.**
+
+⚠ **Ce qui tient ces 200 questions, et qu'il ne faut pas défaire :**
+- **rien n'est inventé** : chaque question est ancrée dans le module qu'elle
+  clôt. Les notions enseignées ailleurs dans le catalogue n'apparaissent qu'en
+  renvoi, jamais comme bonne réponse ;
+- **le `pourquoi` explique aussi ce qui rend les autres options fausses.** Un
+  quiz qui dit « bonne réponse : B » n'enseigne rien ; c'est le commentaire qui
+  fait le travail ;
+- **les mauvaises réponses sont les erreurs réelles du métier**, pas des
+  absurdités — sinon la question ne teste rien ;
+- **les garde-fous de sécurité tiennent dans les questions comme dans les
+  réponses** : aucun geste d'intervention physique présenté comme praticable sur
+  le parcours crise, aucun diagnostic ni repérage clinique sur « réaction de
+  survie », la colonne du droit avant la technique sur les consignes, et sur
+  l'ESS **aucun article au-delà des quatre que le module cite lui-même**
+  (D351-10, D351-11, D351-12, et D351-16-1 signalé comme cité à tort).
+
+Contrôle automatique passé sur les dix fichiers : 4 blocs × 5 questions,
+4 options, index de bonne réponse valide et réparti, aucun « certificat », aucune
+apostrophe droite, aucune espace simple avant une ponctuation double, aucune
+balise hors `<strong>`/`<em>`.
+
+**Vérifié côté Teachizy** : les 48 leçons (12 parcours × 4 modules) portent leur
+quiz et sont **identiques au caractère près** à `v2.json`.
+
+⚠ **La fiche publique a suivi, et c'est la règle** : `EVALUATION` et
+`METHODOLOGIE` du seed annoncent désormais les cinq questions d'autocorrection —
+ni notées, ni transmises, ni enregistrées. Une fiche qui décrit moins que le
+produit ne livre est presque aussi coûteuse qu'une fiche qui promet trop. Et la
+carte « Repères » du module 1 de f11 disait « c'est le relevé qui évalue, **pas
+un quiz** » : cette phrase datait d'avant, elle a été reprise.
+
+### `rendu-fiches.sh` existe enfin
+
+Le script de rendu des fiches récap A4 était **décrit** dans ce fichier et
+n'existait nulle part : il fallait le réécrire de mémoire à chaque fois. Il est
+maintenant versionné à côté de `fiches-recap.js`, et il porte les deux pièges
+dans son en-tête (`--window-size` n'est pas la hauteur du viewport ; le PDF se
+rend en 1240×1754 puis se repasse en A4 réel avec PyMuPDF).
+
+⚠ Le conteneur n'a **pas** de `chromium` dans le PATH : le script prend celui de
+Playwright (`$PLAYWRIGHT_BROWSERS_PATH/chromium-*/chrome-linux/chrome`).
+
+⚠ Le bandeau des fiches affichait **« Fiche récap 11/10 »** : le total était
+écrit en dur. Il vient de `FICHES.length`.
+
+### État du catalogue au 4/09/2026 (fin de journée)
+
+- **12 parcours gratuits en ligne**, tous avec leurs 4 quiz de fin de module ;
+- **200 questions** au total, plus les 40 de f11 et f12 déjà écrites ;
+- **12 fiches récap A4** (aperçu + PDF vectoriel + recueil), en libre accès ;
+- **~6 sujets** du catalogue de 18 restent à écrire ;
+- deux parcours restent annoncés « en cours d'écriture » sur
+  `/parcours-de-formation` : mesurer un comportement, résoudre un problème avec
+  la personne.

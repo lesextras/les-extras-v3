@@ -77,6 +77,8 @@ const EVALUATION = `La progression est enregistrée module par module : chaque m
 
 Chaque module se termine par trois critères vérifiables — « Avant de passer au module suivant » — que vous cochez vous-même. Ce ne sont pas des questions de connaissance : ce sont des productions (une grille remplie, une phrase écrite, un relevé compté).
 
+Chaque module se termine aussi par cinq questions d’autocorrection, avec leurs réponses commentées juste en dessous : elles ne sont ni notées, ni transmises, ni enregistrées. Elles servent à vérifier qu’une notion est passée avant d’avancer, et le commentaire explique aussi ce qui rend les autres réponses fausses.
+
 Il n’y a ni examen, ni note. Ce qui est évalué, c’est votre propre relevé : chaque formation se termine par une période d’auto-observation avec une grille à remplir, et une lecture guidée de ce que vous y aurez noté.
 
 Attestation de suivi nominative : 20 €, facultative. Elle se demande une fois les modules terminés, et les conditions vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
@@ -99,7 +101,7 @@ const METHODOLOGIE = `Comment ça se passe, concrètement.
 
 Quatre modules, toujours dans le même ordre, plus une section d’annexes.
 
-Chaque module s’ouvre sur une carte « Repères du module » — durée, prérequis, modalité, évaluation — et se ferme sur « Avant de passer au module suivant », trois critères que vous pouvez cocher vous-même.
+Chaque module s’ouvre sur une carte « Repères du module » — durée, prérequis, modalité, évaluation — et se ferme sur cinq questions d’autocorrection puis sur « Avant de passer au module suivant », trois critères que vous pouvez cocher vous-même.
 
 1. La théorie, en quelques minutes. Le strict nécessaire pour comprendre ce qu’on va faire, pas un cours.
 2. Une situation qui dérape. On ne vous montre pas un modèle parfait : on vous montre une scène réelle qui échoue, on vous demande de chercher pourquoi, et l’analyse ne vient qu’ensuite. C’est vous qui produisez la réponse — c’est ce qui la rend transposable.

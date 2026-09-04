@@ -216,7 +216,7 @@ const M1 = {
     minutes: 12,
     prerequis: 'Aucun. Ce parcours se suit seul, mais il se comprend mieux après « Les quatre fonctions d’un comportement ».',
     evaluation:
-      'Le module 3 fait produire une fiche de renforcement, et le module 4 la confronte à dix jours de relevé. C’est le relevé qui évalue, pas un quiz.',
+      'Le module 3 fait produire une fiche de renforcement, et le module 4 la confronte à dix jours de relevé. Les cinq questions de fin de module vérifient la notion ; c’est le relevé qui évalue la pratique.',
     apres: 'dix jours de relevé, deux chiffres par jour, entre le module 3 et le module 4.',
   },
   objectifs: [
