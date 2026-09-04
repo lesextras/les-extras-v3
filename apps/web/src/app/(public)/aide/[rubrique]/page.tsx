@@ -14,7 +14,7 @@ export async function generateMetadata({ params: paramsPromesse }: { params: Pro
   const r = trouverRubrique(params.rubrique);
   if (!r) return { title: "Aide" };
   return {
-    title: `${r.titre} — Centre d’aide`,
+    title: `${r.titre}, Centre d’aide`,
     // `resume` fait 41 à 66 caractères : c'est la bonne longueur pour un
     // chapeau affiché, la mauvaise pour une description de résultat Google,
     // qui en accepte environ 155 et se retrouvait à moitié vide. On complète
@@ -28,7 +28,7 @@ export async function generateMetadata({ params: paramsPromesse }: { params: Pro
     openGraph: {
       ...SOCLE_OG,
       url: `/aide/${r.slug}`,
-      title: `${r.titre} — Centre d’aide`,
+      title: `${r.titre}, Centre d’aide`,
       description: r.resume,
     },
   };

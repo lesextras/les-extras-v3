@@ -32,7 +32,7 @@ export default function ErreurPublique({
           Cette page n’a pas pu s’afficher
         </h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Le problème vient de chez nous, pas de vous. Réessayez dans un instant —
+          Le problème vient de chez nous, pas de vous. Réessayez dans un instant
           et si vous cherchiez un intervenant en urgence, appelez-nous plutôt que
           d’attendre.
         </p>

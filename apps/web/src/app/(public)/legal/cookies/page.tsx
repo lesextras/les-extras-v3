@@ -67,7 +67,7 @@ export default function CookiesPage() {
 
       <PageHeader
         title="Cookies et stockage local"
-        subtitle="Ce que Les Extras dépose réellement sur votre navigateur — la liste complète, pas un texte type."
+        subtitle="Ce que Les Extras dépose réellement sur votre navigateur : la liste complète, pas un texte type."
       />
 
       {MESURE_ACTIVE ? (
@@ -79,8 +79,8 @@ export default function CookiesPage() {
                 <h2 className="font-semibold">Un seul cookie non essentiel, et seulement si vous l&apos;acceptez</h2>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   L&apos;association finance sa visibilité par de la publicité en ligne. Pour savoir
-                  quelle annonce amène réellement des inscriptions — et arrêter celles qui ne
-                  servent à rien — nous utilisons la mesure de conversion de Google Ads.
+                  quelle annonce amène réellement des inscriptions, et arrêter celles qui ne
+                  servent à rien : nous utilisons la mesure de conversion de Google Ads.
                   <strong className="text-foreground">
                     {" "}
                     Rien n&apos;est chargé tant que vous n&apos;avez pas répondu
@@ -107,14 +107,14 @@ export default function CookiesPage() {
             <div>
               <h2 className="font-semibold">Ce que nous n&apos;utilisons pas</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Aucun cookie publicitaire. Aucun outil de mesure d&apos;audience — pas de Google
+                Aucun cookie publicitaire. Aucun outil de mesure d&apos;audience, pas de Google
                 Analytics, pas de Matomo, pas de pixel de réseau social. Aucun partage de données de
                 navigation avec un tiers. Aucun profilage.
               </p>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 C&apos;est la raison pour laquelle vous ne trouverez pas de bouton « Refuser » : il
                 n&apos;y a rien à refuser. Les seuls cookies déposés sont indispensables au
-                fonctionnement, et la réglementation les dispense de consentement — elle impose en
+                fonctionnement, et la réglementation les dispense de consentement, elle impose en
                 revanche de vous en informer, ce que fait cette page.
               </p>
             </div>

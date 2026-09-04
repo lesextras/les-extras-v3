@@ -68,7 +68,7 @@ function monthLabel(ym: string): string {
 
 // Délai en heures -> libellé lisible (h ou j).
 function formatDelay(hours: number | null): string {
-  if (hours === null) return "—";
+  if (hours === null) return ", ";
   if (hours < 48) return `${hours.toLocaleString("fr-FR")} h`;
   return `${(Math.round((hours / 24) * 10) / 10).toLocaleString("fr-FR")} j`;
 }

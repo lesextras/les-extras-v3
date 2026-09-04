@@ -58,7 +58,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Comment les intervenants sont-ils vérifiés ?",
         reponse: [
           "Chaque profil est contrôlé par l'équipe avant d'être visible : diplômes, expériences et pièces d'identité.",
-          "Les pièces de conformité — diplôme, extrait de casier, attestation URSSAF, assurance — sont déposées dans le coffre-fort et surveillées : une alerte part avant chaque échéance, pas après.",
+          "Les pièces de conformité, diplôme, extrait de casier, attestation URSSAF, assurance, sont déposées dans le coffre-fort et surveillées : une alerte part avant chaque échéance, pas après.",
         ],
       },
       {
@@ -130,8 +130,8 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "ce-qui-est-gratuit",
         question: "Qu'est-ce qui est gratuit ?",
         reponse: [
-          "Toute la mise en relation et l'aide à la contractualisation : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité — gratuit, pour les établissements comme pour les intervenants, sans commission.",
-          "Deux services seulement se paient : les formations Qualiopi (au devis, facturées par l'association) et LEX, l'assistant IA à crédits. Un renfort ou un atelier se paie à son intervenant, à son tarif — la plateforme n'ajoute rien.",
+          "Toute la mise en relation et l'aide à la contractualisation : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité, gratuit, pour les établissements comme pour les intervenants, sans commission.",
+          "Deux services seulement se paient : les formations Qualiopi (au devis, facturées par l'association) et LEX, l'assistant IA à crédits. Un renfort ou un atelier se paie à son intervenant, à son tarif : la plateforme n'ajoute rien.",
         ],
       },
       {
@@ -139,7 +139,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Comment fonctionnent les crédits LEX ?",
         reponse: [
           "LEX, l'assistant IA (écriture professionnelle, générateur d'activités, fiches pré-remplies, GAPiste), fonctionne à crédits : un crédit par génération. Chaque compte reçoit 15 générations offertes à son ouverture puis le 1er de chaque mois, sans carte bancaire et sans date de fin ; ce qui n'est pas consommé se reporte jusqu'à trois mois. Au-delà, vous rechargez par packs ou par un abonnement à dotation mensuelle.",
-          "Votre consommation, votre solde et les tarifs sont visibles dans votre espace, page « LEX — Crédits & abonnement ». Le bot d'aide, lui, reste gratuit. Les recettes soutiennent les actions de l'association.",
+          "Votre consommation, votre solde et les tarifs sont visibles dans votre espace, page « LEX, Crédits & abonnement ». Le bot d'aide, lui, reste gratuit. Les recettes soutiennent les actions de l'association.",
         ],
       },
       {
@@ -153,7 +153,7 @@ export const RUBRIQUES: Rubrique[] = [
         // Un établissement qui cherchait le bouton « payer » ne le trouvait pas.
         question: "Comment régler une facture ?",
         reponse: [
-          "Chaque facture est téléchargeable en PDF depuis votre espace. Une facture émise par un intervenant se règle par virement, directement auprès de lui, dans le délai indiqué sur le document. Seules les factures émises par l'association — formations et crédits LEX — se règlent en ligne par carte.",
+          "Chaque facture est téléchargeable en PDF depuis votre espace. Une facture émise par un intervenant se règle par virement, directement auprès de lui, dans le délai indiqué sur le document. Seules les factures émises par l'association, formations et crédits LEX, se règlent en ligne par carte.",
           "Les mentions légales et le détail des heures y figurent, pour que votre comptabilité n'ait rien à reconstituer.",
         ],
       },

@@ -62,7 +62,7 @@ export default async function ProgressionPage() {
 
   const idx = ORDRE.indexOf(data.palier);
   const note =
-    data.stats.noteMoyenne != null ? data.stats.noteMoyenne.toFixed(1).replace(".", ",") : "—";
+    data.stats.noteMoyenne != null ? data.stats.noteMoyenne.toFixed(1).replace(".", ",") : "-";
 
   return (
     <div className="space-y-8">
@@ -128,7 +128,7 @@ export default async function ProgressionPage() {
           hint={
             data.stats.missionsAnnulees > 0
               ? `${data.stats.missionsAnnulees} mission(s) annulée(s)`
-              : "Aucune annulation — continuez comme ça"
+              : "Aucune annulation, continuez comme ça"
           }
           icon={<Award className="h-5 w-5" aria-hidden />}
         />
@@ -167,7 +167,7 @@ export default async function ProgressionPage() {
                     <span className="font-medium text-foreground">{c.libelle}</span>
                     <span className="text-muted-foreground">
                       {" "}
-                      — {c.valeur} <span className="text-xs">(objectif : {c.cible})</span>
+{c.valeur} <span className="text-xs">(objectif : {c.cible})</span>
                     </span>
                   </div>
                 </li>

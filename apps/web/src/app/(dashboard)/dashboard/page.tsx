@@ -200,7 +200,7 @@ export default async function DashboardPage() {
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="space-y-3 p-5">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">Prise en main — {steps.length - remaining}/{steps.length}</p>
+                <p className="text-sm font-semibold text-foreground">Prise en main : {steps.length - remaining}/{steps.length}</p>
                 <span className="text-xs text-muted-foreground">
                   {isEstablishment
                     ? "Vos services et votre équipe d’abord : c’est ce qui met des gens dans le planning."
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
                     </span>
                     {/* PAS DE TEXTE BARRÉ SUR UNE ÉTAPE RÉUSSIE.
                         Trois lignes barrées au premier écran, ça se lit
-                        « annulé » ou « indisponible », jamais « accompli » —
+                        « annulé » ou « indisponible », jamais « accompli »
                         c'est la convention typographique de la rature, et
                         elle joue contre nous ici. La coche verte et la
                         couleur atténuée disent déjà que c'est fait ; le trait
@@ -235,7 +235,7 @@ export default async function DashboardPage() {
         );
       })()}
 
-      {/* KPIs — les statistiques du compte. */}
+      {/* KPIs : les statistiques du compte. */}
       {(() => {
         // 21/08/2026 (demande Siham) : les statistiques s'affichent TOUJOURS.
         // Elles n'apparaissaient qu'à partir de la première activité ; un

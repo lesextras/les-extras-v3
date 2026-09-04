@@ -44,7 +44,7 @@ export default async function MonAvisPage() {
             <span className="font-medium text-foreground">
               {new Date(deja[0].createdAt).toLocaleDateString("fr-FR")}
             </span>
-            . Merci. Vous pouvez en laisser un autre — si quelque chose a changé,
+            . Merci. Vous pouvez en laisser un autre : si quelque chose a changé,
             en bien ou en mal, c'est utile de le savoir.
           </CardContent>
         </Card>

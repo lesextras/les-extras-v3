@@ -113,7 +113,7 @@ export default async function AccountPage({
               <p className="max-w-xl text-sm text-muted-foreground">
                 Découpez votre établissement en services. C&apos;est ce découpage qui permet
                 à chaque chef de service de ne voir que son équipe, son planning et ses
-                dossiers — plutôt que la structure entière.
+                dossiers : plutôt que la structure entière.
               </p>
             </div>
             <Button asChild variant="outline" className="shrink-0">

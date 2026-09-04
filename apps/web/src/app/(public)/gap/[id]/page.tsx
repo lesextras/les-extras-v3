@@ -13,7 +13,7 @@ import { ActionsSituation } from "@/app/_shared/ActionsSituation";
 import { LexGapiste } from "@/app/_shared/LexGapiste";
 import type { QuestionDetail } from "@/app/_shared/gap";
 
-export const metadata: Metadata = { title: "Situation — Le GAP" };
+export const metadata: Metadata = { title: "Situation, Le GAP" };
 
 export default async function SituationPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
   const params = await paramsPromesse;
@@ -97,7 +97,7 @@ export default async function SituationPage({ params: paramsPromesse }: { params
         </Card>
       </article>
 
-      {/* LEX le GAPiste — proposé à l'auteur de la situation en priorité */}
+      {/* LEX le GAPiste : proposé à l'auteur de la situation en priorité */}
       {data.estMienne ? (
         <LexGapiste
           accountId={session.account.id}

@@ -49,7 +49,7 @@ interface Funnel {
 }
 
 function pourcent(v: number | null): string {
-  return v == null ? "—" : `${v} %`;
+  return v == null ? "-" : `${v} %`;
 }
 
 export default async function TunnelPage() {
@@ -153,7 +153,7 @@ export default async function TunnelPage() {
                         {pourcent(a.conversion)}
                       </td>
                       <td className="px-4 py-3 text-right text-muted-foreground">
-                        {a.prix ? formatMoney(a.prix) : "—"}
+                        {a.prix ? formatMoney(a.prix) : ", "}
                       </td>
                     </tr>
                   ))}

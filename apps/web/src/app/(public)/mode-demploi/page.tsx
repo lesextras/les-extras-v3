@@ -29,7 +29,7 @@ export default function ModeDemploiPage() {
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
           Deux guides, un par public. Dix minutes de lecture chacun, dans
-          l&rsquo;ordre où les choses se passent vraiment — et pour une question
+          l&rsquo;ordre où les choses se passent vraiment, et pour une question
           ponctuelle, le <Link href="/aide" className="text-primary underline-offset-4 hover:underline">centre d&rsquo;aide</Link> répond
           point par point.
         </p>

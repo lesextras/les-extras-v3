@@ -36,7 +36,7 @@ export default function CoutRemplacementPage() {
         <p className="mt-4 text-lg text-muted-foreground">
           Une agence d'intérim facture le brut du poste multiplié par un coefficient qui couvre
           charges, indemnités et marge. Un intervenant indépendant facture son tarif, en direct.
-          Comparez les deux sur votre situation réelle — les paramètres sont modifiables.
+          Comparez les deux sur votre situation réelle : les paramètres sont modifiables.
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export default function CoutRemplacementPage() {
             Un <strong className="font-semibold text-foreground">intervenant indépendant</strong> facture
             un tarif unique, négocié en direct : il gère lui-même ses charges et sa protection sociale.
             Sur Les Extras, <strong className="font-semibold text-foreground">aucune commission n'est prélevée
-            sur l'intervenant</strong>, et contrat, facture et suivi des heures sont générés automatiquement —
+            sur l'intervenant</strong>, et contrat, facture et suivi des heures sont générés automatiquement
             c'est le temps administratif de votre équipe qui disparaît.
           </p>
           <p>

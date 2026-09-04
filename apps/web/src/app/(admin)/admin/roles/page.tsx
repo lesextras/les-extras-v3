@@ -34,7 +34,7 @@ function Dot({ ok }: { ok: boolean }) {
   return ok ? (
     <span className="text-success" aria-label="autorisé">✓</span>
   ) : (
-    <span className="text-muted-foreground/40" aria-label="non autorisé">—</span>
+    <span className="text-muted-foreground/40" aria-label="non autorisé">-</span>
   );
 }
 

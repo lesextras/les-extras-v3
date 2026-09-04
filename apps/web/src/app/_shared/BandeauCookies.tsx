@@ -40,7 +40,7 @@ const NECESSAIRES = [
   },
   {
     nom: "Préférences d'affichage",
-    role: "Menu replié, aides déjà lues, campagne d'arrivée — stockées dans votre navigateur",
+    role: "Menu replié, aides déjà lues, campagne d'arrivée, stockées dans votre navigateur",
     duree: "Jusqu'à effacement",
     type: "Local",
   },
@@ -120,7 +120,7 @@ export function BandeauCookies() {
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   Les cookies qui vous gardent connecté sont indispensables et restent posés dans
                   tous les cas. À côté, nous aimerions déposer un cookie de mesure : il nous dit
-                  quelle annonce a amené une inscription, et rien de plus — jamais votre identité,
+                  quelle annonce a amené une inscription, et rien de plus, jamais votre identité,
                   jamais le contenu de vos écrits professionnels.{" "}
                   <strong className="text-foreground">
                     Refuser ne change rien à votre utilisation du site.
@@ -133,7 +133,7 @@ export function BandeauCookies() {
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   Aucun traceur publicitaire, aucun outil de mesure d&apos;audience, aucun partage
                   avec des tiers. Les seuls cookies déposés servent à vous garder connecté et à
-                  mémoriser votre compte actif — sans eux, la plateforme ne fonctionne pas.
+                  mémoriser votre compte actif : sans eux, la plateforme ne fonctionne pas.
                   C&apos;est pour cela qu&apos;il n&apos;y a rien à refuser ici.
                 </p>
               </>

@@ -87,7 +87,7 @@ export default async function AvisPage() {
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {item.counterpart.accountName} — {targetName} · prestation terminée le{" "}
+                          {item.counterpart.accountName} : {targetName} · prestation terminée le{" "}
                           {formatDate(item.completedAt)}
                           {item.scheduledAt ? ` (planifiée le ${formatDate(item.scheduledAt)})` : ""}
                         </p>

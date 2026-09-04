@@ -138,7 +138,7 @@ function tonDevis(status: string): "default" | "secondary" | "outline" | "destru
 }
 
 const euros = (v: string | number | null | undefined) =>
-  v == null ? "—" : Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  v == null ? "-" : Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 
 /** Onglet-lien. Actif = fond plein, pour qu'on voie où l'on est sans réfléchir. */
 function Onglet({
@@ -247,7 +247,7 @@ export default async function FacturationPage({
       {retourPaiement === "succes" ? (
         <p className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-foreground">
           Votre règlement a bien été enregistré. La facture passe en « réglée » dès que la banque
-          confirme — comptez quelques instants.
+          confirme : comptez quelques instants.
         </p>
       ) : retourPaiement === "annule" ? (
         <p className="rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
@@ -337,7 +337,7 @@ export default async function FacturationPage({
           ) : listeFactures.length === 0 ? (
             <EmptyState
               title="Aucune facture"
-              description="Un brouillon de facture est préparé pour chaque atelier terminé — de l'intervenant vers l'établissement, sans commission. Les renforts, eux, relèvent du contrat de travail : ils ne passent pas par une facture."
+              description="Un brouillon de facture est préparé pour chaque atelier terminé : de l'intervenant vers l'établissement, sans commission. Les renforts, eux, relèvent du contrat de travail : ils ne passent pas par une facture."
             />
           ) : (
             <Card>
@@ -376,14 +376,14 @@ export default async function FacturationPage({
                               estEmetteur={inv.accountId === accountId}
                               compact
                             />
-                            {/* Le règlement appartient au PAYEUR — le compte à
+                            {/* Le règlement appartient au PAYEUR, le compte à
                                 qui la facture est adressée. « Pas moi
                                 l'émetteur » ne suffisait pas : une facture
                                 sans payeur désigné affichait le bouton à qui
                                 n'avait rien à régler, et le serveur refusait
                                 ensuite. Note : les factures d'intervenants ne
                                 s'encaissent pas encore en ligne (voir
-                                BillingActions) — le bouton reste affiché et
+                                BillingActions) : le bouton reste affiché et
                                 explique la marche à suivre plutôt que de
                                 laisser l'établissement chercher. */}
                             {inv.status === "ISSUED" && inv.payerAccountId === accountId ? (

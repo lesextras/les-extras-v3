@@ -172,7 +172,7 @@ export function AdminUsersTable({
                             accountId={accountId}
                           />
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">-</span>
                         )}
                       </TableCell>
                     </TableRow>

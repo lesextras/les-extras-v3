@@ -181,12 +181,12 @@ export function AdminCategoriesManager({ categories }: { categories: AdminCatego
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant="outline">{TYPES.find((t) => t.value === c.type)?.label ?? c.type ?? "—"}</Badge>
+                          <Badge variant="outline">{TYPES.find((t) => t.value === c.type)?.label ?? c.type ?? "-"}</Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{c.parent?.title ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{c.parent?.title ?? "-"}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {c._count ? `${c._count.children} s-cat · ${c._count.articles} art.` : "—"}
+                        {c._count ? `${c._count.children} s-cat · ${c._count.articles} art.` : ", "}
                       </TableCell>
                       <TableCell>
                         <Badge variant={c.archived ? "outline" : "success"}>

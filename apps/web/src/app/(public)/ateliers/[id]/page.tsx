@@ -243,7 +243,7 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 >
                   <Image
                     src={src}
-                    alt={`${service.title} — visuel ${i + 2}`}
+                    alt={`${service.title}, visuel ${i + 2}`}
                     fill
                     sizes="33vw"
                     className="object-cover"
@@ -445,14 +445,14 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                   redirige en 307 vers /login. Un visiteur venu de Google ou de
                   LinkedIn, qui découvre Les Extras et lit sur l'accueil « sans
                   compte, sans engagement », se heurtait donc à un mur de
-                  connexion — le devis sans compte n'étant qu'un lien discret
+                  connexion : le devis sans compte n'étant qu'un lien discret
                   en dessous. Les deux chemins existent toujours ; c'est leur
                   ordre qui change. */}
               <div className="space-y-2">
                 <PublicQuoteForm serviceId={service.id} titre={service.title} principal />
                 <Button asChild variant="outline" className="w-full">
                   <Link href={`/marketplace/services/${service.id}`}>
-                    Réserver directement — j&apos;ai un compte
+                    Réserver directement, j&apos;ai un compte
                   </Link>
                 </Button>
                 <p className="text-center text-xs text-muted-foreground">
@@ -468,7 +468,7 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                     Aucune vérification d'identité ni de casier n'existe dans le
                     produit ; mesuré le 3/09/2026, seize comptes sur cent treize
                     avaient seulement confirmé leur adresse e-mail. La ligne est
-                    remplacée par ce qui est vrai et vérifiable — et qui rassure
+                    remplacée par ce qui est vrai et vérifiable, et qui rassure
                     tout autant, parce que c'est tenu. */}
                 <p className="flex items-center gap-1.5">
                   <ShieldCheck className="size-3.5" /> Rien n&apos;est engagé avant votre accord

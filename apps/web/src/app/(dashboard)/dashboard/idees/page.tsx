@@ -16,7 +16,7 @@ export default async function IdeesPage() {
     <div className="space-y-8">
       <PageHeader
         title="Boîte à idées"
-        subtitle="Ce que vous demandez ici oriente vraiment les prochaines versions. Proposez, votez — les idées les plus soutenues passent en priorité, et une idée retenue rapporte 40 points."
+        subtitle="Ce que vous demandez ici oriente vraiment les prochaines versions. Proposez, votez : les idées les plus soutenues passent en priorité, et une idée retenue rapporte 40 points."
       />
       {error ? (
         <ErrorState description={error} />

@@ -43,12 +43,12 @@ const jour = (d: string) =>
 
 function qui(r: Retour) {
   const nom = [r.user?.firstName, r.user?.lastName].filter(Boolean).join(" ");
-  return r.account?.name ?? nom ?? r.user?.email ?? "—";
+  return r.account?.name ?? nom ?? r.user?.email ?? "-";
 }
 
 /** Une note sur 5, colorée par ce qu'elle veut dire — pas par sa valeur brute. */
 function Note({ valeur }: { valeur?: number | null }) {
-  if (!valeur) return <span className="text-muted-foreground">—</span>;
+  if (!valeur) return <span className="text-muted-foreground">-</span>;
   const ton =
     valeur >= 4
       ? "text-emerald-600 dark:text-emerald-400"
@@ -152,7 +152,7 @@ export default async function AdminRetoursPage() {
           <Card>
             <CardContent className="p-5 text-sm text-muted-foreground">
               Aucun problème signalé pour le moment. C&apos;est une bonne
-              nouvelle tant que des avis arrivent — pas s&apos;il n&apos;y en a
+              nouvelle tant que des avis arrivent : pas s&apos;il n&apos;y en a
               aucun : vérifiez alors que l&apos;enquête part bien.
             </CardContent>
           </Card>

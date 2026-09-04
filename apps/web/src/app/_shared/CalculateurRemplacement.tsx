@@ -144,7 +144,7 @@ export function CalculateurRemplacement() {
           <p className="mt-1 text-sm text-primary-foreground/80">
             {ecart >= 0
               ? `soit ${pourcent} % de moins qu'en passant par une agence`
-              : "l'intérim reste moins cher avec ces paramètres — ajustez le tarif ou le coefficient"}
+              : "l'intérim reste moins cher avec ces paramètres, ajustez le tarif ou le coefficient"}
           </p>
           <Button asChild variant="secondary" className="mt-5">
             <Link href="/register">
@@ -162,7 +162,7 @@ export function CalculateurRemplacement() {
             Les valeurs par défaut sont des <strong className="font-semibold text-foreground">ordres de grandeur</strong> :
             remplacez-les par vos chiffres réels (votre coefficient d'agence figure sur vos contrats).
             Le calcul compare des coûts directs ; il n'intègre ni la continuité de l'accompagnement,
-            ni la connaissance des jeunes par un intervenant déjà venu — deux avantages
+            ni la connaissance des jeunes par un intervenant déjà venu, deux avantages
             difficiles à chiffrer mais bien réels.
           </p>
         </div>

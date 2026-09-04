@@ -289,7 +289,7 @@ export function AdminFormationsManager({
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">{f.title}</p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {f.ownerAccount?.name ?? "—"}
+                            {f.ownerAccount?.name ?? "-"}
                             {f.durationHours ? ` · ${f.durationHours} h` : ""}
                           </p>
                         </div>
@@ -304,7 +304,7 @@ export function AdminFormationsManager({
                           {f.cpfEligible ? <Badge variant="success">CPF</Badge> : null}
                           {f.certifying ? <Badge variant="soft">Certifiant</Badge> : null}
                           {!f.cpfEligible && !f.certifying ? (
-                            <span className="text-xs text-muted-foreground">—</span>
+                            <span className="text-xs text-muted-foreground">-</span>
                           ) : null}
                         </div>
                       </TableCell>

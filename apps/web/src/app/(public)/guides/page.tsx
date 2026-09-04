@@ -75,8 +75,8 @@ export default function GuidesPage() {
           alinéa de l’article 375 du code civil et non de l’article L223-5 du CASF ; et
           l’article qui régit l’équipe de suivi de la scolarisation est le D351-10 du code
           de l’éducation, pas le D351-16-1, qui traite de l’aide humaine. Là où aucune
-          norme n’existe — c’est le cas pour la règle « faits d’un côté, interprétation de
-          l’autre » —, nous le disons plutôt que d’inventer une recommandation officielle.
+          norme n’existe : c’est le cas pour la règle « faits d’un côté, interprétation de
+          l’autre » : , nous le disons plutôt que d’inventer une recommandation officielle.
         </p>
       </div>
     </div>

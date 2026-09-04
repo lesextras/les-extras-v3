@@ -86,7 +86,7 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
                 1
               </span>
               <span className="text-muted-foreground">
-                <strong className="text-foreground">Il questionne d&apos;abord</strong> — contexte, faits, ressentis, enjeux, ce que vous avez déjà tenté.
+                <strong className="text-foreground">Il questionne d&apos;abord</strong> : contexte, faits, ressentis, enjeux, ce que vous avez déjà tenté.
               </span>
             </li>
             <li className="flex gap-3">
@@ -94,7 +94,7 @@ export function BlocGap({ illustration }: { illustration?: React.ReactNode }) {
                 2
               </span>
               <span className="text-muted-foreground">
-                <strong className="text-foreground">Puis il prend position</strong> — son analyse, la posture à tenir, deux ou trois activités, et ce qu’il ferait dès lundi.
+                <strong className="text-foreground">Puis il prend position</strong> : son analyse, la posture à tenir, deux ou trois activités, et ce qu’il ferait dès lundi.
               </span>
             </li>
           </ol>

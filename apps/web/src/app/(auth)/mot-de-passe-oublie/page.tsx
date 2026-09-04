@@ -87,7 +87,7 @@ export default function MotDePasseOubliePage() {
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           Rien ne vient&nbsp;? Regardez dans vos indésirables. Vérifiez aussi que c’est bien
-          l’adresse avec laquelle le compte a été créé — c’est la cause la plus fréquente.
+          l’adresse avec laquelle le compte a été créé : c’est la cause la plus fréquente.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild>

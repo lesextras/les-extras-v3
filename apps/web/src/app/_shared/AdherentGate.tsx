@@ -38,8 +38,8 @@ export function AdherentGate({ titre, description, benefices }: {
       </div>
       <p className="mt-6 text-xs text-muted-foreground">
         Un crédit = une génération. Rechargez par packs, ou prenez un abonnement dont la recharge
-        quotidienne remet votre solde à niveau chaque matin. Tout le reste de la plateforme —
-        renforts, ateliers, contractualisation, planning — reste gratuit.
+        quotidienne remet votre solde à niveau chaque matin. Tout le reste de la plateforme
+        renforts, ateliers, contractualisation, planning, reste gratuit.
       </p>
     </div>
   );

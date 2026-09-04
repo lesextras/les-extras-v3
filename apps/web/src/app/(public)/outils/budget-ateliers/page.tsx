@@ -22,7 +22,7 @@ export default function BudgetAteliersPage() {
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
           Traduisez votre projet d'établissement en budget : coût annuel, coût par jeune,
-          coût par jeune et par mois — les trois chiffres qui font passer un arbitrage.
+          coût par jeune et par mois : les trois chiffres qui font passer un arbitrage.
         </p>
       </div>
       <CalculateurBudget />

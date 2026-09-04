@@ -52,7 +52,7 @@ function EcranCascade() {
     <Fenetre url="les-extras.fr/dashboard/renforts">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-foreground">Éducateur spécialisé — nuit</p>
+          <p className="text-sm font-semibold text-foreground">Éducateur spécialisé, nuit</p>
           <p className="mt-0.5 text-xs text-muted-foreground">Ce soir 21 h → 7 h · Unité Les Tilleuls</p>
         </div>
         <span className="shrink-0 rounded-full bg-success/15 px-2.5 py-1 text-[11px] font-semibold text-success">
@@ -119,7 +119,7 @@ function EcranTelephone() {
             Nouveau renfort près de chez vous
           </p>
           <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-            Éducateur spécialisé — nuit, Melun. Ce soir 21 h → 7 h.
+            Éducateur spécialisé, nuit, Melun. Ce soir 21 h → 7 h.
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-2.5">
@@ -130,7 +130,7 @@ function EcranTelephone() {
             Mission demain 21 h
           </p>
           <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-            MECS Les Hirondelles — rappel automatique la veille.
+            MECS Les Hirondelles : rappel automatique la veille.
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-2.5">
@@ -191,7 +191,7 @@ export function ApercuProduit() {
       <div className="mt-12 grid gap-4 sm:grid-cols-3">
         {[
           { titre: "Planning partagé", texte: "Créneaux, missions récurrentes et heures au même endroit." },
-          { titre: "Coffre-fort de conformité", texte: "Diplômes, casier, URSSAF — alerte avant l’échéance." },
+          { titre: "Coffre-fort de conformité", texte: "Diplômes, casier, URSSAF, alerte avant l’échéance." },
           { titre: "Devis, contrat, facture", texte: "Générés depuis la mission. Rien à ressaisir." },
           { titre: "Congés & compteurs", texte: "Absences, soldes, heures du mois, export paie en CSV." },
           { titre: "72 h pour ajuster", texte: "Chacun vérifie les heures ; passé le délai, tout se valide seul." },

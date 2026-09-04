@@ -118,7 +118,7 @@ function Fiche({ m, accountId }: { m: Membre; accountId: string }) {
               <p className="mt-1.5 max-w-prose whitespace-pre-line rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
                 {m.noteInterne}
                 {m.ajoutePar ? (
-                  <span className="mt-1 block text-[11px] opacity-70">— {m.ajoutePar}</span>
+                  <span className="mt-1 block text-[11px] opacity-70">, {m.ajoutePar}</span>
                 ) : null}
               </p>
             ) : null}
@@ -227,7 +227,7 @@ export default async function VivierPage() {
           {retenus.length > 0 ? (
             <section className="space-y-3">
               <SectionTitle
-                title={`Retenus — ${retenus.length}`}
+                title={`Retenus, ${retenus.length}`}
                 action={
                   <span className="text-xs text-muted-foreground">
                     Prioritaires sur vos besoins de renfort
@@ -243,7 +243,7 @@ export default async function VivierPage() {
           {habitues.length > 0 ? (
             <section className="space-y-3">
               <SectionTitle
-                title={`Déjà venus chez vous — ${habitues.length}`}
+                title={`Déjà venus chez vous, ${habitues.length}`}
                 action={
                   <span className="text-xs text-muted-foreground">
                     Détectés automatiquement

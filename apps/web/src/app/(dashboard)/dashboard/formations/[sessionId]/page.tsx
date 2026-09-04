@@ -231,7 +231,7 @@ export default async function SessionDetailPage({ params: paramsPromesse }: { pa
               </div>
               {/* La feuille papier reste indispensable : c'est la signature
                   manuscrite du stagiaire en salle qui fait preuve, pas la case
-                  cochée après coup. Le PDF porte les deux — les cases à signer
+                  cochée après coup. Le PDF porte les deux, les cases à signer
                   et le récapitulatif de ce qui a été saisi. */}
               <Button asChild size="sm" variant="outline">
                 <a
@@ -266,7 +266,7 @@ export default async function SessionDetailPage({ params: paramsPromesse }: { pa
       {/* LE BILAN QUALITÉ.
           Un taux de réponse dit autant qu'une moyenne : cinq réponses sur cinq
           à 4,8 ne vaut pas la même chose qu'une réponse sur vingt à 5. Les deux
-          sont donc affichés côte à côte, et les commentaires en clair — c'est
+          sont donc affichés côte à côte, et les commentaires en clair, c'est
           eux que l'auditeur lit, pas la note. */}
       {bilan && bilan.inscrits > 0 ? (
         <Card>
@@ -281,10 +281,10 @@ export default async function SessionDetailPage({ params: paramsPromesse }: { pa
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  À chaud — fin de session
+                  À chaud, fin de session
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-foreground">
-                  {bilan.chaud.moyenne != null ? `${bilan.chaud.moyenne} / 5` : "—"}
+                  {bilan.chaud.moyenne != null ? `${bilan.chaud.moyenne} / 5` : ", "}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {bilan.chaud.reponses} réponse{bilan.chaud.reponses > 1 ? "s" : ""} sur{" "}
@@ -293,10 +293,10 @@ export default async function SessionDetailPage({ params: paramsPromesse }: { pa
               </div>
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  À froid — quelques mois après
+                  À froid, quelques mois après
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-foreground">
-                  {bilan.froid.moyenne != null ? `${bilan.froid.moyenne} / 5` : "—"}
+                  {bilan.froid.moyenne != null ? `${bilan.froid.moyenne} / 5` : ", "}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {bilan.froid.reponses} réponse{bilan.froid.reponses > 1 ? "s" : ""} sur{" "}

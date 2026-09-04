@@ -173,7 +173,7 @@ Les offres affichent un prix mensuel ; ce qui compte, c’est le prix d’une
           La comparaison porte sur un point précis, et c’est celui qui décide de l’usage
           réel : combien d’écrits vous pouvez faire assister dans un mois. Vingt générations
           mensuelles, c’est une semaine de travail pour un éducateur référent en période de
-          bilans — après quoi l’outil est là mais ne sert plus, et le professionnel revient
+          bilans : après quoi l’outil est là mais ne sert plus, et le professionnel revient
           à sa page blanche ou, pire, à un assistant grand public dans lequel il collera des
           noms d’enfants.
         </p>
@@ -191,7 +191,7 @@ Les offres affichent un prix mensuel ; ce qui compte, c’est le prix d’une
         </p>
         <ul className="mt-4 space-y-3">
           {[
-            'Les noms sortent-ils du poste de travail ? Chez nous, non : ils sont remplacés par des rôles — [le jeune], [la mère], [l’éducatrice référente] — avant tout traitement, et rétablis localement dans le document rendu.',
+            'Les noms sortent-ils du poste de travail ? Chez nous, non : ils sont remplacés par des rôles, [le jeune], [la mère], [l’éducatrice référente], avant tout traitement, et rétablis localement dans le document rendu.',
             'Qui est le fournisseur du modèle de langage, nommément ? Un éditeur qui refuse de le nommer vous demande une confiance qu’il ne documente pas.',
             'Le contenu saisi sert-il à entraîner un modèle ? La réponse doit être écrite dans un contrat, pas dans une page marketing.',
           ].map((s) => (
@@ -228,7 +228,7 @@ Les offres affichent un prix mensuel ; ce qui compte, c’est le prix d’une
           <Link href="/legal#mentions" className="text-primary underline-offset-4 hover:underline">
             mentions légales
           </Link>
-          . Vérifiez-les — et vérifiez ceux des autres.
+          . Vérifiez-les : et vérifiez ceux des autres.
         </p>
       </section>
 

@@ -42,12 +42,12 @@ const sections: Section[] = [
     id: 'mentions',
     title: 'Mentions légales',
     body: [
-      'LES EXTRAS est un service édité par ADéPA — association loi 1901, SIRET 820 051 852 00011, dont le siège est situé 7 rue André Malraux, 77000 Melun (adresse administrative : 30 rue Nouvelle, 77190 Dammarie-lès-Lys). Le site met en relation les établissements sociaux et médico-sociaux et les professionnels du secteur.',
+      'LES EXTRAS est un service édité par ADéPA, association loi 1901, SIRET 820 051 852 00011, dont le siège est situé 7 rue André Malraux, 77000 Melun (adresse administrative : 30 rue Nouvelle, 77190 Dammarie-lès-Lys). Le site met en relation les établissements sociaux et médico-sociaux et les professionnels du secteur.',
       'Directeur de la publication : Christophe Renaud. Contact : contact@les-extras.fr.',
       // Le numéro ci-dessous est celui du certificat Qualiopi lui-même. La
       // variante « 11 77 01011 77 » qui circulait sur plusieurs pages du
       // réseau est fausse — vérifié sur le certificat le 10/08/2026.
-      'Organisme de formation enregistré sous le numéro de déclaration d’activité 11771011677 (préfecture d’Île-de-France) — cet enregistrement ne vaut pas agrément de l’État.',
+      'Organisme de formation enregistré sous le numéro de déclaration d’activité 11771011677 (préfecture d’Île-de-France) : cet enregistrement ne vaut pas agrément de l’État.',
       'Certification Qualiopi n° QNW0132, délivrée le 10 mars 2026 par QUALIPRO CERTIFICATION (accréditation COFRAC n° 5-0681), valable jusqu’au 9 mars 2029, au titre des actions de formation et des bilans de compétences.',
       'Hébergement : Hostinger International Ltd., 61 Lordou Vironos Street, 6023 Larnaca, Chypre. Les serveurs utilisés sont situés dans l’Union européenne.',
     ],
@@ -95,7 +95,7 @@ const sections: Section[] = [
         points: [
           'Les fiches, missions et contenus publiés peuvent être contrôlés a posteriori. Un contenu manifestement illicite ou contraire aux présentes conditions est retiré ; son auteur en est informé et peut contester par retour de courriel.',
           'Un compte peut être suspendu en cas de manquement grave ou répété, de fraude ou d’usage détourné du service. Sauf urgence ou obligation légale, la suspension est précédée d’un avertissement.',
-          'Chacun peut supprimer son compte à tout moment depuis « Mes données personnelles ». Les documents légalement conservés — factures, contrats — le restent pour la durée prévue par la loi.',
+          'Chacun peut supprimer son compte à tout moment depuis « Mes données personnelles ». Les documents légalement conservés, factures, contrats, le restent pour la durée prévue par la loi.',
         ],
       },
       {
@@ -125,7 +125,7 @@ const sections: Section[] = [
         points: [
           'Les crédits et abonnements LEX, l’assistant d’écriture : une allocation mensuelle est offerte à chaque compte, sans carte bancaire et sans date de fin ; au-delà, un pack de crédits ou un abonnement mensuel peut être souscrit.',
           'Les formations sous certification Qualiopi, commandées à l’association et facturées par elle sur devis, avec convention de formation et financement possible par un OPCO.',
-          'L’attestation de suivi d’une mini-formation en ligne, délivrée à la demande. La mini-formation elle-même est gratuite, du premier au dernier module, sans carte bancaire et sans date de fin : seule l’attestation est payante, et elle est facultative — ne pas la demander ne retire aucun accès.',
+          'L’attestation de suivi d’une mini-formation en ligne, délivrée à la demande. La mini-formation elle-même est gratuite, du premier au dernier module, sans carte bancaire et sans date de fin : seule l’attestation est payante, et elle est facultative, ne pas la demander ne retire aucun accès.',
         ],
       },
       {
@@ -167,7 +167,7 @@ const sections: Section[] = [
         points: [
           'Le consommateur dispose d’un délai de quatorze jours à compter de la conclusion du contrat pour se rétracter, sans motif ni pénalité (article L. 221-18 du code de la consommation). Ce droit bénéficie également, dans les conditions de l’article L. 221-3, au professionnel employant cinq salariés au plus lorsque l’objet du contrat n’entre pas dans le champ de son activité principale.',
           'Pour l’exercer, il suffit d’écrire à contact@les-extras.fr en indiquant le compte et la commande concernés. Le remboursement intervient dans les quatorze jours suivant la réception de la demande, par le même moyen de paiement.',
-          'Pour un service exécuté immédiatement à la demande expresse du client — c’est le cas des crédits LEX, utilisables aussitôt —, le droit de rétractation ne peut plus être exercé une fois le service pleinement exécuté, et les crédits déjà consommés sont déduits du remboursement (articles L. 221-25 et L. 221-28 du code de la consommation).',
+          'Pour un service exécuté immédiatement à la demande expresse du client, c’est le cas des crédits LEX, utilisables aussitôt, , le droit de rétractation ne peut plus être exercé une fois le service pleinement exécuté, et les crédits déjà consommés sont déduits du remboursement (articles L. 221-25 et L. 221-28 du code de la consommation).',
           'Les formations font l’objet d’une convention distincte : le délai de rétractation applicable y est rappelé, ainsi que les conditions d’annulation propres au financement retenu.',
         ],
       },
@@ -180,7 +180,7 @@ const sections: Section[] = [
       'Il n’existe pas de politique de remboursement des prestations sur cette plateforme, pour une raison simple : les prestations ne lui sont pas payées.',
       'Une mission de renfort donne lieu à un contrat conclu entre l’établissement et l’intervenant, le plus souvent un contrat à durée déterminée. La rémunération est versée par l’établissement, selon les règles de la paie ou de la facturation, sans intervention de l’association. Un atelier ou une intervention se règle de la même façon : directement, sur la facture émise par l’intervenant.',
       'Les conditions d’annulation d’une intervention relèvent donc de l’accord entre les deux parties et des règles applicables au contrat conclu. La plateforme conserve la trace des échanges, des créneaux et des heures validées : ces éléments restent consultables par chacune des parties et peuvent servir de preuve en cas de désaccord.',
-      'Les remboursements que l’association peut effectuer ne concernent que ce qu’elle a elle-même encaissé — crédits et abonnements LEX, formations qu’elle a facturées — dans les conditions de la rubrique précédente.',
+      'Les remboursements que l’association peut effectuer ne concernent que ce qu’elle a elle-même encaissé, crédits et abonnements LEX, formations qu’elle a facturées, dans les conditions de la rubrique précédente.',
       // La phrase annonçait « l’IBAN qui y figure » : renseigner ses
       // coordonnées bancaires reste facultatif pour l’émetteur, et une
       // facture peut donc parfaitement sortir sans. On énonce le principe —
@@ -193,8 +193,8 @@ const sections: Section[] = [
     id: 'donnees',
     title: 'Protection des données personnelles',
     body: [
-      'Responsable de traitement : association ADéPA, 7 rue André Malraux, 77000 Melun. Contact pour toute question ou demande relative aux données : assoc.adepa@gmail.com. Aucun délégué à la protection des données n’est désigné — la désignation n’est obligatoire ni par la taille ni par l’activité de l’association, et ce point de contact en tient lieu.',
-      'Pour les comptes, le catalogue et la mise en relation, l’association est responsable de traitement. Pour les données que chaque établissement gère dans son propre espace — équipe, contrats, dossiers de conformité de ses intervenants —, l’établissement est responsable de traitement et l’association agit comme sous-traitant au sens de l’article 28 du RGPD.',
+      'Responsable de traitement : association ADéPA, 7 rue André Malraux, 77000 Melun. Contact pour toute question ou demande relative aux données : assoc.adepa@gmail.com. Aucun délégué à la protection des données n’est désigné : la désignation n’est obligatoire ni par la taille ni par l’activité de l’association, et ce point de contact en tient lieu.',
+      'Pour les comptes, le catalogue et la mise en relation, l’association est responsable de traitement. Pour les données que chaque établissement gère dans son propre espace, équipe, contrats, dossiers de conformité de ses intervenants, , l’établissement est responsable de traitement et l’association agit comme sous-traitant au sens de l’article 28 du RGPD.',
       {
         sous: 'Ce qui est traité, et pourquoi',
         points: [
@@ -226,7 +226,7 @@ const sections: Section[] = [
         points: [
           'Hébergement du serveur applicatif et de la base de données : prestataire établi dans l’Union européenne.',
           'Paiement en ligne des crédits, abonnements et factures : prestataire de paiement agréé.',
-          'Envoi des courriels transactionnels — notifications, invitations, alertes : prestataire établi dans l’Union européenne.',
+          'Envoi des courriels transactionnels, notifications, invitations, alertes : prestataire établi dans l’Union européenne.',
           'Moteur d’intelligence artificielle de l’assistant LEX : prestataire spécialisé, alimenté uniquement par des données pseudonymisées. Les contenus qui lui sont transmis ne comportent ni les noms, ni les dates de naissance, ni les coordonnées des personnes accompagnées.',
           'Certains de ces prestataires sont établis hors de l’Union européenne. Ces transferts sont encadrés par les clauses contractuelles types adoptées par la Commission européenne.',
           'La liste nominative de nos sous-traitants est communiquée sur simple demande à assoc.adepa@gmail.com.',
@@ -251,7 +251,7 @@ const sections: Section[] = [
     title: 'Réclamations et médiation',
     body: [
       'Toute réclamation peut être adressée à contact@les-extras.fr. Nous nous engageons à en accuser réception et à y répondre dans un délai raisonnable.',
-      'Conformément à l’article L. 612-1 du code de la consommation, tout consommateur a le droit de recourir gratuitement à un médiateur de la consommation. Le médiateur compétent pour LES EXTRAS est en cours de désignation : ses nom et coordonnées seront publiés ici dès qu’il sera référencé, et aucun nom ne figurera sur cette page avant de l’être. Dans l’intervalle, écrivez-nous — aucune réclamation ne restera sans réponse au motif que cette désignation est en cours, et le recours au médiateur reste ouvert dès sa désignation, y compris pour un différend né avant elle.',
+      'Conformément à l’article L. 612-1 du code de la consommation, tout consommateur a le droit de recourir gratuitement à un médiateur de la consommation. Le médiateur compétent pour LES EXTRAS est en cours de désignation : ses nom et coordonnées seront publiés ici dès qu’il sera référencé, et aucun nom ne figurera sur cette page avant de l’être. Dans l’intervalle, écrivez-nous : aucune réclamation ne restera sans réponse au motif que cette désignation est en cours, et le recours au médiateur reste ouvert dès sa désignation, y compris pour un différend né avant elle.',
       'Le recours à la médiation suppose d’avoir tenté au préalable de résoudre le différend directement avec nous, par une réclamation écrite.',
       'Les litiges entre un établissement et un intervenant relèvent de leur relation contractuelle et, le cas échéant, de la juridiction compétente pour celle-ci : la plateforme n’y est pas partie.',
     ],

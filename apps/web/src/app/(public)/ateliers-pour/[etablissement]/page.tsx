@@ -149,7 +149,7 @@ Références relues une par une le 2 septembre 2026. Elles ne remplacent pas l�
               'Vous ouvrez les fiches qui correspondent à votre public : chaque fiche porte le tarif de l’intervenant, sa zone et ses disponibilités.',
               'Vous demandez un devis, établi sous 48 heures, sans commission : vous payez le tarif de l’intervenant, qui le touche en entier.',
               'Le contrat est généré et signé en ligne, la facture suit. Rien à ressaisir.',
-              'Après l’intervention, ce que l’intervenant observe vous revient par écrit — c’est utilisable dans le projet personnalisé.',
+              'Après l’intervention, ce que l’intervenant observe vous revient par écrit : c’est utilisable dans le projet personnalisé.',
             ].map((t, i) => (
               <li key={t.slice(0, 30)} className="flex gap-3 text-[15px] leading-relaxed text-muted-foreground">
                 <span
@@ -202,8 +202,8 @@ Tarifs, zones et disponibilités sont visibles sans compte. Vous n’en créez u
           ))}
         </ul>
         <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-          Et si vous cherchez plutôt à écrire — bilan, rapport de situation, projet
-          personnalisé —, les{' '}
+          Et si vous cherchez plutôt à écrire : bilan, rapport de situation, projet
+          personnalisé, , les{' '}
           <Link href="/guides" className="text-primary underline-offset-4 hover:underline">
             guides des écrits professionnels
           </Link>{' '}

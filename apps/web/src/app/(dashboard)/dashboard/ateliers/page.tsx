@@ -72,10 +72,10 @@ export default async function AteliersPage() {
   // elles n'attendent plus rien et vivent dans l'historique, en bas.
   const A_TRAITER = ["REQUESTED", "ACCEPTED", "CONFIRMED", "IN_PROGRESS"] as const;
   const ETAPE: Record<string, string> = {
-    REQUESTED: "Nouvelle demande — à accepter ou à décliner",
-    ACCEPTED: "Acceptée — confirmez la date pour la bloquer",
-    CONFIRMED: "Date bloquée — démarrez le jour de l’atelier",
-    IN_PROGRESS: "En cours — marquez-la terminée pour préparer la facture",
+    REQUESTED: "Nouvelle demande, à accepter ou à décliner",
+    ACCEPTED: "Acceptée, confirmez la date pour la bloquer",
+    CONFIRMED: "Date bloquée, démarrez le jour de l’atelier",
+    IN_PROGRESS: "En cours, marquez-la terminée pour préparer la facture",
   };
   const pending = (bookings.data ?? [])
     .filter((b) => (A_TRAITER as readonly string[]).includes(b.status))
@@ -178,7 +178,7 @@ export default async function AteliersPage() {
                         : `${aCompleter.length} de vos fiches sont incomplètes`}
                     </p>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      Elles restent en ligne — rien n'est retiré. Mais à côté d'une fiche qui
+                      Elles restent en ligne, rien n'est retiré. Mais à côté d'une fiche qui
                       annonce sa durée, son nombre de participants et son déroulé, elles se font
                       moins ouvrir. Le détail de ce qui manque est sous chaque fiche.
                     </p>
@@ -195,7 +195,7 @@ export default async function AteliersPage() {
                 <ServiceCard audience service={sv} href={`/marketplace/services/${sv.id}`} />
                 {/* CE QUI MANQUE, ÉCRIT SOUS LA FICHE.
                     Dix des treize ateliers du catalogue sont publiés sans
-                    durée, sans participants, sans matériel ni créneaux — et
+                    durée, sans participants, sans matériel ni créneaux, et
                     rien ne le disait jamais à leur auteur. La fiche part au
                     catalogue, elle a l'air normale dans son propre espace, et
                     c'est le visiteur qui voit la différence. */}

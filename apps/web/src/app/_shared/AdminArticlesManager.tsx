@@ -171,7 +171,7 @@ export function AdminArticlesManager({
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{a.category?.title ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{a.category?.title ?? "-"}</TableCell>
                       <TableCell>
                         <Badge variant={a.status === "PUBLISHED" ? "success" : "outline"}>
                           {STATUS_LABEL[a.status] ?? a.status}

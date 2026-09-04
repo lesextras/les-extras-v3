@@ -24,7 +24,7 @@ import { PageHeader, SectionTitle, ErrorState } from "../../../_shared/ui";
 import { CheckoutButton } from "../../../_shared/BillingActions";
 import { formatDate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "LEX — Crédits & abonnement" };
+export const metadata: Metadata = { title: "LEX, Crédits & abonnement" };
 
 interface Plan {
   id: string;
@@ -91,10 +91,10 @@ const MOTIF: Record<string, string> = {
   ACHAT_PACK: "Achat d'un pack de crédits",
   DOTATION_MENSUELLE: "Dotation mensuelle (offre gratuite)",
   ESSAI_DECOUVERTE: "Essai Découverte (ancienne offre)",
-  REMBOURSEMENT_LEX_ECRIT: "Remboursement — génération échouée",
-  REMBOURSEMENT_LEX_ACTIVITE: "Remboursement — génération échouée",
-  REMBOURSEMENT_LEX_FICHE: "Remboursement — génération échouée",
-  REMBOURSEMENT_LEX_GAPISTE: "Remboursement — génération échouée",
+  REMBOURSEMENT_LEX_ECRIT: "Remboursement, génération échouée",
+  REMBOURSEMENT_LEX_ACTIVITE: "Remboursement, génération échouée",
+  REMBOURSEMENT_LEX_FICHE: "Remboursement, génération échouée",
+  REMBOURSEMENT_LEX_GAPISTE: "Remboursement, génération échouée",
   STRIPE_PURCHASE: "Achat de crédits",
 };
 
@@ -114,7 +114,7 @@ export default async function LexCreditsPage({
   if (resOverview.error || !resOverview.data) {
     return (
       <div className="space-y-6">
-        <PageHeader title="LEX — Crédits & abonnement" subtitle="Votre utilisation de l'assistant IA." />
+        <PageHeader title="LEX, Crédits & abonnement" subtitle="Votre utilisation de l'assistant IA." />
         <ErrorState description={resOverview.error ?? "Données indisponibles."} />
       </div>
     );
@@ -138,22 +138,22 @@ export default async function LexCreditsPage({
   return (
     <div className="space-y-8">
       <PageHeader
-        title="LEX — Crédits & abonnement"
-        subtitle="LEX est le seul outil payant de votre espace : un crédit par génération. Toute la mise en relation — renforts, ateliers, contractualisation — reste gratuite."
+        title="LEX, Crédits & abonnement"
+        subtitle="LEX est le seul outil payant de votre espace : un crédit par génération. Toute la mise en relation, renforts, ateliers, contractualisation, reste gratuite."
       />
 
       {retour === "succes" ? (
         <Card className="border-success/30 bg-success/10">
           <CardContent className="p-4 text-sm text-foreground">
             <span className="font-semibold">Paiement confirmé.</span> Vos crédits seront visibles
-            d&apos;ici quelques secondes — rechargez la page si besoin.
+            d&apos;ici quelques secondes : rechargez la page si besoin.
           </CardContent>
         </Card>
       ) : null}
       {retour === "annule" ? (
         <Card className="border-warning/40 bg-warning/5">
           <CardContent className="p-4 text-sm text-foreground">
-            Paiement annulé — aucun montant n&apos;a été débité.
+            Paiement annulé : aucun montant n&apos;a été débité.
           </CardContent>
         </Card>
       ) : null}
@@ -182,8 +182,8 @@ export default async function LexCreditsPage({
                   {illimite
                     ? "Accès illimité accordé à votre compte"
                     : planActif
-                      ? `Abonnement ${planActif.label} — ${planActif.monthlyCredits} générations créditées chaque mois`
-                      : `Solde disponible — 1 crédit = 1 génération LEX, ${offreGratuite.mensuel} offertes chaque mois`}
+                      ? `Abonnement ${planActif.label} : ${planActif.monthlyCredits} générations créditées chaque mois`
+                      : `Solde disponible, 1 crédit = 1 génération LEX, ${offreGratuite.mensuel} offertes chaque mois`}
                 </p>
               </div>
             </div>
@@ -236,7 +236,7 @@ export default async function LexCreditsPage({
             <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
               Rien à activer : la dotation est créditée à l&apos;ouverture du compte, puis le 1er de
               chaque mois. Ce qui n&apos;est pas consommé se reporte, jusqu&apos;à{" "}
-              {offreGratuite.mensuel * reportMois} crédits — de quoi absorber une période de bilans
+              {offreGratuite.mensuel * reportMois} crédits : de quoi absorber une période de bilans
               sans avoir à payer. Les formules ci-dessous ne servent qu&apos;au-delà.
             </p>
           </CardContent>
@@ -249,7 +249,7 @@ export default async function LexCreditsPage({
           <div>
             <SectionTitle title="Recharger des crédits" />
             <p className="mt-1 text-sm text-muted-foreground">
-              Paiement en une fois — les crédits achetés n&apos;expirent pas.
+              Paiement en une fois : les crédits achetés n&apos;expirent pas.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -261,7 +261,7 @@ export default async function LexCreditsPage({
                     <p className="text-lg font-bold text-primary">{euros(pack.amountCents)}</p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {pack.credits} crédits — soit {pack.credits} générations LEX
+                    {pack.credits} crédits : soit {pack.credits} générations LEX
                   </p>
                   <CheckoutButton
                     accountId={accountId}
@@ -282,7 +282,7 @@ export default async function LexCreditsPage({
       {!illimite && !active && formules.length > 0 ? (
         <section className="space-y-4">
           <div>
-            <SectionTitle title="S'abonner — dotation mensuelle" />
+            <SectionTitle title="S'abonner, dotation mensuelle" />
             <p className="mt-1 text-sm text-muted-foreground">
               Chaque mois, votre allocation est créditée et se reporte jusqu&apos;à{" "}
               {reportMois} mois. Pour un usage régulier, c&apos;est plus simple qu&apos;un pack.
@@ -327,7 +327,7 @@ export default async function LexCreditsPage({
             <Card className="border-primary/20 bg-primary-soft/20">
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">Journal des générations</span> — qui
+                  <span className="font-medium text-foreground">Journal des générations</span>, qui
                   a produit quel écrit, et quand. Utile pour un protocole d&apos;équipe ou une
                   évaluation HAS.
                 </p>
@@ -376,10 +376,10 @@ export default async function LexCreditsPage({
             <h2 className="font-semibold">Ce que consomment les crédits</h2>
             <ul className="mt-3 space-y-2">
               {[
-                "LEX · Assistant d'écriture — notes brutes transformées en écrit professionnel",
+                "LEX · Assistant d'écriture : notes brutes transformées en écrit professionnel",
                 "LEX · Générateur d'activités éducatives et thérapeutiques",
                 "LEX · Aide au remplissage des fiches ateliers et formations",
-                "LEX · GAPiste — animation du groupe d'analyse de pratique",
+                "LEX · GAPiste : animation du groupe d'analyse de pratique",
               ].map((i) => (
                 <li key={i} className="flex gap-2 text-sm text-muted-foreground">
                   <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
@@ -421,7 +421,7 @@ export default async function LexCreditsPage({
             <div>
               <h2 className="font-semibold">Les formations Qualiopi se facturent au devis</h2>
               <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                C&apos;est l&apos;autre service payant de la plateforme — mais pas ici : les
+                C&apos;est l&apos;autre service payant de la plateforme, mais pas ici : les
                 formations sont facturées par l&apos;association ADéPA, certifiée Qualiopi, qui fait
                 appel aux formateurs du réseau Les Extras. Demandez un devis depuis le catalogue,
                 réglez la facture après la session.

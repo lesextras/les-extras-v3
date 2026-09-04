@@ -63,14 +63,14 @@ export async function generateMetadata({
   const ville = data?.city?.trim();
   const titre = [nom, metier, ville ? `à ${ville}` : null]
     .filter(Boolean)
-    .join(" — ")
-    .replace(" — à ", " à ");
+    .join(", ")
+    .replace(", à ", " à ");
   // Sans canonique, les quatre fiches publiques du sitemap n'en déclaraient
   // aucune : le moteur choisit alors lui-même l'adresse de référence, et
   // n'importe quel paramètre ajouté à l'URL devient une page de plus.
   const description =
     data?.owner?.profile?.bio?.slice(0, 160) ||
-    `${nom ?? "Intervenant"} — profil vérifié sur Les Extras, ateliers et renfort en établissement médico-social.`;
+    `${nom ?? "Intervenant"} : profil vérifié sur Les Extras, ateliers et renfort en établissement médico-social.`;
   // Titre et description de partage étaient déjà ceux de la page : le helper
   // les produit à l'identique et rétablit la carte de partage, que cet objet
   // `openGraph` effaçait en remplaçant celui du layout racine.

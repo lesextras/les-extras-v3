@@ -198,7 +198,7 @@ export default function WizardForm({
                     name="city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel required hint="La ville où vous êtes basé(e) — utile pour les missions proches de chez vous.">
+                        <FormLabel required hint="La ville où vous êtes basé(e) : utile pour les missions proches de chez vous.">
                           Ville
                         </FormLabel>
                         <FormControl>
@@ -223,7 +223,7 @@ export default function WizardForm({
                   />
                 </div>
 
-                {/* LE MÉTIER — premier critère du moteur de correspondance
+                {/* LE MÉTIER : premier critère du moteur de correspondance
                     (30 % du score). Il ne se demandait nulle part dans le
                     tunnel : la quasi-totalité des intervenants inscrits
                     partaient donc au score plancher, et ne recevaient
@@ -279,7 +279,7 @@ export default function WizardForm({
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>Optionnel — 600 caractères maximum.</FormDescription>
+                      <FormDescription>Optionnel : 600 caractères maximum.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -292,7 +292,7 @@ export default function WizardForm({
               <RattachementEtablissement accountId={accountId} />
             )}
 
-            {/* Étape 2 : documents — intervenants uniquement */}
+            {/* Étape 2 : documents, intervenants uniquement */}
             {etape === 'Documents' && (
               <div className="space-y-5">
                 <div>
@@ -379,7 +379,7 @@ export default function WizardForm({
                     des offres reçues (55 % du score à eux deux), et ils se
                     remplissent en dix secondes. Les laisser sauter revenait à
                     inscrire quelqu'un dans un annuaire où personne ne le
-                    trouve — c'est ce qui s'est produit pour la quasi-totalité
+                    trouve : c'est ce qui s'est produit pour la quasi-totalité
                     des profils en production. */}
                 {step < STEPS.length - 1 && !(estIntervenant && etape === 'Profil') && (
                   <Button type="button" variant="ghost" onClick={skip} disabled={submitting}>

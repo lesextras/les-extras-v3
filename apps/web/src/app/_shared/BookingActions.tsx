@@ -124,8 +124,8 @@ export function BookingActions({
             agir(
               "accept",
               atelier
-                ? "Réservation acceptée — confirmez la date pour la bloquer"
-                : "Candidature retenue — confirmez pour bloquer le créneau",
+                ? "Réservation acceptée : confirmez la date pour la bloquer"
+                : "Candidature retenue, confirmez pour bloquer le créneau",
             )
           }
         >
@@ -147,8 +147,8 @@ export function BookingActions({
             agir(
               "confirm",
               atelier
-                ? "Date confirmée — l’établissement est prévenu"
-                : "Renfort confirmé — le créneau est posé sur le planning",
+                ? "Date confirmée : l’établissement est prévenu"
+                : "Renfort confirmé, le créneau est posé sur le planning",
             )
           }
         >
@@ -197,8 +197,8 @@ export function BookingActions({
           agir(
             "complete",
             atelier
-              ? "Atelier terminé — votre facture est préparée en brouillon"
-              : "Mission terminée — la fenêtre de pointage de 72 h est ouverte",
+              ? "Atelier terminé : votre facture est préparée en brouillon"
+              : "Mission terminée, la fenêtre de pointage de 72 h est ouverte",
           )
         }
       >

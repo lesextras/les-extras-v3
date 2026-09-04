@@ -279,7 +279,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
       });
       setBrouillon(r.brouillon);
       setProtection(r.protection ?? null);
-      setTitre(`${trame.titre} — ${new Date().toLocaleDateString("fr-FR")}`);
+      setTitre(`${trame.titre} : ${new Date().toLocaleDateString("fr-FR")}`);
       setEnregistre(false);
       setAvisDonne(false);
       setEtape("relire");
@@ -457,7 +457,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
             ) : null}
           </div>
 
-          {/* LE FORMULAIRE — le genre, le cadre, les faits, puis les reglages */}
+          {/* LE FORMULAIRE : le genre, le cadre, les faits, puis les reglages */}
           {etape === "ecrire" ? (
             <form
               className="space-y-4"
@@ -556,7 +556,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
               <label className="flex flex-col gap-1 text-sm">
                 <span className="font-medium text-foreground">
                   Ce que vous en pensez{" "}
-                  <span className="font-normal text-muted-foreground">— facultatif</span>
+                  <span className="font-normal text-muted-foreground">, facultatif</span>
                 </span>
                 <textarea
                   name="hypotheses"
@@ -570,7 +570,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">
                   {notes.length < 20
-                    ? "Encore quelques mots — une vingtaine de caractères minimum."
+                    ? "Encore quelques mots : une vingtaine de caractères minimum."
                     : `${notes.length.toLocaleString("fr-FR")} caractères. Prêt quand vous l'êtes.`}
                 </p>
                 <Button type="submit" disabled={!trame || notes.length < 20 || enCours || !disponible} size="lg">
@@ -585,7 +585,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
             </form>
           ) : null}
 
-          {/* ÉTAPE 3 — relecture, édition, validation */}
+          {/* ÉTAPE 3 : relecture, édition, validation */}
           {etape === "relire" && trame ? (
             <div className="space-y-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -593,7 +593,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   <h2 className="text-lg font-semibold text-foreground">Relisez avant de garder</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Ce texte est un brouillon : corrigez-le librement ci-dessous. Vous en êtes
-                    l'auteur — rien n'est conservé tant que vous n'enregistrez pas.
+                    l'auteur : rien n'est conservé tant que vous n'enregistrez pas.
                   </p>
                 </div>
                 <Badge variant="soft" className="shrink-0">

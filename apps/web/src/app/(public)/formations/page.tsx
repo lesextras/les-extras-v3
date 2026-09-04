@@ -114,7 +114,7 @@ function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
         {/* Le bandeau de thématique n'a de sens que sur les vignettes qui ne
             l'écrivent pas déjà : la couverture d'une mini-formation le porte
             en haut à gauche, et le repli de marque (sans photo) l'affiche en
-            son centre. Dans les deux cas, le bandeau redisait le même mot —
+            son centre. Dans les deux cas, le bandeau redisait le même mot
             et sur la couverture, il recouvrait le bandeau blanc du bas. */}
         {f.categoryRef?.title && !emoji && visuel ? (
           <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
@@ -527,7 +527,7 @@ export default async function FormationsCatalogPage({
                 </span>
               </div>
               {/* SANS FILTRE, ON FAIT DÉFILER ; AVEC FILTRE, ON ÉTALE.
-                  Une rangée qui défile se parcourt à l'œil, comme un rayon —
+                  Une rangée qui défile se parcourt à l'œil, comme un rayon
                   c'est ce qu'on veut quand on arrive sans idée précise. Mais
                   dès qu'on a filtré, on veut voir TOUS les résultats d'un
                   coup : cacher la moitié derrière une flèche, après un
@@ -568,7 +568,7 @@ export default async function FormationsCatalogPage({
               {/* Pas de rangée qui défile ici : elles se comptent sur les
                   doigts d'une main et se vendent au devis. Un directeur qui
                   cherche une action de formation veut les voir toutes, d'un
-                  coup — pas en découvrir une à la fois. */}
+                  coup : pas en découvrir une à la fois. */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {autres.map((f, i) => (
                   <CarteFormation key={f.id} f={f} rang={i} />

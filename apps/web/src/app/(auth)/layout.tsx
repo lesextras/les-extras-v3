@@ -86,7 +86,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div>
             <p className="text-sm font-semibold">Formations certifiées Qualiopi</p>
             <p className="text-xs text-primary-foreground/70">
-              Certification portée par l’association ADéPA — finançables OPCO
+              Certification portée par l’association ADéPA, finançables OPCO
             </p>
           </div>
         </div>

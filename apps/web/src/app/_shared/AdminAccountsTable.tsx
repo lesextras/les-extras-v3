@@ -68,7 +68,7 @@ const ACCOUNT_ROLE_LABEL: Record<string, string> = {
 
 function memberName(m: AdminMembership) {
   const n = [m.user?.firstName, m.user?.lastName].filter(Boolean).join(" ");
-  return n || m.user?.email || "—";
+  return n || m.user?.email || ", ";
 }
 
 export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
@@ -270,7 +270,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                             </Badge>
                           </div>
                           <p className="truncate text-xs text-muted-foreground">
-                            {[a.city, a.owner?.email].filter(Boolean).join(" · ") || "—"}
+                            {[a.city, a.owner?.email].filter(Boolean).join(" · ") || ", "}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
                             {a._count?.reliefMissions ?? 0} mission(s) · {a._count?.services ?? 0} atelier(s) ·{" "}
@@ -288,8 +288,8 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                           disabled={busy === a.id}
                           title={
                             a.isMember
-                              ? "Ce compte utilise LEX sans consommer de crédits — cliquer pour retirer"
-                              : "Exonérer ce compte de crédits LEX (partenaire, test) — cliquer pour accorder"
+                              ? "Ce compte utilise LEX sans consommer de crédits, cliquer pour retirer"
+                              : "Exonérer ce compte de crédits LEX (partenaire, test), cliquer pour accorder"
                           }
                           onClick={() => basculerLexIllimite(a)}
                         >

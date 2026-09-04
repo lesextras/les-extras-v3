@@ -50,7 +50,7 @@ export default async function MetierPage({ params: paramsPromesse }: { params: P
     "@context": "https://schema.org",
     "@type": "Service",
     serviceType: `Remplacement ${metier.nom}`,
-    provider: { "@type": "Organization", name: "Les Extras — ADéPA" },
+    provider: { "@type": "Organization", name: "Les Extras, ADéPA" },
     areaServed: VILLES.map((v) => ({ "@type": "AdministrativeArea", name: v.nom })),
     description: metier.accroche,
   };

@@ -94,7 +94,7 @@ export default function IntervenantIndependantPage() {
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
 La plateforme de l’association ADéPA : MECS, IME, ITEP, SESSAD et EHPAD d’un côté,
           professionnels indépendants de l’autre. Vous publiez, ils réservent, vous facturez
-          votre tarif — sans commission.
+          votre tarif, sans commission.
         </p>
       </div>
 
@@ -160,7 +160,7 @@ Liste non limitative : si vous intervenez dans le secteur, votre métier a sa pl
           les trois seules que se pose un professionnel avant de créer un
           compte : de quoi ai-je besoin, combien de temps ça me coûte, et
           où est-ce que ça se passe. Tout ce qui suit est lu dans le produit
-          lui-même — rien n'est annoncé qui ne soit vérifiable. */}
+          lui-même : rien n'est annoncé qui ne soit vérifiable. */}
       <section className="mt-16">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           Ce dont vous avez besoin pour commencer
@@ -208,8 +208,8 @@ Melun, et le réseau se construit d’abord en Île-de-France :{" "}
 
       {/* ── Les deux dispositifs, et lequel s'applique quand ────────────────
           RenforTeam promet « un vrai bulletin de paie » ; cette page promet
-          « vous facturez, vous gardez 100 % ». Les deux sont vrais — ce sont
-          deux dispositifs différents — mais rien ne l'expliquait, et un
+          « vous facturez, vous gardez 100 % ». Les deux sont vrais, ce sont
+          deux dispositifs différents : mais rien ne l'expliquait, et un
           éducateur qui lisait les deux pages ne savait pas ce qu'il signait. */}
       <section className="mt-16">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -225,7 +225,7 @@ La seule distinction qui change votre statut sur une intervention. Vous pouvez f
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
 Un établissement réserve votre offre. Vous intervenez{" "}
               <strong>en tant qu’indépendant</strong>, sous votre SIRET, et vous facturez en
-              direct. Devis, contrat et facture sont générés — rien n’est prélevé.
+              direct. Devis, contrat et facture sont générés, rien n’est prélevé.
             </p>
             <p className="mt-3 text-sm font-medium text-foreground">
               Il vous faut donc un statut d’indépendant.

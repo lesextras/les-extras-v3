@@ -112,7 +112,7 @@ export default async function AdminReservationsPage({
                       <TableCell>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">
-                            {b.account?.name ?? "—"}
+                            {b.account?.name ?? "-"}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {b.account?.type === "ESTABLISHMENT" ? "Établissement" : "Freelance"}
@@ -122,7 +122,7 @@ export default async function AdminReservationsPage({
                       <TableCell className="text-sm text-muted-foreground">
                         {b.mission?.title ??
                           b.service?.title ??
-                          (b.quote?.reference ? `Devis ${b.quote.reference}` : "—")}
+                          (b.quote?.reference ? `Devis ${b.quote.reference}` : ", ")}
                       </TableCell>
                       <TableCell>
                         <Badge variant={bookingBadgeVariant(b.status)}>

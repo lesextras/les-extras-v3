@@ -108,10 +108,10 @@ export default function DemoPage() {
           <div className="mt-6">
             <ContactForm
               sujets={[
-                "Démonstration — établissement",
-                "Démonstration — groupe ou siège",
-                "Démonstration — plan de formation",
-                "Démonstration — autre",
+                "Démonstration, établissement",
+                "Démonstration, groupe ou siège",
+                "Démonstration, plan de formation",
+                "Démonstration, autre",
               ]}
             />
           </div>

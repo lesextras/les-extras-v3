@@ -16,7 +16,7 @@ import { metaPublique } from "@/lib/meta";
 import { visuel } from "@/lib/media";
 import { VisuelCarte } from "../../_shared/VisuelCarte";
 export const metadata: Metadata = metaPublique({
-  title: "Édublog — actualités du médico-social",
+  title: "Édublog, actualités du médico-social",
   description:
     "Articles et actualités du médico-social : retours d’expérience, projets d’établissements, publications des intervenants. En accès libre.",
   path: "/edublog",
@@ -77,7 +77,7 @@ export default async function ActualitesPage({
     {
       cle: "editorial" as const,
       titre: "Articles",
-      detail: "Analyses, guides et méthodes — par l'équipe et par le réseau",
+      detail: "Analyses, guides et méthodes, par l'équipe et par le réseau",
       nb: data?.nbEditorial,
     },
     {
@@ -183,7 +183,7 @@ export default async function ActualitesPage({
 
                     Sans visuel, l article a la une perdait la moitie gauche de sa
                     carte et paraissait inacheve a cote des autres. Le repli de
-                    marque garde la mise en page entiere — meme geste que sur les
+                    marque garde la mise en page entiere, meme geste que sur les
                     formations, avec le meme composant. */}
                 <div className="relative aspect-[16/10] bg-muted md:aspect-auto md:min-h-[280px]">
                   <VisuelCarte src={visuel(une.coverUrl)} alt={une.title} sizes="50vw" priority>

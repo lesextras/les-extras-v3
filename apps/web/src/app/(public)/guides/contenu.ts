@@ -79,7 +79,7 @@ const PILIER: GuideEcrit = {
   description:
     'Ce que vous écrivez sera lu par la famille et parfois par un juge. Les six règles qui tiennent, la distinction faits/interprétation, et des exemples réécrits phrase par phrase.',
   chapo:
-    'Un écrit professionnel n’est pas un exercice de style : c’est une pièce qui circule, qui reste, et qui pèse sur la vie de quelqu’un. Voici ce qui le rend solide — et les formulations qui le fragilisent, réécrites.',
+    'Un écrit professionnel n’est pas un exercice de style : c’est une pièce qui circule, qui reste, et qui pèse sur la vie de quelqu’un. Voici ce qui le rend solide : et les formulations qui le fragilisent, réécrites.',
   minutes: 9,
   cadre: [
     {
@@ -97,7 +97,7 @@ const PILIER: GuideEcrit = {
   ],
   sections: [
     {
-      titre: 'Écrivez comme si la famille lisait — parce qu’elle lira',
+      titre: 'Écrivez comme si la famille lisait, parce qu’elle lira',
       blocs: [
         {
           type: 'p',
@@ -116,7 +116,7 @@ const PILIER: GuideEcrit = {
           apres:
             'Lors de l’entretien du 14 mars, Mme M. a indiqué ne pas partager l’inquiétude du service concernant l’absentéisme scolaire de [le jeune] et a déclaré : « à la maison il n’y a aucun problème ». Elle a refusé la proposition d’un temps d’échange avec le père en présence du service. [Le jeune] nous a rapporté le 21 mars que sa mère lui aurait dit de ne pas parler de son père devant nous ; le père n’a pas été rencontré depuis le 4 février.',
           pourquoi:
-            '« Déni total », « instrumentalise » et « clairement » sont des qualifications, pas des observations : elles ne se prouvent pas et elles se retournent contre le service à l’audience. La version réécrite dit strictement la même inquiétude, mais elle est datée, sourcée, et le lecteur — juge, parent, collègue — peut la vérifier.',
+            '« Déni total », « instrumentalise » et « clairement » sont des qualifications, pas des observations : elles ne se prouvent pas et elles se retournent contre le service à l’audience. La version réécrite dit strictement la même inquiétude, mais elle est datée, sourcée, et le lecteur, juge, parent, collègue, peut la vérifier.',
         },
       ],
     },
@@ -126,7 +126,7 @@ const PILIER: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Aucun texte ne l’impose : contrairement à ce qu’on lit souvent, il n’existe pas de recommandation officielle de la HAS ou de l’ancienne ANESM consacrée aux écrits professionnels. C’est une règle de métier, pas une norme opposable — mais c’est la règle qui distingue un écrit qui tient d’un écrit qui s’effondre à la première contestation.',
+            'Aucun texte ne l’impose : contrairement à ce qu’on lit souvent, il n’existe pas de recommandation officielle de la HAS ou de l’ancienne ANESM consacrée aux écrits professionnels. C’est une règle de métier, pas une norme opposable : mais c’est la règle qui distingue un écrit qui tient d’un écrit qui s’effondre à la première contestation.',
         },
         {
           type: 'p',
@@ -149,7 +149,7 @@ const PILIER: GuideEcrit = {
       ],
     },
     {
-      titre: 'Dire aussi ce qui va bien — c’est une exigence, pas une politesse',
+      titre: 'Dire aussi ce qui va bien, c’est une exigence, pas une politesse',
       blocs: [
         {
           type: 'p',
@@ -159,7 +159,7 @@ const PILIER: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Un écrit qui n’aligne que des difficultés donne une image fausse et, très concrètement, prive le magistrat des leviers sur lesquels il pourrait s’appuyer. Un parent qui n’est décrit que par ses manquements n’a plus de raison de coopérer — et il l’a lu.',
+            'Un écrit qui n’aligne que des difficultés donne une image fausse et, très concrètement, prive le magistrat des leviers sur lesquels il pourrait s’appuyer. Un parent qui n’est décrit que par ses manquements n’a plus de raison de coopérer, et il l’a lu.',
         },
       ],
     },
@@ -172,7 +172,7 @@ const PILIER: GuideEcrit = {
             'Les mineurs par leur prénom et l’initiale du nom, ou par leur fonction dans la situation. Jamais « le cas », jamais « le sujet ».',
             'Les adultes par leur civilité et leur nom : « Mme M. », « M. D. ». La civilité n’est pas un ornement, elle marque le respect dû à quelqu’un qui vous lira.',
             'Les professionnels par leur fonction, pas leur nom, sauf si l’identification est nécessaire : « l’éducatrice référente », « la psychologue du service ».',
-            'Les tiers non concernés : le moins possible. L’article L311-6 du CRPA réserve à la seule personne concernée les documents qui portent sur elle un jugement de valeur — plus vous nommez de tiers, plus vous compliquez la communication du dossier.',
+            'Les tiers non concernés : le moins possible. L’article L311-6 du CRPA réserve à la seule personne concernée les documents qui portent sur elle un jugement de valeur : plus vous nommez de tiers, plus vous compliquez la communication du dossier.',
           ],
         },
       ],
@@ -198,12 +198,12 @@ const PILIER: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Un rapport de situation bien mené prend rarement moins de deux heures : relire les transmissions, retrouver les dates, vérifier ce qui a effectivement été proposé, écrire, faire relire. Ce n’est pas du temps perdu — c’est le temps qui fait la différence entre un écrit qui décide et un écrit qu’on subit.',
+            'Un rapport de situation bien mené prend rarement moins de deux heures : relire les transmissions, retrouver les dates, vérifier ce qui a effectivement été proposé, écrire, faire relire. Ce n’est pas du temps perdu : c’est le temps qui fait la différence entre un écrit qui décide et un écrit qu’on subit.',
         },
         {
           type: 'p',
           texte:
-            'Ce que LEX fait, c’est la partie mécanique : structurer un brouillon à partir de vos notes, tenir la trame de votre établissement, proposer une reformulation quand une phrase glisse vers le jugement. Ce qu’il ne fait pas, et ne fera pas : décider à votre place de ce qui doit être écrit. Les noms des personnes ne quittent jamais votre poste — ils sont remplacés par des rôles avant tout envoi, et rétablis à l’arrivée.',
+            'Ce que LEX fait, c’est la partie mécanique : structurer un brouillon à partir de vos notes, tenir la trame de votre établissement, proposer une reformulation quand une phrase glisse vers le jugement. Ce qu’il ne fait pas, et ne fera pas : décider à votre place de ce qui doit être écrit. Les noms des personnes ne quittent jamais votre poste : ils sont remplacés par des rôles avant tout envoi, et rétablis à l’arrivée.',
         },
       ],
     },
@@ -219,7 +219,7 @@ const PILIER: GuideEcrit = {
     },
     {
       q: 'Peut-on utiliser une intelligence artificielle pour rédiger un écrit professionnel ?',
-      r: 'Pour aider à structurer et à reformuler, oui, à une condition non négociable : que les données nominatives ne sortent pas de votre poste de travail. C’est le principe de LEX — les noms sont remplacés par des rôles avant tout traitement et rétablis localement. Coller un rapport nominatif dans un assistant grand public, en revanche, transmet des données de santé et des données de mineurs à un tiers, ce que ni le RGPD ni votre employeur ne permettent.',
+      r: 'Pour aider à structurer et à reformuler, oui, à une condition non négociable : que les données nominatives ne sortent pas de votre poste de travail. C’est le principe de LEX : les noms sont remplacés par des rôles avant tout traitement et rétablis localement. Coller un rapport nominatif dans un assistant grand public, en revanche, transmet des données de santé et des données de mineurs à un tiers, ce que ni le RGPD ni votre employeur ne permettent.',
     },
   ],
 };
@@ -241,7 +241,7 @@ const RAPPORT: GuideEcrit = {
       ou: 'Code civil, article 375, dernier alinéa',
     },
     {
-      quoi: 'Le service élabore au moins une fois par an un rapport sur la situation de tout enfant accueilli ou faisant l’objet d’une mesure éducative — tous les six mois pour les enfants de moins de deux ans. Son contenu et ses conclusions sont portés à la connaissance du père, de la mère, du tuteur et du mineur selon son âge et sa maturité.',
+      quoi: 'Le service élabore au moins une fois par an un rapport sur la situation de tout enfant accueilli ou faisant l’objet d’une mesure éducative, tous les six mois pour les enfants de moins de deux ans. Son contenu et ses conclusions sont portés à la connaissance du père, de la mère, du tuteur et du mineur selon son âge et sa maturité.',
       ou: 'Code de l’action sociale et des familles, article L223-5',
     },
     {
@@ -251,7 +251,7 @@ const RAPPORT: GuideEcrit = {
   ],
   sections: [
     {
-      titre: 'Deux rapports, deux fondements — ne les mélangez pas',
+      titre: 'Deux rapports, deux fondements, ne les mélangez pas',
       blocs: [
         {
           type: 'p',
@@ -261,7 +261,7 @@ const RAPPORT: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'En pratique, le même document sert souvent les deux usages — mais si vous devez citer un texte dans un courrier, une note de service ou une procédure interne, citez le bon. Et retenez la périodicité renforcée : tous les six mois pour les enfants de moins de deux ans. Cette règle vient de la loi du 14 mars 2016, pas de la loi Taquet du 7 février 2022 — laquelle a bien modifié l’article L223-5, mais sur d’autres points.',
+            'En pratique, le même document sert souvent les deux usages : mais si vous devez citer un texte dans un courrier, une note de service ou une procédure interne, citez le bon. Et retenez la périodicité renforcée : tous les six mois pour les enfants de moins de deux ans. Cette règle vient de la loi du 14 mars 2016, pas de la loi Taquet du 7 février 2022 : laquelle a bien modifié l’article L223-5, mais sur d’autres points.',
         },
       ],
     },
@@ -284,7 +284,7 @@ const RAPPORT: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'À quoi s’ajoutent l’évaluation pluridisciplinaire, le bilan des actions menées au titre du projet pour l’enfant, et l’atteinte — ou non — des objectifs fixés par la décision administrative ou judiciaire. C’est ce dernier point qui manque le plus souvent : le rapport raconte l’année sans jamais revenir sur ce que la décision demandait.',
+            'À quoi s’ajoutent l’évaluation pluridisciplinaire, le bilan des actions menées au titre du projet pour l’enfant, et l’atteinte, ou non, des objectifs fixés par la décision administrative ou judiciaire. C’est ce dernier point qui manque le plus souvent : le rapport raconte l’année sans jamais revenir sur ce que la décision demandait.',
         },
       ],
     },
@@ -301,7 +301,7 @@ const RAPPORT: GuideEcrit = {
           avant:
             'Au vu de ce qui précède, il apparaît que la situation reste préoccupante et que le maintien de la mesure semble nécessaire afin de poursuivre le travail engagé avec la famille.',
           apres:
-            'Deux des trois objectifs fixés par l’ordonnance du 12 mai 2025 sont atteints : la scolarité de [le jeune] est stabilisée (aucune exclusion depuis novembre, 92 % de présence au deuxième trimestre) et les visites médiatisées se déroulent sans incident depuis février. Le troisième — la reprise d’un hébergement au domicile maternel un week-end sur deux — n’a pas pu être engagé : Mme M. a annulé les quatre rendez-vous de préparation proposés entre janvier et avril. Le service propose le renouvellement de la mesure de placement pour douze mois, assorti d’un objectif unique et resserré : la mise en œuvre effective de ces temps d’hébergement, avec un point d’étape à six mois.',
+            'Deux des trois objectifs fixés par l’ordonnance du 12 mai 2025 sont atteints : la scolarité de [le jeune] est stabilisée (aucune exclusion depuis novembre, 92 % de présence au deuxième trimestre) et les visites médiatisées se déroulent sans incident depuis février. Le troisième, la reprise d’un hébergement au domicile maternel un week-end sur deux, n’a pas pu être engagé : Mme M. a annulé les quatre rendez-vous de préparation proposés entre janvier et avril. Le service propose le renouvellement de la mesure de placement pour douze mois, assorti d’un objectif unique et resserré : la mise en œuvre effective de ces temps d’hébergement, avec un point d’étape à six mois.',
           pourquoi:
             'La première version ne dit rien qu’un magistrat puisse utiliser : ni ce qui a changé, ni ce qui bloque, ni ce qu’on demande. La seconde est chiffrée, elle reprend les objectifs de la décision précédente un par un, elle nomme l’obstacle sans qualifier la mère, et elle formule une demande précise. Elle fait la même longueur.',
         },
@@ -335,7 +335,7 @@ const RAPPORT: GuideEcrit = {
     },
     {
       q: 'Que faire si les parents contestent ce qui est écrit ?',
-      r: 'Leur désaccord se rapporte, et c’est une force pour l’écrit : « Mme M. conteste cette lecture et indique que… ». Un rapport qui restitue le désaccord est plus crédible qu’un rapport qui l’efface, et le magistrat y trouve l’information qu’il cherche — la position réelle de chacun.',
+      r: 'Leur désaccord se rapporte, et c’est une force pour l’écrit : « Mme M. conteste cette lecture et indique que… ». Un rapport qui restitue le désaccord est plus crédible qu’un rapport qui l’efface, et le magistrat y trouve l’information qu’il cherche : la position réelle de chacun.',
     },
   ],
 };
@@ -349,7 +349,7 @@ const PROJET: GuideEcrit = {
   description:
     'Les délais réglementaires que presque personne ne connaît, la différence entre un objectif et une intention, et cinq objectifs réécrits pour devenir évaluables.',
   chapo:
-    'Le projet personnalisé est le document le plus recopié du secteur — et celui dont les objectifs sont le plus souvent inévaluables. Voici comment le rendre utile, et ce que la réglementation exige vraiment.',
+    'Le projet personnalisé est le document le plus recopié du secteur : et celui dont les objectifs sont le plus souvent inévaluables. Voici comment le rendre utile, et ce que la réglementation exige vraiment.',
   minutes: 7,
   cadre: [
     {
@@ -387,7 +387,7 @@ const PROJET: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Ils ne figurent pas dans l’article L311-4, que tout le monde cite, mais dans la partie réglementaire — l’article D311 du CASF, issu du décret du 26 novembre 2004.',
+            'Ils ne figurent pas dans l’article L311-4, que tout le monde cite, mais dans la partie réglementaire : l’article D311 du CASF, issu du décret du 26 novembre 2004.',
         },
         {
           type: 'liste',
@@ -401,7 +401,7 @@ const PROJET: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'C’est cet avenant à six mois qui porte les objectifs — pas le document d’admission. Beaucoup d’établissements le découvrent lors d’une évaluation, alors qu’il s’agit du document que l’autorité de contrôle demande en premier.',
+            'C’est cet avenant à six mois qui porte les objectifs : pas le document d’admission. Beaucoup d’établissements le découvrent lors d’une évaluation, alors qu’il s’agit du document que l’autorité de contrôle demande en premier.',
         },
       ],
     },
@@ -419,7 +419,7 @@ const PROJET: GuideEcrit = {
           apres:
             'D’ici au 30 juin, [le jeune] prépare seul son petit-déjeuner quatre matins sur sept, avec une consigne orale de rappel le premier jour de la semaine. Évaluation : relevé quotidien tenu par l’équipe du matin, point d’étape le 15 avril.',
           pourquoi:
-            '« Favoriser » n’est pas un résultat, c’est une posture professionnelle — elle décrit ce que fait l’équipe, pas ce qui aura changé pour la personne. La version réécrite nomme le comportement attendu, sa fréquence, l’échéance, l’aide maintenue et la façon dont on saura.',
+            '« Favoriser » n’est pas un résultat, c’est une posture professionnelle : elle décrit ce que fait l’équipe, pas ce qui aura changé pour la personne. La version réécrite nomme le comportement attendu, sa fréquence, l’échéance, l’aide maintenue et la façon dont on saura.',
         },
         {
           type: 'reecriture',
@@ -542,7 +542,7 @@ const ESS: GuideEcrit = {
           avant:
             'Les progrès sont notables mais [le jeune] reste en difficulté sur les apprentissages et un accompagnement renforcé serait souhaitable.',
           apres:
-            'Depuis septembre, [le jeune] tient une séance de trente minutes sans sortir de la salle, contre dix minutes l’an dernier — relevé sur les vingt-quatre séances du service. Les sorties de classe restent concentrées sur les temps de transition (interclasses, entrée en salle après la récréation) : sept des neuf incidents signalés par l’établissement en relèvent. Le service demande que l’AESH accompagne prioritairement ces temps de transition plutôt que les temps d’apprentissage assis, et propose de partager sa grille d’observation avec l’enseignante au premier trimestre.',
+            'Depuis septembre, [le jeune] tient une séance de trente minutes sans sortir de la salle, contre dix minutes l’an dernier : relevé sur les vingt-quatre séances du service. Les sorties de classe restent concentrées sur les temps de transition (interclasses, entrée en salle après la récréation) : sept des neuf incidents signalés par l’établissement en relèvent. Le service demande que l’AESH accompagne prioritairement ces temps de transition plutôt que les temps d’apprentissage assis, et propose de partager sa grille d’observation avec l’enseignante au premier trimestre.',
           pourquoi:
             '« Notable », « en difficulté » et « souhaitable » ne permettent à personne de décider quoi que ce soit. La version réécrite apporte une mesure, identifie un motif, et transforme le constat en une demande précise que l’ESS peut acter.',
         },
@@ -607,7 +607,7 @@ const IP: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Un réflexe utile : l’article L226-4 précise que quiconque saisit directement le procureur doit en adresser copie au président du conseil départemental. Le département n’est donc jamais court-circuité — c’est une raison de moins d’hésiter quand l’urgence commande.',
+            'Un réflexe utile : l’article L226-4 précise que quiconque saisit directement le procureur doit en adresser copie au président du conseil départemental. Le département n’est donc jamais court-circuité : c’est une raison de moins d’hésiter quand l’urgence commande.',
         },
       ],
     },
@@ -622,7 +622,7 @@ const IP: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Ce qui s’applique à lui, c’est l’article 226-14 du code pénal, qui lève le secret professionnel pour informer les autorités de privations ou de sévices infligés à un mineur. C’est une permission, pas une obligation générale — et cette nuance est précisément ce qui rend la décision collective, en équipe et avec le chef de service, plutôt qu’individuelle et solitaire.',
+            'Ce qui s’applique à lui, c’est l’article 226-14 du code pénal, qui lève le secret professionnel pour informer les autorités de privations ou de sévices infligés à un mineur. C’est une permission, pas une obligation générale : et cette nuance est précisément ce qui rend la décision collective, en équipe et avec le chef de service, plutôt qu’individuelle et solitaire.',
         },
       ],
     },
@@ -632,7 +632,7 @@ const IP: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'L’article 375 du code civil ne fonde pas le signalement. Il définit l’assistance éducative et énumère qui peut saisir le juge des enfants : les père et mère conjointement ou l’un d’eux, la personne ou le service à qui l’enfant a été confié, le tuteur, le mineur lui-même, le ministère public — et, à titre exceptionnel seulement, le juge d’office.',
+            'L’article 375 du code civil ne fonde pas le signalement. Il définit l’assistance éducative et énumère qui peut saisir le juge des enfants : les père et mère conjointement ou l’un d’eux, la personne ou le service à qui l’enfant a été confié, le tuteur, le mineur lui-même, le ministère public, et, à titre exceptionnel seulement, le juge d’office.',
         },
         {
           type: 'p',
@@ -647,16 +647,16 @@ const IP: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Le rôle de l’écrit n’est pas de qualifier le danger — c’est le travail de l’évaluation qui suivra, désormais encadrée par le cadre national de référence publié par la HAS en janvier 2021 et rendu obligatoire par le décret du 30 décembre 2022. Votre rôle est de transmettre ce que vous savez, proprement.',
+            'Le rôle de l’écrit n’est pas de qualifier le danger : c’est le travail de l’évaluation qui suivra, désormais encadrée par le cadre national de référence publié par la HAS en janvier 2021 et rendu obligatoire par le décret du 30 décembre 2022. Votre rôle est de transmettre ce que vous savez, proprement.',
         },
         {
           type: 'liste',
           items: [
             'Qui : identité du mineur, âge, adresse, composition familiale connue, mesures en cours.',
-            'Quoi : les faits, datés, dans l’ordre chronologique. Ce que vous avez constaté vous-même, et ce qui vous a été rapporté — en distinguant les deux.',
+            'Quoi : les faits, datés, dans l’ordre chronologique. Ce que vous avez constaté vous-même, et ce qui vous a été rapporté : en distinguant les deux.',
             'Les paroles : ce que l’enfant a dit, entre guillemets, dans ses mots, sans reformulation. C’est le seul endroit où la formulation exacte compte plus que le style.',
             'Ce qui a déjà été tenté : entretiens, propositions, refus, partenaires mobilisés.',
-            'Ce qui vous inquiète, annoncé comme votre analyse — et non comme une conclusion.',
+            'Ce qui vous inquiète, annoncé comme votre analyse : et non comme une conclusion.',
           ],
         },
         {
@@ -672,7 +672,7 @@ const IP: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Oui, en principe. L’article L226-2-2 du CASF encadre le partage d’informations à caractère secret entre professionnels : il doit être strictement limité à ce qui est nécessaire, et les parents comme le mineur doivent en être informés préalablement — sauf si cette information est contraire à l’intérêt de l’enfant.',
+            'Oui, en principe. L’article L226-2-2 du CASF encadre le partage d’informations à caractère secret entre professionnels : il doit être strictement limité à ce qui est nécessaire, et les parents comme le mineur doivent en être informés préalablement, sauf si cette information est contraire à l’intérêt de l’enfant.',
         },
         {
           type: 'p',
@@ -704,7 +704,7 @@ const IP: GuideEcrit = {
     },
     {
       q: 'Un éducateur en association est-il tenu de signaler au procureur ?',
-      r: 'L’article 40, alinéa 2, du code de procédure pénale n’oblige que les autorités constituées, officiers publics et fonctionnaires : il ne s’applique pas de plein droit à un salarié d’association. L’article 226-14 du code pénal lève en revanche le secret professionnel pour informer les autorités de privations ou sévices infligés à un mineur — c’est une permission, et la décision se prend en équipe.',
+      r: 'L’article 40, alinéa 2, du code de procédure pénale n’oblige que les autorités constituées, officiers publics et fonctionnaires : il ne s’applique pas de plein droit à un salarié d’association. L’article 226-14 du code pénal lève en revanche le secret professionnel pour informer les autorités de privations ou sévices infligés à un mineur : c’est une permission, et la décision se prend en équipe.',
     },
     {
       q: 'Peut-on saisir directement le juge des enfants ?',
@@ -741,7 +741,7 @@ const BILAN: GuideEcrit = {
         {
           type: 'p',
           texte:
-            'Un bilan de fin d’accompagnement a deux lecteurs. La personne concernée et sa famille, qui y ont accès. Et surtout le professionnel qui prendra la suite — un autre service, un référent ASE, un enseignant, un employeur en insertion — et qui n’a aucune connaissance du dossier.',
+            'Un bilan de fin d’accompagnement a deux lecteurs. La personne concernée et sa famille, qui y ont accès. Et surtout le professionnel qui prendra la suite, un autre service, un référent ASE, un enseignant, un employeur en insertion, et qui n’a aucune connaissance du dossier.',
         },
         {
           type: 'p',
@@ -774,7 +774,7 @@ const BILAN: GuideEcrit = {
           avant:
             'L’accompagnement s’est heurté au manque d’adhésion de [le jeune], qui n’a jamais réellement investi la relation éducative malgré les efforts constants de l’équipe.',
           apres:
-            'Sur les vingt-quatre rendez-vous proposés en bureau, [le jeune] en a honoré neuf. Sur les onze temps proposés en extérieur — trajets, atelier vélo, courses — il en a honoré dix. Ce contraste, constant sur les deux années, a été le principal enseignement de l’accompagnement : la relation s’établit dans l’activité partagée et se dérobe dans le face-à-face assis. Le service recommande au professionnel suivant de construire les premiers temps de rencontre sur un support concret plutôt que sur un entretien.',
+            'Sur les vingt-quatre rendez-vous proposés en bureau, [le jeune] en a honoré neuf. Sur les onze temps proposés en extérieur, trajets, atelier vélo, courses, il en a honoré dix. Ce contraste, constant sur les deux années, a été le principal enseignement de l’accompagnement : la relation s’établit dans l’activité partagée et se dérobe dans le face-à-face assis. Le service recommande au professionnel suivant de construire les premiers temps de rencontre sur un support concret plutôt que sur un entretien.',
           pourquoi:
             'La première version rend la personne responsable de l’échec et ne transmet rien d’utilisable. La seconde transmet un savoir : elle donne au professionnel suivant la clé qu’il aurait mis six mois à trouver seul. C’est exactement ce à quoi sert un bilan.',
         },
@@ -788,7 +788,7 @@ const BILAN: GuideEcrit = {
           items: [
             'Recopier les rapports antérieurs. Un bilan n’est pas une compilation : c’est une synthèse écrite depuis la fin, avec le recul que les rapports intermédiaires n’avaient pas.',
             'Régler ses comptes avec la famille ou avec un partenaire. Ce document sera lu, y compris par les personnes concernées, et il survivra à votre passage dans le service.',
-            'Omettre ce qui a échoué. Un bilan qui ne dit que la réussite prive le suivant de l’information la plus précieuse — et il se remarque.',
+            'Omettre ce qui a échoué. Un bilan qui ne dit que la réussite prive le suivant de l’information la plus précieuse, et il se remarque.',
           ],
         },
       ],
@@ -801,7 +801,7 @@ const BILAN: GuideEcrit = {
     },
     {
       q: 'La personne peut-elle demander à lire son bilan ?',
-      r: 'Oui : l’article L311-3, 5° du CASF garantit l’accès à toute information ou document relatif à la prise en charge. L’article L311-6 du CRPA en fixe la limite lorsque le document porte une appréciation ou un jugement de valeur sur un tiers nommément désigné — raison de plus pour n’y nommer que les personnes nécessaires.',
+      r: 'Oui : l’article L311-3, 5° du CASF garantit l’accès à toute information ou document relatif à la prise en charge. L’article L311-6 du CRPA en fixe la limite lorsque le document porte une appréciation ou un jugement de valeur sur un tiers nommément désigné : raison de plus pour n’y nommer que les personnes nécessaires.',
     },
     {
       q: 'Combien de pages ?',

@@ -26,7 +26,7 @@ export async function generateMetadata({ params: paramsPromesse }: { params: Pro
   const v = trouverVille(params.ville);
   if (!v) return { title: "Renfort" };
   return {
-    title: `Renfort éducatif ${v.nom} — RenforTeam`,
+    title: `Renfort éducatif ${v.nom}, RenforTeam`,
     description: `${v.nom} : trouver un intervenant qualifié pour un remplacement en établissement médico-social. Profils vérifiés, contrat généré, zéro commission.`,
     alternates: { canonical: `/renfort/${v.slug}` },
     // Sans `url`, le partage héritait de celui du layout racine (« / ») :
@@ -40,7 +40,7 @@ export async function generateMetadata({ params: paramsPromesse }: { params: Pro
     openGraph: {
       ...SOCLE_OG,
       url: `/renfort/${v.slug}`,
-      title: `Renfort éducatif ${v.nom} — RenforTeam`,
+      title: `Renfort éducatif ${v.nom}, RenforTeam`,
       description: `Trouver un intervenant qualifié pour un remplacement en établissement médico-social à ${v.nom} et alentours.`,
     },
   };
@@ -55,7 +55,7 @@ export default async function VillePage({ params: paramsPromesse }: { params: Pr
     "@context": "https://schema.org",
     "@type": "Service",
     serviceType: "Renfort éducatif en établissement médico-social",
-    provider: { "@type": "Organization", name: "Les Extras — ADéPA" },
+    provider: { "@type": "Organization", name: "Les Extras, ADéPA" },
     areaServed: { "@type": "AdministrativeArea", name: ville.nom },
     description: ville.contexte,
   };

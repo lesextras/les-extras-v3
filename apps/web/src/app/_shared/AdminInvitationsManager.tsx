@@ -45,7 +45,7 @@ export interface AdminInvitation {
 }
 
 function fmt(d?: string | null) {
-  if (!d) return "—";
+  if (!d) return ", ";
   return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
@@ -97,7 +97,7 @@ export function AdminInvitationsManager({ invitations }: { invitations: AdminInv
                 return (
                   <TableRow key={i.id}>
                     <TableCell className="text-sm font-medium text-foreground">{i.email}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{i.account?.name ?? "—"}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{i.account?.name ?? "-"}</TableCell>
                     <TableCell>
                       <Badge variant="muted">{ACCOUNT_ROLE_LABEL[i.role] ?? i.role}</Badge>
                     </TableCell>

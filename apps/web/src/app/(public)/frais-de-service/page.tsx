@@ -27,14 +27,14 @@ const PAYANT = [
   {
     icone: Users,
     titre: "Vous commandez une formation Qualiopi",
-    prix: "Sur devis — facturée par l’association",
+    prix: "Sur devis, facturée par l’association",
     detail:
       "C’est le seul service facturé par l’association ADéPA, sous sa certification Qualiopi et finançable OPCO. Elle fait appel aux formateurs du réseau Les Extras ; vous recevez un devis avant, une facture après.",
   },
   {
     icone: Sparkles,
     titre: "Vous utilisez LEX, l’assistant IA",
-    prix: "À crédits — un crédit par génération",
+    prix: "À crédits, un crédit par génération",
     detail:
       "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. 15 générations offertes chaque mois, sans carte bancaire et sans date de fin ; au-delà, packs ou abonnement à dotation mensuelle. Les tarifs sont affichés dans votre espace ; le bot d’aide reste gratuit.",
   },
@@ -75,7 +75,7 @@ export default function FraisPage() {
           </ul>
           <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
             Sans limite de durée et sans nombre d’utilisateurs imposé. Un renfort ou un
-            atelier se paie à son intervenant, à son tarif — la plateforme n’ajoute rien.
+            atelier se paie à son intervenant, à son tarif : la plateforme n’ajoute rien.
           </p>
         </section>
 
@@ -158,7 +158,7 @@ export default function FraisPage() {
           Deux affirmations fausses corrigées ici.
           1. « La commission y figure en clair, sur une ligne distincte » : il n’y a
              aucune ligne de commission sur les factures, parce qu’il n’y a aucune
-             commission — COMMISSION_DEFAUT vaut 0 (src/lib/commission.ts). Annoncer
+             commission, COMMISSION_DEFAUT vaut 0 (src/lib/commission.ts). Annoncer
              une ligne qui n’existe pas fait douter du document reçu.
           2. « payables en ligne » : `createInvoiceCheckout`
              (apps/api/src/billing/billing.service.ts) refuse les factures émises par

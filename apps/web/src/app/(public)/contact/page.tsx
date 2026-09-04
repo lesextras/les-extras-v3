@@ -4,9 +4,9 @@ import { ContactForm } from "../../_shared/ContactForm";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Contact — écrire à l’équipe ADéPA",
+  title: "Contact, écrire à l’équipe ADéPA",
   description:
-    "Contactez l'équipe ADéPA — Les Extras, la marketplace du renfort médico-social. Établissements, intervenants, formations : écrivez-nous.",
+    "Contactez l'équipe ADéPA, Les Extras, la marketplace du renfort médico-social. Établissements, intervenants, formations : écrivez-nous.",
   path: "/contact",
 });
 
@@ -24,7 +24,7 @@ export default function ContactPage() {
           contact@adepa77.fr
         </a>
         <span aria-hidden>·</span>
-        <span>ADéPA — Melun (77)</span>
+        <span>ADéPA, Melun (77)</span>
       </div>
 
       <div className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-sm">

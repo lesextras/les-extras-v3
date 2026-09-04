@@ -110,7 +110,7 @@ export function Calculateur() {
           <p className="mt-1 text-3xl font-semibold text-foreground">{euros(coordinationAnnuelle)}</p>
           <p className="mt-2 text-xs text-muted-foreground">
             La cascade de diffusion, les candidatures en un clic, le contrat généré automatiquement
-            et le pointage intégré réduisent ce temps — la part exacte dépend de votre organisation,
+            et le pointage intégré réduisent ce temps : la part exacte dépend de votre organisation,
             nous ne l'estimons pas à votre place.
           </p>
         </div>
@@ -125,7 +125,7 @@ export function Calculateur() {
             href="/demo"
             className="mt-4 inline-block rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
           >
-            Voir comment ça marche — demander une démo
+            Voir comment ça marche, demander une démo
           </a>
         </div>
       </div>

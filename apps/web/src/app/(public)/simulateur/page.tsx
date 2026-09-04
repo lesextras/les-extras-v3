@@ -5,7 +5,7 @@ import { Calculateur } from "./Calculateur";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Simulateur d'économies — renfort sans commission",
+  title: "Simulateur d'économies, renfort sans commission",
   description:
     "Calculez ce que vous coûtent la commission de votre intermédiaire actuel et le temps de coordination des remplacements, à partir de vos propres chiffres.",
   path: "/simulateur",
@@ -19,7 +19,7 @@ export default function SimulateurPage() {
           Combien vous coûte votre organisation actuelle des renforts ?
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Saisissez vos chiffres — le calcul se fait avec eux, et seulement avec eux.
+          Saisissez vos chiffres : le calcul se fait avec eux, et seulement avec eux.
         </p>
       </div>
       <div className="mt-10">

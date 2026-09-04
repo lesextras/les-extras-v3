@@ -14,8 +14,8 @@ export default async function ActivitesPage() {
   if (!adherent) {
     return (
       <AdherentGate
-        titre="LEX — le générateur d'activités éducatives"
-        description="Décrivez votre public et les besoins à travailler : LEX conçoit des activités structurées — déroulé, matériel, variantes, points de vigilance — à valider en équipe."
+        titre="LEX : le générateur d'activités éducatives"
+        description="Décrivez votre public et les besoins à travailler : LEX conçoit des activités structurées, déroulé, matériel, variantes, points de vigilance, à valider en équipe."
         benefices={[
           "Deux propositions structurées par demande",
           "Points de vigilance et indicateurs d'observation inclus",
@@ -30,7 +30,7 @@ export default async function ActivitesPage() {
     <div className="space-y-6">
       <PageHeader
         title="LEX · Générateur d'activités"
-        subtitle="Décrivez votre public et les besoins à travailler : l'assistant conçoit des activités éducatives structurées — déroulé, matériel, variantes et points de vigilance. Chaque proposition doit être validée en équipe pluridisciplinaire avant mise en œuvre."
+        subtitle="Décrivez votre public et les besoins à travailler : l'assistant conçoit des activités éducatives structurées, déroulé, matériel, variantes et points de vigilance. Chaque proposition doit être validée en équipe pluridisciplinaire avant mise en œuvre."
       />
       <ActivityGenerator />
     </div>

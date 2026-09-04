@@ -24,7 +24,7 @@ export async function generateMetadata({
   const res = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
   const { data } = res;
   if (!data) return metaIntrouvable(res, "Mission de renfort")!;
-  const lieu = data.city ? ` — ${data.city}` : "";
+  const lieu = data.city ? `, ${data.city}` : "";
   const titre = `${data.title}${lieu}`;
   const description =
     (data.description ?? "").replace(/\s+/g, " ").trim().slice(0, 160) ||
@@ -104,12 +104,12 @@ export default async function MissionPublicPage({ params: paramsPromesse }: { pa
               <Row label="Début" value={formatDate(mission.startDate)} />
               {mission.endDate ? <Row label="Fin" value={formatDate(mission.endDate)} /> : null}
               {mission.startTime || mission.endTime ? (
-                <Row label="Horaires" value={`${mission.startTime ?? "?"} – ${mission.endTime ?? "?"}`} />
+                <Row label="Horaires" value={`${mission.startTime ?? "?"}, ${mission.endTime ?? "?"}`} />
               ) : null}
               {mission.job ? <Row label="Métier" value={mission.job} /> : null}
               <Row
                 label="Lieu"
-                value={`${mission.city ?? "—"}${mission.postalCode ? ` (${mission.postalCode})` : ""}`}
+                value={`${mission.city ?? "-"}${mission.postalCode ? ` (${mission.postalCode})` : ""}`}
               />
               <Row label="Postes" value={String(mission.headcount)} />
               {mission.hourlyRate ? (

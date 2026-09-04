@@ -44,7 +44,7 @@ export default async function ConformitePage() {
     <div className="space-y-6">
       <PageHeader
         title="Conformité"
-        subtitle="Les pièces obligatoires de vos intervenants — identité, diplôme, casier judiciaire, permis, IBAN, attestation URSSAF. On ne montre ici que ce qui manque ou arrive à échéance."
+        subtitle="Les pièces obligatoires de vos intervenants : identité, diplôme, casier judiciaire, permis, IBAN, attestation URSSAF. On ne montre ici que ce qui manque ou arrive à échéance."
         actions={
           <Button asChild variant="outline">
             <Link href="/dashboard/equipe">Voir toute l’équipe</Link>

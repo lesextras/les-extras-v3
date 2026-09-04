@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = metaPublique({
-  title: "Cadre de confiance LEX — IA, déontologie et données",
+  title: "Cadre de confiance LEX, IA, déontologie et données",
   description:
     "Comment LEX traite les données des personnes accompagnées : pseudonymisation avant envoi au modèle, aucun entraînement sur vos écrits, notes brutes non conservées.",
   path: "/confiance-lex",
@@ -68,7 +68,7 @@ const GARANTIES = [
     icone: ScrollText,
     titre: "Traçabilité complète",
     texte:
-      "Qui a demandé, sur quel modèle d’écrit, et quand. La direction consulte et exporte ce journal — utile pour une évaluation HAS. Il enregistre la demande, jamais le contenu produit.",
+      "Qui a demandé, sur quel modèle d’écrit, et quand. La direction consulte et exporte ce journal : utile pour une évaluation HAS. Il enregistre la demande, jamais le contenu produit.",
   },
 ];
 
@@ -131,7 +131,7 @@ export default function ConfianceLexPage() {
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/80">
 Coller une note d’observation nominative dans un outil grand public, c’est envoyer en
           clair le prénom, l’âge et l’histoire d’un enfant à un service qui n’a aucune obligation
-          envers votre secteur — sans trace, et sans personne pour en rendre compte.
+          envers votre secteur : sans trace, et sans personne pour en rendre compte.
         </p>
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/80">
 LEX ne vous demande pas de renoncer à l’aide à la rédaction, mais de la faire dans un

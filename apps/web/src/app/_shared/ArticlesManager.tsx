@@ -245,7 +245,7 @@ export function ArticlesManager({
                 {!linkedin.configured
                   ? "Bientôt : publiez vos actualités sur LinkedIn en un clic."
                   : linkedin.connected
-                    ? `Connecté${linkedin.name ? ` — ${linkedin.name}` : ""}. Vos actualités peuvent être publiées sur votre profil.`
+                    ? `Connecté${linkedin.name ? `, ${linkedin.name}` : ""}. Vos actualités peuvent être publiées sur votre profil.`
                     : "Connectez votre compte pour publier vos actualités sur votre profil en un clic."}
               </p>
             </div>
@@ -321,9 +321,9 @@ export function ArticlesManager({
                   }
                   className="h-11 w-full rounded-lg border border-input bg-card px-3.5 text-sm text-foreground shadow-sm transition-colors hover:border-primary/30 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:w-72"
                 >
-                  <option value="DRAFT">Brouillon — visible de vous seul</option>
-                  <option value="PUBLISHED">Publiée — visible sur l’Édublog</option>
-                  <option value="ARCHIVED">Archivée — retirée du fil, conservée ici</option>
+                  <option value="DRAFT">Brouillon : visible de vous seul</option>
+                  <option value="PUBLISHED">Publiée : visible sur l’Édublog</option>
+                  <option value="ARCHIVED">Archivée : retirée du fil, conservée ici</option>
                 </select>
               </div>
             ) : null}
@@ -463,7 +463,7 @@ export function ArticlesManager({
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Rien de publié pour le moment. Une actualité pour raconter une intervention réussie ou un
-          temps fort ; un article de fond pour partager une méthode qui marche — c’est ce qui vous
+          temps fort ; un article de fond pour partager une méthode qui marche, c’est ce qui vous
           rend visible.
         </p>
       ) : (

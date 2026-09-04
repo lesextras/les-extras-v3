@@ -58,7 +58,7 @@ export default async function OpportunitesPage() {
         />
         {/* Un salarié rattaché à un établissement arrivait ici sur un
             cul-de-sac : « Réservé aux intervenants », et rien d'autre. Il
-            peut pourtant se positionner sur ce qui est ouvert — on le lui
+            peut pourtant se positionner sur ce qui est ouvert, on le lui
             dit, et on lui donne le chemin. */}
         <EmptyState
           icon={<Target />}

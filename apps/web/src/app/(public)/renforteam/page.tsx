@@ -27,7 +27,7 @@ import { formatDate } from "../../_shared/format";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "RenforTeam — remplacement urgent en médico-social",
+  title: "RenforTeam, remplacement urgent en médico-social",
   description:
     "Un poste à couvrir demain matin ? Publiez le besoin. Il descend en cascade : votre équipe, les habitués, le réseau. Le premier qui accepte emporte la mission.",
   path: "/renforteam",
@@ -68,7 +68,7 @@ const CASCADE = [
 const ETABLISSEMENT = [
   { icone: Clock, texte: "Publication en trois minutes : métier, dates, horaires, lieu, taux." },
   { icone: Zap, texte: "Marquez « urgent » et le besoin saute directement à la diffusion large." },
-  { icone: Users, texte: "Le premier intervenant qui accepte emporte la mission — pas de tri à faire." },
+  { icone: Users, texte: "Le premier intervenant qui accepte emporte la mission, pas de tri à faire." },
   // Ce que la plateforme produit est une proposition chiffrée, pas un contrat
   // de travail : c'est l'établissement qui embauche, en son nom propre. Le
   // promettre autrement, c'est promettre de l'intérim qu'on ne fait pas.
@@ -211,7 +211,7 @@ Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte empor
         </div>
       </section>
 
-      {/* Missions ouvertes — aperçu flouté. Section absente s'il n'y en a pas. */}
+      {/* Missions ouvertes, aperçu flouté. Section absente s'il n'y en a pas. */}
       {enPanne ? (
         <section className="rounded-2xl border border-warning/40 bg-warning/5 px-6 py-5">
           <p className="font-medium text-foreground">

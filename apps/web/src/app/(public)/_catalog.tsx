@@ -92,7 +92,7 @@ function CarteCatalogue({ item }: { item: CatalogItem }) {
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         >
           {/* Sans photo, une vignette qui a l'air « en panne » ne se
-      clique pas : on affiche un visuel intentionnel — dégradé
+      clique pas : on affiche un visuel intentionnel, dégradé
       de marque + catégorie de la fiche. */}
           <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
             <span className="flex flex-col items-center gap-1.5 text-center">
@@ -390,7 +390,7 @@ export async function CatalogView({
         />
       ) : (
         <>
-          {/* Entrées rapides par expertise — repris du site historique, où l'on
+          {/* Entrées rapides par expertise : repris du site historique, où l'on
             cherchait d'abord « pour qui » puis « comment ». */}
           {!filtree && (publics.length > 0 || categories.length > 0) ? (
             <div className="grid gap-5 md:grid-cols-2">

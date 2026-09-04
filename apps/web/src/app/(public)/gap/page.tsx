@@ -12,7 +12,7 @@ import { GapFil } from "../../_shared/GapFil";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Le GAP — Groupe d’Analyse de Pratique en ligne",
+  title: "Le GAP, Groupe d’Analyse de Pratique en ligne",
   description:
     "Déposez une situation de terrain, recevez les retours de professionnels du médico-social. Anonyme, entre pairs, réservé aux membres.",
   path: "/gap",

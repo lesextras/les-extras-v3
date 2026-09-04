@@ -244,7 +244,7 @@ export function AdminFormationForm({
                 id="f-certname"
                 value={v.certificationName}
                 onChange={(e) => set("certificationName", e.target.value)}
-                placeholder="RS1234 — Titre professionnel…"
+                placeholder="RS1234, Titre professionnel…"
               />
             </Field>
           ) : null}

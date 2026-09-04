@@ -84,20 +84,20 @@ export const ETABLISSEMENTS: Etablissement[] = [
     publicAccueilli:
       'Des jeunes aux rythmes et aux capacités d’attention très hétérogènes dans un même groupe. Un atelier conçu pour un niveau moyen ne fonctionne pas ici.',
     cequunAtelierApporte: [
-      'Un support que l’équipe ne peut pas porter seule — musicothérapie, socio-esthétique, activité physique adaptée : des médiations qui demandent une compétence et un matériel spécifiques.',
+      'Un support que l’équipe ne peut pas porter seule, musicothérapie, socio-esthétique, activité physique adaptée : des médiations qui demandent une compétence et un matériel spécifiques.',
       'Un regard extérieur sur des jeunes qui, dans le quotidien, sont d’abord vus à travers leurs difficultés. Une séance où quelqu’un découvre un jeune sans son dossier change souvent ce que l’équipe en dit ensuite.',
       'Une trace mobilisable pour l’ESS ou le projet personnalisé : ce qu’un jeune a réussi dans un atelier est un élément d’évaluation, pas une anecdote.',
       'Un rythme qui coupe la semaine, ce que les équipes cherchent particulièrement sur les périodes longues sans vacances scolaires.',
     ],
     contraintes: [
       'Des groupes de six à huit au maximum : au-delà, les écarts de niveau rendent la séance ingérable pour un intervenant seul.',
-      'Une durée courte — trente à quarante-cinq minutes de participation réelle, pas davantage — et un déroulé toujours identique d’une séance à l’autre.',
+      'Une durée courte, trente à quarante-cinq minutes de participation réelle, pas davantage, et un déroulé toujours identique d’une séance à l’autre.',
       'La présence d’au moins un professionnel de l’établissement pendant toute la séance : ce n’est pas une question de confiance, c’est ce qui permet de gérer une sortie de groupe sans interrompre l’atelier.',
       'Des consignes accessibles : phrases courtes, appui visuel, démonstration avant explication.',
     ],
     avantDeFaireEntrer: [
       'Le diplôme ou la qualification correspondant à la médiation proposée.',
-      'L’extrait de casier judiciaire n° 3 — non négociable dès lors qu’il y a des mineurs.',
+      'L’extrait de casier judiciaire n° 3 : non négociable dès lors qu’il y a des mineurs.',
       'L’attestation d’assurance en responsabilité civile professionnelle en cours de validité.',
       'Une fiche d’atelier écrite : objectifs, déroulé, matériel apporté, matériel attendu de l’établissement.',
     ],
@@ -121,14 +121,14 @@ export const ETABLISSEMENTS: Etablissement[] = [
     publicAccueilli:
       'Des jeunes dont l’intelligence n’est pas en cause, et qui le savent : l’échec leur coûte cher. La place, le regard des autres et la réparation traversent toutes les séances.',
     cequunAtelierApporte: [
-      'Un détour. Ce qui ne peut pas se dire en entretien passe souvent par le corps, le son ou l’image — c’est la raison d’être des médiations dans ce type d’établissement, pas un supplément d’âme.',
+      'Un détour. Ce qui ne peut pas se dire en entretien passe souvent par le corps, le son ou l’image : c’est la raison d’être des médiations dans ce type d’établissement, pas un supplément d’âme.',
       'Un cadre où l’échec est réparable dans la même séance. Une prise ratée en psycho-boxe, un texte qui ne tient pas en slam : on recommence, et c’est exactement ce que le jeune ne peut pas faire à l’école.',
       'Un adulte qui n’a pas d’histoire avec lui. Un intervenant extérieur n’arrive pas avec le souvenir de la crise de la semaine dernière, et cela suffit parfois à débloquer une situation.',
       'Des éléments concrets pour le projet personnalisé d’accompagnement, sur des registres que le quotidien de l’unité ne met pas en évidence.',
     ],
     contraintes: [
       'Un cadre annoncé au début de chaque séance et tenu à l’identique : ce qui est autorisé, ce qui ne l’est pas, ce qui se passe si ça déborde. Un cadre qui varie est lu comme une faille.',
-      'Une sortie possible sans humiliation. Un jeune doit pouvoir quitter la séance et y revenir — un intervenant qui transforme la sortie en sanction perd le groupe.',
+      'Une sortie possible sans humiliation. Un jeune doit pouvoir quitter la séance et y revenir : un intervenant qui transforme la sortie en sanction perd le groupe.',
       'Pas d’interprétation à voix haute. L’intervenant décrit ce qu’il a vu, il ne qualifie pas ce qu’il en pense : cela appartient à l’équipe et au psychologue.',
       'Un point de cinq minutes avec l’éducateur présent après la séance. C’est là que se transmet l’essentiel, et c’est ce que la plupart des intervenants oublient de prévoir dans leur temps.',
     ],
@@ -159,7 +159,7 @@ export const ETABLISSEMENTS: Etablissement[] = [
       'Des jeunes séparés de leur famille, pour qui un adulte de plus ne compte que s’il revient. La régularité importe plus que le contenu.',
     cequunAtelierApporte: [
       'Un temps qui n’est pas un temps de gestion. Le quotidien d’un foyer est fait de lever, de repas, de devoirs et de conflits ; un atelier est l’un des rares moments où l’adulte présent ne demande rien d’autre que de faire.',
-      'Une production qui sort du foyer. Un texte, une photo, une vidéo montrable — la valorisation à l’extérieur est un levier que les équipes n’ont pas les moyens de fabriquer seules.',
+      'Une production qui sort du foyer. Un texte, une photo, une vidéo montrable : la valorisation à l’extérieur est un levier que les équipes n’ont pas les moyens de fabriquer seules.',
       'Un support pour parler de soi sans être interrogé, ce qui est rarement possible ailleurs pour un jeune dont l’histoire est déjà écrite dans un dossier.',
       'Des observations utilisables dans le rapport de situation annuel, à condition qu’elles soient factuelles et datées.',
     ],
@@ -170,7 +170,7 @@ export const ETABLISSEMENTS: Etablissement[] = [
       'Des groupes qui changent d’une séance à l’autre : les arrivées et les départs sont la règle, pas l’exception. Un atelier qui suppose la présence des mêmes jeunes pendant dix semaines ne tiendra pas.',
     ],
     avantDeFaireEntrer: [
-      'L’extrait de casier judiciaire n° 3 — vérifié systématiquement, et récent.',
+      'L’extrait de casier judiciaire n° 3 : vérifié systématiquement, et récent.',
       'La qualification correspondant à la médiation proposée.',
       'L’attestation d’assurance en responsabilité civile professionnelle.',
       'Un déroulé écrit précisant ce qui est produit, ce qui en est conservé et ce qui en sort de l’établissement.',
@@ -181,7 +181,7 @@ export const ETABLISSEMENTS: Etablissement[] = [
         ou: 'Code civil, article 375, dernier alinéa',
       },
       {
-        quoi: 'Le service élabore au moins une fois par an un rapport sur la situation de tout enfant accueilli — tous les six mois avant deux ans ; son contenu est porté à la connaissance des parents et du mineur selon son âge et sa maturité.',
+        quoi: 'Le service élabore au moins une fois par an un rapport sur la situation de tout enfant accueilli, tous les six mois avant deux ans ; son contenu est porté à la connaissance des parents et du mineur selon son âge et sa maturité.',
         ou: 'Code de l’action sociale et des familles, article L223-5',
       },
     ],
@@ -195,18 +195,18 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Organiser un atelier collectif quand le service n’a pas de murs : ce que change l’intervention sur les lieux de vie, les formats qui tiennent, et les pièces à réunir.',
     presentation:
-      'Un SESSAD accompagne des enfants et adolescents sur leurs lieux de vie : domicile, école, parfois crèche ou stage. Il n’a pas de collectif permanent — seul de cette liste — et c’est ce qui complique l’organisation d’un atelier.',
+      'Un SESSAD accompagne des enfants et adolescents sur leurs lieux de vie : domicile, école, parfois crèche ou stage. Il n’a pas de collectif permanent, seul de cette liste, et c’est ce qui complique l’organisation d’un atelier.',
     publicAccueilli:
       'Des jeunes scolarisés en milieu ordinaire la plupart du temps, souvent seuls de leur situation dans leur classe. Le collectif est précisément ce qui leur manque, et ce qu’un atelier peut leur offrir ponctuellement.',
     cequunAtelierApporte: [
       'Le groupe, justement. Se retrouver avec d’autres jeunes accompagnés par le même service est, pour beaucoup, la première occasion de ne pas être l’exception.',
       'Un temps fort qui donne au service une actualité à partager avec les familles et avec les établissements scolaires partenaires.',
       'Un support commun aux professionnels du service, qui travaillent le reste du temps chacun de leur côté.',
-      'Des observations en situation collective, que le suivi individuel ne permet jamais de recueillir — et qui alimentent utilement l’équipe de suivi de la scolarisation.',
+      'Des observations en situation collective, que le suivi individuel ne permet jamais de recueillir : et qui alimentent utilement l’équipe de suivi de la scolarisation.',
     ],
     contraintes: [
       'Un format court et concentré : une demi-journée, ou un cycle de trois séances sur les vacances scolaires, plutôt qu’un rendez-vous hebdomadaire que les emplois du temps ne supportent pas.',
-      'Un lieu à trouver — locaux du service, salle municipale, établissement partenaire. La question du lieu se règle avant celle du contenu, pas l’inverse.',
+      'Un lieu à trouver : locaux du service, salle municipale, établissement partenaire. La question du lieu se règle avant celle du contenu, pas l’inverse.',
       'Des âges et des situations très hétérogènes dans le même groupe, puisque le service ne recrute pas par classe d’âge.',
       'Le transport, qui est presque toujours le vrai facteur limitant. Un atelier réussi dont la moitié du groupe n’a pas pu venir n’est pas un atelier réussi.',
     ],
@@ -214,7 +214,7 @@ export const ETABLISSEMENTS: Etablissement[] = [
       'La qualification correspondant à la médiation proposée.',
       'L’extrait de casier judiciaire n° 3.',
       'L’attestation d’assurance en responsabilité civile professionnelle, couvrant l’intervention hors les murs.',
-      'Une fiche précisant le matériel apporté et l’espace nécessaire — un service sans locaux ne peut pas improviser.',
+      'Une fiche précisant le matériel apporté et l’espace nécessaire : un service sans locaux ne peut pas improviser.',
     ],
     cadre: [
       {
@@ -232,13 +232,13 @@ export const ETABLISSEMENTS: Etablissement[] = [
     description:
       'Un atelier en ESAT : articuler l’activité de production et le soutien médico-social, choisir un créneau qui ne désorganise pas la chaîne, et réunir les pièces nécessaires.',
     presentation:
-      'Un ESAT accueille des adultes en situation de handicap dans une activité professionnelle en milieu protégé, avec un soutien médico-social. C’est un lieu de travail — avec des délais et des clients — et un lieu d’accompagnement.',
+      'Un ESAT accueille des adultes en situation de handicap dans une activité professionnelle en milieu protégé, avec un soutien médico-social. C’est un lieu de travail, avec des délais et des clients, et un lieu d’accompagnement.',
     publicAccueilli:
       'Des adultes pour qui le statut de travailleur est central. On ne s’adresse pas ici à des personnes accompagnées, mais à des collègues.',
     cequunAtelierApporte: [
       'Un temps de soutien qui ne ressemble pas à une réunion. L’activité physique adaptée, la socio-esthétique ou l’expression corporelle sont mieux reçues qu’un temps de parole en salle.',
       'Une occasion de travailler l’image de soi, sujet massif et rarement abordé de front dans un cadre professionnel.',
-      'Un support pour les moniteurs d’atelier eux-mêmes, qui portent seuls la tension entre production et accompagnement — c’est aussi ce que l’analyse des pratiques professionnelles vient soulager.',
+      'Un support pour les moniteurs d’atelier eux-mêmes, qui portent seuls la tension entre production et accompagnement : c’est aussi ce que l’analyse des pratiques professionnelles vient soulager.',
       'Une respiration collective sur des périodes de forte charge, où l’équipe cherche justement à éviter que la tension se règle en conflit.',
     ],
     contraintes: [
@@ -250,7 +250,7 @@ export const ETABLISSEMENTS: Etablissement[] = [
     avantDeFaireEntrer: [
       'La qualification correspondant à la médiation proposée.',
       'L’attestation d’assurance en responsabilité civile professionnelle.',
-      'La connaissance du public adulte en situation de handicap — une expérience exclusivement enfance se voit en une séance.',
+      'La connaissance du public adulte en situation de handicap : une expérience exclusivement enfance se voit en une séance.',
       'Un déroulé compatible avec un créneau fixe et court, généralement une heure.',
     ],
     cadre: [],

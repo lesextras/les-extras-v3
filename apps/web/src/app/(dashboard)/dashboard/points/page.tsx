@@ -159,7 +159,7 @@ export default async function PointsPage() {
               La réduction est CALCULÉE ici (reductionApplicable), elle n'est
               déduite par aucun automatisme : c'est l'équipe qui l'applique sur
               la facture, à la demande. Aucune tâche planifiée ne périme non
-              plus les points. Le texte annonçait les deux comme acquis — une
+              plus les points. Le texte annonçait les deux comme acquis, une
               promesse qu'aucune ligne de code ne tient se paie en confiance
               perdue le jour de la première facture. */}
           <p className="text-sm text-muted-foreground">

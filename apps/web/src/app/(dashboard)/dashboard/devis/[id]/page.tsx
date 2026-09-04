@@ -48,7 +48,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const euros = (v: string | number | null | undefined) =>
-  v == null ? "—" : Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  v == null ? "-" : Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 
 export default async function DevisDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
   const params = await paramsPromesse;
@@ -78,8 +78,8 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
         title={q.title}
         subtitle={`${q.reference} · ${
           q.viewerIsClient
-            ? `Intervenant : ${q.providerAccount?.name ?? "—"}`
-            : `Établissement : ${q.clientAccount?.name ?? "—"}`
+            ? `Intervenant : ${q.providerAccount?.name ?? "-"}`
+            : `Établissement : ${q.clientAccount?.name ?? "-"}`
         }`}
       />
 
@@ -237,7 +237,7 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
         <Card className="border-success/30 bg-success/10">
           <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
             <div className="text-sm text-foreground">
-              <p>Devis accepté — la prestation est confirmée et la réservation créée.</p>
+              <p>Devis accepté : la prestation est confirmée et la réservation créée.</p>
               {q.acceptedByName ? (
                 <p className="mt-1 text-xs text-muted-foreground">
                   Bon pour accord donné par {q.acceptedByName}
@@ -260,7 +260,7 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
       {q.status === "REFUSED" ? (
         <Card>
           <CardContent className="p-4 text-sm text-muted-foreground">
-            Devis non retenu{q.refusalReason ? ` — ${q.refusalReason}` : ""}.
+            Devis non retenu{q.refusalReason ? `, ${q.refusalReason}` : ""}.
           </CardContent>
         </Card>
       ) : null}

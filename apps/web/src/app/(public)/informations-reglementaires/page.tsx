@@ -15,7 +15,7 @@ import {
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Informations réglementaires — organisme de formation",
+  title: "Informations réglementaires, organisme de formation",
   description:
     "Identité de l’organisme, prérequis, délais d’accès, modalités d’évaluation, accessibilité, indicateurs de résultats et procédure de réclamation.",
   path: "/informations-reglementaires",
@@ -56,7 +56,7 @@ export const metadata: Metadata = metaPublique({
 const RELEVE_LE = "2 septembre 2026";
 
 const IDENTITE = [
-  ["Raison sociale", "Association ADéPA — association loi 1901"],
+  ["Raison sociale", "Association ADéPA, association loi 1901"],
   ["Dispositif", "LES EXTRAS"],
   ["Siège social", "7 rue André Malraux, 77000 Melun"],
   ["SIRET", "820 051 852 00011"],
@@ -118,15 +118,15 @@ const DELAIS = [
 
 const EVALUATION = [
   "Les mini-formations en ligne enregistrent la progression module par module : chaque module porte une durée minimale de consultation, et le parcours est réputé suivi lorsque tous les modules ont été parcourus.",
-  "Chaque module se termine par trois critères vérifiables — « Avant de passer au module suivant » — que l’apprenant coche lui-même. Ce ne sont pas des questions de connaissance : ce sont des productions (une grille remplie, une phrase écrite, un relevé compté).",
+  "Chaque module se termine par trois critères vérifiables, « Avant de passer au module suivant », que l’apprenant coche lui-même. Ce ne sont pas des questions de connaissance : ce sont des productions (une grille remplie, une phrase écrite, un relevé compté).",
   "Il n’y a ni examen, ni note, ni classement.",
   "Les formations facturées au devis suivent les modalités d’évaluation décrites sur leur propre fiche, et donnent lieu à une attestation de fin de formation.",
 ];
 
 const ACCESSIBILITE = [
   "Les parcours en ligne se lisent au clavier, se redimensionnent, et n’imposent ni durée ni rythme : ils sont accessibles sans date de fin et se fractionnent librement.",
-  "Les contenus sont écrits en phrases courtes, sans jargon non expliqué, et chaque grille est reproduite en texte plutôt qu’en image — une image de tableau n’est pas lisible par une synthèse vocale.",
-  "Pour toute situation de handicap nécessitant un aménagement — sur une formation en ligne comme en présentiel —, prenez contact avant l’inscription : nous étudions l’aménagement possible et, si nous ne pouvons pas le proposer, nous orientons vers un organisme qui le peut.",
+  "Les contenus sont écrits en phrases courtes, sans jargon non expliqué, et chaque grille est reproduite en texte plutôt qu’en image : une image de tableau n’est pas lisible par une synthèse vocale.",
+  "Pour toute situation de handicap nécessitant un aménagement, sur une formation en ligne comme en présentiel, , prenez contact avant l’inscription : nous étudions l’aménagement possible et, si nous ne pouvons pas le proposer, nous orientons vers un organisme qui le peut.",
 ];
 
 const RECLAMATION = [
@@ -158,7 +158,7 @@ export default function InformationsReglementairesPage() {
         </p>
       </header>
 
-      {/* 1 — L'organisme */}
+      {/* 1, L'organisme */}
       <section className="space-y-5">
         <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <Building2 className="size-5 text-primary" />
@@ -189,7 +189,7 @@ export default function InformationsReglementairesPage() {
         </p>
       </section>
 
-      {/* 2 — Deux catégories */}
+      {/* 2, Deux catégories */}
       <section className="space-y-5">
         <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <FileText className="size-5 text-primary" />
@@ -212,7 +212,7 @@ export default function InformationsReglementairesPage() {
         </div>
       </section>
 
-      {/* 3 — Prérequis */}
+      {/* 3, Prérequis */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">Prérequis</h2>
         <ul className="space-y-2">
@@ -227,7 +227,7 @@ export default function InformationsReglementairesPage() {
         </ul>
       </section>
 
-      {/* 4 — Délais d'accès */}
+      {/* 4, Délais d'accès */}
       <section className="space-y-4">
         <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <CalendarClock className="size-5 text-primary" />
@@ -251,7 +251,7 @@ export default function InformationsReglementairesPage() {
         </div>
       </section>
 
-      {/* 5 — Évaluation et sanction */}
+      {/* 5, Évaluation et sanction */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">
           Modalités d’évaluation et sanction du parcours
@@ -290,7 +290,7 @@ export default function InformationsReglementairesPage() {
         </div>
       </section>
 
-      {/* 6 — Accessibilité */}
+      {/* 6, Accessibilité */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">
           Accessibilité et situation de handicap
@@ -315,7 +315,7 @@ export default function InformationsReglementairesPage() {
         </p>
       </section>
 
-      {/* 7 — Indicateurs */}
+      {/* 7, Indicateurs */}
       <section className="space-y-4">
         <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <Gauge className="size-5 text-primary" />
@@ -336,7 +336,7 @@ export default function InformationsReglementairesPage() {
         </div>
       </section>
 
-      {/* 8 — Réclamation */}
+      {/* 8, Réclamation */}
       <section className="space-y-4">
         <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <MessageSquareWarning className="size-5 text-primary" />
@@ -357,7 +357,7 @@ export default function InformationsReglementairesPage() {
         </ol>
       </section>
 
-      {/* 9 — Médiation : ce qui manque, dit franchement */}
+      {/* 9, Médiation : ce qui manque, dit franchement */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">
           Médiation de la consommation

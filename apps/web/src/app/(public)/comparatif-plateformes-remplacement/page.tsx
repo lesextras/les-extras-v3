@@ -55,7 +55,7 @@ const LIGNES: Ligne[] = [
   },
   {
     question: 'Ce que paie le professionnel',
-    brigad: '15 % TTC de frais de service sur chaque mission — 9,9 % TTC pour les missions d’infirmier.',
+    brigad: '15 % TTC de frais de service sur chaque mission, 9,9 % TTC pour les missions d’infirmier.',
     hublo: 'Rien : l’inscription du soignant est gratuite.',
     nous: 'Rien. La commission est à zéro : le tarif chiffré lui revient intégralement.',
   },
@@ -68,14 +68,14 @@ const LIGNES: Ligne[] = [
   {
     question: 'Si vous embauchez durablement quelqu’un rencontré sur la plateforme',
     brigad: 'Non publié.',
-    hublo: '2 000 € HT pour un aide-soignant, 3 000 € HT pour un infirmier issu du vivier — sauf après douze mois ou trente missions, les deux n’étant pas cumulatifs.',
+    hublo: '2 000 € HT pour un aide-soignant, 3 000 € HT pour un infirmier issu du vivier, sauf après douze mois ou trente missions, les deux n’étant pas cumulatifs.',
     nous: 'Rien. Une embauche est une bonne nouvelle, pas un événement facturable.',
   },
   {
     question: 'Mission annulée à moins de 48 heures',
     brigad: '25 % du montant du premier jour la veille ; 50 % du premier jour et 25 % du second le jour même.',
     hublo: 'Toute mission annulée à moins de 48 heures avant son début est facturée.',
-    nous: 'Rien n’est facturé — il n’y a rien à facturer.',
+    nous: 'Rien n’est facturé, il n’y a rien à facturer.',
   },
   {
     question: 'Statut du professionnel',
@@ -86,10 +86,10 @@ const LIGNES: Ligne[] = [
 ];
 
 const OU_VERIFIER = [
-  'Brigad — page « frais de service » côté entreprises et côté talents, et centre d’aide, article « Tout sur les frais de service ». Les pourcentages y sont écrits en toutes lettres, et confirmés par les exemples chiffrés que Brigad publie lui-même.',
-  'Brigad — conditions générales d’utilisation, annexes relatives aux missions indépendants et aux emplois salariés, pour les frais d’annulation.',
-  'Hublo — conditions générales de vente, article 7 pour les conditions financières et annexe 1 pour le Pool : frais de recrutement, exonérations, facturation des annulations.',
-  'Hublo — conditions générales d’utilisation à destination des soignants, article 4.3, pour la gratuité de l’inscription.',
+  'Brigad : page « frais de service » côté entreprises et côté talents, et centre d’aide, article « Tout sur les frais de service ». Les pourcentages y sont écrits en toutes lettres, et confirmés par les exemples chiffrés que Brigad publie lui-même.',
+  'Brigad : conditions générales d’utilisation, annexes relatives aux missions indépendants et aux emplois salariés, pour les frais d’annulation.',
+  'Hublo, conditions générales de vente, article 7 pour les conditions financières et annexe 1 pour le Pool : frais de recrutement, exonérations, facturation des annulations.',
+  'Hublo : conditions générales d’utilisation à destination des soignants, article 4.3, pour la gratuité de l’inscription.',
 ];
 
 export default function ComparatifRemplacementPage() {
@@ -155,7 +155,7 @@ Trois façons de financer le même service, d’après ce que chaque acteur publ
         <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
 Une plateforme gratuite sans modèle économique visible inquiète, à juste titre. Il
           n’y a pas de piège : Les Extras est édité par une association loi 1901, pas par une société financée pour croître.
-          Deux choses, et deux seulement, sont payantes — et aucune n’est le renfort.
+          Deux choses, et deux seulement, sont payantes : et aucune n’est le renfort.
         </p>
         <ul className="mt-6 space-y-4">
           <li className="flex gap-3">

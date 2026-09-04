@@ -171,8 +171,8 @@ export default async function FormationPubliquePage({
                 « Public visé » occupait une demi-colonne et laissait l'autre
                 vide : sur une mini-formation, ni durée en heures, ni ville, ni
                 certification ne sont renseignées, donc l'encart restait seul
-                sur sa ligne. Les deux vont ensemble à la lecture — à qui ça
-                s'adresse, et ce qu'il faut avant — et ils comblent la ligne. */}
+                sur sa ligne. Les deux vont ensemble à la lecture, à qui ça
+                s'adresse, et ce qu'il faut avant : et ils comblent la ligne. */}
             {f.prerequisites ? <Attribut icon={<ListChecks className="size-4" />} label="Prérequis" value={f.prerequisites} ton="secondaire" /> : null}
             {f.city ? <Attribut icon={<MapPin className="size-4" />} label="Lieu" value={f.city} /> : null}
             {f.certificationName ? <Attribut icon={<BadgeCheck className="size-4" />} label="Certification" value={f.certificationName} /> : null}
@@ -241,7 +241,7 @@ export default async function FormationPubliquePage({
               l'afficher quand même reviendrait à demander un devis pour un
               contenu accessible en un clic.
 
-              On bascule donc sur un bloc entièrement distinct — un prix
+              On bascule donc sur un bloc entièrement distinct, un prix
               (gratuit), un bouton (commencer), et la mention honnête de
               l'attestation payante, qui est le seul élément facturé.
               Aucune formation existante n'est touchée : `freeOnline` vaut
@@ -289,14 +289,14 @@ export default async function FormationPubliquePage({
               </CardContent>
             </Card>
           ) : null}
-          {/* COMMENT ÇA SE PASSE — le bloc qui manquait.
+          {/* COMMENT ÇA SE PASSE, le bloc qui manquait.
 
               La fiche décrivait très bien la pédagogie (méthodologie,
               évaluation, prérequis, programme) et ne disait NULLE PART ce qui
               arrive quand on clique sur « Commencer la formation » : qu'on
               quitte ce site, qu'on arrive sur un espace de formation qui porte
               un autre nom, et qu'on n'a aucune carte bancaire à sortir. Sur une
-              offre gratuite, c'est exactement là qu'on perd les gens — d'autant
+              offre gratuite, c'est exactement là qu'on perd les gens, d'autant
               que la page porte par ailleurs un bouton « Créer un compte » qui
               parle d'autre chose (un compte Les Extras, sans rapport).
 
@@ -327,15 +327,15 @@ export default async function FormationPubliquePage({
             </Card>
           ) : null}
 
-          {/* LA FICHE RÉCAP — une page A4 qui résume tout le parcours : la
+          {/* LA FICHE RÉCAP, une page A4 qui résume tout le parcours : la
               notion clé, les quatre modules, le schéma central, l'arbre de
               décision, la grille de relevé vierge, les erreurs fréquentes.
 
               Elle est ici, AVANT l'inscription et en libre accès, parce que
               c'est le meilleur aperçu possible de ce que vaut le parcours :
               on voit en dix secondes s'il traite bien le problème qu'on a.
-              Les fichiers sont générés par scripts/mini-formations —
-              `fiches-recap.js` — donc ils ne peuvent pas se désynchroniser
+              Les fichiers sont générés par scripts/mini-formations
+              `fiches-recap.js` : donc ils ne peuvent pas se désynchroniser
               du contenu des modules.
 
               Le PDF est vectoriel (~200 Ko) : il s'imprime net en A4. */}
@@ -400,13 +400,13 @@ export default async function FormationPubliquePage({
 
               {/* Même inversion que sur les fiches atelier : « S'inscrire »
                   passe par /marketplace, donc par la connexion. Le devis, lui,
-                  n'exige rien — et c'est de toute façon au devis que se vend
+                  n'exige rien : et c'est de toute façon au devis que se vend
                   une formation Qualiopi, facturée à l'établissement. */}
               <div className="space-y-2">
                 <PublicQuoteForm formationSlug={f.slug} titre={f.title} principal />
                 <Button asChild variant="outline" className="w-full">
                   <Link href={`/marketplace/formations/${f.id}`}>
-                    S’inscrire à une session — j’ai un compte
+                    S’inscrire à une session, j’ai un compte
                   </Link>
                 </Button>
                 <p className="text-center text-xs text-muted-foreground">
@@ -418,7 +418,7 @@ export default async function FormationPubliquePage({
                 <p className="flex items-center gap-1.5"><ShieldCheck className="size-3.5" /> Certification Qualiopi ADéPA</p>
                 {/* ⚠ « ATTESTATION ET CERTIFICAT DÉLIVRÉS » CONTREDISAIT
                     FRONTALEMENT LE BLOC SITUÉ PLUS HAUT SUR LA MÊME PAGE, qui
-                    dit — à raison — « ni diplôme, ni certification
+                    dit, à raison, « ni diplôme, ni certification
                     professionnelle ». Ce qui est délivré est une attestation de
                     suivi nominative, facultative, à 20 €. Le mot « certificat »
                     laisse entendre autre chose : c'est exactement la pratique

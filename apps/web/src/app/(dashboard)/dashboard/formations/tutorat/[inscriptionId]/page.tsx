@@ -38,7 +38,7 @@ export default async function TutoratPage({ params: paramsPromesse }: { params: 
           ← Retour aux formations
         </Link>
       </div>
-      <PageHeader title={`Tutorat — ${learner}`} subtitle="Accompagnement individualisé : projet d'avenir, jalons et entretiens de suivi." />
+      <PageHeader title={`Tutorat, ${learner}`} subtitle="Accompagnement individualisé : projet d'avenir, jalons et entretiens de suivi." />
       <TutoratPanel
         inscriptionId={params.inscriptionId}
         accountId={session.account.id}

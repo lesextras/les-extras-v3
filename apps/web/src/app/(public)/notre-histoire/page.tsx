@@ -11,7 +11,7 @@ import { PageHeader } from "../../_shared/ui";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Notre histoire — l’association ADéPA",
+  title: "Notre histoire, l’association ADéPA",
   description:
     "Le dispositif de mise en relation de l’association ADéPA, créée en 2012 : éducation, prévention et animation auprès des jeunes et des familles.",
   path: "/notre-histoire",
@@ -46,7 +46,7 @@ export default function NotreHistoirePage() {
     <div className="space-y-14">
       <PageHeader
         title="Notre histoire"
-        subtitle="Les Extras est développée par l’ADéPA — Association pour le Développement de l’Éducation Par l’Animation."
+        subtitle="Les Extras est développée par l’ADéPA, Association pour le Développement de l’Éducation Par l’Animation."
       />
 
       <section className="space-y-4">

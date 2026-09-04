@@ -149,7 +149,7 @@ export function BasculeNotifications() {
     setMessage(null);
     try {
       await fetch("/api/proxy/push/essai", { method: "POST" });
-      setMessage("Envoi lancé — la notification doit arriver dans quelques secondes.");
+      setMessage("Envoi lancé : la notification doit arriver dans quelques secondes.");
     } finally {
       setOccupe(false);
     }

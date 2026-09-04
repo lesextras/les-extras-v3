@@ -30,7 +30,7 @@ export default async function MonDossierPage() {
         title="Mon dossier"
         subtitle={
           intervenant
-            ? "Les pièces que les établissements attendent avant de vous confier une intervention. Vous les déposez ici une fois — elles servent partout."
+            ? "Les pièces que les établissements attendent avant de vous confier une intervention. Vous les déposez ici une fois, elles servent partout."
             : "Les pièces obligatoires de votre dossier professionnel dans cette structure."
         }
         actions={

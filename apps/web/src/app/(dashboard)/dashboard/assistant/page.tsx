@@ -16,7 +16,7 @@ export default async function AssistantPage() {
   if (!adherent) {
     return (
       <AdherentGate
-        titre="LEX — l'assistant d'écriture professionnelle"
+        titre="LEX : l'assistant d'écriture professionnelle"
         description="Vos notes brutes deviennent des écrits professionnels : notes d'observation, rapports de situation, transmissions, comptes rendus. Trois minutes au lieu de trente."
         benefices={[
           "Noms masqués avant tout traitement, notes jamais stockées",
@@ -33,7 +33,7 @@ export default async function AssistantPage() {
     <div className="space-y-6">
       <PageHeader
         title="LEX · Assistant d'écriture"
-        subtitle="Vos notes brutes deviennent des écrits professionnels — notes, rapports, transmissions, courriers aux parents et aux partenaires. Déposez un de vos écrits : LEX apprend votre trame et rédige dedans, puis vous téléchargez en Word ou en PDF."
+        subtitle="Vos notes brutes deviennent des écrits professionnels : notes, rapports, transmissions, courriers aux parents et aux partenaires. Déposez un de vos écrits : LEX apprend votre trame et rédige dedans, puis vous téléchargez en Word ou en PDF."
       />
       <AssistantStudio
         peutPublier={["OWNER", "ADMIN", "MANAGER"].includes(session.account.role)}

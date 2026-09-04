@@ -225,7 +225,7 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                         {(() => {
                           const items = rattachements(u);
                           if (items.length === 0)
-                            return <span className="text-xs text-muted-foreground">—</span>;
+                            return <span className="text-xs text-muted-foreground">-</span>;
                           return (
                             <div className="flex max-w-[260px] flex-wrap gap-1">
                               {items.map((it, i) => (

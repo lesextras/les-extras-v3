@@ -57,7 +57,7 @@ function Formulaire() {
         <h1 className="mt-6 text-2xl font-bold tracking-tight">Lien incomplet</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           Cette adresse ne contient pas de jeton de réinitialisation. Le lien a peut-être été
-          coupé en passant d’un logiciel à l’autre — recopiez-le en entier, ou demandez-en un
+          coupé en passant d’un logiciel à l’autre : recopiez-le en entier, ou demandez-en un
           nouveau.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">

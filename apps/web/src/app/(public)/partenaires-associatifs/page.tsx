@@ -196,7 +196,7 @@ export default function PartenairesAssociatifsPage() {
         </p>
       </section>
 
-      {/* L'appel à partenariat — à la place d'une liste de partenaires que
+      {/* L'appel à partenariat : à la place d'une liste de partenaires que
           nous n'avons pas encore. Dire « soyez le premier » est vrai ;
           afficher trois logos empruntés ne l'aurait pas été. */}
       <section className="rounded-2xl bg-primary p-8 text-primary-foreground">

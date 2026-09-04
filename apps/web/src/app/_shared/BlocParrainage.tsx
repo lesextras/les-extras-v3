@@ -88,7 +88,7 @@ export function BlocParrainage({ accountId }: { accountId: string }) {
       </CardContent>
     </Card>
 
-    {/* PARRAINER UNE STRUCTURE — bloc à part, et récompense à part.
+    {/* PARRAINER UNE STRUCTURE : bloc à part, et récompense à part.
 
         Amener un confrère, c'est ajouter de l'offre. Amener une MECS ou un
         IME, c'est ajouter de la demande : des renforts à couvrir, des
@@ -108,7 +108,7 @@ export function BlocParrainage({ accountId }: { accountId: string }) {
             {data.pointsParFilleulEtablissement} points
           </strong>
           {data.pointsParFilleulActif > 0
-            ? ` — ${Math.round(data.pointsParFilleulEtablissement / data.pointsParFilleulActif)} fois un parrainage ordinaire.`
+            ? ` : ${Math.round(data.pointsParFilleulEtablissement / data.pointsParFilleulActif)} fois un parrainage ordinaire.`
             : "."}{" "}
           Une structure qui entre ne commande pas une fois : elle revient.
         </p>
@@ -136,7 +136,7 @@ export function BlocParrainage({ accountId }: { accountId: string }) {
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           C'est le même lien : c'est ce que votre filleul choisit à
-          l'inscription — établissement ou intervenant — qui décide du montant.
+          l'inscription, établissement ou intervenant, qui décide du montant.
         </p>
       </CardContent>
     </Card>

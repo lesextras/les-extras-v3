@@ -151,7 +151,7 @@ export default async function DashboardFormationsPage() {
       {sessions.length > 0 ? (
         <div className="space-y-4">
           <SectionTitle
-            title={`Sessions à animer — ${aVenir.length}`}
+            title={`Sessions à animer, ${aVenir.length}`}
             action={
               passees.length > 0 ? (
                 <span className="text-xs text-muted-foreground">

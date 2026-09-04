@@ -68,7 +68,7 @@ export default async function TempsDeTravailPage() {
 
       {/* Les règles ne concernent que ceux qui peuvent les changer. Elles
           restent en bas : on les consulte, on ne les manipule pas tous les
-          jours — et elles engagent la convention collective. */}
+          jours : et elles engagent la convention collective. */}
       {canDecide ? (
         error ? (
           <ErrorState description={error} />
@@ -81,7 +81,7 @@ export default async function TempsDeTravailPage() {
                 médico-social, la seule majoration imposée par la loi est celle du 1<sup>er</sup> mai :
                 la nuit, le dimanche et les dix autres jours fériés relèvent de votre convention
                 collective ou de votre accord d’entreprise. Tant que rien n’est renseigné, les
-                chiffrages sortent sans majoration — et le disent.
+                chiffrages sortent sans majoration, et le disent.
               </p>
             </div>
             <ParametresTemps

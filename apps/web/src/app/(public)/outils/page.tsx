@@ -20,7 +20,7 @@ const OUTILS = [
   {
     href: "/outils/budget-ateliers",
     titre: "Budget annuel d'ateliers",
-    texte: "Coût total, coût par jeune, coût par jeune et par mois — les chiffres qui font passer un arbitrage en direction.",
+    texte: "Coût total, coût par jeune, coût par jeune et par mois, les chiffres qui font passer un arbitrage en direction.",
     icone: PiggyBank,
   },
 ];

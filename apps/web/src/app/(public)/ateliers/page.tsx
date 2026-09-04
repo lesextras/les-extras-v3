@@ -37,7 +37,7 @@ export default async function AteliersCatalogPage({
         Sans ce bloc, elles ne seraient reliées que par le plan du site : un
         moteur de recherche suit les liens, il ne devine pas. Et pour un
         visiteur, la question qui précède « quel atelier ? » est toujours
-        « est-ce que ça marche chez moi ? » — c'est à cette question-là que ces
+        « est-ce que ça marche chez moi ? » : c'est à cette question-là que ces
         pages répondent, chacune avec les contraintes de son type de structure.
       */}
       <section className="mt-16 border-t border-border pt-10">

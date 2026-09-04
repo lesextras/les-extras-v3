@@ -140,8 +140,8 @@ function Ligne({
             {role === "prestataire" ? " · vous intervenez" : " · vous réservez"}
             {participants ? ` · ${participants} participant${participants > 1 ? "s" : ""}` : ""}
           </p>
-          {/* Les précisions du demandeur — public accueilli, objectifs,
-              contraintes — décident souvent de l'acceptation. Les saisir puis
+          {/* Les précisions du demandeur : public accueilli, objectifs,
+              contraintes : décident souvent de l'acceptation. Les saisir puis
               ne jamais les montrer revenait à les perdre. */}
           {note ? (
             <p className="mt-2 max-w-prose whitespace-pre-line rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
@@ -173,7 +173,7 @@ export type VueReservation = "tout" | "ateliers" | "formations";
 export const TITRE_VUE: Record<VueReservation, { titre: string; sous: string }> = {
   tout: {
     titre: "Mes réservations",
-    sous: "Renforts, ateliers et formations — ce que vous avez réservé comme ce que vous animez, au même endroit.",
+    sous: "Renforts, ateliers et formations, ce que vous avez réservé comme ce que vous animez, au même endroit.",
   },
   ateliers: {
     titre: "Mes réservations ateliers",
@@ -266,7 +266,7 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
           }
           description={
             vue === "ateliers"
-              ? "Dès qu'un atelier est réservé — par vous ou chez vous — il apparaît ici avec sa date et son statut."
+              ? "Dès qu'un atelier est réservé, par vous ou chez vous, il apparaît ici avec sa date et son statut."
               : vue === "formations"
                 ? "Dès qu'une personne est inscrite à une session, son inscription apparaît ici, avec son financement et son attestation."
                 : "Dès qu'un renfort est pourvu, qu'un atelier est réservé ou qu'un salarié est inscrit à une formation, tout apparaît ici."
@@ -304,7 +304,7 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
 
       {renforts.length > 0 && (
         <section className="space-y-3">
-          <SectionTitle title={`RenforTeam — ${renforts.length}`} />
+          <SectionTitle title={`RenforTeam, ${renforts.length}`} />
           {renforts.map((b) => (
             <Ligne
               key={b.id}
@@ -335,7 +335,7 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
 
       {ateliers.length > 0 && (
         <section className="space-y-3">
-          <SectionTitle title={`Ateliers — ${ateliers.length}`} />
+          <SectionTitle title={`Ateliers, ${ateliers.length}`} />
           {ateliers.map((b) => (
             <Ligne
               key={b.id}
@@ -373,7 +373,7 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
       {inscriptions.length > 0 && (
         <section className="space-y-3">
           <SectionTitle
-            title={`Formations — ${inscriptions.length} inscription${inscriptions.length > 1 ? "s" : ""}`}
+            title={`Formations : ${inscriptions.length} inscription${inscriptions.length > 1 ? "s" : ""}`}
           />
           {inscriptions.map((i) => {
             const apprenant =

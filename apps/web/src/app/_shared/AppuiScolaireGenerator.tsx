@@ -149,7 +149,7 @@ export function AppuiScolaireGenerator() {
               <Lightbulb className="mx-auto size-8 text-muted-foreground/50" />
               <p className="mt-3 max-w-sm text-sm text-muted-foreground">
                 Dites l’âge, la matière et ce que vous observez : vous recevrez un support prêt
-                à poser sur la table — comment l’amener, quoi faire si ça bloque, et à quoi voir
+                à poser sur la table : comment l’amener, quoi faire si ça bloque, et à quoi voir
                 que ça a marché.
               </p>
             </div>

@@ -5,7 +5,7 @@ import { METIERS, VILLES } from "./donnees";
 import { metaPublique } from "@/lib/meta";
 
 export const metadata: Metadata = metaPublique({
-  title: "Renfort éducatif — par métier et par territoire",
+  title: "Renfort éducatif, par métier et par territoire",
   description:
     "Trouvez un intervenant qualifié pour un remplacement en établissement médico-social : éducateur spécialisé, moniteur-éducateur, AES, psychologue. Île-de-France.",
   path: "/renfort",

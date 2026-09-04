@@ -75,7 +75,7 @@ export function ActionsPublication({
           publiée immédiatement, sans aucun contrôle Qualiopi. Celui de
           `/dashboard/formations` ouvre `ProposerFormationModal` : il crée un
           PROGRAMME, en brouillon, relu par ADéPA avant diffusion sous sa
-          certification. Deux tables, deux circuits — un intervenant qui
+          certification. Deux tables, deux circuits, un intervenant qui
           voulait soumettre un programme certifiant depuis son tableau de bord
           publiait en réalité une fiche atelier sans relecture.
           C'est le vrai parcours qui est branché ici. */}
