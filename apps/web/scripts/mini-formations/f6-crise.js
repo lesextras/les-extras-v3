@@ -29,6 +29,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/les-premieres-minutes-d-une-crise.js'); // les quatre quiz de fin de module
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
 
@@ -325,6 +326,7 @@ parcours du catalogue, et le module&nbsp;4 vous dira quand y aller.</p>`,
   ],
   annexes:
     'la <strong>carte de poche des trois réductions</strong> à découper, le <strong>tableau « décrire au lieu de qualifier »</strong>, et la <strong>fiche des limites absolues</strong> à afficher en salle d’équipe.',
+  quiz: Q[0],
   avant: [
     'J’ai décrit une crise réelle en quatre éléments, sans aucun mot de jugement.',
     'Je peux citer les six ajouts, et j’ai coché ceux qui étaient présents chez moi.',
@@ -533,6 +535,7 @@ soirée où l’on ajoute tout ce que ce module demande de retirer.</p>`,
   ],
   annexes:
     'la <strong>scène de Sofiane corrigée</strong> minute par minute, la <strong>grille des sept ajouts</strong> à passer sur votre propre scène, et le <strong>tableau des phrases de cahier</strong> (faits contre qualifications).',
+  quiz: Q[1],
   avant: [
     'Ma scène est découpée en moments, et chaque moment porte un ajout ou un « rien ».',
     'J’ai entouré mon moment de bascule.',
@@ -760,6 +763,7 @@ servira.</p>`,
   ],
   annexes:
     'le <strong>gabarit de la fiche à froid</strong> en cinq lignes, la <strong>banque de signes de montée</strong> par catégorie, les <strong>modèles de phrase unique</strong>, et le <strong>tableau « écrit ainsi, ça s’applique »</strong>.',
+  quiz: Q[2],
   avant: [
     'Mes cinq lignes sont écrites et la feuille est affichée quelque part.',
     'Ma ligne 2 est une conduite concrète à la première personne, pas une intention.',
@@ -967,6 +971,7 @@ mobile, service ressource — pas des raisons de mieux s’organiser.</p>`,
   ],
   annexes:
     'le <strong>relevé de crise en cinq colonnes</strong> sur dix jours, la <strong>fiche de lecture du dixième jour</strong>, le <strong>tableau des phrases de compte rendu</strong>, et la <strong>fiche « à qui s’adresser, et quand »</strong>.',
+  quiz: Q[3],
   avant: [
     'J’ai dix jours de relevé, colonnes 4 et 5 comprises.',
     'J’ai compté mes « rien » sur les deux semaines — comptés, pas estimés.',

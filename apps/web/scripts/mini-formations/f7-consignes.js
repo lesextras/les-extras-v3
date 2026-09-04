@@ -27,6 +27,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/l-enfant-qui-dit-non-a-tout.js'); // les quatre quiz de fin de module
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
 
@@ -332,6 +333,7 @@ après.</p>`,
   ],
   annexes:
     'la <strong>grille de comptage d’une heure</strong>, le <strong>tableau des cinq « non »</strong>, et les <strong>sept défauts avec vingt consignes réécrites</strong>.',
+  quiz: Q[0],
   avant: [
     'J’ai compté mes consignes sur une heure réelle, et j’ai une proportion de refus.',
     'Je peux nommer les cinq « non » et dire lequel je rencontre le plus souvent.',
@@ -522,6 +524,7 @@ parcours «&nbsp;Rendre l’environnement prévisible&nbsp;».</p>`,
   ],
   annexes:
     'la <strong>scène de Camille corrigée</strong> consigne par consigne, la <strong>fiche « une consigne à la fois »</strong>, et le <strong>mémo du choix et de la fausse alternative</strong>.',
+  quiz: Q[1],
   avant: [
     'Ma scène est découpée, et chaque consigne porte un défaut ou un « aucun ».',
     'J’ai identifié ma consigne abandonnée.',
@@ -727,6 +730,7 @@ mesurera rien de comparable.</p>`,
   ],
   annexes:
     'la <strong>fiche des trois colonnes</strong> à remplir, le <strong>gabarit des cinq consignes</strong>, les <strong>vingt consignes réécrites</strong>, et le <strong>mémo « au bout des cinq secondes »</strong>.',
+  quiz: Q[2],
   avant: [
     'Mes trois colonnes sont remplies, la troisième comprise.',
     'Il me reste cinq consignes ou moins, écrites mot pour mot, et chacune passe le test du film.',
@@ -958,6 +962,7 @@ changement de traitement produisent des refus qu’aucune reformulation ne lève
   ],
   annexes:
     'le <strong>relevé de dix jours</strong> à cinq lignes, la <strong>fiche de lecture</strong> aux quatre questions, et le <strong>tableau des phrases d’écrit professionnel</strong>.',
+  quiz: Q[3],
   avant: [
     'J’ai dix jours de relevé, avec mes deux cases personnelles remplies.',
     'J’ai compté F, A et N pour chaque consigne séparément — comptés, pas estimés.',

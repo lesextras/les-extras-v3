@@ -33,6 +33,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/preparer-une-equipe-de-suivi-de-la-scolarisation.js'); // les quatre quiz de fin de module
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
 
@@ -286,6 +287,7 @@ web.</p>`,
   ],
   annexes:
     'la <strong>fiche des textes</strong> (qui fait quoi, sous quel article), le <strong>tableau des deux GEVA-Sco</strong>, et la <strong>liste des cinq raisons d’échec</strong> à passer sur votre dernière réunion.',
+  quiz: Q[0],
   avant: [
     'Je sais qui réunit l’ESS, à quelle fréquence, et je ne confonds plus le D351-10 avec le D351-16-1.',
     'Je sais que le GEVA-Sco réexamen vaut compte rendu, et qu’il remonte à la MDPH.',
@@ -484,6 +486,7 @@ qui les rend efficaces.</p>`,
   ],
   annexes:
     'la <strong>réunion de Noam corrigée</strong> intervention par intervention, le <strong>mémo des deux phrases</strong>, et le <strong>tableau des trois façons de dire les choses difficiles</strong>.',
+  quiz: Q[1],
   avant: [
     'J’ai relu une réunion réelle, intervention par intervention, avec ce qui manquait à chacune.',
     'J’ai repéré le fait qui a été perdu faute d’avoir été demandé à l’écrit.',
@@ -690,6 +693,7 @@ officiel. Si une phrase ne peut pas l’être, elle n’est pas encore finie.</p
   ],
   annexes:
     'le <strong>gabarit de la feuille d’une page</strong>, le <strong>tableau « appréciation → fait »</strong>, la <strong>liste des demandes recopiables</strong>, et les <strong>trois courriels types</strong> (demander une réunion, demander le GEVA-Sco, demander un complément).',
+  quiz: Q[2],
   avant: [
     'Ma feuille tient sur un recto et se lit en moins de trois minutes.',
     'Chacun de mes faits contient une situation, une mesure, une période et ce qui a été essayé.',
@@ -895,6 +899,7 @@ ${A.tableau(
   ],
   annexes:
     'la <strong>grille de relecture en quatre passages</strong>, les <strong>trois courriels types</strong>, et la <strong>page de suivi</strong> à ouvrir pour la réunion suivante.',
+  quiz: Q[3],
   avant: [
     'J’ai relu le document en quatre passages, ou j’ai écrit le courriel pour l’obtenir.',
     'J’ai écrit et envoyé mon courriel de complément, avec deux éléments au maximum.',

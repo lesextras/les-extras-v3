@@ -12,6 +12,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/apprendre-a-demander-plutot-qu-a-crier.js'); // les quatre quiz de fin de module
 
 
 /* ── FIGURES ─────────────────────────────────────────────────────────────── */
@@ -274,6 +275,7 @@ avant.</li>
   ],
   annexes:
     'la <strong>fiche des trois conditions</strong> à cocher, le <strong>tableau des formes de demande</strong>, et <strong>trois remplacements corrigés</strong> — dont deux qui ne remplacent rien.',
+  quiz: Q[0],
   avant: [
     'Je sais dire quelle fonction mon remplacement vise, et je l’ai écrite.',
     'Mon remplacement passe les quatre conditions sans « oui mais ».',
@@ -469,6 +471,7 @@ pause. Un plan lancé le soir où vous êtes seul avec trois enfants et un repas
   ],
   annexes:
     'la <strong>grille d’audit des moments à risque</strong>, le <strong>modèle de phrase à afficher</strong> pour les autres adultes, et <strong>la scène de Noé corrigée</strong> avec les trois versions praticables.',
+  quiz: Q[1],
   avant: [
     'J’ai listé les moments où je ne peux pas répondre en moins de trois secondes.',
     'J’ai une version auto-servie du remplacement pour ces moments-là.',
@@ -637,6 +640,7 @@ depuis le début&nbsp;: on remet le cran précédent quelques jours, et on repar
   ],
   annexes:
     'le <strong>plan en six lignes</strong> à remplir, la <strong>séquence d’enseignement en quatre temps</strong>, et <strong>deux plans corrigés</strong> — un bon et un inapplicable.',
+  quiz: Q[2],
   avant: [
     'Mon plan tient en six lignes sur une feuille.',
     'La ligne 5 — ma réponse au comportement ancien — est écrite, pas seulement pensée.',
@@ -795,6 +799,7 @@ la compétence.</p>`,
   ],
   annexes:
     'le <strong>relevé à deux colonnes</strong> sur quatorze jours, la <strong>fiche de lecture du quatorzième jour</strong>, et le <strong>tableau des quatre lectures</strong> avec la suite à engager.',
+  quiz: Q[3],
   avant: [
     'J’ai quatorze jours de relevé, ou je sais pourquoi il en manque.',
     'J’ai compté les deux colonnes semaine par semaine — quatre nombres écrits.',

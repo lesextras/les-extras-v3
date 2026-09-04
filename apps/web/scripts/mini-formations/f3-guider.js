@@ -8,6 +8,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/guider-puis-s-effacer.js'); // les quatre quiz de fin de module
 
 const ECHELLE = A.tableau(
   ['Niveau', "L'aide, du plus léger au plus lourd", 'Ce qu’elle coûte à retirer'],
@@ -221,6 +222,7 @@ de la fatigue de l’adulte. Écrit à l’avance, il tient.</p>`,
   ],
   annexes:
     'l’<strong>échelle des aides de 0 à 7</strong> à imprimer, la <strong>fiche de mesure du niveau réel</strong>, et un <strong>mémo sur la règle du délai</strong>.',
+  quiz: Q[0],
   avant: [
     'Je peux nommer les niveaux d’aide et dire lequel je donne réellement.',
     'J’ai compté mon délai en secondes, deux fois, sur une vraie situation.',
@@ -363,6 +365,7 @@ normale et elle dure quelques jours.</li>
   ],
   annexes:
     'la <strong>fiche « photo à trois mois »</strong>, le <strong>tableau des reformulations d’écrits</strong> (décrire le dispositif plutôt que la personne), et le <strong>plan d’Inès</strong> tel qu’il aurait dû être écrit.',
+  quiz: Q[1],
   avant: [
     'Je connais mon niveau d’aide aujourd’hui et, autant que possible, celui d’il y a trois mois.',
     'J’ai réécrit une phrase de bilan pour qu’elle décrive le dispositif et non la personne.',
@@ -503,6 +506,7 @@ remplaçant bienveillant fait la tâche à la place et remet le plan à zéro.</
   ],
   annexes:
     'le <strong>plan d’estompage en quatre lignes</strong> à remplir, la <strong>fiche « en cas d’échec »</strong>, et un <strong>modèle de phrase d’annonce</strong>.',
+  quiz: Q[2],
   avant: [
     'Mon plan tient en quatre lignes et le niveau y est traduit en mots concrets.',
     'Mon critère de passage est vérifiable par quelqu’un d’autre que moi.',
@@ -655,6 +659,7 @@ n’est jamais urgent.</p>`,
   ],
   annexes:
     'le <strong>relevé de niveau d’aide</strong> sur quinze jours, le <strong>tableau des crans intermédiaires</strong>, et des <strong>modèles de phrases de bilan</strong> qui décrivent le dispositif.',
+  quiz: Q[3],
   avant: [
     'J’ai relevé le niveau d’aide, pas la réussite, pendant au moins deux semaines.',
     'J’ai calculé mes deux niveaux moyens et repéré mon plus long palier.',

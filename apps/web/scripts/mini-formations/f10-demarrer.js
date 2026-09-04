@@ -27,6 +27,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/aider-a-demarrer-une-tache.js'); // les quatre quiz de fin de module
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
 
@@ -316,6 +317,7 @@ demain.</p>`,
   ],
   annexes:
     'le <strong>tableau des six coûts et des six leviers</strong>, la <strong>liste des amorçages par type de tâche</strong>, et la <strong>fiche « est-ce bien un problème de démarrage&nbsp;? »</strong>.',
+  quiz: Q[0],
   avant: [
     'J’ai une tâche unique et j’ai coché les coûts qui jouent, parmi les six.',
     'J’ai écrit un levier concret et matériel pour chacun.',
@@ -501,6 +503,7 @@ minutes contre vingt minutes de relances&nbsp;», que vous passiez déjà.</p>`,
   ],
   annexes:
     'la <strong>scène de Karim corrigée</strong>, le <strong>tableau « amorcer / faire à la place »</strong>, et la <strong>liste des préparations de deux minutes</strong>, en atelier comme à la maison.',
+  quiz: Q[1],
   avant: [
     'Ma chronologie porte l’heure de ma première intervention.',
     'J’ai coché les coûts présents avant toute intervention.',
@@ -672,6 +675,7 @@ celui qui produira les trois quarts du résultat.</p>`,
   ],
   annexes:
     'le <strong>gabarit de la fiche en cinq lignes</strong>, le <strong>tableau des premières actions</strong>, la <strong>liste des fins visibles</strong>, et le <strong>mémo des phrases à ne pas dire</strong>.',
+  quiz: Q[2],
   avant: [
     'Mes cinq lignes sont écrites et la feuille est affichée.',
     'La ligne 2 porte un nom et une heure.',
@@ -854,6 +858,7 @@ ailleurs coûte des semaines à tout le monde, à commencer par la personne.</li
   ],
   annexes:
     'le <strong>relevé de dix jours</strong> à quatre colonnes, la <strong>fiche de lecture aux quatre issues</strong>, et le <strong>tableau des phrases de bilan</strong>.',
+  quiz: Q[3],
   avant: [
     'J’ai dix jours de relevé, avec la colonne « préparation » remplie.',
     'J’ai calculé — pas estimé — mes deux délais moyens.',

@@ -11,6 +11,7 @@
 
 const G = require('./gabarit-v3.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/les-quatre-fonctions-d-un-comportement.js'); // les quatre quiz de fin de module
 
 
 /* ── FIGURES ─────────────────────────────────────────────────────────────── */
@@ -269,6 +270,7 @@ qu’attend un rapport de situation, une note d’observation ou un compte rendu
   ],
   annexes:
     'la <strong>grille Avant / Comportement / Après</strong> à imprimer, un <strong>mémo des quatre fonctions</strong> avec leurs indices, et <strong>deux relevés corrigés</strong> — un exploitable, un inutilisable — à comparer aux vôtres.',
+  quiz: Q[0],
   avant: [
     'Je peux nommer les quatre fonctions sans relire le module.',
     'J’ai écrit UN comportement en termes observables, sans un seul adjectif.',
@@ -440,6 +442,7 @@ le mot exact plutôt que le résumé.</p>`,
   ],
   annexes:
     'la <strong>trame « scène qui dérape »</strong> à remplir, la <strong>liste des mots à bannir</strong> d’un relevé, et <strong>la scène de Yanis corrigée</strong>, avec l’analyse ligne à ligne.',
+  quiz: Q[1],
   avant: [
     'J’ai écrit une scène de dix à quinze lignes sans un seul mot de jugement.',
     'J’ai identifié ce que le comportement a obtenu dans les dix secondes suivantes.',
@@ -593,6 +596,7 @@ constat qui ne mène nulle part.</p>`,
   ],
   annexes:
     'la <strong>grille en quatre colonnes</strong> prête à imprimer (format poche et format A4), une <strong>feuille de comptage</strong> de la colonne « Après », et <strong>deux relevés corrigés</strong>, l’un exploitable et l’autre non, avec ce qui les distingue.',
+  quiz: Q[2],
   avant: [
     'Ma grille est tracée, le comportement est écrit en haut, et la fenêtre d’observation a une heure de début et de fin.',
     'Ma ligne d’essai a pris moins d’une minute.',
@@ -740,6 +744,7 @@ Savoir s’arrêter fait partie de la compétence.</p>`,
   ],
   annexes:
     'la <strong>fiche de lecture du septième jour</strong>, le <strong>modèle d’hypothèse en trois phrases</strong> à recopier, et un <strong>arbre de décision</strong> qui relie chaque conclusion à la formation suivante du catalogue.',
+  quiz: Q[3],
   avant: [
     'J’ai un relevé d’au moins cinq lignes et je l’ai compté, pas seulement relu.',
     'Mon hypothèse tient en trois phrases et contient un nombre et une proportion.',

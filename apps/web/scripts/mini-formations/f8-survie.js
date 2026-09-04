@@ -27,6 +27,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/lire-un-comportement-comme-une-reaction-de-survie.js'); // les quatre quiz de fin de module
 
 /* ── MODULE 1 ────────────────────────────────────────────────────────────── */
 
@@ -311,6 +312,7 @@ est ailleurs, et il est décisif&nbsp;: c’est celui qui tient le quotidien.</l
   ],
   annexes:
     'le <strong>tableau des sept conduites</strong> et de leurs contextes, la <strong>fiche « ce qui ne se lit pas comme ça »</strong>, et la <strong>liste des réglages du quotidien</strong> déjà écrits.',
+  quiz: Q[0],
   avant: [
     'J’ai décrit une conduite réelle sans lui prêter d’intention.',
     'J’ai écrit deux contextes dans lesquels elle serait une bonne idée.',
@@ -501,6 +503,7 @@ une fois de plus.</p>`,
   ],
   annexes:
     'la <strong>scène de Yasmine corrigée</strong> étape par étape, la <strong>fiche « ce que notre réponse enseigne »</strong> à deux colonnes, et le <strong>mémo sur l’ordre des choses</strong>.',
+  quiz: Q[1],
   avant: [
     'J’ai rempli mes deux colonnes : ce que la réponse visait, ce qu’elle enseignait.',
     'J’ai repéré une inversion d’ordre — quelque chose retiré avant d’être remplacé.',
@@ -702,6 +705,7 @@ survit pas au premier week-end.</p>`,
   ],
   annexes:
     'le <strong>gabarit de la fiche en cinq lignes</strong>, le <strong>tableau des huit réglages</strong> avec ce qui les fait échouer, et les <strong>quatre phrases pour porter un réglage en réunion</strong>.',
+  quiz: Q[2],
   avant: [
     'Mes cinq lignes sont écrites, y compris la ligne 3.',
     'Mon réglage passe les cinq conditions, et il tiendrait un samedi avec un remplaçant.',
@@ -933,6 +937,7 @@ prochain de recommencer à zéro.</li>
   ],
   annexes:
     'le <strong>relevé de quinze jours</strong> à trois colonnes, la <strong>fiche de lecture aux quatre issues</strong>, le <strong>tableau des phrases de rapport</strong>, et la <strong>fiche « à qui cela revient »</strong>.',
+  quiz: Q[3],
   avant: [
     'J’ai quinze jours de relevé, avec la colonne « réglage tenu » remplie.',
     'J’ai compté — pas estimé — les jours avec la conduite et les jours de réglage tenu.',

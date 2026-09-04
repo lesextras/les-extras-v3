@@ -7,6 +7,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/decomposer-une-routine-en-etapes.js'); // les quatre quiz de fin de module
 
 const TROIS_MODES = A.tableau(
   ['Mode', 'Comment ça se passe', 'Quand le choisir', 'Son avantage décisif'],
@@ -237,6 +238,7 @@ d’avoir commencé.</p>`,
   ],
   annexes:
     'la <strong>feuille de chaîne</strong> avec les colonnes S/A/N, <strong>quatre chaînes déjà écrites</strong> (mains, pull, table, sac), et le <strong>tableau des trois modes d’enseignement</strong>.',
+  quiz: Q[0],
   avant: [
     'Ma chaîne compte entre cinq et douze étapes et passe le test du témoin.',
     'Chaque étape décrit ce que fait la personne, pas ce que je fais.',
@@ -400,6 +402,7 @@ chaussures, le manteau, le brossage de dents, mettre la table, préparer son car
   ],
   annexes:
     'la <strong>grille des cinq absences</strong>, le <strong>tableau des phrases de retour</strong>, et <strong>la séance de Malik corrigée</strong>, chaîne et ligne de base comprises.',
+  quiz: Q[1],
   avant: [
     'J’ai identifié au moins deux des cinq absences dans une de mes séances.',
     'J’ai choisi un créneau où cinq secondes de silence sont réellement possibles.',
@@ -549,6 +552,7 @@ servira à rien.</p>`,
   ],
   annexes:
     'la <strong>feuille de chaîne complète</strong> (étapes, S/A/N, mode, cible, critère, phrase), <strong>quatre chaînes prêtes à l’emploi</strong>, et un <strong>exemple entièrement chiffré</strong>.',
+  quiz: Q[2],
   avant: [
     'Ma ligne de base est prise et mes S sont comptés.',
     'Mon mode d’enseignement découle de la règle, pas de mon intuition.',
@@ -707,6 +711,7 @@ avec un ergothérapeute, ou avec un médecin. Une routine n’est jamais urgente
   ],
   annexes:
     'le <strong>relevé de dix jours</strong>, la <strong>fiche de lecture du dixième jour</strong>, et le <strong>tableau des découpages</strong> pour couper une étape trop grosse.',
+  quiz: Q[3],
   avant: [
     'J’ai dix jours de relevé, avec la colonne « aide » remplie.',
     'Je sais combien de fois j’ai aidé avant les cinq secondes.',

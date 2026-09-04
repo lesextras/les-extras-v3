@@ -10,6 +10,7 @@
 const G = require('./gabarit-v3.js');
 const A = require('./annexes.js');
 const S = require('./schemas.js');
+const Q = require('./quiz/rendre-l-environnement-previsible.js'); // les quatre quiz de fin de module
 
 const NIVEAUX = A.tableau(
   ['Niveau de représentation', 'Ce que la personne doit déjà savoir', 'Comment le tester en dix secondes'],
@@ -238,6 +239,7 @@ jour de contrariété devient elle-même le problème.</p>`,
   ],
   annexes:
     'le <strong>tableau des niveaux de représentation</strong> avec le test de dix secondes, le <strong>mémo des cinq causes d’abandon</strong>, et une <strong>liste de repères de temps</strong> selon l’âge et le profil.',
+  quiz: Q[0],
   avant: [
     'Je sais dire à quelle question mon support répondra — une seule.',
     'J’ai testé le niveau de représentation, je ne l’ai pas supposé.',
@@ -391,6 +393,7 @@ coûte cher, à la maison comme ailleurs.</li>
   ],
   annexes:
     'la <strong>grille des cinq causes</strong> à passer sur un support existant, et <strong>le support de Léa refait</strong>, avec son coût d’entretien chiffré.',
+  quiz: Q[1],
   avant: [
     'J’ai passé un support existant aux cinq causes et j’en ai identifié au moins deux.',
     'Je sais dire combien de cases il comptait et qui était censé le mettre à jour.',
@@ -539,6 +542,7 @@ plus vite que les supports en papier — et coûtent bien plus cher à refaire.<
   ],
   annexes:
     'la <strong>fiche de conception</strong> (question, niveau, cases, manipulation, responsabilité), le <strong>gabarit de bande à quatre et six cases</strong>, et la <strong>séquence de la carte « changement »</strong> en trois gestes.',
+  quiz: Q[2],
   avant: [
     'Mon support répond à une seule question, écrite avec les mots de la personne.',
     'Il compte au plus six cases, il porte une marque de fin, et quelque chose s’y manipule.',
@@ -676,6 +680,7 @@ vraiment.</p>`,
   ],
   annexes:
     'le <strong>relevé de quatorze jours</strong> à trois colonnes, la <strong>fiche de lecture</strong> avec les quatre décisions, et un <strong>modèle de phrase d’abandon</strong> à conserver.',
+  quiz: Q[3],
   avant: [
     'J’ai quatorze jours de relevé, avec les trois colonnes.',
     'J’ai compté chaque colonne — pas relu, compté.',
