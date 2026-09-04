@@ -141,7 +141,7 @@ export async function formationPdf(
       : `le ${dateFr(s.startDate)}`,
   );
   ligne(doc, 'Durée', f.durationHours ? `${f.durationHours} heures` : ', ');
-  ligne(doc, 'Lieu', s.location ?? ', ');
+  ligne(doc, 'Lieu', s.location ?? 'Non renseigné');
   ligne(doc, 'Formateur', formateur || ', ');
   ligne(
     doc,
@@ -291,7 +291,7 @@ export async function emargementPdf(d: DonneesEmargementPdf): Promise<Buffer> {
       : `le ${dateFr(s.startDate)}`,
   );
   ligne(doc, 'Durée', s.formation.durationHours ? `${s.formation.durationHours} heures` : ', ');
-  ligne(doc, 'Lieu', s.location ?? ', ');
+  ligne(doc, 'Lieu', s.location ?? 'Non renseigné');
   ligne(doc, 'Formateur', formateur || ', ');
   ligne(doc, 'Inscrits', String(inscriptions.length));
 

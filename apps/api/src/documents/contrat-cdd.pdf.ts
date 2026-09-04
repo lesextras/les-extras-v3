@@ -94,18 +94,18 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
       .filter(Boolean)
       .join(', ') || ', ',
   );
-  ligne(doc, 'SIRET', employeur.siret ?? ', ');
+  ligne(doc, 'SIRET', employeur.siret ?? 'Non renseigné');
   doc.moveDown(0.3);
   ligne(doc, 'Le salarié', salarie);
   if (c.user?.email) ligne(doc, 'Courriel', c.user.email);
-  ligne(doc, 'Qualification', c.qualification ?? ', ');
+  ligne(doc, 'Qualification', c.qualification ?? 'Non renseigné');
 
   titreSection(doc, 'Motif de recours');
   paragraphe(doc, def?.libelle ?? c.motif);
   if (def?.article) paragraphe(doc, `Fondement : ${def.article}.`, { gris: true });
   if (def?.exigeSalarieRemplace) {
-    ligne(doc, 'Personne remplacée', c.salarieRemplaceNom ?? ', ');
-    ligne(doc, 'Sa qualification', c.salarieRemplaceQualification ?? ', ');
+    ligne(doc, 'Personne remplacée', c.salarieRemplaceNom ?? 'Non renseigné');
+    ligne(doc, 'Sa qualification', c.salarieRemplaceQualification ?? 'Non renseigné');
   }
 
   titreSection(doc, 'Durée du contrat');
@@ -124,7 +124,7 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
   );
 
   titreSection(doc, 'Emploi occupé');
-  ligne(doc, 'Poste', c.poste ?? ', ');
+  ligne(doc, 'Poste', c.poste ?? 'Non renseigné');
   ligne(
     doc,
     'Poste à risques particuliers',
@@ -134,7 +134,7 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
         ? 'Oui : une formation renforcée à la sécurité est due'
         : 'Non',
   );
-  ligne(doc, 'Convention collective', c.conventionCollective ?? ', ');
+  ligne(doc, 'Convention collective', c.conventionCollective ?? 'Non renseigné');
 
   titreSection(doc, 'Rémunération');
   ligne(doc, 'Rémunération brute', euros(Number(c.remunerationBrute ?? 0)));
@@ -148,8 +148,8 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
   );
 
   titreSection(doc, 'Organismes sociaux');
-  ligne(doc, 'Retraite complémentaire', c.caisseRetraiteComplementaire ?? ', ');
-  ligne(doc, 'Prévoyance', c.organismePrevoyance ?? ', ');
+  ligne(doc, 'Retraite complémentaire', c.caisseRetraiteComplementaire ?? 'Non renseigné');
+  ligne(doc, 'Prévoyance', c.organismePrevoyance ?? 'Non renseigné');
   ligne(
     doc,
     "Déclaration préalable à l'embauche",

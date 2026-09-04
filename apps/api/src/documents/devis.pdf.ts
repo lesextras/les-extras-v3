@@ -132,7 +132,7 @@ function adresse(p: PartieFigee): string {
 function identite(doc: ReturnType<typeof nouveauDocument>['doc'], p: PartieFigee) {
   ligne(doc, 'Raison sociale', p.legalName ?? p.name);
   ligne(doc, 'Adresse', adresse(p));
-  ligne(doc, 'SIRET', p.siret ?? ', ');
+  ligne(doc, 'SIRET', p.siret ?? 'Non renseigné');
   if (p.contactEmail) ligne(doc, 'Contact', p.contactEmail);
   if (p.phone) ligne(doc, 'Téléphone', p.phone);
 }
@@ -212,7 +212,7 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
         ],
     lignes.map((l) => {
       const base = [
-        String((l as { label?: string }).label ?? ', '),
+        String((l as { label?: string }).label ?? 'Non renseigné'),
         String(Number(l.quantity ?? 0)),
         String((l as { unit?: string }).unit ?? 'forfait'),
         euros(Number(l.unitPrice ?? 0)),
@@ -300,8 +300,8 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
   } else if (accepte) {
     titreSection(doc, 'Acceptation');
     ligne(doc, 'Accepté le', dateFr(q.decidedAt));
-    ligne(doc, 'Par', q.acceptedByName ?? ', ');
-    ligne(doc, 'En qualité de', q.acceptedByRole ?? ', ');
+    ligne(doc, 'Par', q.acceptedByName ?? 'Non renseigné');
+    ligne(doc, 'En qualité de', q.acceptedByRole ?? 'Non renseigné');
     encadre(
       doc,
       `Devis accepté le ${dateFr(q.decidedAt)}${q.acceptedByName ? ` par ${q.acceptedByName}` : ''}, depuis l'espace client de ${client.legalName ?? client.name}. Cette acceptation vaut bon pour accord.`,

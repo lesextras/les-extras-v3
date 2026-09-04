@@ -119,7 +119,8 @@ function adresse(p: {
   city: string | null;
 }): string {
   return (
-    [p.address, [p.postalCode, p.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || ', '
+    [p.address, [p.postalCode, p.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') ||
+    'Non renseignée'
   );
 }
 
@@ -165,14 +166,14 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
   titreSection(doc, 'Émetteur');
   ligne(doc, 'Raison sociale', emetteur.legalName ?? emetteur.name);
   ligne(doc, 'Adresse', adresse(emetteur));
-  ligne(doc, 'SIRET', emetteur.siret ?? ', ');
+  ligne(doc, 'SIRET', emetteur.siret ?? 'Non renseigné');
   if (emetteur.contactEmail) ligne(doc, 'Contact', emetteur.contactEmail);
 
   titreSection(doc, 'Client');
-  ligne(doc, 'Raison sociale', client?.legalName ?? client?.name ?? ', ');
+  ligne(doc, 'Raison sociale', client?.legalName ?? client?.name ?? 'Non renseigné');
   if (client) {
     ligne(doc, 'Adresse', adresse(client));
-    ligne(doc, 'SIRET', client.siret ?? ', ');
+    ligne(doc, 'SIRET', client.siret ?? 'Non renseigné');
   }
 
   titreSection(doc, 'Prestation');

@@ -88,24 +88,24 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
   );
 
   titreSection(doc, 'Établissement demandeur');
-  ligne(doc, 'Structure', e?.legalName ?? e?.name ?? ', ');
+  ligne(doc, 'Structure', e?.legalName ?? e?.name ?? 'Non renseigné');
   ligne(
     doc,
     'Adresse',
     [e?.address, [e?.postalCode, e?.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') ||
       ', ',
   );
-  ligne(doc, 'SIRET', e?.siret ?? ', ');
+  ligne(doc, 'SIRET', e?.siret ?? 'Non renseigné');
 
   titreSection(doc, 'Personne proposée');
   ligne(doc, 'Nom', personne);
-  ligne(doc, 'Métier', c?.profile?.job ?? m.job ?? ', ');
+  ligne(doc, 'Métier', c?.profile?.job ?? m.job ?? 'Non renseigné');
   ligne(doc, 'Contact', [c?.email, c?.phone].filter(Boolean).join(' · ') || ', ');
-  ligne(doc, 'Secteur', c?.profile?.city ?? ', ');
+  ligne(doc, 'Secteur', c?.profile?.city ?? 'Non renseigné');
 
   titreSection(doc, 'Besoin à couvrir');
   ligne(doc, 'Intitulé', m.title);
-  ligne(doc, 'Métier recherché', m.job ?? ', ');
+  ligne(doc, 'Métier recherché', m.job ?? 'Non renseigné');
   ligne(
     doc,
     'Période',
