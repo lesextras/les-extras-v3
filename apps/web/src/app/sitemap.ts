@@ -4,6 +4,7 @@ import { METIERS, VILLES } from "./(public)/renfort/donnees";
 import { RUBRIQUES } from "./(public)/aide/contenu";
 import { GUIDES_ECRITS } from "./(public)/guides/contenu";
 import { ETABLISSEMENTS } from "./(public)/ateliers-pour/donnees";
+import { LANDINGS } from "./(public)/l/donnees";
 
 // Sitemap dynamique : pages statiques publiques + catalogue & missions publiés.
 // Régénéré périodiquement (revalidate) et tolérant à une API indisponible.
@@ -123,6 +124,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.8,
+    })),
+    // Les pages d'atterrissage par produit : courtes, mais ce sont des pages
+    // de contenu à part entière, et une campagne qui pointe dessus doit
+    // trouver Google déjà au courant.
+    ...LANDINGS.map((l) => ({
+      url: `${base}/l/${l.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
     ...METIERS.map((m) => ({
       url: `${base}/renfort/metier/${m.slug}`,
