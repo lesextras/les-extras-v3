@@ -366,8 +366,22 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   }
 
   async function supprimerDoc(id: string) {
-    await api(`/assistant/documents/${id}`, { method: "DELETE" }).catch(() => undefined);
-    setDocuments((d) => d.filter((x) => x.id !== id));
+    // ⚠ LA LIGNE DISPARAISSAIT MÊME QUAND LA SUPPRESSION ÉCHOUAIT.
+    // `.catch(() => undefined)` avalait l'erreur, puis on retirait le document
+    // de la liste : à l'écran il était supprimé, en base il était toujours là,
+    // et il revenait au rechargement suivant. On ne retire de la liste que ce
+    // que le serveur a réellement supprimé, et on le dit quand il refuse.
+    try {
+      await api(`/assistant/documents/${id}`, { method: "DELETE" });
+      setDocuments((d) => d.filter((x) => x.id !== id));
+    } catch (err) {
+      toast({
+        title: "Suppression impossible",
+        description:
+          err instanceof Error ? err.message : "Le document n'a pas pu être supprimé. Réessayez.",
+        variant: "error",
+      });
+    }
   }
 
   function recommencer() {

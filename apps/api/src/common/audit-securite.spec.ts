@@ -99,7 +99,7 @@ describe('Audit sécurité — suppressions qui laissaient des orphelins', () =>
       booking: { count: jest.fn().mockResolvedValue(1) },
       quote: { count: jest.fn().mockResolvedValue(0) },
     };
-    const services = new ServicesService(prisma as never, {} as never, {} as never);
+    const services = new ServicesService(prisma as never, {} as never, {} as never, {} as never);
 
     const resultat = await services.remove('svc', 'cpt');
 
@@ -121,7 +121,7 @@ describe('Audit sécurité — suppressions qui laissaient des orphelins', () =>
       booking: { count: jest.fn().mockResolvedValue(0) },
       quote: { count: jest.fn().mockResolvedValue(2) },
     };
-    const services = new ServicesService(prisma as never, {} as never, {} as never);
+    const services = new ServicesService(prisma as never, {} as never, {} as never, {} as never);
 
     await services.remove('svc', 'cpt');
 
@@ -138,7 +138,7 @@ describe('Audit sécurité — suppressions qui laissaient des orphelins', () =>
       booking: { count: jest.fn().mockResolvedValue(0) },
       quote: { count: jest.fn().mockResolvedValue(0) },
     };
-    const services = new ServicesService(prisma as never, {} as never, {} as never);
+    const services = new ServicesService(prisma as never, {} as never, {} as never, {} as never);
 
     expect(await services.remove('svc', 'cpt')).toEqual({ deleted: true });
     expect(prisma.service.delete).toHaveBeenCalled();

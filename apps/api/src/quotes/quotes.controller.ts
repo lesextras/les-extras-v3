@@ -54,8 +54,12 @@ export class QuotesController {
   }
 
   @Get(':id')
-  findOne(@CurrentUser() user: RequestUser, @Param('id') id: string) {
-    return this.quotes.findOne(user.id, id);
+  findOne(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Param('id') id: string,
+  ) {
+    return this.quotes.findOne(user.id, id, account.id);
   }
 
   /** Établissement : demande de devis (depuis une fiche atelier/formation). */
@@ -72,25 +76,31 @@ export class QuotesController {
   @Post(':id/send')
   send(
     @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
     @Param('id') id: string,
     @Body() dto: SendQuoteDto,
   ) {
-    return this.quotes.send(user.id, id, dto);
+    return this.quotes.send(user.id, id, account.id, dto);
   }
 
   /** Établissement : acceptation → réservation confirmée. */
   @Post(':id/accept')
-  accept(@CurrentUser() user: RequestUser, @Param('id') id: string) {
-    return this.quotes.accept(user.id, id);
+  accept(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Param('id') id: string,
+  ) {
+    return this.quotes.accept(user.id, id, account.id);
   }
 
   /** Établissement : refus motivé. */
   @Post(':id/refuse')
   refuse(
     @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
     @Param('id') id: string,
     @Body() dto: RefuseQuoteDto,
   ) {
-    return this.quotes.refuse(user.id, id, dto.reason);
+    return this.quotes.refuse(user.id, id, account.id, dto.reason);
   }
 }

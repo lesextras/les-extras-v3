@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import {
   Star, Clock, Users, MapPin, CalendarClock, ShieldCheck, BadgeCheck, Eye, ListChecks,
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
+import { exigerFiche, metaIntrouvable } from "../../../_shared/fiche-publique";
 import { premierVisuel, visuels } from "@/lib/media";
 import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
 import { titreFiche } from "@/lib/titre-fiche";
@@ -57,14 +57,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const params = await paramsPromesse;
-  const { data } = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
+  const res = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
+  const { data } = res;
   // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
   // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
   // ne s'exécute, et le code de statut est déjà joué. On ne peut plus le
   // corriger — mais on peut dire aux robots de ne pas indexer : sans cela,
   // chaque URL périmée ou mal tapée entre au catalogue de Google comme une
   // page valide.
-  if (!data) return { title: "Formation introuvable", robots: { index: false, follow: false } };
+  if (!data) return metaIntrouvable(res, "Formation introuvable")!;
   const desc = resume(data.objectives || data.summary || "Formation proposée sur Les Extras.");
   const image = premierVisuel(data.images);
   // `titreFiche` ouvre par le type de page : sans lui, une formation et un
@@ -105,8 +106,8 @@ export default async function FormationPubliquePage({
   params: Promise<{ slug: string }>;
 }) {
   const params = await paramsPromesse;
-  const { data: f } = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
-  if (!f) notFound();
+  const resf = await fetchPublic<FormationDetail>(`/public/formations/${params.slug}`);
+  const f = exigerFiche(resf, "Formation");
 
   const images = visuels(f.images);
   const faq = Array.isArray(f.faq) ? f.faq : [];
@@ -415,7 +416,14 @@ export default async function FormationPubliquePage({
 
               <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
                 <p className="flex items-center gap-1.5"><ShieldCheck className="size-3.5" /> Certification Qualiopi ADéPA</p>
-                <p className="flex items-center gap-1.5"><BadgeCheck className="size-3.5" /> Attestation et certificat délivrés</p>
+                {/* ⚠ « ATTESTATION ET CERTIFICAT DÉLIVRÉS » CONTREDISAIT
+                    FRONTALEMENT LE BLOC SITUÉ PLUS HAUT SUR LA MÊME PAGE, qui
+                    dit — à raison — « ni diplôme, ni certification
+                    professionnelle ». Ce qui est délivré est une attestation de
+                    suivi nominative, facultative, à 20 €. Le mot « certificat »
+                    laisse entendre autre chose : c'est exactement la pratique
+                    trompeuse que l'autre bloc existe pour éviter. */}
+                <p className="flex items-center gap-1.5"><BadgeCheck className="size-3.5" /> Attestation de suivi nominative, facultative</p>
                 <p className="flex items-center gap-1.5"><Users className="size-3.5" /> Émargement et suivi inclus</p>
               </div>
             </CardContent>

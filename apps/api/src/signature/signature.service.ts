@@ -560,12 +560,35 @@ export class SignatureService {
     userEmail: string,
     role: string,
   ) {
+    // ⚠ LA RECHERCHE NE FILTRE PLUS SUR LE COMPTE ACTIF, ET C'EST UNE
+    // CORRECTION DE BOGUE, PAS UN ASSOUPLISSEMENT (3/09/2026).
+    //
+    // La clause `accountId` rendait cette lecture IMPOSSIBLE à la personne à
+    // qui la signature est destinée. Une `Signature` est créée avec
+    // l'`accountId` de l'ÉTABLISSEMENT qui la demande (voir `demander()`) ;
+    // l'intervenant indépendant, lui, n'est membre que de son propre compte, et
+    // l'`AccountGuard` l'oblige à envoyer le sien. Le `findFirst` ne trouvait
+    // donc jamais rien, et il lisait « Demande de signature introuvable.
+    // Vérifiez que vous êtes connecté avec le compte auquel la demande est
+    // adressée » — un conseil impossible à suivre, il n'a pas d'autre compte.
+    //
+    // Le plus parlant : les deux lignes suivantes vérifient déjà
+    // `signataireEmail !== userEmail`. Elles n'ont de sens QUE pour quelqu'un
+    // d'extérieur au compte — la preuve que ce cas était prévu, et que c'est le
+    // filtre du dessus qui le contredisait. `POST /signatures/:id/signer`
+    // fonctionnait d'ailleurs très bien : il reconnaît le destinataire par son
+    // adresse. Seule la LECTURE était cassée, et c'est elle qui porte l'écran.
+    //
+    // Le contrôle d'accès est donc entièrement porté par les deux règles
+    // ci-dessous, et elles suffisent : ou bien on est responsable DU COMPTE QUI
+    // A DEMANDÉ la signature, ou bien on est nommément le signataire.
     const s = await this.prisma.signature.findFirst({
-      where: { id: signatureId, accountId },
+      where: { id: signatureId },
       include: { evenements: { orderBy: { createdAt: 'asc' } } },
     });
     if (!s) throw new NotFoundException('Demande de signature introuvable.');
-    const responsable = ['OWNER', 'ADMIN', 'MANAGER'].includes(role);
+    const responsable =
+      s.accountId === accountId && ['OWNER', 'ADMIN', 'MANAGER'].includes(role);
     if (!responsable && s.signataireEmail !== userEmail.toLowerCase().trim()) {
       throw new ForbiddenException('Cette demande de signature ne vous est pas adressée.');
     }

@@ -1087,6 +1087,209 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // LES QUATRE ÉVÉNEMENTS QUI N'ENVOYAIENT RIEN (3 septembre 2026)
+  // ─────────────────────────────────────────────────────────────────────────
+  //
+  // ⚠ CE BLOC RÉPARE UN SILENCE, PAS UN MANQUE DE FONCTIONNALITÉ.
+  //
+  // Réserver un atelier, demander un devis, demander un rattachement et
+  // transmettre un contrat n'écrivaient qu'une ligne en base — au mieux une
+  // notification dans l'application, au pire rien du tout. Or personne ne
+  // consulte une plateforme qu'il n'utilise pas encore tous les jours : c'est
+  // le courriel qui ramène.
+  //
+  // Mesuré en production le 3/09/2026 : quinze réservations, une seule menée à
+  // son terme ; deux demandes de rattachement en attente dont personne
+  // n'avait été prévenu. Et quatre comptes intervenants portant quatorze
+  // fiches ont une adresse sur un domaine SANS MX — d'où la règle : ces envois
+  // sont toujours protégés par un `.catch()` chez l'appelant, un courriel qui
+  // ne part pas ne doit jamais faire échouer le geste de quelqu'un d'autre.
+
+  /** Une réservation d'atelier vient d'arriver, côté intervenant. */
+  async sendReservationRecue(
+    to: string,
+    data: {
+      atelier: string;
+      etablissement?: string | null;
+      quand?: Date | null;
+      participants?: number | null;
+      note?: string | null;
+      depassement?: number | null;
+    },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    const quand = data.quand
+      ? new Date(data.quand).toLocaleDateString('fr-FR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : 'date à convenir';
+    await this.send(
+      to,
+      `Réservation reçue — ${data.atelier}`,
+      this.layout(
+        'Un établissement vous a réservé',
+        `<b>${e(data.etablissement ?? 'Un établissement')}</b> vient de réserver
+        votre atelier <b>${e(data.atelier)}</b>.
+        <br><br><b>Quand :</b> ${e(quand)}
+        ${data.participants ? `<br><b>Participants :</b> ${data.participants}` : ''}
+        ${
+          data.depassement
+            ? `<br><b>⚠ Au-delà des ${data.depassement} annoncés sur votre fiche.</b>
+               C'est un refus ou une renégociation — mieux vaut le dire maintenant
+               que le jour même.`
+            : ''
+        }
+        ${
+          data.note
+            ? `<br><br><b>Sa précision :</b><br><i>${e(data.note).slice(0, 800)}</i>`
+            : ''
+        }
+        <br><br>Acceptez ou déclinez depuis votre espace. Tant que vous n'avez pas
+        répondu, l'établissement attend.`,
+        { label: 'Voir la réservation', url: `${this.webUrl}/dashboard/ateliers` },
+      ),
+    );
+  }
+
+  /** Un établissement demande un devis sur une fiche. */
+  async sendDevisDemande(
+    to: string,
+    data: { atelier?: string | null; etablissement?: string | null; message?: string | null },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    await this.send(
+      to,
+      `Demande de devis — ${data.atelier ?? 'votre intervention'}`,
+      this.layout(
+        'Une demande de devis vous attend',
+        `<b>${e(data.etablissement ?? 'Un établissement')}</b> vous demande un devis
+        ${data.atelier ? `pour <b>${e(data.atelier)}</b>` : ''}.
+        ${data.message ? `<br><br><i>${e(data.message).slice(0, 800)}</i>` : ''}
+        <br><br>Le site annonce une réponse sous 48 heures : c'est la promesse qui
+        décide un directeur à essayer la plateforme plutôt qu'à appeler ailleurs.`,
+        { label: 'Répondre au devis', url: `${this.webUrl}/dashboard/facturation?vue=devis` },
+      ),
+    );
+  }
+
+  /** Le devis chiffré est parti — côté établissement. */
+  async sendDevisRecu(
+    to: string,
+    data: { atelier?: string | null; intervenant?: string | null; montant?: string | null },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    await this.send(
+      to,
+      `Votre devis est arrivé${data.atelier ? ` — ${data.atelier}` : ''}`,
+      this.layout(
+        'Votre devis est arrivé',
+        `<b>${e(data.intervenant ?? 'Votre intervenant')}</b> vous a adressé un devis
+        ${data.atelier ? `pour <b>${e(data.atelier)}</b>` : ''}
+        ${data.montant ? `— <b>${e(data.montant)}</b>` : ''}.
+        <br><br>Vous pouvez l'accepter ou le refuser depuis votre espace. L'accepter
+        crée la réservation et bloque la date.`,
+        { label: 'Voir le devis', url: `${this.webUrl}/dashboard/facturation?vue=devis` },
+      ),
+    );
+  }
+
+  /**
+   * RATTACHEMENT — les trois moments, dans un seul point d'entrée.
+   *
+   * ⚠ Le module n'envoyait RIEN, dans aucun des deux sens, alors que quatre
+   * écrans affirmaient le contraire (« Vous serez prévenu ici et par e-mail »).
+   * Une personne pouvait attendre indéfiniment une réponse que personne ne
+   * savait qu'elle attendait.
+   */
+  async sendRattachement(
+    to: string,
+    data: {
+      moment: 'demande' | 'acceptee' | 'refusee';
+      salarie?: string | null;
+      etablissement?: string | null;
+      motif?: string | null;
+    },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    const qui = e(data.salarie ?? 'Une personne');
+    const ou = e(data.etablissement ?? 'votre établissement');
+
+    if (data.moment === 'demande') {
+      await this.send(
+        to,
+        `Demande de rattachement — ${data.salarie ?? 'un salarié'}`,
+        this.layout(
+          'Quelqu’un demande à rejoindre votre équipe',
+          `<b>${qui}</b> demande à être rattaché·e à <b>${ou}</b> sur Les Extras.
+          <br><br>Tant que vous n'avez pas répondu, cette personne <b>ne peut ni
+          publier, ni répondre à un renfort</b> : son espace est en attente. Un
+          clic suffit, dans les deux sens.`,
+          { label: 'Voir la demande', url: `${this.webUrl}/dashboard/equipe` },
+        ),
+      );
+      return;
+    }
+
+    if (data.moment === 'acceptee') {
+      await this.send(
+        to,
+        `C’est accepté — vous êtes rattaché·e à ${data.etablissement ?? 'votre établissement'}`,
+        this.layout(
+          'Votre rattachement est accepté',
+          `<b>${ou}</b> vient d'accepter votre rattachement. Votre espace est
+          ouvert : vous pouvez publier vos ateliers et répondre aux renforts de la
+          maison.
+          <br><br><b>Une seule chose à savoir :</b> déconnectez-vous puis
+          reconnectez-vous une fois. Le sélecteur de compte ne montrera votre
+          établissement qu'après — c'est votre jeton de connexion qui porte la
+          liste, et il date d'avant l'acceptation.`,
+          { label: 'Ouvrir mon espace', url: `${this.webUrl}/dashboard` },
+        ),
+      );
+      return;
+    }
+
+    await this.send(
+      to,
+      'Votre demande de rattachement n’a pas été retenue',
+      this.layout(
+        'Réponse à votre demande',
+        `<b>${ou}</b> n'a pas retenu votre demande de rattachement.
+        ${data.motif ? `<br><br><i>${e(data.motif).slice(0, 500)}</i>` : ''}
+        <br><br>Si c'est une erreur d'aiguillage — mauvais établissement, mauvais
+        profil au moment de l'inscription — écrivez-nous : cela se corrige.
+        <br><br>Vous pouvez aussi demander un rattachement à un autre
+        établissement depuis votre espace.`,
+        { label: 'Nous écrire', url: `${this.webUrl}/contact` },
+      ),
+    );
+  }
+
+  /** Le contrat vient d'être transmis à son signataire. */
+  async sendContratTransmis(
+    to: string,
+    data: { etablissement?: string | null; intitule?: string | null },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    await this.send(
+      to,
+      'Votre contrat vous a été transmis',
+      this.layout(
+        'Votre contrat vous attend',
+        `<b>${e(data.etablissement ?? 'L’établissement')}</b> vient de vous transmettre
+        ${data.intitule ? `<b>${e(data.intitule)}</b>` : 'votre contrat'}.
+        <br><br>Relisez-le dans votre espace. Il n'engage personne tant qu'il n'est
+        pas signé — et la signature se fait en ligne, avec un code envoyé au moment
+        où vous la demandez.`,
+        { label: 'Lire mon contrat', url: `${this.webUrl}/dashboard/reservations` },
+      ),
+    );
+  }
+
   /**
    * ENQUÊTE DE SATISFACTION — une semaine après la première fiche mise en ligne.
    *

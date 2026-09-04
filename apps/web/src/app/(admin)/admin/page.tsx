@@ -1,7 +1,7 @@
 // Back-office ADMIN — tableau de bord : KPIs plateforme, raccourcis, file de modération.
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Users, Building2, Megaphone, GraduationCap, CalendarCheck, ArrowRight, AlertTriangle, Clock, FileWarning, UserCheck, CheckCircle2 } from "lucide-react";
+import { Users, Building2, Megaphone, GraduationCap, CalendarCheck, ArrowRight, AlertTriangle, Clock, FileWarning, UserCheck, CheckCircle2, Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,8 @@ interface DeskData {
     expiringDocuments?: number;
     pendingTimeEntries?: number;
     pendingModeration?: number;
+    pendingContacts?: number;
+    pendingAttachments?: number;
   };
 }
 
@@ -86,7 +88,9 @@ export default async function AdminPage() {
     (dc.pendingUsers ?? 0) +
     (dc.expiredDocuments ?? 0) +
     (dc.expiringDocuments ?? 0) +
-    (dc.pendingTimeEntries ?? 0);
+    (dc.pendingTimeEntries ?? 0) +
+    (dc.pendingContacts ?? 0) +
+    (dc.pendingAttachments ?? 0);
 
   return (
     <div className="space-y-8">
@@ -113,7 +117,8 @@ export default async function AdminPage() {
               <CheckCircle2 className="size-5 shrink-0 text-success" />
               <p className="text-sm text-foreground">
                 <span className="font-semibold">Rien d&apos;urgent.</span> Aucun renfort à moins de 48 h non pourvu,
-                aucun compte à valider, aucun document en échéance, aucune heure en attente.
+                aucun compte à valider, aucun document en échéance, aucune heure en attente,
+                aucun message ni rattachement sans réponse.
               </p>
             </CardContent>
           </Card>
@@ -150,6 +155,24 @@ export default async function AdminPage() {
                       {(dc.expiredDocuments ?? 0) > 0 ? `${dc.expiredDocuments} déjà expiré${(dc.expiredDocuments ?? 0) > 1 ? "s" : ""}` : "Expire(nt) sous 30 jours"}
                       {expDocs[0]?.expiresAt ? ` · 1er : ${formatDate(expDocs[0].expiresAt)}` : ""}
                     </p>
+                  </Link>
+                ) : null}
+                {/* DEUX FILES QUI ATTENDAIENT UNE RÉPONSE HUMAINE SANS
+                    JAMAIS APPARAÎTRE ICI. Un message de contact et une demande
+                    de rattachement sont exactement ce que ce cockpit existe
+                    pour faire remonter — ils y manquaient. */}
+                {(dc.pendingContacts ?? 0) > 0 ? (
+                  <Link href="/admin/contacts" className="group rounded-xl border border-border bg-card p-4 transition hover:shadow-card">
+                    <div className="flex items-center gap-2 text-primary"><Mail className="size-4" /><span className="text-2xl font-bold">{dc.pendingContacts}</span></div>
+                    <p className="mt-1 text-sm font-medium text-foreground">Message{(dc.pendingContacts ?? 0) > 1 ? "s" : ""} sans réponse</p>
+                    <p className="text-xs text-muted-foreground">Reçus par le formulaire de contact</p>
+                  </Link>
+                ) : null}
+                {(dc.pendingAttachments ?? 0) > 0 ? (
+                  <Link href="/admin/utilisateurs" className="group rounded-xl border border-border bg-card p-4 transition hover:shadow-card">
+                    <div className="flex items-center gap-2 text-warning"><UserCheck className="size-4" /><span className="text-2xl font-bold">{dc.pendingAttachments}</span></div>
+                    <p className="mt-1 text-sm font-medium text-foreground">Rattachement{(dc.pendingAttachments ?? 0) > 1 ? "s" : ""} en attente</p>
+                    <p className="text-xs text-muted-foreground">Un espace reste bridé tant que l&apos;établissement n&apos;a pas répondu</p>
                   </Link>
                 ) : null}
                 {(dc.pendingTimeEntries ?? 0) > 0 ? (

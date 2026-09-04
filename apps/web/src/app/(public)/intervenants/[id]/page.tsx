@@ -3,13 +3,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, BadgeCheck } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
 import { fetchPublic } from "../../../_shared/server";
+import { exigerFiche, metaIntrouvable } from "../../../_shared/fiche-publique";
 import { formatMoney, formatDate, fullName, initials } from "../../../_shared/format";
 
 interface VendorService {
@@ -83,8 +83,8 @@ export async function generateMetadata({
 
 export default async function VendorPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
   const params = await paramsPromesse;
-  const { data: vendor } = await fetchPublic<Vendor>(`/public/vendors/${params.id}`);
-  if (!vendor) notFound();
+  const resvendor = await fetchPublic<Vendor>(`/public/vendors/${params.id}`);
+  const vendor = exigerFiche(resvendor, "Intervenant");
 
   const nom = fullName(vendor.owner?.firstName, vendor.owner?.lastName) || vendor.name || "Intervenant";
   const metier = vendor.owner?.profile?.job;

@@ -1,12 +1,12 @@
 // Page publique de détail d'une mission de renfort (vitrine, sans connexion).
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { metaPublique } from "@/lib/meta";
 import { fetchPublic } from "../../../_shared/server";
+import { exigerFiche, metaIntrouvable } from "../../../_shared/fiche-publique";
 import { MISSION_CATEGORY_LABEL, formatDate, formatRate } from "../../../_shared/format";
 
 /**
@@ -21,8 +21,9 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const params = await paramsPromesse;
-  const { data } = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
-  if (!data) return { title: "Mission de renfort", robots: { index: false, follow: true } };
+  const res = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
+  const { data } = res;
+  if (!data) return metaIntrouvable(res, "Mission de renfort")!;
   const lieu = data.city ? ` — ${data.city}` : "";
   const titre = `${data.title}${lieu}`;
   const description =
@@ -58,8 +59,8 @@ interface PublicMission {
 
 export default async function MissionPublicPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
   const params = await paramsPromesse;
-  const { data: mission } = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
-  if (!mission) notFound();
+  const resmission = await fetchPublic<PublicMission>(`/public/missions/${params.id}`);
+  const mission = exigerFiche(resmission, "Mission");
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

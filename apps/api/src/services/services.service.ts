@@ -10,6 +10,7 @@ import { slugLibre } from './slug-service';
 import { CommunityService } from '../community/community.service';
 import { PointReason } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MailService } from '../common/mail/mail.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { QueryServicesDto } from './dto/query-services.dto';
@@ -26,6 +27,7 @@ export class ServicesService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     private readonly community: CommunityService,
+    private readonly mail: MailService,
   ) {}
 
   async create(accountId: string, dto: CreateServiceDto) {
@@ -356,6 +358,36 @@ export class ServicesService {
       body: `Votre atelier « ${service.title} » a été réservé${precision}${alerte}.`,
       link: `/dashboard/reservations`,
     });
+
+    // ⚠ ET UN COURRIEL, PAS SEULEMENT UNE CLOCHE (3/09/2026).
+    //
+    // Cette réservation n'écrivait qu'une notification dans l'application.
+    // Personne n'ouvre une plateforme qu'il n'utilise pas encore tous les
+    // jours : l'intervenant ne l'apprenait donc que s'il repassait par hasard.
+    // L'écran de l'établissement, lui, promet « L'intervenant vous répondra
+    // rapidement ».
+    //
+    // Le `.catch()` est indispensable : quatre comptes du catalogue portent une
+    // adresse sur un domaine sans MX. Un courriel qui ne part pas ne doit jamais
+    // faire échouer la réservation de quelqu'un d'autre.
+    const proprietaire = await this.prisma.user
+      .findUnique({ where: { id: service.account.ownerId }, select: { email: true } })
+      .catch(() => null);
+    const demandeur = await this.prisma.account
+      .findUnique({ where: { id: bookingAccountId }, select: { name: true } })
+      .catch(() => null);
+    if (proprietaire?.email) {
+      await this.mail
+        .sendReservationRecue(proprietaire.email, {
+          atelier: service.title,
+          etablissement: demandeur?.name,
+          quand: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
+          participants: effectif,
+          note: dto.message?.trim() || null,
+          depassement: depasse ? service.maxParticipants : null,
+        })
+        .catch(() => undefined);
+    }
 
     return booking;
   }

@@ -1,13 +1,13 @@
 // Article public : lisible sans connexion, indexable, partageable.
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, Building2, Newspaper } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
+import { exigerFiche, metaIntrouvable } from "../../../_shared/fiche-publique";
 import { formatDate, initials, fullName } from "../../../_shared/format";
 import { RichText, texteBrut } from "../../../_shared/RichText";
 import type { ArticleCard } from "../page";
@@ -31,14 +31,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const params = await paramsPromesse;
-  const { data } = await fetchPublic<ArticleDetail>(`/articles/feed/${params.slug}`);
+  const res = await fetchPublic<ArticleDetail>(`/articles/feed/${params.slug}`);
+  const { data } = res;
   // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
   // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
   // ne s'exécute, et le code de statut est déjà joué. On ne peut plus le
   // corriger — mais on peut dire aux robots de ne pas indexer : sans cela,
   // chaque URL périmée ou mal tapée entre au catalogue de Google comme une
   // page valide.
-  if (!data) return { title: "Actualité introuvable", robots: { index: false, follow: false } };
+  if (!data) return metaIntrouvable(res, "Actualité introuvable")!;
   const desc = resume(data.excerpt || data.content || data.title);
   const image = visuel(data.coverUrl) ?? undefined;
   return {
@@ -73,8 +74,8 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params: paramsPromesse }: { params: Promise<{ slug: string }>}) {
   const params = await paramsPromesse;
-  const { data: a } = await fetchPublic<ArticleDetail>(`/articles/feed/${params.slug}`);
-  if (!a) notFound();
+  const resa = await fetchPublic<ArticleDetail>(`/articles/feed/${params.slug}`);
+  const a = exigerFiche(resa, "Actualité");
 
   const nom = a.account?.name ?? "Les Extras";
   const auteur = fullName(a.author?.firstName, a.author?.lastName);

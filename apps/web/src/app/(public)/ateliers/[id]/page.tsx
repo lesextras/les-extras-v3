@@ -5,7 +5,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { fetchPublic } from "../../../_shared/server";
+import { exigerFiche, metaIntrouvable } from "../../../_shared/fiche-publique";
 import { premierVisuel, visuels } from "@/lib/media";
 import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
 import { titreFiche } from "@/lib/titre-fiche";
@@ -123,14 +123,15 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const params = await paramsPromesse;
-  const { data } = await fetchPublic<ServiceDetail>(`/public/catalog/${params.id}`);
+  const res = await fetchPublic<ServiceDetail>(`/public/catalog/${params.id}`);
+  const { data } = res;
   // 200 alors que la fiche n'existe pas : le squelette de `(public)/loading.tsx`
   // ouvre une frontière Suspense, la coquille part donc AVANT que `notFound()`
   // ne s'exécute, et le code de statut est déjà joué. On ne peut plus le
   // corriger — mais on peut dire aux robots de ne pas indexer : sans cela,
   // chaque URL périmée ou mal tapée entre au catalogue de Google comme une
   // page valide.
-  if (!data) return { title: "Atelier introuvable", robots: { index: false, follow: false } };
+  if (!data) return metaIntrouvable(res, "Atelier introuvable")!;
 
   // Le gabarit racine suffixe deja « · LES EXTRAS ». `titreFiche` ouvre par le
   // type de page : sans lui, un atelier et une formation portant le même
@@ -173,10 +174,8 @@ export async function generateMetadata({
 
 export default async function AtelierPublicPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
   const params = await paramsPromesse;
-  const { data: service } = await fetchPublic<ServiceDetail>(
-    `/public/catalog/${params.id}`,
-  );
-  if (!service) notFound();
+  const resservice = await fetchPublic<ServiceDetail>(`/public/catalog/${params.id}`);
+  const service = exigerFiche(resservice, "Atelier");
 
   // UNE FICHE, UNE ADRESSE — MAIS PAS DEPUIS ICI.
   //
@@ -447,8 +446,16 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
               </div>
 
               <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
+                {/* ⚠ « INTERVENANTS VÉRIFIÉS » ÉTAIT FAUX, ET C'EST LA PIRE
+                    CATÉGORIE DE FAUX : une promesse de sécurité faite à un
+                    directeur qui va confier des enfants ou des personnes âgées.
+                    Aucune vérification d'identité ni de casier n'existe dans le
+                    produit ; mesuré le 3/09/2026, seize comptes sur cent treize
+                    avaient seulement confirmé leur adresse e-mail. La ligne est
+                    remplacée par ce qui est vrai et vérifiable — et qui rassure
+                    tout autant, parce que c'est tenu. */}
                 <p className="flex items-center gap-1.5">
-                  <ShieldCheck className="size-3.5" /> Intervenants vérifiés
+                  <ShieldCheck className="size-3.5" /> Rien n&apos;est engagé avant votre accord
                 </p>
                 <p className="flex items-center gap-1.5">
                   <BadgeCheck className="size-3.5" /> Contrat et facture générés automatiquement

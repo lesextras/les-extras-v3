@@ -10,6 +10,7 @@ import { MESSAGE_HORS_PORTEE, reservableParCompte } from '../services/portee-sal
 import { bornes, page } from '../common/pagination';
 import { decomposerPrix, COMMISSION_DEFAUT } from '../billing/commission';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MailService } from '../common/mail/mail.service';
 import { CreateQuoteRequestDto, SendQuoteDto } from './dto/quote.dto';
 import { totauxDevis } from './totaux';
 import { SELECT_PARTIE, figerPartie } from './parties';
@@ -29,7 +30,21 @@ export class QuotesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly mail: MailService,
   ) {}
+
+  /**
+   * L'adresse du titulaire d'un compte. Renvoie `null` plutôt que de lever :
+   * un courriel qui ne part pas ne doit jamais faire échouer le geste qui l'a
+   * déclenché — c'est la règle de tout ce fichier.
+   */
+  private async adresseDuCompte(ownerId?: string | null): Promise<string | null> {
+    if (!ownerId) return null;
+    const u = await this.prisma.user
+      .findUnique({ where: { id: ownerId }, select: { email: true } })
+      .catch(() => null);
+    return u?.email ?? null;
+  }
 
   /** Référence séquentielle annuelle : DEV-YYYY-00001. */
   private async nextReference(): Promise<string> {
@@ -56,7 +71,27 @@ export class QuotesService {
   }
 
   /** Devis visible par le demandeur ET par l'intervenant, personne d'autre. */
-  private async requireParticipant(userId: string, quoteId: string) {
+  /**
+   * ⚠ LE COMPTE ACTIF EST DÉSORMAIS EXIGÉ, ET C'ÉTAIT UNE ÉLÉVATION DE
+   * PRIVILÈGE.
+   *
+   * Cette méthode ne regardait que les appartenances de la PERSONNE : si
+   * l'un de ses comptes figurait au devis, elle passait. Le garde de rôle du
+   * contrôleur, lui, ne juge que le compte ACTIF. Les deux ensemble laissaient
+   * le trou suivant, vérifié en lecture de code :
+   *
+   *   un éducateur simple MEMBRE de la MECS ouvre en parallèle son propre
+   *   compte intervenant, dont il est OWNER. Il bascule dessus — le garde de
+   *   rôle est satisfait, il est OWNER — puis appelle /quotes/:id/accept sur
+   *   un devis de la MECS. Ici, son appartenance MECS était trouvée, son rôle
+   *   n'était jamais lu : le devis à 900 € était accepté au nom de
+   *   l'établissement, réservation confirmée à l'appui.
+   *
+   * L'en-tête de ce fichier documentait déjà ce trou comme refermé. Il l'était
+   * pour le menu et pour le garde de rôle, pas pour la route. On aligne : le
+   * compte au nom duquel on agit doit être l'un des deux comptes du devis.
+   */
+  private async requireParticipant(userId: string, quoteId: string, accountId: string) {
     const quote = await this.prisma.quote.findUnique({
       where: { id: quoteId },
       include: {
@@ -66,17 +101,26 @@ export class QuotesService {
       },
     });
     if (!quote) throw new NotFoundException('Devis introuvable.');
-    const memberships = await this.prisma.membership.findMany({
-      where: {
-        userId,
-        accountId: { in: [quote.clientAccountId, quote.providerAccountId] },
-        status: 'ACTIVE',
-      },
+
+    // Le compte actif — celui dont le garde a validé le rôle — doit être l'un
+    // des deux comptes du devis. Un devis ne se lit ni ne se décide « au nom
+    // de quelqu'un d'autre ».
+    if (accountId !== quote.clientAccountId && accountId !== quote.providerAccountId) {
+      throw new ForbiddenException(
+        "Ce devis n'appartient pas au compte sur lequel vous êtes connecté. Basculez sur le bon compte pour y accéder.",
+      );
+    }
+
+    // L'appartenance reste vérifiée : le compte actif vient d'un en-tête, la
+    // ceinture ne remplace pas les bretelles.
+    const membership = await this.prisma.membership.findFirst({
+      where: { userId, accountId, status: 'ACTIVE' },
       select: { accountId: true },
     });
-    if (memberships.length === 0) throw new ForbiddenException('Accès refusé à ce devis.');
-    const isClient = memberships.some((m) => m.accountId === quote.clientAccountId);
-    const isProvider = memberships.some((m) => m.accountId === quote.providerAccountId);
+    if (!membership) throw new ForbiddenException('Accès refusé à ce devis.');
+
+    const isClient = accountId === quote.clientAccountId;
+    const isProvider = accountId === quote.providerAccountId;
     return { quote, isClient, isProvider };
   }
 
@@ -106,8 +150,8 @@ export class QuotesService {
     return page(items, total, p, perPage);
   }
 
-  async findOne(userId: string, id: string) {
-    const { quote, isClient, isProvider } = await this.requireParticipant(userId, id);
+  async findOne(userId: string, id: string, accountId: string) {
+    const { quote, isClient, isProvider } = await this.requireParticipant(userId, id, accountId);
     return { ...quote, viewerIsClient: isClient, viewerIsProvider: isProvider };
   }
 
@@ -184,6 +228,19 @@ export class QuotesService {
         body: `${client.name} vous demande un devis pour « ${quote.title} ».`,
         link: `/dashboard/devis/${quote.id}`,
       });
+      // ⚠ ET UN COURRIEL. Cette demande n'écrivait qu'une cloche dans
+      // l'application, alors que le site promet une réponse sous 48 h — la
+      // promesse qui décide un directeur à essayer plutôt qu'à appeler ailleurs.
+      const email = await this.adresseDuCompte(provider.ownerId);
+      if (email) {
+        await this.mail
+          .sendDevisDemande(email, {
+            atelier: quote.title,
+            etablissement: client.name,
+            message: dto.request ?? null,
+          })
+          .catch(() => undefined);
+      }
     }
     return quote;
   }
@@ -192,8 +249,8 @@ export class QuotesService {
    * Étape 2 — l'intervenant chiffre et envoie. Réenvoi possible tant que le
    * devis n'est pas décidé (le demandeur est renotifié).
    */
-  async send(userId: string, id: string, dto: SendQuoteDto) {
-    const { quote, isProvider } = await this.requireParticipant(userId, id);
+  async send(userId: string, id: string, accountId: string, dto: SendQuoteDto) {
+    const { quote, isProvider } = await this.requireParticipant(userId, id, accountId);
     if (!isProvider) throw new ForbiddenException("Seul l'intervenant peut chiffrer ce devis.");
     if (['ACCEPTED', 'REFUSED', 'EXPIRED'].includes(quote.status)) {
       throw new BadRequestException('Ce devis est clôturé.');
@@ -269,6 +326,16 @@ export class QuotesService {
         body: `${quote.providerAccount.name} vous a envoyé un devis de ${amount.toFixed(2)} € pour « ${updated.title} ».`,
         link: `/dashboard/devis/${id}`,
       });
+      const email = await this.adresseDuCompte(quote.clientAccount.ownerId);
+      if (email) {
+        await this.mail
+          .sendDevisRecu(email, {
+            atelier: updated.title,
+            intervenant: quote.providerAccount.name,
+            montant: `${amount.toFixed(2)} €`,
+          })
+          .catch(() => undefined);
+      }
     }
     return updated;
   }
@@ -277,8 +344,8 @@ export class QuotesService {
    * Étape 3 — l'établissement accepte : le devis et la réservation naissent
    * dans la MÊME transaction (pas de devis accepté sans prestation planifiée).
    */
-  async accept(userId: string, id: string) {
-    const { quote, isClient } = await this.requireParticipant(userId, id);
+  async accept(userId: string, id: string, accountId: string) {
+    const { quote, isClient } = await this.requireParticipant(userId, id, accountId);
     if (!isClient) throw new ForbiddenException("Seul l'établissement peut accepter ce devis.");
     if (quote.status !== 'SENT') {
       throw new BadRequestException('Seul un devis envoyé peut être accepté.');
@@ -364,8 +431,8 @@ export class QuotesService {
   }
 
   /** Étape 3 bis — refus motivé (l'intervenant est prévenu). */
-  async refuse(userId: string, id: string, reason?: string) {
-    const { quote, isClient } = await this.requireParticipant(userId, id);
+  async refuse(userId: string, id: string, accountId: string, reason?: string) {
+    const { quote, isClient } = await this.requireParticipant(userId, id, accountId);
     if (!isClient) throw new ForbiddenException("Seul l'établissement peut refuser ce devis.");
     if (quote.status !== 'SENT') {
       throw new BadRequestException('Seul un devis envoyé peut être refusé.');

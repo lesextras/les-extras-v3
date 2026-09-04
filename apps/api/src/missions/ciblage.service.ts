@@ -232,12 +232,38 @@ export class CiblageService {
   async assertReponseAutorisee(mission: MissionCiblee, accountId: string): Promise<void> {
     await this.assertCiblageRespecte(mission, accountId);
 
-    if (mission.visibility === MissionVisibility.SALARIES) {
+    // Le compte qui répond est lu ICI, avant les paliers de diffusion, parce
+    // que le premier palier a besoin de savoir s'il s'agit d'un salarié maison.
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { ownerId: true, profilSalarie: true },
+    });
+    const salarieMaison = compte?.ownerId
+      ? await this.prisma.membership.findFirst({
+          where: { accountId: mission.accountId, userId: compte.ownerId },
+          select: { id: true },
+        })
+      : null;
+
+    // ⚠ CE PALIER REFUSAIT TOUT LE MONDE, Y COMPRIS CEUX POUR QUI IL EXISTE.
+    //
+    // `SALARIES` est le premier cran de la cascade : l'annonce est proposée
+    // pendant six heures à l'équipe avant de s'ouvrir. C'est aussi le choix par
+    // défaut du formulaire SOS Renfort et du serveur. Mais le refus était
+    // inconditionnel — il tombait avant la trentaine de lignes écrites plus
+    // bas pour laisser précisément les salariés rattachés répondre. Personne ne
+    // pouvait donc répondre à une mission pendant ses six premières heures :
+    // ni l'équipe, à qui elle était adressée, ni les autres, à juste titre.
+    //
+    // Le refus ne vaut désormais que pour qui n'appartient pas à la maison.
+    if (mission.visibility === MissionVisibility.SALARIES && !salarieMaison) {
       throw new BadRequestException(
-        "Cette mission est encore réservée aux salariés de l'établissement.",
+        "Cette mission est réservée aux salariés de l'établissement pendant ses premières heures. Elle s'ouvrira plus largement si elle n'est pas pourvue.",
       );
     }
-    if (mission.visibility === MissionVisibility.RESERVED) {
+    // La cascade s'élargit, elle ne se rétrécit jamais : ce qui était ouvert
+    // à l'équipe au premier palier le reste au second.
+    if (mission.visibility === MissionVisibility.RESERVED && !salarieMaison) {
       const connus = await this.intervenantsConnus(mission.accountId);
       if (!connus.includes(accountId)) {
         throw new BadRequestException(
@@ -246,15 +272,8 @@ export class CiblageService {
       }
     }
 
-    const compte = await this.prisma.account.findUnique({
-      where: { id: accountId },
-      select: { ownerId: true, profilSalarie: true },
-    });
     if (compte?.ownerId) {
-      const salarie = await this.prisma.membership.findFirst({
-        where: { accountId: mission.accountId, userId: compte.ownerId },
-        select: { id: true },
-      });
+      const salarie = salarieMaison;
 
       // UN SALARIÉ NE RÉPOND QU'AUX BESOINS DE SA PROPRE MAISON.
       //

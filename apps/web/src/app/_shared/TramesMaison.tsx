@@ -128,9 +128,21 @@ export function TramesMaisonPanel({
     if (!window.confirm(`Supprimer la trame « ${t.nom} » ? Le modèle d'origine sera supprimé aussi.`)) {
       return;
     }
-    await fetch(`/api/proxy/assistant/trames-maison/${t.id}`, { method: "DELETE" }).catch(
-      () => undefined,
-    );
+    // ⚠ MÊME PIÈGE QU'AILLEURS : l'échec était avalé et l'écran se rafraîchissait
+    // comme si tout s'était bien passé. Sur une trame partagée à tout
+    // l'établissement, croire avoir retiré un document qui reste en ligne n'est
+    // pas un détail d'affichage.
+    const r = await fetch(`/api/proxy/assistant/trames-maison/${t.id}`, {
+      method: "DELETE",
+    }).catch(() => null);
+    if (!r || !r.ok) {
+      toast({
+        title: "Suppression impossible",
+        description: "La trame n'a pas pu être supprimée. Réessayez dans un instant.",
+        variant: "error",
+      });
+      return;
+    }
     onChange();
   }
 

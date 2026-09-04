@@ -4,6 +4,8 @@ import { bornes, page } from '../common/pagination';
 import { chiffrer } from './proposition';
 import { chiffrerVacation } from '../planning/majorations';
 import { ParametresTempsService } from '../planning/parametres-temps.service';
+import { MailService } from '../common/mail/mail.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateContratDto, DpaeDto, TerminerDto, UpdateContratDto } from './dto/contrat.dto';
 import {
   CauseFinContrat,
@@ -42,6 +44,11 @@ export class ContratsService {
     // convention de l'etablissement, jamais du code : hors 1er mai, aucune
     // majoration n'est legale dans le medico-social.
     private readonly parametres: ParametresTempsService,
+    // ⚠ TRANSMETTRE UN CONTRAT N'AVERTISSAIT PAS LE SALARIÉ. Le statut passait
+    // à TRANSMIS, le document devenait consultable, et personne ne le disait à
+    // la seule personne que ce document engage.
+    private readonly mail: MailService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Le contrat vu comme un projet, pour passer au moteur de règles. */
@@ -576,6 +583,30 @@ export class ContratsService {
         periodeEssaiJours: periodeEssaiMaxJours(duree),
       },
     });
+
+    // La personne engagée est prévenue — cloche et courriel. Sans quoi le
+    // contrat attend dans un écran que le salarié n'a aucune raison d'ouvrir.
+    const employeur = await this.prisma.account
+      .findUnique({ where: { id: accountId }, select: { name: true } })
+      .catch(() => null);
+    const intitule = c.poste ?? c.mission?.title ?? 'Contrat à durée déterminée';
+    await this.notifications
+      .create(c.userId, {
+        type: 'CONTRAT_TRANSMIS',
+        title: 'Un contrat vous a été transmis',
+        body: `${employeur?.name ?? 'Un établissement'} vous transmet un contrat — ${intitule}.`,
+        link: `/dashboard/contrats/${id}`,
+      })
+      .catch(() => undefined);
+    if (c.user?.email) {
+      await this.mail
+        .sendContratTransmis(c.user.email, {
+          etablissement: employeur?.name ?? null,
+          intitule,
+        })
+        .catch(() => undefined);
+    }
+
     return this.get(accountId, id);
   }
 

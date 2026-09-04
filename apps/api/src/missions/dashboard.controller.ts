@@ -85,8 +85,27 @@ export class DashboardController {
     const ownerId = compte?.ownerId ?? '';
     const [applications, upcomingBookings, reglees, nonLus] = await Promise.all([
       this.prisma.booking.count({ where: { accountId: account.id, status: 'REQUESTED' } }),
+      // ⚠ « INTERVENTIONS À VENIR » NE COMPTAIT QUE LA MOITIÉ DU MÉTIER.
+      //
+      // `Booking.accountId` désigne le compte QUI DEMANDE. Pour un intervenant,
+      // il ne vaut le sien que sur ses candidatures à un renfort. Un atelier de
+      // son catalogue réservé par un établissement porte l'identifiant de
+      // l'ÉTABLISSEMENT — le compteur l'ignorait donc entièrement.
+      //
+      // Mesuré en production le 3/09/2026 : huit réservations confirmées, et un
+      // intervenant qui a un atelier bloqué la semaine prochaine lisait
+      // « 0 intervention à venir » sur son tableau de bord. Un compteur faux
+      // vaut moins que pas de compteur : il fait croire qu'il n'y a rien à
+      // préparer.
       this.prisma.booking.count({
-        where: { accountId: account.id, status: { in: ['ACCEPTED', 'CONFIRMED'] } },
+        where: {
+          status: { in: ['ACCEPTED', 'CONFIRMED', 'IN_PROGRESS'] },
+          OR: [
+            { accountId: account.id },
+            { service: { accountId: account.id } },
+            { mission: { accountId: account.id } },
+          ],
+        },
       }),
       this.prisma.invoice.aggregate({
         where: {

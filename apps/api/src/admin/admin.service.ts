@@ -1269,11 +1269,25 @@ export class AdminService {
     const in48h = new Date(now.getTime() + 48 * 3600 * 1000);
     const in30d = new Date(now.getTime() + 30 * 24 * 3600 * 1000);
 
-    const [urgentMissions, pendingUsers, expiringDocs, pendingTimeEntries, draftMissions, draftServices] =
-      await this.prisma.$transaction([
+    const [
+      urgentMissions,
+      pendingUsers,
+      expiringDocs,
+      pendingTimeEntries,
+      draftMissions,
+      draftServices,
+      pendingContacts,
+      pendingAttachments,
+    ] = await this.prisma.$transaction([
         // Missions publiées qui démarrent dans moins de 48 h et ne sont pas pourvues.
+        //
+        // ⚠ LA BORNE BASSE MANQUAIT, ET LE COMPTEUR NE POUVAIT QUE GROSSIR.
+        // Sans `gte: now`, « démarre dans moins de 48 h » attrapait aussi tout
+        // ce qui avait démarré la semaine dernière, le mois dernier, en juillet.
+        // Une alerte qui ne redescend jamais cesse d'être une alerte : on
+        // apprend à ne plus la regarder, et la vraie urgence s'y noie.
         this.prisma.reliefMission.findMany({
-          where: { status: 'PUBLISHED', startDate: { lte: in48h } },
+          where: { status: 'PUBLISHED', startDate: { gte: now, lte: in48h } },
           orderBy: { startDate: 'asc' },
           take: 10,
           select: {
@@ -1305,6 +1319,15 @@ export class AdminService {
         this.prisma.timeEntry.count({ where: { status: 'PENDING' } }),
         this.prisma.reliefMission.count({ where: { status: 'DRAFT' } }),
         this.prisma.service.count({ where: { status: 'DRAFT' } }),
+        // ⚠ DEUX FILES D'ATTENTE QUI N'APPARAISSAIENT NULLE PART.
+        //
+        // Un message envoyé depuis le formulaire de contact et une demande de
+        // rattachement en attente demandent tous deux une réponse humaine —
+        // c'est la définition même de ce cockpit. Ni l'un ni l'autre n'y était
+        // compté : mesuré le 3/09/2026, quatre messages et deux demandes
+        // dormaient sans que rien ne le dise.
+        this.prisma.contactRequest.count({ where: { status: 'NEW' } }),
+        this.prisma.attachmentRequest.count({ where: { status: 'PENDING' } }),
       ]);
 
     const expired = expiringDocs.filter((d) => d.expiresAt && d.expiresAt < now).length;
@@ -1321,6 +1344,8 @@ export class AdminService {
         expiringDocuments: expiringDocs.length - expired,
         pendingTimeEntries,
         pendingModeration: draftMissions + draftServices,
+        pendingContacts,
+        pendingAttachments,
       },
     };
   }

@@ -178,7 +178,7 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
       },
       quote: { create: jest.fn() },
     };
-    const service = new QuotesService(prisma, {} as any);
+    const service = new QuotesService(prisma, {} as any, {} as any);
 
     await expect(
       service.request('user', 'compte-mecs', { serviceId: 'svc' } as any),
@@ -203,7 +203,7 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
       },
       quote: { create: jest.fn() },
     };
-    const service = new QuotesService(prisma, {} as any);
+    const service = new QuotesService(prisma, {} as any, {} as any);
 
     await expect(
       service.request('user', 'compte-mecs', { serviceId: 'svc' } as any),

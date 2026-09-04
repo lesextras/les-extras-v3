@@ -2169,3 +2169,116 @@ croire l'inverse de ce qui vient de se passer — et c'est exactement le défaut
 que le message « Atelier publié » sur une publication refusée avait produit en
 août. `lib/confetti.ts` refuse déjà de partir si la personne a demandé moins
 d'animations (`prefers-reduced-motion`).
+
+---
+
+## L'audit expérience client — ce qui a été refermé le 4/09/2026
+
+Demande de Siham : « fait audit experience client de tous les utilisateurs ! on
+est a 100% ? », puis « go fait tout ». Le rapport est publié en artefact
+(`audit-experience-client.html`). Ce qui suit est ce qui a été **corrigé dans le
+code**, avec la raison — pour ne pas défaire par mégarde ce qui a coûté cher à
+trouver.
+
+### 1. Le chemin de l'argent était coupé — et c'était le trou le plus cher
+
+`/dashboard/ateliers` ne listait que les réservations `REQUESTED`. Dès qu'un
+intervenant en acceptait une, elle quittait la section et retombait en simple
+ligne d'historique, **sans aucun bouton** — alors que le serveur réserve
+précisément à l'intervenant le droit de la confirmer, de la démarrer et de la
+terminer (`assertOffreur`).
+
+⚠ **`preparerFactureAtelier()` n'est appelée QUE depuis `complete()`.** Pas de
+`COMPLETED`, donc pas de facture, jamais. Mesuré en production le 3/09/2026 :
+**une seule réservation terminée sur quinze**, huit bloquées en « confirmée ».
+
+Corrigé : `A_TRAITER` liste les quatre états qui attendent un geste, dans
+l'ordre de la machine à états, avec `ETAPE[]` qui nomme la marche en toutes
+lettres. `BookingActions` prend un `contexte` (`"atelier" | "renfort"`) parce que
+« Retenir la candidature » n'a aucun sens sur un atelier. `vue-reservations.tsx`
+porte les mêmes boutons côté établissement.
+
+### 2. Quatre e-mails qui n'écrivaient qu'une ligne en base
+
+Réservation reçue, demande de devis, devis reçu, rattachement (les trois
+moments), transmission de contrat : **cinq méthodes ajoutées à `MailService`**,
+et `MailModule` importé dans `services`, `quotes`, `contrats` et
+`attachment-requests`.
+
+⚠ **`attachment-requests` n'avait NI `MailService` NI `NotificationsService`** :
+zéro notification dans les deux sens, contre quatre écrans qui promettaient le
+contraire. Deux personnes attendaient au moment de l'audit. Le message
+d'acceptation dit explicitement de **se déconnecter puis se reconnecter** — la
+liste des comptes voyage dans le jeton.
+
+⚠ **Ajouter un paramètre au constructeur casse les specs qui instancient la
+classe à la main** (`ServicesService` → 4 arguments, `QuotesService` → 3). Même
+piège que pour `AdminService` en août. Les cinq sites d'appel ont été repris.
+
+### 3. SOS Renfort : le premier palier refusait ceux pour qui il existait
+
+`ciblage.service.ts` levait **inconditionnellement** sur
+`visibility === SALARIES`, avant les quarante lignes écrites plus bas pour
+laisser précisément les salariés rattachés répondre. Or `SALARIES` est le choix
+**par défaut** du formulaire ET du serveur : pendant les six premières heures de
+chaque annonce, **personne** ne pouvait répondre. Le refus ne vaut désormais que
+pour qui n'est pas de la maison, et la cascade `RESERVED` garde l'équipe ouverte
+(elle s'élargit, elle ne se rétrécit jamais).
+
+### 4. Devis : une élévation de privilège réelle
+
+`requireParticipant()` ne lisait que les appartenances de la **personne** ; le
+garde de rôle du contrôleur ne juge que le compte **actif**. Un éducateur simple
+`MEMBER` d'une MECS, `OWNER` de son compte intervenant perso, basculait dessus et
+acceptait un devis à 900 € au nom de l'établissement. L'en-tête de
+`quotes.controller.ts` documentait ce trou comme refermé : il l'était pour le
+menu, pas pour la route. `findOne`, `send`, `accept` et `refuse` reçoivent
+maintenant `@CurrentAccount()`.
+
+Les scénarios 3 et 4 sont figés dans `src/common/audit-experience.spec.ts` —
+ils ne se voient pas en relisant le fichier fautif, seulement en les jouant.
+
+### 5. Panne d'API ≠ fiche supprimée (le piège SEO)
+
+Les cinq fiches publiques faisaient `if (!data) notFound()` + `robots: noindex`.
+Or `fetchPublic` renvoyait `undefined` aussi bien sur un 404 que sur une API
+injoignable : **pendant chaque redéploiement, tout le catalogue répondait
+« supprimé » aux robots**, et un désindexage se répare en semaines. `fetchPublic`
+conserve désormais le statut HTTP ; `_shared/fiche-publique.ts` pose la
+distinction une seule fois (`exigerFiche`, `metaIntrouvable`).
+
+### 6. Les petites vérités qui coûtaient cher
+
+- **« Intervenants vérifiés »** sur la fiche atelier : faux, et c'est la pire
+  catégorie de faux — une promesse de sécurité faite à qui va confier des
+  enfants. Aucune vérification d'identité n'existe dans le produit (16 comptes
+  vérifiés sur 113, et cela ne vérifie qu'une adresse e-mail). Remplacé par
+  « Rien n'est engagé avant votre accord », qui est vrai.
+- **« Attestation et certificat délivrés »** sur la fiche formation
+  contredisait frontalement le bloc « ni diplôme, ni certification
+  professionnelle » situé plus haut **sur la même page**.
+- **Le Desk** comptait les renforts urgents avec `lte: in48h` sans borne basse :
+  le compteur ne pouvait que grossir, et une alerte qui ne redescend jamais
+  cesse d'en être une. Deux files invisibles y sont ajoutées : les messages de
+  contact `NEW` et les rattachements `PENDING`.
+- **Le menu réduit du salarié en attente** ne tenait que sur `/dashboard` :
+  un clic sur le catalogue (`app/marketplace/layout.tsx`) rendait les quinze
+  entrées freelance, dont douze mènent à un refus serveur. `/dashboard/appui-scolaire`
+  manquait aussi à `lib/rattachement.ts` — seule porte de LEX qui restait fermée.
+- **« Interventions à venir »** ne comptait que les réservations où
+  l'intervenant est le **demandeur** : un atelier de son catalogue réservé par
+  un établissement porte l'identifiant de l'ÉTABLISSEMENT. Le compteur ignorait
+  donc tout son métier.
+- **Suppressions optimistes** (`AssistantStudio`, `TramesMaison`) : le
+  `.catch(() => undefined)` avalait l'échec et la ligne disparaissait quand même.
+- **La page d'accueil** perdait ses trois rayons en silence si `/public/highlights`
+  ne répondait pas : un visiteur arrivant pendant un redéploiement voyait une
+  association sans un seul atelier. Un encart le dit maintenant.
+
+### Ce qui reste et n'est PAS du code
+
+SIRET et adresse dans l'assistant d'établissement (imprimés « SIRET — » sur les
+factures et les CDD) ; le médiateur de la consommation (CECMC) ; le premier
+paiement Stripe réel ; le second compte ADMIN ; RE-DESSINE MOI (fiche « été 2025 »
+à 300 €, toujours en ligne) ; les vraies adresses de Younes, Christophe et
+Jean Léo ; le `h1` de l'accueil ; la preuve sociale.

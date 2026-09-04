@@ -103,9 +103,10 @@ export default async function LandingPage() {
   const ateliersTotal = catalogueAteliers?.total ?? 0;
 
   // Marketplace visible sans compte : les mieux notés, directement en accueil.
-  const { data: unes } = await fetchPublic<{ ateliers: OfferCard[]; formations: OfferCard[] }>(
-    '/public/highlights',
-  );
+  const { data: unes, error: erreurUnes } = await fetchPublic<{
+    ateliers: OfferCard[];
+    formations: OfferCard[];
+  }>('/public/highlights');
 
   // TROIS CARTES PAR RAYON, PAS DIX ET SEPT.
   //
@@ -419,6 +420,37 @@ export default async function LandingPage() {
                   )}
                 </div>
               </Reveal>
+
+              {/* ⚠ QUAND L'API NE RÉPOND PAS, LA VITRINE DISPARAISSAIT EN SILENCE.
+                  Les trois sections produit étaient conditionnées à
+                  `length > 0`, et rien ne distinguait « rien à montrer » de
+                  « je n'ai pas pu demander ». Un visiteur arrivant pendant un
+                  redéploiement — deux à trois minutes, et c'est précisément
+                  l'heure où l'on pousse une campagne — voyait une association
+                  sans un seul atelier au catalogue. On préfère dire que le
+                  chargement a échoué et donner la porte du catalogue :
+                  l'erreur avouée coûte infiniment moins cher que le vide. */}
+              {erreurUnes && ateliersUne.length === 0 ? (
+                <Reveal className="rounded-2xl border border-border/60 bg-card/40 p-8 text-center">
+                  <p className="text-lg font-semibold text-foreground">
+                    Notre sélection ne s’affiche pas en ce moment.
+                  </p>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                    C’est un incident passager de notre côté, pas un catalogue vide :
+                    les ateliers et les formations sont bien en ligne.
+                  </p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    <Button asChild>
+                      <Link href="/ateliers">
+                        Voir les ateliers <ArrowRight />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/formations">Voir les formations</Link>
+                    </Button>
+                  </div>
+                </Reveal>
+              ) : null}
 
               {ateliersUne.length > 0 ? (
                 <div className="space-y-6">

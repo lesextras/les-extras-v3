@@ -55,7 +55,34 @@ export default async function AteliersPage() {
     fetchApi<Booking[]>(session, "/bookings?scope=account&kind=service"),
   ]);
 
-  const pending = (bookings.data ?? []).filter((b) => b.status === "REQUESTED");
+  // LES RÉSERVATIONS QUI DEMANDENT UN GESTE — pas seulement les nouvelles.
+  //
+  // ⚠ CET ÉCRAN NE MONTRAIT QUE LES « REQUESTED », ET C'ÉTAIT LE TROU LE PLUS
+  // COÛTEUX DU PRODUIT. Dès qu'un intervenant acceptait une réservation, elle
+  // quittait cette section et retombait en simple ligne d'historique, sans
+  // aucun bouton — alors que le serveur réserve précisément à l'intervenant le
+  // droit de la confirmer, de la démarrer et de la terminer (`assertOffreur`).
+  //
+  // Comme la facture d'atelier n'est préparée QUE par `complete()`, plus aucune
+  // facture ne pouvait naître. Mesuré en production le 3/09/2026 : une seule
+  // réservation terminée sur quinze, huit bloquées en « confirmée ».
+  //
+  // Les quatre états qui attendent quelque chose sont donc listés ensemble, dans
+  // l'ordre de la machine à états. `COMPLETED` et `CANCELLED` n'y sont pas :
+  // elles n'attendent plus rien et vivent dans l'historique, en bas.
+  const A_TRAITER = ["REQUESTED", "ACCEPTED", "CONFIRMED", "IN_PROGRESS"] as const;
+  const ETAPE: Record<string, string> = {
+    REQUESTED: "Nouvelle demande — à accepter ou à décliner",
+    ACCEPTED: "Acceptée — confirmez la date pour la bloquer",
+    CONFIRMED: "Date bloquée — démarrez le jour de l’atelier",
+    IN_PROGRESS: "En cours — marquez-la terminée pour préparer la facture",
+  };
+  const pending = (bookings.data ?? [])
+    .filter((b) => (A_TRAITER as readonly string[]).includes(b.status))
+    .sort(
+      (a, z) =>
+        A_TRAITER.indexOf(a.status as never) - A_TRAITER.indexOf(z.status as never),
+    );
 
   return (
     <div className="space-y-8">
@@ -68,7 +95,7 @@ export default async function AteliersPage() {
       {pending.length > 0 ? (
         <Card className="border-secondary/30 bg-secondary/5">
           <CardHeader>
-            <SectionTitle title={`Demandes à traiter (${pending.length})`} />
+            <SectionTitle title={`Réservations à traiter (${pending.length})`} />
           </CardHeader>
           <CardContent className="space-y-3">
             {pending.map((b) => (
@@ -82,6 +109,10 @@ export default async function AteliersPage() {
                     L'établissement le saisissait déjà ; personne ne le lisait. */}
                 <div className="min-w-0 space-y-1">
                   <p className="text-sm font-medium text-foreground">{b.service?.title ?? "Atelier"}</p>
+                  {/* L'ÉTAPE, EN TOUTES LETTRES. La machine à états compte
+                      quatre marches ; sans les nommer, l'intervenant ne sait
+                      pas laquelle il vient de franchir ni ce qui reste. */}
+                  <p className="text-xs font-medium text-primary">{ETAPE[b.status] ?? ""}</p>
                   <p className="text-xs text-muted-foreground">
                     Demandé par {b.account?.name ?? "un établissement"}
                     {b.scheduledAt
@@ -97,7 +128,12 @@ export default async function AteliersPage() {
                     </p>
                   ) : null}
                 </div>
-                <BookingActions bookingId={b.id} accountId={session.account.id} status={b.status} />
+                <BookingActions
+                  bookingId={b.id}
+                  accountId={session.account.id}
+                  status={b.status}
+                  contexte="atelier"
+                />
               </div>
             ))}
           </CardContent>

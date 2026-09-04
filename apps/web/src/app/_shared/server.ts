@@ -121,7 +121,7 @@ export async function fetchApi<T>(
 export async function fetchPublic<T>(
   path: string,
   options?: { revalidate?: number },
-): Promise<{ data?: T; error?: string }> {
+): Promise<{ data?: T; error?: string; introuvable?: boolean; status?: number }> {
   const revalidate = options?.revalidate ?? 60;
   try {
     const data = (await apiRequest(path, {
@@ -131,7 +131,16 @@ export async function fetchPublic<T>(
     return { data };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur inconnue";
-    return { error: message };
+    // ⚠ « PAS DE DONNÉE » N'EST PAS « N'EXISTE PAS ».
+    //
+    // Les fiches publiques traitaient toute absence de donnée comme un 404 :
+    // `notFound()` et `robots: noindex`. Une API en panne cinq minutes — un
+    // redéploiement suffit — faisait donc répondre « cette page n'existe pas »
+    // à Google pour TOUT le catalogue, et un désindexage se paie en semaines
+    // de trafic. Le statut HTTP distingue les deux cas ; il était simplement
+    // jeté ici. `introuvable` n'est vrai que sur un vrai 404 ou 410.
+    const status = err instanceof ApiError ? err.status : 0;
+    return { error: message, status, introuvable: status === 404 || status === 410 };
   }
 }
 

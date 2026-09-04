@@ -22,6 +22,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireSession, fetchApi } from "../../../_shared/server";
+import { BookingActions } from "../../../_shared/BookingActions";
 import { PageHeader, SectionTitle, EmptyState, ErrorState } from "../../../_shared/ui";
 import {
   formatDate,
@@ -87,6 +88,7 @@ function Ligne({
   role,
   participants,
   note,
+  actions,
 }: {
   /**
    * Identifiant de la réservation, posé en ancre HTML. Les notifications et les
@@ -106,6 +108,16 @@ function Ligne({
   role: "client" | "prestataire";
   participants?: number | null;
   note?: string | null;
+  /**
+   * Les actions de la machine à états, quand cette ligne en attend une.
+   *
+   * ⚠ CETTE LIGNE N'AVAIT AUCUN BOUTON, ET C'ÉTAIT UN CUL-DE-SAC. Une
+   * réservation en attente restait inerte : ni relance, ni annulation, ni
+   * moyen de la faire avancer. Côté intervenant, c'est ici que les
+   * réservations retombaient après avoir quitté « à traiter » sur
+   * /dashboard/ateliers.
+   */
+  actions?: React.ReactNode;
 }) {
   return (
     <Card id={ancre} className="scroll-mt-24 target:ring-2 target:ring-primary">
@@ -148,6 +160,7 @@ function Ligne({
               statut}
           </Badge>
         </div>
+        {actions ? <div className="w-full border-t border-border pt-3">{actions}</div> : null}
       </CardContent>
     </Card>
   );
@@ -307,6 +320,14 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
               }
               montant={euros(b.totalAmount)}
               role={b.mission?.accountId === accountId ? "client" : "prestataire"}
+              // Sur un renfort, c'est l'ÉTABLISSEMENT qui fait avancer la
+              // machine à états (`assertDemandeur`). L'intervenant, lui, ne
+              // voit que l'état.
+              actions={
+                b.mission?.accountId === accountId ? (
+                  <BookingActions bookingId={b.id} accountId={accountId} status={b.status as never} />
+                ) : null
+              }
             />
           ))}
         </section>
@@ -330,6 +351,20 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
               }
               montant={euros(b.totalAmount)}
               role={b.service?.accountId === accountId ? "prestataire" : "client"}
+              // Sur un atelier, c'est l'INTERVENANT qui fait avancer la machine
+              // à états (`assertOffreur`) : confirmer, démarrer, terminer — et
+              // c'est `complete()` qui prépare la facture. Sans ces boutons ici,
+              // une réservation acceptée n'avait plus aucun chemin nulle part.
+              actions={
+                b.service?.accountId === accountId ? (
+                  <BookingActions
+                    bookingId={b.id}
+                    accountId={accountId}
+                    status={b.status as never}
+                    contexte="atelier"
+                  />
+                ) : null
+              }
             />
           ))}
         </section>

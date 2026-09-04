@@ -26,6 +26,10 @@ export const CHEMINS_OUVERTS_SANS_RATTACHEMENT = [
   '/dashboard/formations',
   '/dashboard/assistant',
   '/dashboard/activites',
+  // LEX compte trois outils, et le troisième manquait à cette liste : l'appui
+  // scolaire était l'unique porte de LEX que l'écran d'attente refermait, alors
+  // que le serveur, lui, l'ouvre comme les deux autres (`assistant`).
+  '/dashboard/appui-scolaire',
   '/dashboard/adhesion',
   '/dashboard/mon-dossier',
   '/dashboard/account',

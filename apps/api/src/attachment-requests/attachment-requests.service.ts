@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { AccountRole, AccountType, AttachmentRequestStatus, MembershipStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../common/mail/mail.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
 import { CreateAttachmentRequestDto } from './dto/create-attachment-request.dto';
 
@@ -21,7 +23,62 @@ import { CreateAttachmentRequestDto } from './dto/create-attachment-request.dto'
  */
 @Injectable()
 export class AttachmentRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+    private readonly notifications: NotificationsService,
+  ) {}
+
+  /**
+   * ⚠ CE SERVICE N'AVERTISSAIT PERSONNE, DANS AUCUN DES DEUX SENS.
+   *
+   * Une demande de rattachement s'écrivait en base et attendait qu'un
+   * directeur ouvre par hasard l'écran « Équipe ». Une décision se prenait
+   * sans que le salarié en sache jamais rien — alors que son espace reste
+   * bridé tant qu'aucune réponse n'arrive. Mesuré le 3/09/2026 : deux
+   * personnes attendaient depuis des semaines, des deux côtés du silence.
+   *
+   * Chaque envoi est en `catch(() => undefined)` : un SMTP en panne ne doit
+   * jamais faire échouer l'action métier qui vient de réussir.
+   */
+  private async prevenirResponsables(
+    establishmentId: string,
+    salarie: string,
+    etablissement: string,
+    message?: string | null,
+  ) {
+    const responsables = await this.prisma.membership
+      .findMany({
+        where: {
+          accountId: establishmentId,
+          status: MembershipStatus.ACTIVE,
+          role: { in: [AccountRole.OWNER, AccountRole.ADMIN] },
+        },
+        select: { userId: true, user: { select: { email: true } } },
+      })
+      .catch(() => []);
+
+    for (const r of responsables) {
+      await this.notifications
+        .create(r.userId, {
+          type: 'ATTACHMENT_REQUESTED',
+          title: 'Demande de rattachement',
+          body: `${salarie} demande à rejoindre ${etablissement}.`,
+          link: '/dashboard/equipe',
+        })
+        .catch(() => undefined);
+      if (r.user?.email) {
+        await this.mail
+          .sendRattachement(r.user.email, {
+            moment: 'demande',
+            salarie,
+            etablissement,
+            motif: message ?? null,
+          })
+          .catch(() => undefined);
+      }
+    }
+  }
 
   /** Le compte « salarié » demande son rattachement à un établissement. */
   async create(requesterAccount: RequestAccount, requesterUser: RequestUser, dto: CreateAttachmentRequestDto) {
@@ -80,6 +137,20 @@ export class AttachmentRequestsService {
             message: dto.message?.trim() || null,
           },
         });
+
+    // Le nom du compte demandeur ne voyage pas dans le jeton — seul son id le
+    // fait. On le lit ici pour que le courriel dise « Sarah Dupont demande à
+    // rejoindre » plutôt qu'une adresse technique.
+    const demandeur = await this.prisma.account
+      .findUnique({ where: { id: requesterAccount.id }, select: { name: true } })
+      .catch(() => null);
+
+    await this.prevenirResponsables(
+      establishment.id,
+      demandeur?.name ?? requesterUser.email,
+      establishment.name,
+      request.message,
+    );
 
     return request;
   }
@@ -160,6 +231,8 @@ export class AttachmentRequestsService {
       return created;
     });
 
+    await this.prevenirLeSalarie(request.requesterUserId, account.id, 'acceptee');
+
     return {
       approved: true,
       membership: { id: membership.id, accountId: membership.accountId, role: membership.role },
@@ -172,7 +245,7 @@ export class AttachmentRequestsService {
     if (request.status !== AttachmentRequestStatus.PENDING) {
       throw new BadRequestException('Seule une demande en attente peut être refusée.');
     }
-    return this.prisma.attachmentRequest.update({
+    const refusee = await this.prisma.attachmentRequest.update({
       where: { id: requestId },
       data: {
         status: AttachmentRequestStatus.REJECTED,
@@ -180,5 +253,55 @@ export class AttachmentRequestsService {
         decidedAt: new Date(),
       },
     });
+
+    await this.prevenirLeSalarie(request.requesterUserId, account.id, 'refusee');
+
+    return refusee;
+  }
+
+  /**
+   * L'autre sens du silence : la personne qui attend.
+   *
+   * Un refus est prévenu comme une acceptation — sans motif, parce que la
+   * décision n'en porte pas en base : mieux vaut une réponse nette qu'une
+   * attente indéfinie. L'acceptation, elle, dit explicitement de se
+   * reconnecter : la liste des comptes voyage dans le jeton, le sélecteur ne
+   * montre l'établissement qu'à la connexion suivante.
+   */
+  private async prevenirLeSalarie(
+    userId: string,
+    establishmentId: string,
+    moment: 'acceptee' | 'refusee',
+  ) {
+    const [user, etablissement] = await Promise.all([
+      this.prisma.user
+        .findUnique({ where: { id: userId }, select: { email: true } })
+        .catch(() => null),
+      this.prisma.account
+        .findUnique({ where: { id: establishmentId }, select: { name: true } })
+        .catch(() => null),
+    ]);
+    const nom = etablissement?.name ?? 'un établissement';
+
+    await this.notifications
+      .create(userId, {
+        type: moment === 'acceptee' ? 'ATTACHMENT_APPROVED' : 'ATTACHMENT_REJECTED',
+        title:
+          moment === 'acceptee'
+            ? 'Votre rattachement est accepté'
+            : 'Votre demande de rattachement a été refusée',
+        body:
+          moment === 'acceptee'
+            ? `${nom} a accepté votre rattachement. Déconnectez-vous puis reconnectez-vous pour voir l'établissement dans votre sélecteur de compte.`
+            : `${nom} n'a pas donné suite. Votre espace individuel reste inchangé.`,
+        link: '/dashboard',
+      })
+      .catch(() => undefined);
+
+    if (user?.email) {
+      await this.mail
+        .sendRattachement(user.email, { moment, etablissement: nom })
+        .catch(() => undefined);
+    }
   }
 }
