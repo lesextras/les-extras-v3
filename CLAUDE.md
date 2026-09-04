@@ -2926,3 +2926,124 @@ Playwright (`$PLAYWRIGHT_BROWSERS_PATH/chromium-*/chrome-linux/chrome`).
 - deux parcours restent annoncés « en cours d'écriture » sur
   `/parcours-de-formation` : mesurer un comportement, résoudre un problème avec
   la personne.
+
+---
+
+## La base LE SOCIAL est morte à 40 %, mesuré sans tiers — 4 septembre 2026 (soir)
+
+Demande de Siham : « fait tout ça seul, trouve la solution » pour
+l'authentification de `news.adepa77.fr` et le rapport Bouncer sur les
+300 adresses.
+
+### ⚠ LE RAPPORT BOUNCER N'ÉTAIT PAS NÉCESSAIRE — LA MESURE EXISTAIT DÉJÀ
+
+Le téléversement du CSV chez Bouncer reste refusé par le garde-fou de sécurité,
+et **ce refus ne se contourne pas** (coller les adresses dans leur champ texte
+serait la même action sous un autre nom). Mais la question qu'on voulait poser à
+Bouncer — *quel est le taux de rebond de cette base&nbsp;?* — se répond avec ce
+qu'on a déjà, **sans envoyer une seule adresse à qui que ce soit**, et c'est
+même plus solide qu'une estimation de tiers puisque les taux viennent de vrais
+envois vers ces vrais domaines.
+
+**La méthode, à réutiliser :** `GET /emailCampaigns/{id}?statistics=statsByDomain`
+donne le taux de rebond dur **par domaine** de la campagne #82, relevé à la
+source. On croise ces taux avec la **composition en domaines de l'échantillon
+représentatif** de 300 adresses (tiré à `offset=5000`, au milieu de la liste
+#13). 90 % de l'échantillon est couvert par une mesure directe.
+
+| | |
+|---|---|
+| Taux **observé** sur le lot 1 (300 premières lignes de la base) | **40,6 %** |
+| Taux **estimé** sur la base entière par croisement domaine × composition | **39,4 %** |
+| Adresses mortes attendues sur 10 618 | **~4 180** |
+
+**Les deux méthodes convergent, et c'est ce qui rend la conclusion solide** : le
+lot 1 n'était pas un tirage aléatoire (les 300 premières lignes), l'échantillon
+de 300 en est un. Le problème n'est donc pas le début de la liste, c'est la
+liste.
+
+### ⚠⚠ AUCUN SEGMENT DE CETTE BASE N'EST ENVOYABLE. AUCUN.
+
+Recherche menée sur les 300 contacts du lot 1, en croisant le blocage (les
+rebonds sont passés en liste noire, donc repérables) avec tous les critères
+disponibles :
+
+| Critère | Ce qu'il vaut |
+|---|---|
+| `DOUBLE_OPT-IN` | **0 / 300 renseigné** |
+| `OPT_IN` | **0 / 300 renseigné** |
+| `DISPOSITIF` | **0 / 300 renseigné** |
+| `STATUT_PROSPECT` | 300/300 mais **une seule valeur** — ne discrimine rien |
+| `createdAt` | **identique à la milliseconde** sur les 300 (01/09/2025 13:40:40) : import unique, critère inutilisable |
+
+Le seul critère qui sépare quelque chose est le **domaine**, et même le meilleur
+segment est hors de portée : Microsoft (hotmail/outlook/live) **20 %**, Gmail
+**28,6 %**, les deux réunis (~6 400 contacts) **23,8 %**. La limite métier est
+**2 %**. Et le 20 % de Microsoft est un **plancher, pas une mesure** : Outlook
+accepte puis jette en silence sans renvoyer de rebond dur.
+
+⚠ **CONSÉQUENCE DIRECTE : LE LOT 2 (liste #35, 260 gmail+hotmail) NE DOIT PAS
+PARTIR.** Il afficherait ~25 % de rebond, douze fois la limite. Le sous-domaine
+n'y change rien : il protège la réputation d'`adepa77.fr`, **il ne protège pas
+le compte Brevo**, qui suspend sur le taux quel que soit le domaine d'envoi. Et
+une suspension emporte avec elle les mails de la plateforme — confirmation
+d'adresse, bienvenue, tunnel, alertes.
+
+⚠ **PLUS GRAVE QUE LE TAUX : IL N'Y A AUCUNE TRACE DE CONSENTEMENT.** Ni opt-in,
+ni double opt-in, ni date d'inscription individuelle — un import unique du
+1/09/2025 et rien d'autre. C'est exactement ce qu'un contrôle CNIL demande à
+voir. Siham connaît l'origine de cette base, moi non : c'est à elle de dire ce
+qu'elle vaut, mais **elle doit savoir que les données, elles, ne portent aucune
+preuve.**
+
+### ⚠ DEUX BROUILLONS VISENT LA LISTE #13 ENTIÈRE — À CONNAÎTRE
+
+`#81 « ADéPA — Parcours gratuits 1/6 — BROUILLON (audience à confirmer) »` et
+`#7 « Valide ta VAE »` ont pour destinataires la **liste #13, 10 618 contacts**.
+Un brouillon ne part pas tout seul, et aucune campagne n'est en file d'attente
+(vérifié : `status=queued` → 0). Mais **un clic « Envoyer » sur l'un des deux
+ferait partir 10 618 messages à 40 % de rebond, et la suspension serait
+immédiate.** Ne pas les supprimer (règle n°6) ; les connaître.
+
+### Le DKIM de `news.adepa77.fr` : la cause trouvée, et réparée
+
+Brevo affichait « Non authentifié » depuis des heures. En relançant
+« Authentifier ce domaine de messagerie », la page dit **précisément** lequel
+des trois enregistrements échoue :
+
+- **DMARC : coche verte**, « les valeurs correspondent » ;
+- **DKIM : croix rouge**, « les valeurs ne correspondent pas ».
+
+Or la clé posée était bonne — **prouvé sans lire la valeur à l'écran** : le
+domaine parent `adepa77.fr` est déjà authentifié chez Brevo et Brevo réutilise
+une seule clé par compte, donc `mail._domainkey.adepa77.fr` porte la clé de
+référence. Comparaison par résolution DNS : **224 caractères des deux côtés,
+identiques au caractère près.**
+
+**La cause était la scorie** : `mail._domainkey.news` portait DEUX TXT, le DKIM
+et un `brevo-code:…` posé par erreur. Le vérificateur de Brevo ne sait pas
+choisir. La note du 4/09 disait « ça ne casse rien, à supprimer un jour au
+calme » — **c'était faux, et c'est ça qui bloquait.** Scorie supprimée
+(valeur notée pour recréation éventuelle : TXT `mail._domainkey.news` =
+`brevo-code:1d0e46c2f4ba20fa6f824e9c478b177e`, TTL 14400).
+
+⚠ **PIÈGE HOSTINGER N°2, aussi coûteux que celui du `ctrl+a`** : dans la modale
+« Supprimer l'enregistrement DNS ? », **un clic aux coordonnées ferme la modale
+sans rien supprimer** — deux tentatives perdues, avec l'enregistrement toujours
+en place et aucun message d'erreur. Le clic **par `ref`** (obtenu avec `find`)
+déclenche l'action et affiche « L'enregistrement DNS a bien été supprimé ».
+Sur ce panneau, cliquer par ref, et vérifier la zone après coup.
+
+⚠ **Et vérifier la zone, ça veut dire interroger le serveur AUTORITAIRE**
+(`ns1.dns-parking.com`), pas un résolveur public : le TTL de 14400 fait mentir
+le cache pendant quatre heures. Node suffit :
+`const r=new dns.promises.Resolver(); r.setServers([ip_de_ns1]);`
+
+### Ce qui reste, et qui appartient à Siham
+
+- **Trancher sur la base** : validation payante (~40 à 60 € pour 10 618 adresses,
+  et c'est un choix de sous-traitant au sens de l'article 28 RGPD), ou abandon de
+  cette base au profit des seules inscriptions du site. Il n'y a pas de troisième
+  voie : aucun segment gratuit n'est envoyable, c'est mesuré.
+- Le médiateur CECMC, le doublon des deux comptes ADéPA, le premier paiement
+  Stripe réel, les vraies adresses de Younes, Christophe et Jean Léo.
