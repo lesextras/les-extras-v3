@@ -123,7 +123,7 @@ export class MailService implements OnModuleDestroy {
    * sans que rien ne le signale. Un repli doit être une valeur sûre, pas une
    * valeur historique.
    */
-  private get webUrl(): string {
+  get webUrl(): string {
     return (
       this.config.get<string>('APP_WEB_URL') ??
       this.config.get<string>('WEB_ORIGIN') ??
@@ -1391,10 +1391,22 @@ export class MailService implements OnModuleDestroy {
    */
   async sendTunnelAccueil(
     to: string,
-    data: { prenom?: string | null; etape: number },
+    data: {
+      prenom?: string | null;
+      etape: number;
+      /**
+       * Une personne qui a demandé une fiche récap SANS créer de compte n'a
+       * pas d'espace où se désabonner : on lui donne un lien par jeton. Sans
+       * ce paramètre, le lien mène au profil, comme pour un compte.
+       */
+      desabonnement?: { url: string; motif: string };
+    },
   ): Promise<void> {
     const message = TUNNEL_ACCUEIL[data.etape - 1];
     if (!message) return;
+    const lien = data.desabonnement?.url ?? `${this.webUrl}/dashboard/account?onglet=profil`;
+    const motif =
+      data.desabonnement?.motif ?? 'Vous recevez ce message parce que vous avez créé un compte sur Les Extras.';
     await this.send(
       to,
       message.sujet,
@@ -1403,10 +1415,65 @@ export class MailService implements OnModuleDestroy {
         `${message.corps}
          <div style="margin-top:24px;font-size:12px;color:#9ca3af">
            Siham, pour l’association ADéPA.<br>
-           Vous recevez ce message parce que vous avez créé un compte sur Les Extras.
-           <a href="${this.webUrl}/dashboard/account?onglet=profil" style="color:#9ca3af">Ne plus recevoir ces e-mails</a>.
+           ${motif}
+           <a href="${lien}" style="color:#9ca3af">Ne plus recevoir ces e-mails</a>.
          </div>`,
         { label: message.bouton, url: `${this.webUrl}${message.chemin}` },
+      ),
+    );
+  }
+
+  /**
+   * LA FICHE RÉCAP, ENVOYÉE À QUI L'A DEMANDÉE — 4/09/2026.
+   *
+   * C'est le service rendu en échange de l'adresse, et il part toujours,
+   * opt-in ou pas : la personne a demandé un document, elle le reçoit. Le
+   * message ne vend rien et ne promet rien d'autre — le premier courriel d'une
+   * relation décide si les suivants seront ouverts.
+   *
+   * Si la personne a coché la séquence d'accueil, on le lui dit ici, avec le
+   * lien pour se retirer : elle doit pouvoir changer d'avis avant le premier
+   * message de la séquence, pas seulement après.
+   */
+  async sendFicheRecap(
+    to: string,
+    data: {
+      prenom?: string | null;
+      titre: string;
+      slug: string;
+      enrollUrl?: string | null;
+      consentTunnel: boolean;
+      desabonnementUrl: string;
+    },
+  ): Promise<void> {
+    const fiche = `${this.webUrl}/fiches/${data.slug}.pdf`;
+    const page = `${this.webUrl}/formations/${data.slug}`;
+    const suite = data.consentTunnel
+      ? `<p style="margin:16px 0 0">Vous avez demandé à recevoir les parcours suivants : un message
+         tous les trois jours, six en tout, chacun avec un outil utilisable le jour même.
+         <a href="${data.desabonnementUrl}" style="color:#6b7280">Se retirer en un clic</a>.</p>`
+      : '';
+    await this.send(
+      to,
+      `Votre fiche récap : ${data.titre}`,
+      this.layout(
+        `Bonjour${data.prenom ? ` ${data.prenom}` : ''},`,
+        `<p>Voici la fiche récap A4 du parcours <b>${data.titre}</b> : la notion clé, les
+         quatre modules, la grille de relevé à recopier et les erreurs qui coûtent le plus.
+         Elle s’imprime et se punaise en salle d’équipe.</p>
+         <p style="margin:12px 0 0"><a href="${fiche}" style="color:#183767;font-weight:600">Télécharger la fiche (PDF)</a></p>
+         ${
+           data.enrollUrl
+             ? `<p style="margin:12px 0 0">Le parcours complet est gratuit, du premier au dernier module, sans
+                carte bancaire : <a href="${data.enrollUrl}" style="color:#183767">${page.replace('https://', '')}</a>.</p>`
+             : ''
+         }
+         ${suite}
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">
+           Siham, pour l’association ADéPA.<br>
+           Vous recevez ce message parce que vous avez demandé cette fiche sur Les Extras.
+         </div>`,
+        { label: 'Ouvrir la fiche récap', url: fiche },
       ),
     );
   }

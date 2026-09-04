@@ -11,13 +11,21 @@ import { ServiceModal } from "../../../_shared/modals/ServiceModal";
 import { CompletudeBandeau } from "../../../_shared/CompletudeFiche";
 import { completude } from "@/lib/completude-fiche";
 import { BookingActions } from "../../../_shared/BookingActions";
+import { BlocParrainage } from "../../../_shared/BlocParrainage";
 import { SERVICE_STATUS_LABEL } from "../../../_shared/format";
 import type { Booking, Service } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Mes ateliers" };
 
-export default async function AteliersPage() {
+export default async function AteliersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ publie?: string }>;
+}) {
   const session = await requireSession();
+  // Posé par ServiceModal juste après une mise en ligne réussie : l'encart
+  // de parrainage ne s'affiche qu'à ce moment-là, et une seule fois.
+  const { publie } = await searchParams;
 
   // UN SALARIÉ EN ATTENTE PEUT REGARDER, PAS ENCORE PUBLIER.
   //
@@ -91,6 +99,21 @@ export default async function AteliersPage() {
         subtitle="Gérez votre catalogue d’interventions et vos demandes de réservation."
         actions={enAttente ? null : <ServiceModal accountId={session.account.id} />}
       />
+
+      {publie === "1" ? (
+        <Card className="border-primary/30 bg-primary-soft">
+          <CardHeader>
+            <SectionTitle title="Votre atelier est en ligne. Et un collègue ?" />
+            <p className="text-sm text-muted-foreground">
+              Un intervenant qui publie grâce à vous, ce sont des points pour vous et un
+              catalogue plus large pour tout le monde. Le lien ci-dessous est le vôtre.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <BlocParrainage accountId={session.account.id} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       {pending.length > 0 ? (
         <Card className="border-secondary/30 bg-secondary/5">

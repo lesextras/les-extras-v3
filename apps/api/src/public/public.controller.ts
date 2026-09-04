@@ -5,6 +5,8 @@ import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { QueryPublicFormationsDto } from './dto/query-public-formations.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { CreateQuoteRequestDto } from './dto/create-quote-request.dto';
+import { CreateCaptureDto, DesabonnementCaptureDto } from './dto/create-capture.dto';
+import { CreateVueDto } from './dto/create-vue.dto';
 import { QueryVendorsDto } from './dto/query-vendors.dto';
 
 /**
@@ -97,5 +99,38 @@ export class PublicController {
   @Post('contact')
   contact(@Body() dto: CreateContactDto) {
     return this.publicService.createContact(dto);
+  }
+
+  /**
+   * POST /public/captures — « Recevoir la fiche récap par e-mail » depuis la
+   * fiche d'un parcours gratuit. Même plafond que les autres formulaires
+   * ouverts, même champ-piège.
+   */
+  @Throttle({ default: { limit: 8, ttl: 3_600_000 } })
+  @Post('captures')
+  capture(@Body() dto: CreateCaptureDto) {
+    return this.publicService.createCapture(dto);
+  }
+
+  /**
+   * POST /public/captures/desabonnement — retrait de la séquence d'accueil par
+   * jeton. Un POST et non un GET : un lien ouvert par un antivirus ou un
+   * aperçu de messagerie ne doit pas désabonner quelqu'un à son insu.
+   */
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @Post('captures/desabonnement')
+  desabonnement(@Body() dto: DesabonnementCaptureDto) {
+    return this.publicService.desabonnerCapture(dto.jeton);
+  }
+
+  /**
+   * POST /public/trafic — une page vue, agrégée par jour, chemin et origine.
+   * Aucun identifiant de personne n'entre ici (voir CreateVueDto). Plafond
+   * large : une visite normale enchaîne dix pages en quelques minutes.
+   */
+  @Throttle({ default: { limit: 120, ttl: 600_000 } })
+  @Post('trafic')
+  vue(@Body() dto: CreateVueDto) {
+    return this.publicService.compterVue(dto);
   }
 }

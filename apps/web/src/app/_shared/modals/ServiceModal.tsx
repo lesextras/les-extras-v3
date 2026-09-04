@@ -373,6 +373,16 @@ export function ServiceModal({
         });
       }
       setOpen(false);
+      // LE PARRAINAGE SE PROPOSE AU MOMENT DE LA JOIE, PAS DANS UN MENU.
+      //
+      // Une fiche vient d'être mise en ligne : c'est l'instant où la personne
+      // a envie d'en parler, et c'est le seul où une invitation à parrainer
+      // un collègue est autre chose qu'une sollicitation. Le paramètre est lu
+      // par « Mes ateliers », qui affiche l'encart une fois. Jamais sur un
+      // brouillon ni sur un refus — même doctrine que les confettis.
+      if (statut === "PUBLISHED" && publiee) {
+        router.replace("/dashboard/ateliers?publie=1");
+      }
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Création impossible");

@@ -812,7 +812,560 @@ const BILAN: GuideEcrit = {
 
 /* ────────────────────────────────────────────────────────────────────────── */
 
-export const GUIDES_ECRITS: GuideEcrit[] = [PILIER, RAPPORT, PROJET, ESS, IP, BILAN];
+const TRANSMISSIONS: GuideEcrit = {
+  slug: 'transmissions-cahier-de-liaison',
+  titre: 'Les transmissions et le cahier de liaison',
+  accroche: 'Écrire des transmissions qui tiendront dans six mois',
+  description:
+    'L’écrit le plus court du métier est celui qui pèse le plus lourd : la transmission du soir se retrouve dans le rapport, puis dans l’orientation. Le test de la caméra, les mots à bannir, et un gabarit en trois lignes.',
+  chapo:
+    'On écrit une transmission en deux minutes, debout, à la fin d’un service. Six mois plus tard, quelqu’un qui n’était pas là la relit pour décider d’une orientation. Ce guide sert à ce que la phrase écrite vite soit encore vraie ce jour-là.',
+  minutes: 8,
+  cadre: [
+    {
+      quoi: 'La personne accompagnée a accès à toute information ou document relatif à sa prise en charge.',
+      ou: 'Code de l’action sociale et des familles, article L311-3, 5°',
+    },
+    {
+      quoi: 'Les documents portant une appréciation ou un jugement de valeur sur une personne nommément désignée ne sont communicables qu’à cette personne.',
+      ou: 'Code des relations entre le public et l’administration, article L311-6',
+    },
+  ],
+  sections: [
+    {
+      titre: 'L’écrit du soir devient une orientation six mois plus tard',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Une transmission n’a pas de lecteur au moment où on l’écrit : c’est ce qui la rend dangereuse. On l’écrit pour le collègue du lendemain, qui la lira en diagonale entre deux levers. Mais elle ne disparaît pas le lendemain. Elle reste dans le cahier de liaison ou dans le logiciel, c’est elle que l’éducateur référent rouvre au moment de rédiger le rapport de situation, et c’est d’elle que sort la phrase « des comportements agressifs sont régulièrement relevés en soirée » qui, un jour, motive un changement d’orientation.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Le rapport n’est jamais meilleur que les transmissions dont il est tiré. Un rapport rédigé à partir de trente lignes qui disent « soirée compliquée » ou « Nassim insupportable ce soir » ne pourra rien dire de plus, quelle que soit la qualité de son auteur. À l’inverse, trente lignes qui disent ce qui s’est passé, à quelle heure, après quoi, permettent d’écrire trois mois plus tard une phrase chiffrée que personne ne pourra contester.',
+        },
+        {
+          type: 'p',
+          texte:
+            'C’est pour cela que le cahier de liaison est l’écrit le plus important du secteur, et le moins enseigné : il ne se relit pas avant d’être envoyé, il n’a pas de trame, il n’est pas corrigé par un chef de service. Tout repose sur le réflexe de la personne qui écrit.',
+        },
+      ],
+    },
+    {
+      titre: 'Le test de la caméra',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Une seule question, à se poser avant de poser le stylo : une caméra fixée au plafond de la pièce aurait-elle enregistré ce que je viens d’écrire ? Elle aurait filmé un enfant qui renverse une chaise, qui crie, qui pleure, qui sort de la pièce, qui reste vingt minutes sous la table. Elle n’aurait pas filmé un enfant « agressif », « provocateur », « qui cherche l’affrontement » ou « qui teste le cadre ». Ces mots-là ne sont pas des images, ce sont des lectures.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Le test ne demande pas d’écrire sans penser. Il demande de séparer les deux couches. La couche filmable d’abord, avec l’heure, le lieu et ce qui s’est passé ; la lecture ensuite, si elle est utile, annoncée comme telle : « je fais l’hypothèse que… », « il me semble que… ». Un collègue peut contester votre hypothèse sans contester votre description. Si les deux sont fondues dans le même mot, il doit tout rejeter ou tout accepter.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Aucun texte ne l’impose. Il n’existe pas de recommandation officielle de la HAS ni de l’ancienne ANESM consacrée aux écrits professionnels, et la règle « les faits d’un côté, l’interprétation de l’autre » est une règle de métier, pas une norme opposable. Mais c’est celle qui fait qu’une transmission résiste à la relecture, six mois après, par quelqu’un qui n’a pas la même lecture que vous.',
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Nassim a encore été agressif au repas. Il a cherché la confrontation avec tout le monde et a fini par pourrir la soirée du groupe. Rien ne le calme.',
+          apres:
+            '19 h 10, salle à manger. Pendant le service, Nassim a poussé son assiette qui est tombée au sol. Il a dit « j’en veux pas de ta bouffe » à l’éducatrice qui servait, puis a quitté la table. Il est resté dans le couloir jusqu’à 19 h 35, assis par terre. Est revenu de lui-même et a mangé un yaourt debout. Le reste du groupe a terminé le repas sans incident. Ce qui a précédé : à 19 h, sa mère a appelé pour dire qu’elle ne viendrait pas samedi.',
+          pourquoi:
+            '« Agressif », « cherché la confrontation », « pourrir la soirée », « rien ne le calme » : quatre lectures, zéro image. La version réécrite tient en cinq lignes, dit ce qu’une caméra aurait vu, et surtout donne l’information qui manquait : l’appel de la mère, dix minutes avant. C’est cette ligne-là qui servira dans le rapport. Elle change tout, et elle ne coûte rien à écrire.',
+        },
+      ],
+    },
+    {
+      titre: 'Les mots qui font passer une opinion pour un fait',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Certains mots sont des jugements déguisés en descriptions. Ils ont l’air neutres parce que tout le monde les emploie, et c’est justement pour cela qu’ils passent. En voici quelques-uns, avec ce qu’il faut écrire à la place.',
+        },
+        {
+          type: 'liste',
+          items: [
+            '« Agressif » → dites le geste et la parole : a tapé dans la porte, a dit « je vais te casser la gueule », a jeté le verre vers Théo.',
+            '« Manipulateur » → c’est une qualification psychologique, elle n’appartient pas à l’éducateur. Décrivez la séquence : a demandé à sortir à l’éducatrice A qui a refusé, l’a demandé dix minutes plus tard à l’éducateur B sans mentionner le premier refus.',
+            '« La mère est dans le déni » → écrivez ce qu’elle a dit, entre guillemets, et ce qu’elle a refusé : « Mme R. a indiqué qu’il n’y avait aucun problème à la maison et a décliné le rendez-vous proposé le 12. »',
+            '« Comportement inadapté » → inadapté à quoi ? Le mot dit seulement que vous n’avez pas aimé. Décrivez le comportement, et le contexte qui le rend problématique.',
+            '« Il fait exprès », « il sait très bien ce qu’il fait » → ce sont des affirmations sur ce qui se passe dans la tête de quelqu’un. Aucune caméra ne le filme. Supprimez.',
+            '« Comme d’habitude », « encore », « toujours » → comptez. « Troisième fois cette semaine » est un fait ; « encore » est un soupir.',
+          ],
+        },
+        {
+          type: 'p',
+          texte:
+            'Le plus insidieux de tous est le diagnostic glissé sans y penser. Sous une signature éducative, un mot médical est une affirmation que personne n’a posée. Il reste dans le dossier, se recopie de rapport en rapport, et finit par retarder la vraie consultation parce que « c’est déjà dit ». Si un diagnostic existe, on le rapporte en citant qui l’a posé et quand. On n’en formule jamais un.',
+        },
+      ],
+    },
+    {
+      titre: 'Le gabarit en trois lignes',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Une transmission utile tient en trois lignes, toujours dans le même ordre. Ce n’est pas une trame de plus : c’est ce qui fait qu’on peut la relire vite, la comparer à celle d’hier, et la retrouver dans six mois.',
+        },
+        {
+          type: 'liste',
+          items: [
+            'Quand et où : l’heure, même approximative, et le lieu. « Vers 17 h 30, salle d’activités. » Sans l’heure, on ne peut pas relier l’événement à ce qui l’entoure.',
+            'Ce qui a précédé : la consigne donnée, le refus, l’appel téléphonique, l’arrivée d’un autre jeune, la fin d’une activité. C’est la ligne que tout le monde oublie, et c’est la plus utile : un comportement sans antécédent paraît surgir de la personne.',
+            'Ce qui s’est passé, puis ce qui a suivi : les gestes, les paroles entre guillemets, la durée. Et comment cela s’est terminé : de lui-même, après une proposition, après un changement de pièce. Le retour au calme est une information aussi importante que la montée.',
+          ],
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Clara en crise cet après-midi, a dû être isolée. Comportement inadapté envers les autres. À surveiller.',
+          apres:
+            '16 h 45, salle d’activités, fin de l’atelier peinture. Consigne de ranger donnée au groupe. Clara a continué à peindre ; deuxième rappel de l’éducateur à 16 h 50. Elle a jeté son pinceau dans l’évier, a crié « vous me laissez jamais finir », a poussé Lina qui passait derrière elle (Lina a reculé, pas de chute). L’éducateur lui a proposé d’aller finir son dessin dans le bureau ; elle a accepté et y est restée quinze minutes, seule, porte ouverte. Revenue au goûter à 17 h 10, a demandé pardon à Lina d’elle-même.',
+          pourquoi:
+            'La première version ne dit ni quand, ni ce qui a précédé, ni ce que l’adulte a fait, et « isolée » décrit une mesure qui n’a pas eu lieu (elle est allée finir son dessin, porte ouverte, sur proposition). La seconde met l’adulte dans la scène, avec ses deux rappels, et donne la fin : la proposition qui a marché, et l’excuse spontanée. C’est cette fin qu’on voudra retrouver le jour où on cherchera ce qui aide Clara.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Vous remarquerez que dans les deux réécritures, l’adulte apparaît. C’est volontaire. La plupart des transmissions décrivent ce que le jeune a fait et rien de ce que l’adulte a fait juste avant. Or c’est souvent là que se trouve la clé : le rappel donné de loin, la consigne lancée à tout le groupe, la porte fermée. Écrire ce que vous avez fait n’est pas s’accuser : c’est donner à l’équipe la moitié de l’information qu’elle n’a jamais.',
+        },
+      ],
+    },
+    {
+      titre: 'Écrire aussi ce qui va bien, sinon le dossier ment',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'On écrit quand ça déborde. Les soirées ordinaires ne laissent aucune trace, ou un « RAS ». Résultat mécanique : le cahier de liaison ne contient que les incidents, et le rapport qui en sera tiré décrira un jeune qui n’existe pas, celui des seuls mauvais jours. Un écrit qui n’aligne que des difficultés n’est pas neutre parce qu’il est factuel. Il est à charge, et il est faux par omission.',
+        },
+        {
+          type: 'reecriture',
+          avant: 'RAS. Soirée calme.',
+          apres:
+            'Soirée sans incident. Théo a mis la table sans qu’on le lui demande (première fois depuis son arrivée), a aidé Sofiane à finir ses devoirs de maths pendant vingt minutes. Couché à 21 h 30 à la première demande.',
+          pourquoi:
+            'Les deux versions décrivent la même soirée. La seconde donne trois informations qu’on ne retrouvera nulle part ailleurs, et qui pèseront le jour où il faudra écrire les points d’appui : l’initiative, la coopération avec un pair, le coucher sans rappel. Écrire ce qui va bien prend trente secondes de plus et c’est ce qui rend le dossier juste.',
+        },
+      ],
+    },
+    {
+      titre: 'La personne lira son dossier, et c’est le droit commun',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'L’article L311-3, 5° du code de l’action sociale et des familles garantit à la personne accompagnée l’accès à toute information ou document relatif à sa prise en charge. Le cahier de liaison en fait partie. Un jeune devenu majeur, un parent, une personne accueillie en foyer peut demander à le lire, et les transmissions rédigées à chaud sont exactement ce qu’ils y trouveront.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Deux conséquences pratiques. La première : chaque ligne doit pouvoir être lue par la personne qu’elle décrit sans que vous ayez à la reformuler. Ce n’est pas une raison d’adoucir ce qui s’est passé, c’est une raison d’être exact. La seconde tient à l’article L311-6 du code des relations entre le public et l’administration : les documents qui portent une appréciation ou un jugement de valeur sur une personne nommément désignée ne sont communicables qu’à elle. Plus une transmission nomme d’autres jeunes, plus elle devient compliquée à communiquer. Nommez les tiers le moins possible, et jamais avec un jugement.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Enfin, si la situation est judiciarisée, le rapport tiré de ces transmissions sera consultable au greffe par les parents et par le mineur capable de discernement, en application de l’article 1187 du code de procédure civile. Le mot « manipulateur » écrit un soir de fatigue peut se retrouver, recopié, sous les yeux d’un avocat.',
+        },
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: 'Faut-il tout écrire, ou seulement ce qui est important ?',
+      r: 'Ce qui sort de l’ordinaire, dans un sens comme dans l’autre : l’incident, mais aussi l’initiative, la première fois, le retour au calme plus rapide que d’habitude. Une transmission qui ne relève que les débordements produit un dossier à charge. La règle utile : si cela pouvait compter pour comprendre la personne dans six mois, cela s’écrit.',
+    },
+    {
+      q: 'Peut-on écrire ce qu’on pense dans une transmission ?',
+      r: 'Oui, à condition de l’annoncer comme tel et de le séparer de ce qu’on a vu. « Je fais l’hypothèse que l’appel de sa mère y est pour quelque chose » est une phrase recevable. « Il a encore fait sa crise parce que sa mère a appelé » présente une hypothèse comme un fait et ne se vérifie pas.',
+    },
+    {
+      q: 'Combien de temps une transmission doit-elle prendre ?',
+      r: 'Deux à trois minutes pour une transmission ordinaire, cinq pour un événement. L’heure, ce qui a précédé, ce qui s’est passé, ce qui a suivi : ce n’est pas plus long à écrire que « soirée compliquée », c’est seulement plus précis. Le temps gagné se mesure au moment du rapport, quand tout est déjà là.',
+    },
+    {
+      q: 'Un jeune ou un parent peut-il vraiment lire le cahier de liaison ?',
+      r: 'L’article L311-3, 5° du CASF garantit l’accès à toute information ou document relatif à la prise en charge, et le cahier de liaison en fait partie. L’article L311-6 du CRPA en fixe la limite : ce qui porte un jugement de valeur sur un tiers nommément désigné n’est communicable qu’à ce tiers. D’où l’intérêt de nommer les autres jeunes le moins possible.',
+    },
+    {
+      q: 'Que faire d’une transmission qu’un collègue a mal écrite ?',
+      r: 'On ne la corrige pas et on ne l’efface pas : un écrit daté et signé appartient à son auteur et à la chronologie du dossier. On ajoute la sienne à la suite, datée, avec ce qu’on a observé soi-même. Et on en parle en réunion d’équipe : c’est une question de pratique commune, pas une faute individuelle.',
+    },
+  ],
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const INCIDENT: GuideEcrit = {
+  slug: 'note-d-incident-evenement-indesirable',
+  titre: 'La note d’incident et l’événement indésirable',
+  accroche: 'Rédiger une note d’incident en établissement social ou médico-social',
+  description:
+    'Ce qu’on écrit dans l’heure qui suit, ce qui a précédé, ce qui a suivi, qui a été prévenu, sans qualifier ni juger. Et la différence entre une note interne, une transmission à la direction et une déclaration aux autorités.',
+  chapo:
+    'Une note d’incident est le seul écrit du métier qu’on rédige en état de choc, et le seul qui sera relu mot à mot, parfois des mois plus tard, par des gens qui n’étaient pas là. Ces deux contraintes commandent tout : on écrit vite, et on n’écrit que ce qu’on a vu.',
+  minutes: 8,
+  cadre: [
+    {
+      quoi: 'La personne accompagnée a accès à toute information ou document relatif à sa prise en charge.',
+      ou: 'Code de l’action sociale et des familles, article L311-3, 5°',
+    },
+    {
+      quoi: 'Les documents portant une appréciation ou un jugement de valeur sur une personne nommément désignée ne sont communicables qu’à cette personne.',
+      ou: 'Code des relations entre le public et l’administration, article L311-6',
+    },
+  ],
+  sections: [
+    {
+      titre: 'Écrivez dans l’heure, pas le lendemain',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'La mémoire d’un événement violent ou inattendu se réécrit dès qu’on le raconte. Après le premier récit oral au collègue, après l’appel au cadre d’astreinte, après la nuit, la scène a déjà changé : les durées se sont allongées, l’ordre des gestes s’est réorganisé pour faire sens, les paroles exactes ont été remplacées par leur résumé. La note écrite le lendemain est une note sur le souvenir de l’événement, pas sur l’événement.',
+        },
+        {
+          type: 'p',
+          texte:
+            'D’où la règle : la note d’incident s’écrit dans l’heure, une fois la sécurité de tout le monde assurée, et pas avant. Elle peut être courte, maladroite, comporter des trous signalés comme tels (« je n’ai pas vu qui a lancé la chaise »). Elle ne doit pas être retardée pour être mieux écrite. Une note complétée le lendemain dit qu’elle l’a été, avec la date et l’heure de l’ajout. Et chacun écrit la sienne, seul, avant d’avoir comparé ses souvenirs avec ceux des collègues.',
+        },
+      ],
+    },
+    {
+      titre: 'Le déroulé en quatre temps',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Une note d’incident n’est pas un récit, c’est une chronologie. Les heures, même approximatives, structurent tout : une suite de moments, dans l’ordre où ils se sont produits, et rien d’autre.',
+        },
+        {
+          type: 'liste',
+          items: [
+            'Ce qui a précédé : où en était le groupe, quelle consigne venait d’être donnée, qui était présent, ce que l’adulte a dit ou fait dans les minutes d’avant. C’est la partie que les notes oublient le plus, et la seule qui permette de comprendre.',
+            'Ce qui s’est passé : les gestes, les paroles entre guillemets, les objets, les blessures constatées à l’œil nu, la durée. Un geste à la fois. « Il a frappé » ne suffit pas : avec quoi, où, combien de fois, qu’est-ce qui s’est passé entre chaque coup.',
+            'Ce qui a suivi : ce que vous avez fait, ce que les autres adultes ont fait, comment cela s’est arrêté, l’état de chacun dans la demi-heure qui suit, où étaient les autres jeunes pendant ce temps.',
+            'Qui a été prévenu, à quelle heure, par qui : le cadre d’astreinte, le médecin, les parents ou le représentant légal, le service gardien, les secours. Et ce qui a été dit à la personne concernée elle-même.',
+          ],
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Vers 18 h, Yanis a pété un câble dans la salle télé et a agressé violemment Malo. On a dû intervenir à plusieurs pour le maîtriser. Malo a été vu par l’infirmière. Le cadre d’astreinte a été prévenu.',
+          apres:
+            '17 h 55, salle télé. Six jeunes présents, un éducateur (moi). Malo change de chaîne alors que Yanis regardait un match. Yanis dit « remets-le » deux fois, Malo ne répond pas. Vers 18 h, Yanis se lève et donne un coup de poing à Malo sur le côté gauche de la tête, puis un second sur l’épaule. Malo tombe du canapé. Je me place entre les deux et dis à Yanis de sortir ; il sort dans le couloir en tapant dans la porte. L’éducatrice de l’autre groupe, appelée, reste avec Malo. Aucun maintien physique. Malo a une rougeur à la tempe gauche, pas de saignement ; il pleure. Yanis est resté dix minutes dans le couloir puis est monté dans sa chambre, porte ouverte, sans opposition. 18 h 15 : infirmière prévenue, a vu Malo à 18 h 25. 18 h 20 : cadre d’astreinte prévenu par moi. 18 h 40 : mère de Malo prévenue par le cadre. Les quatre autres jeunes sont restés en salle télé avec l’éducatrice.',
+          pourquoi:
+            '« Pété un câble », « agressé violemment », « maîtriser » : trois expressions qui disent votre émotion, aucune qui dise ce qui s’est passé. La seconde version donne le déclencheur, les gestes un par un, le fait qu’il n’y a pas eu de maintien physique (« intervenir à plusieurs pour le maîtriser » laissait croire l’inverse), la blessure telle qu’on la voit, et la chaîne des personnes prévenues avec les heures. Elle protège Malo, Yanis, et vous.',
+        },
+      ],
+    },
+    {
+      titre: 'L’adulte fait partie de la scène',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'La tentation, quand on écrit après un incident, est de se décrire comme un témoin. Or vous n’êtes pas un témoin : vous étiez dans la pièce, vous avez dit des choses, fait des gestes, et ces gestes ont pesé sur ce qui a suivi. Une note sans aucun verbe à la première personne décrit un incident sans adulte, ce qui n’existe pas.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Écrire ce que vous avez fait n’est pas s’accuser. « J’ai dit non depuis le bureau sans me déplacer », « je lui ai pris le bras », « j’ai crié » : ces phrases sont désagréables à écrire, et ce sont celles qu’on cherche en relecture, parce qu’elles permettent à l’équipe de comprendre ce qui aide et ce qui aggrave. Une note qui les omet sera contredite par le jeune, par un autre jeune, ou par la caméra du couloir.',
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Lina a refusé de monter se coucher et s’est mise à insulter l’équipe. Elle a fini par jeter son téléphone contre le mur. Elle a été raccompagnée dans sa chambre.',
+          apres:
+            '21 h 40, salon. J’ai annoncé l’heure du coucher au groupe depuis la porte. Lina, sur son téléphone, n’a pas bougé. À 21 h 45, je lui ai dit depuis le même endroit « Lina, ça fait deux fois, tu montes ». Elle a répondu « ferme-la » sans lever les yeux. Je me suis approché et j’ai tendu la main vers son téléphone en disant « donne-le-moi ». Elle s’est levée et l’a jeté contre le mur du salon (écran cassé). Elle a dit « vous me le prenez toujours, il est à moi ». Elle est montée seule dans sa chambre à 21 h 50. Je ne l’ai pas suivie. Ma collègue est passée la voir à 22 h 10 ; Lina était couchée, a dit qu’elle ne voulait pas parler. Aucun contact physique.',
+          pourquoi:
+            '« Raccompagnée » suggère un accompagnement physique qui n’a pas eu lieu ; « insulter l’équipe » remplace deux mots précis par une catégorie. Surtout, la première version fait disparaître le geste de l’adulte, la main tendue vers le téléphone, qui précède immédiatement le jet. Le lire n’accuse personne ; il permet de discuter en équipe de ce qu’on fait des téléphones à l’heure du coucher, ce qui est la seule question utile.',
+        },
+      ],
+    },
+    {
+      titre: 'Sans qualification, sans jugement, sans diagnostic',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Une note d’incident ne dit pas qui a tort, ni pourquoi la personne a fait ce qu’elle a fait. Ces deux questions viendront en équipe, avec le recul, et d’autres écrits les porteront. Dans la note, chaque mot qui qualifie affaiblit le tout : un lecteur qui tombe sur « violent » ou « incontrôlable » sait que l’auteur a interprété, et se met à douter du reste.',
+        },
+        {
+          type: 'liste',
+          items: [
+            '« Agressif », « violent » → les gestes, un par un, avec leur cible et leur effet.',
+            '« Il a fait une crise », « elle a décompensé » → ce sont des mots médicaux. Décrivez ce que vous avez vu : cris, pleurs, coups dans le mur, durée, comment cela s’est arrêté.',
+            '« Il l’a fait exprès », « pour attirer l’attention » → une intention ne se voit pas. Supprimez.',
+            '« Nous avons été obligés de » → dites ce que vous avez fait. Le lecteur jugera lui-même si c’était nécessaire.',
+          ],
+        },
+        {
+          type: 'p',
+          texte:
+            'Un mot sur les diagnostics. Sous une signature éducative, un mot médical est une affirmation que personne n’a posée, qui reste dans le dossier et se recopie de note en rapport. Si un diagnostic existe, on le rapporte en disant qui l’a posé et quand ; on n’en formule pas dans une note d’incident, même sous une forme prudente. Ce n’est pas une question de compétence, c’est une question de signature.',
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Sofiane, très instable depuis le début de la semaine, a fait une nouvelle crise au moment du départ pour l’école. Impossible de le raisonner. Il a fini par se calmer tout seul au bout d’un moment.',
+          apres:
+            '8 h 05, hall d’entrée, départ pour l’école. Sofiane, manteau mis, s’est assis par terre contre le mur et a dit « j’y vais pas ». Je lui ai demandé deux fois de se lever ; il a répété « j’y vais pas » en se tenant les genoux, il respirait vite et pleurait. Je suis resté à côté de lui sans parler. Le reste du groupe est parti avec ma collègue à 8 h 10. À 8 h 20, il s’est levé de lui-même et a demandé un verre d’eau. À 8 h 30, il a accepté que je l’accompagne à l’école en voiture ; arrivé à 8 h 50. Troisième fois cette semaine (notes du lundi 3 et du mercredi 5). École prévenue du retard à 8 h 15, cadre informé à 9 h.',
+          pourquoi:
+            '« Instable », « crise », « impossible de le raisonner » : un jugement, un mot qui ne décrit rien, et une conclusion. La version réécrite dit ce qu’une caméra aurait vu, respiration rapide et pleurs compris, sans les nommer autrement. Elle dit ce que l’adulte a fait, ce qui a fonctionné, et renvoie aux deux notes précédentes au lieu de dire « nouvelle ». C’est sur ces bases-là qu’une consultation pourra être demandée, si l’équipe le décide.',
+        },
+      ],
+    },
+    {
+      titre: 'Note interne, transmission à la direction, déclaration aux autorités',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Ce sont trois écrits différents, pour trois destinataires, et la même note ne sert pas aux trois. La note interne est celle qu’on vient de décrire : rédigée par la personne présente, dans l’heure, versée au dossier et lue par l’équipe. Elle existe pour tout incident, même mineur, et ne demande l’autorisation de personne.',
+        },
+        {
+          type: 'p',
+          texte:
+            'La transmission à la direction est un second temps. Elle reprend la note interne, souvent mot pour mot, et y ajoute ce que la direction doit savoir pour décider : les suites déjà engagées, les blessures constatées, et le cas échéant l’avis de l’équipe sur ce qu’il conviendrait de faire. C’est ici, et pas dans la note initiale, que l’analyse a sa place, annoncée comme telle.',
+        },
+        {
+          type: 'p',
+          texte:
+            'La déclaration aux autorités, agence régionale de santé ou conseil départemental selon l’établissement, obéit à un régime propre, avec ses critères, son formulaire et ses délais. Ce guide ne le détaille pas : la liste des événements à déclarer et le circuit sont fixés par la procédure de votre établissement, et c’est à la direction qu’il revient de déclarer. Ce qu’il faut retenir, c’est que la déclaration s’appuie sur votre note interne, et qu’elle peut se retrouver telle quelle sous les yeux d’une autorité de contrôle ou d’un magistrat si l’incident donne lieu à une plainte. Une note précise, horodatée et sans qualification rend la déclaration solide ; une note vague oblige la direction à reconstruire les faits deux jours plus tard, à partir de souvenirs.',
+        },
+      ],
+    },
+    {
+      titre: 'La personne concernée lira, et les autres jeunes aussi',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'L’article L311-3, 5° du code de l’action sociale et des familles garantit à la personne accompagnée l’accès à toute information ou document relatif à sa prise en charge : la note d’incident qui la concerne en fait partie. Cela ne change rien à ce qu’il faut écrire ; cela interdit seulement d’y écrire ce qu’on n’oserait pas dire en face. Et comme un incident implique souvent plusieurs jeunes, l’article L311-6 du code des relations entre le public et l’administration devient concret : les documents qui portent un jugement de valeur sur une personne nommément désignée ne sont communicables qu’à cette personne. Une note sur Yanis qui décrit Malo comme « provocateur » ne pourra pas être communiquée à Yanis sans difficulté ; une note qui dit « Malo a changé de chaîne » le pourra. Nommez les autres jeunes quand la chronologie l’exige, et jamais avec un jugement.',
+        },
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: 'Qu’est-ce qu’un événement indésirable ?',
+      r: 'Un événement qui porte atteinte, ou aurait pu porter atteinte, à la sécurité, à la santé ou au bien-être d’une personne accueillie ou d’un professionnel : violence, fugue, accident, erreur de traitement, maltraitance. Ceux qui doivent être déclarés aux autorités, et selon quel circuit, sont fixés par la procédure de votre établissement : demandez-la, elle existe.',
+    },
+    {
+      q: 'Qui rédige la note d’incident ?',
+      r: 'La personne qui était présente, elle-même, et non son chef de service à partir de son récit. Si plusieurs professionnels étaient là, chacun rédige la sienne, seul. Des notes qui diffèrent sur un détail ne sont pas un problème : elles montrent qu’elles n’ont pas été harmonisées.',
+    },
+    {
+      q: 'Peut-on écrire ce qu’on pense de l’incident ?',
+      r: 'Pas dans la note initiale, qui ne porte que les faits. Votre lecture a sa place dans la transmission à la direction ou en réunion d’équipe, annoncée comme une hypothèse. Une note d’incident qui explique sera lue comme une note écrite pour justifier.',
+    },
+    {
+      q: 'Que faire si on n’a pas tout vu ?',
+      r: 'L’écrire. « Je n’ai pas vu le début : quand je suis entré, Malo était au sol et Yanis debout à côté de lui » est une phrase parfaitement recevable, et beaucoup plus solide qu’une reconstruction. Une note qui reconnaît ses trous est crue sur le reste.',
+    },
+  ],
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const COURRIER: GuideEcrit = {
+  slug: 'courrier-aux-parents-autorite-parentale',
+  titre: 'Le courrier aux titulaires de l’autorité parentale',
+  accroche: 'Écrire aux parents sans juger, et obtenir une réponse',
+  description:
+    'Informer sans plaider, distinguer ce qui se décide seul de ce qui demande l’accord des parents, laisser la place à leur point de vue, et faire revenir le coupon-réponse. Avec trois courriers réécrits.',
+  chapo:
+    'Le courrier aux parents est l’écrit qui sort de l’établissement le plus souvent, et celui qui abîme le plus vite une relation quand il est mal fait. Il n’a qu’un but : que le parent sache, comprenne, et réponde. Tout ce qui ne sert pas ces trois choses est à retirer.',
+  minutes: 8,
+  cadre: [
+    {
+      quoi: 'Le service élabore au moins une fois par an un rapport sur la situation de tout enfant accueilli ou faisant l’objet d’une mesure éducative, tous les six mois pour les enfants de moins de deux ans. Son contenu et ses conclusions sont portés à la connaissance du père, de la mère, du tuteur et du mineur selon son âge et sa maturité.',
+      ou: 'Code de l’action sociale et des familles, article L223-5',
+    },
+    {
+      quoi: 'La personne accueillie a droit à la participation directe à la conception et à la mise en œuvre du projet d’accueil et d’accompagnement qui la concerne.',
+      ou: 'Code de l’action sociale et des familles, article L311-3, 7°',
+    },
+  ],
+  sections: [
+    {
+      titre: 'Un courrier informe, il ne plaide pas',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Le courrier aux parents a une fonction et une seule : porter à leur connaissance une information qu’ils doivent avoir, et leur permettre d’y répondre. Une sortie, un séjour, une décision de l’établissement, la date d’une réunion, un événement qui a concerné leur enfant. Il ne sert pas à convaincre, à recadrer, ni à préparer un rapport en constituant des preuves.',
+        },
+        {
+          type: 'p',
+          texte:
+            'C’est pourtant ce que font beaucoup de courriers, sans le vouloir. Ils commencent par informer, puis glissent vers « nous ne pouvons que constater », « malgré nos nombreuses sollicitations », « comme nous vous l’avons déjà indiqué ». Chacune de ces formules dit au parent qu’il est en tort. Il le lit, il se ferme, et la réunion suivante commence avec une personne qui vient se défendre. La règle qui tient : jamais d’argumentaire contre un parent dans un courrier. Si un désaccord existe, il se traite en entretien, et l’entretien se consigne ensuite dans le dossier, pas dans une lettre.',
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Madame, Monsieur, malgré nos nombreuses relances, nous constatons que Nassim n’a toujours pas ses affaires de sport, ce qui l’empêche de participer aux séances depuis un mois. Nous vous rappelons qu’il est de votre responsabilité de fournir le nécessaire à votre enfant. Nous comptons sur vous pour régulariser rapidement la situation.',
+          apres:
+            'Madame, Monsieur, Nassim n’a pas pu participer aux quatre dernières séances de sport du jeudi (les 5, 12, 19 et 26 mars), faute de tenue adaptée. Il nous dit qu’il y tient. Il lui faut un short, un tee-shirt et des chaussures de sport, qui peuvent rester à l’établissement. Si cela pose une difficulté, l’équipe dispose d’un vestiaire de dépannage : il suffit de nous le dire, par le coupon ci-joint ou par téléphone, et nous nous en occupons. Nous restons à votre disposition.',
+          pourquoi:
+            '« Malgré nos nombreuses relances », « nous vous rappelons qu’il est de votre responsabilité », « nous comptons sur vous » : le premier courrier est un reproche en trois temps, et il n’offre aucune sortie. Le second donne les dates, dit ce dont l’enfant a besoin, rapporte ce qu’il en dit, et ouvre une porte concrète. Il obtient plus souvent la tenue de sport, et il n’abîme rien.',
+        },
+      ],
+    },
+    {
+      titre: 'Acte usuel, acte non usuel : dire lequel, et demander ce qu’il faut',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Une distinction de pratique courante gouverne le courrier aux parents en établissement : celle entre les actes usuels, ceux de la vie quotidienne, que l’établissement qui accueille l’enfant accomplit sans solliciter les parents à chaque fois, et les actes non usuels, ceux qui engagent l’avenir de l’enfant ou touchent à ses droits fondamentaux, qui demandent l’accord des titulaires de l’autorité parentale. Une sortie au parc relève de la première catégorie ; une inscription dans un nouvel établissement scolaire, une intervention chirurgicale programmée ou un voyage à l’étranger relèvent de la seconde. La frontière n’est pas toujours nette, et c’est le document d’accueil de l’établissement qui, le plus souvent, fixe la liste de ce qui se décide seul.',
+        },
+        {
+          type: 'p',
+          texte:
+            'Ce qui compte pour le courrier : il doit dire de quelle catégorie relève ce qu’il annonce. Soit vous informez d’une décision que l’établissement a prise et dont vous rendez compte ; soit vous demandez un accord sans lequel rien ne se fera. Un courrier qui mélange les deux registres dit au parent qu’il est consulté pour la forme.',
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Madame, Monsieur, nous vous informons que Clara participera au séjour de ski organisé du 8 au 13 février à Valloire. Merci de nous retourner l’autorisation ci-jointe signée avant le 20 janvier ainsi que la copie de sa carte d’identité.',
+          apres:
+            'Madame, Monsieur, l’établissement organise un séjour à Valloire (Savoie) du 8 au 13 février, avec pratique du ski encadrée par des moniteurs diplômés. Clara souhaite y participer. Ce séjour ne peut avoir lieu pour elle qu’avec votre accord, que nous vous demandons par le coupon ci-joint, à nous retourner avant le 20 janvier. Vous y trouverez le programme, les horaires de départ et de retour, la liste des affaires nécessaires et le nom de l’éducatrice joignable pendant le séjour. Si vous souhaitez en parler avant de décider, Mme D., éducatrice référente, peut vous appeler au créneau de votre choix.',
+          pourquoi:
+            'Le premier courrier annonce la participation comme acquise, puis réclame une autorisation : le parent comprend que son accord ne compte pas. Le second dit clairement que rien ne se fera sans lui, donne ce dont il a besoin pour décider, rapporte le souhait de l’enfant, et propose un échange avant la réponse. C’est ce qu’exige, en pratique, un acte non usuel.',
+        },
+      ],
+    },
+    {
+      titre: 'La place du point de vue des parents',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Un parent qui reçoit un courrier de l’établissement lit, avant tout, ce qu’on pense de lui. Le courrier qui laisse une place à son point de vue, qui rapporte ce qu’il a dit, qui reconnaît un désaccord sans le trancher, change la lecture.',
+        },
+        {
+          type: 'p',
+          texte:
+            'En protection de l’enfance, ce n’est pas seulement une question de tact. L’article L223-5 du code de l’action sociale et des familles impose que le contenu et les conclusions du rapport de situation soient portés à la connaissance du père, de la mère, du tuteur et du mineur selon son âge et sa maturité : le courrier qui invite à la réunion où il sera présenté est le premier contact du parent avec ce qui a été écrit sur lui. Et le cadre national de référence publié par la HAS en janvier 2021, rendu obligatoire pour l’évaluation des informations préoccupantes par le décret n° 2022-1728 du 30 décembre 2022, demande que le point de vue des parents figure dans l’écrit : un courrier qui le sollicite n’est pas une politesse, c’est la façon de l’obtenir. Hors protection de l’enfance, le fondement est le droit à la participation directe garanti par l’article L311-3, 7° du même code, qui, pour un mineur, se joue en pratique avec les titulaires de l’autorité parentale.',
+        },
+        {
+          type: 'reecriture',
+          avant:
+            'Madame, suite à notre entretien du 3 avril, au cours duquel vous avez exprimé votre désaccord avec le maintien des visites médiatisées, nous vous confirmons que l’équipe maintient ce dispositif, dans l’intérêt de Théo. Nous espérons que vous comprendrez le sens de cette décision.',
+          apres:
+            'Madame, lors de notre entretien du 3 avril, vous nous avez dit souhaiter que les visites avec Théo aient lieu sans la présence d’un tiers, parce que, selon vos mots, « on ne peut pas parler normalement avec quelqu’un dans la pièce ». Nous avons transmis votre demande telle quelle. Le service propose de maintenir la présence de l’éducatrice pour les deux prochaines visites, puis de faire un point avec vous le 15 mai pour décider de la suite ensemble. Ce point est prévu pour que votre demande soit examinée avec vous, pas à votre place. Si la date ne vous convient pas, dites-le-nous par le coupon ci-joint ou par téléphone, nous en trouverons une autre.',
+          pourquoi:
+            '« Nous espérons que vous comprendrez » est la formule qui ferme toutes les portes : elle dit à la mère qu’elle n’a pas compris. La version réécrite rapporte sa demande dans ses mots, dit ce qui en a été fait, propose une échéance précise et annonce que la décision se prendra avec elle. Elle ne cède sur rien : les deux visites suivantes restent médiatisées. Mais la mère y trouve sa place, et elle viendra le 15 mai.',
+        },
+      ],
+    },
+    {
+      titre: 'Le coupon-réponse',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Un courrier qui attend une réponse doit la rendre facile. Un parent qui devrait rédiger lui-même une réponse ne le fera pas, ou tard ; un parent qui a trois cases à cocher et une signature à apposer le fera le soir même. Le coupon-réponse n’est pas une formalité : c’est ce qui transforme une lettre en échange.',
+        },
+        {
+          type: 'liste',
+          items: [
+            'Le rappel en une ligne de ce sur quoi on répond : « Séjour à Valloire du 8 au 13 février ».',
+            'Des cases, jamais une question ouverte seule : « j’autorise / je n’autorise pas / je souhaite en parler avant de décider ». La troisième case est celle qui compte : elle donne au parent une façon de ne pas dire non.',
+            'Un espace libre de quelques lignes, « Ce que je souhaite vous dire », pour le point de vue du parent. Souvent vide ; quand il ne l’est pas, c’est l’information la plus utile du dossier.',
+            'La date, le nom et la signature du ou des titulaires de l’autorité parentale. Quand les deux parents exercent l’autorité parentale et vivent séparément, chacun reçoit son courrier et son coupon.',
+            'La date limite de retour, ce qui se passe si le coupon ne revient pas (pour un acte non usuel, l’enfant ne participe pas, et il faut le dire), et les façons de le retourner : par l’enfant, par courrier, en photo par message. Plus il y a de voies, plus il revient.',
+          ],
+        },
+      ],
+    },
+    {
+      titre: 'Le ton',
+      blocs: [
+        {
+          type: 'p',
+          texte:
+            'Le ton d’un courrier se juge en une lecture, avant même le sens. Quelques règles qui font la différence entre une lettre qu’on lit jusqu’au bout et une lettre qu’on pose.',
+        },
+        {
+          type: 'liste',
+          items: [
+            'La civilité et le nom : « Madame R. », « Monsieur B. ». Jamais « la famille » en adresse.',
+            'Des phrases courtes, une information par phrase, et une seule page : ce qui ne tient pas sur une page sera dit en entretien.',
+            'Aucun sigle non expliqué. « L’ESS », « le PPS », « la CRIP » sont des mots de professionnels ; le parent les lit comme une langue étrangère, et il n’ose pas demander.',
+            'L’enfant par son prénom, et ce qu’il en dit quand c’est pertinent : « Clara souhaite y participer ». Un courrier qui rapporte la parole de l’enfant est lu autrement.',
+            'Un nom et un numéro joignable. « L’équipe » ne se rappelle pas ; Mme D., le mardi et le jeudi après 14 h, oui.',
+            'Ni conditionnel de reproche (« il aurait été souhaitable que »), ni impératif (« vous devez »), ni menace voilée (« à défaut, nous serions contraints de »). Ce qui se passe en l’absence de réponse se dit simplement.',
+          ],
+        },
+      ],
+    },
+    {
+      titre: 'Ce qu’un courrier aux parents ne porte jamais',
+      blocs: [
+        {
+          type: 'liste',
+          items: [
+            'Un argumentaire contre l’un des parents, ou une comparaison entre les deux : le courrier adressé au père ne dit rien de la mère, et inversement.',
+            'Un diagnostic, même prudent, même entre parenthèses. Un courrier signé par un éducateur ne dit pas « trouble », « anxiété », « profil ». Il dit ce que l’enfant fait, et propose une consultation si l’équipe le pense utile.',
+            'Le récit détaillé d’un incident impliquant un autre enfant nommé : le parent est informé de ce qui est arrivé à son enfant, pas de ce qu’a fait celui du voisin.',
+            'Une décision qui n’a pas encore été prise, présentée comme acquise pour obtenir l’accord plus vite.',
+          ],
+        },
+        {
+          type: 'p',
+          texte:
+            'Un dernier point de méthode : faites lire le courrier par un collègue qui ne connaît pas la situation, en lui demandant une seule chose, comment il se sentirait s’il le recevait pour son propre enfant. Deux minutes, et le reproche caché que l’auteur ne voit plus est repéré.',
+        },
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: 'Faut-il écrire aux deux parents ?',
+      r: 'Quand les deux exercent l’autorité parentale, oui, chacun à son adresse s’ils vivent séparément, avec le même contenu et le même coupon. Écrire à un seul en comptant sur lui pour transmettre, c’est se retrouver avec un parent qui n’a pas été informé et qui le fera savoir. Les situations particulières se vérifient dans le dossier avant d’écrire.',
+    },
+    {
+      q: 'Qu’est-ce qu’un acte usuel ?',
+      r: 'En pratique, un acte de la vie courante de l’enfant, que l’établissement qui l’accueille accomplit sans solliciter les parents à chaque fois : une sortie à la journée, une activité habituelle. Les actes non usuels, ceux qui engagent l’avenir de l’enfant ou touchent à ses droits fondamentaux, demandent l’accord des titulaires de l’autorité parentale. La liste de ce qui se décide seul figure le plus souvent dans le document d’accueil de votre établissement : c’est lui qui fait foi.',
+    },
+    {
+      q: 'Que faire si le coupon ne revient pas ?',
+      r: 'Relancer une fois, par téléphone ou message, en rappelant simplement la date limite et ce qui se passe sans réponse. Pour un acte non usuel, l’absence de réponse vaut absence d’accord : l’enfant ne participe pas, et il faut le lui expliquer. Une relance qui reproche le silence n’obtient jamais le coupon.',
+    },
+    {
+      q: 'Peut-on dire à un parent que l’équipe n’est pas d’accord avec lui ?',
+      r: 'Oui, en entretien, où le désaccord peut se discuter. Dans un courrier, on rapporte sa position dans ses mots, ce que le service propose et quand la décision sera prise avec lui. Un désaccord écrit sans possibilité de réponse immédiate se lit comme une sentence.',
+    },
+  ],
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+
+// Ordre de lecture : le pilier, puis les écrits du quotidien dont tout le reste
+// est tiré (transmissions, note d’incident), puis les documents formels, et
+// enfin le courrier qui sort de l’établissement.
+export const GUIDES_ECRITS: GuideEcrit[] = [
+  PILIER,
+  TRANSMISSIONS,
+  INCIDENT,
+  RAPPORT,
+  PROJET,
+  ESS,
+  IP,
+  BILAN,
+  COURRIER,
+];
 
 export function trouverGuideEcrit(slug: string): GuideEcrit | undefined {
   return GUIDES_ECRITS.find((g) => g.slug === slug);

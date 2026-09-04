@@ -477,6 +477,117 @@ export class PublicService {
   }
 
   /**
+   * LA CAPTURE D'ADRESSE SUR UNE FICHE DE PARCOURS — 4/09/2026.
+   *
+   * Idempotente sur (email, slug) : redemander la même fiche renvoie la fiche
+   * et ne crée pas de doublon. Un opt-in déjà donné n'est jamais retiré par
+   * une redemande sans la case ; il ne l'est que par le lien de désabonnement.
+   *
+   * ⚠ La réponse est identique que l'adresse existe ou non, et le champ-piège
+   * répond 201 sans rien créer : on ne renseigne ni un robot ni un curieux.
+   */
+  async createCapture(dto: {
+    email: string;
+    slug: string;
+    prenom?: string;
+    consentTunnel?: boolean;
+    source?: string;
+    sourceMedium?: string;
+    sourceCampaign?: string;
+    sourceLanding?: string;
+    website?: string;
+  }) {
+    if (dto.website) return { ok: true };
+
+    const formation = await this.prisma.formation.findFirst({
+      where: { slug: dto.slug, status: 'PUBLISHED', freeOnline: true },
+      select: { title: true, slug: true, enrollUrl: true },
+    });
+    if (!formation) throw new NotFoundException('Parcours introuvable.');
+
+    const email = dto.email.trim().toLowerCase();
+    const prenom = dto.prenom?.trim().slice(0, 60) || undefined;
+    const consent = dto.consentTunnel === true;
+
+    const capture = await this.prisma.captureFiche.upsert({
+      where: { email_slug: { email, slug: formation.slug } },
+      create: {
+        email,
+        slug: formation.slug,
+        prenom,
+        consentTunnel: consent,
+        source: (dto.source || 'direct').slice(0, 60),
+        sourceMedium: dto.sourceMedium?.slice(0, 60),
+        sourceCampaign: dto.sourceCampaign?.slice(0, 60),
+        sourceLanding: dto.sourceLanding?.slice(0, 120),
+      },
+      update: {
+        prenom: prenom ?? undefined,
+        // Un consentement se donne, il ne se retire pas par omission.
+        ...(consent ? { consentTunnel: true, consentAt: new Date(), desabonneAt: null } : {}),
+      },
+      select: { jeton: true, consentTunnel: true },
+    });
+
+    this.mail
+      .sendFicheRecap(email, {
+        prenom,
+        titre: formation.title,
+        slug: formation.slug,
+        enrollUrl: formation.enrollUrl,
+        consentTunnel: capture.consentTunnel,
+        desabonnementUrl: `${this.mail.webUrl}/desinscription?j=${capture.jeton}`,
+      })
+      .catch(() => undefined);
+
+    return { ok: true };
+  }
+
+  /** Retrait de la séquence d'accueil. Idempotent ; un jeton inconnu répond ok. */
+  async desabonnerCapture(jeton: string) {
+    await this.prisma.captureFiche
+      .updateMany({
+        where: { jeton, desabonneAt: null },
+        data: { desabonneAt: new Date(), consentTunnel: false },
+      })
+      .catch(() => undefined);
+    return { ok: true };
+  }
+
+  /**
+   * L'AUDIENCE SANS TRACEUR : un compteur par jour × chemin × origine.
+   *
+   * Le chemin est normalisé pour tenir la cardinalité : les paramètres sont
+   * déjà retirés côté web, les identifiants longs de missions et de fiches
+   * restent (ils comptent chacun pour une page réelle), et tout est tronqué
+   * à 200 caractères. Une erreur ici ne remonte jamais au navigateur.
+   */
+  async compterVue(dto: {
+    chemin: string;
+    source?: string;
+    medium?: string;
+    campagne?: string;
+    visite?: boolean;
+  }) {
+    const chemin = dto.chemin.replace(/\/+$/, '').slice(0, 200) || '/';
+    const source = (dto.source || 'direct').toLowerCase().slice(0, 60);
+    const medium = (dto.medium || '').toLowerCase().slice(0, 60);
+    const campagne = (dto.campagne || '').toLowerCase().slice(0, 60);
+    const jour = new Date();
+    jour.setUTCHours(0, 0, 0, 0);
+    const visite = dto.visite ? 1 : 0;
+
+    await this.prisma.vuePage
+      .upsert({
+        where: { jour_chemin_source_medium_campagne: { jour, chemin, source, medium, campagne } },
+        create: { jour, chemin, source, medium, campagne, vues: 1, visites: visite },
+        update: { vues: { increment: 1 }, visites: { increment: visite } },
+      })
+      .catch(() => undefined);
+    return { ok: true };
+  }
+
+  /**
    * Détail PUBLIC d'un service PUBLISHED (404 sinon) — fiche vitrine complète :
    * contenu pédagogique, réputation de l'intervenant et fiches de la même
    * famille. Incrémente le compteur de consultations (preuve sociale).

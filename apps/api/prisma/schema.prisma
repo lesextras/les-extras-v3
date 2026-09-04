@@ -2649,3 +2649,79 @@ model AlerteRecherche {
   @@index([userId])
   @@index([actif])
 }
+
+/// LA CAPTURE D'ADRESSE SUR UNE FICHE DE PARCOURS GRATUIT — 4/09/2026.
+///
+/// ⚠ POURQUOI CE MODÈLE EXISTE : les douze parcours sont le meilleur aimant du
+/// site, et jusqu'ici la fiche renvoyait vers Teachizy, qui gardait l'adresse.
+/// Les Extras ne conservait rien. Ce modèle est la base propre qui remplace la
+/// base achetée : chaque ligne porte la DATE du consentement, la fiche demandée
+/// et l'origine de la visite. C'est exactement ce qu'un contrôle demande à voir,
+/// et exactement ce que la base LE SOCIAL n'avait pas.
+///
+/// Deux consentements distincts, et il faut les garder distincts :
+///  · l'envoi de la fiche récap est le SERVICE demandé — il part toujours ;
+///  · `consentTunnel` est un opt-in explicite, case décochée par défaut, pour
+///    recevoir la séquence d'accueil (les parcours suivants). Sans cette case,
+///    on ne renvoie jamais rien d'autre que la fiche.
+///
+/// Le désabonnement se fait par le `jeton`, sans compte ni mot de passe : une
+/// personne qui n'a pas de compte doit pouvoir se retirer en un clic.
+model CaptureFiche {
+  id              String    @id @default(cuid())
+  email           String
+  /// Slug de la formation dont la fiche a été demandée.
+  slug            String
+  prenom          String?
+  /// Opt-in explicite pour la séquence d'accueil. Décoché par défaut.
+  consentTunnel   Boolean   @default(false)
+  consentAt       DateTime  @default(now())
+  /// Attribution première visite, même vocabulaire que Account.source*.
+  source          String?
+  sourceMedium    String?
+  sourceCampaign  String?
+  sourceLanding   String?
+  /// Même mécanique que User.tunnelEtape : un COMPTEUR scellé avant l'envoi.
+  tunnelEtape     Int       @default(0)
+  tunnelDernierAt DateTime?
+  desabonneAt     DateTime?
+  /// Jeton opaque du lien de désabonnement.
+  jeton           String    @unique @default(cuid())
+  createdAt       DateTime  @default(now())
+
+  @@unique([email, slug])
+  @@index([email])
+  @@index([source])
+  @@index([consentTunnel, desabonneAt, tunnelEtape])
+}
+
+/// L'AUDIENCE, SANS TRACEUR — 4/09/2026.
+///
+/// Une ligne par jour × chemin × origine, et un compteur. Aucun identifiant de
+/// personne, aucune adresse IP, aucun cookie : c'est ce qui place cette mesure
+/// dans l'exemption de consentement de la CNIL (mesure d'audience strictement
+/// nécessaire, sans suivi individuel ni recoupement). Le jour où quelqu'un veut
+/// y ajouter un identifiant de visiteur, ce n'est plus le même objet juridique.
+///
+/// `source`/`medium`/`campagne` viennent de `lib/source.ts` côté web : c'est la
+/// PREMIÈRE origine de la visite, la même qui est portée sur Account et sur
+/// ContactRequest — les trois se comparent donc directement.
+///
+/// Chaînes vides plutôt que NULL dans la clé unique : Postgres considère deux
+/// NULL comme distincts et l'upsert créerait une ligne par vue.
+model VuePage {
+  id       String   @id @default(cuid())
+  jour     DateTime @db.Date
+  chemin   String
+  source   String   @default("direct")
+  medium   String   @default("")
+  campagne String   @default("")
+  /// Pages vues.
+  vues     Int      @default(0)
+  /// Visites : première page d'une session de navigation.
+  visites  Int      @default(0)
+
+  @@unique([jour, chemin, source, medium, campagne])
+  @@index([jour])
+  @@index([source, jour])
+}

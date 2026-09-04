@@ -4,6 +4,7 @@ import { CommunityService } from './community.service';
 import { HebdoScheduler } from './hebdo.scheduler';
 import { ActivationScheduler } from './activation.scheduler';
 import { TunnelScheduler } from './tunnel.scheduler';
+import { CapturesScheduler } from './captures.scheduler';
 import { EnqueteScheduler } from './enquete.scheduler';
 import { AlertesService } from './alertes.service';
 import { AlertesScheduler } from './alertes.scheduler';
@@ -18,6 +19,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     HebdoScheduler,
     ActivationScheduler,
     TunnelScheduler,
+    CapturesScheduler,
     EnqueteScheduler,
     AlertesService,
     AlertesScheduler,

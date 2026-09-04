@@ -16,6 +16,7 @@ import { titreFiche } from "@/lib/titre-fiche";
 import { formatMoney, formatDate } from "../../../_shared/format";
 import { QrShare } from "../../../_shared/QrShare";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
+import { CaptureFiche, PartagerFiche } from "../../../_shared/CaptureFiche";
 import type { FormationCard } from "../page";
 
 interface FaqItem { question: string; answer: string }
@@ -372,9 +373,17 @@ export default async function FormationPubliquePage({
                     Télécharger la fiche A4 (PDF)
                   </Link>
                 </Button>
+                {/* LA CAPTURE D'ADRESSE, ICI ET PAS AU-DESSUS DU BOUTON DE
+                    SORTIE. Le téléchargement direct reste libre, sans
+                    inscription — on ne met pas la fiche derrière un mur. On
+                    propose, juste après, de la recevoir par e-mail : c'est le
+                    seul endroit du site où une adresse se donne pour un
+                    document qu'on veut vraiment, en consentement daté. */}
+                <CaptureFiche slug={f.slug} titre={f.title} />
                 <p className="text-center text-xs text-muted-foreground">
                   Libre d&apos;accès, sans inscription.
                 </p>
+                <PartagerFiche slug={f.slug} titre={f.title} />
               </CardContent>
             </Card>
           ) : null}

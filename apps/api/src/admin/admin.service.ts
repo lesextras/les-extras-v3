@@ -1612,6 +1612,144 @@ export class AdminService {
    * bookings). Voir AVG_INTERIM_SAVINGS_EUR pour l'hypothèse d'économie.
    */
   /**
+   * L'AUDIENCE PAR CANAL, ET CE QUE CHAQUE CANAL A PRODUIT — 4/09/2026.
+   *
+   * Demandé par Siham : « il faut qu'on puisse voir les statistiques du site
+   * pour mesurer si ça marche et par quel canal ». Trois tables portent la même
+   * clé `source` (première origine de la visite, posée par `lib/source.ts`) :
+   * `VuePage` pour l'audience, `Account` pour les inscriptions, `CaptureFiche`
+   * pour les adresses captées, `ContactRequest` pour les demandes. On les
+   * aligne ici canal par canal : c'est la seule lecture qui dise si un canal
+   * amène des VISITES ou des GENS.
+   *
+   * ⚠ L'audience commence le jour du déploiement du compteur ; les comptes,
+   * captures et demandes portent leur source depuis bien avant. Sur les
+   * premières semaines, un canal peut donc afficher des inscriptions sans
+   * visite : ce n'est pas un bogue, c'est l'historique.
+   */
+  async audience(jours = 30) {
+    const fenetre = [7, 30, 90].includes(jours) ? jours : 30;
+    const depuis = new Date(Date.now() - fenetre * 86_400_000);
+    depuis.setUTCHours(0, 0, 0, 0);
+
+    const [parJour, parCanal, pages, comptes, captures, demandes, capturesTotal, capturesOptin] =
+      await Promise.all([
+        this.prisma.vuePage.groupBy({
+          by: ['jour'],
+          where: { jour: { gte: depuis } },
+          _sum: { vues: true, visites: true },
+          orderBy: { jour: 'asc' },
+        }),
+        this.prisma.vuePage.groupBy({
+          by: ['source', 'medium'],
+          where: { jour: { gte: depuis } },
+          _sum: { vues: true, visites: true },
+          orderBy: { _sum: { visites: 'desc' } },
+          take: 30,
+        }),
+        this.prisma.vuePage.groupBy({
+          by: ['chemin'],
+          where: { jour: { gte: depuis } },
+          _sum: { vues: true, visites: true },
+          orderBy: { _sum: { vues: 'desc' } },
+          take: 40,
+        }),
+        this.prisma.account.groupBy({
+          by: ['source'],
+          where: { createdAt: { gte: depuis } },
+          _count: { _all: true },
+        }),
+        this.prisma.captureFiche.groupBy({
+          by: ['source'],
+          where: { createdAt: { gte: depuis } },
+          _count: { _all: true },
+        }),
+        this.prisma.contactRequest.groupBy({
+          by: ['source'],
+          where: { createdAt: { gte: depuis } },
+          _count: { _all: true },
+        }),
+        this.prisma.captureFiche.count(),
+        this.prisma.captureFiche.count({ where: { consentTunnel: true, desabonneAt: null } }),
+      ]);
+
+    // Une ligne par source, quel que soit le côté d'où elle vient : un canal
+    // qui a produit une inscription sans une seule vue doit apparaître.
+    const canaux = new Map<
+      string,
+      { source: string; vues: number; visites: number; inscriptions: number; captures: number; demandes: number }
+    >();
+    const ligne = (source: string | null) => {
+      const cle = (source || 'direct').toLowerCase();
+      let l = canaux.get(cle);
+      if (!l) {
+        l = { source: cle, vues: 0, visites: 0, inscriptions: 0, captures: 0, demandes: 0 };
+        canaux.set(cle, l);
+      }
+      return l;
+    };
+    for (const c of parCanal) {
+      const l = ligne(c.source);
+      l.vues += c._sum.vues ?? 0;
+      l.visites += c._sum.visites ?? 0;
+    }
+    for (const c of comptes) ligne(c.source).inscriptions += c._count._all;
+    for (const c of captures) ligne(c.source).captures += c._count._all;
+    for (const c of demandes) ligne(c.source).demandes += c._count._all;
+
+    const totalVues = parJour.reduce((t, j) => t + (j._sum.vues ?? 0), 0);
+    const totalVisites = parJour.reduce((t, j) => t + (j._sum.visites ?? 0), 0);
+    const totalInscriptions = comptes.reduce((t, c) => t + c._count._all, 0);
+    const totalCaptures = captures.reduce((t, c) => t + c._count._all, 0);
+    const totalDemandes = demandes.reduce((t, c) => t + c._count._all, 0);
+
+    // Part organique : ce qui n'est ni payé ni envoyé par nous. C'est le
+    // chiffre que les marketplaces regardent pour savoir si elles tiennent
+    // debout sans acheter leur trafic.
+    const PAYE = new Set(['cpc', 'paid_social', 'display', 'paid']);
+    const ENVOYE = new Set(['email', 'brevo', 'newsletter']);
+    let visitesPayees = 0;
+    let visitesEnvoyees = 0;
+    for (const c of parCanal) {
+      const m = (c.medium || '').toLowerCase();
+      if (PAYE.has(m)) visitesPayees += c._sum.visites ?? 0;
+      else if (ENVOYE.has(m) || ENVOYE.has((c.source || '').toLowerCase()))
+        visitesEnvoyees += c._sum.visites ?? 0;
+    }
+
+    return {
+      fenetre,
+      depuis,
+      global: {
+        vues: totalVues,
+        visites: totalVisites,
+        inscriptions: totalInscriptions,
+        captures: totalCaptures,
+        demandes: totalDemandes,
+        partOrganique:
+          totalVisites > 0
+            ? Math.round(((totalVisites - visitesPayees - visitesEnvoyees) / totalVisites) * 100)
+            : null,
+        capturesTotal,
+        capturesOptin,
+      },
+      parJour: parJour.map((j) => ({
+        jour: j.jour,
+        vues: j._sum.vues ?? 0,
+        visites: j._sum.visites ?? 0,
+      })),
+      canaux: [...canaux.values()].sort(
+        (a, b) => b.visites - a.visites || b.inscriptions - a.inscriptions || b.captures - a.captures,
+      ),
+      pages: pages.map((p) => ({
+        chemin: p.chemin,
+        vues: p._sum.vues ?? 0,
+        visites: p._sum.visites ?? 0,
+      })),
+    };
+  }
+
+  /**
    * Tunnel d'acquisition, fiche par fiche.
    *
    * Les compteurs `views` et `requestsCount` existaient en base mais ne

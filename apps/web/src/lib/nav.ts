@@ -35,6 +35,7 @@ import {
   ShieldAlert,
   UsersRound,
   BellRing,
+  Globe,
 } from 'lucide-react';
 import type { NavRole, AccountType, AccountRole } from './types';
 
@@ -418,6 +419,10 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, hint: 'KPIs détaillés de la plateforme' },
       { label: "Tunnel d'acquisition", href: '/admin/tunnel', icon: Filter, hint: 'Vue → demande → devis → réservation, fiche par fiche' },
+      // Ajouté le 04/09/2026 : d'où viennent les visites, et lesquelles
+      // deviennent des gens. Mesure sans traceur, même clé `source` que les
+      // inscriptions et les demandes.
+      { label: 'Trafic par canal', href: '/admin/trafic', icon: Globe, hint: 'Visites, inscriptions, adresses captées et demandes, canal par canal' },
       // Ajouté le 03/09/2026. Cinq séquences partent toutes seules et
       // `MailService.send()` ne lève jamais : un envoi raté ne se voyait que
       // dans les journaux du conteneur, autant dire nulle part.

@@ -64,6 +64,15 @@ export class AdminController {
     return this.admin.roiStats();
   }
 
+  /**
+   * L'audience par canal, et ce que chaque canal a produit.
+   * `jours` : 7, 30 ou 90 (30 par défaut).
+   */
+  @Get('stats/audience')
+  audience(@Query('jours') jours?: string) {
+    return this.admin.audience(jours ? Number(jours) : 30);
+  }
+
   // --- Coffre-fort de conformité (vue plateforme) -------------------------
 
   @Get('conformite')

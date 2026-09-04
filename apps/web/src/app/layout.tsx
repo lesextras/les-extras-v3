@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers';
 import { PwaRegister } from './_shared/PwaRegister';
 import { BandeauCookies } from './_shared/BandeauCookies';
 import { CaptureSource } from './_shared/CaptureSource';
+import { CompteurVues } from './_shared/CompteurVues';
 import { MesureAudience } from './_shared/MesureAudience';
 import { InstallPrompt } from './_shared/InstallPrompt';
 
@@ -217,6 +218,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <BandeauCookies />
           <CaptureSource />
           <MesureAudience />
+          <CompteurVues />
         </Providers>
       </body>
     </html>
