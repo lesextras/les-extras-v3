@@ -192,6 +192,28 @@ COUVERTURES = [
         "emoji": "🚀",
         "confettis": "⏲️🧰🎬🪣",
     },
+    {
+        "fichier": "renforcer-ce-qui-va.jpg",
+        "surtitre": "Comportements-défis et opposition",
+        "titre": "Renforcer ce qui va",
+        "sous": "Un renforçateur se reconnaît à l’effet, jamais à l’intention",
+        "duree": "4 modules + annexes · 46 min",
+        "accent": (0x0D, 0x94, 0x88),
+        "second": (0xF5, 0x9E, 0x0B),
+        "emoji": "🌱",
+        "confettis": "⭐📈👍📋",
+    },
+    {
+        "fichier": "decrire-un-comportement-sans-le-juger.jpg",
+        "surtitre": "Observer et écrire",
+        "titre": "Décrire un comportement sans le juger",
+        "sous": "Une caméra ne filme ni les intentions, ni les motivations",
+        "duree": "4 modules + annexes · 46 min",
+        "accent": (0x4F, 0x46, 0xE5),
+        "second": (0x06, 0xB6, 0xD4),
+        "emoji": "📹",
+        "confettis": "📝🔎🗂️✍",
+    },
 ]
 
 

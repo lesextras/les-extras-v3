@@ -234,6 +234,20 @@ const PROFIL = {
     categorie: 'Apprentissages et autonomie',
     publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.ECOLE],
   },
+  'renforcer-ce-qui-va': {
+    minutes: 46,
+    categorie: 'Comportements-défis et situations de crise',
+    publics: [PUBLICS.PARENTS, PUBLICS.MEDICO, PUBLICS.FAMILLES],
+  },
+  // ⚠ Pas de PUBLICS.PARENTS ici, et c'est voulu : ce parcours porte sur
+  // l'ecrit professionnel qui circule et engage. Un parent n'ecrit pas de
+  // rapport ; le module 2 lui parle du cahier de liaison, mais la fiche ne
+  // doit pas lui promettre un contenu qui n'est pas fait pour lui.
+  'decrire-un-comportement-sans-le-juger': {
+    minutes: 46,
+    categorie: 'Analyse des pratiques',
+    publics: [PUBLICS.MEDICO, PUBLICS.ASE, PUBLICS.FAMILLES, PUBLICS.CADRES],
+  },
 };
 
 /**
@@ -572,6 +586,70 @@ Module 3 — Exercice guidé : la fiche de démarrage. La préparation avec un n
 
 Module 4 — Dix jours, et la phrase de bilan. On mesure un délai, pas une motivation — et une phrase utile contient deux chiffres et une durée.`,
     targetAudience: `Parents devant les devoirs, l’habillage, la douche, le rangement ; moniteurs d’atelier et professionnels d’ESAT, de foyer de vie et de SAVS ; professionnels du médico-social et de l’école (IME, ITEP, SESSAD, AESH, enseignants) ; toute personne qui accompagne quelqu’un dont on dit qu’il « ne fait rien » alors qu’il travaille très bien une fois lancé.`,
+  },
+  {
+    slug: 'renforcer-ce-qui-va',
+    image: 'renforcer-ce-qui-va.jpg',
+    slugPlateforme: 'renforcer-ce-qui-va',
+    title: 'Renforcer ce qui va',
+    summary: `Thématique : comportements-défis et opposition. Une seule compétence travaillée : faire augmenter un comportement qui existe déjà, en le remarquant au bon moment et au bon rythme.
+
+Un renforçateur se reconnaît à son effet, jamais à l’intention de l’adulte : est renforçateur ce qui rend un comportement plus fréquent, et cela se constate après coup, en comptant. C’est la phrase qui défait le plus de malentendus, à commencer par « les félicitations, ça marche avec lui » — qui est une croyance tant que personne n’a compté.
+
+Trois réglages décident du résultat, et presque jamais le contenu de la récompense : le délai d’abord, le critère ensuite, la fréquence enfin. Le parcours fait régler le critère SOUS le niveau déjà atteint, pour que le dispositif se déclenche dès le premier jour.
+
+46 minutes de lecture sur quatre modules, avec un quiz d’autocorrection par module, plus dix jours de relevé entre le module 3 et le module 4 : comptez une dizaine de jours en tout.
+
+${GARDE_FOU}`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— énoncer ce qu’est un renforçateur sans employer le mot « plaisir » ;
+— distinguer un comportement à renforcer d’un comportement à enseigner, et savoir vers quel parcours renvoyer ;
+— régler un délai, un critère et une fréquence, dans cet ordre d’importance ;
+— établir une liste de préférences avec la personne, et non à sa place ;
+— écrire une phrase de remarque qui nomme le comportement, en trois secondes et sur un ton normal ;
+— tenir un relevé à deux colonnes et y lire votre propre régularité ;
+— espacer le renforcement par paliers sans que le comportement s’effondre ;
+— reconnaître les quatre situations où un dispositif ne doit pas être posé du tout.`,
+    program: `Module 1 — Un renforçateur se reconnaît à l’effet, jamais à l’intention. La phrase qui trie, les trois réglages par ordre d’importance, et les quatre situations où l’on ne pose pas de dispositif.
+
+Module 2 — Le tableau qui s’est effondré en neuf jours. Un dispositif réel disséqué : critère hors de portée, délai de plusieurs semaines, récompense choisie sans la personne, et une gommette retirée.
+
+Module 3 — Exercice guidé : la fiche de renforcement. La liste de préférences et ses trois modes de passation, le critère réglé par le bas, la phrase de remarque écrite mot pour mot.
+
+Module 4 — Dix jours, puis espacer sans tout perdre. Lire les deux colonnes, décider sur une tendance et non sur trois jours, monter d’un palier, et passer au renforcement irrégulier.`,
+    targetAudience: `Professionnels du médico-social (IME, ITEP, SESSAD, MECS, ESAT, foyer de vie, SAVS) ; assistants familiaux ; parents et proches ; toute personne qui a déjà vu un tableau de points s’éteindre en trois semaines et qui veut comprendre lequel des trois réglages était faux.`,
+  },
+  {
+    slug: 'decrire-un-comportement-sans-le-juger',
+    image: 'decrire-un-comportement-sans-le-juger.jpg',
+    slugPlateforme: 'decrire-un-comportement-sans-le-juger',
+    title: 'Décrire un comportement sans le juger',
+    summary: `Thématique : observer et écrire. Une seule compétence travaillée : écrire ce qu’on a vu, et non ce qu’on en a pensé — puis reconnaître, dans ses propres écrits, les mots qui font passer une interprétation pour un fait.
+
+L’outil tient en une question : une caméra posée dans la pièce aurait-elle enregistré ce que je viens d’écrire ? Elle n’enregistre ni les intentions, ni les motivations, ni les diagnostics. Tout ce qui n’est pas filmable est une interprétation — elle a sa place, annoncée comme telle, jamais glissée au milieu des faits.
+
+Ce n’est pas une exigence de style. Un écrit professionnel produit des décisions, il est recopié dans le dossier suivant, il survit à l’équipe qui l’a produit, et l’article L311-3 du CASF donne à la personne accompagnée le droit de le lire. À chaque recopie, le contexte disparaît et les adjectifs restent : c’est la raison technique pour laquelle on écrit des faits.
+
+46 minutes de lecture sur quatre modules, avec un quiz d’autocorrection par module, plus sept jours de relevé entre le module 3 et le module 4 : une observation écrite par jour, trois lignes.`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— appliquer le test de la caméra à une phrase et trancher fait ou interprétation ;
+— repérer les formulations qui font passer une opinion pour une observation ;
+— reconnaître le glissement d’un épisode daté à un trait de caractère, et les verbes qui le signalent ;
+— écrire une observation en trois lignes : quand, où, ce qui a précédé, ce qui s’est passé ;
+— annoncer une hypothèse au lieu de la glisser dans les faits ;
+— faire figurer ce que l’adulte a dit ou fait juste avant ;
+— relire vos propres écrits selon quatre critères mesurables ;
+— distinguer ce qu’aucun texte n’impose de ce que le décret 2022-1728 exige réellement.`,
+    program: `Module 1 — Le test de la caméra. Ce que l’écrit produit, le droit d’accès de la personne à son dossier, les mots qui trahissent, et pourquoi aucun terme clinique ne s’écrit sous une signature éducative.
+
+Module 2 — Comment une phrase du soir devient une orientation. Une transmission de novembre suivie jusqu’à une décision de mars, et les trois moments où quelqu’un aurait pu remonter à la source.
+
+Module 3 — Exercice guidé : la grille en trois colonnes. Ce que j’ai vu, ce que j’en ai pensé, ce que j’écris — et sept jours d’observations, dont au moins trois sur des moments ordinaires.
+
+Module 4 — Se relire, et transmettre à l’équipe. La relecture en quatre passes, l’équilibre exigé par le cadre national de référence, le point de vue de la personne, et une règle commune par mois.`,
+    targetAudience: `Professionnels du médico-social et de la protection de l’enfance qui produisent des écrits : transmissions, comptes rendus, rapports de situation, notes pour une ESS ou pour le juge ; assistants familiaux ; référents de parcours ; encadrement et direction qui relisent et valident les écrits de leur équipe.`,
   },
 ];
 
