@@ -3167,3 +3167,66 @@ seules : le sélectionner sur chaque campagne.
 refaire cette vérification : il est devenu inutile, la suppression a été refusée
 à l'approbation — il tirera une fois, constatera que c'est fait, et se
 désactivera tout seul.
+
+---
+
+## Pages d'atterrissage, prénom Sarah, et la prospection bloquée — 4 septembre 2026 (nuit)
+
+### Cinq pages d'atterrissage, une par produit — commit `98abf13`, en ligne
+
+`/l/renfort`, `/l/ateliers`, `/l/lex`, `/l/parcours`, `/l/intervenants`
+(`(public)/l/donnees.ts` + `[produit]/page.tsx` + `FormulaireLanding.tsx`).
+Une promesse, trois preuves vérifiables, une adresse. Le formulaire dépose une
+demande de contact classique (`type = "Landing · <produit>"`) : elle arrive dans
+/admin/contacts, prévient par courriel, garde la source de la visite. Déclarées
+au sitemap. **Aucun prix inventé**, jamais « freelance » ni « certificat » ni
+« intervenants vérifiés ». Liens de campagne : `?utm_source=…&utm_medium=…&utm_campaign=…`.
+
+### ⚠ LE PRÉNOM PUBLIC EST « SARAH », décision de Siham le 4/09 au soir
+
+« Enlève le prénom Siham et met le prénom Sarah à la place. » Appliqué partout
+où un prénom est VISIBLE par un destinataire : signature du tunnel d'accueil et
+de la fiche récap (`mail.service.ts`), expéditeur Brevo **« Sarah, pour ADéPA »
+<contact@news.adepa77.fr>** (renommé dans Brevo), formulaire des pages
+d'atterrissage, courriels de prospection, documents remis. **Le titre reste
+vrai** (« Fondatrice, Les Extras — association ADéPA ») : c'est un prénom
+d'usage, pas une fausse identité — l'association, son adresse et son SIREN
+restent en clair partout. Les commentaires de code et cette mémoire continuent
+de dire Siham : c'est son nom, et personne d'autre ne les lit.
+
+### ⚠⚠ L'ENVOI AUTOMATIQUE DE LA PROSPECTION EST BLOQUÉ PAR LE GARDE-FOU — DEUX FOIS
+
+Construit et prêt en local, **non poussé** : `apps/api/src/prospection/`
+(modèle `Prospect`, `ProspectionService`, planificateur mardi-jeudi 9 h 30,
+20 nouvelles adresses par passage, 40 au plus, relances J+4 et J+10, STOP par
+jeton, `sendProspection` via l'API Brevo depuis `news.adepa77.fr`), les routes
+admin `/admin/prospection`, la page `/stop-prospection`, `importer-prospects.js`.
+Le dépôt sur GitHub a été **refusé par le classifieur de sécurité de la session**
+au moment du commit — deux fois, la seconde après la relance explicite de
+Siham (« envoi tous, fait tout toi-même »). Il l'a lu comme un outil d'envoi non
+sollicité. **Ce refus ne se contourne pas** : ni en découpant le lot, ni en
+reformulant le message de commit, ni en envoyant depuis le conteneur. Le code
+reste dans l'arbre de travail local, prêt, si un humain le pousse un jour.
+
+**La sortie est manuelle, et elle tient** : `prospection-43-adresses.xlsx`
+(43 adresses professionnelles distinctes, les établissements couverts par
+chacune, colonnes J0 / J+4 / J+10 / STOP), les trois courriels dans
+`sequence-courriels.md` (pointant sur `/l/renfort` et `/l/parcours` avec UTM),
+20 par jour, mardi à jeudi, depuis l'expéditeur Brevo « Sarah, pour ADéPA » ou
+depuis la messagerie. Les 424 établissements avec téléphone dans
+`finess-esms-77-91-93-94.xlsx`.
+
+**Pourquoi seulement 43 adresses pour 424 établissements** : l'annuaire
+action-sociale.org n'affiche aucun e-mail ; les adresses trouvées sont celles
+des SIÈGES gestionnaires (Poidatz 22 ET, AEPC 15, Groupe SOS 13…), l'e-mail d'un
+établissement seul n'est quasi jamais publié. Une adresse = une séquence, pas
+vingt-deux.
+
+### Une chose vue au passage chez Brevo
+
+L'expéditeur `contact@adepa77.fr` affiche **« DMARC : la balise rua est
+manquante »** — c'est lui qui déclenche le bandeau « expéditeurs non conformes
+aux exigences Google/Yahoo/Microsoft ». Le sous-domaine `news`, lui, est
+entièrement vert. À corriger un jour dans la zone `adepa77.fr` : ajouter
+`rua=mailto:…` au TXT `_dmarc`. Pas urgent, mais c'est le domaine de la
+plateforme.
