@@ -328,7 +328,7 @@ export async function CatalogView({
             aria-label="Filtrer par département"
             className={`${inputClass} sm:w-52`}
           >
-            <option value="">Partout en Île-de-France</option>
+            <option value="">Partout en France</option>
             {territoires.map((d) => (
               <option key={d.code} value={d.slug}>
                 {d.nom} ({d.total})
