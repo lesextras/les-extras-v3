@@ -3047,3 +3047,123 @@ le cache pendant quatre heures. Node suffit :
   voie : aucun segment gratuit n'est envoyable, c'est mesuré.
 - Le médiateur CECMC, le doublon des deux comptes ADéPA, le premier paiement
   Stripe réel, les vraies adresses de Younes, Christophe et Jean Léo.
+
+---
+
+## Faire connaître le site : ce qui a été construit — 4 septembre 2026 (soir)
+
+Demande de Siham : « fait tout ce que tu peux faire seul, feu vert complet […] il
+faut aussi qu'on puisse voir les statistiques du site pour mesurer si ça marche
+et par quel canal, met ça dans le compte admin ». Commit `99a5b7e`. L'analyse
+stratégique est publiée en artefact (« Faire connaître Les Extras »).
+
+### Le diagnostic, en une phrase
+
+**Le site n'a pas un problème de contenu, il a un problème de distribution.**
+Douze parcours, neuf guides, deux comparatifs, deux simulateurs, trente-six pages
+secteur/ville/métier — et trois canaux : une page LinkedIn, une page Facebook,
+une base mail morte. Les trois leviers retenus : l'aimant gratuit qui capte
+l'adresse, la fondatrice qui parle (profil personnel, 7× les impressions d'une
+page), la prospection directe des établissements.
+
+### 1. `CaptureFiche` — l'adresse se donne pour un document qu'on veut
+
+Sur les douze fiches de parcours, sous le téléchargement libre de la fiche A4 :
+« Recevoir la fiche récap par e-mail » (`_shared/CaptureFiche.tsx`,
+`POST /public/captures`, modèle `CaptureFiche`). C'est la base propre qui
+remplace la base achetée : chaque ligne porte la date du consentement, la fiche
+demandée et l'origine de la visite.
+
+⚠ **DEUX CONSENTEMENTS, ET ILS RESTENT SÉPARÉS.** L'envoi de la fiche est le
+service demandé, il part toujours (`sendFicheRecap`). La séquence d'accueil est
+une case **décochée par défaut** (`consentTunnel`) : sans elle, rien d'autre ne
+part jamais. Pré-cocher cette case ferait de tout le dispositif un consentement
+de façade — exactement ce qui rend une base invendable.
+
+- **Le téléchargement direct reste libre**, sans inscription : on ne met pas la
+  fiche derrière un mur, on propose de la recevoir juste après.
+- **Désinscription par jeton** (`/desinscription?j=…`, `POST
+  /public/captures/desabonnement`) : une personne sans compte doit pouvoir se
+  retirer en un clic. Un POST, jamais un GET : un antivirus qui suit les liens
+  ne doit pas désabonner quelqu'un à son insu.
+- **`CapturesScheduler`** (10 h 30, entre le tunnel des comptes et l'enquête) :
+  même doctrine que `TunnelScheduler` — étape scellée avant l'envoi, compteur et
+  non calendrier. Différences : opt-in explicite obligatoire, **une adresse =
+  une séquence** (trois fiches demandées ne font pas trois séries), et une
+  adresse qui a un compte est laissée au tunnel des comptes.
+- Idempotent sur (email, slug) ; un consentement se donne, il ne se retire pas
+  par omission — seulement par le lien.
+
+### 2. L'audience sans traceur, et `/admin/trafic`
+
+`VuePage` : une ligne par jour × chemin × origine, et deux compteurs (vues,
+visites). **Aucun identifiant de personne, aucune IP, aucun cookie** — c'est ce
+qui place la mesure dans l'exemption CNIL « mesure d'audience ». `CompteurVues`
+(client, dans le layout racine) envoie `POST /public/trafic` à chaque page
+publique ; espace connecté, admin et marketplace sont exclus. Le drapeau
+« première page de la session » vit en sessionStorage et ne quitte pas le
+navigateur.
+
+⚠ **Le jour où quelqu'un veut y ajouter un identifiant de visiteur, ce n'est plus
+le même objet juridique.** `CreateVueDto` est volontairement pauvre, et il doit
+le rester. Et cette mesure ne passe PAS par `MesureAudience` (Google, soumis au
+consentement) : deux mesures, deux régimes, celle-ci tourne toujours.
+
+`/admin/trafic` (`GET /admin/stats/audience?jours=7|30|90`) aligne quatre tables
+sur **la même clé `source`** — celle que `lib/source.ts` pose à la première page
+de la visite : `VuePage` (audience), `Account.source` (inscriptions),
+`CaptureFiche.source` (adresses), `ContactRequest.source` (demandes). C'est la
+seule lecture qui dise si un canal amène des visites ou des gens. Part
+organique = visites hors medium payé/envoyé.
+
+⚠ **L'audience commence au déploiement du compteur ; inscriptions et demandes
+portent leur source depuis bien avant.** Un canal peut donc afficher des
+inscriptions sans une seule vue pendant quelques semaines : c'est l'historique.
+
+⚠ Une ligne de test `/__test` / source `test` a été écrite le 4/09 à 18 h 26 pour
+vérifier la route en direct : une vue, à ignorer.
+
+### 3. Le parrainage au moment de la joie
+
+`ServiceModal` renvoie sur `/dashboard/ateliers?publie=1` après une mise en
+ligne réussie, et « Mes ateliers » affiche alors une fois `BlocParrainage`.
+Jamais sur un brouillon ni sur un refus — même doctrine que les confettis.
+
+### 4. Trois guides de plus, aucune référence nouvelle
+
+`transmissions-cahier-de-liaison`, `note-d-incident-evenement-indesirable`,
+`courrier-aux-parents-autorite-parentale` dans `guides/contenu.ts`. Références
+strictement reprises de celles déjà vérifiées dans le fichier ; la déclaration
+ARS/CD est renvoyée « à la procédure de votre établissement », l'acte
+usuel/non usuel présenté comme distinction de pratique courante.
+
+### 5. Le dossier de prospection — `/home/claude/prospection/` (remis à Siham)
+
+- `finess-esms-77-91-94.xlsx` : **309 établissements** (IME 80, SESSAD 77,
+  MECS 72, ESAT 60, ITEP 20) depuis FINESS, licence ouverte, données au
+  4/05/2026 — 9 % sans téléphone, aucune adresse e-mail (à trouver structure par
+  structure, adresses PROFESSIONNELLES seulement). Script `extraire-finess.py`.
+- `analyse-interet-legitime.md`, `registre-traitement-prospection.md` : les deux
+  pièces que la CNIL contrôle réellement (les sanctions récentes visent
+  l'absence de documentation, pas l'envoi).
+- `sequence-courriels.md` : J0 (CDD à 0 %, avec le CE du 11/02/2025 cité pour ce
+  qu'il dit — un aide-soignant — et pas plus), J+4 (les douze parcours), J+10
+  (dernier message, dix minutes au téléphone). Mentions obligatoires en pied,
+  « répondez STOP », traité sous 7 jours, **un STOP retire l'établissement
+  entier**. 20 par jour, jamais depuis `adepa77.fr`.
+- `posts-linkedin-siham.md` : dix posts dans sa voix, tirés de f6 et f12,
+  prénoms changés, six avec lien et quatre sans.
+- `messages-createurs.md` (trois variantes) et `direct-mensuel-deroule.md`.
+
+### `news.adepa77.fr` est authentifié, et l'expéditeur existe
+
+Une fois la scorie DNS publiée (Hostinger a mis ~50 minutes à pousser la zone),
+« Authentifier » a répondu **« Votre domaine a été authentifié »** du premier
+coup. Expéditeur créé et vérifié : **« Siham, pour ADéPA »
+<contact@news.adepa77.fr>**. Les campagnes ne changent pas d'expéditeur toutes
+seules : le sélectionner sur chaque campagne.
+
+⚠ **Rappel programmé à 18 h 45 UTC (`trig_0164HbrcXrtX7o6jca8fCAyQ`)** pour
+refaire cette vérification : il est devenu inutile, la suppression a été refusée
+à l'approbation — il tirera une fois, constatera que c'est fait, et se
+désactivera tout seul.
