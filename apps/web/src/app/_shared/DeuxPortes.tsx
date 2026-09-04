@@ -40,7 +40,9 @@ const PORTES = [
     // créer un compte avant d’avoir rien expliqué. Les deux portes mènent
     // désormais à une page qui explique, l’inscription est le lien secondaire.
     href: "/intervenant-independant",
-    secondaire: { libelle: "Créer mon compte", href: "/register" },
+    // Un seul libellé pour /register sur toute la page : celui-ci en était
+    // le sixième et dernier.
+    secondaire: { libelle: "Créer un compte", href: "/register" },
     teinte: "text-secondary",
     bordure: "border-secondary/35",
     carte: "bg-gradient-to-br from-secondary/[0.16] via-background to-background",
