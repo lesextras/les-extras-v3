@@ -1189,6 +1189,7 @@ période précédente. Le critère passe à vingt minutes le 15. »</p>
   A.pied();
 
 module.exports = {
+  uuid: '18e0ccdd-723d-4c5d-9edb-f13074c7de8c',
   slug: 'renforcer-ce-qui-va',
   modules: [
     { titre: 'Module 1 — Un renforçateur se reconnaît à l’effet, jamais à l’intention', minutes: 12, html: G.assembler(M1) },

@@ -1102,6 +1102,7 @@ regard du cadre national de référence de janvier 2021.</p>
   A.pied();
 
 module.exports = {
+  uuid: 'd70788a2-04cb-41b9-8252-82fca1d1e82e',
   slug: 'decrire-un-comportement-sans-le-juger',
   modules: [
     { titre: 'Module 1 — Le test de la caméra', minutes: 12, html: G.assembler(M1) },

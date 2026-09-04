@@ -29,6 +29,8 @@ const f7 = require('./f7-consignes.js');
 const f8 = require('./f8-survie.js');
 const f9 = require('./f9-ess.js');
 const f10 = require('./f10-demarrer.js');
+const f11 = require('./f11-renforcer.js');
+const f12 = require('./f12-decrire.js');
 
 /** ids des items Teachizy, relevés après la création des sections. */
 const IDS = {
@@ -42,6 +44,8 @@ const IDS = {
   'lire-un-comportement-comme-une-reaction-de-survie': { lecons: [1471249, 1471251, 1471253, 1471255], annexes: 1471257 },
   'preparer-une-equipe-de-suivi-de-la-scolarisation': { lecons: [1471320, 1471322, 1471324, 1471326], annexes: 1471328 },
   'aider-a-demarrer-une-tache': { lecons: [1471644, 1471646, 1471648, 1471650], annexes: 1471652 },
+  'renforcer-ce-qui-va': { lecons: [1474350, 1474352, 1474354, 1474356], annexes: 1474358 },
+  'decrire-un-comportement-sans-le-juger': { lecons: [1474360, 1474362, 1474364, 1474366], annexes: 1474368 },
 };
 
 /**
@@ -70,6 +74,11 @@ const COMPORTEMENTALES = new Set([
   // dans le seed) : les deux doivent dire la même chose, sinon la fiche promet
   // autre chose que la formation.
   'aider-a-demarrer-une-tache',
+  // « Renforcer ce qui va » vient directement de l'analyse appliquee du
+  // comportement : c'est le parcours ou l'encart est le plus necessaire.
+  // « Decrire un comportement sans le juger » ne le porte PAS : il traite de
+  // l'ecrit professionnel, pas d'une technique comportementale.
+  'renforcer-ce-qui-va',
 ]);
 
 const SOURCES = [
@@ -83,6 +92,8 @@ const SOURCES = [
   { f: f8, annexes: f8.annexes },
   { f: f9, annexes: f9.annexes },
   { f: f10, annexes: f10.annexes },
+  { f: f11, annexes: f11.annexes },
+  { f: f12, annexes: f12.annexes },
 ];
 
 /**
