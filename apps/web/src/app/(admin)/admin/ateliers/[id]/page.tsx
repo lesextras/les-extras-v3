@@ -85,7 +85,7 @@ export default async function AdminServiceDetail({ params: paramsPromesse }: { p
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{s.title}</h1>
           <p className="text-sm text-muted-foreground">
-            Proposé par {s.account?.name ?? "—"}
+            Proposé par {s.account?.name ?? "-"}
             {s.account?.city ? ` · ${s.account.city}` : ""} · {s._count?.bookings ?? 0} réservation(s)
           </p>
         </div>
@@ -129,7 +129,7 @@ export default async function AdminServiceDetail({ params: paramsPromesse }: { p
               {s.publicTarget ? <Row label="Public" value={s.publicTarget} /> : null}
               {s.publicTargets?.length ? <Row label="Publics" value={s.publicTargets.join(", ")} /> : null}
               {s.timeSlots?.length ? <Row label="Créneaux" value={s.timeSlots.join(" · ")} /> : null}
-              <Row label="Lieu" value={s.city ?? "—"} />
+              <Row label="Lieu" value={s.city ?? "-"} />
               <Row label="Vues" value={String(s.views ?? 0)} />
             </CardContent>
           </Card>

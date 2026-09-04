@@ -104,7 +104,7 @@ function fabrique(soldeInitial = 5, isMember = false) {
   return { credits: new CreditsService(prisma as never), etat, account, creditLedger };
 }
 
-describe('CreditsService — consommer', () => {
+describe('CreditsService, consommer', () => {
   it('débite et écrit le mouvement au grand livre', async () => {
     const { credits, etat } = fabrique(5);
     const solde = await credits.consommer('acc1', 1, 'LEX_ECRIT');
@@ -127,7 +127,7 @@ describe('CreditsService — consommer', () => {
   });
 });
 
-describe('CreditsService — crediter', () => {
+describe('CreditsService, crediter', () => {
   it('crédite et journalise', async () => {
     const { credits, etat } = fabrique(2);
     const solde = await credits.crediter('acc1', 10, 'ACHAT_PACK');
@@ -136,7 +136,7 @@ describe('CreditsService — crediter', () => {
   });
 });
 
-describe('CreditsService — avecCredit', () => {
+describe('CreditsService, avecCredit', () => {
   it('consomme un crédit puis exécute la génération', async () => {
     const { credits, etat } = fabrique(3);
     const resultat = await credits.avecCredit('acc1', 'LEX_ECRIT', async () => 'ok');
@@ -166,7 +166,7 @@ describe('CreditsService — avecCredit', () => {
   });
 });
 
-describe('CreditsService — dotation mensuelle', () => {
+describe('CreditsService : dotation mensuelle', () => {
   const plan = SUBSCRIPTION_PLANS[0];
 
   it("ajoute l'allocation du plan au solde (report, pas remise à niveau)", async () => {
@@ -224,7 +224,7 @@ describe('CreditsService — dotation mensuelle', () => {
   });
 });
 
-describe('CreditsService — offre gratuite permanente', () => {
+describe('CreditsService : offre gratuite permanente', () => {
   it('accorde la dotation immédiatement, sans attendre le 1er du mois', async () => {
     const { credits, etat } = fabrique(0);
     const r = await credits.activerOffreGratuite('acc1');
@@ -242,7 +242,7 @@ describe('CreditsService — offre gratuite permanente', () => {
   });
 });
 
-describe("CreditsService — s'abonner en cours de mois", () => {
+describe("CreditsService : s'abonner en cours de mois", () => {
   const plan = SUBSCRIPTION_PLANS[0];
 
   // LE BUG QUI COÛTAIT DE L'ARGENT RÉEL : le motif DOTATION_MENSUELLE est

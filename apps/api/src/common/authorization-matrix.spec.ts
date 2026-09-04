@@ -85,7 +85,7 @@ describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
      * l'entrée « Devis & factures » (voir nav.ts). L'interface promettait une
      * restriction que le serveur n'appliquait pas ; on aligne le serveur.
      */
-    it('consulter : Direction, Administrateur, Responsable — jamais un simple membre', () => {
+    it('consulter : Direction, Administrateur, Responsable, jamais un simple membre', () => {
       for (const m of ['findAll', 'summary', 'findOne']) {
         expect(rolesOf(InvoicesController, m)).toEqual(MANAGER);
       }

@@ -294,7 +294,7 @@ export class DocumentsService {
         }
       : facture.inscription
         ? {
-            intitule: `Formation « ${facture.inscription.session.formation.title} » — inscription`,
+            intitule: `Formation « ${facture.inscription.session.formation.title} », inscription`,
             dateRealisation: facture.inscription.session.startDate,
           }
         : null;

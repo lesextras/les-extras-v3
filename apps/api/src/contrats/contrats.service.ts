@@ -594,7 +594,7 @@ export class ContratsService {
       .create(c.userId, {
         type: 'CONTRAT_TRANSMIS',
         title: 'Un contrat vous a été transmis',
-        body: `${employeur?.name ?? 'Un établissement'} vous transmet un contrat — ${intitule}.`,
+        body: `${employeur?.name ?? 'Un établissement'} vous transmet un contrat, ${intitule}.`,
         link: `/dashboard/contrats/${id}`,
       })
       .catch(() => undefined);

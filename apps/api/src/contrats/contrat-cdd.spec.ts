@@ -19,7 +19,7 @@ const complet = (): ProjetContrat => ({
   salarieRemplaceQualification: 'Éducatrice spécialisée',
   dateDebut: d('2026-09-01'),
   dateFin: d('2026-09-30'),
-  poste: 'Éducateur spécialisé — internat',
+  poste: 'Éducateur spécialisé, internat',
   qualification: 'Éducateur spécialisé',
   conventionCollective: 'CCN 66',
   remunerationBrute: 2200,

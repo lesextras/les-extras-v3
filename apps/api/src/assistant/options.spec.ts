@@ -88,7 +88,7 @@ describe('libellesRetenus', () => {
 });
 
 describe('consignesDepuisChoix', () => {
-  it('ne produit rien quand rien n’est coché — LEX propose de lui-même', () => {
+  it('ne produit rien quand rien n’est coché, LEX propose de lui-même', () => {
     expect(consignesDepuisChoix(GROUPES_ACTIVITE, {})).toEqual([]);
     expect(
       consignesDepuisChoix(GROUPES_ACTIVITE, { mediations: [], competences: undefined }),

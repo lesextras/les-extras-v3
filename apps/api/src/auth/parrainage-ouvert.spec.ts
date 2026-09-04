@@ -37,7 +37,7 @@ function parrainRetenu(parrain: string | undefined): string | null {
   return COMPTES[parrain]?.id ?? null;
 }
 
-describe('Parrainage — qui peut parrainer, qui peut être parrainé', () => {
+describe('Parrainage : qui peut parrainer, qui peut être parrainé', () => {
   it('un établissement peut être parrainé', () => {
     expect(parrainRetenu('acc-freelance')).toBe('acc-freelance');
   });
@@ -52,7 +52,7 @@ describe('Parrainage — qui peut parrainer, qui peut être parrainé', () => {
     expect(parrainRetenu('acc-salarie')).toBe('acc-salarie');
   });
 
-  it('un intervenant peut toujours parrainer — on n\'a rien retiré', () => {
+  it('un intervenant peut toujours parrainer : on n\'a rien retiré', () => {
     expect(parrainRetenu('acc-freelance')).toBe('acc-freelance');
   });
 

@@ -133,8 +133,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
     constats.push({
       code: 'JOUR_MAX',
       gravite: 'BLOQUANT',
-      message: `${fh(heuresJour)} h de travail sur la journée — au-delà du maximum de ${PLAFONDS.jourMax} h, dérogations comprises.`,
-      regle: 'Durée quotidienne maximale — art. L. 3121-19 du code du travail',
+      message: `${fh(heuresJour)} h de travail sur la journée, au-delà du maximum de ${PLAFONDS.jourMax} h, dérogations comprises.`,
+      regle: 'Durée quotidienne maximale, art. L. 3121-19 du code du travail',
       valeur: heuresJour,
       plafond: PLAFONDS.jourMax,
     });
@@ -142,8 +142,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
     constats.push({
       code: 'JOUR_ALERTE',
       gravite: 'INFO',
-      message: `${fh(heuresJour)} h sur la journée — au-delà des ${PLAFONDS.jourAlerte} h habituelles. Possible seulement si un accord ou une dérogation le prévoit.`,
-      regle: 'Durée quotidienne — art. L. 3121-18 du code du travail',
+      message: `${fh(heuresJour)} h sur la journée, au-delà des ${PLAFONDS.jourAlerte} h habituelles. Possible seulement si un accord ou une dérogation le prévoit.`,
+      regle: 'Durée quotidienne, art. L. 3121-18 du code du travail',
       valeur: heuresJour,
       plafond: PLAFONDS.jourAlerte,
     });
@@ -157,8 +157,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
     constats.push({
       code: 'SEMAINE_MAX',
       gravite: 'BLOQUANT',
-      message: `${fh(heuresSemaine)} h sur la semaine — au-delà du plafond absolu de ${PLAFONDS.semaineMax} h.`,
-      regle: 'Durée hebdomadaire maximale — art. L. 3121-20 du code du travail',
+      message: `${fh(heuresSemaine)} h sur la semaine, au-delà du plafond absolu de ${PLAFONDS.semaineMax} h.`,
+      regle: 'Durée hebdomadaire maximale, art. L. 3121-20 du code du travail',
       valeur: heuresSemaine,
       plafond: PLAFONDS.semaineMax,
     });
@@ -166,8 +166,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
     constats.push({
       code: 'SEMAINE_ALERTE',
       gravite: 'INFO',
-      message: `${fh(heuresSemaine)} h sur la semaine — la moyenne sur 12 semaines ne pourra pas dépasser ${PLAFONDS.moyenneMax} h.`,
-      regle: 'Durée hebdomadaire — art. L. 3121-22 du code du travail',
+      message: `${fh(heuresSemaine)} h sur la semaine, la moyenne sur 12 semaines ne pourra pas dépasser ${PLAFONDS.moyenneMax} h.`,
+      regle: 'Durée hebdomadaire, art. L. 3121-22 du code du travail',
       valeur: heuresSemaine,
       plafond: PLAFONDS.semaineAlerte,
     });
@@ -196,8 +196,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
     constats.push({
       code: 'MOYENNE_MAX',
       gravite: 'BLOQUANT',
-      message: `${fh(pireMoyenne)} h par semaine en moyenne sur 12 semaines (${periode}) — au-delà du plafond de ${PLAFONDS.moyenneMax} h.`,
-      regle: 'Moyenne sur 12 semaines — art. L. 3121-22 du code du travail',
+      message: `${fh(pireMoyenne)} h par semaine en moyenne sur 12 semaines (${periode}), au-delà du plafond de ${PLAFONDS.moyenneMax} h.`,
+      regle: 'Moyenne sur 12 semaines, art. L. 3121-22 du code du travail',
       valeur: pireMoyenne,
       plafond: PLAFONDS.moyenneMax,
     });
@@ -205,8 +205,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
     constats.push({
       code: 'MOYENNE_ALERTE',
       gravite: 'INFO',
-      message: `${fh(pireMoyenne)} h par semaine en moyenne sur 12 semaines (${periode}) — la marge avant le plafond de ${PLAFONDS.moyenneMax} h se réduit.`,
-      regle: 'Moyenne sur 12 semaines — art. L. 3121-22 du code du travail',
+      message: `${fh(pireMoyenne)} h par semaine en moyenne sur 12 semaines (${periode}), la marge avant le plafond de ${PLAFONDS.moyenneMax} h se réduit.`,
+      regle: 'Moyenne sur 12 semaines, art. L. 3121-22 du code du travail',
       valeur: pireMoyenne,
       plafond: PLAFONDS.moyenneAlerte,
     });
@@ -231,8 +231,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
       constats.push({
         code: 'REPOS_QUOTIDIEN',
         gravite: 'BLOQUANT',
-        message: `${fh(repos)} h de repos avec le créneau ${sens} — moins que les ${PLAFONDS.reposQuotidien} h de repos quotidien.`,
-        regle: 'Repos quotidien — art. L. 3131-1 du code du travail',
+        message: `${fh(repos)} h de repos avec le créneau ${sens}, moins que les ${PLAFONDS.reposQuotidien} h de repos quotidien.`,
+        regle: 'Repos quotidien, art. L. 3131-1 du code du travail',
         valeur: repos,
         plafond: PLAFONDS.reposQuotidien,
       });
@@ -259,8 +259,8 @@ export function evaluerCreneau(creneaux: Creneau[], candidat: Creneau): Constat[
       constats.push({
         code: 'REPOS_HEBDO',
         gravite: 'BLOQUANT',
-        message: `Plus longue coupure de la semaine : ${fh(plusGrandeCoupure)} h — moins que les ${PLAFONDS.reposHebdo} h de repos hebdomadaire.`,
-        regle: 'Repos hebdomadaire — art. L. 3132-2 du code du travail',
+        message: `Plus longue coupure de la semaine : ${fh(plusGrandeCoupure)} h, moins que les ${PLAFONDS.reposHebdo} h de repos hebdomadaire.`,
+        regle: 'Repos hebdomadaire, art. L. 3132-2 du code du travail',
         valeur: plusGrandeCoupure,
         plafond: PLAFONDS.reposHebdo,
       });

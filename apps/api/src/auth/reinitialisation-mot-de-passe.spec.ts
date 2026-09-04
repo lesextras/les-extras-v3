@@ -94,7 +94,7 @@ function monter(user: {
   return { service, prisma, mail, jwt, enregistre };
 }
 
-describe('Mot de passe oublié — la demande ne renseigne personne', () => {
+describe('Mot de passe oublié : la demande ne renseigne personne', () => {
   it('répond la même chose pour une adresse connue et une adresse inconnue', async () => {
     const hache = await bcrypt.hash('Tilleuls2026', 4);
     const { service, mail } = monter({ password: hache });
@@ -118,7 +118,7 @@ describe('Mot de passe oublié — la demande ne renseigne personne', () => {
   });
 });
 
-describe('Mot de passe oublié — le lien ne sert qu’une fois', () => {
+describe('Mot de passe oublié : le lien ne sert qu’une fois', () => {
   async function lienPour(motDePasseActuel: string) {
     const hache = await bcrypt.hash(motDePasseActuel, 4);
     const ctx = monter({ password: hache });

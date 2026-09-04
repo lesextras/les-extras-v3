@@ -163,7 +163,7 @@ export function ligne(doc: Doc, libelle: string, valeur: string) {
     .fillColor(ENCRE)
     .font('Helvetica-Bold')
     .fontSize(9.5)
-    .text(valeur || '—', MARGE + largeurLibelle, y, {
+    .text(valeur || ' : ', MARGE + largeurLibelle, y, {
       width: LARGEUR_UTILE - largeurLibelle,
     });
   doc.y = Math.max(basLibelle, doc.y) + 4;
@@ -300,9 +300,9 @@ export function euros(v: number | string | null | undefined): string {
 }
 
 export function dateFr(v: Date | string | null | undefined): string {
-  if (!v) return '—';
+  if (!v) return ', ';
   const d = typeof v === 'string' ? new Date(v) : v;
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return ', ';
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 

@@ -21,7 +21,7 @@ import { ExtractionService } from './extraction.service';
  */
 
 const ANALYSE = JSON.stringify({
-  squelette: '- Contexte — le cadre — 2 phrases\n- Faits — la chronologie — 6 lignes',
+  squelette: '- Contexte, le cadre, 2 phrases\n- Faits, la chronologie, 6 lignes',
   style: 'Première personne du pluriel, passé composé, vouvoiement.',
   extrait: "Le présent rapport couvre la période du … au ….",
 });
@@ -51,7 +51,7 @@ function monter(reponseMoteur = ANALYSE) {
   return { service, prisma, moteur, files };
 }
 
-describe('TramesMaisonService — import', () => {
+describe('TramesMaisonService, import', () => {
   it("ne laisse AUCUN nom partir au moteur : la pseudonymisation passe avant", async () => {
     const { service, moteur } = monter();
     await service.importer('cpt', 'u1', AccountRole.MEMBER, {
@@ -146,7 +146,7 @@ describe('TramesMaisonService — import', () => {
   });
 });
 
-describe('TramesMaisonService — visibilité et droits', () => {
+describe('TramesMaisonService : visibilité et droits', () => {
   it("ne montre que les siennes et celles publiées par l'établissement", async () => {
     const { service, prisma } = monter();
     await service.lister('cpt', 'u1');

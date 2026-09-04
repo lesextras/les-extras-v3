@@ -58,7 +58,7 @@ function prismaMock() {
   };
 }
 
-describe('MatchingService — ce qui sort vers le front, ce qui sort vers la diffusion', () => {
+describe('MatchingService : ce qui sort vers le front, ce qui sort vers la diffusion', () => {
   it('la liste destinée à l’écran ne porte AUCUNE adresse e-mail', async () => {
     const service = new MatchingService(prismaMock() as never);
     const { candidates } = await service.candidatesForMission('m1', 'etab');
@@ -68,7 +68,7 @@ describe('MatchingService — ce qui sort vers le front, ce qui sort vers la dif
     expect(JSON.stringify(candidates)).not.toContain('camille@example.fr');
   });
 
-  it('la liste interne, elle, porte l’adresse — sans quoi la diffusion n’écrit à personne', async () => {
+  it('la liste interne, elle, porte l’adresse : sans quoi la diffusion n’écrit à personne', async () => {
     const service = new MatchingService(prismaMock() as never);
     const { candidates } = await service.candidatesForMissionInterne('m1', 'etab');
     expect(candidates).toHaveLength(1);

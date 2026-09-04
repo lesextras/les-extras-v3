@@ -195,7 +195,7 @@ describe('bilan de fin de période', () => {
   });
 });
 
-describe('période incomplète — le cas du remplaçant', () => {
+describe('période incomplète : le cas du remplaçant', () => {
   it('décompte à la semaine, pas au prorata du seuil annuel', () => {
     // Article D. 3121-25 : en cas d'arrivée ou de départ en cours de période,
     // les heures au-delà de 35 h hebdomadaires sont supplémentaires. Le

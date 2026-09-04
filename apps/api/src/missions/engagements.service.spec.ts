@@ -139,7 +139,7 @@ function monter(overrides: { mission?: Record<string, unknown>; file?: any[] } =
   return { service, prisma, mail, notifications, community, ciblage, file };
 }
 
-describe('EngagementsService — sengager', () => {
+describe('EngagementsService, sengager', () => {
   it('refuse un compte établissement : on ne prend pas sa propre offre', async () => {
     const { service } = monter();
     await expect(service.sengager('m1', 'etab', 'ESTABLISHMENT')).rejects.toBeInstanceOf(
@@ -199,7 +199,7 @@ describe('EngagementsService — sengager', () => {
   });
 });
 
-describe('EngagementsService — décision de l’établissement', () => {
+describe('EngagementsService : décision de l’établissement', () => {
   it('refuse l’accès à un autre compte que le propriétaire', async () => {
     const { service } = monter();
     await expect(
@@ -286,7 +286,7 @@ describe('EngagementsService — décision de l’établissement', () => {
   });
 });
 
-describe('EngagementsService — retrait', () => {
+describe('EngagementsService, retrait', () => {
   it('un intervenant non engagé ne peut pas se retirer', async () => {
     const { service } = monter();
     await expect(service.retirer('m1', 'f1')).rejects.toBeInstanceOf(BadRequestException);

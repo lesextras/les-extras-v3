@@ -383,7 +383,7 @@ export class CommunityService {
         content: i.content,
         status: i.status,
         reply: i.reply,
-        auteur: i.account?.name ?? '—',
+        auteur: i.account?.name ?? ', ',
         votes: i.votes.length,
         aVote: i.votes.some((v) => v.userId === userId),
         createdAt: i.createdAt,

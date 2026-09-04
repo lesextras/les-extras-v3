@@ -47,7 +47,7 @@ export class ExtractionService {
     texte = this.nettoyer(texte);
     if (texte.length < 120) {
       throw new BadRequestException(
-        "Ce document ne contient presque pas de texte lisible. S'il s'agit d'un PDF scanné, c'est une image : ouvrez-le, copiez le texte et collez-le — le résultat sera le même.",
+        "Ce document ne contient presque pas de texte lisible. S'il s'agit d'un PDF scanné, c'est une image : ouvrez-le, copiez le texte et collez-le, le résultat sera le même.",
       );
     }
     // Au-delà, on n'apprend rien de plus : un modèle d'écrit se lit sur

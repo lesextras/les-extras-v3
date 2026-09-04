@@ -334,7 +334,7 @@ export class MailService implements OnModuleDestroy {
         this.noter(to, subject, 'brevo', false, `${res.status} ${body.slice(0, 200)}`);
       } else {
         this.logger.warn(
-          `[MAIL:brevo] envoyé to=${to} subject="${subject}" — repli sur Brevo : ` +
+          `[MAIL:brevo] envoyé to=${to} subject="${subject}", repli sur Brevo : ` +
             `SPF n'autorise pas Brevo pour ce domaine, la délivrabilité est incertaine.`,
         );
         this.noter(to, subject, 'brevo', true);
@@ -358,7 +358,7 @@ export class MailService implements OnModuleDestroy {
     const url = `${this.webUrl}/verify-email?token=${encodeURIComponent(token)}`;
     await this.send(
       to,
-      'Confirmez votre adresse — LES EXTRAS',
+      'Confirmez votre adresse, LES EXTRAS',
       this.layout(
         `Plus qu'une étape${prenom ? `, ${prenom}` : ''}`,
         `Votre compte est créé. Confirmez cette adresse pour l'activer complètement : c'est ce qui
@@ -381,7 +381,7 @@ export class MailService implements OnModuleDestroy {
     const url = `${this.webUrl}/reinitialiser-mot-de-passe?token=${encodeURIComponent(token)}`;
     await this.send(
       to,
-      'Réinitialiser votre mot de passe — LES EXTRAS',
+      'Réinitialiser votre mot de passe, LES EXTRAS',
       this.layout(
         `Nouveau mot de passe${prenom ? `, ${prenom}` : ''}`,
         `Vous avez demandé à changer votre mot de passe. Le bouton ci-dessous vous mène à
@@ -460,7 +460,7 @@ export class MailService implements OnModuleDestroy {
              ? ''
              : `<br><b>Une seule chose à faire d'abord :</b> confirmer votre adresse, avec le lien
                 du message intitulé « Confirmez votre adresse ». Sans cette confirmation, tout
-                reste accessible — mais rien de ce que vous publiez ne devient visible du public.
+                reste accessible : mais rien de ce que vous publiez ne devient visible du public.
                 Si vous ne le trouvez pas, regardez dans vos indésirables : c'est là qu'il finit
                 une fois sur trois.<br>`
          }
@@ -619,7 +619,7 @@ export class MailService implements OnModuleDestroy {
         'Des missions près de chez vous',
         data.missions.map(
           (m) =>
-            `<a href="${this.webUrl}/marketplace/missions/${m.id}" style="color:#1A1A1A">${m.titre}</a>${m.ville ? ` — ${m.ville}` : ''}`,
+            `<a href="${this.webUrl}/marketplace/missions/${m.id}" style="color:#1A1A1A">${m.titre}</a>${m.ville ? `, ${m.ville}` : ''}`,
         ),
         data.missions.length ? { label: 'Voir toutes les missions', url: `${this.webUrl}/dashboard/opportunites` } : undefined,
       ),
@@ -627,7 +627,7 @@ export class MailService implements OnModuleDestroy {
         'Des collègues attendent un retour dans le GAP',
         data.questions.map(
           (q) =>
-            `<a href="${this.webUrl}/dashboard/gap/${q.id}" style="color:#1A1A1A">${q.titre}</a> <span style="color:#9ca3af">— ${q.metier}</span>`,
+            `<a href="${this.webUrl}/dashboard/gap/${q.id}" style="color:#1A1A1A">${q.titre}</a> <span style="color:#9ca3af">, ${q.metier}</span>`,
         ),
         data.questions.length ? { label: 'Ouvrir le GAP', url: `${this.webUrl}/dashboard/gap` } : undefined,
       ),
@@ -677,10 +677,10 @@ export class MailService implements OnModuleDestroy {
       etablissement: {
         sujet: 'Votre premier renfort est à trois champs d’ici',
         corps:
-          `Votre espace est prêt. La prochaine étape — la seule qui compte — est de
+          `Votre espace est prêt. La prochaine étape, la seule qui compte, est de
            <b>publier votre premier besoin</b> : un poste, des dates, un mot de contexte.
            La diffusion fait le reste, par cercles : vos salariés d'abord, puis vos
-           habitués, puis le réseau. Vous ne payez aucune commission — le tarif de
+           habitués, puis le réseau. Vous ne payez aucune commission, le tarif de
            l'intervenant est son tarif.`,
         cta: { label: 'Publier mon premier besoin', chemin: '/dashboard/renforts' },
       },
@@ -689,14 +689,14 @@ export class MailService implements OnModuleDestroy {
         corps:
           `Votre compte est ouvert. Ce qui décide maintenant de la suite, c'est votre
            <b>dossier</b> : métier, ville, diplôme. À la publication d'un renfort, les
-           établissements voient d'abord les dossiers complets — un dossier vide est
+           établissements voient d'abord les dossiers complets, un dossier vide est
            invisible, un dossier complet est sollicité. Dix minutes, une seule fois.`,
         cta: { label: 'Compléter mon dossier', chemin: '/dashboard/mon-dossier' },
       },
       salarie: {
         sujet: 'Une demande de rattachement, et tout s’ouvre',
         corps:
-          `Votre compte est ouvert, et LEX — l'assistant d'écrits professionnels — est
+          `Votre compte est ouvert, et LEX, l'assistant d'écrits professionnels, est
            <b>déjà utilisable</b>, avec votre dotation offerte. Pour le reste, une seule
            étape : <b>demander votre rattachement</b> à votre établissement. Une fois
            accepté, ses renforts vous arrivent avant tout le monde.`,
@@ -744,12 +744,12 @@ export class MailService implements OnModuleDestroy {
   ): Promise<void> {
     const when = this.frDate(data.date);
     const url = `${this.webUrl}/marketplace/missions/${data.missionId}`;
-    const tag = data.emergency ? '🚨 <b>Mission urgente</b> — ' : '';
+    const tag = data.emergency ? '🚨 <b>Mission urgente</b>, ' : '';
 
     // Le contexte de sélection, dit simplement et honnêtement.
     let selection = '';
     if (data.vague === 1 && data.retenus) {
-      selection = `<br><br>Vous faites partie des <b>${data.retenus} intervenants</b> dont le profil correspond le mieux à ce besoin — métier, secteur géographique et disponibilité. Nous ne l'avons proposée qu'à vous pour l'instant.`;
+      selection = `<br><br>Vous faites partie des <b>${data.retenus} intervenants</b> dont le profil correspond le mieux à ce besoin : métier, secteur géographique et disponibilité. Nous ne l'avons proposée qu'à vous pour l'instant.`;
     } else if (data.vague === 2) {
       selection = `<br><br>Cette mission n'a pas encore trouvé preneur auprès des premiers profils sollicités : nous élargissons la recherche, et votre profil correspond.`;
     } else if (data.vague === 3) {
@@ -797,7 +797,7 @@ export class MailService implements OnModuleDestroy {
     }
     await this.send(
       to,
-      `Votre mission « ${data.title} » — nous reprenons la main`,
+      `Votre mission « ${data.title} », nous reprenons la main`,
       this.layout(
         'Nous nous en occupons personnellement',
         `Votre mission <b>« ${data.title} »</b>${when ? ` du <b>${when}</b>` : ''} n'a pas encore trouvé preneur
@@ -827,7 +827,7 @@ export class MailService implements OnModuleDestroy {
     const when = this.frDate(data.date);
     const url = `${this.webUrl}/marketplace/missions/${data.missionId}`;
     const situation = data.presente
-      ? `Votre profil vient d'être <b>transmis à l'établissement</b>, qui doit maintenant le valider. Vous recevrez sa réponse ici même — et le contrat d'engagement dès qu'elle sera positive.`
+      ? `Votre profil vient d'être <b>transmis à l'établissement</b>, qui doit maintenant le valider. Vous recevrez sa réponse ici même : et le contrat d'engagement dès qu'elle sera positive.`
       : `Vous êtes <b>${data.rang}<sup>e</sup> dans la file</b>. Une personne s'est engagée avant vous : son profil est en cours de validation. Si l'établissement ne la retient pas, c'est le vôtre qui sera présenté.`;
     await this.send(
       to,
@@ -870,12 +870,12 @@ export class MailService implements OnModuleDestroy {
         : `Un intervenant a pris votre mission : ${data.title}`,
       this.layout(
         data.relance ? 'Un intervenant vous attend' : 'Un profil à valider',
-        `<b>${data.freelanceName}</b>${data.freelanceJob ? ` — ${data.freelanceJob}` : ''} s'est engagé·e sur votre mission
+        `<b>${data.freelanceName}</b>${data.freelanceJob ? `, ${data.freelanceJob}` : ''} s'est engagé·e sur votre mission
         <b>« ${data.title} »</b>${data.city ? ` à ${data.city}` : ''}${when ? ` du <b>${when}</b>` : ''}.
         ${data.message ? `<br><br><i>« ${data.message} »</i>` : ''}
         <br><br>Rien n'est confirmé tant que vous n'avez pas répondu : <b>vous acceptez ou vous refusez</b>, et le contrat n'est
         émis qu'après votre acceptation.${suite}
-        ${data.relance ? `<br><br>La personne attend depuis un moment — une réponse, même négative, lui permet de se positionner ailleurs.` : ''}`,
+        ${data.relance ? `<br><br>La personne attend depuis un moment, une réponse, même négative, lui permet de se positionner ailleurs.` : ''}`,
         { label: 'Voir le profil et répondre', url },
       ),
     );
@@ -895,7 +895,7 @@ export class MailService implements OnModuleDestroy {
         data.caduc ? 'La mission a été attribuée' : 'L’établissement a retenu un autre profil',
         data.caduc
           ? `La mission <b>« ${data.title} »</b>${when ? ` du ${when}` : ''} a été attribuée à un autre intervenant engagé avant vous.
-             <br><br>Votre engagement est donc levé : vous êtes libre sur ce créneau. Merci d'avoir répondu — c'est exactement
+             <br><br>Votre engagement est donc levé : vous êtes libre sur ce créneau. Merci d'avoir répondu, c'est exactement
              ce qui fait tenir le réseau.`
           : `L'établissement n'a pas retenu votre profil pour <b>« ${data.title} »</b>${when ? ` du ${when}` : ''}.
              ${data.motif ? `<br><br><b>Motif indiqué :</b> ${data.motif}` : ''}
@@ -942,7 +942,7 @@ export class MailService implements OnModuleDestroy {
       this.layout(
         'Votre mission est pourvue ✅',
         `Bonne nouvelle : la mission <b>« ${data.title} »</b>${when ? ` du <b>${when}</b>` : ''} a été acceptée par
-        <b>${data.freelanceName}</b>${data.freelanceJob ? ` — ${data.freelanceJob}` : ''}.
+        <b>${data.freelanceName}</b>${data.freelanceJob ? `, ${data.freelanceJob}` : ''}.
         <br><br>Le contrat de mission est prêt à être signé. Vous y retrouverez le détail du profil de l'intervenant.`,
         { label: 'Voir le contrat & le profil', url },
       ),
@@ -990,7 +990,7 @@ export class MailService implements OnModuleDestroy {
     const url = `${site}/actualites/${data.slug}`;
     await this.send(
       to,
-      `Première actualité publiée — ${data.accountName}`,
+      `Première actualité publiée, ${data.accountName}`,
       this.layout(
         'Une nouvelle structure publie',
         `<b>${data.accountName}</b> (${data.accountType}) vient de publier sa première
@@ -1070,7 +1070,7 @@ export class MailService implements OnModuleDestroy {
       data.typeCompte === 'ESTABLISHMENT' ? 'Établissement' : 'Professionnel';
     await this.send(
       to,
-      `Nouvelle inscription — ${qui} (${genre})`,
+      `Nouvelle inscription, ${qui} (${genre})`,
       this.layout(
         'Un compte vient d’être créé',
         `<b>${e(qui)}</b> vient de s’inscrire sur Les Extras.
@@ -1129,7 +1129,7 @@ export class MailService implements OnModuleDestroy {
       : 'date à convenir';
     await this.send(
       to,
-      `Réservation reçue — ${data.atelier}`,
+      `Réservation reçue, ${data.atelier}`,
       this.layout(
         'Un établissement vous a réservé',
         `<b>${e(data.etablissement ?? 'Un établissement')}</b> vient de réserver
@@ -1139,7 +1139,7 @@ export class MailService implements OnModuleDestroy {
         ${
           data.depassement
             ? `<br><b>⚠ Au-delà des ${data.depassement} annoncés sur votre fiche.</b>
-               C'est un refus ou une renégociation — mieux vaut le dire maintenant
+               C'est un refus ou une renégociation : mieux vaut le dire maintenant
                que le jour même.`
             : ''
         }
@@ -1163,7 +1163,7 @@ export class MailService implements OnModuleDestroy {
     const e = (t: string) => t.replace(/</g, '&lt;');
     await this.send(
       to,
-      `Demande de devis — ${data.atelier ?? 'votre intervention'}`,
+      `Demande de devis, ${data.atelier ?? 'votre intervention'}`,
       this.layout(
         'Une demande de devis vous attend',
         `<b>${e(data.etablissement ?? 'Un établissement')}</b> vous demande un devis
@@ -1184,12 +1184,12 @@ export class MailService implements OnModuleDestroy {
     const e = (t: string) => t.replace(/</g, '&lt;');
     await this.send(
       to,
-      `Votre devis est arrivé${data.atelier ? ` — ${data.atelier}` : ''}`,
+      `Votre devis est arrivé${data.atelier ? `, ${data.atelier}` : ''}`,
       this.layout(
         'Votre devis est arrivé',
         `<b>${e(data.intervenant ?? 'Votre intervenant')}</b> vous a adressé un devis
         ${data.atelier ? `pour <b>${e(data.atelier)}</b>` : ''}
-        ${data.montant ? `— <b>${e(data.montant)}</b>` : ''}.
+        ${data.montant ? `, <b>${e(data.montant)}</b>` : ''}.
         <br><br>Vous pouvez l'accepter ou le refuser depuis votre espace. L'accepter
         crée la réservation et bloque la date.`,
         { label: 'Voir le devis', url: `${this.webUrl}/dashboard/facturation?vue=devis` },
@@ -1221,7 +1221,7 @@ export class MailService implements OnModuleDestroy {
     if (data.moment === 'demande') {
       await this.send(
         to,
-        `Demande de rattachement — ${data.salarie ?? 'un salarié'}`,
+        `Demande de rattachement, ${data.salarie ?? 'un salarié'}`,
         this.layout(
           'Quelqu’un demande à rejoindre votre équipe',
           `<b>${qui}</b> demande à être rattaché·e à <b>${ou}</b> sur Les Extras.
@@ -1237,7 +1237,7 @@ export class MailService implements OnModuleDestroy {
     if (data.moment === 'acceptee') {
       await this.send(
         to,
-        `C’est accepté — vous êtes rattaché·e à ${data.etablissement ?? 'votre établissement'}`,
+        `C’est accepté : vous êtes rattaché·e à ${data.etablissement ?? 'votre établissement'}`,
         this.layout(
           'Votre rattachement est accepté',
           `<b>${ou}</b> vient d'accepter votre rattachement. Votre espace est
@@ -1245,7 +1245,7 @@ export class MailService implements OnModuleDestroy {
           maison.
           <br><br><b>Une seule chose à savoir :</b> déconnectez-vous puis
           reconnectez-vous une fois. Le sélecteur de compte ne montrera votre
-          établissement qu'après — c'est votre jeton de connexion qui porte la
+          établissement qu'après : c'est votre jeton de connexion qui porte la
           liste, et il date d'avant l'acceptation.`,
           { label: 'Ouvrir mon espace', url: `${this.webUrl}/dashboard` },
         ),
@@ -1260,8 +1260,8 @@ export class MailService implements OnModuleDestroy {
         'Réponse à votre demande',
         `<b>${ou}</b> n'a pas retenu votre demande de rattachement.
         ${data.motif ? `<br><br><i>${e(data.motif).slice(0, 500)}</i>` : ''}
-        <br><br>Si c'est une erreur d'aiguillage — mauvais établissement, mauvais
-        profil au moment de l'inscription — écrivez-nous : cela se corrige.
+        <br><br>Si c'est une erreur d'aiguillage : mauvais établissement, mauvais
+        profil au moment de l'inscription, écrivez-nous : cela se corrige.
         <br><br>Vous pouvez aussi demander un rattachement à un autre
         établissement depuis votre espace.`,
         { label: 'Nous écrire', url: `${this.webUrl}/contact` },
@@ -1283,7 +1283,7 @@ export class MailService implements OnModuleDestroy {
         `<b>${e(data.etablissement ?? 'L’établissement')}</b> vient de vous transmettre
         ${data.intitule ? `<b>${e(data.intitule)}</b>` : 'votre contrat'}.
         <br><br>Relisez-le dans votre espace. Il n'engage personne tant qu'il n'est
-        pas signé — et la signature se fait en ligne, avec un code envoyé au moment
+        pas signé : et la signature se fait en ligne, avec un code envoyé au moment
         où vous la demandez.`,
         { label: 'Lire mon contrat', url: `${this.webUrl}/dashboard/reservations` },
       ),
@@ -1399,7 +1399,7 @@ export class MailService implements OnModuleDestroy {
     const to = this.config.get<string>('CONTACT_INBOX_EMAIL') ?? 'contact@adepa77.fr';
     await this.send(
       to,
-      `Nouvelle demande de contact — ${data.name}`,
+      `Nouvelle demande de contact, ${data.name}`,
       this.layout(
         'Nouvelle demande de contact',
         `<b>${data.name}</b> vous a écrit via le site.
@@ -1477,7 +1477,7 @@ export const TUNNEL_ACCUEIL: {
       Tant qu’on ignore quoi, on travaille sur la forme et on se trompe de cible.
       <br><br>Quatre fonctions possibles, une grille en quatre colonnes pour
       trancher, et l’erreur qui coûte le plus cher. C’est notre premier parcours
-      gratuit — 45 minutes de lecture, et un relevé d’une minute par jour pendant
+      gratuit : 45 minutes de lecture, et un relevé d’une minute par jour pendant
       une semaine.`,
     bouton: 'Ouvrir le parcours',
     chemin: '/formations/les-quatre-fonctions-d-un-comportement',
@@ -1488,7 +1488,7 @@ export const TUNNEL_ACCUEIL: {
       part. Ce qui se travaille vraiment, c’est <b>ce que l’adulte ajoute pendant</b> :
       les mots, les demandes, le public, la proximité, les menaces, le volume.
       <br><br>Six choses, et la conduite décidée à froid. Aucun geste
-      d’intervention physique n’est enseigné dans ce parcours — ces gestes
+      d’intervention physique n’est enseigné dans ce parcours, ces gestes
       s’apprennent en présentiel, avec mise en situation, jamais dans un texte.`,
     bouton: 'Lire le parcours',
     chemin: '/formations/les-premieres-minutes-d-une-crise',
@@ -1497,7 +1497,7 @@ export const TUNNEL_ACCUEIL: {
     sujet: '« Il dit non à tout » n’est pas une donnée',
     corps: `C’est une impression, et elle est presque toujours fausse dans les
       proportions qu’elle annonce. L’autre moitié de la scène est à portée :
-      <b>la consigne de l’adulte</b> — sa forme, son nombre, son moment.
+      <b>la consigne de l’adulte</b> : sa forme, son nombre, son moment.
       <br><br>Une compétence qui s’exerce sans rien savoir de la personne d’en
       face, et qui donne des résultats en quelques jours parce qu’elle ne demande
       de changer que soi. Le parcours fait d’abord écrire ce qui n’a PAS à être
@@ -1511,7 +1511,7 @@ export const TUNNEL_ACCUEIL: {
       logique de la grille des fonctions : une fois qu’on sait ce que le
       comportement obtient, on <b>enseigne un moyen d’obtenir la même chose</b>.
       <br><br>Il doit être plus facile, plus rapide et aussi fiable que celui
-      qu’on veut voir disparaître — sinon personne ne l’adopte, et c’est
+      qu’on veut voir disparaître : sinon personne ne l’adopte, et c’est
       exactement là que la plupart des plans échouent.`,
     bouton: 'Ouvrir le parcours',
     chemin: '/formations/apprendre-a-demander-plutot-qu-a-crier',
@@ -1523,7 +1523,7 @@ export const TUNNEL_ACCUEIL: {
       souvent seule.
       <br><br>La conséquence est considérable : expliquer mieux, motiver,
       encourager n’a presque aucun effet. Ce qui en a un, c’est de réduire le coût
-      des trente premières secondes — et il y a six leviers pour ça.`,
+      des trente premières secondes : et il y a six leviers pour ça.`,
     bouton: 'Lire le parcours',
     chemin: '/formations/aider-a-demarrer-une-tache',
   },
@@ -1533,7 +1533,7 @@ export const TUNNEL_ACCUEIL: {
       modules, le schéma central, l’arbre de décision et la grille de relevé
       vierge. Elles sont en libre accès, sans compte, et faites pour être
       imprimées et posées en salle d’équipe.
-      <br><br>Le catalogue complet est ouvert — dix parcours gratuits, du premier
+      <br><br>Le catalogue complet est ouvert : dix parcours gratuits, du premier
       au dernier module, sans carte bancaire. Et votre espace comprend
       <b>15 générations LEX offertes chaque mois</b> pour vos écrits
       professionnels : elles sont là, elles n’attendent que vous.`,

@@ -62,7 +62,7 @@ const sessionOuverte = (maxSeats: number | null): FauxSession => ({
 
 const apprenant = { learnerName: 'Awa Diallo' } as never;
 
-describe('inscription — le plafond de places', () => {
+describe('inscription : le plafond de places', () => {
   it('accepte tant qu’il reste de la place', async () => {
     const { svc, inscription } = service(sessionOuverte(8), 5);
 
@@ -97,7 +97,7 @@ describe('inscription — le plafond de places', () => {
   });
 });
 
-describe('inscription — le basculement en COMPLÈTE', () => {
+describe('inscription : le basculement en COMPLÈTE', () => {
   it('passe la session en COMPLÈTE quand la dernière place part', async () => {
     const { svc, formationSession } = service(sessionOuverte(8), 7);
 
@@ -128,7 +128,7 @@ describe('inscription — le basculement en COMPLÈTE', () => {
   });
 });
 
-describe('inscription — les sessions fermées', () => {
+describe('inscription : les sessions fermées', () => {
   it('refuse une session annulée', async () => {
     const { svc } = service({ ...sessionOuverte(20), status: 'CANCELLED' }, 0);
 

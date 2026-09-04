@@ -70,7 +70,7 @@ export const SUBSCRIPTION_PLANS = [
     label: 'LEX',
     amountCents: 1900,
     monthlyCredits: 200,
-    perks: '200 générations par mois, reportables — écriture, activités, fiches, GAPiste',
+    perks: '200 générations par mois, reportables, écriture, activités, fiches, GAPiste',
   },
   {
     id: 'plan-pro',
@@ -113,7 +113,7 @@ export const SUBSCRIPTION_PLANS = [
  */
 export const ESTABLISHMENT_PLAN = {
   id: 'plan-etablissement',
-  label: 'LEX Équipe — établissement',
+  label: 'LEX Équipe, établissement',
   amountCents: 8900,
   monthlyCredits: 1000,
   perks:
@@ -267,7 +267,7 @@ export class BillingService {
       'line_items[0][price_data][currency]': 'eur',
       'line_items[0][price_data][unit_amount]': String(plan.amountCents),
       'line_items[0][price_data][recurring][interval]': 'month',
-      'line_items[0][price_data][product_data][name]': `Les Extras — Abonnement ${plan.label}`,
+      'line_items[0][price_data][product_data][name]': `Les Extras, Abonnement ${plan.label}`,
       success_url: `${webUrl}/dashboard/adhesion?paiement=succes`,
       cancel_url: `${webUrl}/dashboard/adhesion?paiement=annule`,
       'metadata[kind]': 'subscription',
@@ -348,7 +348,7 @@ export class BillingService {
       // l'émetteur, et beaucoup de factures sortent sans. On dit donc où
       // regarder sans promettre ce qui s'y trouve.
       throw new NotImplementedException(
-        "Les factures d'intervenants ne se règlent pas en ligne : l'établissement paie l'intervenant par virement, selon les coordonnées bancaires indiquées par l'émetteur sur sa facture. Si elles n'y figurent pas, demande-les-lui. Seules les factures de l'association — formations et crédits LEX — se règlent par carte.",
+        "Les factures d'intervenants ne se règlent pas en ligne : l'établissement paie l'intervenant par virement, selon les coordonnées bancaires indiquées par l'émetteur sur sa facture. Si elles n'y figurent pas, demande-les-lui. Seules les factures de l'association, formations et crédits LEX, se règlent par carte.",
       );
     }
     if (invoice.status === 'PAID') {
@@ -369,7 +369,7 @@ export class BillingService {
       'line_items[0][quantity]': '1',
       'line_items[0][price_data][currency]': 'eur',
       'line_items[0][price_data][unit_amount]': String(amountCents),
-      'line_items[0][price_data][product_data][name]': `Les Extras — Facture ${invoice.number}`,
+      'line_items[0][price_data][product_data][name]': `Les Extras, Facture ${invoice.number}`,
       // Pointer directement l'écran des factures : `/dashboard/finance` n'est
       // qu'une redirection, et elle perdait le paramètre en route — le client
       // revenait de Stripe sans la moindre confirmation.
@@ -402,7 +402,7 @@ export class BillingService {
       'line_items[0][quantity]': '1',
       'line_items[0][price_data][currency]': 'eur',
       'line_items[0][price_data][unit_amount]': String(pack.amountCents),
-      'line_items[0][price_data][product_data][name]': `Les Extras — LEX ${pack.label} (${pack.credits} crédits)`,
+      'line_items[0][price_data][product_data][name]': `Les Extras, LEX ${pack.label} (${pack.credits} crédits)`,
       success_url: `${webUrl}/dashboard/adhesion?paiement=succes`,
       cancel_url: `${webUrl}/dashboard/adhesion?paiement=annule`,
       'metadata[kind]': 'credits',

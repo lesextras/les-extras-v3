@@ -40,14 +40,14 @@ function service(overrides: Record<string, unknown> = {}) {
   return { svc: new VivierService(prisma, notifications), prisma: prisma as never };
 }
 
-describe('vivier — qui peut y entrer', () => {
+describe('vivier : qui peut y entrer', () => {
   it('accepte un compte intervenant', async () => {
     const { svc } = service();
 
     await expect(svc.retenir('acc_etab', 'acc_freelance', 'u_chef')).resolves.toBeDefined();
   });
 
-  it('refuse un établissement — un vivier réunit des intervenants', async () => {
+  it('refuse un établissement : un vivier réunit des intervenants', async () => {
     const { svc } = service({
       account: {
         findUnique: jest.fn(async () => ({
@@ -113,7 +113,7 @@ describe('vivier — qui peut y entrer', () => {
   });
 });
 
-describe('vivier — le retrait', () => {
+describe('vivier, le retrait', () => {
   it('refuse de retirer quelqu’un qui n’y figure pas', async () => {
     const { svc } = service();
 
@@ -140,7 +140,7 @@ describe('vivier — le retrait', () => {
   });
 });
 
-describe('vivier — le rappel sur une mission', () => {
+describe('vivier : le rappel sur une mission', () => {
   const mission = (visibility: string) => ({
     id: 'm_1',
     title: 'Nuit du samedi',
@@ -235,7 +235,7 @@ describe('vivier — le rappel sur une mission', () => {
   });
 });
 
-describe('vivier — réservé aux établissements', () => {
+describe('vivier : réservé aux établissements', () => {
   it('refuse un compte intervenant', () => {
     const { svc } = service();
 

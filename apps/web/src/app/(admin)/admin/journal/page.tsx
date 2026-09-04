@@ -69,7 +69,7 @@ export default async function AdminJournalPage() {
         title="Journal d’audit"
         subtitle={
           total
-            ? `Traçabilité des actions sensibles — ${total} entrée${total > 1 ? "s" : ""} enregistrée${total > 1 ? "s" : ""}.`
+            ? `Traçabilité des actions sensibles : ${total} entrée${total > 1 ? "s" : ""} enregistrée${total > 1 ? "s" : ""}.`
             : "Traçabilité des actions sensibles réalisées sur la plateforme (validation d’heures, documents, modération)."
         }
       />

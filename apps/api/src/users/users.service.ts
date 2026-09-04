@@ -505,7 +505,7 @@ export class UsersService {
 
     const payload = {
       _lisezMoi: {
-        titre: 'Export de vos données personnelles — Les Extras',
+        titre: 'Export de vos données personnelles, Les Extras',
         genereLe: generatedAt.toISOString(),
         aProposDeCeFichier:
           "Ce fichier contient l'ensemble des données personnelles que Les Extras conserve à votre sujet, au format JSON (lisible par un humain et réutilisable par un autre service). Il est délivré au titre du droit d'accès (article 15 du RGPD) et du droit à la portabilité (article 20 du RGPD).",

@@ -54,7 +54,7 @@ export class ExportService {
       if (!ligne) continue;
       // Le coupon-réponse des courriers est séparé par une ligne de tirets :
       // c'est un vrai élément du document, pas une décoration.
-      if (/^([-*_—]\s?){3,}$/.test(ligne)) {
+      if (/^([-*_ : ]\s?){3,}$/.test(ligne)) {
         blocs.push({ type: 'trait' });
         continue;
       }
@@ -190,7 +190,7 @@ export class ExportService {
     }
 
     const doc = new Document({
-      creator: 'LEX — Les Extras',
+      creator: 'LEX, Les Extras',
       title: titre,
       description: "Brouillon d'écrit professionnel, à relire et valider par son auteur.",
       numbering: {

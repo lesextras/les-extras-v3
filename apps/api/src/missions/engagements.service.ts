@@ -380,7 +380,7 @@ export class EngagementsService {
             date: mission.startDate,
             time:
               mission.startTime && mission.endTime
-                ? `${mission.startTime} – ${mission.endTime}`
+                ? `${mission.startTime}, ${mission.endTime}`
                 : (mission.startTime ?? null),
             contractUrl,
           })
@@ -553,7 +553,7 @@ export class EngagementsService {
         title: caduc ? 'Mission attribuée à un autre' : 'Profil non retenu',
         body: caduc
           ? `« ${mission.title} » a été attribuée à un intervenant engagé avant vous. Vous êtes libre sur ce créneau.`
-          : `L'établissement n'a pas retenu votre profil pour « ${mission.title} »${motif ? ` — ${motif}` : ''}.`,
+          : `L'établissement n'a pas retenu votre profil pour « ${mission.title} »${motif ? `, ${motif}` : ''}.`,
         link: '/marketplace',
       })
       .catch(() => undefined);

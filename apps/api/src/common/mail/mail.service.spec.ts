@@ -27,7 +27,7 @@ function envoyer(service: MailService) {
   return service.sendEmailVerification('directrice@mecs-exemple.fr', 'jeton', 'Claire');
 }
 
-describe('MailService — choix du transport', () => {
+describe('MailService : choix du transport', () => {
   beforeEach(() => {
     CREER.mockReset();
     jest.spyOn(globalThis, 'fetch' as never).mockResolvedValue({
@@ -183,7 +183,7 @@ describe('MailService — choix du transport', () => {
     expect(CREER).not.toHaveBeenCalled();
   });
 
-  it('se replie sur Brevo si le SMTP échoue — un message imparfait vaut mieux que rien', async () => {
+  it('se replie sur Brevo si le SMTP échoue : un message imparfait vaut mieux que rien', async () => {
     CREER.mockReturnValue({
       sendMail: jest.fn().mockRejectedValue(new Error('connexion refusée')),
       close: jest.fn(),

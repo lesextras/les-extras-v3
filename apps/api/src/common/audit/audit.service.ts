@@ -82,7 +82,7 @@ export class AuditService {
       const message = error instanceof Error ? error.message : String(error);
       // Volontairement en warn : c'est une perte de traçabilité, pas une panne métier.
       this.logger.warn(
-        `Journal d'audit — écriture impossible pour l'action « ${input.action} » : ${message}`,
+        `Journal d'audit, écriture impossible pour l'action « ${input.action} » : ${message}`,
       );
       return null;
     }

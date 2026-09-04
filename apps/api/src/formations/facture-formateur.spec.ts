@@ -68,7 +68,7 @@ function monter(o: Options = {}) {
   return { svc, prisma: prisma as unknown as Record<string, any> };
 }
 
-describe('Facture du formateur — sens et propriété du document', () => {
+describe('Facture du formateur : sens et propriété du document', () => {
   it('le formateur émet depuis son compte, à destination de l’organisme', async () => {
     const { svc } = monter();
     const f: any = await svc.trainerInvoice('s_1', CPT_FORMATEUR, FORMATEUR);
@@ -102,7 +102,7 @@ describe('Facture du formateur — sens et propriété du document', () => {
   });
 });
 
-describe('Facture du formateur — ce que la plateforme refuse de faire', () => {
+describe('Facture du formateur : ce que la plateforme refuse de faire', () => {
   it("l'organisme ne peut pas établir la facture de son formateur", async () => {
     // Ce serait de l'autofacturation (art. 289, I-2 du CGI), qui suppose un
     // mandat écrit du fournisseur. Aucun n'existe : la plateforme est un outil.
@@ -170,7 +170,7 @@ describe('Facture du formateur — ce que la plateforme refuse de faire', () => 
   });
 });
 
-describe('Rémunération du formateur — qui a le droit de la fixer', () => {
+describe('Rémunération du formateur : qui a le droit de la fixer', () => {
   /** Prisma minimal pour `updateSession`. */
   function monterMaj(acteur: { accountId: string; userId: string }) {
     const session = {
@@ -193,7 +193,7 @@ describe('Rémunération du formateur — qui a le droit de la fixer', () => {
     expect(update.mock.calls[0][0].data.trainerFeeHt).toBe(900);
   });
 
-  it("l'établissement hôte aussi — c'est lui qui commande sur le parcours interne", async () => {
+  it("l'établissement hôte aussi : c'est lui qui commande sur le parcours interne", async () => {
     const { svc, update } = monterMaj({ accountId: ETABLISSEMENT, userId: 'user_etab' });
     await svc.updateSession('s_1', ETABLISSEMENT, 'user_etab', { trainerFeeHt: 750 } as never);
     expect(update.mock.calls[0][0].data.trainerFeeHt).toBe(750);

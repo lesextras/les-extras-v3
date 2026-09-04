@@ -165,9 +165,9 @@ const LONGUEUR: GroupeChoix = {
   multiple: false,
   max: 1,
   choix: [
-    { cle: 'bref', libelle: 'Bref — une demi-page' },
-    { cle: 'standard', libelle: 'Standard — une page' },
-    { cle: 'detaille', libelle: 'Détaillé — deux pages' },
+    { cle: 'bref', libelle: 'Bref, une demi-page' },
+    { cle: 'standard', libelle: 'Standard, une page' },
+    { cle: 'detaille', libelle: 'Détaillé, deux pages' },
   ],
 };
 

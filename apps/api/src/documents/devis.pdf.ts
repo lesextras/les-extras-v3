@@ -97,7 +97,7 @@ export interface DonneesDevisPdf {
 }
 
 const STATUT: Record<string, string> = {
-  REQUESTED: 'Demande reçue — chiffrage en cours',
+  REQUESTED: 'Demande reçue, chiffrage en cours',
   SENT: 'Proposition en attente de décision',
   ACCEPTED: 'Accepté',
   REFUSED: 'Non retenu',
@@ -125,14 +125,14 @@ function taux(v: number): string {
 
 function adresse(p: PartieFigee): string {
   return (
-    [p.address, [p.postalCode, p.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '—'
+    [p.address, [p.postalCode, p.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || ', '
   );
 }
 
 function identite(doc: ReturnType<typeof nouveauDocument>['doc'], p: PartieFigee) {
   ligne(doc, 'Raison sociale', p.legalName ?? p.name);
   ligne(doc, 'Adresse', adresse(p));
-  ligne(doc, 'SIRET', p.siret ?? '—');
+  ligne(doc, 'SIRET', p.siret ?? ', ');
   if (p.contactEmail) ligne(doc, 'Contact', p.contactEmail);
   if (p.phone) ligne(doc, 'Téléphone', p.phone);
 }
@@ -212,7 +212,7 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
         ],
     lignes.map((l) => {
       const base = [
-        String((l as { label?: string }).label ?? '—'),
+        String((l as { label?: string }).label ?? ', '),
         String(Number(l.quantity ?? 0)),
         String((l as { unit?: string }).unit ?? 'forfait'),
         euros(Number(l.unitPrice ?? 0)),
@@ -288,20 +288,20 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
   if (d.signature) {
     // Déjà signé : on n'imprime pas une case à remplir sous un document
     // accepté, on imprime la preuve.
-    titreSection(doc, 'Acceptation — signature électronique');
+    titreSection(doc, 'Acceptation : signature électronique');
     ligne(doc, 'Signataire', d.signature.signataireNom);
     ligne(doc, 'Adresse de signature', d.signature.signataireEmail);
     ligne(doc, 'Date et heure', d.signature.signeLe.toLocaleString('fr-FR'));
     ligne(doc, 'Empreinte du document', d.signature.empreinte);
     encadre(
       doc,
-      "Ce devis a été accepté par signature électronique au sens de l'article 1367 du code civil. L'empreinte ci-dessus est celle du document au moment de la signature : toute modification ultérieure de son contenu la rendrait fausse. Le journal complet de la signature — horodatage, adresse de connexion, vérification du code à usage unique — est conservé par l'émetteur et peut être produit sur demande.",
+      "Ce devis a été accepté par signature électronique au sens de l'article 1367 du code civil. L'empreinte ci-dessus est celle du document au moment de la signature : toute modification ultérieure de son contenu la rendrait fausse. Le journal complet de la signature, horodatage, adresse de connexion, vérification du code à usage unique, est conservé par l'émetteur et peut être produit sur demande.",
     );
   } else if (accepte) {
     titreSection(doc, 'Acceptation');
     ligne(doc, 'Accepté le', dateFr(q.decidedAt));
-    ligne(doc, 'Par', q.acceptedByName ?? '—');
-    ligne(doc, 'En qualité de', q.acceptedByRole ?? '—');
+    ligne(doc, 'Par', q.acceptedByName ?? ', ');
+    ligne(doc, 'En qualité de', q.acceptedByRole ?? ', ');
     encadre(
       doc,
       `Devis accepté le ${dateFr(q.decidedAt)}${q.acceptedByName ? ` par ${q.acceptedByName}` : ''}, depuis l'espace client de ${client.legalName ?? client.name}. Cette acceptation vaut bon pour accord.`,
@@ -321,7 +321,7 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
       doc,
       perime
         ? "Cette offre a dépassé sa durée de validité. Demandez au prestataire un devis actualisé avant de l'accepter."
-        : "Pour accepter cette proposition, portez ci-dessous la mention manuscrite « Bon pour accord », datez et signez, puis renvoyez le document au prestataire — ou acceptez-le directement depuis votre espace, ce qui a la même valeur.",
+        : "Pour accepter cette proposition, portez ci-dessous la mention manuscrite « Bon pour accord », datez et signez, puis renvoyez le document au prestataire, ou acceptez-le directement depuis votre espace, ce qui a la même valeur.",
     );
     doc.moveDown(0.4);
     garderPlace(doc, 190);

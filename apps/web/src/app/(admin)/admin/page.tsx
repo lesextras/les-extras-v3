@@ -109,7 +109,7 @@ export default async function AdminPage() {
         />
       ) : null}
 
-      {/* ── LE DESK — cockpit par alertes : on traite ce qui brûle, on ne navigue pas ── */}
+      {/* ── LE DESK, cockpit par alertes : on traite ce qui brûle, on ne navigue pas ── */}
       <section aria-label="Le Desk" className="space-y-4">
         {alertTotal === 0 ? (
           <Card className="border-success/30 bg-success/10">
@@ -160,7 +160,7 @@ export default async function AdminPage() {
                 {/* DEUX FILES QUI ATTENDAIENT UNE RÉPONSE HUMAINE SANS
                     JAMAIS APPARAÎTRE ICI. Un message de contact et une demande
                     de rattachement sont exactement ce que ce cockpit existe
-                    pour faire remonter — ils y manquaient. */}
+                    pour faire remonter, ils y manquaient. */}
                 {(dc.pendingContacts ?? 0) > 0 ? (
                   <Link href="/admin/contacts" className="group rounded-xl border border-border bg-card p-4 transition hover:shadow-card">
                     <div className="flex items-center gap-2 text-primary"><Mail className="size-4" /><span className="text-2xl font-bold">{dc.pendingContacts}</span></div>

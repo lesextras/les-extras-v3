@@ -54,7 +54,7 @@ function prismaMock(options: {
   };
 }
 
-describe('Accès aux réponses — cascade de diffusion', () => {
+describe('Accès aux réponses : cascade de diffusion', () => {
   it('refuse un inconnu sur une mission réservée aux salariés', async () => {
     const ciblage = new CiblageService(prismaMock({}) as never);
 
@@ -88,7 +88,7 @@ describe('Accès aux réponses — cascade de diffusion', () => {
   });
 });
 
-describe('Accès aux réponses — garde-fou travail dissimulé', () => {
+describe('Accès aux réponses : garde-fou travail dissimulé', () => {
   it('refuse un salarié qui répondrait en indépendant à son propre employeur', async () => {
     const ciblage = new CiblageService(
       prismaMock({ ownerId: 'u-salarie', estSalarie: true }) as never,

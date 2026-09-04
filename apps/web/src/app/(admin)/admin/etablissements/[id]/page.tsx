@@ -36,7 +36,7 @@ interface AccountDetail {
 
 function fullName(m: Member) {
   const n = [m.user?.firstName, m.user?.lastName].filter(Boolean).join(" ");
-  return n || m.user?.email || "—";
+  return n || m.user?.email || ", ";
 }
 
 export default async function AdminAccountDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
@@ -134,7 +134,7 @@ function Row({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex justify-between gap-3 border-b border-border py-1.5 last:border-0">
       <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium text-foreground">{value || "—"}</span>
+      <span className="text-right font-medium text-foreground">{value || ", "}</span>
     </div>
   );
 }

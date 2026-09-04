@@ -43,7 +43,7 @@ function fabrique(flux: 'renfort' | 'atelier' = 'renfort') {
       mission: renfort
         ? {
             id: 'm1',
-            title: 'Renfort éducateur — internat',
+            title: 'Renfort éducateur, internat',
             accountId: ETABLISSEMENT,
             account: { ownerId: 'user-etab' },
           }

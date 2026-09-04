@@ -31,7 +31,7 @@ export class MemberGuard implements CanActivate {
     if (account.isMember) return true;
     if (account.credits <= 0) {
       throw new ForbiddenException(
-        'Votre solde de crédits LEX est épuisé. Rechargez des crédits ou prenez un abonnement à recharge quotidienne — le reste de la plateforme demeure gratuit.',
+        'Votre solde de crédits LEX est épuisé. Rechargez des crédits ou prenez un abonnement à recharge quotidienne : le reste de la plateforme demeure gratuit.',
       );
     }
     return true;

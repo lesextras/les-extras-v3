@@ -44,14 +44,14 @@ function prismaMock(
 }
 
 const dto = (extra: Record<string, unknown> = {}) => ({
-  title: 'Internat — soirée',
+  title: 'Internat, soirée',
   startAt: a(0, 8),
   endAt: a(0, 20), // 12 h : au-delà du plafond de 10 h, donc bloquant.
   freelanceId: 'user_1',
   ...extra,
 }) as never;
 
-describe('PlanningService — plafonds de durée du travail', () => {
+describe('PlanningService : plafonds de durée du travail', () => {
   it("refuse d'écrire un créneau qui dépasse un plafond, sans motif", async () => {
     const { prisma, create } = prismaMock([
       // Déjà 10 h ce jour-là chez un autre employeur : le cumul est hors limites.
@@ -120,7 +120,7 @@ describe('PlanningService — plafonds de durée du travail', () => {
   });
 });
 
-describe('PlanningService — rattachement au service', () => {
+describe('PlanningService : rattachement au service', () => {
   it('hérite du service de l’intervenant quand on ne le précise pas', async () => {
     const { prisma, create } = prismaMock([], 'unit_foyer');
     const service = new PlanningService(prisma);

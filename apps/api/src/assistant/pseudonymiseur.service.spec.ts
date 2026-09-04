@@ -47,7 +47,7 @@ describe('PseudonymiseurService', () => {
   });
 });
 
-describe('PseudonymiseurService — prénom en tête de phrase', () => {
+describe('PseudonymiseurService : prénom en tête de phrase', () => {
   const svc = new PseudonymiseurService();
 
   it('masque un prénom du dictionnaire qui ouvre une phrase', () => {
@@ -77,7 +77,7 @@ describe('PseudonymiseurService — prénom en tête de phrase', () => {
  * sections ni aux sigles métier, qui sont eux aussi en capitales et qui sont
  * précisément ce qu'on cherche à apprendre d'un modèle d'écrit.
  */
-describe('PseudonymiseurService — noms de famille en capitales', () => {
+describe('PseudonymiseurService : noms de famille en capitales', () => {
   const service = new PseudonymiseurService();
 
   it('masque le patronyme accolé à un prénom', () => {
@@ -149,7 +149,7 @@ describe('PseudonymiseurService — noms de famille en capitales', () => {
  * ordinaire, et pas un prénom de moins masqué qu'avant. Le second bout prime :
  * mieux vaut mille fois un mot masqué en trop qu'une identité laissée en clair.
  */
-describe('PseudonymiseurService — faux positifs', () => {
+describe('PseudonymiseurService, faux positifs', () => {
   const service = new PseudonymiseurService();
 
   it("ne voit aucune personne dans une demande d'activité qui n'en nomme aucune", () => {
@@ -211,7 +211,7 @@ describe('PseudonymiseurService — faux positifs', () => {
  * sûr. Inverser deux rôles dans un rapport lu par un juge coûte infiniment plus
  * cher que d'y laisser une lettre.
  */
-describe('PseudonymiseurService — jetons par rôle', () => {
+describe('PseudonymiseurService : jetons par rôle', () => {
   const service = new PseudonymiseurService();
 
   it('nomme le rôle quand la phrase le donne avant le nom', () => {

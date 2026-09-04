@@ -75,7 +75,7 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
   const def = MOTIFS_RECOURS[c.motif as MotifRecours];
 
   const { doc, termine } = nouveauDocument(
-    `Contrat à durée déterminée — ${salarie}`,
+    `Contrat à durée déterminée, ${salarie}`,
     employeur.legalName ?? employeur.name,
   );
 
@@ -92,20 +92,20 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
     'Adresse',
     [employeur.address, [employeur.postalCode, employeur.city].filter(Boolean).join(' ')]
       .filter(Boolean)
-      .join(', ') || '—',
+      .join(', ') || ', ',
   );
-  ligne(doc, 'SIRET', employeur.siret ?? '—');
+  ligne(doc, 'SIRET', employeur.siret ?? ', ');
   doc.moveDown(0.3);
   ligne(doc, 'Le salarié', salarie);
   if (c.user?.email) ligne(doc, 'Courriel', c.user.email);
-  ligne(doc, 'Qualification', c.qualification ?? '—');
+  ligne(doc, 'Qualification', c.qualification ?? ', ');
 
   titreSection(doc, 'Motif de recours');
   paragraphe(doc, def?.libelle ?? c.motif);
   if (def?.article) paragraphe(doc, `Fondement : ${def.article}.`, { gris: true });
   if (def?.exigeSalarieRemplace) {
-    ligne(doc, 'Personne remplacée', c.salarieRemplaceNom ?? '—');
-    ligne(doc, 'Sa qualification', c.salarieRemplaceQualification ?? '—');
+    ligne(doc, 'Personne remplacée', c.salarieRemplaceNom ?? ', ');
+    ligne(doc, 'Sa qualification', c.salarieRemplaceQualification ?? ', ');
   }
 
   titreSection(doc, 'Durée du contrat');
@@ -114,7 +114,7 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
     ligne(doc, 'Date de fin', dateFr(c.dateFin));
     ligne(doc, 'Durée', `${synthese.dureeJours} jours`);
   } else {
-    ligne(doc, 'Terme', 'Imprécis — le contrat prend fin à la réalisation de son objet');
+    ligne(doc, 'Terme', 'Imprécis : le contrat prend fin à la réalisation de son objet');
     ligne(doc, 'Durée minimale', `${c.dureeMinimaleJours ?? synthese.dureeJours} jours`);
   }
   ligne(
@@ -124,17 +124,17 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
   );
 
   titreSection(doc, 'Emploi occupé');
-  ligne(doc, 'Poste', c.poste ?? '—');
+  ligne(doc, 'Poste', c.poste ?? ', ');
   ligne(
     doc,
     'Poste à risques particuliers',
     c.posteARisques === null || c.posteARisques === undefined
-      ? '—'
+      ? ', '
       : c.posteARisques
-        ? 'Oui — une formation renforcée à la sécurité est due'
+        ? 'Oui : une formation renforcée à la sécurité est due'
         : 'Non',
   );
-  ligne(doc, 'Convention collective', c.conventionCollective ?? '—');
+  ligne(doc, 'Convention collective', c.conventionCollective ?? ', ');
 
   titreSection(doc, 'Rémunération');
   ligne(doc, 'Rémunération brute', euros(Number(c.remunerationBrute ?? 0)));
@@ -143,18 +143,18 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
     doc,
     'Indemnité de fin de contrat',
     synthese.indemniteFinDeContrat.due
-      ? `${euros(synthese.indemniteFinDeContrat.montant)} — 10 % de la rémunération brute totale (art. L. 1243-8)`
+      ? `${euros(synthese.indemniteFinDeContrat.montant)} : 10 % de la rémunération brute totale (art. L. 1243-8)`
       : 'Non due',
   );
 
   titreSection(doc, 'Organismes sociaux');
-  ligne(doc, 'Retraite complémentaire', c.caisseRetraiteComplementaire ?? '—');
-  ligne(doc, 'Prévoyance', c.organismePrevoyance ?? '—');
+  ligne(doc, 'Retraite complémentaire', c.caisseRetraiteComplementaire ?? ', ');
+  ligne(doc, 'Prévoyance', c.organismePrevoyance ?? ', ');
   ligne(
     doc,
     "Déclaration préalable à l'embauche",
     c.dpaeEffectueeLe
-      ? `Effectuée le ${dateFr(c.dpaeEffectueeLe)}${c.dpaeReference ? ` — réf. ${c.dpaeReference}` : ''}`
+      ? `Effectuée le ${dateFr(c.dpaeEffectueeLe)}${c.dpaeReference ? `, réf. ${c.dpaeReference}` : ''}`
       : 'À effectuer avant la prise de fonction',
   );
 
@@ -170,7 +170,7 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
     "L'établissement signataire est l'employeur : il conclut ce contrat en son nom propre et en assume seul la responsabilité. Ce document a été généré à partir des règles du code du travail ; faites-le relire au regard de votre convention collective, qui peut prévoir des dispositions plus favorables au salarié que les planchers légaux appliqués ici.",
   );
 
-  signatures(doc, `Pour l'employeur — ${employeur.legalName ?? employeur.name}`, `Le salarié — ${salarie}`);
+  signatures(doc, `Pour l'employeur, ${employeur.legalName ?? employeur.name}`, `Le salarié, ${salarie}`);
 
   doc.flushPages();
   pied(

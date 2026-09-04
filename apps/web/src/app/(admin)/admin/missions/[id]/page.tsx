@@ -70,7 +70,7 @@ export default async function AdminMissionDetail({ params: paramsPromesse }: { p
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{m.title}</h1>
           {/* « Publiée par » sur un brouillon contredisait le badge de statut. */}
           <p className="text-sm text-muted-foreground">
-            {m.status === "DRAFT" ? "Déposée par" : "Publiée par"} {m.account?.name ?? "—"}
+            {m.status === "DRAFT" ? "Déposée par" : "Publiée par"} {m.account?.name ?? "-"}
             {m.account?.city ? ` · ${m.account.city}` : ""} · {m._count?.bookings ?? 0} candidature(s)
           </p>
         </div>
@@ -92,10 +92,10 @@ export default async function AdminMissionDetail({ params: paramsPromesse }: { p
             <Row label="Début" value={formatDate(m.startDate)} />
             {m.endDate ? <Row label="Fin" value={formatDate(m.endDate)} /> : null}
             {m.startTime || m.endTime ? (
-              <Row label="Horaires" value={`${m.startTime ?? "?"} – ${m.endTime ?? "?"}`} />
+              <Row label="Horaires" value={`${m.startTime ?? "?"}, ${m.endTime ?? "?"}`} />
             ) : null}
             {m.job ? <Row label="Métier" value={m.job} /> : null}
-            <Row label="Lieu" value={`${m.city ?? "—"}${m.postalCode ? ` (${m.postalCode})` : ""}`} />
+            <Row label="Lieu" value={`${m.city ?? "-"}${m.postalCode ? ` (${m.postalCode})` : ""}`} />
             <Row label="Postes" value={String(m.headcount)} />
             {m.hourlyRate ? <Row label="Rémunération" value={formatRate(m.hourlyRate)} highlight /> : null}
           </CardContent>

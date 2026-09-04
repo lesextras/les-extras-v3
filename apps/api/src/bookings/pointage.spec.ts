@@ -48,7 +48,7 @@ const termineIlYA = (heures: number) => ({
 
 const creneau = { startedAt: '2026-09-01T09:00:00.000Z', endedAt: '2026-09-01T17:00:00.000Z' };
 
-describe('pointage — la fenêtre de 72 h', () => {
+describe('pointage : la fenêtre de 72 h', () => {
   it('accepte une déclaration pendant la fenêtre', async () => {
     const { svc, timeEntry } = service(termineIlYA(24));
 
@@ -84,7 +84,7 @@ describe('pointage — la fenêtre de 72 h', () => {
   });
 });
 
-describe('pointage — qui déclare', () => {
+describe('pointage, qui déclare', () => {
   it("refuse que l'établissement déclare à la place de l'intervenant", async () => {
     // C'est l'intervenant qui déclare ses heures ; l'établissement les valide
     // ou les refuse. Laisser l'employeur saisir le temps de l'autre, c'est
@@ -98,7 +98,7 @@ describe('pointage — qui déclare', () => {
   });
 });
 
-describe('pointage — cohérence des créneaux', () => {
+describe('pointage : cohérence des créneaux', () => {
   it('refuse une fin antérieure au début', async () => {
     const { svc, timeEntry } = service(termineIlYA(1));
 
@@ -122,7 +122,7 @@ describe('pointage — cohérence des créneaux', () => {
   });
 });
 
-describe('pointage — validation à l’échéance', () => {
+describe('pointage : validation à l’échéance', () => {
   it('valide d’office les créneaux en attente une fois la fenêtre close', async () => {
     const { svc, timeEntry } = service(termineIlYA(80));
 

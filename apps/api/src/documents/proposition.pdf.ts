@@ -72,8 +72,8 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
   const personne = nomComplet(c) || c?.email || 'Personne proposée';
 
   const { doc, termine } = nouveauDocument(
-    `Proposition d'engagement — ${m.title}`,
-    'Les Extras — ADéPA77',
+    `Proposition d'engagement, ${m.title}`,
+    'Les Extras, ADéPA77',
   );
 
   enTete(
@@ -88,24 +88,24 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
   );
 
   titreSection(doc, 'Établissement demandeur');
-  ligne(doc, 'Structure', e?.legalName ?? e?.name ?? '—');
+  ligne(doc, 'Structure', e?.legalName ?? e?.name ?? ', ');
   ligne(
     doc,
     'Adresse',
     [e?.address, [e?.postalCode, e?.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') ||
-      '—',
+      ', ',
   );
-  ligne(doc, 'SIRET', e?.siret ?? '—');
+  ligne(doc, 'SIRET', e?.siret ?? ', ');
 
   titreSection(doc, 'Personne proposée');
   ligne(doc, 'Nom', personne);
-  ligne(doc, 'Métier', c?.profile?.job ?? m.job ?? '—');
-  ligne(doc, 'Contact', [c?.email, c?.phone].filter(Boolean).join(' · ') || '—');
-  ligne(doc, 'Secteur', c?.profile?.city ?? '—');
+  ligne(doc, 'Métier', c?.profile?.job ?? m.job ?? ', ');
+  ligne(doc, 'Contact', [c?.email, c?.phone].filter(Boolean).join(' · ') || ', ');
+  ligne(doc, 'Secteur', c?.profile?.city ?? ', ');
 
   titreSection(doc, 'Besoin à couvrir');
   ligne(doc, 'Intitulé', m.title);
-  ligne(doc, 'Métier recherché', m.job ?? '—');
+  ligne(doc, 'Métier recherché', m.job ?? ', ');
   ligne(
     doc,
     'Période',
@@ -116,12 +116,12 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
   ligne(
     doc,
     'Horaires',
-    m.startTime || m.endTime ? `${m.startTime ?? '?'} – ${m.endTime ?? '?'}` : '—',
+    m.startTime || m.endTime ? `${m.startTime ?? '?'}, ${m.endTime ?? '?'}` : ', ',
   );
   ligne(
     doc,
     'Lieu',
-    [m.city, m.postalCode ? `(${m.postalCode})` : null].filter(Boolean).join(' ') || '—',
+    [m.city, m.postalCode ? `(${m.postalCode})` : null].filter(Boolean).join(' ') || ', ',
   );
   ligne(doc, 'Postes à pourvoir', String(m.headcount));
   if (m.description) {
@@ -143,12 +143,12 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
         ch.heuresParJour !== null
           ? `${ch.heuresParJour} h × ${ch.jours} jour${ch.jours > 1 ? 's' : ''}${m.headcount > 1 ? ` × ${m.headcount} postes` : ''}`
           : 'horaires non précisés',
-        ch.heuresTotales !== null ? `${ch.heuresTotales} h` : '—',
+        ch.heuresTotales !== null ? `${ch.heuresTotales} h` : ', ',
       ],
       [
         'Taux horaire brut annoncé',
         ch.tauxHoraire !== null ? 'proposé par votre établissement' : 'à convenir',
-        ch.tauxHoraire !== null ? euros(ch.tauxHoraire) : '—',
+        ch.tauxHoraire !== null ? euros(ch.tauxHoraire) : ', ',
       ],
       [
         'Rémunération brute estimée',
@@ -163,13 +163,13 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
   titreSection(doc, 'Ce qui se passe ensuite');
   paragraphe(
     doc,
-    "1. Vous acceptez cette proposition. 2. Votre établissement établit le contrat à durée déterminée : depuis l'écran Contrats CDD, les éléments ci-dessus sont repris automatiquement et il ne reste qu'à compléter les mentions qui relèvent de vous — convention collective, caisse de retraite complémentaire, organisme de prévoyance. 3. L'outil vérifie que rien ne manque au regard de l'article L. 1242-12 avant de vous laisser transmettre le contrat au salarié, calcule la période d'essai, l'indemnité de fin de contrat et le délai de carence, et contrôle que les plafonds de durée du travail sont respectés — tous employeurs confondus.",
+    "1. Vous acceptez cette proposition. 2. Votre établissement établit le contrat à durée déterminée : depuis l'écran Contrats CDD, les éléments ci-dessus sont repris automatiquement et il ne reste qu'à compléter les mentions qui relèvent de vous, convention collective, caisse de retraite complémentaire, organisme de prévoyance. 3. L'outil vérifie que rien ne manque au regard de l'article L. 1242-12 avant de vous laisser transmettre le contrat au salarié, calcule la période d'essai, l'indemnité de fin de contrat et le délai de carence, et contrôle que les plafonds de durée du travail sont respectés : tous employeurs confondus.",
   );
 
   doc.flushPages();
   pied(
     doc,
-    `Proposition ${d.booking.id.slice(-8).toUpperCase()} · Les Extras — ADéPA77 · ce document n'est pas un contrat de travail`,
+    `Proposition ${d.booking.id.slice(-8).toUpperCase()} · Les Extras, ADéPA77 · ce document n'est pas un contrat de travail`,
   );
   doc.end();
   return termine;

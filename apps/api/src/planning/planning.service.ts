@@ -446,7 +446,7 @@ export class PlanningService {
           freelanceId: userId,
           notes: creneau.note ?? null,
           derogationMotif: bloquants.length
-            ? "Import de planning — organisation annualisée du temps de travail"
+            ? "Import de planning : organisation annualisée du temps de travail"
             : null,
           derogationCodes: bloquants.map((b) => b.code),
           derogationLe: bloquants.length ? new Date() : null,

@@ -65,7 +65,7 @@ export default async function AdminFacturesPage() {
                     <TableRow key={inv.id}>
                       <TableCell className="text-sm font-medium text-foreground">{inv.number}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {inv.account?.name ?? "—"}
+                        {inv.account?.name ?? "-"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                         {formatMoney(inv.amount)}

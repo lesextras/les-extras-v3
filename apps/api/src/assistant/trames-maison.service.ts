@@ -41,14 +41,14 @@ import { FilesService, type FichierRecu } from '../storage/files.service';
  */
 
 /** Consigne d'extraction. Volontairement pauvre en liberté : on veut une FORME. */
-const SYSTEM_EXTRACTION = `Tu analyses un écrit professionnel du secteur social ou médico-social français pour en extraire le MODÈLE, c'est-à-dire sa forme — jamais son contenu.
+const SYSTEM_EXTRACTION = `Tu analyses un écrit professionnel du secteur social ou médico-social français pour en extraire le MODÈLE, c'est-à-dire sa forme, jamais son contenu.
 
 Le texte a été pseudonymisé : il contient des jetons comme [PERSONNE-A] ou [DATE-1]. C'est normal, ignore-les.
 
 Tu réponds UNIQUEMENT par un objet JSON valide, sans texte autour, avec exactement ces trois clés :
 
 {
-  "squelette": "La liste ordonnée des sections du document, une par ligne, sous la forme « - Intitulé exact tel qu'il figure dans le modèle — ce que la section contient, en une phrase — longueur observée (nombre de phrases ou de lignes) ». Reprends les intitulés MOT POUR MOT : c'est tout l'intérêt. Si le document n'a pas d'intitulés apparents, décris les blocs dans leur ordre (en-tête, corps, formule, signature).",
+  "squelette": "La liste ordonnée des sections du document, une par ligne, sous la forme « - Intitulé exact tel qu'il figure dans le modèle, ce que la section contient, en une phrase, longueur observée (nombre de phrases ou de lignes) ». Reprends les intitulés MOT POUR MOT : c'est tout l'intérêt. Si le document n'a pas d'intitulés apparents, décris les blocs dans leur ordre (en-tête, corps, formule, signature).",
   "style": "Les règles de forme observées, en cinq à dix lignes : personne employée (je / nous / le professionnel), temps dominant, façon de désigner la personne accompagnée, formules d'ouverture et de clôture reprises telles quelles, usage des dates, du gras, des puces, niveau de langue, longueur totale approximative.",
   "extrait": "Deux ou trois phrases RECOPIÉES du modèle, choisies parce qu'elles sont représentatives du ton. Ne recopie aucune phrase qui décrirait une situation personnelle : prends une formule d'usage, une phrase d'introduction ou de conclusion."
 }
@@ -128,7 +128,7 @@ export class TramesMaisonService {
       : (dto.texte ?? '').trim();
     if (texteBrut.length < 120) {
       throw new BadRequestException(
-        "Ce modèle est trop court pour qu'on en tire quelque chose. Collez un écrit complet — une page suffit.",
+        "Ce modèle est trop court pour qu'on en tire quelque chose. Collez un écrit complet, une page suffit.",
       );
     }
 

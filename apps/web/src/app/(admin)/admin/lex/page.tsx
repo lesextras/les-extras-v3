@@ -13,7 +13,7 @@ import { requireAdmin, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle, ErrorState, StatCard, EmptyState } from "../../../_shared/ui";
 import { formatDateTime } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "LEX — Crédits & abonnements · Administration" };
+export const metadata: Metadata = { title: "LEX, Crédits & abonnements · Administration" };
 
 interface Achat {
   id: string;
@@ -62,7 +62,7 @@ export default async function AdminLexPage() {
   if (res.error || !res.data) {
     return (
       <div className="space-y-6">
-        <PageHeader title="LEX — Crédits & abonnements" subtitle="Ventes, consommation et abonnés de l'assistant IA." />
+        <PageHeader title="LEX, Crédits & abonnements" subtitle="Ventes, consommation et abonnés de l'assistant IA." />
         <ErrorState description={res.error ?? "Données indisponibles."} />
       </div>
     );
@@ -74,22 +74,22 @@ export default async function AdminLexPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="LEX — Crédits & abonnements"
-        subtitle="Ce qui se vend, ce qui se consomme, qui est abonné — tiré des écritures réelles."
+        title="LEX, Crédits & abonnements"
+        subtitle="Ce qui se vend, ce qui se consomme, qui est abonné : tiré des écritures réelles."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Ventes (30 jours)"
           value={euros(s.ventes.trenteJours.montantCents)}
-          hint={`${s.ventes.trenteJours.achats} achat(s) · ${s.ventes.trenteJours.credits} crédits — total : ${euros(s.ventes.total.montantCents)}`}
+          hint={`${s.ventes.trenteJours.achats} achat(s) · ${s.ventes.trenteJours.credits} crédits, total : ${euros(s.ventes.total.montantCents)}`}
           icon={<Coins className="h-4 w-4" />}
           accent="teal"
         />
         <StatCard
           label="Consommation (30 jours)"
           value={s.consommation.trenteJours.credits}
-          hint={`${s.consommation.trenteJours.generations} génération(s) — total : ${s.consommation.total.credits} crédits`}
+          hint={`${s.consommation.trenteJours.generations} génération(s), total : ${s.consommation.total.credits} crédits`}
           icon={<TrendingUp className="h-4 w-4" />}
           accent="neutral"
         />

@@ -1142,7 +1142,7 @@ export class AdminService {
       }
       return {
         id: s.id,
-        formation: s.formation?.title ?? '—',
+        formation: s.formation?.title ?? ', ',
         type: s.formation?.type ?? null,
         certifying: s.formation?.certifying ?? false,
         startDate: s.startDate,
@@ -1543,7 +1543,7 @@ export class AdminService {
     const activite = [
       ...dernieresDemandes.map((d) => ({
         type: 'demande' as const,
-        libelle: `${d.name} — ${d.type ?? 'demande'}`,
+        libelle: `${d.name}, ${d.type ?? 'demande'}`,
         detail: d.source || 'direct',
         date: d.createdAt.toISOString(),
       })),

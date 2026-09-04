@@ -7,7 +7,7 @@ import { chiffrer, heuresParJour, joursCouverts, minutesDepuisMinuit } from './p
  * la nuit — un service de 21 h à 7 h ne dure pas moins dix-quatre heures.
  */
 
-describe('proposition d’engagement — chiffrage', () => {
+describe('proposition d’engagement, chiffrage', () => {
   describe('lecture des horaires', () => {
     it('accepte les formats saisis en vrai', () => {
       expect(minutesDepuisMinuit('09h00')).toBe(540);

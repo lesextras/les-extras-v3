@@ -425,13 +425,13 @@ export class PublicService {
         where: { id: dto.serviceId, ...VITRINE },
         select: { title: true },
       });
-      if (s) objet = `Devis — ${s.title}`;
+      if (s) objet = `Devis, ${s.title}`;
     } else if (dto.formationSlug) {
       const f = await this.prisma.formation.findFirst({
         where: { slug: dto.formationSlug, status: 'PUBLISHED' },
         select: { title: true },
       });
-      if (f) objet = `Devis formation — ${f.title}`;
+      if (f) objet = `Devis formation, ${f.title}`;
     }
 
     const corps = [
@@ -980,7 +980,7 @@ export class PublicService {
               .map((s) =>
                 s.title
                   .replace(/^ATELIER\s+(DE\s+)?/i, '')
-                  .replace(/\s*[-–—].*$/, '')
+                  .replace(/\s*[-, , ].*$/, '')
                   .trim(),
               )
               .filter((t) => t.length > 2 && t.length <= 42),
@@ -997,7 +997,7 @@ export class PublicService {
           [c.owner?.firstName, c.owner?.lastName]
             .filter(Boolean)
             .join(' ')
-            .replace(/\s*[—-]\s*Intervenant\s*$/i, '')
+            .replace(/\s*[ : -]\s*Intervenant\s*$/i, '')
             .trim() || c.name;
 
         return {
@@ -1123,7 +1123,7 @@ export class PublicService {
           .map((s) =>
             s.title
               .replace(/^ATELIER\s+(DE\s+)?/i, '')
-              .replace(/\s*[-–—].*$/, '')
+              .replace(/\s*[-, , ].*$/, '')
               .trim(),
           )
           .filter((t) => t.length > 2 && t.length <= 42),
@@ -1137,7 +1137,7 @@ export class PublicService {
           ...account.owner,
           // « Christophe — Intervenant » : « — Intervenant » est un reliquat
           // d'import collé dans le champ nom de famille, pas un vrai patronyme.
-          lastName: (account.owner.lastName ?? '').replace(/^\s*[—-]\s*Intervenant\s*$/i, ''),
+          lastName: (account.owner.lastName ?? '').replace(/^\s*[ : -]\s*Intervenant\s*$/i, ''),
           profile: {
             ...(account.owner.profile ?? { job: null, bio: null, skills: [], city: null }),
             job:

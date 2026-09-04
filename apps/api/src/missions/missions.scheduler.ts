@@ -97,7 +97,7 @@ export class MissionsScheduler {
     if (brut === undefined) return defaut;
     const n = Number(brut);
     if (!Number.isFinite(n)) {
-      this.logger.warn(`${cle}="${brut}" illisible — valeur par défaut ${defaut} appliquée.`);
+      this.logger.warn(`${cle}="${brut}" illisible : valeur par défaut ${defaut} appliquée.`);
       return defaut;
     }
     return Math.min(Math.max(n, min), max);
@@ -237,11 +237,11 @@ export class MissionsScheduler {
   @Cron(EXPRESSION_CRON, { name: 'relance-missions-non-pourvues' })
   async relancerMissionsNonPourvues(): Promise<void> {
     if (!this.actif) {
-      this.logger.debug('Relance désactivée (SCHEDULER_ENABLED=false) — passage ignoré.');
+      this.logger.debug('Relance désactivée (SCHEDULER_ENABLED=false), passage ignoré.');
       return;
     }
     if (this.enCours) {
-      this.logger.warn('Passage précédent encore en cours — celui-ci est ignoré.');
+      this.logger.warn('Passage précédent encore en cours, celui-ci est ignoré.');
       return;
     }
 
@@ -288,7 +288,7 @@ export class MissionsScheduler {
       this.enCours = false;
       const duree = Date.now() - demarre;
       this.logger.log(
-        `Relance des missions — ${examinees} examinée(s), ${elargies} élargie(s), ` +
+        `Relance des missions : ${examinees} examinée(s), ${elargies} élargie(s), ` +
           `${rediffusees} rediffusée(s), ${alertes} alerte(s), ${erreurs} erreur(s) en ${duree} ms.`,
       );
     }
@@ -307,7 +307,7 @@ export class MissionsScheduler {
       // Sans destinataire, impossible de déposer le repère anti-doublon :
       // on s'abstient plutôt que de risquer des envois en boucle.
       this.logger.warn(
-        `Mission ${mission.id} sans propriétaire de compte — relance ignorée (anti-doublon impossible).`,
+        `Mission ${mission.id} sans propriétaire de compte : relance ignorée (anti-doublon impossible).`,
       );
       return bilan;
     }
@@ -355,7 +355,7 @@ export class MissionsScheduler {
     // deux fois pour ce palier.
     await this.notifications.create(proprietaireId, {
       type: typeRepere,
-      title: palierSuivant ? 'Mission relancée — diffusion élargie' : 'Mission relancée',
+      title: palierSuivant ? 'Mission relancée, diffusion élargie' : 'Mission relancée',
       body: palierSuivant
         ? `« ${mission.title} » n'est toujours pas pourvue après ${Math.round(
             heuresDepuisPublication,
@@ -371,7 +371,7 @@ export class MissionsScheduler {
       await this.missions.broaden(mission.id, mission.accountId);
       bilan.elargie = true;
       this.logger.log(
-        `Mission ${mission.id} — diffusion élargie ${palierCourant} -> ${palierSuivant}.`,
+        `Mission ${mission.id} : diffusion élargie ${palierCourant} -> ${palierSuivant}.`,
       );
     }
 
@@ -381,7 +381,7 @@ export class MissionsScheduler {
     );
     bilan.rediffusee = true;
     this.logger.log(
-      `Mission ${mission.id} — relance envoyée à ${notifies} intervenant(s) (palier ${
+      `Mission ${mission.id} : relance envoyée à ${notifies} intervenant(s) (palier ${
         palierSuivant ?? palierCourant
       }).`,
     );
@@ -403,7 +403,7 @@ export class MissionsScheduler {
     const heures = Math.max(0, Math.round(heuresAvantDebut));
     await this.notifications.create(proprietaireId, {
       type: TYPE_ALERTE,
-      title: 'Mission non pourvue — échéance proche',
+      title: 'Mission non pourvue, échéance proche',
       body:
         `« ${mission.title} » démarre dans ${heures} h (${quand}${
           mission.startTime ? ` à ${mission.startTime}` : ''
@@ -412,7 +412,7 @@ export class MissionsScheduler {
       link: lien,
     });
     this.logger.warn(
-      `Mission ${mission.id} — alerte échéance envoyée à l'établissement (${heures} h avant le début).`,
+      `Mission ${mission.id} : alerte échéance envoyée à l'établissement (${heures} h avant le début).`,
     );
     return true;
   }

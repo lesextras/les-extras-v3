@@ -245,7 +245,7 @@ describe('MissionsService', () => {
  * de score s'abaisse à mesure qu'on élargit, et l'e-mail dit à l'intervenant
  * qu'il fait partie d'une sélection restreinte.
  */
-describe('MissionsService — diffusion ciblée par vagues', () => {
+describe('MissionsService : diffusion ciblée par vagues', () => {
   const MISSION = {
     id: 'm1',
     accountId: 'etab',
@@ -459,7 +459,7 @@ describe('MissionsService — diffusion ciblée par vagues', () => {
  * Ce qu'on protège : une mission adressée à des destinataires précis part à
  * ceux-là et à personne d'autre, en une seule fois, sans élargissement.
  */
-describe('MissionsService — diffusion nominative', () => {
+describe('MissionsService : diffusion nominative', () => {
   function monter(mission: Record<string, unknown>, autorises: Set<string> | null, salaries: string[] = []) {
     const complete = {
       id: 'm1',

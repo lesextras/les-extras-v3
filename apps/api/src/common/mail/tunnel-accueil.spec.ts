@@ -12,7 +12,7 @@ import { TUNNEL_ACCUEIL } from './mail.service';
  * relecture humaine rate, c'est-à-dire la mécanique.
  */
 describe("Tunnel d'accueil", () => {
-  it('compte exactement six messages — la longueur que le planificateur attend', () => {
+  it('compte exactement six messages : la longueur que le planificateur attend', () => {
     // TunnelScheduler.ETAPES vaut 6. Si l'un des deux change sans l'autre, soit
     // le dernier message ne part jamais, soit le planificateur demande une
     // étape qui n'existe pas (et `sendTunnelAccueil` sort en silence).

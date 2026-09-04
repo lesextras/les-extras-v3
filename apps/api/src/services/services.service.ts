@@ -369,7 +369,7 @@ export class ServicesService {
     const depasse =
       effectif !== null && service.maxParticipants !== null && effectif > service.maxParticipants;
     const precision = effectif === null ? '' : ` pour ${effectif} participant${effectif > 1 ? 's' : ''}`;
-    const alerte = depasse ? ` — au-delà des ${service.maxParticipants} annoncés sur votre fiche` : '';
+    const alerte = depasse ? `, au-delà des ${service.maxParticipants} annoncés sur votre fiche` : '';
 
     await this.notifications.create(service.account.ownerId, {
       type: 'SERVICE_BOOKING',

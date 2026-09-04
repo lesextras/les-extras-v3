@@ -29,7 +29,7 @@ const fauxNotifications = () => ({ create: jest.fn(async () => ({})) });
 /** La notification part après la réponse : on laisse la boucle d'événements la dérouler. */
 const microtache = () => new Promise((r) => setTimeout(r, 0));
 
-describe('CommunityService.crediter — célébration des premiers points', () => {
+describe('CommunityService.crediter : célébration des premiers points', () => {
   it('notifie le propriétaire au tout premier gain', async () => {
     const prisma = fauxPrisma(0);
     const notifications = fauxNotifications();
@@ -61,7 +61,7 @@ describe('CommunityService.crediter — célébration des premiers points', () =
     expect(notifications.create).not.toHaveBeenCalled();
   });
 
-  it('ne crédite rien — et ne fête rien — pour un montant nul', async () => {
+  it('ne crédite rien, et ne fête rien, pour un montant nul', async () => {
     const prisma = fauxPrisma(0);
     const notifications = fauxNotifications();
     const svc = new CommunityService(prisma as never, notifications as never);

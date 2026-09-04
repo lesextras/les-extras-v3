@@ -111,7 +111,7 @@ export default async function AdminRegistrePage() {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{fmtDate(r.startDate)}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{r.durationHours ? `${r.durationHours} h` : "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{r.durationHours ? `${r.durationHours} h` : ", "}</td>
                   <td className="px-4 py-3 text-muted-foreground">{r.inscrits}</td>
                   <td className="px-4 py-3 text-muted-foreground">{r.emargements}</td>
                 </tr>

@@ -38,7 +38,7 @@ export default async function AdminContactsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Demandes de contact"
-        subtitle={`Messages reçus via le formulaire public${newCount ? ` — ${newCount} en attente` : ""}.`}
+        subtitle={`Messages reçus via le formulaire public${newCount ? `, ${newCount} en attente` : ""}.`}
       />
       {res.error ? (
         <ErrorState retryHref="/admin/contacts" />
@@ -74,7 +74,7 @@ export default async function AdminContactsPage() {
                           {c.phone ? ` · ${c.phone}` : ""}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">{c.type ?? "—"}</TableCell>
+                      <TableCell className="text-sm">{c.type ?? "-"}</TableCell>
                       <TableCell className="max-w-md">
                         <p className="whitespace-pre-wrap text-sm text-muted-foreground">{c.content}</p>
                       </TableCell>

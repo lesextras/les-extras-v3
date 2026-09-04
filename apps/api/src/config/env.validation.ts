@@ -9,7 +9,7 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
 
   if (missing.length > 0) {
     throw new Error(
-      `Configuration invalide — variables d'environnement manquantes : ${missing.join(', ')}`,
+      `Configuration invalide, variables d'environnement manquantes : ${missing.join(', ')}`,
     );
   }
 

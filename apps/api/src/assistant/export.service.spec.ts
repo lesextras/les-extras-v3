@@ -11,7 +11,7 @@ import { ExtractionService } from './extraction.service';
  */
 
 const CONTENU = `## Objet
-Demande d'autorisation — séjour du 10 au 14 février
+Demande d'autorisation : séjour du 10 au 14 février
 
 Madame, Monsieur,
 
@@ -81,7 +81,7 @@ describe('ExportService', () => {
     expect(service.nomFichier("Demande d'autorisation parentale", 'docx', new Date('2026-08-04'))).toBe(
       'demande-d-autorisation-parentale-2026-08-04.docx',
     );
-    expect(service.nomFichier('Écrit — été', 'pdf', new Date('2026-01-02'))).toBe(
+    expect(service.nomFichier('Écrit : été', 'pdf', new Date('2026-01-02'))).toBe(
       'ecrit-ete-2026-01-02.pdf',
     );
   });

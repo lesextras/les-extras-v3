@@ -213,7 +213,7 @@ export class ParametresTempsService {
       ecart: Math.round((v.heuresAPlanifier - seuil) * 100) / 100,
       lecture:
         v.heuresAPlanifier < seuil
-          ? `Ce salarié ne peut pas atteindre ${seuil} h : son calendrier n'en contient que ${v.heuresAPlanifier}. Ce n'est pas une anomalie — les congés trimestriels du secteur retirent des jours travaillables. Le seuil de déclenchement des heures supplémentaires, lui, reste inchangé : seul un accord d'entreprise peut l'abaisser.`
+          ? `Ce salarié ne peut pas atteindre ${seuil} h : son calendrier n'en contient que ${v.heuresAPlanifier}. Ce n'est pas une anomalie : les congés trimestriels du secteur retirent des jours travaillables. Le seuil de déclenchement des heures supplémentaires, lui, reste inchangé : seul un accord d'entreprise peut l'abaisser.`
           : `Ce salarié peut atteindre le seuil de ${seuil} h dans l'année.`,
     };
   }

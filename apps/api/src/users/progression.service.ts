@@ -152,7 +152,7 @@ export class ProgressionService {
     const palier = this.palierDepuisStats(s);
 
     const pct = (x: number) => `${Math.round(x * 100)} %`;
-    const note = s.noteMoyenne != null ? s.noteMoyenne.toFixed(1).replace('.', ',') : '—';
+    const note = s.noteMoyenne != null ? s.noteMoyenne.toFixed(1).replace('.', ',') : ', ';
 
     const criteres = (seuils: (typeof SEUILS)['CONFIRME' | 'SUPER_EXTRA']): Critere[] => [
       {

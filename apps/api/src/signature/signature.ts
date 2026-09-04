@@ -160,7 +160,7 @@ export function verifier(
     return {
       ok: false,
       echec: 'EXPIREE',
-      message: `Le code a expiré — il n'est valable que ${VALIDITE_CODE_MINUTES} minutes. Demandez-en un nouveau.`,
+      message: `Le code a expiré, il n'est valable que ${VALIDITE_CODE_MINUTES} minutes. Demandez-en un nouveau.`,
     };
   }
   if (etat.tentatives >= TENTATIVES_MAX) {
@@ -241,7 +241,7 @@ export function dossierPreuve(s: {
       ? 'Signature électronique simple avec vérification par code à usage unique adressé par courriel'
       : `Signature déléguée au prestataire ${s.prestataire}`,
     portee: interne
-      ? "Cette signature est une signature électronique simple au sens du règlement eIDAS. Elle est valable : l'article 1367 du code civil reconnaît la signature électronique dès lors que le procédé identifie son auteur et garantit son lien avec l'acte, ce que fait le faisceau de preuves ci-dessous — empreinte du document, code à usage unique vérifié, horodatage, adresse de connexion. Elle ne bénéficie pas, en revanche, de la présomption de fiabilité attachée à la signature qualifiée : en cas de contestation, c'est à celui qui l'invoque de démontrer la fiabilité du procédé. Le présent dossier est fait pour cela."
+      ? "Cette signature est une signature électronique simple au sens du règlement eIDAS. Elle est valable : l'article 1367 du code civil reconnaît la signature électronique dès lors que le procédé identifie son auteur et garantit son lien avec l'acte, ce que fait le faisceau de preuves ci-dessous, empreinte du document, code à usage unique vérifié, horodatage, adresse de connexion. Elle ne bénéficie pas, en revanche, de la présomption de fiabilité attachée à la signature qualifiée : en cas de contestation, c'est à celui qui l'invoque de démontrer la fiabilité du procédé. Le présent dossier est fait pour cela."
       : "Cette signature a été recueillie par un prestataire de services de confiance. Sa portée juridique et son niveau eIDAS sont ceux du certificat délivré par ce prestataire, dont l'attestation fait foi.",
     chronologie: [...s.evenements].sort(
       (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),

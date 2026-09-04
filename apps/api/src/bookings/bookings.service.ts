@@ -316,7 +316,7 @@ export class BookingsService {
     await this.community.crediter(
       accountId,
       PointReason.PARRAINAGE,
-      'Première prestation terminée — bonus de parrainage',
+      'Première prestation terminée, bonus de parrainage',
       montantParrainage,
     );
   }

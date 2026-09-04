@@ -472,8 +472,8 @@ export class MissionsService {
     if (candidatures > 0) {
       throw new BadRequestException(
         candidatures === 1
-          ? 'Une personne a déjà candidaté à ce renfort : il ne peut plus être supprimé. Clôturez-le — elle en sera informée, et l’historique restera consultable.'
-          : `${candidatures} personnes ont déjà candidaté à ce renfort : il ne peut plus être supprimé. Clôturez-le — elles en seront informées, et l’historique restera consultable.`,
+          ? 'Une personne a déjà candidaté à ce renfort : il ne peut plus être supprimé. Clôturez-le : elle en sera informée, et l’historique restera consultable.'
+          : `${candidatures} personnes ont déjà candidaté à ce renfort : il ne peut plus être supprimé. Clôturez-le : elles en seront informées, et l’historique restera consultable.`,
       );
     }
     await this.prisma.reliefMission.delete({ where: { id } });
@@ -617,7 +617,7 @@ export class MissionsService {
     void this.broadcastToMatched(id, accountId)
       .then((notifies) => {
         this.logger.log(
-          `Mission ${id} publiée (${palierDepart}) — ${notifies} destinataire(s) notifié(s).`,
+          `Mission ${id} publiée (${palierDepart}) : ${notifies} destinataire(s) notifié(s).`,
         );
         if (notifies === 0) {
           void this.audit?.log({
@@ -631,7 +631,7 @@ export class MissionsService {
       })
       .catch((err) => {
         const message = err instanceof Error ? err.message : String(err);
-        this.logger.error(`Mission ${id} — diffusion en échec après publication : ${message}`);
+        this.logger.error(`Mission ${id}, diffusion en échec après publication : ${message}`);
         void this.audit?.log({
           action: 'mission.diffusion.echec',
           entityType: 'ReliefMission',
@@ -794,7 +794,7 @@ export class MissionsService {
     const avecAdresse = candidats.filter((c) => Boolean(c.email));
     if (candidats.length > 0 && avecAdresse.length === 0) {
       const message =
-        `Mission ${missionId} — diffusion impossible : ${candidats.length} candidat(s) classé(s), ` +
+        `Mission ${missionId}, diffusion impossible : ${candidats.length} candidat(s) classé(s), ` +
         `aucun avec adresse e-mail. La source des candidats ne renvoie plus l'adresse ` +
         `(voir MatchingService.candidatesForMissionInterne).`;
       this.logger.error(message);
@@ -849,7 +849,7 @@ export class MissionsService {
     const echecs = resultats.length - partis;
     if (echecs > 0) {
       this.logger.error(
-        `Mission ${mission.id} — ${echecs} e-mail(s) de diffusion non partis sur ${resultats.length}.`,
+        `Mission ${mission.id} : ${echecs} e-mail(s) de diffusion non partis sur ${resultats.length}.`,
       );
     }
     return partis;
@@ -893,7 +893,7 @@ export class MissionsService {
         data: { diffusionVague: 1, derniereVagueAt: new Date() },
       });
       this.logger.log(
-        `Mission ${missionId} — diffusion ciblée (${mission.cibleDiffusion}) : ${notifies} intervenant(s) notifié(s) sur ${destinataires.length} visé(s) + ${internes} salarié(s).`,
+        `Mission ${missionId}, diffusion ciblée (${mission.cibleDiffusion}) : ${notifies} intervenant(s) notifié(s) sur ${destinataires.length} visé(s) + ${internes} salarié(s).`,
       );
       return notifies + internes;
     }
@@ -955,7 +955,7 @@ export class MissionsService {
       data: { diffusionVague: vague, derniereVagueAt: new Date() },
     });
     this.logger.log(
-      `Mission ${missionId} — vague ${vague}/${vagues.length} : ${notifies} intervenant(s) notifié(s) sur ${targets.length} visé(s) (seuil ${seuil}).`,
+      `Mission ${missionId}, vague ${vague}/${vagues.length} : ${notifies} intervenant(s) notifié(s) sur ${targets.length} visé(s) (seuil ${seuil}).`,
     );
     return notifies;
   }
@@ -1002,7 +1002,7 @@ export class MissionsService {
     // profil à la direction : elle reste ouverte, au-dessus.
     if (await this.ciblage.estSalarie(freelanceAccountId)) {
       throw new BadRequestException(
-        "Vous êtes salarié de cet établissement : vous ne prenez pas la mission directement. Candidatez — ce sont des heures supplémentaires, votre établissement doit les accepter.",
+        "Vous êtes salarié de cet établissement : vous ne prenez pas la mission directement. Candidatez : ce sont des heures supplémentaires, votre établissement doit les accepter.",
       );
     }
 
@@ -1079,7 +1079,7 @@ export class MissionsService {
           city: mission.city,
           address: null,
           date: mission.startDate,
-          time: mission.startTime && mission.endTime ? `${mission.startTime} – ${mission.endTime}` : mission.startTime ?? null,
+          time: mission.startTime && mission.endTime ? `${mission.startTime}, ${mission.endTime}` : mission.startTime ?? null,
           contractUrl,
         }).catch(() => undefined);
       }

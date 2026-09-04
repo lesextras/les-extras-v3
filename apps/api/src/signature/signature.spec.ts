@@ -33,9 +33,9 @@ const etat = (o: Partial<EtatSignature> = {}): EtatSignature => ({
 
 describe('empreinte du document', () => {
   it('produit une empreinte SHA-256 stable', () => {
-    const e = empreinte('Contrat à durée déterminée — Awa Diallo');
+    const e = empreinte('Contrat à durée déterminée, Awa Diallo');
     expect(e).toHaveLength(64);
-    expect(e).toBe(empreinte('Contrat à durée déterminée — Awa Diallo'));
+    expect(e).toBe(empreinte('Contrat à durée déterminée, Awa Diallo'));
   });
 
   it('change dès qu’un seul caractère change', () => {
@@ -81,14 +81,14 @@ describe('code à usage unique', () => {
   });
 });
 
-describe('vérification — le chemin normal', () => {
+describe('vérification : le chemin normal', () => {
   it('accepte un code valide sur un document intact', () => {
     const r = verifier(etat(), '123456', SEL, empreinte('le contrat'));
     expect(r.ok).toBe(true);
   });
 });
 
-describe('vérification — les refus', () => {
+describe('vérification, les refus', () => {
   it('refuse un code erroné', () => {
     const r = verifier(etat(), '000000', SEL, empreinte('le contrat'));
     expect(r.ok).toBe(false);
@@ -126,7 +126,7 @@ describe('vérification — les refus', () => {
     expect(r.echec).toBe('CODE_ABSENT');
   });
 
-  it('REFUSE QUAND LE DOCUMENT A CHANGÉ — même avec le bon code', () => {
+  it('REFUSE QUAND LE DOCUMENT A CHANGÉ : même avec le bon code', () => {
     // Le test le plus important du fichier. Sans lui, on pourrait faire
     // signer un contrat à 1 800 €, en modifier la rémunération, et se
     // prévaloir d'une signature qui ne porte plus sur rien.

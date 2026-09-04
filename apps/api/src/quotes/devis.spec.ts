@@ -10,7 +10,7 @@ import { figerPartie, relirePartiesFigees } from './parties';
  * d'un engagement financier, et la stabilité de ce sur quoi une signature
  * porte.
  */
-describe('Devis — les totaux', () => {
+describe('Devis, les totaux', () => {
   it('somme les lignes hors taxes, sans TVA quand aucune ligne n en porte', () => {
     const t = totauxDevis([
       { quantity: 3, unitPrice: 120 },
@@ -58,7 +58,7 @@ describe('Devis — les totaux', () => {
     expect(t.totalHt).toBe(30);
   });
 
-  it('traite une ligne sans taux comme non soumise — cas des devis antérieurs', () => {
+  it('traite une ligne sans taux comme non soumise : cas des devis antérieurs', () => {
     const t = totauxDevis([{ quantity: 1, unitPrice: 200 }]);
     expect(t.totalTva).toBe(0);
     expect(t.totalTtc).toBe(t.totalHt);
@@ -71,7 +71,7 @@ describe('Devis — les totaux', () => {
   });
 });
 
-describe("Devis — l'identité des parties est figée", () => {
+describe("Devis : l'identité des parties est figée", () => {
   const compte = {
     name: 'MECS Le Coteau',
     legalName: 'Association Le Coteau',
@@ -97,7 +97,7 @@ describe("Devis — l'identité des parties est figée", () => {
    */
   it("ne suit pas une modification ultérieure du compte", () => {
     const fige = figerPartie(compte);
-    const modifie = { ...compte, legalName: 'Association Le Coteau — nouvelle raison sociale' };
+    const modifie = { ...compte, legalName: 'Association Le Coteau, nouvelle raison sociale' };
     expect(figerPartie(modifie).legalName).not.toBe(fige.legalName);
     expect(fige.legalName).toBe('Association Le Coteau');
   });

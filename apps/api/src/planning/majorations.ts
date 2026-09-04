@@ -226,12 +226,12 @@ export function chiffrerVacation(
 
   if (heures.nuit > 0) {
     lignes.push({
-      libelle: `Heures de nuit (${p.nuitDebutHeure} h – ${p.nuitFinHeure} h)`,
+      libelle: `Heures de nuit (${p.nuitDebutHeure} h, ${p.nuitFinHeure} h)`,
       heures: heures.nuit,
       tauxPct: p.nuitPct,
       montant: surcout(heures.nuit, p.nuitPct),
       legale: false,
-      reference: 'Taux conventionnel — la loi ne fixe aucune majoration de nuit (art. L. 3122-8)',
+      reference: 'Taux conventionnel, la loi ne fixe aucune majoration de nuit (art. L. 3122-8)',
     });
     if (p.nuitPct === 0) {
       avertissements.push(
@@ -248,7 +248,7 @@ export function chiffrerVacation(
       montant: surcout(heures.dimanche, p.dimanchePct),
       legale: false,
       reference:
-        'Taux conventionnel — les ESSMS relèvent de la dérogation permanente au repos dominical (art. R. 3132-5), sans contrepartie légale',
+        'Taux conventionnel : les ESSMS relèvent de la dérogation permanente au repos dominical (art. R. 3132-5), sans contrepartie légale',
     });
     if (p.dimanchePct === 0) {
       avertissements.push(
@@ -264,7 +264,7 @@ export function chiffrerVacation(
       tauxPct: p.feriePct,
       montant: surcout(heures.ferie, p.feriePct),
       legale: false,
-      reference: 'Taux conventionnel — hors 1er mai, aucune majoration de férié n\'est légale',
+      reference: 'Taux conventionnel, hors 1er mai, aucune majoration de férié n\'est légale',
     });
   }
 
@@ -278,7 +278,7 @@ export function chiffrerVacation(
       montant: surcout(heures.premierMai, 100),
       legale: true,
       reference:
-        'Article L. 3133-6 — indemnité égale au salaire du travail accompli, en sus de celui-ci',
+        'Article L. 3133-6 : indemnité égale au salaire du travail accompli, en sus de celui-ci',
     });
     avertissements.push(
       "Le 1er mai est majoré de 100 % par la loi. Attention à la mécanique de paie : ce n'est pas un taux horaire doublé mais le salaire normal PLUS une indemnité d'un montant égal, sur deux lignes distinctes du bulletin.",

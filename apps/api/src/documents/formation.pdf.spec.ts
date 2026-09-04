@@ -30,7 +30,7 @@ const sessionFormation = {
   id: 'sess_12345678',
   startDate: new Date('2026-09-14T00:00:00Z'),
   endDate: new Date('2026-09-15T00:00:00Z'),
-  location: 'Melun — salle Jaurès',
+  location: 'Melun, salle Jaurès',
   trainer: { firstName: 'Karim', lastName: 'Benali' },
 };
 

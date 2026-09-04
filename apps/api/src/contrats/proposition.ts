@@ -92,6 +92,6 @@ export function chiffrer(m: {
     tauxHoraire: taux,
     brutEstime: brut,
     avertissement:
-      "Estimation de la rémunération brute seule. Les cotisations patronales s'y ajoutent : elles dépendent de votre convention collective, de votre effectif et des exonérations dont vous bénéficiez. Ce document n'est pas un contrat de travail — il sert de base au CDD que votre établissement conclura directement avec la personne.",
+      "Estimation de la rémunération brute seule. Les cotisations patronales s'y ajoutent : elles dépendent de votre convention collective, de votre effectif et des exonérations dont vous bénéficiez. Ce document n'est pas un contrat de travail : il sert de base au CDD que votre établissement conclura directement avec la personne.",
   };
 }

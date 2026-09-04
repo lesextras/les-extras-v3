@@ -71,7 +71,7 @@ const sessionAbonnement = (metadata: Record<string, string>, payment_status = 'p
   },
 });
 
-describe('BillingService — le webhook Stripe est une porte sur Internet', () => {
+describe('BillingService : le webhook Stripe est une porte sur Internet', () => {
   describe('la porte tient', () => {
     it('refuse une signature absente', async () => {
       const { billing, subscription } = service();
@@ -266,7 +266,7 @@ describe('BillingService — le webhook Stripe est une porte sur Internet', () =
  * plan. La dotation étant idempotente dans le mois, le cron mensuel ne la
  * servira pas une seconde fois.
  */
-describe('BillingService — dotation à la souscription', () => {
+describe('BillingService : dotation à la souscription', () => {
   it("crédite l'allocation du plan dès l'activation de l'abonnement", async () => {
     const { billing, credits } = service();
     const { brut, entete } = signe(
@@ -302,7 +302,7 @@ describe('BillingService — dotation à la souscription', () => {
  *     (art. L. 521-2 et L. 522-1 CMF). On répond 501 avec la marche à suivre,
  *     plutôt que d'encaisser d'abord et de régulariser ensuite.
  */
-describe('BillingService — règlement en ligne d’une facture', () => {
+describe('BillingService : règlement en ligne d’une facture', () => {
   function contexte(invoiceRow: Record<string, unknown> | null, comptePlateforme = 'compte-adepa') {
     const prisma = {
       membership: {

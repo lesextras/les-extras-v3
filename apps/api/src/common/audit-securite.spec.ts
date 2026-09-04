@@ -30,7 +30,7 @@ const COMPTE_VALIDE = {
   organizationName: 'MECS Les Tilleuls',
 };
 
-describe('Audit sécurité — mot de passe', () => {
+describe('Audit sécurité, mot de passe', () => {
   it('refuse un mot de passe sans chiffre, même assez long', async () => {
     const dto = plainToInstance(RegisterDto, { ...COMPTE_VALIDE, password: 'motdepasse' });
     expect(await contraintes(dto)).toContain('matches');
@@ -52,7 +52,7 @@ describe('Audit sécurité — mot de passe', () => {
   });
 });
 
-describe('Audit sécurité — messages de validation en français', () => {
+describe('Audit sécurité : messages de validation en français', () => {
   /** Fabrique l'objet que class-validator passe à l'exceptionFactory. */
   function erreur(property: string, constraints: Record<string, string>): ValidationError {
     return { property, constraints, children: [] } as ValidationError;
@@ -88,7 +88,7 @@ describe('Audit sécurité — messages de validation en français', () => {
   });
 });
 
-describe('Audit sécurité — suppressions qui laissaient des orphelins', () => {
+describe('Audit sécurité : suppressions qui laissaient des orphelins', () => {
   it('archive un atelier déjà réservé au lieu de le supprimer', async () => {
     const prisma = {
       service: {

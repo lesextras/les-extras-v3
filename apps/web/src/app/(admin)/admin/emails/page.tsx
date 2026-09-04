@@ -80,12 +80,12 @@ interface Suivi {
 /** Les six messages, dans l'ordre. Doit suivre `TUNNEL_ACCUEIL` côté API. */
 const ETAPES = [
   "Pas encore commencé",
-  "1 — Les quatre fonctions",
-  "2 — Les premières minutes d’une crise",
-  "3 — L’enfant qui dit non",
-  "4 — Demander plutôt que crier",
-  "5 — Démarrer une tâche",
-  "6 — Les fiches A4 (fin)",
+  "1, Les quatre fonctions",
+  "2, Les premières minutes d’une crise",
+  "3, L’enfant qui dit non",
+  "4, Demander plutôt que crier",
+  "5, Démarrer une tâche",
+  "6, Les fiches A4 (fin)",
 ];
 
 export default async function AdminEmailsPage() {
@@ -191,7 +191,7 @@ export default async function AdminEmailsPage() {
         </CardContent>
       </Card>
 
-      {/* L'AVANCEMENT DU TUNNEL — la seule partie durable de cet écran. */}
+      {/* L'AVANCEMENT DU TUNNEL : la seule partie durable de cet écran. */}
       <section className="space-y-3">
         <SectionTitle>Où en sont les inscrits</SectionTitle>
         <Card>
@@ -220,7 +220,7 @@ export default async function AdminEmailsPage() {
               L’étape 0 réunit les comptes qui n’ont pas encore reçu le premier message :
               les inscrits de moins de trois jours, ceux dont l’adresse n’est pas confirmée
               ({tunnel.nonConfirmes} sur les trente derniers jours), les désabonnés, et tous
-              les comptes créés avant la mise en service du tunnel — le planificateur ne
+              les comptes créés avant la mise en service du tunnel, le planificateur ne
               remonte pas au-delà de trente jours.
             </p>
           </CardContent>
@@ -254,7 +254,7 @@ export default async function AdminEmailsPage() {
                     <TableRow key={u.id}>
                       <TableCell>
                         <span className="block font-medium text-foreground">
-                          {[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}
+                          {[u.firstName, u.lastName].filter(Boolean).join(" ") || ", "}
                         </span>
                         <span className="block text-xs text-muted-foreground">{u.email}</span>
                       </TableCell>
@@ -283,7 +283,7 @@ export default async function AdminEmailsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {u.tunnelDernierAt ? formatDateTime(u.tunnelDernierAt) : "—"}
+                        {u.tunnelDernierAt ? formatDateTime(u.tunnelDernierAt) : ", "}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -294,7 +294,7 @@ export default async function AdminEmailsPage() {
         )}
       </section>
 
-      {/* LE JOURNAL — volatil, et c'est écrit. */}
+      {/* LE JOURNAL, volatil, et c'est écrit. */}
       <section className="space-y-3">
         <SectionTitle>Les derniers envois</SectionTitle>
         {envois.derniers.length === 0 ? (

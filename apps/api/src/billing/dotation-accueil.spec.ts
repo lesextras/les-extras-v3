@@ -33,17 +33,17 @@ function attendreDotation(ecriture: {
   expect(ecriture.reason).toBe(MOTIF_DOTATION);
 }
 
-describe('Dotation d’accueil — les constantes', () => {
+describe('Dotation d’accueil, les constantes', () => {
   it('accorde une dotation non nulle, sinon le correctif ne sert à rien', () => {
     expect(FREE_MONTHLY_CREDITS).toBeGreaterThan(0);
   });
 
-  it('partage le motif de la dotation mensuelle — c’est la clé d’idempotence', () => {
+  it('partage le motif de la dotation mensuelle : c’est la clé d’idempotence', () => {
     expect(MOTIF_DOTATION).toBe('DOTATION_MENSUELLE');
   });
 });
 
-describe('Dotation d’accueil — inscription (auth.service)', () => {
+describe('Dotation d’accueil : inscription (auth.service)', () => {
   it('crédite le compte et écrit au grand livre, dans la transaction de création', async () => {
     // On rejoue la transaction telle que le service la compose, sans monter
     // tout le service : ce qui compte est la forme des deux écritures.

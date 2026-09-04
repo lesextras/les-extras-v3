@@ -112,7 +112,7 @@ export class GtaService {
       await this.prisma.shift.create({
         data: {
           accountId,
-          title: `${LIBELLE_TYPE[demande.type]} — ${nom}`.trim(),
+          title: `${LIBELLE_TYPE[demande.type]}, ${nom}`.trim(),
           startAt: demande.debut,
           endAt: finJournee,
           freelanceId: demande.userId,
@@ -220,7 +220,7 @@ export class GtaService {
 
       return {
         userId: m.user.id,
-        nom: [m.user.firstName, m.user.lastName].filter(Boolean).join(' ') || '—',
+        nom: [m.user.firstName, m.user.lastName].filter(Boolean).join(' ') || ', ',
         role: m.role,
         heuresPlanifieesMois: heuresMois,
         joursCongesPris: joursConges,
@@ -271,7 +271,7 @@ export class GtaService {
           select: { id: true },
         });
         if (existe) {
-          sautes.push(`${shift.title} — semaine +${s}`);
+          sautes.push(`${shift.title}, semaine +${s}`);
           continue;
         }
         await this.prisma.shift.create({

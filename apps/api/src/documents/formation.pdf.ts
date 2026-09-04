@@ -105,7 +105,7 @@ export async function formationPdf(
   const certificat = genre === 'certificat';
 
   const titre = certificat ? 'Certificat de réalisation' : "Attestation d'assiduité";
-  const { doc, termine } = nouveauDocument(`${titre} — ${f.title}`, organisme);
+  const { doc, termine } = nouveauDocument(`${titre}, ${f.title}`, organisme);
 
   // L'en-tête ne disait que le nom de l'organisme et sa ville : impossible,
   // pour un financeur qui reçoit la pièce seule, de rattacher le document à un
@@ -140,9 +140,9 @@ export async function formationPdf(
       ? `du ${dateFr(s.startDate)} au ${dateFr(s.endDate)}`
       : `le ${dateFr(s.startDate)}`,
   );
-  ligne(doc, 'Durée', f.durationHours ? `${f.durationHours} heures` : '—');
-  ligne(doc, 'Lieu', s.location ?? '—');
-  ligne(doc, 'Formateur', formateur || '—');
+  ligne(doc, 'Durée', f.durationHours ? `${f.durationHours} heures` : ', ');
+  ligne(doc, 'Lieu', s.location ?? ', ');
+  ligne(doc, 'Formateur', formateur || ', ');
   ligne(
     doc,
     'Assiduité',
@@ -272,7 +272,7 @@ export async function emargementPdf(d: DonneesEmargementPdf): Promise<Buffer> {
   const formateur = nomComplet(s.trainer);
 
   const { doc, termine } = nouveauDocument(
-    `Feuille d'émargement — ${s.formation.title}`,
+    `Feuille d'émargement, ${s.formation.title}`,
     organisme,
   );
 
@@ -290,9 +290,9 @@ export async function emargementPdf(d: DonneesEmargementPdf): Promise<Buffer> {
       ? `du ${dateFr(s.startDate)} au ${dateFr(s.endDate)}`
       : `le ${dateFr(s.startDate)}`,
   );
-  ligne(doc, 'Durée', s.formation.durationHours ? `${s.formation.durationHours} heures` : '—');
-  ligne(doc, 'Lieu', s.location ?? '—');
-  ligne(doc, 'Formateur', formateur || '—');
+  ligne(doc, 'Durée', s.formation.durationHours ? `${s.formation.durationHours} heures` : ', ');
+  ligne(doc, 'Lieu', s.location ?? ', ');
+  ligne(doc, 'Formateur', formateur || ', ');
   ligne(doc, 'Inscrits', String(inscriptions.length));
 
   // --- Les cases à faire signer en salle ---

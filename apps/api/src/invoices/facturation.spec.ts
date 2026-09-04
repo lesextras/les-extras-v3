@@ -96,7 +96,7 @@ function monter(f = facture()) {
   return { service, prisma, mail };
 }
 
-describe('InvoicesService — émetteur et payeur', () => {
+describe('InvoicesService : émetteur et payeur', () => {
   it('le payeur peut lire la facture qui lui est adressée', async () => {
     const { service } = monter();
     await expect(service.findOne('f1', PAYEUR)).resolves.toMatchObject({ id: 'f1' });
@@ -158,7 +158,7 @@ describe('InvoicesService — émetteur et payeur', () => {
   });
 });
 
-describe('Numérotation — la règle que le module formations ignorait', () => {
+describe('Numérotation : la règle que le module formations ignorait', () => {
   it('repart du DERNIER numéro, jamais du nombre de factures', () => {
     // Trois factures dont une annulée : compter donnerait 00003, ce qui est
     // déjà attribué. La séquence légale doit continuer à 00004.
@@ -171,7 +171,7 @@ describe('Numérotation — la règle que le module formations ignorait', () => 
   });
 });
 
-describe('Numérotation — scopée par émetteur', () => {
+describe('Numérotation : scopée par émetteur', () => {
   // Une séquence globale mélangeait les factures de personnes morales
   // distinctes : deux établissements sans aucun lien recevaient des numéros
   // qui se suivaient dans la MÊME suite — non conforme à l'art. 242 nonies A
@@ -222,7 +222,7 @@ function monterAvecBooking(booking: Record<string, unknown> | null) {
   return { service, prisma };
 }
 
-describe('Création de facture — qui facture qui', () => {
+describe('Création de facture : qui facture qui', () => {
   it("un atelier se facture de l'intervenant vers l'établissement", async () => {
     // L'ancienne règle exigeait que l'appelant soit `booking.accountId`,
     // c'est-à-dire l'ÉTABLISSEMENT sur un atelier, et posait l'intervenant
@@ -290,7 +290,7 @@ describe('Création de facture — qui facture qui', () => {
  * envoyée et déjà archivée par le client — deux exemplaires du même numéro
  * pouvaient ne pas dire la même chose.
  */
-describe('Facture — identité figée à l\'émission', () => {
+describe('Facture : identité figée à l\'émission', () => {
   it('recopie les deux parties, chacune de son côté', async () => {
     const { service, prisma } = monter();
     await service.issue('f1', EMETTEUR);
