@@ -32,8 +32,13 @@ export function sansBalisage(texte: string): string {
       if (titreDiese) return titreDiese[1].replace(/[*_`]/g, "").toUpperCase();
       const titreGras = nu.match(/^\*\*(.+)\*\*:?$/);
       if (titreGras) return titreGras[1].replace(/[*_`]/g, "").toUpperCase();
-      // Une puce reste une puce, avec un tiret cadratin.
-      let corps = ligne.replace(/^(\s*)[-*+]\s+/, "$1, ");
+      // Une puce reste une puce. ⚠ ELLE S'ÉCRIVAIT AVEC UN TIRET CADRATIN, et
+      // le passage du 4/09/2026 qui a retire ces tirets du texte l'a transformee
+      // en virgule en tete de ligne : chaque puce d'un document LEX sortait
+      // « , texte ». Ici le tiret n'etait pas une ponctuation de phrase mais un
+      // MARQUEUR, et un marqueur ne se remplace pas par une virgule. Le point
+      // median est ce qu'on lit dans un document Word imprime.
+      let corps = ligne.replace(/^(\s*)[-*+]\s+/, "$1\u2022 ");
       // Le reste du balisage tombe, le texte demeure.
       corps = corps
         .replace(/\*\*(.+?)\*\*/g, "$1")
