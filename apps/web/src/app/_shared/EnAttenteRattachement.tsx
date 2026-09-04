@@ -48,7 +48,7 @@ export function EnAttenteRattachement({
             <ul className="space-y-1 text-sm text-muted-foreground">
               {enAttente.map((d) => (
                 <li key={d.id}>
-                  <span className="font-medium text-foreground">{d.nom}</span> — en attente de
+                  <span className="font-medium text-foreground">{d.nom}</span>, en attente de
                   réponse
                   {d.envoyeeLe ? ` (envoyée le ${d.envoyeeLe})` : ""}
                 </li>

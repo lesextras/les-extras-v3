@@ -42,10 +42,10 @@ export function ModaleAdherent({
           <span className="mb-1 grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary">
             <Lock className="size-5" />
           </span>
-          {/* « Épuisés » suggérait une consommation passée — faux pour un
+          {/* « Épuisés » suggérait une consommation passée, faux pour un
               compte neuf qui n'a simplement pas encore activé son essai. */}
           <DialogTitle>
-            {fonctionnalite ? `${fonctionnalite} — crédits LEX requis` : "Crédits LEX requis"}
+            {fonctionnalite ? `${fonctionnalite}, crédits LEX requis` : "Crédits LEX requis"}
           </DialogTitle>
           <DialogDescription>
             Les outils LEX fonctionnent à crédits : un crédit par génération. Première visite ?
@@ -77,8 +77,8 @@ export function ModaleAdherent({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Tout le reste de la plateforme — renforts, ateliers, contractualisation, planning,
-          gestion d’équipe et bot d’aide — reste gratuit et le restera.
+          Tout le reste de la plateforme : renforts, ateliers, contractualisation, planning,
+          gestion d’équipe et bot d’aide : reste gratuit et le restera.
         </p>
       </DialogContent>
     </Dialog>

@@ -221,7 +221,7 @@ export function MonDossier({ initial, accountId }: { initial: MonDossierData; ac
         <p className="mt-3 max-w-prose text-xs text-muted-foreground">
           Un dossier complet vous fait passer devant : un établissement qui doit couvrir un
           créneau demain ne prendra pas le risque d'attendre une attestation. Vous déposez, la
-          structure vérifie — vous ne pouvez pas valider vos propres pièces, et c'est ce qui
+          structure vérifie : vous ne pouvez pas valider vos propres pièces, et c'est ce qui
           donne du poids à celles qui sont vérifiées.
         </p>
       </div>

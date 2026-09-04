@@ -184,7 +184,7 @@ export function EvaluationForm({
         <form onSubmit={envoyer} className="space-y-4">
           <Field
             label={chaud ? "Satisfaction générale" : "Utilité avec le recul"}
-            hint="Obligatoire — c'est la seule donnée agrégée dans le bilan qualité."
+            hint="Obligatoire : c'est la seule donnée agrégée dans le bilan qualité."
           >
             <Echelle nom="note" valeur={note} onChange={setNote} />
           </Field>
@@ -233,7 +233,7 @@ export function EvaluationForm({
             <Field
               label="Atteinte des objectifs pédagogiques"
               htmlFor="resultat"
-              hint="Appréciée par le formateur. Ex : « Objectifs atteints », « Partiellement — module 3 à revoir »."
+              hint="Appréciée par le formateur. Ex : « Objectifs atteints », « Partiellement, module 3 à revoir »."
             >
               <input
                 id="resultat"

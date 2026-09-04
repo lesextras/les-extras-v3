@@ -172,7 +172,7 @@ export function ParametresTemps({
           Ces valeurs viennent de votre convention, pas de la loi.
         </p>
         <p className="mt-1 max-w-prose text-sm text-muted-foreground">
-          Dans le médico-social, la seule majoration imposée par la loi est celle du 1er mai —
+          Dans le médico-social, la seule majoration imposée par la loi est celle du 1er mai
           l&apos;article L.&nbsp;3133-6 la fixe à 100&nbsp;%, et le logiciel l&apos;applique tout
           seul. Le travail de nuit ouvre un repos compensateur obligatoire, mais la compensation
           en argent n&apos;est due que « le cas échéant ». Le dimanche n&apos;ouvre aucune
@@ -181,7 +181,7 @@ export function ParametresTemps({
           sont travaillables sans majoration.
         </p>
         <p className="mt-2 max-w-prose text-sm text-muted-foreground">
-          Ouvrez votre convention — CCN 51, CCN 66, accords CHRS — ou votre accord
+          Ouvrez votre convention, CCN 51, CCN 66, accords CHRS, ou votre accord
           d&apos;entreprise, et reportez ici ce qui y est écrit. Un zéro laissé en place est
           honnête ; un taux inventé par le logiciel ne le serait pas.
         </p>
@@ -189,7 +189,7 @@ export function ParametresTemps({
 
       {zero ? (
         <Badge variant="warning">
-          Aucune majoration renseignée — les chiffrages ne comporteront que le 1er mai
+          Aucune majoration renseignée : les chiffrages ne comporteront que le 1er mai
         </Badge>
       ) : null}
 
@@ -227,7 +227,7 @@ export function ParametresTemps({
           <h3 className="font-semibold text-foreground">Travail de nuit</h3>
           <p className="text-xs text-muted-foreground">
             L&apos;accord de branche du 17 avril 2002 demande neuf heures continues à positionner
-            dans l&apos;amplitude 21 h – 7 h. À défaut d&apos;accord, la loi retient 21 h – 6 h.
+            dans l&apos;amplitude 21 h, 7 h. À défaut d&apos;accord, la loi retient 21 h, 6 h.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -313,7 +313,7 @@ export function ParametresTemps({
           </div>
           <Bascule
             libelle="Cumuler dimanche et jour férié quand ils tombent le même jour"
-            aide="La CCN 51 l'exclut expressément : « lorsqu'un jour férié tombe un dimanche il n'y a pas de cumul ». D'autres textes sont muets — vérifiez le vôtre."
+            aide="La CCN 51 l'exclut expressément : « lorsqu'un jour férié tombe un dimanche il n'y a pas de cumul ». D'autres textes sont muets, vérifiez le vôtre."
             valeur={p.cumulDimancheEtFerie}
             onChange={(v) => modifiable && set("cumulDimancheEtFerie", v)}
           />
@@ -339,7 +339,7 @@ export function ParametresTemps({
         <CardHeader>
           <h3 className="font-semibold text-foreground">Heures supplémentaires</h3>
           <p className="text-xs text-muted-foreground">
-            Les valeurs proposées — 25 %, 50 %, 220 heures — ne sont pas d&apos;ordre public : ce
+            Les valeurs proposées, 25 %, 50 %, 220 heures, ne sont pas d&apos;ordre public : ce
             sont celles qui s&apos;appliquent à défaut d&apos;accord. Un accord peut les modifier,
             sans jamais descendre sous 10 % (article L.&nbsp;3121-33).
           </p>
@@ -398,7 +398,7 @@ export function ParametresTemps({
             Attention à ne pas confondre deux nombres qui se ressemblent. Le{" "}
             <strong className="text-foreground">seuil de déclenchement</strong> décide à partir de
             combien d&apos;heures une heure devient supplémentaire : 1 607 h par défaut, et
-            c&apos;est un plafond — un accord peut descendre en dessous, jamais monter au-dessus.
+            c&apos;est un plafond : un accord peut descendre en dessous, jamais monter au-dessus.
             Le <strong className="text-foreground">volume planifiable</strong>, lui, se calcule à
             partir du calendrier de chaque salarié, congés trimestriels déduits : un éducateur
             avec dix-huit jours de congés trimestriels tourne autour de 1 450 h, et il ne peut
@@ -471,7 +471,7 @@ export function ParametresTemps({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field
-              label="Congés trimestriels — personnel éducatif (j/an)"
+              label="Congés trimestriels : personnel éducatif (j/an)"
               htmlFor="ctEduc"
               hint="18 jours en CCN 66 (annexe 3, art. 6) et en CCN 51 pour les établissements accueillant des personnes handicapées."
             >
@@ -485,7 +485,7 @@ export function ParametresTemps({
               />
             </Field>
             <Field
-              label="Congés trimestriels — autres personnels (j/an)"
+              label="Congés trimestriels : autres personnels (j/an)"
               htmlFor="ctAutres"
               hint="9 jours pour l'administratif en CCN 66, 9 jours en CHRS."
             >

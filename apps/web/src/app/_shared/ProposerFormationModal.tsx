@@ -132,7 +132,7 @@ export function ProposerFormationModal({
           <Field
             label="Objectifs pédagogiques"
             htmlFor="pf-objectives"
-            hint="Ce que les participants savent faire à la fin. Un objectif par ligne — attendu en audit Qualiopi."
+            hint="Ce que les participants savent faire à la fin. Un objectif par ligne : attendu en audit Qualiopi."
           >
             <Textarea
               id="pf-objectives"
@@ -147,7 +147,7 @@ export function ProposerFormationModal({
             htmlFor="pf-program"
             hint="Le déroulé concret de la formation, séquence par séquence."
           >
-            <Textarea id="pf-program" name="program" rows={5} placeholder="Séquence 1 — …" />
+            <Textarea id="pf-program" name="program" rows={5} placeholder="Séquence 1, …" />
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

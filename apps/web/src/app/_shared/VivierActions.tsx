@@ -92,7 +92,7 @@ export function RetenirIntervenant({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{retenu ? `${nom} — note de service` : `Retenir ${nom}`}</DialogTitle>
+          <DialogTitle>{retenu ? `${nom}, note de service` : `Retenir ${nom}`}</DialogTitle>
           <DialogDescription>
             {retenu
               ? "Cette note reste interne à votre établissement."
@@ -218,7 +218,7 @@ export function RappelerVivier({
               >
                 {eligibles.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.title} — {new Date(m.startDate).toLocaleDateString("fr-FR")}
+                    {m.title} : {new Date(m.startDate).toLocaleDateString("fr-FR")}
                   </option>
                 ))}
               </select>

@@ -134,7 +134,7 @@ export function MembersManager({
           method: "POST",
           accountId,
         }),
-      "Demande approuvée — la personne est maintenant membre de l’établissement",
+      "Demande approuvée : la personne est maintenant membre de l’établissement",
     );
 
   const rejectAttachment = (req: AttachmentRequest) =>
@@ -324,10 +324,10 @@ export function MembersManager({
                   {attachmentRequests.map((req) => (
                     <TableRow key={req.id}>
                       <TableCell className="font-medium">
-                        {req.requesterUser?.email ?? "—"}
+                        {req.requesterUser?.email ?? "-"}
                       </TableCell>
                       <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
-                        {req.message ?? "—"}
+                        {req.message ?? "-"}
                       </TableCell>
                       <TableCell>
                         <span className="text-xs text-muted-foreground">{timeAgo(req.createdAt)}</span>

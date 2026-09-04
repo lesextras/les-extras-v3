@@ -79,7 +79,7 @@ export function RequestQuoteModal({
         <DialogHeader>
           <DialogTitle>Demander un devis</DialogTitle>
           <DialogDescription>
-            {serviceTitle} — décrivez votre besoin, l&apos;intervenant vous
+            {serviceTitle} : décrivez votre besoin, l&apos;intervenant vous
             répond avec un chiffrage détaillé.
           </DialogDescription>
         </DialogHeader>

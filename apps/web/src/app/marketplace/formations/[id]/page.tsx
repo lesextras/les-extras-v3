@@ -112,7 +112,7 @@ export default async function FormationDetailPage({ params: paramsPromesse }: { 
           </span>
           {f.rating.toFixed(1)}/5
           <span className="font-normal text-muted-foreground">
-            — satisfaction de {f.ratingCount} stagiaire{(f.ratingCount ?? 0) > 1 ? "s" : ""}
+satisfaction de {f.ratingCount} stagiaire{(f.ratingCount ?? 0) > 1 ? "s" : ""}
           </span>
         </p>
       ) : null}
@@ -186,7 +186,7 @@ export default async function FormationDetailPage({ params: paramsPromesse }: { 
                       <div className="mt-2.5 flex items-center gap-3">
                         <InscribeButton sessionId={s.id} accountId={session.account.id} />
                         {/* Lien de gestion : uniquement pour l'organisateur de la
-                            formation ou le formateur de la session — pour les
+                            formation ou le formateur de la session, pour les
                             autres, la page de gestion refuserait l'accès. */}
                         {f.ownerAccount?.id === session.account.id ||
                         s.trainer?.id === session.user.id ? (

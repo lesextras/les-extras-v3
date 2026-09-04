@@ -116,7 +116,7 @@ export function FormationInterneModal({
         <DialogHeader>
           <DialogTitle>Créer une formation interne</DialogTitle>
           <DialogDescription>
-            Un salarié référent forme ses collègues. Parcours simplifié, sans Qualiopi ni CPF —
+            Un salarié référent forme ses collègues. Parcours simplifié, sans Qualiopi ni CPF
             l’établissement délivre une attestation de fin de formation.
           </DialogDescription>
         </DialogHeader>
@@ -154,7 +154,7 @@ export function FormationInterneModal({
                   {trainers.map((t) => (
                     <SelectItem key={t.userId} value={t.userId}>
                       {t.name}
-                      {t.job ? ` — ${t.job}` : ""}
+                      {t.job ? `, ${t.job}` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>

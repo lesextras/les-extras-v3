@@ -185,7 +185,7 @@ export function OfferCarousel({
 
                   <div className="flex items-center justify-between border-t border-border pt-3">
                     {/* « Sur devis » sur une formation gratuite ferait fuir
-                        exactement les gens qu'elle vise — c'est ce qu'affichait
+                        exactement les gens qu'elle vise, c'est ce qu'affichait
                         ce carrousel sur les dix mini-formations. */}
                     <p className="text-lg font-semibold text-primary">
                       {o.freeOnline

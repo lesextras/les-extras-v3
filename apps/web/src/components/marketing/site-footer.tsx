@@ -158,12 +158,12 @@ export function SiteFooter() {
         </div>
 
         {/*
-          QUI ÉDITE CE SITE — en un paragraphe, sur les 93 pages.
+          QUI ÉDITE CE SITE : en un paragraphe, sur les 93 pages.
 
           Le concurrent direct de LEX publie des mentions légales sans SIREN,
           sans adresse et sans forme juridique, avec un contact en gmail.com,
           tout en vendant un abonnement à 1 290 €/mois. C'est une faiblesse
-          structurelle qu'on ne peut pas copier — et l'inverse est notre seul
+          structurelle qu'on ne peut pas copier : et l'inverse est notre seul
           avantage gratuit : une direction d'ESMS VÉRIFIE avant de signer, et
           elle vérifie ici, pas dans un formulaire.
 
@@ -176,7 +176,7 @@ export function SiteFooter() {
         <div className="mt-10 border-t border-border pt-6">
           <p className="max-w-4xl text-xs leading-relaxed text-muted-foreground">
             <span className="font-medium text-foreground/80">Qui édite ce site.</span> ADéPA,
-            association loi 1901 — SIRET 820 051 852 00011, 7 rue André Malraux, 77000 Melun.
+            association loi 1901, SIRET 820 051 852 00011, 7 rue André Malraux, 77000 Melun.
             Organisme de formation déclaré sous le n° 11771011677 (cet enregistrement ne vaut
             pas agrément de l’État), certifié Qualiopi n° QNW0132 par QUALIPRO CERTIFICATION,
             accréditation COFRAC n° 5-0681, valable jusqu’au 9 mars 2029, au titre des actions
@@ -197,7 +197,7 @@ export function SiteFooter() {
           Google laisse une personne epingler un site comme source preferee :
           ses pages remontent alors davantage dans LES resultats de cette
           personne. Un directeur qui nous epingle une fois nous retrouve
-          ensuite sans nous chercher — exactement la fidelisation que vise un
+          ensuite sans nous chercher : exactement la fidelisation que vise un
           site de niche comme le notre.
 
           Le bouton se pose en deux morceaux : le script officiel de Google, et
@@ -214,7 +214,7 @@ export function SiteFooter() {
         */}
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground lg:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <p>© {new Date().getFullYear()} LES EXTRAS — ADéPA</p>
+            <p>© {new Date().getFullYear()} LES EXTRAS, ADéPA</p>
             <Link href="/notre-histoire" className="transition-colors hover:text-primary">
               Notre histoire
             </Link>
@@ -225,7 +225,7 @@ export function SiteFooter() {
                 Tout le trafic social vient de là, et le chemin ne se faisait que
                 dans un sens. C'est la PAGE ENTREPRISE qu'on met en avant ici :
                 c'est elle qui porte la marque et que le site doit faire grandir
-                — son adresse a été relevée dans son administration. */}
+son adresse a été relevée dans son administration. */}
             <a
               href="https://www.linkedin.com/company/les-extras-adepa/"
               target="_blank"

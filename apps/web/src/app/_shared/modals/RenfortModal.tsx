@@ -115,7 +115,7 @@ const MODES = [
   {
     value: "FILE_ENGAGEMENT",
     titre: "Je valide chaque profil",
-    aide: "L'intervenant s'engage, son profil vous est présenté, vous acceptez ou vous refusez. En cas de refus, le suivant vous est présenté aussitôt. Comme vous gardez la main, l'offre est proposée à beaucoup plus de monde — vos chances de couvrir le besoin augmentent nettement.",
+    aide: "L'intervenant s'engage, son profil vous est présenté, vous acceptez ou vous refusez. En cas de refus, le suivant vous est présenté aussitôt. Comme vous gardez la main, l'offre est proposée à beaucoup plus de monde : vos chances de couvrir le besoin augmentent nettement.",
   },
 ] as const;
 
@@ -340,7 +340,7 @@ export function RenfortModal({
                 ? "Vos salariés sont prévenus les premiers. Sans réponse de leur part, l'offre s'élargira toute seule."
                 : visibility === "RESERVED"
                   ? "Votre équipe n'a pas été sollicitée : l'offre est partie aux intervenants que vous connaissez."
-                  : "L'offre est visible immédiatement par tout le réseau — ni vos salariés ni votre vivier n'ont été sollicités en priorité.",
+                  : "L'offre est visible immédiatement par tout le réseau, ni vos salariés ni votre vivier n'ont été sollicités en priorité.",
         });
       } else {
         toast({
@@ -392,7 +392,7 @@ export function RenfortModal({
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <Field label="Intitulé" htmlFor="title" required>
-            <Input id="title" name="title" required placeholder="Éducateur spé — internat" />
+            <Input id="title" name="title" required placeholder="Éducateur spé, internat" />
           </Field>
           <Field label="Description" htmlFor="description" required>
             <Textarea
@@ -482,7 +482,7 @@ export function RenfortModal({
                 defaultValue=""
                 className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
               >
-                <option value="">— Toute la structure —</option>
+                <option value="">Toute la structure</option>
                 {units.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
@@ -533,7 +533,7 @@ export function RenfortModal({
                     required
                     className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                   >
-                    <option value="">— Choisir un service —</option>
+                    <option value="">Choisir un service</option>
                     {units.map((u) => (
                       <option key={u.id} value={u.id}>
                         {u.name}
@@ -617,7 +617,7 @@ export function RenfortModal({
                 />
                 {salariesCoches.length + intervenantsCoches.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    Cochez au moins une personne — sinon la mission repart en diffusion normale.
+                    Cochez au moins une personne : sinon la mission repart en diffusion normale.
                   </p>
                 ) : null}
               </div>

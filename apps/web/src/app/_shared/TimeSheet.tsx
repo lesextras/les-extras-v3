@@ -126,7 +126,7 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
       <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
         <p className="font-medium text-destructive">Le pointage n’a pas pu être chargé</p>
         <p className="mt-1 text-muted-foreground">
-          Vos heures ne sont pas perdues — c’est l’affichage qui a échoué. Vérifiez votre
+          Vos heures ne sont pas perdues : c’est l’affichage qui a échoué. Vérifiez votre
           connexion et réessayez.
         </p>
         <button
@@ -148,7 +148,7 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
   return (
     <div className="mx-auto mt-6 max-w-3xl rounded-2xl border border-border bg-card p-6 print:hidden">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-foreground">Pointage — temps travaillé</h2>
+        <h2 className="text-base font-semibold text-foreground">Pointage, temps travaillé</h2>
         <div className="text-sm text-muted-foreground">
           <span className="font-medium text-foreground">{hoursLabel(data.validatedMinutes)}</span> validé
           {data.pendingMinutes ? <> · {hoursLabel(data.pendingMinutes)} en attente</> : null}
@@ -164,7 +164,7 @@ export function TimeSheet({ bookingId, accountId }: { bookingId: string; account
         ) : (
           <p className="mt-3 rounded-lg border border-[#b8860b]/30 bg-[#b8860b]/10 px-3 py-2 text-xs text-foreground">
             Fenêtre d&apos;ajustement ouverte jusqu&apos;au{" "}
-            <span className="font-medium">{fmtWhen(fenetre.limite)}</span> — après cette date, les
+            <span className="font-medium">{fmtWhen(fenetre.limite)}</span>, après cette date, les
             heures déclarées sont validées telles quelles et tout est verrouillé.
           </p>
         )

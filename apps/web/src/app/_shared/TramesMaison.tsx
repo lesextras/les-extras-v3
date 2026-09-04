@@ -163,8 +163,8 @@ export function TramesMaisonPanel({
         <div>
           <h2 className="text-lg font-semibold text-foreground">Mes trames</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Déposez un écrit que vous avez déjà rendu : LEX en apprend la forme — vos intitulés,
-            leur ordre, votre ton — et rédigera vos prochains documents dedans. Les noms sont
+            Déposez un écrit que vous avez déjà rendu : LEX en apprend la forme, vos intitulés,
+            leur ordre, votre ton : et rédigera vos prochains documents dedans. Les noms sont
             masqués avant l&apos;analyse ; ce qui est conservé, c&apos;est la structure, pas la
             situation.
           </p>
@@ -186,7 +186,7 @@ export function TramesMaisonPanel({
               <input
                 value={nom}
                 onChange={(e) => setNom(e.target.value)}
-                placeholder="Rapport de situation — modèle MECS"
+                placeholder="Rapport de situation, modèle MECS"
                 className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
               />
             </label>
@@ -197,7 +197,7 @@ export function TramesMaisonPanel({
                 onChange={(e) => setGenre(e.target.value)}
                 className="mt-1 h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
               >
-                <option value="">— Tous les écrits —</option>
+                <option value="">Tous les écrits</option>
                 {genres.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.titre}
@@ -217,7 +217,7 @@ export function TramesMaisonPanel({
             />
             <p className="text-xs text-muted-foreground">
               Word ou PDF, 10 Mo maximum. Un PDF scanné est une image : dans ce cas, copiez le
-              texte et collez-le ci-dessous — le résultat est le même.
+              texte et collez-le ci-dessous, le résultat est le même.
             </p>
             {!fichier ? (
               <textarea
@@ -256,7 +256,7 @@ export function TramesMaisonPanel({
               {enCours ? "Analyse du modèle…" : "Apprendre cette trame"}
             </Button>
             <span className="text-xs text-muted-foreground">
-              Gratuit — aucun crédit consommé.
+              Gratuit, aucun crédit consommé.
             </span>
           </div>
         </form>

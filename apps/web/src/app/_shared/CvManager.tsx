@@ -119,7 +119,7 @@ export function CvManager({ accountId }: { accountId: string }) {
                 <div>
                   <p className="text-sm font-medium text-foreground">{q.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {[q.organization, q.year].filter(Boolean).join(" · ") || "—"}
+                    {[q.organization, q.year].filter(Boolean).join(" · ") || ", "}
                   </p>
                 </div>
                 <button
@@ -136,7 +136,7 @@ export function CvManager({ accountId }: { accountId: string }) {
         </ul>
         <form onSubmit={addQual} className="mt-4 space-y-3 border-t border-border pt-4">
           <Field label="Intitulé du diplôme / de la formation" htmlFor="q-title" required>
-            <Input id="q-title" name="title" required placeholder="DEES — Diplôme d'État d'éducateur spécialisé" />
+            <Input id="q-title" name="title" required placeholder="DEES, Diplôme d'État d'éducateur spécialisé" />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Établissement" htmlFor="q-org">
@@ -180,10 +180,10 @@ export function CvManager({ accountId }: { accountId: string }) {
         </ul>
         <form onSubmit={addExp} className="mt-4 space-y-3 border-t border-border pt-4">
           <Field label="Poste / structure" htmlFor="x-title" required>
-            <Input id="x-title" name="title" required placeholder="Éducateur spé — MECS Les Hirondelles" />
+            <Input id="x-title" name="title" required placeholder="Éducateur spé, MECS Les Hirondelles" />
           </Field>
           <Field label="Période" htmlFor="x-year">
-            <Input id="x-year" name="year" placeholder="2019 – 2023" />
+            <Input id="x-year" name="year" placeholder="2019, 2023" />
           </Field>
           <Field label="Description" htmlFor="x-desc">
             <Textarea id="x-desc" name="description" rows={2} placeholder="Missions, public accueilli…" />

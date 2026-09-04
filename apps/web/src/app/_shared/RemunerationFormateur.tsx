@@ -108,7 +108,7 @@ export function RemunerationFormateur({
       toast({
         title: "Facture créée",
         description: inv?.number
-          ? `N° ${inv.number} — en brouillon, à votre nom. Émettez-la pour l'adresser à l'organisme.`
+          ? `N° ${inv.number} : en brouillon, à votre nom. Émettez-la pour l'adresser à l'organisme.`
           : "En brouillon, à votre nom. Émettez-la pour l'adresser à l'organisme.",
       });
       router.refresh();

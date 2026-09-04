@@ -185,7 +185,7 @@ export function PrivacyPanel({ exportDate }: { exportDate: string }) {
                     <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
                     <span>
                       <span className="font-medium text-foreground">{item.quoi}</span>{" "}
-                      — {item.pourquoi}
+{item.pourquoi}
                     </span>
                   </li>
                 ))}

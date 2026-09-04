@@ -9,21 +9,21 @@ const EUR = new Intl.NumberFormat("fr-FR", {
 });
 
 export function formatMoney(value?: string | number | null): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return ", ";
   const n = typeof value === "string" ? Number(value) : value;
-  if (Number.isNaN(n)) return "—";
+  if (Number.isNaN(n)) return ", ";
   return EUR.format(n);
 }
 
 export function formatRate(value?: string | number | null): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return ", ";
   return `${formatMoney(value)}/h`;
 }
 
 export function formatDate(value?: string | Date | null): string {
-  if (!value) return "—";
+  if (!value) return ", ";
   const d = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return ", ";
   return d.toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "long",
@@ -32,16 +32,16 @@ export function formatDate(value?: string | Date | null): string {
 }
 
 export function formatDateShort(value?: string | Date | null): string {
-  if (!value) return "—";
+  if (!value) return ", ";
   const d = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return ", ";
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
 }
 
 export function formatDateTime(value?: string | Date | null): string {
-  if (!value) return "—";
+  if (!value) return ", ";
   const d = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return ", ";
   return d.toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "short",

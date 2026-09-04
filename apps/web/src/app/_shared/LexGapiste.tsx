@@ -89,7 +89,7 @@ export function LexGapiste({
           <div className="flex gap-3">
             <Lock className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
             <div className="max-w-2xl">
-              <p className="font-semibold">LEX le GAPiste — fonctionne à crédits</p>
+              <p className="font-semibold">LEX le GAPiste, fonctionne à crédits</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 L&apos;animateur IA du GAP, avec la posture d&apos;un psychologue clinicien et
                 d&apos;un éducateur spécialisé senior. Il questionne d&apos;abord le contexte, les
@@ -117,7 +117,7 @@ export function LexGapiste({
             <div className="max-w-2xl">
               <p className="font-semibold">Solliciter LEX le GAPiste</p>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Il commence par vous poser quelques questions — le contexte, les faits, ce que ça
+                Il commence par vous poser quelques questions : le contexte, les faits, ce que ça
                 vous fait, ce qui se joue. Puis il vous donne son analyse, la posture qu&apos;il
                 vous conseille, des activités à essayer et ce qu&apos;il ferait dès lundi.
                 Comptez cinq minutes.
@@ -181,7 +181,7 @@ export function LexGapiste({
           ))}
           {/* Deux barres grises ne disaient pas que quelqu'un réfléchit : elles
               disaient qu'un écran charge. Ici on nomme ce qui se passe, et on
-              montre que ça avance — l'attente devient lisible. */}
+              montre que ça avance : l'attente devient lisible. */}
           {chargement ? (
             <div className="flex max-w-[85%] items-center gap-3 rounded-2xl bg-card px-4 py-3" aria-live="polite" role="status">
               <span className="relative grid size-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
@@ -214,7 +214,7 @@ export function LexGapiste({
             value={message}
             maxLength={3000}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Répondez à ce qui vous parle — on avance à votre rythme."
+            placeholder="Répondez à ce qui vous parle : on avance à votre rythme."
             aria-label="Votre réponse à LEX"
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {

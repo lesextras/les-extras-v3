@@ -66,7 +66,7 @@ export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSou
             <h2 className="text-lg font-semibold">
               Objectif {euros(objectif.cible)}
               {objectif.echeance
-                ? ` — ${new Date(objectif.echeance).toLocaleDateString('fr-FR', {
+                ? ` : ${new Date(objectif.echeance).toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'long',
                   })}`
@@ -123,7 +123,7 @@ export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSou
         </div>
       </div>
 
-      {/* Funnel en euros — la vue qui relie le trafic à l'argent */}
+      {/* Funnel en euros : la vue qui relie le trafic à l'argent */}
       {funnel ? (
         <div className="mt-6 border-t border-border/60 pt-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -157,7 +157,7 @@ export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSou
           </Link>
         </div>
       ) : null}
-      {/* Inscriptions par campagne — placé avant les demandes : pendant une
+      {/* Inscriptions par campagne, placé avant les demandes : pendant une
           campagne payante, c'est le compte créé qui se monétise, pas le clic. */}
       {inscriptionsParSource && inscriptionsParSource.length ? (
         <div className="mt-6 border-t border-border/60 pt-5">

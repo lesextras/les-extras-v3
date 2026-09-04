@@ -95,7 +95,7 @@ const PARCOURS: Record<
         icone: Megaphone,
         titre: "Publiez un RenforTeam",
         texte:
-          "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé, jusqu'au CDD généré — la mise en relation et la contractualisation sont gratuites. Rappel automatique la veille, validation hiérarchique en option.",
+          "Votre équipe d’abord, puis les habitués, enfin le réseau. Le premier qui accepte est engagé, jusqu'au CDD généré : la mise en relation et la contractualisation sont gratuites. Rappel automatique la veille, validation hiérarchique en option.",
         probleme:
           "Un arrêt maladie à 21 h. Vingt appels, personne ne décroche.",
         change:
@@ -294,7 +294,7 @@ export function TimelineParcours() {
 
   return (
     <div ref={zone}>
-      {/* Sélecteur de profil — l'indicateur glisse d'un onglet à l'autre */}
+      {/* Sélecteur de profil : l'indicateur glisse d'un onglet à l'autre */}
       <div className="mx-auto grid w-fit grid-cols-2 gap-1 rounded-full border border-border bg-card p-1">
         {(
           [

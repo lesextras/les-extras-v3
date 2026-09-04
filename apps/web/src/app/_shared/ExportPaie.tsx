@@ -92,12 +92,12 @@ export function ExportPaie({ compact = false }: { compact?: boolean }) {
       <div className="flex flex-wrap gap-2">
         <Button asChild variant="outline">
           <a href={`/api/proxy/gta/export/evp.csv?mois=${choisi}`} download>
-            Salariés — heures et congés
+            Salariés, heures et congés
           </a>
         </Button>
         <Button asChild variant="outline">
           <a href="/api/proxy/bookings/export/heures.csv" download>
-            Intervenants — heures validées
+            Intervenants, heures validées
           </a>
         </Button>
       </div>

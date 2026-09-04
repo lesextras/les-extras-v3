@@ -43,7 +43,7 @@ export function InscriptionDeliverables({
       toast({
         title: "Facture créée",
         description: inv?.number
-          ? `N° ${inv.number} — en brouillon. Émettez-la pour l'adresser au client.`
+          ? `N° ${inv.number}, en brouillon. Émettez-la pour l'adresser au client.`
           : "En brouillon. Émettez-la pour l'adresser au client.",
       });
       router.refresh();
@@ -90,7 +90,7 @@ export function InscriptionDeliverables({
 
       {/* Une facture créée mais jamais émise ne sert à rien : elle n'a pas de
           date, le client ne la reçoit pas et ne peut pas la régler. Le geste
-          manquait — c'est ici qu'il doit se trouver, au moment où l'on clôt
+          manquait : c'est ici qu'il doit se trouver, au moment où l'on clôt
           l'inscription. */}
       {creee ? (
         <>

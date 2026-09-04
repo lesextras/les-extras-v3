@@ -70,7 +70,7 @@ const ETAPES = [
     numero: "1",
     titre: "Vous déposez une situation",
     texte:
-      "Ce qui se passe, depuis quand, avec qui. Et ce que vous avez déjà tenté — c’est ça qui évite les réponses évidentes.",
+      "Ce qui se passe, depuis quand, avec qui. Et ce que vous avez déjà tenté : c’est ça qui évite les réponses évidentes.",
   },
   {
     numero: "2",
@@ -180,7 +180,7 @@ export async function GapVitrine() {
         </div>
       </section>
 
-      {/* Aperçu flouté — la preuve que ça vit, pas le contenu */}
+      {/* Aperçu flouté : la preuve que ça vit, pas le contenu */}
       {apercu.length > 0 ? (
         <section className="space-y-6">
           <div className="flex flex-wrap items-end justify-between gap-4">

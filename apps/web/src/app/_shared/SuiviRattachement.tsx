@@ -89,7 +89,7 @@ export function SuiviRattachement({
                     <span className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="size-4 shrink-0 text-amber-600" aria-hidden />
                       <span>
-                        Demande envoyée à <strong className="text-foreground">{nom}</strong> — en
+                        Demande envoyée à <strong className="text-foreground">{nom}</strong>, en
                         attente de sa réponse. Vous gardez tous vos droits de compte indépendant.
                       </span>
                     </span>

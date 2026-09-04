@@ -39,7 +39,7 @@ export default async function MarketplaceFormationsPage({
     <div className="space-y-6">
       <PageHeader
         title="Formations certifiantes"
-        subtitle="Catalogue ADéPA — organisme certifié Qualiopi. Inscrivez vos salariés, financement CPF ou OPCO possible."
+        subtitle="Catalogue ADéPA : organisme certifié Qualiopi. Inscrivez vos salariés, financement CPF ou OPCO possible."
         actions={
           <Button asChild variant="outline">
             <Link href="/dashboard/formations">Mes formations</Link>

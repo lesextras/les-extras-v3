@@ -142,7 +142,7 @@ export function SignerClient({
             disabled={busy !== null || code.length !== 6}
             onClick={async () => {
               if (await action("/signer", { code })) {
-                toast({ title: "Document signé", description: "Merci — tout est enregistré." });
+                toast({ title: "Document signé", description: "Merci, tout est enregistré." });
                 router.refresh();
               }
             }}

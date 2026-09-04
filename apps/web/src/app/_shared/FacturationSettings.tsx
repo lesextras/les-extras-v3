@@ -93,7 +93,7 @@ export function FacturationSettings({
             <Field
               label="Raison sociale"
               htmlFor="legalName"
-              hint="Le nom légal qui doit apparaître sur vos factures — celui de votre structure, ou le vôtre si vous êtes indépendant·e."
+              hint="Le nom légal qui doit apparaître sur vos factures : celui de votre structure, ou le vôtre si vous êtes indépendant·e."
             >
               <Input
                 id="legalName"
@@ -147,7 +147,7 @@ export function FacturationSettings({
           {/* COORDONNÉES DE RÈGLEMENT. Le produit annonce un règlement par
               virement, mais rien ne permettait de saisir l'IBAN : la facture
               partait sans le moyen de la payer. Rien n'est pré-rempli ni
-              suggéré — des coordonnées bancaires ne s'inventent pas. */}
+              suggéré : des coordonnées bancaires ne s'inventent pas. */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-[2fr_1fr]">
             <Field
               label="IBAN"
@@ -180,7 +180,7 @@ export function FacturationSettings({
           <Field
             label="Logo (adresse de l'image)"
             htmlFor="logoUrl"
-            hint="Imprimé en tête de vos devis et factures, à la place de leur en-tête sobre. Une image PNG ou JPEG accessible en ligne (le logo de votre site, par exemple). Laissez vide pour des documents sans logo — c'est très bien aussi."
+            hint="Imprimé en tête de vos devis et factures, à la place de leur en-tête sobre. Une image PNG ou JPEG accessible en ligne (le logo de votre site, par exemple). Laissez vide pour des documents sans logo, c'est très bien aussi."
           >
             <Input
               id="logoUrl"

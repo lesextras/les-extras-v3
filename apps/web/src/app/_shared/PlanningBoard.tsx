@@ -385,7 +385,7 @@ export function PlanningBoard({
       const d = debutSemaine(curseur);
       const f = ajouterJours(d, 6);
       const memeMois = d.getMonth() === f.getMonth();
-      return `${d.getDate()} ${memeMois ? "" : d.toLocaleDateString("fr-FR", { month: "long" }) + " "}– ${f.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`;
+      return `${d.getDate()} ${memeMois ? "" : d.toLocaleDateString("fr-FR", { month: "long" }) + " "}, ${f.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`;
     }
     return curseur.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
   }, [vue, curseur]);
@@ -584,7 +584,7 @@ export function PlanningBoard({
                       {visibles.map((s) => (
                         <span
                           key={s.id}
-                          title={`${hhmm(s.startAt)} – ${hhmm(s.endAt)} · ${s.title}`}
+                          title={`${hhmm(s.startAt)} : ${hhmm(s.endAt)} · ${s.title}`}
                           className={`block truncate rounded px-1.5 py-0.5 text-[11px] leading-tight ${
                             COULEUR_ORIGINE[s.origine ?? "MANUEL"] ?? COULEUR_ORIGINE.MANUEL
                           } ${s.status === "CANCELLED" ? "line-through opacity-60" : ""}`}
@@ -942,7 +942,7 @@ function NewShiftModal({
                   <li key={c.id} className="text-sm text-foreground">
                     <span className="font-medium">{c.title}</span>
                     <span className="block text-xs text-muted-foreground">
-                      {dayLabel(c.startAt)} · {hhmm(c.startAt)} – {hhmm(c.endAt)}
+                      {dayLabel(c.startAt)} · {hhmm(c.startAt)}, {hhmm(c.endAt)}
                     </span>
                   </li>
                 ))}
@@ -965,7 +965,7 @@ function NewShiftModal({
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
             <Field label="Intitulé" htmlFor="title" required>
-              <Input id="title" name="title" required placeholder="Internat — soirée" />
+              <Input id="title" name="title" required placeholder="Internat, soirée" />
             </Field>
             <Field label="Date" htmlFor="date" required>
               <Input id="date" name="date" type="date" required />
@@ -979,7 +979,7 @@ function NewShiftModal({
               </Field>
             </div>
             {people.length > 0 ? (
-              <Field label="Intervenant" hint="Optionnel — parmi les intervenants du planning.">
+              <Field label="Intervenant" hint="Optionnel : parmi les intervenants du planning.">
                 <Select value={freelanceId} onValueChange={setFreelanceId}>
                   <SelectTrigger>
                     <SelectValue placeholder="Non affecté" />
@@ -1155,7 +1155,7 @@ function AvailabilitySection({
                     <span className="text-sm text-foreground">
                       {a.weekday != null ? WEEKDAYS[a.weekday] : a.date}
                       <span className="ml-2 text-muted-foreground">
-                        {a.startTime} – {a.endTime}
+                        {a.startTime}, {a.endTime}
                       </span>
                     </span>
                   </div>

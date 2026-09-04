@@ -31,7 +31,7 @@ export interface IdeaItem {
 const STATUTS: Record<IdeaStatus, { label: string; variant: BadgeVariant }> = {
   NEW: { label: "Nouvelle", variant: "secondary" },
   REVIEWING: { label: "À l'étude", variant: "warning" },
-  PLANNED: { label: "Retenue — au programme", variant: "default" },
+  PLANNED: { label: "Retenue, au programme", variant: "default" },
   DONE: { label: "Livrée", variant: "success" },
   DECLINED: { label: "Écartée", variant: "muted" },
 };
@@ -173,7 +173,7 @@ export function IdeaBox({
       {idees.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Aucune idée pour l&apos;instant — la vôtre sera la première.
+            Aucune idée pour l&apos;instant : la vôtre sera la première.
           </CardContent>
         </Card>
       ) : (

@@ -11,7 +11,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { RichText, decoderEntites, texteBrut } from '../RichText';
 
-describe('RichText — contenu HTML', () => {
+describe('RichText, contenu HTML', () => {
   it('rend les paragraphes et les titres au lieu d’afficher les balises', () => {
     const { container } = render(
       <RichText value={'<p class="wp-block-paragraph">Bonjour</p><h2 class="wp-block-heading">Un titre</h2>'} />,
@@ -72,7 +72,7 @@ describe('RichText — contenu HTML', () => {
   });
 });
 
-describe('RichText — rien ne devient exécutable', () => {
+describe('RichText : rien ne devient exécutable', () => {
   it('n’émet jamais de balise script, même si l’article en contient une', () => {
     const { container } = render(
       <RichText value={'<p>Avant</p><script>window.__pirate = 1</script><p>Après</p>'} />,

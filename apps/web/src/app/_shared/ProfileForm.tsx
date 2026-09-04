@@ -161,7 +161,7 @@ export function ProfileForm({
             </div>
 
             {/* Le rayon pilote directement le score de proximité du matching.
-                Laissé en champ numérique nu, personne ne le renseignait — et un
+                Laissé en champ numérique nu, personne ne le renseignait, et un
                 rayon vide fait disparaître l'intervenant des propositions. */}
             <Field
               label="Rayon d'intervention"
@@ -190,7 +190,7 @@ export function ProfileForm({
         </Card>
       ) : null}
 
-      {/* Le rendez-vous du lundi — désactivable en un clic, sans détour par
+      {/* Le rendez-vous du lundi : désactivable en un clic, sans détour par
           un e-mail de désinscription. */}
       <Card>
         <CardContent className="pt-6">

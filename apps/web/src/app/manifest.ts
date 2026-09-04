@@ -15,7 +15,7 @@ import type { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
-    name: 'LES EXTRAS — Le renfort médico-social',
+    name: 'LES EXTRAS, Le renfort médico-social',
     short_name: 'Les Extras',
     description:
       "Trouvez un renfort en urgence ou réservez un atelier : la marketplace qui relie les établissements médico-sociaux aux professionnels indépendants.",

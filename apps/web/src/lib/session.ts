@@ -105,7 +105,7 @@ export async function getSession(): Promise<Session | null> {
     // `account` est requis par les consommateurs (Web-Marketplace). En absence
     // de compte (cas limite : admin sans tenant), on fournit un placeholder sûr.
     const account: SessionAccount =
-      active ?? { id: '', name: '—', type: 'FREELANCE', role: 'MEMBER' };
+      active ?? { id: '', name: ', ', type: 'FREELANCE', role: 'MEMBER' };
 
     return { user, token, account, activeAccount: active, accounts };
   } catch {

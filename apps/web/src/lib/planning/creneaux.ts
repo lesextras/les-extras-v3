@@ -132,7 +132,7 @@ export function enCreneaux(lignes: LignePlanning[], personne?: string): Conversi
       ignorees.push({
         personne: l.personne,
         date: l.date,
-        raison: l.type ? `absence — ${l.type}` : 'absence',
+        raison: l.type ? `absence, ${l.type}` : 'absence',
       });
       continue;
     }
@@ -175,7 +175,7 @@ export function enCreneaux(lignes: LignePlanning[], personne?: string): Conversi
       debut,
       fin,
       lisible: `${quand} · ${hhmm(d).replace(':', 'h')} → ${hhmm(f).replace(':', 'h')}`,
-      note: `Importé depuis un planning${l.type ? ` — ${l.type}` : ''}`,
+      note: `Importé depuis un planning${l.type ? `, ${l.type}` : ''}`,
     });
   }
 

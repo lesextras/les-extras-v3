@@ -31,8 +31,8 @@ const SUFFIXE_MARQUE = ' · LES EXTRAS'.length;
 const MAX_TITRE = 65;
 
 const ETIQUETTES = {
-  atelier: 'Atelier — ',
-  formation: 'Formation — ',
+  atelier: 'Atelier, ',
+  formation: 'Formation, ',
 } as const;
 
 export type TypeFiche = keyof typeof ETIQUETTES;
@@ -55,7 +55,7 @@ function couper(texte: string, budget: number): string {
   let precedent = '';
   while (base !== precedent) {
     precedent = base;
-    base = base.replace(/[\s.,;:/–—-]+$/u, '').replace(MOTS_SUSPENDUS, '');
+    base = base.replace(/[\s.,;:/, , -]+$/u, '').replace(MOTS_SUSPENDUS, '');
   }
   return `${base}…`;
 }

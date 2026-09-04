@@ -27,7 +27,7 @@ import { apiRequest } from "@/lib/api";
 import { lancerConfettis } from "@/lib/confetti";
 import { Field, Textarea } from "../form-fields";
 import { FileUpload, type FichierDepose } from "../FileUpload";
-import { DEPARTEMENTS } from "@/lib/territoires";
+import { DEPARTEMENTS, REGIONS, resumeTerritoire } from "@/lib/territoires";
 
 const CATEGORIES = [
   { value: "ATELIER", label: "Atelier" },
@@ -177,7 +177,7 @@ export function ServiceModal({
         body: { type: "ATELIER", brief: brief.trim() },
       });
       const f = r.fiche as { title?: string; description?: string; publicTarget?: string; duration?: string; objectifs?: string[] } | undefined;
-      if (!f) throw new Error("Réponse inexploitable — réessayez en précisant le brief.");
+      if (!f) throw new Error("Réponse inexploitable : réessayez en précisant le brief.");
       const set = (id: string, v?: string) => {
         const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
         if (el && v) el.value = v;
@@ -479,46 +479,99 @@ export function ServiceModal({
 
           <Field
             label="Départements où vous intervenez"
-            hint="C'est le filtre du catalogue. Un établissement cherche d'abord qui se déplace jusqu'à lui — sans au moins un département coché, votre fiche n'apparaît dans aucune recherche par territoire."
+            hint="C'est le filtre du catalogue. Un établissement cherche d'abord qui se déplace jusqu'à lui : sans au moins un département coché, votre fiche n'apparaît dans aucune recherche par territoire."
           >
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  setTerritoires((liste) =>
-                    liste.length === DEPARTEMENTS.length
-                      ? []
-                      : DEPARTEMENTS.map((d) => d.code),
-                  )
-                }
-                className="rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground"
-              >
-                {territoires.length === DEPARTEMENTS.length
-                  ? "Tout décocher"
-                  : "Toute l’Île-de-France"}
-              </button>
-              {DEPARTEMENTS.map((d) => {
-                const actif = territoires.includes(d.code);
-                return (
+            {/* CENT UN DÉPARTEMENTS NE SE COCHENT PAS UN PAR UN.
+                La première version affichait une pastille par département : très
+                bien pour huit, illisible pour cent un, et impossible sur un
+                téléphone. On ajoute par région ou à l'unité, et seuls les
+                territoires retenus restent à l'écran. */}
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  aria-label="Ajouter une région entière"
+                  value=""
+                  onChange={(e) => {
+                    const r = e.target.value;
+                    if (!r) return;
+                    const codes = DEPARTEMENTS.filter((d) => d.region === r).map((d) => d.code);
+                    setTerritoires((liste) => [...new Set([...liste, ...codes])]);
+                  }}
+                  className="h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">Ajouter une région entière…</option>
+                  {REGIONS.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  aria-label="Ajouter un département"
+                  value=""
+                  onChange={(e) => {
+                    const c = e.target.value;
+                    if (!c) return;
+                    setTerritoires((liste) => [...new Set([...liste, c])]);
+                  }}
+                  className="h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">Ajouter un département…</option>
+                  {REGIONS.map((r) => (
+                    <optgroup key={r} label={r}>
+                      {DEPARTEMENTS.filter((d) => d.region === r).map((d) => (
+                        <option key={d.code} value={d.code}>
+                          {d.code} · {d.nom}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  onClick={() => setTerritoires(DEPARTEMENTS.map((d) => d.code))}
+                  className="rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                >
+                  Toute la France
+                </button>
+                {territoires.length > 0 ? (
                   <button
-                    key={d.code}
                     type="button"
-                    aria-pressed={actif}
-                    onClick={() =>
-                      setTerritoires((liste) =>
-                        actif ? liste.filter((x) => x !== d.code) : [...liste, d.code],
-                      )
-                    }
-                    className={
-                      actif
-                        ? "rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
-                        : "rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    }
+                    onClick={() => setTerritoires([])}
+                    className="text-xs text-muted-foreground underline hover:text-foreground"
                   >
-                    {d.nom}
+                    Tout enlever
                   </button>
-                );
-              })}
+                ) : null}
+              </div>
+
+              {territoires.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Aucun territoire pour l&apos;instant. Votre fiche restera visible dans le
+                  catalogue, mais pas dans les recherches par département.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <span className="self-center text-xs font-medium text-foreground">
+                    {resumeTerritoire(territoires)}
+                  </span>
+                  {DEPARTEMENTS.filter((d) => territoires.includes(d.code)).map((d) => (
+                    <button
+                      key={d.code}
+                      type="button"
+                      onClick={() =>
+                        setTerritoires((liste) => liste.filter((x) => x !== d.code))
+                      }
+                      aria-label={`Retirer ${d.nom}`}
+                      className="rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                    >
+                      {d.nom} ×
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </Field>
 
@@ -615,7 +668,7 @@ export function ServiceModal({
             <summary className="cursor-pointer text-sm font-semibold text-foreground">
               Contenu pédagogique
               <span className="ml-2 font-normal text-muted-foreground">
-                — objectifs, méthode, évaluation
+objectifs, méthode, évaluation
               </span>
             </summary>
             <div className="mt-3 space-y-4">
@@ -699,8 +752,8 @@ export function ServiceModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="PUBLISHED">Publiée — visible dans le catalogue</SelectItem>
-                <SelectItem value="DRAFT">Brouillon — retirée du catalogue</SelectItem>
+                <SelectItem value="PUBLISHED">Publiée : visible dans le catalogue</SelectItem>
+                <SelectItem value="DRAFT">Brouillon : retirée du catalogue</SelectItem>
               </SelectContent>
             </Select>
             <p className="mt-1.5 text-xs text-muted-foreground">

@@ -94,7 +94,7 @@ export function ContratsListe({
         <EmptyState
           icon={<FileText className="h-5 w-5" />}
           title="Aucun contrat pour l’instant"
-          description="Quand vous embauchez quelqu’un en CDD — un remplacement, un renfort trouvé sur la plateforme — créez son contrat ici : les échéances et les montants se calculent tout seuls."
+          description="Quand vous embauchez quelqu’un en CDD, un remplacement, un renfort trouvé sur la plateforme, créez son contrat ici : les échéances et les montants se calculent tout seuls."
           action={<NouveauContrat motifs={motifs} salaries={salaries} />}
         />
       ) : (
@@ -232,7 +232,7 @@ function NouveauContrat({
               <SelectContent>
                 {salaries.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {fullName(s.firstName, s.lastName) || s.email} — {s.origine}
+                    {fullName(s.firstName, s.lastName) || s.email}, {s.origine}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -268,7 +268,7 @@ function NouveauContrat({
           </div>
 
           <Field label="Poste" htmlFor="poste" hint="Vous pourrez le préciser ensuite.">
-            <Input id="poste" name="poste" placeholder="Éducateur spécialisé — internat" />
+            <Input id="poste" name="poste" placeholder="Éducateur spécialisé, internat" />
           </Field>
 
           {erreur ? <p className="text-sm text-destructive">{erreur}</p> : null}

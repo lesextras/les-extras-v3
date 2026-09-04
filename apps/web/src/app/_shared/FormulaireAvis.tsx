@@ -48,7 +48,7 @@ function Notes({
               type="button"
               role="radio"
               aria-checked={actif}
-              aria-label={`${n} sur 5 — ${LEGENDES[n]}`}
+              aria-label={`${n} sur 5, ${LEGENDES[n]}`}
               onClick={() => onChange(n)}
               className={
                 actif
@@ -86,7 +86,7 @@ export function FormulaireAvis({ accountId }: { accountId?: string }) {
   async function envoyer(e: React.FormEvent) {
     e.preventDefault();
     if (!globale) {
-      setErreur("Donnez au moins une note globale — c'est la seule question obligatoire.");
+      setErreur("Donnez au moins une note globale : c'est la seule question obligatoire.");
       return;
     }
     setEnvoi(true);
@@ -107,7 +107,7 @@ export function FormulaireAvis({ accountId }: { accountId?: string }) {
       lancerConfettis();
       setFait(true);
       toast({
-        title: "Merci — c'est enregistré",
+        title: "Merci, c'est enregistré",
         description: probleme.trim()
           ? "Le problème que vous signalez est remonté à l'association ; il est traité dans la journée."
           : "Votre avis est lu par l'association.",
@@ -126,7 +126,7 @@ export function FormulaireAvis({ accountId }: { accountId?: string }) {
         <p className="text-base font-semibold text-foreground">Merci.</p>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           C&apos;est enregistré. Si vous avez signalé un problème, il est remonté
-          tel quel à l&apos;association — vous pouvez être rappelé à ce sujet.
+          tel quel à l&apos;association : vous pouvez être rappelé à ce sujet.
         </p>
       </div>
     );

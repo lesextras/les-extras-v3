@@ -159,7 +159,7 @@ export function QualiopiMatrix({ data }: { data: Conformite }) {
       {data.criteria.map((c) => (
         <div key={c.id} className="rounded-lg border border-border bg-card p-5">
           <h3 className="mb-1 font-semibold text-foreground">
-            Critère {c.number} — {c.title}
+            Critère {c.number}, {c.title}
           </h3>
           <div>
             {c.indicators.map((ind) => (

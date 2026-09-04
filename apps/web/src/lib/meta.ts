@@ -35,7 +35,7 @@ export const CARTE_PARTAGE = {
   url: '/images/partage-les-extras.jpg',
   width: 1200,
   height: 630,
-  alt: 'LES EXTRAS — ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
+  alt: 'LES EXTRAS, ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
 };
 
 /** Ce qu'un objet `openGraph` de page doit réémettre pour ne rien perdre. */

@@ -175,7 +175,7 @@ export function ContratDetail({
             {STATUT_LABEL[contrat.statut] ?? contrat.statut}
           </Badge>
           {/* La pièce est produite par le serveur : le même document quel que
-              soit le navigateur, et les mêmes chiffres que l'écran — la
+              soit le navigateur, et les mêmes chiffres que l'écran, la
               synthèse affichée ici est celle qui alimente le PDF. */}
           <Button asChild variant="outline" className="gap-2">
             <a
@@ -246,7 +246,7 @@ export function ContratDetail({
               <p className="font-medium text-foreground">
                 {fullName(contrat.user?.firstName, contrat.user?.lastName) ||
                   contrat.user?.email ||
-                  "—"}
+                  ", "}
               </p>
             </div>
 
@@ -334,7 +334,7 @@ export function ContratDetail({
                   value={contrat.poste ?? ""}
                   disabled={!modifiable}
                   onChange={(e) => set("poste", e.target.value)}
-                  placeholder="Éducateur spécialisé — internat"
+                  placeholder="Éducateur spécialisé, internat"
                 />
               </Field>
               <Field label="Qualification du salarié">
@@ -362,7 +362,7 @@ export function ContratDetail({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="non">Non</SelectItem>
-                  <SelectItem value="oui">Oui — formation renforcée à la sécurité</SelectItem>
+                  <SelectItem value="oui">Oui : formation renforcée à la sécurité</SelectItem>
                 </SelectContent>
               </Select>
             </Field>

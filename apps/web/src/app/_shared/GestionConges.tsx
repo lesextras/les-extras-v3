@@ -48,7 +48,7 @@ const STATUT_LABEL: Record<Conge["statut"], string> = {
 };
 
 function nom(u: Conge["user"]): string {
-  return [u.firstName, u.lastName].filter(Boolean).join(" ") || "—";
+  return [u.firstName, u.lastName].filter(Boolean).join(" ") || ", ";
 }
 
 export function GestionConges({
@@ -185,7 +185,7 @@ export function GestionConges({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <h2 className="text-base font-semibold text-foreground">Demandes</h2>
-          {/* L'export sortait toujours le mois EN COURS — exactement le
+          {/* L'export sortait toujours le mois EN COURS, exactement le
               mauvais mois quand on prépare la paie du précédent. Le choix du
               mois vit désormais dans le composant. */}
           {canDecide ? <ExportPaie compact /> : null}
@@ -273,7 +273,7 @@ export function GestionConges({
                         <td className="py-2 pr-4">{k.soldeConges} j</td>
                         <td className="py-2">
                           {k.semainesAuDela48h.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">—</span>
+                            <span className="text-xs text-muted-foreground">-</span>
                           ) : (
                             k.semainesAuDela48h.map((s) => (
                               <span key={s.semaine} className="block text-xs font-medium text-[#b8860b]">

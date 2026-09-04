@@ -71,7 +71,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
               <Sparkles className="size-4" />
             </span>
             <div>
-              <p className="text-sm font-semibold leading-tight">Lex — l'assistant Les Extras</p>
+              <p className="text-sm font-semibold leading-tight">Lex : l'assistant Les Extras</p>
               <p className="text-[11px] text-primary-foreground/75">
                 {mode === "public" ? "Questions sur la plateforme" : "Aide sur votre espace"}
               </p>
@@ -87,7 +87,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
                 <p className="mt-3 font-semibold text-foreground">Crédits LEX requis</p>
                 <p className="mt-1.5 text-sm text-muted-foreground">
                   Les générations LEX consomment des crédits. Activez l&apos;essai Découverte
-                  gratuit, rechargez par packs ou prenez un abonnement à dotation mensuelle —
+                  gratuit, rechargez par packs ou prenez un abonnement à dotation mensuelle
                   le reste de la plateforme reste gratuit.
                 </p>
                 <a
@@ -167,7 +167,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
           </form>
           )}
           <p className="border-t border-border/60 px-3 py-1.5 text-center text-[10px] text-muted-foreground">
-            Réponses générées par IA — vérifiez les informations importantes.
+            Réponses générées par IA : vérifiez les informations importantes.
           </p>
         </div>
       ) : null}

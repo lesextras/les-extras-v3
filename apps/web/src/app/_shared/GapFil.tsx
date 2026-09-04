@@ -92,7 +92,7 @@ export async function GapFil({
       />
 
       {/* UN SEUL ENCART, moitié moins haut que les deux qu'il remplace : le
-          cadre et l'issue de secours disent la même chose — comment on parle
+          cadre et l'issue de secours disent la même chose, comment on parle
           ici, et à qui, quand personne ne répond. */}
       <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 md:p-6">
         <span
@@ -118,7 +118,7 @@ export async function GapFil({
               >
                 <Icone className={`size-4 shrink-0 ${c.teinte}`} aria-hidden />
                 <span className={`text-sm font-semibold ${c.teinte}`}>{c.titre}</span>
-                <span className="text-sm text-muted-foreground">— {c.glose}</span>
+                <span className="text-sm text-muted-foreground">, {c.glose}</span>
               </li>
             );
           })}
@@ -132,7 +132,7 @@ export async function GapFil({
           <p className="min-w-0 flex-1 text-sm leading-relaxed text-muted-foreground">
             Personne ne répond ?{" "}
             <span className="font-semibold text-foreground">LEX le GAPiste</span> vous
-            questionne d&apos;abord, comme un animateur en séance, puis prend position — en
+            questionne d&apos;abord, comme un animateur en séance, puis prend position, en
             privé.
           </p>
           <Button asChild className="shrink-0">

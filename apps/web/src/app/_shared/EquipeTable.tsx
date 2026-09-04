@@ -87,7 +87,7 @@ const TOUS = "__tous__";
 
 /** Pastille de conformité : verte, orange ou rouge, avec le compte à l'appui. */
 function PastilleConformite({ c }: { c: MembreListe["conformite"] }) {
-  if (!c) return <span className="text-sm text-muted-foreground">—</span>;
+  if (!c) return <span className="text-sm text-muted-foreground">-</span>;
   if (c.missing > 0) {
     return (
       <Badge variant="destructive" className="gap-1">
@@ -303,7 +303,7 @@ export function EquipeTable({
         <p className="text-sm text-muted-foreground">
           {donnees.total === 0
             ? "Aucun résultat"
-            : `${debut}–${fin} sur ${donnees.total} personne${donnees.total > 1 ? "s" : ""}`}
+            : `${debut}, ${fin} sur ${donnees.total} personne${donnees.total > 1 ? "s" : ""}`}
           {enDefaut > 0 ? ` · ${enDefaut} dossier${enDefaut > 1 ? "s" : ""} incomplet${enDefaut > 1 ? "s" : ""} sur cette page` : null}
         </p>
         {donnees.pages > 1 ? (

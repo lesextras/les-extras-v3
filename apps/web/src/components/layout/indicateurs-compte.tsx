@@ -65,7 +65,7 @@ export function IndicateursCompte({
       {aDesPoints && solde ? (
         <Link
           href="/dashboard/points"
-          title={`${solde.points} points — soit ${solde.euros} € de réduction`}
+          title={`${solde.points} points : soit ${solde.euros} € de réduction`}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent"
         >
           <Award className="size-4 text-primary" aria-hidden />

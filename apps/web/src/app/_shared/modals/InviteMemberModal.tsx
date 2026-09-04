@@ -112,7 +112,7 @@ export function InviteMemberModal({
           {services.length > 0 ? (
             <Field
               label="Service"
-              hint="Rattacher dès maintenant évite d’y penser plus tard — et fait apparaître la personne dans le planning de son équipe dès son arrivée."
+              hint="Rattacher dès maintenant évite d’y penser plus tard : et fait apparaître la personne dans le planning de son équipe dès son arrivée."
             >
               <Select value={service} onValueChange={setService}>
                 <SelectTrigger>

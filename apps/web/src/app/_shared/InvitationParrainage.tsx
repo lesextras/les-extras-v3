@@ -165,7 +165,7 @@ export function InvitationParrainage({ accountId }: { accountId: string }) {
   }
 
   const etapes = [
-    <>Envoyez votre lien à un confrère — établissement ou intervenant, il vaut pour les deux.</>,
+    <>Envoyez votre lien à un confrère : établissement ou intervenant, il vaut pour les deux.</>,
     <>Il crée son compte avec ce lien. Gratuit, comme le vôtre.</>,
     <>
       À sa première prestation terminée&nbsp;:{' '}
@@ -194,7 +194,7 @@ export function InvitationParrainage({ accountId }: { accountId: string }) {
             <div className="min-w-0">
               <DialogTitle className="text-xl">Parrainez un confrère</DialogTitle>
               <p className="mt-0.5 text-sm font-semibold text-primary">
-                {points}&nbsp;points pour vous, {points} pour lui — {euros}&nbsp;€ de
+                {points}&nbsp;points pour vous, {points} pour lui, {euros}&nbsp;€ de
                 réduction chacun
               </p>
             </div>

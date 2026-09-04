@@ -39,9 +39,9 @@ export interface DocInscription {
 function fullName(i: DocInscription) {
   if (i.learner) {
     const n = [i.learner.firstName, i.learner.lastName].filter(Boolean).join(" ");
-    return n || i.learner.email || "—";
+    return n || i.learner.email || ", ";
   }
-  return i.learnerName || "—";
+  return i.learnerName || ", ";
 }
 
 function fmt(d?: string | null) {
@@ -113,7 +113,7 @@ export function FormationDocument({
             <span className="text-neutral-500">Dates</span>
             <span className="text-right font-medium">
               {fmt(s?.startDate)}
-              {s?.endDate ? ` – ${fmt(s.endDate)}` : ""}
+              {s?.endDate ? `, ${fmt(s.endDate)}` : ""}
             </span>
             {f?.durationHours ? (
               <>

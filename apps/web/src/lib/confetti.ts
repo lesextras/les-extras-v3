@@ -21,8 +21,8 @@ type Options = {
 };
 
 const COULEURS = [
-  'hsl(347, 80%, 57%)', // framboise — primaire
-  'hsl(14, 72%, 58%)', // terracotta — secondaire
+  'hsl(347, 80%, 57%)', // framboise, primaire
+  'hsl(14, 72%, 58%)', // terracotta, secondaire
   'hsl(152, 58%, 52%)', // vert de validation
   'hsl(38, 92%, 62%)', // ambre
   'hsl(40, 30%, 96%)', // ivoire

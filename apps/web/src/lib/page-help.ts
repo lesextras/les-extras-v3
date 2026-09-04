@@ -26,10 +26,10 @@ const AIDE: Record<string, PageHelpEntry> = {
   "/dashboard/contrats": {
     titre: "Vous embauchez, l'outil calcule",
     texte:
-      "Votre établissement reste l'employeur : le CDD est conclu entre lui et la personne, sans intermédiaire ni mise à disposition. Ce que l'outil apporte, c'est le calcul que personne ne refait à chaque contrat — période d'essai maximale, indemnité de fin de contrat, délai de carence avant de repourvoir le poste, date limite de transmission et fenêtre de la DPAE.",
+      "Votre établissement reste l'employeur : le CDD est conclu entre lui et la personne, sans intermédiaire ni mise à disposition. Ce que l'outil apporte, c'est le calcul que personne ne refait à chaque contrat : période d'essai maximale, indemnité de fin de contrat, délai de carence avant de repourvoir le poste, date limite de transmission et fenêtre de la DPAE.",
     etapes: [
       "Créez le brouillon : la personne, le motif de recours, les dates.",
-      "Complétez les mentions obligatoires — la transmission est refusée tant qu'il en manque une, parce qu'un CDD incomplet vaut CDI.",
+      "Complétez les mentions obligatoires : la transmission est refusée tant qu'il en manque une, parce qu'un CDD incomplet vaut CDI.",
       "Déclarez la DPAE avant l'embauche, puis clôturez en indiquant la cause : elle décide de l'indemnité de précarité.",
     ],
   },
@@ -37,7 +37,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   "/dashboard/temps-de-travail": {
     titre: "Le planning, les congés et les règles, au même endroit",
     texte:
-      "Déposez le planning d'équipe que vous tenez déjà : il est lu sur votre poste, jamais téléversé, et vous voyez aussitôt les heures planifiées, les jours d'absence posés et ce qui reste sur le plafond annuel. En dessous, les demandes d'absence à trancher et les compteurs ; tout en bas, les règles de votre convention — nuit, dimanche, fériés — qui servent à chaque chiffrage.",
+      "Déposez le planning d'équipe que vous tenez déjà : il est lu sur votre poste, jamais téléversé, et vous voyez aussitôt les heures planifiées, les jours d'absence posés et ce qui reste sur le plafond annuel. En dessous, les demandes d'absence à trancher et les compteurs ; tout en bas, les règles de votre convention, nuit, dimanche, fériés, qui servent à chaque chiffrage.",
     etapes: [
       "Déposez un CSV avec au minimum les colonnes personne et date.",
       "Posez ou tranchez les demandes : une absence approuvée entre seule au planning.",
@@ -47,17 +47,17 @@ const AIDE: Record<string, PageHelpEntry> = {
   "/dashboard/progression": {
     titre: "Trois paliers, gagnés sur le terrain",
     texte:
-      "Nouveau, Confirmé, Super Extra : votre palier est calculé uniquement sur vos missions réelles — missions terminées, note moyenne reçue, taux d'annulation. Rien de déclaratif. Le palier Super Extra vous donne un accès prioritaire aux missions : vous êtes sollicité avant leur ouverture au réseau complet.",
+      "Nouveau, Confirmé, Super Extra : votre palier est calculé uniquement sur vos missions réelles, missions terminées, note moyenne reçue, taux d'annulation. Rien de déclaratif. Le palier Super Extra vous donne un accès prioritaire aux missions : vous êtes sollicité avant leur ouverture au réseau complet.",
     etapes: [
       "Regardez les critères du prochain palier : chacun indique où vous en êtes.",
-      "Honorez vos missions et évitez les annulations de dernière minute — c'est le critère qui pèse le plus.",
+      "Honorez vos missions et évitez les annulations de dernière minute : c'est le critère qui pèse le plus.",
       "Demandez un avis après chaque prestation : la note moyenne compte dès 1 avis.",
     ],
   },
   "/dashboard/points": {
     titre: "Vos points, et comment ils deviennent des euros",
     texte:
-      "Chaque contribution à la communauté crédite des points : publier un atelier, réaliser une mission, déposer un avis, écrire un article, proposer une idée retenue. 10 points valent 1 € de réduction, déduite au moment de la facturation dans la limite de 30 % du montant. Les points expirent au bout de 12 mois — mieux vaut les utiliser au fil de l'eau.",
+      "Chaque contribution à la communauté crédite des points : publier un atelier, réaliser une mission, déposer un avis, écrire un article, proposer une idée retenue. 10 points valent 1 € de réduction, déduite au moment de la facturation dans la limite de 30 % du montant. Les points expirent au bout de 12 mois : mieux vaut les utiliser au fil de l'eau.",
     etapes: [
       "Repérez dans « Comment en gagner » l'action qui vous rapporte le plus.",
       "Signalez votre solde à l'équipe au moment de votre prochaine commande.",
@@ -65,7 +65,7 @@ const AIDE: Record<string, PageHelpEntry> = {
     ],
   },
   "/dashboard/idees": {
-    titre: "Dites ce qui vous manque — c'est ce qui oriente les versions",
+    titre: "Dites ce qui vous manque, c'est ce qui oriente les versions",
     texte:
       "Cette page n'est pas une boîte à suggestions décorative : les idées les plus votées passent en priorité de développement, et leur statut est mis à jour publiquement. Une idée retenue rapporte 40 points à son auteur.",
     etapes: [
@@ -89,7 +89,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard': {
     titre: 'Votre tableau de bord',
     texte:
-      'Vue d’ensemble de votre activité : les actions à traiter apparaissent en haut, les chiffres clés en dessous. Le menu de gauche donne accès à tout — survolez une entrée pour voir à quoi elle sert.',
+      'Vue d’ensemble de votre activité : les actions à traiter apparaissent en haut, les chiffres clés en dessous. Le menu de gauche donne accès à tout : survolez une entrée pour voir à quoi elle sert.',
     etapes: [
       'Traitez d’abord les alertes et demandes en attente',
       'Utilisez ⌘K (ou Ctrl+K) pour chercher n’importe quelle page',
@@ -110,7 +110,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/reservations': {
     titre: 'Mes réservations',
     texte:
-      'Tout ce qui a été réservé, dans les deux sens : les renforts pourvus, les ateliers commandés et les salariés inscrits en formation. Chaque ligne indique si vous êtes du côté qui réserve ou du côté qui intervient — un même compte peut faire les deux. Le contrat s’ouvre en cliquant sur l’intitulé.',
+      'Tout ce qui a été réservé, dans les deux sens : les renforts pourvus, les ateliers commandés et les salariés inscrits en formation. Chaque ligne indique si vous êtes du côté qui réserve ou du côté qui intervient : un même compte peut faire les deux. Le contrat s’ouvre en cliquant sur l’intitulé.',
   },
   '/dashboard/reservations/ateliers': {
     titre: 'Mes réservations ateliers',
@@ -120,12 +120,12 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/reservations/formations': {
     titre: 'Mes réservations formation',
     texte:
-      'Les inscriptions en formation, nominatives : qui est inscrit, à quelle session, et où en est le dossier. C’est ici qu’on retrouve l’attestation une fois la session terminée — la pièce que demande un financeur.',
+      'Les inscriptions en formation, nominatives : qui est inscrit, à quelle session, et où en est le dossier. C’est ici qu’on retrouve l’attestation une fois la session terminée : la pièce que demande un financeur.',
   },
   '/dashboard/planning': {
     titre: 'Votre planning',
     texte:
-      'Toutes vos interventions confirmées, jour par jour. Les heures effectuées se déclarent ici puis sont validées par l’établissement — c’est ce qui déclenche la facturation.',
+      'Toutes vos interventions confirmées, jour par jour. Les heures effectuées se déclarent ici puis sont validées par l’établissement : c’est ce qui déclenche la facturation.',
   },
   '/dashboard/inbox': {
     titre: 'Messagerie',
@@ -142,7 +142,7 @@ const AIDE: Record<string, PageHelpEntry> = {
     titre: 'Assistant d’écriture',
     texte:
       'Transformez des notes brutes en écrit professionnel (note d’observation, transmission, rapport…). Les noms sont masqués avant tout traitement et vos notes ne sont jamais stockées : seul le document que vous validez est conservé.',
-    etapes: ['Choisissez une trame', 'Collez ou dictez vos notes', 'Relisez, ajustez puis validez — c’est vous qui signez'],
+    etapes: ['Choisissez une trame', 'Collez ou dictez vos notes', 'Relisez, ajustez puis validez, c’est vous qui signez'],
   },
   '/dashboard/ateliers': {
     titre: 'Vos ateliers',
@@ -157,7 +157,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/devis': {
     titre: 'Devis',
     texte:
-      'Les demandes de devis reçues et envoyées. Un devis accepté crée automatiquement la réservation et le contrat — rien à ressaisir.',
+      'Les demandes de devis reçues et envoyées. Un devis accepté crée automatiquement la réservation et le contrat, rien à ressaisir.',
     etapes: ['Répondez vite : un devis chiffré sous 48 h convertit bien mieux'],
   },
   '/dashboard/renforts': {
@@ -177,9 +177,9 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Vos factures, paiements et documents comptables. Chaque facture est téléchargeable en PDF ; le paiement en ligne est disponible sur les factures dues.',
   },
   '/dashboard/adhesion': {
-    titre: 'LEX — Crédits & abonnement',
+    titre: 'LEX, Crédits & abonnement',
     texte:
-      'LEX, l’assistant IA, fonctionne à crédits : un crédit par génération. Cet écran montre votre solde, votre consommation et vos recharges. Toute la mise en relation — renforts, ateliers, contractualisation — reste gratuite.',
+      'LEX, l’assistant IA, fonctionne à crédits : un crédit par génération. Cet écran montre votre solde, votre consommation et vos recharges. Toute la mise en relation, renforts, ateliers, contractualisation, reste gratuite.',
     etapes: [
       'Rechargez par packs (paiement en une fois, les crédits n’expirent pas).',
       'Ou prenez un abonnement : chaque matin, votre solde est remis au niveau de votre allocation quotidienne.',
@@ -212,19 +212,19 @@ const AIDE: Record<string, PageHelpEntry> = {
       "Votre vivier, ce sont les professionnels déjà venus chez vous ou que vous avez retenus. Une mission diffusée « à mes intervenants connus » leur est proposée avant d'être ouverte au réseau.",
     etapes: [
       'Retenez un intervenant après une mission réussie : il entre au vivier.',
-      'Notez ce qui compte (habitudes, unités où il est à l’aise) — visible de vous seul.',
+      'Notez ce qui compte (habitudes, unités où il est à l’aise), visible de vous seul.',
       'Rappelez-le en un clic à la prochaine publication de mission.',
     ],
   },
   '/dashboard/notifications': {
     titre: 'Tout ce qui s’est passé sans vous',
     texte:
-      'Candidatures, signatures, rappels et confirmations. Ouvrir cette page marque tout comme lu — le compteur de la cloche repart de zéro.',
+      'Candidatures, signatures, rappels et confirmations. Ouvrir cette page marque tout comme lu : le compteur de la cloche repart de zéro.',
   },
   '/dashboard/avis': {
     titre: 'Avis',
     texte:
-      'Après chaque mission ou atelier, chacun évalue l’autre. Les avis nourrissent la confiance sur la plateforme — pensez à laisser les vôtres.',
+      'Après chaque mission ou atelier, chacun évalue l’autre. Les avis nourrissent la confiance sur la plateforme : pensez à laisser les vôtres.',
   },
   '/dashboard/actualites': {
     titre: 'Vos publications',
@@ -265,9 +265,9 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Le suivi de toutes les réservations : statut, dates, montant. Vous pouvez confirmer, annuler ou relancer depuis chaque ligne.',
   },
   '/admin/lex': {
-    titre: 'LEX — Crédits & abonnements',
+    titre: 'LEX, Crédits & abonnements',
     texte:
-      'Le pilotage de LEX : ventes de packs, consommation de crédits, abonnements actifs et essais Découverte en cours — tiré des écritures réelles.',
+      'Le pilotage de LEX : ventes de packs, consommation de crédits, abonnements actifs et essais Découverte en cours, tiré des écritures réelles.',
   },
   '/admin/etablissements': {
     titre: 'Comptes & sous-comptes',
@@ -343,7 +343,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/admin/journal': {
     titre: 'Journal d’audit',
     texte:
-      'Qui a fait quoi, et quand : validations, modérations, changements de rôle. Consultation seule — rien ne s’y modifie.',
+      'Qui a fait quoi, et quand : validations, modérations, changements de rôle. Consultation seule, rien ne s’y modifie.',
   },
 };
 

@@ -65,7 +65,7 @@ export interface ContractData {
   } | null;
 }
 
-function fullName(o?: { firstName?: string | null; lastName?: string | null } | null, fallback = "—") {
+function fullName(o?: { firstName?: string | null; lastName?: string | null } | null, fallback = ", ") {
   const n = [o?.firstName, o?.lastName].filter(Boolean).join(" ");
   return n || fallback;
 }
@@ -118,7 +118,7 @@ export function ContractDocument({
       <div className="mb-6 flex items-start justify-between">
         <div>
           <div className="text-lg font-bold text-[#156d6b]">LES EXTRAS</div>
-          <div className="text-xs text-neutral-500">Proposition d’engagement — renfort médico-social</div>
+          <div className="text-xs text-neutral-500">Proposition d’engagement : renfort médico-social</div>
         </div>
         <div className="flex gap-2 print:hidden">
           <Button asChild variant="outline" size="sm">
@@ -148,26 +148,26 @@ export function ContractDocument({
       <div className="mb-6 grid grid-cols-2 gap-4">
         <section className="rounded-lg border border-neutral-200 p-3">
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Établissement</h2>
-          <p className="font-medium">{est?.legalName || est?.name || "—"}</p>
+          <p className="font-medium">{est?.legalName || est?.name || ", "}</p>
           {est?.siret ? <p>SIRET : {est.siret}</p> : null}
-          <p>{[est?.address, est?.city].filter(Boolean).join(", ") || "—"}</p>
+          <p>{[est?.address, est?.city].filter(Boolean).join(", ") || ", "}</p>
         </section>
         <section className="rounded-lg border border-neutral-200 p-3">
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Personne proposée</h2>
           <p className="font-medium">{fullName(fl, contract.account?.name)}</p>
           {fl?.profile?.job ? <p>{fl.profile.job}</p> : null}
           {fl?.profile?.siret ? <p>SIRET : {fl.profile.siret}</p> : null}
-          <p>{[fl?.email, fl?.phone].filter(Boolean).join(" · ") || "—"}</p>
+          <p>{[fl?.email, fl?.phone].filter(Boolean).join(" · ") || ", "}</p>
         </section>
       </div>
 
       <section className="mb-6 rounded-lg border border-neutral-200 p-3">
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Détail de la mission</h2>
         <div className="grid grid-cols-2 gap-y-1">
-          <Line label="Métier" value={m?.job ?? "—"} />
+          <Line label="Métier" value={m?.job ?? "-"} />
           <Line label="Date" value={formatDate(m?.startDate)} />
-          <Line label="Horaires" value={m?.startTime || m?.endTime ? `${m?.startTime ?? "?"} – ${m?.endTime ?? "?"}` : "—"} />
-          <Line label="Lieu" value={`${m?.city ?? "—"}${m?.postalCode ? ` (${m.postalCode})` : ""}`} />
+          <Line label="Horaires" value={m?.startTime || m?.endTime ? `${m?.startTime ?? "?"}, ${m?.endTime ?? "?"}` : ", "} />
+          <Line label="Lieu" value={`${m?.city ?? "-"}${m?.postalCode ? ` (${m.postalCode})` : ""}`} />
           <Line label="Taux horaire brut" value={m?.hourlyRate ? formatRate(m.hourlyRate) : "à convenir"} />
           <Line label="Postes" value={String(m?.headcount ?? 1)} />
         </div>
@@ -182,7 +182,7 @@ export function ContractDocument({
           Le montant indiqué est une rémunération brute estimée : les cotisations patronales s’y
           ajoutent et dépendent de votre convention collective, de votre effectif et des
           exonérations dont vous bénéficiez. Une fois cette proposition acceptée par les deux
-          parties, votre établissement établit le contrat à durée déterminée — les éléments
+          parties, votre établissement établit le contrat à durée déterminée, les éléments
           ci-dessus y sont repris automatiquement, et l’outil vérifie qu’aucune mention
           obligatoire ne manque avant de vous laisser le transmettre au salarié.
         </p>
@@ -221,7 +221,7 @@ function SignBlock({ title, signedAt, name }: { title: string; signedAt?: string
   return (
     <div className="rounded-lg border border-dashed border-neutral-300 p-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{title}</p>
-      <p className="mt-1 text-sm font-medium">{name ?? "—"}</p>
+      <p className="mt-1 text-sm font-medium">{name ?? "-"}</p>
       <div className="mt-4 h-10 border-b border-neutral-300" />
       <p className="mt-1 text-[11px] text-neutral-500">
         {signedAt

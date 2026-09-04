@@ -71,12 +71,12 @@ export default async function MissionDetailPage({ params: paramsPromesse }: { pa
                 <Row label="Début" value={formatDate(mission.startDate)} />
                 {mission.endDate ? <Row label="Fin" value={formatDate(mission.endDate)} /> : null}
                 {mission.startTime || mission.endTime ? (
-                  <Row label="Horaires" value={`${mission.startTime ?? "?"} – ${mission.endTime ?? "?"}`} />
+                  <Row label="Horaires" value={`${mission.startTime ?? "?"}, ${mission.endTime ?? "?"}`} />
                 ) : null}
                 {mission.job ? <Row label="Métier" value={mission.job} /> : null}
                 <Row
                   label="Lieu"
-                  value={`${mission.city ?? "—"}${mission.postalCode ? ` (${mission.postalCode})` : ""}`}
+                  value={`${mission.city ?? "-"}${mission.postalCode ? ` (${mission.postalCode})` : ""}`}
                 />
                 <Row label="Postes" value={String(mission.headcount)} />
               </dl>
@@ -101,7 +101,7 @@ export default async function MissionDetailPage({ params: paramsPromesse }: { pa
                   />
                   <p className="text-center text-xs text-muted-foreground">
                     {mission.modeAttribution === "FILE_ENGAGEMENT"
-                      ? "Votre profil est présenté à l’établissement, qui accepte ou refuse. Le contrat n’est émis qu’après son accord — d’ici là, rien ne vous engage."
+                      ? "Votre profil est présenté à l’établissement, qui accepte ou refuse. Le contrat n’est émis qu’après son accord : d’ici là, rien ne vous engage."
                       : "Premier arrivé, premier servi : la mission vous est attribuée dès validation."}
                   </p>
                 </div>

@@ -27,7 +27,7 @@ export function RappelVerification({ email }: { email: string }) {
       });
       toast({
         title: "Lien renvoyé",
-        description: `Regardez dans ${email} — et dans les indésirables, au cas où.`,
+        description: `Regardez dans ${email}, et dans les indésirables, au cas où.`,
       });
     } catch {
       toast({

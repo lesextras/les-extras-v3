@@ -38,7 +38,7 @@ export function MissionCard({ mission, href }: { mission: Mission; href?: string
           <div>
             <dt className="text-muted-foreground/70">Lieu</dt>
             <dd className="font-medium text-foreground">
-              {mission.city ?? "—"} {mission.postalCode ? `(${mission.postalCode})` : ""}
+              {mission.city ?? "-"} {mission.postalCode ? `(${mission.postalCode})` : ""}
             </dd>
           </div>
         </dl>

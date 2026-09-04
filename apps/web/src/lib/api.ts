@@ -29,16 +29,16 @@ export interface ApiRequestOptions<TBody = unknown> {
 
 /** Libellés français des statuts HTTP courants — le repli quand l'API ne dit rien de mieux. */
 const STATUT_FR: Record<number, string> = {
-  400: 'Demande invalide — vérifiez les champs saisis.',
-  401: 'Session expirée — reconnectez-vous.',
+  400: 'Demande invalide, vérifiez les champs saisis.',
+  401: 'Session expirée, reconnectez-vous.',
   403: "Vous n'avez pas les droits pour cette action.",
-  404: 'Introuvable — la page ou la ressource a peut-être été supprimée.',
-  409: 'Conflit — cette action a déjà été faite, ou entre en collision avec une autre.',
-  422: 'Données invalides — vérifiez les champs saisis.',
-  429: 'Trop de tentatives — patientez un instant avant de réessayer.',
-  500: 'Erreur du serveur — réessayez dans un instant.',
-  502: 'Service momentanément indisponible — réessayez dans un instant.',
-  503: 'Service momentanément indisponible — réessayez dans un instant.',
+  404: 'Introuvable, la page ou la ressource a peut-être été supprimée.',
+  409: 'Conflit, cette action a déjà été faite, ou entre en collision avec une autre.',
+  422: 'Données invalides, vérifiez les champs saisis.',
+  429: 'Trop de tentatives, patientez un instant avant de réessayer.',
+  500: 'Erreur du serveur, réessayez dans un instant.',
+  502: 'Service momentanément indisponible, réessayez dans un instant.',
+  503: 'Service momentanément indisponible, réessayez dans un instant.',
 };
 
 /**
@@ -51,7 +51,7 @@ const STATUT_FR: Record<number, string> = {
  * on retombe sur un libellé français du statut.
  */
 function messageLisible(status: number, payload: unknown): string {
-  const repli = STATUT_FR[status] ?? `Erreur ${status} — réessayez dans un instant.`;
+  const repli = STATUT_FR[status] ?? `Erreur ${status} : réessayez dans un instant.`;
   if (!payload || typeof payload !== 'object' || !('message' in payload)) return repli;
   const brut = (payload as { message: unknown }).message;
   const textes = (Array.isArray(brut) ? brut : [brut])

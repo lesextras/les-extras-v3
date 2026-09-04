@@ -53,7 +53,7 @@ describe('LoginForm', () => {
     );
 
     if (!LoginForm) {
-      console.warn('[QA] LoginForm introuvable — test skip jusqu\'à sa livraison (Web-Core).');
+      console.warn('[QA] LoginForm introuvable : test skip jusqu\'à sa livraison (Web-Core).');
       return; // skip souple
     }
 
@@ -80,7 +80,7 @@ describe('RegisterForm', () => {
     );
 
     if (!RegisterForm) {
-      console.warn('[QA] RegisterForm introuvable — test skip jusqu\'à sa livraison (Web-Core).');
+      console.warn('[QA] RegisterForm introuvable : test skip jusqu\'à sa livraison (Web-Core).');
       return;
     }
 

@@ -46,7 +46,7 @@ export function RangeeDefilante({
       <button
         type="button"
         onClick={() => glisser(-1)}
-        aria-label={`${etiquette} — précédentes`}
+        aria-label={`${etiquette}, précédentes`}
         className="absolute left-0 top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-card transition hover:bg-accent md:grid"
       >
         <ChevronLeft className="size-5" />
@@ -54,7 +54,7 @@ export function RangeeDefilante({
       <button
         type="button"
         onClick={() => glisser(1)}
-        aria-label={`${etiquette} — suivantes`}
+        aria-label={`${etiquette}, suivantes`}
         className="absolute right-0 top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border border-border bg-background shadow-card transition hover:bg-accent md:grid"
       >
         <ChevronRight className="size-5" />

@@ -161,7 +161,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
 
           Il était réservé aux comptes établissement ; côté intervenant il
           occupait une section entière du menu de gauche. Le voici en haut,
-          à droite du sélecteur de compte, pour tous les comptes — un
+          à droite du sélecteur de compte, pour tous les comptes, un
           catalogue se consulte, il n'a pas à tenir un tiers du menu. */}
         <DropdownMenu align="start">
           <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
@@ -176,7 +176,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
             </DropdownMenuItem>
             {/* « Annuaire des intervenants » retiré le 21/08/2026 (demande
                 Siham) : /intervenants redirige vers la page publique de
-                recrutement — proposer « créez votre compte intervenant » à
+                recrutement : proposer « créez votre compte intervenant » à
                 un établissement connecté n'avait aucun sens. Ce contenu vit
                 désormais en section de la page d'accueil publique. */}
             <DropdownMenuItem onClick={() => router.push('/ateliers')}>
@@ -198,7 +198,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
           jour-là au motif que c'est un outil quotidien, il remonte ici
           aujourd'hui. Le motif de la redescente n'était pas faux, mais il
           coûtait trois entrées de sidebar répétées dans QUATRE menus
-          (freelance, établissement, admin, salarié en attente) — et sur le
+          (freelance, établissement, admin, salarié en attente), et sur le
           compte admin, ces trois entrées poussaient le travail
           d'administration sous la ligne de flottaison.
 
@@ -248,7 +248,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
           <kbd className="hidden rounded border border-border px-1 text-[10px] lg:inline">⌘K</kbd>
         </button>
         {/* La cloche mène aux notifications, pas à la messagerie : la
-            pastille compte des notifications, et la page marque tout lu —
+            pastille compte des notifications, et la page marque tout lu
             avant, le compteur ne redescendait jamais. */}
         <Link
           href="/dashboard/notifications"

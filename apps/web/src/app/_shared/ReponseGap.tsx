@@ -256,7 +256,7 @@ export function FilReponses({
                         agir(
                           `/gap/reponses/${r.id}/retenir`,
                           r.id,
-                          "Retour retenu — son auteur reçoit 40 points",
+                          "Retour retenu : son auteur reçoit 40 points",
                         )
                       }
                     >
@@ -298,7 +298,7 @@ export function FilReponses({
           <Card className="border-dashed">
             <CardContent className="py-6 text-sm text-muted-foreground">
               C&apos;est votre question : les réponses viennent des autres. Quand l&apos;une
-              d&apos;elles vous a aidé, retenez-la — c&apos;est ce qui aide les collègues suivants.
+              d&apos;elles vous a aidé, retenez-la : c&apos;est ce qui aide les collègues suivants.
             </CardContent>
           </Card>
         ) : (
@@ -308,7 +308,7 @@ export function FilReponses({
                 <h3 className="font-semibold">Vous avez vécu cette situation ?</h3>
                 <p className="text-sm text-muted-foreground">
                   Ce qui aide vraiment : ce que vous avez tenté, dans quel contexte, et ce que ça a
-                  donné — y compris quand ça n&apos;a pas marché.
+                  donné : y compris quand ça n&apos;a pas marché.
                 </p>
               </div>
               <form onSubmit={repondre} className="space-y-4">
@@ -341,7 +341,7 @@ export function FilReponses({
                   </Button>
                   <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                     <ShieldCheck className="size-3.5 text-success" aria-hidden />
-                    Publié sous « Un·e {"{métier}"} » — les prénoms cités sont masqués
+                    Publié sous « Un·e {"{métier}"} » : les prénoms cités sont masqués
                   </span>
                 </div>
               </form>
@@ -352,7 +352,7 @@ export function FilReponses({
         <Card className="border-primary/30">
           <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-6">
             <p className="text-sm text-muted-foreground">
-              La lecture est libre. Pour répondre à un collègue, il faut un compte — c&apos;est
+              La lecture est libre. Pour répondre à un collègue, il faut un compte, c&apos;est
               gratuit et ça prend trente secondes.
             </p>
             <Button asChild>

@@ -75,16 +75,16 @@ export interface DocInvoice {
 const EUR = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 function money(value?: string | number | null): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return ", ";
   const n = typeof value === "string" ? Number(value) : value;
-  if (Number.isNaN(n)) return "—";
+  if (Number.isNaN(n)) return ", ";
   return EUR.format(n);
 }
 
 function fmt(d?: string | null): string {
-  if (!d) return "—";
+  if (!d) return ", ";
   const date = new Date(d);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return ", ";
   return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
@@ -133,7 +133,7 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
       }
     : invoice.inscription?.session?.formation?.title
       ? {
-          intitule: `Formation « ${invoice.inscription.session.formation.title} » — inscription`,
+          intitule: `Formation « ${invoice.inscription.session.formation.title} », inscription`,
           dateRealisation: invoice.inscription.session.startDate ?? null,
         }
       : null;
@@ -241,7 +241,7 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
                 <>{[emetteur?.postalCode, emetteur?.city].filter(Boolean).join(" ")}<br /></>
               ) : null}
               {emetteur?.siret ? <>SIRET : {emetteur.siret}<br /></> : null}
-              {emetteur?.owner?.email ?? "—"}
+              {emetteur?.owner?.email ?? "-"}
             </p>
             <p className="mt-1 text-[10px] uppercase tracking-widest text-neutral-400">
               via la plateforme Les Extras
@@ -360,7 +360,7 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
           {avecTva ? null : <p>{mentionTva}</p>}
           {/* DEUX CORRECTIONS ICI, sur la même phrase.
               Le délai, d'abord : la page annonçait un règlement « à réception »
-              là où le PDF de la même facture annonce trente jours — deux
+              là où le PDF de la même facture annonce trente jours, deux
               délais contractuels différents pour une seule pièce, et le client
               lit celui qui l'arrange.
               Les pénalités, ensuite : « conformément à la réglementation en
@@ -373,7 +373,7 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
               ? "Cette facture a été réglée. Aucun paiement ne reste dû."
               : "Règlement à trente jours à compter de la date d’émission. Passé ce délai, des pénalités de retard sont exigibles au taux de trois fois le taux d’intérêt légal, ainsi qu’une indemnité forfaitaire de recouvrement de 40 € (art. L. 441-10 et D. 441-5 du code de commerce). Aucun escompte n’est accordé pour paiement anticipé."}
           </p>
-          {/* Coordonnées de règlement — voir `afficherReglement` plus haut. */}
+          {/* Coordonnées de règlement : voir `afficherReglement` plus haut. */}
           {afficherReglement ? (
             <div className="mt-3 text-neutral-600">
               <p className="text-[11px] uppercase tracking-widest text-neutral-400">Règlement</p>
@@ -393,7 +393,7 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
             </div>
           ) : null}
           <p className="mt-2 text-neutral-400">
-            Document généré par la plateforme Les Extras — {invoice.number}.
+            Document généré par la plateforme Les Extras, {invoice.number}.
           </p>
         </footer>
       </div>

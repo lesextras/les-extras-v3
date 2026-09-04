@@ -63,7 +63,7 @@ export function DecompositionPrix({
       {/* Le texte décrit le circuit réellement exécuté par l'API : la facture
           d'atelier est émise par l'intervenant et adressée à l'établissement
           (bookings.service.ts, émetteur = compte de la fiche atelier). Il a
-          longtemps annoncé l'inverse — facturer l'association — ce qui menait
+          longtemps annoncé l'inverse, facturer l'association, ce qui menait
           l'intervenant à adresser sa facture au mauvais destinataire. */}
       <p className="mt-3 text-xs text-muted-foreground">
         {d.commission > 0

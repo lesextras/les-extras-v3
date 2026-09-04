@@ -23,7 +23,7 @@ export const metadata: Metadata = {
       'https://les-extras.fr',
   ),
   title: {
-    default: 'LES EXTRAS — Ateliers et formations pour le médico-social',
+    default: 'LES EXTRAS, Ateliers et formations pour le médico-social',
     template: '%s · LES EXTRAS',
   },
   // Description de l'accueil (et repli des pages qui n'en posent pas).
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     // adresse canonique de partage — vingt-deux pages le faisaient, dont les
     // six pages ville et les deux calculateurs, c'est-à-dire précisément
     // celles qu'on partage. L'accueil pose le sien dans `app/page.tsx`.
-    title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
+    title: 'LES EXTRAS, Ateliers et formations pour le médico-social',
     description:
       'Ateliers et formations courtes réservables en ligne, devis en 48 h, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
     siteName: 'LES EXTRAS',
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
         url: '/images/partage-les-extras.jpg',
         width: 1200,
         height: 630,
-        alt: 'LES EXTRAS — ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
+        alt: 'LES EXTRAS, ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
       },
     ],
   },
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     // « summary » affiche une vignette minuscule ; le grand format double la
     // surface cliquable dans un fil.
     card: 'summary_large_image',
-    title: 'LES EXTRAS — Ateliers et formations pour le médico-social',
+    title: 'LES EXTRAS, Ateliers et formations pour le médico-social',
     description:
       'Ateliers et formations courtes réservables en ligne, devis en 48 h, dossier de conformité par intervenant.',
     images: ['/images/partage-les-extras.jpg'],
@@ -186,10 +186,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Le thème est posé AVANT le premier pixel : sans ce script, une
             personne en mode clair verrait la page s'afficher en sombre puis
-            basculer — un clignotement désagréable à chaque navigation.
+            basculer : un clignotement désagréable à chaque navigation.
 
             Tant que personne n'a choisi, on ne pose RIEN : chaque espace garde
-            alors son fond d'origine — charbon pour l'accueil, ivoire pour
+            alors son fond d'origine : charbon pour l'accueil, ivoire pour
             l'espace connecté. L'attribut n'apparaît qu'après un clic sur la
             bascule, et il vaut alors pour tout le site. */}
         <script
@@ -199,7 +199,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        {/* Identité schema.org du site — voir IDENTITE_STRUCTUREE ci-dessus. */}
+        {/* Identité schema.org du site : voir IDENTITE_STRUCTUREE ci-dessus. */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(IDENTITE_STRUCTUREE) }}

@@ -143,7 +143,7 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                 >
                   <Image
                     src={src}
-                    alt={`${service.title} — visuel ${i + 2}`}
+                    alt={`${service.title}, visuel ${i + 2}`}
                     fill
                     sizes="33vw"
                     className="object-cover"

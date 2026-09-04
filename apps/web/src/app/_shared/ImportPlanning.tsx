@@ -149,7 +149,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
         title: `${res.crees} créneau${res.crees > 1 ? "x" : ""} ajouté${res.crees > 1 ? "s" : ""}`,
         description:
           res.refuses > 0
-            ? `${res.refuses} créneau(x) non ajouté(s) — le détail est à l'écran.`
+            ? `${res.refuses} créneau(x) non ajouté(s) : le détail est à l'écran.`
             : "Votre agenda est à jour.",
       });
       router.refresh();
@@ -185,12 +185,12 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
         </DialogHeader>
 
         <p className="text-sm text-muted-foreground">
-          Déposez le planning que vous avez déjà — CSV, Excel ou PDF. Il est lu sur votre poste :
+          Déposez le planning que vous avez déjà, CSV, Excel ou PDF. Il est lu sur votre poste :
           le document ne quitte pas votre navigateur, seuls les créneaux que vous validez entrent
           dans votre agenda.
         </p>
 
-        {/* Étape 1 — le fichier. */}
+        {/* Étape 1, le fichier. */}
         <div className="rounded-xl border border-dashed border-border p-4">
           <input
             ref={entree}
@@ -239,7 +239,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
           </p>
         ) : null}
 
-        {/* Étape 2 — de qui parle-t-on ? */}
+        {/* Étape 2, de qui parle-t-on ? */}
         {noms.length > 1 ? (
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium">Ce planning nomme {noms.length} personnes</span>
@@ -251,7 +251,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
               }}
               className="h-10 rounded-xl border border-input bg-background px-3 text-sm"
             >
-              <option value="">— choisissez la vôtre —</option>
+              <option value="">choisissez la vôtre</option>
               {noms.map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -265,7 +265,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
           </label>
         ) : null}
 
-        {/* Étape 3 — la relecture. */}
+        {/* Étape 3, la relecture. */}
         {!resultat && conversion.creneaux.length > 0 ? (
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
@@ -317,7 +317,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
             <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
               {conversion.ignorees.slice(0, 40).map((l, i) => (
                 <li key={i}>
-                  {l.date} — {l.raison}
+                  {l.date}, {l.raison}
                 </li>
               ))}
             </ul>
@@ -332,7 +332,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
           </p>
         ) : null}
 
-        {/* Étape 4 — ce qui s'est passé. */}
+        {/* Étape 4, ce qui s'est passé. */}
         {resultat ? (
           <div className="space-y-2">
             <p className="text-sm font-medium">
@@ -349,7 +349,7 @@ export function ImportPlanning({ accountId }: { accountId: string }) {
                         dateStyle: "short",
                         timeStyle: "short",
                       })}{" "}
-                      — {r.refus}
+{r.refus}
                     </li>
                   ))}
               </ul>

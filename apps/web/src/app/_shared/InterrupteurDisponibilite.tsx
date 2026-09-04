@@ -74,7 +74,7 @@ export function InterrupteurDisponibilite({
         <p className="mt-0.5 max-w-prose text-xs text-muted-foreground">
           {etat
             ? "Vous apparaissez dans les suggestions envoyées aux établissements qui cherchent un renfort."
-            : "Vous n'apparaissez plus dans les suggestions. Votre profil, vos fiches et vos interventions en cours ne bougent pas — rebasculez quand vous voulez."}
+            : "Vous n'apparaissez plus dans les suggestions. Votre profil, vos fiches et vos interventions en cours ne bougent pas : rebasculez quand vous voulez."}
         </p>
       </div>
       <Button

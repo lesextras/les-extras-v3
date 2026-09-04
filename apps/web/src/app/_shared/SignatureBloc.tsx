@@ -279,7 +279,7 @@ export function SignatureBloc({
           <p className="max-w-prose rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
             Ce que le logiciel recueille est une <strong>signature électronique simple</strong>{" "}
             accompagnée d&apos;un faisceau de preuves : empreinte du document, code à usage unique
-            vérifié, horodatage, adresse de connexion, journal des étapes. Elle est valable —
+            vérifié, horodatage, adresse de connexion, journal des étapes. Elle est valable
             l&apos;article 1367 du code civil reconnaît la signature électronique dès lors que le
             procédé identifie son auteur et garantit son lien avec l&apos;acte. Elle ne bénéficie
             pas, en revanche, de la présomption de fiabilité attachée à la signature qualifiée :

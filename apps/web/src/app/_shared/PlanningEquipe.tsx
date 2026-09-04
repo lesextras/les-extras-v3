@@ -110,7 +110,7 @@ export function PlanningEquipe({ plafondAnnuel = 1607 }: { plafondAnnuel?: numbe
             Votre planning d’équipe
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-            Déposez le planning que vous tenez déjà — <strong className="font-semibold text-foreground">CSV,
+            Déposez le planning que vous tenez déjà : <strong className="font-semibold text-foreground">CSV,
             Excel ou PDF</strong>. Il est lu{' '}
             <strong className="font-semibold text-foreground">sur votre poste</strong> : rien
             n’est téléversé, rien n’est enregistré, et fermer l’onglet efface tout.
@@ -164,11 +164,11 @@ export function PlanningEquipe({ plafondAnnuel = 1607 }: { plafondAnnuel?: numbe
             compte comme une absence et non comme du travail.
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Le nom des colonnes est reconnu dans ses formes courantes —{' '}
+            Le nom des colonnes est reconnu dans ses formes courantes, {' '}
             <code className="text-foreground">nom</code>,{' '}
             <code className="text-foreground">salarié</code>,{' '}
             <code className="text-foreground">agent</code> valent{' '}
-            <code className="text-foreground">personne</code> — et l’en-tête n’a pas besoin
+            <code className="text-foreground">personne</code> : et l’en-tête n’a pas besoin
             d’être sur la première ligne : un titre et une date au-dessus du tableau ne
             gênent pas.
           </p>
@@ -195,7 +195,7 @@ export function PlanningEquipe({ plafondAnnuel = 1607 }: { plafondAnnuel?: numbe
             Colonne{lecture.colonnesManquantes.length > 1 ? 's' : ''} introuvable
             {lecture.colonnesManquantes.length > 1 ? 's' : ''} :{' '}
             <strong>{lecture.colonnesManquantes.join(', ')}</strong>. Renommez l’en-tête et
-            redéposez le fichier — mieux vaut ne rien compter que compter faux.
+            redéposez le fichier : mieux vaut ne rien compter que compter faux.
           </span>
         </p>
       ) : null}
@@ -207,7 +207,7 @@ export function PlanningEquipe({ plafondAnnuel = 1607 }: { plafondAnnuel?: numbe
               <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
               <span>
                 Lecture d’un PDF : les colonnes ont été reconstituées d’après la position des
-                titres. <strong>Vérifiez les totaux</strong> avant de vous en servir — et si
+                titres. <strong>Vérifiez les totaux</strong> avant de vous en servir, et si
                 quelque chose cloche, redéposez le même planning en CSV ou en Excel.
               </span>
             </p>
@@ -255,7 +255,7 @@ export function PlanningEquipe({ plafondAnnuel = 1607 }: { plafondAnnuel?: numbe
                       <td className="px-4 py-2.5 font-medium text-foreground">{b.personne}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums">{heuresLisibles(b.heuresTravaillees)}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">
-                        {b.joursAbsence > 0 ? `${b.joursAbsence} j` : '—'}
+                        {b.joursAbsence > 0 ? `${b.joursAbsence} j` : ', '}
                       </td>
                       <td className={`px-4 py-2.5 text-right tabular-nums ${reste < 0 ? 'font-semibold text-destructive' : 'text-muted-foreground'}`}>
                         {heuresLisibles(Math.abs(reste))}{reste < 0 ? ' au-delà' : ''}
@@ -269,7 +269,7 @@ export function PlanningEquipe({ plafondAnnuel = 1607 }: { plafondAnnuel?: numbe
 
           <p className="text-xs leading-relaxed text-muted-foreground">
             {nomFichier ? <span className="text-foreground">{nomFichier}</span> : null}
-            {nomFichier ? ' — ' : null}
+            {nomFichier ? ', ' : null}
             {lecture.lignes.length} ligne{lecture.lignes.length > 1 ? 's' : ''} lue
             {lecture.lignes.length > 1 ? 's' : ''}. Le reste est calculé sur le plafond annuel
             d’ordre public ({plafondAnnuel} h) et ne tient pas compte des jours non encore
@@ -285,7 +285,7 @@ export function PlanningEquipe({ plafondAnnuel = 1607 }: { plafondAnnuel?: numbe
               </p>
               <ul className="mt-1.5 space-y-0.5 text-muted-foreground">
                 {lecture.refusees.slice(0, 8).map((r) => (
-                  <li key={r.numero}>Ligne {r.numero} — {r.raison}</li>
+                  <li key={r.numero}>Ligne {r.numero}, {r.raison}</li>
                 ))}
                 {lecture.refusees.length > 8 ? <li>…</li> : null}
               </ul>

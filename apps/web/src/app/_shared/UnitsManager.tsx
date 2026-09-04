@@ -163,7 +163,7 @@ export function UnitsManager({ accountId, canManage }: { accountId: string; canM
                   onChange={(e) => assign(m.id, e.target.value)}
                   className="h-9 rounded-lg border border-input bg-background px-2 text-sm"
                 >
-                  <option value="">— Sans unité —</option>
+                  <option value="">Sans unité</option>
                   {units.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.name}

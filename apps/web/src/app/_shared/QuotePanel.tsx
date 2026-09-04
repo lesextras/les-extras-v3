@@ -129,7 +129,7 @@ export function QuoteEditor({
                 id={`label-${i}`}
                 value={line.label}
                 onChange={(e) => update(i, { label: e.target.value })}
-                placeholder="Atelier médiation animale — séance de 2 h"
+                placeholder="Atelier médiation animale, séance de 2 h"
               />
             </Field>
             <Field label={i === 0 ? "Qté" : ""} htmlFor={`qty-${i}`}>

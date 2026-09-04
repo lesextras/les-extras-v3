@@ -125,7 +125,7 @@ export function ReviewForm({
             </button>
           ))}
           <span className="ml-2 text-sm text-muted-foreground">
-            {rating > 0 ? `${rating}/5` : "—"}
+            {rating > 0 ? `${rating}/5` : ", "}
           </span>
         </div>
       </Field>
@@ -133,7 +133,7 @@ export function ReviewForm({
       <Field
         label="Commentaire"
         htmlFor={`review-comment-${bookingId}`}
-        hint="Facultatif — 2000 caractères maximum. Restez factuel et professionnel."
+        hint="Facultatif, 2000 caractères maximum. Restez factuel et professionnel."
       >
         <Textarea
           id={`review-comment-${bookingId}`}

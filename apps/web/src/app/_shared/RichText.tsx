@@ -31,7 +31,7 @@ const LATIN1 =
 const ENTITES: Record<string, string> = {
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
   rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", sbquo: "‚", bdquo: "„",
-  hellip: "…", mdash: "—", ndash: "–", laquo: "«", raquo: "»", euro: "€",
+  hellip: "…", mdash: ", ", ndash: ", ", laquo: "«", raquo: "»", euro: "€",
   bull: "•", middot: "·", deg: "°", copy: "©", reg: "®", trade: "™",
 };
 LATIN1.split(" ").forEach((nom, i) => {

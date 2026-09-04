@@ -32,7 +32,7 @@ export function Field({
             plus bas. La bulle ne révélait donc rien : elle posait une
             trentaine de petits ronds gris sur les formulaires du site, à côté
             de textes parfaitement lisibles. Un repère qui ne désigne rien de
-            caché n'est pas un repère, c'est du bruit — et le bruit se retire.
+            caché n'est pas un repère, c'est du bruit, et le bruit se retire.
             Elle reste utile là où elle explique quelque chose d'invisible
             (voir InfoHint, encore employé dans le menu et à l'inscription). */}
       </label>

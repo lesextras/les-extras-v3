@@ -100,7 +100,7 @@ export function PublicQuoteForm({
   return (
     <Card>
       <CardContent className="p-5">
-        <p className="mb-3 text-sm font-medium text-foreground">Devis — {titre}</p>
+        <p className="mb-3 text-sm font-medium text-foreground">Devis, {titre}</p>
         <form onSubmit={soumettre} className="relative space-y-3">
           {/* Champ-piège anti-robot : invisible pour un humain, rempli par les bots. */}
           <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">

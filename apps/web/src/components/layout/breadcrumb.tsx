@@ -41,8 +41,8 @@ const LABELS: Record<string, string> = {
   inbox: 'Messagerie',
   opportunites: 'Opportunités',
   finance: 'Factures & revenus',
-  credits: 'LEX — Crédits',
-  adhesion: 'LEX — Crédits & abonnement',
+  credits: 'LEX, Crédits',
+  adhesion: 'LEX, Crédits & abonnement',
   devis: 'Devis',
   account: 'Mon établissement',
   // Segments qui manquaient : le fil les fabriquait depuis l'URL.

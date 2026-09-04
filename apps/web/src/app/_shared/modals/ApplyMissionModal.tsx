@@ -71,7 +71,7 @@ export function ApplyMissionModal({
           <DialogDescription className="line-clamp-2">{missionTitle}</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
-          <Field label="Message de motivation" htmlFor="message" hint="Optionnel — présentez votre disponibilité et votre expérience.">
+          <Field label="Message de motivation" htmlFor="message" hint="Optionnel : présentez votre disponibilité et votre expérience.">
             <Textarea
               id="message"
               name="message"

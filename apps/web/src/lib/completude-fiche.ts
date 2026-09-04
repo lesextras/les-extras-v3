@@ -82,7 +82,7 @@ export function analyserFiche(f: FichePourCompletude): PointDeCompletude[] {
     p(
       "maxParticipants",
       "Participants maximum",
-      "Décide si l'atelier tient avec le groupe qu'on a — ou s'il faut deux séances.",
+      "Décide si l'atelier tient avec le groupe qu'on a : ou s'il faut deux séances.",
       f.maxParticipants,
     ),
     p(
@@ -118,7 +118,7 @@ export function analyserFiche(f: FichePourCompletude): PointDeCompletude[] {
     p(
       "prerequisites",
       "Prérequis",
-      "Ce qu'il faut avant — ou « Aucun », qui est une réponse à part entière.",
+      "Ce qu'il faut avant : ou « Aucun », qui est une réponse à part entière.",
       f.prerequisites,
     ),
     p(

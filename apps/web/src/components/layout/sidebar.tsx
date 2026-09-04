@@ -204,7 +204,7 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
                       {/* `truncate` coupait sur UNE ligne : « Mes réservations
                           ateliers » et « Mes réservations formation » sortaient
                           toutes deux en « Mes réservations … », donc
-                          indiscernables — et « Former mes équipes » en « Former
+                          indiscernables : et « Former mes équipes » en « Former
                           mes équi… ». Une entrée qu'on ne peut pas lire est une
                           entrée sur laquelle on ne clique pas. Deux lignes
                           autorisées : seules les entrées qui débordent
@@ -242,8 +242,8 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
                         <button
                           type="button"
                           onClick={() => setLexBloquee(item.label)}
-                          title="Crédits LEX requis — activez l'essai gratuit ou rechargez"
-                          aria-label={`${item.label} — crédits LEX requis`}
+                          title="Crédits LEX requis : activez l'essai gratuit ou rechargez"
+                          aria-label={`${item.label}, crédits LEX requis`}
                           className={classes}
                         >
                           {contenu}
@@ -275,8 +275,8 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
       </nav>
 
       {/* La « vue essentielle » a été retirée le 12/08/2026. Deux réglages
-          d'affichage qui se superposaient — l'un cachait le non-essentiel,
-          l'autre montrait l'avancé — faisaient qu'on ne savait plus lequel
+          d'affichage qui se superposaient : l'un cachait le non-essentiel,
+          l'autre montrait l'avancé : faisaient qu'on ne savait plus lequel
           expliquait ce qu'on voyait. Il n'en reste qu'un, et c'est un
           aiguillage : le quotidien, ou la gestion RH. */}
       <div className="border-t border-border px-4 pt-3">
@@ -305,7 +305,7 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
           défile : personne ne descendait jusque-là, et le programme de
           parrainage restait lettre morte auprès des seuls qui pouvaient le
           faire tourner. On la sort du défilement et on la pose juste
-          au-dessus du bloc d'aide — toujours à l'écran, comme lui. */}
+          au-dessus du bloc d'aide : toujours à l'écran, comme lui. */}
       <div className="px-4 pb-1 pt-2">
         <Link
           href="/dashboard/points"

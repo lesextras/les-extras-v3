@@ -97,13 +97,13 @@ export function VerifyEmail({ token }: { token?: string }) {
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {etat === "deja"
-                    ? "Ce lien avait déjà été utilisé — tout est en ordre, vous pouvez vous connecter."
+                    ? "Ce lien avait déjà été utilisé : tout est en ordre, vous pouvez vous connecter."
                     : "Bienvenue dans la communauté LES EXTRAS, le dispositif de l’association ADéPA. Un e-mail vient de partir avec vos premiers pas."}
                 </p>
               </div>
               {/* On passe par `/welcome`, pas par `/dashboard`.
-                  C'est le chemin le plus emprunté — on clique le lien reçu par
-                  e-mail — et il sautait tout le parcours de finalisation :
+                  C'est le chemin le plus emprunté : on clique le lien reçu par
+                  e-mail, et il sautait tout le parcours de finalisation :
                   `onboardingStep` restait à 0, donc la connexion renvoyait
                   ensuite sur « Bienvenue ! » à chaque fois, indéfiniment.
                   `/welcome` passe désormais la main au tableau de bord dès que

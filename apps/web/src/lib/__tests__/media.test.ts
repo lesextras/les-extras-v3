@@ -78,7 +78,7 @@ describe('médiathèque', () => {
     expect(wp('wp-content/x.jpg')).toBe(`https://${MEDIATHEQUE}/wp-content/x.jpg`);
   });
 
-  it("n'est jamais un hôte hérité — sinon la réécriture boucle", () => {
+  it("n'est jamais un hôte hérité : sinon la réécriture boucle", () => {
     expect(visuel(wp('/wp-content/uploads/a.jpg'))).toBe(wp('/wp-content/uploads/a.jpg'));
   });
 });

@@ -77,7 +77,7 @@ const CASCADE = [
   {
     titre: "Le réseau Les Extras",
     texte:
-      "En dernier recours, l’offre s’ouvre au réseau — filtré sur le métier, la zone et les disponibilités.",
+      "En dernier recours, l’offre s’ouvre au réseau : filtré sur le métier, la zone et les disponibilités.",
     pastille: "bg-amber-500 text-amber-950",
   },
 ];
@@ -129,7 +129,7 @@ export function UnSeulFormulaire() {
         })}
       </Reveal>
       {/* La cascade, en clair. C’est l’ordre de diffusion qui sépare ce
-          logiciel d’une annonce publiée au hasard — encore fallait-il le dire. */}
+          logiciel d’une annonce publiée au hasard : encore fallait-il le dire. */}
       <Reveal className="mt-8 overflow-hidden rounded-2xl border border-border bg-card/60">
         <div className="border-b border-border px-6 py-5 md:px-8">
           <h3 className="text-lg font-bold tracking-tight text-foreground">

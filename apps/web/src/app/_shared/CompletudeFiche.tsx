@@ -34,7 +34,7 @@ export function CompletudeBandeau({ fiche }: { fiche: FichePourCompletude }) {
           Il manque : <span className="text-foreground">{manque.map((m) => m.label).join(", ")}</span>.
         </p>
       ) : (
-        <p className="mt-1.5 text-xs text-muted-foreground">Rien ne manque — la fiche est complète.</p>
+        <p className="mt-1.5 text-xs text-muted-foreground">Rien ne manque : la fiche est complète.</p>
       )}
     </div>
   );

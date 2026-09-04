@@ -37,7 +37,7 @@ export function ImportEquipeCsv({ accountId }: { accountId: string }) {
       if (lignes.length === 0) {
         toast({
           title: "Aucune ligne exploitable",
-          description: "Format attendu : email;prénom;nom;rôle — une personne par ligne.",
+          description: "Format attendu : email;prénom;nom;rôle, une personne par ligne.",
           variant: "error",
         });
         return;

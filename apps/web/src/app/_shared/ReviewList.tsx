@@ -66,7 +66,7 @@ export function ReviewList({
       <Card>
         <CardContent className="flex flex-wrap items-center gap-4 p-5">
           <p className="text-[32px] font-bold leading-none tracking-tight text-foreground [font-variant-numeric:tabular-nums]">
-            {average !== null ? average.toFixed(1) : "—"}
+            {average !== null ? average.toFixed(1) : ", "}
             <span className="text-base font-medium text-muted-foreground"> / 5</span>
           </p>
           <div className="space-y-1">

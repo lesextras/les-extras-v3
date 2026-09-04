@@ -78,7 +78,7 @@ export const metadata: Metadata = {
         url: '/images/partage-les-extras.jpg',
         width: 1200,
         height: 630,
-        alt: 'LES EXTRAS — ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
+        alt: 'LES EXTRAS, ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
       },
     ],
   },
@@ -147,7 +147,7 @@ export default async function LandingPage() {
       <SiteHeader />
 
       <main id="main" className="flex-1">
-        {/* ============ HERO — scindé, style grande plateforme ============ */}
+        {/* ============ HERO : scindé, style grande plateforme ============ */}
         <section className="relative isolate overflow-hidden bg-warm-gradient">
           {/* Deux masses floues qui dérivent lentement derrière le contenu.
               Purement décoratives : aria-hidden, aucun coût de lecture. */}
@@ -169,7 +169,7 @@ export default async function LandingPage() {
                   Le titre dit maintenant ce en quoi la maison croit, et non
                   qui elle sert : ce sont les professionnels de terrain qui
                   portent les interventions. Le sous-titre, lui, garde le
-                  concret — ce qu'on vient chercher, et à quel prix. */}
+                  concret : ce qu'on vient chercher, et à quel prix. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
                 Les interventions portées{' '}
                 <span className="text-secondary">par ceux qui font le terrain.</span>
@@ -183,7 +183,7 @@ export default async function LandingPage() {
                 <HeroSearch />
               </div>
 
-              {/* Recherches populaires — vraies catégories du catalogue */}
+              {/* Recherches populaires : vraies catégories du catalogue */}
               <div className="animate-fade-in-up stagger-4 mt-4 flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground">Populaire :</span>
                 {['Psycho-boxe', 'Slam', 'Théâtre', 'Musicothérapie'].map((c) => (
@@ -204,7 +204,7 @@ export default async function LandingPage() {
                     Aucune étape de validation n'existe : publier une fiche
                     suffit à paraître au catalogue. Ce qui EXISTE, et qui est
                     même le vrai différenciateur face à une plateforme
-                    généraliste, c'est le dossier de conformité — identité,
+                    généraliste, c'est le dossier de conformité, identité,
                     diplôme, bulletin n° 3 du casier judiciaire (art. L. 133-6
                     CASF) et coordonnées bancaires, réunis et suivis à
                     échéance. On annonce ça, qui est mesurable. */}
@@ -223,10 +223,10 @@ export default async function LandingPage() {
               </div>
             </div>
 
-            {/* Colonne visuelle — composition avec cartes flottantes.
+            {/* Colonne visuelle : composition avec cartes flottantes.
                 Attention : Reveal applique un `transform`, ce qui en fait le
                 bloc conteneur de tout enfant `absolute`. Le positionnement
-                doit donc vivre SUR le Reveal, pas dans son enfant — sinon les
+                doit donc vivre SUR le Reveal, pas dans son enfant, sinon les
                 cartes retombent sous la photo au lieu de se poser dessus. */}
             <div className="relative hidden lg:block">
               <Reveal>
@@ -269,7 +269,7 @@ export default async function LandingPage() {
                         dix-sept se lit comme « petit » sur une place de marché.
                         Hublo n'a jamais publié son inventaire : il publie son
                         nombre d'établissements. On publie le chiffre qui est
-                        fort — et le nôtre, celui qu'aucun concurrent ne peut
+                        fort : et le nôtre, celui qu'aucun concurrent ne peut
                         écrire, ce sont les zéros : Brigad prend 10 % par
                         mission, Hublo facture 2 000 à 3 000 € HT pour recruter
                         un profil de son vivier.
@@ -284,7 +284,7 @@ export default async function LandingPage() {
               </Reveal>
 
               {/* Pastille « en activité » : le seul élément qui pulse, et il
-                  porte une information réelle — la plateforme tourne. */}
+                  porte une information réelle, la plateforme tourne. */}
               <Reveal delay={440} className="absolute -bottom-4 right-8 z-10">
                 <div className="flex items-center gap-2.5 rounded-full border border-border/70 bg-card/95 py-2 pl-3 pr-4 shadow-card backdrop-blur">
                   <span className="relative grid size-2.5 place-items-center">
@@ -297,7 +297,7 @@ export default async function LandingPage() {
                       ⚠ MAIS PLUS « ET BIENTÔT PARTOUT ». Cette fin de phrase
                       annonçait à tout visiteur hors Île-de-France que ce n'était
                       pas encore pour lui, et une promesse d'expansion sans date
-                      ne rassure personne — elle avoue seulement qu'on n'y est
+                      ne rassure personne : elle avoue seulement qu'on n'y est
                       pas. Le territoire devient un argument : des intervenants
                       qui connaissent les établissements dans lesquels ils
                       interviennent. C'est vrai, et c'est ce qu'on vend. */}
@@ -310,7 +310,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ DOMAINES — cartes photo + texte (style annonce) ============ */}
+        {/* ============ DOMAINES : cartes photo + texte (style annonce) ============ */}
         <section className="section">
           <Reveal className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -425,8 +425,8 @@ export default async function LandingPage() {
                   Les trois sections produit étaient conditionnées à
                   `length > 0`, et rien ne distinguait « rien à montrer » de
                   « je n'ai pas pu demander ». Un visiteur arrivant pendant un
-                  redéploiement — deux à trois minutes, et c'est précisément
-                  l'heure où l'on pousse une campagne — voyait une association
+                  redéploiement : deux à trois minutes, et c'est précisément
+                  l'heure où l'on pousse une campagne, voyait une association
                   sans un seul atelier au catalogue. On préfère dire que le
                   chargement a échoué et donner la porte du catalogue :
                   l'erreur avouée coûte infiniment moins cher que le vide. */}
@@ -501,7 +501,7 @@ export default async function LandingPage() {
                         {/* Pas « Voir les {n} parcours » : `highlights` renvoie
                             une SÉLECTION de dix formations, dont sept gratuites
                             aujourd'hui. Le compte affiché serait celui du
-                            carrousel, pas celui du catalogue — un chiffre faux
+                            carrousel, pas celui du catalogue, un chiffre faux
                             sur la première page se vérifie en un clic, et c'est
                             le clic suivant. */}
                         Tous les parcours gratuits <ArrowRight />
@@ -538,7 +538,7 @@ export default async function LandingPage() {
           </section>
         ) : null}
 
-        {/* ============ LEX & LE GAP — TROIS BLOCS DEVENUS UN ============
+        {/* ============ LEX & LE GAP, TROIS BLOCS DEVENUS UN ============
 
             L’essai, le détail de l’offre puis le GAP se suivaient en trois
             sections : trois titres, trois respirations, trois fois la même
@@ -602,7 +602,7 @@ export default async function LandingPage() {
                   nom: 'Mise en relation & contractualisation',
                   sous: 'Renforts et ateliers, de la publication au contrat signé.',
                   prix: '0 €',
-                  prixSous: 'Gratuit, pour toujours — 0 % de commission',
+                  prixSous: 'Gratuit, pour toujours, 0 % de commission',
                   points: [
                     'RenforTeam : diffusion en cascade, jusqu’au CDD généré',
                     'Ateliers : devis sous 48 h, contrat et facture automatiques',
@@ -624,7 +624,7 @@ export default async function LandingPage() {
                   nom: 'Formations Qualiopi',
                   sous: 'Facturées par l’association, sous sa certification.',
                   prix: 'Sur devis',
-                  prixSous: 'Facturées par l’association ADéPA — finançables OPCO',
+                  prixSous: 'Facturées par l’association ADéPA, finançables OPCO',
                   points: [
                     'Animées par les formateurs du réseau Les Extras',
                     'Certifiées Qualiopi, finançables par votre OPCO',
@@ -729,7 +729,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ CATALOGUE & CONTACT — les formulaires du site historique ============ */}
+        {/* ============ CATALOGUE & CONTACT : les formulaires du site historique ============ */}
         <section id="catalogue-contact" className="scroll-mt-24">
           <div className="section">
             <Reveal className="mx-auto max-w-2xl text-center">

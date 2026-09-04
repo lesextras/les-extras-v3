@@ -143,7 +143,7 @@ const freelanceNav: NavSection[] = [
       // planning, comme côté établissement.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
-      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
+      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP, groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       // Les trois outils LEX sont remontés dans la barre du haut le
       // 03/09/2026 (voir header.tsx). Ils occupaient les trois dernières
       // lignes de cette section dans les QUATRE menus du fichier.
@@ -160,7 +160,7 @@ const freelanceNav: NavSection[] = [
     items: [
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog — vos articles vous font connaître des établissements' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
     ],
   },
   {
@@ -170,7 +170,7 @@ const freelanceNav: NavSection[] = [
       // l'intervenant, l'intervenant n'y avait aucun acces. Il ne pouvait ni
       // voir ce qui manquait, ni deposer sa carte d'identite.
       { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces obligatoires : identité, diplôme, casier judiciaire, IBAN, attestation URSSAF. Un dossier complet vous fait passer devant.' },
-      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures — au même endroit' },
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures, au même endroit' },
       // LEX se recharge aussi depuis un compte intervenant : l'assistant IA
       // est ouvert aux deux types de comptes, à crédits pour tout le monde.
       // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
@@ -179,7 +179,7 @@ const freelanceNav: NavSection[] = [
       // devis et la conformité.
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
-      { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra — et l\'accès prioritaire aux missions' },
+      { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra, et l\'accès prioritaire aux missions' },
       // « Points & parrainage » n'est plus dans cette liste : il est épinglé
       // en bas du menu, juste au-dessus du bloc d'aide (voir sidebar.tsx).
       // Au fond d'une liste défilante, personne ne descendait jusqu'à lui.
@@ -233,7 +233,7 @@ const establishmentNav: NavSection[] = [
       //
       // Une seule porte, qui ouvre sur « Tout ». Le tri se fait ensuite, là
       // où on le voit.
-      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers commandés et les inscriptions en formation, au même endroit — filtrables sur la page' },
+      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers commandés et les inscriptions en formation, au même endroit, filtrables sur la page' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
       // Le pendant contractuel du planning : on a trouvé quelqu'un, on
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
@@ -266,7 +266,7 @@ const establishmentNav: NavSection[] = [
   // titre, comme les autres cas du fichier.
   {
     items: [
-      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP — groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
+      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP, groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
     ],
   },
   {
@@ -289,7 +289,7 @@ const establishmentNav: NavSection[] = [
       // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
       // Une fiche par personne, et la conformité comme propriété de cette
       // personne — pas comme un annuaire parallèle qu'il faut recouper.
-      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier — recherche et filtres par service' },
+      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier, recherche et filtres par service' },
       // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
       // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
       // Les uns sont salariés, les autres viennent en renfort.
@@ -300,12 +300,12 @@ const establishmentNav: NavSection[] = [
       // soi-même en contrat court — le pendant humain de « Contrats CDD ».
       { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog — vos articles vous font connaître des établissements' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
       // Devis et factures sont les deux temps du même geste : on chiffre,
       // puis on facture. Deux entrées éloignées obligeaient à traverser le
       // menu pour retrouver la facture d'un devis accepté.
-      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures — au même endroit' },
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures, au même endroit' },
       // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
       // chef de service de toute vue sur la consommation de LEX — et de tout
       // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
@@ -314,7 +314,7 @@ const establishmentNav: NavSection[] = [
       // La conformité existait comme page mais n'était liée nulle part dans le
       // menu établissement : on la rend visible. Elle ferme la section — c'est
       // ce qu'on vérifie, pas ce qu'on fait tous les jours.
-      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants — identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
+      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants, identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
       // « Points & parrainage » n'est plus dans cette liste : comme côté
       // intervenant, l'entrée est épinglée en bas du menu, juste au-dessus du
       // bloc d'aide (voir sidebar.tsx). Même place pour tous les comptes.
@@ -479,7 +479,7 @@ const attenteRattachementNav: NavSection[] = [
       // rubrique, et ce qu'on anime releve de son activite comme le reste.
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles },
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
-      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Votre agenda — importez-y le planning que vous avez déjà, en CSV, Excel ou PDF' },
+      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Votre agenda, importez-y le planning que vous avez déjà, en CSV, Excel ou PDF' },
     ],
   },
   // Les deux outils LEX sont dans la barre du haut depuis le 03/09/2026. Le
