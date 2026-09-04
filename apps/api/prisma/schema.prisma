@@ -529,6 +529,19 @@ model Service {
   /// Coût en crédits d'une réservation de cet atelier par un établissement.
   creditCost      Int             @default(1)
   city            String?
+  /// LES DÉPARTEMENTS RÉELLEMENT COUVERTS, en codes INSEE ("77", "91"…).
+  ///
+  /// ⚠ `city` est un champ de texte libre, et le filtre du catalogue s'appuyait
+  /// dessus avec un `contains`. Mesuré le 4/09/2026 : « Île-de-France » rendait
+  /// 10 fiches, « Ile de France » 3, « Créteil » ZÉRO — la même région écrite de
+  /// deux façons, et aucune requête ne rendait les dix-sept. Seize fiches sur
+  /// dix-sept mettaient d'ailleurs une RÉGION dans un champ nommé « ville ».
+  ///
+  /// Ce tableau est la liste fermée qui remplace le texte libre au filtrage.
+  /// `city` reste, parce qu'il dit une autre chose — la ville de base de
+  /// l'intervenant — et parce qu'effacer une donnée saisie à la main ne se fait
+  /// pas. Voir `src/common/territoires.ts` pour le référentiel et la lecture.
+  departements    String[]        @default([])
   status          ServiceStatus   @default(DRAFT)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

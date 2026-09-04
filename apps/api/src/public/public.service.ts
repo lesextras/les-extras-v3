@@ -10,6 +10,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ProgressionService } from '../users/progression.service';
 import { MailService } from '../common/mail/mail.service';
+import { DEPARTEMENTS, trouverDepartement } from '../common/territoires';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 
@@ -42,6 +43,10 @@ const PUBLIC_SELECT = {
   duration: true,
   durationMinutes: true,
   city: true,
+  /// Le territoire couvert, en codes INSEE. La carte l'affiche à la place de
+  /// `city` : « Toute l'Île-de-France » dit ce qu'un directeur veut savoir,
+  /// « Île-de-France » écrit dans un champ « ville » ne le disait pas.
+  departements: true,
   maxParticipants: true,
   publicTarget: true,
   publicTargets: true,
@@ -228,8 +233,27 @@ export class PublicService {
     }
 
     if (query.public) where.publicTargets = { has: query.public };
-    if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
     if (query.priceMax != null) where.price = { lte: query.priceMax };
+
+    // ⚠ LE FILTRE DE LIEU NE PASSE PLUS PAR `city`.
+    //
+    // Il s'appuyait sur `contains` insensible à la casse — mais pas aux accents
+    // ni aux tirets. Mesuré en direct le 4/09/2026 sur les dix-sept fiches en
+    // ligne : « Île-de-France » rendait 10 résultats, « Ile de France » 3,
+    // « Créteil » ZÉRO. Deux graphies de la même région, et aucune requête ne
+    // rendait les dix-sept. La liste déroulante du catalogue, construite à
+    // partir des valeurs distinctes en base, proposait d'ailleurs les deux
+    // graphies comme deux lieux différents.
+    //
+    // `departement` prend le relais : un code INSEE dans une liste fermée,
+    // comparé à un tableau. Voir `common/territoires.ts`.
+    const departement = query.departement
+      ? trouverDepartement(query.departement)
+      : undefined;
+    if (departement) where.departements = { has: departement.code };
+    // `city` reste accepté pour ne pas casser un lien déjà partagé ou indexé,
+    // mais il n'est plus proposé nulle part dans l'interface.
+    else if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
 
     const take = query.take ?? 24;
     const skip = query.skip ?? 0;
@@ -271,7 +295,7 @@ export class PublicService {
     // Facettes : on ne propose que des filtres qui donnent des résultats.
     const facettes = await this.prisma.service.findMany({
       where: this.typeWhere(query.type),
-      select: { publicTargets: true, city: true },
+      select: { publicTargets: true, city: true, departements: true },
     });
     const publics = Array.from(
       new Set(facettes.flatMap((f) => f.publicTargets)),
@@ -280,13 +304,32 @@ export class PublicService {
       new Set(facettes.map((f) => f.city).filter((c): c is string => Boolean(c))),
     ).sort((a, b) => a.localeCompare(b, 'fr'));
 
+    // LES TERRITOIRES AVEC LEUR COMPTE, dans l'ordre du référentiel.
+    //
+    // On ne propose qu'un département où quelque chose existe : un filtre qui
+    // mène à une page vide est une déception qu'on aurait pu éviter. Et le
+    // compte est affiché — « Seine-et-Marne (14) » dit au directeur ce qu'il
+    // trouvera avant de cliquer, ce que la liste de villes ne disait jamais.
+    const compteur = new Map<string, number>();
+    for (const f of facettes) {
+      for (const code of f.departements) {
+        compteur.set(code, (compteur.get(code) ?? 0) + 1);
+      }
+    }
+    const departements = DEPARTEMENTS.filter((d) => compteur.has(d.code)).map((d) => ({
+      code: d.code,
+      slug: d.slug,
+      nom: d.nom,
+      total: compteur.get(d.code) ?? 0,
+    }));
+
     const notes = await this.noteParService(items.map((i) => i.id));
     const enrichis = items.map((i) => ({ ...i, ...(notes.get(i.id) ?? { rating: null, reviewsCount: 0 }) }));
     if (query.sort === 'rating') {
       enrichis.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
     }
 
-    return { items: enrichis, total, take, skip, categories, publics, cities };
+    return { items: enrichis, total, take, skip, categories, publics, cities, departements };
   }
 
   /** Note moyenne et nombre d'avis, par fiche, en une seule requête. */

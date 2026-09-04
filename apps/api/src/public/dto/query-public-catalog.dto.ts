@@ -26,7 +26,22 @@ export class QueryPublicCatalogDto {
   @MaxLength(60)
   public?: string;
 
-  /** Ville ou département tel que saisi sur la fiche. */
+  /**
+   * Département couvert : code INSEE ou adresse lisible (« 77 »,
+   * « seine-et-marne »). C'est le filtre de lieu du catalogue.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  departement?: string;
+
+  /**
+   * Ancien filtre de lieu, en texte libre. ⚠ Conservé UNIQUEMENT pour ne pas
+   * casser un lien déjà partagé ou indexé : il comparait `city` avec un
+   * `contains` qui ignorait les accents, si bien que « Ile de France » et
+   * « Île-de-France » ne rendaient pas les mêmes fiches. Plus rien ne le
+   * propose dans l'interface. Voir `common/territoires.ts`.
+   */
   @IsOptional()
   @IsString()
   @MaxLength(80)

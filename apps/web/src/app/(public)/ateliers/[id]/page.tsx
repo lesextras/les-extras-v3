@@ -25,6 +25,7 @@ import { exigerFiche, metaIntrouvable } from "../../../_shared/fiche-publique";
 import { premierVisuel, visuels } from "@/lib/media";
 import { SOCLE_OG, SOCLE_TWITTER } from "@/lib/meta";
 import { titreFiche } from "@/lib/titre-fiche";
+import { resumeTerritoire, nomsDepartements } from "@/lib/territoires";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -76,6 +77,8 @@ interface ServiceDetail {
   qualiopi?: boolean;
   price?: string | number | null;
   city?: string | null;
+  /** Départements couverts, en codes INSEE. Voir `lib/territoires.ts`. */
+  departements?: string[] | null;
   views?: number | null;
   requestsCount?: number | null;
   featured?: boolean;
@@ -198,6 +201,8 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
       ? [service.publicTarget]
       : [];
   const duree = dureeLisible(service.durationMinutes, service.duration);
+  const territoire = resumeTerritoire(service.departements ?? []);
+  const territoiresNoms = nomsDepartements(service.departements ?? []);
   const owner = service.account?.owner;
   const faq = Array.isArray(service.faq) ? service.faq : [];
   const extras = Array.isArray(service.priceExtras) ? service.priceExtras : [];
@@ -309,7 +314,18 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
             {service.material ? (
               <Attribut icon={<Package className="size-4" />} label="Matériel" value={service.material} />
             ) : null}
-            {service.city ? (
+            {/* ⚠ « LIEU » N'ÉTAIT PAS LA BONNE QUESTION. L'atelier se tient CHEZ
+                l'établissement : ce qu'un directeur veut savoir, c'est jusqu'où
+                l'intervenant se déplace. Le champ affichait `city`, où seize
+                fiches sur dix-sept avaient écrit une région faute d'un endroit
+                pour dire leur territoire. */}
+            {territoire ? (
+              <Attribut
+                icon={<MapPin className="size-4" />}
+                label="Se déplace"
+                value={territoire}
+              />
+            ) : service.city ? (
               <Attribut icon={<MapPin className="size-4" />} label="Lieu" value={service.city} />
             ) : null}
             {service.prerequisites ? (
@@ -555,7 +571,11 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
               name: service.title,
               description: resume(service.description, 300),
               serviceType: SERVICE_CATEGORY_LABEL[service.category],
-              areaServed: service.city ?? undefined,
+              // `areaServed` reçoit les départements réellement couverts : c'est
+              // ce que Google lit pour rattacher la fiche à un territoire.
+              areaServed: territoiresNoms.length
+                ? territoiresNoms
+                : (service.city ?? undefined),
               ...(images.length ? { image: images } : {}),
               provider: {
                 "@type": "Organization",

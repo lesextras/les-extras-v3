@@ -29,6 +29,7 @@ import {
   CreateSessionAdminDto,
   UpdateSessionAdminDto,
 } from './dto/formation-admin.dto';
+import { DEPARTEMENTS } from '../common/territoires';
 
 /**
  * Hypothèse d'économie moyenne réalisée sur une mission de renfort pourvue
@@ -479,6 +480,17 @@ export class AdminService {
     const fiche = await this.prisma.service.findUnique({ where: { id }, select: { id: true } });
     if (!fiche) throw new NotFoundException('Atelier introuvable.');
     const donnees = Object.fromEntries(Object.entries(dto).filter(([, v]) => v !== undefined));
+    // Les départements passent par le même tamis que côté intervenant : un code
+    // hors référentiel écrit en base rendrait la fiche invisible de tous les
+    // filtres, sans erreur ni trace. Voir `common/territoires.ts`.
+    if (Array.isArray(donnees.departements)) {
+      const connus = new Set(DEPARTEMENTS.map((d) => d.code));
+      donnees.departements = [
+        ...new Set((donnees.departements as unknown[]).filter((c): c is string =>
+          typeof c === 'string' && connus.has(c),
+        )),
+      ].sort();
+    }
     const maj = await this.prisma.service.update({ where: { id }, data: donnees });
     await this.audit.log({
       actorId: acteurId,

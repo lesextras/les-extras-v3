@@ -18,6 +18,7 @@ import { premierVisuel } from "@/lib/media";
 import { FavoriteButton } from "../_shared/FavoriteButton";
 import { PageHeader, EmptyState } from "../_shared/ui";
 import { SERVICE_CATEGORY_LABEL, formatMoney } from "../_shared/format";
+import { resumeTerritoire } from "@/lib/territoires";
 import type { ServiceCategory } from "../_shared/types";
 
 export interface CatalogItem {
@@ -30,6 +31,8 @@ export interface CatalogItem {
   price?: string | number | null;
   duration?: string | null;
   city?: string | null;
+  /** Départements couverts, en codes INSEE. Voir `lib/territoires.ts`. */
+  departements?: string[] | null;
   images?: string[] | null;
   publicTargets?: string[] | null;
   publicTarget?: string | null;
@@ -54,6 +57,8 @@ interface CatalogResponse {
   categories: string[];
   publics: string[];
   cities: string[];
+  /** Territoires où il y a effectivement quelque chose, avec leur compte. */
+  departements: { code: string; slug: string; nom: string; total: number }[];
 }
 
 const inputClass =
@@ -66,7 +71,13 @@ const inputClass =
  */
 function CarteCatalogue({ item }: { item: CatalogItem }) {
   const organisme = item.account?.name;
-  const ville = item.city ?? item.account?.city;
+  // ⚠ ON N'AFFICHE PLUS `city` TEL QUEL. Seize fiches sur dix-sept y avaient
+  // écrit une RÉGION dans un champ nommé « ville » — la vignette annonçait donc
+  // « Île-de-France » comme s'il s'agissait d'un lieu de rendez-vous. Le
+  // territoire couvert dit ce qu'un directeur cherche : est-ce que ça vient
+  // jusqu'à moi. `city` ne sert plus que de repli pour les fiches d'avant.
+  const ville =
+    resumeTerritoire(item.departements ?? []) ?? item.city ?? item.account?.city;
   return (
     <Card className="group card-interactive relative flex h-full flex-col overflow-hidden">
       {/* Le visuel d'abord : une fiche sans image ne se clique pas. */}
@@ -198,6 +209,7 @@ export async function CatalogView({
     category?: string;
     public?: string;
     city?: string;
+    departement?: string;
     priceMax?: string;
     sort?: string;
   };
@@ -205,7 +217,7 @@ export async function CatalogView({
   const search = searchParams?.search?.trim() ?? "";
   const category = searchParams?.category ?? "";
   const publicVise = searchParams?.public ?? "";
-  const ville = searchParams?.city ?? "";
+  const territoire = searchParams?.departement ?? "";
   const budget = searchParams?.priceMax ?? "";
   const tri = searchParams?.sort ?? "";
 
@@ -219,7 +231,7 @@ export async function CatalogView({
   if (search) qs.set("search", search);
   if (category) qs.set("category", category);
   if (publicVise) qs.set("public", publicVise);
-  if (ville) qs.set("city", ville);
+  if (territoire) qs.set("departement", territoire);
   if (budget) qs.set("priceMax", budget);
   if (tri) qs.set("sort", tri);
 
@@ -230,10 +242,10 @@ export async function CatalogView({
   const categories = data?.categories ?? [];
   const publics = data?.publics ?? [];
   /** Aucun critère actif : on peut proposer les entrées par expertise. */
-  const filtree = Boolean(search || category || publicVise || ville || budget);
-  const cities = data?.cities ?? [];
+  const filtree = Boolean(search || category || publicVise || territoire || budget);
+  const territoires = data?.departements ?? [];
   const hasFilters = Boolean(
-    search || category || publicVise || ville || budget || tri,
+    search || category || publicVise || territoire || budget || tri,
   );
 
   // PLUS DE RANGÉE « À LA UNE » — décision de Siham, 3 septembre 2026.
@@ -302,19 +314,28 @@ export async function CatalogView({
             </option>
           ))}
         </select>
-        <select
-          name="city"
-          defaultValue={ville}
-          aria-label="Filtrer par lieu"
-          className={`${inputClass} sm:w-40`}
-        >
-          <option value="">Partout</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        {/* ⚠ CE FILTRE ÉTAIT LE PLUS DÉCEVANT DU SITE.
+            Il listait les valeurs distinctes du champ « ville » saisi à la
+            main : il proposait donc « Ile de France » ET « Île-de-France »
+            comme deux lieux différents, l'un rendant 10 fiches et l'autre 3.
+            Et « Créteil » ne pouvait rien rendre, alors que treize fiches
+            annonçaient couvrir toute la région.
+            Liste fermée, un département par entrée, avec ce qu'on y trouve. */}
+        {territoires.length > 0 ? (
+          <select
+            name="departement"
+            defaultValue={territoire}
+            aria-label="Filtrer par département"
+            className={`${inputClass} sm:w-52`}
+          >
+            <option value="">Partout en Île-de-France</option>
+            {territoires.map((d) => (
+              <option key={d.code} value={d.slug}>
+                {d.nom} ({d.total})
+              </option>
+            ))}
+          </select>
+        ) : null}
         <input
           type="number"
           name="priceMax"

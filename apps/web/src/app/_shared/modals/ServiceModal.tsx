@@ -27,6 +27,7 @@ import { apiRequest } from "@/lib/api";
 import { lancerConfettis } from "@/lib/confetti";
 import { Field, Textarea } from "../form-fields";
 import { FileUpload, type FichierDepose } from "../FileUpload";
+import { DEPARTEMENTS } from "@/lib/territoires";
 
 const CATEGORIES = [
   { value: "ATELIER", label: "Atelier" },
@@ -64,6 +65,7 @@ export interface FicheExistante {
   publicTarget?: string | null;
   price?: string | number | null;
   city?: string | null;
+  departements?: string[] | null;
   status?: string | null;
   objectives?: string | null;
   methodology?: string | null;
@@ -128,6 +130,14 @@ export function ServiceModal({
   const [brief, setBrief] = useState("");
   const [statut, setStatut] = useState<string>(fiche?.status ?? "PUBLISHED");
   const [publics, setPublics] = useState<string[]>(fiche?.publicTargets ?? []);
+  /**
+   * LES DÉPARTEMENTS OÙ L'ON SE DÉPLACE — la question que pose vraiment un
+   * directeur. L'atelier se tient CHEZ lui : il ne cherche pas où se trouve la
+   * prestation, il cherche si elle vient jusqu'à lui. Le champ « Ville » ne
+   * répondait pas à ça, et seize fiches sur dix-sept y avaient d'ailleurs écrit
+   * une région faute de mieux.
+   */
+  const [territoires, setTerritoires] = useState<string[]>(fiche?.departements ?? []);
   /**
    * PHOTOS DE LA FICHE — au moins une est exigée à la CRÉATION.
    *
@@ -236,6 +246,7 @@ export function ServiceModal({
       publicTarget: texte("publicTarget"),
       price: fd.get("price") ? Number(fd.get("price")) : undefined,
       city: texte("city"),
+      departements: territoires,
       // Le contenu pédagogique : ces champs existaient en base et dans l'API
       // depuis le début, mais seul l'import de catalogue les remplissait. Une
       // fiche créée à la main sortait donc systématiquement plus pauvre qu'une
@@ -457,10 +468,59 @@ export function ServiceModal({
             >
               <Input id="publicTarget" name="publicTarget" defaultValue={fiche?.publicTarget ?? ""} placeholder="Adultes en situation de handicap" />
             </Field>
-            <Field label="Ville" htmlFor="city">
+            <Field
+              label="Votre ville de base"
+              htmlFor="city"
+              hint="D'où vous partez. Le territoire couvert se coche juste en dessous."
+            >
               <Input id="city" name="city" defaultValue={fiche?.city ?? ""} placeholder="Melun" />
             </Field>
           </div>
+
+          <Field
+            label="Départements où vous intervenez"
+            hint="C'est le filtre du catalogue. Un établissement cherche d'abord qui se déplace jusqu'à lui — sans au moins un département coché, votre fiche n'apparaît dans aucune recherche par territoire."
+          >
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setTerritoires((liste) =>
+                    liste.length === DEPARTEMENTS.length
+                      ? []
+                      : DEPARTEMENTS.map((d) => d.code),
+                  )
+                }
+                className="rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              >
+                {territoires.length === DEPARTEMENTS.length
+                  ? "Tout décocher"
+                  : "Toute l’Île-de-France"}
+              </button>
+              {DEPARTEMENTS.map((d) => {
+                const actif = territoires.includes(d.code);
+                return (
+                  <button
+                    key={d.code}
+                    type="button"
+                    aria-pressed={actif}
+                    onClick={() =>
+                      setTerritoires((liste) =>
+                        actif ? liste.filter((x) => x !== d.code) : [...liste, d.code],
+                      )
+                    }
+                    className={
+                      actif
+                        ? "rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                        : "rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    }
+                  >
+                    {d.nom}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
 
           <Field
             label="Publics concernés"

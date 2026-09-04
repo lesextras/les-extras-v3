@@ -78,6 +78,24 @@ export class CreateServiceDto {
   @IsOptional()
   @IsString()
   city?: string;
+
+  /**
+   * LES DÉPARTEMENTS RÉELLEMENT COUVERTS, en codes INSEE.
+   *
+   * ⚠ C'est ce qui remplace `city` au filtrage du catalogue. Le champ « ville »
+   * en texte libre produisait des lieux incomparables — « Île-de-France » et
+   * « Ile de France » vivaient côte à côte, et « Créteil » ne rendait aucune
+   * fiche alors que treize annonçaient couvrir toute la région. Voir
+   * `common/territoires.ts`.
+   *
+   * Une fiche sans département reste publiable : elle n'apparaît simplement pas
+   * quand on filtre par territoire. Rendre le champ obligatoire aurait bloqué la
+   * republication des fiches existantes, ce qui coûte plus cher que le manque.
+   */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  departements?: string[];
   /** Durée en minutes (480 = 8 h) : sert au tri et aux filtres. */
   @IsOptional()
   @IsInt()

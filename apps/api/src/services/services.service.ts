@@ -20,6 +20,18 @@ import {
   visibleParCompte,
 } from './portee-salarie';
 import { BookServiceDto } from './dto/book-service.dto';
+import { DEPARTEMENTS } from '../common/territoires';
+
+/**
+ * Ne garde que les codes du référentiel, sans doublon et dans un ordre stable.
+ * Un formulaire peut envoyer n'importe quoi ; un code inconnu écrit en base
+ * produirait une fiche invisible de tous les filtres, en silence.
+ */
+function codesValides(codes?: string[] | null): string[] {
+  if (!codes?.length) return [];
+  const connus = new Set(DEPARTEMENTS.map((d) => d.code));
+  return [...new Set(codes.filter((c) => connus.has(c)))].sort();
+}
 
 @Injectable()
 export class ServicesService {
@@ -64,6 +76,7 @@ export class ServicesService {
         qualiopi: dto.qualiopi ?? false,
         price: dto.price,
         city: dto.city,
+        departements: codesValides(dto.departements),
       },
     });
 
@@ -243,7 +256,7 @@ export class ServicesService {
 
   async update(id: string, accountId: string, dto: UpdateServiceDto) {
     const avant = await this.assertOwned(id, accountId);
-    const { faq, priceExtras, ...rest } = dto;
+    const { faq, priceExtras, departements, ...rest } = dto;
     // Première mise en ligne de cette fiche : elle enrichit le catalogue
     // commun, elle est créditée en points. Les republications suivantes ne
     // rapportent rien (sinon il suffirait de dépublier/republier en boucle).
@@ -259,6 +272,12 @@ export class ServicesService {
         ...(faq !== undefined ? { faq: faq as unknown as object } : {}),
         ...(priceExtras !== undefined
           ? { priceExtras: priceExtras as unknown as object }
+          : {}),
+        // ⚠ LES CODES SONT FILTRÉS, PAS FAIT CONFIANCE. Le champ arrive d'un
+        // formulaire ; un code inconnu enregistré tel quel ferait une fiche
+        // introuvable par tous les filtres, sans que rien ne le signale.
+        ...(departements !== undefined
+          ? { departements: codesValides(departements) }
           : {}),
       },
     });

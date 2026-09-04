@@ -48,6 +48,8 @@ export class UpdateServiceAdminDto {
   @IsOptional() @IsString() @MaxLength(200) title?: string;
   @IsOptional() @IsString() @MaxLength(20000) description?: string;
   @IsOptional() @IsString() @MaxLength(120) city?: string;
+  /** Départements couverts (codes INSEE) — voir `common/territoires.ts`. */
+  @IsOptional() @IsArray() @IsString({ each: true }) departements?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) images?: string[];
   @IsOptional() @IsArray() @IsString({ each: true }) publicTargets?: string[];
   @IsOptional() @IsString() @MaxLength(200) publicTarget?: string;
