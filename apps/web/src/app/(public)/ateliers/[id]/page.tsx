@@ -15,7 +15,6 @@ import {
   Users,
   MapPin,
   Package,
-  Eye,
   BadgeCheck,
   CalendarClock,
   ShieldCheck,
@@ -209,6 +208,19 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
   const creneaux = service.timeSlots ?? [];
   const avis = service.reviews ?? [];
 
+  // COMBIEN ÇA COÛTE PAR PERSONNE — la question que se pose vraiment une
+  // direction. Le budget animation d'un EHPAD tourne autour de 3 à 5 € par
+  // résident et par jour ; « 300 € la séance » se compare mentalement à la
+  // référence du secteur (« moins de 50 € ») et perd, alors que sur dix
+  // participants la séance revient à 30 € par personne. Le calcul se fait à
+  // partir de deux champs déjà saisis : rien de plus n'est demandé à
+  // l'intervenant.
+  const prixNombre = Number(service.price);
+  const parPersonne =
+    Number(service.maxParticipants) > 0 && prixNombre > 0
+      ? prixNombre / Number(service.maxParticipants)
+      : null;
+
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <nav aria-label="Fil d'Ariane" className="text-sm text-muted-foreground">
@@ -278,6 +290,11 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
             <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               {service.title}
             </h1>
+            {/* ⚠ LE COMPTEUR DE CONSULTATIONS A ÉTÉ RETIRÉ D'ICI. Il annonçait
+                à un acheteur que des centaines de personnes avaient regardé
+                la fiche avant lui sans que rien n'en sorte — ni avis, ni
+                réservation. C'est de la preuve sociale à l'envers. Le chiffre
+                reste visible côté intervenant et dans /admin, là où il sert. */}
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               {service.rating ? (
                 <span className="inline-flex items-center gap-1 font-medium text-foreground">
@@ -285,13 +302,8 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                   {service.rating.toFixed(1)}
                   <span className="font-normal text-muted-foreground">
                     ({avis.length} avis
-                    {service.ratingSource === "provider" ? " sur l\u2019intervenant" : ""})
+                    {service.ratingSource === "provider" ? " sur l’intervenant" : ""})
                   </span>
-                </span>
-              ) : null}
-              {service.views ? (
-                <span className="inline-flex items-center gap-1">
-                  <Eye className="size-4" /> {service.views} consultations
                 </span>
               ) : null}
               <span>Ajouté le {formatDate(service.createdAt)}</span>
@@ -382,7 +394,7 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
               <h2 className="text-lg font-semibold text-foreground">
                 {service.ratingSource === "service"
                   ? "Avis sur cet atelier"
-                  : "Avis sur l\u2019intervenant"}
+                  : "Avis sur l’intervenant"}
               </h2>
               <div className="space-y-2">
                 {avis.map((a) => (
@@ -423,6 +435,12 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 <div>
                   <p className="text-2xl font-bold text-foreground">{formatMoney(service.price)}</p>
                   <p className="text-xs text-muted-foreground">Tarif de référence, par séance</p>
+                  {parPersonne ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Soit {formatMoney(parPersonne)} par participant, pour{" "}
+                      {service.maxParticipants} personnes.
+                    </p>
+                  ) : null}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">Tarif sur devis</p>
@@ -499,7 +517,10 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 <div className="flex items-center gap-3">
                   <Avatar className="size-11">
                     <AvatarImage src={service.account.logoUrl ?? undefined} />
-                    <AvatarFallback>
+                    {/* L'aplat aux couleurs du site remplace le rond gris : sans
+                        photo, un profil ne doit pas avoir l'air vide. Aucune
+                        photo n'est exigée de l'intervenant. */}
+                    <AvatarFallback className="bg-primary/10 font-medium text-primary">
                       {initials(owner?.firstName, owner?.lastName) ||
                         (service.account.name ?? "?").slice(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -508,8 +529,11 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                     <p className="truncate text-sm font-medium text-foreground">
                       {fullName(owner?.firstName, owner?.lastName) || service.account.name}
                     </p>
+                    {/* Le métier ET la ville : `job ?? city` masquait la ville
+                        dès qu'un métier était renseigné. */}
                     <p className="truncate text-xs text-muted-foreground">
-                      {owner?.profile?.job ?? service.account.city ?? "Intervenant Les Extras"}
+                      {[owner?.profile?.job, service.account.city].filter(Boolean).join(" · ") ||
+                        "Intervenant Les Extras"}
                     </p>
                   </div>
                 </div>
