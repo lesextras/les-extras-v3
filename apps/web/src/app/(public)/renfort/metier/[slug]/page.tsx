@@ -113,7 +113,7 @@ export default async function MetierPage({ params: paramsPromesse }: { params: P
         <section className="rounded-xl border border-border bg-card p-6">
           <h2 className="flex items-center gap-2 font-semibold text-foreground">
             <ShieldCheck className="size-4 text-primary" aria-hidden />
-            Ce qui est vérifié avant la mise en relation
+            Les pièces exigées au dossier de conformité
           </h2>
           <ul className="mt-4 space-y-2.5">
             {metier.verifications.map((v) => (
