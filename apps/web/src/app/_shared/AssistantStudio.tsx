@@ -222,6 +222,17 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
    */
   const [intitule, setIntitule] = React.useState("");
   /**
+   * L'APERCU DU MASQUAGE (06/09/2026).
+   *
+   * On promettait « les noms sont masques avant traitement » et on affichait
+   * un compteur. Une direction ne signe pas un outil sur une promesse : elle
+   * veut voir. Ce champ porte le texte EXACT qui partira, pseudonymes
+   * compris. Il se demande, il ne coute rien, et il n'appelle pas le modele.
+   */
+  const [masque, setMasque] = React.useState<string | null>(null);
+  const [masquageEnCours, setMasquageEnCours] = React.useState(false);
+  const formulaire = React.useRef<HTMLFormElement>(null);
+  /**
    * LES ÉCRITS QUE LEX A RELUS AVANT DE RÉDIGER.
    *
    * C'est le professionnel qui signe le document : il doit savoir sur quoi le
@@ -424,8 +435,35 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
     }
   }
 
+  /**
+   * Le controle, avant l'envoi. On envoie EXACTEMENT ce que la generation
+   * enverrait — contexte compris — sinon l'apercu mentirait par omission.
+   */
+  async function voirLeMasquage() {
+    const fd = formulaire.current ? new FormData(formulaire.current) : null;
+    const texte = fd ? avecContexte(fd, notes) : notes;
+    if (!texte.trim()) return;
+    setMasquageEnCours(true);
+    try {
+      const r = await api<{ masque: string; protection: typeof protection }>(
+        "/assistant/apercu-masquage",
+        { method: "POST", body: JSON.stringify({ notes: texte }) },
+      );
+      setMasque(r.masque);
+      setProtection(r.protection ?? null);
+    } catch (err) {
+      toast({
+        title: "Aperçu impossible",
+        description: (err as Error).message,
+        variant: "error",
+      });
+    } finally {
+      setMasquageEnCours(false);
+    }
+  }
+
   function recommencer() {
-    setEtape("ecrire"); setNotes(""); setBrouillon(""); setIntitule("");
+    setEtape("ecrire"); setNotes(""); setBrouillon(""); setIntitule(""); setMasque(null);
     setProtection(null); setAnterieurs([]); setEnregistre(false); setAvisDonne(false);
   }
 
@@ -500,6 +538,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
           {/* LE FORMULAIRE : le genre, le cadre, les faits, puis les reglages */}
           {etape === "ecrire" ? (
             <form
+              ref={formulaire}
               className="space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -630,6 +669,51 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                   className="w-full rounded-xl border border-input bg-card p-3 text-sm leading-relaxed text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                 />
               </label>
+
+              {/* VOIR AVANT D'ENVOYER (06/09/2026).
+                  La garantie « les noms sont masqués » etait affichee, jamais
+                  montree. Ici, le professionnel lit le texte exact qui part :
+                  s'il reste un nom, il le voit et il corrige. C'est gratuit,
+                  ca n'appelle pas le modele, et ca ne consomme aucun credit. */}
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">
+                      Ce que LEX va lire
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                      Les noms, les dates et les coordonnées sont remplacés avant
+                      l&apos;envoi. Vous pouvez le vérifier vous-même, ligne à ligne.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void voirLeMasquage()}
+                    disabled={notes.trim().length < 3 || masquageEnCours}
+                  >
+                    {masquageEnCours ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <EyeOff className="size-4" />
+                    )}
+                    {masque ? "Revérifier" : "Voir le texte masqué"}
+                  </Button>
+                </div>
+                {masque !== null ? (
+                  <>
+                    <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-lg bg-muted/60 p-3 font-mono text-xs leading-relaxed text-foreground">
+                      {masque}
+                    </pre>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {protection && protection.personnes + protection.dates + protection.contacts > 0
+                        ? `${protection.personnes} personne${protection.personnes > 1 ? "s" : ""}, ${protection.dates} date${protection.dates > 1 ? "s" : ""} et ${protection.contacts} coordonnée${protection.contacts > 1 ? "s" : ""} remplacées. Si un nom reste visible ci-dessus, corrigez vos notes avant d'envoyer.`
+                        : "Aucun nom, aucune date et aucune coordonnée n'ont été repérés dans ces notes. Relisez : si vous en voyez un ci-dessus, corrigez-le avant d'envoyer."}
+                    </p>
+                  </>
+                ) : null}
+              </div>
 
               <ChoixLex groupes={groupesEcrit} />
               <div className="flex flex-wrap items-center justify-between gap-3">
