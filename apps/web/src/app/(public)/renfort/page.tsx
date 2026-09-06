@@ -24,8 +24,8 @@ export default function RenfortIndexPage() {
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
           Choisissez le métier que vous cherchez, ou le territoire où vous êtes.
-          Chaque page explique ce que couvre le renfort et ce qui est vérifié avant
-          la mise en relation.
+          Chaque page explique ce que couvre le renfort et les pièces exigées au dossier de
+          conformité.
         </p>
       </div>
 

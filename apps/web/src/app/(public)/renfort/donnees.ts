@@ -14,7 +14,7 @@ export interface Metier {
   accroche: string;
   /** Ce que le renfort couvre concrètement pour ce métier. */
   missions: string[];
-  /** Diplômes et pièces vérifiés avant mise en relation. */
+  /** Pièces exigées au dossier de conformité, déposées avant mise en relation. */
   verifications: string[];
   /** Structures qui recrutent le plus ce profil. */
   structures: string;
@@ -86,7 +86,7 @@ export const METIERS: Metier[] = [
     nom: "Éducateur de jeunes enfants",
     pluriel: "Éducateurs de jeunes enfants",
     accroche:
-      "Un éducateur de jeunes enfants sur un remplacement, avec un profil vérifié avant la mise en relation.",
+      "Un éducateur de jeunes enfants sur un remplacement, avec son dossier de conformité déposé avant la mise en relation.",
     missions: [
       "Remplacement en pouponnière ou en crèche associative",
       "Accompagnement du très jeune enfant en protection de l'enfance",
