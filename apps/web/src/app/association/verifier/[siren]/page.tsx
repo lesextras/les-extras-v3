@@ -78,6 +78,12 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
   if (!fiche) notFound();
 
   const { association: a, classeur, completude, etapesVerifiees, versionReferentiel } = fiche;
+  // L'adresse du répertoire contient déjà le code postal et la commune ; on ne les répète pas.
+  const localite = [a.codePostal, a.commune].filter(Boolean).join(' ');
+  const siege =
+    a.adresse && (!a.codePostal || a.adresse.includes(a.codePostal))
+      ? a.adresse
+      : [a.adresse, localite].filter(Boolean).join(', ') || 'Non renseigné';
   const deduites = classeur.filter((p) => p.etat === 'DEDUITE');
   const parCategorie = classeur.reduce<Record<string, typeof classeur>>((acc, p) => {
     (acc[p.type.categorie] ??= []).push(p);
@@ -101,7 +107,7 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
             <dt>Forme</dt>
             <dd>{a.natureLibelle}{a.ess ? ' · économie sociale et solidaire' : ''}</dd>
             <dt>Siège</dt>
-            <dd>{[a.adresse, [a.codePostal, a.commune].filter(Boolean).join(' ')].filter(Boolean).join(', ') || 'Non renseigné'}</dd>
+            <dd>{siege}</dd>
             <dt>Créée le</dt>
             <dd>{formaterDate(a.dateCreation) ?? 'Non renseigné'}</dd>
             <dt>SIREN</dt>
