@@ -1974,6 +1974,8 @@ enum AssistantTrame {
   NOTE_OBSERVATION
   RAPPORT_SITUATION
   TRANSMISSION
+  /// Écrit libre : la personne donne elle-même le titre du document.
+  ECRIT_LIBRE
   SYNTHESE_REUNION
   COMPTE_RENDU_ATELIER
   /// Courrier aux titulaires de l'autorité parentale : demande d'autorisation
