@@ -44,6 +44,8 @@ interface Trame {
   description: string;
   conseils: string[];
   exemple: string;
+  /** L'ecrit libre : pas de genre impose, la personne le nomme elle-meme. */
+  intituleLibre?: boolean;
 }
 
 interface DocumentResume {
@@ -198,12 +200,27 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   const [trameMaisonId, setTrameMaisonId] = React.useState("");
   const [disponible, setDisponible] = React.useState(true);
   const [documents, setDocuments] = React.useState<DocumentResume[]>([]);
+  /**
+   * Le libelle francais de CHAQUE genre, y compris ceux qui ne sont plus
+   * proposes : sans lui, un document ecrit avant la reduction des genres
+   * s'afficherait dans « Mes documents » sous son identifiant technique.
+   */
+  const [libelles, setLibelles] = React.useState<Record<string, string>>({});
 
   const [etape, setEtape] = React.useState<Etape>("ecrire");
   const [trame, setTrame] = React.useState<Trame | null>(null);
   const [notes, setNotes] = React.useState("");
   const [brouillon, setBrouillon] = React.useState("");
   const [titre, setTitre] = React.useState("");
+  /**
+   * LE NOM DE L'ECRIT LIBRE, SAISI AVANT LES NOTES (06/09/2026).
+   *
+   * Les trois genres offerts portent leur forme dans leur nom. Pour tout le
+   * reste, c'est la personne qui nomme son ecrit, en haut du formulaire, et
+   * ce nom devient a la fois la consigne envoyee au moteur et le titre du
+   * document enregistre.
+   */
+  const [intitule, setIntitule] = React.useState("");
   /**
    * LES ÉCRITS QUE LEX A RELUS AVANT DE RÉDIGER.
    *
@@ -231,9 +248,12 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   const dictee = useDictee((t) => setNotes((n) => n + t));
 
   React.useEffect(() => {
-    api<{ disponible: boolean; trames: Trame[] }>("/assistant/trames")
+    api<{ disponible: boolean; trames: Trame[]; libelles?: Record<string, string> }>(
+      "/assistant/trames",
+    )
       .then((d) => {
         setTrames(d.trames);
+        setLibelles(d.libelles ?? {});
         setDisponible(d.disponible);
         // Le formulaire s'ouvre deja rempli : le premier genre sert de defaut,
         // et la liste deroulante reste a portee pour en changer.
@@ -251,10 +271,10 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   }, []);
 
   const libelleTrame = React.useMemo(() => {
-    const m: Record<string, string> = {};
+    const m: Record<string, string> = { ...libelles };
     for (const t of trames) m[t.id] = t.titre;
     return m;
-  }, [trames]);
+  }, [trames, libelles]);
 
   // ── Actions ────────────────────────────────────────────────────────────
 
@@ -280,6 +300,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
         body: JSON.stringify({
           trame: trame.id,
           notes: fd ? avecContexte(fd, notes) : notes,
+          ...(trame.intituleLibre ? { intitule: intitule.trim() } : {}),
           ...(trameMaisonId ? { trameMaisonId } : {}),
           ...(fd
             ? {
@@ -294,7 +315,11 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
       setBrouillon(r.brouillon);
       setProtection(r.protection ?? null);
       setAnterieurs(r.anterieurs ?? []);
-      setTitre(`${trame.titre} : ${new Date().toLocaleDateString("fr-FR")}`);
+      setTitre(
+        trame.intituleLibre
+          ? intitule.trim()
+          : `${trame.titre} : ${new Date().toLocaleDateString("fr-FR")}`,
+      );
       setEnregistre(false);
       setAvisDonne(false);
       setEtape("relire");
@@ -400,7 +425,7 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
   }
 
   function recommencer() {
-    setEtape("ecrire"); setNotes(""); setBrouillon("");
+    setEtape("ecrire"); setNotes(""); setBrouillon(""); setIntitule("");
     setProtection(null); setAnterieurs([]); setEnregistre(false); setAvisDonne(false);
   }
 
@@ -503,6 +528,31 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
                 ) : null}
               </label>
 
+              {/* L'ECRIT LIBRE SE NOMME AVANT DE S'ECRIRE (06/09/2026).
+                  Les trois genres offerts portent leur forme dans leur nom.
+                  Ici, c'est la personne qui la donne : « Courrier au referent
+                  ASE » et « Bilan de fin de sejour » ne produisent pas le meme
+                  document, et LEX n'a aucun moyen de le deviner des notes. */}
+              {trame?.intituleLibre ? (
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="font-medium text-foreground">
+                    Comment s&apos;appelle votre écrit ?
+                  </span>
+                  <input
+                    value={intitule}
+                    onChange={(e) => setIntitule(e.target.value)}
+                    maxLength={120}
+                    placeholder="Courrier au référent ASE, Bilan de fin de séjour, Note interne…"
+                    aria-label="Le nom de votre écrit"
+                    className="h-11 w-full rounded-lg border border-input bg-card px-3.5 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    C&apos;est ce nom qui décide de la forme du document, et c&apos;est lui
+                    qui restera comme titre.
+                  </span>
+                </label>
+              ) : null}
+
               <ChoixTrameMaison
                 trames={tramesMaison.filter((t) => !t.genre || t.genre === trame?.id)}
                 valeur={trameMaisonId}
@@ -584,11 +634,23 @@ export function AssistantStudio({ peutPublier = false }: { peutPublier?: boolean
               <ChoixLex groupes={groupesEcrit} />
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">
-                  {notes.length < 20
-                    ? "Encore quelques mots : une vingtaine de caractères minimum."
-                    : `${notes.length.toLocaleString("fr-FR")} caractères. Prêt quand vous l'êtes.`}
+                  {trame?.intituleLibre && intitule.trim().length < 3
+                    ? "Donnez d'abord un nom à votre écrit."
+                    : notes.length < 20
+                      ? "Encore quelques mots : une vingtaine de caractères minimum."
+                      : `${notes.length.toLocaleString("fr-FR")} caractères. Prêt quand vous l'êtes.`}
                 </p>
-                <Button type="submit" disabled={!trame || notes.length < 20 || enCours || !disponible} size="lg">
+                <Button
+                  type="submit"
+                  disabled={
+                    !trame ||
+                    notes.length < 20 ||
+                    enCours ||
+                    !disponible ||
+                    (trame.intituleLibre && intitule.trim().length < 3)
+                  }
+                  size="lg"
+                >
                   {enCours ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
                   {enCours ? "Rédaction en cours…" : "Rédiger le document"}
                 </Button>
