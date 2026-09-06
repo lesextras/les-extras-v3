@@ -8,6 +8,7 @@ import { CaptureSource } from './_shared/CaptureSource';
 import { CompteurVues } from './_shared/CompteurVues';
 import { MesureAudience } from './_shared/MesureAudience';
 import { InstallPrompt } from './_shared/InstallPrompt';
+import { SaufAssociation } from './_shared/SaufAssociation';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -213,12 +214,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <Providers>
           {children}
-          <PwaRegister />
-          <InstallPrompt />
-          <BandeauCookies />
-          <CaptureSource />
-          <MesureAudience />
-          <CompteurVues />
+          {/* Les compagnons de Les Extras ne s'affichent pas sur
+              association.toulali.fr, servi par ce même déploiement. */}
+          <SaufAssociation>
+            <PwaRegister />
+            <InstallPrompt />
+            <BandeauCookies />
+            <CaptureSource />
+            <MesureAudience />
+            <CompteurVues />
+          </SaufAssociation>
         </Providers>
       </body>
     </html>
