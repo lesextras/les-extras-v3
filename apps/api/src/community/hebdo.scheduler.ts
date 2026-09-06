@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AccountType, MissionStatus, QuestionStatus, UserStatus } from '@prisma/client';
+import {
+  AccountType,
+  MissionStatus,
+  QuestionStatus,
+  ServiceStatus,
+  UserStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 
@@ -52,7 +58,7 @@ export class HebdoScheduler {
     });
 
     // Contenus communs, lus une seule fois pour tout le monde.
-    const [missions, questions, formations] = await Promise.all([
+    const [missions, questions, formations, ateliers] = await Promise.all([
       this.prisma.reliefMission.findMany({
         where: { status: MissionStatus.PUBLISHED, startDate: { gte: new Date() } },
         orderBy: { createdAt: 'desc' },
@@ -71,13 +77,44 @@ export class HebdoScheduler {
         take: 3,
         select: { slug: true, title: true },
       }),
+      /**
+       * LES ATELIERS QUI ARRIVENT (06/09/2026).
+       *
+       * Une fiche d'atelier était publiée, relue, mise en ligne, et personne
+       * n'était prévenu : elle attendait qu'on la trouve dans le catalogue.
+       * Un intervenant qui passe une heure à écrire sa fiche mérite mieux, et
+       * une direction qui cherche une intervention ne va pas visiter le
+       * catalogue toutes les semaines. Elles rejoignent donc les nouveautés du
+       * lundi, comme les formations.
+       *
+       * `verified: true` n'est pas une précaution de plus : c'est la garantie
+       * qu'on n'annonce jamais une fiche que l'équipe n'a pas relue.
+       */
+      this.prisma.service.findMany({
+        where: {
+          status: ServiceStatus.PUBLISHED,
+          verified: true,
+          createdAt: { gte: semaine },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, slug: true, title: true, city: true },
+      }),
     ]);
 
     const web = process.env.APP_WEB_URL ?? 'https://les-extras.fr';
-    const nouveautes = formations.map((f) => ({
-      titre: `Nouvelle formation : ${f.title}`,
-      lien: `${web}/formations/${f.slug}`,
-    }));
+    const nouveautes = [
+      ...ateliers.map((a) => ({
+        titre: a.city
+          ? `Nouvel atelier à ${a.city} : ${a.title}`
+          : `Nouvel atelier : ${a.title}`,
+        lien: `${web}/ateliers/${a.slug ?? a.id}`,
+      })),
+      ...formations.map((f) => ({
+        titre: `Nouvelle formation : ${f.title}`,
+        lien: `${web}/formations/${f.slug}`,
+      })),
+    ];
 
     let envoyes = 0;
     for (const u of utilisateurs) {
