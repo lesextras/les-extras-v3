@@ -148,7 +148,7 @@ const PARCOURS: Record<
         probleme:
           "À chaque structure, on renvoie les mêmes diplômes.",
         change:
-          "Un profil vérifié une fois, qui parle pour vous partout.",
+          "Un dossier de conformité déposé une fois, qui parle pour vous partout.",
       },
       {
         niveau: "gratuit",
