@@ -13,6 +13,13 @@
 // vérifié dans le code au moment de l'écriture. Aucun prix n'y figure en
 // dehors de « gratuit » et « sans commission », qui sont le modèle publié sur
 // /frais-de-service.
+//
+// ⚠ ON N'ÉCRIT PAS ICI QUE LES PROFILS SONT VÉRIFIÉS. Aucun contrôle
+// d'identité ni de casier n'est opéré par l'association : ce que le produit
+// fait réellement, c'est un dossier de conformité déposé par l'intervenant et
+// consultable par l'établissement. Promettre une vérification de sécurité à
+// une direction qui va confier des enfants ou des personnes âgées serait la
+// pire catégorie de faux.
 
 export interface Etape {
   titre: string;
@@ -68,7 +75,7 @@ export const GUIDES: Guide[] = [
         titre: "… ou réservez un atelier au catalogue",
         texte: [
           "Le catalogue est public : objectifs, méthode, public visé, durée et prix sur chaque fiche, sans compte. Depuis une fiche, vous demandez un devis.",
-          "L'intervenant chiffre, vous acceptez en ligne, le devis porte la mention « Bon pour accord » et vaut engagement, et la réservation se crée avec son contrat et sa facture. Chaque profil a été vérifié avant d'être visible : diplômes, expériences, pièces d'identité.",
+          "L'intervenant chiffre, vous acceptez en ligne, le devis porte la mention « Bon pour accord » et vaut engagement, et la réservation se crée avec son contrat et sa facture. Chaque intervenant dépose son dossier de conformité — diplôme, pièce d'identité, casier, URSSAF, assurance — et vous le consultez avant de vous engager.",
         ],
         lien: { href: "/ateliers", label: "Parcourir les ateliers" },
       },
@@ -93,7 +100,7 @@ export const GUIDES: Guide[] = [
     titre: "Mode d'emploi, intervenants",
     accroche: "De votre profil à votre première facture, pas à pas",
     description:
-      "Créer son profil vérifié, recevoir des missions de renfort, publier ses ateliers et facturer 100 % de son tarif : le parcours complet d'un intervenant sur Les Extras.",
+      "Créer son profil, déposer son dossier de conformité, recevoir des missions de renfort et facturer 100 % de son tarif : le parcours d'un intervenant.",
     duree: "PT20M",
     etapes: [
       {
@@ -105,16 +112,16 @@ export const GUIDES: Guide[] = [
         lien: { href: "/register?type=intervenant", label: "Créer le compte" },
       },
       {
-        titre: "Faites vérifier vos pièces",
+        titre: "Déposez vos pièces au coffre-fort",
         texte: [
-          "Déposez diplômes, pièce d'identité, extrait de casier, attestation URSSAF et assurance dans le coffre-fort. L'équipe contrôle chaque profil avant publication : c'est cette vérification qui fait la confiance des établissements, et donc vos missions.",
+          "Déposez diplômes, pièce d'identité, extrait de casier, attestation URSSAF et assurance dans le coffre-fort. Un dossier complet est ce que l'établissement regarde en premier : c'est lui qui fait la confiance, et donc vos missions.",
           "Le coffre-fort surveille les échéances : une alerte part avant qu'une attestation n'expire, jamais après.",
         ],
       },
       {
         titre: "Recevez des missions de renfort",
         texte: [
-          "Une fois le profil validé, les besoins de renfort qui correspondent à votre métier et à votre secteur vous arrivent directement. Le premier qui accepte emporte la mission : activez les notifications sur votre téléphone.",
+          "Une fois votre profil publié, les besoins de renfort qui correspondent à votre métier et à votre secteur vous arrivent directement. Le premier qui accepte emporte la mission : activez les notifications sur votre téléphone.",
           "Le contrat se signe électroniquement, les heures se déclarent dans l'application, l'établissement les valide : et c'est cette validation qui déclenche la facturation.",
         ],
       },
