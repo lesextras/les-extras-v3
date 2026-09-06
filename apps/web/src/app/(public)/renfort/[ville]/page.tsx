@@ -15,11 +15,14 @@ export function generateStaticParams() {
  * = le nom de territoire le plus long, « Seine-Saint-Denis » (17) :
  * « Renfort éducatif  » (17) + 17 + « — RenforTeam » précédé d'une espace (13)
  * = 47, donc 60 affichés. L'ancien suffixe « — intervenants qualifiés » (25)
- * portait le même cas à 72. La promesse n'est pas perdue : « profils vérifiés »
- * reste dans la description.
+ * portait le même cas à 72. La promesse n'est pas perdue : « dossier de
+ * conformité » reste dans la description.
  *
  * Même arithmétique pour la description, plafonnée à 160 : la partie fixe fait
- * 138 caractères, plus le nom du territoire (17 au pire) = 155.
+ * 135 caractères, plus le nom du territoire (17 au pire) = 152. « Profils
+ * vérifiés » y figurait auparavant : la mention est fausse tant qu'aucun
+ * contrôle d'identité ni de casier n'est réellement opéré, et elle a donc été
+ * remplacée par ce que le produit fait vraiment — un dossier de conformité.
  */
 export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ ville: string }>}): Promise<Metadata> {
   const params = await paramsPromesse;
@@ -27,7 +30,7 @@ export async function generateMetadata({ params: paramsPromesse }: { params: Pro
   if (!v) return { title: "Renfort" };
   return {
     title: `Renfort éducatif ${v.nom}, RenforTeam`,
-    description: `${v.nom} : trouver un intervenant qualifié pour un remplacement en établissement médico-social. Profils vérifiés, contrat généré, zéro commission.`,
+    description: `${v.nom} : un intervenant qualifié pour un remplacement en établissement médico-social. Dossier de conformité, contrat généré, zéro commission.`,
     alternates: { canonical: `/renfort/${v.slug}` },
     // Sans `url`, le partage héritait de celui du layout racine (« / ») :
     // une publicité pointant sur la page Melun s'affichait avec l'adresse
