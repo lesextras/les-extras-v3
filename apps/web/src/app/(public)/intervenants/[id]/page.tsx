@@ -68,9 +68,13 @@ export async function generateMetadata({
   // Sans canonique, les quatre fiches publiques du sitemap n'en déclaraient
   // aucune : le moteur choisit alors lui-même l'adresse de référence, et
   // n'importe quel paramètre ajouté à l'URL devient une page de plus.
+  //
+  // ⚠ Cette description annonçait un « profil vérifié ». Aucune vérification
+  // d'identité ni de casier n'est opérée : la mention est retirée. Ce que le
+  // produit fait, c'est un dossier de conformité déposé par l'intervenant.
   const description =
     data?.owner?.profile?.bio?.slice(0, 160) ||
-    `${nom ?? "Intervenant"} : profil vérifié sur Les Extras, ateliers et renfort en établissement médico-social.`;
+    `${nom ?? "Intervenant"} : ateliers et renfort en établissement médico-social, sur Les Extras.`;
   // Titre et description de partage étaient déjà ceux de la page : le helper
   // les produit à l'identique et rétablit la carte de partage, que cet objet
   // `openGraph` effaçait en remplaçant celui du layout racine.
