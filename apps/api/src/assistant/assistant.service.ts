@@ -1,4 +1,11 @@
-import { ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { AssistantTrame, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
@@ -12,7 +19,12 @@ import {
   trameAvecMemoire,
   type EcritAnterieur,
 } from './anteriorite';
-import { TRAMES, trouverTrame } from './trames';
+import {
+  LIBELLES_TRAMES,
+  TRAMES_OFFERTES,
+  consigneEcritLibre,
+  trouverTrame,
+} from './trames';
 import {
   GROUPES_ACTIVITE, GROUPES_APPUI, GROUPES_ECRIT, consignesDepuisChoix,
 } from './options';
@@ -103,11 +115,19 @@ export class AssistantService {
     return Boolean(membre);
   }
 
-  /** Les trames disponibles + l'état du service (pour l'interface). */
+  /**
+   * Les trames disponibles + l'état du service (pour l'interface).
+   *
+   * `trames` ne porte que les genres OFFERTS au choix, dans l'ordre voulu.
+   * `libelles` porte tous les genres, y compris ceux qui ne sont plus offerts :
+   * sans lui, un document enregistré l'an dernier s'afficherait dans « Mes
+   * documents » sous son identifiant technique.
+   */
   trames() {
     return {
       disponible: this.moteur.disponible,
-      trames: TRAMES.map(({ system: _system, ...publique }) => publique),
+      trames: TRAMES_OFFERTES.map(({ system: _system, ...publique }) => publique),
+      libelles: LIBELLES_TRAMES,
     };
   }
 
@@ -201,8 +221,26 @@ export class AssistantService {
     } | null,
     /** Cases cochées dans l'interface : destinataire, registre, parties, longueur. */
     choix?: Readonly<Record<string, readonly string[] | undefined>>,
+    /**
+     * Le nom que le professionnel a donné à son écrit, saisi AVANT les notes.
+     * Il n'a de sens que pour l'écrit libre : c'est lui qui remplace le genre.
+     */
+    intitule?: string,
   ) {
     const def = trouverTrame(trame);
+    // L'ÉCRIT LIBRE N'A PAS DE GENRE, IL A UN NOM (06/09/2026).
+    //
+    // Pour les trois genres offerts, la consigne est écrite d'avance et testée
+    // en CI. Pour l'écrit libre, elle se compose ici, autour de l'intitulé que
+    // la personne a saisi : le socle déontologique reste devant, à l'identique,
+    // et c'est la seule chose qui change.
+    const nomLibre = def.intituleLibre ? (intitule ?? '').trim() : '';
+    if (def.intituleLibre && nomLibre.length < 3) {
+      throw new BadRequestException(
+        "Donnez d'abord un nom à votre écrit : c'est lui qui dit quel document produire.",
+      );
+    }
+    const consigne = def.intituleLibre ? consigneEcritLibre(nomLibre) : def.system;
 
     // Les consignes de forme ne contiennent aucune donnée personnelle : elles
     // se placent avant les notes masquées, sans passer par la pseudonymisation.
@@ -233,7 +271,7 @@ export class AssistantService {
     const { ecrits, sources } = await this.anteriorite(accountId, authorId, trame, sujets);
 
     const brouillonMasque = await this.moteur.completer({
-      system: trameMaison ? AssistantService.avecTrameMaison(def.system, trameMaison) : def.system,
+      system: trameMaison ? AssistantService.avecTrameMaison(consigne, trameMaison) : consigne,
       user: `${cadrage}${blocAnteriorite(ecrits)}Notes brutes du professionnel :\n\n${notesPretes}`,
       // Relire deux écrits antérieurs demande de la place pour répondre : un
       // plafond calculé sur la seule trame produirait un document tronqué.
@@ -250,7 +288,9 @@ export class AssistantService {
       protection: this.pseudo.resume(table),
       trame: def.id,
       trameMaison: trameMaison ? { id: trameMaison.id, nom: trameMaison.nom } : null,
-      titrePropose: def.titre,
+      // Sur un écrit libre, le titre proposé est celui que la personne a écrit
+      // elle-même : c'est le seul cas où LEX n'a rien à proposer de mieux.
+      titrePropose: nomLibre || def.titre,
       // ⚠ ON DIT TOUJOURS CE QUI A ÉTÉ RELU. Un professionnel doit savoir sur
       // quoi son brouillon s'appuie : c'est lui qui signe le document, et un
       // écrit antérieur inexact se propagerait en silence sans cette ligne.

@@ -105,8 +105,10 @@ export class AssistantController {
           registre: dto.registre ? [dto.registre] : undefined,
           sections: dto.sections,
           longueur: dto.longueur ? [dto.longueur] : undefined,
-        }),
-      trameMaison?.nom ?? dto.trame,
+        }, dto.intitule),
+      // Le journal porte le nom que la personne a donné à son écrit libre :
+      // « ECRIT_LIBRE » ne dirait rien à la direction qui relit le registre.
+      trameMaison?.nom ?? (dto.intitule?.trim() || dto.trame),
     );
     if (trameMaison) await this.tramesMaison.compterUsage(trameMaison.id);
     return resultat;

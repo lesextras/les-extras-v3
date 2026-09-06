@@ -15,6 +15,12 @@ export interface TrameDef {
   conseils: string[];
   exemple: string;
   system: string;
+  /**
+   * L'écrit n'a pas de genre imposé : c'est le professionnel qui le nomme,
+   * AVANT d'écrire ses notes, et son intitulé devient la consigne de forme.
+   * L'interface affiche alors un champ « Comment s'appelle votre écrit ? ».
+   */
+  intituleLibre?: boolean;
 }
 
 /**
@@ -43,6 +49,26 @@ Qualité, c'est ce qui sépare un écrit tenu d'un écrit générique :
 12. Tu es concret : une heure, une durée, un lieu, une parole rapportée entre guillemets si elle figure dans les notes. Un écrit qui pourrait décrire n'importe quelle personne dans n'importe quelle structure est un écrit raté.
 13. Tu ne donnes pas de conseils éducatifs génériques et tu ne fais pas la leçon au professionnel qui te lit : c'est lui le référent, tu mets en forme son travail.
 14. Tu ne recopies pas les notes : tu les ordonnes, tu construis la chronologie, tu relies ce qui se répond, et tu nommes ce qui s'est joué en restant dans les faits.`;
+
+/**
+ * Consigne ajoutée au socle pour l'écrit libre.
+ *
+ * Elle est calculée à la génération, parce qu'elle contient l'intitulé que le
+ * professionnel a donné lui-même : c'est cet intitulé, et rien d'autre, qui
+ * dit quel document produire. Le socle déontologique reste devant, intact.
+ */
+export function consigneEcritLibre(intitule: string): string {
+  const propre = intitule.trim().replace(/\s+/g, ' ').slice(0, 120);
+  return `${CADRE}
+
+Le professionnel a nommé lui-même le document qu'il veut : « ${propre} ».
+
+Produis CE document, et rien d'autre :
+• Le titre du document est exactement « ${propre} », seul sur la première ligne, en majuscules.
+• Tu déduis la structure de cet intitulé et de la matière fournie. Un courrier prend la forme d'un courrier (objet, appel, corps, politesse, signature) ; un compte rendu prend des sections titrées ; une note courte reste une note courte.
+• Tu n'ajoutes AUCUNE rubrique que les notes ne nourrissent pas. Mieux vaut un document de douze lignes qu'un plan de quatre parties dont trois sont vides.
+• Si l'intitulé demande un écrit qui suppose une décision sur une personne (signalement, information préoccupante, sanction, orientation), tu produis la mise en forme des FAITS et tu rappelles en fin de document que la décision et la qualification relèvent du cadre légal et de l'équipe pluridisciplinaire.`;
+}
 
 export const TRAMES: TrameDef[] = [
   {
@@ -104,6 +130,21 @@ Produis une TRANSMISSION courte et opérationnelle :
 • Points de vigilance : ce que l'équipe suivante doit surveiller.
 • À faire : rendez-vous, tâches, relais concrets.
 Phrases courtes. Une transmission se lit en une minute.`,
+  },
+  {
+    id: AssistantTrame.ECRIT_LIBRE,
+    titre: 'Écrit libre, vous lui donnez son nom',
+    description:
+      "Pour tous les autres écrits : courrier, synthèse, compte rendu, bilan, note interne. Vous écrivez son nom en haut, LEX en déduit la forme et ne remplit que ce que vos notes contiennent.",
+    conseils: [
+      "Nommez votre écrit comme vous le nommeriez sur votre poste : « Courrier au référent ASE », « Bilan de fin de séjour », « Compte rendu de la réunion du 12 ».",
+      'Le nom que vous donnez décide de la forme du document : soyez précis, cela vaut mieux que « rapport ».',
+      "Le reste ne change pas : les faits d'abord, ce que vous en pensez dans le champ prévu.",
+    ],
+    exemple:
+      "Courrier au médecin scolaire pour Lina. Absences répétées en cours d'EPS depuis novembre, dit avoir mal au ventre le matin. Demande d'un avis et d'un rendez-vous avant les vacances de février. Sa mère est informée de la démarche.",
+    intituleLibre: true,
+    system: consigneEcritLibre('Écrit professionnel'),
   },
   {
     id: AssistantTrame.SYNTHESE_REUNION,
@@ -229,6 +270,39 @@ Produis un BILAN DE FIN D'ACCOMPAGNEMENT structuré ainsi :
 RÈGLE PROPRE À CE BILAN : le document suit la personne. Il sera lu par d'autres professionnels et souvent par elle. Aucune formule qui enferme (« incapable de », « ne parviendra pas à ») : on décrit ce qui est observé aujourd'hui, jamais un pronostic.`,
   },
 ];
+
+/**
+ * CE QUE L'INTERFACE PROPOSE, ET DANS CET ORDRE (06/09/2026).
+ *
+ * Huit genres dans une liste déroulante, c'est un choix à faire avant d'avoir
+ * compris ce qu'on gagne : le professionnel ouvre la liste, hésite, et repart.
+ * Trois genres couvrent l'écrasante majorité des écrits d'une équipe, la note
+ * d'observation, la transmission et le rapport de situation ; tout le reste
+ * passe par l'écrit libre, que la personne nomme elle-même.
+ *
+ * ⚠ `TRAMES` garde le catalogue COMPLET, et ce n'est pas un oubli : des
+ * documents déjà enregistrés portent les anciens genres, les trames maison y
+ * sont rattachées par `genre`, et une valeur d'enum ne se retire pas d'une
+ * base Postgres. Ce qui se réduit, c'est le choix offert, pas l'histoire.
+ */
+export const TRAMES_PROPOSEES: readonly AssistantTrame[] = [
+  AssistantTrame.NOTE_OBSERVATION,
+  AssistantTrame.TRANSMISSION,
+  AssistantTrame.RAPPORT_SITUATION,
+  AssistantTrame.ECRIT_LIBRE,
+];
+
+/** Les trames offertes au choix, dans l'ordre d'affichage. */
+export const TRAMES_OFFERTES: TrameDef[] = TRAMES_PROPOSEES.map((id) => {
+  const t = TRAMES.find((x) => x.id === id);
+  if (!t) throw new Error(`Trame proposée introuvable : ${id}`);
+  return t;
+});
+
+/** Le libellé français de CHAQUE genre, y compris ceux qui ne sont plus offerts. */
+export const LIBELLES_TRAMES: Readonly<Record<string, string>> = Object.fromEntries(
+  TRAMES.map((t) => [t.id, t.titre]),
+);
 
 export function trouverTrame(id: AssistantTrame): TrameDef {
   const t = TRAMES.find((x) => x.id === id);
