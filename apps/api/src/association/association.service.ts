@@ -194,7 +194,8 @@ export class AssociationService {
   // ---------------------------------------------------------------------------
 
   private normaliser(r: ResultatBrut): AssociationPublique | null {
-    if (!r.siren) return null;
+    // Le service renvoie parfois une coquille vide (structure non diffusible) : on l'ignore.
+    if (!r.siren || (!r.nom_complet && !r.nom_raison_sociale) || !r.nature_juridique) return null;
     const nature = r.nature_juridique ?? '';
     const effectif = r.tranche_effectif_salarie ?? null;
     return {
