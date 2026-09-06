@@ -34,8 +34,9 @@ async function charger(slug: string) {
   return data && (data as Reponse).etape ? (data as Reponse) : null;
 }
 
-export async function generateMetadata({ params }: { params: { etape: string } }): Promise<Metadata> {
-  const r = await charger(params.etape);
+export async function generateMetadata({ params }: { params: Promise<{ etape: string }> }): Promise<Metadata> {
+  const { etape } = await params;
+  const r = await charger(etape);
   if (!r) return { title: 'Étape introuvable' };
   return {
     title: `${r.etape.titre} (étape ${r.etape.numero} sur ${r.total})`,
@@ -44,8 +45,9 @@ export async function generateMetadata({ params }: { params: { etape: string } }
   };
 }
 
-export default async function EtapePage({ params }: { params: { etape: string } }) {
-  const r = await charger(params.etape);
+export default async function EtapePage({ params }: { params: Promise<{ etape: string }> }) {
+  const { etape } = await params;
+  const r = await charger(etape);
   if (!r) notFound();
   const { etape: e, pieces, total, precedente, suivante } = r;
 
