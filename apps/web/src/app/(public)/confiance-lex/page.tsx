@@ -36,9 +36,9 @@ export const metadata: Metadata = metaPublique({
 const GARANTIES = [
   {
     icone: EyeOff,
-    titre: "Les noms ne sortent jamais d’ici",
+    titre: "Les noms sont remplacés, et vous le vérifiez",
     texte:
-      "Prénoms, noms, dates de naissance et coordonnées deviennent des codes avant l’envoi. Le service d’IA ne voit jamais l’identité des personnes. Les noms sont rétablis ensuite, sur nos serveurs.",
+      "Prénoms, noms, dates de naissance et coordonnées deviennent des codes avant l’envoi : le moteur reçoit « [PERSONNE-A] », pas un nom. Avant chaque écrit, un bouton affiche le texte exact qui va partir : vous contrôlez, vous ne croyez pas sur parole. Les noms sont rétablis ensuite, sur nos serveurs.",
   },
   {
     icone: MapPin,
@@ -68,7 +68,7 @@ const GARANTIES = [
     icone: ScrollText,
     titre: "Traçabilité complète",
     texte:
-      "Qui a demandé, sur quel modèle d’écrit, et quand. La direction consulte et exporte ce journal : utile pour une évaluation HAS. Il enregistre la demande, jamais le contenu produit.",
+      "Qui a demandé, sur quel modèle d’écrit, et quand. Chaque génération est enregistrée : la demande, jamais le contenu produit. Le journal de votre établissement vous est communiqué sur demande, pour une évaluation HAS ou un contrôle.",
   },
 ];
 
