@@ -117,7 +117,7 @@ export default async function ArticlePage({ params: paramsPromesse }: { params: 
             </Avatar>
             <span className="font-medium text-foreground">{nom}</span>
           </span>
-          {auteur ? <span>par {auteur}</span> : null}
+          {auteurPersonne ? <span>par {auteurPersonne}</span> : null}
           {a.account?.type === "ESTABLISHMENT" ? (
             <span className="inline-flex items-center gap-1"><Building2 className="size-3.5" /> Établissement</span>
           ) : null}
