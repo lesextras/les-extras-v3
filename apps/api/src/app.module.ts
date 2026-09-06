@@ -49,6 +49,9 @@ import { DocumentsModule } from './documents/documents.module';
 import { VivierModule } from './vivier/vivier.module';
 import { SignatureModule } from './signature/signature.module';
 
+// --- Piloter mon association (association.toulali.fr) ---
+import { AssociationModule } from './association/association.module';
+
 @Module({
   imports: [
     HealthModule,
@@ -105,6 +108,9 @@ import { SignatureModule } from './signature/signature.module';
 
     // Vitrine publique (non authentifiée).
     PublicModule,
+
+    // Piloter mon association : routes publiques, référentiels, données RNA/SIRENE.
+    AssociationModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
