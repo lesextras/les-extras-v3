@@ -61,8 +61,9 @@ async function charger(siren: string) {
   return data && (data as Fiche).association ? (data as Fiche) : null;
 }
 
-export async function generateMetadata({ params }: { params: { siren: string } }): Promise<Metadata> {
-  const fiche = await charger(params.siren);
+export async function generateMetadata({ params }: { params: Promise<{ siren: string }> }): Promise<Metadata> {
+  const { siren } = await params;
+  const fiche = await charger(siren);
   if (!fiche) return { title: 'Association introuvable' };
   return {
     title: `${fiche.association.nom} : le dossier est-il complet ?`,
@@ -71,8 +72,9 @@ export async function generateMetadata({ params }: { params: { siren: string } }
   };
 }
 
-export default async function FichePage({ params }: { params: { siren: string } }) {
-  const fiche = await charger(params.siren);
+export default async function FichePage({ params }: { params: Promise<{ siren: string }> }) {
+  const { siren } = await params;
+  const fiche = await charger(siren);
   if (!fiche) notFound();
 
   const { association: a, classeur, completude, etapesVerifiees, versionReferentiel } = fiche;
