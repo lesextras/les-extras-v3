@@ -49,6 +49,17 @@ export class GenererDto {
   sections?: string[];
 }
 
+/**
+ * Aperçu du masquage : le texte tel que le moteur le lira, montré AVANT
+ * l'envoi. Aucun appel au modèle, aucune persistance, aucun crédit.
+ */
+export class ApercuMasquageDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(8000)
+  notes!: string;
+}
+
 /** Enregistrement d'un document APRÈS relecture et validation par l'auteur. */
 export class EnregistrerDocumentDto {
   @IsEnum(AssistantTrame)
