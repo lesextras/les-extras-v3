@@ -133,6 +133,33 @@ export class AssistantService {
 
 
   /**
+   * CE QUE LE MOTEUR VA LIRE, MONTRÉ AVANT L'ENVOI (06/09/2026).
+   *
+   * Le masquage existait depuis le premier jour, mais personne ne le voyait :
+   * on affichait un compteur (« 3 personnes protégées ») et il fallait croire
+   * sur parole. Une direction ne signe pas un outil sur parole.
+   *
+   * Cette route renvoie le texte EXACTEMENT tel qu'il partira, pseudonymes
+   * compris. Le professionnel lit, vérifie qu'aucun nom n'est passé au
+   * travers, corrige ses notes si besoin, et décide. La promesse cesse d'être
+   * probabiliste : elle devient vérifiable, à chaque écrit.
+   *
+   * GRATUIT et sans appel au modèle : c'est un contrôle, pas une génération.
+   * Facturer la vérification d'une garantie serait indéfendable.
+   */
+  async apercuMasquage(accountId: string, notes: string) {
+    const { texte, table } = this.pseudo.masquer(notes);
+    // Les mêmes pseudonymes que ceux de la génération : le registre du compte
+    // les fixe une fois pour toutes. Un aperçu qui montrerait d'autres jetons
+    // que ceux réellement envoyés serait pire que pas d'aperçu du tout.
+    const stables = await this.registre.stabiliser(accountId, table);
+    return {
+      masque: RegistrePseudoService.reecrire(texte, stables),
+      protection: this.pseudo.resume(table),
+    };
+  }
+
+  /**
    * LES ÉCRITS DÉJÀ RÉDIGÉS SUR LES MÊMES PERSONNES.
    *
    * On cherche par pseudonyme stable, jamais par nom : `AssistantDocument.sujets`

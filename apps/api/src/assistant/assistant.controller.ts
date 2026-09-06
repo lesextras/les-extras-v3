@@ -19,7 +19,7 @@ import { ExtractionService } from './extraction.service';
 import { CreditsService } from '../billing/credits.service';
 import { catalogueChoix } from './options';
 import type { FichierRecu } from '../storage/files.service';
-import { ActiviteDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, EnvoyerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
+import { ActiviteDto, ApercuMasquageDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, EnvoyerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
@@ -77,6 +77,24 @@ export class AssistantController {
   @Get('options')
   options() {
     return catalogueChoix();
+  }
+
+  /**
+   * L'APERÇU DU MASQUAGE : voir ce que le moteur lira, avant de l'envoyer.
+   *
+   * GRATUIT, et volontairement : c'est le contrôle d'une garantie, pas une
+   * génération. Aucun appel au modèle, aucune écriture en base. Le plafond est
+   * plus haut que celui de la génération, parce qu'un professionnel prudent
+   * corrige ses notes et revérifie deux ou trois fois avant d'envoyer.
+   */
+  @Throttle({ default: { limit: 120, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
+  @Post('apercu-masquage')
+  apercuMasquage(
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: ApercuMasquageDto,
+  ) {
+    return this.assistant.apercuMasquage(account.id, dto.notes);
   }
 
   /** Génération : plafonnée par utilisateur — le poste de coût est ici. */

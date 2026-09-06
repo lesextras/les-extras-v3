@@ -46,4 +46,66 @@ export const PRENOMS_COURANTS: ReadonlySet<string> = new Set([
   'veronique', 'victor', 'victoria', 'vincent', 'virginie', 'walid', 'wassim', 'william', 'yacine', 'yanis', 'yann', 'yannick',
   'yasmine', 'yassine', 'yasser', 'yohan', 'youcef', 'younes', 'yousra', 'youssef', 'youssouf', 'yvan', 'yves', 'zahra',
   'zakaria', 'zayd', 'zoe',
+
+  // ── Complément du 6 septembre 2026 ──────────────────────────────────────
+  // La liste d'origine tenait en 471 entrées : elle attrapait Kevin et Marie,
+  // pas Nafissatou ni Massinissa. Un prénom manqué en tête de phrase, c'est un
+  // nom réel qui part au moteur, et c'est la seule panne vraiment grave de ce
+  // produit. On élargit donc, en couvrant ce que le secteur rencontre
+  // réellement : prénoms français, maghrébins, ouest-africains, portugais,
+  // italiens, d'Europe de l'Est, et les prénoms composés courants.
+  //
+  // ⚠ Cette liste ne sera JAMAIS complète, et c'est pour cela que l'aperçu du
+  // masquage existe (`/assistant/apercu-masquage`) : le professionnel voit le
+  // texte exact qui part et corrige ce qui a échappé. Le dictionnaire réduit
+  // la fréquence de l'erreur ; l'aperçu en supprime la conséquence.
+  'abdel', 'abdelkader', 'abdoulaye', 'abel', 'abigail', 'achille', 'ada', 'adja', 'adnan', 'afonso', 'agathe', 'agnes',
+  'ahlam', 'aimé', 'akram', 'aladin', 'alan', 'alassane', 'alban', 'albane', 'alberto', 'aldo', 'alessandro', 'alessia',
+  'alexander', 'alexandra', 'alfred', 'alia', 'aliou', 'alissia', 'alix', 'allison', 'alma', 'alpha', 'alphonse', 'alya',
+  'amandine', 'amani', 'amaury', 'ambre', 'amed', 'anaelle', 'anastasia', 'anatole', 'andreas', 'ange', 'angela', 'anita',
+  'anouk', 'antonia', 'antonio', 'apolline', 'arafat', 'archibald', 'ariane', 'armand', 'armelle', 'arnaud', 'aron', 'arsene',
+  'assane', 'assetou', 'astrid', 'athena', 'aubin', 'audrey', 'augustin', 'aurelia', 'awa', 'axelle', 'ayman', 'aziz',
+  'azzedine', 'babacar', 'baya', 'belkacem', 'berenice', 'bernadette', 'bernard', 'bertrand', 'bianca', 'bintou', 'blaise', 'blandine',
+  'boris', 'boubacar', 'bourama', 'brigitte', 'cadi', 'caitlin', 'candice', 'capucine', 'carine', 'carmen', 'casimir', 'cassandre',
+  'cassim', 'castille', 'cathy', 'cecile', 'cecilia', 'celestin', 'cesar', 'chahinez', 'chaimae', 'chanel', 'charly', 'cheikh',
+  'cherif', 'chiara', 'chloe', 'chloee', 'christiane', 'claude', 'claudia', 'claudine', 'cleo', 'clotilde', 'colette', 'come',
+  'constance', 'constant', 'corentine', 'cosette', 'cyprien', 'cyrielle', 'dahlia', 'dalia', 'danielle', 'daouda', 'daphne', 'darius',
+  'davy', 'dayan', 'delphine', 'demba', 'desire', 'diego', 'dieynaba', 'dimitri', 'djamila', 'djeneba', 'dominique', 'donovan',
+  'dora', 'doriane', 'dorothee', 'driss', 'edgar', 'edith', 'edmond', 'edwige', 'eleanore', 'electra', 'elena', 'eleonore',
+  'elian', 'eliane', 'elijah', 'elina', 'elio', 'eliott', 'ella', 'elliot', 'elmire', 'eloi', 'elyas', 'elyes',
+  'emile', 'emilien', 'emy', 'enora', 'ephraim', 'erwann', 'esaie', 'eugene', 'eugenie', 'eulalie', 'eunice', 'eve',
+  'evelyne', 'everest', 'ezechiel', 'fabiola', 'faisal', 'fanta', 'fara', 'farida', 'faustine', 'felicie', 'felix', 'ferdinand',
+  'fernand', 'fiona', 'firmin', 'flavien', 'fleur', 'florence', 'florine', 'fortune', 'francine', 'francky', 'francoise', 'gaby',
+  'gaia', 'garance', 'gaspard', 'gautier', 'gaya', 'genevieve', 'gennaro', 'georgette', 'gilbert', 'gino', 'giovanni', 'giulia',
+  'gladys', 'gloria', 'godefroy', 'gontran', 'grace', 'gregoire', 'guillemette', 'gustave', 'guy', 'gwen', 'gwenael', 'hadja',
+  'hafid', 'hakim', 'halima', 'hamid', 'hanane', 'hania', 'hannah', 'harold', 'haroun', 'hawa', 'hayat', 'hedi',
+  'henriette', 'herve', 'hilaire', 'hind', 'honorine', 'horacio', 'hortense', 'houda', 'hubert', 'iban', 'ibtissam', 'idir',
+  'idrissa', 'igor', 'ilhan', 'iliana', 'ilias', 'ilyas', 'imad', 'imene', 'inaya', 'irene', 'irina', 'iris',
+  'isaac', 'isabelle', 'isaure', 'isidore', 'isis', 'islem', 'ismail', 'issam', 'iyed', 'jacqueline', 'jamal', 'janine',
+  'jasmine', 'jason', 'jean-baptiste', 'jean-luc', 'jean-marc', 'jean-pierre', 'jeannine', 'jeremie', 'jerome', 'jibril', 'joachim', 'jocelyne',
+  'joelle', 'jolan', 'jordane', 'josette', 'josiane', 'josue', 'jules', 'julia', 'juliana', 'julienne', 'justin', 'kaci',
+  'kadidiatou', 'kaya', 'kaïs', 'kelia', 'kelly', 'keren', 'khalid', 'khalil', 'kilian', 'kimberley', 'kylan', 'laetitia',
+  'lahcen', 'lahouari', 'lalia', 'lamine', 'lancelot', 'laurianne', 'laurine', 'layana', 'lazare', 'leandre', 'lehna', 'lenny',
+  'leonard', 'leontine', 'liam', 'liana', 'lilas', 'lilia', 'lilya', 'lionel', 'lise', 'loane', 'loanne', 'lohan',
+  'lorena', 'lorine', 'louison', 'louka', 'lounis', 'luce', 'lucile', 'lucille', 'ludwig', 'lyes', 'lysandre', 'madeleine',
+  'madjid', 'magali', 'mahdi', 'mahe', 'mai', 'maiwenn', 'malak', 'malo', 'manuel', 'mao', 'marcelle', 'marguerite',
+  'mariame', 'marielle', 'marilou', 'marinette', 'marlene', 'marthe', 'martial', 'martin', 'martine', 'maryline', 'maryse', 'massinissa',
+  'mathilda', 'matilde', 'maurice', 'mauricette', 'maxandre', 'mayeul', 'maylis', 'maïmouna', 'medine', 'melissandre', 'melody', 'merlin',
+  'messaoud', 'micheline', 'mireille', 'mohand', 'moktar', 'monique', 'morgan', 'mouna', 'mounia', 'mourad', 'mustapha', 'nadir',
+  'nafissatou', 'nagib', 'nahil', 'naila', 'najat', 'nassera', 'nassira', 'nawal', 'nawel', 'nayla', 'nelly', 'nelson',
+  'nestor', 'nicolette', 'nils', 'nino', 'noam', 'nolwenn', 'norah', 'nordine', 'noura', 'nourhene', 'octave', 'odette',
+  'odile', 'olga', 'oliver', 'ondine', 'oriane', 'orlane', 'othmane', 'ouafa', 'oumaima', 'oumar', 'pacome', 'paloma',
+  'paolo', 'paulette', 'paulin', 'pedro', 'peggy', 'penelope', 'perle', 'perrine', 'philippine', 'pia', 'pierre-yves', 'pierrick',
+  'prisca', 'prosper', 'prudence', 'rabah', 'rachelle', 'radia', 'raissa', 'ramata', 'ramzi', 'randa', 'raoul', 'rayane',
+  'raymond', 'rebeca', 'reda', 'regine', 'renaud', 'rene', 'renee', 'reyhan', 'rita', 'rodolphe', 'rodrigue', 'roger',
+  'roland', 'romaric', 'romuald', 'rosa', 'rose', 'roseline', 'rosine', 'roxana', 'ruben', 'rudy', 'saad', 'sabri',
+  'sadia', 'safa', 'safiatou', 'sahra', 'salif', 'saliha', 'salomé', 'samba', 'samson', 'sandy', 'santiago', 'sarra',
+  'saskia', 'seif', 'selin', 'serena', 'servane', 'sevan', 'sidney', 'sidonie', 'sigrid', 'silvia', 'simone', 'slimane',
+  'soizic', 'solange', 'soline', 'sonny', 'soukaina', 'souleymane', 'stanislas', 'stella', 'suzon', 'swann', 'sybille', 'sylvana',
+  'tahar', 'talia', 'tamara', 'tarek', 'tatiana', 'tayeb', 'telma', 'teresa', 'thelma', 'theodore', 'theophile', 'therese',
+  'thibaud', 'thierno', 'tiphaine', 'titouan', 'toussaint', 'tracy', 'ulysse', 'valere', 'valeriane', 'valia', 'vera', 'veronica',
+  'victoire', 'vinciane', 'violette', 'virgile', 'vivien', 'wael', 'wafa', 'wahiba', 'walter', 'wendy', 'wesley', 'wilfried',
+  'willy', 'xavier', 'yacouba', 'yael', 'yahia', 'yamina', 'yasmin', 'yasmina', 'yazid', 'yohann', 'yolande', 'yona',
+  'youna', 'youri', 'ysaline', 'yvette', 'yvon', 'zacharie', 'zainab', 'zaineb', 'zena', 'zineb', 'zinedine', 'zita',
+  'zora', 'zoubida', 'zoulikha', 'zyad',
 ]);
