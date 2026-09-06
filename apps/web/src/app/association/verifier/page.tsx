@@ -25,8 +25,9 @@ interface AssociationPublique {
   active: boolean;
 }
 
-export default async function VerifierPage({ searchParams }: { searchParams: { q?: string } }) {
-  const q = (searchParams.q ?? '').trim();
+export default async function VerifierPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q: brut } = await searchParams;
+  const q = (brut ?? '').trim();
   let resultats: AssociationPublique[] | null = null;
   let erreur: string | null = null;
 
