@@ -5,6 +5,13 @@
 // dépend de l'API est un article d'aide indisponible le jour où l'API tousse.
 // Elles vivent avec le code, donc elles suivent les évolutions du produit dans
 // le même commit que la fonctionnalité qu'elles décrivent.
+//
+// ⚠ AUCUNE RÉPONSE ICI NE PROMET QUE LES PROFILS SONT VÉRIFIÉS. L'association
+// n'opère ni contrôle d'identité ni consultation de casier. Ce que le produit
+// fait réellement : l'intervenant dépose son dossier de conformité, et
+// l'établissement le consulte avant de s'engager. Promettre une vérification
+// de sécurité à une direction qui va confier des enfants ou des personnes
+// âgées serait la pire catégorie de faux.
 
 export interface Article {
   slug: string;
@@ -55,9 +62,9 @@ export const RUBRIQUES: Rubrique[] = [
       },
       {
         slug: "verification-des-intervenants",
-        question: "Comment les intervenants sont-ils vérifiés ?",
+        question: "Quelles pièces les intervenants doivent-ils fournir ?",
         reponse: [
-          "Chaque profil est contrôlé par l'équipe avant d'être visible : diplômes, expériences et pièces d'identité.",
+          "Chaque intervenant renseigne son métier, ses diplômes et ses expériences, puis dépose son dossier de conformité. Vous le consultez depuis la mission avant de vous engager.",
           "Les pièces de conformité, diplôme, extrait de casier, attestation URSSAF, assurance, sont déposées dans le coffre-fort et surveillées : une alerte part avant chaque échéance, pas après.",
         ],
       },
@@ -82,7 +89,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Comment rejoindre le réseau ?",
         reponse: [
           "Vous créez un compte intervenant, puis vous remplissez votre profil : métier, diplômes, expériences, zones d'intervention.",
-          "L'équipe vérifie les pièces avant publication. Une fois le profil validé, vous recevez les missions qui correspondent à votre métier et à votre secteur.",
+          "Vous déposez ensuite vos pièces au coffre-fort. Une fois votre profil en ligne, vous recevez les missions qui correspondent à votre métier et à votre secteur.",
         ],
       },
       {
