@@ -3,13 +3,13 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
-import { LIBELLES_ROLE, pourInput, type Contact, type RoleContact } from '../_types';
+import { CATEGORIES_CONTACT, LIBELLES_ROLE, categorieDuContact, pourInput, type Contact, type RoleContact } from '../_types';
 
 const CHAMP =
   'w-full rounded-xl border border-[#D9D6EE] bg-white px-4 py-3 text-base text-[#1D1B5C] focus:border-[#4F46E5] focus:outline-none focus:ring-4 focus:ring-[#ECEBFC]';
 
 const ROLES_EQUIPE: RoleContact[] = ['PRESIDENT', 'TRESORIER', 'SECRETAIRE', 'MEMBRE_BUREAU', 'MEMBRE', 'BENEVOLE', 'SALARIE'];
-const ROLES_AUTOUR: RoleContact[] = ['PARTENAIRE', 'FINANCEUR', 'ELU', 'AUTRE'];
+const ROLES_AUTOUR: RoleContact[] = ['PARTENAIRE', 'FINANCEUR', 'INSTITUTIONNEL', 'ELU', 'AUTRE'];
 
 interface Valeurs {
   prenom: string;
@@ -17,6 +17,7 @@ interface Valeurs {
   email: string;
   telephone: string;
   structure: string;
+  poste: string;
   roles: RoleContact[];
   dateAdhesion: string;
   cotisationAJour: boolean;
@@ -32,6 +33,7 @@ function depuis(c: Contact | null, rolesParDefaut: RoleContact[]): Valeurs {
     email: c?.email ?? '',
     telephone: c?.telephone ?? '',
     structure: c?.structure ?? '',
+    poste: c?.poste ?? '',
     roles: c?.roles ?? rolesParDefaut,
     dateAdhesion: pourInput(c?.dateAdhesion),
     cotisationAJour: c?.cotisationAJour ?? false,
@@ -61,6 +63,7 @@ export function FicheContact({
 
   const estBureau = v.roles.some((r) => r === 'PRESIDENT' || r === 'TRESORIER' || r === 'SECRETAIRE' || r === 'MEMBRE_BUREAU');
   const estAutour = v.roles.some((r) => ROLES_AUTOUR.includes(r));
+  const libelleFamille = CATEGORIES_CONTACT.find((f) => f.code === categorieDuContact(v.roles))?.libelle ?? 'Contacts divers';
 
   function basculerRole(r: RoleContact) {
     setV((x) => ({ ...x, roles: x.roles.includes(r) ? x.roles.filter((y) => y !== r) : [...x.roles, r] }));
@@ -76,6 +79,7 @@ export function FicheContact({
       email: v.email.trim() || null,
       telephone: v.telephone.trim() || null,
       structure: v.structure.trim() || null,
+      poste: v.poste.trim() || null,
       roles: v.roles.length ? v.roles : ['MEMBRE'],
       dateAdhesion: v.dateAdhesion || null,
       cotisationAJour: v.cotisationAJour,
@@ -155,14 +159,26 @@ export function FicheContact({
       <fieldset>
         <legend className="mb-2 text-sm font-bold text-[#1D1B5C]">Autour de l&apos;association</legend>
         <div className="flex flex-wrap gap-2">{ROLES_AUTOUR.map(caseRole)}</div>
+        {estAutour ? (
+          <p className="mt-2 text-sm text-[#6B6A8A]">
+            Cette personne sera rangée dans <strong className="font-extrabold text-[#4338CA]">{libelleFamille}</strong> de tes contacts.
+          </p>
+        ) : null}
       </fieldset>
 
       {estAutour ? (
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold text-[#1D1B5C]">Sa structure</span>
-          <span className="text-[#6B6A8A]">La mairie, le département, l&apos;école, l&apos;entreprise…</span>
-          <input type="text" maxLength={160} value={v.structure} onChange={(e) => setV({ ...v, structure: e.target.value })} className={CHAMP} />
-        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-bold text-[#1D1B5C]">Sa structure</span>
+            <span className="text-[#6B6A8A]">La mairie, le département, l&apos;école, l&apos;entreprise…</span>
+            <input type="text" maxLength={160} value={v.structure} onChange={(e) => setV({ ...v, structure: e.target.value })} className={CHAMP} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-bold text-[#1D1B5C]">Son poste</span>
+            <span className="text-[#6B6A8A]">Chargée de mission, adjoint aux sports, directrice…</span>
+            <input type="text" maxLength={120} value={v.poste} onChange={(e) => setV({ ...v, poste: e.target.value })} className={CHAMP} />
+          </label>
+        </div>
       ) : null}
 
       {v.roles.includes('MEMBRE') ? (

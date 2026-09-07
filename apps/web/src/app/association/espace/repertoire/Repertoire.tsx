@@ -1,13 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { LIBELLES_ROLE, dateCourte, type Contact, type RoleContact } from '../_types';
+import {
+  CATEGORIES_CONTACT,
+  LIBELLES_ROLE,
+  dateCourte,
+  type CategorieContact,
+  type Contact,
+  type RoleContact,
+} from '../_types';
 import { FicheContact } from './FicheContact';
 
-type Onglet = 'EQUIPE' | 'MEMBRES' | 'AUTOUR';
+type Onglet = 'EQUIPE' | 'MEMBRES' | CategorieContact;
 
-const ROLES_AUTOUR: RoleContact[] = ['PARTENAIRE', 'FINANCEUR', 'ELU'];
 const ROLES_BUREAU: RoleContact[] = ['PRESIDENT', 'TRESORIER', 'SECRETAIRE', 'MEMBRE_BUREAU'];
+const ROLES_CLASSES: RoleContact[] = ['PARTENAIRE', 'FINANCEUR', 'ELU', 'INSTITUTIONNEL'];
+const ROLES_INTERNES: RoleContact[] = ['PRESIDENT', 'TRESORIER', 'SECRETAIRE', 'MEMBRE_BUREAU', 'MEMBRE', 'BENEVOLE', 'SALARIE'];
 
 /** Ce que chaque rôle permet de faire : les « droits » dans l'association. */
 export const DROITS: Partial<Record<RoleContact, string>> = {
@@ -21,6 +29,7 @@ export const DROITS: Partial<Record<RoleContact, string>> = {
   PARTENAIRE: 'Agit avec vous sur le terrain',
   FINANCEUR: 'Donne de l’argent, demande des comptes',
   ELU: 'Peut appuyer un dossier auprès de sa collectivité',
+  INSTITUTIONNEL: 'Instruit vos demandes, connaît les dispositifs',
 };
 
 function initiales(c: Contact) {
@@ -28,30 +37,44 @@ function initiales(c: Contact) {
 }
 
 /**
- * Le répertoire. En mode INTERNE : l'équipe et les membres, avec ce que
- * chaque rôle permet de faire. En mode PARTENAIRES : ce qu'il y a autour.
+ * Le répertoire. En mode INTERNE : l'équipe et les membres, avec ce que chaque
+ * rôle permet de faire. En mode CONTACTS : les quatre familles de contacts
+ * autour de l'association (partenaires, financeurs, institutionnels, divers).
  */
-export function Repertoire({ contacts, mode = 'INTERNE' }: { contacts: Contact[]; mode?: 'INTERNE' | 'PARTENAIRES' }) {
-  const [onglet, setOnglet] = useState<Onglet>(mode === 'PARTENAIRES' ? 'AUTOUR' : 'EQUIPE');
+export function Repertoire({ contacts, mode = 'INTERNE' }: { contacts: Contact[]; mode?: 'INTERNE' | 'CONTACTS' }) {
+  const [onglet, setOnglet] = useState<Onglet>(mode === 'CONTACTS' ? 'PARTENAIRE' : 'EQUIPE');
   const [ouverte, setOuverte] = useState<Contact | null | 'nouvelle'>(null);
   const [filtre, setFiltre] = useState('');
 
   const equipe = contacts.filter((c) => c.roles.some((r) => ROLES_BUREAU.includes(r) || r === 'BENEVOLE' || r === 'SALARIE'));
   const membres = contacts.filter((c) => c.roles.includes('MEMBRE'));
-  const autour = contacts.filter((c) => c.roles.some((r) => ROLES_AUTOUR.includes(r) || r === 'AUTRE'));
-  const liste = (onglet === 'EQUIPE' ? equipe : onglet === 'MEMBRES' ? membres : autour).filter((c) => {
+
+  /** Les divers ramassent aussi les contacts externes qu'on n'a pas rangés. */
+  function parCategorie(code: CategorieContact): Contact[] {
+    const famille = CATEGORIES_CONTACT.find((f) => f.code === code);
+    if (!famille) return [];
+    if (code !== 'DIVERS') return contacts.filter((c) => c.roles.some((r) => famille.roles.includes(r)));
+    return contacts.filter(
+      (c) => c.roles.includes('AUTRE') || (!c.roles.some((r) => ROLES_CLASSES.includes(r)) && !c.roles.some((r) => ROLES_INTERNES.includes(r))),
+    );
+  }
+
+  const listeBrute = onglet === 'EQUIPE' ? equipe : onglet === 'MEMBRES' ? membres : parCategorie(onglet);
+  const liste = listeBrute.filter((c) => {
     const q = filtre.trim().toLowerCase();
-    return !q || `${c.prenom} ${c.nom} ${c.structure ?? ''} ${c.email ?? ''}`.toLowerCase().includes(q);
+    return !q || `${c.prenom} ${c.nom} ${c.structure ?? ''} ${c.poste ?? ''} ${c.email ?? ''}`.toLowerCase().includes(q);
   });
 
   const onglets: { code: Onglet; libelle: string; nombre: number }[] =
-    mode === 'PARTENAIRES'
-      ? [{ code: 'AUTOUR', libelle: 'Partenaires et financeurs', nombre: autour.length }]
+    mode === 'CONTACTS'
+      ? CATEGORIES_CONTACT.map((f) => ({ code: f.code as Onglet, libelle: f.libelle, nombre: parCategorie(f.code).length }))
       : [
           { code: 'EQUIPE', libelle: "L'équipe", nombre: equipe.length },
           { code: 'MEMBRES', libelle: 'Les membres', nombre: membres.length },
         ];
-  const rolesParDefaut: RoleContact[] = onglet === 'EQUIPE' ? ['BENEVOLE'] : onglet === 'MEMBRES' ? ['MEMBRE'] : ['PARTENAIRE'];
+
+  const famille = CATEGORIES_CONTACT.find((f) => f.code === onglet);
+  const rolesParDefaut: RoleContact[] = onglet === 'EQUIPE' ? ['BENEVOLE'] : onglet === 'MEMBRES' ? ['MEMBRE'] : [famille?.roles[0] ?? 'AUTRE'];
 
   return (
     <div className="space-y-4">
@@ -83,19 +106,25 @@ export function Repertoire({ contacts, mode = 'INTERNE' }: { contacts: Contact[]
         </div>
       </div>
 
+      {famille ? <p className="text-sm text-[#6B6A8A]">{famille.enUnMot}.</p> : null}
+
       {ouverte === 'nouvelle' ? <FicheContact contact={null} rolesParDefaut={rolesParDefaut} onFermer={() => setOuverte(null)} /> : null}
 
       {liste.length === 0 ? (
         <div className="rounded-2xl border border-[#E6E4F3] bg-white px-6 py-10 text-center">
           <p className="font-bold text-[#1D1B5C]">
-            {onglet === 'EQUIPE' ? 'Personne dans l’équipe pour l’instant.' : onglet === 'MEMBRES' ? 'Aucun membre pour l’instant.' : 'Aucun partenaire pour l’instant.'}
+            {onglet === 'EQUIPE'
+              ? 'Personne dans l’équipe pour l’instant.'
+              : onglet === 'MEMBRES'
+                ? 'Aucun membre pour l’instant.'
+                : `Rien dans « ${famille?.libelle ?? 'cette famille'} » pour l’instant.`}
           </p>
           <p className="mt-1 text-sm text-[#6B6A8A]">
             {onglet === 'EQUIPE'
               ? 'Commence par le président, le trésorier et le secrétaire : les financeurs demandent qui décide.'
               : onglet === 'MEMBRES'
                 ? 'Chaque membre, avec sa date d’entrée et sa cotisation : c’est ce qui prouve qu’une décision est valable.'
-                : 'La personne de la mairie, le financeur, l’élu qui vous connaît : un nom, un téléphone, on ne cherche plus.'}
+                : 'Un nom, un poste, un téléphone : le jour où il faut appeler, on ne cherche plus.'}
           </p>
           <button type="button" onClick={() => setOuverte('nouvelle')} className="mt-4 rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA]">
             Ajouter une personne
@@ -119,6 +148,7 @@ export function Repertoire({ contacts, mode = 'INTERNE' }: { contacts: Contact[]
                         {c.prenom} {c.nom}
                         {c.structure ? <span className="font-normal text-[#6B6A8A]"> · {c.structure}</span> : null}
                       </span>
+                      {c.poste ? <span className="mt-0.5 block text-sm text-[#3B3A66]">{c.poste}</span> : null}
                       <span className="mt-0.5 flex flex-wrap gap-1.5">
                         {c.roles.map((r) => (
                           <span key={r} className="rounded-full bg-[#F0EFF7] px-2 py-0.5 text-xs font-bold text-[#6B6A8A]">
