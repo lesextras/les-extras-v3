@@ -58,17 +58,16 @@ export const ICONES = {
 /**
  * UNE SEULE LISTE. « Accueil » et « Ce lundi » sont la même page (le tableau de
  * bord quand on est connectée) ; « Mon association » porte le classeur, les
- * documents, la fiche publique et les agréments ; « Ce à quoi j'ai droit »
+ * documents, la fiche publique, les agréments et le secrétariat ; « Ce à quoi j'ai droit »
  * porte les outils utiles.
  */
 const MENU: Entree[] = [
   { href: '/', libelle: 'Accueil', icone: ICONES.accueil },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
-  { href: '/espace/secretariat', libelle: 'Mon secrétariat', icone: ICONES.budget },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
   { href: '/espace/repertoire', libelle: 'Mon équipe', icone: ICONES.droits },
-  { href: '/espace/partenaires', libelle: 'Mes partenaires', icone: ICONES.partenaires },
+  { href: '/espace/partenaires', libelle: 'Mes contacts', icone: ICONES.partenaires },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
@@ -79,7 +78,8 @@ const PORTEES: Record<string, string> = {
   '/espace': '/',
   '/espace/actions': '/espace/projets',
   '/espace/financeurs': '/espace/projets',
-  '/espace/budget': '/espace/secretariat',
+  '/espace/budget': '/espace/association',
+  '/espace/secretariat': '/espace/association',
   '/espace/documents': '/espace/association',
   '/espace/classeur': '/espace/association',
   '/verifier': '/espace/association',
@@ -247,7 +247,7 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
       {/* Au centre : l'entrée la plus importante, l'argent. */}
       <Link
         href="/espace/dossiers"
-        className="shrink-0 rounded-xl bg-[#D6335C] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#BC2A4E] sm:px-5 sm:text-[15px]"
+        className="shrink-0 rounded-xl bg-[#0F5F3E] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#0B4A30] sm:px-5 sm:text-[15px]"
       >
         <span className="sm:hidden">Mes subventions</span>
         <span className="hidden sm:inline">Mes subventions et appels à projet</span>
