@@ -1,0 +1,129 @@
+'use client';
+
+import { useState } from 'react';
+import { LIBELLES_ROLE, dateCourte, type Contact, type RoleContact } from '../_types';
+import { FicheContact } from './FicheContact';
+
+type Onglet = 'EQUIPE' | 'MEMBRES' | 'AUTOUR';
+
+const ROLES_AUTOUR: RoleContact[] = ['PARTENAIRE', 'FINANCEUR', 'ELU'];
+const ROLES_BUREAU: RoleContact[] = ['PRESIDENT', 'TRESORIER', 'SECRETAIRE', 'MEMBRE_BUREAU'];
+
+function initiales(c: Contact) {
+  return `${c.prenom[0] ?? ''}${c.nom[0] ?? ''}`.toUpperCase();
+}
+
+/** Le répertoire en trois onglets : l'équipe, les membres, autour de l'association. */
+export function Repertoire({ contacts }: { contacts: Contact[] }) {
+  const [onglet, setOnglet] = useState<Onglet>('EQUIPE');
+  const [ouverte, setOuverte] = useState<Contact | null | 'nouvelle'>(null);
+  const [filtre, setFiltre] = useState('');
+
+  const equipe = contacts.filter((c) => c.roles.some((r) => ROLES_BUREAU.includes(r) || r === 'BENEVOLE' || r === 'SALARIE'));
+  const membres = contacts.filter((c) => c.roles.includes('MEMBRE'));
+  const autour = contacts.filter((c) => c.roles.some((r) => ROLES_AUTOUR.includes(r) || r === 'AUTRE'));
+  const liste = (onglet === 'EQUIPE' ? equipe : onglet === 'MEMBRES' ? membres : autour).filter((c) => {
+    const q = filtre.trim().toLowerCase();
+    return !q || `${c.prenom} ${c.nom} ${c.structure ?? ''} ${c.email ?? ''}`.toLowerCase().includes(q);
+  });
+
+  const onglets: { code: Onglet; libelle: string; nombre: number }[] = [
+    { code: 'EQUIPE', libelle: "L'équipe", nombre: equipe.length },
+    { code: 'MEMBRES', libelle: 'Les membres', nombre: membres.length },
+    { code: 'AUTOUR', libelle: 'Partenaires et financeurs', nombre: autour.length },
+  ];
+  const rolesParDefaut: RoleContact[] = onglet === 'EQUIPE' ? ['BENEVOLE'] : onglet === 'MEMBRES' ? ['MEMBRE'] : ['PARTENAIRE'];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {onglets.map((o) => (
+          <button
+            key={o.code}
+            type="button"
+            onClick={() => {
+              setOnglet(o.code);
+              setOuverte(null);
+            }}
+            className={`rounded-full px-4 py-2 text-sm font-bold ${onglet === o.code ? 'bg-[#1D1B5C] text-white' : 'bg-white text-[#3B3A66] hover:bg-[#ECEBFC]'}`}
+          >
+            {o.libelle} <span className={onglet === o.code ? 'text-[#C7C4F2]' : 'text-[#9A99B5]'}>{o.nombre}</span>
+          </button>
+        ))}
+        <div className="ml-auto flex gap-2">
+          <input
+            type="search"
+            value={filtre}
+            onChange={(e) => setFiltre(e.target.value)}
+            placeholder="Chercher un nom…"
+            className="w-44 rounded-xl border border-[#D9D6EE] bg-white px-3 py-2 text-sm focus:border-[#4F46E5] focus:outline-none"
+          />
+          <button type="button" onClick={() => setOuverte('nouvelle')} className="rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]">
+            + Ajouter
+          </button>
+        </div>
+      </div>
+
+      {ouverte === 'nouvelle' ? <FicheContact contact={null} rolesParDefaut={rolesParDefaut} onFermer={() => setOuverte(null)} /> : null}
+
+      {liste.length === 0 ? (
+        <div className="rounded-2xl border border-[#E6E4F3] bg-white px-6 py-10 text-center">
+          <p className="font-bold text-[#1D1B5C]">
+            {onglet === 'EQUIPE' ? 'Personne dans l’équipe pour l’instant.' : onglet === 'MEMBRES' ? 'Aucun membre pour l’instant.' : 'Aucun partenaire pour l’instant.'}
+          </p>
+          <p className="mt-1 text-sm text-[#6B6A8A]">
+            {onglet === 'EQUIPE'
+              ? 'Commence par le président, le trésorier et le secrétaire : les financeurs demandent qui décide.'
+              : onglet === 'MEMBRES'
+                ? 'Chaque membre, avec sa date d’entrée et sa cotisation : c’est ce qui prouve qu’une décision est valable.'
+                : 'La personne de la mairie, le financeur, l’élu qui vous connaît : un nom, un téléphone, on ne cherche plus.'}
+          </p>
+          <button type="button" onClick={() => setOuverte('nouvelle')} className="mt-4 rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA]">
+            Ajouter une personne
+          </button>
+        </div>
+      ) : (
+        <ul className="divide-y divide-[#E6E4F3] overflow-hidden rounded-2xl border border-[#E6E4F3] bg-white">
+          {liste.map((c) => (
+            <li key={c.id}>
+              {ouverte && ouverte !== 'nouvelle' && ouverte.id === c.id ? (
+                <div className="p-3">
+                  <FicheContact contact={c} onFermer={() => setOuverte(null)} />
+                </div>
+              ) : (
+                <button type="button" onClick={() => setOuverte(c)} className="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-[#F5F4FC]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#ECEBFC] text-sm font-extrabold text-[#4338CA]">{initiales(c)}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-extrabold text-[#1D1B5C]">
+                      {c.prenom} {c.nom}
+                      {c.structure ? <span className="font-normal text-[#6B6A8A]"> · {c.structure}</span> : null}
+                    </span>
+                    <span className="mt-0.5 flex flex-wrap gap-1.5">
+                      {c.roles.map((r) => (
+                        <span key={r} className="rounded-full bg-[#F0EFF7] px-2 py-0.5 text-xs font-bold text-[#6B6A8A]">
+                          {LIBELLES_ROLE[r]}
+                        </span>
+                      ))}
+                      {c.roles.includes('MEMBRE') ? (
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${c.cotisationAJour ? 'bg-[#E3F5EC] text-[#0F5F3E]' : 'bg-[#FEF3E2] text-[#7C3E06]'}`}>
+                          {c.cotisationAJour ? 'Cotisation à jour' : 'Cotisation à régler'}
+                        </span>
+                      ) : null}
+                      {c.mandatFin ? (
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${new Date(c.mandatFin).getTime() < Date.now() ? 'bg-[#FDE8E6] text-[#8A2419]' : 'bg-[#F0EFF7] text-[#6B6A8A]'}`}>
+                          Mandat jusqu&apos;au {dateCourte(c.mandatFin)}
+                        </span>
+                      ) : null}
+                    </span>
+                  </span>
+                  <span className="hidden text-sm text-[#6B6A8A] sm:block">{c.email ?? c.telephone ?? ''}</span>
+                  <span className="text-[#C7C4F2]">›</span>
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
