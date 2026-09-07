@@ -9,8 +9,12 @@ import { LIBELLES_NATURE, type NatureDossier } from '../_types';
  * Une nouvelle demande. Rien n'est pré-rempli : chaque subvention et chaque
  * appel à projet a ses propres règles. On recopie ce qu'annonce le financeur,
  * et l'idée qu'on va lui proposer.
+ *
+ * Seule exception, et c'est le principe du site : les financeurs déjà notés
+ * dans « Mes contacts » et les projets déjà notés dans « Mes projets » sont
+ * proposés, pour ne jamais retaper deux fois la même chose.
  */
-export function NouveauDossier() {
+export function NouveauDossier({ financeursConnus = [], projetsConnus = [] }: { financeursConnus?: string[]; projetsConnus?: string[] }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
   const [nature, setNature] = useState<NatureDossier>('SUBVENTION');
@@ -87,7 +91,28 @@ export function NouveauDossier() {
       </label>
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold">Financeur</span>
-        <input type="text" required maxLength={160} value={financeur} onChange={(e) => setFinanceur(e.target.value)} placeholder="Mairie de …, CAF, département, fondation…" className={champ} />
+        <input
+          type="text"
+          required
+          maxLength={160}
+          list="financeurs-connus"
+          value={financeur}
+          onChange={(e) => setFinanceur(e.target.value)}
+          placeholder="Mairie de …, CAF, département, fondation…"
+          className={champ}
+        />
+        {financeursConnus.length ? (
+          <>
+            <datalist id="financeurs-connus">
+              {financeursConnus.map((f) => (
+                <option key={f} value={f} />
+              ))}
+            </datalist>
+            <span className="text-xs text-[#6B6A8A]">
+              Tes financeurs et institutions déjà notés dans « Mes contacts » sont proposés dès les premières lettres.
+            </span>
+          </>
+        ) : null}
       </label>
 
       <label className="flex flex-col gap-1 text-sm sm:col-span-2">
@@ -99,6 +124,20 @@ export function NouveauDossier() {
       <label className="flex flex-col gap-1 text-sm sm:col-span-2">
         <span className="font-bold">Idée du projet à proposer</span>
         <span className="text-xs text-[#6B6A8A]">Ce que tu comptes lui présenter. Deux phrases suffisent pour commencer.</span>
+        {projetsConnus.length ? (
+          <span className="mb-1 flex flex-wrap gap-1.5">
+            {projetsConnus.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setIdeeProjet((t) => (t.includes(p) ? t : `${t}${t.trim() ? '\n' : ''}${p}`))}
+                className="rounded-full bg-[#ECEBFC] px-3 py-1 text-xs font-bold text-[#4338CA] hover:bg-[#D9D6EE]"
+              >
+                + {p}
+              </button>
+            ))}
+          </span>
+        ) : null}
         <textarea rows={3} maxLength={4000} value={ideeProjet} onChange={(e) => setIdeeProjet(e.target.value)} className={champ} />
       </label>
 

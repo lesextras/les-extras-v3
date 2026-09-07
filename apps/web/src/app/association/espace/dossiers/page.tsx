@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
 import { Encart, Titre, Tuile } from '../../_ui';
-import { formaterEuros, type Espace, type NatureDossier } from '../_types';
+import { formaterEuros, type ActionAssociation, type Contact, type Espace, type NatureDossier } from '../_types';
 import { NouveauDossier } from './NouveauDossier';
 import { Tableau } from './Tableau';
 
@@ -13,8 +13,23 @@ import { Tableau } from './Tableau';
 
 export default async function DossiersPage({ searchParams }: { searchParams: Promise<{ vue?: string }> }) {
   const [{ vue }, s] = await Promise.all([searchParams, sessionAssociation('/espace/dossiers')]);
-  const { data, error } = await apiEspace<Espace>(s, '/association/espace');
+  // Tout est relié : les financeurs viennent des contacts, les idées des projets.
+  const [{ data, error }, repertoire, projets] = await Promise.all([
+    apiEspace<Espace>(s, '/association/espace'),
+    apiEspace<{ contacts: Contact[] }>(s, '/association/repertoire'),
+    apiEspace<{ actions: ActionAssociation[] }>(s, '/association/actions'),
+  ]);
   if (!data) return <Encart ton="attention">{error ?? 'Les dossiers ne se chargent pas pour le moment.'}</Encart>;
+
+  const financeursConnus = [
+    ...new Set(
+      (repertoire.data?.contacts ?? [])
+        .filter((c) => c.roles.some((r) => r === 'FINANCEUR' || r === 'INSTITUTIONNEL' || r === 'ELU'))
+        .map((c) => c.structure?.trim() || `${c.prenom} ${c.nom}`.trim())
+        .filter(Boolean),
+    ),
+  ].sort((a, b) => a.localeCompare(b, 'fr'));
+  const projetsConnus = (projets.data?.actions ?? []).map((a) => a.intitule).filter(Boolean).slice(0, 12);
 
   // Deux familles : ce qu'on demande, et les concours auxquels on répond.
   const choisie: NatureDossier | null = vue === 'appels' ? 'APPEL_A_PROJET' : vue === 'subventions' ? 'SUBVENTION' : null;
@@ -66,7 +81,7 @@ export default async function DossiersPage({ searchParams }: { searchParams: Pro
         })}
       </div>
 
-      <NouveauDossier />
+      <NouveauDossier financeursConnus={financeursConnus} projetsConnus={projetsConnus} />
 
       <div className="mt-8">
         <Tableau dossiers={dossiers} montrerNature={choisie === null} />
