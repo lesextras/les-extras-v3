@@ -21,6 +21,7 @@ import type { RequestAccount, RequestUser } from '../common/types/request-contex
 import type { FichierRecu } from '../storage/files.service';
 import { TAILLE_MAX_GLOBALE } from '../storage/file-rules';
 import { EspaceService } from './espace.service';
+import { IaFinanceursDto, IaDossierDto } from './dto/espace.dto';
 import {
   ActionDto,
   ContactDto,
@@ -175,6 +176,22 @@ export class AssociationEspaceController {
   @Delete('actions/:id')
   supprimerAction(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
     return this.espace.supprimerAction(account.id, id);
+  }
+
+  // --------------------------------------------------------------- l'IA
+
+  /** Des pistes de financeurs et de mécènes, à partir du projet de l'association. */
+  @Post('ia/financeurs')
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  financeurs(@CurrentAccount() account: RequestAccount, @Body() dto: IaFinanceursDto) {
+    return this.espace.chercherFinanceurs(account.id, dto.precision);
+  }
+
+  /** Les textes d'une demande, rédigés à partir de ce qui est déjà noté. */
+  @Post('ia/dossier/:id')
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  redigerDossier(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: IaDossierDto) {
+    return this.espace.redigerDossier(account.id, id, dto.precision);
   }
 
   // ------------------------------------------------------ gestion budgétaire

@@ -30,6 +30,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FilesService, type FichierRecu } from '../storage/files.service';
 import { champsManquants, trouverModele, type Valeurs } from './fabrique';
 import { rendrePdf } from './rendu';
+import { ClaudeService } from '../assistant/claude.service';
+import {
+  CONSIGNE_DOSSIER,
+  CONSIGNE_FINANCEURS,
+  lireJson,
+  nettoyerDossier,
+  nettoyerPistes,
+  type DossierRedige,
+  type PisteFinanceur,
+} from './ia';
 import { AssociationService, type AssociationPublique } from './association.service';
 import {
   DISPOSITIFS,
@@ -103,6 +113,7 @@ export class EspaceService {
     private readonly prisma: PrismaService,
     private readonly files: FilesService,
     private readonly publiques: AssociationService,
+    private readonly moteur: ClaudeService,
   ) {}
 
   // ---------------------------------------------------------------- inscription
@@ -962,6 +973,86 @@ export class EspaceService {
     };
   }
 
+  // -------------------------------------------------- l'IA pour la demande
+
+  /** Ce que le moteur a besoin de savoir sur l'association, en clair et sans données personnelles. */
+  private async portrait(accountId: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const [actions, contacts] = await Promise.all([
+      this.prisma.actionAssociation.findMany({ where: { organisationId: organisation.id }, orderBy: { createdAt: 'desc' }, take: 10 }),
+      this.prisma.contactAssociation.findMany({ where: { organisationId: organisation.id } }),
+    ]);
+    const projet = this.projetDe(organisation);
+    const resume = this.resumeContacts(contacts);
+    return {
+      organisation,
+      texte: [
+        `Association : ${organisation.nom}`,
+        organisation.commune ? `Commune : ${organisation.commune}${organisation.codePostal ? ` (${organisation.codePostal})` : ''}` : '',
+        organisation.dateCreation ? `Créée le : ${new Date(organisation.dateCreation).toISOString().slice(0, 10)}` : '',
+        projet.pourQui ? `Pour qui : ${projet.pourQui}` : '',
+        projet.quoi ? `Ce qu'elle fait : ${projet.quoi}` : '',
+        projet.comment ? `Comment : ${projet.comment}` : '',
+        projet.apres ? `Ce que ça change : ${projet.apres}` : '',
+        projet.demande ? `Ce qu'elle demande : ${projet.demande}` : '',
+        `Membres : ${resume.membres} · bénévoles : ${resume.benevoles} · salariés : ${resume.salaries}`,
+        actions.length
+          ? `Projets récents :\n${actions.map((a) => `- ${a.intitule}${a.resume ? ` : ${a.resume}` : ''}${a.beneficiaires ? ` (${a.beneficiaires} personnes)` : ''}`).join('\n')}`
+          : "Aucun projet noté pour l'instant.",
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    };
+  }
+
+  /** Des pistes de financeurs et de mécènes, à vérifier avant de se lancer. */
+  async chercherFinanceurs(accountId: string, precision?: string): Promise<{ pistes: PisteFinanceur[]; genereLe: string }> {
+    const { texte } = await this.portrait(accountId);
+    const brut = await this.moteur.completer({
+      system: CONSIGNE_FINANCEURS,
+      user: `${texte}${precision ? `\n\nCe qu'elle cherche à financer en priorité : ${precision}` : ''}`,
+      maxTokens: 2500,
+      temperature: 0.3,
+    });
+    const pistes = nettoyerPistes(lireJson(brut));
+    if (!pistes.length) throw new BadRequestException("La recherche n'a rien donné de exploitable. Réessaie en précisant ton projet.");
+    return { pistes, genereLe: new Date().toISOString() };
+  }
+
+  /** Les textes d'une demande, écrits à partir de ce que l'association a déjà noté. */
+  async redigerDossier(accountId: string, dossierId: string, precision?: string): Promise<{ dossier: DossierRedige; genereLe: string }> {
+    const organisation = await this.organisationDuCompte(accountId);
+    const d = await this.prisma.dossierFinancement.findFirst({ where: { id: dossierId, organisationId: organisation.id } });
+    if (!d) throw new NotFoundException('Ce dossier est introuvable.');
+    const { texte } = await this.portrait(accountId);
+    const demande = [
+      `Financeur : ${d.financeur}`,
+      `Intitulé : ${d.intitule}`,
+      `Nature : ${d.nature === 'APPEL_A_PROJET' ? 'appel à projet' : 'subvention'}`,
+      d.description ? `Ce que le financeur demande : ${d.description}` : '',
+      d.ideeProjet ? `Idée de projet à proposer : ${d.ideeProjet}` : '',
+      d.montantMax !== null ? `Montant maximum annoncé : ${Number(d.montantMax)} euros` : '',
+      d.montantDemande !== null ? `Montant que l'association veut demander : ${Number(d.montantDemande)} euros` : '',
+      d.dateLimiteDepot ? `Date limite : ${d.dateLimiteDepot.toISOString().slice(0, 10)}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+    const brut = await this.moteur.completer({
+      system: CONSIGNE_DOSSIER,
+      user: `${texte}\n\nLA DEMANDE\n${demande}${precision ? `\n\nPrécisions données par l'association : ${precision}` : ''}`,
+      maxTokens: 3000,
+      temperature: 0.4,
+    });
+    const dossier = nettoyerDossier(lireJson(brut));
+    if (!dossier?.presentation) throw new BadRequestException("La rédaction n'a pas abouti. Réessaie dans un instant.");
+    return { dossier, genereLe: new Date().toISOString() };
+  }
+
+  /** L'IA est-elle branchée sur ce serveur ? */
+  get iaDisponible(): boolean {
+    return this.moteur.disponible;
+  }
+
   // --------------------------------------------------------------- documents
 
   async documents(accountId: string) {
@@ -1089,6 +1180,7 @@ export class EspaceService {
       actions,
       resumeActions: this.resumeActions(actions),
       budget: this.resumeMouvements(mouvements),
+      ia: { disponible: this.moteur.disponible },
       derniersMouvements: mouvements.slice(0, 5).map((m) => this.decorerMouvement(m)),
       nbDocuments,
       configuration: { etapes: configuration, faites: configurationFaites, total: configuration.length, pourcentage: Math.round((configurationFaites / configuration.length) * 100) },

@@ -484,6 +484,214 @@ export const MODELES: Modele[] = [
     },
   },
   {
+    code: 'convocation-ag',
+    titre: "La convocation à l'assemblée générale",
+    enUnMot: 'Le courrier qui convoque les membres : date, heure, lieu, ordre du jour. À envoyer 15 jours avant.',
+    categorie: 'Secrétariat',
+    etapes: ['la-premiere-assemblee-generale'],
+    pages: [
+      { titre: 'La réunion', champs: ['nom', 'siege', 'typeAg', 'dateAg', 'heure', 'lieu'] },
+      { titre: 'L’ordre du jour', champs: ['points', 'pouvoir', 'ville', 'date', 'president'] },
+    ],
+    champs: [
+      CHAMP_NOM,
+      CHAMP_SIEGE,
+      { nom: 'typeAg', libelle: 'Type d’assemblée', type: 'texte', requis: true, aide: 'Ordinaire, extraordinaire, constitutive…' },
+      { nom: 'dateAg', libelle: 'Date de l’assemblée', type: 'date', requis: true },
+      { nom: 'heure', libelle: 'Heure', type: 'texte', requis: true, aide: 'Par exemple 18 h 30.' },
+      { nom: 'lieu', libelle: 'Lieu', type: 'texte', requis: true, aide: 'Salle, adresse, ou lien de visioconférence.' },
+      {
+        nom: 'points',
+        libelle: 'Les points à l’ordre du jour',
+        type: 'liste',
+        requis: true,
+        lignesDepart: 5,
+        colonnes: [{ nom: 'point', libelle: 'Point', type: 'texte', large: true }],
+      },
+      { nom: 'pouvoir', libelle: 'Un membre peut-il donner pouvoir ?', type: 'texte', aide: 'Par exemple : oui, un pouvoir par personne présente.' },
+      CHAMP_VILLE,
+      CHAMP_DATE,
+      CHAMP_PRESIDENT,
+    ],
+    construire: (v) => {
+      const nom = t(v.nom, "l'association");
+      const points = lignes(v.points).map((l) => t(l.point)).filter(Boolean);
+      return {
+        titre: `Convocation à l'assemblée générale ${t(v.typeAg, '').toLowerCase()}`.trim(),
+        sousTitre: `Association « ${nom} »`,
+        nomFichier: nomFichier('convocation-ag', nom),
+        blocs: [
+          { type: 'para', texte: `${nom} — ${t(v.siege, '…')}` },
+          { type: 'espace' },
+          { type: 'para', texte: 'Chère adhérente, cher adhérent,' },
+          {
+            type: 'para',
+            texte: `Vous êtes convoqué·e à l'assemblée générale ${t(v.typeAg, '').toLowerCase()} de l'association, qui se tiendra le ${dateFr(v.dateAg)} à ${t(v.heure, '…')}, à ${t(v.lieu, '…')}.`,
+          },
+          { type: 'titre', texte: 'Ordre du jour', niveau: 2 },
+          { type: 'liste', items: points.length ? points : ['…'] },
+          ...(t(v.pouvoir) ? [{ type: 'para' as const, texte: `Pouvoirs : ${t(v.pouvoir)}` }] : []),
+          { type: 'para', texte: 'Votre présence compte : les décisions prises engagent l’association pour l’année.' },
+          { type: 'signatures', lieu: t(v.ville, '…'), date: dateFr(v.date), noms: [`${t(v.president, 'La présidence')}, président·e`] },
+        ],
+      };
+    },
+  },
+  {
+    code: 'ordre-du-jour',
+    titre: "L'ordre du jour",
+    enUnMot: 'La feuille de route de la réunion : les points, dans l’ordre, avec qui parle et combien de temps.',
+    categorie: 'Secrétariat',
+    etapes: ['la-premiere-assemblee-generale'],
+    pages: [
+      { titre: 'La réunion', champs: ['nom', 'intitule', 'dateAg', 'heure', 'lieu'] },
+      { titre: 'Les points', champs: ['points', 'ville', 'date', 'secretaire'] },
+    ],
+    champs: [
+      CHAMP_NOM,
+      { nom: 'intitule', libelle: 'Quelle réunion ?', type: 'texte', requis: true, aide: 'Assemblée générale ordinaire, réunion du bureau…' },
+      { nom: 'dateAg', libelle: 'Date', type: 'date', requis: true },
+      { nom: 'heure', libelle: 'Heure', type: 'texte' },
+      { nom: 'lieu', libelle: 'Lieu', type: 'texte' },
+      {
+        nom: 'points',
+        libelle: 'Les points',
+        type: 'liste',
+        requis: true,
+        lignesDepart: 6,
+        colonnes: [
+          { nom: 'point', libelle: 'Point', type: 'texte', large: true },
+          { nom: 'qui', libelle: 'Qui présente', type: 'texte' },
+          { nom: 'duree', libelle: 'Durée', type: 'texte' },
+        ],
+      },
+      CHAMP_VILLE,
+      CHAMP_DATE,
+      CHAMP_SECRETAIRE,
+    ],
+    construire: (v) => {
+      const nom = t(v.nom, "l'association");
+      const points = lignes(v.points).filter((l) => t(l.point));
+      return {
+        titre: `Ordre du jour — ${t(v.intitule, 'réunion')}`,
+        sousTitre: `Association « ${nom} » · ${dateFr(v.dateAg)}${t(v.heure) ? ` à ${t(v.heure)}` : ''}${t(v.lieu) ? ` · ${t(v.lieu)}` : ''}`,
+        nomFichier: nomFichier('ordre-du-jour', nom),
+        blocs: [
+          {
+            type: 'tableau',
+            entetes: ['Point', 'Qui présente', 'Durée'],
+            largeurs: [60, 25, 15],
+            lignes: points.length ? points.map((l, i) => [`${i + 1}. ${t(l.point)}`, t(l.qui), t(l.duree)]) : [['…', '', '']],
+          },
+          { type: 'para', texte: 'Chaque point est présenté, discuté, puis mis au vote quand une décision est nécessaire.' },
+          { type: 'signatures', lieu: t(v.ville, '…'), date: dateFr(v.date), noms: [`${t(v.secretaire, 'Le secrétariat')}, secrétaire`] },
+        ],
+      };
+    },
+  },
+  {
+    code: 'feuille-de-presence',
+    titre: 'La feuille de présence',
+    enUnMot: 'La liste à signer le jour de l’assemblée : c’est elle qui prouve que le quorum était atteint.',
+    categorie: 'Secrétariat',
+    etapes: ['la-premiere-assemblee-generale'],
+    pages: [
+      { titre: 'La réunion', champs: ['nom', 'intitule', 'dateAg', 'lieu'] },
+      { titre: 'Les personnes attendues', champs: ['personnes', 'ville', 'date', 'president'] },
+    ],
+    champs: [
+      CHAMP_NOM,
+      { nom: 'intitule', libelle: 'Quelle réunion ?', type: 'texte', requis: true, aide: 'Assemblée générale ordinaire du …' },
+      { nom: 'dateAg', libelle: 'Date', type: 'date', requis: true },
+      { nom: 'lieu', libelle: 'Lieu', type: 'texte' },
+      {
+        nom: 'personnes',
+        libelle: 'Les personnes attendues',
+        type: 'liste',
+        lignesDepart: 12,
+        aide: 'Laisse des lignes vides : on signe à la main le jour J.',
+        colonnes: [
+          { nom: 'nom', libelle: 'Nom et prénom', type: 'texte', large: true },
+          { nom: 'qualite', libelle: 'Qualité', type: 'texte' },
+          { nom: 'pouvoir', libelle: 'Pouvoir à', type: 'texte' },
+        ],
+      },
+      CHAMP_VILLE,
+      CHAMP_DATE,
+      CHAMP_PRESIDENT,
+    ],
+    construire: (v) => {
+      const nom = t(v.nom, "l'association");
+      const gens = lignes(v.personnes);
+      const remplies = gens.map((l) => [t(l.nom), t(l.qualite), t(l.pouvoir), '']);
+      const vides = Array.from({ length: Math.max(0, 12 - remplies.length) }, () => ['', '', '', '']);
+      return {
+        titre: 'Feuille de présence',
+        sousTitre: `Association « ${nom} » · ${t(v.intitule, 'assemblée générale')} du ${dateFr(v.dateAg)}${t(v.lieu) ? ` · ${t(v.lieu)}` : ''}`,
+        nomFichier: nomFichier('feuille-de-presence', nom),
+        blocs: [
+          {
+            type: 'tableau',
+            entetes: ['Nom et prénom', 'Qualité', 'Pouvoir à', 'Signature'],
+            largeurs: [35, 20, 20, 25],
+            lignes: [...remplies, ...vides],
+          },
+          { type: 'para', texte: 'Chaque personne présente signe en face de son nom. Les pouvoirs sont annexés à cette feuille.' },
+          { type: 'signatures', lieu: t(v.ville, '…'), date: dateFr(v.date), noms: [`${t(v.president, 'La présidence')}, président·e`] },
+        ],
+      };
+    },
+  },
+  {
+    code: 'recu-fiscal',
+    titre: 'Le reçu fiscal (dons)',
+    enUnMot: 'Le reçu à remettre au donateur : sans lui, il ne peut pas déduire son don de ses impôts.',
+    categorie: 'Secrétariat',
+    etapes: [],
+    pages: [
+      { titre: "L'association", champs: ['nom', 'siege', 'objetAsso', 'numeroRecu'] },
+      { titre: 'Le don', champs: ['donateur', 'adresseDonateur', 'montant', 'dateDon', 'formeDon', 'ville', 'date', 'president'] },
+    ],
+    champs: [
+      CHAMP_NOM,
+      CHAMP_SIEGE,
+      { nom: 'objetAsso', libelle: "Objet de l'association", type: 'long', requis: true, prerempli: 'projet.texteCourt', aide: "Ce que fait l'association : c'est ce qui justifie l'intérêt général." },
+      { nom: 'numeroRecu', libelle: 'Numéro du reçu', type: 'texte', requis: true, aide: 'Une suite continue : 2026-001, 2026-002…' },
+      { nom: 'donateur', libelle: 'Nom du donateur', type: 'texte', requis: true },
+      { nom: 'adresseDonateur', libelle: 'Adresse du donateur', type: 'texte', requis: true },
+      { nom: 'montant', libelle: 'Montant du don (euros)', type: 'nombre', requis: true },
+      { nom: 'dateDon', libelle: 'Date du don', type: 'date', requis: true },
+      { nom: 'formeDon', libelle: 'Forme du don', type: 'texte', requis: true, aide: 'Espèces, chèque, virement, abandon de frais…' },
+      CHAMP_VILLE,
+      CHAMP_DATE,
+      CHAMP_PRESIDENT,
+    ],
+    construire: (v) => {
+      const nom = t(v.nom, "l'association");
+      return {
+        titre: `Reçu de don n° ${t(v.numeroRecu, '…')}`,
+        sousTitre: `Association « ${nom} »`,
+        nomFichier: nomFichier(`recu-${t(v.numeroRecu, 'don')}`, nom),
+        blocs: [
+          { type: 'titre', texte: "L'association bénéficiaire", niveau: 2 },
+          { type: 'liste', items: [`Nom : ${nom}`, `Siège : ${t(v.siege, '…')}`, `Objet : ${t(v.objetAsso, '…')}`] },
+          { type: 'titre', texte: 'Le donateur', niveau: 2 },
+          { type: 'liste', items: [`Nom : ${t(v.donateur, '…')}`, `Adresse : ${t(v.adresseDonateur, '…')}`] },
+          { type: 'titre', texte: 'Le don', niveau: 2 },
+          { type: 'liste', items: [`Montant : ${euros(n(v.montant))}`, `Date : ${dateFr(v.dateDon)}`, `Forme : ${t(v.formeDon, '…')}`] },
+          { type: 'para', texte: "L'association reconnaît avoir reçu ce don et certifie qu'il ne donne lieu à aucune contrepartie." },
+          {
+            type: 'para',
+            texte:
+              "Ce reçu est délivré pour permettre au donateur de faire valoir la réduction d'impôt prévue par le code général des impôts. L'association reste responsable de son droit à délivrer des reçus : en cas de doute, elle peut demander un rescrit à l'administration fiscale.",
+            italique: true,
+          },
+          { type: 'signatures', lieu: t(v.ville, '…'), date: dateFr(v.date), noms: [`${t(v.president, 'La présidence')}, président·e`] },
+        ],
+      };
+    },
+  },
+  {
     code: 'lettre-mairie',
     titre: 'La lettre de demande à la mairie',
     enUnMot: 'Une page pour accompagner ton dossier : qui vous êtes, ce que vous faites, ce que vous demandez.',
