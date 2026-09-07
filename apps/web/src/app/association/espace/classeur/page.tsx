@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
+import { nomCourt } from '../../_nom';
 import { Barre, BTN_SECONDAIRE, CARTE, Encart, Titre, Tuile } from '../../_ui';
 import { CATEGORIES, type Espace } from '../_types';
 import { PieceDuClasseur } from './PieceDuClasseur';
@@ -34,7 +35,7 @@ export default async function ClasseurPage() {
           </Link>
         }
       >
-        {data.organisation.nom}
+        {nomCourt(data.organisation.nom)}
       </Titre>
 
       <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
