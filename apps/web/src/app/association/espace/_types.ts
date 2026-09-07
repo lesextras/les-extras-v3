@@ -1,5 +1,11 @@
 export type SituationPiece = 'DEDUITE' | 'A_JOUR' | 'BIENTOT_PERIMEE' | 'PERIMEE' | 'MANQUANTE';
 export type EtatDossier = 'REPERE' | 'EN_ECRITURE' | 'DEPOSE' | 'ACCORDE' | 'REFUSE' | 'SOLDE';
+export type NatureDossier = 'SUBVENTION' | 'APPEL_A_PROJET';
+
+export const LIBELLES_NATURE: Record<NatureDossier, string> = {
+  SUBVENTION: 'Subvention',
+  APPEL_A_PROJET: 'Appel à projet',
+};
 
 export interface TypeDePiece {
   code: string;
@@ -36,6 +42,7 @@ export interface Dossier {
   dispositifCode: string | null;
   financeur: string;
   intitule: string;
+  nature: NatureDossier;
   etat: EtatDossier;
   montantDemande: number | null;
   montantAccorde: number | null;
