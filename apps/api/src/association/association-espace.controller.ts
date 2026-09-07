@@ -22,11 +22,13 @@ import type { FichierRecu } from '../storage/files.service';
 import { TAILLE_MAX_GLOBALE } from '../storage/file-rules';
 import { EspaceService } from './espace.service';
 import {
+  ActionDto,
   ContactDto,
   DocumentDto,
   DossierDto,
   EtapeFaiteDto,
   FabriqueDto,
+  ModifierActionDto,
   ModifierContactDto,
   ModifierDossierDto,
   ModifierOrganisationDto,
@@ -149,6 +151,28 @@ export class AssociationEspaceController {
   @Delete('repertoire/:id')
   supprimerContact(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
     return this.espace.supprimerContact(account.id, id);
+  }
+
+  // --------------------------------------------------------------- actions
+
+  @Get('actions')
+  actions(@CurrentAccount() account: RequestAccount) {
+    return this.espace.actions(account.id);
+  }
+
+  @Post('actions')
+  creerAction(@CurrentAccount() account: RequestAccount, @Body() dto: ActionDto) {
+    return this.espace.creerAction(account.id, dto);
+  }
+
+  @Patch('actions/:id')
+  modifierAction(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: ModifierActionDto) {
+    return this.espace.modifierAction(account.id, id, dto);
+  }
+
+  @Delete('actions/:id')
+  supprimerAction(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
+    return this.espace.supprimerAction(account.id, id);
   }
 
   // ------------------------------------------------------------- documents

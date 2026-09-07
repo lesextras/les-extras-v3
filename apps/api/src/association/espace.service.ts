@@ -8,12 +8,14 @@ import {
 import {
   AccountRole,
   AccountType,
+  EtatAction,
   EtatDossier,
   EtatPiece,
   FileKind,
   MembershipStatus,
   Prisma,
   UserStatus,
+  type ActionAssociation,
   type ContactAssociation,
   type DossierFinancement,
   type GlobalRole,
@@ -35,11 +37,13 @@ import {
 } from './referentiel-pieces';
 import { ETAPES_CHEMIN } from './chemin';
 import type {
+  ActionDto,
   ContactDto,
   DocumentDto,
   DossierDto,
   InscriptionAssociationDto,
   LigneBudgetDto,
+  ModifierActionDto,
   ModifierContactDto,
   ModifierDossierDto,
   ModifierOrganisationDto,
@@ -754,6 +758,89 @@ export class EspaceService {
     };
   }
 
+  // ----------------------------------------------------------------- actions
+
+  /** Les actions de l'association, la plus récente d'abord. */
+  async actions(accountId: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const actions = await this.prisma.actionAssociation.findMany({
+      where: { organisationId: organisation.id },
+      orderBy: [{ dateDebut: 'desc' }, { createdAt: 'desc' }],
+    });
+    return { actions, resume: this.resumeActions(actions) };
+  }
+
+  async creerAction(accountId: string, dto: ActionDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    return this.prisma.actionAssociation.create({
+      data: {
+        organisationId: organisation.id,
+        intitule: dto.intitule.trim(),
+        resume: dto.resume?.trim() || null,
+        lieu: dto.lieu?.trim() || null,
+        dateDebut: dto.dateDebut ? new Date(dto.dateDebut) : null,
+        dateFin: dto.dateFin ? new Date(dto.dateFin) : null,
+        etat: dto.etat ?? EtatAction.PREVUE,
+        beneficiaires: dto.beneficiaires ?? null,
+        benevoles: dto.benevoles ?? null,
+        heuresBenevoles: dto.heuresBenevoles ?? null,
+        cout: dto.cout ?? null,
+        partenaires: dto.partenaires?.trim() || null,
+        bilan: dto.bilan?.trim() || null,
+      },
+    });
+  }
+
+  async modifierAction(accountId: string, id: string, dto: ModifierActionDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const existante = await this.prisma.actionAssociation.findFirst({ where: { id, organisationId: organisation.id } });
+    if (!existante) throw new NotFoundException('Cette action est introuvable.');
+    const date = (v: string | null | undefined) => (v === undefined ? undefined : v ? new Date(v) : null);
+    const texte = (v: string | null | undefined) => (v === undefined ? undefined : v?.trim() || null);
+    return this.prisma.actionAssociation.update({
+      where: { id },
+      data: {
+        intitule: dto.intitule?.trim(),
+        resume: texte(dto.resume),
+        lieu: texte(dto.lieu),
+        dateDebut: date(dto.dateDebut),
+        dateFin: date(dto.dateFin),
+        etat: dto.etat,
+        beneficiaires: dto.beneficiaires,
+        benevoles: dto.benevoles,
+        heuresBenevoles: dto.heuresBenevoles,
+        cout: dto.cout,
+        partenaires: texte(dto.partenaires),
+        bilan: texte(dto.bilan),
+      },
+    });
+  }
+
+  async supprimerAction(accountId: string, id: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const existante = await this.prisma.actionAssociation.findFirst({ where: { id, organisationId: organisation.id } });
+    if (!existante) throw new NotFoundException('Cette action est introuvable.');
+    await this.prisma.actionAssociation.delete({ where: { id } });
+    return { ok: true };
+  }
+
+  /** Les chiffres qu'un financeur demande toujours : combien d'actions, pour combien de personnes. */
+  private resumeActions(actions: ActionAssociation[]) {
+    const somme = (f: (a: ActionAssociation) => number | null) => actions.reduce((t, a) => t + (f(a) ?? 0), 0);
+    const terminees = actions.filter((a) => a.etat === EtatAction.TERMINEE);
+    return {
+      total: actions.length,
+      prevues: actions.filter((a) => a.etat === EtatAction.PREVUE).length,
+      enCours: actions.filter((a) => a.etat === EtatAction.EN_COURS).length,
+      terminees: terminees.length,
+      beneficiaires: somme((a) => a.beneficiaires),
+      benevoles: somme((a) => a.benevoles),
+      heuresBenevoles: somme((a) => a.heuresBenevoles),
+      cout: somme((a) => a.cout),
+      sansBilan: terminees.filter((a) => !a.bilan).length,
+    };
+  }
+
   // --------------------------------------------------------------- documents
 
   async documents(accountId: string) {
@@ -817,13 +904,17 @@ export class EspaceService {
   /** Tout ce qu'affiche l'espace, en un seul appel. */
   async espace(accountId: string) {
     const organisation = await this.organisationDuCompte(accountId);
-    const [pieces, dossiers, contacts, nbDocuments] = await Promise.all([
+    const [pieces, dossiers, contacts, actions, nbDocuments] = await Promise.all([
       this.prisma.pieceAssociation.findMany({ where: { organisationId: organisation.id } }),
       this.prisma.dossierFinancement.findMany({
         where: { organisationId: organisation.id },
         orderBy: [{ dateLimiteDepot: 'asc' }, { createdAt: 'desc' }],
       }),
       this.prisma.contactAssociation.findMany({ where: { organisationId: organisation.id } }),
+      this.prisma.actionAssociation.findMany({
+        where: { organisationId: organisation.id },
+        orderBy: [{ dateDebut: 'desc' }, { createdAt: 'desc' }],
+      }),
       this.prisma.documentAssociation.count({ where: { organisationId: organisation.id } }),
     ]);
 
@@ -859,6 +950,7 @@ export class EspaceService {
       { code: 'BUREAU', libelle: 'Noter qui est président, trésorier, secrétaire', faite: vieStatutaire.bureau.president && vieStatutaire.bureau.tresorier, href: '/espace/repertoire' },
       { code: 'PAPIERS', libelle: `Déposer les papiers d'identité (${identiteOk}/${identite.length})`, faite: identite.length > 0 && identiteOk === identite.length, href: '/espace/classeur' },
       { code: 'PROJET', libelle: 'Écrire le projet en une page', faite: projet.complet, href: '/espace/association#projet' },
+      { code: 'ACTION', libelle: 'Noter une action de l’association', faite: actions.length > 0, href: '/espace/actions' },
       { code: 'DOSSIER', libelle: 'Créer mon premier dossier de subvention', faite: dossiers.length > 0, href: '/espace/dossiers' },
     ];
     const configurationFaites = configuration.filter((c) => c.faite).length;
@@ -872,6 +964,8 @@ export class EspaceService {
       projet,
       vieStatutaire,
       repertoire,
+      actions,
+      resumeActions: this.resumeActions(actions),
       nbDocuments,
       configuration: { etapes: configuration, faites: configurationFaites, total: configuration.length, pourcentage: Math.round((configurationFaites / configuration.length) * 100) },
       versionReferentiel: VERSION_REFERENTIEL,

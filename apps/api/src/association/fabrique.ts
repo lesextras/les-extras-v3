@@ -335,6 +335,7 @@ export const MODELES: Modele[] = [
         type: 'liste',
         requis: true,
         lignesDepart: 3,
+        prerempli: 'actions.liste',
         colonnes: [
           { nom: 'titre', libelle: 'Action', type: 'texte', large: true },
           { nom: 'quand', libelle: 'Quand', type: 'texte' },
