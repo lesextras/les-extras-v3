@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { associationConnectee } from './_session';
 import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, FormulaireRecherche, SousTitre } from './_ui';
 import { chargerChemin, TEINTES_PARTIE } from './_chemin';
 
@@ -9,6 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AccueilAssociation() {
+  // Connectée avec un espace ouvert : l'accueil, c'est le tableau de bord.
+  if (await associationConnectee()) redirect('/espace');
+
   const chemin = await chargerChemin();
   const parties = chemin?.parties ?? [];
   const etapes = chemin?.etapes ?? [];

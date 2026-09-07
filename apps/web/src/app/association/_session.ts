@@ -30,6 +30,17 @@ export async function sessionAssociation(chemin = '/espace'): Promise<SessionAss
   return { session, compte };
 }
 
+/** Le compte association de la personne connectée, s'il y en a un. Ne redirige jamais. */
+export async function associationConnectee(): Promise<SessionAccount | null> {
+  const session = await getSession();
+  if (!session) return null;
+  const comptes = session.accounts ?? [];
+  return (
+    comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
+    ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null)
+  );
+}
+
 /** Appel à l'API au nom de l'association, côté serveur, jamais mis en cache. */
 export async function apiEspace<T>(
   s: SessionAssociation,
