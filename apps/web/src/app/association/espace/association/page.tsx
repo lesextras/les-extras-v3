@@ -21,6 +21,7 @@ export default async function MonAssociationPage() {
   const rib = classeur.find((c) => c.type.code === 'RIB');
   const ribOk = rib ? rib.situation === 'A_JOUR' || rib.situation === 'DEDUITE' : false;
   const identiteOk = Boolean(o.rna || o.siret);
+  const papiersPrets = classeur.filter((c) => c.situation === 'A_JOUR' || c.situation === 'DEDUITE').length;
   const bureauOk = vie.bureau.president && vie.bureau.tresorier;
 
   const blocs = [
@@ -54,9 +55,27 @@ export default async function MonAssociationPage() {
 
   return (
     <>
-      <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier : qui vous êtes, qui décide, où verser l'argent.">
+      <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier : qui vous êtes, qui décide, où verser l'argent — et tous vos papiers au même endroit.">
         {o.nom}
       </Titre>
+
+      {/* ------------------------------------------------------- mes papiers */}
+      <section className="mb-8 grid gap-4 md:grid-cols-2">
+        <Link href="/espace/classeur" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+          <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes papiers</span>
+          <span className="mt-1 block text-sm text-[#6B6A8A]">
+            Les {classeur.length} pièces que les financeurs demandent : {papiersPrets} déjà prêtes.
+          </span>
+          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir le classeur →</span>
+        </Link>
+        <Link href="/espace/documents" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+          <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes autres documents</span>
+          <span className="mt-1 block text-sm text-[#6B6A8A]">
+            {data.nbDocuments === 0 ? 'Conventions, courriers, photos, affiches : rien encore.' : `${data.nbDocuments} document${data.nbDocuments > 1 ? 's' : ''} rangé${data.nbDocuments > 1 ? 's' : ''}.`}
+          </span>
+          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir mes documents →</span>
+        </Link>
+      </section>
 
       {/* --------------------------------------------------- dossier d'identité */}
       <section>
