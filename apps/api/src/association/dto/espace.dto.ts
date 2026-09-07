@@ -158,6 +158,7 @@ export class ContactDto {
   @IsOptional() @IsEmail() email?: string | null;
   @IsOptional() @IsString() @MaxLength(40) telephone?: string | null;
   @IsOptional() @IsString() @MaxLength(160) structure?: string | null;
+  @IsOptional() @IsString() @MaxLength(120) poste?: string | null;
   @IsOptional() @IsArray() @IsEnum(RoleContact, { each: true }) roles?: RoleContact[];
   @IsOptional() @IsDateString() dateAdhesion?: string | null;
   @IsOptional() @IsBoolean() cotisationAJour?: boolean;
@@ -172,6 +173,7 @@ export class ModifierContactDto {
   @IsOptional() @IsEmail() email?: string | null;
   @IsOptional() @IsString() @MaxLength(40) telephone?: string | null;
   @IsOptional() @IsString() @MaxLength(160) structure?: string | null;
+  @IsOptional() @IsString() @MaxLength(120) poste?: string | null;
   @IsOptional() @IsArray() @IsEnum(RoleContact, { each: true }) roles?: RoleContact[];
   @IsOptional() @IsDateString() dateAdhesion?: string | null;
   @IsOptional() @IsBoolean() cotisationAJour?: boolean;
@@ -279,6 +281,8 @@ export class ModifierMouvementDto {
 /** Une recherche de financeurs : ce que l'association veut financer en priorité. */
 export class IaFinanceursDto {
   @IsOptional() @IsString() @MaxLength(1000) precision?: string;
+  /** Quand la recherche part d'un projet noté dans l'espace. */
+  @IsOptional() @IsString() @MaxLength(40) projetId?: string;
 }
 
 /** Une rédaction de dossier : des précisions à donner au moteur. */
