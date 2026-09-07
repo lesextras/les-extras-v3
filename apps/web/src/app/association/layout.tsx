@@ -6,7 +6,7 @@ import { Coque, NOM_SITE, ORIGINE_SITE } from './_ui';
 import type { CompteAffiche } from './BarreLaterale';
 
 /**
- * COCKPIT ASSOCIATIF — association.toulali.fr
+ * PILOTER MON ASSOCIATION — association.toulali.fr
  *
  * Ce groupe de routes est servi sous son propre domaine par le middleware.
  * La coque lit la session (pour afficher qui est connecté) : les pages sont
@@ -21,7 +21,7 @@ const fraunces = Fraunces({ subsets: ['latin'], style: ['italic'], weight: ['600
 export const metadata: Metadata = {
   metadataBase: new URL(ORIGINE_SITE),
   title: {
-    absolute: `${NOM_SITE} — par ADéPA`,
+    absolute: `${NOM_SITE} — par Toulali`,
     template: `%s · ${NOM_SITE}`,
   },
   description:
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     siteName: NOM_SITE,
     locale: 'fr_FR',
     type: 'website',
-    title: `${NOM_SITE} — par ADéPA`,
+    title: `${NOM_SITE} — par Toulali`,
     description:
       "Faire naître ton association, la faire vivre, demander une subvention : douze étapes expliquées simplement, avec les CERFA et des documents exemples. Gratuit.",
     images: [
@@ -52,14 +52,14 @@ export const metadata: Metadata = {
         url: '/association/partage-piloter.png',
         width: 1200,
         height: 630,
-        alt: 'Cockpit associatif, par ADéPA : le chemin étape par étape jusqu’à la subvention.',
+        alt: 'Piloter mon association, par Toulali : le chemin étape par étape jusqu’à la subvention.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     images: ['/association/partage-piloter.png'],
-    title: `${NOM_SITE} — par ADéPA`,
+    title: `${NOM_SITE} — par Toulali`,
     description: 'Douze étapes expliquées simplement, jusqu’à la première subvention. Gratuit.',
   },
   robots: { index: true, follow: true },
@@ -78,11 +78,15 @@ export default async function AssociationLayout({ children }: { children: ReactN
   let compte: CompteAffiche | null = null;
   if (session) {
     const comptes = session.accounts ?? [];
-    const association = comptes.find((c) => (c.type as string) === 'ASSOCIATION') ?? ((session.account.type as string) === 'ASSOCIATION' ? session.account : null);
+    const associations = comptes.filter((c) => (c.type as string) === 'ASSOCIATION');
+    const association = associations[0] ?? ((session.account.type as string) === 'ASSOCIATION' ? session.account : null);
     compte = {
       nom: association?.name ?? session.user.firstName ?? session.user.email,
       prenom: session.user.firstName ?? session.user.email.split('@')[0],
       espaceOuvert: Boolean(association),
+      // Toutes les associations de la personne : le menu du haut les liste.
+      associations: (associations.length ? associations : association ? [association] : []).map((c) => ({ id: c.id, nom: c.name })),
+      active: association?.id ?? null,
     };
   }
   return (

@@ -6,7 +6,7 @@ import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, Formula
 import { chargerChemin, TEINTES_PARTIE } from './_chemin';
 
 export const metadata: Metadata = {
-  title: 'Cockpit associatif — par ADéPA',
+  title: 'Piloter mon association — par Toulali',
   alternates: { canonical: '/' },
 };
 
@@ -145,7 +145,7 @@ export default async function AccueilAssociation() {
           <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">Pourquoi c&apos;est gratuit</p>
           <p className="mt-2 leading-relaxed">Une association qui démarre n&apos;a pas d&apos;argent pour un logiciel. Ici, tout est gratuit pendant que l&apos;outil se construit.</p>
           <p className="mt-3 text-sm text-[#6B6A8A]">
-            Un outil de l’association ADéPA, avec Toulali, son centre de formation. Pour aller plus loin :{' '}
+            Un outil de Toulali, centre de formation. Pour aller plus loin :{' '}
             <Link href="/se-former" className="font-bold text-[#4F46E5] underline underline-offset-4">
               se former
             </Link>

@@ -12,6 +12,10 @@ export interface CompteAffiche {
   prenom: string;
   /** Vrai quand la personne a un espace d'association ouvert. */
   espaceOuvert: boolean;
+  /** Toutes les associations de la personne, pour le menu « Mes associations ». */
+  associations?: { id: string; nom: string }[];
+  /** Celle sur laquelle on travaille en ce moment. */
+  active?: string | null;
 }
 
 interface Entree {
@@ -55,23 +59,23 @@ export const ICONES = {
   fermer: i('M18 6L6 18M6 6l12 12'),
   aide: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'),
   chevron: i('M6 9l6 6 6-6'),
-  /** La boussole de la marque : « Cockpit associatif ». */
+  /** La boussole de la marque : « Piloter mon association ». */
   boussole: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z'),
   courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
 };
 
 /**
- * UNE SEULE LISTE. « Cockpit associatif » est l'accueil : la marque et la
+ * UNE SEULE LISTE. « Piloter mon association » est l'accueil : la marque et la
  * porte d'entrée, en rouge rosé. « Ce lundi » est la même page une fois
  * connectée ; « Mon association » porte le classeur, les documents, la fiche
  * publique, les agréments et le secrétariat ; « Ce à quoi j'ai droit » porte les
  * outils utiles.
  */
 const MENU: Entree[] = [
-  { href: '/', libelle: 'Cockpit associatif', icone: ICONES.boussole, accent: true },
+  { href: '/', libelle: 'Piloter mon association', icone: ICONES.boussole, accent: true },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
-  { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
+  { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
   { href: '/espace/repertoire', libelle: 'Mon équipe', icone: ICONES.droits },
   { href: '/espace/partenaires', libelle: 'Mes contacts', icone: ICONES.partenaires },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
@@ -88,6 +92,7 @@ const PORTEES: Record<string, string> = {
   '/espace/actions': '/espace/projets',
   '/espace/financeurs': '/espace/projets',
   '/espace/budget': '/espace/association',
+  '/espace/comptabilite': '/espace/association',
   '/espace/secretariat': '/espace/association',
   '/espace/documents': '/espace/association',
   '/espace/classeur': '/espace/association',
@@ -135,7 +140,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
           {/* Seule l'icône porte le rouge rosé ; le libellé reste comme les autres. */}
           <span className={`shrink-0 ${e.accent ? 'text-[#F3B0C2]' : estActif ? 'text-white' : 'text-[#A9A6D9]'}`}>{e.icone}</span>
           {/* Une entrée, une ligne : on rétrécit le libellé plutôt que de le couper. */}
-          <span className="flex-1 whitespace-nowrap">{e.libelle}</span>
+          <span className={`flex-1 whitespace-nowrap ${e.accent ? 'text-[13.5px] tracking-tight' : ''}`}>{e.libelle}</span>
           {e.pastille && !estActif ? (
             <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#1D1B5C]">{e.pastille}</span>
           ) : null}
@@ -159,14 +164,10 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
           </>
         ) : (
           <Link href="/" className="flex flex-col items-center gap-2 no-underline">
-            {/* La marque porte la troisième couleur du site : le rouge rosé. */}
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#D6335C] text-white">
-              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z" />
-              </svg>
-            </span>
-            <span className="text-sm font-extrabold text-white">Cockpit associatif</span>
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A9A6D9]">par ADéPA</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/association/marque.svg" alt="" width={56} height={56} className="h-14 w-14 rounded-2xl" />
+            <span className="text-sm font-extrabold leading-snug text-white">Piloter mon association</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A9A6D9]">par Toulali</span>
           </Link>
         )}
       </div>
@@ -176,7 +177,14 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
         <ul className="space-y-0.5">{(compte ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map(lien)}</ul>
       </nav>
 
-      <div className="mt-auto pt-6">
+      <div className="mt-auto space-y-2 pt-6">
+        {/* Nous écrire est à portée de main, juste avant de partir. */}
+        <Link
+          href="/nous-contacter"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-white/25 px-4 py-2.5 text-sm font-bold text-white no-underline transition hover:border-white/60 hover:bg-white/10"
+        >
+          {ICONES.courrier} Nous contacter
+        </Link>
         {compte ? (
           <button
             type="button"
@@ -186,22 +194,15 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
             <span className="text-[#A9A6D9]">{ICONES.sortir}</span> Se déconnecter
           </button>
         ) : (
-          <div className="flex flex-col gap-2 px-1">
-            <Link href="/inscription" className="inline-flex items-center justify-center rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-bold text-white no-underline hover:bg-[#4338CA]">
+          <>
+            <Link href="/inscription" className="flex w-full items-center justify-center rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-bold text-white no-underline hover:bg-[#4338CA]">
               Créer mon espace, gratuit
             </Link>
-            <Link href="/connexion" className="inline-flex items-center justify-center rounded-xl border-2 border-white/30 px-4 py-2 text-sm font-bold text-white no-underline hover:border-white">
+            <Link href="/connexion" className="flex w-full items-center justify-center rounded-xl border-2 border-white/30 px-4 py-2 text-sm font-bold text-white no-underline hover:border-white">
               Se connecter
             </Link>
-          </div>
+          </>
         )}
-        {/* En bas, toujours : de quoi nous écrire. */}
-        <Link
-          href="/nous-contacter"
-          className="mt-4 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold text-[#D9D7F2] no-underline transition hover:bg-white/10 hover:text-white"
-        >
-          <span className="text-[#A9A6D9]">{ICONES.courrier}</span> Nous contacter
-        </Link>
       </div>
     </div>
   );
@@ -241,23 +242,11 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-[#E6E4F3] bg-white px-4 py-2.5 sm:px-8">
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <Link href="/" className="flex items-center gap-2 no-underline lg:hidden">
-          <span className="flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-[#D6335C] text-white">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z" />
-            </svg>
-          </span>
-          <span className="text-[15px] font-extrabold text-[#1D1B5C]">Cockpit</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/association/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
+          <span className="text-[15px] font-extrabold text-[#1D1B5C]">Piloter</span>
         </Link>
-        {compte?.espaceOuvert ? (
-          <Link
-            href="/espace/association"
-            title={compte.nom}
-            className="hidden items-center gap-2 truncate text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] sm:flex"
-          >
-            <span className="truncate">{nomCourt(compte.nom)}</span>
-            {ICONES.chevron}
-          </Link>
-        ) : null}
+        {compte?.espaceOuvert ? <MenuAssociations compte={compte} /> : null}
         <Link href="/chemin" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">
           {ICONES.aide} Centre d&apos;aide
         </Link>
@@ -326,5 +315,56 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         )}
       </div>
     </header>
+  );
+}
+
+/**
+ * MES ASSOCIATIONS. Une personne peut en piloter plusieurs : le menu les liste
+ * et propose d'en ajouter une, comme sur les autres outils associatifs.
+ */
+function MenuAssociations({ compte }: { compte: CompteAffiche }) {
+  const [ouvert, setOuvert] = useState(false);
+  const liste = compte.associations?.length ? compte.associations : [{ id: 'active', nom: compte.nom }];
+
+  return (
+    <div className="relative hidden sm:block">
+      <button
+        type="button"
+        onClick={() => setOuvert((o) => !o)}
+        aria-expanded={ouvert}
+        title={compte.nom}
+        className="flex max-w-[260px] items-center gap-2 rounded-xl px-2 py-1.5 text-[15px] font-bold text-[#1D1B5C] hover:bg-[#F5F4FC]"
+      >
+        <span className="truncate">{liste.length > 1 ? 'Mes associations' : nomCourt(compte.nom)}</span>
+        {ICONES.chevron}
+      </button>
+      {ouvert ? (
+        <div className="absolute left-0 top-full z-30 mt-1 w-[290px] rounded-2xl border border-[#E6E4F3] bg-white p-2 shadow-lg">
+          {liste.map((a) => (
+            <Link
+              key={a.id}
+              href="/espace/association"
+              onClick={() => setOuvert(false)}
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 no-underline hover:bg-[#F5F4FC]"
+              title={a.nom}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#4F46E5] text-xs font-extrabold text-white">
+                {initiale(a.nom)}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm font-bold text-[#1D1B5C]">{nomCourt(a.nom, 24)}</span>
+              {compte.active === a.id || liste.length === 1 ? <span className="shrink-0 text-sm font-bold text-[#4F46E5]">✓</span> : null}
+            </Link>
+          ))}
+          <Link
+            href="/ouvrir-mon-espace"
+            onClick={() => setOuvert(false)}
+            className="mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 no-underline hover:bg-[#F5F4FC]"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ECEBFC] text-lg font-extrabold text-[#4338CA]">+</span>
+            <span className="text-sm font-bold text-[#1D1B5C]">Ajouter une association</span>
+          </Link>
+        </div>
+      ) : null}
+    </div>
   );
 }
