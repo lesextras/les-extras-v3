@@ -37,7 +37,7 @@ export function FormulaireInscription() {
         },
       });
       await connecter(email.trim(), motDePasse);
-      window.location.href = '/espace';
+      window.location.href = '/espace?bienvenue=1';
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "L'inscription a échoué.");
       setEnCours(false);
@@ -49,28 +49,28 @@ export function FormulaireInscription() {
   return (
     <form onSubmit={soumettre} className="flex max-w-[560px] flex-col gap-5">
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-xs uppercase tracking-[0.14em] text-[#5C6B63]">Votre association</legend>
+        <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#4338CA]">1. Ton association</legend>
         <ChoixAssociation nom={nomAssociation} onNom={setNomAssociation} choisie={choisie} onChoisie={setChoisie} />
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-xs uppercase tracking-[0.14em] text-[#5C6B63]">Vous</legend>
+        <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#4338CA]">2. Toi</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">Prénom</span>
+            <span className="font-bold">Prénom</span>
             <input type="text" required maxLength={80} autoComplete="given-name" value={prenom} onChange={(e) => setPrenom(e.target.value)} className={champ} />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">Nom</span>
+            <span className="font-bold">Nom</span>
             <input type="text" required maxLength={80} autoComplete="family-name" value={nom} onChange={(e) => setNom(e.target.value)} className={champ} />
           </label>
         </div>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Adresse e-mail</span>
+          <span className="font-bold">Adresse e-mail</span>
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={champ} />
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Mot de passe</span>
+          <span className="font-bold">Mot de passe</span>
           <input
             type="password"
             required
@@ -80,17 +80,17 @@ export function FormulaireInscription() {
             onChange={(e) => setMotDePasse(e.target.value)}
             className={champ}
           />
-          <span className="text-xs text-[#5C6B63]">Au moins 8 caractères, avec une lettre et un chiffre.</span>
+          <span className="text-xs text-[#6B6A8A]">Au moins 8 caractères, avec une lettre et un chiffre.</span>
         </label>
       </fieldset>
 
       {erreur ? (
-        <p role="alert" className="rounded-md border border-[#E4C9A0] bg-[#F7EBD6] px-4 py-3 text-sm text-[#7A4A0E]">
+        <p role="alert" className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">
           {erreur}
           {/existe déjà/i.test(erreur) ? (
             <>
               {' '}
-              <Link href="/connexion" className="font-medium underline underline-offset-4">
+              <Link href="/connexion" className="font-bold underline underline-offset-4">
                 Se connecter avec cette adresse
               </Link>
               , l&apos;espace de votre association s&apos;ouvrira dans la foulée.
@@ -102,12 +102,12 @@ export function FormulaireInscription() {
       <button
         type="submit"
         disabled={enCours}
-        className="rounded-md bg-[#1F6A4E] px-5 py-3 text-base font-medium text-white hover:bg-[#185540] disabled:opacity-60"
+        className="rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA] disabled:opacity-60"
       >
-        {enCours ? 'Création de votre espace…' : "Créer l'espace de mon association"}
+        {enCours ? 'Création de ton espace…' : "Créer l'espace de mon association →"}
       </button>
-      <p className="text-xs leading-relaxed text-[#5C6B63]">
-        Gratuit. Vos pièces restent les vôtres : vous pouvez les retirer, et fermer l&apos;espace, à tout moment.
+      <p className="text-xs leading-relaxed text-[#6B6A8A]">
+        Gratuit. Tes pièces restent les tiennes : tu peux les retirer, et fermer l&apos;espace, à tout moment.
       </p>
     </form>
   );
