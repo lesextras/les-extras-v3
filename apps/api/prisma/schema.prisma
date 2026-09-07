@@ -2834,6 +2834,13 @@ model PieceAssociation {
   @@index([organisationId, dateExpiration])
 }
 
+/// Ce qu'on demande : une subvention (on demande de l'aide pour ce qu'on fait
+/// déjà) ou un appel à projet (un financeur ouvre un concours, on candidate).
+enum NatureDossier {
+  SUBVENTION
+  APPEL_A_PROJET
+}
+
 model DossierFinancement {
   id              String       @id @default(cuid())
   organisationId  String
@@ -2842,6 +2849,8 @@ model DossierFinancement {
   dispositifCode  String?
   financeur       String
   intitule        String
+  /// Une subvention qu'on demande, ou un appel à projet auquel on répond.
+  nature          NatureDossier @default(SUBVENTION)
   etat            EtatDossier  @default(REPERE)
   montantDemande  Decimal?     @db.Decimal(12, 2)
   montantAccorde  Decimal?     @db.Decimal(12, 2)
