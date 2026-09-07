@@ -5,7 +5,6 @@ import { chargerModeles } from '../../_chemin';
 import { preremplissageDeBase } from '../../_fabrique';
 import { CARTE, Encart, Pastille, SousTitre, Titre, Tuile } from '../../_ui';
 import { dateCourte, formaterEuros, type Espace, type Mouvement, type ResumeBudget } from '../_types';
-import { Mouvements } from '../budget/Mouvements';
 import { DocumentsSecretariat } from './DocumentsSecretariat';
 
 /**
@@ -72,7 +71,7 @@ export default async function SecretariatPage() {
         ? `${budget.lignes} ligne${budget.lignes > 1 ? 's' : ''} notée${budget.lignes > 1 ? 's' : ''} · solde ${formaterEuros(budget.solde)}`
         : 'Le cahier de comptes est vide.',
       etat: budget && budget.lignes > 0 ? 'OK' : 'ATTENTION',
-      action: { libelle: 'Le cahier de comptes', href: '#comptes' },
+      action: { libelle: 'Ma comptabilité', href: '/espace/comptabilite' },
     },
     {
       code: 'recus',
@@ -119,8 +118,18 @@ export default async function SecretariatPage() {
       <section className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tuile libelle="Obligations à tenir" valeur={aTenir} detail={aTenir ? 'À regarder de près' : 'Tout est en règle'} ton={aTenir ? 'attention' : 'ok'} />
         <Tuile libelle="Documents à fabriquer" valeur={modeles.length} detail="Convocation, PV, reçus…" />
-        <Tuile libelle="Ce qui est entré" valeur={formaterEuros(budget?.recettes ?? 0)} detail={`${formaterEuros(budget?.recettesAnnee ?? 0)} en ${budget?.annee ?? new Date().getFullYear()}`} ton="ok" />
-        <Tuile libelle="Solde" valeur={formaterEuros(budget?.solde ?? 0)} detail={`${budget?.lignes ?? 0} ligne${(budget?.lignes ?? 0) > 1 ? 's' : ''} notée${(budget?.lignes ?? 0) > 1 ? 's' : ''}`} ton={(budget?.solde ?? 0) < 0 ? 'alerte' : 'neutre'} />
+        <Tuile
+          libelle="Pièces périmées"
+          valeur={piecesPerimees.length}
+          detail={piecesBientot.length ? `${piecesBientot.length} expire${piecesBientot.length > 1 ? 'nt' : ''} bientôt` : 'Rien à renouveler'}
+          ton={piecesPerimees.length ? 'alerte' : piecesBientot.length ? 'attention' : 'ok'}
+        />
+        <Tuile
+          libelle="Comptes rendus à faire"
+          valeur={comptesRendus.length}
+          detail={comptesRendus.length ? 'Subventions accordées à justifier' : 'Rien en attente'}
+          ton={comptesRendus.length ? 'attention' : 'ok'}
+        />
       </section>
 
       {/* --------------------------------------------------- les obligations */}
@@ -163,38 +172,23 @@ export default async function SecretariatPage() {
         </div>
       </section>
 
-      {/* --------------------------------------------------------- les comptes */}
+      {/* --------------------------------------------------------- l'argent */}
       <section id="comptes" className="scroll-mt-24">
-        <SousTitre>Le cahier de comptes</SousTitre>
-        <p className="mt-1 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Une ligne par mouvement : dons, adhésions, ventes, subventions reçues, et tout ce qui sort. C&apos;est ce cahier qu&apos;on présente en assemblée générale.
+        <SousTitre>L&apos;argent</SousTitre>
+        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
+          Les comptes ont leur propre page : le cahier de comptes, le prévisionnel, les dons et les reçus fiscaux, la billetterie et les ventes.
         </p>
-        {budget ? (
-          <div className="mt-4 mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className={`${CARTE} px-5 py-4`}>
-              <p className="text-sm font-bold text-[#6B6A8A]">Dons</p>
-              <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.dons)}</p>
-              <p className="text-sm text-[#6B6A8A]">{budget.donsAvecRecu} avec reçu fiscal</p>
-            </div>
-            <div className={`${CARTE} px-5 py-4`}>
-              <p className="text-sm font-bold text-[#6B6A8A]">Adhésions</p>
-              <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.adhesions)}</p>
-              <p className="text-sm text-[#6B6A8A]">Cotisations encaissées</p>
-            </div>
-            <div className={`${CARTE} px-5 py-4`}>
-              <p className="text-sm font-bold text-[#6B6A8A]">Ventes et billetterie</p>
-              <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.ventes)}</p>
-              <p className="text-sm text-[#6B6A8A]">Buvette, objets, entrées</p>
-            </div>
-            <div className={`${CARTE} px-5 py-4`}>
-              <p className="text-sm font-bold text-[#6B6A8A]">Subventions reçues</p>
-              <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.subventions)}</p>
-              <p className="text-sm text-[#6B6A8A]">Versées sur le compte</p>
-            </div>
-          </div>
-        ) : null}
-        <Mouvements mouvements={mouvements} />
+        <Link href="/espace/comptabilite" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+          <span className="block text-lg font-extrabold text-[#1D1B5C]">Ma comptabilité</span>
+          <span className="mt-1 block text-sm text-[#6B6A8A]">
+            {budget?.lignes
+              ? `${budget.lignes} ligne${budget.lignes > 1 ? 's' : ''} notée${budget.lignes > 1 ? 's' : ''} · solde ${formaterEuros(budget.solde)}`
+              : 'Le cahier de comptes est encore vide : une ligne par don, par cotisation, par achat.'}
+          </span>
+          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir ma comptabilité →</span>
+        </Link>
       </section>
+
     </>
   );
 }
