@@ -1,4 +1,5 @@
 import 'server-only';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import { apiRequest, ApiError } from '@/lib/api';
@@ -15,6 +16,33 @@ import type { Session, SessionAccount } from '@/lib/types';
  */
 export const TYPE_ASSOCIATION = 'ASSOCIATION';
 
+/**
+ * QUAND UNE PERSONNE EN PILOTE PLUSIEURS. Un cookie de préférence dit sur quel
+ * espace elle travaille. Il ne porte AUCUN droit : on ne le suit que si
+ * l'identifiant qu'il contient est bien l'un des comptes de la session. Sinon
+ * on retombe sur le premier, comme avant.
+ */
+export const COOKIE_ESPACE = 'pilote_espace';
+
+async function espaceVoulu(): Promise<string | null> {
+  try {
+    return (await cookies()).get(COOKIE_ESPACE)?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Le compte association actif : la préférence si elle est valable, sinon le premier. */
+async function choisirAssociation(session: Session): Promise<SessionAccount | null> {
+  const comptes = session.accounts ?? [];
+  const candidats = comptes.filter((c) => (c.type as string) === TYPE_ASSOCIATION);
+  if (!candidats.length) {
+    return (session.account.type as string) === TYPE_ASSOCIATION ? session.account : null;
+  }
+  const voulu = await espaceVoulu();
+  return (voulu ? candidats.find((c) => c.id === voulu) : null) ?? candidats[0];
+}
+
 export interface SessionAssociation {
   session: Session;
   compte: SessionAccount;
@@ -23,10 +51,7 @@ export interface SessionAssociation {
 export async function sessionAssociation(chemin = '/espace'): Promise<SessionAssociation> {
   const session = await getSession();
   if (!session) redirect(`/connexion?next=${encodeURIComponent(chemin)}`);
-  const comptes = session.accounts ?? [];
-  const compte =
-    comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
-    ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null);
+  const compte = await choisirAssociation(session);
   if (!compte) redirect('/ouvrir-mon-espace');
   return { session, compte };
 }
@@ -35,11 +60,7 @@ export async function sessionAssociation(chemin = '/espace'): Promise<SessionAss
 export async function associationConnectee(): Promise<SessionAccount | null> {
   const session = await getSession();
   if (!session) return null;
-  const comptes = session.accounts ?? [];
-  return (
-    comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
-    ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null)
-  );
+  return choisirAssociation(session);
 }
 
 /** Appel à l'API au nom de l'association, côté serveur, jamais mis en cache. */
@@ -77,10 +98,7 @@ export function formaterEuros(n: number | null | undefined) {
 export async function etapesFaitesSiConnecte(): Promise<{ faites: Set<string>; verifiees: Set<string>; nomAssociation: string } | null> {
   const session = await getSession();
   if (!session) return null;
-  const comptes = session.accounts ?? [];
-  const compte =
-    comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
-    ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null);
+  const compte = await choisirAssociation(session);
   if (!compte) return null;
   try {
     const data = (await apiRequest('/association/espace', {
@@ -124,10 +142,7 @@ interface EspaceBrut {
 export async function contexteChemin(): Promise<ContexteChemin | null> {
   const session = await getSession();
   if (!session) return null;
-  const comptes = session.accounts ?? [];
-  const compte =
-    comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
-    ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null);
+  const compte = await choisirAssociation(session);
   if (!compte) return null;
   try {
     const data = (await apiRequest('/association/espace', {

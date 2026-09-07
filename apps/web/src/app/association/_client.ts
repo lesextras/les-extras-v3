@@ -81,6 +81,7 @@ export async function connecter(email: string, password: string): Promise<{ ouve
     body: JSON.stringify(compte ? { token: jeton, accountId: compte.id } : { token: jeton }),
   });
   if (!res.ok) throw new Error("La session n'a pas pu être ouverte.");
+  if (compte) choisirEspace(compte.id);
   return { ouvert: Boolean(compte) };
 }
 
@@ -94,12 +95,26 @@ export async function ouvrirEspace(
   siren?: string,
   autre = false,
 ): Promise<{ accountId: string; existant?: boolean }> {
-  return appel<{ accountId: string; existant?: boolean }>('/association/ouvrir', {
+  const r = await appel<{ accountId: string; existant?: boolean }>('/association/ouvrir', {
     method: 'POST',
     body: { nomAssociation: nomAssociation.trim(), ...(siren ? { siren } : {}), ...(autre ? { autre: true } : {}) },
   });
+  if (r.accountId) choisirEspace(r.accountId);
+  return r;
+}
+
+/**
+ * L'espace sur lequel on travaille — une association parmi plusieurs, ou une
+ * académie. Ce cookie ne donne AUCUN droit : le serveur ne le suit que si
+ * l'identifiant est bien l'un des comptes de la session. C'est une préférence
+ * d'affichage, pas une autorisation.
+ */
+export function choisirEspace(accountId: string) {
+  const unAn = 60 * 60 * 24 * 365;
+  document.cookie = `pilote_espace=${encodeURIComponent(accountId)}; path=/; max-age=${unAn}; samesite=lax`;
 }
 
 export async function deconnecter(): Promise<void> {
   await fetch('/api/auth/session', { method: 'DELETE' });
+  document.cookie = 'pilote_espace=; path=/; max-age=0';
 }

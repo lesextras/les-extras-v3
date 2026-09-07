@@ -18,7 +18,7 @@ import { BarreHaut, BarreLaterale, type CompteAffiche } from './BarreLaterale';
  */
 
 export const NOM_SITE = 'Piloter mon association';
-export const ORIGINE_SITE = 'https://association.toulali.fr';
+export const ORIGINE_SITE = 'https://pilote.toulali.fr';
 
 /* --------------------------------------------------------------- classes */
 
@@ -60,6 +60,13 @@ export function Coque({ children, compte }: { children: ReactNode; compte: Compt
               </a>
               , centre de formation. Les informations sur les associations viennent des répertoires publics (RNA,
               SIRENE). Gratuit, pour toutes les associations, pendant que l&apos;outil se construit.
+            </p>
+            <p className="mt-2 max-w-[70ch] leading-relaxed">
+              Le dispositif est porté par l&apos;association{' '}
+              <a href="https://adepa77.fr/" target="_blank" rel="noopener noreferrer" className="font-bold text-[#C42B57] underline underline-offset-4">
+                ADéPA
+              </a>{' '}
+              — un don la soutient, et ouvre droit à un reçu fiscal.
             </p>
           </footer>
         </div>
