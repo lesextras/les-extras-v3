@@ -201,11 +201,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        {/* Identité schema.org du site : voir IDENTITE_STRUCTUREE ci-dessus. */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(IDENTITE_STRUCTUREE) }}
-        />
+        {/* Identité schema.org du site : voir IDENTITE_STRUCTUREE ci-dessus.
+            Elle décrit LES EXTRAS : elle n'a pas sa place sur association.toulali.fr. */}
+        <SaufAssociation>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(IDENTITE_STRUCTUREE) }}
+          />
+        </SaufAssociation>
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-card focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
