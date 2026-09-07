@@ -1,19 +1,20 @@
 import { Module } from '@nestjs/common';
 import { AssociationService } from './association.service';
+import { EspaceService } from './espace.service';
 import { AssociationPublicController } from './association-public.controller';
+import { AssociationEspaceController } from './association-espace.controller';
 
 /**
  * PILOTER MON ASSOCIATION (association.toulali.fr).
  *
- * Premier lot : tout est public et sans base de données. Le référentiel des
- * pièces, le chemin et la carte des outils sont des fichiers versionnés ; les
- * données d'identité viennent de l'API publique « Recherche d'entreprises ».
- * Les objets persistants (organisation, classeur, dossiers) arrivent au lot
- * suivant, avec le type de compte ASSOCIATION.
+ * Deux faces : la face publique (référentiel des pièces, chemin, carte des
+ * outils, vérification d'une association, inscription) et l'espace connecté
+ * d'un compte ASSOCIATION (organisation, classeur à péremption, dossiers de
+ * financement, écran du lundi).
  */
 @Module({
-  controllers: [AssociationPublicController],
-  providers: [AssociationService],
-  exports: [AssociationService],
+  controllers: [AssociationPublicController, AssociationEspaceController],
+  providers: [AssociationService, EspaceService],
+  exports: [AssociationService, EspaceService],
 })
 export class AssociationModule {}

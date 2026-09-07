@@ -1,6 +1,8 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AssociationService } from './association.service';
+import { EspaceService } from './espace.service';
+import { InscriptionAssociationDto } from './dto/espace.dto';
 
 /**
  * PILOTER MON ASSOCIATION : LES ROUTES PUBLIQUES.
@@ -11,7 +13,10 @@ import { AssociationService } from './association.service';
  */
 @Controller('public/association')
 export class AssociationPublicController {
-  constructor(private readonly service: AssociationService) {}
+  constructor(
+    private readonly service: AssociationService,
+    private readonly espace: EspaceService,
+  ) {}
 
   /** Recherche par nom, SIREN, SIRET ou RNA. */
   @Get('recherche')
@@ -45,5 +50,12 @@ export class AssociationPublicController {
   @Get('outils')
   outils() {
     return this.service.outils();
+  }
+
+  /** Ouvrir l'espace d'une association : un compte, une organisation, un classeur pré-rempli. */
+  @Post('inscription')
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
+  inscription(@Body() dto: InscriptionAssociationDto) {
+    return this.espace.inscrire(dto);
   }
 }
