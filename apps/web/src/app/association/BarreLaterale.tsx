@@ -96,6 +96,7 @@ const PORTEES: Record<string, string> = {
   '/espace/secretariat': '/espace/association',
   '/espace/documents': '/espace/association',
   '/espace/classeur': '/espace/association',
+  '/mon-profil': '/espace/association',
   '/verifier': '/espace/association',
   '/agrements': '/espace/association',
   '/outils': '/avantages',
@@ -284,8 +285,8 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
                 <Link href="/espace/association" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:bg-[#F5F4FC]">
                   Mon association
                 </Link>
-                <Link href="/espace" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:bg-[#F5F4FC]">
-                  Ce lundi
+                <Link href="/mon-profil" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:bg-[#F5F4FC]">
+                  Mon profil
                 </Link>
                 <button type="button" onClick={deconnecter} className="block w-full rounded-xl px-3 py-2 text-left text-sm font-bold text-[#8A2419] hover:bg-[#FDE8E6]">
                   Se déconnecter
