@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
+import { nomCourt } from './_nom';
 
 export interface CompteAffiche {
   /** Le nom de l'association (ou le prénom si aucune association encore). */
@@ -56,8 +57,8 @@ export const ICONES = {
 
 /**
  * UNE SEULE LISTE. « Accueil » et « Ce lundi » sont la même page (le tableau de
- * bord quand on est connectée) ; « Mon association et ses papiers » porte le
- * classeur, les documents et la fiche publique ; « Ce à quoi j'ai droit »
+ * bord quand on est connectée) ; « Mon association » porte le classeur, les
+ * documents, la fiche publique et les agréments ; « Ce à quoi j'ai droit »
  * porte les outils utiles.
  */
 const MENU: Entree[] = [
@@ -65,12 +66,12 @@ const MENU: Entree[] = [
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
   { href: '/espace/dossiers', libelle: 'Mes subventions et appels à projet', icone: ICONES.dossiers },
-  { href: '/espace/budget', libelle: 'Ma gestion budgétaire', icone: ICONES.budget },
-  { href: '/espace/association', libelle: 'Mon association et ses papiers', icone: ICONES.association },
-  { href: '/espace/repertoire', libelle: 'Mon équipe et ses droits', icone: ICONES.droits },
-  { href: '/espace/partenaires', libelle: 'Mes partenaires et leurs rôles', icone: ICONES.partenaires },
+  { href: '/espace/financeurs', libelle: 'Trouver des financeurs', icone: ICONES.verifier },
+  { href: '/espace/secretariat', libelle: 'Mon secrétariat', icone: ICONES.budget },
+  { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
+  { href: '/espace/repertoire', libelle: 'Mon équipe', icone: ICONES.droits },
+  { href: '/espace/partenaires', libelle: 'Mes partenaires', icone: ICONES.partenaires },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
-  { href: '/agrements', libelle: 'Nos agréments', icone: ICONES.agrement },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
 ];
@@ -79,9 +80,11 @@ const MENU: Entree[] = [
 const PORTEES: Record<string, string> = {
   '/espace': '/',
   '/espace/actions': '/espace/projets',
-  '/espace/classeur': '/espace/association',
+  '/espace/budget': '/espace/secretariat',
   '/espace/documents': '/espace/association',
+  '/espace/classeur': '/espace/association',
   '/verifier': '/espace/association',
+  '/agrements': '/espace/association',
   '/outils': '/avantages',
 };
 
@@ -140,7 +143,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
               {initiale(compte.nom)}
             </span>
             <Link href="/espace/association" className="mt-3 line-clamp-2 text-sm font-bold text-white no-underline hover:underline" title={compte.nom}>
-              {compte.nom}
+              {nomCourt(compte.nom)}
             </Link>
             <span className="mt-0.5 text-xs text-[#A9A6D9]">{compte.espaceOuvert ? 'Espace ouvert' : 'Compte connecté'}</span>
           </>
@@ -228,8 +231,12 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
           <span className="text-[15px] font-extrabold text-[#1D1B5C]">Piloter</span>
         </Link>
         {compte?.espaceOuvert ? (
-          <Link href="/espace/association" className="hidden items-center gap-2 truncate text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] sm:flex">
-            <span className="truncate">{compte.nom}</span>
+          <Link
+            href="/espace/association"
+            title={compte.nom}
+            className="hidden items-center gap-2 truncate text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] sm:flex"
+          >
+            <span className="truncate">{nomCourt(compte.nom)}</span>
             {ICONES.chevron}
           </Link>
         ) : null}
