@@ -36,7 +36,7 @@ export function FormulaireContact() {
       `Nom : ${nom.trim()}`,
       association.trim() ? `Association : ${association.trim()}` : null,
       email.trim() ? `Répondre à : ${email.trim()}` : null,
-      'Envoyé depuis le Cockpit associatif',
+      'Envoyé depuis Piloter mon association',
     ]
       .filter((l) => l !== null)
       .join('\n');
@@ -49,7 +49,7 @@ export function FormulaireContact() {
       return;
     }
     setErreur(null);
-    const lien = `mailto:${ADRESSE_ADEPA}?subject=${encodeURIComponent(`[Cockpit] ${sujet}`)}&body=${encodeURIComponent(corps())}`;
+    const lien = `mailto:${ADRESSE_ADEPA}?subject=${encodeURIComponent(`[Piloter] ${sujet}`)}&body=${encodeURIComponent(corps())}`;
     window.location.href = lien;
   }
 
