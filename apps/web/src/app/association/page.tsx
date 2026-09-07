@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Carte, FormulaireRecherche, SousTitre } from './_ui';
+import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, FormulaireRecherche, SousTitre } from './_ui';
 import { chargerChemin, TEINTES_PARTIE } from './_chemin';
 
 export const metadata: Metadata = {
@@ -117,6 +117,30 @@ export default async function AccueilAssociation() {
             ))}
           </ul>
         </div>
+      </section>
+
+      {/* ------------------------------------------- ce à quoi j'ai droit */}
+      <section className="mt-10 grid gap-4 md:grid-cols-2">
+        <Link href="/avantages" className={`${CARTE_VIVE} group block p-5 no-underline sm:p-6`}>
+          <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">Ce à quoi j&apos;ai droit</p>
+          <h2 className="mt-2 text-xl font-extrabold text-[#1D1B5C] group-hover:text-[#4F46E5]">
+            Google, Canva, Microsoft offerts, reçus fiscaux, Service civique, bénévoles…
+          </h2>
+          <p className="mt-2 leading-relaxed text-[#3B3A66]">
+            Quinze avantages qu&apos;une association peut demander. Pour chacun : ce qu&apos;il te faut, comment faire, et le lien direct.
+          </p>
+          <span className="mt-4 inline-block text-sm font-bold text-[#4F46E5]">Voir la liste →</span>
+        </Link>
+        <Link href="/presence-en-ligne" className={`${CARTE_VIVE} group block p-5 no-underline sm:p-6`}>
+          <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">Être visible en ligne</p>
+          <h2 className="mt-2 text-xl font-extrabold text-[#1D1B5C] group-hover:text-[#4F46E5]">
+            Fiche Google, page HelloAsso, réseaux, e-mails au nom de l&apos;association, site simple.
+          </h2>
+          <p className="mt-2 leading-relaxed text-[#3B3A66]">
+            Dix étapes dans l&apos;ordre, une par semaine, presque toutes gratuites. Qu&apos;on te trouve, et qu&apos;on comprenne.
+          </p>
+          <span className="mt-4 inline-block text-sm font-bold text-[#4F46E5]">Commencer →</span>
+        </Link>
       </section>
 
       {/* ---------------------------------------------------------- mon espace */}

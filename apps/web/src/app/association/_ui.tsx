@@ -29,6 +29,8 @@ export const BTN_SECONDAIRE =
 export const BTN_DISCRET =
   'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-[#4F46E5] no-underline hover:bg-[#ECEBFC]';
 export const CARTE = 'rounded-2xl border border-[#E6E4F3] bg-white shadow-[0_1px_2px_rgba(29,27,92,0.04)]';
+/** La même carte, qui se soulève un peu au survol : pour ce qui se clique ou se déplie. */
+export const CARTE_VIVE = `${CARTE} transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#C7C4F2] hover:shadow-[0_10px_28px_rgba(29,27,92,0.09)] motion-reduce:transition-none motion-reduce:hover:translate-y-0`;
 
 /* ------------------------------------------------------------------ coque */
 
@@ -170,7 +172,7 @@ export function Tuile({
   );
   if (href) {
     return (
-      <Link href={href} className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+      <Link href={href} className={`${CARTE_VIVE} block p-5 no-underline`}>
         {contenu}
       </Link>
     );
