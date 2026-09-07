@@ -36,7 +36,7 @@ const LIENS_ESPACE: Record<string, LienEspace[]> = {
   ],
   'trouver-le-premier-financeur': [
     { titre: 'Repérer une demande', detail: 'Note le financeur, ce qu’il demande, la date limite et le montant max : elle remonte sur l’accueil.', href: '/espace/dossiers', bouton: 'Créer la demande' },
-    { titre: 'Trouver des financeurs', detail: 'Des pistes publiques, des fondations et des mécènes à partir de ton projet.', href: '/espace/financeurs', bouton: 'Chercher' },
+    { titre: 'Trouver des financeurs', detail: 'Des pistes publiques, des fondations et des mécènes à partir de ton projet.', href: '/espace/projets#financeurs', bouton: 'Chercher' },
     { titre: 'Mes projets', detail: 'L’idée que tu vas proposer se prépare dans mes projets.', href: '/espace/projets', bouton: 'Ouvrir mes projets' },
   ],
   'constituer-et-deposer-le-dossier': [
