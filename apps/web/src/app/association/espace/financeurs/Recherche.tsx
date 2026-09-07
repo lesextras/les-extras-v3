@@ -14,6 +14,8 @@ interface Piste {
   commentFaire: string;
   lien?: string;
   aVerifier?: string;
+  facilite: 'FACILE' | 'MOYEN' | 'DIFFICILE';
+  pourquoiCetteNote?: string;
 }
 
 const LIBELLES_TYPE: Record<Piste['type'], string> = {
@@ -23,6 +25,13 @@ const LIBELLES_TYPE: Record<Piste['type'], string> = {
   AUTRE: 'Autre',
 };
 
+/** La note d'accessibilité, du plus facile au plus difficile à décrocher. */
+const FACILITES: Record<Piste['facilite'], { libelle: string; ton: string; puces: number }> = {
+  FACILE: { libelle: 'Facile à obtenir', ton: 'bg-[#E3F5EC] text-[#0F5F3E]', puces: 1 },
+  MOYEN: { libelle: 'Demande du travail', ton: 'bg-[#FEF3E2] text-[#7C3E06]', puces: 2 },
+  DIFFICILE: { libelle: 'Difficile, à viser plus tard', ton: 'bg-[#FDE8E6] text-[#8A2419]', puces: 3 },
+};
+
 const TONS: Record<Piste['type'], string> = {
   PUBLIC: 'bg-[#ECEBFC] text-[#4338CA]',
   FONDATION: 'bg-[#E3F5EC] text-[#0F5F3E]',
@@ -30,8 +39,12 @@ const TONS: Record<Piste['type'], string> = {
   AUTRE: 'bg-[#F0EFF7] text-[#6B6A8A]',
 };
 
-/** La recherche de financeurs : une phrase, un bouton, des pistes à vérifier. */
-export function Recherche({ disponible }: { disponible: boolean }) {
+/**
+ * La recherche de financeurs : une phrase, un bouton, des pistes à vérifier,
+ * classées de la plus facile à décrocher à la plus difficile. Quand elle est
+ * ouverte depuis un projet, c'est la liste des financeurs DE CE projet.
+ */
+export function Recherche({ disponible, projetId, projetIntitule }: { disponible: boolean; projetId?: string; projetIntitule?: string }) {
   const [precision, setPrecision] = useState('');
   const [pistes, setPistes] = useState<Piste[] | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -43,7 +56,10 @@ export function Recherche({ disponible }: { disponible: boolean }) {
     try {
       const r = await appel<{ pistes: Piste[] }>('/association/ia/financeurs', {
         method: 'POST',
-        body: precision.trim() ? { precision: precision.trim() } : {},
+        body: {
+          ...(precision.trim() ? { precision: precision.trim() } : {}),
+          ...(projetId ? { projetId } : {}),
+        },
       });
       setPistes(r.pistes);
     } catch (err) {
@@ -71,7 +87,9 @@ export function Recherche({ disponible }: { disponible: boolean }) {
     <div className="space-y-4">
       <div className={`${CARTE} p-5`}>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold text-[#1D1B5C]">Que cherches-tu à financer en priorité ?</span>
+          <span className="font-bold text-[#1D1B5C]">
+            {projetIntitule ? `Quelque chose à préciser sur « ${projetIntitule} » ?` : 'Que cherches-tu à financer en priorité ?'}
+          </span>
           <span className="text-[#6B6A8A]">Facultatif. Par exemple : du matériel pour l&apos;atelier cuisine, un poste de coordination, une sortie pour vingt jeunes.</span>
           <textarea
             rows={2}
@@ -82,10 +100,12 @@ export function Recherche({ disponible }: { disponible: boolean }) {
           />
         </label>
         <button type="button" onClick={chercher} disabled={enCours} className={`${BTN_PRIMAIRE} mt-4 disabled:opacity-60`}>
-          {enCours ? 'Recherche en cours…' : 'Chercher des financeurs'}
+          {enCours ? 'Recherche en cours…' : projetIntitule ? 'Chercher des financeurs pour ce projet' : 'Chercher des financeurs'}
         </button>
         <p className="mt-2 text-xs text-[#6B6A8A]">
-          La recherche part de ce que tu as noté : ton projet en une page, tes projets, ta commune. Plus c&apos;est rempli, plus les pistes sont justes.
+          {projetIntitule
+            ? 'La recherche part de ce projet, de ton projet en une page et de ta commune. Les pistes les plus faciles à décrocher arrivent en premier.'
+            : 'La recherche part de ce que tu as noté : ton projet en une page, tes projets, ta commune. Plus c’est rempli, plus les pistes sont justes.'}
         </p>
       </div>
 
@@ -98,7 +118,8 @@ export function Recherche({ disponible }: { disponible: boolean }) {
           <>
             <p className="rounded-xl border border-[#D9D6EE] bg-[#F5F4FC] px-4 py-3 text-sm text-[#3B3A66]">
               <span className="font-bold text-[#1D1B5C]">Des pistes, pas des promesses.</span> Vérifie toujours sur le site du financeur : les conditions, les
-              montants et les dates changent. Rien de ce qui est écrit ici ne remplace l&apos;annonce officielle.
+              montants et les dates changent. Rien de ce qui est écrit ici ne remplace l&apos;annonce officielle. Les pistes sont classées de la plus facile à
+              décrocher à la plus difficile.
             </p>
             <ul className="grid gap-4 md:grid-cols-2">
               {pistes.map((p) => (
@@ -108,7 +129,17 @@ export function Recherche({ disponible }: { disponible: boolean }) {
                       <h3 className="font-extrabold leading-snug text-[#1D1B5C]">{p.nom}</h3>
                       <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${TONS[p.type]}`}>{LIBELLES_TYPE[p.type]}</span>
                     </div>
-                    {p.echelle ? <p className="mt-0.5 text-sm text-[#6B6A8A]">{p.echelle}</p> : null}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${FACILITES[p.facilite].ton}`}>
+                        <span aria-hidden="true">
+                          {'●'.repeat(FACILITES[p.facilite].puces)}
+                          <span className="opacity-30">{'●'.repeat(3 - FACILITES[p.facilite].puces)}</span>
+                        </span>
+                        {FACILITES[p.facilite].libelle}
+                      </span>
+                      {p.echelle ? <span className="text-sm text-[#6B6A8A]">{p.echelle}</span> : null}
+                    </div>
+                    {p.pourquoiCetteNote ? <p className="mt-1 text-sm text-[#6B6A8A]">{p.pourquoiCetteNote}</p> : null}
                     <p className="mt-2 text-sm leading-relaxed text-[#3B3A66]">{p.soutient}</p>
                     <p className="mt-2 text-sm leading-relaxed">
                       <span className="font-bold text-[#1D1B5C]">Pourquoi vous : </span>
