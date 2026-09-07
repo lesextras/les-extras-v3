@@ -277,6 +277,8 @@ model Account {
   /// Demandes de rattachement reçues par CET établissement (à approuver/refuser).
   attachmentRequestsReceived    AttachmentRequest[]  @relation("AttachmentTarget")
   organisation                  Organisation?
+  /// Piloter mon academie : la fiche de l'organisme de formation.
+  academie                      Academie?
 
   @@index([type])
   @@index([slug])
@@ -1046,6 +1048,10 @@ enum AccountType {
   /// Piloter mon association (association.toulali.fr) : une association qui
   /// pilote son financement et sa conformité. Ni intervenant, ni établissement.
   ASSOCIATION
+  /// Piloter mon académie (academie.toulali.fr) : un organisme de formation qui
+  /// pilote sa certification Qualiopi, son catalogue et ses apprenants. Une même
+  /// personne peut porter une association ET une académie : ce sont deux comptes.
+  ACADEMIE
 }
 
 enum AccountRole {
@@ -3038,4 +3044,148 @@ model MouvementAssociation {
 
   @@index([organisationId, date])
   @@index([organisationId, sens])
+}
+
+// ---------------------------------------------------------------------------
+// PILOTER MON ACADÉMIE (academie.toulali.fr)
+// ---------------------------------------------------------------------------
+
+/// LA FICHE D'UN ORGANISME DE FORMATION.
+///
+/// Le pendant d'`Organisation` pour l'espace association : une ligne par compte
+/// de type ACADEMIE, créée en même temps que le compte, complétée ensuite.
+/// Tout le métier — programmes, sessions, inscriptions, émargements, preuves
+/// Qualiopi — vit déjà dans les modèles `Formation`, `FormationSession`,
+/// `Inscription`, `Emargement` et `QualiopiProof` : on ne les duplique pas.
+model Academie {
+  id        String  @id @default(cuid())
+  accountId String  @unique
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  nom   String
+  sigle String?
+
+  /// Numéro de déclaration d'activité délivré par la DREETS. Non bloquant à
+  /// l'ouverture : une académie en cours de déclaration ouvre son espace et le
+  /// renseigne le jour où elle l'a.
+  nda          String?
+  ndaDeposeLe  DateTime?
+  dreets       String?
+
+  siren String?
+  siret String?
+  /// 85.59A pour la formation continue d'adultes, quand il est renseigné.
+  ape   String?
+
+  adresse    String?
+  codePostal String?
+  commune    String?
+  telephone  String?
+  courriel   String?
+  siteWeb    String?
+
+  /// Où en est la certification. C'est ce champ qui décide de ce que l'accueil
+  /// met en avant le premier jour.
+  qualiopi          EtatQualiopi @default(PAS_ENGAGE)
+  certificateur     String?
+  auditPrevuLe      DateTime?
+  certifieDu        DateTime?
+  certifieAu        DateTime?
+
+  /// Obligation d'affichage du référent handicap (critère 3).
+  referentHandicap    String?
+  referentPedagogique String?
+
+  /// Ce qu'on affiche en une phrase, et le texte long de la page publique.
+  resume      String?
+  presentation String?
+
+  /// Les étapes du chemin cochées à la main. Le reste se déduit des données.
+  etapesFaites String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  veilles      VeilleEntree[]
+  reclamations Reclamation[]
+
+  @@index([qualiopi])
+}
+
+enum EtatQualiopi {
+  PAS_ENGAGE
+  EN_PREPARATION
+  AUDIT_PLANIFIE
+  CERTIFIE
+  SUSPENDU
+}
+
+/// LE JOURNAL DE VEILLE — critère 6 du référentiel national qualité.
+/// Trois indicateurs en dépendent (veille légale, veille métier, veille
+/// handicap) et c'est le motif de non-conformité le plus fréquent en audit :
+/// il ne suffit pas de faire la veille, il faut en garder la trace datée.
+model VeilleEntree {
+  id         String   @id @default(cuid())
+  academieId String
+  academie   Academie @relation(fields: [academieId], references: [id], onDelete: Cascade)
+
+  type       TypeVeille
+  date       DateTime
+  titre      String
+  source     String?
+  lien       String?
+  resume     String?
+  /// Ce qu'on en a fait : c'est cette colonne que l'auditeur regarde vraiment.
+  consequence String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academieId, date])
+  @@index([academieId, type])
+}
+
+enum TypeVeille {
+  LEGALE
+  METIER
+  HANDICAP
+  INNOVATION
+  EMPLOI
+}
+
+/// LE REGISTRE DES RÉCLAMATIONS — critère 7.
+model Reclamation {
+  id         String   @id @default(cuid())
+  academieId String
+  academie   Academie @relation(fields: [academieId], references: [id], onDelete: Cascade)
+
+  recueLe     DateTime
+  origine     OrigineReclamation @default(APPRENANT)
+  auteur      String?
+  objet       String
+  detail      String?
+  traitement  String?
+  clotureeLe  DateTime?
+  statut      StatutReclamation @default(OUVERTE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([academieId, statut])
+  @@index([academieId, recueLe])
+}
+
+enum OrigineReclamation {
+  APPRENANT
+  ENTREPRISE
+  FINANCEUR
+  FORMATEUR
+  AUTRE
+}
+
+enum StatutReclamation {
+  OUVERTE
+  EN_COURS
+  RESOLUE
+  CLASSEE
 }
