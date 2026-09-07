@@ -61,22 +61,35 @@ interface ResultatConnexion {
   user?: { memberships?: { account?: { id: string; type?: string } }[] };
 }
 
-/** Connexion : jeton par l'API, puis cookie de session posé par le site. */
-export async function connecter(email: string, password: string): Promise<void> {
+/**
+ * Connexion : jeton par l'API, puis cookie de session posé par le site.
+ *
+ * Renvoie `ouvert: true` quand la personne a un compte d'association (la
+ * session est alors posée sur ce compte). Sinon la session est posée sans
+ * compte actif, et c'est à l'appelant de proposer d'ouvrir l'espace :
+ * voir `ouvrirEspace`, puis rappeler `connecter` pour un jeton à jour.
+ */
+export async function connecter(email: string, password: string): Promise<{ ouvert: boolean }> {
   const r = await appel<ResultatConnexion>('/auth/login', { method: 'POST', body: { email, password } });
   const jeton = r.accessToken;
   if (!jeton) throw new Error('Connexion impossible : jeton manquant.');
   const comptes = (r.user?.memberships ?? []).map((m) => m.account).filter(Boolean) as { id: string; type?: string }[];
   const compte = comptes.find((c) => c.type === 'ASSOCIATION');
-  if (!compte) {
-    throw new Error("Ce compte n'est pas un compte d'association. Créez l'espace de votre association pour continuer.");
-  }
   const res = await fetch('/api/auth/session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: jeton, accountId: compte.id }),
+    body: JSON.stringify(compte ? { token: jeton, accountId: compte.id } : { token: jeton }),
   });
   if (!res.ok) throw new Error("La session n'a pas pu être ouverte.");
+  return { ouvert: Boolean(compte) };
+}
+
+/** Ouvre l'espace d'une association pour la personne connectée (session posée, sans compte actif). */
+export async function ouvrirEspace(nomAssociation: string, siren?: string): Promise<{ accountId: string }> {
+  return appel<{ accountId: string }>('/association/ouvrir', {
+    method: 'POST',
+    body: { nomAssociation: nomAssociation.trim(), ...(siren ? { siren } : {}) },
+  });
 }
 
 export async function deconnecter(): Promise<void> {
