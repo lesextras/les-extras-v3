@@ -78,14 +78,14 @@ export const ICONES = {
 };
 
 /**
- * UNE SEULE LISTE. « Poste de pilotage » est l'accueil : la marque et la
+ * UNE SEULE LISTE. « Tableau de bord » est l'accueil : la marque et la
  * porte d'entrée, en rouge rosé. « Ce lundi » est la même page une fois
  * connectée ; « Mon association » porte le classeur, les documents, la fiche
  * publique, les agréments et le secrétariat ; « Ce à quoi j'ai droit » porte les
  * outils utiles.
  */
 const MENU: Entree[] = [
-  { href: '/', libelle: 'Poste de pilotage', icone: ICONES.boussole, accent: true },
+  { href: '/', libelle: 'Tableau de bord', icone: ICONES.boussole, accent: true },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
   { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
@@ -190,7 +190,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
             <Link href="/espace/association" className="mt-3 line-clamp-2 text-sm font-bold text-white no-underline hover:underline" title={compte.nom}>
               {nomCourt(compte.nom)}
             </Link>
-            <span className="mt-0.5 text-xs text-[#A9A6D9]">{compte.espaceOuvert ? 'Espace ouvert' : 'Compte connecté'}</span>
+            <span className="mt-0.5 text-xs text-[#A9A6D9]">{compte.espaceOuvert ? 'Espace association ouvert' : 'Compte connecté'}</span>
           </>
         ) : (
           <Link href="/" className="flex flex-col items-center gap-2 no-underline">
