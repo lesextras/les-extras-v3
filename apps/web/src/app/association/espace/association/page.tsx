@@ -61,21 +61,22 @@ export default async function MonAssociationPage() {
         {nomCourt(o.nom)}
       </Titre>
 
-      {/* ------------------------------------------------------- mes papiers */}
+      {/* ------------------------------------------- les trois grandes portes */}
       <section className="mb-8 grid gap-4 md:grid-cols-3">
-        <Link href="/espace/classeur" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-          <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes papiers</span>
+        <Link href="#secretariat" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+          <span className="block text-lg font-extrabold text-[#1D1B5C]">Mon secrétariat</span>
           <span className="mt-1 block text-sm text-[#6B6A8A]">
-            Les {classeur.length} pièces que les financeurs demandent : {papiersPrets} déjà prêtes.
+            Les obligations à tenir, les documents à fabriquer, et tous tes papiers : les {classeur.length} pièces du classeur ({papiersPrets} déjà prêtes) et tes
+            autres documents.
           </span>
-          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir le classeur →</span>
+          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir mon secrétariat →</span>
         </Link>
-        <Link href="/espace/documents" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-          <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes autres documents</span>
+        <Link href="/espace/secretariat#comptes" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+          <span className="block text-lg font-extrabold text-[#1D1B5C]">Ma comptabilité</span>
           <span className="mt-1 block text-sm text-[#6B6A8A]">
-            {data.nbDocuments === 0 ? 'Conventions, courriers, photos, affiches : rien encore.' : `${data.nbDocuments} document${data.nbDocuments > 1 ? 's' : ''} rangé${data.nbDocuments > 1 ? 's' : ''}.`}
+            Dons, adhésions, ventes, subventions reçues et toutes les dépenses. C&apos;est ce cahier qu&apos;on présente en assemblée générale.
           </span>
-          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir mes documents →</span>
+          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir la gestion budgétaire →</span>
         </Link>
         <Link href="#agrements" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
           <span className="block text-lg font-extrabold text-[#1D1B5C]">Nos agréments</span>
@@ -197,13 +198,13 @@ export default async function MonAssociationPage() {
       </section>
 
       {/* ------------------------------------------------------ secrétariat */}
-      <section className="mt-10">
+      <section id="secretariat" className="mt-10 scroll-mt-24">
         <SousTitre>Mon secrétariat</SousTitre>
         <p className="mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Tout ce qu&apos;un secrétaire et un trésorier ont à faire : les obligations à tenir, les papiers de la vie de l&apos;association à fabriquer, et
-          l&apos;argent qui entre et qui sort.
+          Tout ce qu&apos;un secrétaire et un trésorier ont à faire : les obligations à tenir, les papiers de la vie de l&apos;association à fabriquer, tes pièces
+          rangées, et l&apos;argent qui entre et qui sort.
         </p>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Link href="/espace/secretariat#obligations" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
             <span className="block text-lg font-extrabold text-[#1D1B5C]">Ce qu&apos;on doit tenir</span>
             <span className="mt-1 block text-sm text-[#6B6A8A]">
@@ -216,16 +217,32 @@ export default async function MonAssociationPage() {
             <span className="mt-1 block text-sm text-[#6B6A8A]">
               Convocation, ordre du jour, feuille de présence, procès-verbal, liste des dirigeants, rapport d&apos;activité, reçu fiscal.
             </span>
-            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Fabriquer un document →</span>
+            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Fabriquer ou déposer →</span>
           </Link>
-          <Link href="/espace/secretariat#comptes" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-            <span className="block text-lg font-extrabold text-[#1D1B5C]">Le cahier de comptes</span>
+          <Link href="/espace/classeur" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+            <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes papiers</span>
             <span className="mt-1 block text-sm text-[#6B6A8A]">
-              Dons, adhésions, ventes, subventions reçues et toutes les dépenses. C&apos;est ce cahier qu&apos;on présente en assemblée générale.
+              Les {classeur.length} pièces que les financeurs demandent : {papiersPrets} déjà prêtes.
             </span>
-            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir les comptes →</span>
+            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir le classeur →</span>
+          </Link>
+          <Link href="/espace/documents" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+            <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes autres documents</span>
+            <span className="mt-1 block text-sm text-[#6B6A8A]">
+              {data.nbDocuments === 0
+                ? 'Conventions, courriers, photos, affiches : rien encore.'
+                : `${data.nbDocuments} document${data.nbDocuments > 1 ? 's' : ''} rangé${data.nbDocuments > 1 ? 's' : ''}.`}
+            </span>
+            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir mes documents →</span>
           </Link>
         </div>
+        <p className="mt-4 text-sm text-[#6B6A8A]">
+          L&apos;argent qui entre et qui sort est juste à côté :{' '}
+          <Link href="/espace/secretariat#comptes" className="font-bold text-[#4F46E5] underline underline-offset-4">
+            ma comptabilité
+          </Link>
+          .
+        </p>
       </section>
 
       {/* ------------------------------------------------------- agréments */}
