@@ -28,14 +28,22 @@ const LIENS_ESPACE: Record<string, LienEspace[]> = {
   'la-premiere-assemblee-generale': [
     { titre: 'La date de l’assemblée', detail: 'Note la date : on te rappelle la prochaine un an après.', href: '/espace/association', bouton: 'Noter la date' },
   ],
+  'le-projet-en-une-page': [
+    { titre: 'Mes projets', detail: 'Note ici ce que tu veux faire : le texte se recopie dans tes demandes de subvention.', href: '/espace/projets', bouton: 'Ouvrir mes projets' },
+  ],
+  'le-premier-budget': [
+    { titre: 'Ma gestion budgétaire', detail: 'Ce qui entre et ce qui sort, ligne par ligne : le budget part de là.', href: '/espace/budget', bouton: 'Ouvrir le cahier de comptes' },
+  ],
   'trouver-le-premier-financeur': [
-    { titre: 'Repérer un dossier', detail: 'Crée le dossier avec le financeur et la date limite : il remonte le lundi.', href: '/espace/dossiers', bouton: 'Créer le dossier' },
+    { titre: 'Repérer une demande', detail: 'Note le financeur, ce qu’il demande, la date limite et le montant max : elle remonte sur l’accueil.', href: '/espace/dossiers', bouton: 'Créer la demande' },
+    { titre: 'Mes projets', detail: 'L’idée que tu vas proposer se prépare dans mes projets.', href: '/espace/projets', bouton: 'Ouvrir mes projets' },
   ],
   'constituer-et-deposer-le-dossier': [
-    { titre: 'Mon dossier de subvention', detail: 'Les papiers à joindre sont cochés depuis ton classeur.', href: '/espace/dossiers', bouton: 'Ouvrir mes dossiers' },
+    { titre: 'Ma demande', detail: 'Les papiers à joindre sont cochés depuis ton classeur.', href: '/espace/dossiers', bouton: 'Ouvrir mes demandes' },
   ],
   'rendre-compte': [
-    { titre: 'Le compte rendu', detail: 'Le budget réalisé et le bilan se remplissent dans le dossier accordé.', href: '/espace/dossiers', bouton: 'Ouvrir mes dossiers' },
+    { titre: 'Le compte rendu', detail: 'Le budget réalisé et le bilan se remplissent dans la demande accordée.', href: '/espace/dossiers', bouton: 'Ouvrir mes demandes' },
+    { titre: 'Le bilan du projet', detail: 'Ce que le projet a donné, noté une fois pour toutes.', href: '/espace/projets', bouton: 'Ouvrir mes projets' },
   ],
 };
 
