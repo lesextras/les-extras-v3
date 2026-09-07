@@ -55,20 +55,20 @@ export const ICONES = {
   fermer: i('M18 6L6 18M6 6l12 12'),
   aide: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'),
   chevron: i('M6 9l6 6 6-6'),
-  /** La boussole de la marque : « Piloter mon association ». */
+  /** La boussole de la marque : « Cockpit associatif ». */
   boussole: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z'),
   courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
 };
 
 /**
- * UNE SEULE LISTE. « Piloter mon association » est l'accueil : la marque et la
+ * UNE SEULE LISTE. « Cockpit associatif » est l'accueil : la marque et la
  * porte d'entrée, en rouge rosé. « Ce lundi » est la même page une fois
  * connectée ; « Mon association » porte le classeur, les documents, la fiche
  * publique, les agréments et le secrétariat ; « Ce à quoi j'ai droit » porte les
  * outils utiles.
  */
 const MENU: Entree[] = [
-  { href: '/', libelle: 'Piloter mon association', icone: ICONES.boussole, accent: true },
+  { href: '/', libelle: 'Cockpit associatif', icone: ICONES.boussole, accent: true },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
@@ -132,7 +132,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
           {/* Seule l'icône porte le rouge rosé ; le libellé reste comme les autres. */}
           <span className={`shrink-0 ${e.accent ? 'text-[#F3B0C2]' : estActif ? 'text-white' : 'text-[#A9A6D9]'}`}>{e.icone}</span>
           {/* Une entrée, une ligne : on rétrécit le libellé plutôt que de le couper. */}
-          <span className={`flex-1 whitespace-nowrap ${e.accent ? 'text-[13px]' : ''}`}>{e.libelle}</span>
+          <span className="flex-1 whitespace-nowrap">{e.libelle}</span>
           {e.pastille && !estActif ? (
             <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#1D1B5C]">{e.pastille}</span>
           ) : null}
@@ -156,10 +156,14 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
           </>
         ) : (
           <Link href="/" className="flex flex-col items-center gap-2 no-underline">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/association/marque.svg" alt="" width={56} height={56} className="h-14 w-14 rounded-2xl" />
-            <span className="text-sm font-extrabold text-white">Piloter mon association</span>
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A9A6D9]">par Toulali</span>
+            {/* La marque porte la troisième couleur du site : le rouge rosé. */}
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#D6335C] text-white">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z" />
+              </svg>
+            </span>
+            <span className="text-sm font-extrabold text-white">Cockpit associatif</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A9A6D9]">par ADéPA</span>
           </Link>
         )}
       </div>
@@ -233,9 +237,12 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-[#E6E4F3] bg-white px-4 py-2.5 sm:px-8">
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <Link href="/" className="flex items-center gap-2 no-underline lg:hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/association/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
-          <span className="text-[15px] font-extrabold text-[#1D1B5C]">Piloter</span>
+          <span className="flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-[#D6335C] text-white">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z" />
+            </svg>
+          </span>
+          <span className="text-[15px] font-extrabold text-[#1D1B5C]">Cockpit</span>
         </Link>
         {compte?.espaceOuvert ? (
           <Link

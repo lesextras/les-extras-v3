@@ -6,7 +6,7 @@ import { Coque, NOM_SITE, ORIGINE_SITE } from './_ui';
 import type { CompteAffiche } from './BarreLaterale';
 
 /**
- * PILOTER MON ASSOCIATION — association.toulali.fr
+ * COCKPIT ASSOCIATIF — association.toulali.fr
  *
  * Ce groupe de routes est servi sous son propre domaine par le middleware.
  * La coque lit la session (pour afficher qui est connecté) : les pages sont
@@ -21,7 +21,7 @@ const fraunces = Fraunces({ subsets: ['latin'], style: ['italic'], weight: ['600
 export const metadata: Metadata = {
   metadataBase: new URL(ORIGINE_SITE),
   title: {
-    absolute: `${NOM_SITE} — par Toulali`,
+    absolute: `${NOM_SITE} — par ADéPA`,
     template: `%s · ${NOM_SITE}`,
   },
   description:
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     siteName: NOM_SITE,
     locale: 'fr_FR',
     type: 'website',
-    title: `${NOM_SITE} — par Toulali`,
+    title: `${NOM_SITE} — par ADéPA`,
     description:
       "Faire naître ton association, la faire vivre, demander une subvention : douze étapes expliquées simplement, avec les CERFA et des documents exemples. Gratuit.",
     images: [
@@ -52,14 +52,14 @@ export const metadata: Metadata = {
         url: '/association/partage-piloter.png',
         width: 1200,
         height: 630,
-        alt: 'Piloter mon association, par Toulali : le chemin étape par étape jusqu’à la subvention.',
+        alt: 'Cockpit associatif, par ADéPA : le chemin étape par étape jusqu’à la subvention.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     images: ['/association/partage-piloter.png'],
-    title: `${NOM_SITE} — par Toulali`,
+    title: `${NOM_SITE} — par ADéPA`,
     description: 'Douze étapes expliquées simplement, jusqu’à la première subvention. Gratuit.',
   },
   robots: { index: true, follow: true },
