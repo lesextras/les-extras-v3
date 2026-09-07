@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
-import { Encart } from '../../_ui';
+import { Barre, Encart, Titre, Tuile } from '../../_ui';
 import { CATEGORIES, type Espace } from '../_types';
 import { PieceDuClasseur } from './PieceDuClasseur';
 
@@ -18,21 +19,38 @@ export default async function ClasseurPage() {
     return acc;
   }, {});
   const pretes = data.classeur.filter((l) => l.situation === 'A_JOUR' || l.situation === 'DEDUITE').length;
+  const bientot = data.classeur.filter((l) => l.situation === 'BIENTOT_PERIMEE').length;
+  const perimees = data.classeur.filter((l) => l.situation === 'PERIMEE').length;
+  const manquantes = data.classeur.filter((l) => l.situation === 'MANQUANTE').length;
 
   return (
     <>
-      <header className="mb-6">
-        <p className="text-xs uppercase tracking-[0.14em] text-[#5C6B63]">{data.organisation.nom}</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">Le classeur</h1>
-        <p className="mt-2 max-w-[64ch] text-[#3E4A44]">
-          {pretes} pièce{pretes > 1 ? 's' : ''} sur {data.classeur.length} prête{pretes > 1 ? 's' : ''}. Une pièce déposée avec
-          sa date est surveillée : vous serez prévenu 60 jours avant qu&apos;elle expire.
-        </p>
-      </header>
+      <Titre
+        surtitre="Le classeur"
+        sousTitre="Les treize papiers que les financeurs demandent. Tu déposes un fichier, tu notes sa date : on te prévient 60 jours avant qu'il expire."
+        actions={
+          <Link href="/chemin/les-cinq-pieces-d-identite" className="inline-flex items-center rounded-xl border-2 border-[#D9D6EE] bg-white px-4 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:border-[#4F46E5]">
+            Où trouver chaque papier
+          </Link>
+        }
+      >
+        {data.organisation.nom}
+      </Titre>
+
+      <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Tuile libelle="Prêtes" valeur={`${pretes} / ${data.classeur.length}`} ton="ok" />
+        <Tuile libelle="À fournir" valeur={manquantes} ton={manquantes ? 'neutre' : 'ok'} />
+        <Tuile libelle="Expirent bientôt" valeur={bientot} ton={bientot ? 'attention' : 'neutre'} />
+        <Tuile libelle="Périmées" valeur={perimees} ton={perimees ? 'alerte' : 'neutre'} />
+      </section>
+      <div className="mb-8">
+        <Barre pourcentage={Math.round((pretes / data.classeur.length) * 100)} ton="ok" />
+      </div>
+
       <div className="space-y-8">
         {Object.entries(parCategorie).map(([cat, lignes]) => (
           <section key={cat}>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.14em] text-[#5C6B63]">{CATEGORIES[cat] ?? cat}</h2>
+            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#6B6A8A]">{CATEGORIES[cat] ?? cat}</h2>
             <ul className="space-y-3">
               {lignes.map((l) => (
                 <PieceDuClasseur key={l.type.code} ligne={l} />
@@ -41,7 +59,7 @@ export default async function ClasseurPage() {
           </section>
         ))}
       </div>
-      <p className="mt-6 text-xs text-[#5C6B63]">Référentiel des pièces vérifié le {data.versionReferentiel}.</p>
+      <p className="mt-6 text-xs text-[#6B6A8A]">Référentiel des pièces vérifié le {data.versionReferentiel}.</p>
     </>
   );
 }

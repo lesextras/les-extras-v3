@@ -61,7 +61,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
   }
 
   async function retirer() {
-    if (!window.confirm('Retirer ce fichier du classeur ? Vous pourrez en déposer un autre.')) return;
+    if (!window.confirm('Retirer ce fichier du classeur ? Tu pourras en déposer un autre.')) return;
     setEnCours(true);
     try {
       await appel(`/association/classeur/${type.code}/fichier`, { method: 'DELETE' });
@@ -74,22 +74,22 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
   }
 
   const champ =
-    'rounded-md border border-[#C9C3B5] bg-white px-3 py-2 text-sm focus:border-[#1F6A4E] focus:outline-none focus:ring-2 focus:ring-[#B9D6C6]';
+    'rounded-xl border border-[#D9D6EE] bg-white px-3 py-2 text-sm focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#ECEBFC]';
 
   return (
-    <li className="rounded-md border border-[#DDD8CC] bg-white px-5 py-4">
+    <li id={type.code} className="scroll-mt-24 rounded-2xl border border-[#E6E4F3] bg-white px-5 py-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <Pastille ton={ton}>{LIBELLES_SITUATION[situation]}</Pastille>
-            <span className="font-semibold">{type.libelle}</span>
-            {type.dureeValiditeMois ? <span className="text-xs text-[#5C6B63]">valable {type.dureeValiditeMois} mois</span> : null}
-            {type.parExercice ? <span className="text-xs text-[#5C6B63]">chaque année</span> : null}
+            <span className="font-extrabold text-[#1D1B5C]">{type.libelle}</span>
+            {type.dureeValiditeMois ? <span className="text-xs text-[#6B6A8A]">valable {type.dureeValiditeMois} mois</span> : null}
+            {type.parExercice ? <span className="text-xs text-[#6B6A8A]">chaque année</span> : null}
           </div>
-          <p className="mt-1 text-sm text-[#3E4A44]">{type.pourquoi}</p>
-          {piece?.preuve && situation === 'DEDUITE' ? <p className="mt-1 text-sm text-[#5C6B63]">Prouvée par : {piece.preuve}</p> : null}
+          <p className="mt-1 text-sm text-[#3B3A66]">{type.pourquoi}</p>
+          {piece?.preuve && situation === 'DEDUITE' ? <p className="mt-1 text-sm text-[#6B6A8A]">Prouvée par : {piece.preuve}</p> : null}
           {piece?.fileId ? (
-            <p className="mt-1 text-sm text-[#5C6B63]">
+            <p className="mt-1 text-sm text-[#6B6A8A]">
               <a href={`/api/proxy/files/${piece.fileId}`} target="_blank" rel="noopener" className="underline underline-offset-4">
                 Voir le fichier
               </a>
@@ -99,7 +99,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
           ) : null}
           {situation === 'MANQUANTE' ? (
             <p className="mt-1 text-sm">
-              <span className="text-[#5C6B63]">Où la trouver : </span>
+              <span className="text-[#6B6A8A]">Où la trouver : </span>
               {type.ouLaTrouver}
             </p>
           ) : null}
@@ -109,7 +109,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
             <button
               type="button"
               onClick={() => setOuvert((v) => !v)}
-              className="rounded-md border border-[#1F6A4E] px-3 py-1.5 text-sm font-medium text-[#1F6A4E] hover:bg-[#E4EFE8]"
+              className="rounded-xl border border-[#4F46E5] px-3 py-1.5 text-sm font-bold text-[#4F46E5] hover:bg-[#ECEBFC]"
             >
               {piece?.fileId ? 'Remplacer ou corriger' : 'Déposer'}
             </button>
@@ -117,7 +117,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
             <button
               type="button"
               onClick={() => setOuvert((v) => !v)}
-              className="rounded-md border border-[#DDD8CC] px-3 py-1.5 text-sm text-[#5C6B63] hover:bg-[#F6F4EE]"
+              className="rounded-xl border border-[#E6E4F3] px-3 py-1.5 text-sm text-[#6B6A8A] hover:bg-[#F5F4FC]"
             >
               Ajouter le document quand même
             </button>
@@ -126,42 +126,42 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
       </div>
 
       {ouvert ? (
-        <form onSubmit={enregistrer} className="mt-4 grid gap-3 border-t border-[#EEEAE0] pt-4 sm:grid-cols-2">
+        <form onSubmit={enregistrer} className="mt-4 grid gap-3 border-t border-[#E6E4F3] pt-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-            <span className="font-medium">Fichier (PDF, JPEG, PNG ou WEBP)</span>
+            <span className="font-bold">Fichier (PDF, JPEG, PNG ou WEBP)</span>
             <input ref={fichierRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="text-sm" />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">Date du document</span>
+            <span className="font-bold">Date du document</span>
             <input type="date" value={dateEmission} onChange={(e) => setDateEmission(e.target.value)} className={champ} />
           </label>
           {type.dureeValiditeMois || type.code === 'AGREMENT' ? (
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium">Date d&apos;expiration</span>
+              <span className="font-bold">Date d&apos;expiration</span>
               <input type="date" value={dateExpiration} onChange={(e) => setDateExpiration(e.target.value)} className={champ} />
-              <span className="text-xs text-[#5C6B63]">Laissez vide : elle sera calculée depuis la date du document.</span>
+              <span className="text-xs text-[#6B6A8A]">Laisse vide : elle sera calculée depuis la date du document.</span>
             </label>
           ) : null}
           {type.parExercice ? (
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium">Exercice (année)</span>
+              <span className="font-bold">Exercice (année)</span>
               <input type="number" min={2000} max={2100} value={exercice} onChange={(e) => setExercice(e.target.value)} className={champ} />
             </label>
           ) : null}
           <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-            <span className="font-medium">Note (facultatif)</span>
+            <span className="font-bold">Note (facultatif)</span>
             <input type="text" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} className={champ} />
           </label>
-          {erreur ? <p className="text-sm text-[#7A4A0E] sm:col-span-2">{erreur}</p> : null}
+          {erreur ? <p className="text-sm text-[#7C3E06] sm:col-span-2">{erreur}</p> : null}
           <div className="flex flex-wrap gap-2 sm:col-span-2">
-            <button type="submit" disabled={enCours} className="rounded-md bg-[#1F6A4E] px-4 py-2 text-sm font-medium text-white hover:bg-[#185540] disabled:opacity-60">
+            <button type="submit" disabled={enCours} className="rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA] disabled:opacity-60">
               {enCours ? 'Enregistrement…' : 'Enregistrer'}
             </button>
-            <button type="button" onClick={() => setOuvert(false)} className="rounded-md px-4 py-2 text-sm text-[#5C6B63] hover:bg-[#F6F4EE]">
+            <button type="button" onClick={() => setOuvert(false)} className="rounded-xl px-4 py-2 text-sm text-[#6B6A8A] hover:bg-[#F5F4FC]">
               Annuler
             </button>
             {piece?.fileId ? (
-              <button type="button" onClick={retirer} disabled={enCours} className="ml-auto rounded-md px-4 py-2 text-sm text-[#7A4A0E] hover:bg-[#F7EBD6]">
+              <button type="button" onClick={retirer} disabled={enCours} className="ml-auto rounded-xl px-4 py-2 text-sm text-[#7C3E06] hover:bg-[#FEF3E2]">
                 Retirer le fichier
               </button>
             ) : null}
