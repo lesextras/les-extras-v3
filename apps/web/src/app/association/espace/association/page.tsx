@@ -196,6 +196,38 @@ export default async function MonAssociationPage() {
         </Carte>
       </section>
 
+      {/* ------------------------------------------------------ secrétariat */}
+      <section className="mt-10">
+        <SousTitre>Mon secrétariat</SousTitre>
+        <p className="mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
+          Tout ce qu&apos;un secrétaire et un trésorier ont à faire : les obligations à tenir, les papiers de la vie de l&apos;association à fabriquer, et
+          l&apos;argent qui entre et qui sort.
+        </p>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Link href="/espace/secretariat#obligations" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+            <span className="block text-lg font-extrabold text-[#1D1B5C]">Ce qu&apos;on doit tenir</span>
+            <span className="mt-1 block text-sm text-[#6B6A8A]">
+              Assemblée générale, bureau à jour, déclarations en préfecture, comptes, reçus de dons, papiers, comptes rendus de subvention.
+            </span>
+            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Voir les obligations →</span>
+          </Link>
+          <Link href="/espace/secretariat#documents" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+            <span className="block text-lg font-extrabold text-[#1D1B5C]">Les documents à fabriquer</span>
+            <span className="mt-1 block text-sm text-[#6B6A8A]">
+              Convocation, ordre du jour, feuille de présence, procès-verbal, liste des dirigeants, rapport d&apos;activité, reçu fiscal.
+            </span>
+            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Fabriquer un document →</span>
+          </Link>
+          <Link href="/espace/secretariat#comptes" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+            <span className="block text-lg font-extrabold text-[#1D1B5C]">Le cahier de comptes</span>
+            <span className="mt-1 block text-sm text-[#6B6A8A]">
+              Dons, adhésions, ventes, subventions reçues et toutes les dépenses. C&apos;est ce cahier qu&apos;on présente en assemblée générale.
+            </span>
+            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir les comptes →</span>
+          </Link>
+        </div>
+      </section>
+
       {/* ------------------------------------------------------- agréments */}
       <section id="agrements" className="mt-10 scroll-mt-24">
         <SousTitre>Nos agréments</SousTitre>
