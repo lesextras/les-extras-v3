@@ -184,6 +184,20 @@ export default async function MonAssociationPage() {
           </div>
         </Carte>
       </section>
+
+      <section className="mt-6">
+        <Carte>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-extrabold text-[#1D1B5C]">Ce que les autres voient</h2>
+              <p className="mt-1 text-sm text-[#6B6A8A]">Ta fiche dans les répertoires publics (RNA, SIRENE) : nom, adresse, activité, date de création.</p>
+            </div>
+            <Link href="/verifier" className={BTN_SECONDAIRE}>
+              Vérifier ma fiche publique →
+            </Link>
+          </div>
+        </Carte>
+      </section>
     </>
   );
 }
