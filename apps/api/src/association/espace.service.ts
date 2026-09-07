@@ -23,6 +23,8 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService, type FichierRecu } from '../storage/files.service';
+import { champsManquants, trouverModele, type Valeurs } from './fabrique';
+import { rendrePdf } from './rendu';
 import { AssociationService, type AssociationPublique } from './association.service';
 import {
   DISPOSITIFS,
@@ -777,6 +779,28 @@ export class EspaceService {
       },
       include: { file: { select: { id: true, originalName: true, size: true, mimeType: true } } },
     });
+  }
+
+  /**
+   * Fabrique un document (PDF) et le range au bon endroit : la pièce du
+   * classeur qu'il produit, ou « mes documents » avec sa catégorie. Renvoie
+   * de quoi l'ouvrir tout de suite.
+   */
+  async fabriquer(accountId: string, userId: string, code: string, valeurs: Valeurs) {
+    const modele = trouverModele(code);
+    if (!modele) throw new NotFoundException('Ce modèle est inconnu.');
+    const manquants = champsManquants(modele, valeurs);
+    if (manquants.length) throw new BadRequestException(`Il manque : ${manquants.join(', ')}.`);
+    const doc = modele.construire(valeurs);
+    const buffer = await rendrePdf(doc);
+    const fichier: FichierRecu = { originalname: `${doc.nomFichier}.pdf`, mimetype: 'application/pdf', size: buffer.length, buffer };
+
+    if (modele.piece) {
+      const piece = await this.deposerPiece(accountId, userId, modele.piece, fichier, {});
+      return { fileId: piece.fileId, nom: fichier.originalname, piece: modele.piece, range: 'CLASSEUR' as const };
+    }
+    const document = await this.deposerDocument(accountId, userId, fichier, { titre: doc.titre, categorie: modele.categorie });
+    return { fileId: document.fileId, nom: fichier.originalname, documentId: document.id, range: 'DOCUMENTS' as const };
   }
 
   async supprimerDocument(accountId: string, userId: string, role: GlobalRole, id: string) {

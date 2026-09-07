@@ -26,6 +26,7 @@ import {
   DocumentDto,
   DossierDto,
   EtapeFaiteDto,
+  FabriqueDto,
   ModifierContactDto,
   ModifierDossierDto,
   ModifierOrganisationDto,
@@ -151,6 +152,18 @@ export class AssociationEspaceController {
   }
 
   // ------------------------------------------------------------- documents
+
+  /** Fabriquer un document ET le ranger : au classeur si c'est une pièce, sinon dans mes documents. */
+  @Post('fabrique/:code')
+  @Throttle({ default: { limit: 60, ttl: 3_600_000 } })
+  fabriquer(
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+    @Param('code') code: string,
+    @Body() dto: FabriqueDto,
+  ) {
+    return this.espace.fabriquer(account.id, user.id, code, dto.valeurs ?? {});
+  }
 
   @Get('documents')
   documents(@CurrentAccount() account: RequestAccount) {

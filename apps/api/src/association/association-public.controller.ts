@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Header, NotFoundException, Param, Post, Query, StreamableFile } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AssociationService } from './association.service';
 import { EspaceService } from './espace.service';
-import { InscriptionAssociationDto } from './dto/espace.dto';
+import { FabriqueDto, InscriptionAssociationDto } from './dto/espace.dto';
+import { catalogueModeles, champsManquants, trouverModele } from './fabrique';
+import { rendreDocx, rendrePdf } from './rendu';
 
 /**
  * PILOTER MON ASSOCIATION : LES ROUTES PUBLIQUES.
@@ -57,5 +59,30 @@ export class AssociationPublicController {
   @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   inscription(@Body() dto: InscriptionAssociationDto) {
     return this.espace.inscrire(dto);
+  }
+
+  /** Les documents qu'on peut fabriquer sur place : champs et écrans du formulaire. */
+  @Get('fabrique')
+  fabrique() {
+    return { modeles: catalogueModeles() };
+  }
+
+  /** Fabriquer un document sans compte : le fichier revient directement, rien n'est gardé. */
+  @Post('fabrique/:code')
+  @Throttle({ default: { limit: 30, ttl: 3_600_000 } })
+  @Header('Cache-Control', 'no-store')
+  async fabriquer(@Param('code') code: string, @Body() dto: FabriqueDto) {
+    const modele = trouverModele(code);
+    if (!modele) throw new NotFoundException('Ce modèle est inconnu.');
+    const manquants = champsManquants(modele, dto.valeurs ?? {});
+    if (manquants.length) throw new BadRequestException(`Il manque : ${manquants.join(', ')}.`);
+    const doc = modele.construire(dto.valeurs ?? {});
+    const docx = dto.format === 'docx';
+    const buffer = docx ? await rendreDocx(doc) : await rendrePdf(doc);
+    return new StreamableFile(buffer, {
+      type: docx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf',
+      disposition: `attachment; filename="${doc.nomFichier}.${docx ? 'docx' : 'pdf'}"`,
+      length: buffer.length,
+    });
   }
 }
