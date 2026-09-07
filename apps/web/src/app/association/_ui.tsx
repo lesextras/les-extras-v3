@@ -23,9 +23,13 @@ export function Coque({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#F6F4EE] text-[#1E2A25]">
       <header className="border-b border-[#DDD8CC] bg-[#F6F4EE]/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1080px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-4">
-          <Link href="/" className="flex items-baseline gap-2 no-underline">
-            <span className="text-lg font-semibold tracking-tight text-[#1E2A25]">{NOM_SITE}</span>
-            <span className="text-xs uppercase tracking-[0.14em] text-[#5C6B63]">par Toulali</span>
+          <Link href="/" className="flex items-center gap-3 no-underline">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/association/marque.svg" alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
+            <span className="flex flex-col leading-tight sm:flex-row sm:items-baseline sm:gap-2">
+              <span className="text-lg font-semibold tracking-tight text-[#1E2A25]">{NOM_SITE}</span>
+              <span className="text-xs uppercase tracking-[0.14em] text-[#5C6B63]">par Toulali</span>
+            </span>
           </Link>
           <nav aria-label="Navigation principale" className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
             {NAV.map((n) => (
