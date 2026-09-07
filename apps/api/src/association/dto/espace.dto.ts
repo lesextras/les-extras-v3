@@ -275,3 +275,13 @@ export class ModifierMouvementDto {
   @IsOptional() @IsString() @MaxLength(40) actionId?: string | null;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string | null;
 }
+
+/** Une recherche de financeurs : ce que l'association veut financer en priorité. */
+export class IaFinanceursDto {
+  @IsOptional() @IsString() @MaxLength(1000) precision?: string;
+}
+
+/** Une rédaction de dossier : des précisions à donner au moteur. */
+export class IaDossierDto {
+  @IsOptional() @IsString() @MaxLength(2000) precision?: string;
+}
