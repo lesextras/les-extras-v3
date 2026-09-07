@@ -19,7 +19,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { EtatDossier, NiveauOrganisation, RoleContact } from '@prisma/client';
+import { EtatAction, EtatDossier, NiveauOrganisation, RoleContact } from '@prisma/client';
 
 /**
  * L'inscription d'une association. Un seul écran : qui vous êtes, quelle
@@ -206,4 +206,35 @@ export class ModifierDossierDto {
 export class FabriqueDto {
   @IsObject() valeurs!: Record<string, unknown>;
   @IsOptional() @IsIn(['pdf', 'docx']) format?: 'pdf' | 'docx';
+}
+
+/** Une action de l'association : ce qu'elle fait sur le terrain. */
+export class ActionDto {
+  @IsString() @IsNotEmpty({ message: "L'intitulé de l'action est nécessaire." }) @MaxLength(200) intitule!: string;
+  @IsOptional() @IsString() @MaxLength(2000) resume?: string | null;
+  @IsOptional() @IsString() @MaxLength(160) lieu?: string | null;
+  @IsOptional() @IsDateString() dateDebut?: string | null;
+  @IsOptional() @IsDateString() dateFin?: string | null;
+  @IsOptional() @IsEnum(EtatAction) etat?: EtatAction;
+  @IsOptional() @IsInt() @Min(0) @Max(1000000) beneficiaires?: number | null;
+  @IsOptional() @IsInt() @Min(0) @Max(100000) benevoles?: number | null;
+  @IsOptional() @IsInt() @Min(0) @Max(1000000) heuresBenevoles?: number | null;
+  @IsOptional() @IsInt() @Min(0) @Max(100000000) cout?: number | null;
+  @IsOptional() @IsString() @MaxLength(400) partenaires?: string | null;
+  @IsOptional() @IsString() @MaxLength(4000) bilan?: string | null;
+}
+
+export class ModifierActionDto {
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(200) intitule?: string;
+  @IsOptional() @IsString() @MaxLength(2000) resume?: string | null;
+  @IsOptional() @IsString() @MaxLength(160) lieu?: string | null;
+  @IsOptional() @IsDateString() dateDebut?: string | null;
+  @IsOptional() @IsDateString() dateFin?: string | null;
+  @IsOptional() @IsEnum(EtatAction) etat?: EtatAction;
+  @IsOptional() @IsInt() @Min(0) @Max(1000000) beneficiaires?: number | null;
+  @IsOptional() @IsInt() @Min(0) @Max(100000) benevoles?: number | null;
+  @IsOptional() @IsInt() @Min(0) @Max(1000000) heuresBenevoles?: number | null;
+  @IsOptional() @IsInt() @Min(0) @Max(100000000) cout?: number | null;
+  @IsOptional() @IsString() @MaxLength(400) partenaires?: string | null;
+  @IsOptional() @IsString() @MaxLength(4000) bilan?: string | null;
 }
