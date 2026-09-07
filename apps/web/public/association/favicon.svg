@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <rect width="128" height="128" rx="30" fill="#1F6A4E"/>
+  <rect width="128" height="128" rx="30" fill="#C42B57"/>
   <circle cx="64" cy="64" r="39" fill="none" stroke="#F6F4EE" stroke-width="9"/>
   <g transform="rotate(45 64 64)">
     <polygon points="64,30 52,64 76,64" fill="#F6F4EE"/>
-    <polygon points="64,98 52,64 76,64" fill="#8FC2A8"/>
+    <polygon points="64,98 52,64 76,64" fill="#F3B0C2"/>
   </g>
-  <circle cx="64" cy="64" r="7" fill="#1F6A4E" stroke="#F6F4EE" stroke-width="3.5"/>
+  <circle cx="64" cy="64" r="7" fill="#C42B57" stroke="#F6F4EE" stroke-width="3.5"/>
 </svg>
