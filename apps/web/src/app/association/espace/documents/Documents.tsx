@@ -22,25 +22,30 @@ export function Documents({ documents }: { documents: DocumentLibre[] }) {
   const [titre, setTitre] = useState('');
   const [categorie, setCategorie] = useState('Autre');
   const [filtre, setFiltre] = useState<string>('');
+  const [nombre, setNombre] = useState(0);
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
 
+  /** On peut en déposer plusieurs d'un coup ; le titre saisi ne vaut que pour un fichier seul. */
   async function deposer(e: FormEvent) {
     e.preventDefault();
-    const f = fichier.current?.files?.[0];
-    if (!f) {
-      setErreur('Choisis un fichier.');
+    const fichiers = Array.from(fichier.current?.files ?? []);
+    if (!fichiers.length) {
+      setErreur('Choisis au moins un fichier.');
       return;
     }
     setErreur(null);
     setEnCours(true);
-    const form = new FormData();
-    form.append('file', f);
-    form.append('titre', titre.trim() || f.name);
-    form.append('categorie', categorie);
     try {
-      await appel('/association/documents', { method: 'POST', form });
+      for (const f of fichiers) {
+        const form = new FormData();
+        form.append('file', f);
+        form.append('titre', (fichiers.length === 1 && titre.trim()) || f.name);
+        form.append('categorie', categorie);
+        await appel('/association/documents', { method: 'POST', form });
+      }
       setTitre('');
+      setNombre(0);
       if (fichier.current) fichier.current.value = '';
       router.refresh();
     } catch (err) {
@@ -66,15 +71,31 @@ export function Documents({ documents }: { documents: DocumentLibre[] }) {
   return (
     <div className="space-y-6">
       <form onSubmit={deposer} className="rounded-2xl border border-[#E6E4F3] bg-white p-5">
-        <p className="mb-3 font-extrabold text-[#1D1B5C]">Ajouter un document</p>
+        <p className="mb-3 font-extrabold text-[#1D1B5C]">Ajouter des documents</p>
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_160px_auto] sm:items-end">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-bold text-[#1D1B5C]">Le fichier</span>
-            <input ref={fichier} type="file" required className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#ECEBFC] file:px-3 file:py-2 file:font-bold file:text-[#4338CA]" />
+            <span className="font-bold text-[#1D1B5C]">Les fichiers</span>
+            <input
+              ref={fichier}
+              type="file"
+              multiple
+              required
+              onChange={(e) => setNombre(e.target.files?.length ?? 0)}
+              className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#ECEBFC] file:px-3 file:py-2 file:font-bold file:text-[#4338CA]"
+            />
+            <span className="text-xs text-[#6B6A8A]">Tu peux en choisir plusieurs d&apos;un coup.</span>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold text-[#1D1B5C]">Son titre</span>
-            <input type="text" maxLength={160} value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Sinon, le nom du fichier" className={CHAMP} />
+            <input
+              type="text"
+              maxLength={160}
+              value={titre}
+              onChange={(e) => setTitre(e.target.value)}
+              disabled={nombre > 1}
+              placeholder={nombre > 1 ? 'Le nom de chaque fichier' : 'Sinon, le nom du fichier'}
+              className={`${CHAMP} disabled:bg-[#F5F4FC] disabled:text-[#6B6A8A]`}
+            />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold text-[#1D1B5C]">Catégorie</span>
@@ -85,7 +106,7 @@ export function Documents({ documents }: { documents: DocumentLibre[] }) {
             </select>
           </label>
           <button type="submit" disabled={enCours} className="rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA] disabled:opacity-60">
-            {enCours ? 'Envoi…' : 'Déposer'}
+            {enCours ? 'Envoi…' : nombre > 1 ? `Déposer les ${nombre}` : 'Déposer'}
           </button>
         </div>
         {erreur ? <p className="mt-3 rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">{erreur}</p> : null}
