@@ -105,6 +105,43 @@ export interface ResumeContacts {
   bureau: { id: string; nom: string; roles: RoleContact[] }[];
 }
 
+export type EtatAction = 'PREVUE' | 'EN_COURS' | 'TERMINEE';
+
+export const LIBELLES_ETAT_ACTION: Record<EtatAction, string> = {
+  PREVUE: 'Prévue',
+  EN_COURS: 'En cours',
+  TERMINEE: 'Terminée',
+};
+
+/** Une action de l'association : ce qu'elle fait vraiment, avec ses chiffres. */
+export interface ActionAssociation {
+  id: string;
+  intitule: string;
+  resume: string | null;
+  lieu: string | null;
+  dateDebut: string | null;
+  dateFin: string | null;
+  etat: EtatAction;
+  beneficiaires: number | null;
+  benevoles: number | null;
+  heuresBenevoles: number | null;
+  cout: number | null;
+  partenaires: string | null;
+  bilan: string | null;
+}
+
+export interface ResumeActions {
+  total: number;
+  prevues: number;
+  enCours: number;
+  terminees: number;
+  beneficiaires: number;
+  benevoles: number;
+  heuresBenevoles: number;
+  cout: number;
+  sansBilan: number;
+}
+
 export interface DocumentLibre {
   id: string;
   titre: string;
@@ -182,6 +219,8 @@ export interface Espace {
   projet: Projet;
   vieStatutaire: VieStatutaire;
   repertoire: ResumeContacts;
+  actions: ActionAssociation[];
+  resumeActions: ResumeActions;
   nbDocuments: number;
   configuration: { etapes: { code: string; libelle: string; faite: boolean; href: string }[]; faites: number; total: number; pourcentage: number };
   versionReferentiel: string;

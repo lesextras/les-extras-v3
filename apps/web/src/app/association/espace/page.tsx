@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../_session';
 import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Carte, Encart, Pastille, SousTitre } from '../_ui';
-import { LIBELLES_ETAT, dateCourte, formaterEuros, type Espace } from './_types';
+import { LIBELLES_ETAT, LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type Espace } from './_types';
 
 /** L'anneau de progression, comme un compteur de configuration. */
 function Anneau({ pourcentage }: { pourcentage: number }) {
@@ -19,18 +19,33 @@ function Anneau({ pourcentage }: { pourcentage: number }) {
   );
 }
 
+/** Les quatre gestes du quotidien, comme les briques d'accueil d'un outil connu. */
+const RACCOURCIS: { href: string; libelle: string; icone: string }[] = [
+  { href: '/espace/actions', libelle: 'Noter une action', icone: 'M13 2L3 14h7l-1 8 10-12h-7z' },
+  { href: '/espace/dossiers', libelle: 'Demander une subvention', icone: 'M12 2v20M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.6 7 6.5s2.2 3 5 3 5 1.1 5 3-2.2 3-5 3-5-1.1-5-3' },
+  { href: '/espace/classeur', libelle: 'Déposer un papier', icone: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+  { href: '@chemin', libelle: 'Continuer le chemin', icone: 'M4 20V9a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5M4 20h16M12 10v10' },
+];
+
+const TONS_ACTION = {
+  PREVUE: 'bg-[#ECEBFC] text-[#4338CA]',
+  EN_COURS: 'bg-[#FEF3E2] text-[#7C3E06]',
+  TERMINEE: 'bg-[#E3F5EC] text-[#0F5F3E]',
+} as const;
+
 export default async function LundiPage({ searchParams }: { searchParams: Promise<{ bienvenue?: string }> }) {
   const [{ bienvenue }, s] = await Promise.all([searchParams, sessionAssociation('/espace')]);
   const { data, error } = await apiEspace<Espace>(s, '/association/espace');
   if (!data) return <Encart ton="attention">{error ?? "L'espace ne se charge pas pour le moment. Recharge la page dans un instant."}</Encart>;
 
-  const { organisation, lundi, chemin, dossiers, configuration, vieStatutaire } = data;
+  const { organisation, lundi, chemin, dossiers, configuration, vieStatutaire, actions, resumeActions } = data;
   const prenom = s.session.user.firstName ?? '';
   const prochaineEtape = chemin.etapes.find((e) => !e.faite) ?? null;
   const prochaineConfig = configuration.etapes.find((e) => !e.faite) ?? null;
   const urgences = lundi.perime.length + lundi.du.length + (vieStatutaire.agEnRetard ? 1 : 0) + vieStatutaire.mandatsExpires.length;
   const demande = dossiers.reduce((t, d) => t + (d.montantDemande ?? 0), 0);
   const accorde = dossiers.filter((d) => d.etat === 'ACCORDE' || d.etat === 'SOLDE').reduce((t, d) => t + (d.montantAccorde ?? 0), 0);
+  const actionsRecentes = actions.slice(0, 4);
   const recents = [...dossiers].sort((a, b) => (b.dateLimiteDepot ?? '').localeCompare(a.dateLimiteDepot ?? '')).slice(0, 5);
 
   return (
@@ -50,18 +65,16 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
           )}
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
-          <Link href="/chemin#partie-3" className={BTN_SECONDAIRE}>
-            Demander une subvention
-          </Link>
-          <Link href="/espace/classeur" className={BTN_SECONDAIRE}>
-            Déposer une pièce
-          </Link>
-          <Link href="/espace/repertoire" className={BTN_SECONDAIRE}>
-            Ajouter un membre
-          </Link>
-          <Link href={prochaineEtape ? `/chemin/${prochaineEtape.slug}` : '/chemin'} className={BTN_SECONDAIRE}>
-            Continuer le chemin
-          </Link>
+          {RACCOURCIS.map((r) => (
+            <Link key={r.href} href={r.href === '@chemin' ? (prochaineEtape ? `/chemin/${prochaineEtape.slug}` : '/chemin') : r.href} className={`${BTN_SECONDAIRE} gap-2`}>
+              <span className="text-[#4F46E5]" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={r.icone} />
+                </svg>
+              </span>
+              {r.libelle}
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -109,7 +122,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
 
         <div className="flex flex-col gap-4">
           <Carte>
-            <h2 className="text-xl font-extrabold text-[#1D1B5C]">Subventions</h2>
+            <h2 className="text-xl font-extrabold text-[#1D1B5C]">Mes subventions</h2>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div>
                 <p className="text-sm font-bold text-[#6B6A8A]">Demandé</p>
@@ -124,7 +137,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
               {lundi.enCours.deposes} déposé{lundi.enCours.deposes > 1 ? 's' : ''} en attente de réponse · {lundi.enCours.accordesAJustifier} à justifier
             </p>
             <Link href="/espace/dossiers" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-              Créer un dossier →
+              Créer une demande →
             </Link>
           </Carte>
           <Carte>
@@ -232,12 +245,72 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
         )}
       </section>
 
+      {/* ------------------------------------------------------------- actions */}
+      <section className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <SousTitre>Mes actions</SousTitre>
+          <Link href="/espace/actions" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+            Toutes mes actions
+          </Link>
+        </div>
+        {actions.length === 0 ? (
+          <div className={`${CARTE} px-6 py-10 text-center`}>
+            <p className="font-bold text-[#1D1B5C]">Aucune action notée pour l&apos;instant.</p>
+            <p className="mt-1 text-sm text-[#6B6A8A]">
+              Une sortie, un atelier, un tournoi : notée ici, elle remplit toute seule le rapport d&apos;activité et les dossiers.
+            </p>
+            <Link href="/espace/actions" className={`${BTN_PRIMAIRE} mt-4`}>
+              Noter une action
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="mb-3 grid gap-3 sm:grid-cols-3">
+              <div className={`${CARTE} px-5 py-4`}>
+                <p className="text-sm font-bold text-[#6B6A8A]">Actions</p>
+                <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{resumeActions.total}</p>
+                <p className="text-sm text-[#6B6A8A]">
+                  {resumeActions.enCours} en cours · {resumeActions.terminees} terminée{resumeActions.terminees > 1 ? 's' : ''}
+                </p>
+              </div>
+              <div className={`${CARTE} px-5 py-4`}>
+                <p className="text-sm font-bold text-[#6B6A8A]">Personnes touchées</p>
+                <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{resumeActions.beneficiaires}</p>
+                <p className="text-sm text-[#6B6A8A]">Le chiffre que les financeurs demandent</p>
+              </div>
+              <div className={`${CARTE} px-5 py-4`}>
+                <p className="text-sm font-bold text-[#6B6A8A]">Bénévoles engagés</p>
+                <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{resumeActions.benevoles}</p>
+                <p className="text-sm text-[#6B6A8A]">{resumeActions.heuresBenevoles} heure{resumeActions.heuresBenevoles > 1 ? 's' : ''} données</p>
+              </div>
+            </div>
+            <ul className="grid gap-3 md:grid-cols-2">
+              {actionsRecentes.map((a) => (
+                <li key={a.id}>
+                  <Link href="/espace/actions" className={`${CARTE} flex h-full flex-col px-5 py-4 no-underline`}>
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="font-extrabold text-[#1D1B5C]">{a.intitule}</span>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${TONS_ACTION[a.etat]}`}>{LIBELLES_ETAT_ACTION[a.etat]}</span>
+                    </span>
+                    <span className="mt-1 text-sm text-[#6B6A8A]">
+                      {a.dateDebut ? dateCourte(a.dateDebut) : 'Pas encore de date'}
+                      {a.lieu ? ` · ${a.lieu}` : ''}
+                      {a.beneficiaires !== null ? ` · ${a.beneficiaires} personnes` : ''}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </section>
+
       {/* ------------------------------------------------------------ dossiers */}
       <section className="mt-8">
         <div className="mb-4 flex items-center justify-between">
-          <SousTitre>Dossiers récents</SousTitre>
+          <SousTitre>Mes subventions et appels à projet</SousTitre>
           <Link href="/espace/dossiers" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-            Tous les dossiers
+            Tout voir
           </Link>
         </div>
         <div className={`${CARTE} overflow-hidden`}>
