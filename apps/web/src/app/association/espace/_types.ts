@@ -143,7 +143,19 @@ export interface TotauxBudget {
   equilibre: boolean;
 }
 
-export type RoleContact = 'PRESIDENT' | 'TRESORIER' | 'SECRETAIRE' | 'MEMBRE_BUREAU' | 'MEMBRE' | 'BENEVOLE' | 'SALARIE' | 'PARTENAIRE' | 'FINANCEUR' | 'ELU' | 'AUTRE';
+export type RoleContact =
+  | 'PRESIDENT'
+  | 'TRESORIER'
+  | 'SECRETAIRE'
+  | 'MEMBRE_BUREAU'
+  | 'MEMBRE'
+  | 'BENEVOLE'
+  | 'SALARIE'
+  | 'PARTENAIRE'
+  | 'FINANCEUR'
+  | 'ELU'
+  | 'INSTITUTIONNEL'
+  | 'AUTRE';
 
 export const LIBELLES_ROLE: Record<RoleContact, string> = {
   PRESIDENT: 'Président·e',
@@ -156,8 +168,38 @@ export const LIBELLES_ROLE: Record<RoleContact, string> = {
   PARTENAIRE: 'Partenaire',
   FINANCEUR: 'Financeur',
   ELU: 'Élu·e',
+  INSTITUTIONNEL: 'Institution',
   AUTRE: 'Autre',
 };
+
+/** Les quatre familles de contacts autour de l'association. */
+export type CategorieContact = 'PARTENAIRE' | 'FINANCEUR' | 'INSTITUTIONNEL' | 'DIVERS';
+
+export const CATEGORIES_CONTACT: {
+  code: CategorieContact;
+  libelle: string;
+  enUnMot: string;
+  /** Les rôles qui rangent un contact dans cette famille. */
+  roles: RoleContact[];
+}[] = [
+  { code: 'PARTENAIRE', libelle: 'Partenaires', enUnMot: 'Ceux qui agissent avec vous sur le terrain', roles: ['PARTENAIRE'] },
+  { code: 'FINANCEUR', libelle: 'Financeurs', enUnMot: 'Ceux qui donnent de l’argent et demandent des comptes', roles: ['FINANCEUR'] },
+  {
+    code: 'INSTITUTIONNEL',
+    libelle: 'Contacts institutionnels',
+    enUnMot: 'Mairie, préfecture, CAF, département, école, élus',
+    roles: ['INSTITUTIONNEL', 'ELU'],
+  },
+  { code: 'DIVERS', libelle: 'Contacts divers', enUnMot: 'Tous les autres : presse, prestataires, voisins…', roles: ['AUTRE'] },
+];
+
+/** Tous les rôles qui font sortir un contact de l'équipe interne. */
+export const ROLES_AUTOUR: RoleContact[] = ['PARTENAIRE', 'FINANCEUR', 'ELU', 'INSTITUTIONNEL', 'AUTRE'];
+
+/** La famille d'un contact : la première qui correspond à un de ses rôles. */
+export function categorieDuContact(roles: RoleContact[]): CategorieContact {
+  return CATEGORIES_CONTACT.find((c) => roles.some((r) => c.roles.includes(r)))?.code ?? 'DIVERS';
+}
 
 export interface Contact {
   id: string;
@@ -166,6 +208,8 @@ export interface Contact {
   email: string | null;
   telephone: string | null;
   structure: string | null;
+  /** Son poste dans sa structure : chargée de mission, adjoint aux sports… */
+  poste: string | null;
   roles: RoleContact[];
   dateAdhesion: string | null;
   cotisationAJour: boolean;
