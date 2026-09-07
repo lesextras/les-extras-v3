@@ -7,7 +7,7 @@ import { appel } from '../../_client';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE_VIVE, Pastille } from '../../_ui';
 import type { DocumentEtape } from '../../_chemin';
 import type { ModeleFabrique, Prerempli } from '../../_fabrique';
-import { FabriqueDocument } from './FabriqueDocument';
+import { FabriqueDocument } from '../../FabriqueDocument';
 
 /**
  * CE QU'IL Y A À FAIRE À CETTE ÉTAPE, EN CARTES.

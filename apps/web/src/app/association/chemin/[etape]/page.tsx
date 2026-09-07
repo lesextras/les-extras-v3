@@ -32,10 +32,11 @@ const LIENS_ESPACE: Record<string, LienEspace[]> = {
     { titre: 'Mes projets', detail: 'Note ici ce que tu veux faire : le texte se recopie dans tes demandes de subvention.', href: '/espace/projets', bouton: 'Ouvrir mes projets' },
   ],
   'le-premier-budget': [
-    { titre: 'Ma gestion budgétaire', detail: 'Ce qui entre et ce qui sort, ligne par ligne : le budget part de là.', href: '/espace/budget', bouton: 'Ouvrir le cahier de comptes' },
+    { titre: 'Ma gestion budgétaire', detail: 'Ce qui entre et ce qui sort, ligne par ligne : le budget part de là.', href: '/espace/secretariat#comptes', bouton: 'Ouvrir le cahier de comptes' },
   ],
   'trouver-le-premier-financeur': [
     { titre: 'Repérer une demande', detail: 'Note le financeur, ce qu’il demande, la date limite et le montant max : elle remonte sur l’accueil.', href: '/espace/dossiers', bouton: 'Créer la demande' },
+    { titre: 'Trouver des financeurs', detail: 'Des pistes publiques, des fondations et des mécènes à partir de ton projet.', href: '/espace/financeurs', bouton: 'Chercher' },
     { titre: 'Mes projets', detail: 'L’idée que tu vas proposer se prépare dans mes projets.', href: '/espace/projets', bouton: 'Ouvrir mes projets' },
   ],
   'constituer-et-deposer-le-dossier': [
