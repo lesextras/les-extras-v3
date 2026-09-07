@@ -19,7 +19,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { EtatAction, EtatDossier, NatureDossier, NiveauOrganisation, RoleContact } from '@prisma/client';
+import { EtatAction, EtatDossier, MoyenPaiement, NatureDossier, NatureMouvement, NiveauOrganisation, RoleContact, SensMouvement } from '@prisma/client';
 
 /**
  * L'inscription d'une association. Un seul écran : qui vous êtes, quelle
@@ -108,6 +108,9 @@ export class EtapeFaiteDto {
 
 export class DossierDto {
   @IsOptional() @IsEnum(NatureDossier) nature?: NatureDossier;
+  @IsOptional() @IsString() @MaxLength(4000) description?: string | null;
+  @IsOptional() @IsString() @MaxLength(4000) ideeProjet?: string | null;
+  @IsOptional() @IsNumber() @Min(0) montantMax?: number | null;
   @IsOptional() @IsString() @MaxLength(40) dispositifCode?: string | null;
   @IsString() @IsNotEmpty({ message: 'Le financeur est nécessaire.' }) @MaxLength(160) financeur!: string;
   @IsString() @IsNotEmpty({ message: "L'intitulé est nécessaire." }) @MaxLength(200) intitule!: string;
@@ -186,6 +189,9 @@ export class DocumentDto {
 
 export class ModifierDossierDto {
   @IsOptional() @IsEnum(NatureDossier) nature?: NatureDossier;
+  @IsOptional() @IsString() @MaxLength(4000) description?: string | null;
+  @IsOptional() @IsString() @MaxLength(4000) ideeProjet?: string | null;
+  @IsOptional() @IsNumber() @Min(0) montantMax?: number | null;
   @IsOptional() @IsString() @MaxLength(40) dispositifCode?: string | null;
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(160) financeur?: string;
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(200) intitule?: string;
@@ -239,4 +245,33 @@ export class ModifierActionDto {
   @IsOptional() @IsInt() @Min(0) @Max(100000000) cout?: number | null;
   @IsOptional() @IsString() @MaxLength(400) partenaires?: string | null;
   @IsOptional() @IsString() @MaxLength(4000) bilan?: string | null;
+}
+
+/** Une ligne du cahier de comptes : un don, une vente, une adhésion, une dépense. */
+export class MouvementDto {
+  @IsEnum(SensMouvement) sens!: SensMouvement;
+  @IsEnum(NatureMouvement) nature!: NatureMouvement;
+  @IsString() @IsNotEmpty({ message: 'Un libellé est nécessaire.' }) @MaxLength(200) libelle!: string;
+  @IsNumber() @Min(0) montant!: number;
+  @IsDateString() date!: string;
+  @IsOptional() @IsString() @MaxLength(160) tiers?: string | null;
+  @IsOptional() @IsEnum(MoyenPaiement) moyen?: MoyenPaiement | null;
+  @IsOptional() @IsBoolean() recuFiscal?: boolean;
+  @IsOptional() @IsString() @MaxLength(40) dossierId?: string | null;
+  @IsOptional() @IsString() @MaxLength(40) actionId?: string | null;
+  @IsOptional() @IsString() @MaxLength(2000) notes?: string | null;
+}
+
+export class ModifierMouvementDto {
+  @IsOptional() @IsEnum(SensMouvement) sens?: SensMouvement;
+  @IsOptional() @IsEnum(NatureMouvement) nature?: NatureMouvement;
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(200) libelle?: string;
+  @IsOptional() @IsNumber() @Min(0) montant?: number;
+  @IsOptional() @IsDateString() date?: string;
+  @IsOptional() @IsString() @MaxLength(160) tiers?: string | null;
+  @IsOptional() @IsEnum(MoyenPaiement) moyen?: MoyenPaiement | null;
+  @IsOptional() @IsBoolean() recuFiscal?: boolean;
+  @IsOptional() @IsString() @MaxLength(40) dossierId?: string | null;
+  @IsOptional() @IsString() @MaxLength(40) actionId?: string | null;
+  @IsOptional() @IsString() @MaxLength(2000) notes?: string | null;
 }
