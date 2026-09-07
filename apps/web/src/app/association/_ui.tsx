@@ -45,7 +45,7 @@ export function Coque({ children, compte }: { children: ReactNode; compte: Compt
       >
         Aller au contenu
       </a>
-      <div className="lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
+      <div className="lg:grid lg:grid-cols-[282px_minmax(0,1fr)]">
         <BarreLaterale compte={compte} />
         <div className="min-w-0">
           <BarreHaut compte={compte} />

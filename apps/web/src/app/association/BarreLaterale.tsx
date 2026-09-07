@@ -97,6 +97,7 @@ const PORTEES: Record<string, string> = {
   '/espace/documents': '/espace/association',
   '/espace/classeur': '/espace/association',
   '/mon-profil': '/espace/association',
+  '/ajouter-une-association': '/espace/association',
   '/verifier': '/espace/association',
   '/agrements': '/espace/association',
   '/outils': '/avantages',
@@ -141,7 +142,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
           {/* Seule l'icône porte le rouge rosé ; le libellé reste comme les autres. */}
           <span className={`shrink-0 ${e.accent ? 'text-[#F3B0C2]' : estActif ? 'text-white' : 'text-[#A9A6D9]'}`}>{e.icone}</span>
           {/* Une entrée, une ligne : on rétrécit le libellé plutôt que de le couper. */}
-          <span className={`flex-1 whitespace-nowrap ${e.accent ? 'text-[13.5px] tracking-tight' : ''}`}>{e.libelle}</span>
+          <span className={`flex-1 whitespace-nowrap ${e.accent ? 'tracking-tight' : ''}`}>{e.libelle}</span>
           {e.pastille && !estActif ? (
             <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#1D1B5C]">{e.pastille}</span>
           ) : null}
@@ -179,22 +180,14 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
       </nav>
 
       <div className="mt-auto space-y-2 pt-6">
-        {/* Nous écrire est à portée de main, juste avant de partir. */}
+        {/* Nous écrire est à portée de main. Se déconnecter vit en haut à droite. */}
         <Link
           href="/nous-contacter"
           className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-white/25 px-4 py-2.5 text-sm font-bold text-white no-underline transition hover:border-white/60 hover:bg-white/10"
         >
           {ICONES.courrier} Nous contacter
         </Link>
-        {compte ? (
-          <button
-            type="button"
-            onClick={deconnecter}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold text-[#D9D7F2] hover:bg-white/10 hover:text-white"
-          >
-            <span className="text-[#A9A6D9]">{ICONES.sortir}</span> Se déconnecter
-          </button>
-        ) : (
+        {compte ? null : (
           <>
             <Link href="/inscription" className="flex w-full items-center justify-center rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-bold text-white no-underline hover:bg-[#4338CA]">
               Créer mon espace, gratuit
@@ -204,6 +197,12 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
             </Link>
           </>
         )}
+        {/* La signature, tout en bas : d'où vient l'outil. */}
+        <Link href="/" className="flex items-center justify-center gap-2 pt-3 no-underline">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/association/marque.svg" alt="" width={26} height={26} className="h-[26px] w-[26px] rounded-lg" />
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A9A6D9]">créé par Toulali</span>
+        </Link>
       </div>
     </div>
   );
@@ -250,9 +249,6 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         {compte?.espaceOuvert ? <MenuAssociations compte={compte} /> : null}
         <Link href="/chemin" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">
           {ICONES.aide} Centre d&apos;aide
-        </Link>
-        <Link href="/nous-contacter" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] lg:flex">
-          {ICONES.courrier} Nous contacter
         </Link>
       </div>
 
@@ -357,7 +353,7 @@ function MenuAssociations({ compte }: { compte: CompteAffiche }) {
             </Link>
           ))}
           <Link
-            href="/ouvrir-mon-espace"
+            href="/ajouter-une-association"
             onClick={() => setOuvert(false)}
             className="mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 no-underline hover:bg-[#F5F4FC]"
           >

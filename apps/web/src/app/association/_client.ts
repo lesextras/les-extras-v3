@@ -84,11 +84,19 @@ export async function connecter(email: string, password: string): Promise<{ ouve
   return { ouvert: Boolean(compte) };
 }
 
-/** Ouvre l'espace d'une association pour la personne connectée (session posée, sans compte actif). */
-export async function ouvrirEspace(nomAssociation: string, siren?: string): Promise<{ accountId: string }> {
-  return appel<{ accountId: string }>('/association/ouvrir', {
+/**
+ * Ouvre l'espace d'une association pour la personne connectée. Avec `autre`,
+ * on en ajoute une DE PLUS : une même personne peut piloter plusieurs
+ * associations ou fondations.
+ */
+export async function ouvrirEspace(
+  nomAssociation: string,
+  siren?: string,
+  autre = false,
+): Promise<{ accountId: string; existant?: boolean }> {
+  return appel<{ accountId: string; existant?: boolean }>('/association/ouvrir', {
     method: 'POST',
-    body: { nomAssociation: nomAssociation.trim(), ...(siren ? { siren } : {}) },
+    body: { nomAssociation: nomAssociation.trim(), ...(siren ? { siren } : {}), ...(autre ? { autre: true } : {}) },
   });
 }
 
