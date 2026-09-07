@@ -49,8 +49,11 @@ import { DocumentsModule } from './documents/documents.module';
 import { VivierModule } from './vivier/vivier.module';
 import { SignatureModule } from './signature/signature.module';
 
-// --- Piloter mon association (association.toulali.fr) ---
+// --- Piloter mon association (pilote.toulali.fr) ---
 import { AssociationModule } from './association/association.module';
+
+// --- Piloter mon académie (pilote.toulali.fr/academie) ---
+import { AcademieModule } from './academie/academie.module';
 
 @Module({
   imports: [
@@ -111,6 +114,9 @@ import { AssociationModule } from './association/association.module';
 
     // Piloter mon association : routes publiques, référentiels, données RNA/SIRENE.
     AssociationModule,
+
+    // Piloter mon académie : fiche de l'organisme, chemin, veille, réclamations.
+    AcademieModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
