@@ -2806,6 +2806,7 @@ model Organisation {
   contacts  ContactAssociation[]
   documents DocumentAssociation[]
   actions   ActionAssociation[]
+  mouvements MouvementAssociation[]
 
   @@index([siren])
   @@index([rna])
@@ -2851,6 +2852,12 @@ model DossierFinancement {
   intitule        String
   /// Une subvention qu'on demande, ou un appel à projet auquel on répond.
   nature          NatureDossier @default(SUBVENTION)
+  /// Ce que le financeur demande, recopié de l'appel : à qui il s'adresse, pour quoi.
+  description     String?
+  /// L'idée de projet qu'on va lui proposer.
+  ideeProjet      String?
+  /// Le plafond annoncé par le financeur.
+  montantMax      Decimal?     @db.Decimal(12, 2)
   etat            EtatDossier  @default(REPERE)
   montantDemande  Decimal?     @db.Decimal(12, 2)
   montantAccorde  Decimal?     @db.Decimal(12, 2)
@@ -2963,4 +2970,68 @@ model ActionAssociation {
   updatedAt      DateTime     @updatedAt
 
   @@index([organisationId])
+}
+
+/// L'argent qui entre, l'argent qui sort.
+enum SensMouvement {
+  RECETTE
+  DEPENSE
+}
+
+/// D'où vient l'argent, ou à quoi il part.
+enum NatureMouvement {
+  DON
+  ADHESION
+  VENTE
+  BILLETTERIE
+  SUBVENTION
+  MECENAT
+  PRESTATION
+  AUTRE_RECETTE
+  ACHAT
+  MATERIEL
+  LOCAL
+  ASSURANCE
+  DEPLACEMENT
+  COMMUNICATION
+  SALAIRE
+  BANQUE
+  AUTRE_DEPENSE
+}
+
+/// Comment l'argent a circulé.
+enum MoyenPaiement {
+  ESPECES
+  CHEQUE
+  VIREMENT
+  CARTE
+  EN_LIGNE
+  AUTRE
+}
+
+/// Le cahier de comptes : une ligne par mouvement d'argent.
+model MouvementAssociation {
+  id             String          @id @default(cuid())
+  organisationId String
+  organisation   Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  sens           SensMouvement
+  nature         NatureMouvement
+  libelle        String
+  montant        Decimal         @db.Decimal(12, 2)
+  date           DateTime
+  /// Qui a donné, qui a payé, ou à qui on a payé.
+  tiers          String?
+  moyen          MoyenPaiement?
+  /// Le don a-t-il donné lieu à un reçu fiscal ?
+  recuFiscal     Boolean         @default(false)
+  /// Rattaché à une subvention ou à un appel à projet.
+  dossierId      String?
+  /// Rattaché à une action de l'association.
+  actionId       String?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([organisationId, date])
+  @@index([organisationId, sens])
 }
