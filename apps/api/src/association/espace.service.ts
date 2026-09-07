@@ -136,26 +136,33 @@ export class EspaceService {
       }
     }
 
-    const nomAssociation = (publique?.nom ?? dto.nomAssociation).trim();
+    const nomAssociation = (publique?.nom ?? dto.nomAssociation ?? '').trim();
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
-    const slug = await this.slugUnique(nomAssociation);
 
+    const donneesUtilisateur = {
+      email,
+      password: passwordHash,
+      firstName: dto.prenom.trim(),
+      lastName: dto.nom.trim(),
+      // Pas de parcours de vérification Les Extras ici : l'espace
+      // association n'en dépend pas, et ses courriers viendront plus tard.
+      status: UserStatus.VERIFIED,
+      emailVerified: true,
+      onboardingStep: 3,
+      hebdoOptIn: false,
+      profile: { create: {} },
+    };
+
+    // Pas encore d'association : on crée seulement le compte. La personne
+    // suit le chemin, et ouvrira son espace le jour où l'association existe.
+    if (!nomAssociation) {
+      const user = await this.prisma.user.create({ data: donneesUtilisateur, select: { id: true } });
+      return { ok: true, accountId: null as string | null, avecAssociation: false, userId: user.id };
+    }
+
+    const slug = await this.slugUnique(nomAssociation);
     const resultat = await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          email,
-          password: passwordHash,
-          firstName: dto.prenom.trim(),
-          lastName: dto.nom.trim(),
-          // Pas de parcours de vérification Les Extras ici : l'espace
-          // association n'en dépend pas, et ses courriers viendront plus tard.
-          status: UserStatus.VERIFIED,
-          emailVerified: true,
-          onboardingStep: 3,
-          hebdoOptIn: false,
-          profile: { create: {} },
-        },
-      });
+      const user = await tx.user.create({ data: donneesUtilisateur });
       return this.creerEspace(tx, {
         userId: user.id,
         email,
@@ -168,7 +175,7 @@ export class EspaceService {
     });
 
     await this.synchroniserPiecesDeduites(resultat.organisation.id);
-    return { ok: true, accountId: resultat.account.id };
+    return { ok: true, accountId: resultat.account.id as string | null, avecAssociation: true, userId: resultat.account.id };
   }
 
   /**
