@@ -31,15 +31,23 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
     setErreur(null);
     setEnCours(true);
     try {
-      const fichier = fichierRef.current?.files?.[0];
-      if (fichier) {
+      const fichiers = Array.from(fichierRef.current?.files ?? []);
+      if (fichiers.length) {
+        // Le premier fichier est la pièce ; les suivants sont rangés à côté, dans « Mes documents ».
         const form = new FormData();
-        form.append('file', fichier);
+        form.append('file', fichiers[0]);
         if (dateEmission) form.append('dateEmission', dateEmission);
         if (dateExpiration) form.append('dateExpiration', dateExpiration);
         if (exercice) form.append('exercice', exercice);
         if (note) form.append('note', note);
         await appel(`/association/classeur/${type.code}`, { method: 'POST', form });
+        for (const f of fichiers.slice(1)) {
+          const autre = new FormData();
+          autre.append('file', f);
+          autre.append('titre', f.name);
+          autre.append('categorie', 'Autre');
+          await appel('/association/documents', { method: 'POST', form: autre });
+        }
       } else {
         await appel(`/association/classeur/${type.code}`, {
           method: 'PATCH',
@@ -111,7 +119,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
               onClick={() => setOuvert((v) => !v)}
               className="rounded-xl border border-[#4F46E5] px-3 py-1.5 text-sm font-bold text-[#4F46E5] hover:bg-[#ECEBFC]"
             >
-              {piece?.fileId ? 'Remplacer ou corriger' : 'Déposer'}
+              {piece?.fileId ? 'Remplacer ou corriger' : 'Déposer des fichiers'}
             </button>
           ) : (
             <button
@@ -128,8 +136,11 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
       {ouvert ? (
         <form onSubmit={enregistrer} className="mt-4 grid gap-3 border-t border-[#E6E4F3] pt-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-            <span className="font-bold">Fichier (PDF, JPEG, PNG ou WEBP)</span>
-            <input ref={fichierRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="text-sm" />
+            <span className="font-bold">Fichiers (PDF, JPEG, PNG ou WEBP)</span>
+            <input ref={fichierRef} type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" className="text-sm" />
+            <span className="text-xs text-[#6B6A8A]">
+              Tu peux en déposer plusieurs : le premier prend la place du papier, les autres sont rangés dans « Mes documents ».
+            </span>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold">Date du document</span>
