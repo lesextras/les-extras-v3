@@ -85,3 +85,80 @@ export async function etapesFaitesSiConnecte(): Promise<{ faites: Set<string>; v
     return null;
   }
 }
+
+/** Ce qu'une page du chemin sait de l'association connectée : ses étapes, son classeur, de quoi pré-remplir. */
+export interface ContexteChemin {
+  faites: Set<string>;
+  verifiees: Set<string>;
+  nomAssociation: string;
+  /** Par code de pièce : où elle en est, et le fichier s'il y en a un. */
+  classeur: Record<string, { situation: string; fileId: string | null; libelle: string }>;
+  prerempli: Record<string, unknown>;
+}
+
+interface EspaceBrut {
+  organisation?: { nom?: string; adresse?: string | null; codePostal?: string | null; commune?: string | null };
+  chemin?: { etapes?: { slug: string; faite: boolean; verifiee?: boolean }[] };
+  classeur?: { type: { code: string; libelle: string }; situation: string; piece?: { fileId?: string | null } | null }[];
+  repertoire?: { resume?: { membresAJour?: number; benevoles?: number; bureau?: { nom: string; roles: string[] }[] } };
+  projet?: { pourQui?: string | null; quoi?: string | null; comment?: string | null; apres?: string | null; demande?: string | null };
+}
+
+/**
+ * Comme `etapesFaitesSiConnecte`, avec en plus le classeur et les valeurs
+ * pré-remplies pour fabriquer un document. Ne redirige jamais.
+ */
+export async function contexteChemin(): Promise<ContexteChemin | null> {
+  const session = await getSession();
+  if (!session) return null;
+  const comptes = session.accounts ?? [];
+  const compte =
+    comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
+    ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null);
+  if (!compte) return null;
+  try {
+    const data = (await apiRequest('/association/espace', {
+      method: 'GET',
+      token: session.token,
+      accountId: compte.id,
+      cache: 'no-store',
+    })) as EspaceBrut;
+    const etapes = data.chemin?.etapes ?? [];
+    const classeur: ContexteChemin['classeur'] = {};
+    for (const l of data.classeur ?? []) classeur[l.type.code] = { situation: l.situation, fileId: l.piece?.fileId ?? null, libelle: l.type.libelle };
+    const o = data.organisation ?? {};
+    const bureau = data.repertoire?.resume?.bureau ?? [];
+    const nomRole = (role: string) => bureau.find((b) => b.roles.includes(role))?.nom ?? '';
+    const p = data.projet ?? {};
+    const prerempli: Record<string, unknown> = {
+      'organisation.nom': o.nom ?? '',
+      'organisation.adresse': [o.adresse, [o.codePostal, o.commune].filter(Boolean).join(' ')].filter(Boolean).join(', '),
+      'organisation.commune': o.commune ?? '',
+      'bureau.president': nomRole('PRESIDENT'),
+      'bureau.tresorier': nomRole('TRESORIER'),
+      'bureau.secretaire': nomRole('SECRETAIRE'),
+      'bureau.liste': bureau.map((b) => {
+        const [prenom, ...reste] = b.nom.split(' ');
+        const fonction = b.roles.includes('PRESIDENT') ? 'Président·e' : b.roles.includes('TRESORIER') ? 'Trésorier·ère' : b.roles.includes('SECRETAIRE') ? 'Secrétaire' : 'Membre du bureau';
+        return { prenom, nom: reste.join(' '), fonction };
+      }),
+      'repertoire.membresAJour': data.repertoire?.resume?.membresAJour ?? '',
+      'repertoire.benevoles': data.repertoire?.resume?.benevoles ?? '',
+      'projet.pourQui': p.pourQui ?? '',
+      'projet.quoi': p.quoi ?? '',
+      'projet.comment': p.comment ?? '',
+      'projet.apres': p.apres ?? '',
+      'projet.demande': p.demande ?? '',
+      'projet.texteCourt': p.quoi ?? '',
+    };
+    return {
+      faites: new Set(etapes.filter((e) => e.faite).map((e) => e.slug)),
+      verifiees: new Set(etapes.filter((e) => e.verifiee).map((e) => e.slug)),
+      nomAssociation: o.nom ?? compte.name,
+      classeur,
+      prerempli,
+    };
+  } catch {
+    return null;
+  }
+}

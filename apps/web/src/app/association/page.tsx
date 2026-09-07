@@ -17,29 +17,26 @@ export default async function AccueilAssociation() {
     <>
       {/* ------------------------------------------------------------ accueil */}
       <section className={`${CARTE} overflow-hidden`}>
-        <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-center">
+        <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center">
           <div>
             <p className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">Gratuit, pour toutes les associations</p>
             <h1 className="text-3xl font-extrabold leading-[1.08] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-5xl">
               Ton association, <Accent>étape par étape</Accent>, jusqu&apos;à la subvention.
             </h1>
-            <p className="mt-4 max-w-[56ch] text-lg leading-relaxed">
-              Douze étapes, expliquées simplement. À chaque étape : pourquoi, comment faire, les formulaires officiels et des
-              documents exemples à recopier. Rien à deviner.
-            </p>
+            <p className="mt-4 max-w-[48ch] text-lg leading-relaxed">Tes papiers, tes dossiers, tes membres. Tu déposes, tu fabriques, tu coches.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/chemin" className={BTN_PRIMAIRE}>
                 Commencer le chemin →
               </Link>
-              <Link href="/subvention" className={BTN_SECONDAIRE}>
+              <Link href="/chemin#partie-3" className={BTN_SECONDAIRE}>
                 Demander une subvention
               </Link>
             </div>
           </div>
-          <div className="rounded-2xl bg-[#F5F4FC] p-5">
-            <p className="text-sm font-bold text-[#1D1B5C]">Où en est ton association ?</p>
-            <p className="mt-1 text-sm text-[#6B6A8A]">Tape son nom : on lit les répertoires publics et on te dit ce qui est déjà fait.</p>
-            <div className="mt-3">
+          <div className="rounded-2xl border-t-4 border-[#4F46E5] bg-[#F5F4FC] p-6">
+            <h2 className="text-2xl font-extrabold tracking-tight text-[#1D1B5C]">Vérifier mon association</h2>
+            <p className="mt-1 text-sm text-[#6B6A8A]">Son nom, son SIREN ou son numéro RNA : on te dit ce qui est déjà fait.</p>
+            <div className="mt-4">
               <FormulaireRecherche />
             </div>
           </div>
@@ -82,40 +79,21 @@ export default async function AccueilAssociation() {
 
       {/* ---------------------------------------------------------- subvention */}
       <section className="mt-10 rounded-2xl border-2 border-[#4F46E5] bg-[#ECEBFC] p-6 sm:p-8">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:items-center">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#4338CA]">Demander une subvention</p>
             <h2 className="mt-2 text-2xl font-extrabold leading-tight text-[#1D1B5C] [text-wrap:balance] sm:text-3xl">
-              Un projet en une page, un budget, le formulaire <Accent>CERFA 12156</Accent>, et tu déposes.
+              Le projet, le budget, le <Accent>CERFA 12156</Accent>. Cinq étapes, dans le chemin.
             </h2>
-            <p className="mt-3 max-w-[58ch] leading-relaxed">
-              Mairie, FDVA, département, appels à projets : on t&apos;explique à qui demander, quoi remplir, quels papiers joindre,
-              et comment rendre compte ensuite. Tout est gratuit.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="/subvention" className={BTN_PRIMAIRE}>
-                Voir comment faire
-              </Link>
-              <Link href="/espace/dossiers" className={BTN_SECONDAIRE}>
-                Suivre mes dossiers
-              </Link>
-            </div>
           </div>
-          <ul className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            {[
-              ['1', 'Raconter le projet', 'Quatre questions, une page.'],
-              ['2', 'Chiffrer le budget', 'Dépenses = recettes.'],
-              ['3', 'Déposer et rendre compte', 'CERFA 12156, puis 15059.'],
-            ].map(([n, t, d]) => (
-              <li key={n} className="flex items-start gap-3 rounded-xl bg-white p-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#4F46E5] text-sm font-extrabold text-white">{n}</span>
-                <span>
-                  <span className="block font-extrabold text-[#1D1B5C]">{t}</span>
-                  <span className="block text-sm text-[#6B6A8A]">{d}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          <div className="flex shrink-0 flex-wrap gap-3">
+            <Link href="/chemin#partie-3" className={BTN_PRIMAIRE}>
+              Voir les cinq étapes
+            </Link>
+            <Link href="/espace/dossiers" className={BTN_SECONDAIRE}>
+              Suivre mes dossiers
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -148,10 +126,7 @@ export default async function AccueilAssociation() {
         <Carte>
           <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">Mon espace</p>
           <h2 className="mt-2 text-xl font-extrabold text-[#1D1B5C]">Un classeur qui prévient avant qu&apos;une pièce expire</h2>
-          <p className="mt-2 leading-relaxed">
-            Tes papiers rangés, tes dossiers de subvention suivis du repérage au compte rendu, ton équipe et tes contacts,
-            et chaque lundi ce qui presse. Pré-rempli depuis les répertoires publics.
-          </p>
+          <p className="mt-2 leading-relaxed">Tes papiers, tes dossiers, ton équipe. Et chaque lundi, ce qui presse.</p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link href="/inscription" className={BTN_PRIMAIRE}>
               Créer l&apos;espace de mon association
@@ -163,11 +138,7 @@ export default async function AccueilAssociation() {
         </Carte>
         <Carte>
           <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">Pourquoi c&apos;est gratuit</p>
-          <p className="mt-2 leading-relaxed">
-            Une association qui démarre n&apos;a pas d&apos;argent pour un logiciel, et c&apos;est justement à ce moment-là qu&apos;elle
-            a besoin qu&apos;on lui montre le chemin. Ces pages sont là pour ça. Quand elle grandit, l&apos;espace de pilotage prend
-            le relais : il est ouvert, et gratuit lui aussi pendant qu&apos;il se construit.
-          </p>
+          <p className="mt-2 leading-relaxed">Une association qui démarre n&apos;a pas d&apos;argent pour un logiciel. Ici, tout est gratuit pendant que l&apos;outil se construit.</p>
           <p className="mt-3 text-sm text-[#6B6A8A]">
             Un outil de Toulali, centre de formation. Pour aller plus loin :{' '}
             <Link href="/se-former" className="font-bold text-[#4F46E5] underline underline-offset-4">

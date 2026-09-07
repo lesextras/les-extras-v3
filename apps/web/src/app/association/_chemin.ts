@@ -1,4 +1,5 @@
 import { fetchPublic } from '../_shared/server';
+import type { ModeleFabrique } from './_fabrique';
 
 /** Les types du chemin, tels que l'API les renvoie (voir apps/api/src/association/chemin.ts). */
 
@@ -66,6 +67,12 @@ export async function chargerChemin(): Promise<CheminComplet | null> {
 export async function chargerEtape(slug: string): Promise<EtapeDetaillee | null> {
   const { data } = await fetchPublic<EtapeDetaillee>(`/public/association/chemin/${encodeURIComponent(slug)}`, { revalidate: 300 });
   return data && (data as EtapeDetaillee).etape ? (data as EtapeDetaillee) : null;
+}
+
+/** Les modèles de documents qu'on peut fabriquer sur place. */
+export async function chargerModeles(): Promise<ModeleFabrique[]> {
+  const { data } = await fetchPublic<{ modeles: ModeleFabrique[] }>('/public/association/fabrique', { revalidate: 300 });
+  return data && Array.isArray((data as { modeles?: unknown }).modeles) ? (data as { modeles: ModeleFabrique[] }).modeles : [];
 }
 
 export const LIBELLES_GENRE: Record<GenreDocument, string> = {

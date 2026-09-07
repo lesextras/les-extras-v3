@@ -52,7 +52,6 @@ export const ICONES = {
 const DECOUVRIR: Entree[] = [
   { href: '/', libelle: 'Accueil', icone: ICONES.accueil },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
-  { href: '/subvention', libelle: 'Demander une subvention', icone: ICONES.subvention },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/verifier', libelle: 'Vérifier mon association', icone: ICONES.verifier },

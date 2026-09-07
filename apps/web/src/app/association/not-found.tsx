@@ -12,7 +12,7 @@ export default function Introuvable() {
           <Link href="/chemin" className={BTN_PRIMAIRE}>
             Le chemin, étape par étape
           </Link>
-          <Link href="/subvention" className={BTN_SECONDAIRE}>
+          <Link href="/chemin#partie-3" className={BTN_SECONDAIRE}>
             Demander une subvention
           </Link>
           <Link href="/verifier" className={BTN_SECONDAIRE}>
