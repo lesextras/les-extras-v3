@@ -5,8 +5,8 @@ import type { Contact, ResumeContacts } from '../_types';
 import { Repertoire } from './Repertoire';
 
 /**
- * MON ÉQUIPE ET MES CONTACTS : le répertoire de l'association. Une personne
- * peut cumuler les rôles ; les dirigeants ont des mandats datés.
+ * MON ÉQUIPE ET SES DROITS : qui décide, qui aide, qui est membre — et ce que
+ * chaque rôle permet de faire. Les partenaires ont leur propre page.
  */
 export default async function RepertoirePage() {
   const s = await sessionAssociation('/espace/repertoire');
@@ -17,27 +17,31 @@ export default async function RepertoirePage() {
   return (
     <>
       <Titre
-        surtitre="Mon équipe et mes contacts"
-        sousTitre="Qui décide, qui aide, qui est membre, et qui vous connaît à la mairie ou chez les financeurs. Une personne peut avoir plusieurs rôles."
+        surtitre="Qui fait quoi"
+        sousTitre="Chaque rôle donne des droits : le président signe, le trésorier engage les dépenses, le membre à jour de cotisation vote. Une personne peut cumuler les rôles."
       >
-        Le répertoire
+        Mon équipe et ses droits
       </Titre>
 
       <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tuile libelle="Membres" valeur={resume.membres} detail={`${resume.membresAJour} à jour de cotisation`} ton={resume.membres && resume.membresAJour < resume.membres ? 'attention' : 'neutre'} />
         <Tuile libelle="Bureau" valeur={resume.bureau.length} detail={resume.bureau.length ? resume.bureau.map((b) => b.nom.split(' ')[0]).join(', ') : 'Président, trésorier, secrétaire'} ton={resume.bureau.length >= 2 ? 'ok' : 'attention'} />
         <Tuile libelle="Bénévoles et salariés" valeur={resume.benevoles + resume.salaries} detail={`${resume.benevoles} bénévole${resume.benevoles > 1 ? 's' : ''} · ${resume.salaries} salarié${resume.salaries > 1 ? 's' : ''}`} />
-        <Tuile libelle="Partenaires et financeurs" valeur={resume.partenaires} detail="Mairie, département, élus, écoles…" />
+        <Tuile libelle="Partenaires et financeurs" valeur={resume.partenaires} detail="Sur la page « Mes partenaires »" />
       </section>
 
-      <Repertoire contacts={contacts} />
+      <Repertoire contacts={contacts} mode="INTERNE" />
 
       <p className="mt-6 text-sm text-[#6B6A8A]">
-        Pour encaisser les cotisations en ligne, un service de paiement pour associations fait le travail :{' '}
+        Les personnes autour de l&apos;association sont{' '}
+        <Link href="/espace/partenaires" className="font-bold text-[#4F46E5] underline underline-offset-4">
+          sur la page des partenaires
+        </Link>
+        . Pour encaisser les cotisations en ligne,{' '}
         <Link href="/outils" className="font-bold text-[#4F46E5] underline underline-offset-4">
           voir les outils utiles
         </Link>
-        . Les membres se notent ici, avec leur date d&apos;entrée et leur cotisation.
+        .
       </p>
     </>
   );
