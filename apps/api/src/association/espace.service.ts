@@ -1050,11 +1050,33 @@ export class EspaceService {
     return `Le moteur n'a pas répondu. Détail technique : ${detail.slice(0, 200) || 'inconnu'}`;
   }
 
-  async chercherFinanceurs(accountId: string, precision?: string): Promise<{ pistes: PisteFinanceur[]; genereLe: string }> {
+  async chercherFinanceurs(accountId: string, precision?: string, projetId?: string): Promise<{ pistes: PisteFinanceur[]; genereLe: string }> {
     const { texte } = await this.portrait(accountId);
+    // Quand la recherche part d'un projet précis, on décrit ce projet au moteur :
+    // c'est la liste des financeurs DE CE PROJET, pas une liste générale.
+    let leProjet = '';
+    if (projetId) {
+      const organisation = await this.organisationDuCompte(accountId);
+      const a = await this.prisma.actionAssociation.findFirst({ where: { id: projetId, organisationId: organisation.id } });
+      if (a) {
+        leProjet = [
+          `\n\nLE PROJET À FINANCER`,
+          `Intitulé : ${a.intitule}`,
+          a.resume ? `En deux mots : ${a.resume}` : '',
+          a.lieu ? `Où : ${a.lieu}` : '',
+          a.dateDebut ? `Quand : à partir du ${a.dateDebut.toISOString().slice(0, 10)}` : '',
+          a.beneficiaires !== null ? `Personnes touchées : ${a.beneficiaires}` : '',
+          a.benevoles !== null ? `Bénévoles mobilisés : ${a.benevoles}` : '',
+          a.cout !== null ? `Coût estimé : ${Number(a.cout)} euros` : '',
+          a.partenaires ? `Avec : ${a.partenaires}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n');
+      }
+    }
     const brut = await this.appelerMoteur({
       system: CONSIGNE_FINANCEURS,
-      user: `${texte}${precision ? `\n\nCe qu'elle cherche à financer en priorité : ${precision}` : ''}`,
+      user: `${texte}${leProjet}${precision ? `\n\nCe qu'elle cherche à financer en priorité : ${precision}` : ''}`,
       maxTokens: 2500,
       temperature: 0.3,
     });

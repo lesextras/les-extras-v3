@@ -184,7 +184,7 @@ export class AssociationEspaceController {
   @Post('ia/financeurs')
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   financeurs(@CurrentAccount() account: RequestAccount, @Body() dto: IaFinanceursDto) {
-    return this.espace.chercherFinanceurs(account.id, dto.precision);
+    return this.espace.chercherFinanceurs(account.id, dto.precision, dto.projetId);
   }
 
   /** Les textes d'une demande, rédigés à partir de ce qui est déjà noté. */

@@ -28,6 +28,14 @@ export interface PisteFinanceur {
   lien?: string;
   /** Ce qu'il faut vérifier avant de se lancer. */
   aVerifier?: string;
+  /**
+   * À quel point c'est accessible pour une petite association qui débute :
+   * FACILE (dossier court, réponse rapide), MOYEN, DIFFICILE (gros dossier,
+   * concurrence, cofinancements exigés). Les pistes faciles passent devant.
+   */
+  facilite: 'FACILE' | 'MOYEN' | 'DIFFICILE';
+  /** Une ligne qui explique cette note. */
+  pourquoiCetteNote?: string;
 }
 
 export interface DossierRedige {
@@ -54,9 +62,14 @@ Règles absolues :
 export const CONSIGNE_FINANCEURS = `${REGLES_COMMUNES}
 Ta tâche : proposer des pistes de financement adaptées au projet décrit (financeurs publics, fondations, et mécénat d'entreprise).
 Privilégie ce qui existe durablement (dispositifs installés, fondations connues, entreprises implantées localement) plutôt que des appels ponctuels dont tu ignores le calendrier.
+Note aussi chaque piste selon sa DIFFICULTÉ pour une petite association qui débute :
+- FACILE : dossier court, pas de cofinancement exigé, interlocuteur joignable, réponse en quelques semaines (souvent la commune, une petite fondation locale, un commerce du quartier).
+- MOYEN : dossier structuré, budget prévisionnel demandé, calendrier annuel à respecter.
+- DIFFICILE : gros dossier, forte concurrence, cofinancements ou agrément exigés, association déjà installée attendue.
+Explique la note en une ligne dans "pourquoiCetteNote".
 Format attendu :
-{"pistes":[{"nom":"","type":"PUBLIC|FONDATION|ENTREPRISE|AUTRE","echelle":"","soutient":"","pourquoiVous":"","commentFaire":"","lien":"","aVerifier":""}]}
-Entre 5 et 8 pistes, de la plus évidente à la plus ambitieuse.`;
+{"pistes":[{"nom":"","type":"PUBLIC|FONDATION|ENTREPRISE|AUTRE","echelle":"","soutient":"","pourquoiVous":"","commentFaire":"","lien":"","aVerifier":"","facilite":"FACILE|MOYEN|DIFFICILE","pourquoiCetteNote":""}]}
+Entre 5 et 8 pistes. Commence par les plus faciles à décrocher.`;
 
 export const CONSIGNE_DOSSIER = `${REGLES_COMMUNES}
 Ta tâche : rédiger les textes d'une demande de subvention à partir des informations fournies. N'ajoute aucun fait qui n'y figure pas : si une information manque, écris-la dans "aCompleter" au lieu de l'inventer.
@@ -77,12 +90,16 @@ export function lireJson<T>(brut: string): T | null {
   }
 }
 
+/** Le classement des pistes : le plus accessible d'abord. */
+const ORDRE_FACILITE: Record<PisteFinanceur['facilite'], number> = { FACILE: 0, MOYEN: 1, DIFFICILE: 2 };
+
 const texteCourt = (v: unknown, max = 400) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 /** On ne garde d'une piste que des champs propres : rien d'autre n'atteint l'écran. */
 export function nettoyerPistes(brut: unknown): PisteFinanceur[] {
   const liste = Array.isArray((brut as { pistes?: unknown })?.pistes) ? ((brut as { pistes: unknown[] }).pistes as Record<string, unknown>[]) : [];
   const types = ['PUBLIC', 'FONDATION', 'ENTREPRISE', 'AUTRE'];
+  const facilites = ['FACILE', 'MOYEN', 'DIFFICILE'];
   return liste
     .filter((p) => p && typeof p === 'object' && texteCourt(p.nom, 160))
     .slice(0, 8)
@@ -98,8 +115,12 @@ export function nettoyerPistes(brut: unknown): PisteFinanceur[] {
         // Un lien n'est gardé que s'il ressemble vraiment à une adresse https.
         lien: /^https:\/\/[\w.-]+\.[a-z]{2,}(\/\S*)?$/i.test(lien) ? lien : undefined,
         aVerifier: texteCourt(p.aVerifier, 300) || undefined,
+        facilite: (facilites.includes(String(p.facilite)) ? String(p.facilite) : 'MOYEN') as PisteFinanceur['facilite'],
+        pourquoiCetteNote: texteCourt(p.pourquoiCetteNote, 300) || undefined,
       };
-    });
+    })
+    // Du plus facile à décrocher au plus difficile : on commence par le possible.
+    .sort((a, b) => ORDRE_FACILITE[a.facilite] - ORDRE_FACILITE[b.facilite]);
 }
 
 export function nettoyerDossier(brut: unknown): DossierRedige | null {
