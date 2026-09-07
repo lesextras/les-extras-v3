@@ -79,6 +79,14 @@ export class OuvrirEspaceDto {
   @IsString()
   @Matches(/^\d{9}$/, { message: 'Un numéro SIREN compte exactement neuf chiffres.' })
   siren?: string;
+
+  /**
+   * Vrai quand la personne ajoute une association DE PLUS : sans ce drapeau on
+   * lui rend celle qu'elle a déjà, pour ne pas en créer une par mégarde.
+   */
+  @IsOptional()
+  @IsBoolean()
+  autre?: boolean;
 }
 
 export class RattacherOrganisationDto {
