@@ -27,7 +27,7 @@ export default async function DossiersPage() {
   return (
     <>
       <Titre
-        surtitre="Mes dossiers de subvention"
+        surtitre={data.organisation.nom}
         sousTitre="Un dossier par demande : la mairie, le FDVA, le département, un appel à projets. La date limite remonte sur l'écran du lundi 60 jours avant."
         actions={
           <Link href="/subvention" className="inline-flex items-center rounded-xl border-2 border-[#D9D6EE] bg-white px-4 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:border-[#4F46E5]">
@@ -35,7 +35,7 @@ export default async function DossiersPage() {
           </Link>
         }
       >
-        {data.organisation.nom}
+        Mes dossiers de subvention
       </Titre>
 
       <section className="mb-6 grid gap-3 sm:grid-cols-3">
