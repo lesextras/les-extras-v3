@@ -59,6 +59,19 @@ export class InscriptionAssociationDto {
   source?: string;
 }
 
+/** Ouvrir l'espace d'une association pour une personne qui a déjà un compte. */
+export class OuvrirEspaceDto {
+  @IsString()
+  @IsNotEmpty({ message: "Le nom de l'association est nécessaire." })
+  @MaxLength(200)
+  nomAssociation!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{9}$/, { message: 'Un numéro SIREN compte exactement neuf chiffres.' })
+  siren?: string;
+}
+
 export class RattacherOrganisationDto {
   @IsString()
   @Matches(/^\d{9}$/, { message: 'Un numéro SIREN compte exactement neuf chiffres.' })
