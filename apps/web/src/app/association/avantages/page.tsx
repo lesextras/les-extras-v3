@@ -39,7 +39,7 @@ export default function AvantagesPage() {
           <p className="text-sm font-bold text-[#6B6A8A]">En tout</p>
           <p className="mt-1 text-4xl font-extrabold tabular-nums text-[#1D1B5C]">{total} avantages</p>
           <p className="mt-1 text-sm text-[#6B6A8A]">
-            dont {gratuits} gratuits ou publics. Aucun lien n&apos;est sponsorisé.
+            {gratuits === total ? 'Tous gratuits ou publics.' : `dont ${gratuits} gratuits ou publics.`} Aucun lien n&apos;est sponsorisé.
           </p>
           <nav className="mt-4 flex flex-wrap gap-2" aria-label="Aller à une famille">
             {FAMILLES_AVANTAGES.map((f) => (
@@ -95,6 +95,15 @@ export default function AvantagesPage() {
           </p>
           <Link href="/presence-en-ligne" className={`${BTN_SECONDAIRE} mt-4 !bg-white`}>
             Être visible en ligne →
+          </Link>
+        </Encart>
+        <Encart ton="info">
+          <p className="text-lg font-extrabold">Les outils du quotidien</p>
+          <p className="mt-1 leading-relaxed">
+            Encaisser les cotisations, envoyer des e-mails, tenir les comptes, faire une affiche : les services que les associations utilisent le plus, avec ce que ça coûte.
+          </p>
+          <Link href="/outils" className={`${BTN_SECONDAIRE} mt-4 !bg-white`}>
+            Les outils utiles →
           </Link>
         </Encart>
         <Encart ton="neutre">
