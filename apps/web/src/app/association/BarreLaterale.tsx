@@ -52,28 +52,37 @@ export const ICONES = {
   chevron: i('M6 9l6 6 6-6'),
 };
 
-const DECOUVRIR: Entree[] = [
+/**
+ * UNE SEULE LISTE. « Accueil » et « Ce lundi » sont la même page (le tableau de
+ * bord quand on est connectée), le classeur porte aussi les autres documents,
+ * « Mon association » porte la fiche publique, et « Ce à quoi j'ai droit »
+ * porte les outils utiles.
+ */
+const MENU: Entree[] = [
   { href: '/', libelle: 'Accueil', icone: ICONES.accueil },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
+  { href: '/espace/actions', libelle: 'Mes actions', icone: ICONES.actions },
+  { href: '/espace/dossiers', libelle: 'Mes subventions et appels à projet', icone: ICONES.dossiers },
+  { href: '/espace/classeur', libelle: 'Mes papiers et documents', icone: ICONES.classeur },
+  { href: '/espace/repertoire', libelle: 'Mon équipe et ses droits', icone: ICONES.droits },
+  { href: '/espace/partenaires', libelle: 'Mes partenaires et leurs rôles', icone: ICONES.partenaires },
+  { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
-  { href: '/verifier', libelle: 'Vérifier mon association', icone: ICONES.verifier },
-  { href: '/outils', libelle: 'Les outils utiles', icone: ICONES.outils },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
 ];
 
-const ESPACE: Entree[] = [
-  { href: '/espace', libelle: 'Ce lundi', icone: ICONES.lundi },
-  { href: '/espace/actions', libelle: 'Mes actions', icone: ICONES.actions },
-  { href: '/espace/dossiers', libelle: 'Mes subventions et appels à projet', icone: ICONES.dossiers },
-  { href: '/espace/classeur', libelle: 'Le classeur', icone: ICONES.classeur },
-  { href: '/espace/repertoire', libelle: 'Mon équipe et ses droits', icone: ICONES.droits },
-  { href: '/espace/partenaires', libelle: 'Mes partenaires et leurs rôles', icone: ICONES.partenaires },
-  { href: '/espace/documents', libelle: 'Mes documents', icone: ICONES.documents },
-  { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
-];
+/** Les pages qui n'ont plus d'entrée à elles : elles éclairent l'entrée qui les porte. */
+const PORTEES: Record<string, string> = {
+  '/espace': '/',
+  '/espace/documents': '/espace/classeur',
+  '/verifier': '/espace/association',
+  '/outils': '/avantages',
+};
 
 function actif(chemin: string, href: string) {
+  const porte = PORTEES[chemin];
+  if (porte) return porte === href;
   if (href === '/' || href === '/espace') return chemin === href;
   return chemin === href || chemin.startsWith(`${href}/`);
 }
@@ -140,14 +149,8 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
         )}
       </div>
 
-      <nav aria-label="Découvrir">
-        <p className="mb-1 px-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8A87C4]">Découvrir</p>
-        <ul className="space-y-0.5">{DECOUVRIR.map(lien)}</ul>
-      </nav>
-
-      <nav aria-label="Mon espace" className="mt-5">
-        <p className="mb-1 px-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#8A87C4]">Mon espace</p>
-        <ul className="space-y-0.5">{ESPACE.map(lien)}</ul>
+      <nav aria-label="Navigation">
+        <ul className="space-y-0.5">{MENU.map(lien)}</ul>
       </nav>
 
       <div className="mt-auto pt-6">
