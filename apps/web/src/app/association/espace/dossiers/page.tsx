@@ -30,7 +30,7 @@ export default async function DossiersPage() {
         surtitre={data.organisation.nom}
         sousTitre="Un dossier par demande : la mairie, le FDVA, le département, un appel à projets. La date limite remonte sur l'écran du lundi 60 jours avant."
         actions={
-          <Link href="/subvention" className="inline-flex items-center rounded-xl border-2 border-[#D9D6EE] bg-white px-4 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:border-[#4F46E5]">
+          <Link href="/chemin#partie-3" className="inline-flex items-center rounded-xl border-2 border-[#D9D6EE] bg-white px-4 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:border-[#4F46E5]">
             Comment demander une subvention
           </Link>
         }
