@@ -6,7 +6,7 @@ import { ADRESSE_ADEPA, FormulaireContact } from './FormulaireContact';
 export const metadata: Metadata = {
   title: 'Nous contacter',
   description:
-    "Écrire à ADéPA, l'association qui fait « Piloter mon association » : une question, un souci, une idée, un partenariat. On répond à tout le monde.",
+    "Écrire à ADéPA, l'association qui fait « Cockpit associatif » : une question, un souci, une idée, un partenariat. On répond à tout le monde.",
   alternates: { canonical: '/nous-contacter' },
 };
 
@@ -39,7 +39,7 @@ export default function NousContacterPage() {
             <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#C42B57]">Qui répond</p>
             <p className="mt-2 font-extrabold text-[#1D1B5C]">ADéPA</p>
             <p className="mt-1 text-sm leading-relaxed text-[#3B3A66]">
-              Association éducative basée à Melun (Seine-et-Marne). C&apos;est elle qui construit « Piloter mon association » avec Toulali, son centre de
+              Association éducative basée à Melun (Seine-et-Marne). C&apos;est elle qui construit « Cockpit associatif » avec Toulali, son centre de
               formation.
             </p>
             <p className="mt-3 text-sm">
