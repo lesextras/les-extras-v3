@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import {
   AccountRole,
@@ -1006,9 +1007,41 @@ export class EspaceService {
   }
 
   /** Des pistes de financeurs et de mécènes, à vérifier avant de se lancer. */
+  /**
+   * Appelle le moteur en gardant la VRAIE raison de l'échec : sans elle, on ne
+   * peut pas dire si c'est la clé, le crédit, le modèle ou le réseau. La clé
+   * elle-même n'apparaît jamais dans le message renvoyé.
+   */
+  private async appelerMoteur(options: Parameters<ClaudeService['completer']>[0]): Promise<string> {
+    try {
+      return await this.moteur.completer(options);
+    } catch (err) {
+      const brute = (err as { cause?: unknown } | null)?.cause;
+      const cause = brute instanceof Error ? brute.message : typeof brute === 'string' ? brute : '';
+      const propre = `${err instanceof Error ? err.message : String(err)} ${cause}`.replace(/sk-[A-Za-z0-9_-]{8,}/g, '***').trim();
+      console.error('[IA association] le moteur a échoué :', propre.slice(0, 400));
+      throw new ServiceUnavailableException(this.raisonMoteur(propre));
+    }
+  }
+
+  /** Traduit l'échec du moteur en une phrase que l'association peut agir dessus. */
+  private raisonMoteur(detail: string): string {
+    if (/401|authentication|invalid x-api-key|unauthor/i.test(detail))
+      return "La clé du moteur est refusée. Recopie ANTHROPIC_API_KEY en entier dans la configuration du serveur, sans espace ni retour à la ligne.";
+    if (/credit|billing|payment|quota|402/i.test(detail))
+      return "Le compte du moteur n'a plus de crédit. Recharge-le, puis réessaie.";
+    if (/404|not_found_error|model/i.test(detail))
+      return "Le modèle demandé n'existe pas. Vérifie ANTHROPIC_MODEL dans la configuration du serveur.";
+    if (/429|rate_limit/i.test(detail))
+      return 'Trop de demandes en même temps. Attends une minute et réessaie.';
+    if (/timeout|ENOTFOUND|ECONNREFUSED|EAI_AGAIN|fetch failed|network|socket/i.test(detail))
+      return "Le serveur n'arrive pas à joindre le moteur (réseau bloqué). Réessaie dans un instant.";
+    return `Le moteur n'a pas répondu. Détail technique : ${detail.slice(0, 200) || 'inconnu'}`;
+  }
+
   async chercherFinanceurs(accountId: string, precision?: string): Promise<{ pistes: PisteFinanceur[]; genereLe: string }> {
     const { texte } = await this.portrait(accountId);
-    const brut = await this.moteur.completer({
+    const brut = await this.appelerMoteur({
       system: CONSIGNE_FINANCEURS,
       user: `${texte}${precision ? `\n\nCe qu'elle cherche à financer en priorité : ${precision}` : ''}`,
       maxTokens: 2500,
@@ -1037,7 +1070,7 @@ export class EspaceService {
     ]
       .filter(Boolean)
       .join('\n');
-    const brut = await this.moteur.completer({
+    const brut = await this.appelerMoteur({
       system: CONSIGNE_DOSSIER,
       user: `${texte}\n\nLA DEMANDE\n${demande}${precision ? `\n\nPrécisions données par l'association : ${precision}` : ''}`,
       maxTokens: 3000,
