@@ -5,7 +5,7 @@ import { LIBELLES_ETAT, dateCourte, formaterEuros, type Dossier, type Espace } f
 import { NouveauDossier } from './NouveauDossier';
 
 /**
- * MES DOSSIERS DE SUBVENTION. Un dossier = un financeur, un intitulé, un état,
+ * MES SUBVENTIONS ET APPELS À PROJET. Un dossier = un financeur, un intitulé, un état,
  * des dates. Du repérage au compte rendu, comme une colonne par état.
  */
 const COLONNES: { etats: Dossier['etat'][]; titre: string; aide: string }[] = [
@@ -35,7 +35,7 @@ export default async function DossiersPage() {
           </Link>
         }
       >
-        Mes dossiers de subvention
+        Mes subventions et appels à projet
       </Titre>
 
       <section className="mb-6 grid gap-3 sm:grid-cols-3">
