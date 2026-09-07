@@ -1,15 +1,22 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { Fraunces, Nunito } from 'next/font/google';
+import { getSession } from '@/lib/session';
 import { Coque, NOM_SITE, ORIGINE_SITE } from './_ui';
+import type { CompteAffiche } from './BarreLaterale';
 
 /**
  * PILOTER MON ASSOCIATION — association.toulali.fr
  *
  * Ce groupe de routes est servi sous son propre domaine par le middleware.
- * Il ne lit jamais la session : tout ce qui est ici est public.
+ * La coque lit la session (pour afficher qui est connecté) : les pages sont
+ * donc rendues à la demande. Tout ce qui est public le reste.
  */
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
+
+const nunito = Nunito({ subsets: ['latin'], weight: ['400', '600', '700', '800'], variable: '--font-pilote', display: 'swap' });
+const fraunces = Fraunces({ subsets: ['latin'], style: ['italic'], weight: ['600'], variable: '--font-pilote-serif', display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(ORIGINE_SITE),
@@ -18,8 +25,8 @@ export const metadata: Metadata = {
     template: `%s · ${NOM_SITE}`,
   },
   description:
-    "Vérifiez en une minute si votre association a les pièces qu'un financeur demande, suivez le chemin étape par étape, et trouvez le bon outil pour chaque besoin. Gratuit, sans compte.",
-  keywords: ['subvention association', 'dossier de subvention', 'créer une association', 'SIRET association', 'RNA', 'FDVA', 'CERFA 12156'],
+    "Le chemin étape par étape pour faire naître ton association, la faire vivre et demander une subvention : chaque étape expliquée simplement, avec les formulaires CERFA et des documents exemples. Gratuit.",
+  keywords: ['subvention association', 'dossier de subvention', 'créer une association', 'SIRET association', 'RNA', 'FDVA', 'CERFA 12156', 'appel à projets association'],
   applicationName: NOM_SITE,
   manifest: null,
   appleWebApp: { capable: false, title: NOM_SITE },
@@ -39,13 +46,13 @@ export const metadata: Metadata = {
     type: 'website',
     title: `${NOM_SITE} — par Toulali`,
     description:
-      "Vérifiez si votre association a les pièces qu'un financeur demande, suivez le chemin étape par étape, trouvez le bon outil. Gratuit, sans compte.",
+      "Faire naître ton association, la faire vivre, demander une subvention : douze étapes expliquées simplement, avec les CERFA et des documents exemples. Gratuit.",
     images: [
       {
         url: '/association/partage-piloter.png',
         width: 1200,
         height: 630,
-        alt: 'Piloter mon association, par Toulali : votre association est-elle prête à demander une subvention ?',
+        alt: 'Piloter mon association, par Toulali : le chemin étape par étape jusqu’à la subvention.',
       },
     ],
   },
@@ -53,19 +60,34 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     images: ['/association/partage-piloter.png'],
     title: `${NOM_SITE} — par Toulali`,
-    description: "Votre association est-elle prête à demander une subvention ? Vérifiez-le en une minute, gratuitement.",
+    description: 'Douze étapes expliquées simplement, jusqu’à la première subvention. Gratuit.',
   },
   robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#1F6A4E',
+  themeColor: '#4F46E5',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
 };
 
-export default function AssociationLayout({ children }: { children: ReactNode }) {
-  return <Coque>{children}</Coque>;
+export default async function AssociationLayout({ children }: { children: ReactNode }) {
+  const session = await getSession();
+  let compte: CompteAffiche | null = null;
+  if (session) {
+    const comptes = session.accounts ?? [];
+    const association = comptes.find((c) => (c.type as string) === 'ASSOCIATION') ?? ((session.account.type as string) === 'ASSOCIATION' ? session.account : null);
+    compte = {
+      nom: association?.name ?? session.user.firstName ?? session.user.email,
+      prenom: session.user.firstName ?? session.user.email.split('@')[0],
+      espaceOuvert: Boolean(association),
+    };
+  }
+  return (
+    <div className={`${nunito.variable} ${fraunces.variable}`}>
+      <Coque compte={compte}>{children}</Coque>
+    </div>
+  );
 }

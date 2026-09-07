@@ -1,36 +1,25 @@
 import Link from 'next/link';
-import { Encart, Titre } from './_ui';
+import { BTN_PRIMAIRE, BTN_SECONDAIRE, Carte, Titre } from './_ui';
 
 export default function Introuvable() {
   return (
-    <>
+    <div className="mx-auto max-w-[640px]">
       <Titre surtitre="Page introuvable" sousTitre="Cette adresse ne mène nulle part. Rien n'est perdu : voici par où repartir.">
         Il n&apos;y a rien ici
       </Titre>
-      <div className="max-w-[64ch]">
-        <Encart>
-          <ul className="space-y-2">
-            <li>
-              <Link href="/verifier" className="underline underline-offset-4">
-                Vérifier mon association
-              </Link>{' '}
-              : les pièces déjà prouvées, celles qui manquent, où les trouver.
-            </li>
-            <li>
-              <Link href="/chemin" className="underline underline-offset-4">
-                Le chemin
-              </Link>{' '}
-              : piloter une association, une étape à la fois.
-            </li>
-            <li>
-              <Link href="/outils" className="underline underline-offset-4">
-                La carte des outils
-              </Link>{' '}
-              : qui fait quoi, gratuitement ou non.
-            </li>
-          </ul>
-        </Encart>
-      </div>
-    </>
+      <Carte>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/chemin" className={BTN_PRIMAIRE}>
+            Le chemin, étape par étape
+          </Link>
+          <Link href="/subvention" className={BTN_SECONDAIRE}>
+            Demander une subvention
+          </Link>
+          <Link href="/verifier" className={BTN_SECONDAIRE}>
+            Vérifier mon association
+          </Link>
+        </div>
+      </Carte>
+    </div>
   );
 }

@@ -12,7 +12,7 @@ export interface AssociationTrouvee {
 }
 
 export const CHAMP =
-  'rounded-md border border-[#C9C3B5] bg-white px-4 py-3 text-base focus:border-[#1F6A4E] focus:outline-none focus:ring-2 focus:ring-[#B9D6C6]';
+  'rounded-xl border border-[#D9D6EE] bg-white px-4 py-3 text-base focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#ECEBFC]';
 
 /**
  * Le nom de l'association, cherché dans les répertoires publics. Si elle y
@@ -50,7 +50,7 @@ export function ChoixAssociation({
   return (
     <div className="flex flex-col gap-3">
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Son nom</span>
+        <span className="font-bold">Son nom</span>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
             type="text"
@@ -69,35 +69,35 @@ export function ChoixAssociation({
             type="button"
             onClick={chercher}
             disabled={recherche}
-            className="rounded-md border border-[#1F6A4E] px-4 py-3 text-sm font-medium text-[#1F6A4E] hover:bg-[#E4EFE8] disabled:opacity-60"
+            className="rounded-xl border border-[#4F46E5] px-4 py-3 text-sm font-bold text-[#4F46E5] hover:bg-[#ECEBFC] disabled:opacity-60"
           >
             {recherche ? 'Recherche…' : 'Retrouver dans les répertoires'}
           </button>
         </div>
       </label>
       {resultats.length > 0 && !choisie ? (
-        <ul className="divide-y divide-[#DDD8CC] rounded-md border border-[#DDD8CC] bg-white text-sm">
+        <ul className="divide-y divide-[#E6E4F3] rounded-xl border border-[#E6E4F3] bg-white text-sm">
           {resultats.map((r) => (
             <li key={r.siren}>
               <button
                 type="button"
                 onClick={() => onChoisie(r)}
-                className="flex w-full flex-col items-start gap-0.5 px-4 py-3 text-left hover:bg-[#F6F4EE]"
+                className="flex w-full flex-col items-start gap-0.5 px-4 py-3 text-left hover:bg-[#F5F4FC]"
               >
-                <span className="font-medium">{r.nom}</span>
-                <span className="text-[#5C6B63]">
+                <span className="font-bold">{r.nom}</span>
+                <span className="text-[#6B6A8A]">
                   {[r.codePostal, r.commune].filter(Boolean).join(' ')} · SIREN {r.siren}
                   {r.rna ? ` · RNA ${r.rna}` : ''}
                 </span>
               </button>
             </li>
           ))}
-          <li className="px-4 py-2 text-xs text-[#5C6B63]">Ce n&apos;est pas la vôtre ? Continuez, vous la rattacherez plus tard.</li>
+          <li className="px-4 py-2 text-xs text-[#6B6A8A]">Ce n&apos;est pas la vôtre ? Continuez, vous la rattacherez plus tard.</li>
         </ul>
       ) : null}
       {choisie ? (
-        <p className="rounded-md border border-[#B9D6C6] bg-[#E4EFE8] px-4 py-3 text-sm">
-          <span className="font-medium">{choisie.nom}</span> · SIREN {choisie.siren}
+        <p className="rounded-xl border border-[#BFE6D2] bg-[#E3F5EC] px-4 py-3 text-sm">
+          <span className="font-bold">{choisie.nom}</span> · SIREN {choisie.siren}
           {choisie.rna ? ` · RNA ${choisie.rna}` : ''} — son classeur sera pré-rempli.{' '}
           <button type="button" onClick={() => onChoisie(null)} className="underline underline-offset-4">
             Changer

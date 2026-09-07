@@ -56,3 +56,32 @@ export function formaterEuros(n: number | null | undefined) {
   if (n === null || n === undefined) return '—';
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }
+
+/**
+ * Les étapes du chemin déjà cochées, si la personne est connectée avec une
+ * association ; sinon null. Ne redirige jamais : les pages publiques s'en
+ * servent pour afficher « fait » sans exiger de compte.
+ */
+export async function etapesFaitesSiConnecte(): Promise<{ faites: Set<string>; verifiees: Set<string>; nomAssociation: string } | null> {
+  const session = await getSession();
+  if (!session) return null;
+  const comptes = session.accounts ?? [];
+  const compte =
+    comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
+    ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null);
+  if (!compte) return null;
+  try {
+    const data = (await apiRequest('/association/espace', {
+      method: 'GET',
+      token: session.token,
+      accountId: compte.id,
+      cache: 'no-store',
+    })) as { chemin?: { etapes?: { slug: string; faite: boolean; verifiee?: boolean }[] }; organisation?: { nom?: string } };
+    const etapes = data.chemin?.etapes ?? [];
+    const faites = new Set(etapes.filter((e) => e.faite).map((e) => e.slug));
+    const verifiees = new Set(etapes.filter((e) => e.verifiee).map((e) => e.slug));
+    return { faites, verifiees, nomAssociation: data.organisation?.nom ?? compte.name };
+  } catch {
+    return null;
+  }
+}
