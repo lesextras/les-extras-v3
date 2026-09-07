@@ -4,6 +4,7 @@ import {
   IsDateString,
   IsEmail,
   IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -14,8 +15,10 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
-import { EtatDossier, NiveauOrganisation } from '@prisma/client';
+import { Type } from 'class-transformer';
+import { EtatDossier, NiveauOrganisation, RoleContact } from '@prisma/client';
 
 /**
  * L'inscription d'une association. Un seul écran : qui vous êtes, quelle
@@ -115,6 +118,68 @@ export class DossierDto {
   @IsOptional() @IsDateString() dateCompteRendu?: string | null;
   @IsOptional() @IsArray() @IsString({ each: true }) piecesExigees?: string[];
   @IsOptional() @IsString() @MaxLength(4000) notes?: string | null;
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LigneBudgetDto) budgetPrevu?: LigneBudgetDto[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LigneBudgetDto) budgetRealise?: LigneBudgetDto[];
+  @IsOptional() @IsString() @MaxLength(4000) bilanAction?: string | null;
+  @IsOptional() @IsInt() @Min(0) nombreBeneficiaires?: number | null;
+}
+
+/** Une ligne de budget : ce que ça coûte, ou d'où vient l'argent. */
+export class LigneBudgetDto {
+  @IsString() @IsNotEmpty() @MaxLength(160) libelle!: string;
+  @IsNumber() @Min(0) montant!: number;
+  @IsIn(['DEPENSE', 'RECETTE']) sens!: 'DEPENSE' | 'RECETTE';
+}
+
+/** Le projet en une page : quatre questions, et ce qu'on demande. */
+export class ProjetDto {
+  @IsOptional() @IsString() @MaxLength(2000) pourQui?: string | null;
+  @IsOptional() @IsString() @MaxLength(2000) quoi?: string | null;
+  @IsOptional() @IsString() @MaxLength(2000) comment?: string | null;
+  @IsOptional() @IsString() @MaxLength(2000) apres?: string | null;
+  @IsOptional() @IsString() @MaxLength(1000) demande?: string | null;
+}
+
+/** La vie statutaire : la dernière assemblée générale, la durée des mandats. */
+export class VieStatutaireDto {
+  @IsOptional() @IsDateString() dateDerniereAG?: string | null;
+  @IsOptional() @IsInt() @Min(1) @Max(120) dureeMandatMois?: number;
+}
+
+/** Une personne du répertoire : membre, bénévole, dirigeant, partenaire, financeur. */
+export class ContactDto {
+  @IsString() @IsNotEmpty() @MaxLength(80) prenom!: string;
+  @IsString() @IsNotEmpty() @MaxLength(80) nom!: string;
+  @IsOptional() @IsEmail() email?: string | null;
+  @IsOptional() @IsString() @MaxLength(40) telephone?: string | null;
+  @IsOptional() @IsString() @MaxLength(160) structure?: string | null;
+  @IsOptional() @IsArray() @IsEnum(RoleContact, { each: true }) roles?: RoleContact[];
+  @IsOptional() @IsDateString() dateAdhesion?: string | null;
+  @IsOptional() @IsBoolean() cotisationAJour?: boolean;
+  @IsOptional() @IsDateString() mandatDebut?: string | null;
+  @IsOptional() @IsDateString() mandatFin?: string | null;
+  @IsOptional() @IsString() @MaxLength(2000) notes?: string | null;
+}
+
+export class ModifierContactDto {
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(80) prenom?: string;
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(80) nom?: string;
+  @IsOptional() @IsEmail() email?: string | null;
+  @IsOptional() @IsString() @MaxLength(40) telephone?: string | null;
+  @IsOptional() @IsString() @MaxLength(160) structure?: string | null;
+  @IsOptional() @IsArray() @IsEnum(RoleContact, { each: true }) roles?: RoleContact[];
+  @IsOptional() @IsDateString() dateAdhesion?: string | null;
+  @IsOptional() @IsBoolean() cotisationAJour?: boolean;
+  @IsOptional() @IsDateString() mandatDebut?: string | null;
+  @IsOptional() @IsDateString() mandatFin?: string | null;
+  @IsOptional() @IsString() @MaxLength(2000) notes?: string | null;
+}
+
+/** Un document libre : un titre, une catégorie, un fichier. */
+export class DocumentDto {
+  @IsString() @IsNotEmpty() @MaxLength(160) titre!: string;
+  @IsOptional() @IsString() @MaxLength(60) categorie?: string;
+  @IsOptional() @IsString() @MaxLength(1000) note?: string;
 }
 
 export class ModifierDossierDto {
@@ -130,4 +195,8 @@ export class ModifierDossierDto {
   @IsOptional() @IsDateString() dateCompteRendu?: string | null;
   @IsOptional() @IsArray() @IsString({ each: true }) piecesExigees?: string[];
   @IsOptional() @IsString() @MaxLength(4000) notes?: string | null;
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LigneBudgetDto) budgetPrevu?: LigneBudgetDto[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LigneBudgetDto) budgetRealise?: LigneBudgetDto[];
+  @IsOptional() @IsString() @MaxLength(4000) bilanAction?: string | null;
+  @IsOptional() @IsInt() @Min(0) nombreBeneficiaires?: number | null;
 }
