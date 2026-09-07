@@ -126,17 +126,13 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
           href={e.href}
           aria-current={estActif ? 'page' : undefined}
           className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold no-underline transition ${
-            estActif
-              ? e.accent
-                ? 'bg-[#D6335C] text-white'
-                : 'bg-[#4F46E5] text-white'
-              : e.accent
-                ? 'text-[#F3B0C2] hover:bg-[#D6335C]/25 hover:text-white'
-                : 'text-[#D9D7F2] hover:bg-white/10 hover:text-white'
+            estActif ? 'bg-[#4F46E5] text-white' : 'text-[#D9D7F2] hover:bg-white/10 hover:text-white'
           }`}
         >
-          <span className={estActif ? 'text-white' : e.accent ? 'text-[#F3B0C2]' : 'text-[#A9A6D9]'}>{e.icone}</span>
-          <span className="flex-1">{e.libelle}</span>
+          {/* Seule l'icône porte le rouge rosé ; le libellé reste comme les autres. */}
+          <span className={`shrink-0 ${e.accent ? 'text-[#F3B0C2]' : estActif ? 'text-white' : 'text-[#A9A6D9]'}`}>{e.icone}</span>
+          {/* Une entrée, une ligne : on rétrécit le libellé plutôt que de le couper. */}
+          <span className={`flex-1 whitespace-nowrap ${e.accent ? 'text-[13px]' : ''}`}>{e.libelle}</span>
           {e.pastille && !estActif ? (
             <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#1D1B5C]">{e.pastille}</span>
           ) : null}
@@ -303,13 +299,13 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
             {/* Deux portes, comme chez HelloAsso : pas encore d'association, ou déjà une. */}
             <Link
               href="/inscription?type=particulier"
-              className="hidden rounded-xl border-2 border-[#C7C4F2] px-3 py-1.5 text-[14px] font-bold text-[#4338CA] no-underline transition hover:border-[#4F46E5] hover:bg-[#ECEBFC] md:inline-flex"
+              className="hidden whitespace-nowrap rounded-xl border-2 border-[#C7C4F2] px-3 py-1.5 text-[13px] font-bold text-[#4338CA] no-underline transition hover:border-[#4F46E5] hover:bg-[#ECEBFC] md:inline-flex"
             >
               Créer espace particulier
             </Link>
             <Link
               href="/inscription?type=association"
-              className="hidden rounded-xl bg-[#4F46E5] px-3 py-2 text-[14px] font-bold text-white no-underline transition hover:bg-[#4338CA] sm:inline-flex"
+              className="hidden whitespace-nowrap rounded-xl bg-[#4F46E5] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#4338CA] sm:inline-flex"
             >
               Créer espace association
             </Link>
