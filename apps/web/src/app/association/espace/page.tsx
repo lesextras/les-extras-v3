@@ -50,7 +50,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
           )}
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
-          <Link href="/espace/dossiers" className={BTN_SECONDAIRE}>
+          <Link href="/chemin#partie-3" className={BTN_SECONDAIRE}>
             Demander une subvention
           </Link>
           <Link href="/espace/classeur" className={BTN_SECONDAIRE}>
