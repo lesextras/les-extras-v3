@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
 import { BTN_SECONDAIRE, CARTE, Carte, Encart, Pastille, SousTitre, Titre } from '../../_ui';
-import { ListeAgrements, NOMBRE_AGREMENTS, dateAgrements } from '../../ListeAgrements';
+import { NOMBRE_AGREMENTS } from '../../ListeAgrements';
 import { LIBELLES_ROLE, dateCourte, type Espace } from '../_types';
 import { Rattacher } from './Rattacher';
 import { FormulaireOrganisation } from './FormulaireOrganisation';
@@ -55,6 +55,44 @@ export default async function MonAssociationPage() {
   ];
   const complets = blocs.filter((b) => b.ok).length;
 
+  /** Trois portes, trois couleurs : chacune mène à sa page, on ne les confond pas. */
+  const PORTES = [
+    {
+      href: '/espace/secretariat',
+      titre: 'Mon secrétariat',
+      detail: `Les obligations à tenir, les documents à fabriquer, et tous tes papiers : les ${classeur.length} pièces du classeur (${papiersPrets} déjà prêtes) et tes autres documents.`,
+      bouton: 'Ouvrir mon secrétariat',
+      bordure: 'border-[#C7C4F2] hover:border-[#4F46E5]',
+      fond: 'bg-[#ECEBFC]',
+      pastille: 'bg-[#4F46E5]',
+      texte: 'text-[#4338CA]',
+      icone: 'M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h6',
+    },
+    {
+      href: '/espace/comptabilite',
+      titre: 'Ma comptabilité',
+      detail:
+        "Le cahier de comptes, le prévisionnel, les dons et leurs reçus fiscaux, la billetterie et les ventes. C'est ce qu'on présente en assemblée générale.",
+      bouton: 'Ouvrir ma comptabilité',
+      bordure: 'border-[#F3B0C2] hover:border-[#D6335C]',
+      fond: 'bg-[#FDE7EC]',
+      pastille: 'bg-[#D6335C]',
+      texte: 'text-[#C42B57]',
+      icone: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+    },
+    {
+      href: '/agrements',
+      titre: 'Nos agréments',
+      detail: `Les ${NOMBRE_AGREMENTS} reconnaissances officielles qu'une association peut demander, ce que chacune ouvre et où la demander.`,
+      bouton: 'Voir les agréments',
+      bordure: 'border-[#B7E4CE] hover:border-[#1E9E6A]',
+      fond: 'bg-[#E3F5EC]',
+      pastille: 'bg-[#1E9E6A]',
+      texte: 'text-[#0F5F3E]',
+      icone: 'M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.2 13.8L7 22l5-3 5 3-1.2-8.2',
+    },
+  ];
+
   return (
     <>
       <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier : qui vous êtes, qui décide, où verser l'argent — et tous vos papiers au même endroit.">
@@ -63,28 +101,24 @@ export default async function MonAssociationPage() {
 
       {/* ------------------------------------------- les trois grandes portes */}
       <section className="mb-8 grid gap-4 md:grid-cols-3">
-        <Link href="#secretariat" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-          <span className="block text-lg font-extrabold text-[#1D1B5C]">Mon secrétariat</span>
-          <span className="mt-1 block text-sm text-[#6B6A8A]">
-            Les obligations à tenir, les documents à fabriquer, et tous tes papiers : les {classeur.length} pièces du classeur ({papiersPrets} déjà prêtes) et tes
-            autres documents.
-          </span>
-          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir mon secrétariat →</span>
-        </Link>
-        <Link href="/espace/secretariat#comptes" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-          <span className="block text-lg font-extrabold text-[#1D1B5C]">Ma comptabilité</span>
-          <span className="mt-1 block text-sm text-[#6B6A8A]">
-            Dons, adhésions, ventes, subventions reçues et toutes les dépenses. C&apos;est ce cahier qu&apos;on présente en assemblée générale.
-          </span>
-          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir la gestion budgétaire →</span>
-        </Link>
-        <Link href="#agrements" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-          <span className="block text-lg font-extrabold text-[#1D1B5C]">Nos agréments</span>
-          <span className="mt-1 block text-sm text-[#6B6A8A]">
-            Les {NOMBRE_AGREMENTS} reconnaissances officielles qu&apos;une association peut demander, et ce que chacune ouvre.
-          </span>
-          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Voir les agréments →</span>
-        </Link>
+        {PORTES.map((p) => (
+          <Link
+            key={p.href}
+            href={p.href}
+            className={`group flex flex-col rounded-2xl border-2 ${p.bordure} ${p.fond} p-5 no-underline transition duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_16px_34px_-18px_rgba(29,27,92,0.55)] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
+          >
+            <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${p.pastille} text-white`} aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d={p.icone} />
+              </svg>
+            </span>
+            <span className="mt-3 block text-lg font-extrabold text-[#1D1B5C]">{p.titre}</span>
+            <span className="mt-1 block text-sm leading-relaxed text-[#3B3A66]">{p.detail}</span>
+            <span className={`mt-auto pt-4 text-sm font-bold ${p.texte}`}>
+              {p.bouton} <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </span>
+          </Link>
+        ))}
       </section>
 
       {/* --------------------------------------------------- dossier d'identité */}
@@ -195,65 +229,6 @@ export default async function MonAssociationPage() {
             .
           </p>
         </Carte>
-      </section>
-
-      {/* ------------------------------------------------------ secrétariat */}
-      <section id="secretariat" className="mt-10 scroll-mt-24">
-        <SousTitre>Mon secrétariat</SousTitre>
-        <p className="mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Tout ce qu&apos;un secrétaire et un trésorier ont à faire : les obligations à tenir, les papiers de la vie de l&apos;association à fabriquer, tes pièces
-          rangées, et l&apos;argent qui entre et qui sort.
-        </p>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Link href="/espace/secretariat#obligations" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-            <span className="block text-lg font-extrabold text-[#1D1B5C]">Ce qu&apos;on doit tenir</span>
-            <span className="mt-1 block text-sm text-[#6B6A8A]">
-              Assemblée générale, bureau à jour, déclarations en préfecture, comptes, reçus de dons, papiers, comptes rendus de subvention.
-            </span>
-            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Voir les obligations →</span>
-          </Link>
-          <Link href="/espace/secretariat#documents" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-            <span className="block text-lg font-extrabold text-[#1D1B5C]">Les documents à fabriquer</span>
-            <span className="mt-1 block text-sm text-[#6B6A8A]">
-              Convocation, ordre du jour, feuille de présence, procès-verbal, liste des dirigeants, rapport d&apos;activité, reçu fiscal.
-            </span>
-            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Fabriquer ou déposer →</span>
-          </Link>
-          <Link href="/espace/classeur" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-            <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes papiers</span>
-            <span className="mt-1 block text-sm text-[#6B6A8A]">
-              Les {classeur.length} pièces que les financeurs demandent : {papiersPrets} déjà prêtes.
-            </span>
-            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir le classeur →</span>
-          </Link>
-          <Link href="/espace/documents" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
-            <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes autres documents</span>
-            <span className="mt-1 block text-sm text-[#6B6A8A]">
-              {data.nbDocuments === 0
-                ? 'Conventions, courriers, photos, affiches : rien encore.'
-                : `${data.nbDocuments} document${data.nbDocuments > 1 ? 's' : ''} rangé${data.nbDocuments > 1 ? 's' : ''}.`}
-            </span>
-            <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir mes documents →</span>
-          </Link>
-        </div>
-        <p className="mt-4 text-sm text-[#6B6A8A]">
-          L&apos;argent qui entre et qui sort est juste à côté :{' '}
-          <Link href="/espace/secretariat#comptes" className="font-bold text-[#4F46E5] underline underline-offset-4">
-            ma comptabilité
-          </Link>
-          .
-        </p>
-      </section>
-
-      {/* ------------------------------------------------------- agréments */}
-      <section id="agrements" className="mt-10 scroll-mt-24">
-        <SousTitre>Nos agréments</SousTitre>
-        <p className="mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Un agrément, c&apos;est l&apos;État qui reconnaît officiellement l&apos;association. Ce n&apos;est pas de l&apos;argent : ça ouvre des portes, des
-          financements réservés, et ça prouve ton sérieux. {NOMBRE_AGREMENTS} agréments existent — clique sur une famille pour voir ce que chacun ouvre et où le
-          demander. Relu le {dateAgrements()} ; la page officielle fait foi.
-        </p>
-        <ListeAgrements replie />
       </section>
 
       {/* ------------------------------------------------------ abonnement */}
