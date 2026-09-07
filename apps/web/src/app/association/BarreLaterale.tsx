@@ -41,6 +41,8 @@ export const ICONES = {
   dossiers: i('M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 15h6M9 11h2'),
   repertoire: i('M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8'),
   actions: i('M13 2L3 14h7l-1 8 10-12h-7z'),
+  budget: i('M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'),
+  agrement: i('M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.2 13.8L7 22l5-3 5 3-1.2-8.2'),
   droits: i('M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6zM9 12l2 2 4-4'),
   partenaires: i('M12 21s-7-4.4-9.3-8.4A5.3 5.3 0 0 1 12 6.6a5.3 5.3 0 0 1 9.3 6C19 16.6 12 21 12 21z'),
   documents: i('M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h6'),
@@ -61,12 +63,14 @@ export const ICONES = {
 const MENU: Entree[] = [
   { href: '/', libelle: 'Accueil', icone: ICONES.accueil },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
-  { href: '/espace/actions', libelle: 'Mes actions', icone: ICONES.actions },
+  { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
   { href: '/espace/dossiers', libelle: 'Mes subventions et appels à projet', icone: ICONES.dossiers },
+  { href: '/espace/budget', libelle: 'Ma gestion budgétaire', icone: ICONES.budget },
   { href: '/espace/association', libelle: 'Mon association et ses papiers', icone: ICONES.association },
   { href: '/espace/repertoire', libelle: 'Mon équipe et ses droits', icone: ICONES.droits },
   { href: '/espace/partenaires', libelle: 'Mes partenaires et leurs rôles', icone: ICONES.partenaires },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
+  { href: '/agrements', libelle: 'Nos agréments', icone: ICONES.agrement },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
 ];
@@ -74,6 +78,7 @@ const MENU: Entree[] = [
 /** Les pages qui n'ont plus d'entrée à elles : elles éclairent l'entrée qui les porte. */
 const PORTEES: Record<string, string> = {
   '/espace': '/',
+  '/espace/actions': '/espace/projets',
   '/espace/classeur': '/espace/association',
   '/espace/documents': '/espace/association',
   '/verifier': '/espace/association',
