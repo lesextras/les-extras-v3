@@ -36,6 +36,7 @@ import type {
   ModifierDossierDto,
   ModifierOrganisationDto,
   ModifierPieceDto,
+  OuvrirEspaceDto,
 } from './dto/espace.dto';
 
 const BCRYPT_ROUNDS = 12;
@@ -124,49 +125,116 @@ export class EspaceService {
           profile: { create: {} },
         },
       });
-      const account = await tx.account.create({
-        data: {
-          name: nomAssociation,
-          type: AccountType.ASSOCIATION,
-          slug,
-          legalName: nomAssociation,
-          siret: publique?.siret ?? null,
-          address: publique?.adresse ?? null,
-          city: publique?.commune ?? null,
-          postalCode: publique?.codePostal ?? null,
-          contactEmail: email,
-          ownerId: user.id,
-          source: dto.source ?? 'association.toulali.fr',
-        },
+      return this.creerEspace(tx, {
+        userId: user.id,
+        email,
+        nomAssociation,
+        slug,
+        siren: dto.siren ?? null,
+        publique,
+        source: dto.source ?? 'association.toulali.fr',
       });
-      await tx.membership.create({
-        data: {
-          userId: user.id,
-          accountId: account.id,
-          role: AccountRole.OWNER,
-          status: MembershipStatus.ACTIVE,
-        },
-      });
-      const organisation = await tx.organisation.create({
-        data: {
-          accountId: account.id,
-          nom: nomAssociation,
-          sigle: publique?.sigle ?? null,
-          rna: publique?.rna ?? null,
-          siren: publique?.siren ?? dto.siren ?? null,
-          siret: publique?.siret ?? null,
-          natureJuridique: publique?.natureJuridique ?? null,
-          adresse: publique?.adresse ?? null,
-          codePostal: publique?.codePostal ?? null,
-          commune: publique?.commune ?? null,
-          dateCreation: publique?.dateCreation ? new Date(publique.dateCreation) : null,
-        },
-      });
-      return { user, account, organisation };
     });
 
     await this.synchroniserPiecesDeduites(resultat.organisation.id);
     return { ok: true, accountId: resultat.account.id };
+  }
+
+  /**
+   * Ouvrir l'espace d'une association pour une personne qui a DÉJÀ un compte
+   * (elle s'est connectée, mais aucun de ses comptes n'est une association).
+   * Si elle en a déjà un, on le renvoie tel quel : l'appel est sans danger.
+   */
+  async ouvrir(userId: string, dto: OuvrirEspaceDto) {
+    const deja = await this.prisma.membership.findFirst({
+      where: { userId, status: MembershipStatus.ACTIVE, account: { type: AccountType.ASSOCIATION } },
+      select: { accountId: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (deja) return { ok: true, accountId: deja.accountId, existant: true };
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
+    if (!user) throw new NotFoundException('Compte introuvable.');
+
+    let publique: AssociationPublique | null = null;
+    if (dto.siren) {
+      try {
+        publique = (await this.publiques.fiche(dto.siren)).association;
+      } catch {
+        publique = null;
+      }
+    }
+    const nomAssociation = (publique?.nom ?? dto.nomAssociation).trim();
+    const slug = await this.slugUnique(nomAssociation);
+
+    const resultat = await this.prisma.$transaction((tx) =>
+      this.creerEspace(tx, {
+        userId: user.id,
+        email: user.email,
+        nomAssociation,
+        slug,
+        siren: dto.siren ?? null,
+        publique,
+        source: 'association.toulali.fr',
+      }),
+    );
+    await this.synchroniserPiecesDeduites(resultat.organisation.id);
+    return { ok: true, accountId: resultat.account.id, existant: false };
+  }
+
+  /** Le compte ASSOCIATION, son membre propriétaire et son organisation, d'un bloc. */
+  private async creerEspace(
+    tx: Prisma.TransactionClient,
+    p: {
+      userId: string;
+      email: string;
+      nomAssociation: string;
+      slug: string;
+      siren: string | null;
+      publique: AssociationPublique | null;
+      source: string;
+    },
+  ) {
+    const { publique } = p;
+    const account = await tx.account.create({
+      data: {
+        name: p.nomAssociation,
+        type: AccountType.ASSOCIATION,
+        slug: p.slug,
+        legalName: p.nomAssociation,
+        siret: publique?.siret ?? null,
+        address: publique?.adresse ?? null,
+        city: publique?.commune ?? null,
+        postalCode: publique?.codePostal ?? null,
+        contactEmail: p.email,
+        ownerId: p.userId,
+        source: p.source,
+      },
+    });
+    await tx.membership.create({
+      data: {
+        userId: p.userId,
+        accountId: account.id,
+        role: AccountRole.OWNER,
+        status: MembershipStatus.ACTIVE,
+      },
+    });
+    const organisation = await tx.organisation.create({
+      data: {
+        accountId: account.id,
+        nom: p.nomAssociation,
+        sigle: publique?.sigle ?? null,
+        rna: publique?.rna ?? null,
+        siren: publique?.siren ?? p.siren,
+        siret: publique?.siret ?? null,
+        natureJuridique: publique?.natureJuridique ?? null,
+        adresse: publique?.adresse ?? null,
+        codePostal: publique?.codePostal ?? null,
+        commune: publique?.commune ?? null,
+        dateCreation: publique?.dateCreation ? new Date(publique.dateCreation) : null,
+      },
+    });
+    return { account, organisation };
   }
 
   // ------------------------------------------------------------- organisation

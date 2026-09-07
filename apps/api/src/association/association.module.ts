@@ -3,6 +3,7 @@ import { AssociationService } from './association.service';
 import { EspaceService } from './espace.service';
 import { AssociationPublicController } from './association-public.controller';
 import { AssociationEspaceController } from './association-espace.controller';
+import { AssociationOuvertureController } from './association-ouverture.controller';
 
 /**
  * PILOTER MON ASSOCIATION (association.toulali.fr).
@@ -13,7 +14,7 @@ import { AssociationEspaceController } from './association-espace.controller';
  * financement, écran du lundi).
  */
 @Module({
-  controllers: [AssociationPublicController, AssociationEspaceController],
+  controllers: [AssociationPublicController, AssociationEspaceController, AssociationOuvertureController],
   providers: [AssociationService, EspaceService],
   exports: [AssociationService, EspaceService],
 })
