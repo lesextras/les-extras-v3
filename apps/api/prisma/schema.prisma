@@ -2805,6 +2805,7 @@ model Organisation {
   dossiers  DossierFinancement[]
   contacts  ContactAssociation[]
   documents DocumentAssociation[]
+  actions   ActionAssociation[]
 
   @@index([siren])
   @@index([rna])
@@ -2912,6 +2913,43 @@ model DocumentAssociation {
   fileId         String?
   file           FileAsset?   @relation("DocumentAssociationFichier", fields: [fileId], references: [id], onDelete: SetNull)
   note           String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organisationId])
+}
+
+/// L'état d'une action : ce qu'on prépare, ce qu'on fait, ce qui est fini.
+enum EtatAction {
+  PREVUE
+  EN_COURS
+  TERMINEE
+}
+
+/// Les actions de l'association : ce qu'elle fait vraiment sur le terrain.
+/// C'est la matière du rapport d'activité et des dossiers de subvention.
+model ActionAssociation {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  intitule       String
+  /// À quoi ça sert, pour qui, en deux phrases.
+  resume         String?
+  lieu           String?
+  dateDebut      DateTime?
+  dateFin        DateTime?
+  etat           EtatAction   @default(PREVUE)
+  /// Combien de personnes en ont profité.
+  beneficiaires  Int?
+  /// Combien de bénévoles, et combien d'heures données.
+  benevoles      Int?
+  heuresBenevoles Int?
+  /// Ce que l'action a coûté, en euros.
+  cout           Int?
+  /// Avec qui : la mairie, une école, une autre association.
+  partenaires    String?
+  /// Ce qu'on en retient, une fois l'action finie.
+  bilan          String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
