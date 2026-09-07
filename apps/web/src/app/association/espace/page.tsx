@@ -24,7 +24,7 @@ function Anneau({ pourcentage }: { pourcentage: number }) {
 const RACCOURCIS: { href: string; libelle: string; icone: string }[] = [
   { href: '/espace/projets', libelle: 'Noter un projet', icone: 'M13 2L3 14h7l-1 8 10-12h-7z' },
   { href: '/espace/dossiers', libelle: 'Demander une subvention', icone: 'M12 2v20M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.6 7 6.5s2.2 3 5 3 5 1.1 5 3-2.2 3-5 3-5-1.1-5-3' },
-  { href: '/espace/secretariat#comptes', libelle: 'Noter un don, une recette', icone: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
+  { href: '/espace/comptabilite', libelle: 'Noter un don, une recette', icone: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
   { href: '/espace/classeur', libelle: 'Déposer un papier', icone: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
   { href: '@chemin', libelle: 'Continuer le chemin', icone: 'M4 20V9a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5M4 20h16M12 10v10' },
 ];
@@ -311,7 +311,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
       <section className="mt-8">
         <div className="mb-4 flex items-center justify-between">
           <SousTitre>Ma gestion budgétaire</SousTitre>
-          <Link href="/espace/secretariat#comptes" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+          <Link href="/espace/comptabilite" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
             Le cahier de comptes
           </Link>
         </div>
