@@ -54,8 +54,8 @@ export const ICONES = {
 
 /**
  * UNE SEULE LISTE. « Accueil » et « Ce lundi » sont la même page (le tableau de
- * bord quand on est connectée), le classeur porte aussi les autres documents,
- * « Mon association » porte la fiche publique, et « Ce à quoi j'ai droit »
+ * bord quand on est connectée) ; « Mon association et ses papiers » porte le
+ * classeur, les documents et la fiche publique ; « Ce à quoi j'ai droit »
  * porte les outils utiles.
  */
 const MENU: Entree[] = [
@@ -63,10 +63,9 @@ const MENU: Entree[] = [
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/actions', libelle: 'Mes actions', icone: ICONES.actions },
   { href: '/espace/dossiers', libelle: 'Mes subventions et appels à projet', icone: ICONES.dossiers },
-  { href: '/espace/classeur', libelle: 'Mes papiers et documents', icone: ICONES.classeur },
+  { href: '/espace/association', libelle: 'Mon association et ses papiers', icone: ICONES.association },
   { href: '/espace/repertoire', libelle: 'Mon équipe et ses droits', icone: ICONES.droits },
   { href: '/espace/partenaires', libelle: 'Mes partenaires et leurs rôles', icone: ICONES.partenaires },
-  { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
@@ -75,7 +74,8 @@ const MENU: Entree[] = [
 /** Les pages qui n'ont plus d'entrée à elles : elles éclairent l'entrée qui les porte. */
 const PORTEES: Record<string, string> = {
   '/espace': '/',
-  '/espace/documents': '/espace/classeur',
+  '/espace/classeur': '/espace/association',
+  '/espace/documents': '/espace/association',
   '/verifier': '/espace/association',
   '/outils': '/avantages',
 };
