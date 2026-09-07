@@ -184,12 +184,15 @@ export class EspaceService {
    * Si elle en a déjà un, on le renvoie tel quel : l'appel est sans danger.
    */
   async ouvrir(userId: string, dto: OuvrirEspaceDto) {
-    const deja = await this.prisma.membership.findFirst({
+    // Une personne peut piloter plusieurs associations ou fondations. Sans le
+    // drapeau « autre », on lui rend celle qu'elle a déjà : on n'en crée pas
+    // une deuxième par mégarde en repassant par l'ouverture d'espace.
+    const siennes = await this.prisma.membership.findMany({
       where: { userId, status: MembershipStatus.ACTIVE, account: { type: AccountType.ASSOCIATION } },
-      select: { accountId: true },
+      select: { accountId: true, account: { select: { name: true } } },
       orderBy: { createdAt: 'asc' },
     });
-    if (deja) return { ok: true, accountId: deja.accountId, existant: true };
+    if (siennes.length && !dto.autre) return { ok: true, accountId: siennes[0].accountId, existant: true };
 
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
     if (!user) throw new NotFoundException('Compte introuvable.');
@@ -203,6 +206,9 @@ export class EspaceService {
       }
     }
     const nomAssociation = (publique?.nom ?? dto.nomAssociation).trim();
+    // Deux fois la même association ne servirait à personne : on rend la sienne.
+    const memeNom = siennes.find((m) => m.account.name.trim().toLowerCase() === nomAssociation.toLowerCase());
+    if (memeNom) return { ok: true, accountId: memeNom.accountId, existant: true };
     const slug = await this.slugUnique(nomAssociation);
 
     const resultat = await this.prisma.$transaction((tx) =>
