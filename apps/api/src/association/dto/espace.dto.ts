@@ -19,7 +19,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { EtatAction, EtatDossier, NiveauOrganisation, RoleContact } from '@prisma/client';
+import { EtatAction, EtatDossier, NatureDossier, NiveauOrganisation, RoleContact } from '@prisma/client';
 
 /**
  * L'inscription d'une association. Un seul écran : qui vous êtes, quelle
@@ -107,6 +107,7 @@ export class EtapeFaiteDto {
 }
 
 export class DossierDto {
+  @IsOptional() @IsEnum(NatureDossier) nature?: NatureDossier;
   @IsOptional() @IsString() @MaxLength(40) dispositifCode?: string | null;
   @IsString() @IsNotEmpty({ message: 'Le financeur est nécessaire.' }) @MaxLength(160) financeur!: string;
   @IsString() @IsNotEmpty({ message: "L'intitulé est nécessaire." }) @MaxLength(200) intitule!: string;
@@ -184,6 +185,7 @@ export class DocumentDto {
 }
 
 export class ModifierDossierDto {
+  @IsOptional() @IsEnum(NatureDossier) nature?: NatureDossier;
   @IsOptional() @IsString() @MaxLength(40) dispositifCode?: string | null;
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(160) financeur?: string;
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(200) intitule?: string;
