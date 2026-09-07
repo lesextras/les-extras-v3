@@ -86,13 +86,13 @@ export function FicheDossier({ dossier }: { dossier: Dossier }) {
   }
 
   const champ =
-    'rounded-md border border-[#C9C3B5] bg-white px-3 py-2 text-sm focus:border-[#1F6A4E] focus:outline-none focus:ring-2 focus:ring-[#B9D6C6]';
+    'rounded-xl border border-[#D9D6EE] bg-white px-3 py-2 text-sm focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#ECEBFC]';
 
   return (
-    <form onSubmit={enregistrer} className="grid gap-3 rounded-md border border-[#DDD8CC] bg-white p-5 sm:grid-cols-2">
-      <h2 className="text-sm uppercase tracking-[0.14em] text-[#5C6B63] sm:col-span-2">Le dossier</h2>
+    <form onSubmit={enregistrer} className="grid gap-3 rounded-xl border border-[#E6E4F3] bg-white p-5 sm:grid-cols-2">
+      <h2 className="text-sm uppercase tracking-[0.12em] text-[#6B6A8A] sm:col-span-2">Le dossier</h2>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">État</span>
+        <span className="font-bold">État</span>
         <select value={etat} onChange={(e) => setEtat(e.target.value as EtatDossier)} className={champ}>
           {ETATS.map((x) => (
             <option key={x} value={x}>
@@ -102,40 +102,40 @@ export function FicheDossier({ dossier }: { dossier: Dossier }) {
         </select>
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Financeur</span>
+        <span className="font-bold">Financeur</span>
         <input type="text" required maxLength={160} value={financeur} onChange={(e) => setFinanceur(e.target.value)} className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-        <span className="font-medium">Intitulé</span>
+        <span className="font-bold">Intitulé</span>
         <input type="text" required maxLength={200} value={intitule} onChange={(e) => setIntitule(e.target.value)} className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Date limite de dépôt</span>
+        <span className="font-bold">Date limite de dépôt</span>
         <input type="date" value={dateLimiteDepot} onChange={(e) => setDateLimiteDepot(e.target.value)} className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Date de dépôt</span>
+        <span className="font-bold">Date de dépôt</span>
         <input type="date" value={dateDepot} onChange={(e) => setDateDepot(e.target.value)} className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Date de décision</span>
+        <span className="font-bold">Date de décision</span>
         <input type="date" value={dateDecision} onChange={(e) => setDateDecision(e.target.value)} className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Compte rendu à rendre le</span>
+        <span className="font-bold">Compte rendu à rendre le</span>
         <input type="date" value={dateCompteRendu} onChange={(e) => setDateCompteRendu(e.target.value)} className={champ} />
-        <span className="text-xs text-[#5C6B63]">En général six mois après la fin de l&apos;action, ou la date fixée par la convention.</span>
+        <span className="text-xs text-[#6B6A8A]">En général six mois après la fin de l&apos;action, ou la date fixée par la convention.</span>
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Montant demandé (€)</span>
+        <span className="font-bold">Montant demandé (€)</span>
         <input type="number" min={0} step={1} value={montantDemande} onChange={(e) => setMontantDemande(e.target.value)} className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Montant accordé (€)</span>
+        <span className="font-bold">Montant accordé (€)</span>
         <input type="number" min={0} step={1} value={montantAccorde} onChange={(e) => setMontantAccorde(e.target.value)} className={champ} />
       </label>
       <fieldset className="sm:col-span-2">
-        <legend className="mb-2 text-sm font-medium">Pièces exigées par ce financeur</legend>
+        <legend className="mb-2 text-sm font-bold">Pièces exigées par ce financeur</legend>
         <div className="grid gap-1 sm:grid-cols-2">
           {PIECES.map(([code, libelle]) => (
             <label key={code} className="flex items-center gap-2 text-sm">
@@ -150,16 +150,16 @@ export function FicheDossier({ dossier }: { dossier: Dossier }) {
         </div>
       </fieldset>
       <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-        <span className="font-medium">Notes</span>
+        <span className="font-bold">Notes</span>
         <textarea rows={3} maxLength={4000} value={notes} onChange={(e) => setNotes(e.target.value)} className={champ} />
       </label>
-      {erreur ? <p className="text-sm text-[#7A4A0E] sm:col-span-2">{erreur}</p> : null}
-      {message ? <p className="text-sm text-[#1F6A4E] sm:col-span-2">{message}</p> : null}
+      {erreur ? <p className="text-sm text-[#7C3E06] sm:col-span-2">{erreur}</p> : null}
+      {message ? <p className="text-sm text-[#4F46E5] sm:col-span-2">{message}</p> : null}
       <div className="flex flex-wrap gap-2 sm:col-span-2">
-        <button type="submit" disabled={enCours} className="rounded-md bg-[#1F6A4E] px-4 py-2 text-sm font-medium text-white hover:bg-[#185540] disabled:opacity-60">
+        <button type="submit" disabled={enCours} className="rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA] disabled:opacity-60">
           {enCours ? 'Enregistrement…' : 'Enregistrer'}
         </button>
-        <button type="button" onClick={supprimer} disabled={enCours} className="ml-auto rounded-md px-4 py-2 text-sm text-[#7A4A0E] hover:bg-[#F7EBD6]">
+        <button type="button" onClick={supprimer} disabled={enCours} className="ml-auto rounded-xl px-4 py-2 text-sm text-[#7C3E06] hover:bg-[#FEF3E2]">
           Supprimer le dossier
         </button>
       </div>
