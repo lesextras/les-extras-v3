@@ -85,7 +85,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
 
       <section className="mb-6 grid gap-3 sm:grid-cols-3">
         <Carte>
-          <p className="text-sm font-bold text-[#6B6A8A]">Demandé</p>
+          <p className="text-sm font-bold text-[#6B6A8A]">Demandé{d.montantMax !== null ? ` (max ${formaterEuros(d.montantMax)})` : ''}</p>
           <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(d.montantDemande)}</p>
         </Carte>
         <Carte>
@@ -97,6 +97,26 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
           <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{dateCourte(d.etat === 'ACCORDE' ? d.dateCompteRendu : d.dateLimiteDepot)}</p>
         </Carte>
       </section>
+
+      {d.description || d.ideeProjet ? (
+        <section className="mb-8 grid gap-4 md:grid-cols-2">
+          {d.description ? (
+            <Carte>
+              <h2 className="text-lg font-extrabold text-[#1D1B5C]">Ce que le financeur demande</h2>
+              <p className="mt-2 whitespace-pre-line leading-relaxed">{d.description}</p>
+            </Carte>
+          ) : null}
+          {d.ideeProjet ? (
+            <Carte>
+              <h2 className="text-lg font-extrabold text-[#1D1B5C]">L&apos;idée qu&apos;on propose</h2>
+              <p className="mt-2 whitespace-pre-line leading-relaxed">{d.ideeProjet}</p>
+              <Link href="/espace/projets" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+                Mes projets →
+              </Link>
+            </Carte>
+          ) : null}
+        </section>
+      ) : null}
 
       {/* ------------------------------------------------------- assemblage */}
       <section className="mb-8">
