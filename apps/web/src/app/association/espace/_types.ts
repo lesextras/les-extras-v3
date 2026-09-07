@@ -302,6 +302,7 @@ export interface Espace {
   resumeActions: ResumeActions;
   budget: ResumeBudget;
   derniersMouvements: Mouvement[];
+  ia?: { disponible: boolean };
   nbDocuments: number;
   configuration: { etapes: { code: string; libelle: string; faite: boolean; href: string }[]; faites: number; total: number; pourcentage: number };
   versionReferentiel: string;
