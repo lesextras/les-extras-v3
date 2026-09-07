@@ -21,8 +21,9 @@ function Anneau({ pourcentage }: { pourcentage: number }) {
 
 /** Les quatre gestes du quotidien, comme les briques d'accueil d'un outil connu. */
 const RACCOURCIS: { href: string; libelle: string; icone: string }[] = [
-  { href: '/espace/actions', libelle: 'Noter une action', icone: 'M13 2L3 14h7l-1 8 10-12h-7z' },
+  { href: '/espace/projets', libelle: 'Noter un projet', icone: 'M13 2L3 14h7l-1 8 10-12h-7z' },
   { href: '/espace/dossiers', libelle: 'Demander une subvention', icone: 'M12 2v20M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.6 7 6.5s2.2 3 5 3 5 1.1 5 3-2.2 3-5 3-5-1.1-5-3' },
+  { href: '/espace/budget', libelle: 'Noter un don, une recette', icone: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
   { href: '/espace/classeur', libelle: 'Déposer un papier', icone: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
   { href: '@chemin', libelle: 'Continuer le chemin', icone: 'M4 20V9a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5M4 20h16M12 10v10' },
 ];
@@ -38,7 +39,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
   const { data, error } = await apiEspace<Espace>(s, '/association/espace');
   if (!data) return <Encart ton="attention">{error ?? "L'espace ne se charge pas pour le moment. Recharge la page dans un instant."}</Encart>;
 
-  const { organisation, lundi, chemin, dossiers, configuration, vieStatutaire, actions, resumeActions } = data;
+  const { organisation, lundi, chemin, dossiers, configuration, vieStatutaire, actions, resumeActions, budget } = data;
   const prenom = s.session.user.firstName ?? '';
   const prochaineEtape = chemin.etapes.find((e) => !e.faite) ?? null;
   const prochaineConfig = configuration.etapes.find((e) => !e.faite) ?? null;
@@ -248,29 +249,29 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
       {/* ------------------------------------------------------------- actions */}
       <section className="mt-8">
         <div className="mb-4 flex items-center justify-between">
-          <SousTitre>Mes actions</SousTitre>
-          <Link href="/espace/actions" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-            Toutes mes actions
+          <SousTitre>Mes projets</SousTitre>
+          <Link href="/espace/projets" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+            Tous mes projets
           </Link>
         </div>
         {actions.length === 0 ? (
           <div className={`${CARTE} px-6 py-10 text-center`}>
-            <p className="font-bold text-[#1D1B5C]">Aucune action notée pour l&apos;instant.</p>
+            <p className="font-bold text-[#1D1B5C]">Aucun projet noté pour l&apos;instant.</p>
             <p className="mt-1 text-sm text-[#6B6A8A]">
-              Une sortie, un atelier, un tournoi : notée ici, elle remplit toute seule le rapport d&apos;activité et les dossiers.
+              Une sortie, un atelier, un tournoi : noté ici, il remplit tout seul le rapport d&apos;activité et tes demandes de subvention.
             </p>
-            <Link href="/espace/actions" className={`${BTN_PRIMAIRE} mt-4`}>
-              Noter une action
+            <Link href="/espace/projets" className={`${BTN_PRIMAIRE} mt-4`}>
+              Noter un projet
             </Link>
           </div>
         ) : (
           <>
             <div className="mb-3 grid gap-3 sm:grid-cols-3">
               <div className={`${CARTE} px-5 py-4`}>
-                <p className="text-sm font-bold text-[#6B6A8A]">Actions</p>
+                <p className="text-sm font-bold text-[#6B6A8A]">Projets</p>
                 <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{resumeActions.total}</p>
                 <p className="text-sm text-[#6B6A8A]">
-                  {resumeActions.enCours} en cours · {resumeActions.terminees} terminée{resumeActions.terminees > 1 ? 's' : ''}
+                  {resumeActions.enCours} en cours · {resumeActions.terminees} terminé{resumeActions.terminees > 1 ? 's' : ''}
                 </p>
               </div>
               <div className={`${CARTE} px-5 py-4`}>
@@ -287,7 +288,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
             <ul className="grid gap-3 md:grid-cols-2">
               {actionsRecentes.map((a) => (
                 <li key={a.id}>
-                  <Link href="/espace/actions" className={`${CARTE} flex h-full flex-col px-5 py-4 no-underline`}>
+                  <Link href="/espace/projets" className={`${CARTE} flex h-full flex-col px-5 py-4 no-underline`}>
                     <span className="flex items-start justify-between gap-3">
                       <span className="font-extrabold text-[#1D1B5C]">{a.intitule}</span>
                       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${TONS_ACTION[a.etat]}`}>{LIBELLES_ETAT_ACTION[a.etat]}</span>
@@ -303,6 +304,40 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
             </ul>
           </>
         )}
+      </section>
+
+      {/* -------------------------------------------------------------- argent */}
+      <section className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <SousTitre>Ma gestion budgétaire</SousTitre>
+          <Link href="/espace/budget" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+            Le cahier de comptes
+          </Link>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className={`${CARTE} px-5 py-4`}>
+            <p className="text-sm font-bold text-[#6B6A8A]">Ce qui est entré</p>
+            <p className="text-2xl font-extrabold tabular-nums text-[#1E9E6A]">{formaterEuros(budget.recettes)}</p>
+            <p className="text-sm text-[#6B6A8A]">{formaterEuros(budget.recettesAnnee)} en {budget.annee}</p>
+          </div>
+          <div className={`${CARTE} px-5 py-4`}>
+            <p className="text-sm font-bold text-[#6B6A8A]">Ce qui est sorti</p>
+            <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.depenses)}</p>
+            <p className="text-sm text-[#6B6A8A]">{formaterEuros(budget.depensesAnnee)} en {budget.annee}</p>
+          </div>
+          <div className={`${CARTE} px-5 py-4`}>
+            <p className="text-sm font-bold text-[#6B6A8A]">Solde</p>
+            <p className={`text-2xl font-extrabold tabular-nums ${budget.solde < 0 ? 'text-[#C0392B]' : 'text-[#1D1B5C]'}`}>{formaterEuros(budget.solde)}</p>
+            <p className="text-sm text-[#6B6A8A]">{budget.lignes} ligne{budget.lignes > 1 ? 's' : ''} notée{budget.lignes > 1 ? 's' : ''}</p>
+          </div>
+          <div className={`${CARTE} px-5 py-4`}>
+            <p className="text-sm font-bold text-[#6B6A8A]">Dons reçus</p>
+            <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.dons)}</p>
+            <p className="text-sm text-[#6B6A8A]">
+              {budget.donsAvecRecu} reçu{budget.donsAvecRecu > 1 ? 's' : ''} fiscal{budget.donsAvecRecu > 1 ? 'aux' : ''} envoyé{budget.donsAvecRecu > 1 ? 's' : ''}
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* ------------------------------------------------------------ dossiers */}

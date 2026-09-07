@@ -43,6 +43,9 @@ export interface Dossier {
   financeur: string;
   intitule: string;
   nature: NatureDossier;
+  description: string | null;
+  ideeProjet: string | null;
+  montantMax: number | null;
   etat: EtatDossier;
   montantDemande: number | null;
   montantAccorde: number | null;
@@ -57,6 +60,75 @@ export interface Dossier {
   totaux: { prevu: TotauxBudget; realise: TotauxBudget };
   bilanAction: string | null;
   nombreBeneficiaires: number | null;
+}
+
+export type SensMouvement = 'RECETTE' | 'DEPENSE';
+export type NatureMouvement =
+  | 'DON' | 'ADHESION' | 'VENTE' | 'BILLETTERIE' | 'SUBVENTION' | 'MECENAT' | 'PRESTATION' | 'AUTRE_RECETTE'
+  | 'ACHAT' | 'MATERIEL' | 'LOCAL' | 'ASSURANCE' | 'DEPLACEMENT' | 'COMMUNICATION' | 'SALAIRE' | 'BANQUE' | 'AUTRE_DEPENSE';
+export type MoyenPaiement = 'ESPECES' | 'CHEQUE' | 'VIREMENT' | 'CARTE' | 'EN_LIGNE' | 'AUTRE';
+
+export const NATURES_RECETTE: NatureMouvement[] = ['DON', 'ADHESION', 'VENTE', 'BILLETTERIE', 'SUBVENTION', 'MECENAT', 'PRESTATION', 'AUTRE_RECETTE'];
+export const NATURES_DEPENSE: NatureMouvement[] = ['ACHAT', 'MATERIEL', 'LOCAL', 'ASSURANCE', 'DEPLACEMENT', 'COMMUNICATION', 'SALAIRE', 'BANQUE', 'AUTRE_DEPENSE'];
+
+export const LIBELLES_NATURE_MOUVEMENT: Record<NatureMouvement, string> = {
+  DON: 'Don',
+  ADHESION: 'Adhésion, cotisation',
+  VENTE: 'Vente (buvette, gâteaux, objets)',
+  BILLETTERIE: 'Billetterie, entrées',
+  SUBVENTION: 'Subvention reçue',
+  MECENAT: 'Mécénat, sponsor',
+  PRESTATION: 'Prestation facturée',
+  AUTRE_RECETTE: 'Autre entrée',
+  ACHAT: 'Achat, fournitures',
+  MATERIEL: 'Matériel',
+  LOCAL: 'Local, salle, loyer',
+  ASSURANCE: 'Assurance',
+  DEPLACEMENT: 'Déplacement',
+  COMMUNICATION: 'Communication, impression',
+  SALAIRE: 'Salaire, cotisations',
+  BANQUE: 'Frais bancaires',
+  AUTRE_DEPENSE: 'Autre sortie',
+};
+
+export const LIBELLES_MOYEN: Record<MoyenPaiement, string> = {
+  ESPECES: 'Espèces',
+  CHEQUE: 'Chèque',
+  VIREMENT: 'Virement',
+  CARTE: 'Carte',
+  EN_LIGNE: 'En ligne',
+  AUTRE: 'Autre',
+};
+
+export interface Mouvement {
+  id: string;
+  sens: SensMouvement;
+  nature: NatureMouvement;
+  libelle: string;
+  montant: number;
+  date: string;
+  tiers: string | null;
+  moyen: MoyenPaiement | null;
+  recuFiscal: boolean;
+  dossierId: string | null;
+  actionId: string | null;
+  notes: string | null;
+}
+
+export interface ResumeBudget {
+  lignes: number;
+  recettes: number;
+  depenses: number;
+  solde: number;
+  annee: number;
+  recettesAnnee: number;
+  depensesAnnee: number;
+  dons: number;
+  donsAvecRecu: number;
+  adhesions: number;
+  ventes: number;
+  subventions: number;
+  parNature: Record<string, number>;
 }
 
 export interface LigneBudget {
@@ -228,6 +300,8 @@ export interface Espace {
   repertoire: ResumeContacts;
   actions: ActionAssociation[];
   resumeActions: ResumeActions;
+  budget: ResumeBudget;
+  derniersMouvements: Mouvement[];
   nbDocuments: number;
   configuration: { etapes: { code: string; libelle: string; faite: boolean; href: string }[]; faites: number; total: number; pourcentage: number };
   versionReferentiel: string;
