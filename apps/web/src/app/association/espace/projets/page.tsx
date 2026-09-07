@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { Encart, Titre, Tuile } from '../../_ui';
 import type { ActionAssociation, ResumeActions } from '../_types';
-import { Projets } from './Projets';
+import { Kanban } from './Kanban';
 
 /**
  * MES PROJETS : ce que l'association fait, ou veut faire. C'est la matière du
@@ -30,7 +30,7 @@ export default async function ProjetsPage() {
         <Tuile libelle="Bilans à écrire" valeur={resume.sansBilan} detail={resume.sansBilan ? 'Projets finis sans bilan' : 'Tout est à jour'} ton={resume.sansBilan ? 'attention' : 'ok'} />
       </section>
 
-      <Projets projets={actions} />
+      <Kanban projets={actions} />
 
       <p className="mt-6 text-sm text-[#6B6A8A]">
         Ces projets remplissent d&apos;eux-mêmes le rapport d&apos;activité :{' '}
