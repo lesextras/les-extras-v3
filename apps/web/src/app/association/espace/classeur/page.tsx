@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
-import { Barre, Encart, Titre, Tuile } from '../../_ui';
+import { Barre, BTN_SECONDAIRE, CARTE, Encart, Titre, Tuile } from '../../_ui';
 import { CATEGORIES, type Espace } from '../_types';
 import { PieceDuClasseur } from './PieceDuClasseur';
 
@@ -59,6 +59,15 @@ export default async function ClasseurPage() {
           </section>
         ))}
       </div>
+      <section className={`${CARTE} mt-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between`}>
+        <div>
+          <h2 className="text-lg font-extrabold text-[#1D1B5C]">Mes autres documents</h2>
+          <p className="mt-1 text-sm text-[#6B6A8A]">Tout ce qui n&apos;est pas une pièce du classeur : conventions, courriers, photos, affiches.</p>
+        </div>
+        <Link href="/espace/documents" className={BTN_SECONDAIRE}>
+          Ouvrir mes documents →
+        </Link>
+      </section>
       <p className="mt-6 text-xs text-[#6B6A8A]">Référentiel des pièces vérifié le {data.versionReferentiel}.</p>
     </>
   );
