@@ -704,6 +704,7 @@ export class EspaceService {
         email: dto.email?.trim().toLowerCase() || null,
         telephone: dto.telephone?.trim() || null,
         structure: dto.structure?.trim() || null,
+        poste: dto.poste?.trim() || null,
         roles: dto.roles ?? [RoleContact.MEMBRE],
         dateAdhesion: dto.dateAdhesion ? new Date(dto.dateAdhesion) : null,
         cotisationAJour: dto.cotisationAJour ?? false,
@@ -729,6 +730,7 @@ export class EspaceService {
         email: dto.email === undefined ? undefined : dto.email?.trim().toLowerCase() || null,
         telephone: texte(dto.telephone),
         structure: texte(dto.structure),
+        poste: texte(dto.poste),
         roles: dto.roles,
         dateAdhesion: date(dto.dateAdhesion),
         cotisationAJour: dto.cotisationAJour,
@@ -756,6 +758,7 @@ export class EspaceService {
       email: c.email,
       telephone: c.telephone,
       structure: c.structure,
+      poste: c.poste,
       roles: c.roles,
       dateAdhesion: c.dateAdhesion,
       cotisationAJour: c.cotisationAJour,
@@ -776,7 +779,15 @@ export class EspaceService {
       membresAJour: membres.filter((c) => c.cotisationAJour).length,
       benevoles: equipe(RoleContact.BENEVOLE),
       salaries: equipe(RoleContact.SALARIE),
-      partenaires: contacts.filter((c) => c.roles.includes(RoleContact.PARTENAIRE) || c.roles.includes(RoleContact.FINANCEUR) || c.roles.includes(RoleContact.ELU)).length,
+      partenaires: contacts.filter((c) =>
+        c.roles.some(
+          (r) =>
+            r === RoleContact.PARTENAIRE ||
+            r === RoleContact.FINANCEUR ||
+            r === RoleContact.ELU ||
+            r === RoleContact.INSTITUTIONNEL,
+        ),
+      ).length,
       bureau: contacts
         .filter((c) => c.roles.some((r) => r === RoleContact.PRESIDENT || r === RoleContact.TRESORIER || r === RoleContact.SECRETAIRE))
         .map((c) => ({ id: c.id, nom: `${c.prenom} ${c.nom}`, roles: c.roles })),
