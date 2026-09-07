@@ -6,11 +6,16 @@ import { appel, connecter } from '../_client';
 import { CHAMP, ChoixAssociation, type AssociationTrouvee } from '../ChoixAssociation';
 
 /**
- * L'inscription en un écran. Le SIREN est cherché par le nom : si
- * l'association est dans les répertoires publics, son classeur naît déjà
- * rempli de ce que l'administration sait.
+ * L'inscription en un écran, deux portes.
+ *
+ * `avecAssociation` : l'association existe déjà — on la cherche par son nom,
+ * et si elle est dans les répertoires publics son classeur naît rempli de ce
+ * que l'administration sait déjà.
+ *
+ * Sinon : on crée seulement le compte. La personne suit le chemin, et ouvrira
+ * l'espace de son association le jour où celle-ci existera.
  */
-export function FormulaireInscription() {
+export function FormulaireInscription({ avecAssociation = true }: { avecAssociation?: boolean }) {
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
@@ -32,12 +37,13 @@ export function FormulaireInscription() {
           nom: nom.trim(),
           email: email.trim(),
           password: motDePasse,
-          nomAssociation: (choisie?.nom ?? nomAssociation).trim(),
-          ...(choisie ? { siren: choisie.siren } : {}),
+          ...(avecAssociation
+            ? { nomAssociation: (choisie?.nom ?? nomAssociation).trim(), ...(choisie ? { siren: choisie.siren } : {}) }
+            : {}),
         },
       });
       await connecter(email.trim(), motDePasse);
-      window.location.href = '/espace?bienvenue=1';
+      window.location.href = avecAssociation ? '/espace?bienvenue=1' : '/chemin?bienvenue=1';
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "L'inscription a échoué.");
       setEnCours(false);
@@ -48,13 +54,15 @@ export function FormulaireInscription() {
 
   return (
     <form onSubmit={soumettre} className="flex max-w-[560px] flex-col gap-5">
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#4338CA]">1. Ton association</legend>
-        <ChoixAssociation nom={nomAssociation} onNom={setNomAssociation} choisie={choisie} onChoisie={setChoisie} />
-      </fieldset>
+      {avecAssociation ? (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#4338CA]">1. Ton association</legend>
+          <ChoixAssociation nom={nomAssociation} onNom={setNomAssociation} choisie={choisie} onChoisie={setChoisie} />
+        </fieldset>
+      ) : null}
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#4338CA]">2. Toi</legend>
+        <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#4338CA]">{avecAssociation ? '2. Toi' : 'Toi'}</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold">Prénom</span>
@@ -93,7 +101,7 @@ export function FormulaireInscription() {
               <Link href="/connexion" className="font-bold underline underline-offset-4">
                 Se connecter avec cette adresse
               </Link>
-              , l&apos;espace de votre association s&apos;ouvrira dans la foulée.
+              , tout reprendra où tu en étais.
             </>
           ) : null}
         </p>
@@ -104,10 +112,10 @@ export function FormulaireInscription() {
         disabled={enCours}
         className="rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA] disabled:opacity-60"
       >
-        {enCours ? 'Création de ton espace…' : "Créer l'espace de mon association →"}
+        {enCours ? 'Création de ton compte…' : avecAssociation ? "Créer l'espace de mon association →" : 'Créer mon compte et commencer →'}
       </button>
       <p className="text-xs leading-relaxed text-[#6B6A8A]">
-        Gratuit. Tes pièces restent les tiennes : tu peux les retirer, et fermer l&apos;espace, à tout moment.
+        Gratuit. Tes pièces restent les tiennes : tu peux les retirer, et fermer ton compte, à tout moment.
       </p>
     </form>
   );
