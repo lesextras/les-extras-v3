@@ -8,6 +8,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Matches,
@@ -199,4 +200,10 @@ export class ModifierDossierDto {
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => LigneBudgetDto) budgetRealise?: LigneBudgetDto[];
   @IsOptional() @IsString() @MaxLength(4000) bilanAction?: string | null;
   @IsOptional() @IsInt() @Min(0) nombreBeneficiaires?: number | null;
+}
+
+/** Fabriquer un document : les valeurs du formulaire, et le format voulu. */
+export class FabriqueDto {
+  @IsObject() valeurs!: Record<string, unknown>;
+  @IsOptional() @IsIn(['pdf', 'docx']) format?: 'pdf' | 'docx';
 }
