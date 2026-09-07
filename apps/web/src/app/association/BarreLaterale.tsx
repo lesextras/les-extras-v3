@@ -242,12 +242,29 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         <Link href="/chemin" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">
           {ICONES.aide} Centre d&apos;aide
         </Link>
+        {/* Deux portes, comme chez HelloAsso : on n'a pas encore d'association, ou on en a déjà une. */}
+        {!compte ? (
+          <>
+            <Link
+              href="/inscription?type=particulier"
+              className="hidden items-center gap-1.5 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] lg:flex"
+            >
+              Espace particulier
+            </Link>
+            <Link
+              href="/inscription?type=association"
+              className="hidden items-center gap-1.5 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] lg:flex"
+            >
+              Espace association
+            </Link>
+          </>
+        ) : null}
       </div>
 
       {/* Au centre : l'entrée la plus importante, l'argent. */}
       <Link
         href="/espace/dossiers"
-        className="shrink-0 rounded-xl bg-[#0F5F3E] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#0B4A30] sm:px-5 sm:text-[15px]"
+        className="shrink-0 rounded-xl bg-[#D6335C] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#BC2A4E] sm:px-5 sm:text-[15px]"
       >
         <span className="sm:hidden">Mes subventions</span>
         <span className="hidden sm:inline">Mes subventions et appels à projet</span>
@@ -283,7 +300,7 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         ) : (
           <>
             <Link href="/connexion" className="rounded-xl px-3 py-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:bg-[#F5F4FC]">
-              Se connecter
+              Connexion
             </Link>
             <Link href="/inscription" className="hidden rounded-xl bg-[#4F46E5] px-4 py-2 text-[15px] font-bold text-white no-underline hover:bg-[#4338CA] sm:inline-flex">
               Créer mon espace

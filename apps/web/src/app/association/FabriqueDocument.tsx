@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { appel } from './_client';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CHAMP } from './_ui';
 import { valeursInitiales, type ChampFabrique, type ModeleFabrique, type Prerempli } from './_fabrique';
+import { DeposerFichiers } from './DeposerFichiers';
 
 /**
  * FABRIQUER UN DOCUMENT, ÉCRAN PAR ÉCRAN.
@@ -72,6 +73,7 @@ export function FabriqueDocument({
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [resultat, setResultat] = useState<Resultat | null>(null);
+  const [depot, setDepot] = useState(false);
 
   const pages = useMemo(() => {
     const cites = new Set(modele.pages.flatMap((p) => p.champs));
@@ -248,6 +250,31 @@ export function FabriqueDocument({
       </div>
 
       {erreur ? <p className="mt-3 text-sm font-bold text-[#8A2419]">{erreur}</p> : null}
+
+      {/* On a déjà le document : pas la peine de le refaire, on le dépose. */}
+      {connecte ? (
+        <div className="mt-4 rounded-2xl border border-[#E6E4F3] bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm leading-relaxed text-[#3B3A66]">
+              <span className="font-extrabold text-[#1D1B5C]">Tu as déjà ce document ?</span> Dépose-le plutôt, et plusieurs fichiers si besoin.
+            </p>
+            <button type="button" onClick={() => setDepot((v) => !v)} className={`${BTN_SECONDAIRE} !py-2 text-sm`}>
+              {depot ? 'Masquer' : 'Déposer des fichiers'}
+            </button>
+          </div>
+          {depot ? (
+            <div className="mt-3">
+              <DeposerFichiers
+                piece={modele.piece ?? undefined}
+                categorie={modele.categorie ?? 'Autre'}
+                titre={modele.titre}
+                onFini={onFermer}
+                onAnnuler={() => setDepot(false)}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#E6E4F3] pt-4">
         <button type="button" onClick={() => (page > 0 ? setPage(page - 1) : onFermer())} className={BTN_SECONDAIRE}>

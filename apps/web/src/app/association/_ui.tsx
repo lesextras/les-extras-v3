@@ -12,7 +12,9 @@ import { BarreHaut, BarreLaterale, type CompteAffiche } from './BarreLaterale';
  * Palette : fond lavande #F5F4FC, encre marine #1D1B5C, texte #3B3A66,
  * sourdine #6B6A8A, accent indigo #4F46E5 (foncé #4338CA, clair #ECEBFC),
  * bordure #E6E4F3, jaune #F5B400, vert #1E9E6A / #E3F5EC, ambre #B45309 /
- * #FEF3E2, rouge #C0392B / #FDE8E6.
+ * #FEF3E2. TROISIÈME COULEUR DU SITE : le rouge rosé #C42B57 (plein
+ * #D6335C, foncé #8A1B3D, clair #FDE7EC, bordure #F3B0C2) — il porte le mot
+ * mis en valeur dans les titres, ce qui presse, et l'argent.
  */
 
 export const NOM_SITE = 'Piloter mon association';
@@ -68,11 +70,11 @@ export function Coque({ children, compte }: { children: ReactNode; compte: Compt
 
 /* ------------------------------------------------------------- typographie */
 
-/** Un mot mis en valeur dans un titre : italique serif, en indigo. */
+/** Un mot mis en valeur dans un titre : italique serif, en rouge rosé. */
 export function Accent({ children }: { children: ReactNode }) {
   return (
     <em
-      className="text-[#4F46E5]"
+      className="text-[#C42B57]"
       style={{ fontFamily: 'var(--font-pilote-serif), Georgia, serif', fontStyle: 'italic', fontWeight: 600 }}
     >
       {children}
@@ -126,7 +128,7 @@ export function Encart({ ton = 'neutre', children }: { ton?: 'neutre' | 'ok' | '
       : ton === 'attention'
         ? 'border-[#F5D6A8] bg-[#FEF3E2] text-[#7C3E06]'
         : ton === 'alerte'
-          ? 'border-[#F3B8B1] bg-[#FDE8E6] text-[#8A2419]'
+          ? 'border-[#F3B0C2] bg-[#FDE7EC] text-[#8A1B3D]'
           : ton === 'info'
             ? 'border-[#C7C4F2] bg-[#ECEBFC] text-[#1D1B5C]'
             : 'border-[#E6E4F3] bg-white text-[#3B3A66]';
@@ -140,7 +142,7 @@ export function Pastille({ ton, children }: { ton: 'ok' | 'attention' | 'alerte'
       : ton === 'attention'
         ? 'bg-[#FEF3E2] text-[#7C3E06]'
         : ton === 'alerte'
-          ? 'bg-[#FDE8E6] text-[#8A2419]'
+          ? 'bg-[#FDE7EC] text-[#8A1B3D]'
           : ton === 'accent'
             ? 'bg-[#ECEBFC] text-[#4338CA]'
             : 'bg-[#F0EFF7] text-[#6B6A8A]';
@@ -162,7 +164,7 @@ export function Tuile({
   href?: string;
 }) {
   const couleur =
-    ton === 'ok' ? 'text-[#1E9E6A]' : ton === 'attention' ? 'text-[#B45309]' : ton === 'alerte' ? 'text-[#C0392B]' : 'text-[#1D1B5C]';
+    ton === 'ok' ? 'text-[#1E9E6A]' : ton === 'attention' ? 'text-[#B45309]' : ton === 'alerte' ? 'text-[#C42B57]' : 'text-[#1D1B5C]';
   const contenu = (
     <>
       <p className="text-sm font-bold text-[#6B6A8A]">{libelle}</p>

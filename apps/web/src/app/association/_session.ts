@@ -9,8 +9,9 @@ import type { Session, SessionAccount } from '@/lib/types';
  *
  * Le cookie est le même que celui du reste du déploiement ; ce qui change,
  * c'est le compte qu'on retient : le premier compte de type ASSOCIATION de la
- * personne. Sans session, ou sans compte de ce type, on renvoie vers la
- * connexion en gardant la page demandée.
+ * personne. Sans session, on renvoie vers la connexion en gardant la page
+ * demandée. Avec une session mais sans compte d'association — quelqu'un qui a
+ * commencé sans association — on renvoie vers l'ouverture de son espace.
  */
 export const TYPE_ASSOCIATION = 'ASSOCIATION';
 
@@ -26,7 +27,7 @@ export async function sessionAssociation(chemin = '/espace'): Promise<SessionAss
   const compte =
     comptes.find((c) => (c.type as string) === TYPE_ASSOCIATION) ??
     ((session.account.type as string) === TYPE_ASSOCIATION ? session.account : null);
-  if (!compte) redirect('/connexion?motif=compte');
+  if (!compte) redirect('/ouvrir-mon-espace');
   return { session, compte };
 }
 
