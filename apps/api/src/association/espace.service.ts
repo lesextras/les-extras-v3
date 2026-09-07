@@ -11,6 +11,7 @@ import {
   EtatAction,
   EtatDossier,
   NatureDossier,
+  SensMouvement,
   EtatPiece,
   FileKind,
   MembershipStatus,
@@ -19,6 +20,7 @@ import {
   type ActionAssociation,
   type ContactAssociation,
   type DossierFinancement,
+  type MouvementAssociation,
   type GlobalRole,
   type PieceAssociation,
   RoleContact,
@@ -40,6 +42,8 @@ import { ETAPES_CHEMIN } from './chemin';
 import type {
   ActionDto,
   ContactDto,
+  MouvementDto,
+  ModifierMouvementDto,
   DocumentDto,
   DossierDto,
   InscriptionAssociationDto,
@@ -488,6 +492,9 @@ export class EspaceService {
         financeur: dto.financeur.trim(),
         intitule: dto.intitule.trim(),
         nature: dto.nature ?? NatureDossier.SUBVENTION,
+        description: dto.description?.trim() || null,
+        ideeProjet: dto.ideeProjet?.trim() || null,
+        montantMax: dto.montantMax ?? null,
         etat: dto.etat ?? EtatDossier.REPERE,
         montantDemande: dto.montantDemande ?? null,
         montantAccorde: dto.montantAccorde ?? null,
@@ -516,6 +523,9 @@ export class EspaceService {
       financeur: dto.financeur?.trim(),
       intitule: dto.intitule?.trim(),
       nature: dto.nature,
+      description: dto.description === undefined ? undefined : dto.description?.trim() || null,
+      ideeProjet: dto.ideeProjet === undefined ? undefined : dto.ideeProjet?.trim() || null,
+      montantMax: dto.montantMax === undefined ? undefined : dto.montantMax,
       etat: dto.etat,
       montantDemande: dto.montantDemande === undefined ? undefined : dto.montantDemande,
       montantAccorde: dto.montantAccorde === undefined ? undefined : dto.montantAccorde,
@@ -844,6 +854,114 @@ export class EspaceService {
     };
   }
 
+  // ------------------------------------------------------ gestion budgétaire
+
+  /** Le cahier de comptes : chaque euro entré ou sorti, du plus récent au plus ancien. */
+  async mouvements(accountId: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const mouvements = await this.prisma.mouvementAssociation.findMany({
+      where: { organisationId: organisation.id },
+      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+    });
+    return { mouvements: mouvements.map((m) => this.decorerMouvement(m)), resume: this.resumeMouvements(mouvements) };
+  }
+
+  async creerMouvement(accountId: string, dto: MouvementDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const m = await this.prisma.mouvementAssociation.create({
+      data: {
+        organisationId: organisation.id,
+        sens: dto.sens,
+        nature: dto.nature,
+        libelle: dto.libelle.trim(),
+        montant: dto.montant,
+        date: new Date(dto.date),
+        tiers: dto.tiers?.trim() || null,
+        moyen: dto.moyen ?? null,
+        recuFiscal: dto.recuFiscal ?? false,
+        dossierId: dto.dossierId || null,
+        actionId: dto.actionId || null,
+        notes: dto.notes?.trim() || null,
+      },
+    });
+    return this.decorerMouvement(m);
+  }
+
+  async modifierMouvement(accountId: string, id: string, dto: ModifierMouvementDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const existant = await this.prisma.mouvementAssociation.findFirst({ where: { id, organisationId: organisation.id } });
+    if (!existant) throw new NotFoundException('Cette ligne est introuvable.');
+    const texte = (v: string | null | undefined) => (v === undefined ? undefined : v?.trim() || null);
+    const m = await this.prisma.mouvementAssociation.update({
+      where: { id },
+      data: {
+        sens: dto.sens,
+        nature: dto.nature,
+        libelle: dto.libelle?.trim(),
+        montant: dto.montant,
+        date: dto.date ? new Date(dto.date) : undefined,
+        tiers: texte(dto.tiers),
+        moyen: dto.moyen === undefined ? undefined : dto.moyen,
+        recuFiscal: dto.recuFiscal,
+        dossierId: dto.dossierId === undefined ? undefined : dto.dossierId || null,
+        actionId: dto.actionId === undefined ? undefined : dto.actionId || null,
+        notes: texte(dto.notes),
+      },
+    });
+    return this.decorerMouvement(m);
+  }
+
+  async supprimerMouvement(accountId: string, id: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const existant = await this.prisma.mouvementAssociation.findFirst({ where: { id, organisationId: organisation.id } });
+    if (!existant) throw new NotFoundException('Cette ligne est introuvable.');
+    await this.prisma.mouvementAssociation.delete({ where: { id } });
+    return { ok: true };
+  }
+
+  private decorerMouvement(m: MouvementAssociation) {
+    return {
+      id: m.id,
+      sens: m.sens,
+      nature: m.nature,
+      libelle: m.libelle,
+      montant: Number(m.montant),
+      date: m.date,
+      tiers: m.tiers,
+      moyen: m.moyen,
+      recuFiscal: m.recuFiscal,
+      dossierId: m.dossierId,
+      actionId: m.actionId,
+      notes: m.notes,
+    };
+  }
+
+  /** Ce que le trésorier regarde : entrées, sorties, solde, et le détail par nature. */
+  private resumeMouvements(mouvements: MouvementAssociation[]) {
+    const annee = new Date().getFullYear();
+    const somme = (l: MouvementAssociation[]) => l.reduce((t, m) => t + Number(m.montant), 0);
+    const recettes = mouvements.filter((m) => m.sens === SensMouvement.RECETTE);
+    const depenses = mouvements.filter((m) => m.sens === SensMouvement.DEPENSE);
+    const deCetteAnnee = mouvements.filter((m) => m.date.getFullYear() === annee);
+    const parNature: Record<string, number> = {};
+    for (const m of mouvements) parNature[m.nature] = (parNature[m.nature] ?? 0) + Number(m.montant);
+    return {
+      lignes: mouvements.length,
+      recettes: somme(recettes),
+      depenses: somme(depenses),
+      solde: somme(recettes) - somme(depenses),
+      annee,
+      recettesAnnee: somme(deCetteAnnee.filter((m) => m.sens === SensMouvement.RECETTE)),
+      depensesAnnee: somme(deCetteAnnee.filter((m) => m.sens === SensMouvement.DEPENSE)),
+      dons: somme(mouvements.filter((m) => m.nature === 'DON')),
+      donsAvecRecu: mouvements.filter((m) => m.nature === 'DON' && m.recuFiscal).length,
+      adhesions: somme(mouvements.filter((m) => m.nature === 'ADHESION')),
+      ventes: somme(mouvements.filter((m) => m.nature === 'VENTE' || m.nature === 'BILLETTERIE')),
+      subventions: somme(mouvements.filter((m) => m.nature === 'SUBVENTION')),
+      parNature,
+    };
+  }
+
   // --------------------------------------------------------------- documents
 
   async documents(accountId: string) {
@@ -907,7 +1025,7 @@ export class EspaceService {
   /** Tout ce qu'affiche l'espace, en un seul appel. */
   async espace(accountId: string) {
     const organisation = await this.organisationDuCompte(accountId);
-    const [pieces, dossiers, contacts, actions, nbDocuments] = await Promise.all([
+    const [pieces, dossiers, contacts, actions, mouvements, nbDocuments] = await Promise.all([
       this.prisma.pieceAssociation.findMany({ where: { organisationId: organisation.id } }),
       this.prisma.dossierFinancement.findMany({
         where: { organisationId: organisation.id },
@@ -918,6 +1036,7 @@ export class EspaceService {
         where: { organisationId: organisation.id },
         orderBy: [{ dateDebut: 'desc' }, { createdAt: 'desc' }],
       }),
+      this.prisma.mouvementAssociation.findMany({ where: { organisationId: organisation.id }, orderBy: [{ date: 'desc' }] }),
       this.prisma.documentAssociation.count({ where: { organisationId: organisation.id } }),
     ]);
 
@@ -969,6 +1088,8 @@ export class EspaceService {
       repertoire,
       actions,
       resumeActions: this.resumeActions(actions),
+      budget: this.resumeMouvements(mouvements),
+      derniersMouvements: mouvements.slice(0, 5).map((m) => this.decorerMouvement(m)),
       nbDocuments,
       configuration: { etapes: configuration, faites: configurationFaites, total: configuration.length, pourcentage: Math.round((configurationFaites / configuration.length) * 100) },
       versionReferentiel: VERSION_REFERENTIEL,
@@ -1101,6 +1222,9 @@ export class EspaceService {
       financeur: d.financeur,
       intitule: d.intitule,
       nature: d.nature,
+      description: d.description,
+      ideeProjet: d.ideeProjet,
+      montantMax: d.montantMax === null ? null : Number(d.montantMax),
       etat: d.etat,
       montantDemande: d.montantDemande === null ? null : Number(d.montantDemande),
       montantAccorde: d.montantAccorde === null ? null : Number(d.montantAccorde),

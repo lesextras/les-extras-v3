@@ -24,6 +24,8 @@ import { EspaceService } from './espace.service';
 import {
   ActionDto,
   ContactDto,
+  MouvementDto,
+  ModifierMouvementDto,
   DocumentDto,
   DossierDto,
   EtapeFaiteDto,
@@ -173,6 +175,28 @@ export class AssociationEspaceController {
   @Delete('actions/:id')
   supprimerAction(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
     return this.espace.supprimerAction(account.id, id);
+  }
+
+  // ------------------------------------------------------ gestion budgétaire
+
+  @Get('mouvements')
+  mouvements(@CurrentAccount() account: RequestAccount) {
+    return this.espace.mouvements(account.id);
+  }
+
+  @Post('mouvements')
+  creerMouvement(@CurrentAccount() account: RequestAccount, @Body() dto: MouvementDto) {
+    return this.espace.creerMouvement(account.id, dto);
+  }
+
+  @Patch('mouvements/:id')
+  modifierMouvement(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: ModifierMouvementDto) {
+    return this.espace.modifierMouvement(account.id, id, dto);
+  }
+
+  @Delete('mouvements/:id')
+  supprimerMouvement(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
+    return this.espace.supprimerMouvement(account.id, id);
   }
 
   // ------------------------------------------------------------- documents
