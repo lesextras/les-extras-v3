@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
+import { nomCourt } from '../../_nom';
 import { BTN_SECONDAIRE, CARTE, Carte, Encart, Pastille, SousTitre, Titre } from '../../_ui';
+import { ListeAgrements, NOMBRE_AGREMENTS, dateAgrements } from '../../ListeAgrements';
 import { LIBELLES_ROLE, dateCourte, type Espace } from '../_types';
 import { Rattacher } from './Rattacher';
 import { FormulaireOrganisation } from './FormulaireOrganisation';
@@ -56,11 +58,11 @@ export default async function MonAssociationPage() {
   return (
     <>
       <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier : qui vous êtes, qui décide, où verser l'argent — et tous vos papiers au même endroit.">
-        {o.nom}
+        {nomCourt(o.nom)}
       </Titre>
 
       {/* ------------------------------------------------------- mes papiers */}
-      <section className="mb-8 grid gap-4 md:grid-cols-2">
+      <section className="mb-8 grid gap-4 md:grid-cols-3">
         <Link href="/espace/classeur" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
           <span className="block text-lg font-extrabold text-[#1D1B5C]">Mes papiers</span>
           <span className="mt-1 block text-sm text-[#6B6A8A]">
@@ -74,6 +76,13 @@ export default async function MonAssociationPage() {
             {data.nbDocuments === 0 ? 'Conventions, courriers, photos, affiches : rien encore.' : `${data.nbDocuments} document${data.nbDocuments > 1 ? 's' : ''} rangé${data.nbDocuments > 1 ? 's' : ''}.`}
           </span>
           <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir mes documents →</span>
+        </Link>
+        <Link href="#agrements" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
+          <span className="block text-lg font-extrabold text-[#1D1B5C]">Nos agréments</span>
+          <span className="mt-1 block text-sm text-[#6B6A8A]">
+            Les {NOMBRE_AGREMENTS} reconnaissances officielles qu&apos;une association peut demander, et ce que chacune ouvre.
+          </span>
+          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Voir les agréments →</span>
         </Link>
       </section>
 
@@ -185,6 +194,17 @@ export default async function MonAssociationPage() {
             .
           </p>
         </Carte>
+      </section>
+
+      {/* ------------------------------------------------------- agréments */}
+      <section id="agrements" className="mt-10 scroll-mt-24">
+        <SousTitre>Nos agréments</SousTitre>
+        <p className="mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
+          Un agrément, c&apos;est l&apos;État qui reconnaît officiellement l&apos;association. Ce n&apos;est pas de l&apos;argent : ça ouvre des portes, des
+          financements réservés, et ça prouve ton sérieux. {NOMBRE_AGREMENTS} agréments existent — clique sur une famille pour voir ce que chacun ouvre et où le
+          demander. Relu le {dateAgrements()} ; la page officielle fait foi.
+        </p>
+        <ListeAgrements replie />
       </section>
 
       {/* ------------------------------------------------------ abonnement */}
