@@ -58,23 +58,23 @@ export function FormulaireConnexion({ suivant }: { suivant: string }) {
   if (etape === 'ouverture') {
     return (
       <form onSubmit={ouvrir} className="flex max-w-[560px] flex-col gap-5">
-        <p className="rounded-md border border-[#B9D6C6] bg-[#E4EFE8] px-4 py-3 text-sm">
-          Vous êtes connecté avec <span className="font-medium">{email.trim()}</span>, mais ce compte n&apos;a pas encore
+        <p className="rounded-xl border border-[#BFE6D2] bg-[#E3F5EC] px-4 py-3 text-sm">
+          Vous êtes connecté avec <span className="font-bold">{email.trim()}</span>, mais ce compte n&apos;a pas encore
           d&apos;espace d&apos;association. Dites-nous laquelle : on l&apos;ouvre tout de suite.
         </p>
         <fieldset className="flex flex-col gap-3">
-          <legend className="mb-1 text-xs uppercase tracking-[0.14em] text-[#5C6B63]">Votre association</legend>
+          <legend className="mb-1 text-xs uppercase tracking-[0.12em] text-[#6B6A8A]">Votre association</legend>
           <ChoixAssociation nom={nomAssociation} onNom={setNomAssociation} choisie={choisie} onChoisie={setChoisie} />
         </fieldset>
         {erreur ? (
-          <p role="alert" className="rounded-md border border-[#E4C9A0] bg-[#F7EBD6] px-4 py-3 text-sm text-[#7A4A0E]">
+          <p role="alert" className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">
             {erreur}
           </p>
         ) : null}
         <button
           type="submit"
           disabled={enCours || nomAssociation.trim().length < 3}
-          className="rounded-md bg-[#1F6A4E] px-5 py-3 text-base font-medium text-white hover:bg-[#185540] disabled:opacity-60"
+          className="rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA] disabled:opacity-60"
         >
           {enCours ? 'Ouverture…' : "Ouvrir l'espace de mon association"}
         </button>
@@ -85,7 +85,7 @@ export function FormulaireConnexion({ suivant }: { suivant: string }) {
   return (
     <form onSubmit={soumettre} className="flex max-w-[440px] flex-col gap-4">
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Adresse e-mail</span>
+        <span className="font-bold">Adresse e-mail</span>
         <input
           type="email"
           name="email"
@@ -97,7 +97,7 @@ export function FormulaireConnexion({ suivant }: { suivant: string }) {
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Mot de passe</span>
+        <span className="font-bold">Mot de passe</span>
         <input
           type="password"
           name="password"
@@ -109,14 +109,14 @@ export function FormulaireConnexion({ suivant }: { suivant: string }) {
         />
       </label>
       {erreur ? (
-        <p role="alert" className="rounded-md border border-[#E4C9A0] bg-[#F7EBD6] px-4 py-3 text-sm text-[#7A4A0E]">
+        <p role="alert" className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">
           {erreur}
         </p>
       ) : null}
       <button
         type="submit"
         disabled={enCours}
-        className="rounded-md bg-[#1F6A4E] px-5 py-3 text-base font-medium text-white hover:bg-[#185540] disabled:opacity-60"
+        className="rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA] disabled:opacity-60"
       >
         {enCours ? 'Connexion…' : 'Ouvrir mon espace'}
       </button>
