@@ -38,7 +38,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
       {/* ------------------------------------------------------------ bonjour */}
       <section className="rounded-2xl bg-[#ECEBFC] px-6 py-8 text-center sm:py-10">
         <h1 className="text-3xl font-extrabold tracking-tight text-[#1D1B5C] sm:text-4xl">
-          Bonjour{prenom ? ` ${prenom}` : ''},
+          {prenom ? `Bonjour ${prenom},` : 'Bonjour !'}
         </h1>
         <p className="mt-2 text-lg text-[#3B3A66]">
           {bienvenue ? (
