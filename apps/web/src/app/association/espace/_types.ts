@@ -45,6 +45,97 @@ export interface Dossier {
   dateCompteRendu: string | null;
   piecesExigees: string[];
   notes: string | null;
+  budgetPrevu: LigneBudget[];
+  budgetRealise: LigneBudget[];
+  totaux: { prevu: TotauxBudget; realise: TotauxBudget };
+  bilanAction: string | null;
+  nombreBeneficiaires: number | null;
+}
+
+export interface LigneBudget {
+  libelle: string;
+  montant: number;
+  sens: 'DEPENSE' | 'RECETTE';
+}
+
+export interface TotauxBudget {
+  depenses: number;
+  recettes: number;
+  equilibre: boolean;
+}
+
+export type RoleContact = 'PRESIDENT' | 'TRESORIER' | 'SECRETAIRE' | 'MEMBRE_BUREAU' | 'MEMBRE' | 'BENEVOLE' | 'SALARIE' | 'PARTENAIRE' | 'FINANCEUR' | 'ELU' | 'AUTRE';
+
+export const LIBELLES_ROLE: Record<RoleContact, string> = {
+  PRESIDENT: 'Président·e',
+  TRESORIER: 'Trésorier·ère',
+  SECRETAIRE: 'Secrétaire',
+  MEMBRE_BUREAU: 'Membre du bureau',
+  MEMBRE: 'Membre',
+  BENEVOLE: 'Bénévole',
+  SALARIE: 'Salarié·e',
+  PARTENAIRE: 'Partenaire',
+  FINANCEUR: 'Financeur',
+  ELU: 'Élu·e',
+  AUTRE: 'Autre',
+};
+
+export interface Contact {
+  id: string;
+  prenom: string;
+  nom: string;
+  email: string | null;
+  telephone: string | null;
+  structure: string | null;
+  roles: RoleContact[];
+  dateAdhesion: string | null;
+  cotisationAJour: boolean;
+  mandatDebut: string | null;
+  mandatFin: string | null;
+  notes: string | null;
+}
+
+export interface ResumeContacts {
+  total: number;
+  membres: number;
+  membresAJour: number;
+  benevoles: number;
+  salaries: number;
+  partenaires: number;
+  bureau: { id: string; nom: string; roles: RoleContact[] }[];
+}
+
+export interface DocumentLibre {
+  id: string;
+  titre: string;
+  categorie: string | null;
+  note: string | null;
+  fileId: string | null;
+  file: { id: string; originalName: string; size: number; mimeType: string } | null;
+  createdAt: string;
+}
+
+export interface Projet {
+  pourQui: string | null;
+  quoi: string | null;
+  comment: string | null;
+  apres: string | null;
+  demande: string | null;
+  remplis: number;
+  complet: boolean;
+  texte: string;
+}
+
+export interface VieStatutaire {
+  dateDerniereAG: string | null;
+  dureeMandatMois: number;
+  joursDepuisAG: number | null;
+  prochaineAG: string | null;
+  agEnRetard: boolean;
+  agBientot: boolean;
+  bureau: { president: boolean; tresorier: boolean; secretaire: boolean };
+  mandatsExpires: { id: string; nom: string; roles: RoleContact[]; mandatFin: string }[];
+  mandatsBientot: { id: string; nom: string; roles: RoleContact[]; mandatFin: string }[];
 }
 
 export interface Dispositif {
@@ -72,6 +163,8 @@ export interface Organisation {
   niveau: 'PETITE' | 'GESTIONNAIRE' | 'RESEAU';
   moisClotureExercice: number;
   etapesFaites: string[];
+  dateDerniereAG: string | null;
+  dureeMandatMois: number;
 }
 
 export interface Espace {
@@ -86,8 +179,18 @@ export interface Espace {
     manque: { typeCode: string; libelle: string; dossiers: number }[];
     cetteAnnee: { annee: number; obtenu: number; dossiersAccordes: number; dossiersDecides: number; tauxReussite: number | null; piecesPerimees: number; etapesFaites: number };
   };
+  projet: Projet;
+  vieStatutaire: VieStatutaire;
+  repertoire: ResumeContacts;
+  nbDocuments: number;
+  configuration: { etapes: { code: string; libelle: string; faite: boolean; href: string }[]; faites: number; total: number; pourcentage: number };
   versionReferentiel: string;
   dispositifs: Dispositif[];
+}
+
+export function formaterEuros(n: number | null | undefined) {
+  if (n === null || n === undefined) return '—';
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }
 
 export const LIBELLES_ETAT: Record<EtatDossier, string> = {
