@@ -20,6 +20,8 @@ interface Entree {
   icone: ReactNode;
   /** Une pastille à côté du libellé. */
   pastille?: string;
+  /** L'entrée porte la troisième couleur du site, le rouge rosé. */
+  accent?: boolean;
 }
 
 const i = (d: string) => (
@@ -53,16 +55,20 @@ export const ICONES = {
   fermer: i('M18 6L6 18M6 6l12 12'),
   aide: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'),
   chevron: i('M6 9l6 6 6-6'),
+  /** La boussole de la marque : « Piloter mon association ». */
+  boussole: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z'),
+  courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
 };
 
 /**
- * UNE SEULE LISTE. « Accueil » et « Ce lundi » sont la même page (le tableau de
- * bord quand on est connectée) ; « Mon association » porte le classeur, les
- * documents, la fiche publique, les agréments et le secrétariat ; « Ce à quoi j'ai droit »
- * porte les outils utiles.
+ * UNE SEULE LISTE. « Piloter mon association » est l'accueil : la marque et la
+ * porte d'entrée, en rouge rosé. « Ce lundi » est la même page une fois
+ * connectée ; « Mon association » porte le classeur, les documents, la fiche
+ * publique, les agréments et le secrétariat ; « Ce à quoi j'ai droit » porte les
+ * outils utiles.
  */
 const MENU: Entree[] = [
-  { href: '/', libelle: 'Accueil', icone: ICONES.accueil },
+  { href: '/', libelle: 'Piloter mon association', icone: ICONES.boussole, accent: true },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
@@ -120,10 +126,16 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
           href={e.href}
           aria-current={estActif ? 'page' : undefined}
           className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold no-underline transition ${
-            estActif ? 'bg-[#4F46E5] text-white' : 'text-[#D9D7F2] hover:bg-white/10 hover:text-white'
+            estActif
+              ? e.accent
+                ? 'bg-[#D6335C] text-white'
+                : 'bg-[#4F46E5] text-white'
+              : e.accent
+                ? 'text-[#F3B0C2] hover:bg-[#D6335C]/25 hover:text-white'
+                : 'text-[#D9D7F2] hover:bg-white/10 hover:text-white'
           }`}
         >
-          <span className={estActif ? 'text-white' : 'text-[#A9A6D9]'}>{e.icone}</span>
+          <span className={estActif ? 'text-white' : e.accent ? 'text-[#F3B0C2]' : 'text-[#A9A6D9]'}>{e.icone}</span>
           <span className="flex-1">{e.libelle}</span>
           {e.pastille && !estActif ? (
             <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#1D1B5C]">{e.pastille}</span>
@@ -179,13 +191,13 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
             </Link>
           </div>
         )}
-        {compte ? (
-          <Link href="/" className="mt-4 flex items-center justify-center gap-2 no-underline">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/association/marque.svg" alt="" width={28} height={28} className="h-7 w-7 rounded-lg" />
-            <span className="text-sm font-extrabold text-white">Piloter mon association</span>
-          </Link>
-        ) : null}
+        {/* En bas, toujours : de quoi nous écrire. */}
+        <Link
+          href="/nous-contacter"
+          className="mt-4 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold text-[#D9D7F2] no-underline transition hover:bg-white/10 hover:text-white"
+        >
+          <span className="text-[#A9A6D9]">{ICONES.courrier}</span> Nous contacter
+        </Link>
       </div>
     </div>
   );
@@ -242,23 +254,9 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         <Link href="/chemin" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">
           {ICONES.aide} Centre d&apos;aide
         </Link>
-        {/* Deux portes, comme chez HelloAsso : on n'a pas encore d'association, ou on en a déjà une. */}
-        {!compte ? (
-          <>
-            <Link
-              href="/inscription?type=particulier"
-              className="hidden items-center gap-1.5 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] lg:flex"
-            >
-              Espace particulier
-            </Link>
-            <Link
-              href="/inscription?type=association"
-              className="hidden items-center gap-1.5 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] lg:flex"
-            >
-              Espace association
-            </Link>
-          </>
-        ) : null}
+        <Link href="/nous-contacter" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] lg:flex">
+          {ICONES.courrier} Nous contacter
+        </Link>
       </div>
 
       {/* Au centre : l'entrée la plus importante, l'argent. */}
@@ -302,8 +300,18 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
             <Link href="/connexion" className="rounded-xl px-3 py-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:bg-[#F5F4FC]">
               Connexion
             </Link>
-            <Link href="/inscription" className="hidden rounded-xl bg-[#4F46E5] px-4 py-2 text-[15px] font-bold text-white no-underline hover:bg-[#4338CA] sm:inline-flex">
-              Créer mon espace
+            {/* Deux portes, comme chez HelloAsso : pas encore d'association, ou déjà une. */}
+            <Link
+              href="/inscription?type=particulier"
+              className="hidden rounded-xl border-2 border-[#C7C4F2] px-3 py-1.5 text-[14px] font-bold text-[#4338CA] no-underline transition hover:border-[#4F46E5] hover:bg-[#ECEBFC] md:inline-flex"
+            >
+              Créer espace particulier
+            </Link>
+            <Link
+              href="/inscription?type=association"
+              className="hidden rounded-xl bg-[#4F46E5] px-3 py-2 text-[14px] font-bold text-white no-underline transition hover:bg-[#4338CA] sm:inline-flex"
+            >
+              Créer espace association
             </Link>
           </>
         )}
