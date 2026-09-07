@@ -70,7 +70,7 @@ export default async function DossiersPage({ searchParams }: { searchParams: Pro
         })}
       </div>
 
-      <NouveauDossier dispositifs={data.dispositifs} />
+      <NouveauDossier />
 
       <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLONNES.map((col) => {
@@ -87,6 +87,7 @@ export default async function DossiersPage({ searchParams }: { searchParams: Pro
                     <Link href={`/espace/dossiers/${d.id}`} className={`${CARTE} block p-3 no-underline transition hover:border-[#4F46E5]`}>
                       <span className="block font-extrabold leading-snug text-[#1D1B5C]">{d.intitule}</span>
                       <span className="block text-sm text-[#6B6A8A]">{d.financeur}</span>
+                      {d.ideeProjet ? <span className="mt-1 line-clamp-2 block text-xs text-[#6B6A8A]">{d.ideeProjet}</span> : null}
                       {choisie === null ? (
                         <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold ${d.nature === 'APPEL_A_PROJET' ? 'bg-[#FEF3E2] text-[#7C3E06]' : 'bg-[#ECEBFC] text-[#4338CA]'}`}>
                           {LIBELLES_NATURE[d.nature ?? 'SUBVENTION']}
