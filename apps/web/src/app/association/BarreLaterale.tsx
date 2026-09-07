@@ -65,8 +65,6 @@ const MENU: Entree[] = [
   { href: '/', libelle: 'Accueil', icone: ICONES.accueil },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
-  { href: '/espace/dossiers', libelle: 'Mes subventions et appels à projet', icone: ICONES.dossiers },
-  { href: '/espace/financeurs', libelle: 'Trouver des financeurs', icone: ICONES.verifier },
   { href: '/espace/secretariat', libelle: 'Mon secrétariat', icone: ICONES.budget },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
   { href: '/espace/repertoire', libelle: 'Mon équipe', icone: ICONES.droits },
@@ -80,6 +78,7 @@ const MENU: Entree[] = [
 const PORTEES: Record<string, string> = {
   '/espace': '/',
   '/espace/actions': '/espace/projets',
+  '/espace/financeurs': '/espace/projets',
   '/espace/budget': '/espace/secretariat',
   '/espace/documents': '/espace/association',
   '/espace/classeur': '/espace/association',
@@ -223,8 +222,8 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
 export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
   const [menu, setMenu] = useState(false);
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#E6E4F3] bg-white px-4 py-2.5 sm:px-8">
-      <div className="flex min-w-0 items-center gap-4">
+    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-[#E6E4F3] bg-white px-4 py-2.5 sm:px-8">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
         <Link href="/" className="flex items-center gap-2 no-underline lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/association/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
@@ -244,7 +243,17 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
           {ICONES.aide} Centre d&apos;aide
         </Link>
       </div>
-      <div className="relative flex items-center gap-2">
+
+      {/* Au centre : l'entrée la plus importante, l'argent. */}
+      <Link
+        href="/espace/dossiers"
+        className="shrink-0 rounded-xl bg-[#D6335C] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#BC2A4E] sm:px-5 sm:text-[15px]"
+      >
+        <span className="sm:hidden">Mes subventions</span>
+        <span className="hidden sm:inline">Mes subventions et appels à projet</span>
+      </Link>
+
+      <div className="relative flex flex-1 items-center justify-end gap-2">
         {compte ? (
           <>
             <button
