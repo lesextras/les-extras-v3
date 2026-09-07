@@ -276,6 +276,7 @@ model Account {
   attachmentRequestsAsRequester AttachmentRequest[]  @relation("AttachmentRequesterAccount")
   /// Demandes de rattachement reçues par CET établissement (à approuver/refuser).
   attachmentRequestsReceived    AttachmentRequest[]  @relation("AttachmentTarget")
+  organisation                  Organisation?
 
   @@index([type])
   @@index([slug])
@@ -1042,6 +1043,9 @@ enum UserStatus {
 enum AccountType {
   ESTABLISHMENT
   FREELANCE
+  /// Piloter mon association (association.toulali.fr) : une association qui
+  /// pilote son financement et sa conformité. Ni intervenant, ni établissement.
+  ASSOCIATION
 }
 
 enum AccountRole {
@@ -1816,6 +1820,7 @@ model FileAsset {
   missions            ReliefMission[]
   documents           Document[]
   avatarOf            User[]               @relation("UserAvatar")
+  piecesAssociation   PieceAssociation[]   @relation("PieceAssociationFichier")
 
   @@index([uploaderId])
   @@index([accountId])
@@ -2726,4 +2731,117 @@ model VuePage {
   @@unique([jour, chemin, source, medium, campagne])
   @@index([jour])
   @@index([source, jour])
+}
+
+// =============================================================================
+// PILOTER MON ASSOCIATION (association.toulali.fr)
+//
+// Le poste de pilotage d'une association : son identité (pré-remplie depuis
+// les répertoires publics), son classeur de pièces à péremption, ses dossiers
+// de financement. Les référentiels (types de pièces, dispositifs, étapes du
+// chemin) sont des fichiers versionnés dans apps/api/src/association/ ; la
+// base ne garde que ce qui appartient à l'association.
+// =============================================================================
+
+/// Taille et organisation, pour révéler les fonctions progressivement.
+enum NiveauOrganisation {
+  PETITE
+  GESTIONNAIRE
+  RESEAU
+}
+
+/// État d'une pièce du classeur.
+/// DEDUITE : prouvée par les données publiques (RNA, SIRENE), rien à déposer.
+/// PRESENTE : un fichier a été déposé. A_FOURNIR : rien encore.
+enum EtatPiece {
+  A_FOURNIR
+  DEDUITE
+  PRESENTE
+}
+
+/// Cycle de vie d'un dossier de financement, du repérage au solde.
+enum EtatDossier {
+  REPERE
+  EN_ECRITURE
+  DEPOSE
+  ACCORDE
+  REFUSE
+  SOLDE
+}
+
+model Organisation {
+  id                  String             @id @default(cuid())
+  accountId           String             @unique
+  account             Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  nom                 String
+  sigle               String?
+  rna                 String?
+  siren               String?
+  siret               String?
+  natureJuridique     String?
+  adresse             String?
+  codePostal          String?
+  commune             String?
+  dateCreation        DateTime?
+  niveau              NiveauOrganisation @default(PETITE)
+  /// Mois de clôture de l'exercice comptable (12 = année civile).
+  moisClotureExercice Int                @default(12)
+  /// Étapes du chemin cochées « je l'ai fait » (slugs).
+  etapesFaites        String[]           @default([])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  pieces   PieceAssociation[]
+  dossiers DossierFinancement[]
+
+  @@index([siren])
+  @@index([rna])
+}
+
+model PieceAssociation {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  /// Code du référentiel (STATUTS, RIB, ASSURANCE_RC…).
+  typeCode       String
+  etat           EtatPiece    @default(A_FOURNIR)
+  /// Ce que les données publiques prouvent (« Numéro RNA W… »).
+  preuve         String?
+  fileId         String?
+  file           FileAsset?   @relation("PieceAssociationFichier", fields: [fileId], references: [id], onDelete: SetNull)
+  dateEmission   DateTime?
+  dateExpiration DateTime?
+  /// Exercice concerné pour les pièces annuelles (comptes, rapport, budget).
+  exercice       Int?
+  note           String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organisationId, typeCode])
+  @@index([organisationId, dateExpiration])
+}
+
+model DossierFinancement {
+  id              String       @id @default(cuid())
+  organisationId  String
+  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  /// Code d'un dispositif du référentiel, s'il en vient.
+  dispositifCode  String?
+  financeur       String
+  intitule        String
+  etat            EtatDossier  @default(REPERE)
+  montantDemande  Decimal?     @db.Decimal(12, 2)
+  montantAccorde  Decimal?     @db.Decimal(12, 2)
+  dateLimiteDepot DateTime?
+  dateDepot       DateTime?
+  dateDecision    DateTime?
+  dateCompteRendu DateTime?
+  /// Codes des pièces exigées par ce financeur.
+  piecesExigees   String[]     @default([])
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organisationId, etat])
+  @@index([organisationId, dateLimiteDepot])
 }
