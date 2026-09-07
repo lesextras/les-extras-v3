@@ -42,7 +42,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
     <>
       <nav className="mb-4 text-sm text-[#6B6A8A]" aria-label="Fil d'Ariane">
         <Link href="/espace/dossiers" className="font-bold text-[#4F46E5] underline underline-offset-4">
-          Mes dossiers de subvention
+          Mes subventions et appels à projet
         </Link>
         <span className="mx-2">›</span>
         <span>{d.intitule}</span>
