@@ -22,12 +22,17 @@ import type { FichierRecu } from '../storage/files.service';
 import { TAILLE_MAX_GLOBALE } from '../storage/file-rules';
 import { EspaceService } from './espace.service';
 import {
+  ContactDto,
+  DocumentDto,
   DossierDto,
   EtapeFaiteDto,
+  ModifierContactDto,
   ModifierDossierDto,
   ModifierOrganisationDto,
   ModifierPieceDto,
+  ProjetDto,
   RattacherOrganisationDto,
+  VieStatutaireDto,
 } from './dto/espace.dto';
 
 /**
@@ -109,6 +114,68 @@ export class AssociationEspaceController {
   @Delete('dossiers/:id')
   supprimerDossier(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
     return this.espace.supprimerDossier(account.id, id);
+  }
+
+  // ------------------------------------------------ projet, vie statutaire
+
+  @Patch('projet')
+  modifierProjet(@CurrentAccount() account: RequestAccount, @Body() dto: ProjetDto) {
+    return this.espace.modifierProjet(account.id, dto);
+  }
+
+  @Patch('vie-statutaire')
+  modifierVieStatutaire(@CurrentAccount() account: RequestAccount, @Body() dto: VieStatutaireDto) {
+    return this.espace.modifierVieStatutaire(account.id, dto);
+  }
+
+  // ------------------------------------------------------------ répertoire
+
+  @Get('repertoire')
+  contacts(@CurrentAccount() account: RequestAccount) {
+    return this.espace.contacts(account.id);
+  }
+
+  @Post('repertoire')
+  creerContact(@CurrentAccount() account: RequestAccount, @Body() dto: ContactDto) {
+    return this.espace.creerContact(account.id, dto);
+  }
+
+  @Patch('repertoire/:id')
+  modifierContact(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: ModifierContactDto) {
+    return this.espace.modifierContact(account.id, id, dto);
+  }
+
+  @Delete('repertoire/:id')
+  supprimerContact(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
+    return this.espace.supprimerContact(account.id, id);
+  }
+
+  // ------------------------------------------------------------- documents
+
+  @Get('documents')
+  documents(@CurrentAccount() account: RequestAccount) {
+    return this.espace.documents(account.id);
+  }
+
+  @Post('documents')
+  @Throttle({ default: { limit: 60, ttl: 3_600_000 } })
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: TAILLE_MAX_GLOBALE, files: 1 } }))
+  deposerDocument(
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+    @UploadedFile() fichier: FichierRecu | undefined,
+    @Body() dto: DocumentDto,
+  ) {
+    if (!fichier) throw new BadRequestException('Aucun fichier reçu.');
+    const propre: DocumentDto = { titre: dto.titre };
+    if (dto.categorie) propre.categorie = dto.categorie;
+    if (dto.note) propre.note = dto.note;
+    return this.espace.deposerDocument(account.id, user.id, fichier, propre);
+  }
+
+  @Delete('documents/:id')
+  supprimerDocument(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.espace.supprimerDocument(account.id, user.id, user.role, id);
   }
 
   /** Les champs d'un formulaire multipart arrivent en chaînes : vide = absent. */

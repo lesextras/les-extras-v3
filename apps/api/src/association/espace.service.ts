@@ -14,9 +14,11 @@ import {
   MembershipStatus,
   Prisma,
   UserStatus,
+  type ContactAssociation,
   type DossierFinancement,
   type GlobalRole,
   type PieceAssociation,
+  RoleContact,
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -31,12 +33,18 @@ import {
 } from './referentiel-pieces';
 import { ETAPES_CHEMIN } from './chemin';
 import type {
+  ContactDto,
+  DocumentDto,
   DossierDto,
   InscriptionAssociationDto,
+  LigneBudgetDto,
+  ModifierContactDto,
   ModifierDossierDto,
   ModifierOrganisationDto,
   ModifierPieceDto,
   OuvrirEspaceDto,
+  ProjetDto,
+  VieStatutaireDto,
 } from './dto/espace.dto';
 
 const BCRYPT_ROUNDS = 12;
@@ -481,6 +489,10 @@ export class EspaceService {
         dateCompteRendu: dto.dateCompteRendu ? new Date(dto.dateCompteRendu) : null,
         piecesExigees: dto.piecesExigees?.length ? dto.piecesExigees : (dispositif?.piecesExigees ?? []),
         notes: dto.notes ?? null,
+        budgetPrevu: dto.budgetPrevu ? this.lignesBudget(dto.budgetPrevu) : undefined,
+        budgetRealise: dto.budgetRealise ? this.lignesBudget(dto.budgetRealise) : undefined,
+        bilanAction: dto.bilanAction ?? null,
+        nombreBeneficiaires: dto.nombreBeneficiaires ?? null,
       },
     });
     return this.dossier(accountId, dossier.id);
@@ -504,6 +516,10 @@ export class EspaceService {
       dateCompteRendu: date(dto.dateCompteRendu),
       piecesExigees: dto.piecesExigees,
       notes: dto.notes === undefined ? undefined : dto.notes,
+      budgetPrevu: dto.budgetPrevu === undefined ? undefined : this.lignesBudget(dto.budgetPrevu),
+      budgetRealise: dto.budgetRealise === undefined ? undefined : this.lignesBudget(dto.budgetRealise),
+      bilanAction: dto.bilanAction === undefined ? undefined : dto.bilanAction,
+      nombreBeneficiaires: dto.nombreBeneficiaires === undefined ? undefined : dto.nombreBeneficiaires,
     };
     // Passer en DEPOSE sans date de dépôt : on prend aujourd'hui.
     if (dto.etat === EtatDossier.DEPOSE && !existant.dateDepot && dto.dateDepot === undefined) {
@@ -551,17 +567,240 @@ export class EspaceService {
     };
   }
 
+  // ------------------------------------------------------------------- projet
+
+  /** Le projet en une page : quatre questions, et ce qu'on demande. */
+  async modifierProjet(accountId: string, dto: ProjetDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const nettoyer = (v: string | null | undefined) => (v === undefined ? undefined : v?.trim() || null);
+    const maj = await this.prisma.organisation.update({
+      where: { id: organisation.id },
+      data: {
+        projetPourQui: nettoyer(dto.pourQui),
+        projetQuoi: nettoyer(dto.quoi),
+        projetComment: nettoyer(dto.comment),
+        projetApres: nettoyer(dto.apres),
+        projetDemande: nettoyer(dto.demande),
+      },
+    });
+    return this.projetDe(maj);
+  }
+
+  private projetDe(o: { projetPourQui: string | null; projetQuoi: string | null; projetComment: string | null; projetApres: string | null; projetDemande: string | null }) {
+    const champs = [o.projetPourQui, o.projetQuoi, o.projetComment, o.projetApres];
+    const remplis = champs.filter((c) => c && c.trim().length > 0).length;
+    const texte = [
+      o.projetPourQui ? `Pour qui ? ${o.projetPourQui.trim()}` : null,
+      o.projetQuoi ? `Quoi ? ${o.projetQuoi.trim()}` : null,
+      o.projetComment ? `Comment ? ${o.projetComment.trim()}` : null,
+      o.projetApres ? `Et après ? ${o.projetApres.trim()}` : null,
+      o.projetDemande ? `Ce que nous demandons : ${o.projetDemande.trim()}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+    return {
+      pourQui: o.projetPourQui,
+      quoi: o.projetQuoi,
+      comment: o.projetComment,
+      apres: o.projetApres,
+      demande: o.projetDemande,
+      remplis,
+      complet: remplis === 4,
+      texte,
+    };
+  }
+
+  // ---------------------------------------------------------- vie statutaire
+
+  async modifierVieStatutaire(accountId: string, dto: VieStatutaireDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const maj = await this.prisma.organisation.update({
+      where: { id: organisation.id },
+      data: {
+        dateDerniereAG: dto.dateDerniereAG === undefined ? undefined : dto.dateDerniereAG ? new Date(dto.dateDerniereAG) : null,
+        dureeMandatMois: dto.dureeMandatMois,
+      },
+    });
+    return this.vieStatutaireDe(maj, await this.prisma.contactAssociation.findMany({ where: { organisationId: maj.id } }));
+  }
+
+  private vieStatutaireDe(o: { dateDerniereAG: Date | null; dureeMandatMois: number }, contacts: ContactAssociation[]) {
+    const maintenant = Date.now();
+    const joursDepuisAG = o.dateDerniereAG ? Math.floor((maintenant - o.dateDerniereAG.getTime()) / JOUR) : null;
+    const prochaineAG = o.dateDerniereAG ? this.ajouterMois(o.dateDerniereAG, 12) : null;
+    const bureau = contacts.filter((c) => c.roles.some((r) => r === RoleContact.PRESIDENT || r === RoleContact.TRESORIER || r === RoleContact.SECRETAIRE));
+    const mandatsExpires = bureau
+      .filter((c) => c.mandatFin && c.mandatFin.getTime() < maintenant)
+      .map((c) => ({ id: c.id, nom: `${c.prenom} ${c.nom}`, roles: c.roles, mandatFin: c.mandatFin }));
+    const mandatsBientot = bureau
+      .filter((c) => c.mandatFin && c.mandatFin.getTime() >= maintenant && c.mandatFin.getTime() < maintenant + HORIZON_JOURS * JOUR)
+      .map((c) => ({ id: c.id, nom: `${c.prenom} ${c.nom}`, roles: c.roles, mandatFin: c.mandatFin }));
+    return {
+      dateDerniereAG: o.dateDerniereAG,
+      dureeMandatMois: o.dureeMandatMois,
+      joursDepuisAG,
+      prochaineAG,
+      agEnRetard: joursDepuisAG !== null && joursDepuisAG > 365,
+      agBientot: prochaineAG !== null && prochaineAG.getTime() > maintenant && prochaineAG.getTime() < maintenant + HORIZON_JOURS * JOUR,
+      bureau: {
+        president: bureau.some((c) => c.roles.includes(RoleContact.PRESIDENT)),
+        tresorier: bureau.some((c) => c.roles.includes(RoleContact.TRESORIER)),
+        secretaire: bureau.some((c) => c.roles.includes(RoleContact.SECRETAIRE)),
+      },
+      mandatsExpires,
+      mandatsBientot,
+    };
+  }
+
+  // -------------------------------------------------------------- répertoire
+
+  async contacts(accountId: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const contacts = await this.prisma.contactAssociation.findMany({
+      where: { organisationId: organisation.id },
+      orderBy: [{ nom: 'asc' }, { prenom: 'asc' }],
+    });
+    return { contacts: contacts.map((c) => this.decorerContact(c)), resume: this.resumeContacts(contacts) };
+  }
+
+  async creerContact(accountId: string, dto: ContactDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const c = await this.prisma.contactAssociation.create({
+      data: {
+        organisationId: organisation.id,
+        prenom: dto.prenom.trim(),
+        nom: dto.nom.trim(),
+        email: dto.email?.trim().toLowerCase() || null,
+        telephone: dto.telephone?.trim() || null,
+        structure: dto.structure?.trim() || null,
+        roles: dto.roles ?? [RoleContact.MEMBRE],
+        dateAdhesion: dto.dateAdhesion ? new Date(dto.dateAdhesion) : null,
+        cotisationAJour: dto.cotisationAJour ?? false,
+        mandatDebut: dto.mandatDebut ? new Date(dto.mandatDebut) : null,
+        mandatFin: dto.mandatFin ? new Date(dto.mandatFin) : null,
+        notes: dto.notes?.trim() || null,
+      },
+    });
+    return this.decorerContact(c);
+  }
+
+  async modifierContact(accountId: string, id: string, dto: ModifierContactDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const existant = await this.prisma.contactAssociation.findFirst({ where: { id, organisationId: organisation.id } });
+    if (!existant) throw new NotFoundException('Cette personne est introuvable.');
+    const date = (v: string | null | undefined) => (v === undefined ? undefined : v ? new Date(v) : null);
+    const texte = (v: string | null | undefined) => (v === undefined ? undefined : v?.trim() || null);
+    const c = await this.prisma.contactAssociation.update({
+      where: { id },
+      data: {
+        prenom: dto.prenom?.trim(),
+        nom: dto.nom?.trim(),
+        email: dto.email === undefined ? undefined : dto.email?.trim().toLowerCase() || null,
+        telephone: texte(dto.telephone),
+        structure: texte(dto.structure),
+        roles: dto.roles,
+        dateAdhesion: date(dto.dateAdhesion),
+        cotisationAJour: dto.cotisationAJour,
+        mandatDebut: date(dto.mandatDebut),
+        mandatFin: date(dto.mandatFin),
+        notes: texte(dto.notes),
+      },
+    });
+    return this.decorerContact(c);
+  }
+
+  async supprimerContact(accountId: string, id: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const existant = await this.prisma.contactAssociation.findFirst({ where: { id, organisationId: organisation.id } });
+    if (!existant) throw new NotFoundException('Cette personne est introuvable.');
+    await this.prisma.contactAssociation.delete({ where: { id } });
+    return { ok: true };
+  }
+
+  private decorerContact(c: ContactAssociation) {
+    return {
+      id: c.id,
+      prenom: c.prenom,
+      nom: c.nom,
+      email: c.email,
+      telephone: c.telephone,
+      structure: c.structure,
+      roles: c.roles,
+      dateAdhesion: c.dateAdhesion,
+      cotisationAJour: c.cotisationAJour,
+      mandatDebut: c.mandatDebut,
+      mandatFin: c.mandatFin,
+      notes: c.notes,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    };
+  }
+
+  private resumeContacts(contacts: ContactAssociation[]) {
+    const equipe = (r: RoleContact) => contacts.filter((c) => c.roles.includes(r)).length;
+    const membres = contacts.filter((c) => c.roles.includes(RoleContact.MEMBRE));
+    return {
+      total: contacts.length,
+      membres: membres.length,
+      membresAJour: membres.filter((c) => c.cotisationAJour).length,
+      benevoles: equipe(RoleContact.BENEVOLE),
+      salaries: equipe(RoleContact.SALARIE),
+      partenaires: contacts.filter((c) => c.roles.includes(RoleContact.PARTENAIRE) || c.roles.includes(RoleContact.FINANCEUR) || c.roles.includes(RoleContact.ELU)).length,
+      bureau: contacts
+        .filter((c) => c.roles.some((r) => r === RoleContact.PRESIDENT || r === RoleContact.TRESORIER || r === RoleContact.SECRETAIRE))
+        .map((c) => ({ id: c.id, nom: `${c.prenom} ${c.nom}`, roles: c.roles })),
+    };
+  }
+
+  // --------------------------------------------------------------- documents
+
+  async documents(accountId: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const docs = await this.prisma.documentAssociation.findMany({
+      where: { organisationId: organisation.id },
+      orderBy: { createdAt: 'desc' },
+      include: { file: { select: { id: true, originalName: true, size: true, mimeType: true } } },
+    });
+    return docs;
+  }
+
+  async deposerDocument(accountId: string, userId: string, fichier: FichierRecu, dto: DocumentDto) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const depose = await this.files.deposer({ fichier, famille: FileKind.COMPLIANCE, userId, accountId });
+    return this.prisma.documentAssociation.create({
+      data: {
+        organisationId: organisation.id,
+        titre: dto.titre.trim(),
+        categorie: dto.categorie?.trim() || null,
+        note: dto.note?.trim() || null,
+        fileId: depose.id,
+      },
+      include: { file: { select: { id: true, originalName: true, size: true, mimeType: true } } },
+    });
+  }
+
+  async supprimerDocument(accountId: string, userId: string, role: GlobalRole, id: string) {
+    const organisation = await this.organisationDuCompte(accountId);
+    const existant = await this.prisma.documentAssociation.findFirst({ where: { id, organisationId: organisation.id } });
+    if (!existant) throw new NotFoundException('Ce document est introuvable.');
+    await this.prisma.documentAssociation.delete({ where: { id } });
+    if (existant.fileId) await this.files.supprimer(existant.fileId, userId, role).catch(() => undefined);
+    return { ok: true };
+  }
+
   // ------------------------------------------------------------------- espace
 
   /** Tout ce qu'affiche l'espace, en un seul appel. */
   async espace(accountId: string) {
     const organisation = await this.organisationDuCompte(accountId);
-    const [pieces, dossiers] = await Promise.all([
+    const [pieces, dossiers, contacts, nbDocuments] = await Promise.all([
       this.prisma.pieceAssociation.findMany({ where: { organisationId: organisation.id } }),
       this.prisma.dossierFinancement.findMany({
         where: { organisationId: organisation.id },
         orderBy: [{ dateLimiteDepot: 'asc' }, { createdAt: 'desc' }],
       }),
+      this.prisma.contactAssociation.findMany({ where: { organisationId: organisation.id } }),
+      this.prisma.documentAssociation.count({ where: { organisationId: organisation.id } }),
     ]);
 
     const classeur: LigneClasseur[] = TYPES_DE_PIECES.map((type) => {
@@ -583,6 +822,22 @@ export class EspaceService {
         (e.verifiableAvec === 'SIRENE' && Boolean(organisation.siret)),
     }));
     const etapesFaites = etapes.filter((e) => e.faite).length;
+    const projet = this.projetDe(organisation);
+    const vieStatutaire = this.vieStatutaireDe(organisation, contacts);
+    const repertoire = this.resumeContacts(contacts);
+
+    // « Termine la configuration de ton espace » : cinq cases, comme un parcours d'accueil.
+    const identite = classeur.filter((c) => c.type.categorie === 'IDENTITE');
+    const identiteOk = identite.filter((c) => c.situation === 'A_JOUR' || c.situation === 'DEDUITE').length;
+    const configuration = [
+      { code: 'ESPACE', libelle: "Créer l'espace de mon association", faite: true, href: '/espace' },
+      { code: 'RATTACHER', libelle: 'Rattacher mon association (RNA, SIRET)', faite: Boolean(organisation.rna || organisation.siret), href: '/espace/association' },
+      { code: 'BUREAU', libelle: 'Noter qui est président, trésorier, secrétaire', faite: vieStatutaire.bureau.president && vieStatutaire.bureau.tresorier, href: '/espace/repertoire' },
+      { code: 'PAPIERS', libelle: `Déposer les papiers d'identité (${identiteOk}/${identite.length})`, faite: identite.length > 0 && identiteOk === identite.length, href: '/espace/classeur' },
+      { code: 'PROJET', libelle: 'Écrire le projet en une page', faite: projet.complet, href: '/espace/association#projet' },
+      { code: 'DOSSIER', libelle: 'Créer mon premier dossier de subvention', faite: dossiers.length > 0, href: '/espace/dossiers' },
+    ];
+    const configurationFaites = configuration.filter((c) => c.faite).length;
 
     return {
       organisation,
@@ -590,6 +845,11 @@ export class EspaceService {
       dossiers: dossiers.map((d) => this.decorerDossier(d)),
       chemin: { etapes, faites: etapesFaites, total: etapes.length, pourcentage: Math.round((etapesFaites / etapes.length) * 100) },
       lundi: this.ecranDuLundi(classeur, dossiers, organisation.etapesFaites.length + etapes.filter((e) => e.verifiee).length),
+      projet,
+      vieStatutaire,
+      repertoire,
+      nbDocuments,
+      configuration: { etapes: configuration, faites: configurationFaites, total: configuration.length, pourcentage: Math.round((configurationFaites / configuration.length) * 100) },
       versionReferentiel: VERSION_REFERENTIEL,
       dispositifs: DISPOSITIFS,
     };
@@ -728,9 +988,39 @@ export class EspaceService {
       dateCompteRendu: d.dateCompteRendu,
       piecesExigees: d.piecesExigees,
       notes: d.notes,
+      budgetPrevu: this.lireBudget(d.budgetPrevu),
+      budgetRealise: this.lireBudget(d.budgetRealise),
+      totaux: {
+        prevu: this.totauxBudget(this.lireBudget(d.budgetPrevu)),
+        realise: this.totauxBudget(this.lireBudget(d.budgetRealise)),
+      },
+      bilanAction: d.bilanAction,
+      nombreBeneficiaires: d.nombreBeneficiaires,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt,
     };
+  }
+
+  private lignesBudget(lignes: LigneBudgetDto[]): Prisma.InputJsonValue {
+    return lignes.map((l) => ({ libelle: l.libelle.trim(), montant: Math.round(l.montant * 100) / 100, sens: l.sens }));
+  }
+
+  private lireBudget(brut: Prisma.JsonValue | null): { libelle: string; montant: number; sens: 'DEPENSE' | 'RECETTE' }[] {
+    if (!Array.isArray(brut)) return [];
+    return brut
+      .map((l) => (l && typeof l === 'object' && !Array.isArray(l) ? (l as Record<string, unknown>) : null))
+      .filter((l): l is Record<string, unknown> => Boolean(l))
+      .map((l) => ({
+        libelle: String(l.libelle ?? ''),
+        montant: Number(l.montant ?? 0),
+        sens: l.sens === 'RECETTE' ? ('RECETTE' as const) : ('DEPENSE' as const),
+      }));
+  }
+
+  private totauxBudget(lignes: { montant: number; sens: 'DEPENSE' | 'RECETTE' }[]) {
+    const depenses = lignes.filter((l) => l.sens === 'DEPENSE').reduce((s, l) => s + l.montant, 0);
+    const recettes = lignes.filter((l) => l.sens === 'RECETTE').reduce((s, l) => s + l.montant, 0);
+    return { depenses, recettes, equilibre: Math.abs(depenses - recettes) < 0.005 };
   }
 
   private ajouterMois(d: Date, mois: number) {

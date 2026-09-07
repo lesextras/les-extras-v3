@@ -6,7 +6,7 @@ import {
   type Dispositif,
   type TypeDePiece,
 } from './referentiel-pieces';
-import { ETAPES_CHEMIN, trouverEtape, type EtapeChemin } from './chemin';
+import { ETAPES_CHEMIN, PARTIES_CHEMIN, trouverEtape, trouverPartie, type DescriptionPartie, type EtapeChemin } from './chemin';
 import { CARTE_DES_OUTILS, LIBELLES_COUT } from './outils';
 
 /**
@@ -166,8 +166,8 @@ export class AssociationService {
     return { version: VERSION_REFERENTIEL, pieces: TYPES_DE_PIECES, dispositifs: DISPOSITIFS };
   }
 
-  chemin(): { etapes: EtapeChemin[]; total: number } {
-    return { etapes: [...ETAPES_CHEMIN], total: ETAPES_CHEMIN.length };
+  chemin(): { parties: DescriptionPartie[]; etapes: EtapeChemin[]; total: number } {
+    return { parties: [...PARTIES_CHEMIN], etapes: [...ETAPES_CHEMIN], total: ETAPES_CHEMIN.length };
   }
 
   etape(slugOuNumero: string) {
@@ -180,6 +180,7 @@ export class AssociationService {
       .filter((t): t is TypeDePiece => Boolean(t));
     return {
       etape: e,
+      partie: trouverPartie(e.partie),
       pieces,
       total: ETAPES_CHEMIN.length,
       precedente: precedente ? { numero: precedente.numero, slug: precedente.slug, titre: precedente.titre } : null,
