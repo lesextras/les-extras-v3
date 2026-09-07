@@ -72,7 +72,7 @@ export const ICONES = {
  * ensuite le métier.
  */
 const MENU: Entree[] = [
-  { href: '/academie', libelle: 'Poste de pilotage', icone: ICONES.toque, accent: true },
+  { href: '/academie', libelle: 'Tableau de bord', icone: ICONES.toque, accent: true },
   { href: '/academie/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/academie/mon-academie', libelle: 'Mon académie', icone: ICONES.academie },
   { href: '/academie/catalogue', libelle: 'Mon catalogue', icone: ICONES.catalogue },
@@ -174,7 +174,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
             <Link href="/academie/mon-academie" className="mt-3 line-clamp-2 text-sm font-bold text-white no-underline hover:underline" title={compte.nom}>
               {court(compte.nom)}
             </Link>
-            <span className="mt-0.5 text-xs text-[#8CBBA4]">{compte.espaceOuvert ? 'Espace ouvert' : 'Compte connecté'}</span>
+            <span className="mt-0.5 text-xs text-[#8CBBA4]">{compte.espaceOuvert ? 'Espace académie ouvert' : 'Compte connecté'}</span>
           </>
         ) : (
           <Link href="/academie" className="flex flex-col items-center gap-2 no-underline">
