@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { apiEspace, sessionAssociation } from '../../../_session';
 import { Barre, Carte, Encart, Pastille, SousTitre } from '../../../_ui';
-import { LIBELLES_ETAT, LIBELLES_SITUATION, dateCourte, formaterEuros, type Dispositif, type Dossier, type SituationPiece } from '../../_types';
+import { LIBELLES_ETAT, LIBELLES_NATURE, LIBELLES_SITUATION, dateCourte, formaterEuros, type Dispositif, type Dossier, type SituationPiece } from '../../_types';
 import { FicheDossier } from './FicheDossier';
 import { BudgetDossier } from './BudgetDossier';
 
@@ -51,6 +51,9 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
       <header className="mb-6">
         <div className="flex flex-wrap items-center gap-2">
           <Pastille ton={d.etat === 'ACCORDE' || d.etat === 'SOLDE' ? 'ok' : d.etat === 'REFUSE' ? 'alerte' : d.etat === 'DEPOSE' ? 'accent' : 'neutre'}>{LIBELLES_ETAT[d.etat]}</Pastille>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${d.nature === 'APPEL_A_PROJET' ? 'bg-[#FEF3E2] text-[#7C3E06]' : 'bg-[#ECEBFC] text-[#4338CA]'}`}>
+            {LIBELLES_NATURE[d.nature ?? 'SUBVENTION']}
+          </span>
           <span className="text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">{d.financeur}</span>
         </div>
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#1D1B5C] sm:text-4xl">{d.intitule}</h1>
