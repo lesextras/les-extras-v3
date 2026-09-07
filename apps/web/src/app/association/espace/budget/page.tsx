@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-/** La gestion budgétaire vit maintenant dans « Mon secrétariat ». */
+/** La gestion budgétaire a sa page : « Ma comptabilité ». */
 export default function AncienBudget() {
-  redirect('/espace/secretariat#comptes');
+  redirect('/espace/comptabilite');
 }
