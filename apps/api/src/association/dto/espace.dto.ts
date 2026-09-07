@@ -22,9 +22,10 @@ import { Type } from 'class-transformer';
 import { EtatAction, EtatDossier, MoyenPaiement, NatureDossier, NatureMouvement, NiveauOrganisation, RoleContact, SensMouvement } from '@prisma/client';
 
 /**
- * L'inscription d'une association. Un seul écran : qui vous êtes, quelle
- * association, un mot de passe. Le SIREN est facultatif : s'il est donné, le
- * classeur est pré-rempli avant même le premier clic.
+ * L'inscription. Deux portes, comme chez les grands : soit on a déjà une
+ * association (on la nomme, et son classeur naît pré-rempli depuis les
+ * répertoires publics), soit on n'en a pas encore (on crée juste son compte
+ * et on suit le chemin). D'où un nom d'association facultatif.
  */
 export class InscriptionAssociationDto {
   @IsEmail({}, { message: 'Cette adresse e-mail ne semble pas valide.' })
@@ -47,10 +48,14 @@ export class InscriptionAssociationDto {
   @MaxLength(80)
   nom!: string;
 
+  /**
+   * Facultatif : on peut créer un compte AVANT d'avoir une association (on
+   * suit alors le chemin, et on ouvre l'espace le jour où elle existe).
+   */
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: "Le nom de l'association est nécessaire." })
   @MaxLength(200)
-  nomAssociation!: string;
+  nomAssociation?: string;
 
   @IsOptional()
   @IsString()
