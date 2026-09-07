@@ -100,7 +100,8 @@ interface EspaceBrut {
   organisation?: { nom?: string; adresse?: string | null; codePostal?: string | null; commune?: string | null };
   chemin?: { etapes?: { slug: string; faite: boolean; verifiee?: boolean }[] };
   classeur?: { type: { code: string; libelle: string }; situation: string; piece?: { fileId?: string | null } | null }[];
-  repertoire?: { resume?: { membresAJour?: number; benevoles?: number; bureau?: { nom: string; roles: string[] }[] } };
+  repertoire?: { membresAJour?: number; benevoles?: number; bureau?: { nom: string; roles: string[] }[]; resume?: { membresAJour?: number; benevoles?: number; bureau?: { nom: string; roles: string[] }[] } };
+  actions?: { intitule: string; dateDebut?: string | null; beneficiaires?: number | null }[];
   projet?: { pourQui?: string | null; quoi?: string | null; comment?: string | null; apres?: string | null; demande?: string | null };
 }
 
@@ -127,7 +128,8 @@ export async function contexteChemin(): Promise<ContexteChemin | null> {
     const classeur: ContexteChemin['classeur'] = {};
     for (const l of data.classeur ?? []) classeur[l.type.code] = { situation: l.situation, fileId: l.piece?.fileId ?? null, libelle: l.type.libelle };
     const o = data.organisation ?? {};
-    const bureau = data.repertoire?.resume?.bureau ?? [];
+    const repertoire = data.repertoire?.resume ?? data.repertoire ?? {};
+    const bureau = repertoire.bureau ?? [];
     const nomRole = (role: string) => bureau.find((b) => b.roles.includes(role))?.nom ?? '';
     const p = data.projet ?? {};
     const prerempli: Record<string, unknown> = {
@@ -142,14 +144,19 @@ export async function contexteChemin(): Promise<ContexteChemin | null> {
         const fonction = b.roles.includes('PRESIDENT') ? 'Président·e' : b.roles.includes('TRESORIER') ? 'Trésorier·ère' : b.roles.includes('SECRETAIRE') ? 'Secrétaire' : 'Membre du bureau';
         return { prenom, nom: reste.join(' '), fonction };
       }),
-      'repertoire.membresAJour': data.repertoire?.resume?.membresAJour ?? '',
-      'repertoire.benevoles': data.repertoire?.resume?.benevoles ?? '',
+      'repertoire.membresAJour': repertoire.membresAJour ?? '',
+      'repertoire.benevoles': repertoire.benevoles ?? '',
       'projet.pourQui': p.pourQui ?? '',
       'projet.quoi': p.quoi ?? '',
       'projet.comment': p.comment ?? '',
       'projet.apres': p.apres ?? '',
       'projet.demande': p.demande ?? '',
       'projet.texteCourt': p.quoi ?? '',
+      'actions.liste': (data.actions ?? []).map((a) => ({
+        titre: a.intitule,
+        quand: a.dateDebut ? new Date(a.dateDebut).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '',
+        personnes: a.beneficiaires ?? '',
+      })),
     };
     return {
       faites: new Set(etapes.filter((e) => e.faite).map((e) => e.slug)),

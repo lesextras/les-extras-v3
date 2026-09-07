@@ -40,6 +40,9 @@ export const ICONES = {
   classeur: i('M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'),
   dossiers: i('M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 15h6M9 11h2'),
   repertoire: i('M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8'),
+  actions: i('M13 2L3 14h7l-1 8 10-12h-7z'),
+  droits: i('M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6zM9 12l2 2 4-4'),
+  partenaires: i('M12 21s-7-4.4-9.3-8.4A5.3 5.3 0 0 1 12 6.6a5.3 5.3 0 0 1 9.3 6C19 16.6 12 21 12 21z'),
   documents: i('M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h6'),
   association: i('M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01M9 14h.01M15 14h.01'),
   sortir: i('M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9'),
@@ -61,9 +64,11 @@ const DECOUVRIR: Entree[] = [
 
 const ESPACE: Entree[] = [
   { href: '/espace', libelle: 'Ce lundi', icone: ICONES.lundi },
+  { href: '/espace/actions', libelle: 'Mes actions', icone: ICONES.actions },
+  { href: '/espace/dossiers', libelle: 'Mes subventions et appels à projet', icone: ICONES.dossiers },
   { href: '/espace/classeur', libelle: 'Le classeur', icone: ICONES.classeur },
-  { href: '/espace/dossiers', libelle: 'Mes dossiers de subvention', icone: ICONES.dossiers },
-  { href: '/espace/repertoire', libelle: 'Mon équipe et mes contacts', icone: ICONES.repertoire },
+  { href: '/espace/repertoire', libelle: 'Mon équipe et ses droits', icone: ICONES.droits },
+  { href: '/espace/partenaires', libelle: 'Mes partenaires et leurs rôles', icone: ICONES.partenaires },
   { href: '/espace/documents', libelle: 'Mes documents', icone: ICONES.documents },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
 ];
