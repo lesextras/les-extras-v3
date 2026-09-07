@@ -22,9 +22,9 @@ export default async function CheminPage() {
     <>
       <Titre
         surtitre="Le chemin"
-        sousTitre="Une étape à la fois. Chaque étape te dit pourquoi, comment faire, et te donne les papiers à remplir. Tu peux cocher ce qui est déjà fait."
+        sousTitre="À chaque étape : tu déposes tes papiers, tu les fabriques sur place, et tu coches."
       >
-        Douze étapes, <Accent>trois parties</Accent>, une subvention au bout.
+        Douze étapes, <Accent>une subvention</Accent> au bout.
       </Titre>
 
       {!chemin ? (
@@ -50,8 +50,7 @@ export default async function CheminPage() {
       ) : (
         <div className={`${CARTE} mb-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between`}>
           <p className="max-w-[60ch] leading-relaxed">
-            <span className="font-extrabold text-[#1D1B5C]">Tu veux cocher les étapes au fur et à mesure ?</span> Crée l&apos;espace
-            de ton association : il est gratuit, et il retient où tu en es.
+            <span className="font-extrabold text-[#1D1B5C]">Crée ton espace pour cocher les étapes.</span> Gratuit.
           </p>
           <div className="flex shrink-0 gap-2">
             <Link href="/inscription" className={BTN_PRIMAIRE}>
@@ -85,10 +84,6 @@ export default async function CheminPage() {
                   ) : null}
                 </div>
                 <p className="mt-2 max-w-[70ch] leading-relaxed text-[#1D1B5C]">{p.enUnMot}</p>
-                <p className="mt-1 text-sm text-[#6B6A8A]">
-                  <span className="font-bold">À la fin : </span>
-                  {p.resultat}
-                </p>
               </div>
 
               <ol className="mt-3 space-y-3">
@@ -116,16 +111,7 @@ export default async function CheminPage() {
                               <span className="rounded-full bg-[#ECEBFC] px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-[#4338CA]">Prochaine</span>
                             ) : null}
                           </span>
-                          <span className="mt-1 block leading-relaxed">{e.enUnMot}</span>
-                          <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-[#6B6A8A]">
-                            <span><span className="font-bold">Durée :</span> {e.dureeEstimee.split('.')[0]}.</span>
-                            <span><span className="font-bold">Coût :</span> {e.cout}</span>
-                            {e.documents.length ? (
-                              <span>
-                                <span className="font-bold">Documents :</span> {e.documents.length}
-                              </span>
-                            ) : null}
-                          </span>
+                          <span className="mt-1 block text-sm leading-relaxed text-[#6B6A8A]">{e.enUnMot}</span>
                         </span>
                         <span className="hidden shrink-0 self-center text-2xl text-[#C7C4F2] group-hover:text-[#4F46E5] sm:block">›</span>
                       </Link>
