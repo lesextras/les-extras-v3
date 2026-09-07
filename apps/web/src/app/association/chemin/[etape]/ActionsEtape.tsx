@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { appel } from '../../_client';
+import { useState, type ReactNode } from 'react';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE_VIVE, Pastille } from '../../_ui';
 import type { DocumentEtape } from '../../_chemin';
 import type { ModeleFabrique, Prerempli } from '../../_fabrique';
 import { FabriqueDocument } from '../../FabriqueDocument';
+import { BoutonDeposerFichiers } from '../../DeposerFichiers';
 
 /**
  * CE QU'IL Y A À FAIRE À CETTE ÉTAPE, EN CARTES.
@@ -104,36 +103,11 @@ export function ActionsEtape({
   connecte: boolean;
   prerempli: Prerempli;
 }) {
-  const router = useRouter();
   const [fabrique, setFabrique] = useState<ModeleFabrique | null>(null);
   const [depot, setDepot] = useState<string | null>(null);
-  const [enCours, setEnCours] = useState(false);
-  const [erreur, setErreur] = useState<string | null>(null);
-  const fichierRef = useRef<HTMLInputElement>(null);
 
   if (fabrique) {
     return <FabriqueDocument modele={fabrique} prerempli={prerempli} connecte={connecte} onFermer={() => setFabrique(null)} />;
-  }
-
-  async function deposer(code: string) {
-    const fichier = fichierRef.current?.files?.[0];
-    if (!fichier) {
-      setErreur('Choisis un fichier : PDF, JPEG, PNG ou WEBP.');
-      return;
-    }
-    setEnCours(true);
-    setErreur(null);
-    try {
-      const form = new FormData();
-      form.append('file', fichier);
-      await appel(`/association/classeur/${code}`, { method: 'POST', form });
-      setDepot(null);
-      router.refresh();
-    } catch (err) {
-      setErreur(err instanceof Error ? err.message : 'Le dépôt a échoué.');
-    } finally {
-      setEnCours(false);
-    }
   }
 
   const modelesParPiece = new Map(modeles.filter((m) => m.piece).map((m) => [m.piece as string, m]));
@@ -185,32 +159,20 @@ export function ActionsEtape({
                   Fabriquer
                 </button>
               ) : null}
-              <button
-                type="button"
-                onClick={() => {
-                  setErreur(null);
-                  setDepot(ouvert ? null : p.code);
-                }}
-                className={`${modele ? BTN_SECONDAIRE : BTN_PRIMAIRE} w-full`}
-              >
-                {etat?.fileId ? 'Remplacer le fichier' : 'Déposer un fichier'}
-              </button>
+              {connecte ? (
+                <BoutonDeposerFichiers
+                  classeNom={`${modele ? BTN_SECONDAIRE : BTN_PRIMAIRE} w-full`}
+                  libelle={etat?.fileId ? 'Remplacer les fichiers' : 'Déposer des fichiers'}
+                  piece={p.code}
+                  categorie="Autre"
+                />
+              ) : (
+                <button type="button" onClick={() => setDepot(ouvert ? null : p.code)} className={`${modele ? BTN_SECONDAIRE : BTN_PRIMAIRE} w-full`}>
+                  Déposer des fichiers
+                </button>
+              )}
             </div>
             {ouvert && !connecte ? <Connexion /> : null}
-            {ouvert && connecte ? (
-              <div className="mt-3 w-full rounded-xl bg-[#F5F4FC] p-3 text-left text-sm">
-                <input ref={fichierRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="w-full text-sm" />
-                {erreur ? <p className="mt-2 text-[#8A2419]">{erreur}</p> : null}
-                <div className="mt-2 flex gap-2">
-                  <button type="button" onClick={() => deposer(p.code)} disabled={enCours} className={`${BTN_PRIMAIRE} !py-2 text-sm`}>
-                    {enCours ? 'Envoi…' : 'Enregistrer'}
-                  </button>
-                  <button type="button" onClick={() => setDepot(null)} className="px-3 text-sm text-[#6B6A8A]">
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            ) : null}
           </Carte>
         );
       })}
@@ -223,11 +185,25 @@ export function ActionsEtape({
             <Pastille ton="accent">À fabriquer ici</Pastille>
           </div>
           <p className="mt-2 line-clamp-3 text-sm text-[#6B6A8A]">{m.enUnMot}</p>
-          <div className="mt-4 w-full">
+          <div className="mt-4 flex w-full flex-col gap-2">
             <button type="button" onClick={() => setFabrique(m)} className={`${BTN_PRIMAIRE} w-full`}>
               Fabriquer
             </button>
+            {connecte ? (
+              <BoutonDeposerFichiers
+                classeNom={`${BTN_SECONDAIRE} w-full`}
+                libelle="Déposer des fichiers"
+                piece={m.piece ?? undefined}
+                categorie={m.categorie ?? 'Autre'}
+                titre={m.titre}
+              />
+            ) : (
+              <button type="button" onClick={() => setDepot(depot === m.code ? null : m.code)} className={`${BTN_SECONDAIRE} w-full`}>
+                Déposer des fichiers
+              </button>
+            )}
           </div>
+          {depot === m.code && !connecte ? <Connexion /> : null}
         </Carte>
       ))}
 
