@@ -1821,6 +1821,7 @@ model FileAsset {
   documents           Document[]
   avatarOf            User[]               @relation("UserAvatar")
   piecesAssociation   PieceAssociation[]   @relation("PieceAssociationFichier")
+  documentsAssociation DocumentAssociation[] @relation("DocumentAssociationFichier")
 
   @@index([uploaderId])
   @@index([accountId])
@@ -2788,11 +2789,22 @@ model Organisation {
   moisClotureExercice Int                @default(12)
   /// Étapes du chemin cochées « je l'ai fait » (slugs).
   etapesFaites        String[]           @default([])
+  /// Le projet en une page : quatre questions, et ce qu'on demande.
+  projetPourQui       String?
+  projetQuoi          String?
+  projetComment       String?
+  projetApres         String?
+  projetDemande       String?
+  /// Vie statutaire : la dernière assemblée générale, la durée des mandats.
+  dateDerniereAG      DateTime?
+  dureeMandatMois     Int                @default(12)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
-  pieces   PieceAssociation[]
-  dossiers DossierFinancement[]
+  pieces    PieceAssociation[]
+  dossiers  DossierFinancement[]
+  contacts  ContactAssociation[]
+  documents DocumentAssociation[]
 
   @@index([siren])
   @@index([rna])
@@ -2839,9 +2851,69 @@ model DossierFinancement {
   /// Codes des pièces exigées par ce financeur.
   piecesExigees   String[]     @default([])
   notes           String?
+  /// Budget prévisionnel et réalisé : lignes { libelle, montant, sens: 'DEPENSE' | 'RECETTE' }.
+  budgetPrevu     Json?
+  budgetRealise   Json?
+  /// Le compte rendu : ce que l'action a produit, en quelques phrases.
+  bilanAction     String?
+  nombreBeneficiaires Int?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
   @@index([organisationId, etat])
   @@index([organisationId, dateLimiteDepot])
+}
+
+/// Un rôle dans l'association ou autour d'elle. Une personne peut en cumuler plusieurs.
+enum RoleContact {
+  PRESIDENT
+  TRESORIER
+  SECRETAIRE
+  MEMBRE_BUREAU
+  MEMBRE
+  BENEVOLE
+  SALARIE
+  PARTENAIRE
+  FINANCEUR
+  ELU
+  AUTRE
+}
+
+/// Le répertoire : membres, bénévoles, dirigeants, partenaires et financeurs.
+model ContactAssociation {
+  id              String        @id @default(cuid())
+  organisationId  String
+  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  prenom          String
+  nom             String
+  email           String?
+  telephone       String?
+  /// Pour un partenaire ou un financeur : sa structure (mairie, département…).
+  structure       String?
+  roles           RoleContact[] @default([])
+  dateAdhesion    DateTime?
+  cotisationAJour Boolean       @default(false)
+  mandatDebut     DateTime?
+  mandatFin       DateTime?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([organisationId])
+}
+
+/// Les documents libres de l'association (au-delà des pièces du classeur).
+model DocumentAssociation {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  titre          String
+  categorie      String?
+  fileId         String?
+  file           FileAsset?   @relation("DocumentAssociationFichier", fields: [fileId], references: [id], onDelete: SetNull)
+  note           String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organisationId])
 }
