@@ -86,34 +86,34 @@ export default async function CheminPage() {
                 <p className="mt-2 max-w-[70ch] leading-relaxed text-[#1D1B5C]">{p.enUnMot}</p>
               </div>
 
-              <ol className="mt-3 space-y-3">
+              <ol className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {siennes.map((e) => {
                   const faite = faites.has(e.slug);
                   const estProchaine = prochaine?.slug === e.slug;
                   return (
-                    <li key={e.slug}>
+                    <li key={e.slug} className="h-full">
                       <Link
                         href={`/chemin/${e.slug}`}
-                        className={`${CARTE} group flex items-start gap-4 p-5 no-underline transition hover:border-[#4F46E5] ${estProchaine && connecte ? 'border-2 border-[#4F46E5]' : ''}`}
+                        className={`${CARTE} group flex h-full flex-col p-5 no-underline transition hover:-translate-y-0.5 hover:border-[#4F46E5] hover:shadow-[0_12px_28px_-20px_rgba(29,27,92,0.8)] ${estProchaine && connecte ? 'border-2 border-[#4F46E5]' : ''}`}
                       >
-                        <span
-                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-extrabold ${
-                            faite ? 'bg-[#1E9E6A] text-white' : `${teinte.fond} ${teinte.texte}`
-                          }`}
-                          aria-label={faite ? 'Étape faite' : undefined}
-                        >
-                          {faite ? '✓' : e.numero}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex flex-wrap items-center gap-2">
-                            <span className="text-lg font-extrabold leading-snug text-[#1D1B5C] group-hover:text-[#4F46E5]">{e.titre}</span>
-                            {estProchaine && connecte ? (
-                              <span className="rounded-full bg-[#ECEBFC] px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-[#4338CA]">Prochaine</span>
-                            ) : null}
+                        <span className="flex items-center justify-between gap-3">
+                          <span
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-extrabold ${
+                              faite ? 'bg-[#1E9E6A] text-white' : `${teinte.fond} ${teinte.texte}`
+                            }`}
+                            aria-label={faite ? 'Étape faite' : undefined}
+                          >
+                            {faite ? '✓' : e.numero}
                           </span>
-                          <span className="mt-1 block text-sm leading-relaxed text-[#6B6A8A]">{e.enUnMot}</span>
+                          {faite ? (
+                            <span className="rounded-full bg-[#E3F5EC] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">Fait</span>
+                          ) : estProchaine && connecte ? (
+                            <span className="rounded-full bg-[#ECEBFC] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#4338CA]">Prochaine</span>
+                          ) : null}
                         </span>
-                        <span className="hidden shrink-0 self-center text-2xl text-[#C7C4F2] group-hover:text-[#4F46E5] sm:block">›</span>
+                        <span className="mt-3 block text-lg font-extrabold leading-snug text-[#1D1B5C] group-hover:text-[#4F46E5]">{e.titre}</span>
+                        <span className="mt-1 block text-sm leading-relaxed text-[#6B6A8A]">{e.enUnMot}</span>
+                        <span className="mt-auto pt-4 text-sm font-bold text-[#4F46E5]">Ouvrir l&apos;étape →</span>
                       </Link>
                     </li>
                   );
