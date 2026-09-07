@@ -41,35 +41,35 @@ export function FormulaireOrganisation({ organisation: o }: { organisation: Orga
   }
 
   const champ =
-    'rounded-md border border-[#C9C3B5] bg-white px-3 py-2 text-sm focus:border-[#1F6A4E] focus:outline-none focus:ring-2 focus:ring-[#B9D6C6]';
+    'rounded-xl border border-[#D9D6EE] bg-white px-3 py-2 text-sm focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#ECEBFC]';
 
   return (
-    <form onSubmit={enregistrer} className="grid gap-3 rounded-md border border-[#DDD8CC] bg-white p-5 sm:grid-cols-2">
-      <h2 className="text-sm uppercase tracking-[0.14em] text-[#5C6B63] sm:col-span-2">Ce que vous précisez</h2>
+    <form onSubmit={enregistrer} className="grid gap-3 rounded-xl border border-[#E6E4F3] bg-white p-5 sm:grid-cols-2">
+      <h2 className="text-sm uppercase tracking-[0.12em] text-[#6B6A8A] sm:col-span-2">Ce que vous précisez</h2>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Nom d&apos;usage</span>
+        <span className="font-bold">Nom d&apos;usage</span>
         <input type="text" required maxLength={200} value={nom} onChange={(e) => setNom(e.target.value)} className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Sigle</span>
+        <span className="font-bold">Sigle</span>
         <input type="text" maxLength={40} value={sigle} onChange={(e) => setSigle(e.target.value)} className={champ} />
       </label>
       <fieldset className="sm:col-span-2">
-        <legend className="mb-2 text-sm font-medium">Taille</legend>
+        <legend className="mb-2 text-sm font-bold">Taille</legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {NIVEAUX.map((n) => (
-            <label key={n.code} className={`flex cursor-pointer flex-col gap-0.5 rounded-md border px-3 py-2 text-sm ${niveau === n.code ? 'border-[#1F6A4E] bg-[#E4EFE8]' : 'border-[#DDD8CC]'}`}>
-              <span className="flex items-center gap-2 font-medium">
-                <input type="radio" name="niveau" value={n.code} checked={niveau === n.code} onChange={() => setNiveau(n.code)} className="accent-[#1F6A4E]" />
+            <label key={n.code} className={`flex cursor-pointer flex-col gap-0.5 rounded-xl border px-3 py-2 text-sm ${niveau === n.code ? 'border-[#4F46E5] bg-[#ECEBFC]' : 'border-[#E6E4F3]'}`}>
+              <span className="flex items-center gap-2 font-bold">
+                <input type="radio" name="niveau" value={n.code} checked={niveau === n.code} onChange={() => setNiveau(n.code)} className="accent-[#4F46E5]" />
                 {n.libelle}
               </span>
-              <span className="text-xs text-[#5C6B63]">{n.detail}</span>
+              <span className="text-xs text-[#6B6A8A]">{n.detail}</span>
             </label>
           ))}
         </div>
       </fieldset>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Mois de clôture de l&apos;exercice</span>
+        <span className="font-bold">Mois de clôture de l&apos;exercice</span>
         <select value={mois} onChange={(e) => setMois(e.target.value)} className={champ}>
           {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
             <option key={m} value={m}>
@@ -77,12 +77,12 @@ export function FormulaireOrganisation({ organisation: o }: { organisation: Orga
             </option>
           ))}
         </select>
-        <span className="text-xs text-[#5C6B63]">Décembre pour une année civile.</span>
+        <span className="text-xs text-[#6B6A8A]">Décembre pour une année civile.</span>
       </label>
-      {erreur ? <p className="text-sm text-[#7A4A0E] sm:col-span-2">{erreur}</p> : null}
-      {message ? <p className="text-sm text-[#1F6A4E] sm:col-span-2">{message}</p> : null}
+      {erreur ? <p className="text-sm text-[#7C3E06] sm:col-span-2">{erreur}</p> : null}
+      {message ? <p className="text-sm text-[#4F46E5] sm:col-span-2">{message}</p> : null}
       <div className="sm:col-span-2">
-        <button type="submit" disabled={enCours} className="rounded-md bg-[#1F6A4E] px-4 py-2 text-sm font-medium text-white hover:bg-[#185540] disabled:opacity-60">
+        <button type="submit" disabled={enCours} className="rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA] disabled:opacity-60">
           {enCours ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>

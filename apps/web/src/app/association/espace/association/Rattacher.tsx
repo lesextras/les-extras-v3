@@ -61,26 +61,26 @@ export function Rattacher({ valeurInitiale = '' }: { valeurInitiale?: string }) 
             }
           }}
           placeholder="Nom, SIREN ou numéro RNA"
-          className="flex-1 rounded-md border border-[#C9C3B5] bg-white px-4 py-2.5 text-base focus:border-[#1F6A4E] focus:outline-none focus:ring-2 focus:ring-[#B9D6C6]"
+          className="flex-1 rounded-xl border border-[#D9D6EE] bg-white px-4 py-2.5 text-base focus:border-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#ECEBFC]"
         />
         <button
           type="button"
           onClick={chercher}
           disabled={etat !== 'repos'}
-          className="rounded-md bg-[#1F6A4E] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#185540] disabled:opacity-60"
+          className="rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#4338CA] disabled:opacity-60"
         >
           {etat === 'recherche' ? 'Recherche…' : 'Retrouver'}
         </button>
       </div>
-      {erreur ? <p className="text-sm text-[#7A4A0E]">{erreur}</p> : null}
+      {erreur ? <p className="text-sm text-[#7C3E06]">{erreur}</p> : null}
       {resultats.length ? (
-        <ul className="divide-y divide-[#DDD8CC] rounded-md border border-[#DDD8CC] bg-white text-sm">
+        <ul className="divide-y divide-[#E6E4F3] rounded-xl border border-[#E6E4F3] bg-white text-sm">
           {resultats.map((r) => (
             <li key={r.siren} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <span>
-                <span className="font-medium">{r.nom}</span>
+                <span className="font-bold">{r.nom}</span>
                 <br />
-                <span className="text-[#5C6B63]">
+                <span className="text-[#6B6A8A]">
                   {[r.codePostal, r.commune].filter(Boolean).join(' ')} · SIREN {r.siren}
                   {r.rna ? ` · RNA ${r.rna}` : ''}
                 </span>
@@ -89,7 +89,7 @@ export function Rattacher({ valeurInitiale = '' }: { valeurInitiale?: string }) 
                 type="button"
                 onClick={() => rattacher(r.siren)}
                 disabled={etat !== 'repos'}
-                className="shrink-0 rounded-md border border-[#1F6A4E] px-3 py-1.5 text-sm font-medium text-[#1F6A4E] hover:bg-[#E4EFE8] disabled:opacity-60"
+                className="shrink-0 rounded-xl border border-[#4F46E5] px-3 py-1.5 text-sm font-bold text-[#4F46E5] hover:bg-[#ECEBFC] disabled:opacity-60"
               >
                 C&apos;est la mienne
               </button>
