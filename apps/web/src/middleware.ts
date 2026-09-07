@@ -38,6 +38,14 @@ export function middleware(request: NextRequest) {
       url.pathname = pathname.slice(PREFIXE_ASSOCIATION.length) || '/';
       return NextResponse.redirect(url, 308);
     }
+    // L'espace connecté exige une session : sinon, la connexion, en gardant la page demandée.
+    if ((pathname === '/espace' || pathname.startsWith('/espace/')) && !request.cookies.get(SESSION_COOKIE)?.value) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/connexion';
+      url.search = '';
+      url.searchParams.set('next', pathname);
+      return NextResponse.redirect(url);
+    }
     const url = request.nextUrl.clone();
     url.pathname = `${PREFIXE_ASSOCIATION}${pathname === '/' ? '' : pathname}`;
     const entetes = new Headers(request.headers);
