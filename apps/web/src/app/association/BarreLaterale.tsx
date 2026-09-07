@@ -79,6 +79,9 @@ const MENU: Entree[] = [
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
 ];
 
+/** Les seules entrées qui s'ouvrent sans compte. Le reste attend la connexion. */
+const PUBLIC = ['/', '/chemin'];
+
 /** Les pages qui n'ont plus d'entrée à elles : elles éclairent l'entrée qui les porte. */
 const PORTEES: Record<string, string> = {
   '/espace': '/',
@@ -168,8 +171,9 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
         )}
       </div>
 
+      {/* Sans compte, on ne montre que ce qui s'ouvre vraiment : l'accueil et le chemin. */}
       <nav aria-label="Navigation">
-        <ul className="space-y-0.5">{MENU.map(lien)}</ul>
+        <ul className="space-y-0.5">{(compte ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map(lien)}</ul>
       </nav>
 
       <div className="mt-auto pt-6">
@@ -262,14 +266,16 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         </Link>
       </div>
 
-      {/* Au centre : l'entrée la plus importante, l'argent. */}
-      <Link
-        href="/espace/dossiers"
-        className="shrink-0 rounded-xl bg-[#D6335C] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#BC2A4E] sm:px-5 sm:text-[15px]"
-      >
-        <span className="sm:hidden">Mes subventions</span>
-        <span className="hidden sm:inline">Mes subventions et appels à projet</span>
-      </Link>
+      {/* Au centre : l'entrée la plus importante, l'argent. Elle n'existe qu'avec un compte. */}
+      {compte ? (
+        <Link
+          href="/espace/dossiers"
+          className="shrink-0 rounded-xl bg-[#D6335C] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#BC2A4E] sm:px-5 sm:text-[15px]"
+        >
+          <span className="sm:hidden">Mes subventions</span>
+          <span className="hidden sm:inline">Mes subventions et appels à projet</span>
+        </Link>
+      ) : null}
 
       <div className="relative flex flex-1 items-center justify-end gap-2">
         {compte ? (
