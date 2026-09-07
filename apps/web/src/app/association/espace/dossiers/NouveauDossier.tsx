@@ -3,12 +3,13 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
-import type { Dispositif } from '../_types';
+import { LIBELLES_NATURE, type Dispositif, type NatureDossier } from '../_types';
 
 /** Créer un dossier : depuis un dispositif connu (pièces pré-remplies) ou à la main. */
 export function NouveauDossier({ dispositifs }: { dispositifs: Dispositif[] }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
+  const [nature, setNature] = useState<NatureDossier>('SUBVENTION');
   const [dispositifCode, setDispositifCode] = useState('');
   const [financeur, setFinanceur] = useState('');
   const [intitule, setIntitule] = useState('');
@@ -34,6 +35,7 @@ export function NouveauDossier({ dispositifs }: { dispositifs: Dispositif[] }) {
       const cree = await appel<{ id: string }>('/association/dossiers', {
         method: 'POST',
         body: {
+          nature,
           ...(dispositifCode ? { dispositifCode } : {}),
           financeur: financeur.trim(),
           intitule: intitule.trim(),
@@ -62,6 +64,23 @@ export function NouveauDossier({ dispositifs }: { dispositifs: Dispositif[] }) {
 
   return (
     <form onSubmit={soumettre} className="grid gap-3 rounded-xl border border-[#E6E4F3] bg-white p-5 sm:grid-cols-2">
+      <fieldset className="flex flex-col gap-1 text-sm sm:col-span-2">
+        <legend className="font-bold">De quoi s&apos;agit-il ?</legend>
+        <div className="mt-1 flex flex-wrap gap-2">
+          {(['SUBVENTION', 'APPEL_A_PROJET'] as NatureDossier[]).map((n) => (
+            <label
+              key={n}
+              className={`cursor-pointer rounded-xl border px-3 py-2 text-sm font-bold ${nature === n ? 'border-[#4F46E5] bg-[#ECEBFC] text-[#4338CA]' : 'border-[#D9D6EE] bg-white text-[#3B3A66]'}`}
+            >
+              <input type="radio" name="nature" checked={nature === n} onChange={() => setNature(n)} className="sr-only" />
+              {LIBELLES_NATURE[n]}
+            </label>
+          ))}
+        </div>
+        <span className="text-xs text-[#6B6A8A]">
+          Une subvention : tu demandes de l&apos;aide pour ce que tu fais. Un appel à projet : un financeur ouvre un concours, tu candidates avant une date.
+        </span>
+      </fieldset>
       <label className="flex flex-col gap-1 text-sm sm:col-span-2">
         <span className="font-bold">Dispositif connu (facultatif)</span>
         <select value={dispositifCode} onChange={(e) => choisirDispositif(e.target.value)} className={champ}>
