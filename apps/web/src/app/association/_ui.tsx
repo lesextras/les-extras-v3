@@ -16,6 +16,7 @@ const NAV = [
   { href: '/verifier', libelle: 'Vérifier mon association' },
   { href: '/chemin', libelle: 'Le chemin' },
   { href: '/outils', libelle: 'Les outils' },
+  { href: '/espace', libelle: 'Mon espace', fort: true },
 ];
 
 export function Coque({ children }: { children: ReactNode }) {
@@ -36,7 +37,11 @@ export function Coque({ children }: { children: ReactNode }) {
               <Link
                 key={n.href}
                 href={n.href}
-                className="text-[#1E2A25] underline decoration-[#C9C3B5] underline-offset-4 hover:decoration-[#1F6A4E]"
+                className={
+                  n.fort
+                    ? 'rounded-md bg-[#1F6A4E] px-3 py-1 font-medium text-white no-underline hover:bg-[#185540]'
+                    : 'text-[#1E2A25] underline decoration-[#C9C3B5] underline-offset-4 hover:decoration-[#1F6A4E]'
+                }
               >
                 {n.libelle}
               </Link>
@@ -58,7 +63,9 @@ export function Coque({ children }: { children: ReactNode }) {
             (RNA, SIRENE). Rien de ce que vous cherchez ici n&apos;est enregistré.
           </p>
           <p className="leading-relaxed">
-            Gratuit, sans compte.
+            Les pages publiques sont gratuites, sans compte.
+            <br />
+            L&apos;espace de votre association aussi, pour l&apos;instant.
             <br />
             Référentiel des pièces daté, à jour au mieux de nos vérifications.
           </p>

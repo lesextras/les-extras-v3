@@ -78,13 +78,36 @@ export default function AccueilAssociation() {
         </div>
       </section>
 
+      <section className="mt-16 rounded-md border border-[#B9D6C6] bg-[#E4EFE8] px-6 py-6">
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:items-center">
+          <div>
+            <p className="text-xs uppercase tracking-[0.14em] text-[#5C6B63]">Mon espace</p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight [text-wrap:balance]">
+              Un classeur qui prévient avant qu&apos;une pièce expire, et chaque lundi ce qui presse.
+            </h2>
+            <p className="mt-2 max-w-[56ch] text-[#3E4A44]">
+              Vos treize pièces, vos dossiers de financement du repérage au compte rendu, et l&apos;écran du lundi : ce qui périme, ce qui est
+              dû, ce qui manque. Pré-rempli depuis les répertoires publics.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 md:items-end">
+            <Link href="/inscription" className="rounded-md bg-[#1F6A4E] px-5 py-3 text-center text-base font-medium text-white no-underline hover:bg-[#185540]">
+              Créer l&apos;espace de mon association
+            </Link>
+            <Link href="/connexion" className="text-sm underline underline-offset-4">
+              J&apos;ai déjà un espace
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="mt-16 max-w-[64ch]">
         <h2 className="mb-3 text-xl font-semibold tracking-tight">Pourquoi c&apos;est gratuit</h2>
         <p className="leading-relaxed text-[#3E4A44]">
           Une association qui démarre n&apos;a pas d&apos;argent pour un logiciel, et c&apos;est précisément à ce moment-là
           qu&apos;elle a besoin qu&apos;on lui montre le chemin. Ces pages sont là pour ça. Quand l&apos;association grandit,
-          quand elle suit plusieurs financeurs, plusieurs échéances et une équipe, l&apos;espace de pilotage complet prend le
-          relais. Il arrive.
+          quand elle suit plusieurs financeurs, plusieurs échéances et une équipe, l&apos;espace de pilotage prend le relais :
+          il est ouvert, et gratuit lui aussi pendant qu&apos;il se construit.
         </p>
       </section>
     </>
