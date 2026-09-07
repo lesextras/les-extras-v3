@@ -5,6 +5,7 @@ import { Barre, Carte, Encart, Pastille, SousTitre } from '../../../_ui';
 import { LIBELLES_ETAT, LIBELLES_NATURE, LIBELLES_SITUATION, dateCourte, formaterEuros, type Dispositif, type Dossier, type SituationPiece } from '../../_types';
 import { FicheDossier } from './FicheDossier';
 import { BudgetDossier } from './BudgetDossier';
+import { RedigerIA } from './RedigerIA';
 
 interface DossierComplet extends Dossier {
   dispositif: Dispositif | null;
@@ -30,7 +31,10 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   if (!/^[a-z0-9]{10,40}$/i.test(id)) notFound();
   const s = await sessionAssociation(`/espace/dossiers/${id}`);
-  const { data, error, status } = await apiEspace<DossierComplet>(s, `/association/dossiers/${id}`);
+  const [{ data, error, status }, espace] = await Promise.all([
+    apiEspace<DossierComplet>(s, `/association/dossiers/${id}`),
+    apiEspace<{ ia?: { disponible: boolean } }>(s, '/association/espace'),
+  ]);
   if (!data) {
     if (status === 404) notFound();
     return <Encart ton="attention">{error ?? 'Ce dossier ne se charge pas pour le moment.'}</Encart>;
@@ -117,6 +121,10 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
           ) : null}
         </section>
       ) : null}
+
+      <section className="mb-8">
+        <RedigerIA dossierId={d.id} disponible={espace.data?.ia?.disponible ?? false} />
+      </section>
 
       {/* ------------------------------------------------------- assemblage */}
       <section className="mb-8">
