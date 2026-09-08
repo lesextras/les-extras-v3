@@ -66,8 +66,14 @@ export class ClaudeService {
     if (!reponse.ok) {
       const corps = await reponse.text().catch(() => '');
       this.logger.error(`Claude ${reponse.status}: ${corps.slice(0, 300)}`);
+      // Le message reste général pour l'écran — le détail d'Anthropic n'a rien
+      // à faire sous les yeux d'un utilisateur. Mais il voyage en `cause` :
+      // sans lui, impossible de distinguer une clé refusée d'un quota atteint
+      // ou d'un modèle qui n'existe pas, et le diagnostic se fait alors à
+      // l'aveugle dans les journaux du serveur.
       throw new ServiceUnavailableException(
         "Le service de rédaction est momentanément indisponible. Réessayez dans un instant.",
+        { cause: new Error(`Anthropic ${reponse.status} : ${corps.slice(0, 300)}`) },
       );
     }
     const data = (await reponse.json()) as {
