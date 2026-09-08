@@ -1,6 +1,6 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, type OnModuleInit } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { Prisma, StatutCours, StatutInscriptionCours, StatutVente, TypeRemise } from '@prisma/client';
+import { FormationType, Prisma, StatutCours, StatutInscriptionCours, StatutVente, TypeRemise } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { corrigerQuiz, nettoyerQuiz, quizSansReponses, quizUtilisable, type Quiz } from './quiz';
 import type {
@@ -36,8 +36,91 @@ import type {
  * Les bonnes réponses d'un quiz ne quittent jamais le serveur.
  */
 @Injectable()
-export class EcoleService {
+export class EcoleService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * AU DÉMARRAGE : CHAQUE FICHE PROGRAMME D'UNE ACADÉMIE A SA FORMATION.
+   *
+   * Avant, l'organisme écrivait ses fiches programme (Formation) d'un côté et
+   * ses formations suivies (Cours) de l'autre, sans lien. Les fiches déjà
+   * écrites sont rattachées à la formation du même titre quand elle existe ;
+   * sinon on lui ouvre une formation en brouillon qui la porte. Idempotent :
+   * une fiche déjà rattachée n'est plus touchée.
+   */
+  async onModuleInit() {
+    try {
+      await this.rattacherProgrammes();
+    } catch {
+      // Ne jamais empêcher l'API de démarrer pour un rattachement.
+    }
+  }
+
+  private async rattacherProgrammes() {
+    const orphelines = await this.prisma.formation.findMany({
+      where: { cours: { is: null }, ownerAccount: { type: 'ACADEMIE' } },
+      select: { id: true, title: true, summary: true, ownerAccountId: true },
+      take: 500,
+    });
+    for (const f of orphelines) {
+      const existant = await this.prisma.cours.findFirst({
+        where: { accountId: f.ownerAccountId, formationId: null, titre: { equals: f.title.trim(), mode: 'insensitive' } },
+        orderBy: { createdAt: 'asc' },
+      });
+      if (existant) {
+        await this.prisma.cours.update({ where: { id: existant.id }, data: { formationId: f.id } });
+        continue;
+      }
+      const titre = f.title.trim();
+      await this.prisma.cours.create({
+        data: {
+          accountId: f.ownerAccountId,
+          titre,
+          sousTitre: f.summary?.trim() || null,
+          slug: await this.slugLibre('cours', titre),
+          formationId: f.id,
+          chapitres: {
+            create: [{ titre: 'Pour commencer', ordre: 0, lecons: { create: [{ titre: 'Bienvenue', ordre: 0, apercu: true }] } }],
+          },
+        },
+      });
+    }
+  }
+
+  /**
+   * ÉCRIRE LA FICHE PROGRAMME D'UNE FORMATION QUI N'EN A PAS.
+   *
+   * On part de ce qu'on sait déjà — le titre, le sous-titre, les objectifs,
+   * les prérequis, le public, la durée — pour que la fiche ne naisse pas vide.
+   * Elle reste à compléter dans l'onglet « Descriptions » de la formation.
+   */
+  async creerProgramme(accountId: string, coursId: string) {
+    const c = await this.prisma.cours.findFirst({ where: { id: coursId, accountId } });
+    if (!c) throw new NotFoundException("Ce cours n'existe pas.");
+    if (c.formationId) {
+      const deja = await this.prisma.formation.findUnique({ where: { id: c.formationId } });
+      if (deja) return deja;
+    }
+    const titre = c.titre.trim();
+    const heures = c.dureeMinutes > 0 ? Math.max(1, Math.ceil(c.dureeMinutes / 60)) : undefined;
+    const programme = await this.prisma.formation.create({
+      data: {
+        ownerAccountId: accountId,
+        type: FormationType.CERTIFIANTE,
+        title: titre,
+        slug: await this.slugLibre('formation', titre),
+        summary: c.sousTitre?.trim() || undefined,
+        objectives: c.objectifs.length ? c.objectifs.join('\n') : undefined,
+        prerequisites: c.prerequis?.trim() || undefined,
+        targetAudience: c.pourQui?.trim().slice(0, 200) || undefined,
+        durationHours: heures,
+        city: c.lieu?.trim() || undefined,
+        freeOnline: c.modalite === 'EN_LIGNE' && (c.gratuit || c.prixCents === 0),
+      },
+    });
+    await this.prisma.cours.update({ where: { id: coursId }, data: { formationId: programme.id } });
+    return programme;
+  }
 
   /* ====================================================== LE CATALOGUE ==== */
 
@@ -48,6 +131,7 @@ export class EcoleService {
       include: {
         _count: { select: { inscriptions: true } },
         chapitres: { select: { _count: { select: { lecons: true } } } },
+        programme: { select: { id: true, status: true, _count: { select: { sessions: true } } } },
       },
     });
 
@@ -59,6 +143,9 @@ export class EcoleService {
       imageUrl: c.imageUrl,
       statut: c.statut,
       modalite: c.modalite,
+      formationId: c.programme?.id ?? null,
+      programmeStatut: c.programme?.status ?? null,
+      nbSessions: c.programme?._count.sessions ?? 0,
       gratuit: c.gratuit,
       prixCents: c.prixCents,
       nbChapitres: c.chapitres.length,
@@ -140,6 +227,21 @@ export class EcoleService {
     if (dto.seoTitre !== undefined) data.seoTitre = dto.seoTitre.trim() || null;
     if (dto.seoDescription !== undefined) data.seoDescription = dto.seoDescription.trim() || null;
     if (dto.commentairesActifs !== undefined) data.commentairesActifs = dto.commentairesActifs;
+
+    // La fiche programme : on ne rattache qu'une fiche du compte, et une seule fois.
+    if (dto.formationId !== undefined) {
+      if (dto.formationId === null || dto.formationId === '') {
+        data.programme = { disconnect: true };
+      } else {
+        const f = await this.prisma.formation.findFirst({
+          where: { id: dto.formationId, ownerAccountId: accountId },
+          include: { cours: { select: { id: true } } },
+        });
+        if (!f) throw new NotFoundException("Cette fiche programme n'existe pas.");
+        if (f.cours && f.cours.id !== id) throw new BadRequestException('Cette fiche programme est déjà portée par une autre formation.');
+        data.programme = { connect: { id: f.id } };
+      }
+    }
 
     // Une salle sans adresse, une visio sans lien : on le dit avant de publier.
     const modalite = dto.modalite ?? actuel.modalite;
@@ -1215,6 +1317,7 @@ export class EcoleService {
     seoTitre: string | null;
     seoDescription: string | null;
     commentairesActifs: boolean;
+    formationId: string | null;
     statut: string;
     publieLe: Date | null;
     updatedAt: Date;
@@ -1267,6 +1370,7 @@ export class EcoleService {
       seoTitre: c.seoTitre,
       seoDescription: c.seoDescription,
       commentairesActifs: c.commentairesActifs,
+      formationId: c.formationId,
       statut: c.statut,
       publieLe: c.publieLe,
       modifieLe: c.updatedAt,
@@ -1309,7 +1413,7 @@ export class EcoleService {
   }
 
   /** Une adresse lisible, libre, dans la table demandée. */
-  private async slugLibre(quoi: 'cours' | 'pack' | 'ecole', titre: string) {
+  private async slugLibre(quoi: 'cours' | 'pack' | 'ecole' | 'formation', titre: string) {
     const base = normaliser(titre).slice(0, 60).replace(/^-+|-+$/g, '') || quoi;
     for (let i = 0; i < 40; i += 1) {
       const essai = i === 0 ? base : `${base}-${i + 1}`;
@@ -1318,7 +1422,9 @@ export class EcoleService {
           ? await this.prisma.cours.findUnique({ where: { slug: essai } })
           : quoi === 'pack'
             ? await this.prisma.packCours.findUnique({ where: { slug: essai } })
-            : await this.prisma.ecoleEnLigne.findUnique({ where: { slug: essai } });
+            : quoi === 'formation'
+              ? await this.prisma.formation.findUnique({ where: { slug: essai } })
+              : await this.prisma.ecoleEnLigne.findUnique({ where: { slug: essai } });
       if (!pris) return essai;
     }
     return `${base}-${randomBytes(3).toString('hex')}`;
