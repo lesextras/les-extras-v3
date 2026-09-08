@@ -32,13 +32,47 @@ async function espaceVoulu(): Promise<string | null> {
   }
 }
 
+
+/**
+ * LES COMPTES VUS PAR L'API.
+ *
+ * Le cookie de session est écrit à la connexion : un espace ouvert APRÈS ne
+ * s'y trouve pas. Plutôt que d'obliger la personne à se reconnecter pour voir
+ * l'espace qu'elle vient d'ouvrir, on redemande la liste à l'API. On ne le
+ * fait que lorsque la session ne connaît aucun compte du type cherché : le cas
+ * courant ne coûte donc rien.
+ */
+interface AdhesionBrute {
+  account?: SessionAccount | null;
+}
+
+async function comptesFrais(session: Session): Promise<SessionAccount[]> {
+  try {
+    const moi = (await apiRequest('/auth/me', { token: session.token, cache: 'no-store' })) as {
+      memberships?: AdhesionBrute[];
+      user?: { memberships?: AdhesionBrute[] };
+    } | null;
+    const adhesions = moi?.memberships ?? moi?.user?.memberships ?? [];
+    return adhesions
+      .map((a) => a?.account)
+      .filter((c): c is SessionAccount => Boolean(c && c.id && c.type));
+  } catch {
+    // L'API ne répond pas : on s'en tient à ce que la session connaît.
+    return [];
+  }
+}
+
 /** Le compte association actif : la préférence si elle est valable, sinon le premier. */
 async function choisirAssociation(session: Session): Promise<SessionAccount | null> {
   const comptes = session.accounts ?? [];
-  const candidats = comptes.filter((c) => (c.type as string) === TYPE_ASSOCIATION);
-  if (!candidats.length) {
-    return (session.account.type as string) === TYPE_ASSOCIATION ? session.account : null;
+  let candidats = comptes.filter((c) => (c.type as string) === TYPE_ASSOCIATION);
+  if (!candidats.length && (session.account.type as string) === TYPE_ASSOCIATION) {
+    candidats = [session.account];
   }
+  if (!candidats.length) {
+    candidats = (await comptesFrais(session)).filter((c) => (c.type as string) === TYPE_ASSOCIATION);
+  }
+  if (!candidats.length) return null;
   const voulu = await espaceVoulu();
   return (voulu ? candidats.find((c) => c.id === voulu) : null) ?? candidats[0];
 }
