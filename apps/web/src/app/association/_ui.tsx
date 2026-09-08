@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { BarreHaut, BarreLaterale, type CompteAffiche } from './BarreLaterale';
+import { BotAide } from '../_shared/BotAide';
 
 /**
  * LA COQUE DE « PILOTER MON ASSOCIATION ».
@@ -71,6 +72,7 @@ export function Coque({ children, compte }: { children: ReactNode; compte: Compt
           </footer>
         </div>
       </div>
+      <BotAide espace="association" />
     </div>
   );
 }

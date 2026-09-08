@@ -158,28 +158,66 @@ function Plateforme() {
       </section>
 
       {/* --------------------------------------------------- soutenir le projet */}
-      <section className="mt-5 flex flex-wrap items-center gap-5 rounded-[24px] border-2 border-[#C7C4F2] bg-white p-6 sm:p-7">
-        <span className="pilote-icone flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#C42B57] text-white" style={{ animationDelay: '1.2s' }} aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 21s-7-4.4-9.3-8.4A5.3 5.3 0 0 1 12 6.6a5.3 5.3 0 0 1 9.3 6C19 16.6 12 21 12 21z" />
-          </svg>
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-2xl font-extrabold leading-tight text-[#1D1B5C]">Cet outil est gratuit. Il a un porteur.</span>
-          <span className="mt-1 block text-[#3B3A66]">
-            <span className="font-bold text-[#1D1B5C]">ADéPA</span>, association éducative de Melun, porte ce dispositif avec Toulali. Un don ouvre droit
-            à un reçu fiscal.
-          </span>
-        </span>
-        <a
-          href="https://adepa77.fr/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#C42B57] px-5 py-3 text-base font-extrabold text-white no-underline transition hover:bg-[#8A1B3D]"
-        >
-          Soutenir ADéPA
-          <span aria-hidden="true">↗</span>
-        </a>
+      <section className="pilote-porteur relative mt-8 overflow-hidden rounded-[28px] border-2 border-[#F3B0C2] p-7 sm:p-10">
+        <span className="pilote-lueur pilote-lueur-a" aria-hidden="true" />
+        <span className="pilote-lueur pilote-lueur-b" aria-hidden="true" />
+
+        <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0">
+            <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#8A1B3D]">Qui porte cet outil</p>
+            <h2 className="mt-2 text-3xl font-extrabold leading-[1.1] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-4xl">
+              Cet outil est gratuit. Il a un <Accent>porteur</Accent>.
+            </h2>
+            <p className="mt-3 max-w-[58ch] text-lg leading-relaxed text-[#3B3A66]">
+              <span className="font-bold text-[#1D1B5C]">ADéPA</span>, association éducative de Melun, porte ce dispositif
+              avec <span className="font-bold text-[#1D1B5C]">Toulali</span>, son centre de formation. Pas d&apos;actionnaire,
+              pas d&apos;abonnement : ce que tu construis ici t&apos;appartient.
+            </p>
+
+            <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+              {SOUTIENS.map((s, i) => (
+                <li
+                  key={s.titre}
+                  className="rounded-2xl border border-[#F3B0C2] bg-white/85 p-4 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-[#D6335C]"
+                >
+                  <span
+                    className="pilote-icone flex h-10 w-10 items-center justify-center rounded-xl bg-[#FDE7EC] text-[#C42B57]"
+                    style={{ animationDelay: `${0.3 * i}s` }}
+                    aria-hidden="true"
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d={s.icone} />
+                    </svg>
+                  </span>
+                  <span className="mt-2.5 block text-[15px] font-extrabold leading-snug text-[#1D1B5C]">{s.titre}</span>
+                  <span className="mt-1 block text-sm leading-relaxed text-[#3B3A66]">{s.detail}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <a
+                href="https://adepa77.fr/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#C42B57] px-6 py-3.5 text-base font-extrabold text-white no-underline shadow-[0_10px_28px_-12px_rgba(196,43,87,0.9)] transition hover:bg-[#8A1B3D]"
+              >
+                Soutenir ADéPA
+                <span aria-hidden="true">↗</span>
+              </a>
+              <a
+                href="https://toulali.fr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-[#D6335C] bg-white/80 px-5 py-3 text-base font-extrabold text-[#8A1B3D] no-underline transition hover:bg-white"
+              >
+                Découvrir Toulali
+              </a>
+            </div>
+          </div>
+
+          <TroisPorteurs />
+        </div>
       </section>
 
       {/* ----------------------------------------------------------- la fin */}
@@ -332,6 +370,109 @@ const DEDANS = [
   { mot: 'Ce à quoi tu as droit', icone: 'M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z', style: 'bg-[#FEF3E2] text-[#7C3E06]' },
 ];
 
+/* ------------------------------------------------------- ceux qui portent */
+
+const SOUTIENS = [
+  {
+    titre: 'Gratuit, et sans compteur',
+    detail: "Pas d'abonnement, pas de limite de dossiers, pas de version payante qui arriverait plus tard.",
+    icone: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+  },
+  {
+    titre: 'Porté par une association',
+    detail: "ADéPA est une association loi 1901, comme celles qui se servent de l'outil.",
+    icone: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',
+  },
+  {
+    titre: 'Un don, un reçu fiscal',
+    detail: "66 % du montant se déduit de tes impôts. C'est ce qui paie les serveurs et le temps passé.",
+    icone: 'M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h4',
+  },
+];
+
+/**
+ * TROIS PERSONNAGES, DESSINÉS ICI.
+ *
+ * Une illustration originale, faite de formes simples aux couleurs des deux
+ * espaces : celle qui pilote son association (indigo), celle qui forme (vert),
+ * et celle qui donne un coup de main (rouge rosé). Elles se passent le cœur du
+ * dispositif — c'est exactement ce que fait une association.
+ *
+ * Tout est en SVG : rien à charger, net sur tous les écrans, et les
+ * animations s'arrêtent d'elles-mêmes si le système demande moins de
+ * mouvement.
+ */
+function TroisPorteurs() {
+  return (
+    <div className="relative mx-auto w-full max-w-[320px]">
+      <svg viewBox="0 0 320 260" width="100%" role="img" aria-label="Trois personnes qui portent ensemble un même projet">
+        <defs>
+          <linearGradient id="porteurs-sol" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#4F46E5" stopOpacity="0.18" />
+            <stop offset="0.5" stopColor="#1E9E6A" stopOpacity="0.18" />
+            <stop offset="1" stopColor="#C42B57" stopOpacity="0.18" />
+          </linearGradient>
+        </defs>
+
+        {/* le sol commun : elles tiennent sur la même base */}
+        <rect x="24" y="212" width="272" height="12" rx="6" fill="url(#porteurs-sol)" />
+
+        {/* étincelles */}
+        <g fill="#F5B400">
+          <circle className="pilote-etincelle" cx="52" cy="52" r="4" />
+          <circle className="pilote-etincelle" cx="268" cy="74" r="5" style={{ animationDelay: '0.9s' }} />
+          <circle className="pilote-etincelle" cx="238" cy="34" r="3" style={{ animationDelay: '1.8s' }} />
+        </g>
+
+        {/* personnage 1 — l'association */}
+        <g className="pilote-perso" style={{ animationDelay: '0s' }}>
+          <path d="M46 212v-44a30 30 0 0 1 60 0v44z" fill="#4F46E5" />
+          <path d="M56 212v-30a20 20 0 0 1 40 0v30z" fill="#6C63F0" />
+          <circle cx="76" cy="124" r="22" fill="#1D1B5C" />
+          <circle cx="76" cy="124" r="22" fill="#4F46E5" opacity="0.25" />
+          <path d="M60 118a16 16 0 0 1 32 0" fill="#1D1B5C" />
+          <rect x="30" y="168" width="16" height="34" rx="8" fill="#4F46E5" />
+        </g>
+
+        {/* personnage 2 — l'académie, au centre, un peu plus haut */}
+        <g className="pilote-perso" style={{ animationDelay: '0.55s' }}>
+          <path d="M126 212v-52a34 34 0 0 1 68 0v52z" fill="#1E9E6A" />
+          <path d="M138 212v-36a22 22 0 0 1 44 0v36z" fill="#3EB884" />
+          <circle cx="160" cy="106" r="25" fill="#0F5F3E" />
+          <circle cx="160" cy="106" r="25" fill="#1E9E6A" opacity="0.25" />
+          <path d="M136 96l24-13 24 13-24 12z" fill="#0F5F3E" />
+          <path d="M176 104v10c0 4-7 7-16 7s-16-3-16-7v-10" fill="none" stroke="#0F5F3E" strokeWidth="4" strokeLinecap="round" />
+        </g>
+
+        {/* personnage 3 — celle qui donne un coup de main */}
+        <g className="pilote-perso" style={{ animationDelay: '1.1s' }}>
+          <path d="M214 212v-44a30 30 0 0 1 60 0v44z" fill="#C42B57" />
+          <path d="M224 212v-30a20 20 0 0 1 40 0v30z" fill="#D6335C" />
+          <circle cx="244" cy="124" r="22" fill="#8A1B3D" />
+          <circle cx="244" cy="124" r="22" fill="#C42B57" opacity="0.25" />
+          <path d="M228 118a16 16 0 0 1 32 0" fill="#8A1B3D" />
+          <rect x="274" y="168" width="16" height="34" rx="8" fill="#C42B57" />
+        </g>
+
+        {/* le cœur qu'elles se passent */}
+        <g className="pilote-coeur">
+          <circle cx="160" cy="46" r="30" fill="#FFFFFF" stroke="#F3B0C2" strokeWidth="3" />
+          <path
+            d="M160 62s-13-8.2-17.3-15.6A9.9 9.9 0 0 1 160 39.6a9.9 9.9 0 0 1 17.3 6.8C173 53.8 160 62 160 62z"
+            fill="#C42B57"
+          />
+        </g>
+
+        {/* les liens entre les trois */}
+        <g stroke="#C42B57" strokeWidth="3" strokeLinecap="round" opacity="0.45" fill="none">
+          <path className="pilote-lien" d="M100 142q30-46 42-62" />
+          <path className="pilote-lien" d="M220 142q-30-46-42-62" style={{ animationDelay: '0.8s' }} />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 /* --------------------------------------------------------------- animations */
 
 const ANIMATIONS = `
@@ -390,8 +531,38 @@ const ANIMATIONS = `
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+.pilote-porteur {
+  background:
+    radial-gradient(120% 120% at 12% 0%, #FFFFFF 0%, #FDE7EC 55%, #FBD9E3 100%);
+}
+.pilote-lueur { position: absolute; border-radius: 9999px; filter: blur(52px); opacity: .30; pointer-events: none; }
+.pilote-lueur-a { width: 240px; height: 240px; background: #C42B57; top: -90px; right: 18%; animation: pilote-flotte 17s ease-in-out infinite; }
+.pilote-lueur-b { width: 200px; height: 200px; background: #4F46E5; bottom: -110px; left: -40px; animation: pilote-flotte 21s ease-in-out infinite reverse; }
+.pilote-perso { animation: pilote-porte-haut 5.5s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes pilote-porte-haut {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+.pilote-coeur { animation: pilote-bat 2.6s ease-in-out infinite; transform-origin: 160px 46px; }
+@keyframes pilote-bat {
+  0%, 100% { transform: scale(1) translateY(0); }
+  18%      { transform: scale(1.10) translateY(-3px); }
+  36%      { transform: scale(1) translateY(0); }
+  54%      { transform: scale(1.06) translateY(-2px); }
+}
+.pilote-etincelle { animation: pilote-scintille 3.2s ease-in-out infinite; transform-origin: center; }
+@keyframes pilote-scintille {
+  0%, 100% { opacity: .25; transform: scale(.7); }
+  50%      { opacity: 1;   transform: scale(1.25); }
+}
+.pilote-lien { stroke-dasharray: 6 10; animation: pilote-file 3.4s linear infinite; }
+@keyframes pilote-file {
+  0%   { stroke-dashoffset: 32; }
+  100% { stroke-dashoffset: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .pilote-hero, .pilote-bulle, .pilote-brille, .pilote-fleche, .pilote-icone, .pilote-piste { animation: none !important; }
+  .pilote-hero, .pilote-bulle, .pilote-brille, .pilote-fleche, .pilote-icone, .pilote-piste,
+  .pilote-lueur, .pilote-perso, .pilote-coeur, .pilote-etincelle, .pilote-lien { animation: none !important; }
   .pilote-brille { color: #F5B400; -webkit-text-fill-color: #F5B400; }
   .pilote-porte:hover { transform: none; }
 }
