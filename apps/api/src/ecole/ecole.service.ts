@@ -1,11 +1,12 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, type OnModuleInit } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { FormationType, Prisma, StatutCours, StatutInscriptionCours, StatutVente, TypeRemise } from '@prisma/client';
+import { FormationType, Prisma, StatutCours, StatutInscriptionCours, StatutVente, TypeLecon, TypeRemise } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { corrigerQuiz, nettoyerQuiz, quizSansReponses, quizUtilisable, type Quiz } from './quiz';
 import type {
   AffilieDto,
   AvancerDto,
+  AjouterContenuDto,
   ChapitreDto,
   ClasseDto,
   CodePromoDto,
@@ -54,6 +55,11 @@ export class EcoleService implements OnModuleInit {
     } catch {
       // Ne jamais empêcher l'API de démarrer pour un rattachement.
     }
+    try {
+      await this.convertirLesLecons();
+    } catch {
+      // Ni pour une conversion : les leçons se lisent de toute façon.
+    }
   }
 
   private async rattacherProgrammes() {
@@ -79,10 +85,28 @@ export class EcoleService implements OnModuleInit {
           sousTitre: f.summary?.trim() || null,
           slug: await this.slugLibre('cours', titre),
           formationId: f.id,
-          chapitres: {
-            create: [{ titre: 'Pour commencer', ordre: 0, lecons: { create: [{ titre: 'Bienvenue', ordre: 0, apercu: true }] } }],
-          },
         },
+      });
+    }
+  }
+
+  /**
+   * ÉCRIRE EN BLOCS LES LEÇONS D'AVANT.
+   *
+   * Une leçon portait un seul contenu ; elle porte maintenant une suite de
+   * blocs. On convertit une fois pour toutes, sans rien effacer : les anciennes
+   * colonnes restent en place, elles ne servent simplement plus.
+   */
+  private async convertirLesLecons() {
+    const anciennes = await this.prisma.leconCours.findMany({
+      where: { blocs: { equals: Prisma.DbNull }, type: { in: [TypeLecon.TEXTE, TypeLecon.VIDEO, TypeLecon.AUDIO, TypeLecon.DOCUMENT] } },
+      select: { id: true, type: true, contenu: true, videoUrl: true, fichierUrl: true },
+      take: 2000,
+    });
+    for (const l of anciennes) {
+      await this.prisma.leconCours.update({
+        where: { id: l.id },
+        data: { blocs: blocsDepuisLAncien(l) as Prisma.InputJsonValue },
       });
     }
   }
@@ -129,7 +153,7 @@ export class EcoleService implements OnModuleInit {
       where: { accountId },
       orderBy: [{ ordre: 'asc' }, { createdAt: 'desc' }],
       include: {
-        _count: { select: { inscriptions: true } },
+        _count: { select: { inscriptions: true, leconsRacine: true } },
         chapitres: { select: { _count: { select: { lecons: true } } } },
         programme: { select: { id: true, status: true, _count: { select: { sessions: true } } } },
       },
@@ -149,23 +173,27 @@ export class EcoleService implements OnModuleInit {
       gratuit: c.gratuit,
       prixCents: c.prixCents,
       nbChapitres: c.chapitres.length,
-      nbLecons: c.chapitres.reduce((n, ch) => n + ch._count.lecons, 0),
+      nbLecons: c.chapitres.reduce((n, ch) => n + ch._count.lecons, 0) + c._count.leconsRacine,
       nbApprenants: c._count.inscriptions,
       dureeMinutes: c.dureeMinutes,
+      creeLe: c.createdAt,
       modifieLe: c.updatedAt,
     }));
   }
 
+  /**
+   * CE QU'IL FAUT CHARGER POUR VOIR UNE FORMATION EN ENTIER.
+   *
+   * Les chapitres avec leurs leçons, ET les leçons posées sans chapitre :
+   * le chapitre est facultatif, les deux se rangent dans la même liste.
+   */
+  private readonly avecContenu = {
+    chapitres: { orderBy: { ordre: 'asc' as const }, include: { lecons: { orderBy: { ordre: 'asc' as const } } } },
+    leconsRacine: { orderBy: { ordre: 'asc' as const } },
+  };
+
   async lireCours(accountId: string, id: string) {
-    const c = await this.prisma.cours.findFirst({
-      where: { id, accountId },
-      include: {
-        chapitres: {
-          orderBy: { ordre: 'asc' },
-          include: { lecons: { orderBy: { ordre: 'asc' } } },
-        },
-      },
-    });
+    const c = await this.prisma.cours.findFirst({ where: { id, accountId }, include: this.avecContenu });
     if (!c) throw new NotFoundException("Ce cours n'existe pas.");
     return this.rendreCours(c);
   }
@@ -178,17 +206,8 @@ export class EcoleService implements OnModuleInit {
         titre,
         sousTitre: dto.sousTitre?.trim() || null,
         slug: await this.slugLibre('cours', titre),
-        chapitres: {
-          create: [
-            {
-              titre: 'Pour commencer',
-              ordre: 0,
-              lecons: { create: [{ titre: 'Bienvenue', ordre: 0, apercu: true }] },
-            },
-          ],
-        },
       },
-      include: { chapitres: { orderBy: { ordre: 'asc' }, include: { lecons: { orderBy: { ordre: 'asc' } } } } },
+      include: this.avecContenu,
     });
     return this.rendreCours(cours);
   }
@@ -268,7 +287,9 @@ export class EcoleService implements OnModuleInit {
 
     if (dto.statut !== undefined) {
       if (dto.statut === StatutCours.PUBLIE) {
-        const lecons = await this.prisma.leconCours.count({ where: { chapitre: { coursId: id } } });
+        const lecons = await this.prisma.leconCours.count({
+          where: { OR: [{ chapitre: { coursId: id } }, { coursId: id }] },
+        });
         if (!lecons) throw new BadRequestException('Écris au moins une leçon avant de publier ce cours.');
         if (!actuel.publieLe) data.publieLe = new Date();
       }
@@ -278,7 +299,7 @@ export class EcoleService implements OnModuleInit {
     const cours = await this.prisma.cours.update({
       where: { id },
       data,
-      include: { chapitres: { orderBy: { ordre: 'asc' }, include: { lecons: { orderBy: { ordre: 'asc' } } } } },
+      include: this.avecContenu,
     });
     return this.rendreCours(cours);
   }
@@ -293,7 +314,7 @@ export class EcoleService implements OnModuleInit {
   async dupliquerCours(accountId: string, id: string) {
     const source = await this.prisma.cours.findFirst({
       where: { id, accountId },
-      include: { chapitres: { orderBy: { ordre: 'asc' }, include: { lecons: { orderBy: { ordre: 'asc' } } } } },
+      include: this.avecContenu,
     });
     if (!source) throw new NotFoundException("Ce cours n'existe pas.");
 
@@ -321,23 +342,13 @@ export class EcoleService implements OnModuleInit {
             titre: ch.titre,
             resume: ch.resume,
             ordre: ch.ordre,
-            lecons: {
-              create: ch.lecons.map((l) => ({
-                titre: l.titre,
-                type: l.type,
-                contenu: l.contenu,
-                videoUrl: l.videoUrl,
-                fichierUrl: l.fichierUrl,
-                dureeMinutes: l.dureeMinutes,
-                apercu: l.apercu,
-                quiz: (l.quiz ?? Prisma.JsonNull) as Prisma.InputJsonValue,
-                ordre: l.ordre,
-              })),
-            },
+            publie: ch.publie,
+            lecons: { create: ch.lecons.map((l) => this.copieDeLecon(l)) },
           })),
         },
+        leconsRacine: { create: source.leconsRacine.map((l) => this.copieDeLecon(l)) },
       },
-      include: { chapitres: { orderBy: { ordre: 'asc' }, include: { lecons: { orderBy: { ordre: 'asc' } } } } },
+      include: this.avecContenu,
     });
     return this.rendreCours(cours);
   }
@@ -369,6 +380,7 @@ export class EcoleService implements OnModuleInit {
       data: {
         ...(dto.titre !== undefined ? { titre: dto.titre.trim() || 'Chapitre' } : {}),
         ...(dto.resume !== undefined ? { resume: dto.resume.trim() || null } : {}),
+        ...(dto.publie !== undefined ? { publie: dto.publie } : {}),
       },
     });
     return this.lireCours(accountId, coursId);
@@ -422,6 +434,10 @@ export class EcoleService implements OnModuleInit {
     if (dto.fichierUrl !== undefined) data.fichierUrl = dto.fichierUrl.trim() || null;
     if (dto.dureeMinutes !== undefined) data.dureeMinutes = dto.dureeMinutes;
     if (dto.apercu !== undefined) data.apercu = dto.apercu;
+    if (dto.publie !== undefined) data.publie = dto.publie;
+    if (dto.blocs !== undefined) {
+      data.blocs = (dto.blocs === null ? Prisma.JsonNull : nettoyerBlocs(dto.blocs)) as unknown as Prisma.InputJsonValue;
+    }
     if (dto.quiz !== undefined) {
       data.quiz = (dto.quiz === null ? Prisma.JsonNull : nettoyerQuiz(dto.quiz)) as unknown as Prisma.InputJsonValue;
     }
@@ -449,17 +465,178 @@ export class EcoleService implements OnModuleInit {
 
   async deplacerLecon(accountId: string, coursId: string, leconId: string, dto: DeplacerLeconDto) {
     await this.maLecon(accountId, coursId, leconId);
-    await this.monChapitre(accountId, coursId, dto.chapitreId);
-    const dernier = await this.prisma.leconCours.findFirst({
-      where: { chapitreId: dto.chapitreId },
-      orderBy: { ordre: 'desc' },
-      select: { ordre: true },
-    });
+    // Sans chapitre, la leçon remonte au premier niveau de la formation.
+    const vers = dto.chapitreId?.trim() || null;
+    if (vers) await this.monChapitre(accountId, coursId, vers);
     await this.prisma.leconCours.update({
       where: { id: leconId },
-      data: { chapitreId: dto.chapitreId, ordre: dto.position ?? (dernier?.ordre ?? -1) + 1 },
+      data: {
+        chapitreId: vers,
+        coursId: vers ? null : coursId,
+        ordre: dto.position ?? (await this.prochainOrdre(coursId, vers)),
+      },
     });
     return this.lireCours(accountId, coursId);
+  }
+
+
+  /* ====================================================== LE CONTENU ==== */
+
+  /**
+   * AJOUTER UN CONTENU PÉDAGOGIQUE.
+   *
+   * Un seul geste pour tout : un chapitre, une leçon, un quiz, un devoir, une
+   * classe en direct. Le chapitre est FACULTATIF — sans `chapitreId`, la leçon
+   * se pose directement dans la formation, à la suite de ce qui existe déjà.
+   * Chapitres et leçons de premier niveau partagent le même « ordre », si bien
+   * qu'ils se rangent côte à côte dans une seule liste.
+   */
+  async ajouterContenu(accountId: string, coursId: string, dto: AjouterContenuDto) {
+    await this.monCours(accountId, coursId);
+    const genre = dto.genre ?? 'lecon';
+
+    if (genre === 'chapitre') {
+      await this.prisma.chapitreCours.create({
+        data: {
+          coursId,
+          titre: dto.titre?.trim() || 'Nouveau chapitre',
+          resume: dto.resume?.trim() || null,
+          ordre: await this.prochainOrdre(coursId, null),
+        },
+      });
+      return this.lireCours(accountId, coursId);
+    }
+
+    if (dto.chapitreId) await this.monChapitre(accountId, coursId, dto.chapitreId);
+
+    const type = genre === 'quiz' ? TypeLecon.QUIZ : genre === 'devoir' ? TypeLecon.DEVOIR : genre === 'live' ? TypeLecon.LIVE : TypeLecon.TEXTE;
+    const parDefaut = genre === 'quiz' ? 'Nouveau quiz' : genre === 'devoir' ? 'Nouveau devoir' : genre === 'live' ? 'Nouvelle classe en direct' : 'Nouvelle leçon';
+
+    await this.prisma.leconCours.create({
+      data: {
+        chapitreId: dto.chapitreId ?? null,
+        coursId: dto.chapitreId ? null : coursId,
+        titre: dto.titre?.trim() || parDefaut,
+        type,
+        blocs: (genre === 'lecon' ? [] : Prisma.JsonNull) as Prisma.InputJsonValue,
+        ordre: await this.prochainOrdre(coursId, dto.chapitreId ?? null),
+      },
+    });
+    return this.lireCours(accountId, coursId);
+  }
+
+  /**
+   * RANGER LE PREMIER NIVEAU.
+   *
+   * Les identifiants arrivent préfixés — `chapitre:xxx`, `lecon:yyy` — parce
+   * qu'un chapitre et une leçon peuvent se suivre dans la même liste.
+   */
+  async reordonnerContenu(accountId: string, coursId: string, dto: ReordonnerDto) {
+    await this.monCours(accountId, coursId);
+    const chapitres = await this.prisma.chapitreCours.findMany({ where: { coursId }, select: { id: true } });
+    const lecons = await this.prisma.leconCours.findMany({ where: { coursId }, select: { id: true } });
+    const ch = new Set(chapitres.map((c) => c.id));
+    const le = new Set(lecons.map((l) => l.id));
+
+    const gestes: Prisma.PrismaPromise<unknown>[] = [];
+    let i = 0;
+    for (const brut of dto.ids) {
+      const [quoi, id] = brut.includes(':') ? brut.split(':') : ['', brut];
+      if (quoi === 'chapitre' && ch.has(id)) gestes.push(this.prisma.chapitreCours.update({ where: { id }, data: { ordre: i++ } }));
+      else if (quoi === 'lecon' && le.has(id)) gestes.push(this.prisma.leconCours.update({ where: { id }, data: { ordre: i++ } }));
+      else if (!quoi && ch.has(id)) gestes.push(this.prisma.chapitreCours.update({ where: { id }, data: { ordre: i++ } }));
+    }
+    await this.prisma.$transaction(gestes);
+    return this.lireCours(accountId, coursId);
+  }
+
+  /** Dupliquer une leçon : elle se pose juste après l'originale. */
+  async dupliquerLecon(accountId: string, coursId: string, leconId: string) {
+    const source = await this.laLecon(accountId, coursId, leconId);
+    await this.prisma.leconCours.create({
+      data: {
+        ...this.copieDeLecon(source),
+        titre: `${source.titre} (copie)`,
+        chapitreId: source.chapitreId,
+        coursId: source.coursId,
+        ordre: source.ordre + 1,
+      },
+    });
+    return this.lireCours(accountId, coursId);
+  }
+
+  /** Dupliquer un chapitre, avec tout ce qu'il contient. */
+  async dupliquerChapitre(accountId: string, coursId: string, chapitreId: string) {
+    await this.monChapitre(accountId, coursId, chapitreId);
+    const source = await this.prisma.chapitreCours.findUnique({
+      where: { id: chapitreId },
+      include: { lecons: { orderBy: { ordre: 'asc' } } },
+    });
+    if (!source) throw new NotFoundException("Ce chapitre n'existe pas.");
+    await this.prisma.chapitreCours.create({
+      data: {
+        coursId,
+        titre: `${source.titre} (copie)`,
+        resume: source.resume,
+        publie: source.publie,
+        ordre: await this.prochainOrdre(coursId, null),
+        lecons: { create: source.lecons.map((l) => this.copieDeLecon(l)) },
+      },
+    });
+    return this.lireCours(accountId, coursId);
+  }
+
+  /* ============================================================ OUTILS ==== */
+
+  /** Le rang suivant : dans un chapitre, ou au premier niveau de la formation. */
+  private async prochainOrdre(coursId: string, chapitreId: string | null) {
+    if (chapitreId) {
+      const d = await this.prisma.leconCours.findFirst({ where: { chapitreId }, orderBy: { ordre: 'desc' }, select: { ordre: true } });
+      return (d?.ordre ?? -1) + 1;
+    }
+    const [dch, dle] = await Promise.all([
+      this.prisma.chapitreCours.findFirst({ where: { coursId }, orderBy: { ordre: 'desc' }, select: { ordre: true } }),
+      this.prisma.leconCours.findFirst({ where: { coursId }, orderBy: { ordre: 'desc' }, select: { ordre: true } }),
+    ]);
+    return Math.max(dch?.ordre ?? -1, dle?.ordre ?? -1) + 1;
+  }
+
+  /** Tout ce qu'on recopie d'une leçon, sans son rattachement ni son rang. */
+  private copieDeLecon(l: {
+    titre: string;
+    type: TypeLecon;
+    contenu: string | null;
+    videoUrl: string | null;
+    fichierUrl: string | null;
+    blocs: Prisma.JsonValue;
+    dureeMinutes: number;
+    apercu: boolean;
+    publie: boolean;
+    quiz: Prisma.JsonValue;
+    ordre: number;
+  }) {
+    return {
+      titre: l.titre,
+      type: l.type,
+      contenu: l.contenu,
+      videoUrl: l.videoUrl,
+      fichierUrl: l.fichierUrl,
+      blocs: (l.blocs ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+      dureeMinutes: l.dureeMinutes,
+      apercu: l.apercu,
+      publie: l.publie,
+      quiz: (l.quiz ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+      ordre: l.ordre,
+    };
+  }
+
+  /** La leçon en entier — elle appartient au cours, par son chapitre ou en direct. */
+  private async laLecon(accountId: string, coursId: string, leconId: string) {
+    const l = await this.prisma.leconCours.findFirst({
+      where: { id: leconId, OR: [{ chapitre: { coursId, cours: { accountId } } }, { coursId, cours: { accountId } }] },
+    });
+    if (!l) throw new NotFoundException("Cette leçon n'existe pas.");
+    return l;
   }
 
   /* ======================================================= LES APPRENANTS == */
@@ -902,7 +1079,7 @@ export class EcoleService implements OnModuleInit {
       this.prisma.cours.findMany({
         where: { accountId: ecole.accountId, statut: StatutCours.PUBLIE },
         orderBy: [{ ordre: 'asc' }, { publieLe: 'desc' }],
-        include: { chapitres: { select: { _count: { select: { lecons: true } } } } },
+        include: { chapitres: { select: { _count: { select: { lecons: true } } } }, _count: { select: { leconsRacine: true } } },
       }),
       this.prisma.packCours.findMany({
         where: { accountId: ecole.accountId, statut: StatutCours.PUBLIE },
@@ -931,7 +1108,7 @@ export class EcoleService implements OnModuleInit {
         prixCents: c.prixCents,
         prixBarreCents: c.prixBarreCents,
         dureeMinutes: c.dureeMinutes,
-        nbLecons: c.chapitres.reduce((n, ch) => n + ch._count.lecons, 0),
+        nbLecons: c.chapitres.reduce((n, ch) => n + ch._count.lecons, 0) + c._count.leconsRacine,
         certificat: c.certificat,
       })),
       packs: packs.map((p) => ({ titre: p.titre, slug: p.slug, description: p.description, prixCents: p.prixCents })),
@@ -944,10 +1121,18 @@ export class EcoleService implements OnModuleInit {
       where: { slug },
       include: {
         chapitres: { orderBy: { ordre: 'asc' }, include: { lecons: { orderBy: { ordre: 'asc' } } } },
+        leconsRacine: { orderBy: { ordre: 'asc' } },
         account: { select: { name: true, ecoleEnLigne: { select: { nom: true, slug: true, couleur: true, logoUrl: true } } } },
       },
     });
     if (!c || c.statut !== StatutCours.PUBLIE) throw new NotFoundException("Ce cours n'existe pas.");
+
+    const sommaire = (l: { titre: string; type: string; dureeMinutes: number; apercu: boolean }) => ({
+      titre: l.titre,
+      type: l.type,
+      dureeMinutes: l.dureeMinutes,
+      apercu: l.apercu,
+    });
 
     return {
       titre: c.titre,
@@ -960,7 +1145,7 @@ export class EcoleService implements OnModuleInit {
       objectifs: c.objectifs,
       prerequis: c.prerequis,
       pourQui: c.pourQui,
-      dureeMinutes: c.dureeMinutes || this.dureeCalculee(c.chapitres),
+      dureeMinutes: c.dureeMinutes || this.dureeCalculee(c.chapitres, c.leconsRacine),
       gratuit: c.gratuit,
       prixCents: c.prixCents,
       prixBarreCents: c.prixBarreCents,
@@ -978,16 +1163,27 @@ export class EcoleService implements OnModuleInit {
             logoUrl: c.account.ecoleEnLigne.logoUrl,
           }
         : { nom: c.account?.name ?? '', slug: null, couleur: '#0F5F3E', logoUrl: null },
-      chapitres: c.chapitres.map((ch) => ({
-        titre: ch.titre,
-        resume: ch.resume,
-        lecons: ch.lecons.map((l) => ({
-          titre: l.titre,
-          type: l.type,
-          dureeMinutes: l.dureeMinutes,
-          apercu: l.apercu,
-        })),
-      })),
+      // Un chapitre sans titre : les leçons posées directement dans la formation.
+      chapitres: [
+        ...c.chapitres
+          .filter((ch) => ch.publie)
+          .map((ch) => ({
+            titre: ch.titre as string | null,
+            resume: ch.resume,
+            ordre: ch.ordre,
+            lecons: ch.lecons.filter((l) => l.publie).map((l) => sommaire(l)),
+          })),
+        ...(c.leconsRacine.some((l) => l.publie)
+          ? [
+              {
+                titre: null as string | null,
+                resume: null,
+                ordre: c.leconsRacine.find((l) => l.publie)?.ordre ?? 0,
+                lecons: c.leconsRacine.filter((l) => l.publie).map((l) => sommaire(l)),
+              },
+            ]
+          : []),
+      ].sort((a, b) => a.ordre - b.ordre),
     };
   }
 
@@ -1037,6 +1233,7 @@ export class EcoleService implements OnModuleInit {
         cours: {
           include: {
             chapitres: { orderBy: { ordre: 'asc' }, include: { lecons: { orderBy: { ordre: 'asc' } } } },
+            leconsRacine: { orderBy: { ordre: 'asc' } },
             account: { select: { name: true, ecoleEnLigne: { select: { nom: true, couleur: true, logoUrl: true } } } },
           },
         },
@@ -1048,6 +1245,24 @@ export class EcoleService implements OnModuleInit {
     await this.prisma.inscriptionCours.update({ where: { id: i.id }, data: { derniereVisite: new Date() } });
 
     const faites = new Map(i.progressions.map((p) => [p.leconId, p]));
+
+    const rendre = (l: LeconEnBase) => {
+      const quiz = l.quiz ? nettoyerQuiz(l.quiz) : null;
+      const p = faites.get(l.id);
+      return {
+        id: l.id,
+        titre: l.titre,
+        type: l.type,
+        contenu: l.contenu,
+        videoUrl: l.videoUrl,
+        fichierUrl: l.fichierUrl,
+        blocs: Array.isArray(l.blocs) ? l.blocs : blocsDepuisLAncien(l),
+        dureeMinutes: l.dureeMinutes,
+        quiz: quizUtilisable(quiz) ? quizSansReponses(quiz as Quiz) : null,
+        faite: Boolean(p?.faite),
+        score: p?.score ?? null,
+      };
+    };
 
     return {
       apprenant: { prenom: i.prenom, nom: i.nom, email: i.email },
@@ -1072,27 +1287,29 @@ export class EcoleService implements OnModuleInit {
             logoUrl: i.cours.account.ecoleEnLigne.logoUrl,
           }
         : { nom: i.cours.account?.name ?? '', couleur: '#0F5F3E', logoUrl: null },
-      chapitres: i.cours.chapitres.map((ch) => ({
-        id: ch.id,
-        titre: ch.titre,
-        resume: ch.resume,
-        lecons: ch.lecons.map((l) => {
-          const quiz = l.quiz ? nettoyerQuiz(l.quiz) : null;
-          const p = faites.get(l.id);
-          return {
-            id: l.id,
-            titre: l.titre,
-            type: l.type,
-            contenu: l.contenu,
-            videoUrl: l.videoUrl,
-            fichierUrl: l.fichierUrl,
-            dureeMinutes: l.dureeMinutes,
-            quiz: quizUtilisable(quiz) ? quizSansReponses(quiz as Quiz) : null,
-            faite: Boolean(p?.faite),
-            score: p?.score ?? null,
-          };
-        }),
-      })),
+      // Les leçons posées sans chapitre forment un groupe sans titre, à leur rang.
+      chapitres: [
+        ...i.cours.chapitres
+          .filter((ch) => ch.publie)
+          .map((ch) => ({
+            id: ch.id,
+            titre: ch.titre as string | null,
+            resume: ch.resume,
+            ordre: ch.ordre,
+            lecons: ch.lecons.filter((l) => l.publie).map((l) => rendre(l)),
+          })),
+        ...(i.cours.leconsRacine.some((l) => l.publie)
+          ? [
+              {
+                id: 'sans-chapitre',
+                titre: null as string | null,
+                resume: null,
+                ordre: i.cours.leconsRacine.find((l) => l.publie)?.ordre ?? 0,
+                lecons: i.cours.leconsRacine.filter((l) => l.publie).map((l) => rendre(l)),
+              },
+            ]
+          : []),
+      ].sort((a, b) => a.ordre - b.ordre),
     };
   }
 
@@ -1277,15 +1494,18 @@ export class EcoleService implements OnModuleInit {
 
   private async maLecon(accountId: string, coursId: string, leconId: string) {
     const l = await this.prisma.leconCours.findFirst({
-      where: { id: leconId, chapitre: { coursId, cours: { accountId } } },
+      where: { id: leconId, OR: [{ chapitre: { coursId, cours: { accountId } } }, { coursId, cours: { accountId } }] },
       select: { id: true },
     });
     if (!l) throw new NotFoundException("Cette leçon n'existe pas.");
     return l;
   }
 
-  private dureeCalculee(chapitres: { lecons: { dureeMinutes: number }[] }[]) {
-    return chapitres.reduce((n, ch) => n + ch.lecons.reduce((m, l) => m + l.dureeMinutes, 0), 0);
+  private dureeCalculee(chapitres: { lecons: { dureeMinutes: number }[] }[], racine: { dureeMinutes: number }[] = []) {
+    return (
+      chapitres.reduce((n, ch) => n + ch.lecons.reduce((m, l) => m + l.dureeMinutes, 0), 0) +
+      racine.reduce((m, l) => m + l.dureeMinutes, 0)
+    );
   }
 
   private rendreCours(c: {
@@ -1326,19 +1546,10 @@ export class EcoleService implements OnModuleInit {
       titre: string;
       resume: string | null;
       ordre: number;
-      lecons: {
-        id: string;
-        titre: string;
-        type: string;
-        contenu: string | null;
-        videoUrl: string | null;
-        fichierUrl: string | null;
-        dureeMinutes: number;
-        apercu: boolean;
-        quiz: Prisma.JsonValue;
-        ordre: number;
-      }[];
+      publie: boolean;
+      lecons: LeconEnBase[];
     }[];
+    leconsRacine: LeconEnBase[];
   }) {
     return {
       id: c.id,
@@ -1354,7 +1565,7 @@ export class EcoleService implements OnModuleInit {
       prerequis: c.prerequis,
       pourQui: c.pourQui,
       dureeMinutes: c.dureeMinutes,
-      dureeCalculee: this.dureeCalculee(c.chapitres),
+      dureeCalculee: this.dureeCalculee(c.chapitres, c.leconsRacine),
       prixCents: c.prixCents,
       prixBarreCents: c.prixBarreCents,
       gratuit: c.gratuit,
@@ -1380,19 +1591,40 @@ export class EcoleService implements OnModuleInit {
         titre: ch.titre,
         resume: ch.resume,
         ordre: ch.ordre,
-        lecons: ch.lecons.map((l) => ({
-          id: l.id,
-          titre: l.titre,
-          type: l.type,
-          contenu: l.contenu,
-          videoUrl: l.videoUrl,
-          fichierUrl: l.fichierUrl,
-          dureeMinutes: l.dureeMinutes,
-          apercu: l.apercu,
-          quiz: l.quiz ? nettoyerQuiz(l.quiz) : null,
-          ordre: l.ordre,
-        })),
+        publie: ch.publie,
+        lecons: ch.lecons.map((l) => this.rendreLecon(l)),
       })),
+      // LA LISTE UNIQUE : chapitres et leçons sans chapitre, rangés ensemble.
+      contenu: [
+        ...c.chapitres.map((ch) => ({
+          genre: 'chapitre' as const,
+          id: ch.id,
+          titre: ch.titre,
+          resume: ch.resume,
+          ordre: ch.ordre,
+          publie: ch.publie,
+          lecons: ch.lecons.map((l) => this.rendreLecon(l)),
+        })),
+        ...c.leconsRacine.map((l) => ({ genre: 'lecon' as const, ...this.rendreLecon(l) })),
+      ].sort((a, b) => a.ordre - b.ordre),
+    };
+  }
+
+  /** Une leçon telle que l'atelier la lit : ses blocs, son état, son rang. */
+  private rendreLecon(l: LeconEnBase) {
+    return {
+      id: l.id,
+      titre: l.titre,
+      type: l.type,
+      contenu: l.contenu,
+      videoUrl: l.videoUrl,
+      fichierUrl: l.fichierUrl,
+      blocs: Array.isArray(l.blocs) ? l.blocs : blocsDepuisLAncien(l),
+      dureeMinutes: l.dureeMinutes,
+      apercu: l.apercu,
+      publie: l.publie,
+      quiz: l.quiz ? nettoyerQuiz(l.quiz) : null,
+      ordre: l.ordre,
     };
   }
 
@@ -1432,6 +1664,100 @@ export class EcoleService implements OnModuleInit {
 }
 
 /** Enlève les accents, met en minuscules, remplace le reste par des tirets. */
+/** Une leçon telle qu'elle est rangée en base. */
+type LeconEnBase = {
+  id: string;
+  titre: string;
+  type: string;
+  contenu: string | null;
+  videoUrl: string | null;
+  fichierUrl: string | null;
+  blocs: Prisma.JsonValue;
+  dureeMinutes: number;
+  apercu: boolean;
+  publie: boolean;
+  quiz: Prisma.JsonValue;
+  ordre: number;
+};
+
+/**
+ * LIRE UNE LEÇON ÉCRITE AVANT LES BLOCS.
+ *
+ * Avant, une leçon portait un seul contenu : un texte, une vidéo, un fichier.
+ * On le rend sous forme de blocs pour que l'atelier n'ait qu'une seule façon
+ * de lire. Rien n'est effacé en base : la conversion se fait à la lecture, et
+ * une fois pour toutes au premier enregistrement.
+ */
+function blocsDepuisLAncien(l: {
+  type: string;
+  contenu: string | null;
+  videoUrl: string | null;
+  fichierUrl: string | null;
+}): unknown[] {
+  const blocs: unknown[] = [];
+  if (l.videoUrl) blocs.push({ id: 'video', type: l.type === 'AUDIO' ? 'audio' : 'video', url: l.videoUrl });
+  if (l.contenu) blocs.push({ id: 'texte', type: 'texte', html: l.contenu });
+  if (l.fichierUrl) blocs.push({ id: 'fichier', type: 'fichier', url: l.fichierUrl });
+  return blocs;
+}
+
+/** Les blocs qu'une leçon sait afficher. Tout le reste est écarté. */
+const TYPES_DE_BLOC = new Set([
+  'titre',
+  'texte',
+  'video',
+  'audio',
+  'image',
+  'separateur',
+  'information',
+  'fichier',
+  'pdf',
+  'lien',
+  'classe',
+]);
+
+/**
+ * RELIRE LES BLOCS D'UNE LEÇON.
+ *
+ * Ce qui arrive du navigateur est un tableau libre : on garde les blocs dont
+ * le type est connu, on borne les textes, on donne un identifiant à ceux qui
+ * n'en ont pas. Le reste est jeté sans bruit.
+ */
+function nettoyerBlocs(brut: unknown): unknown[] {
+  if (!Array.isArray(brut)) return [];
+  const propres: unknown[] = [];
+  for (const b of brut.slice(0, 200)) {
+    if (!b || typeof b !== 'object') continue;
+    const bloc = b as Record<string, unknown>;
+    const type = String(bloc.type ?? '');
+    if (!TYPES_DE_BLOC.has(type)) continue;
+
+    const texte = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : undefined);
+    const propre: Record<string, unknown> = {
+      id: texte(bloc.id, 40) || randomBytes(8).toString('hex'),
+      type,
+    };
+    const html = texte(bloc.html, 60000);
+    if (html !== undefined) propre.html = html;
+    const contenu = texte(bloc.texte, 60000);
+    if (contenu !== undefined) propre.texte = contenu;
+    const url = texte(bloc.url, 1000);
+    if (url !== undefined) propre.url = url;
+    const legende = texte(bloc.legende, 300);
+    if (legende !== undefined) propre.legende = legende;
+    const nom = texte(bloc.nom, 200);
+    if (nom !== undefined) propre.nom = nom;
+    const ton = texte(bloc.ton, 20);
+    if (ton !== undefined) propre.ton = ton;
+    if (typeof bloc.niveau === 'number') propre.niveau = Math.min(4, Math.max(2, Math.round(bloc.niveau)));
+    const debut = texte(bloc.debut, 40);
+    if (debut !== undefined) propre.debut = debut;
+
+    propres.push(propre);
+  }
+  return propres;
+}
+
 function normaliser(brut: string) {
   return brut
     .normalize('NFD')
