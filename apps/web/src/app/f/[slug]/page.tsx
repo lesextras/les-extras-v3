@@ -17,9 +17,7 @@ interface PagePublique {
 }
 
 async function charger(slug: string): Promise<PagePublique | null> {
-  const { data } = await fetchPublic<PagePublique>(`/public/formulaires/${encodeURIComponent(slug)}`, {
-    cache: 'no-store',
-  });
+  const { data } = await fetchPublic<PagePublique>(`/public/formulaires/${encodeURIComponent(slug)}`, { revalidate: 0 });
   return data && typeof (data as PagePublique).titre === 'string' ? (data as PagePublique) : null;
 }
 
