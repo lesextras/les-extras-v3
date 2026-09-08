@@ -42,7 +42,8 @@ export async function apiAdministration<T>(
 /* ------------------------------------------------------------------ types */
 
 export interface Tableau {
-  comptes: { total: number; associations: number; academies: number; etablissements: number; intervenants: number };
+  /** Piloter uniquement : les espaces association et académie. */
+  comptes: { total: number; associations: number; academies: number };
   personnes: { total: number; administration: number };
   fiches: { organisations: number; academies: number };
   formulaires: { total: number; reponses: number };
