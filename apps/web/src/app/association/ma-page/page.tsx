@@ -1,16 +1,37 @@
 import type { Metadata } from 'next';
-import { EnConstruction } from '../EnConstruction';
+import { apiEspace, sessionAssociation } from '../_session';
+import { Encart, Titre } from '../_ui';
+import type { Espace } from '../espace/_types';
+import { Presentation } from './Presentation';
 
-export const metadata: Metadata = { title: "Ma page association", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Ma page association', robots: { index: false, follow: false } };
 
-export default function Page() {
+/**
+ * `/ma-page` — LA PAGE DE PRÉSENTATION DE L'ASSOCIATION.
+ *
+ * C'est la page qu'on donne : à un financeur qui demande « qui êtes-vous ? »,
+ * à une mairie, à un partenaire. Elle n'est pas saisie une deuxième fois :
+ * elle est composée de ce qui est déjà dans l'espace — l'organisation, le
+ * projet, les actions, le bureau — et elle s'imprime ou se copie telle quelle.
+ */
+export default async function MaPagePage() {
+  const s = await sessionAssociation('/ma-page');
+  const { data, error } = await apiEspace<Espace>(s, '/association/espace');
+
   return (
-    <EnConstruction
-      titre={"Ma page association"}
-      surtitre={"Mon compte"}
-      quoi={"La vitrine publique de ton association : une adresse à donner, une page à remplir toi-même, et un bouton pour passer de l'édition à la version publique."}
-      contenu={["Une bannière et un logo, remplaçables en un clic", "Ta thématique et ta description en 300 caractères — c'est aussi l'aperçu au partage et la description pour Google", "« Nos actions en cours » : billetterie, adhésion, appel à dons, financement participatif", "« Qui sommes-nous ? » dans un éditeur riche, avec images et vidéos", "Ton adresse partageable : pilote.toulali.fr/asso/ton-nom", "La page reste privée tant que tu n'as pas cliqué « publier »"]}
-      deja={"C'est le lot 4 du cahier des charges. Le modèle PagePublique reste à créer — et le texte riche devra être nettoyé côté serveur avant d'être rendu."}
-    />
+    <>
+      <Titre
+        surtitre="Mon compte"
+        sousTitre="Tout ce qui est ici vient de ton espace : tu ne le ressaisis pas. Imprime la page, enregistre-la en PDF ou copie le texte pour le coller dans un dossier."
+      >
+        Ma page association
+      </Titre>
+
+      {data ? (
+        <Presentation espace={data} />
+      ) : (
+        <Encart ton="attention">{error ?? 'La page ne se charge pas pour le moment.'}</Encart>
+      )}
+    </>
   );
 }
