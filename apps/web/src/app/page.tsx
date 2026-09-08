@@ -12,8 +12,35 @@
 // donc avec de vraies données, se sert toute prête (TTFB de fichier statique),
 // et se régénère en arrière-plan. Si l'API est injoignable au build,
 // `fetchPublic` renvoie une erreur sans jeter : la page sort sans la section
-// « sélection », et la première régénération (le healthcheck Docker frappe `/`
+// « catalogue », et la première régénération (le healthcheck Docker frappe `/`
 // toutes les 30 s) la complète.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// REFONTE DU 08/09/2026 : DIX-SEPT SECTIONS DEVENUES HUIT.
+//
+// L'accueil disait tout, et c'était exactement le problème : dix-sept
+// sections, deux publics qui s'alternaient huit fois, LEX raconté trois fois,
+// le prix deux fois, le catalogue quatre fois. Ce qui ne se lisait nulle part,
+// c'est la phrase la plus simple : un réseau d'intervenants pour des renforts,
+// des ateliers et des formations, et un seul logiciel pour tout gérer.
+//
+// L'ordre retenu, et rien d'autre n'a changé — charte, couleurs, animations et
+// composants sont ceux du site :
+//   1. le héros : les trois usages et le logiciel, dès le titre ;
+//   2. Renfort · Atelier · Formation, à largeur égale ;
+//   3. l'aiguillage, deux portes ;
+//   4. le tout-en-un : il diffuse, il formalise, il vérifie, il compte ;
+//   5. le catalogue, en un bloc à onglets ;
+//   6. LEX et le GAP ;
+//   7. le prix, en une ligne ;
+//   8. ouvrir un compte.
+//
+// RIEN N'EST SUPPRIMÉ, tout est déplacé :
+//   • la barre de recherche descend sur /ateliers, qui a déjà la sienne ;
+//   • « un seul formulaire » et « l'aperçu du produit » partent sur
+//     /renforteam, la page qui raconte le renfort en détail ;
+//   • « recevoir le catalogue » et « nous écrire » partent sur /contact.
+// Aucun lien de l'ancienne page ne disparaît sans destination.
 export const revalidate = 300;
 
 import type { Metadata } from 'next';
@@ -23,13 +50,14 @@ import {
   GraduationCap,
   ShieldCheck,
   ArrowRight,
-  CheckCircle2,
   Sparkles,
   FileCheck,
   Clock,
-  Search,
+  Megaphone,
+  FileSignature,
+  Timer,
+  Euro,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
@@ -38,20 +66,16 @@ import { fetchPublic } from './_shared/server';
 // déménagé deux fois, et les URL écrites en dur sont celles qui survivent au
 // déménagement puis cassent seules. Voir `lib/media.ts`.
 import { wp } from '@/lib/media';
-import type { CatalogItem } from './(public)/_catalog';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
-import { HeroSearch } from './_shared/HeroSearch';
+import { CatalogueOnglets } from './_shared/CatalogueOnglets';
 import { estMaison } from '@/lib/mini-formations';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
-import { CartesContact } from './_shared/CartesContact';
 import { OffreLex } from './_shared/OffreLex';
-import { IllustrationReseau } from "./_shared/Illustrations";
+import { IllustrationReseau } from './_shared/Illustrations';
 import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
-import { UnSeulFormulaire } from './_shared/UnSeulFormulaire';
-import { ApercuProduit } from './_shared/ApercuProduit';
 
 /**
  * L'accueil n'avait aucune canonique : les visites arrivant avec un
@@ -84,25 +108,111 @@ export const metadata: Metadata = {
   },
 };
 
+// ─────────────────────────────────────────────────────── les trois usages
+//
+// Un renfort, un atelier, une formation : trois besoins, un même chemin. Ils
+// étaient traités à trois poids différents — le remplacement occupait quatre
+// sections pleines, les ateliers et les formations une vitrine. Trois colonnes
+// de même largeur, c'est ce qui se lit : trois usages d'un même réseau.
+const USAGES = [
+  {
+    kicker: 'Renfort',
+    titre: 'Absorber une absence',
+    texte:
+      'Éducateur, moniteur, AES, psychologue. L’offre descend d’abord vers vos salariés, puis vers vos remplaçants habituels, puis vers le réseau.',
+    points: [
+      'Diffusion en cascade, relance automatique',
+      'Feuille de mission éditée à l’acceptation',
+      'Heures pointées, export paie',
+    ],
+    href: '/renforteam',
+    action: 'Comprendre le renfort',
+    image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
+    trait: 'bg-primary',
+    teinte: 'text-primary',
+    puce: 'border-primary bg-primary-soft',
+  },
+  {
+    kicker: 'Atelier',
+    titre: 'Programmer une médiation',
+    texte:
+      'Musicothérapie, théâtre, psycho-boxe, slam, socio-esthétique, activité physique adaptée. Animés chez vous par un intervenant du réseau.',
+    points: [
+      'Catalogue avec public, durée et tarif affichés',
+      'Devis sous 48 h, feuille de mission et facture',
+      'Le tarif affiché est le tarif payé',
+    ],
+    href: '/ateliers',
+    action: 'Parcourir les ateliers',
+    image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
+    trait: 'bg-secondary',
+    teinte: 'text-secondary',
+    puce: 'border-secondary bg-secondary-soft',
+  },
+  {
+    kicker: 'Formation',
+    titre: 'Faire monter l’équipe',
+    texte:
+      'Analyse des pratiques, accueil du public en difficulté, gestion de la violence. Dans votre établissement, animées par les formateurs du réseau.',
+    points: [
+      'Certifiées Qualiopi, finançables par votre OPCO',
+      'Émargement et attestations automatiques',
+      'Des parcours en ligne gratuits, en plus',
+    ],
+    href: '/formations',
+    action: 'Voir les formations',
+    image: wp('/wp-content/uploads/2025/02/lever-vous-400x400.jpeg'),
+    trait: 'bg-foreground',
+    teinte: 'text-foreground',
+    puce: 'border-foreground bg-muted',
+  },
+];
+
+// Ce que le logiciel fait, en quatre verbes valables pour les trois usages.
+// Les six tuiles « comment marche le renfort » ne parlaient que du renfort :
+// c'était le tout-en-un raconté pour un seul besoin sur trois.
+const TOUT_EN_UN = [
+  {
+    icone: Megaphone,
+    titre: 'Il diffuse',
+    texte:
+      'Un seul formulaire pour les trois besoins. Les intervenants dont le profil correspond sont prévenus, avec relance automatique.',
+  },
+  {
+    icone: FileSignature,
+    titre: 'Il formalise',
+    texte:
+      'Devis sous 48 h, feuille de mission éditée, facture générée. Le contrat de travail, lui, reste rédigé par l’établissement.',
+  },
+  {
+    icone: ShieldCheck,
+    titre: 'Il vérifie',
+    texte:
+      'Diplômes, bulletin n° 3 du casier, URSSAF, assurance : réunis une fois, avec alerte avant l’échéance.',
+  },
+  {
+    icone: Timer,
+    titre: 'Il compte',
+    texte:
+      'Heures pointées, congés et soldes, export paie. Émargement et attestations pour les formations.',
+  },
+];
+
+// Le bandeau défilant : ce que le même logiciel porte, d'un besoin à l'autre.
+const BANDEAU = [
+  'Planning partagé',
+  'Coffre-fort de conformité',
+  'Messagerie',
+  'Congés & compteurs',
+  'Export paie CSV',
+  'Devis, feuille de mission, facture',
+];
+
 export default async function LandingPage() {
   // Plus de lecture de session ici : l'en-tête interroge `/api/visiteur`
   // depuis le navigateur. Voir `app/(public)/layout.tsx`.
-  // Compteur réel du catalogue public (affiché dans le hero).
-  const { data: featured } = await fetchPublic<{ items: CatalogItem[]; total?: number }>(
-    '/public/catalog?type=all&take=3',
-  );
-  const catalogueTotal = featured?.total ?? featured?.items?.length ?? 0;
-
-  // Nombre d'ATELIERS seuls — la page annonçait « Quinze médiations » en dur
-  // alors que le catalogue en compte dix, le reste étant des formations. Un
-  // chiffre faux sur la première page est le plus cher de tous : il se
-  // vérifie en un clic, et c'est le clic suivant.
-  const { data: catalogueAteliers } = await fetchPublic<{ total?: number; items?: CatalogItem[] }>(
-    '/public/catalog?type=atelier&take=1',
-  );
-  const ateliersTotal = catalogueAteliers?.total ?? 0;
-
-  // Marketplace visible sans compte : les mieux notés, directement en accueil.
+  //
+  // Marketplace visible sans compte : la sélection, directement en accueil.
   const { data: unes, error: erreurUnes } = await fetchPublic<{
     ateliers: OfferCard[];
     formations: OfferCard[];
@@ -111,29 +221,23 @@ export default async function LandingPage() {
   // TROIS CARTES PAR RAYON, PAS DIX ET SEPT.
   //
   // La vitrine affichait dix ateliers, sept mini-formations et trois formations
-  // en intra : vingt cartes produit, soit 44 % du poids de la page (944 mots sur
-  // 2 151). Une page d'accueil qui déroule l'inventaire devient une page de
-  // catégorie — or son travail est de qualifier et d'orienter, pas de lister. Le
-  // catalogue a ses propres pages, et chaque rayon porte déjà son lien vers
-  // elles.
-  //
-  // Trois : c'est ce qui tient sur une ligne sans défilement à partir du grand
-  // écran, et ce qui se lit d'un coup d'œil sur téléphone.
+  // en intra : vingt cartes produit, soit 44 % du poids de la page. Une page
+  // d'accueil qui déroule l'inventaire devient une page de catégorie — or son
+  // travail est de qualifier et d'orienter, pas de lister. Le catalogue a ses
+  // propres pages, et chaque rayon porte son lien vers elles.
   const VITRINE = 3;
 
   // ⚠ L'ORDRE VIENT DE `featured`, PAS DES VUES. `/public/highlights` trie par
-  // `featured` puis par nombre de vues. Sans aucune fiche mise en avant, la
-  // première carte de la vitrine était RE-DESSINE MOI — 243 vues, et une
-  // description qui annonce « un dispositif événement 2025, disponible
-  // uniquement durant l'été 2025 ». Le titre de la section promet « notre
-  // sélection » : il fallait qu'une sélection existe vraiment. Les trois fiches
-  // mises en avant sont posées par `seed-fiches-ateliers.js` (MISE_EN_AVANT) et
-  // se changent depuis l'administration.
+  // `featured` puis par nombre de vues. Les trois fiches mises en avant sont
+  // posées par `seed-fiches-ateliers.js` (MISE_EN_AVANT) et se changent depuis
+  // l'administration.
   const ateliersUne = (unes?.ateliers ?? []).slice(0, VITRINE);
 
   // Le même partage que sur /formations : les mini-formations gratuites de la
-  // maison d'un côté, les formations Qualiopi vendues en intra de l'autre.
-  // Voir le commentaire des deux blocs, plus bas.
+  // maison d'un côté, les formations Qualiopi vendues en intra de l'autre. Une
+  // mini-formation gratuite et une formation en intra ne s'adressent pas aux
+  // mêmes personnes et n'ont pas le même prix : dans la même ligne, chacune
+  // brouillait l'autre. Elles sont maintenant deux onglets.
   const gratuites = (unes?.formations ?? [])
     .filter((f) => f.freeOnline && estMaison(f.account?.name))
     .slice(0, VITRINE);
@@ -141,13 +245,42 @@ export default async function LandingPage() {
     .filter((f) => !(f.freeOnline && estMaison(f.account?.name)))
     .slice(0, VITRINE);
 
+  const rayons = [
+    {
+      cle: 'ateliers',
+      libelle: 'Ateliers',
+      chapeau:
+        'Médiations clés en main, animées chez vous par un intervenant du réseau. Public, durée et tarif affichés.',
+      items: ateliersUne,
+      basePath: '/ateliers',
+      lien: { libelle: 'Tout le catalogue', href: '/ateliers' },
+    },
+    {
+      cle: 'qualiopi',
+      libelle: 'Formations Qualiopi',
+      chapeau:
+        'Montée en compétences des équipes, dans votre établissement, finançable par votre OPCO.',
+      items: payantes,
+      basePath: '/formations',
+      lien: { libelle: 'Toutes les formations', href: '/formations' },
+    },
+    {
+      cle: 'gratuits',
+      libelle: 'Parcours gratuits',
+      chapeau:
+        'Une compétence par parcours, quatre modules, une fiche A4 à imprimer. Sans carte bancaire.',
+      items: gratuites,
+      basePath: '/formations',
+      lien: { libelle: 'Tous les parcours gratuits', href: '/formations' },
+    },
+  ];
 
   return (
     <div className="theme-sombre flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
 
       <main id="main" className="flex-1">
-        {/* ============ HERO : scindé, style grande plateforme ============ */}
+        {/* ═══════════ 1. HÉROS : les trois usages et le logiciel, dès le titre */}
         <section className="relative isolate overflow-hidden bg-warm-gradient">
           {/* Deux masses floues qui dérivent lentement derrière le contenu.
               Purement décoratives : aria-hidden, aucun coût de lecture. */}
@@ -160,65 +293,60 @@ export default async function LandingPage() {
             <div>
               <span className="eyebrow animate-fade-in-up inline-flex">
                 <Sparkles className="size-3.5" />
-                Le dispositif de l’association ADéPA
+                Le logiciel du médico-social · association ADéPA
               </span>
-              {/* Le titre nomme le BESOIN, pas la valeur. « Des interventions à
-                  fort impact » ne renseigne pas un directeur qui balaie la page
-                  en trois secondes : c'est le sous-titre qui faisait tout le
-                  travail, deux fois plus petit. On a inversé les deux.
-                  Le titre dit maintenant ce en quoi la maison croit, et non
-                  qui elle sert : ce sont les professionnels de terrain qui
-                  portent les interventions. Le sous-titre, lui, garde le
-                  concret : ce qu'on vient chercher, et à quel prix. */}
+              {/* LE TITRE NOMME LES TROIS USAGES ET LE LOGICIEL.
+                  « Les interventions portées par ceux qui font le terrain »
+                  disait QUI, pas QUOI : une belle phrase sur l'esprit de la
+                  maison, mais qui ne renseignait ni sur ce qu'on trouve ici,
+                  ni sur ce que le logiciel fait. Aucun des trois usages ne
+                  passe devant les autres, et le mot qui manquait — logiciel —
+                  est là. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Les interventions portées{' '}
-                <span className="text-secondary">par ceux qui font le terrain.</span>
+                Renforts, ateliers, formations&nbsp;:{' '}
+                <span className="text-secondary">un seul réseau, un seul logiciel.</span>
               </h1>
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Un remplacement à couvrir, un atelier à programmer, une formation pour l’équipe.
-                La mise en relation est gratuite et sans commission.
+                Vous publiez votre besoin, un intervenant du réseau répond. Le devis, la feuille de
+                mission, les heures et la facture suivent au même endroit. Gratuit des deux côtés,
+                sans commission.
               </p>
 
-              <div className="animate-fade-in-up stagger-3 mt-7 max-w-xl">
-                <HeroSearch />
-              </div>
-
-              {/* Recherches populaires : vraies catégories du catalogue */}
-              <div className="animate-fade-in-up stagger-4 mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Populaire :</span>
-                {['Psycho-boxe', 'Slam', 'Théâtre', 'Musicothérapie'].map((c) => (
-                  <Link
-                    key={c}
-                    href={`/ateliers?search=${encodeURIComponent(c.toLowerCase())}`}
-                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
-                  >
-                    <Search className="size-3" />
-                    {c}
+              {/* LA BARRE DE RECHERCHE A QUITTÉ LE HÉROS.
+                  Mise ici, elle rangeait Les Extras dans la catégorie
+                  « annuaire d'ateliers » : le geste le moins représentatif de
+                  ce que le logiciel sait faire, proposé en premier. Elle a sa
+                  place — sur /ateliers, qui a déjà la sienne, et sur
+                  /formations. À sa place, les deux gestes qui comptent, un par
+                  public, chacun vers sa propre destination. */}
+              <div className="animate-fade-in-up stagger-3 mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <Link href="/renforteam">
+                    Je cherche un intervenant
+                    <ArrowRight />
                   </Link>
-                ))}
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href="/missions">Je cherche des missions</Link>
+                </Button>
               </div>
-
 
               <div className="animate-fade-in-up stagger-4 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                {/* « INTERVENANTS VÉRIFIÉS » N'ÉTAIT PAS VRAI.
-                    Aucune étape de validation n'existe : publier une fiche
-                    suffit à paraître au catalogue. Ce qui EXISTE, et qui est
-                    même le vrai différenciateur face à une plateforme
-                    généraliste, c'est le dossier de conformité, identité,
-                    diplôme, bulletin n° 3 du casier judiciaire (art. L. 133-6
-                    CASF) et coordonnées bancaires, réunis et suivis à
-                    échéance. On annonce ça, qui est mesurable. */}
+                {/* « INTERVENANTS VÉRIFIÉS » N'ÉTAIT PAS VRAI : aucune étape de
+                    validation n'existe. Les trois repères ci-dessous sont
+                    mesurables et tenus. */}
                 <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="size-4 text-primary" />
-                  Dossier de conformité par intervenant
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <GraduationCap className="size-4 text-primary" />
-                  Qualiopi · finançable OPCO
+                  <Euro className="size-4 text-primary" />
+                  <strong className="font-semibold text-foreground">0 %</strong> de commission
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="size-4 text-primary" />
-                  Devis sous 48 h
+                  <strong className="font-semibold text-foreground">48 h</strong> pour un devis
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <GraduationCap className="size-4 text-primary" />
+                  <strong className="font-semibold text-foreground">Qualiopi</strong> · finançable
+                  OPCO
                 </span>
               </div>
             </div>
@@ -252,7 +380,14 @@ export default async function LandingPage() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-foreground">Devis sous 48 h</p>
-                    <p className="text-xs text-muted-foreground">contrat et facture automatiques</p>
+                    {/* ⚠ PLUS DE « CONTRAT AUTOMATIQUE ». Le logiciel édite un
+                        DEVIS et une FEUILLE DE MISSION ; le contrat de travail
+                        reste rédigé par l'établissement. « Contrat généré »
+                        promet plus que ce qui est fait, et c'est le genre de
+                        promesse qu'une direction vérifie avant de signer. */}
+                    <p className="text-xs text-muted-foreground">
+                      feuille de mission et facture
+                    </p>
                   </div>
                 </div>
               </Reveal>
@@ -263,22 +398,12 @@ export default async function LandingPage() {
                     <GraduationCap className="size-5" />
                   </span>
                   <div>
-                    {/* ⚠ ON N'AFFICHE PLUS LA TAILLE DU CATALOGUE ICI.
-                        Cet encart portait « {n} interventions au catalogue ».
-                        C'était le PREMIER nombre que voyait un visiteur, et
-                        dix-sept se lit comme « petit » sur une place de marché.
-                        Hublo n'a jamais publié son inventaire : il publie son
-                        nombre d'établissements. On publie le chiffre qui est
-                        fort : et le nôtre, celui qu'aucun concurrent ne peut
-                        écrire, ce sont les zéros : Brigad prend 10 % par
-                        mission, Hublo facture 2 000 à 3 000 € HT pour recruter
-                        un profil de son vivier.
-                        Le compte du catalogue reste affiché sur /ateliers, à sa
-                        place : là, il informe au lieu de jauger. */}
+                    {/* ⚠ ON N'AFFICHE PLUS LA TAILLE DU CATALOGUE ICI : dix-sept
+                        se lit comme « petit » sur une place de marché. On
+                        publie le chiffre qui est fort, celui qu'aucun
+                        concurrent ne peut écrire : les zéros. */}
                     <p className="text-sm font-semibold text-foreground">0 % de commission</p>
-                    <p className="text-xs text-muted-foreground">
-                      et aucun frais de recrutement
-                    </p>
+                    <p className="text-xs text-muted-foreground">et aucun frais de recrutement</p>
                   </div>
                 </div>
               </Reveal>
@@ -293,14 +418,7 @@ export default async function LandingPage() {
                   </span>
                   {/* Le réseau réel est aujourd'hui francilien, et on continue
                       de le dire : promettre la France entière déçoit le premier
-                      établissement breton qui s'inscrit.
-                      ⚠ MAIS PLUS « ET BIENTÔT PARTOUT ». Cette fin de phrase
-                      annonçait à tout visiteur hors Île-de-France que ce n'était
-                      pas encore pour lui, et une promesse d'expansion sans date
-                      ne rassure personne : elle avoue seulement qu'on n'y est
-                      pas. Le territoire devient un argument : des intervenants
-                      qui connaissent les établissements dans lesquels ils
-                      interviennent. C'est vrai, et c'est ce qu'on vend. */}
+                      établissement breton qui s'inscrit. */}
                   <span className="text-xs font-medium text-foreground">
                     Réseau actif en Île-de-France
                   </span>
@@ -310,254 +428,221 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ DOMAINES : cartes photo + texte (style annonce) ============ */}
+        {/* ═══ 2. LES TROIS USAGES, À LARGEUR ÉGALE ═══
+            « Trois services » posait trois cartes de tailles différentes dans
+            la tête du lecteur : quatre sections pour le renfort, une vitrine
+            pour le reste. À largeur égale, on lit enfin ce que c'est — trois
+            usages d'un même réseau, et le même chemin pour les trois. */}
         <section className="section">
-          <Reveal className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              {/* « Trois portes d'entrée » contredisait, trente lignes plus
-                  haut, le « Par où commencer ? » et ses DEUX portes. Deux
-                  comptages sur le même écran, et le visiteur ne sait plus
-                  lequel lire. Ici on nomme les trois SERVICES, pas des portes. */}
-              <span className="eyebrow">Trois services</span>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Ce que vous trouvez ici
-              </h2>
-            </div>
-            <Button asChild variant="outline">
-              <Link href="/ateliers">
-                Voir le catalogue <ArrowRight />
-              </Link>
-            </Button>
+          <Reveal className="max-w-3xl">
+            <span className="eyebrow">Trois besoins, un même chemin</span>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              Le réseau répond aux trois. Le logiciel gère les trois.
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+              Un renfort, un atelier, une formation : on publie une fois, et tout ce qui suit est
+              édité au même endroit.
+            </p>
           </Reveal>
-          <div className="mt-10 grid gap-8 md:grid-cols-3">
-            {[
-              {
-                titre: 'Les ateliers de notre réseau',
-                texte: 'Médiations clés en main, animées chez vous par un intervenant du réseau.',
-                href: '/ateliers',
-                image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
-                action: 'Parcourir les ateliers',
-              },
-              {
-                titre: 'Nos formations certifiées Qualiopi',
-                texte: 'Montée en compétences des équipes, finançable par votre OPCO.',
-                href: '/formations',
-                image: wp('/wp-content/uploads/2025/02/lever-vous-400x400.jpeg'),
-                action: 'Voir les formations',
-              },
-              {
-                titre: 'Le renfort d’équipe et parental',
-                texte: 'Un professionnel disponible vite, pour absorber l’absence.',
-                href: '/renforteam',
-                image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
-                action: 'Comprendre le renfort',
-              },
-            ].map((d, i) => (
-              <Reveal key={d.titre} delay={i * 110}>
-                <Link href={d.href} className="group block">
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted">
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {USAGES.map((u, i) => (
+              <Reveal key={u.kicker} delay={i * 110} className="h-full">
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
+                  <span
+                    className={`animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full ${u.trait}`}
+                    aria-hidden
+                  />
+                  <div className="relative aspect-[16/9] overflow-hidden bg-muted">
                     <Image
-                      src={d.image}
+                      src={u.image}
                       alt=""
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold leading-snug text-foreground group-hover:text-primary">
-                    {d.titre}
-                  </h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{d.texte}</p>
-                  <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                    {d.action}
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Link>
+                  <div className="flex flex-1 flex-col p-6 pl-7">
+                    <span
+                      className={`text-xs font-bold uppercase tracking-[0.14em] ${u.teinte}`}
+                    >
+                      {u.kicker}
+                    </span>
+                    <h3 className="mt-2.5 text-xl font-bold leading-snug text-foreground">
+                      {u.titre}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{u.texte}</p>
+                    <ul className="mt-4 space-y-2">
+                      {u.points.map((p) => (
+                        <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                          <span
+                            className={`mt-[7px] size-2 shrink-0 rounded-full border-[1.5px] ${u.puce}`}
+                            aria-hidden
+                          />
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      href={u.href}
+                      className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                    >
+                      {u.action}
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                </div>
               </Reveal>
             ))}
           </div>
+
+          {/* Et par-dessus les trois, le même logiciel. */}
+          <Reveal delay={120}>
+            <div className="marquee-hover mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 overflow-hidden rounded-2xl border border-border bg-gradient-to-r from-card via-primary-soft to-card px-6 py-5">
+              <p className="text-sm text-muted-foreground">
+                <strong className="font-semibold text-foreground">
+                  Et par-dessus les trois, le même logiciel.
+                </strong>{' '}
+                Rien ne se ressaisit d’un besoin à l’autre.
+              </p>
+              <div
+                className="min-w-[220px] flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]"
+                aria-hidden
+              >
+                <div className="animate-marquee flex w-max gap-2.5">
+                  {[...BANDEAU, ...BANDEAU].map((m, i) => (
+                    <span
+                      key={`${m}-${i}`}
+                      className="whitespace-nowrap rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground"
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Reveal>
         </section>
 
-        {/* ============ LES DEUX PORTES ============ */}
+        {/* ═══════════════════════════ 3. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
         <DeuxPortes />
 
-        {/* ============ UN SEUL FORMULAIRE ============
-            L’argument central, posé juste après que le visiteur a dit qui il
-            est : ce que déclenche une publication, et ce que LEX prend en
-            charge de l’autre côté. Chaque promesse correspond à un
-            comportement réel du produit. */}
-        <UnSeulFormulaire />
+        {/* ═══ 4. LE TOUT-EN-UN : ce que le logiciel fait, pour les trois ═══ */}
+        <section className="bg-card">
+          <div className="section">
+            <Reveal className="max-w-3xl">
+              <span className="eyebrow">Tout-en-un</span>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                Le travail administratif que vous ne ferez plus
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                Valable pour un renfort comme pour un atelier ou une formation : même dossier, même
+                conformité, même facture.
+              </p>
+            </Reveal>
 
-        {/* ============ MARKETPLACE EN ACCÈS LIBRE ============ */}
-        {(unes?.ateliers?.length ?? 0) > 0 || (unes?.formations?.length ?? 0) > 0 ? (
-          <section id="marketplace" className="bg-card">
-            <div className="section">
-              {/* Ce que la page ne disait nulle part : l’association ne s’intercale
-                  pas. On réserve l’intervenant, pas un intermédiaire. */}
-              <Reveal className="mx-auto mb-12 max-w-3xl text-center">
-                <span className="eyebrow">Sans intermédiaire, sans commission</span>
-                <h2 className="mt-3 text-3xl font-bold tracking-tight text-balance md:text-4xl">
-                  Ateliers et formations, en direct avec l’intervenant
-                </h2>
-                <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                  Vous réservez{' '}
-                  <strong className="font-semibold text-foreground">
-                    directement auprès de l’intervenant
-                  </strong>
-                  . L’association ne prélève{' '}
-                  <strong className="font-semibold text-foreground">aucune commission</strong>.
-                </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  {['0 % de commission', 'Aucun intermédiaire', 'Devis sous 48 h', 'Association loi 1901'].map(
-                    (repere) => (
-                      <span
-                        key={repere}
-                        className="rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground"
-                      >
-                        {repere}
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {TOUT_EN_UN.map((t, i) => {
+                const Icone = t.icone;
+                return (
+                  <Reveal key={t.titre} delay={i * 90} className="h-full">
+                    <div className="flex h-full flex-col rounded-2xl border border-border bg-background p-6 shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+                      <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
+                        <Icone className="size-5" />
                       </span>
-                    ),
-                  )}
+                      <h3 className="mt-4 text-lg font-bold text-foreground">{t.titre}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.texte}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+
+            <Reveal delay={120}>
+              <p className="mt-8 text-sm text-muted-foreground">
+                Le détail du renfort, écran par écran, est sur{' '}
+                <Link
+                  href="/renforteam"
+                  className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+                >
+                  la page RenforTeam
+                </Link>
+                .
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ═══════════════ 5. LE CATALOGUE, EN UN SEUL BLOC À ONGLETS ═════════ */}
+        <section id="marketplace" className="scroll-mt-24">
+          <div className="section">
+            <Reveal className="max-w-3xl">
+              <span className="eyebrow">Sans compte, sans engagement</span>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                Le catalogue, en un seul endroit
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                Vous réservez{' '}
+                <strong className="font-semibold text-foreground">
+                  directement auprès de l’intervenant
+                </strong>
+                . L’association ne prélève{' '}
+                <strong className="font-semibold text-foreground">aucune commission</strong>.
+              </p>
+            </Reveal>
+
+            {/* ⚠ QUAND L'API NE RÉPOND PAS, LA VITRINE DISPARAISSAIT EN SILENCE.
+                Rien ne distinguait « rien à montrer » de « je n'ai pas pu
+                demander ». Un visiteur arrivant pendant un redéploiement voyait
+                une association sans un seul atelier au catalogue. On préfère
+                dire que le chargement a échoué et donner la porte du
+                catalogue : l'erreur avouée coûte moins cher que le vide. */}
+            {erreurUnes && ateliersUne.length === 0 && payantes.length === 0 && gratuites.length === 0 ? (
+              <Reveal className="mt-10 rounded-2xl border border-border/60 bg-card/40 p-8 text-center">
+                <p className="text-lg font-semibold text-foreground">
+                  Notre sélection ne s’affiche pas en ce moment.
+                </p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                  C’est un incident passager de notre côté, pas un catalogue vide : les ateliers et
+                  les formations sont bien en ligne.
+                </p>
+                <div className="mt-5 flex flex-wrap justify-center gap-3">
+                  <Button asChild>
+                    <Link href="/ateliers">
+                      Voir les ateliers <ArrowRight />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/formations">Voir les formations</Link>
+                  </Button>
                 </div>
               </Reveal>
+            ) : (
+              <Reveal className="mt-8">
+                <CatalogueOnglets rayons={rayons} />
+              </Reveal>
+            )}
+          </div>
+        </section>
 
-              {/* ⚠ QUAND L'API NE RÉPOND PAS, LA VITRINE DISPARAISSAIT EN SILENCE.
-                  Les trois sections produit étaient conditionnées à
-                  `length > 0`, et rien ne distinguait « rien à montrer » de
-                  « je n'ai pas pu demander ». Un visiteur arrivant pendant un
-                  redéploiement : deux à trois minutes, et c'est précisément
-                  l'heure où l'on pousse une campagne, voyait une association
-                  sans un seul atelier au catalogue. On préfère dire que le
-                  chargement a échoué et donner la porte du catalogue :
-                  l'erreur avouée coûte infiniment moins cher que le vide. */}
-              {erreurUnes && ateliersUne.length === 0 ? (
-                <Reveal className="rounded-2xl border border-border/60 bg-card/40 p-8 text-center">
-                  <p className="text-lg font-semibold text-foreground">
-                    Notre sélection ne s’affiche pas en ce moment.
-                  </p>
-                  <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                    C’est un incident passager de notre côté, pas un catalogue vide :
-                    les ateliers et les formations sont bien en ligne.
-                  </p>
-                  <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <Button asChild>
-                      <Link href="/ateliers">
-                        Voir les ateliers <ArrowRight />
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <Link href="/formations">Voir les formations</Link>
-                    </Button>
-                  </div>
-                </Reveal>
-              ) : null}
-
-              {ateliersUne.length > 0 ? (
-                <div className="space-y-6">
-                  <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="max-w-2xl">
-                      <span className="eyebrow">Sans compte, sans engagement</span>
-                      {/* « les mieux notés » sans aucun avis publié minait la
-                          confiance : « sélection » dit la même mise en avant,
-                          sans promettre une note qui n'existe pas encore. */}
-                      <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                        Notre sélection d’ateliers
-                      </h2>
-                    </div>
-                    <Button asChild variant="outline">
-                      <Link href="/ateliers">
-                        Tout le catalogue <ArrowRight />
-                      </Link>
-                    </Button>
-                  </Reveal>
-                  <Reveal delay={100}>
-                    <OfferCarousel items={ateliersUne} basePath="/ateliers" />
-                  </Reveal>
-                </div>
-              ) : null}
-
-              {/* DEUX LIGNES, PAS UNE.
-                  Une mini-formation gratuite et une formation Qualiopi vendue
-                  en intra ne s'adressent pas aux mêmes personnes et n'ont pas
-                  le même prix. Dans la même ligne, chacune brouillait l'autre :
-                  le parent tombait sur « à partir de 1 600 € », le directeur
-                  sur « Gratuit ». C'est le même découpage que sur /formations,
-                  et il doit le rester. */}
-              {gratuites.length > 0 ? (
-                <div className="mt-16 space-y-6">
-                  <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="max-w-2xl">
-                      <span className="eyebrow">Conçues et tenues par ADéPA</span>
-                      <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                        Les mini-formations gratuites
-                      </h2>
-                      <p className="mt-2 text-muted-foreground">
-                        Une compétence par parcours, quatre modules, une fiche A4 à imprimer.
-                        Sans carte bancaire.
-                      </p>
-                    </div>
-                    <Button asChild variant="outline">
-                      <Link href="/formations">
-                        {/* Pas « Voir les {n} parcours » : `highlights` renvoie
-                            une SÉLECTION de dix formations, dont sept gratuites
-                            aujourd'hui. Le compte affiché serait celui du
-                            carrousel, pas celui du catalogue, un chiffre faux
-                            sur la première page se vérifie en un clic, et c'est
-                            le clic suivant. */}
-                        Tous les parcours gratuits <ArrowRight />
-                      </Link>
-                    </Button>
-                  </Reveal>
-                  <Reveal delay={100}>
-                    <OfferCarousel items={gratuites} basePath="/formations" />
-                  </Reveal>
-                </div>
-              ) : null}
-
-              {payantes.length > 0 ? (
-                <div className="mt-16 space-y-6">
-                  <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="max-w-2xl">
-                      <span className="eyebrow">Qualiopi · finançable OPCO</span>
-                      <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                        Nos formations en intra
-                      </h2>
-                    </div>
-                    <Button asChild variant="outline">
-                      <Link href="/formations">
-                        Toutes les formations <ArrowRight />
-                      </Link>
-                    </Button>
-                  </Reveal>
-                  <Reveal delay={100}>
-                    <OfferCarousel items={payantes} basePath="/formations" />
-                  </Reveal>
-                </div>
-              ) : null}
-            </div>
-          </section>
-        ) : null}
-
-        {/* ============ LEX & LE GAP, TROIS BLOCS DEVENUS UN ============
-
-            L’essai, le détail de l’offre puis le GAP se suivaient en trois
+        {/* ═══════════════════════════════ 6. LEX ET LE GAP ═══════════════════
+            L'essai, le détail de l'offre puis le GAP se suivaient en trois
             sections : trois titres, trois respirations, trois fois la même
-            promesse. Ensemble ils poussaient le catalogue si bas que plus
-            personne n’y arrivait. Tout tient ici, sur la bande claire qui
-            sert déjà de repère au milieu du fond charbon. */}
+            promesse. Tout tient ici, sur la bande claire qui sert déjà de
+            repère au milieu du fond charbon. */}
         <section
           id="lex"
           className="scroll-mt-24 border-y border-border bg-gradient-to-b from-primary/[0.07] via-background to-background"
         >
           <div className="section">
-            <Reveal>
-              <span className="eyebrow">LEX · l’assistant IA du médico-social</span>
+            <Reveal className="max-w-3xl">
+              <span className="eyebrow">Pour celles et ceux qui font le terrain</span>
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                Décrivez un besoin. La séance est écrite en quinze secondes.
+                Le métier ne s’arrête pas à la fin de la journée
               </h2>
-              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                Écrits professionnels, séances, appui scolaire, analyse de pratique.
-                Quatre outils, un seul compteur de crédits.
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                Restent les écrits, les séances à préparer, et la situation qui tourne en boucle.
+                LEX pour les écrits, le GAP pour la pratique.
               </p>
             </Reveal>
 
@@ -575,180 +660,71 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ============ APERÇU DU PRODUIT ============ */}
-        <ApercuProduit />
-
-        {/* ============ TARIFS ============ */}
+        {/* ══════════════════════════ 7. LE PRIX, EN UNE LIGNE ════════════════
+            « Gratuit des deux côtés » est l'argument le plus fort du site : il
+            méritait une section à lui, pas deux moitiés éloignées de six
+            écrans. Trois cartes-tarifs de la taille d'un comparatif SaaS
+            laissaient croire à trois formules à choisir — il n'y en a qu'une,
+            et elle est gratuite. */}
         <section id="tarifs" className="scroll-mt-24 bg-card">
           <div className="section">
-            <Reveal className="mx-auto max-w-2xl text-center">
+            <Reveal className="max-w-3xl">
               <span className="eyebrow">Tarifs</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                La mise en relation est gratuite. Pour tout le monde.
+              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                La mise en relation est gratuite. Des deux côtés.
               </h2>
-              <p className="mt-4 text-muted-foreground">
-                Renforts et ateliers, jusqu’au{" "}
-                <strong className="font-semibold text-foreground">contrat</strong> et à la{" "}
-                <strong className="font-semibold text-foreground">facture</strong> : gratuit des deux
-                côtés, sans commission. Seuls les{" "}
-                <strong className="font-semibold text-foreground">formations Qualiopi</strong> et{" "}
-                <strong className="font-semibold text-foreground">LEX</strong> se paient.
-              </p>
             </Reveal>
 
-            <div className="mt-14 grid items-start gap-6 lg:grid-cols-3">
-              {[
-                {
-                  nom: 'Mise en relation & contractualisation',
-                  sous: 'Renforts et ateliers, de la publication au contrat signé.',
-                  prix: '0 €',
-                  prixSous: 'Gratuit, pour toujours, 0 % de commission',
-                  points: [
-                    'RenforTeam : diffusion en cascade, jusqu’au CDD généré',
-                    'Ateliers : devis sous 48 h, contrat et facture automatiques',
-                    'L’intervenant touche son tarif intégralement',
-                    'Planning, équipe, conformité et messagerie inclus',
-                  ],
-                  href: '/register',
-                  action: 'Créer un compte',
-                  ruban: 'Le cœur du service',
-                  bordure: 'border-primary/45',
-                  fond: 'bg-gradient-to-br from-primary/20 via-card to-card',
-                  lisere: 'bg-primary',
-                  halo: 'bg-primary/30',
-                  pastille: 'bg-primary text-primary-foreground',
-                  puce: 'text-primary',
-                  bouton: 'bg-primary text-primary-foreground hover:bg-primary/90',
-                },
-                {
-                  nom: 'Formations Qualiopi',
-                  sous: 'Facturées par l’association, sous sa certification.',
-                  prix: 'Sur devis',
-                  prixSous: 'Facturées par l’association ADéPA, finançables OPCO',
-                  points: [
-                    'Animées par les formateurs du réseau Les Extras',
-                    'Certifiées Qualiopi, finançables par votre OPCO',
-                    'Émargement, attestations et justificatifs automatiques',
-                    'Devis en ligne, réponse sous 48 h',
-                  ],
-                  href: '/formations',
-                  // « Demander un devis » menait au CATALOGUE des formations,
-                  // pas à un formulaire. Le devis se demande depuis la fiche
-                  // d'une formation précise — c'est le bon ordre : on choisit,
-                  // puis on demande. Le libellé dit maintenant ce qu'il fait.
-                  action: 'Voir les formations',
-                  ruban: 'Sur devis',
-                  bordure: 'border-secondary/45',
-                  fond: 'bg-gradient-to-br from-secondary/20 via-card to-card',
-                  lisere: 'bg-secondary',
-                  halo: 'bg-secondary/30',
-                  pastille: 'bg-secondary text-secondary-foreground',
-                  puce: 'text-secondary',
-                  bouton: 'bg-secondary text-secondary-foreground hover:bg-secondary/90',
-                },
-                {
-                  nom: 'LEX, l’assistant IA',
-                  sous: 'Payant seulement au-delà de la dotation gratuite.',
-                  prix: 'Gratuit, puis 19 €',
-                  prixSous: '15 générations offertes chaque mois, sans carte bancaire.',
-                  points: [
-                    '15 générations par mois, reportables trois mois',
-                    'Assistant d’écriture : notes brutes → écrits professionnels',
-                    'Générateur d’activités éducatives et thérapeutiques',
-                    'Au-delà : 19 €/mois pour 200 générations, 49 € pour 600',
-                  ],
-                  href: '/register',
-                  // ⚠ MÊME DESTINATION, MÊME LIBELLÉ. Ce bouton disait
-                  // « Découvrir LEX » et menait au formulaire d'inscription :
-                  // il promettait une découverte et livrait un formulaire.
-                  // C'est le motif exact corrigé le 12/08, revenu par la
-                  // porte de derrière. La règle « un libellé par destination »
-                  // n'est pas cosmétique : dix libellés menaient tous à
-                  // /register, et le visiteur croyait à dix destinations.
-                  action: 'Créer un compte',
-                  ruban: 'À crédits',
-                  bordure: 'border-amber-500/45',
-                  fond: 'bg-gradient-to-br from-amber-500/20 via-card to-card',
-                  lisere: 'bg-amber-500',
-                  halo: 'bg-amber-500/30',
-                  pastille: 'bg-amber-500 text-amber-950',
-                  puce: 'text-amber-600',
-                  bouton: 'bg-amber-500 text-amber-950 hover:bg-amber-500/90',
-                },
-              ].map((offre, i) => (
-                <Reveal key={offre.nom} delay={i * 110} className="h-full">
-                  <div
-                    className={cn(
-                      'group relative flex h-full flex-col overflow-hidden rounded-2xl border p-8 shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl',
-                      offre.bordure,
-                      offre.fond,
-                    )}
-                  >
-                    <span className={cn('absolute inset-x-0 top-0 h-1', offre.lisere)} aria-hidden />
-                    <span
-                      className={cn(
-                        'pointer-events-none absolute -right-10 -top-14 size-36 rounded-full blur-3xl',
-                        offre.halo,
-                      )}
-                      aria-hidden
-                    />
-                    <span
-                      className={cn(
-                        'relative w-fit rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide',
-                        offre.pastille,
-                      )}
-                    >
-                      {offre.ruban}
+            <Reveal delay={100} className="mt-8">
+              <div className="rounded-2xl border border-border bg-background p-8 shadow-card md:p-10">
+                <p className="text-3xl font-bold tracking-tight text-foreground md:text-4xl text-balance">
+                  0 € — de la publication à la facture.
+                </p>
+                <ul className="mt-8 grid gap-6 md:grid-cols-3">
+                  <li className="border-l-2 border-primary pl-4">
+                    <strong className="block text-sm font-bold text-foreground">
+                      Renforts et ateliers
+                    </strong>
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      Gratuit pour toujours, 0 % de commission. L’intervenant touche son tarif en
+                      entier.
                     </span>
-                    <h3 className="relative mt-5 text-xl font-bold tracking-tight">{offre.nom}</h3>
-                    <p className="relative mt-2 text-sm text-muted-foreground">{offre.sous}</p>
-                    <p className="relative mt-6 text-4xl font-bold tracking-tight">{offre.prix}</p>
-                    <p className="relative mt-1 text-sm text-muted-foreground">{offre.prixSous}</p>
-                    <div className="relative my-6 h-px bg-border" />
-                    <ul className="relative flex-1 space-y-2.5">
-                      {offre.points.map((f) => (
-                        <li key={f} className="flex items-start gap-2.5 text-sm">
-                          <CheckCircle2 className={cn('mt-0.5 size-4 shrink-0', offre.puce)} />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button asChild variant="primary" className={cn('relative mt-8 w-full', offre.bouton)}>
-                      <Link href={offre.href}>{offre.action}</Link>
-                    </Button>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-
-            <Reveal delay={120}>
-              <p className="mt-8 text-center text-sm text-muted-foreground">
-                Montants HT. Formations Qualiopi finançables par votre OPCO.
-              </p>
+                  </li>
+                  <li className="border-l-2 border-secondary pl-4">
+                    <strong className="block text-sm font-bold text-foreground">
+                      Formations Qualiopi
+                    </strong>
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      Sur devis, facturées par l’association ADéPA, finançables par votre OPCO.
+                    </span>
+                  </li>
+                  <li className="border-l-2 border-amber-500 pl-4">
+                    <strong className="block text-sm font-bold text-foreground">LEX</strong>
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      15 générations offertes chaque mois, sans carte bancaire, puis 19 €/mois pour
+                      200.
+                    </span>
+                  </li>
+                </ul>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button asChild variant="outline">
+                    <Link href="/formations">
+                      Voir les formations <ArrowRight />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="#offre-lex">Le détail de LEX</Link>
+                  </Button>
+                </div>
+                <p className="mt-6 text-sm text-muted-foreground">
+                  Montants HT. Formations Qualiopi finançables par votre OPCO.
+                </p>
+              </div>
             </Reveal>
           </div>
         </section>
 
-        {/* ============ CATALOGUE & CONTACT : les formulaires du site historique ============ */}
-        <section id="catalogue-contact" className="scroll-mt-24">
-          <div className="section">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <span className="eyebrow">On reste en contact</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Recevez le catalogue, posez vos questions
-              </h2>
-              <p className="mt-4 text-muted-foreground">
-                Sans créer de compte.
-              </p>
-            </Reveal>
-
-            <Reveal className="mt-12">
-              <CartesContact />
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ============ CTA FINAL ============ */}
+        {/* ═══════════════════════════════ 8. OUVRIR UN COMPTE ════════════════ */}
         <section className="section">
           <Reveal>
             <div className="relative overflow-hidden rounded-3xl bloc-nuit bg-[hsl(222,21%,15%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">
@@ -758,13 +734,11 @@ export default async function LandingPage() {
                 aria-hidden
               />
               <div className="relative mx-auto max-w-2xl">
-                {/* « Sereinement » revenait ici et dans le pied de page : un
-                    adverbe qui ne promet rien et qu'on lit deux fois. */}
                 <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
                   Ouvrez un compte, regardez, décidez ensuite
                 </h2>
                 <p className="mt-4 text-muted-foreground">
-                  Compte gratuit, sans engagement.
+                  Gratuit, sans engagement, sans carte bancaire.
                 </p>
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg" variant="secondary">
@@ -782,11 +756,20 @@ export default async function LandingPage() {
                     <Link href="/login">J’ai déjà un compte</Link>
                   </Button>
                 </div>
+                <p className="mt-6 text-sm text-muted-foreground">
+                  Une question avant&nbsp;?{' '}
+                  <Link
+                    href="/contact"
+                    className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+                  >
+                    Écrivez-nous ou demandez le catalogue
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
           </Reveal>
         </section>
-
       </main>
 
       <SiteFooter />
