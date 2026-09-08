@@ -107,7 +107,6 @@ const MENU: Entree[] = [
  */
 const MON_COMPTE: Entree[] = [
   { href: '/ma-page', libelle: 'Ma page association', icone: ICONES.page },
-  { href: '/versements', libelle: 'Versements', icone: ICONES.versements },
   { href: '/parametres', libelle: 'Paramètres', icone: ICONES.reglages },
   { href: '/droits-acces', libelle: "Droits d'accès", icone: ICONES.cles },
 ];
@@ -117,6 +116,7 @@ const PUBLIC = ['/', '/association', '/chemin', '/association/chemin'];
 
 /** Les pages qui n'ont plus d'entrée à elles : elles éclairent l'entrée qui les porte. */
 const PORTEES: Record<string, string> = {
+  '/versements': '/espace/comptabilite',
   '/espace': '/',
   '/association': '/',
   '/espace/actions': '/espace/projets',
