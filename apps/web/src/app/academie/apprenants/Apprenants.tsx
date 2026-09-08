@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { appel, messageDe } from '../_ecole/api';
 import { BTN_DISCRET, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CHAMP, Encart, Pastille } from '../_ui';
 import { dateCourte, euros, type Apprenant, type CoursResume, type Vente } from '../_ecole/types';
@@ -22,8 +22,8 @@ interface Invitation {
  * personnes qui décrochent, pendant qu'on peut encore les rattraper.
  */
 
-type Tri = 'inscription' | 'visite' | 'nom' | 'progression';
-type Filtre = 'tous' | 'en-cours' | 'termines' | 'inactifs';
+type Tri = 'inscription' | 'visite' | 'nom' | 'progression' | 'revenus' | 'formations';
+type Filtre = 'tous' | 'en-cours' | 'termines' | 'inactifs' | 'bloques';
 
 interface Personne {
   cle: string;
@@ -35,6 +35,7 @@ interface Personne {
   progression: number;
   termines: number;
   revenusCents: number;
+  bloquee: boolean;
 }
 
 /** « il y a 22 jours », « il y a 2 mois » — la même façon de dire que partout. */
@@ -90,6 +91,7 @@ function regrouper(inscriptions: Apprenant[], ventes: Vente[]): Personne[] {
         progression: 0,
         termines: 0,
         revenusCents: paye.get(cle) ?? 0,
+        bloquee: false,
       });
     }
   }
@@ -97,6 +99,8 @@ function regrouper(inscriptions: Apprenant[], ventes: Vente[]): Personne[] {
   for (const p of par.values()) {
     p.progression = Math.round(p.cours.reduce((t, c) => t + (c.progression ?? 0), 0) / p.cours.length);
     p.termines = p.cours.filter((c) => c.statut === 'TERMINEE').length;
+    // Bloquée dès qu'un de ses accès l'est : c'est la personne qu'on bloque.
+    p.bloquee = p.cours.some((c) => c.statut === 'SUSPENDUE');
   }
   return [...par.values()];
 }
@@ -145,6 +149,8 @@ export function Apprenants({
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [lienCopie, setLienCopie] = useState(false);
   const [coursId, setCoursId] = useState(cours[0]?.id ?? '');
+  const [importe, setImporte] = useState<string | null>(null);
+  const fichier = useRef<HTMLInputElement | null>(null);
   const [courriel, setCourriel] = useState('');
   const [prenom, setPrenom] = useState('');
   const [nomFamille, setNomFamille] = useState('');
@@ -155,15 +161,112 @@ export function Apprenants({
     if (filtre === 'en-cours') l = l.filter((p) => p.termines < p.cours.length);
     if (filtre === 'termines') l = l.filter((p) => p.termines === p.cours.length && p.cours.length > 0);
     if (filtre === 'inactifs') l = l.filter((p) => joursDepuis(p.derniereVisite) >= 30);
+    if (filtre === 'bloques') l = l.filter((p) => p.bloquee);
     const trie = [...l];
     if (tri === 'inscription') trie.sort((a, b) => (a.inscritLe < b.inscritLe ? 1 : -1));
     if (tri === 'visite') trie.sort((a, b) => joursDepuis(a.derniereVisite) - joursDepuis(b.derniereVisite));
     if (tri === 'nom') trie.sort((a, b) => (a.nom || a.email).localeCompare(b.nom || b.email, 'fr'));
     if (tri === 'progression') trie.sort((a, b) => b.progression - a.progression);
+    if (tri === 'revenus') trie.sort((a, b) => b.revenusCents - a.revenusCents);
+    if (tri === 'formations') trie.sort((a, b) => b.cours.length - a.cours.length);
     return trie;
   }, [personnes, recherche, filtre, tri]);
 
   const inactifs = personnes.filter((p) => joursDepuis(p.derniereVisite) >= 30).length;
+
+  /**
+   * IMPORTER UNE LISTE D'APPRENANTS.
+   *
+   * Un fichier CSV, une adresse par ligne — avec éventuellement le prénom et
+   * le nom. On inscrit au cours choisi juste au-dessus. Une ligne qui échoue
+   * (adresse invalide, personne déjà inscrite) n'arrête pas les autres : le
+   * compte rendu dit combien sont passées.
+   */
+  async function importerCsv(texte: string) {
+    if (!coursId) {
+      setErreur("Choisis d'abord le cours dans lequel importer ces personnes.");
+      return;
+    }
+    const lignes = texte
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    setEnCours(true);
+    setErreur(null);
+    setImporte(null);
+
+    let faites = 0;
+    let ratees = 0;
+    const neuves: Apprenant[] = [];
+    const c = cours.find((x) => x.id === coursId);
+
+    for (const ligne of lignes.slice(0, 500)) {
+      const cases = ligne.split(/[;,\t]/).map((x) => x.trim().replace(/^"|"$/g, ''));
+      const email = cases.find((x) => x.includes('@'))?.toLowerCase();
+      if (!email) continue;
+      // Une ligne d'en-têtes ne contient pas d'arobase : elle est ignorée d'elle-même.
+      const autres = cases.filter((x) => x !== email && x && !x.includes('@'));
+      try {
+        const creee = await appel<Invitation>(`/ecole/cours/${coursId}/apprenants`, {
+          methode: 'POST',
+          corps: {
+            email,
+            ...(autres[0] ? { prenom: autres[0].slice(0, 120) } : {}),
+            ...(autres[1] ? { nom: autres[1].slice(0, 120) } : {}),
+          },
+        });
+        faites += 1;
+        neuves.push({
+          id: creee.id,
+          email: creee.email,
+          nom: autres.slice(0, 2).join(' ') || null,
+          cours: { id: coursId, titre: c?.titre ?? 'Cours' },
+          statut: 'ACTIVE',
+          progression: 0,
+          termineLe: null,
+          certificatEmisLe: null,
+          derniereVisite: null,
+          inscritLe: new Date().toISOString(),
+          lien: creee.lien,
+        });
+      } catch {
+        ratees += 1;
+      }
+    }
+
+    setAjoutees((l) => [...neuves, ...l]);
+    setEnCours(false);
+    setImporte(
+      faites
+        ? `${faites} personne${faites > 1 ? 's' : ''} inscrite${faites > 1 ? 's' : ''}${ratees ? ` — ${ratees} ligne${ratees > 1 ? 's' : ''} écartée${ratees > 1 ? 's' : ''} (adresse invalide ou déjà inscrite)` : '.'}`
+        : "Aucune ligne n'a pu être importée : vérifie que le fichier contient une adresse e-mail par ligne.",
+    );
+  }
+
+  /** Bloquer, c'est fermer l'accès sans rien effacer. */
+  async function basculerBlocage(p: Personne) {
+    setEnCours(true);
+    setErreur(null);
+    try {
+      for (const inscription of p.cours) {
+        await appel(`/ecole/apprenants/${inscription.id}/bloquer`, {
+          methode: 'POST',
+          corps: { bloquer: !p.bloquee },
+        });
+      }
+      setAjoutees((l) =>
+        l.map((a) =>
+          a.email.trim().toLowerCase() === p.cle ? { ...a, statut: p.bloquee ? 'ACTIVE' : 'SUSPENDUE' } : a,
+        ),
+      );
+      // Les inscriptions venues du serveur ne se rafraîchissent qu'au rechargement.
+      window.location.reload();
+    } catch (err) {
+      setErreur(messageDe(err));
+      setEnCours(false);
+    }
+  }
 
   async function envoyerInvitation(e: FormEvent) {
     e.preventDefault();
@@ -268,6 +371,7 @@ export function Apprenants({
               <option value="en-cours">En cours</option>
               <option value="termines">Ont terminé</option>
               <option value="inactifs">Sans visite depuis un mois</option>
+              <option value="bloques">Bloqués</option>
             </select>
           </label>
           <label className="block">
@@ -277,6 +381,8 @@ export function Apprenants({
               <option value="visite">Dernière visite</option>
               <option value="nom">Nom</option>
               <option value="progression">Progression</option>
+              <option value="revenus">Revenus</option>
+              <option value="formations">Nombre de formations</option>
             </select>
           </label>
         </div>
@@ -291,6 +397,26 @@ export function Apprenants({
           <button type="button" onClick={exporter} className={`${BTN_SECONDAIRE} ml-auto`}>
             Exporter en CSV
           </button>
+          <input
+            ref={fichier}
+            type="file"
+            accept=".csv,text/csv,text/plain"
+            className="hidden"
+            onChange={async (e) => {
+              const f = e.target.files?.[0];
+              e.target.value = '';
+              if (!f) return;
+              await importerCsv(await f.text());
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fichier.current?.click()}
+            disabled={enCours}
+            className={BTN_SECONDAIRE}
+          >
+            Importer un CSV
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -304,6 +430,12 @@ export function Apprenants({
           </button>
         </div>
       </div>
+
+      {importe ? (
+        <div className="mb-5">
+          <Encart ton="info">{importe}</Encart>
+        </div>
+      ) : null}
 
       {erreur ? (
         <div className="mb-5">
@@ -451,7 +583,9 @@ export function Apprenants({
                 </span>
 
                 <span className="hidden sm:block">
-                  {p.termines === p.cours.length ? (
+                  {p.bloquee ? (
+                    <Pastille ton="alerte">Bloqué</Pastille>
+                  ) : p.termines === p.cours.length ? (
                     <Pastille ton="ok">Terminé</Pastille>
                   ) : joursDepuis(p.derniereVisite) >= 30 ? (
                     <Pastille ton="attention">À relancer</Pastille>
@@ -463,6 +597,20 @@ export function Apprenants({
 
               {deplie ? (
                 <div className="border-t border-[#EDF4F1] px-4 pb-4 pt-3 sm:px-5">
+                  <div className="mb-3 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void basculerBlocage(p)}
+                      disabled={enCours}
+                      className={BTN_SECONDAIRE}
+                    >
+                      {p.bloquee ? "Rouvrir l'accès" : "Bloquer l'accès"}
+                    </button>
+                    <span className="text-[13px] text-[#5E7A6E]">
+                      Bloquer n&apos;efface rien : la personne garde son inscription et sa progression,
+                      elle ne peut simplement plus ouvrir ses formations.
+                    </span>
+                  </div>
                   <ul className="grid gap-2">
                     {p.cours.map((c) => (
                       <li key={c.id} className="flex flex-wrap items-center gap-3 rounded-xl bg-[#F2F7F5] px-4 py-3">
