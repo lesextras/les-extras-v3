@@ -31,7 +31,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FilesService, type FichierRecu } from '../storage/files.service';
 import { champsManquants, trouverModele, type Valeurs } from './fabrique';
 import { rendrePdf } from './rendu';
-import { ClaudeService } from '../assistant/claude.service';
+import { MoteurService, type OptionsMoteur } from '../assistant/moteur.service';
 import {
   CONSIGNE_DOSSIER,
   CONSIGNE_FINANCEURS,
@@ -114,7 +114,7 @@ export class EspaceService {
     private readonly prisma: PrismaService,
     private readonly files: FilesService,
     private readonly publiques: AssociationService,
-    private readonly moteur: ClaudeService,
+    private readonly moteur: MoteurService,
   ) {}
 
   // ---------------------------------------------------------------- inscription
@@ -1036,7 +1036,7 @@ export class EspaceService {
    * peut pas dire si c'est la clé, le crédit, le modèle ou le réseau. La clé
    * elle-même n'apparaît jamais dans le message renvoyé.
    */
-  private async appelerMoteur(options: Parameters<ClaudeService['completer']>[0]): Promise<string> {
+  private async appelerMoteur(options: OptionsMoteur): Promise<string> {
     try {
       return await this.moteur.completer(options);
     } catch (err) {
@@ -1050,12 +1050,14 @@ export class EspaceService {
 
   /** Traduit l'échec du moteur en une phrase que l'association peut agir dessus. */
   private raisonMoteur(detail: string): string {
-    if (/401|authentication|invalid x-api-key|unauthor/i.test(detail))
-      return "La clé du moteur est refusée. Recopie ANTHROPIC_API_KEY en entier dans la configuration du serveur, sans espace ni retour à la ligne.";
-    if (/credit|billing|payment|quota|402/i.test(detail))
-      return "Le compte du moteur n'a plus de crédit. Recharge-le, puis réessaie.";
-    if (/404|not_found_error|model/i.test(detail))
-      return "Le modèle demandé n'existe pas. Vérifie ANTHROPIC_MODEL dans la configuration du serveur.";
+    const cle = this.moteur.moteur === 'gemini' ? 'GEMINI_API_KEY' : 'ANTHROPIC_API_KEY';
+    const modele = this.moteur.moteur === 'gemini' ? 'GEMINI_MODEL' : 'ANTHROPIC_MODEL';
+    if (/401|403|authentication|invalid x-api-key|API key not valid|PERMISSION_DENIED|unauthor/i.test(detail))
+      return `La clé du moteur est refusée. Recopie ${cle} en entier dans la configuration du serveur, sans espace ni retour à la ligne.`;
+    if (/credit|billing|payment|quota|402|RESOURCE_EXHAUSTED/i.test(detail))
+      return "Le compte du moteur n'a plus de crédit ou a dépassé son quota du jour. Recharge-le, puis réessaie.";
+    if (/404|not_found_error|NOT_FOUND|model/i.test(detail))
+      return `Le modèle demandé n'existe pas. Vérifie ${modele} dans la configuration du serveur.`;
     if (/429|rate_limit/i.test(detail))
       return 'Trop de demandes en même temps. Attends une minute et réessaie.';
     if (/timeout|ENOTFOUND|ECONNREFUSED|EAI_AGAIN|fetch failed|network|socket/i.test(detail))
