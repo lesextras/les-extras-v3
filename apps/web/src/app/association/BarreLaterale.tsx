@@ -119,8 +119,6 @@ const PUBLIC = ['/', '/association', '/chemin', '/association/chemin'];
 const PORTEES: Record<string, string> = {
   '/espace': '/',
   '/association': '/',
-  '/association/chemin': '/chemin',
-  '/academie/chemin': '/chemin',
   '/espace/actions': '/espace/projets',
   '/espace/financeurs': '/espace/projets',
   '/espace/budget': '/espace/association',
@@ -135,7 +133,21 @@ const PORTEES: Record<string, string> = {
   '/outils': '/avantages',
 };
 
+/**
+ * L'ENTRÉE « LE CHEMIN » N'OUVRE PAS LA MÊME PAGE SELON QU'ON EST CHEZ SOI.
+ *
+ * Sans espace, elle ouvre `/chemin` : les deux parcours, expliqués, pour
+ * choisir. Avec un espace ouvert, elle ouvre le chemin DE CET ESPACE — celui
+ * de l'autre n'a plus rien à faire là.
+ */
+const CHEMIN_COMMUN = '/chemin';
+const CHEMIN_ESPACE = '/association/chemin';
+
 function actif(chemin: string, href: string) {
+  // Le chemin commun et celui de l'espace éclairent la même entrée.
+  if (href === CHEMIN_ESPACE || href === CHEMIN_COMMUN) {
+    return chemin === CHEMIN_COMMUN || chemin === CHEMIN_ESPACE || chemin.startsWith(`${CHEMIN_ESPACE}/`);
+  }
   const porte = PORTEES[chemin];
   if (porte) return porte === href;
   if (href === '/' || href === '/espace') return chemin === href;
@@ -190,6 +202,12 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
     );
   };
 
+  // Sans espace, on ne montre que ce qui s'ouvre vraiment ; avec un espace,
+  // « Le chemin » ouvre celui de l'espace, pas la page des deux parcours.
+  const entrees = (compte?.espaceOuvert ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map((e) =>
+    e.href === CHEMIN_COMMUN && compte?.espaceOuvert ? { ...e, href: CHEMIN_ESPACE } : e,
+  );
+
   const contenu = (
     <div className="flex h-full flex-col">
       <div className="mb-6 flex flex-col items-center px-2 text-center">
@@ -225,7 +243,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
 
       {/* Sans compte, on ne montre que ce qui s'ouvre vraiment : l'accueil et le chemin. */}
       <nav aria-label="Navigation">
-        <ul className="space-y-0.5">{(compte?.espaceOuvert ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map(lien)}</ul>
+        <ul className="space-y-0.5">{entrees.map(lien)}</ul>
 
         {/* Mon compte : replié par défaut, déplié quand on est dessus. */}
         {compte?.espaceOuvert ? (
