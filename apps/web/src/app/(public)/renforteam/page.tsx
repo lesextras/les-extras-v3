@@ -25,6 +25,11 @@ import { Button } from "@/components/ui/button";
 import { fetchPublic } from "../../_shared/server";
 import { formatDate } from "../../_shared/format";
 import { metaPublique } from "@/lib/meta";
+// Venus de l'accueil le 08/09/2026 : l'accueil traite les trois usages à
+// égalité, et le détail du renfort — le formulaire unique, la cascade, les
+// écrans du produit — appartient à la page qui raconte le renfort.
+import { UnSeulFormulaire } from "../../_shared/UnSeulFormulaire";
+import { ApercuProduit } from "../../_shared/ApercuProduit";
 
 export const metadata: Metadata = metaPublique({
   title: "RenforTeam, remplacement urgent en médico-social",
@@ -290,6 +295,11 @@ Un incident technique de notre côté, pas une absence de besoins. Réessayez da
           </div>
         </section>
       ) : null}
+
+      {/* Un seul formulaire, puis l'intérieur du produit. */}
+      <UnSeulFormulaire />
+
+      <ApercuProduit />
 
       {/* CTA final */}
       <section className="rounded-3xl border border-border bg-card/50 px-6 py-14 text-center sm:px-12">
