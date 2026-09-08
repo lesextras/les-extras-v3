@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import { BTN_DISCRET, CARTE, Encart, SousTitre } from './_ui';
 import { euros, type Apprenant, type CoursResume, type Vente } from './_ecole/types';
 
@@ -12,6 +15,35 @@ import { euros, type Apprenant, type CoursResume, type Vente } from './_ecole/ty
 
 const MOIS = ['janv.', 'févr.', 'mars', 'avril', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
+/**
+ * LES PÉRIODES.
+ *
+ * `jours` à zéro veut dire « depuis le début » : il n'y a alors pas de période
+ * précédente à laquelle se comparer, et on ne prétend pas le contraire.
+ */
+const PERIODES: { cle: string; nom: string; jours: number }[] = [
+  { cle: 'j1', nom: "Aujourd'hui", jours: 1 },
+  { cle: 'j7', nom: '7 derniers jours', jours: 7 },
+  { cle: 'j30', nom: '30 derniers jours', jours: 30 },
+  { cle: 'm3', nom: '3 derniers mois', jours: 90 },
+  { cle: 'm6', nom: '6 derniers mois', jours: 182 },
+  { cle: 'm12', nom: '12 derniers mois', jours: 365 },
+  { cle: 'tout', nom: 'Tout, depuis le début', jours: 0 },
+];
+
+/** Ce qu'on lit sous un chiffre : la même mesure, la période d'avant. */
+function Avant({ valeur, avant, format }: { valeur: number; avant: number | null; format?: (n: number) => string }) {
+  if (avant === null) return <span className="mt-1 block text-[14px] text-[#5E7A6E]">depuis le début</span>;
+  const dire = format ?? ((n: number) => String(n));
+  const ecart = valeur - avant;
+  const ton = ecart > 0 ? 'text-[#0F5F3E]' : ecart < 0 ? 'text-[#8A1B3D]' : 'text-[#5E7A6E]';
+  return (
+    <span className="mt-1 block text-[14px] text-[#5E7A6E]">
+      Période précédente : {dire(avant)} <span className={`font-bold ${ton}`}>{ecart > 0 ? `+${dire(ecart)}` : ecart < 0 ? dire(ecart) : '='}</span>
+    </span>
+  );
+}
+
 export function BlocStatistiques({
   ventes,
   inscriptions,
@@ -21,6 +53,46 @@ export function BlocStatistiques({
   inscriptions: Apprenant[];
   cours: CoursResume[];
 }) {
+  const [periode, setPeriode] = useState('j30');
+  const jours = PERIODES.find((p) => p.cle === periode)?.jours ?? 30;
+
+  /**
+   * CE QUE DIT LA PÉRIODE CHOISIE — et ce que disait la précédente.
+   *
+   * Deux fenêtres de même longueur, l'une collée à l'autre : c'est la seule
+   * comparaison honnête. Sur « depuis le début », il n'y a pas d'avant.
+   */
+  const fenetre = useMemo(() => {
+    const maintenant = Date.now();
+    const debut = jours ? maintenant - jours * 86400000 : 0;
+    const debutAvant = jours ? debut - jours * 86400000 : 0;
+
+    const dans = (iso: string | null | undefined, a: number, b: number) => {
+      if (!iso) return false;
+      const d = new Date(iso).getTime();
+      return !Number.isNaN(d) && d >= a && d < b;
+    };
+
+    const vendues = ventes.filter((v) => v.statut === 'PAYEE');
+    const compter = (a: number, b: number) => {
+      const v = vendues.filter((x) => dans(x.le, a, b));
+      const i = inscriptions.filter((x) => dans(x.inscritLe, a, b));
+      return {
+        ventes: v.length,
+        revenus: v.reduce((t, x) => t + (x.montantCents ?? 0), 0),
+        apprenants: new Set(i.map((x) => x.email.trim().toLowerCase())).size,
+        inscriptions: i.length,
+        finis: i.filter((x) => x.statut === 'TERMINEE').length,
+        commences: i.filter((x) => (x.progression ?? 0) > 0).length,
+      };
+    };
+
+    return {
+      maintenant: compter(debut, maintenant + 1),
+      avant: jours ? compter(debutAvant, debut) : null,
+    };
+  }, [ventes, inscriptions, jours]);
+
   const annee = new Date().getFullYear();
   const payees = ventes.filter((v) => v.statut === 'PAYEE');
   const payeesAnnee = payees.filter((v) => new Date(v.le).getFullYear() === annee);
@@ -66,6 +138,45 @@ export function BlocStatistiques({
   return (
     <section className="mt-10" id="statistiques">
       <SousTitre>Ce que disent les chiffres</SousTitre>
+
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <label className="flex flex-wrap items-center gap-2 text-[14px] font-bold text-[#12312A]">
+          Sur quelle période
+          <select
+            value={periode}
+            onChange={(e) => setPeriode(e.target.value)}
+            className="rounded-xl border-2 border-[#DDEBE4] bg-white px-3 py-2 text-[15px] font-normal text-[#12312A]"
+          >
+            {PERIODES.map((p) => (
+              <option key={p.cle} value={p.cle}>
+                {p.nom}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { t: 'Apprenants', n: fenetre.maintenant.apprenants, a: fenetre.avant?.apprenants ?? null, f: undefined, c: 'text-[#12312A]' },
+          { t: 'Ventes', n: fenetre.maintenant.ventes, a: fenetre.avant?.ventes ?? null, f: undefined, c: 'text-[#12312A]' },
+          { t: 'Revenus', n: fenetre.maintenant.revenus, a: fenetre.avant?.revenus ?? null, f: euros, c: 'text-[#0F5F3E]' },
+          { t: 'Inscriptions', n: fenetre.maintenant.inscriptions, a: fenetre.avant?.inscriptions ?? null, f: undefined, c: 'text-[#12312A]' },
+        ].map((x) => (
+          <div key={x.t} className={`${CARTE} p-5`}>
+            <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">{x.t}</p>
+            <p className={`mt-1 text-[28px] font-black leading-none ${x.c}`}>{x.f ? x.f(x.n) : x.n}</p>
+            <Avant valeur={x.n} avant={x.a} format={x.f} />
+          </div>
+        ))}
+      </div>
+
+      <p className="mb-6 text-[15px] text-[#334A42]">
+        Sur cette période, <strong className="font-extrabold text-[#12312A]">{fenetre.maintenant.commences}</strong>{' '}
+        apprenant{fenetre.maintenant.commences > 1 ? 's ont' : ' a'} commencé une formation et{' '}
+        <strong className="font-extrabold text-[#12312A]">{fenetre.maintenant.finis}</strong>{' '}
+        {fenetre.maintenant.finis > 1 ? "l'ont" : "l'a"} terminée.
+      </p>
 
       {rienDuTout ? (
         <Encart ton="info">
