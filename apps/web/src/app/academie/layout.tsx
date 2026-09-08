@@ -91,6 +91,7 @@ export default async function AcademieLayout({ children }: { children: ReactNode
       espaceOuvert: Boolean(active),
       espaces,
       active: active?.id ?? null,
+      administration: session.user.role === 'ADMIN',
     };
   }
 

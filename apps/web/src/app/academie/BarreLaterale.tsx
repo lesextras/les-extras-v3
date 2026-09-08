@@ -23,6 +23,8 @@ export interface CompteAffiche {
   espaces?: EspaceAffiche[];
   /** Celui sur lequel on travaille en ce moment. */
   active?: string | null;
+  /** Vrai quand la personne porte le rôle d'administration de Piloter. */
+  administration?: boolean;
 }
 
 interface Entree {
@@ -70,6 +72,7 @@ export const ICONES = {
   versements: i('M2 7h20v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zM2 11h20M6 16h4'),
   reglages: i('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 2.6 7a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 7 2.6h.1A1.6 1.6 0 0 0 9 1V1a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1'),
   cles: i('M21 2l-2 2m-7.6 7.6a5 5 0 1 1-7.1 7.1 5 5 0 0 1 7.1-7.1zM15.5 7.5L19 4l2 2-3.5 3.5z'),
+  administration: i('M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6zM12 9v4M12 16h.01'),
   menu: i('M3 6h18M3 12h18M3 18h18'),
   fermer: i('M18 6L6 18M6 6l12 12'),
 };
@@ -218,7 +221,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
               <span className="flex-1 text-left">Mon compte</span>
               <span className={`shrink-0 text-[#8CBBA4] transition-transform ${compteOuvert ? 'rotate-180' : ''}`}>{ICONES.chevron}</span>
             </button>
-            {compteOuvert ? <ul className="mt-0.5 space-y-0.5 pl-3">{MON_COMPTE.map(lien)}</ul> : null}
+            {compteOuvert ? <ul className="mt-0.5 space-y-0.5 pl-3">{entreesDuCompte(compte).map(lien)}</ul> : null}
           </div>
         ) : null}
       </nav>
@@ -411,4 +414,16 @@ function MenuEspaces({ compte }: { compte: CompteAffiche }) {
       ) : null}
     </div>
   );
+}
+
+/**
+ * Les entrées du groupe « Mon compte ».
+ *
+ * L'administration de Piloter n'apparaît que pour qui la porte : l'entrée est
+ * un raccourci, pas un droit — la page et l'API vérifient le rôle chacune de
+ * leur côté.
+ */
+function entreesDuCompte(compte: CompteAffiche | null): Entree[] {
+  if (!compte?.administration) return MON_COMPTE;
+  return [...MON_COMPTE, { href: '/administration', libelle: 'Administration', icone: ICONES.administration }];
 }
