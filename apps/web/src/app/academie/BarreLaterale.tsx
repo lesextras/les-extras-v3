@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
-import { choisirEspace, deconnecter as fermerSession } from './_client';
+import { choisirEspace, deconnecter as fermerSession, espaceCourant } from './_client';
 
 export interface EspaceAffiche {
   id: string;
@@ -177,6 +177,14 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
     setOuvert(false);
     if (MON_COMPTE.some((e) => chemin.startsWith(e.href))) setCompteOuvert(true);
   }, [chemin]);
+
+  // Le serveur rend la page sur l'académie `compte.active`. On aligne le cookie
+  // d'espace dessus : les appels du navigateur parlent alors de la même
+  // académie que la page qu'il affiche, et non d'un autre compte de la personne.
+  const espaceServeur = compte?.active ?? null;
+  useEffect(() => {
+    if (espaceServeur && espaceCourant() !== espaceServeur) choisirEspace(espaceServeur);
+  }, [espaceServeur]);
 
   const lien = (e: Entree) => {
     const estActif = actif(chemin, e.href);
