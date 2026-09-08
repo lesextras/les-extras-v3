@@ -9,6 +9,7 @@ import {
   ChapitreDto,
   ClasseDto,
   CodePromoDto,
+  CommentaireDto,
   CreerCoursDto,
   DeplacerLeconDto,
   EcoleDto,
@@ -280,6 +281,23 @@ export class EcoleController {
   @Delete('affilies/:id')
   supprimerAffilie(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
     return this.ecole.supprimerAffilie(a.id, id);
+  }
+
+  /* ------------------------------------------------------ les commentaires */
+
+  @Get('commentaires')
+  commentaires(@CurrentAccount() a: RequestAccount, @Query('cours') cours?: string) {
+    return this.ecole.commentaires(a.id, cours);
+  }
+
+  @Patch('commentaires/:id')
+  modifierCommentaire(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: CommentaireDto) {
+    return this.ecole.modifierCommentaire(a.id, id, dto);
+  }
+
+  @Delete('commentaires/:id')
+  supprimerCommentaire(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
+    return this.ecole.supprimerCommentaire(a.id, id);
   }
 
   /* ------------------------------------------------------ les statistiques */

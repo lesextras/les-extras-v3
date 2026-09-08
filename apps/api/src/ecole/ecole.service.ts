@@ -9,7 +9,9 @@ import type {
   ChapitreDto,
   ClasseDto,
   CodePromoDto,
+  CommentaireDto,
   CreerCoursDto,
+  EcrireCommentaireDto,
   DeplacerLeconDto,
   EcoleDto,
   InscrireDto,
@@ -56,6 +58,7 @@ export class EcoleService {
       sousTitre: c.sousTitre,
       imageUrl: c.imageUrl,
       statut: c.statut,
+      modalite: c.modalite,
       gratuit: c.gratuit,
       prixCents: c.prixCents,
       nbChapitres: c.chapitres.length,
@@ -125,6 +128,31 @@ export class EcoleService {
     if (dto.prixBarreCents !== undefined) data.prixBarreCents = dto.prixBarreCents || null;
     if (dto.gratuit !== undefined) data.gratuit = dto.gratuit;
     if (dto.certificat !== undefined) data.certificat = dto.certificat;
+
+    if (dto.modalite !== undefined) data.modalite = dto.modalite;
+    if (dto.lieu !== undefined) data.lieu = dto.lieu.trim() || null;
+    if (dto.lienVisio !== undefined) data.lienVisio = dto.lienVisio.trim() || null;
+    if (dto.accesHandicap !== undefined) data.accesHandicap = dto.accesHandicap.trim() || null;
+    if (dto.lectureOrdonnee !== undefined) data.lectureOrdonnee = dto.lectureOrdonnee;
+    if (dto.placesMax !== undefined) data.placesMax = dto.placesMax || null;
+    if (dto.tvaPourcent !== undefined) data.tvaPourcent = dto.tvaPourcent;
+    if (dto.echeances !== undefined) data.echeances = dto.echeances;
+    if (dto.seoTitre !== undefined) data.seoTitre = dto.seoTitre.trim() || null;
+    if (dto.seoDescription !== undefined) data.seoDescription = dto.seoDescription.trim() || null;
+    if (dto.commentairesActifs !== undefined) data.commentairesActifs = dto.commentairesActifs;
+
+    // Une salle sans adresse, une visio sans lien : on le dit avant de publier.
+    const modalite = dto.modalite ?? actuel.modalite;
+    const enSalle = modalite === 'PRESENTIEL' || modalite === 'MIXTE';
+    const enVisio = modalite === 'VIRTUEL' || modalite === 'MIXTE';
+    const lieu = dto.lieu !== undefined ? dto.lieu.trim() : actuel.lieu;
+    const lienVisio = dto.lienVisio !== undefined ? dto.lienVisio.trim() : actuel.lienVisio;
+    if (dto.statut === StatutCours.PUBLIE && enSalle && !lieu) {
+      throw new BadRequestException('Cette formation se tient en salle : écris où, avant de la publier.');
+    }
+    if (dto.statut === StatutCours.PUBLIE && enVisio && !lienVisio) {
+      throw new BadRequestException('Cette formation se tient en visio : ajoute le lien, avant de la publier.');
+    }
 
     if (dto.slug !== undefined) {
       const voulu = this.enSlug(dto.slug);
@@ -835,6 +863,11 @@ export class EcoleService {
       prixCents: c.prixCents,
       prixBarreCents: c.prixBarreCents,
       certificat: c.certificat,
+      modalite: c.modalite,
+      lieu: c.lieu,
+      accesHandicap: c.accesHandicap,
+      echeances: c.echeances,
+      tvaPourcent: c.tvaPourcent,
       ecole: c.account?.ecoleEnLigne
         ? {
             nom: c.account.ecoleEnLigne.nom,
@@ -873,6 +906,13 @@ export class EcoleService {
 
     const deja = await this.prisma.inscriptionCours.findFirst({ where: { coursId: cours.id, email } });
     if (deja) return { lien: `/apprendre/${deja.jeton}`, dejaInscrit: true };
+
+    if (cours.placesMax) {
+      const inscrits = await this.prisma.inscriptionCours.count({ where: { coursId: cours.id } });
+      if (inscrits >= cours.placesMax) {
+        throw new ForbiddenException('Cette formation est complète. Écris à l\'organisme pour la prochaine session.');
+      }
+    }
 
     const inscription = await this.prisma.inscriptionCours.create({
       data: {
@@ -917,6 +957,11 @@ export class EcoleService {
         sousTitre: i.cours.sousTitre,
         imageUrl: i.cours.imageUrl,
         certificat: i.cours.certificat,
+        modalite: i.cours.modalite,
+        lieu: i.cours.lieu,
+        lienVisio: i.cours.lienVisio,
+        lectureOrdonnee: i.cours.lectureOrdonnee,
+        commentairesActifs: i.cours.commentairesActifs,
       },
       ecole: i.cours.account?.ecoleEnLigne
         ? {
@@ -959,6 +1004,25 @@ export class EcoleService {
       where: { id: leconId, chapitre: { coursId: i.coursId } },
     });
     if (!lecon) throw new NotFoundException("Cette leçon n'appartient pas à ce cours.");
+
+    // Lecture ordonnée : on ne coche pas une leçon si la précédente ne l'est pas.
+    if (i.cours.lectureOrdonnee && dto.faite !== false) {
+      const avant = await this.prisma.leconCours.findMany({
+        where: { chapitre: { coursId: i.coursId } },
+        orderBy: [{ chapitre: { ordre: 'asc' } }, { ordre: 'asc' }],
+        select: { id: true },
+      });
+      const rang = avant.findIndex((l) => l.id === leconId);
+      const precedentes = avant.slice(0, Math.max(0, rang)).map((l) => l.id);
+      if (precedentes.length) {
+        const faitesAvant = await this.prisma.progressionLecon.count({
+          where: { inscriptionId: i.id, faite: true, leconId: { in: precedentes } },
+        });
+        if (faitesAvant < precedentes.length) {
+          throw new ForbiddenException('Cette formation se suit dans l\'ordre : termine la leçon précédente.');
+        }
+      }
+    }
 
     const quiz = lecon.quiz ? nettoyerQuiz(lecon.quiz) : null;
     let score: number | null = null;
@@ -1011,6 +1075,87 @@ export class EcoleService {
     };
   }
 
+  /* ====================================================== COMMENTAIRES ==== */
+
+  /** Ce que les apprenants ont écrit, tout le compte ou une seule formation. */
+  async commentaires(accountId: string, coursId?: string) {
+    const liste = await this.prisma.commentaireCours.findMany({
+      where: { cours: { accountId }, ...(coursId ? { coursId } : {}) },
+      orderBy: { createdAt: 'desc' },
+      take: 300,
+      include: { cours: { select: { id: true, titre: true } }, lecon: { select: { id: true, titre: true } } },
+    });
+
+    return liste.map((c) => ({
+      id: c.id,
+      cours: { id: c.cours.id, titre: c.cours.titre },
+      lecon: c.lecon ? { id: c.lecon.id, titre: c.lecon.titre } : null,
+      auteur: c.auteur,
+      email: c.email,
+      message: c.message,
+      reponse: c.reponse,
+      reponduLe: c.reponduLe,
+      masque: c.masque,
+      le: c.createdAt,
+    }));
+  }
+
+  /** Répondre à un commentaire, ou le masquer. */
+  async modifierCommentaire(accountId: string, id: string, dto: CommentaireDto) {
+    const c = await this.prisma.commentaireCours.findFirst({ where: { id, cours: { accountId } } });
+    if (!c) throw new NotFoundException("Ce commentaire n'existe pas.");
+
+    const data: Prisma.CommentaireCoursUpdateInput = {};
+    if (dto.reponse !== undefined) {
+      const texte = dto.reponse.trim();
+      data.reponse = texte || null;
+      data.reponduLe = texte ? new Date() : null;
+    }
+    if (dto.masque !== undefined) data.masque = dto.masque;
+
+    await this.prisma.commentaireCours.update({ where: { id }, data });
+    return this.commentaires(accountId, c.coursId);
+  }
+
+  async supprimerCommentaire(accountId: string, id: string) {
+    const c = await this.prisma.commentaireCours.findFirst({ where: { id, cours: { accountId } } });
+    if (!c) throw new NotFoundException("Ce commentaire n'existe pas.");
+    await this.prisma.commentaireCours.delete({ where: { id } });
+    return { supprime: true };
+  }
+
+  /** Ce qu'un apprenant écrit depuis son lien personnel. */
+  async commenter(jeton: string, dto: EcrireCommentaireDto) {
+    const i = await this.prisma.inscriptionCours.findUnique({ where: { jeton }, include: { cours: true } });
+    if (!i) throw new NotFoundException("Ce lien n'ouvre aucun cours.");
+    if (i.statut === StatutInscriptionCours.SUSPENDUE) throw new ForbiddenException('Cet accès est suspendu.');
+    if (!i.cours.commentairesActifs) throw new ForbiddenException("Les commentaires sont fermés sur cette formation.");
+
+    const message = (dto.message ?? '').trim();
+    if (message.length < 2) throw new BadRequestException('Écris ta question avant de l\'envoyer.');
+
+    if (dto.leconId) {
+      const lecon = await this.prisma.leconCours.findFirst({
+        where: { id: dto.leconId, chapitre: { coursId: i.coursId } },
+        select: { id: true },
+      });
+      if (!lecon) throw new NotFoundException("Cette leçon n'appartient pas à ce cours.");
+    }
+
+    const auteur = [i.prenom, i.nom].filter(Boolean).join(' ').trim() || i.email;
+    const c = await this.prisma.commentaireCours.create({
+      data: {
+        coursId: i.coursId,
+        leconId: dto.leconId || null,
+        inscriptionId: i.id,
+        auteur,
+        email: i.email,
+        message: message.slice(0, 4000),
+      },
+    });
+    return { id: c.id, envoye: true };
+  }
+
   /* ============================================================= OUTILS ==== */
 
   private async monCours(accountId: string, coursId: string) {
@@ -1059,6 +1204,17 @@ export class EcoleService {
     prixBarreCents: number | null;
     gratuit: boolean;
     certificat: boolean;
+    modalite: string;
+    lieu: string | null;
+    lienVisio: string | null;
+    accesHandicap: string | null;
+    lectureOrdonnee: boolean;
+    placesMax: number | null;
+    tvaPourcent: number;
+    echeances: number;
+    seoTitre: string | null;
+    seoDescription: string | null;
+    commentairesActifs: boolean;
     statut: string;
     publieLe: Date | null;
     updatedAt: Date;
@@ -1100,6 +1256,17 @@ export class EcoleService {
       prixBarreCents: c.prixBarreCents,
       gratuit: c.gratuit,
       certificat: c.certificat,
+      modalite: c.modalite,
+      lieu: c.lieu,
+      lienVisio: c.lienVisio,
+      accesHandicap: c.accesHandicap,
+      lectureOrdonnee: c.lectureOrdonnee,
+      placesMax: c.placesMax,
+      tvaPourcent: c.tvaPourcent,
+      echeances: c.echeances,
+      seoTitre: c.seoTitre,
+      seoDescription: c.seoDescription,
+      commentairesActifs: c.commentairesActifs,
       statut: c.statut,
       publieLe: c.publieLe,
       modifieLe: c.updatedAt,

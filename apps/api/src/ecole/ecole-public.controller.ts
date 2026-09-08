@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { EcoleService } from './ecole.service';
-import { AvancerDto, RejoindreDto } from './dto/ecole.dto';
+import { AvancerDto, EcrireCommentaireDto, RejoindreDto } from './dto/ecole.dto';
 
 /**
  * LA FACE PUBLIQUE DE L'ÉCOLE.
@@ -45,5 +45,12 @@ export class EcolePublicController {
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   avancer(@Param('jeton') jeton: string, @Param('leconId') leconId: string, @Body() dto: AvancerDto) {
     return this.ecole.avancer(jeton, leconId, dto);
+  }
+
+  /** Écrire une question sous une leçon. */
+  @Post('apprendre/:jeton/commentaires')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  commenter(@Param('jeton') jeton: string, @Body() dto: EcrireCommentaireDto) {
+    return this.ecole.commenter(jeton, dto);
   }
 }
