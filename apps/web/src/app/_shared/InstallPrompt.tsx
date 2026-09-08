@@ -15,7 +15,9 @@ import { useEffect, useState } from 'react';
  * association n'a aucun sens — c'est l'hôte qui décide du nom, pas le
  * déploiement.
  *
- * Refusée, la bannière ne revient pas avant trois mois : le refus se retient.
+ * « Plus tard » ne fait pas disparaître la proposition : elle se réduit à une
+ * pastille en bas à droite, qui reste. On la rouvre d'un geste quand on veut,
+ * et le choix de l'avoir réduite se retient d'une visite à l'autre.
  */
 
 interface EvenementInstallation extends Event {
@@ -23,17 +25,16 @@ interface EvenementInstallation extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const MEMOIRE = 'installation-refusee-le';
-const TROIS_MOIS = 90 * 24 * 3600 * 1000;
+const MEMOIRE = 'installation-reduite';
 
 /** Ce que le site s'appelle, là où on est. */
 function marque(hote: string) {
   if (hote.startsWith('pilote.') || hote.includes('toulali')) {
     return {
-      nom: 'Pilote de TOULALI',
-      titre: "Installer l'application Pilote de TOULALI",
+      nom: 'Piloter',
+      titre: "Installer l'application Piloter",
       texte:
-        "Ajoutez Pilote de TOULALI à votre écran d'accueil : votre chemin, vos pièces et vos dossiers s'ouvrent en un geste, même sans connexion.",
+        "Ajoutez Piloter à votre écran d'accueil : votre chemin, vos pièces et vos dossiers s'ouvrent en un geste, même sans connexion.",
     };
   }
   return {
@@ -44,18 +45,26 @@ function marque(hote: string) {
   };
 }
 
-function refusRecent() {
+function dejaReduite() {
   try {
-    const quand = Number(window.localStorage.getItem(MEMOIRE) ?? '0');
-    return Number.isFinite(quand) && quand > 0 && Date.now() - quand < TROIS_MOIS;
+    return window.localStorage.getItem(MEMOIRE) === 'oui';
   } catch {
     return false;
   }
 }
 
+function retenirReduction(reduite: boolean) {
+  try {
+    if (reduite) window.localStorage.setItem(MEMOIRE, 'oui');
+    else window.localStorage.removeItem(MEMOIRE);
+  } catch {
+    /* navigation privée : on oublie, ce n'est pas grave */
+  }
+}
+
 export function InstallPrompt() {
   const [evenement, setEvenement] = useState<EvenementInstallation | null>(null);
-  const [visible, setVisible] = useState(false);
+  const [etat, setEtat] = useState<'cache' | 'ouvert' | 'reduit'>('cache');
   const [nom, setNom] = useState(() => marque(''));
 
   useEffect(() => {
@@ -63,18 +72,24 @@ export function InstallPrompt() {
 
     // Déjà installé : rien à proposer.
     if (window.matchMedia?.('(display-mode: standalone)').matches) return;
-    if (refusRecent()) return;
+    const reduite = dejaReduite();
 
     const surProposition = (e: Event) => {
       e.preventDefault();
       setEvenement(e as EvenementInstallation);
+      // Réduite une fois, elle le reste : c'est la pastille qui la rouvre.
+      if (reduite) {
+        setEtat('reduit');
+        return;
+      }
       // On laisse la personne arriver sur la page avant de proposer quoi que ce soit.
-      window.setTimeout(() => setVisible(true), 12_000);
+      window.setTimeout(() => setEtat('ouvert'), 12_000);
     };
 
     const surInstallation = () => {
-      setVisible(false);
+      setEtat('cache');
       setEvenement(null);
+      retenirReduction(false);
     };
 
     window.addEventListener('beforeinstallprompt', surProposition);
@@ -85,20 +100,16 @@ export function InstallPrompt() {
     };
   }, []);
 
-  if (!visible || !evenement) return null;
+  if (etat === 'cache' || !evenement) return null;
 
-  function refuser() {
-    try {
-      window.localStorage.setItem(MEMOIRE, String(Date.now()));
-    } catch {
-      /* navigation privée : on oublie, ce n'est pas grave */
-    }
-    setVisible(false);
+  function reduire() {
+    retenirReduction(true);
+    setEtat('reduit');
   }
 
   async function installer() {
     if (!evenement) return;
-    setVisible(false);
+    setEtat('cache');
     try {
       await evenement.prompt();
       await evenement.userChoice;
@@ -108,11 +119,28 @@ export function InstallPrompt() {
     setEvenement(null);
   }
 
+  // RÉDUITE : une pastille discrète, au-dessus de la boussole, qui la rouvre.
+  if (etat === 'reduit') {
+    return (
+      <button
+        type="button"
+        onClick={() => setEtat('ouvert')}
+        aria-label={nom.titre}
+        title={nom.titre}
+        className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#4F46E5] shadow-[0_10px_30px_rgba(0,0,0,0.2)] ring-1 ring-black/10 transition hover:bg-[#ECEBFC]"
+      >
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3v12M8 11l4 4 4-4M4 21h16" />
+        </svg>
+      </button>
+    );
+  }
+
   return (
     <div
       role="dialog"
       aria-label={nom.titre}
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-[520px] rounded-2xl border border-black/10 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)] sm:p-5"
+      className="fixed inset-x-3 bottom-[88px] z-50 mx-auto max-w-[520px] rounded-2xl border border-black/10 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)] sm:bottom-3 sm:p-5"
     >
       <div className="flex items-start gap-3">
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#4F46E5] text-white" aria-hidden="true">
@@ -129,7 +157,7 @@ export function InstallPrompt() {
       <div className="mt-4 flex flex-wrap justify-end gap-2">
         <button
           type="button"
-          onClick={refuser}
+          onClick={reduire}
           className="rounded-xl border-2 border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#333] transition hover:border-black/25"
         >
           Plus tard
