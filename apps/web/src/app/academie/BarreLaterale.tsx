@@ -53,6 +53,13 @@ export const ICONES = {
   formateurs: i('M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'),
   certification: i('M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.2 13.8L7 22l5-3 5 3-1.2-8.2'),
   formulaire: i('M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3M9 4a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 4v1H9zM8 12h8M8 16h5'),
+  ventes: i('M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'),
+  packs: i('M21 16V8l-9-5-9 5v8l9 5zM3.3 7.3L12 12l8.7-4.7M12 12v10'),
+  promo: i('M20.6 13.4L11.2 4H4v7.2l9.4 9.4a2 2 0 0 0 2.8 0l4.4-4.4a2 2 0 0 0 0-2.8zM7.5 7.5h.01'),
+  classes: i('M23 7l-7 5 7 5zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z'),
+  statistiques: i('M3 3v18h18M7 15v3M12 9v9M17 5v13'),
+  vitrine: i('M3 9l1.5-5h15L21 9M3 9h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 21v-6h6v6'),
+  affiliation: i('M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4'),
   comptabilite: i('M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'),
   secretariat: i('M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h6'),
   courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
@@ -83,6 +90,11 @@ const MENU: Entree[] = [
   { href: '/academie/cours-en-presentiel', libelle: 'Mes cours en présentiel', icone: ICONES.presentiel },
   { href: '/academie/formateurs', libelle: 'Mes formateurs', icone: ICONES.formateurs },
   { href: '/academie/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
+  { href: '/academie/ventes', libelle: 'Mes ventes', icone: ICONES.ventes },
+  { href: '/academie/packs', libelle: 'Mes packs', icone: ICONES.packs },
+  { href: '/academie/codes-promo', libelle: 'Mes codes promo', icone: ICONES.promo },
+  { href: '/academie/classes-virtuelles', libelle: 'Mes classes virtuelles', icone: ICONES.classes },
+  { href: '/academie/statistiques', libelle: 'Mes statistiques', icone: ICONES.statistiques },
 ];
 
 /**
@@ -91,6 +103,8 @@ const MENU: Entree[] = [
  */
 const MON_COMPTE: Entree[] = [
   { href: '/academie/ma-page', libelle: 'Ma page académie', icone: ICONES.page },
+  { href: '/academie/personnalisation', libelle: 'Personnalisation', icone: ICONES.vitrine },
+  { href: '/academie/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },
   { href: '/academie/versements', libelle: 'Versements', icone: ICONES.versements },
   { href: '/academie/parametres', libelle: 'Paramètres', icone: ICONES.reglages },
   { href: '/academie/droits-acces', libelle: "Droits d'accès", icone: ICONES.cles },
