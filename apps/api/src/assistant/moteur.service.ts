@@ -22,8 +22,11 @@ const MODELE_PAR_DEFAUT = 'gemini-2.5-flash';
 const DELAI_MS = 60_000;
 
 export interface OptionsMoteur {
-  system?: string;
+  /** La consigne : ce que le modèle doit faire, et ce qu'il ne doit jamais faire. */
+  system: string;
   user: string;
+  /** Le fil de la conversation, quand il y en a un. */
+  historique?: { role: 'user' | 'assistant'; content: string }[];
   maxTokens?: number;
   temperature?: number;
 }
@@ -78,8 +81,13 @@ export class MoteurService {
 
   private async gemini(options: OptionsMoteur, cle: string): Promise<string> {
     const modele = process.env.GEMINI_MODEL?.trim() || MODELE_PAR_DEFAUT;
+    // Gemini parle en « tours » : l'assistant s'appelle « model » chez lui.
+    const fil = (options.historique ?? []).map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
     const corps = {
-      contents: [{ role: 'user', parts: [{ text: options.user }] }],
+      contents: [...fil, { role: 'user', parts: [{ text: options.user }] }],
       ...(options.system ? { systemInstruction: { parts: [{ text: options.system }] } } : {}),
       generationConfig: {
         temperature: options.temperature ?? 0.3,
