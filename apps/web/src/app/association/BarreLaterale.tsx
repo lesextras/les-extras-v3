@@ -72,6 +72,8 @@ export const ICONES = {
   /** L'enveloppe : écrire à quelqu'un. */
   enveloppe: i('M3 6h18v12H3zM3 7l9 6 9-6'),
   chevron: i('M6 9l6 6 6-6'),
+  /** Trois points reliés : celui qui recommande, et ce que ça rapporte. */
+  affiliation: i('M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4'),
   /** La boussole de la marque : « Piloter mon association ». */
   boussole: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z'),
   courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
@@ -101,6 +103,7 @@ const MENU: Entree[] = [
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
+  { href: '/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },
 ];
 
 /**
