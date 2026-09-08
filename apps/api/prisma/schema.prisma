@@ -281,6 +281,14 @@ model Account {
   academie                      Academie?
   /// Les formulaires que le compte compose lui-meme (les deux espaces).
   formulaires                   Formulaire[]
+  /// L'ecole en ligne de l'academie : les cours, ce qui se vend, qui apprend.
+  cours                         Cours[]              @relation("CoursCompte")
+  packs                         PackCours[]
+  codesPromo                    CodePromo[]
+  ventesCours                   VenteCours[]
+  classesVirtuelles             ClasseVirtuelle[]
+  ecoleEnLigne                  EcoleEnLigne?
+  affilies                      Affilie[]
 
   @@index([type])
   @@index([slug])
@@ -3272,4 +3280,344 @@ enum StatutFormulaire {
   BROUILLON
   PUBLIE
   FERME
+}
+
+/// ---------------------------------------------------------------------------
+/// L'ÉCOLE EN LIGNE D'UNE ACADÉMIE.
+///
+/// Une académie vend et anime des cours en ligne : un cours porte des
+/// chapitres, un chapitre porte des leçons, une leçon peut être une vidéo, un
+/// texte, un document, un quiz ou un devoir. Une personne s'inscrit, avance
+/// leçon par leçon, et reçoit son attestation à la fin.
+///
+/// Tout appartient au compte : c'est le même garde-fou que partout ailleurs.
+/// Le vocabulaire est français de bout en bout, comme le reste de Piloter, et
+/// distinct de `Formation` — qui est la fiche marchande des Extras, pas un
+/// parcours pédagogique.
+/// ---------------------------------------------------------------------------
+
+model Cours {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation("CoursCompte", fields: [accountId], references: [id], onDelete: Cascade)
+
+  titre       String
+  /// L'adresse publique du cours : /ecole/<slug>. Unique sur tout le site.
+  slug        String  @unique
+  sousTitre   String?
+  description String?
+
+  imageUrl        String?
+  bandeAnnonceUrl String?
+
+  niveau    NiveauCours @default(TOUS)
+  categorie String?
+  /// Ce que la personne saura faire à la fin, une ligne par objectif.
+  objectifs String[]    @default([])
+  prerequis String?
+  pourQui   String?
+
+  /// Renseignée à la main, ou calculée depuis les leçons quand elle vaut 0.
+  dureeMinutes Int @default(0)
+
+  /// En centimes : on ne stocke jamais un prix en flottant.
+  prixCents      Int     @default(0)
+  prixBarreCents Int?
+  gratuit        Boolean @default(false)
+  certificat     Boolean @default(false)
+
+  statut   StatutCours @default(BROUILLON)
+  ordre    Int         @default(0)
+  publieLe DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chapitres    ChapitreCours[]
+  inscriptions InscriptionCours[]
+  ventes       VenteCours[]
+  classes      ClasseVirtuelle[]
+
+  @@index([accountId, statut])
+  @@index([accountId, ordre])
+}
+
+enum StatutCours {
+  BROUILLON
+  PUBLIE
+  ARCHIVE
+}
+
+enum NiveauCours {
+  TOUS
+  DEBUTANT
+  INTERMEDIAIRE
+  AVANCE
+}
+
+model ChapitreCours {
+  id      String @id @default(cuid())
+  coursId String
+  cours   Cours  @relation(fields: [coursId], references: [id], onDelete: Cascade)
+
+  titre  String
+  resume String?
+  ordre  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lecons LeconCours[]
+
+  @@index([coursId, ordre])
+}
+
+model LeconCours {
+  id          String        @id @default(cuid())
+  chapitreId  String
+  chapitre    ChapitreCours @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
+
+  titre   String
+  type    TypeLecon @default(TEXTE)
+  /// Le texte de la leçon, écrit dans l'atelier.
+  contenu String?
+  /// L'adresse de la vidéo ou de l'audio hébergé (aucun fichier ici).
+  videoUrl   String?
+  fichierUrl String?
+
+  dureeMinutes Int     @default(0)
+  /// Une leçon d'aperçu se lit sans avoir acheté le cours.
+  apercu       Boolean @default(false)
+
+  /// { "noteMinimale": 70, "questions": [{ "id", "enonce", "type", "options", "bonnes", "points" }] }
+  quiz Json?
+
+  ordre Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  progressions ProgressionLecon[]
+
+  @@index([chapitreId, ordre])
+}
+
+enum TypeLecon {
+  TEXTE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  QUIZ
+  DEVOIR
+  LIVE
+}
+
+/// UNE PERSONNE INSCRITE À UN COURS.
+///
+/// Pas de compte à créer pour apprendre : une adresse e-mail et un jeton
+/// personnel suffisent. C'est ce jeton qui ouvre le cours, et lui seul.
+model InscriptionCours {
+  id      String @id @default(cuid())
+  coursId String
+  cours   Cours  @relation(fields: [coursId], references: [id], onDelete: Cascade)
+
+  email  String
+  nom    String?
+  prenom String?
+
+  /// L'adresse personnelle d'accès : /apprendre/<jeton>.
+  jeton String @unique
+
+  statut      StatutInscriptionCours @default(ACTIVE)
+  /// Pourcentage de leçons faites, recalculé à chaque leçon cochée.
+  progression Int                    @default(0)
+
+  termineLe        DateTime?
+  certificatEmisLe DateTime?
+  derniereVisite   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  progressions ProgressionLecon[]
+
+  @@unique([coursId, email])
+  @@index([coursId, createdAt])
+}
+
+enum StatutInscriptionCours {
+  ACTIVE
+  SUSPENDUE
+  TERMINEE
+}
+
+model ProgressionLecon {
+  id            String           @id @default(cuid())
+  inscriptionId String
+  inscription   InscriptionCours @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
+  leconId       String
+  lecon         LeconCours       @relation(fields: [leconId], references: [id], onDelete: Cascade)
+
+  faite   Boolean   @default(false)
+  faiteLe DateTime?
+  /// La note du quiz, sur 100, quand la leçon en portait un.
+  score   Int?
+
+  @@unique([inscriptionId, leconId])
+  @@index([leconId])
+}
+
+/// UN PACK : plusieurs cours vendus ensemble, à un prix qui n'est pas la somme.
+model PackCours {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  titre       String
+  slug        String  @unique
+  description String?
+  imageUrl    String?
+  prixCents   Int     @default(0)
+  /// Les cours du pack, dans l'ordre où on les propose.
+  coursIds    String[] @default([])
+
+  statut StatutCours @default(BROUILLON)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, statut])
+}
+
+model CodePromo {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  code   String
+  type   TypeRemise @default(POURCENTAGE)
+  /// Un pourcentage (1 à 100) ou un montant en centimes, selon le type.
+  valeur Int
+
+  /// Vide : le code marche sur tout le catalogue.
+  coursIds String[] @default([])
+
+  debuteLe DateTime?
+  expireLe DateTime?
+  usageMax Int?
+  usages   Int       @default(0)
+  actif    Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, code])
+  @@index([accountId, actif])
+}
+
+enum TypeRemise {
+  POURCENTAGE
+  MONTANT
+}
+
+model VenteCours {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  coursId String?
+  cours   Cours?  @relation(fields: [coursId], references: [id], onDelete: SetNull)
+  packId  String?
+
+  email  String
+  nom    String?
+
+  montantCents Int
+  codePromo    String?
+  /// Le code de l'affilié quand la vente vient d'un lien partagé.
+  affiliation  String?
+
+  statut StatutVente @default(PAYEE)
+  moyen  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, createdAt])
+  @@index([accountId, statut])
+}
+
+enum StatutVente {
+  EN_ATTENTE
+  PAYEE
+  REMBOURSEE
+  ANNULEE
+}
+
+model ClasseVirtuelle {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  coursId   String?
+  cours     Cours?  @relation(fields: [coursId], references: [id], onDelete: SetNull)
+
+  titre       String
+  description String?
+  debut       DateTime
+  fin         DateTime?
+  /// Le lien de la visio : celui qu'on envoie aux inscrits.
+  lien        String?
+  placesMax   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, debut])
+}
+
+/// LA VITRINE DE L'ÉCOLE : ce que voient les gens avant d'acheter.
+model EcoleEnLigne {
+  id        String  @id @default(cuid())
+  accountId String  @unique
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  nom          String
+  slug         String  @unique
+  sousTitre    String?
+  presentation String?
+
+  logoUrl     String?
+  banniereUrl String?
+  couleur     String  @default("#0F5F3E")
+
+  contactEmail String?
+  cgv          String?
+  mentions     String?
+
+  publiee Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// UN AFFILIÉ : quelqu'un qui partage un lien et touche une part de la vente.
+model Affilie {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  nom   String
+  email String
+  code  String
+
+  commissionPourcent Int     @default(20)
+  ventes             Int     @default(0)
+  gainsCents         Int     @default(0)
+  actif              Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, code])
+  @@index([accountId, actif])
 }
