@@ -1794,7 +1794,12 @@ function blocsDepuisLAncien(l: {
   return blocs;
 }
 
-/** Les blocs qu'une leçon sait afficher. Tout le reste est écarté. */
+/**
+ * Les blocs qu'une leçon sait afficher. Tout le reste est écarté.
+ *
+ * La liste suit celle du côté web (_shared/blocs.ts) : ce qui n'y figure pas
+ * n'est pas rendu, donc n'a rien à faire en base.
+ */
 const TYPES_DE_BLOC = new Set([
   'titre',
   'texte',
@@ -1807,6 +1812,39 @@ const TYPES_DE_BLOC = new Set([
   'pdf',
   'lien',
   'classe',
+  'leconLiee',
+  'markdown',
+  'gif',
+  'calendly',
+  'typeform',
+  'youtube',
+  'youtubeDirect',
+  'vimeo',
+  'dailymotion',
+  'twitch',
+  'soundcloud',
+  'googleDocs',
+  'googleSheets',
+  'googleForms',
+  'googleCalendar',
+  'googleSlides',
+  'html',
+  'genially',
+  'accordeon',
+  'carte',
+  'gratter',
+  'slideshare',
+  'instagram',
+  'tweet',
+  'pinterest',
+  'figma',
+  'gist',
+  'code',
+  'chronologie',
+  'jsfiddle',
+  'codepen',
+  'codesandbox',
+  'tiktok',
 ]);
 
 /**
@@ -1845,6 +1883,12 @@ function nettoyerBlocs(brut: unknown): unknown[] {
     if (typeof bloc.niveau === 'number') propre.niveau = Math.min(4, Math.max(2, Math.round(bloc.niveau)));
     const debut = texte(bloc.debut, 40);
     if (debut !== undefined) propre.debut = debut;
+    const verso = texte(bloc.verso, 60000);
+    if (verso !== undefined) propre.verso = verso;
+    const langue = texte(bloc.langue, 40);
+    if (langue !== undefined) propre.langue = langue;
+    const leconId = texte(bloc.leconId, 40);
+    if (leconId !== undefined) propre.leconId = leconId;
 
     propres.push(propre);
   }
