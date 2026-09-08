@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { Encart, Titre } from '../_ui';
-import type { Apprenant, Vente } from '../_ecole/types';
+import type { Apprenant, CoursResume, Vente } from '../_ecole/types';
 import { Apprenants } from './Apprenants';
 
 export const metadata: Metadata = { title: 'Mes apprenants', robots: { index: false, follow: false } };
@@ -16,9 +16,10 @@ export const metadata: Metadata = { title: 'Mes apprenants', robots: { index: fa
  */
 export default async function ApprenantsPage() {
   const s = await sessionAcademie('/academie/apprenants');
-  const [inscriptions, ventes] = await Promise.all([
+  const [inscriptions, ventes, cours] = await Promise.all([
     apiAcademie<Apprenant[]>(s, '/ecole/apprenants'),
     apiAcademie<Vente[]>(s, '/ecole/ventes'),
+    apiAcademie<CoursResume[]>(s, '/ecole/cours'),
   ]);
 
   return (
@@ -34,6 +35,7 @@ export default async function ApprenantsPage() {
         <Apprenants
           inscriptions={Array.isArray(inscriptions.data) ? inscriptions.data : []}
           ventes={Array.isArray(ventes.data) ? ventes.data : []}
+          cours={Array.isArray(cours.data) ? cours.data : []}
         />
       ) : (
         <Encart ton="attention">{inscriptions.error ?? 'Les apprenants ne se chargent pas pour le moment.'}</Encart>

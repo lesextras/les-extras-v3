@@ -1,8 +1,18 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { BTN_DISCRET, BTN_SECONDAIRE, CARTE, CHAMP, Encart, Pastille } from '../_ui';
-import { dateCourte, euros, type Apprenant, type Vente } from '../_ecole/types';
+import { useMemo, useState, type FormEvent } from 'react';
+import { appel, messageDe } from '../_ecole/api';
+import { BTN_DISCRET, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CHAMP, Encart, Pastille } from '../_ui';
+import { dateCourte, euros, type Apprenant, type CoursResume, type Vente } from '../_ecole/types';
+
+const ORIGINE = 'https://pilote.toulali.fr';
+
+/** Ce que l'API rend quand on invite : la personne n'a pas de compte, elle a un lien. */
+interface Invitation {
+  id: string;
+  email: string;
+  lien: string;
+}
 
 /**
  * MES APPRENANTS — LA LISTE DES PERSONNES.
@@ -111,12 +121,33 @@ function versCsv(personnes: Personne[]) {
   return [entetes.map(echapper).join(';'), ...lignes].join('\r\n');
 }
 
-export function Apprenants({ inscriptions, ventes }: { inscriptions: Apprenant[]; ventes: Vente[] }) {
-  const personnes = useMemo(() => regrouper(inscriptions, ventes), [inscriptions, ventes]);
+export function Apprenants({
+  inscriptions,
+  ventes,
+  cours,
+}: {
+  inscriptions: Apprenant[];
+  ventes: Vente[];
+  cours: CoursResume[];
+}) {
+  const [ajoutees, setAjoutees] = useState<Apprenant[]>([]);
+  const toutes = useMemo(() => [...inscriptions, ...ajoutees], [inscriptions, ajoutees]);
+  const personnes = useMemo(() => regrouper(toutes, ventes), [toutes, ventes]);
   const [recherche, setRecherche] = useState('');
   const [filtre, setFiltre] = useState<Filtre>('tous');
   const [tri, setTri] = useState<Tri>('inscription');
   const [ouvert, setOuvert] = useState<string | null>(null);
+
+  // L'invitation : un cours, une adresse, et le lien personnel qui en sort.
+  const [inviter, setInviter] = useState(false);
+  const [enCours, setEnCours] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [invitation, setInvitation] = useState<Invitation | null>(null);
+  const [lienCopie, setLienCopie] = useState(false);
+  const [coursId, setCoursId] = useState(cours[0]?.id ?? '');
+  const [courriel, setCourriel] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [nomFamille, setNomFamille] = useState('');
 
   const visibles = useMemo(() => {
     const q = recherche.trim().toLowerCase();
@@ -134,6 +165,67 @@ export function Apprenants({ inscriptions, ventes }: { inscriptions: Apprenant[]
 
   const inactifs = personnes.filter((p) => joursDepuis(p.derniereVisite) >= 30).length;
 
+  async function envoyerInvitation(e: FormEvent) {
+    e.preventDefault();
+    if (!coursId) {
+      setErreur('Choisis le cours auquel tu invites cette personne.');
+      return;
+    }
+    if (!courriel.includes('@')) {
+      setErreur('Indique une adresse e-mail valide.');
+      return;
+    }
+    setEnCours(true);
+    setErreur(null);
+    setInvitation(null);
+    try {
+      const creee = await appel<Invitation>(`/ecole/cours/${coursId}/apprenants`, {
+        methode: 'POST',
+        corps: {
+          email: courriel.trim().toLowerCase(),
+          ...(prenom.trim() ? { prenom: prenom.trim() } : {}),
+          ...(nomFamille.trim() ? { nom: nomFamille.trim() } : {}),
+        },
+      });
+      setInvitation(creee);
+      const c = cours.find((x) => x.id === coursId);
+      // La liste se met à jour tout de suite : la personne apparaît, sans visite.
+      setAjoutees((l) => [
+        {
+          id: creee.id,
+          email: creee.email,
+          nom: [prenom.trim(), nomFamille.trim()].filter(Boolean).join(' ') || null,
+          cours: { id: coursId, titre: c?.titre ?? 'Cours' },
+          statut: 'ACTIVE',
+          progression: 0,
+          termineLe: null,
+          certificatEmisLe: null,
+          derniereVisite: null,
+          inscritLe: new Date().toISOString(),
+          lien: creee.lien,
+        },
+        ...l,
+      ]);
+      setCourriel('');
+      setPrenom('');
+      setNomFamille('');
+    } catch (err) {
+      setErreur(messageDe(err));
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function copierLien(lien: string) {
+    try {
+      await navigator.clipboard.writeText(lien.startsWith('http') ? lien : `${ORIGINE}${lien}`);
+      setLienCopie(true);
+      window.setTimeout(() => setLienCopie(false), 2500);
+    } catch {
+      setLienCopie(false);
+    }
+  }
+
   function exporter() {
     const contenu = '﻿' + versCsv(visibles);
     const url = URL.createObjectURL(new Blob([contenu], { type: 'text/csv;charset=utf-8' }));
@@ -144,15 +236,6 @@ export function Apprenants({ inscriptions, ventes }: { inscriptions: Apprenant[]
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  }
-
-  if (!personnes.length) {
-    return (
-      <Encart ton="info">
-        Personne n&apos;est encore inscrit. Publie un cours, partage son adresse : chacun crée son compte lui-même et
-        apparaît ici dès sa première connexion.
-      </Encart>
-    );
   }
 
   return (
@@ -208,10 +291,124 @@ export function Apprenants({ inscriptions, ventes }: { inscriptions: Apprenant[]
           <button type="button" onClick={exporter} className={`${BTN_SECONDAIRE} ml-auto`}>
             Exporter en CSV
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setInviter((o) => !o);
+              setInvitation(null);
+              setErreur(null);
+            }}
+            className={BTN_PRIMAIRE}
+          >
+            {inviter ? 'Fermer' : 'Inviter un apprenant'}
+          </button>
         </div>
       </div>
 
+      {erreur ? (
+        <div className="mb-5">
+          <Encart ton="alerte">{erreur}</Encart>
+        </div>
+      ) : null}
+
+      {/* --------------------------------------------------- inviter quelqu'un */}
+      {inviter ? (
+        <form onSubmit={envoyerInvitation} className={`${CARTE} mb-6 p-5`}>
+          <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Inviter un apprenant</h2>
+          <p className="mb-4 max-w-[70ch] text-[14px] leading-relaxed text-[#5E7A6E]">
+            Aucun compte n&apos;est créé à sa place et aucun mot de passe n&apos;est choisi pour elle : l&apos;invitation
+            produit un <span className="font-bold">lien personnel</span> qui lui ouvre son cours. Tu le lui envoies par
+            le moyen que tu veux.
+          </p>
+
+          {cours.length ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block sm:col-span-2">
+                  <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">À quel cours</span>
+                  <select value={coursId} onChange={(e) => setCoursId(e.target.value)} className={CHAMP} required>
+                    {cours.map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {x.titre}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block sm:col-span-2">
+                  <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Adresse e-mail</span>
+                  <input
+                    type="email"
+                    value={courriel}
+                    onChange={(e) => setCourriel(e.target.value)}
+                    className={CHAMP}
+                    maxLength={200}
+                    required
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Prénom</span>
+                  <input value={prenom} onChange={(e) => setPrenom(e.target.value)} className={CHAMP} maxLength={120} />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Nom</span>
+                  <input
+                    value={nomFamille}
+                    onChange={(e) => setNomFamille(e.target.value)}
+                    className={CHAMP}
+                    maxLength={120}
+                  />
+                </label>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button type="submit" disabled={enCours} className={BTN_PRIMAIRE}>
+                  {enCours ? 'Création du lien…' : 'Créer son lien'}
+                </button>
+                <button type="button" onClick={() => setInviter(false)} className={BTN_DISCRET}>
+                  Annuler
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-[15px] leading-relaxed text-[#5E7A6E]">
+              Aucun cours à proposer pour l&apos;instant. Crée d&apos;abord un cours en ligne.
+            </p>
+          )}
+
+          {invitation ? (
+            <div className="mt-5 rounded-xl bg-[#E3F5EC] p-4">
+              <p className="text-[15px] font-bold text-[#0F5F3E]">
+                Le lien de {invitation.email} est prêt.
+              </p>
+              <p className="mt-1 break-all font-mono text-[13px] text-[#334A42]">
+                {invitation.lien.startsWith('http') ? invitation.lien : `${ORIGINE}${invitation.lien}`}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <button type="button" onClick={() => copierLien(invitation.lien)} className={BTN_SECONDAIRE}>
+                  {lienCopie ? 'Lien copié' : 'Copier le lien'}
+                </button>
+                <a
+                  href={`mailto:${invitation.email}?subject=${encodeURIComponent('Ton accès à la formation')}&body=${encodeURIComponent(
+                    `Bonjour,\n\nVoici ton accès personnel à la formation :\n${invitation.lien.startsWith('http') ? invitation.lien : `${ORIGINE}${invitation.lien}`}\n\nCe lien n'est qu'à toi : garde-le.\n\nÀ bientôt.`,
+                  )}`}
+                  className={BTN_DISCRET}
+                >
+                  Le lui envoyer par e-mail
+                </a>
+              </div>
+            </div>
+          ) : null}
+        </form>
+      ) : null}
+
       {/* ------------------------------------------------------ les personnes */}
+      {personnes.length === 0 ? (
+        <Encart ton="info">
+          Personne n&apos;est encore inscrit. Publie un cours et partage son adresse, ou invite quelqu&apos;un
+          directement : dans les deux cas, la personne ouvre son cours avec son propre lien.
+        </Encart>
+      ) : null}
+
       <ul className="grid gap-2">
         {visibles.map((p) => {
           const deplie = ouvert === p.cle;
