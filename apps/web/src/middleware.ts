@@ -14,20 +14,29 @@ const PROTECTED = ['/dashboard', '/marketplace', '/admin', '/welcome', '/wizard'
 const AUTH_PAGES = ['/login', '/register'];
 
 /**
- * PILOTER (pilote.toulali.fr) — DEUX ESPACES SOUS UN SEUL DOMAINE.
+ * PILOTER (pilote.toulali.fr) — TROIS ADRESSES, DEUX ESPACES.
  *
- * Le même déploiement sert plusieurs sites. Sur ce domaine :
- *  - la racine est l'espace association — `/chemin` devient `/association/chemin`
- *    sans que l'adresse change dans le navigateur ;
- *  - `/academie/…` est l'espace académie, servi tel quel depuis `app/academie/`.
+ *   /            la plateforme : elle présente les deux espaces (logo doré)
+ *   /chemin      ce qu'est un chemin, et les deux chemins : association, académie
+ *   /association l'espace association  (dossier app/association/)
+ *   /academie    l'espace académie     (dossier app/academie/)
  *
- * L'ancien domaine `association.toulali.fr` renvoie en 308 vers le nouveau,
- * page par page : rien de ce qui est indexé ou partagé ne se casse.
+ * Les adresses courtes historiques (`/espace`, `/connexion`, `/mon-profil`…)
+ * continuent de fonctionner : elles sont réécrites vers `app/association/…`
+ * sans changer ce qui s'affiche dans la barre d'adresse. Rien de ce qui a été
+ * partagé ou mis en favori ne se casse.
+ *
+ * `/` et `/association` sont servis par le MÊME fichier : il lit l'en-tête
+ * `x-chemin` posé ici pour savoir laquelle des deux pages il doit rendre.
+ *
+ * L'ancien domaine `association.toulali.fr` renvoie en 308 vers le nouveau.
  */
 const HOTE_PILOTE = 'pilote.toulali.fr';
 const HOTE_ANCIEN = 'association.toulali.fr';
 const PREFIXE_ASSOCIATION = '/association';
 const PREFIXE_ACADEMIE = '/academie';
+/** La page qui explique ce qu'est un chemin et ouvre les deux chemins. */
+const PAGE_CHOIX_CHEMIN = `${PREFIXE_ASSOCIATION}/choisir-le-chemin`;
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -65,11 +74,36 @@ export function middleware(request: NextRequest) {
       return NextResponse.next({ request: { headers: entetes } });
     }
 
-    // Adresse déjà préfixée `/association` : on la ramène à sa forme courte.
-    if (pathname === PREFIXE_ASSOCIATION || pathname.startsWith(`${PREFIXE_ASSOCIATION}/`)) {
+    // La page de choix ne s'ouvre que par `/chemin` : son adresse interne redirige.
+    if (pathname === PAGE_CHOIX_CHEMIN) {
       const url = request.nextUrl.clone();
-      url.pathname = pathname.slice(PREFIXE_ASSOCIATION.length) || '/';
+      url.pathname = '/chemin';
       return NextResponse.redirect(url, 308);
+    }
+
+    // `/chemin` n'est plus le chemin de l'association : c'est le choix entre les deux.
+    if (pathname === '/chemin') {
+      const url = request.nextUrl.clone();
+      url.pathname = PAGE_CHOIX_CHEMIN;
+      const entetes = new Headers(request.headers);
+      entetes.set('x-chemin', pathname);
+      return NextResponse.rewrite(url, { request: { headers: entetes } });
+    }
+
+    // L'espace association est servi tel quel : son dossier porte déjà le préfixe.
+    if (pathname === PREFIXE_ASSOCIATION || pathname.startsWith(`${PREFIXE_ASSOCIATION}/`)) {
+      const suite = pathname.slice(PREFIXE_ASSOCIATION.length);
+      const espaceProtege = suite === '/espace' || suite.startsWith('/espace/');
+      if (espaceProtege && !request.cookies.get(SESSION_COOKIE)?.value) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/connexion';
+        url.search = '';
+        url.searchParams.set('next', pathname);
+        return NextResponse.redirect(url);
+      }
+      const entetes = new Headers(request.headers);
+      entetes.set('x-chemin', pathname);
+      return NextResponse.next({ request: { headers: entetes } });
     }
 
     // L'espace connecté exige une session : sinon, la connexion, en gardant la page demandée.
@@ -95,7 +129,6 @@ export function middleware(request: NextRequest) {
     url.protocol = 'https:';
     url.host = HOTE_PILOTE;
     url.port = '';
-    url.pathname = pathname.slice(PREFIXE_ASSOCIATION.length) || '/';
     return NextResponse.redirect(url, 308);
   }
   if (pathname === PREFIXE_ACADEMIE || pathname.startsWith(`${PREFIXE_ACADEMIE}/`)) {
