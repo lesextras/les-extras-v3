@@ -28,20 +28,24 @@ export default async function CataloguePage() {
         Mon catalogue
       </Titre>
 
+      <div className="mb-6">
+        <Encart ton="info">
+          <span className="font-extrabold">Deux endroits, deux métiers.</span> Ici, les{' '}
+          <span className="font-bold">programmes</span> de l&apos;organisme : ce que l&apos;auditeur et le financeur
+          lisent, ce qui donne lieu à des sessions et à des conventions. Les cours qu&apos;on vend en ligne — vignette,
+          prix, chapitres, leçons, quiz, apprenants — se gèrent dans{' '}
+          <Link href="/academie/cours-en-ligne" className="font-bold underline underline-offset-2">
+            Mes cours en ligne
+          </Link>
+          .
+        </Encart>
+      </div>
+
       {liste ? (
         <Programmes initiaux={liste} />
       ) : (
         <Encart ton="attention">{error ?? 'Le catalogue ne se charge pas pour le moment.'}</Encart>
       )}
-
-      <p className="mt-8 max-w-[75ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-        Les formations en ligne, avec leurs chapitres et leurs quiz, se gèrent dans{' '}
-        <Link href="/academie/cours-en-ligne" className="font-bold text-[#0F5F3E] underline underline-offset-4">
-          Mes cours en ligne
-        </Link>
-        . Ce catalogue-ci porte les programmes de l&apos;organisme — ceux qui donnent lieu à des sessions et à des
-        conventions.
-      </p>
     </>
   );
 }
