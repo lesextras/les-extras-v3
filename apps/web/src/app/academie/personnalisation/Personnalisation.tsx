@@ -75,8 +75,8 @@ export function Personnalisation({ vitrine }: { vitrine: Vitrine }) {
     setEnregistre(false);
   }
 
-  async function enregistrer(e: FormEvent) {
-    e.preventDefault();
+  async function enregistrer(e?: FormEvent) {
+    e?.preventDefault();
     setEnCours(true);
     setErreur(null);
     try {
@@ -114,7 +114,13 @@ export function Personnalisation({ vitrine }: { vitrine: Vitrine }) {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ------------------------------------------------------ les champs */}
-        <form onSubmit={enregistrer} className={`${CARTE} p-5`}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void enregistrer();
+          }}
+          className={`${CARTE} p-5`}
+        >
           <h2 className="mb-4 text-[18px] font-extrabold text-[#12312A]">Tes éléments</h2>
 
           <div className="grid gap-4">
@@ -307,7 +313,7 @@ export function Personnalisation({ vitrine }: { vitrine: Vitrine }) {
           </div>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <button type="submit" disabled={enCours} className={BTN_PRIMAIRE}>
+            <button type="button" onClick={() => void enregistrer()} disabled={enCours} className={BTN_PRIMAIRE}>
               {enCours ? 'Enregistrement…' : 'Mettre à jour'}
             </button>
             {enregistre ? <span className="text-[15px] font-bold text-[#0F5F3E]">Enregistré.</span> : null}
