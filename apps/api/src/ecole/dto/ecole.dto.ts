@@ -94,7 +94,9 @@ export class ChapitreDto {
  * chapitre est facultatif.
  */
 export class AjouterContenuDto {
-  @IsOptional() @IsIn(['chapitre', 'lecon', 'quiz', 'devoir', 'live']) genre?: 'chapitre' | 'lecon' | 'quiz' | 'devoir' | 'live';
+  @IsOptional()
+  @IsIn(['chapitre', 'lecon', 'quiz', 'devoir', 'live', 'taches', 'scorm'])
+  genre?: 'chapitre' | 'lecon' | 'quiz' | 'devoir' | 'live' | 'taches' | 'scorm';
   @IsOptional() @IsString() @MaxLength(40) chapitreId?: string;
   @IsOptional() @IsString() @MaxLength(200) titre?: string;
   @IsOptional() @IsString() @MaxLength(1000) resume?: string;
