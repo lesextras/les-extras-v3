@@ -4,28 +4,51 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { appel, messageDe } from './api';
-import { NOM_STATUT_COURS, VERT, duree, euros, type CoursResume } from './types';
+import {
+  MODALITE_COURTE,
+  NOM_MODALITE,
+  NOM_STATUT_COURS,
+  VERT,
+  duree,
+  euros,
+  type CoursResume,
+  type ModaliteCours,
+} from './types';
 
 /**
- * MES COURS EN LIGNE.
+ * MES FORMATIONS.
  *
- * La liste, et le bouton qui en crée un. Un cours naît en brouillon avec un
- * premier chapitre et une première leçon : on part de quelque chose, jamais
+ * La liste, et le bouton qui en crée une. Une formation naît en brouillon avec
+ * un premier chapitre et une première leçon : on part de quelque chose, jamais
  * d'une page blanche.
+ *
+ * La modalité — en ligne, en présentiel, en visio, mixte — n'est pas une autre
+ * liste : c'est une étiquette sur la formation, et un filtre au-dessus.
  */
-export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[]; origine: string }) {
+export function ListeCours({
+  cours: initiaux,
+  origine,
+  modaliteInitiale,
+}: {
+  cours: CoursResume[];
+  origine: string;
+  modaliteInitiale?: ModaliteCours | null;
+}) {
   const router = useRouter();
   const [cours, setCours] = useState(initiaux);
   const [occupe, setOccupe] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [aSupprimer, setASupprimer] = useState<string | null>(null);
+  const [filtre, setFiltre] = useState<ModaliteCours | 'TOUTES'>(modaliteInitiale ?? 'TOUTES');
+
+  const visibles = filtre === 'TOUTES' ? cours : cours.filter((c) => (c.modalite ?? 'EN_LIGNE') === filtre);
 
   async function creer() {
     setOccupe(true);
     setErreur(null);
     try {
-      const c = await appel<{ id: string }>('/ecole/cours', { methode: 'POST', corps: { titre: 'Mon cours' } });
-      router.push(`/academie/cours-en-ligne/${c.id}`);
+      const c = await appel<{ id: string }>('/ecole/cours', { methode: 'POST', corps: { titre: 'Ma formation' } });
+      router.push(`/academie/formations/${c.id}`);
     } catch (e) {
       setErreur(messageDe(e));
       setOccupe(false);
@@ -37,7 +60,7 @@ export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[];
     setErreur(null);
     try {
       const c = await appel<{ id: string }>(`/ecole/cours/${id}/dupliquer`, { methode: 'POST' });
-      router.push(`/academie/cours-en-ligne/${c.id}`);
+      router.push(`/academie/formations/${c.id}`);
     } catch (e) {
       setErreur(messageDe(e));
       setOccupe(false);
@@ -61,9 +84,11 @@ export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[];
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[15px]" style={{ color: VERT.sourdine }}>
-          {cours.length === 0 ? 'Aucun cours pour le moment.' : `${cours.length} cours.`}
+          {cours.length === 0
+            ? 'Aucune formation pour le moment.'
+            : `${visibles.length} formation${visibles.length > 1 ? 's' : ''}${filtre === 'TOUTES' ? '' : ` sur ${cours.length}`}.`}
         </p>
         <button
           type="button"
@@ -72,9 +97,34 @@ export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[];
           className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-base font-bold text-white shadow-sm transition disabled:opacity-60"
           style={{ backgroundColor: VERT.fonce }}
         >
-          <span aria-hidden="true">+</span> Nouveau cours
+          <span aria-hidden="true">+</span> Nouvelle formation
         </button>
       </div>
+
+      {cours.length ? (
+        <div className="mb-5 flex flex-wrap gap-2">
+          {(['TOUTES', 'EN_LIGNE', 'PRESENTIEL', 'VIRTUEL', 'MIXTE'] as const).map((m) => {
+            const n = m === 'TOUTES' ? cours.length : cours.filter((c) => (c.modalite ?? 'EN_LIGNE') === m).length;
+            const actif = filtre === m;
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setFiltre(m)}
+                aria-pressed={actif}
+                className="rounded-full border-2 px-4 py-1.5 text-sm font-bold transition"
+                style={
+                  actif
+                    ? { borderColor: VERT.plein, backgroundColor: VERT.clair, color: VERT.fonce }
+                    : { borderColor: VERT.bord, backgroundColor: '#FFFFFF', color: VERT.sourdine }
+                }
+              >
+                {m === 'TOUTES' ? 'Toutes' : NOM_MODALITE[m]} <span className="tabular-nums">({n})</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       {erreur ? (
         <p className="mb-4 rounded-2xl border border-[#F3B0C2] bg-[#FDE7EC] px-5 py-4 text-[15px] font-bold text-[#8A1B3D]">{erreur}</p>
@@ -83,12 +133,13 @@ export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[];
       {cours.length === 0 ? (
         <div className="rounded-2xl border bg-white p-8 text-center" style={{ borderColor: VERT.bord }}>
           <h2 className="text-xl font-extrabold tracking-tight" style={{ color: VERT.encre }}>
-            Un cours en ligne, c&apos;est ton savoir-faire, découpé.
+            Une formation, c&apos;est ton savoir-faire, découpé.
           </h2>
           <p className="mx-auto mt-3 max-w-[62ch] leading-relaxed" style={{ color: VERT.texte }}>
             Des chapitres, des leçons, des vidéos, des documents, des quiz. Tu écris, tu publies, tu partages
             l&apos;adresse. Les inscrits avancent leçon par leçon, tu vois leur progression, et l&apos;attestation part
-            toute seule quand tout est fait.
+            toute seule quand tout est fait. En ligne, en salle, en visio ou les deux : c&apos;est une option de la
+            formation, pas une autre liste.
           </p>
           <button
             type="button"
@@ -97,12 +148,17 @@ export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[];
             className="mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-base font-bold text-white transition disabled:opacity-60"
             style={{ backgroundColor: VERT.fonce }}
           >
-            Créer mon premier cours
+            Créer ma première formation
           </button>
         </div>
+      ) : visibles.length === 0 ? (
+        <p className="rounded-2xl border bg-white px-5 py-6 text-center" style={{ borderColor: VERT.bord, color: VERT.texte }}>
+          Aucune formation dans cette modalité. Change de filtre, ou choisis la modalité dans l&apos;onglet
+          « Paramètres » d&apos;une formation.
+        </p>
       ) : (
         <ul className="grid gap-3">
-          {cours.map((c) => (
+          {visibles.map((c) => (
             <li key={c.id} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex min-w-0 flex-1 gap-4">
@@ -121,13 +177,19 @@ export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[];
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
-                        href={`/academie/cours-en-ligne/${c.id}`}
+                        href={`/academie/formations/${c.id}`}
                         className="text-lg font-extrabold tracking-tight no-underline hover:underline"
                         style={{ color: VERT.encre }}
                       >
                         {c.titre}
                       </Link>
                       <Etiquette statut={c.statut} />
+                      <span
+                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
+                        style={{ backgroundColor: '#ECEBFC', color: '#4338CA' }}
+                      >
+                        {MODALITE_COURTE[c.modalite ?? 'EN_LIGNE']}
+                      </span>
                     </div>
                     {c.sousTitre ? (
                       <p className="mt-0.5 text-[15px]" style={{ color: VERT.texte }}>
@@ -149,7 +211,7 @@ export function ListeCours({ cours: initiaux, origine }: { cours: CoursResume[];
 
                 <div className="flex shrink-0 flex-wrap gap-2">
                   <Link
-                    href={`/academie/cours-en-ligne/${c.id}`}
+                    href={`/academie/formations/${c.id}`}
                     className="rounded-lg border-2 bg-white px-3 py-2 text-sm font-bold no-underline"
                     style={{ borderColor: VERT.bord, color: VERT.encre }}
                   >
