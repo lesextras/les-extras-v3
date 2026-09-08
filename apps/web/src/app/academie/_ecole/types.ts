@@ -11,6 +11,7 @@ export type NiveauCours = 'TOUS' | 'DEBUTANT' | 'INTERMEDIAIRE' | 'AVANCE';
 export type TypeLecon = 'TEXTE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT' | 'QUIZ' | 'DEVOIR' | 'LIVE';
 export type TypeQuestion = 'CHOIX_UNIQUE' | 'CHOIX_MULTIPLE' | 'VRAI_FAUX';
 export type StatutVente = 'EN_ATTENTE' | 'PAYEE' | 'REMBOURSEE' | 'ANNULEE';
+export type ModaliteCours = 'EN_LIGNE' | 'PRESENTIEL' | 'VIRTUEL' | 'MIXTE';
 export type TypeRemise = 'POURCENTAGE' | 'MONTANT';
 
 export interface QuestionQuiz {
@@ -68,6 +69,17 @@ export interface CoursComplet {
   prixBarreCents: number | null;
   gratuit: boolean;
   certificat: boolean;
+  modalite: ModaliteCours;
+  lieu: string | null;
+  lienVisio: string | null;
+  accesHandicap: string | null;
+  lectureOrdonnee: boolean;
+  placesMax: number | null;
+  tvaPourcent: number;
+  echeances: number;
+  seoTitre: string | null;
+  seoDescription: string | null;
+  commentairesActifs: boolean;
   statut: StatutCours;
   publieLe: string | null;
   modifieLe: string;
@@ -82,6 +94,7 @@ export interface CoursResume {
   sousTitre: string | null;
   imageUrl: string | null;
   statut: StatutCours;
+  modalite?: ModaliteCours;
   gratuit: boolean;
   prixCents: number;
   nbChapitres: number;
@@ -103,6 +116,20 @@ export interface Apprenant {
   derniereVisite: string | null;
   inscritLe: string;
   lien: string;
+}
+
+/** Ce qu'un apprenant a écrit sous une leçon. */
+export interface Commentaire {
+  id: string;
+  cours: { id: string; titre: string };
+  lecon: { id: string; titre: string } | null;
+  auteur: string;
+  email: string | null;
+  message: string;
+  reponse: string | null;
+  reponduLe: string | null;
+  masque: boolean;
+  le: string;
 }
 
 export interface Vente {
@@ -227,6 +254,21 @@ export const NOM_STATUT_COURS: Record<StatutCours, string> = {
   BROUILLON: 'Brouillon',
   PUBLIE: 'Publié',
   ARCHIVE: 'Archivé',
+};
+
+export const NOM_MODALITE: Record<ModaliteCours, string> = {
+  EN_LIGNE: 'En ligne, à son rythme',
+  PRESENTIEL: 'En présentiel',
+  VIRTUEL: 'Classe virtuelle',
+  MIXTE: 'Mixte',
+};
+
+/** La même chose, en court, pour une pastille. */
+export const MODALITE_COURTE: Record<ModaliteCours, string> = {
+  EN_LIGNE: 'En ligne',
+  PRESENTIEL: 'Présentiel',
+  VIRTUEL: 'Visio',
+  MIXTE: 'Mixte',
 };
 
 export const NOM_STATUT_VENTE: Record<StatutVente, string> = {
