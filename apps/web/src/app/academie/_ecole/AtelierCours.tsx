@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { appel, messageDe } from './api';
+import { EditeurLecon } from './EditeurLecon';
 import {
   MODALITE_COURTE,
   NOM_MODALITE,
@@ -27,6 +28,9 @@ import {
   type Vente,
   NOM_STATUT_SESSION,
 } from './types';
+
+/** Ce qu'on peut poser dans une formation. */
+type GenreContenu = 'chapitre' | 'lecon' | 'quiz' | 'devoir' | 'live';
 
 /**
  * L'ATELIER D'UNE FORMATION.
@@ -80,10 +84,13 @@ export function AtelierCours({
   const [occupe, setOccupe] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
-  const [leconOuverte, setLeconOuverte] = useState<string | null>(null);
+  const [leconOuverte, setLeconOuverte] = useState<Lecon | null>(null);
 
   const lien = `${origine}/cours/${c.slug}`;
-  const nbLecons = useMemo(() => c.chapitres.reduce((n, ch) => n + ch.lecons.length, 0), [c]);
+  const nbLecons = useMemo(
+    () => (c.contenu ?? []).reduce((n, e) => n + (e.genre === 'chapitre' ? e.lecons.length : 1), 0),
+    [c],
+  );
 
   async function agir<T = CoursComplet>(chemin: string, init?: Parameters<typeof appel>[1], surRetour?: (d: T) => void) {
     setOccupe(true);
@@ -102,28 +109,22 @@ export function AtelierCours({
 
   /* ------------------------------------------------------------- structure */
 
-  const ajouterChapitre = () => agir(`/ecole/cours/${c.id}/chapitres`, { methode: 'POST', corps: {} });
+  /** Un seul geste pour tout ce qui se pose : chapitre, leçon, quiz, devoir, classe. */
+  const ajouterContenu = (genre: GenreContenu, chapitreId?: string) =>
+    agir(`/ecole/cours/${c.id}/contenu`, { methode: 'POST', corps: { genre, ...(chapitreId ? { chapitreId } : {}) } });
+
   const supprimerChapitre = (id: string) => agir(`/ecole/cours/${c.id}/chapitres/${id}`, { methode: 'DELETE' });
   const renommerChapitre = (id: string, titre: string) =>
     agir(`/ecole/cours/${c.id}/chapitres/${id}`, { methode: 'PATCH', corps: { titre } });
-  const ajouterLecon = (chapitreId: string, type: TypeLecon) =>
-    agir(`/ecole/cours/${c.id}/chapitres/${chapitreId}/lecons`, { methode: 'POST', corps: { type } });
   const supprimerLecon = (id: string) => agir(`/ecole/cours/${c.id}/lecons/${id}`, { methode: 'DELETE' });
 
-  function deplacerChapitre(index: number, sens: -1 | 1) {
-    const ids = c.chapitres.map((ch) => ch.id);
+  /** Ranger le premier niveau : chapitres et leçons se suivent dans la même liste. */
+  function reordonnerContenu(index: number, sens: -1 | 1) {
+    const ids = (c.contenu ?? []).map((e) => `${e.genre}:${e.id}`);
     const cible = index + sens;
     if (cible < 0 || cible >= ids.length) return;
     [ids[index], ids[cible]] = [ids[cible], ids[index]];
-    void agir(`/ecole/cours/${c.id}/chapitres/ordre`, { methode: 'POST', corps: { ids } });
-  }
-
-  function deplacerLecon(chapitre: Chapitre, index: number, sens: -1 | 1) {
-    const ids = chapitre.lecons.map((l) => l.id);
-    const cible = index + sens;
-    if (cible < 0 || cible >= ids.length) return;
-    [ids[index], ids[cible]] = [ids[cible], ids[index]];
-    void agir(`/ecole/cours/${c.id}/chapitres/${chapitre.id}/lecons/ordre`, { methode: 'POST', corps: { ids } });
+    void agir(`/ecole/cours/${c.id}/contenu/ordre`, { methode: 'POST', corps: { ids } });
   }
 
   /* ------------------------------------------------- enregistrer un onglet */
@@ -462,18 +463,26 @@ export function AtelierCours({
         <Contenu
           cours={c}
           occupe={occupe}
-          leconOuverte={leconOuverte}
-          setLeconOuverte={setLeconOuverte}
-          ajouterChapitre={ajouterChapitre}
+          ajouter={ajouterContenu}
           supprimerChapitre={supprimerChapitre}
           renommerChapitre={renommerChapitre}
-          deplacerChapitre={deplacerChapitre}
-          ajouterLecon={ajouterLecon}
+          basculerPublicationChapitre={(id, publie) =>
+            agir(`/ecole/cours/${c.id}/chapitres/${id}`, { methode: 'PATCH', corps: { publie } })
+          }
+          dupliquerChapitre={(id) => agir(`/ecole/cours/${c.id}/chapitres/${id}/dupliquer`, { methode: 'POST', corps: {} })}
           supprimerLecon={supprimerLecon}
-          deplacerLecon={deplacerLecon}
-          enregistrerLecon={(id, patch) => agir(`/ecole/cours/${c.id}/lecons/${id}`, { methode: 'PATCH', corps: patch })}
+          dupliquerLecon={(id) => agir(`/ecole/cours/${c.id}/lecons/${id}/dupliquer`, { methode: 'POST', corps: {} })}
+          basculerPublicationLecon={(id, publie) =>
+            agir(`/ecole/cours/${c.id}/lecons/${id}`, { methode: 'PATCH', corps: { publie } })
+          }
+          deplacerVers={(leconId, chapitreId) =>
+            agir(`/ecole/cours/${c.id}/lecons/${leconId}/deplacer`, { methode: 'POST', corps: { chapitreId } })
+          }
+          reordonner={reordonnerContenu}
+          ouvrirLecon={setLeconOuverte}
           lectureOrdonnee={c.lectureOrdonnee}
           basculerLecture={(v) => void enregistrer({ lectureOrdonnee: v }, 'La lecture ordonnée')}
+          lien={lien}
         />
       ) : null}
 
@@ -528,6 +537,65 @@ export function AtelierCours({
       ) : null}
 
       {onglet === 'statistiques' ? <StatsFormation cours={c} apprenants={apprenants} ventes={ventes} /> : null}
+
+      {/* L'éditeur d'une leçon prend tout l'écran : on n'écrit qu'une chose à la fois. */}
+      {leconOuverte && leconOuverte.type !== 'QUIZ' && leconOuverte.type !== 'DEVOIR' ? (
+        <EditeurLecon
+          lecon={leconOuverte}
+          titreFormation={c.titre}
+          adressePublique={c.statut === 'PUBLIE' ? lien : null}
+          fermer={() => setLeconOuverte(null)}
+          enregistrer={async (patch) => {
+            try {
+              const d = await appel<CoursComplet>(`/ecole/cours/${c.id}/lecons/${leconOuverte.id}`, {
+                methode: 'PATCH',
+                corps: patch,
+              });
+              setC(d);
+              const trouvee = (d.contenu ?? [])
+                .flatMap((e) => (e.genre === 'chapitre' ? e.lecons : [e]))
+                .find((l) => l.id === leconOuverte.id);
+              if (trouvee) setLeconOuverte(trouvee as Lecon);
+              setMessage('La leçon est enregistrée.');
+              return true;
+            } catch (e) {
+              setErreur(messageDe(e));
+              return false;
+            }
+          }}
+        />
+      ) : null}
+
+      {/* Un quiz et un devoir s'écrivent avec leurs propres champs. */}
+      {leconOuverte && (leconOuverte.type === 'QUIZ' || leconOuverte.type === 'DEVOIR') ? (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 px-4 py-8">
+          <div className="mx-auto max-w-3xl rounded-2xl bg-white p-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-extrabold tracking-tight" style={{ color: VERT.encre }}>
+                {NOM_TYPE_LECON[leconOuverte.type]}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setLeconOuverte(null)}
+                className="rounded-xl border-2 bg-white px-3 py-2 text-sm font-extrabold"
+                style={{ borderColor: VERT.bord, color: VERT.texte }}
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+            </div>
+            <FormulaireLecon
+              lecon={leconOuverte}
+              occupe={occupe}
+              enregistrer={(patch) => {
+                void agir(`/ecole/cours/${c.id}/lecons/${leconOuverte.id}`, { methode: 'PATCH', corps: patch });
+                setLeconOuverte(null);
+              }}
+              fermer={() => setLeconOuverte(null)}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -537,154 +605,416 @@ export function AtelierCours({
 function Contenu({
   cours,
   occupe,
-  leconOuverte,
-  setLeconOuverte,
-  ajouterChapitre,
+  ajouter,
   supprimerChapitre,
   renommerChapitre,
-  deplacerChapitre,
-  ajouterLecon,
+  basculerPublicationChapitre,
+  dupliquerChapitre,
   supprimerLecon,
-  deplacerLecon,
-  enregistrerLecon,
+  dupliquerLecon,
+  basculerPublicationLecon,
+  deplacerVers,
+  reordonner,
+  ouvrirLecon,
   lectureOrdonnee,
   basculerLecture,
+  lien,
 }: {
   cours: CoursComplet;
   occupe: boolean;
-  leconOuverte: string | null;
-  setLeconOuverte: (id: string | null) => void;
-  ajouterChapitre: () => void;
+  ajouter: (genre: GenreContenu, chapitreId?: string) => void;
   supprimerChapitre: (id: string) => void;
   renommerChapitre: (id: string, titre: string) => void;
-  deplacerChapitre: (index: number, sens: -1 | 1) => void;
-  ajouterLecon: (chapitreId: string, type: TypeLecon) => void;
+  basculerPublicationChapitre: (id: string, publie: boolean) => void;
+  dupliquerChapitre: (id: string) => void;
   supprimerLecon: (id: string) => void;
-  deplacerLecon: (chapitre: Chapitre, index: number, sens: -1 | 1) => void;
-  enregistrerLecon: (id: string, patch: Record<string, unknown>) => void;
+  dupliquerLecon: (id: string) => void;
+  basculerPublicationLecon: (id: string, publie: boolean) => void;
+  deplacerVers: (leconId: string, chapitreId: string) => void;
+  reordonner: (index: number, sens: -1 | 1) => void;
+  ouvrirLecon: (l: Lecon) => void;
   lectureOrdonnee: boolean;
   basculerLecture: (v: boolean) => void;
+  lien: string;
 }) {
+  const elements = cours.contenu ?? [];
+  const chapitres = elements.filter((e) => e.genre === 'chapitre') as ({ genre: 'chapitre' } & Chapitre)[];
+
   return (
     <div className="grid gap-4">
-      <Interrupteur
-        coche={lectureOrdonnee}
-        changer={basculerLecture}
-        titre="Imposer la lecture ordonnée"
-        quoi="On n'ouvre une leçon qu'après avoir terminé la précédente."
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Interrupteur
+          coche={lectureOrdonnee}
+          changer={basculerLecture}
+          titre="Imposer la lecture ordonnée"
+          quoi="On n'ouvre une leçon qu'après avoir terminé la précédente."
+        />
+        <MenuAjouter occupe={occupe} avecChapitre ajouter={(g) => ajouter(g)} />
+      </div>
 
-      {cours.chapitres.map((ch, i) => (
-        <section key={ch.id} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              defaultValue={ch.titre}
-              onBlur={(e) => {
-                if (e.target.value.trim() && e.target.value !== ch.titre) renommerChapitre(ch.id, e.target.value.trim());
-              }}
-              className="min-w-0 flex-1 rounded-lg border-2 border-transparent px-2 py-1.5 text-lg font-extrabold tracking-tight focus:border-[#B7E4CE] focus:outline-none"
-              style={{ color: VERT.encre }}
-              aria-label="Titre du chapitre"
-            />
-            <div className="flex shrink-0 gap-1">
-              <BoutonIcone titre="Monter le chapitre" onClick={() => deplacerChapitre(i, -1)} disabled={occupe || i === 0}>
-                ↑
-              </BoutonIcone>
-              <BoutonIcone
-                titre="Descendre le chapitre"
-                onClick={() => deplacerChapitre(i, 1)}
-                disabled={occupe || i === cours.chapitres.length - 1}
-              >
-                ↓
-              </BoutonIcone>
-              <BoutonIcone titre="Supprimer le chapitre" onClick={() => supprimerChapitre(ch.id)} disabled={occupe} danger>
-                ✕
-              </BoutonIcone>
+      {elements.length === 0 ? (
+        <p
+          className="rounded-2xl border-2 border-dashed bg-white px-5 py-10 text-center text-[15px]"
+          style={{ borderColor: VERT.bord, color: VERT.sourdine }}
+        >
+          Cette formation n&apos;a encore aucun contenu. Clique sur « Ajouter un contenu pédagogique » :
+          une leçon suffit pour commencer, le chapitre n&apos;est utile que si tu en as plusieurs.
+        </p>
+      ) : null}
+
+      {elements.map((e, i) =>
+        e.genre === 'chapitre' ? (
+          <section key={`ch-${e.id}`} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                defaultValue={e.titre}
+                onBlur={(ev) => {
+                  const v = ev.target.value.trim();
+                  if (v && v !== e.titre) renommerChapitre(e.id, v);
+                }}
+                className="min-w-0 flex-1 rounded-lg border-2 border-transparent px-2 py-1.5 text-lg font-extrabold tracking-tight focus:border-[#B7E4CE] focus:outline-none"
+                style={{ color: VERT.encre }}
+                aria-label="Titre du chapitre"
+              />
+              <span className="shrink-0 text-sm" style={{ color: VERT.sourdine }}>
+                {e.lecons.length} contenu{e.lecons.length > 1 ? 's' : ''} pédagogique{e.lecons.length > 1 ? 's' : ''}
+              </span>
+              {e.publie === false ? <Pastille ton="attention">Brouillon</Pastille> : null}
+              <div className="flex shrink-0 items-center gap-1">
+                <BoutonIcone titre="Monter" onClick={() => reordonner(i, -1)} disabled={occupe || i === 0}>
+                  ↑
+                </BoutonIcone>
+                <BoutonIcone titre="Descendre" onClick={() => reordonner(i, 1)} disabled={occupe || i === elements.length - 1}>
+                  ↓
+                </BoutonIcone>
+                <BoutonIcone titre="Dupliquer le chapitre" onClick={() => dupliquerChapitre(e.id)} disabled={occupe}>
+                  ⧉
+                </BoutonIcone>
+                <MenuTrois
+                  occupe={occupe}
+                  publie={e.publie !== false}
+                  basculer={() => basculerPublicationChapitre(e.id, e.publie === false)}
+                  supprimer={() => supprimerChapitre(e.id)}
+                />
+                <MenuAjouter occupe={occupe} compact ajouter={(g) => ajouter(g, e.id)} />
+              </div>
             </div>
-          </div>
 
-          <ul className="mt-3 grid gap-2">
-            {ch.lecons.map((l, j) => (
-              <li key={l.id} className="rounded-xl border" style={{ borderColor: VERT.bord }}>
-                <div className="flex flex-wrap items-center gap-2 px-4 py-3">
-                  <span
-                    className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold"
-                    style={{ backgroundColor: VERT.clair, color: VERT.fonce }}
-                  >
-                    {NOM_TYPE_LECON[l.type]}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setLeconOuverte(leconOuverte === l.id ? null : l.id)}
-                    className="min-w-0 flex-1 truncate text-left text-[15px] font-bold"
-                    style={{ color: VERT.encre }}
-                  >
-                    {l.titre}
-                  </button>
-                  {l.apercu ? (
-                    <span className="shrink-0 rounded-full bg-[#FEF3E2] px-2.5 py-0.5 text-xs font-bold text-[#7C3E06]">
-                      Aperçu libre
-                    </span>
-                  ) : null}
-                  <span className="shrink-0 text-sm" style={{ color: VERT.sourdine }}>
-                    {l.dureeMinutes ? duree(l.dureeMinutes) : ''}
-                  </span>
-                  <div className="flex shrink-0 gap-1">
-                    <BoutonIcone titre="Monter la leçon" onClick={() => deplacerLecon(ch, j, -1)} disabled={occupe || j === 0}>
-                      ↑
-                    </BoutonIcone>
-                    <BoutonIcone
-                      titre="Descendre la leçon"
-                      onClick={() => deplacerLecon(ch, j, 1)}
-                      disabled={occupe || j === ch.lecons.length - 1}
-                    >
-                      ↓
-                    </BoutonIcone>
-                    <BoutonIcone titre="Supprimer la leçon" onClick={() => supprimerLecon(l.id)} disabled={occupe} danger>
-                      ✕
-                    </BoutonIcone>
-                  </div>
-                </div>
-
-                {leconOuverte === l.id ? (
-                  <FormulaireLecon
+            {e.lecons.length ? (
+              <ul className="mt-3 grid gap-2">
+                {e.lecons.map((l) => (
+                  <LigneLecon
+                    key={l.id}
                     lecon={l}
                     occupe={occupe}
-                    enregistrer={(patch) => enregistrerLecon(l.id, patch)}
-                    fermer={() => setLeconOuverte(null)}
+                    chapitres={chapitres}
+                    chapitreActuel={e.id}
+                    ouvrir={() => ouvrirLecon(l)}
+                    dupliquer={() => dupliquerLecon(l.id)}
+                    supprimer={() => supprimerLecon(l.id)}
+                    basculer={() => basculerPublicationLecon(l.id, l.publie === false)}
+                    deplacerVers={(vers) => deplacerVers(l.id, vers)}
+                    lien={lien}
                   />
-                ) : null}
-              </li>
-            ))}
-          </ul>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm" style={{ color: VERT.sourdine }}>
+                Ce chapitre est vide. Ajoute-lui une leçon.
+              </p>
+            )}
+          </section>
+        ) : (
+          <section key={`le-${e.id}`} className="rounded-2xl border bg-white p-2" style={{ borderColor: VERT.bord }}>
+            <ul>
+              <LigneLecon
+                lecon={e}
+                occupe={occupe}
+                chapitres={chapitres}
+                chapitreActuel=""
+                ouvrir={() => ouvrirLecon(e)}
+                dupliquer={() => dupliquerLecon(e.id)}
+                supprimer={() => supprimerLecon(e.id)}
+                basculer={() => basculerPublicationLecon(e.id, e.publie === false)}
+                deplacerVers={(vers) => deplacerVers(e.id, vers)}
+                monter={() => reordonner(i, -1)}
+                descendre={() => reordonner(i, 1)}
+                premier={i === 0}
+                dernier={i === elements.length - 1}
+                lien={lien}
+              />
+            </ul>
+          </section>
+        ),
+      )}
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            {(['TEXTE', 'VIDEO', 'DOCUMENT', 'QUIZ', 'DEVOIR', 'LIVE'] as TypeLecon[]).map((t) => (
+      {elements.length ? <MenuAjouter occupe={occupe} avecChapitre large ajouter={(g) => ajouter(g)} /> : null}
+    </div>
+  );
+}
+
+/** Une leçon, un quiz, un devoir : la même ligne, avec ses gestes. */
+function LigneLecon({
+  lecon,
+  occupe,
+  chapitres,
+  chapitreActuel,
+  ouvrir,
+  dupliquer,
+  supprimer,
+  basculer,
+  deplacerVers,
+  monter,
+  descendre,
+  premier,
+  dernier,
+  lien,
+}: {
+  lecon: Lecon;
+  occupe: boolean;
+  chapitres: ({ genre: 'chapitre' } & Chapitre)[];
+  chapitreActuel: string;
+  ouvrir: () => void;
+  dupliquer: () => void;
+  supprimer: () => void;
+  basculer: () => void;
+  deplacerVers: (chapitreId: string) => void;
+  monter?: () => void;
+  descendre?: () => void;
+  premier?: boolean;
+  dernier?: boolean;
+  lien: string;
+}) {
+  const nbBlocs = lecon.blocs?.length ?? 0;
+
+  return (
+    <li className="rounded-xl border" style={{ borderColor: VERT.bord }}>
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+        <span
+          className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold"
+          style={{ backgroundColor: VERT.clair, color: VERT.fonce }}
+        >
+          {NOM_TYPE_LECON[lecon.type]}
+        </span>
+        <button
+          type="button"
+          onClick={ouvrir}
+          className="min-w-0 flex-1 truncate text-left text-[15px] font-bold"
+          style={{ color: VERT.encre }}
+        >
+          {lecon.titre}
+        </button>
+        {lecon.publie === false ? <Pastille ton="attention">Brouillon</Pastille> : null}
+        {lecon.apercu ? <Pastille ton="attention">Aperçu libre</Pastille> : null}
+        <span className="shrink-0 text-sm" style={{ color: VERT.sourdine }}>
+          {lecon.dureeMinutes ? duree(lecon.dureeMinutes) : ''}
+          {nbBlocs ? ` · ${nbBlocs} bloc${nbBlocs > 1 ? 's' : ''}` : ''}
+        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          {monter ? (
+            <BoutonIcone titre="Monter" onClick={monter} disabled={occupe || premier}>
+              ↑
+            </BoutonIcone>
+          ) : null}
+          {descendre ? (
+            <BoutonIcone titre="Descendre" onClick={descendre} disabled={occupe || dernier}>
+              ↓
+            </BoutonIcone>
+          ) : null}
+          <BoutonIcone titre="Modifier" onClick={ouvrir} disabled={occupe}>
+            ✎
+          </BoutonIcone>
+          <a
+            href={lien}
+            target="_blank"
+            rel="noreferrer"
+            title="Voir la page publique"
+            aria-label="Voir la page publique"
+            className="grid size-8 place-items-center rounded-lg border-2 bg-white text-sm font-extrabold no-underline"
+            style={{ borderColor: VERT.bord, color: VERT.texte }}
+          >
+            ◉
+          </a>
+          <BoutonIcone titre="Dupliquer" onClick={dupliquer} disabled={occupe}>
+            ⧉
+          </BoutonIcone>
+          <MenuTrois occupe={occupe} publie={lecon.publie !== false} basculer={basculer} supprimer={supprimer} />
+        </div>
+      </div>
+
+      {chapitres.length ? (
+        <div className="border-t px-4 py-2" style={{ borderColor: VERT.bord }}>
+          <label className="flex flex-wrap items-center gap-2 text-sm" style={{ color: VERT.sourdine }}>
+            Déplacer vers…
+            <select
+              value={chapitreActuel}
+              onChange={(e) => deplacerVers(e.target.value)}
+              disabled={occupe}
+              className="rounded-lg border-2 bg-white px-2 py-1 text-sm font-bold"
+              style={{ borderColor: VERT.bord, color: VERT.texte }}
+            >
+              <option value="">Aucun chapitre</option>
+              {chapitres.map((ch) => (
+                <option key={ch.id} value={ch.id}>
+                  {ch.titre}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+/** Le bouton « Ajouter un contenu pédagogique » et son menu. */
+function MenuAjouter({
+  ajouter,
+  occupe,
+  avecChapitre,
+  compact,
+  large,
+}: {
+  ajouter: (genre: GenreContenu) => void;
+  occupe: boolean;
+  avecChapitre?: boolean;
+  compact?: boolean;
+  large?: boolean;
+}) {
+  const [ouvert, setOuvert] = useState(false);
+
+  const choix: { genre: GenreContenu; nom: string; quoi: string }[] = [
+    ...(avecChapitre
+      ? [{ genre: 'chapitre' as const, nom: 'Chapitre (facultatif)', quoi: 'Pour regrouper des leçons.' }]
+      : []),
+    { genre: 'lecon', nom: 'Leçon', quoi: 'Du texte, des vidéos, des images.' },
+    { genre: 'quiz', nom: 'Quiz', quoi: 'Des questions, une note minimale.' },
+    { genre: 'devoir', nom: 'Devoir', quoi: 'Un travail à rendre.' },
+    { genre: 'live', nom: 'Classe en direct', quoi: 'Un rendez-vous en visio.' },
+  ];
+
+  return (
+    <div className={`relative ${large ? 'w-full' : ''}`}>
+      <button
+        type="button"
+        onClick={() => setOuvert((v) => !v)}
+        disabled={occupe}
+        className={
+          compact
+            ? 'rounded-xl px-3 py-1.5 text-sm font-extrabold text-white disabled:opacity-60'
+            : large
+              ? 'w-full rounded-2xl border-2 border-dashed px-5 py-4 text-base font-extrabold disabled:opacity-60'
+              : 'rounded-xl px-4 py-2.5 text-sm font-extrabold text-white disabled:opacity-60'
+        }
+        style={
+          large
+            ? { borderColor: VERT.bord, color: VERT.fonce }
+            : { backgroundColor: VERT.fonce }
+        }
+      >
+        {compact ? 'Ajouter +' : 'Ajouter un contenu pédagogique +'}
+      </button>
+
+      {ouvert ? (
+        <>
+          <button
+            type="button"
+            aria-label="Fermer le menu"
+            onClick={() => setOuvert(false)}
+            className="fixed inset-0 z-10 cursor-default"
+          />
+          <div
+            className="absolute right-0 z-20 mt-1 w-72 overflow-hidden rounded-2xl border-2 bg-white shadow-lg"
+            style={{ borderColor: VERT.bord }}
+          >
+            {choix.map((c) => (
               <button
-                key={t}
+                key={c.genre}
                 type="button"
-                onClick={() => ajouterLecon(ch.id, t)}
-                disabled={occupe}
-                className="rounded-lg border-2 bg-white px-3 py-1.5 text-sm font-bold disabled:opacity-60"
-                style={{ borderColor: VERT.bord, color: VERT.fonce }}
+                onClick={() => {
+                  setOuvert(false);
+                  ajouter(c.genre);
+                }}
+                className="block w-full border-b px-4 py-3 text-left last:border-b-0"
+                style={{ borderColor: VERT.bord }}
               >
-                + {NOM_TYPE_LECON[t]}
+                <span className="block text-[15px] font-extrabold" style={{ color: VERT.encre }}>
+                  {c.nom}
+                </span>
+                <span className="block text-sm" style={{ color: VERT.sourdine }}>
+                  {c.quoi}
+                </span>
               </button>
             ))}
           </div>
-        </section>
-      ))}
-
-      <button
-        type="button"
-        onClick={ajouterChapitre}
-        disabled={occupe}
-        className="rounded-2xl border-2 border-dashed px-5 py-4 text-base font-bold disabled:opacity-60"
-        style={{ borderColor: VERT.bord, color: VERT.fonce }}
-      >
-        + Ajouter un chapitre
-      </button>
+        </>
+      ) : null}
     </div>
+  );
+}
+
+/** Le menu « … » : mettre en brouillon, supprimer. */
+function MenuTrois({
+  occupe,
+  publie,
+  basculer,
+  supprimer,
+}: {
+  occupe: boolean;
+  publie: boolean;
+  basculer: () => void;
+  supprimer: () => void;
+}) {
+  const [ouvert, setOuvert] = useState(false);
+
+  return (
+    <div className="relative">
+      <BoutonIcone titre="Autres gestes" onClick={() => setOuvert((v) => !v)} disabled={occupe}>
+        ⋯
+      </BoutonIcone>
+      {ouvert ? (
+        <>
+          <button
+            type="button"
+            aria-label="Fermer le menu"
+            onClick={() => setOuvert(false)}
+            className="fixed inset-0 z-10 cursor-default"
+          />
+          <div
+            className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-xl border-2 bg-white shadow-lg"
+            style={{ borderColor: VERT.bord }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setOuvert(false);
+                basculer();
+              }}
+              className="block w-full border-b px-4 py-2.5 text-left text-sm font-bold"
+              style={{ borderColor: VERT.bord, color: VERT.texte }}
+            >
+              {publie ? 'Mettre en brouillon' : 'Publier'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOuvert(false);
+                supprimer();
+              }}
+              className="block w-full px-4 py-2.5 text-left text-sm font-bold text-[#8A1B3D]"
+            >
+              Supprimer
+            </button>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function Pastille({ children, ton }: { children: React.ReactNode; ton: 'attention' }) {
+  return (
+    <span className="shrink-0 rounded-full bg-[#FEF3E2] px-2.5 py-0.5 text-xs font-bold text-[#7C3E06]">{children}</span>
   );
 }
 
