@@ -1,12 +1,23 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, type OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+  type OnModuleInit,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
+import { MoteurService } from '../assistant/moteur.service';
 import { FormationType, Prisma, StatutCours, StatutInscriptionCours, StatutVente, TypeLecon, TypeRemise } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { corrigerQuiz, nettoyerQuiz, quizSansReponses, quizUtilisable, type Quiz } from './quiz';
 import type {
   AffilieDto,
+  AcheterCoursDto,
   AvancerDto,
   AjouterContenuDto,
+  CocherTachesDto,
   ChapitreDto,
   ClasseDto,
   CodePromoDto,
@@ -19,8 +30,11 @@ import type {
   LeconDto,
   ModifierCoursDto,
   PackDto,
+  LeconIaDto,
   RejoindreDto,
   ReordonnerDto,
+  StructureIaDto,
+  TitreIaDto,
   VenteDto,
 } from './dto/ecole.dto';
 
@@ -38,7 +52,11 @@ import type {
  */
 @Injectable()
 export class EcoleService implements OnModuleInit {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly moteur: MoteurService,
+    private readonly config: ConfigService,
+  ) {}
 
   /**
    * AU DÉMARRAGE : CHAQUE FICHE PROGRAMME D'UNE ACADÉMIE A SA FORMATION.
@@ -381,6 +399,7 @@ export class EcoleService implements OnModuleInit {
         ...(dto.titre !== undefined ? { titre: dto.titre.trim() || 'Chapitre' } : {}),
         ...(dto.resume !== undefined ? { resume: dto.resume.trim() || null } : {}),
         ...(dto.publie !== undefined ? { publie: dto.publie } : {}),
+        ...(dto.ouvertureJours !== undefined ? { ouvertureJours: dto.ouvertureJours } : {}),
       },
     });
     return this.lireCours(accountId, coursId);
@@ -433,6 +452,12 @@ export class EcoleService implements OnModuleInit {
     if (dto.videoUrl !== undefined) data.videoUrl = dto.videoUrl.trim() || null;
     if (dto.fichierUrl !== undefined) data.fichierUrl = dto.fichierUrl.trim() || null;
     if (dto.dureeMinutes !== undefined) data.dureeMinutes = dto.dureeMinutes;
+    if (dto.dureeImposee !== undefined) data.dureeImposee = dto.dureeImposee;
+    if (dto.ouvertureJours !== undefined) data.ouvertureJours = dto.ouvertureJours;
+    if (dto.scormUrl !== undefined) data.scormUrl = dto.scormUrl.trim() || null;
+    if (dto.taches !== undefined) {
+      data.taches = (dto.taches === null ? Prisma.JsonNull : nettoyerTaches(dto.taches)) as unknown as Prisma.InputJsonValue;
+    }
     if (dto.apercu !== undefined) data.apercu = dto.apercu;
     if (dto.publie !== undefined) data.publie = dto.publie;
     if (dto.blocs !== undefined) {
@@ -1294,22 +1319,45 @@ export class EcoleService implements OnModuleInit {
     await this.prisma.inscriptionCours.update({ where: { id: i.id }, data: { derniereVisite: new Date() } });
 
     const faites = new Map(i.progressions.map((p) => [p.leconId, p]));
+    const joursDepuisInscription = Math.floor((Date.now() - i.createdAt.getTime()) / 86_400_000);
 
-    const rendre = (l: LeconEnBase) => {
+    /**
+     * LA DIFFUSION PROGRESSIVE.
+     *
+     * Une leçon fermée n'est pas cachée : elle s'affiche avec le jour où elle
+     * s'ouvre — sinon l'apprenant croit que la formation est plus courte
+     * qu'elle ne l'est. Mais son contenu ne part pas dans la réponse : ce qui
+     * n'est pas encore dû ne doit pas être lisible en regardant le réseau.
+     */
+    const rendre = (l: LeconEnBase, ouvertureChapitre = 0) => {
       const quiz = l.quiz ? nettoyerQuiz(l.quiz) : null;
       const p = faites.get(l.id);
-      return {
+      const jours = Math.max(l.ouvertureJours ?? 0, ouvertureChapitre);
+      const fermee = jours > joursDepuisInscription;
+      const base = {
         id: l.id,
         titre: l.titre,
         type: l.type,
+        dureeMinutes: l.dureeMinutes,
+        dureeImposee: Boolean(l.dureeImposee),
+        ouverteLe: p?.ouverteLe ? p.ouverteLe.toISOString() : null,
+        faite: Boolean(p?.faite),
+        score: p?.score ?? null,
+        ouvreDansJours: fermee ? jours - joursDepuisInscription : 0,
+      };
+      if (fermee) {
+        return { ...base, contenu: null, videoUrl: null, fichierUrl: null, blocs: [], taches: [], tachesFaites: [], scormUrl: null, quiz: null };
+      }
+      return {
+        ...base,
         contenu: l.contenu,
         videoUrl: l.videoUrl,
         fichierUrl: l.fichierUrl,
         blocs: Array.isArray(l.blocs) ? l.blocs : blocsDepuisLAncien(l),
-        dureeMinutes: l.dureeMinutes,
+        taches: Array.isArray(l.taches) ? l.taches : [],
+        tachesFaites: Array.isArray(p?.taches) ? (p?.taches as string[]) : [],
+        scormUrl: l.scormUrl ?? null,
         quiz: quizUtilisable(quiz) ? quizSansReponses(quiz as Quiz) : null,
-        faite: Boolean(p?.faite),
-        score: p?.score ?? null,
       };
     };
 
@@ -1345,7 +1393,7 @@ export class EcoleService implements OnModuleInit {
             titre: ch.titre as string | null,
             resume: ch.resume,
             ordre: ch.ordre,
-            lecons: ch.lecons.filter((l) => l.publie).map((l) => rendre(l)),
+            lecons: ch.lecons.filter((l) => l.publie).map((l) => rendre(l, ch.ouvertureJours)),
           })),
         ...(i.cours.leconsRacine.some((l) => l.publie)
           ? [
@@ -1368,15 +1416,31 @@ export class EcoleService implements OnModuleInit {
     if (!i) throw new NotFoundException("Ce lien n'ouvre aucun cours.");
     if (i.statut === StatutInscriptionCours.SUSPENDUE) throw new ForbiddenException('Cet accès est suspendu.');
 
+    // Le chapitre est facultatif : une leçon peut être posée à la racine de la
+    // formation. La chercher par son seul chapitre la rendait introuvable.
     const lecon = await this.prisma.leconCours.findFirst({
-      where: { id: leconId, chapitre: { coursId: i.coursId } },
+      where: { id: leconId, OR: [{ chapitre: { coursId: i.coursId } }, { coursId: i.coursId }] },
     });
     if (!lecon) throw new NotFoundException("Cette leçon n'appartient pas à ce cours.");
+
+    // La diffusion progressive vaut aussi ici : on ne coche pas une leçon qui
+    // ne s'est pas encore ouverte.
+    const chapitre = lecon.chapitreId
+      ? await this.prisma.chapitreCours.findUnique({ where: { id: lecon.chapitreId }, select: { ouvertureJours: true } })
+      : null;
+    const jours = Math.max(lecon.ouvertureJours, chapitre?.ouvertureJours ?? 0);
+    const depuis = Math.floor((Date.now() - i.createdAt.getTime()) / 86_400_000);
+    if (jours > depuis) {
+      const reste = jours - depuis;
+      throw new ForbiddenException(
+        `Cette leçon s'ouvre dans ${reste} jour${reste > 1 ? 's' : ''}.`,
+      );
+    }
 
     // Lecture ordonnée : on ne coche pas une leçon si la précédente ne l'est pas.
     if (i.cours.lectureOrdonnee && dto.faite !== false) {
       const avant = await this.prisma.leconCours.findMany({
-        where: { chapitre: { coursId: i.coursId } },
+        where: { OR: [{ chapitre: { coursId: i.coursId } }, { coursId: i.coursId }] },
         orderBy: [{ chapitre: { ordre: 'asc' } }, { ordre: 'asc' }],
         select: { id: true },
       });
@@ -1389,6 +1453,23 @@ export class EcoleService implements OnModuleInit {
         if (faitesAvant < precedentes.length) {
           throw new ForbiddenException('Cette formation se suit dans l\'ordre : termine la leçon précédente.');
         }
+      }
+    }
+
+    // La durée minimum : vérifiée sur l'horloge du serveur, à partir de la
+    // première ouverture de la leçon. Croire le navigateur n'aurait rien imposé.
+    if (lecon.dureeImposee && lecon.dureeMinutes > 0 && dto.faite !== false) {
+      const p = await this.prisma.progressionLecon.findUnique({
+        where: { inscriptionId_leconId: { inscriptionId: i.id, leconId } },
+        select: { ouverteLe: true },
+      });
+      const debut = p?.ouverteLe?.getTime();
+      const attendu = lecon.dureeMinutes * 60_000;
+      if (!debut || Date.now() - debut < attendu) {
+        const reste = Math.max(1, Math.ceil((attendu - (debut ? Date.now() - debut : 0)) / 60_000));
+        throw new ForbiddenException(
+          `Cette leçon demande ${lecon.dureeMinutes} minutes : il reste ${reste} minute${reste > 1 ? 's' : ''}.`,
+        );
       }
     }
 
@@ -1410,7 +1491,9 @@ export class EcoleService implements OnModuleInit {
     });
 
     const [total, cochees] = await Promise.all([
-      this.prisma.leconCours.count({ where: { chapitre: { coursId: i.coursId } } }),
+      this.prisma.leconCours.count({
+        where: { OR: [{ chapitre: { coursId: i.coursId } }, { coursId: i.coursId }] },
+      }),
       this.prisma.progressionLecon.count({ where: { inscriptionId: i.id, faite: true } }),
     ]);
     const progression = total ? Math.round((cochees / total) * 100) : 0;
@@ -1492,6 +1575,297 @@ export class EcoleService implements OnModuleInit {
     return { supprime: true };
   }
 
+  /**
+   * L'APPRENANT OUVRE UNE LEÇON.
+   *
+   * On note l'heure une seule fois : c'est elle qui rend la durée minimum
+   * vérifiable. Rouvrir la leçon ne remet pas le compteur à zéro — sinon
+   * l'attente ne finirait jamais.
+   */
+  async ouvrirLecon(jeton: string, leconId: string) {
+    const i = await this.prisma.inscriptionCours.findUnique({ where: { jeton } });
+    if (!i) throw new NotFoundException("Ce lien n'ouvre aucun cours.");
+    if (i.statut === StatutInscriptionCours.SUSPENDUE) throw new ForbiddenException('Cet accès est suspendu.');
+
+    const lecon = await this.prisma.leconCours.findFirst({
+      where: { id: leconId, OR: [{ chapitre: { coursId: i.coursId } }, { coursId: i.coursId }] },
+      select: { id: true },
+    });
+    if (!lecon) throw new NotFoundException("Cette leçon n'appartient pas à ce cours.");
+
+    const p = await this.prisma.progressionLecon.upsert({
+      where: { inscriptionId_leconId: { inscriptionId: i.id, leconId } },
+      create: { inscriptionId: i.id, leconId, ouverteLe: new Date() },
+      update: {},
+    });
+    if (!p.ouverteLe) {
+      await this.prisma.progressionLecon.update({ where: { id: p.id }, data: { ouverteLe: new Date() } });
+    }
+    return { ouverteLe: (p.ouverteLe ?? new Date()).toISOString() };
+  }
+
+  /** Les tâches cochées d'une leçon « Tâches & missions ». */
+  async cocherTaches(jeton: string, leconId: string, dto: CocherTachesDto) {
+    const i = await this.prisma.inscriptionCours.findUnique({ where: { jeton } });
+    if (!i) throw new NotFoundException("Ce lien n'ouvre aucun cours.");
+    if (i.statut === StatutInscriptionCours.SUSPENDUE) throw new ForbiddenException('Cet accès est suspendu.');
+
+    const lecon = await this.prisma.leconCours.findFirst({
+      where: { id: leconId, OR: [{ chapitre: { coursId: i.coursId } }, { coursId: i.coursId }] },
+      select: { taches: true },
+    });
+    if (!lecon) throw new NotFoundException("Cette leçon n'appartient pas à ce cours.");
+
+    // On ne garde que des identifiants qui existent vraiment dans la leçon.
+    const connues = new Set(
+      (Array.isArray(lecon.taches) ? lecon.taches : [])
+        .map((t) => (t && typeof t === 'object' ? String((t as Record<string, unknown>).id ?? '') : ''))
+        .filter(Boolean),
+    );
+    const cochees = [...new Set(dto.ids.filter((x) => connues.has(x)))].slice(0, 200);
+
+    await this.prisma.progressionLecon.upsert({
+      where: { inscriptionId_leconId: { inscriptionId: i.id, leconId } },
+      create: { inscriptionId: i.id, leconId, taches: cochees as unknown as Prisma.InputJsonValue },
+      update: { taches: cochees as unknown as Prisma.InputJsonValue },
+    });
+    return { taches: cochees };
+  }
+
+  /* ================================================ L'AIDE À L'ÉCRITURE ==== */
+
+  /**
+   * UN PLAN DE FORMATION PROPOSÉ.
+   *
+   * Rien n'est écrit en base : la proposition revient à l'écran, et c'est la
+   * formatrice qui décide de la poser. Une structure imposée serait plus
+   * rapide, et beaucoup plus difficile à défaire.
+   */
+  async proposerStructure(accountId: string, coursId: string, dto: StructureIaDto) {
+    const c = await this.monCours(accountId, coursId);
+    const texte = await this.demanderAuMoteur(
+      "Tu aides une formatrice à bâtir le plan d'une formation en ligne. Tu réponds UNIQUEMENT par du JSON valide, sans texte autour, sans balise de code.",
+      [
+        `Formation : « ${c.titre} »${c.sousTitre ? ` — ${c.sousTitre}` : ''}.`,
+        c.description ? `Ce qu'elle raconte : ${c.description}` : '',
+        dto.consigne ? `Consigne de la formatrice : ${dto.consigne}` : '',
+        `Propose ${dto.chapitres ?? 5} chapitres, ${dto.leconsParChapitre ?? 3} leçons par chapitre.`,
+        'Réponds avec ce JSON : {"chapitres":[{"titre":"…","lecons":[{"titre":"…","resume":"…"}]}]}',
+        'Les titres sont courts et concrets, en français, sans numérotation.',
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    );
+    const brut = lireJson(texte) as { chapitres?: unknown } | null;
+    const chapitres = Array.isArray(brut?.chapitres) ? brut.chapitres : [];
+    const propres = chapitres.slice(0, 12).map((ch) => {
+      const o = (ch ?? {}) as Record<string, unknown>;
+      const lecons = Array.isArray(o.lecons) ? o.lecons : [];
+      return {
+        titre: String(o.titre ?? 'Chapitre').slice(0, 200),
+        lecons: lecons.slice(0, 10).map((l) => {
+          const x = (l ?? {}) as Record<string, unknown>;
+          return {
+            titre: String(x.titre ?? 'Leçon').slice(0, 200),
+            resume: String(x.resume ?? '').slice(0, 1000),
+          };
+        }),
+      };
+    });
+    if (!propres.length) {
+      throw new ServiceUnavailableException("La proposition est revenue vide. Réessaie, ou précise ta consigne.");
+    }
+    return { chapitres: propres };
+  }
+
+  /** Poser un plan proposé : les chapitres et leçons s'ajoutent à la suite. */
+  async poserStructure(accountId: string, coursId: string, plan: { chapitres: { titre: string; lecons: { titre: string; resume?: string }[] }[] }) {
+    await this.monCours(accountId, coursId);
+    let rang = await this.prochainOrdre(coursId, null);
+    for (const ch of plan.chapitres.slice(0, 12)) {
+      const chapitre = await this.prisma.chapitreCours.create({
+        data: { coursId, titre: (ch.titre || 'Chapitre').slice(0, 200), ordre: rang++ },
+      });
+      let r = 0;
+      for (const l of (ch.lecons ?? []).slice(0, 10)) {
+        await this.prisma.leconCours.create({
+          data: {
+            chapitreId: chapitre.id,
+            titre: (l.titre || 'Leçon').slice(0, 200),
+            ordre: r++,
+            blocs: (l.resume
+              ? [{ id: randomBytes(8).toString('hex'), type: 'texte', html: `<p>${echapperHtml(l.resume)}</p>` }]
+              : []) as unknown as Prisma.InputJsonValue,
+          },
+        });
+      }
+    }
+    return this.lireCours(accountId, coursId);
+  }
+
+  /** Des blocs proposés pour une leçon. Ils ne remplacent rien : ils s'ajoutent. */
+  async proposerLecon(accountId: string, coursId: string, leconId: string, dto: LeconIaDto) {
+    const c = await this.monCours(accountId, coursId);
+    const lecon = await this.maLecon(accountId, coursId, leconId);
+    const texte = await this.demanderAuMoteur(
+      "Tu aides une formatrice à écrire une leçon en ligne. Tu réponds UNIQUEMENT par du JSON valide, sans texte autour, sans balise de code.",
+      [
+        `Formation : « ${c.titre} ». Leçon : « ${lecon.titre} ».`,
+        dto.consigne ? `Consigne de la formatrice : ${dto.consigne}` : '',
+        'Réponds avec ce JSON : {"blocs":[{"type":"titre","texte":"…"},{"type":"texte","html":"<p>…</p>"},{"type":"information","html":"<p>…</p>","ton":"info"}]}',
+        'Types autorisés : titre, texte, information, separateur. Le HTML se limite à <p>, <strong>, <em>, <ul>, <li>.',
+        'Écris en français, à la deuxième personne, sans promesse chiffrée et sans inventer de source.',
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    );
+    const brut = lireJson(texte) as { blocs?: unknown } | null;
+    const blocs = nettoyerBlocs(Array.isArray(brut?.blocs) ? brut.blocs : []);
+    if (!blocs.length) {
+      throw new ServiceUnavailableException("La proposition est revenue vide. Réessaie, ou précise ta consigne.");
+    }
+    return { blocs };
+  }
+
+  /** Un titre et une description courte, à partir d'un sujet en une ligne. */
+  async proposerTitre(dto: TitreIaDto) {
+    const texte = await this.demanderAuMoteur(
+      "Tu aides une formatrice à nommer sa formation. Tu réponds UNIQUEMENT par du JSON valide, sans texte autour, sans balise de code.",
+      [
+        `Sujet : ${dto.sujet}`,
+        'Réponds avec ce JSON : {"titre":"…","description":"…"}',
+        'Le titre fait moins de 70 caractères, la description moins de 200. En français, sans superlatif ni promesse chiffrée.',
+      ].join('\n'),
+    );
+    const brut = (lireJson(texte) ?? {}) as Record<string, unknown>;
+    return {
+      titre: String(brut.titre ?? '').slice(0, 128),
+      description: String(brut.description ?? '').slice(0, 400),
+    };
+  }
+
+  /** L'appel au moteur, avec une raison lisible quand il refuse. */
+  private async demanderAuMoteur(system: string, user: string): Promise<string> {
+    if (!this.moteur.disponible) {
+      throw new ServiceUnavailableException(
+        "Aucun moteur de rédaction n'est branché sur ce serveur. Pose GEMINI_API_KEY dans la configuration.",
+      );
+    }
+    try {
+      return await this.moteur.completer({ system, user, maxTokens: 2000, temperature: 0.7 });
+    } catch (err) {
+      const detail = (err instanceof Error ? err.message : String(err)).slice(0, 300);
+      if (/401|403|API key not valid|PERMISSION_DENIED/i.test(detail)) {
+        throw new ServiceUnavailableException('La clé du moteur de rédaction est refusée.');
+      }
+      if (/quota|RESOURCE_EXHAUSTED|429/i.test(detail)) {
+        throw new ServiceUnavailableException("Le moteur de rédaction a atteint son quota. Réessaie plus tard.");
+      }
+      throw new ServiceUnavailableException("Le moteur de rédaction n'a pas répondu. Réessaie dans un instant.");
+    }
+  }
+
+  /* ================================================= LE PAIEMENT EN LIGNE == */
+
+  /**
+   * ACHETER UNE FORMATION.
+   *
+   * On ne crée ni inscription ni vente ici : tant que Stripe n'a pas confirmé,
+   * rien n'existe. C'est le webhook (`kind: 'cours'`) qui inscrit l'apprenant,
+   * une fois et une seule.
+   */
+  async acheterCours(slug: string, dto: AcheterCoursDto, origine: string) {
+    const cle = this.config.get<string>('STRIPE_SECRET_KEY');
+    if (!cle) {
+      throw new ServiceUnavailableException(
+        "Le paiement en ligne n'est pas branché sur ce serveur.",
+      );
+    }
+    const cours = await this.prisma.cours.findUnique({
+      where: { slug },
+      select: { id: true, accountId: true, titre: true, prixCents: true, gratuit: true, statut: true },
+    });
+    if (!cours || cours.statut !== StatutCours.PUBLIE) throw new NotFoundException("Cette formation n'existe pas.");
+    if (cours.gratuit || cours.prixCents <= 0) {
+      throw new BadRequestException('Cette formation est gratuite : inscris-toi directement.');
+    }
+
+    const email = dto.email.trim().toLowerCase();
+    const deja = await this.prisma.inscriptionCours.findUnique({
+      where: { coursId_email: { coursId: cours.id, email } },
+      select: { jeton: true },
+    });
+    if (deja) return { deja: true, lien: `/apprendre/${deja.jeton}` };
+
+    const remise = await this.remisePour(cours.accountId, cours.id, dto.codePromo);
+    const montant = Math.max(0, cours.prixCents - remise);
+    if (montant <= 0) throw new BadRequestException('Ce code ramène le prix à zéro : inscris-toi directement.');
+
+    const racine = origine.replace(/\/$/, '');
+    const params: Record<string, string> = {
+      mode: 'payment',
+      'line_items[0][quantity]': '1',
+      'line_items[0][price_data][currency]': 'eur',
+      'line_items[0][price_data][unit_amount]': String(montant),
+      'line_items[0][price_data][product_data][name]': cours.titre.slice(0, 200),
+      customer_email: email,
+      success_url: `${racine}/ecole/${slug}?paiement=succes&session={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${racine}/ecole/${slug}?paiement=annule`,
+      'metadata[kind]': 'cours',
+      'metadata[coursId]': cours.id,
+      'metadata[accountId]': cours.accountId,
+      'metadata[email]': email,
+    };
+    if (dto.nom?.trim()) params['metadata[nom]'] = dto.nom.trim().slice(0, 120);
+    if (dto.codePromo?.trim()) params['metadata[codePromo]'] = dto.codePromo.trim().slice(0, 40);
+    if (dto.affiliation?.trim()) params['metadata[affiliation]'] = dto.affiliation.trim().slice(0, 40);
+
+    const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${cle}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(params).toString(),
+    });
+    const json = (await res.json()) as { url?: string; error?: { message?: string } };
+    if (!res.ok || !json.url) {
+      throw new BadRequestException(json.error?.message ?? "Le paiement n'a pas pu s'ouvrir.");
+    }
+    return { deja: false, url: json.url };
+  }
+
+  /** Le lien d'accès d'un achat, une fois Stripe passé par le webhook. */
+  async achatConfirme(sessionId: string) {
+    const vente = await this.prisma.venteCours.findUnique({
+      where: { stripeSessionId: sessionId },
+      select: { coursId: true, email: true },
+    });
+    if (!vente?.coursId) return { pret: false as const };
+    const i = await this.prisma.inscriptionCours.findUnique({
+      where: { coursId_email: { coursId: vente.coursId, email: vente.email } },
+      select: { jeton: true },
+    });
+    return i ? { pret: true as const, lien: `/apprendre/${i.jeton}` } : { pret: false as const };
+  }
+
+  /** La remise d'un code promo sur un cours, en centimes. Zéro si le code ne vaut pas. */
+  private async remisePour(accountId: string, coursId: string, code?: string): Promise<number> {
+    if (!code?.trim()) return 0;
+    const promo = await this.prisma.codePromo.findFirst({
+      where: { accountId, code: this.enCode(code) },
+    });
+    if (!promo || !promo.actif) return 0;
+    const maintenant = new Date();
+    if (promo.debuteLe && promo.debuteLe > maintenant) return 0;
+    if (promo.expireLe && promo.expireLe < maintenant) return 0;
+    if (promo.usageMax !== null && promo.usages >= promo.usageMax) return 0;
+    // Une liste vide veut dire « tout le catalogue ».
+    if (promo.coursIds.length && !promo.coursIds.includes(coursId)) return 0;
+    const cours = await this.prisma.cours.findUnique({ where: { id: coursId }, select: { prixCents: true } });
+    const prix = cours?.prixCents ?? 0;
+    return promo.type === TypeRemise.POURCENTAGE
+      ? Math.round((prix * promo.valeur) / 100)
+      : Math.min(prix, promo.valeur);
+  }
+
   /** Ce qu'un apprenant écrit depuis son lien personnel. */
   async commenter(jeton: string, dto: EcrireCommentaireDto) {
     const i = await this.prisma.inscriptionCours.findUnique({ where: { jeton }, include: { cours: true } });
@@ -1527,7 +1901,12 @@ export class EcoleService implements OnModuleInit {
   /* ============================================================= OUTILS ==== */
 
   private async monCours(accountId: string, coursId: string) {
-    const c = await this.prisma.cours.findFirst({ where: { id: coursId, accountId }, select: { id: true } });
+    const c = await this.prisma.cours.findFirst({
+      where: { id: coursId, accountId },
+      // Le titre et la description servent aux propositions d'écriture : les
+      // demander ici évite une seconde requête à chaque appel.
+      select: { id: true, titre: true, sousTitre: true, description: true },
+    });
     if (!c) throw new NotFoundException("Ce cours n'existe pas.");
     return c;
   }
@@ -1544,7 +1923,7 @@ export class EcoleService implements OnModuleInit {
   private async maLecon(accountId: string, coursId: string, leconId: string) {
     const l = await this.prisma.leconCours.findFirst({
       where: { id: leconId, OR: [{ chapitre: { coursId, cours: { accountId } } }, { coursId, cours: { accountId } }] },
-      select: { id: true },
+      select: { id: true, titre: true },
     });
     if (!l) throw new NotFoundException("Cette leçon n'existe pas.");
     return l;
@@ -1596,6 +1975,7 @@ export class EcoleService implements OnModuleInit {
       resume: string | null;
       ordre: number;
       publie: boolean;
+      ouvertureJours: number;
       lecons: LeconEnBase[];
     }[];
     leconsRacine: LeconEnBase[];
@@ -1652,6 +2032,7 @@ export class EcoleService implements OnModuleInit {
           resume: ch.resume,
           ordre: ch.ordre,
           publie: ch.publie,
+          ouvertureJours: ch.ouvertureJours,
           lecons: ch.lecons.map((l) => this.rendreLecon(l)),
         })),
         ...c.leconsRacine.map((l) => ({ genre: 'lecon' as const, ...this.rendreLecon(l) })),
@@ -1670,6 +2051,10 @@ export class EcoleService implements OnModuleInit {
       fichierUrl: l.fichierUrl,
       blocs: Array.isArray(l.blocs) ? l.blocs : blocsDepuisLAncien(l),
       dureeMinutes: l.dureeMinutes,
+      dureeImposee: l.dureeImposee,
+      ouvertureJours: l.ouvertureJours,
+      taches: Array.isArray(l.taches) ? l.taches : [],
+      scormUrl: l.scormUrl ?? null,
       apercu: l.apercu,
       publie: l.publie,
       quiz: l.quiz ? nettoyerQuiz(l.quiz) : null,
@@ -1766,6 +2151,10 @@ type LeconEnBase = {
   videoUrl: string | null;
   fichierUrl: string | null;
   blocs: Prisma.JsonValue;
+  taches?: Prisma.JsonValue;
+  scormUrl?: string | null;
+  dureeImposee?: boolean;
+  ouvertureJours?: number;
   dureeMinutes: number;
   apercu: boolean;
   publie: boolean;
@@ -1893,6 +2282,50 @@ function nettoyerBlocs(brut: unknown): unknown[] {
     propres.push(propre);
   }
   return propres;
+}
+
+/**
+ * TÂCHES & MISSIONS : [{ id, texte }].
+ *
+ * Une tâche sans texte n'est pas une tâche : on la jette. L'identifiant sert à
+ * retrouver la case cochée, il est donné s'il manque.
+ */
+function nettoyerTaches(brut: unknown): unknown[] {
+  if (!Array.isArray(brut)) return [];
+  const propres: unknown[] = [];
+  for (const t of brut.slice(0, 200)) {
+    if (!t || typeof t !== 'object') continue;
+    const o = t as Record<string, unknown>;
+    const texte = typeof o.texte === 'string' ? o.texte.slice(0, 500).trim() : '';
+    if (!texte) continue;
+    const id = typeof o.id === 'string' && o.id ? o.id.slice(0, 40) : randomBytes(8).toString('hex');
+    propres.push({ id, texte });
+  }
+  return propres;
+}
+
+/** Le HTML que l'on pose nous-mêmes : on échappe ce qui vient d'ailleurs. */
+function echapperHtml(s: string) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * LIRE LE JSON D'UN MODÈLE.
+ *
+ * Un modèle encadre volontiers sa réponse d'une balise de code ou d'une phrase
+ * de politesse. On coupe au premier accolade et à la dernière : plus robuste
+ * que d'espérer une réponse parfaite.
+ */
+function lireJson(brut: string): unknown {
+  const t = brut.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const d = t.indexOf('{');
+  const f = t.lastIndexOf('}');
+  if (d < 0 || f <= d) return null;
+  try {
+    return JSON.parse(t.slice(d, f + 1));
+  } catch {
+    return null;
+  }
 }
 
 function normaliser(brut: string) {
