@@ -148,6 +148,7 @@ export class PackDto {
 /* ------------------------------------------------------------ codes promo */
 
 export class CodePromoDto {
+  @IsOptional() @IsString() @MaxLength(200) description?: string;
   @IsOptional() @IsString() @MinLength(2) @MaxLength(40) code?: string;
   @IsOptional() @IsEnum(TypeRemise) type?: TypeRemise;
   @IsOptional() @IsInt() @Min(1) @Max(10000000) valeur?: number;
@@ -193,10 +194,29 @@ export class EcoleDto {
   @IsOptional() @IsString() @MaxLength(8000) presentation?: string;
   @IsOptional() @IsString() @MaxLength(600) logoUrl?: string;
   @IsOptional() @IsString() @MaxLength(600) banniereUrl?: string;
+  @IsOptional() @IsString() @MaxLength(600) faviconUrl?: string;
+
   @IsOptional() @IsString() @MaxLength(9) couleur?: string;
+  @IsOptional() @IsString() @MaxLength(9) couleurFond?: string;
+  @IsOptional() @IsString() @MaxLength(9) couleurTitres?: string;
+  @IsOptional() @IsString() @MaxLength(9) couleurTextes?: string;
+  @IsOptional() @IsString() @MaxLength(9) couleurBoutons?: string;
+  @IsOptional() @IsString() @MaxLength(9) couleurTexteBoutons?: string;
+
+  /** [{ reseau, url }] — relu par `nettoyerLiens`. */
+  @IsOptional() liensSociaux?: unknown;
+
   @IsOptional() @IsString() @MaxLength(200) contactEmail?: string;
   @IsOptional() @IsString() @MaxLength(20000) cgv?: string;
   @IsOptional() @IsString() @MaxLength(20000) mentions?: string;
+
+  @IsOptional() @IsString() @MaxLength(40) certificatModele?: string;
+  @IsOptional() @IsBoolean() certificatsActifs?: boolean;
+  @IsOptional() @IsBoolean() commentairesActifs?: boolean;
+
+  @IsOptional() @IsString() @MaxLength(60) googleAnalytics?: string;
+  @IsOptional() @IsString() @MaxLength(60) pixelMeta?: string;
+
   @IsOptional() @IsBoolean() publiee?: boolean;
 }
 
@@ -207,6 +227,8 @@ export class AffilieDto {
   @IsOptional() @IsString() @MaxLength(200) email?: string;
   @IsOptional() @IsString() @MinLength(2) @MaxLength(40) code?: string;
   @IsOptional() @IsInt() @Min(0) @Max(90) commissionPourcent?: number;
+  /** Ce qu'on lui a déjà versé, en centimes. */
+  @IsOptional() @IsInt() @Min(0) @Max(100000000) gainsVersesCents?: number;
   @IsOptional() @IsBoolean() actif?: boolean;
 }
 
