@@ -32,7 +32,7 @@ export interface CoursSuivi {
   certificat: boolean;
   cours: { titre: string; sousTitre: string | null; imageUrl: string | null; certificat: boolean };
   ecole: { nom: string; couleur: string; logoUrl: string | null };
-  chapitres: { id: string; titre: string; resume: string | null; lecons: LeconSuivie[] }[];
+  chapitres: { id: string; titre: string | null; resume: string | null; lecons: LeconSuivie[] }[];
 }
 
 interface Correction {
@@ -138,7 +138,9 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
           <p className="px-2 pb-2 text-sm font-extrabold uppercase tracking-[0.1em] text-[#5E7A6E]">Le sommaire</p>
           {suivi.chapitres.map((ch) => (
             <div key={ch.id} className="mb-3">
-              <p className="px-2 py-1.5 text-[15px] font-extrabold text-[#12312A]">{ch.titre}</p>
+              {ch.titre ? (
+                <p className="px-2 py-1.5 text-[15px] font-extrabold text-[#12312A]">{ch.titre}</p>
+              ) : null}
               <ul className="grid gap-0.5">
                 {ch.lecons.map((l) => (
                   <li key={l.id}>
