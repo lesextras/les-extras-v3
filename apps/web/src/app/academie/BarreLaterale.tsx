@@ -52,6 +52,7 @@ export const ICONES = {
   presentiel: i('M2 3h20v12H2zM8 21h8M12 15v6'),
   formateurs: i('M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'),
   certification: i('M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.2 13.8L7 22l5-3 5 3-1.2-8.2'),
+  formulaire: i('M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3M9 4a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 4v1H9zM8 12h8M8 16h5'),
   comptabilite: i('M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'),
   secretariat: i('M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h6'),
   courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
@@ -81,6 +82,7 @@ const MENU: Entree[] = [
   { href: '/academie/cours-en-ligne', libelle: 'Mes cours en ligne', icone: ICONES.enLigne },
   { href: '/academie/cours-en-presentiel', libelle: 'Mes cours en présentiel', icone: ICONES.presentiel },
   { href: '/academie/formateurs', libelle: 'Mes formateurs', icone: ICONES.formateurs },
+  { href: '/academie/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
 ];
 
 /**
