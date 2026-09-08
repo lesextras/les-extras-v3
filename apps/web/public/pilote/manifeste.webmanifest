@@ -1,0 +1,44 @@
+{
+  "id": "/",
+  "name": "Piloter, par Toulali",
+  "short_name": "Piloter",
+  "description": "Le chemin étape par étape pour une association ou un organisme de formation : les démarches dans l'ordre, les formulaires officiels, les pièces et les dossiers. Gratuit.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1D1B5C",
+  "background_color": "#F5F4FC",
+  "categories": ["education", "productivity", "business"],
+  "icons": [
+    { "src": "/association/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/association/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/association/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/association/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Le chemin",
+      "short_name": "Le chemin",
+      "description": "Les deux parcours, étape par étape",
+      "url": "/chemin",
+      "icons": [{ "src": "/association/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Mon espace association",
+      "short_name": "Association",
+      "description": "Le classeur, les projets et les dossiers de l'association",
+      "url": "/espace/association",
+      "icons": [{ "src": "/association/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Mon espace académie",
+      "short_name": "Académie",
+      "description": "La certification, le catalogue et les apprenants de l'organisme de formation",
+      "url": "/academie/mon-academie",
+      "icons": [{ "src": "/academie/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
