@@ -6,6 +6,7 @@ import type { RequestAccount } from '../common/types/request-context';
 import { EcoleService } from './ecole.service';
 import {
   AffilieDto,
+  AjouterContenuDto,
   ChapitreDto,
   ClasseDto,
   CodePromoDto,
@@ -70,6 +71,34 @@ export class EcoleController {
   @Post('cours/:id/programme')
   creerProgramme(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
     return this.ecole.creerProgramme(a.id, id);
+  }
+
+  /* ---------------------------------------------------------- le contenu -- */
+
+  /** Ajouter un chapitre, une leçon, un quiz, un devoir, une classe en direct. */
+  @Post('cours/:id/contenu')
+  ajouterContenu(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: AjouterContenuDto) {
+    return this.ecole.ajouterContenu(a.id, id, dto);
+  }
+
+  /** Ranger le premier niveau : identifiants préfixés « chapitre: » ou « lecon: ». */
+  @Post('cours/:id/contenu/ordre')
+  reordonnerContenu(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: ReordonnerDto) {
+    return this.ecole.reordonnerContenu(a.id, id, dto);
+  }
+
+  @Post('cours/:id/lecons/:leconId/dupliquer')
+  dupliquerLecon(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Param('leconId') leconId: string) {
+    return this.ecole.dupliquerLecon(a.id, id, leconId);
+  }
+
+  @Post('cours/:id/chapitres/:chapitreId/dupliquer')
+  dupliquerChapitre(
+    @CurrentAccount() a: RequestAccount,
+    @Param('id') id: string,
+    @Param('chapitreId') chapitreId: string,
+  ) {
+    return this.ecole.dupliquerChapitre(a.id, id, chapitreId);
   }
 
   /* --------------------------------------------------------- les chapitres */
