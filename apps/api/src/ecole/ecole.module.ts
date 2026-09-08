@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ClaudeService } from '../assistant/claude.service';
+import { MoteurService } from '../assistant/moteur.service';
 import { EcoleService } from './ecole.service';
 import { EcoleController } from './ecole.controller';
 import { EcolePublicController } from './ecole-public.controller';
@@ -15,7 +17,8 @@ import { EcolePublicController } from './ecole-public.controller';
  */
 @Module({
   controllers: [EcolePublicController, EcoleController],
-  providers: [EcoleService],
+  // MoteurService (Gemini, Claude en secours) sert l'aide à l'écriture.
+  providers: [EcoleService, MoteurService, ClaudeService],
   exports: [EcoleService],
 })
 export class EcoleModule {}
