@@ -11,7 +11,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { NiveauCours, StatutCours, StatutVente, TypeLecon, TypeRemise } from '@prisma/client';
+import { ModaliteCours, NiveauCours, StatutCours, StatutVente, TypeLecon, TypeRemise } from '@prisma/client';
 
 /* ------------------------------------------------------------------ cours */
 
@@ -38,6 +38,35 @@ export class ModifierCoursDto {
   @IsOptional() @IsBoolean() gratuit?: boolean;
   @IsOptional() @IsBoolean() certificat?: boolean;
   @IsOptional() @IsEnum(StatutCours) statut?: StatutCours;
+
+  /* La modalité : en ligne, en salle, en visio, ou les deux. */
+  @IsOptional() @IsEnum(ModaliteCours) modalite?: ModaliteCours;
+  @IsOptional() @IsString() @MaxLength(300) lieu?: string;
+  @IsOptional() @IsString() @MaxLength(600) lienVisio?: string;
+  @IsOptional() @IsString() @MaxLength(2000) accesHandicap?: string;
+
+  /* Ce que règle l'atelier. */
+  @IsOptional() @IsBoolean() lectureOrdonnee?: boolean;
+  @IsOptional() @IsInt() @Min(0) @Max(100000) placesMax?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(100) tvaPourcent?: number;
+  @IsOptional() @IsInt() @Min(1) @Max(24) echeances?: number;
+  @IsOptional() @IsString() @MaxLength(200) seoTitre?: string;
+  @IsOptional() @IsString() @MaxLength(400) seoDescription?: string;
+  @IsOptional() @IsBoolean() commentairesActifs?: boolean;
+}
+
+/* ----------------------------------------------------------- commentaires */
+
+/** Ce que l'organisme fait d'un commentaire : il répond, ou il le masque. */
+export class CommentaireDto {
+  @IsOptional() @IsString() @MaxLength(4000) reponse?: string;
+  @IsOptional() @IsBoolean() masque?: boolean;
+}
+
+/** Ce qu'écrit un apprenant sous une leçon. */
+export class EcrireCommentaireDto {
+  @IsOptional() @IsString() @MaxLength(40) leconId?: string;
+  @IsString() @MinLength(2) @MaxLength(4000) message!: string;
 }
 
 /* -------------------------------------------------------- chapitres, leçons */
