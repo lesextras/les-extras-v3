@@ -1768,14 +1768,37 @@ export class EcoleService implements OnModuleInit {
     try {
       return await this.moteur.completer({ system, user, maxTokens: 2000, temperature: 0.7 });
     } catch (err) {
-      const detail = (err instanceof Error ? err.message : String(err)).slice(0, 300);
-      if (/401|403|API key not valid|PERMISSION_DENIED/i.test(detail)) {
-        throw new ServiceUnavailableException('La clé du moteur de rédaction est refusée.');
+      // On garde la VRAIE raison : sans elle, impossible de savoir si c'est la
+      // clé, le quota, le modèle ou le réseau. La clé n'apparaît jamais.
+      const cause = (err as { cause?: unknown } | null)?.cause;
+      const detail = `${err instanceof Error ? err.message : String(err)} ${
+        cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : ''
+      }`
+        .replace(/AIza[A-Za-z0-9_-]{10,}/g, '***')
+        .replace(/sk-[A-Za-z0-9_-]{8,}/g, '***')
+        .trim();
+      console.error('[IA école] le moteur a échoué :', detail.slice(0, 400));
+
+      const quelleCle = this.moteur.moteur === 'gemini' ? 'GEMINI_API_KEY' : 'ANTHROPIC_API_KEY';
+      const quelModele = this.moteur.moteur === 'gemini' ? 'GEMINI_MODEL' : 'ANTHROPIC_MODEL';
+      if (/401|403|API key not valid|PERMISSION_DENIED|unauthor|invalid x-api-key/i.test(detail)) {
+        throw new ServiceUnavailableException(
+          `La clé du moteur de rédaction est refusée. Recopie ${quelleCle} en entier dans la configuration du serveur, sans espace ni retour à la ligne.`,
+        );
       }
-      if (/quota|RESOURCE_EXHAUSTED|429/i.test(detail)) {
-        throw new ServiceUnavailableException("Le moteur de rédaction a atteint son quota. Réessaie plus tard.");
+      if (/quota|RESOURCE_EXHAUSTED|429|rate.?limit|billing|credit|402/i.test(detail)) {
+        throw new ServiceUnavailableException(
+          "Le moteur de rédaction a atteint son quota. Réessaie plus tard, ou recharge le compte du modèle.",
+        );
       }
-      throw new ServiceUnavailableException("Le moteur de rédaction n'a pas répondu. Réessaie dans un instant.");
+      if (/404|NOT_FOUND|not_found|model/i.test(detail)) {
+        throw new ServiceUnavailableException(
+          `Le modèle demandé n'existe pas. Vérifie ${quelModele} dans la configuration du serveur.`,
+        );
+      }
+      throw new ServiceUnavailableException(
+        `Le moteur de rédaction n'a pas répondu : ${detail.slice(0, 160) || 'raison inconnue'}`,
+      );
     }
   }
 
