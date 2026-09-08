@@ -8,7 +8,7 @@
 
 export type StatutCours = 'BROUILLON' | 'PUBLIE' | 'ARCHIVE';
 export type NiveauCours = 'TOUS' | 'DEBUTANT' | 'INTERMEDIAIRE' | 'AVANCE';
-export type TypeLecon = 'TEXTE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT' | 'QUIZ' | 'DEVOIR' | 'LIVE';
+export type TypeLecon = 'TEXTE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT' | 'QUIZ' | 'DEVOIR' | 'LIVE' | 'TACHES' | 'SCORM';
 export type TypeQuestion = 'CHOIX_UNIQUE' | 'CHOIX_MULTIPLE' | 'VRAI_FAUX';
 export type StatutVente = 'EN_ATTENTE' | 'PAYEE' | 'REMBOURSEE' | 'ANNULEE';
 export type ModaliteCours = 'EN_LIGNE' | 'PRESENTIEL' | 'VIRTUEL' | 'MIXTE';
@@ -56,6 +56,14 @@ export interface Lecon {
   fichierUrl: string | null;
   blocs: Bloc[];
   dureeMinutes: number;
+  /** Imposée, la durée retient l'apprenant avant qu'il puisse cocher la leçon. */
+  dureeImposee?: boolean;
+  /** Diffusion progressive : la leçon s'ouvre N jours après l'inscription. */
+  ouvertureJours?: number;
+  /** Tâches & missions : une liste que l'apprenant coche. */
+  taches?: { id: string; texte: string }[];
+  /** L'index d'un paquet SCORM déposé ailleurs. */
+  scormUrl?: string | null;
   apercu: boolean;
   publie: boolean;
   quiz: Quiz | null;
@@ -68,6 +76,8 @@ export interface Chapitre {
   resume: string | null;
   ordre: number;
   publie: boolean;
+  /** Diffusion progressive : le chapitre s'ouvre N jours après l'inscription. */
+  ouvertureJours?: number;
   lecons: Lecon[];
 }
 
@@ -344,6 +354,8 @@ export const NOM_TYPE_LECON: Record<TypeLecon, string> = {
   DOCUMENT: 'Document',
   QUIZ: 'Quiz',
   DEVOIR: 'Devoir',
+  TACHES: 'Tâches & missions',
+  SCORM: 'Contenu SCORM',
   LIVE: 'Classe en direct',
 };
 
