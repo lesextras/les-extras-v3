@@ -96,6 +96,7 @@ export default async function AssociationLayout({ children }: { children: ReactN
       espaceOuvert: Boolean(association),
       espaces,
       active: association?.id ?? null,
+      administration: session.user.role === 'ADMIN',
     };
   }
   return (
