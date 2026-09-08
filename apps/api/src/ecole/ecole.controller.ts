@@ -66,6 +66,12 @@ export class EcoleController {
     return this.ecole.dupliquerCours(a.id, id);
   }
 
+  /** Écrit la fiche programme (au sens Qualiopi) de cette formation, à partir de ce qu'on sait déjà. */
+  @Post('cours/:id/programme')
+  creerProgramme(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
+    return this.ecole.creerProgramme(a.id, id);
+  }
+
   /* --------------------------------------------------------- les chapitres */
 
   @Post('cours/:id/chapitres')
