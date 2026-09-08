@@ -22,6 +22,7 @@ export function FormulaireInscription() {
   const [siret, setSiret] = useState('');
   const [nda, setNda] = useState('');
   const [qualiopi, setQualiopi] = useState<EtatQualiopi>('PAS_ENGAGE');
+  const [accepte, setAccepte] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
 
@@ -116,6 +117,27 @@ export function FormulaireInscription() {
         </label>
       </fieldset>
 
+      <label className="flex cursor-pointer items-start gap-2 text-sm" style={{ color: '#5E7A6E' }}>
+        <input
+          type="checkbox"
+          required
+          checked={accepte}
+          onChange={(e) => setAccepte(e.target.checked)}
+          className="mt-1 size-4"
+        />
+        <span>
+          J&apos;accepte les{' '}
+          <Link href="/legal#cgu" className="font-bold text-[#0F5F3E] underline underline-offset-4">
+            conditions d&apos;utilisation
+          </Link>{' '}
+          et la{' '}
+          <Link href="/legal#donnees" className="font-bold text-[#0F5F3E] underline underline-offset-4">
+            politique de confidentialité
+          </Link>
+          .
+        </span>
+      </label>
+
       {erreur ? (
         <p role="alert" className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">
           {erreur}
@@ -131,7 +153,7 @@ export function FormulaireInscription() {
         </p>
       ) : null}
 
-      <button type="submit" disabled={enCours} className={BTN_PRIMAIRE}>
+      <button type="submit" disabled={enCours || !accepte} className={BTN_PRIMAIRE}>
         {enCours ? 'Ouverture de ton espace…' : "Ouvrir l'espace de mon académie →"}
       </button>
       <p className="text-xs leading-relaxed text-[#5E7A6E]">
