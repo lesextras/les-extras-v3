@@ -1417,6 +1417,8 @@ model Formation {
   updatedAt         DateTime        @updatedAt
 
   sessions FormationSession[]
+  /// La formation suivie qui porte cette fiche (Piloter mon académie).
+  cours    Cours?             @relation("CoursProgramme")
 
   @@index([type, status])
   @@index([ownerAccountId])
@@ -3354,6 +3356,15 @@ model Cours {
 
   /// Les apprenants peuvent écrire sous une leçon.
   commentairesActifs Boolean @default(true)
+
+  /// LA FICHE PROGRAMME DE CETTE FORMATION.
+  ///
+  /// Le contenu (chapitres, leçons) vit ici ; les objectifs évaluables, le
+  /// public, les prérequis, la durée en heures et les sessions datées — ce que
+  /// lisent un financeur et un auditeur — vivent sur `Formation`. Vue de
+  /// l'organisme, c'est une seule formation : le lien les tient ensemble.
+  formationId String?    @unique
+  programme   Formation? @relation("CoursProgramme", fields: [formationId], references: [id], onDelete: SetNull)
 
   statut   StatutCours @default(BROUILLON)
   ordre    Int         @default(0)
