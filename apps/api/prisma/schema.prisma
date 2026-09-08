@@ -3326,6 +3326,35 @@ model Cours {
   gratuit        Boolean @default(false)
   certificat     Boolean @default(false)
 
+  /// Comment on l'apprend : à son rythme, en salle, en visio, ou les deux.
+  /// Le présentiel et la classe virtuelle ne sont pas des écrans à part : ce
+  /// sont des options portées par la formation elle-même.
+  modalite      ModaliteCours @default(EN_LIGNE)
+  /// Où ça se tient, quand il y a une salle.
+  lieu          String?
+  /// Le lien de la visio, quand il y en a une.
+  lienVisio     String?
+  /// Comment on accède au lieu en situation de handicap.
+  accesHandicap String?
+
+  /// On ne peut ouvrir une leçon qu'après avoir fait la précédente.
+  lectureOrdonnee Boolean @default(false)
+  /// Le nombre d'inscriptions acceptées. Vide : pas de limite.
+  placesMax       Int?
+
+  /// La TVA appliquée au prix, en pour cent. 0 pour un organisme exonéré.
+  tvaPourcent Int @default(0)
+  /// Le nombre de fois où le prix peut être réglé. 1 : en une fois.
+  echeances   Int @default(1)
+
+  /// Ce que lisent les moteurs de recherche, quand on veut autre chose que
+  /// le titre et le sous-titre.
+  seoTitre       String?
+  seoDescription String?
+
+  /// Les apprenants peuvent écrire sous une leçon.
+  commentairesActifs Boolean @default(true)
+
   statut   StatutCours @default(BROUILLON)
   ordre    Int         @default(0)
   publieLe DateTime?
@@ -3337,9 +3366,19 @@ model Cours {
   inscriptions InscriptionCours[]
   ventes       VenteCours[]
   classes      ClasseVirtuelle[]
+  commentaires CommentaireCours[]
 
   @@index([accountId, statut])
   @@index([accountId, ordre])
+  @@index([accountId, modalite])
+}
+
+/// COMMENT ON SUIT LA FORMATION.
+enum ModaliteCours {
+  EN_LIGNE
+  PRESENTIEL
+  VIRTUEL
+  MIXTE
 }
 
 enum StatutCours {
@@ -3398,6 +3437,7 @@ model LeconCours {
   updatedAt DateTime @updatedAt
 
   progressions ProgressionLecon[]
+  commentaires CommentaireCours[]
 
   @@index([chapitreId, ordre])
 }
@@ -3440,6 +3480,7 @@ model InscriptionCours {
   updatedAt DateTime @updatedAt
 
   progressions ProgressionLecon[]
+  commentaires CommentaireCours[]
 
   @@unique([coursId, email])
   @@index([coursId, createdAt])
@@ -3464,6 +3505,38 @@ model ProgressionLecon {
   score   Int?
 
   @@unique([inscriptionId, leconId])
+  @@index([leconId])
+}
+
+/// CE QU'UN APPRENANT ÉCRIT SOUS UNE LEÇON.
+///
+/// Une question, une remarque, un merci. L'organisme lit, répond, et masque
+/// ce qui n'a rien à faire là. Rien n'est publié sans qu'il l'ait vu passer.
+model CommentaireCours {
+  id      String @id @default(cuid())
+  coursId String
+  cours   Cours  @relation(fields: [coursId], references: [id], onDelete: Cascade)
+
+  leconId String?
+  lecon   LeconCours? @relation(fields: [leconId], references: [id], onDelete: SetNull)
+
+  inscriptionId String?
+  inscription   InscriptionCours? @relation(fields: [inscriptionId], references: [id], onDelete: SetNull)
+
+  auteur  String
+  email   String?
+  message String
+
+  /// La réponse de l'organisme, écrite depuis l'atelier.
+  reponse   String?
+  reponduLe DateTime?
+
+  masque Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([coursId, createdAt])
   @@index([leconId])
 }
 
