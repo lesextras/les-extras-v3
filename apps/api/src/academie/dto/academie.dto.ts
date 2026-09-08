@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsIn,
   IsDateString,
   IsEmail,
   IsEnum,
@@ -145,4 +146,20 @@ export class ModifierReclamationDto {
   @IsOptional() @IsString() @MaxLength(4000) traitement?: string;
   @IsOptional() @IsDateString() clotureeLe?: string;
   @IsOptional() @IsEnum(StatutReclamation) statut?: StatutReclamation;
+}
+
+/**
+ * LA PREUVE D'UN INDICATEUR QUALIOPI.
+ *
+ * Rien n'est obligatoire : on peut poser un intitulé sans lien, un lien sans
+ * intitulé, ou seulement changer l'état. « Sans objet » est un état légitime —
+ * tous les indicateurs ne s'appliquent pas à tous les organismes.
+ */
+export class NotePreuveQualiopiDto {
+  @IsOptional()
+  @IsIn(['A_FAIRE', 'DEPOSEE', 'VALIDEE', 'SANS_OBJET'], { message: "Cet état de preuve n'existe pas." })
+  etat?: 'A_FAIRE' | 'DEPOSEE' | 'VALIDEE' | 'SANS_OBJET';
+
+  @IsOptional() @IsString() @MaxLength(300) intitule?: string;
+  @IsOptional() @IsString() @MaxLength(500) lien?: string;
 }
