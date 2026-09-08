@@ -1,5 +1,7 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { BadRequestException, Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ETAPES_ACADEMIE, VERSION_CHEMIN_ACADEMIE, trouverEtapeAcademie } from './chemin';
+import { RepertoiresFormationService } from './repertoires';
 
 /**
  * LA FACE PUBLIQUE DE « PILOTER MON ACADÉMIE ».
@@ -10,6 +12,31 @@ import { ETAPES_ACADEMIE, VERSION_CHEMIN_ACADEMIE, trouverEtapeAcademie } from '
  */
 @Controller('public/academie')
 export class AcademiePublicController {
+  constructor(private readonly repertoires: RepertoiresFormationService) {}
+
+  /**
+   * CHERCHER SON ORGANISME DANS LES RÉPERTOIRES PUBLICS.
+   *
+   * Comme pour l'association : on ne demande pas de recopier ce que l'État
+   * publie déjà. SIRENE donne le nom, le SIREN, le SIRET et l'adresse ; la
+   * liste publique des organismes de formation y ajoute le numéro de
+   * déclaration d'activité et l'état de la certification.
+   */
+  @Get('recherche')
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  async recherche(@Query('q') q?: string) {
+    const terme = (q ?? '').trim();
+    if (terme.length < 3) throw new BadRequestException('Écris au moins trois lettres.');
+    return { organismes: await this.repertoires.rechercher(terme) };
+  }
+
+  /** La fiche complète d'un organisme, à partir de son SIREN. */
+  @Get('organisme/:siren')
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  async organisme(@Param('siren') siren: string) {
+    return this.repertoires.fiche(siren);
+  }
+
   @Get('chemin')
   chemin() {
     return {

@@ -11,6 +11,7 @@ import {
   SessionStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { RepertoiresFormationService, prerempliDepuis } from './repertoires';
 import { ETAPES_ACADEMIE, VERSION_CHEMIN_ACADEMIE, trouverEtapeAcademie } from './chemin';
 import type {
   ModifierAcademieDto,
@@ -32,7 +33,10 @@ import type {
  */
 @Injectable()
 export class AcademieService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly repertoires: RepertoiresFormationService,
+  ) {}
 
   // ------------------------------------------------------------- ouverture
 
@@ -58,6 +62,12 @@ export class AcademieService {
 
     const slug = await this.slugUnique(nom);
 
+    // CE QUE L'ÉTAT PUBLIE DÉJÀ, ON NE LE REDEMANDE PAS. Avec un SIREN, on va
+    // chercher la fiche dans SIRENE et dans la liste publique des organismes
+    // de formation : le SIRET, l'adresse, le numéro de déclaration et la
+    // DREETS arrivent tout seuls. Ce que la personne a saisi passe d'abord.
+    const prerempli = dto.siren ? await this.prerempli(dto.siren) : null;
+
     const resultat = await this.prisma.$transaction(async (tx) => {
       const account = await tx.account.create({
         data: {
@@ -65,7 +75,10 @@ export class AcademieService {
           type: AccountType.ACADEMIE,
           slug,
           legalName: nom,
-          siret: dto.siret ?? null,
+          siret: dto.siret ?? prerempli?.siret ?? null,
+          address: prerempli?.adresse ?? null,
+          postalCode: prerempli?.codePostal ?? null,
+          city: prerempli?.commune ?? null,
           contactEmail: user.email,
           ownerId: user.id,
           source: 'pilote.toulali.fr',
@@ -78,17 +91,36 @@ export class AcademieService {
         data: {
           accountId: account.id,
           nom,
+          sigle: prerempli?.sigle ?? null,
           siren: dto.siren ?? null,
-          siret: dto.siret ?? null,
-          nda: dto.nda ?? null,
+          siret: dto.siret ?? prerempli?.siret ?? null,
+          ape: prerempli?.ape ?? null,
+          nda: dto.nda ?? prerempli?.nda ?? null,
+          dreets: prerempli?.dreets ?? null,
+          adresse: prerempli?.adresse ?? null,
+          codePostal: prerempli?.codePostal ?? null,
+          commune: prerempli?.commune ?? null,
           courriel: user.email,
-          qualiopi: dto.qualiopi ?? EtatQualiopi.PAS_ENGAGE,
+          qualiopi: dto.qualiopi ?? (prerempli?.certifie ? EtatQualiopi.CERTIFIE : EtatQualiopi.PAS_ENGAGE),
         },
       });
       return { account, academie };
     });
 
     return { ok: true, accountId: resultat.account.id, existant: false };
+  }
+
+  /**
+   * La fiche publique d'un organisme, si les répertoires la connaissent. Une
+   * panne d'API ne doit JAMAIS empêcher d'ouvrir un espace : on renvoie null
+   * et la personne remplit à la main.
+   */
+  private async prerempli(siren: string) {
+    try {
+      return prerempliDepuis(await this.repertoires.fiche(siren));
+    } catch {
+      return null;
+    }
   }
 
   private async slugUnique(nom: string) {
