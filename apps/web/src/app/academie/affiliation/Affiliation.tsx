@@ -48,6 +48,38 @@ export function Affiliation({ initiaux, ventes, slug }: { initiaux: Affilie[]; v
     const x = parCode.get(a.code.toUpperCase());
     return t + Math.round(((x?.caCents ?? 0) * a.commissionPourcent) / 100);
   }, 0);
+  const totalVerse = affilies.reduce((t, a) => t + (a.gainsVersesCents ?? 0), 0);
+  const restantDu = Math.max(0, totalCommissions - totalVerse);
+
+  // Le taux de conversion : la part des ventes payées qui vient d'une recommandation.
+  const ventesPayees = ventes.filter((v) => v.statut === 'PAYEE').length;
+  const conversion = ventesPayees ? Math.round((totalVentes / ventesPayees) * 100) : 0;
+
+  /** Ce qu'un affilié a gagné, et ce qui lui reste dû. */
+  function gains(a: Affilie) {
+    const x = parCode.get(a.code.toUpperCase());
+    const du = Math.round(((x?.caCents ?? 0) * a.commissionPourcent) / 100);
+    return { du, verse: a.gainsVersesCents ?? 0, reste: Math.max(0, du - (a.gainsVersesCents ?? 0)) };
+  }
+
+  /** Marquer ce qu'on vient de lui virer : on enregistre le total versé. */
+  async function marquerVerse(a: Affilie) {
+    const g = gains(a);
+    if (!g.reste) return;
+    setEnCours(true);
+    setErreur(null);
+    try {
+      const maj = await appel<Affilie>(`/ecole/affilies/${a.id}`, {
+        methode: 'PATCH',
+        corps: { gainsVersesCents: g.du },
+      });
+      setAffilies((l) => l.map((x) => (x.id === a.id ? maj : x)));
+    } catch (err) {
+      setErreur(messageDe(err));
+    } finally {
+      setEnCours(false);
+    }
+  }
 
   async function ajouter(e: FormEvent) {
     e.preventDefault();
@@ -113,19 +145,29 @@ export function Affiliation({ initiaux, ventes, slug }: { initiaux: Affilie[]; v
       ) : null}
 
       {/* ------------------------------------------------------ les chiffres */}
-      <div className="mb-7 grid gap-3 sm:grid-cols-3">
+      <div className="mb-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className={`${CARTE} p-5`}>
           <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Ventes par recommandation</p>
           <p className="mt-1 text-[30px] font-black leading-none text-[#12312A]">{totalVentes}</p>
+        </div>
+        <div className={`${CARTE} p-5`}>
+          <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Taux de conversion</p>
+          <p className="mt-1 text-[30px] font-black leading-none text-[#12312A]">{conversion} %</p>
+          <p className="mt-1 text-[13px] text-[#5E7A6E]">des ventes payées</p>
         </div>
         <div className={`${CARTE} p-5`}>
           <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Chiffre d&apos;affaires généré</p>
           <p className="mt-1 text-[30px] font-black leading-none text-[#0F5F3E]">{euros(totalCa)}</p>
         </div>
         <div className={`${CARTE} p-5`}>
-          <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Commissions dues</p>
-          <p className={`mt-1 text-[30px] font-black leading-none ${totalCommissions ? 'text-[#7C3E06]' : 'text-[#12312A]'}`}>
-            {euros(totalCommissions)}
+          <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Commissions générées</p>
+          <p className="mt-1 text-[30px] font-black leading-none text-[#12312A]">{euros(totalCommissions)}</p>
+          <p className="mt-1 text-[13px] text-[#5E7A6E]">dont {euros(totalVerse)} versés</p>
+        </div>
+        <div className={`${CARTE} p-5`}>
+          <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Reste à verser</p>
+          <p className={`mt-1 text-[30px] font-black leading-none ${restantDu ? 'text-[#7C3E06]' : 'text-[#12312A]'}`}>
+            {euros(restantDu)}
           </p>
         </div>
       </div>
@@ -191,7 +233,7 @@ export function Affiliation({ initiaux, ventes, slug }: { initiaux: Affilie[]; v
         <ul className="grid gap-3">
           {affilies.map((a) => {
             const x = parCode.get(a.code.toUpperCase());
-            const du = Math.round(((x?.caCents ?? 0) * a.commissionPourcent) / 100);
+            const g = gains(a);
             return (
               <li key={a.id} className={`${CARTE} p-4 sm:p-5`}>
                 <div className="flex flex-wrap items-start gap-3">
@@ -211,7 +253,18 @@ export function Affiliation({ initiaux, ventes, slug }: { initiaux: Affilie[]; v
                     <span className="font-bold text-[#12312A]">{x?.ventes ?? 0}</span> vente
                     {(x?.ventes ?? 0) > 1 ? 's' : ''} · {euros(x?.caCents ?? 0)} généré
                   </span>
-                  <span className="text-[15px] font-bold text-[#0F5F3E]">{euros(du)} à lui verser</span>
+                  <span className="text-[15px] text-[#334A42]">
+                    <span className="font-bold text-[#0F5F3E]">{euros(g.du)}</span> de commission
+                    {g.verse ? ` · ${euros(g.verse)} versés` : ''}
+                    {g.reste ? (
+                      <span className="font-bold text-[#7C3E06]"> · {euros(g.reste)} à verser</span>
+                    ) : null}
+                  </span>
+                  {g.reste ? (
+                    <button type="button" onClick={() => void marquerVerse(a)} disabled={enCours} className={BTN_DISCRET}>
+                      Marquer comme versé
+                    </button>
+                  ) : null}
                   <button type="button" onClick={() => copier(a)} className={`${BTN_DISCRET} ml-auto`}>
                     {copie === a.id ? 'Lien copié' : 'Copier son lien'}
                   </button>
