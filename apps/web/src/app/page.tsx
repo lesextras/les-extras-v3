@@ -327,7 +327,11 @@ export default async function LandingPage() {
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <Link href="/missions">Je cherche des missions</Link>
+                  {/* ⚠ PAS `/missions` : cette route n'a qu'un segment
+                      dynamique `[id]`, il n'existe aucune page d'index — le
+                      lien tombait sur un 404. La porte publique de
+                      l'intervenant, c'est /intervenant-independant. */}
+                  <Link href="/intervenant-independant">Je cherche des missions</Link>
                 </Button>
               </div>
 
