@@ -3417,6 +3417,9 @@ model ChapitreCours {
   ordre  Int     @default(0)
   /// Un chapitre en brouillon reste écrit, mais ne se lit pas.
   publie Boolean @default(true)
+  /// Diffusion progressive : le chapitre ne s'ouvre qu'au bout de N jours
+  /// comptés depuis l'inscription. Zéro : disponible tout de suite.
+  ouvertureJours Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3453,10 +3456,20 @@ model LeconCours {
   blocs Json?
 
   dureeMinutes Int     @default(0)
+  /// Quand la durée est imposée, la leçon ne peut pas être cochée avant que
+  /// ce temps se soit écoulé depuis sa première ouverture.
+  dureeImposee Boolean @default(false)
   /// Une leçon d'aperçu se lit sans avoir acheté le cours.
   apercu       Boolean @default(false)
   /// Une leçon en brouillon reste écrite, mais ne se lit pas.
   publie       Boolean @default(true)
+  /// Diffusion progressive : voir ChapitreCours.ouvertureJours.
+  ouvertureJours Int @default(0)
+
+  /// TÂCHES & MISSIONS : [{ "id", "texte" }] — une liste que l'apprenant coche.
+  taches Json?
+  /// CONTENU SCORM : l'adresse de l'index d'un paquet déposé ailleurs.
+  scormUrl String?
 
   /// { "noteMinimale": 70, "questions": [{ "id", "enonce", "type", "options", "bonnes", "points" }] }
   quiz Json?
@@ -3481,6 +3494,8 @@ enum TypeLecon {
   QUIZ
   DEVOIR
   LIVE
+  TACHES
+  SCORM
 }
 
 /// UNE PERSONNE INSCRITE À UN COURS.
@@ -3532,6 +3547,11 @@ model ProgressionLecon {
 
   faite   Boolean   @default(false)
   faiteLe DateTime?
+  /// La première ouverture de la leçon : c'est elle qui rend la durée minimum
+  /// vérifiable côté serveur, plutôt que de croire le navigateur.
+  ouverteLe DateTime?
+  /// Les tâches cochées : ["id", "id"…]
+  taches  Json?
   /// La note du quiz, sur 100, quand la leçon en portait un.
   score   Int?
 
@@ -3646,6 +3666,9 @@ model VenteCours {
 
   statut StatutVente @default(PAYEE)
   moyen  String?
+  /// La session Stripe qui a payé cette vente. Unique : une relivraison du
+  /// webhook retombe dessus et n'inscrit personne deux fois.
+  stripeSessionId String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
