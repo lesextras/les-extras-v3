@@ -3374,6 +3374,8 @@ model Cours {
   updatedAt DateTime @updatedAt
 
   chapitres    ChapitreCours[]
+  /// Les leçons posées directement dans la formation, sans chapitre.
+  leconsRacine LeconCours[]       @relation("LeconRacine")
   inscriptions InscriptionCours[]
   ventes       VenteCours[]
   classes      ClasseVirtuelle[]
@@ -3413,6 +3415,8 @@ model ChapitreCours {
   titre  String
   resume String?
   ordre  Int     @default(0)
+  /// Un chapitre en brouillon reste écrit, mais ne se lit pas.
+  publie Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3423,21 +3427,36 @@ model ChapitreCours {
 }
 
 model LeconCours {
-  id          String        @id @default(cuid())
-  chapitreId  String
-  chapitre    ChapitreCours @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+
+  /// Une leçon s'accroche SOIT à un chapitre, SOIT directement à la formation :
+  /// le chapitre est facultatif. Les deux partagent le même « ordre », si bien
+  /// qu'un chapitre et une leçon se rangent côte à côte dans la même liste.
+  chapitreId String?
+  chapitre   ChapitreCours? @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
+  coursId    String?
+  cours      Cours?         @relation("LeconRacine", fields: [coursId], references: [id], onDelete: Cascade)
 
   titre   String
   type    TypeLecon @default(TEXTE)
-  /// Le texte de la leçon, écrit dans l'atelier.
+  /// Le texte de la leçon, écrit dans l'atelier. Ancien format : voir « blocs ».
   contenu String?
   /// L'adresse de la vidéo ou de l'audio hébergé (aucun fichier ici).
   videoUrl   String?
   fichierUrl String?
 
+  /// LA LEÇON EN MORCEAUX, DANS L'ORDRE.
+  ///
+  /// [{ "id", "type": "titre|texte|video|audio|image|separateur|information|
+  ///     fichier|pdf|lien|classe", ... }]
+  /// Les leçons écrites avant les blocs sont converties au démarrage.
+  blocs Json?
+
   dureeMinutes Int     @default(0)
   /// Une leçon d'aperçu se lit sans avoir acheté le cours.
   apercu       Boolean @default(false)
+  /// Une leçon en brouillon reste écrite, mais ne se lit pas.
+  publie       Boolean @default(true)
 
   /// { "noteMinimale": 70, "questions": [{ "id", "enonce", "type", "options", "bonnes", "points" }] }
   quiz Json?
@@ -3451,6 +3470,7 @@ model LeconCours {
   commentaires CommentaireCours[]
 
   @@index([chapitreId, ordre])
+  @@index([coursId, ordre])
 }
 
 enum TypeLecon {
