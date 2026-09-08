@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { Fraunces, Nunito } from 'next/font/google';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { getSession } from '@/lib/session';
 import { Coque, NOM_SITE, ORIGINE_SITE } from './_ui';
 import { COOKIE_ESPACE } from './_session';
@@ -75,8 +75,29 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+/**
+ * OÙ LES MENTIONS S'AFFICHENT.
+ *
+ * Le pied de page légal — qui porte l'outil, d'où viennent les données, le don
+ * — n'a de sens qu'aux endroits où l'on arrive : le tableau de bord, le chemin,
+ * et le profil. Ailleurs, il alourdit un écran de travail. On le pose donc à
+ * partir de l'adresse demandée, lue dans l'en-tête posé par le middleware.
+ */
+const PAGES_AVEC_MENTIONS = ['/', '/association', '/mon-profil', '/association/mon-profil'];
+
+function avecMentions(chemin: string) {
+  if (PAGES_AVEC_MENTIONS.includes(chemin)) return true;
+  return (
+    chemin === '/chemin' ||
+    chemin.startsWith('/chemin/') ||
+    chemin === '/association/chemin' ||
+    chemin.startsWith('/association/chemin/')
+  );
+}
+
 export default async function AssociationLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
+  const chemin = (await headers()).get('x-chemin') ?? '';
   let compte: CompteAffiche | null = null;
   if (session) {
     const tous = (session.accounts ?? []).length ? session.accounts! : session.account ? [session.account] : [];
@@ -101,7 +122,9 @@ export default async function AssociationLayout({ children }: { children: ReactN
   }
   return (
     <div className={`${nunito.variable} ${fraunces.variable}`}>
-      <Coque compte={compte}>{children}</Coque>
+      <Coque compte={compte} mentions={avecMentions(chemin)}>
+        {children}
+      </Coque>
     </div>
   );
 }
