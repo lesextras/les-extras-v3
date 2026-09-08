@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../../_session';
 import { Encart, ORIGINE_SITE } from '../../_ui';
 import { Atelier } from '../../../_shared/formulaires/Atelier';
-import { TEINTE_ACADEMIE, type FormulaireComplet, type Reponse } from '../../../_shared/formulaires/types';
+import { TEINTE_ACADEMIE, type FormulaireComplet, type ReponsesFormulaire } from '../../../_shared/formulaires/types';
 
 export const metadata: Metadata = { title: 'Mon formulaire', robots: { index: false, follow: false } };
 
@@ -14,7 +14,7 @@ export default async function FormulaireAcademiePage({ params }: { params: Promi
 
   const [f, r] = await Promise.all([
     apiAcademie<FormulaireComplet>(s, `/formulaires/${id}`),
-    apiAcademie<Reponse[]>(s, `/formulaires/${id}/reponses`),
+    apiAcademie<ReponsesFormulaire>(s, `/formulaires/${id}/reponses`),
   ]);
 
   if (!f.data) {
@@ -37,7 +37,7 @@ export default async function FormulaireAcademiePage({ params }: { params: Promi
           ← Mes formulaires
         </Link>
       </p>
-      <Atelier formulaire={f.data} reponsesInitiales={r.data ?? []} teinte={TEINTE_ACADEMIE} origine={ORIGINE_SITE} />
+      <Atelier formulaire={f.data} reponsesInitiales={r.data?.reponses ?? []} teinte={TEINTE_ACADEMIE} origine={ORIGINE_SITE} />
     </>
   );
 }
