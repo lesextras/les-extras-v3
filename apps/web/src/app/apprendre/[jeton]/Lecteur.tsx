@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { BlocsLecon } from '../../_shared/blocs-lecon';
+import type { Bloc } from '../../_shared/blocs';
 
 /* ------------------------------------------------------------------ types */
 
@@ -19,6 +21,8 @@ export interface LeconSuivie {
   contenu: string | null;
   videoUrl: string | null;
   fichierUrl: string | null;
+  /** La leçon telle qu'elle a été composée, bloc par bloc. */
+  blocs: Bloc[] | null;
   dureeMinutes: number;
   quiz: { noteMinimale: number; questions: QuestionPublique[] } | null;
   faite: boolean;
@@ -206,7 +210,21 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
                 </p>
               ) : null}
 
-              {lecon.contenu ? (
+              {/* Une leçon composée de blocs s'affiche exactement comme dans
+                  l'éditeur. Les leçons écrites avant les blocs gardent leur
+                  texte : rien de ce qui existait ne disparaît. */}
+              {lecon.blocs?.length ? (
+                <div className="mt-5 max-w-[68ch]">
+                  <BlocsLecon
+                    blocs={lecon.blocs}
+                    couleur={couleur}
+                    lecons={toutes}
+                    ouvrirLecon={(id) => {
+                      if (toutes.some((l) => l.id === id)) setOuverte(id);
+                    }}
+                  />
+                </div>
+              ) : lecon.contenu ? (
                 <div className="mt-5 max-w-[68ch] whitespace-pre-line text-lg leading-relaxed">{lecon.contenu}</div>
               ) : null}
 
