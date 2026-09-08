@@ -19,16 +19,20 @@ import {
   type Lecon,
   type ModaliteCours,
   type NiveauCours,
+  type Programme,
   type QuestionQuiz,
   type Quiz,
+  type SessionProgramme,
   type TypeLecon,
   type Vente,
+  NOM_STATUT_SESSION,
 } from './types';
 
 /**
  * L'ATELIER D'UNE FORMATION.
  *
- * Sept onglets, comme on lit une formation : le contenu qu'on enseigne, les
+ * Sept onglets — huit quand on se retrouve quelque part — comme on lit une
+ * formation : le contenu qu'on enseigne, les
  * paramètres qui la règlent, le prix qu'elle coûte, les descriptions qu'on
  * lit avant de s'inscrire, les apprenants qui la suivent, ce qu'ils écrivent,
  * et ce que les chiffres en disent.
@@ -42,7 +46,7 @@ import {
  * l'ordre, jamais le navigateur.
  */
 
-type Onglet = 'contenu' | 'parametres' | 'prix' | 'descriptions' | 'apprenants' | 'commentaires' | 'statistiques';
+type Onglet = 'contenu' | 'parametres' | 'prix' | 'descriptions' | 'sessions' | 'apprenants' | 'commentaires' | 'statistiques';
 
 /** Ce que chaque modalité veut dire, en une ligne. */
 const QUOI_MODALITE: Record<ModaliteCours, string> = {
@@ -57,15 +61,19 @@ export function AtelierCours({
   apprenants: apprenantsInitiaux,
   commentaires: commentairesInitiaux = [],
   ventes = [],
+  programme: programmeInitial = null,
   origine,
 }: {
   cours: CoursComplet;
   apprenants: Apprenant[];
   commentaires?: Commentaire[];
   ventes?: Vente[];
+  /** La fiche programme portée par cette formation, déjà lue par le serveur. */
+  programme?: Programme | null;
   origine: string;
 }) {
   const [c, setC] = useState<CoursComplet>(initial);
+  const [programme, setProgramme] = useState<Programme | null>(programmeInitial);
   const [apprenants, setApprenants] = useState(apprenantsInitiaux);
   const [commentaires, setCommentaires] = useState(commentairesInitiaux);
   const [onglet, setOnglet] = useState<Onglet>('contenu');
@@ -161,8 +169,13 @@ export function AtelierCours({
       'Le prix',
     );
 
-  const enregistrerDescriptions = () =>
-    enregistrer(
+  /**
+   * Les descriptions vivent à deux endroits — la formation (ce que lit un
+   * apprenant) et sa fiche programme (ce que lit un financeur). On les écrit
+   * en une fois : les objectifs, le public et les prérequis sont les mêmes.
+   */
+  async function enregistrerDescriptions() {
+    await enregistrer(
       {
         sousTitre: c.sousTitre ?? '',
         description: c.description ?? '',
@@ -173,6 +186,59 @@ export function AtelierCours({
       },
       'Les descriptions',
     );
+    if (!programme) return;
+    const objectifs = c.objectifs.map((o) => o.trim()).filter(Boolean);
+    await agir<Programme>(
+      `/formations/${programme.id}`,
+      {
+        methode: 'PATCH',
+        corps: {
+          title: c.titre.trim() || programme.title,
+          summary: (c.sousTitre ?? '').trim().slice(0, 400),
+          objectives: objectifs.join('\n'),
+          targetAudience: (c.pourQui ?? '').trim().slice(0, 200),
+          prerequisites: (c.prerequis ?? '').trim(),
+          program: (programme.program ?? '').trim(),
+          ...(programme.durationHours && programme.durationHours > 0 ? { durationHours: programme.durationHours } : {}),
+        },
+      },
+      (p) => setProgramme((prev) => ({ ...(prev ?? p), ...p, sessions: prev?.sessions ?? p.sessions })),
+    );
+  }
+
+  /** Ouvre la fiche programme de cette formation, à partir de ce qu'on sait déjà. */
+  const ecrireProgramme = () =>
+    agir<Programme>(`/ecole/cours/${c.id}/programme`, { methode: 'POST' }, (p) => {
+      setProgramme({ ...p, sessions: p.sessions ?? [] });
+      setC((prev) => ({ ...prev, formationId: p.id }));
+      setMessage('La fiche programme est ouverte : complète le déroulé et la durée, puis enregistre.');
+    });
+
+  /* -------------------------------------------------------------- sessions */
+
+  const poserSession = (s: SessionProgramme) =>
+    setProgramme((p) => {
+      if (!p) return p;
+      const liste = p.sessions ?? [];
+      const existe = liste.some((x) => x.id === s.id);
+      const sessions = existe ? liste.map((x) => (x.id === s.id ? { ...x, ...s } : x)) : [...liste, s];
+      sessions.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      return { ...p, sessions };
+    });
+
+  const creerSession = (corps: Record<string, unknown>) =>
+    programme
+      ? agir<SessionProgramme>(`/formations/${programme.id}/sessions`, { methode: 'POST', corps }, (s) => {
+          poserSession(s);
+          setMessage('La session est programmée.');
+        })
+      : Promise.resolve();
+
+  const modifierSession = (id: string, corps: Record<string, unknown>) =>
+    agir<SessionProgramme>(`/formations/sessions/${id}`, { methode: 'PATCH', corps }, (s) => {
+      poserSession(s);
+      setMessage('La session est enregistrée.');
+    });
 
   async function changerStatut(statut: CoursComplet['statut']) {
     await agir(`/ecole/cours/${c.id}`, { methode: 'PATCH', corps: { statut } });
@@ -238,11 +304,17 @@ export function AtelierCours({
   const visibles = commentaires.filter((x) => !x.masque);
   const sansReponse = visibles.filter((x) => !x.reponse).length;
 
+  // Les sessions n'ont de sens que quand on se retrouve quelque part, à une
+  // date : en salle, en visio, ou les deux. En ligne pur, l'onglet n'existe pas.
+  const avecSessions = c.modalite !== 'EN_LIGNE';
+  const nbSessions = programme?.sessions?.filter((s) => s.status !== 'CANCELLED').length ?? 0;
+
   const ONGLETS: [Onglet, string][] = [
     ['contenu', 'Contenu'],
     ['parametres', 'Paramètres'],
     ['prix', 'Prix'],
     ['descriptions', 'Descriptions'],
+    ...(avecSessions ? ([['sessions', nbSessions ? `Sessions (${nbSessions})` : 'Sessions']] as [Onglet, string][]) : []),
     ['apprenants', `Apprenants (${apprenants.length})`],
     ['commentaires', sansReponse ? `Commentaires (${sansReponse})` : 'Commentaires'],
     ['statistiques', 'Statistiques'],
@@ -412,7 +484,26 @@ export function AtelierCours({
       {onglet === 'prix' ? <Prix cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerPrix} /> : null}
 
       {onglet === 'descriptions' ? (
-        <Descriptions cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerDescriptions} />
+        <Descriptions
+          cours={c}
+          setCours={setC}
+          programme={programme}
+          setProgramme={setProgramme}
+          ecrireProgramme={ecrireProgramme}
+          occupe={occupe}
+          enregistrer={enregistrerDescriptions}
+        />
+      ) : null}
+
+      {onglet === 'sessions' && avecSessions ? (
+        <Sessions
+          cours={c}
+          programme={programme}
+          ecrireProgramme={ecrireProgramme}
+          occupe={occupe}
+          creer={creerSession}
+          modifier={modifierSession}
+        />
       ) : null}
 
       {onglet === 'apprenants' ? (
@@ -1228,15 +1319,32 @@ function Prix({
 function Descriptions({
   cours: c,
   setCours,
+  programme,
+  setProgramme,
+  ecrireProgramme,
   occupe,
   enregistrer,
 }: {
   cours: CoursComplet;
   setCours: (f: (p: CoursComplet) => CoursComplet) => void;
+  programme: Programme | null;
+  setProgramme: (f: (p: Programme | null) => Programme | null) => void;
+  ecrireProgramme: () => void;
   occupe: boolean;
   enregistrer: () => void;
 }) {
   const set = (patch: Partial<CoursComplet>) => setCours((p) => ({ ...p, ...patch }));
+  const setP = (patch: Partial<Programme>) => setProgramme((p) => (p ? { ...p, ...patch } : p));
+
+  // Les cinq mentions que l'indicateur 1 attend sur une fiche programme.
+  const manques: string[] = [];
+  if (programme) {
+    if (!c.objectifs.some((o) => o.trim())) manques.push('les objectifs');
+    if (!(c.pourQui ?? '').trim()) manques.push('le public visé');
+    if (!(c.prerequis ?? '').trim()) manques.push('les prérequis');
+    if (!programme.durationHours) manques.push('la durée en heures');
+    if (!(programme.program ?? '').trim()) manques.push('le déroulé');
+  }
 
   return (
     <div className="grid gap-4">
@@ -1296,9 +1404,378 @@ function Descriptions({
         </div>
       </Bloc>
 
+      <Bloc titre="La fiche programme — ce que lisent un financeur et un auditeur">
+        {programme ? (
+          <div className="grid gap-3">
+            <p className="max-w-[70ch] text-[14px] leading-relaxed" style={{ color: VERT.sourdine }}>
+              Les objectifs, le public et les prérequis ci-dessus sont ceux de la fiche : ils s&apos;écrivent une fois.
+              Il reste le déroulé et la durée en heures — les deux mentions que l&apos;indicateur 1 exige en plus.
+            </p>
+            <Champ libelle="Le déroulé — les séquences, dans l'ordre, avec leur modalité">
+              <textarea rows={6} value={programme.program ?? ''} onChange={(e) => setP({ program: e.target.value })} className={CHAMP} />
+            </Champ>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Champ libelle="La durée, en heures">
+                <input
+                  type="number"
+                  min={1}
+                  value={programme.durationHours ?? ''}
+                  onChange={(e) => setP({ durationHours: e.target.value ? Number(e.target.value) : null })}
+                  className={CHAMP}
+                />
+              </Champ>
+              <div className="self-end text-[14px]" style={{ color: VERT.sourdine }}>
+                {programme.certifying ? (
+                  <span>
+                    Certifiante{programme.certificationName ? ` — ${programme.certificationName}` : ''}.
+                  </span>
+                ) : (
+                  <span>Non certifiante. Cette mention se pose à la validation du programme.</span>
+                )}
+              </div>
+            </div>
+            {manques.length ? (
+              <p className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-3 py-2 text-[14px] text-[#7C3E06]">
+                Il manque {manques.join(', ')} pour que la fiche tienne devant l&apos;indicateur 1.
+              </p>
+            ) : (
+              <p className="rounded-xl border border-[#B7E4CE] bg-[#E3F5EC] px-3 py-2 text-[14px] text-[#0F5F3E]">
+                Fiche complète : objectifs, public, prérequis, durée et déroulé y sont.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            <p className="max-w-[70ch] text-[14px] leading-relaxed" style={{ color: VERT.sourdine }}>
+              Cette formation n&apos;a pas encore de fiche programme. C&apos;est le premier document qu&apos;un auditeur
+              demande et celui qu&apos;un financeur lit avant de dire oui ; c&apos;est aussi ce qui porte les sessions
+              datées, la convention et l&apos;émargement. Elle s&apos;ouvre à partir de ce qui est déjà écrit ici.
+            </p>
+            <div>
+              <button
+                type="button"
+                onClick={ecrireProgramme}
+                disabled={occupe}
+                className="rounded-xl border-2 bg-white px-4 py-2.5 text-[15px] font-bold disabled:opacity-60"
+                style={{ borderColor: VERT.bord, color: VERT.encre }}
+              >
+                Écrire la fiche programme
+              </button>
+            </div>
+          </div>
+        )}
+      </Bloc>
+
       <Enregistrer occupe={occupe} onClick={enregistrer}>
         Enregistrer les descriptions
       </Enregistrer>
+    </div>
+  );
+}
+
+/* ========================================================== LES SESSIONS == */
+
+/** Une date d'entrée `datetime-local` depuis un ISO, dans le fuseau du navigateur. */
+function versLocal(iso: string | null | undefined) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function dateLongue(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * Les sessions d'une formation en salle, en visio ou mixte : quand on se
+ * retrouve, où, pour combien. C'est la session qui porte les preuves d'un
+ * audit — convention, émargement, évaluations — et elle s'accroche à la fiche
+ * programme : sans fiche, pas de session.
+ */
+function Sessions({
+  cours: c,
+  programme,
+  ecrireProgramme,
+  occupe,
+  creer,
+  modifier,
+}: {
+  cours: CoursComplet;
+  programme: Programme | null;
+  ecrireProgramme: () => void;
+  occupe: boolean;
+  creer: (corps: Record<string, unknown>) => Promise<void>;
+  modifier: (id: string, corps: Record<string, unknown>) => Promise<void>;
+}) {
+  const [ouvert, setOuvert] = useState(false);
+  const [enEdition, setEnEdition] = useState<string | null>(null);
+
+  if (!programme) {
+    return (
+      <Bloc titre="Les sessions">
+        <p className="max-w-[70ch] text-[15px] leading-relaxed" style={{ color: VERT.texte }}>
+          Une session est toujours la session d&apos;une fiche programme : c&apos;est elle que reprennent la convention,
+          la feuille d&apos;émargement et les évaluations. Cette formation n&apos;en a pas encore.
+        </p>
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={ecrireProgramme}
+            disabled={occupe}
+            className="rounded-xl px-5 py-3 text-base font-bold text-white disabled:opacity-60"
+            style={{ backgroundColor: VERT.fonce }}
+          >
+            Écrire la fiche programme
+          </button>
+        </div>
+      </Bloc>
+    );
+  }
+
+  const liste = programme.sessions ?? [];
+  const maintenant = Date.now();
+  const aVenir = liste.filter((s) => new Date(s.endDate ?? s.startDate).getTime() >= maintenant);
+  const passees = liste.filter((s) => new Date(s.endDate ?? s.startDate).getTime() < maintenant);
+  const lieuParDefaut = c.modalite === 'VIRTUEL' ? c.lienVisio ?? '' : c.lieu ?? '';
+
+  return (
+    <div className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[15px]" style={{ color: VERT.sourdine }}>
+          {liste.length === 0
+            ? 'Aucune session programmée.'
+            : `${aVenir.length} à venir · ${passees.length} passée${passees.length > 1 ? 's' : ''}.`}
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setEnEdition(null);
+            setOuvert((o) => !o);
+          }}
+          className="rounded-xl px-5 py-3 text-base font-bold text-white disabled:opacity-60"
+          style={{ backgroundColor: VERT.fonce }}
+        >
+          {ouvert ? 'Fermer' : 'Programmer une session'}
+        </button>
+      </div>
+
+      {ouvert ? (
+        <FormulaireSession
+          initiale={null}
+          lieuParDefaut={lieuParDefaut}
+          placesParDefaut={c.placesMax}
+          occupe={occupe}
+          enVisio={c.modalite === 'VIRTUEL'}
+          valider={async (corps) => {
+            await creer(corps);
+            setOuvert(false);
+          }}
+          annuler={() => setOuvert(false)}
+        />
+      ) : null}
+
+      {[
+        ['À venir', aVenir],
+        ['Déjà passées', passees],
+      ].map(([titre, groupe]) =>
+        (groupe as SessionProgramme[]).length ? (
+          <Bloc key={titre as string} titre={titre as string}>
+            <ul className="grid gap-3">
+              {(groupe as SessionProgramme[]).map((s) => {
+                const annulee = s.status === 'CANCELLED';
+                const manque: string[] = [];
+                if (!s.endDate) manque.push('la date de fin');
+                if (!s.location?.trim()) manque.push(c.modalite === 'VIRTUEL' ? 'le lien de la visio' : 'le lieu');
+                return (
+                  <li key={s.id} className="rounded-xl border bg-white p-4" style={{ borderColor: VERT.bord }}>
+                    {enEdition === s.id ? (
+                      <FormulaireSession
+                        initiale={s}
+                        lieuParDefaut={lieuParDefaut}
+                        placesParDefaut={c.placesMax}
+                        occupe={occupe}
+                        enVisio={c.modalite === 'VIRTUEL'}
+                        valider={async (corps) => {
+                          await modifier(s.id, corps);
+                          setEnEdition(null);
+                        }}
+                        annuler={() => setEnEdition(null)}
+                      />
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
+                            style={
+                              annulee
+                                ? { backgroundColor: '#FDE7EC', color: '#8A1B3D' }
+                                : s.status === 'DONE'
+                                  ? { backgroundColor: '#EDF3F0', color: VERT.sourdine }
+                                  : { backgroundColor: VERT.clair, color: VERT.fonce }
+                            }
+                          >
+                            {NOM_STATUT_SESSION[s.status ?? 'SCHEDULED'] ?? s.status}
+                          </span>
+                          <span className="text-[14px]" style={{ color: VERT.sourdine }}>
+                            {dateLongue(s.startDate)}
+                            {s.endDate ? ` → ${dateLongue(s.endDate)}` : ''}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 text-[16px] font-extrabold" style={{ color: VERT.encre }}>
+                          {s.title || c.titre}
+                        </p>
+                        <p className="mt-1 text-[14px]" style={{ color: VERT.texte }}>
+                          {s.location ? `${s.location} · ` : ''}
+                          {s._count?.inscriptions ?? 0} inscrit{(s._count?.inscriptions ?? 0) > 1 ? 's' : ''}
+                          {s.maxSeats ? ` sur ${s.maxSeats} places` : ''}
+                        </p>
+                        {manque.length && !annulee ? (
+                          <p className="mt-2 rounded-lg border border-[#F5D6A8] bg-[#FEF3E2] px-3 py-1.5 text-[13px] text-[#7C3E06]">
+                            Il manque {manque.join(' et ')} : une convention se défend mal sans.
+                          </p>
+                        ) : null}
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOuvert(false);
+                              setEnEdition(s.id);
+                            }}
+                            disabled={occupe}
+                            className="rounded-lg border-2 bg-white px-3 py-1.5 text-sm font-bold disabled:opacity-60"
+                            style={{ borderColor: VERT.bord, color: VERT.encre }}
+                          >
+                            Modifier
+                          </button>
+                          {annulee ? (
+                            <button
+                              type="button"
+                              onClick={() => modifier(s.id, { status: 'SCHEDULED' })}
+                              disabled={occupe}
+                              className="rounded-lg border-2 bg-white px-3 py-1.5 text-sm font-bold disabled:opacity-60"
+                              style={{ borderColor: VERT.bord, color: VERT.encre }}
+                            >
+                              Remettre au calendrier
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => modifier(s.id, { status: 'CANCELLED' })}
+                              disabled={occupe}
+                              className="rounded-lg border-2 border-[#F3B0C2] bg-white px-3 py-1.5 text-sm font-bold text-[#8A1B3D] disabled:opacity-60"
+                            >
+                              Annuler la session
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </Bloc>
+        ) : null,
+      )}
+    </div>
+  );
+}
+
+function FormulaireSession({
+  initiale,
+  lieuParDefaut,
+  placesParDefaut,
+  occupe,
+  enVisio,
+  valider,
+  annuler,
+}: {
+  initiale: SessionProgramme | null;
+  lieuParDefaut: string;
+  placesParDefaut: number | null;
+  occupe: boolean;
+  enVisio: boolean;
+  valider: (corps: Record<string, unknown>) => Promise<void>;
+  annuler: () => void;
+}) {
+  const [debut, setDebut] = useState(versLocal(initiale?.startDate));
+  const [fin, setFin] = useState(versLocal(initiale?.endDate));
+  const [lieu, setLieu] = useState(initiale ? initiale.location ?? '' : lieuParDefaut);
+  const [places, setPlaces] = useState(initiale ? String(initiale.maxSeats ?? '') : placesParDefaut ? String(placesParDefaut) : '');
+  const [nom, setNom] = useState(initiale?.title ?? '');
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  async function envoyer() {
+    if (!debut) {
+      setErreur('Donne la date de début.');
+      return;
+    }
+    const d = new Date(debut);
+    const f = fin ? new Date(fin) : null;
+    if (f && f.getTime() < d.getTime()) {
+      setErreur('La fin est avant le début.');
+      return;
+    }
+    setErreur(null);
+    const p = Number.parseInt(places, 10);
+    await valider({
+      startDate: d.toISOString(),
+      ...(f ? { endDate: f.toISOString() } : {}),
+      ...(nom.trim() ? { title: nom.trim().slice(0, 160) } : {}),
+      ...(lieu.trim() ? { location: lieu.trim().slice(0, 200) } : {}),
+      ...(Number.isFinite(p) && p > 0 ? { maxSeats: p } : {}),
+    });
+  }
+
+  return (
+    <div className="rounded-xl border p-4" style={{ borderColor: VERT.bord, backgroundColor: VERT.clair }}>
+      {erreur ? <p className="mb-3 text-[14px] font-bold text-[#8A1B3D]">{erreur}</p> : null}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Champ libelle="Début">
+          <input type="datetime-local" value={debut} onChange={(e) => setDebut(e.target.value)} className={CHAMP} required />
+        </Champ>
+        <Champ libelle="Fin — une date de fin rend la convention défendable">
+          <input type="datetime-local" value={fin} onChange={(e) => setFin(e.target.value)} className={CHAMP} />
+        </Champ>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <div className="sm:col-span-2">
+          <Champ libelle={enVisio ? 'Le lien de la visio' : 'Où'}>
+            <input value={lieu} onChange={(e) => setLieu(e.target.value)} className={CHAMP} maxLength={200} placeholder={enVisio ? 'https://…' : 'Adresse de la salle'} />
+          </Champ>
+        </div>
+        <Champ libelle="Places">
+          <input type="number" min={1} value={places} onChange={(e) => setPlaces(e.target.value)} className={CHAMP} />
+        </Champ>
+      </div>
+      <div className="mt-3">
+        <Champ libelle="Un nom pour cette session — facultatif, sinon c'est le titre de la formation">
+          <input value={nom} onChange={(e) => setNom(e.target.value)} className={CHAMP} maxLength={160} />
+        </Champ>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={envoyer}
+          disabled={occupe}
+          className="rounded-xl px-5 py-2.5 text-[15px] font-bold text-white disabled:opacity-60"
+          style={{ backgroundColor: VERT.fonce }}
+        >
+          {initiale ? 'Enregistrer la session' : 'Programmer'}
+        </button>
+        <button
+          type="button"
+          onClick={annuler}
+          className="rounded-xl border-2 bg-white px-4 py-2.5 text-[15px] font-bold"
+          style={{ borderColor: VERT.bord, color: VERT.encre }}
+        >
+          Annuler
+        </button>
+      </div>
     </div>
   );
 }
