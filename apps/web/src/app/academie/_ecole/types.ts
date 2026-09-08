@@ -80,12 +80,59 @@ export interface CoursComplet {
   seoTitre: string | null;
   seoDescription: string | null;
   commentairesActifs: boolean;
+  /** La fiche programme (au sens Qualiopi) que porte cette formation, s'il y en a une. */
+  formationId: string | null;
   statut: StatutCours;
   publieLe: string | null;
   modifieLe: string;
   adresse: string;
   chapitres: Chapitre[];
 }
+
+/**
+ * LA FICHE PROGRAMME : ce que lisent un financeur et un auditeur.
+ * Objectifs évaluables, public, prérequis, durée en heures, déroulé — et les
+ * sessions datées qui portent convention, émargement et évaluations.
+ */
+export interface Programme {
+  id: string;
+  title: string;
+  slug: string;
+  type?: 'CERTIFIANTE' | 'INTERNE' | string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string;
+  summary?: string | null;
+  objectives?: string | null;
+  prerequisites?: string | null;
+  program?: string | null;
+  targetAudience?: string | null;
+  durationHours?: number | null;
+  certifying?: boolean;
+  certificationName?: string | null;
+  cpfEligible?: boolean;
+  sessions?: SessionProgramme[];
+}
+
+export type StatutSession = 'SCHEDULED' | 'OPEN' | 'FULL' | 'RUNNING' | 'DONE' | 'CANCELLED';
+
+export interface SessionProgramme {
+  id: string;
+  title?: string | null;
+  startDate: string;
+  endDate?: string | null;
+  location?: string | null;
+  maxSeats?: number | null;
+  status?: StatutSession | string;
+  _count?: { inscriptions: number };
+}
+
+export const NOM_STATUT_SESSION: Record<string, string> = {
+  SCHEDULED: 'Planifiée',
+  OPEN: 'Ouverte aux inscriptions',
+  FULL: 'Complète',
+  RUNNING: 'En cours',
+  DONE: 'Terminée',
+  CANCELLED: 'Annulée',
+};
 
 export interface CoursResume {
   id: string;
@@ -95,6 +142,9 @@ export interface CoursResume {
   imageUrl: string | null;
   statut: StatutCours;
   modalite?: ModaliteCours;
+  formationId?: string | null;
+  programmeStatut?: string | null;
+  nbSessions?: number;
   gratuit: boolean;
   prixCents: number;
   nbChapitres: number;
