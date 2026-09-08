@@ -200,6 +200,8 @@ export function ListeCours({
                       {c.nbChapitres} chapitre{c.nbChapitres > 1 ? 's' : ''} · {c.nbLecons} leçon
                       {c.nbLecons > 1 ? 's' : ''} · {duree(c.dureeMinutes)} · {c.nbApprenants} apprenant
                       {c.nbApprenants > 1 ? 's' : ''} · {c.gratuit || c.prixCents === 0 ? 'Gratuit' : euros(c.prixCents)}
+                      {c.nbSessions ? ` · ${c.nbSessions} session${c.nbSessions > 1 ? 's' : ''}` : ''}
+                      {c.formationId ? '' : ' · sans fiche programme'}
                     </p>
                     {c.statut === 'PUBLIE' ? (
                       <p className="mt-1 truncate text-sm" style={{ color: VERT.sourdine }}>
