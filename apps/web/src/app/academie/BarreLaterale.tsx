@@ -306,18 +306,18 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
           </>
         ) : (
           <>
-            <Link href="/academie/connexion" className="rounded-xl px-3 py-2 text-[15px] font-bold text-[#12312A] no-underline hover:bg-[#F2F7F5]">
+            <Link href="/academie/connexion" className="rounded-xl border-2 border-[#CFE4D9] bg-white px-3 py-1.5 text-[15px] font-bold text-[#12312A] no-underline transition hover:border-[#0F5F3E] hover:bg-[#F2F7F5]">
               Connexion
             </Link>
             <Link
-              href="/inscription?type=association"
-              className="hidden whitespace-nowrap rounded-xl border-2 border-[#C7C4F2] px-3 py-1.5 text-[13px] font-bold text-[#4338CA] no-underline transition hover:border-[#4F46E5] hover:bg-[#ECEBFC] md:inline-flex"
+              href="/association/inscription?type=association"
+              className="hidden whitespace-nowrap rounded-xl bg-[#C42B57] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#8A1B3D] md:inline-flex"
             >
               Créer espace association
             </Link>
             <Link
               href="/academie/inscription"
-              className="hidden whitespace-nowrap rounded-xl bg-[#1E9E6A] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#17845A] sm:inline-flex"
+              className="hidden whitespace-nowrap rounded-xl bg-[#0F5F3E] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#0B4A30] sm:inline-flex"
             >
               Créer espace académie
             </Link>
