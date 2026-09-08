@@ -4,7 +4,7 @@ import { Fraunces, Nunito } from 'next/font/google';
 import { getSession } from '@/lib/session';
 import { Coque, NOM_SITE, ORIGINE_SITE } from './_ui';
 import { COOKIE_ESPACE } from './_session';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import type { CompteAffiche, EspaceAffiche } from './BarreLaterale';
 
 /**
@@ -70,8 +70,24 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+/**
+ * OÙ LES MENTIONS S'AFFICHENT.
+ *
+ * Le pied de page légal — qui porte l'outil, ce qu'il ne délivre pas, le don —
+ * n'a de sens qu'aux endroits où l'on arrive : le tableau de bord, le chemin,
+ * et le profil. Ailleurs, il alourdit un écran de travail. On le pose donc à
+ * partir de l'adresse demandée, lue dans l'en-tête posé par le middleware.
+ */
+const PAGES_AVEC_MENTIONS = ['/academie', '/academie/mon-profil'];
+
+function avecMentions(chemin: string) {
+  if (PAGES_AVEC_MENTIONS.includes(chemin)) return true;
+  return chemin === '/academie/chemin' || chemin.startsWith('/academie/chemin/');
+}
+
 export default async function AcademieLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
+  const chemin = (await headers()).get('x-chemin') ?? '';
   let compte: CompteAffiche | null = null;
 
   if (session) {
@@ -97,7 +113,9 @@ export default async function AcademieLayout({ children }: { children: ReactNode
 
   return (
     <div className={`${nunito.variable} ${fraunces.variable}`}>
-      <Coque compte={compte}>{children}</Coque>
+      <Coque compte={compte} mentions={avecMentions(chemin)}>
+        {children}
+      </Coque>
     </div>
   );
 }
