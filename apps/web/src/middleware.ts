@@ -48,6 +48,9 @@ const PAGE_CHOIX_CHEMIN = `${PREFIXE_ASSOCIATION}/choisir-le-chemin`;
  */
 const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre'];
 
+/** L'administration de Piloter : une seule adresse, sur le domaine de Piloter. */
+const ADMINISTRATION = '/administration';
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hote = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
@@ -68,6 +71,21 @@ export function middleware(request: NextRequest) {
     // Les pages publiques hors espace : un formulaire partagé, la vitrine d'une
     // école, la page d'un cours, et le cours qu'on suit avec son lien personnel.
     if (PUBLIQUES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return NextResponse.next();
+
+    // L'administration : hors des deux espaces, et fermée sans session. Le rôle
+    // ADMIN est vérifié par la page ET par l'API — jamais par le navigateur.
+    if (pathname === ADMINISTRATION || pathname.startsWith(`${ADMINISTRATION}/`)) {
+      if (!request.cookies.get(SESSION_COOKIE)?.value) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/connexion';
+        url.search = '';
+        url.searchParams.set('next', pathname);
+        return NextResponse.redirect(url);
+      }
+      const entetes = new Headers(request.headers);
+      entetes.set('x-chemin', pathname);
+      return NextResponse.next({ request: { headers: entetes } });
+    }
 
     // L'espace académie est servi tel quel : son dossier porte déjà le préfixe.
     if (pathname === PREFIXE_ACADEMIE || pathname.startsWith(`${PREFIXE_ACADEMIE}/`)) {
@@ -153,7 +171,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
   // Ces pages n'ont qu'une adresse : celle de Piloter.
-  if (PUBLIQUES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+  if (
+    pathname === ADMINISTRATION ||
+    pathname.startsWith(`${ADMINISTRATION}/`) ||
+    PUBLIQUES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  ) {
     const url = request.nextUrl.clone();
     url.protocol = 'https:';
     url.host = HOTE_PILOTE;
