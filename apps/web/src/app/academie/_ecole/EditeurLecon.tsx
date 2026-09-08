@@ -44,6 +44,20 @@ const AIDE_BLOC: Record<TypeBloc, string> = {
   classe: 'Le rendez-vous en visio, avec sa date.',
 };
 
+const ICONE_BLOC: Record<TypeBloc, string> = {
+  titre: 'H',
+  texte: '\u00b6',
+  video: '\u25b6',
+  audio: '\u266a',
+  image: '\u25a3',
+  separateur: '\u2014',
+  information: '\u24d8',
+  fichier: '\u2913',
+  pdf: '\u25a4',
+  lien: '\u2197',
+  classe: '\u25c9',
+};
+
 export function EditeurLecon({
   lecon,
   titreFormation,
@@ -65,6 +79,11 @@ export function EditeurLecon({
   const [blocs, setBlocs] = useState<Bloc[]>(lecon.blocs ?? []);
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [cherche, setCherche] = useState('');
+  const [vise, setVise] = useState<string | null>(null);
+  const [genreAnnexe, setGenreAnnexe] = useState<'lien' | 'fichier'>('lien');
+  const [nomAnnexe, setNomAnnexe] = useState('');
+  const [urlAnnexe, setUrlAnnexe] = useState('');
+  const cadres = useRef<Record<string, HTMLElement | null>>({});
   const [modifie, setModifie] = useState(false);
   const [occupe, setOccupe] = useState(false);
 
@@ -109,6 +128,27 @@ export function EditeurLecon({
     }
     setBlocs((b) => [...b, neuf]);
     setOuvert(neuf.id);
+    setVise(neuf.id);
+    setOnglet('lecon');
+    toucher();
+  };
+
+  // Cliquer un bloc dans la liste de gauche amène l'oeil dessus, il ne
+  // l'ouvre pas : on modifie le bloc là où il se lit, au centre.
+  const montrer = (id: string) => {
+    setVise(id);
+    cadres.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const ajouterAnnexe = () => {
+    const url = urlAnnexe.trim();
+    if (!url) return;
+    const neuf: Bloc = { id: nouvelIdentifiant(), type: genreAnnexe, url };
+    const nom = nomAnnexe.trim();
+    if (nom) neuf.nom = nom;
+    setBlocs((b) => [...b, neuf]);
+    setNomAnnexe('');
+    setUrlAnnexe('');
     setOnglet('lecon');
     toucher();
   };
@@ -281,27 +321,27 @@ export function EditeurLecon({
                   </p>
                 ) : (
                   <ul className="grid gap-1.5">
-                    {blocs.map((b, i) => (
-                      <li key={b.id}>
-                        <button
-                          type="button"
-                          onClick={() => setOuvert(ouvert === b.id ? null : b.id)}
-                          className="flex w-full items-center gap-2 rounded-xl border-2 bg-white px-3 py-2 text-left text-sm font-bold"
-                          style={{
-                            borderColor: ouvert === b.id ? VERT.plein : VERT.bord,
-                            color: VERT.encre,
-                          }}
-                        >
-                          <span className="shrink-0 tabular-nums" style={{ color: VERT.sourdine }}>
-                            {i + 1}.
-                          </span>
-                          <span className="min-w-0 flex-1 truncate">{resume(b)}</span>
-                          <span className="shrink-0 text-xs font-bold" style={{ color: VERT.sourdine }}>
-                            {NOM_BLOC[b.type]}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
+                    {blocs.map((b) => {
+                      const marque = ouvert === b.id || vise === b.id;
+                      return (
+                        <li key={b.id}>
+                          <button
+                            type="button"
+                            onClick={() => montrer(b.id)}
+                            className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed bg-white px-3 py-2 text-left text-sm font-bold"
+                            style={{
+                              borderColor: marque ? VERT.plein : VERT.bord,
+                              color: marque ? VERT.fonce : VERT.encre,
+                            }}
+                          >
+                            <span aria-hidden className="shrink-0 text-base leading-none">
+                              {ICONE_BLOC[b.type]}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">{NOM_BLOC[b.type]}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -327,9 +367,12 @@ export function EditeurLecon({
                     type="button"
                     onClick={() => poser(t)}
                     title={AIDE_BLOC[t]}
-                    className="rounded-xl border-2 bg-white px-3 py-4 text-sm font-bold"
+                    className="grid gap-1.5 rounded-xl border-2 bg-white px-3 py-4 text-sm font-bold"
                     style={{ borderColor: VERT.bord, color: VERT.encre }}
                   >
+                    <span aria-hidden className="text-xl leading-none" style={{ color: VERT.fonce }}>
+                      {ICONE_BLOC[t]}
+                    </span>
                     {NOM_BLOC[t]}
                   </button>
                 ))}
@@ -344,28 +387,68 @@ export function EditeurLecon({
 
           {onglet === 'annexes' ? (
             <div className="grid gap-3 p-4">
-              <p className="text-sm" style={{ color: VERT.texte }}>
-                Une annexe est un document que l’apprenant garde : le support de séance, un modèle à
-                remplir, la bibliographie.
+              <p className="text-center text-sm" style={{ color: VERT.sourdine }}>
+                Voici l’endroit idéal pour ajouter des ressources complémentaires.
               </p>
-              <p className="text-sm" style={{ color: VERT.sourdine }}>
-                Pose-la comme un bloc « Fichier à télécharger » : elle apparaît alors dans la leçon,
-                à l’endroit exact où elle sert.
+              <p className="text-center text-sm" style={{ color: VERT.sourdine }}>
+                Ajoute un <span className="font-bold">lien</span> ou un{' '}
+                <span className="font-bold">fichier</span>.
               </p>
+              <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
+                Type de ressource
+                <select
+                  value={genreAnnexe}
+                  onChange={(e) => setGenreAnnexe(e.target.value as 'lien' | 'fichier')}
+                  className="rounded-xl border-2 bg-white px-3 py-2 text-[15px] font-normal focus:outline-none"
+                  style={{ borderColor: VERT.bord, color: VERT.encre }}
+                >
+                  <option value="lien">Lien</option>
+                  <option value="fichier">Fichier</option>
+                </select>
+              </label>
+              <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
+                Nom de l’annexe
+                <input
+                  value={nomAnnexe}
+                  onChange={(e) => setNomAnnexe(e.target.value)}
+                  className="rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
+                  style={{ borderColor: VERT.bord, color: VERT.encre }}
+                />
+              </label>
+              <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
+                Lien (http:// ou https://)
+                <input
+                  value={urlAnnexe}
+                  onChange={(e) => setUrlAnnexe(e.target.value)}
+                  className="rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
+                  style={{ borderColor: VERT.bord, color: VERT.encre }}
+                />
+              </label>
               <button
                 type="button"
-                onClick={() => poser('fichier')}
-                className="rounded-xl border-2 bg-white px-3 py-2 text-sm font-bold"
-                style={{ borderColor: VERT.bord, color: VERT.fonce }}
+                onClick={ajouterAnnexe}
+                disabled={!urlAnnexe.trim()}
+                className="rounded-xl px-4 py-2.5 text-sm font-extrabold text-white disabled:opacity-50"
+                style={{ backgroundColor: VERT.fonce }}
               >
-                + Ajouter un fichier à télécharger
+                Ajouter
               </button>
             </div>
           ) : null}
         </aside>
 
         {/* ------------------------------------------------------------- l'aperçu */}
-        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-8" style={{ backgroundColor: VERT.fond }}>
+        <main
+          className="min-h-0 flex-1 overflow-y-auto px-4 py-8"
+          style={{ backgroundColor: VERT.fond }}
+          onMouseDown={(e) => {
+            // On sort du bloc en cliquant à côté : pas de bouton « Terminé » à
+            // chercher, comme dans un document qu'on écrit.
+            if (!ouvert) return;
+            const cible = e.target as Node;
+            if (!cadres.current[ouvert]?.contains(cible)) setOuvert(null);
+          }}
+        >
           <div className="mx-auto max-w-3xl">
             <h1 className="mb-6 text-center text-3xl font-black tracking-tight" style={{ color: VERT.encre }}>
               {titre || 'Sans titre'}
@@ -381,34 +464,50 @@ export function EditeurLecon({
             ) : null}
 
             <div className="grid gap-4">
-              {blocs.map((b, i) => (
-                <article
-                  key={b.id}
-                  className="group relative rounded-2xl border-2 bg-white p-5"
-                  style={{ borderColor: ouvert === b.id ? VERT.plein : 'transparent' }}
-                >
-                  <div className="absolute right-3 top-3 flex gap-1 opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
-                    <Icone titre="Monter ce bloc" onClick={() => bouger(i, -1)} disabled={i === 0}>
-                      ↑
-                    </Icone>
-                    <Icone titre="Descendre ce bloc" onClick={() => bouger(i, 1)} disabled={i === blocs.length - 1}>
-                      ↓
-                    </Icone>
-                    <Icone titre="Modifier ce bloc" onClick={() => setOuvert(ouvert === b.id ? null : b.id)}>
-                      ✎
-                    </Icone>
-                    <Icone titre="Supprimer ce bloc" onClick={() => retirer(b.id)} danger>
-                      ✕
-                    </Icone>
-                  </div>
+              {blocs.map((b, i) => {
+                const actif = ouvert === b.id;
+                const enPlace = b.type === 'titre' || b.type === 'texte' || b.type === 'information';
+                return (
+                  <article
+                    key={b.id}
+                    ref={(n) => {
+                      cadres.current[b.id] = n;
+                    }}
+                    onMouseEnter={() => setVise(b.id)}
+                    className="group relative rounded-2xl border-2 bg-white p-5"
+                    style={{ borderColor: actif || vise === b.id ? VERT.plein : 'transparent' }}
+                  >
+                    {/* La barre se pose au-dessus du bloc, comme chez Teachizy :
+                        déplacer à gauche, modifier et retirer à droite. */}
+                    <div className="pointer-events-none absolute inset-x-3 -top-4 flex items-center justify-between opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
+                      <div className="pointer-events-auto flex gap-1">
+                        <Icone titre="Monter ce bloc" onClick={() => bouger(i, -1)} disabled={i === 0}>
+                          ↑
+                        </Icone>
+                        <Icone titre="Descendre ce bloc" onClick={() => bouger(i, 1)} disabled={i === blocs.length - 1}>
+                          ↓
+                        </Icone>
+                      </div>
+                      <div className="pointer-events-auto flex gap-1">
+                        <Icone titre="Modifier ce bloc" onClick={() => setOuvert(actif ? null : b.id)}>
+                          ✎
+                        </Icone>
+                        <Icone titre="Supprimer ce bloc" onClick={() => retirer(b.id)} danger>
+                          ✕
+                        </Icone>
+                      </div>
+                    </div>
 
-                  {ouvert === b.id ? (
-                    <ReglagesBloc bloc={b} changer={(p) => changer(b.id, p)} fermer={() => setOuvert(null)} />
-                  ) : (
-                    <ApercuBloc bloc={b} />
-                  )}
-                </article>
-              ))}
+                    {actif && enPlace ? (
+                      <BlocEnPlace bloc={b} changer={(p) => changer(b.id, p)} />
+                    ) : actif ? (
+                      <ReglagesBloc bloc={b} changer={(p) => changer(b.id, p)} fermer={() => setOuvert(null)} />
+                    ) : (
+                      <ApercuBloc bloc={b} />
+                    )}
+                  </article>
+                );
+              })}
             </div>
           </div>
         </main>
@@ -546,37 +645,6 @@ function ReglagesBloc({
         {NOM_BLOC[bloc.type]}
       </p>
 
-      {bloc.type === 'titre' ? (
-        <input
-          autoFocus
-          value={bloc.texte ?? ''}
-          onChange={(e) => changer({ texte: e.target.value })}
-          className={champ}
-          style={{ borderColor: VERT.bord, color: VERT.encre }}
-          placeholder="Le titre"
-        />
-      ) : null}
-
-      {bloc.type === 'texte' || bloc.type === 'information' ? (
-        <TexteRiche valeur={bloc.html ?? ''} changer={(html) => changer({ html })} />
-      ) : null}
-
-      {bloc.type === 'information' ? (
-        <label className="grid gap-1 text-sm font-bold" style={{ color: VERT.texte }}>
-          Le ton
-          <select
-            value={bloc.ton ?? 'info'}
-            onChange={(e) => changer({ ton: e.target.value as Bloc['ton'] })}
-            className={champ}
-            style={{ borderColor: VERT.bord, color: VERT.encre }}
-          >
-            <option value="info">Un rappel</option>
-            <option value="attention">Une mise en garde</option>
-            <option value="succes">Un encouragement</option>
-          </select>
-        </label>
-      ) : null}
-
       {['video', 'audio', 'image', 'fichier', 'pdf', 'lien', 'classe'].includes(bloc.type) ? (
         <label className="grid gap-1 text-sm font-bold" style={{ color: VERT.texte }}>
           L’adresse
@@ -650,70 +718,128 @@ function ReglagesBloc({
 }
 
 /**
- * UN TEXTE QU'ON MET EN FORME.
+ * LE BLOC S'ÉCRIT LÀ OÙ IL SE LIRA.
  *
- * Gras, italique, liste, lien : le strict nécessaire pour écrire un cours,
- * sans transformer l'écran en traitement de texte.
+ * Pas de formulaire à côté : on tape dans le bloc lui-même, avec la
+ * typographie finale. La petite barre au-dessus ne sert qu'à la mise en forme,
+ * et on sort en cliquant à côté — il n'y a rien à valider.
  */
-function TexteRiche({ valeur, changer }: { valeur: string; changer: (html: string) => void }) {
+function BlocEnPlace({ bloc, changer }: { bloc: Bloc; changer: (patch: Partial<Bloc>) => void }) {
   const zone = useRef<HTMLDivElement | null>(null);
+  const brut = bloc.type === 'titre';
 
   useEffect(() => {
-    if (zone.current && zone.current.innerHTML !== valeur) zone.current.innerHTML = valeur;
-    // On ne réécrit la zone que lorsqu'on change de bloc, jamais en frappant.
+    const n = zone.current;
+    if (!n) return;
+    if (brut) n.innerText = bloc.texte ?? '';
+    else n.innerHTML = bloc.html ?? '';
+    n.focus();
+    // On ne réécrit la zone qu'à l'ouverture, jamais en frappant.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const geste = (commande: string, valeurCommande?: string) => {
-    document.execCommand(commande, false, valeurCommande);
-    if (zone.current) changer(zone.current.innerHTML);
+  const dire = () => {
+    const n = zone.current;
+    if (!n) return;
+    changer(brut ? { texte: n.innerText } : { html: n.innerHTML });
   };
 
-  const bouton = 'rounded-lg border-2 bg-white px-2.5 py-1 text-sm font-extrabold';
+  const geste = (commande: string, valeurCommande?: string) => {
+    zone.current?.focus();
+    document.execCommand(commande, false, valeurCommande);
+    dire();
+  };
+
+  const tons: Record<string, { fond: string; encre: string }> = {
+    info: { fond: VERT.clair, encre: VERT.fonce },
+    attention: { fond: '#FEF3E2', encre: '#7C3E06' },
+    succes: { fond: '#E3F5EC', encre: '#0F5F3E' },
+  };
+  const t = tons[bloc.ton ?? 'info'] ?? tons.info;
+
+  // La zone qu'on écrit porte exactement l'habit du bloc rendu : ce qu'on tape
+  // est déjà ce que l'apprenant lira.
+  const habit =
+    bloc.type === 'titre'
+      ? { cls: 'text-2xl font-extrabold tracking-tight', st: { color: VERT.encre } as React.CSSProperties }
+      : bloc.type === 'information'
+        ? {
+            cls: 'rounded-xl px-4 py-3 text-[15px] leading-relaxed [&_a]:underline [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-2 [&_p:last-child]:mb-0',
+            st: { backgroundColor: t.fond, color: t.encre } as React.CSSProperties,
+          }
+        : {
+            cls: 'prose-sm max-w-none text-[15px] leading-relaxed [&_a]:underline [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-3',
+            st: { color: VERT.texte } as React.CSSProperties,
+          };
 
   return (
     <div className="grid gap-2">
-      <div className="flex flex-wrap gap-1">
-        <button type="button" onClick={() => geste('bold')} className={bouton} style={{ borderColor: VERT.bord, color: VERT.encre }}>
-          G
-        </button>
-        <button
-          type="button"
-          onClick={() => geste('italic')}
-          className={`${bouton} italic`}
-          style={{ borderColor: VERT.bord, color: VERT.encre }}
-        >
-          I
-        </button>
-        <button
-          type="button"
-          onClick={() => geste('insertUnorderedList')}
-          className={bouton}
-          style={{ borderColor: VERT.bord, color: VERT.encre }}
-        >
-          Liste
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            const url = window.prompt('L’adresse du lien');
-            if (url) geste('createLink', url);
-          }}
-          className={bouton}
-          style={{ borderColor: VERT.bord, color: VERT.encre }}
-        >
-          Lien
-        </button>
-      </div>
+      {brut ? null : (
+        <div className="flex flex-wrap gap-1">
+          <BoutonForme onClick={() => geste('bold')}>G</BoutonForme>
+          <BoutonForme onClick={() => geste('italic')} italique>
+            I
+          </BoutonForme>
+          <BoutonForme onClick={() => geste('insertUnorderedList')}>Liste</BoutonForme>
+          <BoutonForme
+            onClick={() => {
+              const url = window.prompt('L’adresse du lien');
+              if (url) geste('createLink', url);
+            }}
+          >
+            Lien
+          </BoutonForme>
+        </div>
+      )}
+
       <div
         ref={zone}
         contentEditable
         suppressContentEditableWarning
-        onInput={(e) => changer((e.target as HTMLDivElement).innerHTML)}
-        className="min-h-[120px] rounded-xl border-2 px-3 py-2 text-[15px] leading-relaxed focus:outline-none [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-2"
-        style={{ borderColor: VERT.bord, color: VERT.texte }}
+        onInput={dire}
+        className={`${habit.cls} focus:outline-none`}
+        style={habit.st}
       />
+
+      {bloc.type === 'information' ? (
+        <label className="flex items-center gap-2 text-sm font-bold" style={{ color: VERT.sourdine }}>
+          Le ton
+          <select
+            value={bloc.ton ?? 'info'}
+            onChange={(e) => changer({ ton: e.target.value as Bloc['ton'] })}
+            className="rounded-lg border-2 bg-white px-2 py-1 text-sm font-bold"
+            style={{ borderColor: VERT.bord, color: VERT.texte }}
+          >
+            <option value="info">Un rappel</option>
+            <option value="attention">Une mise en garde</option>
+            <option value="succes">Un encouragement</option>
+          </select>
+        </label>
+      ) : null}
     </div>
+  );
+}
+
+/** Un bouton de mise en forme : il ne doit jamais voler la sélection. */
+function BoutonForme({
+  children,
+  onClick,
+  italique,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  italique?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={`rounded-lg border-2 bg-white px-2.5 py-1 text-sm font-extrabold ${italique ? 'italic' : ''}`}
+      style={{ borderColor: VERT.bord, color: VERT.encre }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -743,15 +869,4 @@ function Icone({
       {children}
     </button>
   );
-}
-
-/** Ce qu'on lit d'un bloc dans la liste de gauche. */
-function resume(b: Bloc) {
-  if (b.type === 'titre') return b.texte || 'Un titre';
-  if (b.type === 'texte' || b.type === 'information') {
-    const nu = (b.html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    return nu ? nu.slice(0, 60) : 'Un texte';
-  }
-  if (b.type === 'separateur') return 'Un trait';
-  return b.nom || b.legende || b.url || NOM_BLOC[b.type];
 }
