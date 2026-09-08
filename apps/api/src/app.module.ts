@@ -56,6 +56,7 @@ import { AssociationModule } from './association/association.module';
 import { AcademieModule } from './academie/academie.module';
 import { FormulairesModule } from './formulaires/formulaires.module';
 import { EcoleModule } from './ecole/ecole.module';
+import { AdministrationModule } from './administration/administration.module';
 
 @Module({
   imports: [
@@ -121,6 +122,7 @@ import { EcoleModule } from './ecole/ecole.module';
     AcademieModule,
     FormulairesModule,
   EcoleModule,
+  AdministrationModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
