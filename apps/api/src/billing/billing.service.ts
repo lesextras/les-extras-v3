@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreditsService } from './credits.service';
 import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
@@ -590,9 +590,75 @@ export class BillingService {
       return { received: true };
     }
 
+    // ACHAT D'UNE FORMATION EN LIGNE.
+    //
+    // Rien n'a été créé au moment du clic : c'est ici que l'apprenant est
+    // inscrit et la vente enregistrée. L'idempotence tient à
+    // `VenteCours.stripeSessionId`, unique : une relivraison de Stripe
+    // retombe sur la vente existante et n'inscrit personne deux fois.
+    if (kind === 'cours') {
+      const coursId = session.metadata?.coursId;
+      const accountId = session.metadata?.accountId;
+      const email = session.metadata?.email?.trim().toLowerCase();
+      if (!coursId || !accountId || !email) {
+        this.logger.warn(`Webhook cours: session incomplète ${session.id}`);
+        return { received: true };
+      }
+
+      const deja = await this.prisma.venteCours.findUnique({
+        where: { stripeSessionId: session.id },
+        select: { id: true },
+      });
+      if (deja) return { received: true, ignored: 'deja_traite' };
+
+      const montant = Number((session as unknown as { amount_total?: number }).amount_total ?? 0);
+      const nom = session.metadata?.nom ?? null;
+
+      await this.prisma.$transaction(async (tx) => {
+        const inscription = await tx.inscriptionCours.findUnique({
+          where: { coursId_email: { coursId, email } },
+          select: { id: true },
+        });
+        if (!inscription) {
+          await tx.inscriptionCours.create({
+            data: {
+              coursId,
+              email,
+              nom,
+              jeton: randomBytes(24).toString('base64url'),
+            },
+          });
+        }
+        await tx.venteCours.create({
+          data: {
+            accountId,
+            coursId,
+            email,
+            nom,
+            montantCents: montant,
+            statut: 'PAYEE',
+            moyen: 'Stripe',
+            stripeSessionId: session.id,
+            codePromo: session.metadata?.codePromo ?? null,
+            affiliation: session.metadata?.affiliation ?? null,
+          },
+        });
+        // Un code promo utilisé se compte : sans cela, « usageMax » ne veut rien dire.
+        const code = session.metadata?.codePromo?.trim();
+        if (code) {
+          await tx.codePromo.updateMany({
+            where: { accountId, code: code.toUpperCase() },
+            data: { usages: { increment: 1 } },
+          });
+        }
+      });
+      this.logger.log(`Formation ${coursId} payée par ${email}`);
+      return { received: true };
+    }
+
     // Les paiements Stripe connus sont l'abonnement LEX, le règlement d'une
-    // facture et l'achat de crédits, tous traités plus haut. Toute autre
-    // session est ignorée sans erreur.
+    // facture, l'achat de crédits et l'achat d'une formation, tous traités
+    // plus haut. Toute autre session est ignorée sans erreur.
     this.logger.warn(`Webhook: session sans traitement associé (${session.id})`);
     return { received: true };
   }
