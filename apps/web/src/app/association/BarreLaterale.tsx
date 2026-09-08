@@ -168,7 +168,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
   const chemin = usePathname() ?? '/';
   // La plateforme (l'accueil et la page des deux chemins) porte la marque DORÉE ;
   // l'espace association porte la sienne, en rouge rosé.
-  const surLaPlateforme = chemin === '/' || chemin === '/chemin';
+  const surLaPlateforme = chemin === '/' || chemin === '/chemin' || chemin === '/centre-d-aide';
   const [ouvert, setOuvert] = useState(false);
   // Le groupe « Mon compte » s'ouvre tout seul quand on est sur l'une de ses pages.
   const [compteOuvert, setCompteOuvert] = useState(() => MON_COMPTE.some((e) => chemin.startsWith(e.href)));
@@ -320,7 +320,7 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
           <img src="/pilote/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
           <span className="text-[15px] font-extrabold text-[#1D1B5C]">Piloter</span>
         </Link>
-        {compte?.espaceOuvert ? <MenuEspaces compte={compte} /> : null}
+        {compte && (compte.espaceOuvert || (compte.espaces?.length ?? 0) > 0) ? <MenuEspaces compte={compte} /> : null}
         <Link href="/centre-d-aide" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">
           {ICONES.aide} Centre d&apos;aide
         </Link>
