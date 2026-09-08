@@ -29,6 +29,44 @@ export interface Quiz {
   questions: QuestionQuiz[];
 }
 
+/* ------------------------------------------------------------------- blocs */
+
+/**
+ * UNE LEÇON EST FAITE DE BLOCS, DANS L'ORDRE.
+ *
+ * Un titre, un paragraphe, une vidéo, une image, un fichier à télécharger :
+ * on les empile, on les déplace, on les retire. C'est la même chose que dans
+ * un document — sauf qu'ici chaque morceau sait ce qu'il est.
+ */
+export type TypeBloc =
+  | 'titre'
+  | 'texte'
+  | 'video'
+  | 'audio'
+  | 'image'
+  | 'separateur'
+  | 'information'
+  | 'fichier'
+  | 'pdf'
+  | 'lien'
+  | 'classe';
+
+export interface Bloc {
+  id: string;
+  type: TypeBloc;
+  /** Texte riche : « texte » et « information ». */
+  html?: string;
+  /** Texte simple : « titre ». */
+  texte?: string;
+  /** L'adresse : vidéo, audio, image, fichier, PDF, lien, classe. */
+  url?: string;
+  legende?: string;
+  nom?: string;
+  ton?: 'info' | 'attention' | 'succes';
+  niveau?: number;
+  debut?: string;
+}
+
 export interface Lecon {
   id: string;
   titre: string;
@@ -36,8 +74,10 @@ export interface Lecon {
   contenu: string | null;
   videoUrl: string | null;
   fichierUrl: string | null;
+  blocs: Bloc[];
   dureeMinutes: number;
   apercu: boolean;
+  publie: boolean;
   quiz: Quiz | null;
   ordre: number;
 }
@@ -47,8 +87,19 @@ export interface Chapitre {
   titre: string;
   resume: string | null;
   ordre: number;
+  publie: boolean;
   lecons: Lecon[];
 }
+
+/**
+ * LE CONTENU EN UNE SEULE LISTE.
+ *
+ * Un chapitre et une leçon se rangent côte à côte : le chapitre est
+ * facultatif, une leçon peut se poser directement dans la formation.
+ */
+export type ElementContenu =
+  | ({ genre: 'chapitre' } & Chapitre)
+  | ({ genre: 'lecon' } & Lecon);
 
 export interface CoursComplet {
   id: string;
@@ -87,6 +138,7 @@ export interface CoursComplet {
   modifieLe: string;
   adresse: string;
   chapitres: Chapitre[];
+  contenu: ElementContenu[];
 }
 
 /**
@@ -151,6 +203,7 @@ export interface CoursResume {
   nbLecons: number;
   nbApprenants: number;
   dureeMinutes: number;
+  creeLe?: string;
   modifieLe: string;
 }
 
@@ -291,6 +344,21 @@ export const NOM_TYPE_LECON: Record<TypeLecon, string> = {
   QUIZ: 'Quiz',
   DEVOIR: 'Devoir',
   LIVE: 'Classe en direct',
+};
+
+/** Les blocs, tels qu'ils s'appellent dans la palette. */
+export const NOM_BLOC: Record<TypeBloc, string> = {
+  titre: 'Titre',
+  texte: 'Texte',
+  video: 'Vidéo',
+  audio: 'Audio',
+  image: 'Image',
+  separateur: 'Séparateur',
+  information: "Bloc d'information",
+  fichier: 'Fichier à télécharger',
+  pdf: 'Visionneuse PDF',
+  lien: 'Lien',
+  classe: 'Classe en direct',
 };
 
 export const NOM_NIVEAU: Record<NiveauCours, string> = {
