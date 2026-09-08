@@ -38,6 +38,16 @@ const PREFIXE_ACADEMIE = '/academie';
 /** La page qui explique ce qu'est un chemin et ouvre les deux chemins. */
 const PAGE_CHOIX_CHEMIN = `${PREFIXE_ASSOCIATION}/choisir-le-chemin`;
 
+/**
+ * LES PAGES QUI NE SONT DANS AUCUN ESPACE.
+ *
+ * Un formulaire partagé, la vitrine d'une école en ligne, la page d'un cours,
+ * et le cours qu'on suit avec son lien personnel. Elles s'ouvrent sans session,
+ * sans barre latérale, et se servent telles quelles : ni réécriture vers un
+ * espace, ni redirection vers la connexion.
+ */
+const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre'];
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hote = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
@@ -55,8 +65,9 @@ export function middleware(request: NextRequest) {
     // Fichiers partagés entre les sites (manifeste, robots, plan du site…).
     if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
 
-    // La page publique d'un formulaire : hors espace, sans session, telle quelle.
-    if (pathname === '/f' || pathname.startsWith('/f/')) return NextResponse.next();
+    // Les pages publiques hors espace : un formulaire partagé, la vitrine d'une
+    // école, la page d'un cours, et le cours qu'on suit avec son lien personnel.
+    if (PUBLIQUES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return NextResponse.next();
 
     // L'espace académie est servi tel quel : son dossier porte déjà le préfixe.
     if (pathname === PREFIXE_ACADEMIE || pathname.startsWith(`${PREFIXE_ACADEMIE}/`)) {
@@ -141,8 +152,8 @@ export function middleware(request: NextRequest) {
     url.port = '';
     return NextResponse.redirect(url, 308);
   }
-  // Un formulaire partagé n'a qu'une adresse : celle de Piloter.
-  if (pathname === '/f' || pathname.startsWith('/f/')) {
+  // Ces pages n'ont qu'une adresse : celle de Piloter.
+  if (PUBLIQUES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     const url = request.nextUrl.clone();
     url.protocol = 'https:';
     url.host = HOTE_PILOTE;
