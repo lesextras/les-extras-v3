@@ -55,6 +55,9 @@ export function middleware(request: NextRequest) {
     // Fichiers partagés entre les sites (manifeste, robots, plan du site…).
     if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
 
+    // La page publique d'un formulaire : hors espace, sans session, telle quelle.
+    if (pathname === '/f' || pathname.startsWith('/f/')) return NextResponse.next();
+
     // L'espace académie est servi tel quel : son dossier porte déjà le préfixe.
     if (pathname === PREFIXE_ACADEMIE || pathname.startsWith(`${PREFIXE_ACADEMIE}/`)) {
       const espaceProtege =
@@ -132,6 +135,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
   if (pathname === PREFIXE_ACADEMIE || pathname.startsWith(`${PREFIXE_ACADEMIE}/`)) {
+    const url = request.nextUrl.clone();
+    url.protocol = 'https:';
+    url.host = HOTE_PILOTE;
+    url.port = '';
+    return NextResponse.redirect(url, 308);
+  }
+  // Un formulaire partagé n'a qu'une adresse : celle de Piloter.
+  if (pathname === '/f' || pathname.startsWith('/f/')) {
     const url = request.nextUrl.clone();
     url.protocol = 'https:';
     url.host = HOTE_PILOTE;
