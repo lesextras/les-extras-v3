@@ -262,6 +262,7 @@ export interface Pack {
 
 export interface Promo {
   id: string;
+  description: string | null;
   code: string;
   type: TypeRemise;
   valeur: number;
@@ -293,10 +294,29 @@ export interface Vitrine {
   presentation: string | null;
   logoUrl: string | null;
   banniereUrl: string | null;
+  faviconUrl: string | null;
+
+  /** La principale suffit ; les cinq autres se déduisent d'elle si elles sont vides. */
   couleur: string;
+  couleurFond: string | null;
+  couleurTitres: string | null;
+  couleurTextes: string | null;
+  couleurBoutons: string | null;
+  couleurTexteBoutons: string | null;
+
+  liensSociaux: { reseau: string; url: string }[] | null;
+
   contactEmail: string | null;
   cgv: string | null;
   mentions: string | null;
+
+  certificatModele: string | null;
+  certificatsActifs: boolean;
+  commentairesActifs: boolean;
+
+  googleAnalytics: string | null;
+  pixelMeta: string | null;
+
   publiee: boolean;
 }
 
@@ -308,6 +328,7 @@ export interface Affilie {
   commissionPourcent: number;
   ventes: number;
   gainsCents: number;
+  gainsVersesCents: number;
   actif: boolean;
 }
 
