@@ -13,7 +13,17 @@ import { NOM_STATUT_VENTE, dateCourte, euros, type CoursResume, type Pack, type 
  * saisir à la main, et de changer son statut quand l'argent arrive.
  */
 
-type Tri = 'date' | 'montant' | 'acheteur';
+type Tri = 'date' | 'montant' | 'acheteur' | 'reste';
+
+/**
+ * CE QUI RESTE À ENCAISSER SUR UNE VENTE.
+ *
+ * Une vente réglée ne doit plus rien ; une vente remboursée non plus. Reste
+ * une vente enregistrée mais pas encore payée : c'est celle-là qu'on relance.
+ */
+function resteAPayer(v: Vente) {
+  return v.statut === 'EN_ATTENTE' ? (v.montantCents ?? 0) : 0;
+}
 
 const STATUTS: StatutVente[] = ['EN_ATTENTE', 'PAYEE', 'REMBOURSEE', 'ANNULEE'];
 
@@ -25,7 +35,7 @@ const TON: Record<StatutVente, 'ok' | 'attention' | 'neutre' | 'alerte'> = {
 };
 
 function versCsv(ventes: Vente[]) {
-  const entetes = ['Date', 'Acheteur', 'E-mail', 'Produit', 'Statut', 'Moyen', 'Montant (€)'];
+  const entetes = ['Date', 'Acheteur', 'E-mail', 'Produit', 'Statut', 'Moyen', 'Reste à payer (€)', 'Montant (€)'];
   const e = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const lignes = ventes.map((v) =>
     [
@@ -35,6 +45,7 @@ function versCsv(ventes: Vente[]) {
       v.cours?.titre ?? (v.packId ? 'Pack' : ''),
       NOM_STATUT_VENTE[v.statut],
       v.moyen ?? '',
+      (resteAPayer(v) / 100).toFixed(2).replace('.', ','),
       ((v.montantCents ?? 0) / 100).toFixed(2).replace('.', ','),
     ]
       .map(e)
@@ -70,6 +81,7 @@ export function Ventes({ initiales, cours, packs }: { initiales: Vente[]; cours:
     const t = [...l];
     if (tri === 'date') t.sort((a, b) => +new Date(b.le) - +new Date(a.le));
     if (tri === 'montant') t.sort((a, b) => (b.montantCents ?? 0) - (a.montantCents ?? 0));
+    if (tri === 'reste') t.sort((a, b) => resteAPayer(b) - resteAPayer(a));
     if (tri === 'acheteur') t.sort((a, b) => (a.nom || a.email).localeCompare(b.nom || b.email, 'fr'));
     return t;
   }, [ventes, recherche, tri]);
@@ -161,6 +173,7 @@ export function Ventes({ initiales, cours, packs }: { initiales: Vente[]; cours:
             <select value={tri} onChange={(e) => setTri(e.target.value as Tri)} className={CHAMP}>
               <option value="date">Date d&apos;achat</option>
               <option value="montant">Montant</option>
+              <option value="reste">Reste à payer</option>
               <option value="acheteur">Acheteur</option>
             </select>
           </label>
@@ -262,6 +275,14 @@ export function Ventes({ initiales, cours, packs }: { initiales: Vente[]; cours:
                 {v.codePromo ? <span className="block text-[13px] text-[#5E7A6E]">code {v.codePromo}</span> : null}
               </span>
               <Pastille ton={TON[v.statut]}>{NOM_STATUT_VENTE[v.statut]}</Pastille>
+              <span className="w-[110px] text-right">
+                <span className="block text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Reste</span>
+                <span
+                  className={`block text-[15px] font-black ${resteAPayer(v) ? 'text-[#8A1B3D]' : 'text-[#5E7A6E]'}`}
+                >
+                  {euros(resteAPayer(v))}
+                </span>
+              </span>
               <span className="w-[100px] text-right text-[16px] font-black text-[#12312A]">
                 {euros(v.montantCents)}
               </span>
