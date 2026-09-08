@@ -53,6 +53,11 @@ export class ModifierCoursDto {
   @IsOptional() @IsString() @MaxLength(200) seoTitre?: string;
   @IsOptional() @IsString() @MaxLength(400) seoDescription?: string;
   @IsOptional() @IsBoolean() commentairesActifs?: boolean;
+
+  /** La fiche programme (Formation) que porte cette formation ; `null` pour la détacher. */
+  @IsOptional()
+  @IsString()
+  formationId?: string | null;
 }
 
 /* ----------------------------------------------------------- commentaires */
