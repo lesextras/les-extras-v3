@@ -12,6 +12,7 @@ import {
   type ChampBloc,
 } from '../../_shared/blocs';
 import { BlocRendu } from '../../_shared/blocs-lecon';
+import { appel, messageDe } from './api';
 import { VERT, nouvelIdentifiant, type Bloc, type Lecon, type TypeBloc } from './types';
 
 /**
@@ -28,6 +29,7 @@ import { VERT, nouvelIdentifiant, type Bloc, type Lecon, type TypeBloc } from '.
 
 export function EditeurLecon({
   lecon,
+  coursId,
   titreFormation,
   adressePublique,
   lecons = [],
@@ -35,6 +37,7 @@ export function EditeurLecon({
   fermer,
 }: {
   lecon: Lecon;
+  coursId: string;
   titreFormation: string;
   adressePublique: string | null;
   /** Les autres leçons de la formation, pour « Lien vers une leçon ». */
@@ -45,6 +48,12 @@ export function EditeurLecon({
   const [onglet, setOnglet] = useState<'lecon' | 'blocs' | 'annexes'>('lecon');
   const [titre, setTitre] = useState(lecon.titre);
   const [duree, setDuree] = useState(String(lecon.dureeMinutes || ''));
+  const [dureeImposee, setDureeImposee] = useState(Boolean(lecon.dureeImposee));
+  const [ouvertureJours, setOuvertureJours] = useState(String(lecon.ouvertureJours || ''));
+  const [taches, setTaches] = useState<{ id: string; texte: string }[]>(lecon.taches ?? []);
+  const [scormUrl, setScormUrl] = useState(lecon.scormUrl ?? '');
+  const [ecrit, setEcrit] = useState(false);
+  const [glisse, setGlisse] = useState<string | null>(null);
   const [publie, setPublie] = useState(lecon.publie !== false);
   const [apercu, setApercu] = useState(lecon.apercu);
   const [blocs, setBlocs] = useState<Bloc[]>(lecon.blocs ?? []);
@@ -76,6 +85,10 @@ export function EditeurLecon({
     const fait = await enregistrer({
       titre: titre.trim() || 'Leçon',
       dureeMinutes: Number(duree) || 0,
+      dureeImposee,
+      ouvertureJours: Number(ouvertureJours) || 0,
+      taches,
+      scormUrl,
       publie,
       apercu,
       blocs,
@@ -127,6 +140,47 @@ export function EditeurLecon({
     setNomAnnexe('');
     setUrlAnnexe('');
     setOnglet('lecon');
+    toucher();
+  };
+
+  /**
+   * L'IA PROPOSE, ELLE NE REMPLACE PAS.
+   *
+   * Les blocs proposés s'ajoutent à la suite de ce qui existe déjà : on peut
+   * les garder, les modifier, les retirer. Rien n'est effacé.
+   */
+  const ecrireAvecIa = async () => {
+    const consigne = window.prompt(
+      'Que doit dire cette leçon ? (facultatif — laisse vide pour partir du titre)',
+      '',
+    );
+    if (consigne === null) return;
+    setEcrit(true);
+    try {
+      const d = await appel<{ blocs: Bloc[] }>(`/ecole/cours/${coursId}/lecons/${lecon.id}/ia`, {
+        methode: 'POST',
+        corps: { consigne: consigne.trim() || undefined },
+      });
+      setBlocs((b) => [...b, ...(d.blocs ?? [])]);
+      toucher();
+    } catch (err) {
+      window.alert(messageDe(err));
+    } finally {
+      setEcrit(false);
+    }
+  };
+
+  /** Déposer un bloc sur un autre : celui qu'on tient prend sa place. */
+  const deposer = (cible: string) => {
+    if (!glisse || glisse === cible) return;
+    const de = blocs.findIndex((b) => b.id === glisse);
+    const vers = blocs.findIndex((b) => b.id === cible);
+    if (de < 0 || vers < 0) return;
+    const copie = [...blocs];
+    const [pris] = copie.splice(de, 1);
+    copie.splice(vers, 0, pris);
+    setBlocs(copie);
+    setGlisse(null);
     toucher();
   };
 
@@ -182,6 +236,16 @@ export function EditeurLecon({
             Voir la page
           </a>
         ) : null}
+        <button
+          type="button"
+          onClick={() => void ecrireAvecIa()}
+          disabled={ecrit || occupe}
+          title="Proposer des blocs pour cette leçon"
+          className="shrink-0 rounded-xl border-2 bg-white px-3 py-2 text-sm font-extrabold disabled:opacity-50"
+          style={{ borderColor: VERT.bord, color: VERT.fonce }}
+        >
+          {ecrit ? 'Écriture…' : 'Écrire avec l’IA'}
+        </button>
         <button
           type="button"
           onClick={sauver}
@@ -254,6 +318,106 @@ export function EditeurLecon({
                   style={{ borderColor: VERT.bord, color: VERT.encre }}
                 />
               </label>
+
+              <label className="flex items-start gap-2 text-sm" style={{ color: VERT.texte }}>
+                <input
+                  type="checkbox"
+                  checked={dureeImposee}
+                  onChange={(e) => {
+                    setDureeImposee(e.target.checked);
+                    toucher();
+                  }}
+                  className="mt-1 size-4"
+                />
+                <span>
+                  <span className="font-bold">Imposer cette durée</span>
+                  <br />
+                  L’apprenant ne peut pas cocher la leçon avant que ce temps se soit écoulé.
+                </span>
+              </label>
+
+              <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
+                S’ouvre après (en jours)
+                <input
+                  type="number"
+                  min={0}
+                  value={ouvertureJours}
+                  onChange={(e) => {
+                    setOuvertureJours(e.target.value);
+                    toucher();
+                  }}
+                  className="rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
+                  style={{ borderColor: VERT.bord, color: VERT.encre }}
+                />
+                <span className="text-xs font-normal" style={{ color: VERT.sourdine }}>
+                  Vide ou zéro : disponible dès l’inscription.
+                </span>
+              </label>
+
+              {lecon.type === 'SCORM' ? (
+                <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
+                  L’adresse du paquet SCORM
+                  <input
+                    value={scormUrl}
+                    onChange={(e) => {
+                      setScormUrl(e.target.value);
+                      toucher();
+                    }}
+                    placeholder="https://…/story.html"
+                    className="rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
+                    style={{ borderColor: VERT.bord, color: VERT.encre }}
+                  />
+                  <span className="text-xs font-normal" style={{ color: VERT.sourdine }}>
+                    Le paquet doit être déjà déposé quelque part : colle l’adresse de son
+                    index. Il s’affiche dans la leçon, mais sa progression ne remonte pas
+                    encore ici.
+                  </span>
+                </label>
+              ) : null}
+
+              {lecon.type === 'TACHES' ? (
+                <div className="grid gap-2">
+                  <p className="text-sm font-bold" style={{ color: VERT.texte }}>
+                    Les tâches à faire
+                  </p>
+                  {taches.map((t, i) => (
+                    <div key={t.id} className="flex items-center gap-2">
+                      <input
+                        value={t.texte}
+                        onChange={(e) => {
+                          const copie = [...taches];
+                          copie[i] = { ...t, texte: e.target.value };
+                          setTaches(copie);
+                          toucher();
+                        }}
+                        className="min-w-0 flex-1 rounded-xl border-2 px-3 py-2 text-[15px] focus:outline-none"
+                        style={{ borderColor: VERT.bord, color: VERT.encre }}
+                      />
+                      <Icone
+                        titre="Retirer cette tâche"
+                        onClick={() => {
+                          setTaches(taches.filter((x) => x.id !== t.id));
+                          toucher();
+                        }}
+                        danger
+                      >
+                        ✕
+                      </Icone>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTaches([...taches, { id: nouvelIdentifiant(), texte: '' }]);
+                      toucher();
+                    }}
+                    className="rounded-xl border-2 bg-white px-3 py-2 text-sm font-bold"
+                    style={{ borderColor: VERT.bord, color: VERT.fonce }}
+                  >
+                    + Ajouter une tâche
+                  </button>
+                </div>
+              ) : null}
 
               <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
                 Cette leçon
@@ -451,13 +615,39 @@ export function EditeurLecon({
                       cadres.current[b.id] = n;
                     }}
                     onMouseEnter={() => setVise(b.id)}
+                    // On ne rend le bloc déplaçable que quand on le tient par sa
+                    // poignée : sans cela, sélectionner du texte le déplacerait.
+                    draggable={glisse === b.id}
+                    onDragStart={(e) => e.dataTransfer.setData('text/plain', b.id)}
+                    onDragEnd={() => setGlisse(null)}
+                    onDragOver={(e) => {
+                      if (glisse) e.preventDefault();
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      deposer(b.id);
+                    }}
                     className="group relative rounded-2xl border-2 bg-white p-5"
-                    style={{ borderColor: actif || vise === b.id ? VERT.plein : 'transparent' }}
+                    style={{
+                      borderColor: actif || vise === b.id ? VERT.plein : 'transparent',
+                      opacity: glisse === b.id ? 0.5 : 1,
+                    }}
                   >
                     {/* La barre se pose au-dessus du bloc, comme chez Teachizy :
                         déplacer à gauche, modifier et retirer à droite. */}
                     <div className="pointer-events-none absolute inset-x-3 -top-4 flex items-center justify-between opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
                       <div className="pointer-events-auto flex gap-1">
+                        <button
+                          type="button"
+                          title="Déplacer ce bloc"
+                          aria-label="Déplacer ce bloc"
+                          onMouseDown={() => setGlisse(b.id)}
+                          onMouseUp={() => setGlisse(null)}
+                          className="size-8 cursor-grab rounded-lg border-2 bg-white text-sm font-extrabold active:cursor-grabbing"
+                          style={{ borderColor: VERT.bord, color: VERT.texte }}
+                        >
+                          ⠿
+                        </button>
                         <Icone titre="Monter ce bloc" onClick={() => bouger(i, -1)} disabled={i === 0}>
                           ↑
                         </Icone>
