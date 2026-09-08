@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { apiEspace, sessionAssociation } from '../../../_session';
 import { Encart, ORIGINE_SITE } from '../../../_ui';
 import { Atelier } from '../../../../_shared/formulaires/Atelier';
-import { TEINTE_ASSOCIATION, type FormulaireComplet, type Reponse } from '../../../../_shared/formulaires/types';
+import { TEINTE_ASSOCIATION, type FormulaireComplet, type ReponsesFormulaire } from '../../../../_shared/formulaires/types';
 
 export const metadata: Metadata = { title: 'Mon formulaire', robots: { index: false, follow: false } };
 
@@ -14,7 +14,7 @@ export default async function FormulairePage({ params }: { params: Promise<{ id:
 
   const [f, r] = await Promise.all([
     apiEspace<FormulaireComplet>(s, `/formulaires/${id}`),
-    apiEspace<Reponse[]>(s, `/formulaires/${id}/reponses`),
+    apiEspace<ReponsesFormulaire>(s, `/formulaires/${id}/reponses`),
   ]);
 
   if (!f.data) {
@@ -39,7 +39,7 @@ export default async function FormulairePage({ params }: { params: Promise<{ id:
       </p>
       <Atelier
         formulaire={f.data}
-        reponsesInitiales={r.data ?? []}
+        reponsesInitiales={r.data?.reponses ?? []}
         teinte={TEINTE_ASSOCIATION}
         origine={ORIGINE_SITE}
       />
