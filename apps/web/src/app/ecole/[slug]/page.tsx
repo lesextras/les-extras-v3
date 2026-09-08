@@ -14,6 +14,13 @@ interface Vitrine {
     logoUrl: string | null;
     banniereUrl: string | null;
     couleur: string;
+    couleurFond?: string | null;
+    couleurTitres?: string | null;
+    couleurTextes?: string | null;
+    couleurBoutons?: string | null;
+    couleurTexteBoutons?: string | null;
+    faviconUrl?: string | null;
+    liensSociaux?: { reseau: string; url: string }[] | null;
     contactEmail: string | null;
   };
   cours: {
@@ -61,16 +68,28 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
 
   const { ecole } = v;
 
+  // Les cinq couleurs facultatives se déduisent de la principale quand elles
+  // sont vides : une école qui n'y touche pas garde exactement l'ancien rendu.
+  const fond = ecole.couleurFond || '#F7F8F7';
+  const titres = ecole.couleurTitres || '#12312A';
+  const textes = ecole.couleurTextes || '#334A42';
+  const boutons = ecole.couleurBoutons || ecole.couleur;
+  const texteBoutons = ecole.couleurTexteBoutons || '#FFFFFF';
+  const liens = Array.isArray(ecole.liensSociaux) ? ecole.liensSociaux : [];
+
   return (
-    <div className="min-h-screen bg-[#F7F8F7] text-[#334A42]" style={{ fontFamily: 'var(--font-pilote), system-ui, sans-serif' }}>
-      <header className="px-4 py-10 text-white sm:py-16" style={{ backgroundColor: ecole.couleur }}>
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: fond, color: textes, fontFamily: 'var(--font-pilote), system-ui, sans-serif' }}
+    >
+      <header className="px-4 py-10 sm:py-16" style={{ backgroundColor: ecole.couleur, color: texteBoutons }}>
         <div className="mx-auto flex w-full max-w-[1040px] flex-col items-start gap-5">
           {ecole.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={ecole.logoUrl} alt="" className="h-16 w-16 rounded-2xl bg-white/10 object-contain p-1.5" />
           ) : null}
           <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-5xl">{ecole.nom}</h1>
-          {ecole.sousTitre ? <p className="max-w-[56ch] text-lg leading-relaxed text-white/90">{ecole.sousTitre}</p> : null}
+          {ecole.sousTitre ? <p className="max-w-[56ch] text-lg leading-relaxed opacity-90">{ecole.sousTitre}</p> : null}
         </div>
       </header>
 
@@ -79,7 +98,7 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
           <section className="mb-10 max-w-[68ch] whitespace-pre-line text-lg leading-relaxed">{ecole.presentation}</section>
         ) : null}
 
-        <h2 className="text-2xl font-extrabold tracking-tight text-[#12312A] sm:text-3xl">Les cours</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl" style={{ color: titres }}>Les cours</h2>
         {v.cours.length === 0 ? (
           <p className="mt-3 leading-relaxed">Aucun cours n&apos;est publié pour le moment.</p>
         ) : (
@@ -94,13 +113,13 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
                     <div className="h-40 w-full" style={{ backgroundColor: `${ecole.couleur}1A` }} />
                   )}
                   <div className="p-5">
-                    <h3 className="text-lg font-extrabold leading-tight tracking-tight text-[#12312A]">{c.titre}</h3>
+                    <h3 className="text-lg font-extrabold leading-tight tracking-tight" style={{ color: titres }}>{c.titre}</h3>
                     {c.sousTitre ? <p className="mt-1 text-[15px] leading-relaxed text-[#334A42]">{c.sousTitre}</p> : null}
                     <p className="mt-3 text-sm text-[#5E7A6E]">
                       {c.nbLecons} leçon{c.nbLecons > 1 ? 's' : ''}
                       {c.certificat ? ' · attestation' : ''}
                     </p>
-                    <p className="mt-2 text-lg font-extrabold" style={{ color: ecole.couleur }}>
+                    <p className="mt-2 text-lg font-extrabold" style={{ color: boutons }}>
                       {c.gratuit || c.prixCents === 0 ? 'Gratuit' : prix(c.prixCents)}
                       {c.prixBarreCents ? <span className="ml-2 text-sm font-bold text-[#5E7A6E] line-through">{prix(c.prixBarreCents)}</span> : null}
                     </p>
@@ -113,13 +132,13 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
 
         {v.packs.length ? (
           <>
-            <h2 className="mt-12 text-2xl font-extrabold tracking-tight text-[#12312A] sm:text-3xl">Les packs</h2>
+            <h2 className="mt-12 text-2xl font-extrabold tracking-tight sm:text-3xl" style={{ color: titres }}>Les packs</h2>
             <ul className="mt-5 grid gap-4 sm:grid-cols-2">
               {v.packs.map((p) => (
                 <li key={p.slug} className="rounded-2xl border border-[#DDEBE4] bg-white p-5">
-                  <h3 className="text-lg font-extrabold tracking-tight text-[#12312A]">{p.titre}</h3>
+                  <h3 className="text-lg font-extrabold tracking-tight" style={{ color: titres }}>{p.titre}</h3>
                   {p.description ? <p className="mt-1 leading-relaxed">{p.description}</p> : null}
-                  <p className="mt-3 text-lg font-extrabold" style={{ color: ecole.couleur }}>
+                  <p className="mt-3 text-lg font-extrabold" style={{ color: boutons }}>
                     {prix(p.prixCents)}
                   </p>
                 </li>
@@ -132,9 +151,25 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
           {ecole.contactEmail ? (
             <p>
               Une question ?{' '}
-              <a href={`mailto:${ecole.contactEmail}`} className="font-bold underline underline-offset-4" style={{ color: ecole.couleur }}>
+              <a href={`mailto:${ecole.contactEmail}`} className="font-bold underline underline-offset-4" style={{ color: boutons }}>
                 {ecole.contactEmail}
               </a>
+            </p>
+          ) : null}
+          {liens.length ? (
+            <p className="mb-4 flex flex-wrap justify-center gap-x-4 gap-y-2">
+              {liens.map((l) => (
+                <a
+                  key={`${l.reseau}-${l.url}`}
+                  href={l.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold underline underline-offset-4"
+                  style={{ color: boutons }}
+                >
+                  {NOM_RESEAU[l.reseau] ?? l.reseau}
+                </a>
+              ))}
             </p>
           ) : null}
           <p className="mt-2">
@@ -149,6 +184,23 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
     </div>
   );
 }
+
+const NOM_RESEAU: Record<string, string> = {
+  site: 'Site web',
+  facebook: 'Facebook',
+  messenger: 'Messenger',
+  whatsapp: 'WhatsApp',
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  linkedin: 'LinkedIn',
+  youtube: 'YouTube',
+  twitter: 'X',
+  vimeo: 'Vimeo',
+  soundcloud: 'Soundcloud',
+  spotify: 'Spotify',
+  pinterest: 'Pinterest',
+  github: 'GitHub',
+};
 
 function prix(cents: number) {
   return new Intl.NumberFormat('fr-FR', {
