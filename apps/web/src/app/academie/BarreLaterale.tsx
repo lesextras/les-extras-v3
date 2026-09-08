@@ -66,6 +66,8 @@ export const ICONES = {
   secretariat: i('M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h6'),
   courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
   aide: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'),
+  /** L'enveloppe : écrire à quelqu'un. */
+  enveloppe: i('M3 6h18v12H3zM3 7l9 6 9-6'),
   chevron: i('M6 9l6 6 6-6'),
   personne: i('M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'),
   page: i('M4 4h11l5 5v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM15 4v5h5M8 13h8M8 17h5'),
@@ -86,18 +88,13 @@ const MENU: Entree[] = [
   { href: '/academie', libelle: 'Tableau de bord', icone: ICONES.toque, accent: true },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/academie/mon-academie', libelle: 'Mon académie', icone: ICONES.academie },
-  { href: '/academie/catalogue', libelle: 'Mon catalogue', icone: ICONES.catalogue },
-  { href: '/academie/sessions', libelle: 'Mes sessions', icone: ICONES.sessions },
+  { href: '/academie/formations', libelle: 'Mes formations', icone: ICONES.catalogue },
   { href: '/academie/apprenants', libelle: 'Mes apprenants', icone: ICONES.apprenants },
-  { href: '/academie/cours-en-ligne', libelle: 'Mes cours en ligne', icone: ICONES.enLigne },
-  { href: '/academie/cours-en-presentiel', libelle: 'Mes cours en présentiel', icone: ICONES.presentiel },
   { href: '/academie/formateurs', libelle: 'Mes formateurs', icone: ICONES.formateurs },
   { href: '/academie/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
   { href: '/academie/ventes', libelle: 'Mes ventes', icone: ICONES.ventes },
   { href: '/academie/packs', libelle: 'Mes packs', icone: ICONES.packs },
   { href: '/academie/codes-promo', libelle: 'Mes codes promo', icone: ICONES.promo },
-  { href: '/academie/classes-virtuelles', libelle: 'Mes classes virtuelles', icone: ICONES.classes },
-  { href: '/academie/statistiques', libelle: 'Mes statistiques', icone: ICONES.statistiques },
 ];
 
 /**
@@ -118,6 +115,13 @@ const PUBLIC = ['/academie', '/chemin'];
 /** Les pages qui n'ont pas d'entrée à elles : elles éclairent celle qui les porte. */
 const PORTEES: Record<string, string> = {
   '/academie/versements': '/academie/comptabilite',
+  // Les cinq anciennes adresses des formations mènent au même écran fusionné.
+  '/academie/catalogue': '/academie/formations',
+  '/academie/sessions': '/academie/formations',
+  '/academie/cours-en-ligne': '/academie/formations',
+  '/academie/cours-en-presentiel': '/academie/formations',
+  '/academie/classes-virtuelles': '/academie/formations',
+  '/academie/statistiques': '/academie',
   '/academie/certification': '/academie/mon-academie',
   '/academie/comptabilite': '/academie/mon-academie',
   '/academie/secretariat': '/academie/mon-academie',
@@ -317,6 +321,20 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
       ) : null}
 
       <div className="relative flex flex-1 items-center justify-end gap-2">
+        {/* Pouvoir écrire à quelqu'un, depuis n'importe quel écran. */}
+        <Link
+          href="/academie/nous-contacter"
+          className="hidden shrink-0 items-center gap-2 rounded-xl border border-[#DDEBE4] px-3.5 py-2 text-[14px] font-bold text-[#12312A] no-underline transition hover:border-[#1E9E6A] hover:bg-[#E3F5EC] hover:text-[#0F5F3E] sm:flex"
+        >
+          {ICONES.enveloppe} Nous contacter
+        </Link>
+        <Link
+          href="/academie/nous-contacter"
+          aria-label="Nous contacter"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#DDEBE4] text-[#12312A] no-underline hover:bg-[#E3F5EC] sm:hidden"
+        >
+          {ICONES.enveloppe}
+        </Link>
         {compte ? (
           <>
             <button

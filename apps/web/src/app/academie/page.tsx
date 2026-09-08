@@ -3,6 +3,8 @@ import { academieConnectee, apiAcademie, sessionAcademie } from './_session';
 import { chargerChemin, tempsDe, TEINTES } from './_chemin';
 import { Accent, Barre, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, Encart, Pastille, SousTitre, Titre, Tuile, formaterDate } from './_ui';
 import { LIBELLES_QUALIOPI, type EspaceAcademie } from './_types';
+import { BlocStatistiques } from './_stats';
+import type { Apprenant, CoursResume, Vente } from './_ecole/types';
 
 /**
  * L'ACCUEIL DE « PILOTER MON ACADÉMIE ».
@@ -97,7 +99,16 @@ async function Presentation() {
 
 async function TableauDeBord() {
   const s = await sessionAcademie('/academie');
-  const { data, error } = await apiAcademie<EspaceAcademie>(s, '/academie/espace');
+  // L'espace d'un côté, l'école de l'autre : les chiffres de vente et de suivi
+  // vivent dans le module école, et ils ont leur place ici, pas sur un écran
+  // séparé où personne ne va.
+  const [espace, ventesR, apprenantsR, coursR] = await Promise.all([
+    apiAcademie<EspaceAcademie>(s, '/academie/espace'),
+    apiAcademie<Vente[]>(s, '/ecole/ventes'),
+    apiAcademie<Apprenant[]>(s, '/ecole/apprenants'),
+    apiAcademie<CoursResume[]>(s, '/ecole/cours'),
+  ]);
+  const { data, error } = espace;
   if (!data) return <Encart ton="attention">{error ?? 'Ton espace ne se charge pas pour le moment.'}</Encart>;
 
   const { academie, chemin, qualiopi, sessions, apprenants, catalogue, reclamations, veille } = data;
@@ -163,8 +174,8 @@ async function TableauDeBord() {
           ton={qualiopi.couverture >= 100 ? 'ok' : qualiopi.couverture >= 60 ? 'neutre' : 'attention'}
           href="/academie/certification"
         />
-        <Tuile libelle="Au catalogue" valeur={catalogue.total} detail={`${catalogue.publiees} publiée${catalogue.publiees > 1 ? 's' : ''}`} href="/academie/catalogue" />
-        <Tuile libelle="Sessions à venir" valeur={sessions.length} detail={prochaine ? formaterDate(prochaine.debut) ?? undefined : 'Aucune programmée'} href="/academie/sessions" />
+        <Tuile libelle="Au catalogue" valeur={catalogue.total} detail={`${catalogue.publiees} publiée${catalogue.publiees > 1 ? 's' : ''}`} href="/academie/formations" />
+        <Tuile libelle="Sessions à venir" valeur={sessions.length} detail={prochaine ? formaterDate(prochaine.debut) ?? undefined : 'Aucune programmée'} href="/academie/formations?onglet=sessions" />
         <Tuile libelle="Apprenants" valeur={apprenants.total} detail={`${apprenants.certifies} certifié${apprenants.certifies > 1 ? 's' : ''}`} href="/academie/apprenants" />
       </section>
 
@@ -241,6 +252,12 @@ async function TableauDeBord() {
           </ul>
         </section>
       ) : null}
+
+      <BlocStatistiques
+        ventes={Array.isArray(ventesR.data) ? ventesR.data : []}
+        inscriptions={Array.isArray(apprenantsR.data) ? apprenantsR.data : []}
+        cours={Array.isArray(coursR.data) ? coursR.data : []}
+      />
     </>
   );
 }
