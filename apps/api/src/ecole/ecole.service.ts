@@ -534,8 +534,22 @@ export class EcoleService implements OnModuleInit {
 
     if (dto.chapitreId) await this.monChapitre(accountId, coursId, dto.chapitreId);
 
-    const type = genre === 'quiz' ? TypeLecon.QUIZ : genre === 'devoir' ? TypeLecon.DEVOIR : genre === 'live' ? TypeLecon.LIVE : TypeLecon.TEXTE;
-    const parDefaut = genre === 'quiz' ? 'Nouveau quiz' : genre === 'devoir' ? 'Nouveau devoir' : genre === 'live' ? 'Nouvelle classe en direct' : 'Nouvelle leçon';
+    const types: Record<string, string> = {
+      quiz: TypeLecon.QUIZ,
+      devoir: TypeLecon.DEVOIR,
+      live: TypeLecon.LIVE,
+      taches: TypeLecon.TACHES,
+      scorm: TypeLecon.SCORM,
+    };
+    const noms: Record<string, string> = {
+      quiz: 'Nouveau quiz',
+      devoir: 'Nouveau devoir',
+      live: 'Nouvelle classe en direct',
+      taches: 'Nouvelles tâches',
+      scorm: 'Nouveau contenu SCORM',
+    };
+    const type = (types[genre] ?? TypeLecon.TEXTE) as TypeLecon;
+    const parDefaut = noms[genre] ?? 'Nouvelle leçon';
 
     await this.prisma.leconCours.create({
       data: {
