@@ -78,6 +78,8 @@ export class EcrireCommentaireDto {
 /* -------------------------------------------------------- chapitres, leçons */
 
 export class ChapitreDto {
+  /** Diffusion progressive : le chapitre s'ouvre N jours après l'inscription. */
+  @IsOptional() @IsInt() @Min(0) @Max(3650) ouvertureJours?: number;
   @IsOptional() @IsString() @MinLength(1) @MaxLength(200) titre?: string;
   @IsOptional() @IsString() @MaxLength(1000) resume?: string;
   /** Un chapitre en brouillon reste écrit, mais ne se lit pas. */
@@ -105,6 +107,14 @@ export class LeconDto {
   @IsOptional() @IsString() @MaxLength(600) videoUrl?: string;
   @IsOptional() @IsString() @MaxLength(600) fichierUrl?: string;
   @IsOptional() @IsInt() @Min(0) @Max(100000) dureeMinutes?: number;
+  /** Imposée, la durée retient l'apprenant avant qu'il puisse cocher la leçon. */
+  @IsOptional() @IsBoolean() dureeImposee?: boolean;
+  /** Diffusion progressive : la leçon s'ouvre N jours après l'inscription. */
+  @IsOptional() @IsInt() @Min(0) @Max(3650) ouvertureJours?: number;
+  /** Tâches & missions : relues par `nettoyerTaches`. */
+  @IsOptional() taches?: unknown;
+  /** L'index d'un paquet SCORM déposé ailleurs. */
+  @IsOptional() @IsString() @MaxLength(1000) scormUrl?: string;
   @IsOptional() @IsBoolean() apercu?: boolean;
   /** Une leçon en brouillon reste écrite, mais ne se lit pas. */
   @IsOptional() @IsBoolean() publie?: boolean;
@@ -112,6 +122,40 @@ export class LeconDto {
   @IsOptional() blocs?: unknown;
   /** Le quiz est relu par `nettoyerQuiz` : sa forme change d'une question à l'autre. */
   @IsOptional() quiz?: unknown;
+}
+
+/* ------------------------------------------------------- l'aide à l'écriture */
+
+/** Ce qu'on donne à l'IA pour qu'elle propose un plan de formation. */
+export class StructureIaDto {
+  @IsOptional() @IsString() @MaxLength(2000) consigne?: string;
+  @IsOptional() @IsInt() @Min(1) @Max(12) chapitres?: number;
+  @IsOptional() @IsInt() @Min(1) @Max(10) leconsParChapitre?: number;
+}
+
+/** Ce qu'on donne à l'IA pour qu'elle écrive une leçon. */
+export class LeconIaDto {
+  @IsOptional() @IsString() @MaxLength(2000) consigne?: string;
+}
+
+/** Ce qu'on donne à l'IA pour qu'elle propose un titre et une description. */
+export class TitreIaDto {
+  @IsString() @MinLength(2) @MaxLength(400) sujet!: string;
+}
+
+/* ------------------------------------------------------ le paiement en ligne */
+
+/** Acheter une formation : l'acheteur, le code promo, le lien d'affiliation. */
+export class AcheterCoursDto {
+  @IsString() @MaxLength(200) email!: string;
+  @IsOptional() @IsString() @MaxLength(120) nom?: string;
+  @IsOptional() @IsString() @MaxLength(40) codePromo?: string;
+  @IsOptional() @IsString() @MaxLength(40) affiliation?: string;
+}
+
+/** Ce que l'apprenant coche dans une leçon « Tâches & missions ». */
+export class CocherTachesDto {
+  @IsArray() ids!: string[];
 }
 
 /** Le nouvel ordre : la liste des identifiants, dans l'ordre voulu. */
