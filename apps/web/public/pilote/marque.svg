@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Piloter">
   <defs>
-    <linearGradient id="pilote-or" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FBD45E"/>
-      <stop offset="0.5" stop-color="#F5B400"/>
-      <stop offset="1" stop-color="#D99A00"/>
+    <linearGradient id="pilote-deux-espaces" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1E9E6A"/>
+      <stop offset="0.45" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#C42B57"/>
     </linearGradient>
   </defs>
-  <rect width="128" height="128" rx="30" fill="url(#pilote-or)"/>
-  <circle cx="64" cy="64" r="39" fill="none" stroke="#7C3E06" stroke-width="7"/>
+  <rect width="128" height="128" rx="30" fill="url(#pilote-deux-espaces)"/>
+  <circle cx="64" cy="64" r="39" fill="none" stroke="#F6F4EE" stroke-width="7"/>
   <g transform="rotate(45 64 64)">
-    <polygon points="64,31 53,64 75,64" fill="#FFF8E7"/>
-    <polygon points="64,97 53,64 75,64" fill="#7C3E06"/>
+    <polygon points="64,31 53,64 75,64" fill="#F6F4EE"/>
+    <polygon points="64,97 53,64 75,64" fill="#F6F4EE" opacity="0.55"/>
   </g>
-  <circle cx="64" cy="64" r="6.5" fill="#F5B400" stroke="#FFF8E7" stroke-width="3"/>
+  <circle cx="64" cy="64" r="6.5" fill="#F6F4EE"/>
 </svg>
