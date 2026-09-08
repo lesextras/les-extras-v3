@@ -108,7 +108,6 @@ const MON_COMPTE: Entree[] = [
   { href: '/academie/ma-page', libelle: 'Ma page académie', icone: ICONES.page },
   { href: '/academie/personnalisation', libelle: 'Personnalisation', icone: ICONES.vitrine },
   { href: '/academie/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },
-  { href: '/academie/versements', libelle: 'Versements', icone: ICONES.versements },
   { href: '/academie/parametres', libelle: 'Paramètres', icone: ICONES.reglages },
   { href: '/academie/droits-acces', libelle: "Droits d'accès", icone: ICONES.cles },
 ];
@@ -118,6 +117,7 @@ const PUBLIC = ['/academie', '/chemin'];
 
 /** Les pages qui n'ont pas d'entrée à elles : elles éclairent celle qui les porte. */
 const PORTEES: Record<string, string> = {
+  '/academie/versements': '/academie/comptabilite',
   '/academie/certification': '/academie/mon-academie',
   '/academie/comptabilite': '/academie/mon-academie',
   '/academie/secretariat': '/academie/mon-academie',
