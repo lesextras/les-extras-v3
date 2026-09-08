@@ -337,32 +337,6 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
                   </Link>
                 ) : null}
 
-                {/* MES ESPACES. Une même personne porte souvent une association ET une
-                    académie : on doit pouvoir repartir vers l'autre depuis ici, même
-                    quand l'académie n'est pas encore ouverte. */}
-                {compte.espaces?.length ? (
-                  <>
-                    <p className="px-3 pb-1 pt-2 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#5E7A6E]">Mes espaces</p>
-                    {compte.espaces.map((e) => (
-                      <button
-                        key={e.id}
-                        type="button"
-                        onClick={() => {
-                          choisirEspace(e.id);
-                          window.location.href = e.type === 'ACADEMIE' ? '/academie/mon-academie' : '/espace/association';
-                        }}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-[#12312A] hover:bg-[#F2F7F5]"
-                      >
-                        <span
-                          className={`h-2 w-2 shrink-0 rounded-full ${e.type === 'ACADEMIE' ? 'bg-[#1E9E6A]' : 'bg-[#4F46E5]'}`}
-                          aria-hidden="true"
-                        />
-                        <span className="truncate">{court(e.nom, 26)}</span>
-                      </button>
-                    ))}
-                    <span className="my-1 block h-px bg-[#DDEBE4]" />
-                  </>
-                ) : null}
                 <Link href="/academie/mon-profil" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#12312A] no-underline hover:bg-[#F2F7F5]">
                   Mon profil
                 </Link>
@@ -447,6 +421,16 @@ function MenuEspaces({ compte }: { compte: CompteAffiche }) {
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E3F5EC] text-lg font-extrabold text-[#0F5F3E]">+</span>
             <span className="text-sm font-bold text-[#12312A]">Ajouter une académie</span>
+          </Link>
+          {/* Les deux portes, des deux côtés : une même personne ouvre aussi bien
+              une académie de plus qu'une association. */}
+          <Link
+            href="/ouvrir-mon-espace"
+            onClick={() => setOuvert(false)}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 no-underline hover:bg-[#F2F7F5]"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ECEBFC] text-lg font-extrabold text-[#4338CA]">+</span>
+            <span className="text-sm font-bold text-[#12312A]">Ajouter une association</span>
           </Link>
         </div>
       ) : null}
