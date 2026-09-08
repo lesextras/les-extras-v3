@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsDateString,
   IsEnum,
   IsInt,
@@ -79,6 +80,22 @@ export class EcrireCommentaireDto {
 export class ChapitreDto {
   @IsOptional() @IsString() @MinLength(1) @MaxLength(200) titre?: string;
   @IsOptional() @IsString() @MaxLength(1000) resume?: string;
+  /** Un chapitre en brouillon reste écrit, mais ne se lit pas. */
+  @IsOptional() @IsBoolean() publie?: boolean;
+}
+
+/**
+ * AJOUTER UN CONTENU PÉDAGOGIQUE.
+ *
+ * Un seul geste pour tout ce qui se pose dans une formation. Sans
+ * `chapitreId`, le contenu se range directement dans la formation : le
+ * chapitre est facultatif.
+ */
+export class AjouterContenuDto {
+  @IsOptional() @IsIn(['chapitre', 'lecon', 'quiz', 'devoir', 'live']) genre?: 'chapitre' | 'lecon' | 'quiz' | 'devoir' | 'live';
+  @IsOptional() @IsString() @MaxLength(40) chapitreId?: string;
+  @IsOptional() @IsString() @MaxLength(200) titre?: string;
+  @IsOptional() @IsString() @MaxLength(1000) resume?: string;
 }
 
 export class LeconDto {
@@ -89,6 +106,10 @@ export class LeconDto {
   @IsOptional() @IsString() @MaxLength(600) fichierUrl?: string;
   @IsOptional() @IsInt() @Min(0) @Max(100000) dureeMinutes?: number;
   @IsOptional() @IsBoolean() apercu?: boolean;
+  /** Une leçon en brouillon reste écrite, mais ne se lit pas. */
+  @IsOptional() @IsBoolean() publie?: boolean;
+  /** Les blocs sont relus par `nettoyerBlocs` : leur forme change d'un type à l'autre. */
+  @IsOptional() blocs?: unknown;
   /** Le quiz est relu par `nettoyerQuiz` : sa forme change d'une question à l'autre. */
   @IsOptional() quiz?: unknown;
 }
@@ -98,9 +119,9 @@ export class ReordonnerDto {
   @IsArray() ids!: string[];
 }
 
-/** Déplacer une leçon d'un chapitre à l'autre. */
+/** Déplacer une leçon d'un chapitre à l'autre — ou hors de tout chapitre. */
 export class DeplacerLeconDto {
-  @IsString() chapitreId!: string;
+  @IsOptional() @IsString() @MaxLength(40) chapitreId?: string;
   @IsOptional() @IsInt() @Min(0) position?: number;
 }
 
