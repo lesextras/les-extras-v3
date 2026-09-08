@@ -4,10 +4,12 @@ import { useState, type FormEvent } from 'react';
 import { ouvrirAcademie } from '../_client';
 import { BTN_PRIMAIRE, CHAMP } from '../_ui';
 import { LIBELLES_QUALIOPI, type EtatQualiopi } from '../_types';
+import { ChoixAcademie, type OrganismeTrouve } from '../ChoixAcademie';
 
 /** Nommer son organisme, et l'espace s'ouvre. Le reste se complète après. */
 export function FormulaireOuverture({ autre = false }: { autre?: boolean }) {
   const [nom, setNom] = useState('');
+  const [choisi, setChoisi] = useState<OrganismeTrouve | null>(null);
   const [siret, setSiret] = useState('');
   const [nda, setNda] = useState('');
   const [qualiopi, setQualiopi] = useState<EtatQualiopi>('PAS_ENGAGE');
@@ -23,9 +25,12 @@ export function FormulaireOuverture({ autre = false }: { autre?: boolean }) {
     setErreur(null);
     setEnCours(true);
     try {
-      const r = await ouvrirAcademie(nom, {
-        siret: siret.replace(/\s/g, '') || undefined,
-        nda: nda.trim() || undefined,
+      const r = await ouvrirAcademie(choisi?.nom ?? nom, {
+        // Le SIREN retrouvé dans les répertoires : c'est lui qui pré-remplit la
+        // fiche côté serveur (SIRET, adresse, NDA, DREETS).
+        siren: choisi?.siren,
+        siret: siret.replace(/\s/g, '') || choisi?.siret || undefined,
+        nda: nda.trim() || choisi?.declaration?.nda || undefined,
         qualiopi,
         autre,
       });
@@ -40,20 +45,21 @@ export function FormulaireOuverture({ autre = false }: { autre?: boolean }) {
 
   return (
     <form onSubmit={soumettre} className="space-y-4">
-      <label className="block">
-        <span className="mb-1.5 block text-sm font-bold text-[#12312A]">Le nom de ton académie</span>
-        <input type="text" required minLength={2} maxLength={160} value={nom} onChange={(e) => setNom(e.target.value)} className={CHAMP} />
-      </label>
+      <ChoixAcademie nom={nom} onNom={setNom} choisi={choisi} onChoisi={setChoisi} />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1.5 block text-sm font-bold text-[#12312A]">SIRET</span>
           <input type="text" inputMode="numeric" maxLength={17} value={siret} onChange={(e) => setSiret(e.target.value)} className={CHAMP} />
-          <span className="mt-1 block text-xs text-[#5E7A6E]">Facultatif.</span>
+          <span className="mt-1 block text-xs text-[#5E7A6E]">
+            {choisi?.siret ? `Facultatif — trouvé : ${choisi.siret}` : 'Facultatif.'}
+          </span>
         </label>
         <label className="block">
           <span className="mb-1.5 block text-sm font-bold text-[#12312A]">Numéro de déclaration (NDA)</span>
           <input type="text" maxLength={20} value={nda} onChange={(e) => setNda(e.target.value)} className={CHAMP} />
-          <span className="mt-1 block text-xs text-[#5E7A6E]">Facultatif.</span>
+          <span className="mt-1 block text-xs text-[#5E7A6E]">
+            {choisi?.declaration?.nda ? `Facultatif — trouvé : ${choisi.declaration.nda}` : 'Facultatif.'}
+          </span>
         </label>
       </div>
       <label className="block">
