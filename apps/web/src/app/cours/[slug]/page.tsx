@@ -24,7 +24,7 @@ interface PageCours {
   certificat: boolean;
   ecole: { nom: string; slug: string | null; couleur: string; logoUrl: string | null };
   chapitres: {
-    titre: string;
+    titre: string | null;
     resume: string | null;
     lecons: { titre: string; type: string; dureeMinutes: number; apercu: boolean }[];
   }[];
@@ -110,7 +110,9 @@ export default async function PageDuCours({ params }: { params: Promise<{ slug: 
             <div className="mt-4 grid gap-3">
               {c.chapitres.map((ch, i) => (
                 <div key={`${ch.titre}-${i}`} className="rounded-2xl border border-[#DDEBE4] bg-white p-5">
-                  <h3 className="text-lg font-extrabold tracking-tight text-[#12312A]">{ch.titre}</h3>
+                  {ch.titre ? (
+                    <h3 className="text-lg font-extrabold tracking-tight text-[#12312A]">{ch.titre}</h3>
+                  ) : null}
                   {ch.resume ? <p className="mt-1 leading-relaxed">{ch.resume}</p> : null}
                   <ul className="mt-3 grid gap-1.5">
                     {ch.lecons.map((l, j) => (
