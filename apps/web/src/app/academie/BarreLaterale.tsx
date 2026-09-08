@@ -84,7 +84,7 @@ export const ICONES = {
  */
 const MENU: Entree[] = [
   { href: '/academie', libelle: 'Tableau de bord', icone: ICONES.toque, accent: true },
-  { href: '/academie/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
+  { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/academie/mon-academie', libelle: 'Mon académie', icone: ICONES.academie },
   { href: '/academie/catalogue', libelle: 'Mon catalogue', icone: ICONES.catalogue },
   { href: '/academie/sessions', libelle: 'Mes sessions', icone: ICONES.sessions },
@@ -114,10 +114,12 @@ const MON_COMPTE: Entree[] = [
 ];
 
 /** Les seules entrées qui s'ouvrent sans compte. Le reste attend la connexion. */
-const PUBLIC = ['/academie', '/academie/chemin'];
+const PUBLIC = ['/academie', '/chemin'];
 
 /** Les pages qui n'ont pas d'entrée à elles : elles éclairent celle qui les porte. */
 const PORTEES: Record<string, string> = {
+  '/academie/chemin': '/chemin',
+  '/association/chemin': '/chemin',
   '/academie/certification': '/academie/mon-academie',
   '/academie/comptabilite': '/academie/mon-academie',
   '/academie/secretariat': '/academie/mon-academie',
@@ -206,10 +208,10 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
       </div>
 
       <nav aria-label="Navigation">
-        <ul className="space-y-0.5">{(compte ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map(lien)}</ul>
+        <ul className="space-y-0.5">{(compte?.espaceOuvert ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map(lien)}</ul>
 
         {/* Mon compte : replié par défaut, déplié quand on est dessus. */}
-        {compte ? (
+        {compte?.espaceOuvert ? (
           <div className="mt-3 border-t border-white/10 pt-3">
             <button
               type="button"
@@ -280,16 +282,16 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
           <span className="text-[15px] font-extrabold text-[#12312A]">Piloter</span>
         </Link>
         {compte?.espaceOuvert ? <MenuEspaces compte={compte} /> : null}
-        <Link href="/academie/chemin" className="hidden items-center gap-2 text-[15px] font-bold text-[#12312A] no-underline hover:text-[#0F5F3E] md:flex">
+        <Link href="/academie/centre-d-aide" className="hidden items-center gap-2 text-[15px] font-bold text-[#12312A] no-underline hover:text-[#0F5F3E] md:flex">
           {ICONES.aide} Centre d&apos;aide
         </Link>
       </div>
 
       {/* Au centre : l'entrée la plus importante d'un organisme, sa certification. */}
-      {compte ? (
+      {compte?.espaceOuvert ? (
         <Link
           href="/academie/certification"
-          className="shrink-0 rounded-xl bg-[#1E9E6A] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-white no-underline transition hover:bg-[#17845A] sm:px-5 sm:text-[15px]"
+          className="shrink-0 rounded-xl border border-[#B7E4CE] bg-gradient-to-r from-white to-[#E3F5EC] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-[#0F5F3E] no-underline shadow-sm transition hover:from-[#E3F5EC] hover:to-[#B7E4CE] sm:px-5 sm:text-[15px]"
         >
           <span className="sm:hidden">Ma certification</span>
           <span className="hidden sm:inline">Ma certification Qualiopi</span>
@@ -310,10 +312,39 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
               {ICONES.chevron}
             </button>
             {menu ? (
-              <div className="absolute right-0 top-full mt-1 w-56 rounded-2xl border border-[#DDEBE4] bg-white p-2 shadow-lg">
-                <Link href="/academie/mon-academie" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#12312A] no-underline hover:bg-[#F2F7F5]">
-                  Mon académie
-                </Link>
+              <div className="absolute right-0 top-full mt-1 w-64 rounded-2xl border border-[#DDEBE4] bg-white p-2 shadow-lg">
+                {compte.espaceOuvert ? (
+                  <Link href="/academie/mon-academie" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#12312A] no-underline hover:bg-[#F2F7F5]">
+                    Mon académie
+                  </Link>
+                ) : null}
+
+                {/* MES ESPACES. Une même personne porte souvent une association ET une
+                    académie : on doit pouvoir repartir vers l'autre depuis ici, même
+                    quand l'académie n'est pas encore ouverte. */}
+                {compte.espaces?.length ? (
+                  <>
+                    <p className="px-3 pb-1 pt-2 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#5E7A6E]">Mes espaces</p>
+                    {compte.espaces.map((e) => (
+                      <button
+                        key={e.id}
+                        type="button"
+                        onClick={() => {
+                          choisirEspace(e.id);
+                          window.location.href = e.type === 'ACADEMIE' ? '/academie/mon-academie' : '/espace/association';
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-[#12312A] hover:bg-[#F2F7F5]"
+                      >
+                        <span
+                          className={`h-2 w-2 shrink-0 rounded-full ${e.type === 'ACADEMIE' ? 'bg-[#1E9E6A]' : 'bg-[#4F46E5]'}`}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate">{court(e.nom, 26)}</span>
+                      </button>
+                    ))}
+                    <span className="my-1 block h-px bg-[#DDEBE4]" />
+                  </>
+                ) : null}
                 <Link href="/academie/mon-profil" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#12312A] no-underline hover:bg-[#F2F7F5]">
                   Mon profil
                 </Link>
@@ -328,18 +359,7 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
             <Link href="/academie/connexion" className="rounded-xl border-2 border-[#CFE4D9] bg-white px-3 py-1.5 text-[15px] font-bold text-[#12312A] no-underline transition hover:border-[#0F5F3E] hover:bg-[#F2F7F5]">
               Connexion
             </Link>
-            <Link
-              href="/association/inscription?type=association"
-              className="hidden whitespace-nowrap rounded-xl bg-[#C42B57] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#8A1B3D] md:inline-flex"
-            >
-              Créer espace association
-            </Link>
-            <Link
-              href="/academie/inscription"
-              className="hidden whitespace-nowrap rounded-xl bg-[#0F5F3E] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#0B4A30] sm:inline-flex"
-            >
-              Créer espace académie
-            </Link>
+            <MenuCreerEspace />
           </>
         )}
       </div>
@@ -426,4 +446,123 @@ function MenuEspaces({ compte }: { compte: CompteAffiche }) {
 function entreesDuCompte(compte: CompteAffiche | null): Entree[] {
   if (!compte?.administration) return MON_COMPTE;
   return [...MON_COMPTE, { href: '/administration', libelle: 'Administration', icone: ICONES.administration }];
+}
+
+/* ========================================================================== */
+
+/** Les trois portes d'entrée, et ce que chacune veut dire. */
+const PORTES = [
+  {
+    cle: 'particulier',
+    href: '/inscription?type=particulier',
+    titre: 'Espace particulier',
+    ligne: "Je n'ai encore rien créé",
+    info:
+      "Tu n'as ni association ni organisme de formation pour l'instant. Tu ouvres un compte à ton nom, tu lis le chemin, et tu créeras ta structure en route : l'espace se transformera tout seul le jour où elle existera.",
+    pastille: 'bg-[#4F46E5]',
+    icone: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1',
+  },
+  {
+    cle: 'association',
+    href: '/inscription?type=association',
+    titre: 'Espace association',
+    ligne: "J'ai une association loi 1901",
+    info:
+      "Ton association existe déjà, ou tu es en train de la déclarer. L'espace porte son classeur de pièces, ses projets, ses demandes de subvention, ses comptes et son équipe. Sa fiche est pré-remplie à partir de son nom ou de son numéro.",
+    pastille: 'bg-[#C42B57]',
+    icone: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6',
+  },
+  {
+    cle: 'academie',
+    href: '/academie/inscription',
+    titre: 'Espace académie',
+    ligne: "Je forme, ou je vais former",
+    info:
+      "Un organisme de formation n'est pas une association : c'est la déclaration d'activité à la DREETS qui le fait, pas la forme juridique. L'espace porte la déclaration, la certification Qualiopi, le catalogue, les sessions, les apprenants et les émargements.",
+    pastille: 'bg-[#0F5F3E]',
+    icone: 'M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5',
+  },
+];
+
+/**
+ * CRÉER UN ESPACE. Un seul bouton, et une liste qui s'ouvre : trois portes,
+ * chacune avec un « i » qui explique à qui elle s'adresse. Trois boutons côte à
+ * côte obligeaient à deviner ; ici on choisit en lisant.
+ */
+function MenuCreerEspace() {
+  const [ouvert, setOuvert] = useState(false);
+  const [explique, setExplique] = useState<string | null>(null);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOuvert((o) => !o)}
+        aria-expanded={ouvert}
+        aria-haspopup="menu"
+        className="flex items-center gap-2 whitespace-nowrap rounded-xl bg-[#0F5F3E] px-3 py-2 text-[13px] font-bold text-white transition hover:bg-[#0B4A30] sm:px-4 sm:text-[15px]"
+      >
+        Créer un espace
+        <span className={`transition-transform ${ouvert ? 'rotate-180' : ''}`}>{ICONES.chevron}</span>
+      </button>
+
+      {ouvert ? (
+        <>
+          <button
+            type="button"
+            aria-label="Fermer"
+            onClick={() => setOuvert(false)}
+            className="fixed inset-0 z-20 cursor-default"
+          />
+          <div
+            role="menu"
+            className="absolute right-0 top-full z-30 mt-1.5 w-[min(92vw,380px)] rounded-2xl border border-[#DDEBE4] bg-white p-2 shadow-lg"
+          >
+            {PORTES.map((p) => (
+              <div key={p.cle} className="rounded-xl p-1 hover:bg-[#F2F7F5]">
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={p.href}
+                    onClick={() => setOuvert(false)}
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-2 no-underline"
+                  >
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white ${p.pastille}`} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d={p.icone} />
+                      </svg>
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[15px] font-extrabold text-[#12312A]">{p.titre}</span>
+                      <span className="block text-[13px] text-[#5E7A6E]">{p.ligne}</span>
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setExplique((e) => (e === p.cle ? null : p.cle))}
+                    aria-expanded={explique === p.cle}
+                    aria-label={`À qui s'adresse l'${p.titre.toLowerCase()} ?`}
+                    title="Ce que c'est"
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-[13px] font-extrabold transition ${
+                      explique === p.cle
+                        ? 'border-[#0F5F3E] bg-[#0F5F3E] text-white'
+                        : 'border-[#CFE4D9] bg-white text-[#0F5F3E] hover:border-[#0F5F3E]'
+                    }`}
+                  >
+                    i
+                  </button>
+                </div>
+                {explique === p.cle ? (
+                  <p className="mx-2 mb-2 mt-1 rounded-xl bg-[#F2F7F5] p-3 text-[13px] leading-relaxed text-[#334A42]">{p.info}</p>
+                ) : null}
+              </div>
+            ))}
+
+            <p className="mx-3 mb-2 mt-1 text-[12px] leading-relaxed text-[#5E7A6E]">
+              Tu peux changer plus tard : un même compte porte plusieurs espaces.
+            </p>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
 }
