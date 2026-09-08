@@ -2,7 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { NOM_BLOC, VERT, nouvelIdentifiant, type Bloc, type Lecon, type TypeBloc } from './types';
+import {
+  AIDE_BLOC,
+  BLOCS_EN_PLACE,
+  CHAMPS_BLOC,
+  ICONE_BLOC,
+  NOM_BLOC,
+  PALETTE_BLOCS,
+  type ChampBloc,
+} from '../../_shared/blocs';
+import { BlocRendu } from '../../_shared/blocs-lecon';
+import { VERT, nouvelIdentifiant, type Bloc, type Lecon, type TypeBloc } from './types';
 
 /**
  * L'ÉDITEUR D'UNE LEÇON, EN PLEIN ÉCRAN.
@@ -16,58 +26,19 @@ import { NOM_BLOC, VERT, nouvelIdentifiant, type Bloc, type Lecon, type TypeBloc
  * sur du travail non enregistré.
  */
 
-const PALETTE: TypeBloc[] = [
-  'texte',
-  'titre',
-  'video',
-  'audio',
-  'image',
-  'fichier',
-  'pdf',
-  'lien',
-  'information',
-  'separateur',
-  'classe',
-];
-
-const AIDE_BLOC: Record<TypeBloc, string> = {
-  titre: 'Un intertitre pour découper la leçon.',
-  texte: 'Un paragraphe, une liste, un mot en gras.',
-  video: 'Un lien YouTube, Vimeo, Dailymotion ou une vidéo hébergée.',
-  audio: 'Un lien vers un fichier audio.',
-  image: 'Une image, avec sa légende si besoin.',
-  separateur: 'Un trait, pour respirer.',
-  information: 'Un encadré : un rappel, une mise en garde, un bravo.',
-  fichier: 'Un document que l’apprenant télécharge.',
-  pdf: 'Un PDF qui se lit dans la page.',
-  lien: 'Un lien vers une page extérieure.',
-  classe: 'Le rendez-vous en visio, avec sa date.',
-};
-
-const ICONE_BLOC: Record<TypeBloc, string> = {
-  titre: 'H',
-  texte: '\u00b6',
-  video: '\u25b6',
-  audio: '\u266a',
-  image: '\u25a3',
-  separateur: '\u2014',
-  information: '\u24d8',
-  fichier: '\u2913',
-  pdf: '\u25a4',
-  lien: '\u2197',
-  classe: '\u25c9',
-};
-
 export function EditeurLecon({
   lecon,
   titreFormation,
   adressePublique,
+  lecons = [],
   enregistrer,
   fermer,
 }: {
   lecon: Lecon;
   titreFormation: string;
   adressePublique: string | null;
+  /** Les autres leçons de la formation, pour « Lien vers une leçon ». */
+  lecons?: { id: string; titre: string }[];
   enregistrer: (patch: Record<string, unknown>) => Promise<boolean>;
   fermer: () => void;
 }) {
@@ -126,6 +97,12 @@ export function EditeurLecon({
       neuf.html = '<p>Ce qu’il faut retenir.</p>';
       neuf.ton = 'info';
     }
+    if (type === 'carte') {
+      neuf.texte = 'La question';
+      neuf.verso = 'La réponse';
+    }
+    if (type === 'accordeon') neuf.nom = 'Afficher la suite';
+    if (type === 'chronologie') neuf.texte = '2026 | Ce qui se passe cette année-là';
     setBlocs((b) => [...b, neuf]);
     setOuvert(neuf.id);
     setVise(neuf.id);
@@ -175,8 +152,8 @@ export function EditeurLecon({
 
   const palette = useMemo(() => {
     const q = cherche.trim().toLowerCase();
-    if (!q) return PALETTE;
-    return PALETTE.filter((t) => NOM_BLOC[t].toLowerCase().includes(q) || AIDE_BLOC[t].toLowerCase().includes(q));
+    if (!q) return PALETTE_BLOCS;
+    return PALETTE_BLOCS.filter((t) => NOM_BLOC[t].toLowerCase().includes(q) || AIDE_BLOC[t].toLowerCase().includes(q));
   }, [cherche]);
 
   // Sans portail, l'écran plein reste enfermé dans la carte animée qui le porte.
@@ -466,7 +443,7 @@ export function EditeurLecon({
             <div className="grid gap-4">
               {blocs.map((b, i) => {
                 const actif = ouvert === b.id;
-                const enPlace = b.type === 'titre' || b.type === 'texte' || b.type === 'information';
+                const enPlace = BLOCS_EN_PLACE.includes(b.type);
                 return (
                   <article
                     key={b.id}
@@ -501,9 +478,14 @@ export function EditeurLecon({
                     {actif && enPlace ? (
                       <BlocEnPlace bloc={b} changer={(p) => changer(b.id, p)} />
                     ) : actif ? (
-                      <ReglagesBloc bloc={b} changer={(p) => changer(b.id, p)} fermer={() => setOuvert(null)} />
+                      <ReglagesBloc
+                        bloc={b}
+                        changer={(p) => changer(b.id, p)}
+                        fermer={() => setOuvert(null)}
+                        lecons={lecons}
+                      />
                     ) : (
-                      <ApercuBloc bloc={b} />
+                      <BlocRendu bloc={b} couleur={VERT.fonce} lecons={lecons} />
                     )}
                   </article>
                 );
@@ -517,127 +499,86 @@ export function EditeurLecon({
   );
 }
 
-/* ------------------------------------------------------------------ l'aperçu */
-
-function ApercuBloc({ bloc }: { bloc: Bloc }) {
-  if (bloc.type === 'titre') {
-    return (
-      <h2 className="text-2xl font-extrabold tracking-tight" style={{ color: VERT.encre }}>
-        {bloc.texte || 'Un titre'}
-      </h2>
-    );
-  }
-
-  if (bloc.type === 'texte') {
-    return (
-      <div
-        className="prose-sm max-w-none text-[15px] leading-relaxed [&_a]:underline [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-3"
-        style={{ color: VERT.texte }}
-        dangerouslySetInnerHTML={{ __html: bloc.html || '' }}
-      />
-    );
-  }
-
-  if (bloc.type === 'information') {
-    const tons: Record<string, { fond: string; encre: string }> = {
-      info: { fond: VERT.clair, encre: VERT.fonce },
-      attention: { fond: '#FEF3E2', encre: '#7C3E06' },
-      succes: { fond: '#E3F5EC', encre: '#0F5F3E' },
-    };
-    const t = tons[bloc.ton ?? 'info'] ?? tons.info;
-    return (
-      <div
-        className="rounded-xl px-4 py-3 text-[15px] leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0"
-        style={{ backgroundColor: t.fond, color: t.encre }}
-        dangerouslySetInnerHTML={{ __html: bloc.html || '' }}
-      />
-    );
-  }
-
-  if (bloc.type === 'separateur') {
-    return <hr className="border-t-2" style={{ borderColor: VERT.bord }} />;
-  }
-
-  if (bloc.type === 'image') {
-    return bloc.url ? (
-      <figure className="grid gap-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={bloc.url} alt={bloc.legende || ''} className="w-full rounded-xl" />
-        {bloc.legende ? (
-          <figcaption className="text-sm" style={{ color: VERT.sourdine }}>
-            {bloc.legende}
-          </figcaption>
-        ) : null}
-      </figure>
-    ) : (
-      <Vide quoi="Une image — colle son adresse." />
-    );
-  }
-
-  if (bloc.type === 'video' || bloc.type === 'classe') {
-    return bloc.url ? (
-      <p className="text-[15px] font-bold" style={{ color: VERT.fonce }}>
-        {bloc.type === 'classe' ? 'Classe en direct : ' : 'Vidéo : '}
-        <span className="break-all font-normal" style={{ color: VERT.texte }}>
-          {bloc.url}
-        </span>
-        {bloc.debut ? <span style={{ color: VERT.sourdine }}> — {bloc.debut}</span> : null}
-      </p>
-    ) : (
-      <Vide quoi={bloc.type === 'classe' ? 'Le lien de la visio.' : 'Le lien de la vidéo.'} />
-    );
-  }
-
-  if (bloc.type === 'audio') {
-    return bloc.url ? (
-      <audio controls src={bloc.url} className="w-full">
-        Ton navigateur ne lit pas cet audio.
-      </audio>
-    ) : (
-      <Vide quoi="Le lien de l’audio." />
-    );
-  }
-
-  if (bloc.type === 'fichier' || bloc.type === 'pdf' || bloc.type === 'lien') {
-    return bloc.url ? (
-      <a
-        href={bloc.url}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-block rounded-xl border-2 px-4 py-2 text-[15px] font-bold no-underline"
-        style={{ borderColor: VERT.bord, color: VERT.fonce }}
-      >
-        {bloc.nom || (bloc.type === 'pdf' ? 'Ouvrir le PDF' : bloc.type === 'lien' ? 'Ouvrir le lien' : 'Télécharger')}
-      </a>
-    ) : (
-      <Vide quoi="L’adresse du document." />
-    );
-  }
-
-  return null;
-}
-
-function Vide({ quoi }: { quoi: string }) {
-  return (
-    <p className="text-sm italic" style={{ color: VERT.sourdine }}>
-      {quoi}
-    </p>
-  );
-}
-
 /* ---------------------------------------------------------- les réglages ---- */
 
+/**
+ * LES RÉGLAGES D'UN BLOC.
+ *
+ * Chaque type déclare ses champs dans CHAMPS_BLOC : ce formulaire ne fait que
+ * les poser dans l'ordre annoncé. Ajouter un bloc, c'est décrire ses champs
+ * une fois — jamais revenir ici.
+ */
 function ReglagesBloc({
   bloc,
   changer,
   fermer,
+  lecons,
 }: {
   bloc: Bloc;
   changer: (patch: Partial<Bloc>) => void;
   fermer: () => void;
+  lecons: { id: string; titre: string }[];
 }) {
-  const champ =
-    'w-full rounded-xl border-2 px-3 py-2 text-[15px] focus:outline-none';
+  const champ = 'w-full rounded-xl border-2 px-3 py-2 text-[15px] focus:outline-none';
+  const cadre = { borderColor: VERT.bord, color: VERT.encre };
+  const champs = CHAMPS_BLOC[bloc.type] ?? [];
+
+  // Une fonction, pas un composant : un composant redéfini à chaque frappe
+  // serait remonté, et la zone de saisie perdrait le curseur.
+  const etiquette = (cle: string, quoi: string, contenu: React.ReactNode, aide?: string) => (
+    <label key={cle} className="grid gap-1 text-sm font-bold" style={{ color: VERT.texte }}>
+      {quoi}
+      {contenu}
+      {aide ? (
+        <span className="text-xs font-normal" style={{ color: VERT.sourdine }}>
+          {aide}
+        </span>
+      ) : null}
+    </label>
+  );
+
+  const libelleTexte: Partial<Record<TypeBloc, { quoi: string; aide?: string; lignes: number }>> = {
+    markdown: { quoi: 'Ton Markdown', aide: '# Titre, - liste, **gras**, [lien](https://…)', lignes: 8 },
+    html: { quoi: 'Ton HTML', aide: 'Il s’affichera isolé du reste de la page.', lignes: 8 },
+    code: { quoi: 'Ton code', lignes: 8 },
+    carte: { quoi: 'Le recto', aide: 'Ce qu’on lit avant de retourner la carte.', lignes: 3 },
+    gratter: { quoi: 'Ce qui se découvre', lignes: 3 },
+    chronologie: { quoi: 'Les étapes', aide: 'Une ligne par étape : « date | ce qui se passe ».', lignes: 6 },
+    accordeon: { quoi: 'Ce qu’on lit une fois déplié', aide: 'Markdown accepté.', lignes: 5 },
+  };
+
+  const libelleNom: Partial<Record<TypeBloc, string>> = {
+    accordeon: 'Le titre à cliquer',
+    leconLiee: 'Ce qu’on lit sur le bouton',
+  };
+
+  const placeholderUrl: Partial<Record<TypeBloc, string>> = {
+    youtube: 'https://www.youtube.com/watch?v=…',
+    youtubeDirect: 'https://www.youtube.com/live/… ou /channel/…',
+    vimeo: 'https://vimeo.com/…',
+    dailymotion: 'https://www.dailymotion.com/video/…',
+    twitch: 'https://www.twitch.tv/… ou /videos/…',
+    soundcloud: 'https://soundcloud.com/…',
+    tiktok: 'https://www.tiktok.com/@…/video/…',
+    instagram: 'https://www.instagram.com/p/…',
+    tweet: 'https://x.com/…/status/…',
+    pinterest: 'https://www.pinterest.fr/pin/…',
+    calendly: 'https://calendly.com/…',
+    typeform: 'https://form.typeform.com/to/…',
+    genially: 'https://view.genially.com/…',
+    figma: 'https://www.figma.com/file/…',
+    gist: 'https://gist.github.com/…',
+    slideshare: 'https://www.slideshare.net/…',
+    jsfiddle: 'https://jsfiddle.net/…',
+    codepen: 'https://codepen.io/…/pen/…',
+    codesandbox: 'https://codesandbox.io/s/…',
+    googleDocs: 'https://docs.google.com/document/…',
+    googleSheets: 'https://docs.google.com/spreadsheets/…',
+    googleForms: 'https://docs.google.com/forms/…',
+    googleSlides: 'https://docs.google.com/presentation/…',
+    googleCalendar: 'https://calendar.google.com/…',
+    gif: 'https://giphy.com/gifs/… ou une adresse .gif',
+  };
 
   return (
     <div className="grid gap-3 pr-24">
@@ -645,61 +586,128 @@ function ReglagesBloc({
         {NOM_BLOC[bloc.type]}
       </p>
 
-      {['video', 'audio', 'image', 'fichier', 'pdf', 'lien', 'classe'].includes(bloc.type) ? (
-        <label className="grid gap-1 text-sm font-bold" style={{ color: VERT.texte }}>
-          L’adresse
-          <input
-            autoFocus
-            value={bloc.url ?? ''}
-            onChange={(e) => changer({ url: e.target.value })}
-            className={champ}
-            style={{ borderColor: VERT.bord, color: VERT.encre }}
-            placeholder="https://…"
-          />
-        </label>
-      ) : null}
+      {champs.map((c: ChampBloc) => {
+        if (c === 'url') {
+          return etiquette(
+            c,
+            'L’adresse',
+            <input
+              autoFocus
+              value={bloc.url ?? ''}
+              onChange={(e) => changer({ url: e.target.value })}
+              className={champ}
+              style={cadre}
+              placeholder={placeholderUrl[bloc.type] ?? 'https://…'}
+            />,
+          );
+        }
+        if (c === 'nom') {
+          return etiquette(
+            c,
+            libelleNom[bloc.type] ?? 'Ce qu’on lit sur le bouton',
+            <input
+              value={bloc.nom ?? ''}
+              onChange={(e) => changer({ nom: e.target.value })}
+              className={champ}
+              style={cadre}
+              placeholder="Télécharger le support"
+            />,
+          );
+        }
+        if (c === 'legende') {
+          return etiquette(
+            c,
+            'La légende',
+            <input
+              value={bloc.legende ?? ''}
+              onChange={(e) => changer({ legende: e.target.value })}
+              className={champ}
+              style={cadre}
+            />,
+          );
+        }
+        if (c === 'debut') {
+          return etiquette(
+            c,
+            'Quand',
+            <input
+              type="datetime-local"
+              value={bloc.debut ?? ''}
+              onChange={(e) => changer({ debut: e.target.value })}
+              className={champ}
+              style={cadre}
+            />,
+          );
+        }
+        if (c === 'langue') {
+          return etiquette(
+            c,
+            'Le langage',
+            <input
+              value={bloc.langue ?? ''}
+              onChange={(e) => changer({ langue: e.target.value })}
+              className={champ}
+              style={cadre}
+              placeholder="python, html, sql…"
+            />,
+          );
+        }
+        if (c === 'verso') {
+          return etiquette(
+            c,
+            'Le verso',
+            <textarea
+              rows={3}
+              value={bloc.verso ?? ''}
+              onChange={(e) => changer({ verso: e.target.value })}
+              className={champ}
+              style={cadre}
+            />,
+            'Ce qu’on découvre en retournant la carte.',
+          );
+        }
+        if (c === 'lecon') {
+          return etiquette(
+            c,
+            'La leçon visée',
+            <select
+              value={bloc.leconId ?? ''}
+              onChange={(e) => changer({ leconId: e.target.value })}
+              className={`${champ} bg-white`}
+              style={cadre}
+            >
+              <option value="">Choisis une leçon</option>
+              {lecons.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.titre}
+                </option>
+              ))}
+            </select>,
+            lecons.length ? undefined : 'Cette formation n’a pas d’autre leçon pour l’instant.',
+          );
+        }
+        if (c === 'texte' || c === 'html') {
+          const d = libelleTexte[bloc.type] ?? { quoi: 'Le contenu', lignes: 5 };
+          return etiquette(
+            c,
+            d.quoi,
+            <textarea
+              autoFocus
+              rows={d.lignes}
+              value={bloc.texte ?? ''}
+              onChange={(e) => changer({ texte: e.target.value })}
+              className={`${champ} font-mono text-[13px]`}
+              style={cadre}
+            />,
+            d.aide,
+          );
+        }
+        return null;
+      })}
 
-      {bloc.type === 'image' ? (
-        <label className="grid gap-1 text-sm font-bold" style={{ color: VERT.texte }}>
-          La légende
-          <input
-            value={bloc.legende ?? ''}
-            onChange={(e) => changer({ legende: e.target.value })}
-            className={champ}
-            style={{ borderColor: VERT.bord, color: VERT.encre }}
-          />
-        </label>
-      ) : null}
-
-      {['fichier', 'pdf', 'lien'].includes(bloc.type) ? (
-        <label className="grid gap-1 text-sm font-bold" style={{ color: VERT.texte }}>
-          Ce qu’on lit sur le bouton
-          <input
-            value={bloc.nom ?? ''}
-            onChange={(e) => changer({ nom: e.target.value })}
-            className={champ}
-            style={{ borderColor: VERT.bord, color: VERT.encre }}
-            placeholder="Télécharger le support"
-          />
-        </label>
-      ) : null}
-
-      {bloc.type === 'classe' ? (
-        <label className="grid gap-1 text-sm font-bold" style={{ color: VERT.texte }}>
-          Quand
-          <input
-            type="datetime-local"
-            value={bloc.debut ?? ''}
-            onChange={(e) => changer({ debut: e.target.value })}
-            className={champ}
-            style={{ borderColor: VERT.bord, color: VERT.encre }}
-          />
-        </label>
-      ) : null}
-
-      {bloc.type === 'separateur' ? (
+      {champs.length === 0 ? (
         <p className="text-sm" style={{ color: VERT.sourdine }}>
-          Un séparateur n’a rien à régler.
+          Ce bloc n’a rien à régler.
         </p>
       ) : null}
 
@@ -717,13 +725,7 @@ function ReglagesBloc({
   );
 }
 
-/**
- * LE BLOC S'ÉCRIT LÀ OÙ IL SE LIRA.
- *
- * Pas de formulaire à côté : on tape dans le bloc lui-même, avec la
- * typographie finale. La petite barre au-dessus ne sert qu'à la mise en forme,
- * et on sort en cliquant à côté — il n'y a rien à valider.
- */
+
 function BlocEnPlace({ bloc, changer }: { bloc: Bloc; changer: (patch: Partial<Bloc>) => void }) {
   const zone = useRef<HTMLDivElement | null>(null);
   const brut = bloc.type === 'titre';
