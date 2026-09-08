@@ -105,6 +105,7 @@ const MENU: Entree[] = [
 const MON_COMPTE: Entree[] = [
   { href: '/academie/ma-page', libelle: 'Ma page académie', icone: ICONES.page },
   { href: '/academie/personnalisation', libelle: 'Personnalisation', icone: ICONES.vitrine },
+  { href: '/academie/reglages', libelle: 'Réglages des formations', icone: ICONES.reglages },
   { href: '/academie/parametres', libelle: 'Paramètres', icone: ICONES.reglages },
   { href: '/academie/droits-acces', libelle: "Droits d'accès", icone: ICONES.cles },
 ];
