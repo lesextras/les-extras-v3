@@ -69,6 +69,8 @@ export const ICONES = {
   menu: i('M3 6h18M3 12h18M3 18h18'),
   fermer: i('M18 6L6 18M6 6l12 12'),
   aide: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'),
+  /** L'enveloppe : écrire à quelqu'un. */
+  enveloppe: i('M3 6h18v12H3zM3 7l9 6 9-6'),
   chevron: i('M6 9l6 6 6-6'),
   /** La boussole de la marque : « Piloter mon association ». */
   boussole: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.5 7.5l-2.6 6.4-6.4 2.6 2.6-6.4z'),
@@ -339,6 +341,20 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
       ) : null}
 
       <div className="relative flex flex-1 items-center justify-end gap-2">
+        {/* Pouvoir écrire à quelqu'un, depuis n'importe quel écran. */}
+        <Link
+          href="/nous-contacter"
+          className="hidden shrink-0 items-center gap-2 rounded-xl border border-[#E6E4F3] px-3.5 py-2 text-[14px] font-bold text-[#1D1B5C] no-underline transition hover:border-[#4F46E5] hover:bg-[#ECEBFC] hover:text-[#4338CA] sm:flex"
+        >
+          {ICONES.enveloppe} Nous contacter
+        </Link>
+        <Link
+          href="/nous-contacter"
+          aria-label="Nous contacter"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E6E4F3] text-[#1D1B5C] no-underline hover:bg-[#ECEBFC] sm:hidden"
+        >
+          {ICONES.enveloppe}
+        </Link>
         {compte ? (
           <>
             <button
