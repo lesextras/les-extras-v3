@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BlocsLecon } from '../../_shared/blocs-lecon';
 import type { Bloc } from '../../_shared/blocs';
 
@@ -24,6 +24,17 @@ export interface LeconSuivie {
   /** La leçon telle qu'elle a été composée, bloc par bloc. */
   blocs: Bloc[] | null;
   dureeMinutes: number;
+  /** Imposée, la durée retient avant de pouvoir cocher la leçon. */
+  dureeImposee?: boolean;
+  /** L'heure de la première ouverture, d'où court la durée minimum. */
+  ouverteLe?: string | null;
+  /** Diffusion progressive : zéro quand la leçon est ouverte. */
+  ouvreDansJours?: number;
+  /** Tâches & missions. */
+  taches?: { id: string; texte: string }[];
+  tachesFaites?: string[];
+  /** L'index d'un paquet SCORM. */
+  scormUrl?: string | null;
   quiz: { noteMinimale: number; questions: QuestionPublique[] } | null;
   faite: boolean;
   score: number | null;
@@ -60,6 +71,12 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
   const [erreur, setErreur] = useState<string | null>(null);
   const [reponses, setReponses] = useState<Record<string, number[]>>({});
   const [correction, setCorrection] = useState<Correction | null>(null);
+  // Une horloge d'une seconde : elle sert au décompte de la durée minimum.
+  const [maintenant, setMaintenant] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setMaintenant(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const couleur = suivi.ecole.couleur || '#0F5F3E';
 
@@ -75,6 +92,66 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
     setErreur(null);
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  /**
+   * OUVRIR UNE LEÇON, CÔTÉ SERVEUR.
+   *
+   * C'est de cette heure-là que court la durée minimum. On la demande une
+   * seule fois par leçon : rouvrir ne remet pas le compteur à zéro.
+   */
+  useEffect(() => {
+    const l = toutes.find((x) => x.id === ouverte);
+    if (!l || l.ouverteLe || (l.ouvreDansJours ?? 0) > 0) return;
+    let vivant = true;
+    void fetch(`/api/proxy/public/ecole/apprendre/${encodeURIComponent(jeton)}/lecons/${l.id}/ouvrir`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { ouverteLe?: string } | null) => {
+        if (!vivant || !d?.ouverteLe) return;
+        setSuivi((p) => ({
+          ...p,
+          chapitres: p.chapitres.map((ch) => ({
+            ...ch,
+            lecons: ch.lecons.map((x) => (x.id === l.id ? { ...x, ouverteLe: d.ouverteLe } : x)),
+          })),
+        }));
+      })
+      .catch(() => undefined);
+    return () => {
+      vivant = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ouverte]);
+
+  /** Cocher une tâche : on enregistre tout de suite, sans bouton à chercher. */
+  async function basculerTache(leconId: string, tacheId: string) {
+    const l = toutes.find((x) => x.id === leconId);
+    if (!l) return;
+    const faites = l.tachesFaites ?? [];
+    const suite = faites.includes(tacheId) ? faites.filter((x) => x !== tacheId) : [...faites, tacheId];
+    setSuivi((p) => ({
+      ...p,
+      chapitres: p.chapitres.map((ch) => ({
+        ...ch,
+        lecons: ch.lecons.map((x) => (x.id === leconId ? { ...x, tachesFaites: suite } : x)),
+      })),
+    }));
+    await fetch(`/api/proxy/public/ecole/apprendre/${encodeURIComponent(jeton)}/lecons/${leconId}/taches`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ ids: suite }),
+    }).catch(() => undefined);
+  }
+
+  /** Le temps qu'il reste à passer sur la leçon, en minutes. Zéro : c'est bon. */
+  const resteAvantDePouvoirCocher = (() => {
+    if (!lecon?.dureeImposee || !lecon.dureeMinutes) return 0;
+    if (!lecon.ouverteLe) return lecon.dureeMinutes;
+    const ecoule = maintenant - new Date(lecon.ouverteLe).getTime();
+    return Math.max(0, Math.ceil((lecon.dureeMinutes * 60_000 - ecoule) / 60_000));
+  })();
 
   async function envoyer(faite: boolean) {
     if (!lecon) return;
@@ -210,6 +287,53 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
                 </p>
               ) : null}
 
+              {/* LA LEÇON PAS ENCORE OUVERTE.
+                  On dit quand elle s'ouvre plutôt que de la cacher : sinon la
+                  formation paraît plus courte qu'elle ne l'est. */}
+              {(lecon.ouvreDansJours ?? 0) > 0 ? (
+                <p
+                  className="mt-5 rounded-2xl border-2 border-dashed px-5 py-8 text-center text-[15px]"
+                  style={{ borderColor: '#DDEBE4', color: '#5E7A6E' }}
+                >
+                  Cette leçon s’ouvre dans {lecon.ouvreDansJours} jour
+                  {(lecon.ouvreDansJours ?? 0) > 1 ? 's' : ''}. Reviens à ce moment-là.
+                </p>
+              ) : null}
+
+              {lecon.scormUrl ? (
+                <div className="mt-5 overflow-hidden rounded-xl border border-[#DDEBE4]">
+                  <iframe
+                    src={lecon.scormUrl}
+                    title={lecon.titre}
+                    className="aspect-[4/3] w-full"
+                    allowFullScreen
+                  />
+                </div>
+              ) : null}
+
+              {lecon.taches?.length ? (
+                <ul className="mt-5 grid max-w-[68ch] gap-2">
+                  {lecon.taches.map((t) => {
+                    const faite = (lecon.tachesFaites ?? []).includes(t.id);
+                    return (
+                      <li key={t.id}>
+                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#DDEBE4] px-4 py-3 text-[15px]">
+                          <input
+                            type="checkbox"
+                            checked={faite}
+                            onChange={() => void basculerTache(lecon.id, t.id)}
+                            className="mt-1 size-4"
+                          />
+                          <span style={{ color: faite ? '#5E7A6E' : '#334A42', textDecoration: faite ? 'line-through' : 'none' }}>
+                            {t.texte}
+                          </span>
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+
               {/* Une leçon composée de blocs s'affiche exactement comme dans
                   l'éditeur. Les leçons écrites avant les blocs gardent leur
                   texte : rien de ce qui existait ne disparaît. */}
@@ -326,15 +450,19 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
                   </button>
                 ) : null}
 
-                {!lecon.quiz ? (
+                {!lecon.quiz && (lecon.ouvreDansJours ?? 0) === 0 ? (
                   <button
                     type="button"
                     onClick={() => envoyer(!lecon.faite)}
-                    disabled={occupe}
+                    disabled={occupe || (!lecon.faite && resteAvantDePouvoirCocher > 0)}
                     className="rounded-xl px-6 py-3 text-base font-extrabold text-white disabled:opacity-60"
                     style={{ backgroundColor: lecon.faite ? '#5E7A6E' : couleur }}
                   >
-                    {lecon.faite ? 'Décocher cette leçon' : 'J’ai terminé cette leçon'}
+                    {lecon.faite
+                      ? 'Décocher cette leçon'
+                      : resteAvantDePouvoirCocher > 0
+                        ? `Encore ${resteAvantDePouvoirCocher} minute${resteAvantDePouvoirCocher > 1 ? 's' : ''}`
+                        : 'J’ai terminé cette leçon'}
                   </button>
                 ) : null}
 
