@@ -65,7 +65,16 @@ export function middleware(request: NextRequest) {
   }
 
   if (hote === HOTE_PILOTE) {
-    // Fichiers partagés entre les sites (manifeste, robots, plan du site…).
+    // LE MANIFESTE D'INSTALLATION. Le même code sert deux sites : sans cette
+    // réécriture, le téléphone proposerait d'installer « Les Extras » à
+    // quelqu'un qui pilote son association. Un fichier par site, servi tel quel.
+    if (pathname === '/manifest.webmanifest' || pathname === '/manifest.json') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/pilote/manifeste.webmanifest';
+      return NextResponse.rewrite(url);
+    }
+
+    // Fichiers partagés entre les sites (robots, plan du site…).
     if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
 
     // Les pages publiques hors espace : un formulaire partagé, la vitrine d'une
