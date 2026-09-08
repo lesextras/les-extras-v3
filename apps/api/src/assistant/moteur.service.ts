@@ -61,6 +61,11 @@ export class MoteurService {
   }
 
   async completer(options: OptionsMoteur): Promise<string> {
+    // Ce que Gemini a répondu quand il a refusé : gardé pour le joindre à
+    // l'échec de Claude. Les deux moteurs tombent parfois pour la même raison
+    // (une facturation à zéro, un réseau coupé) et ne voir que le second
+    // envoie chercher la panne du mauvais côté.
+    let echecGemini: string | null = null;
     if (this.cleGemini) {
       try {
         return await this.gemini(options, this.cleGemini);
@@ -68,10 +73,27 @@ export class MoteurService {
         // Gemini a refusé : si Claude est branché, il prend le relais. Sinon on
         // remonte l'échec tel quel, pour que l'écran dise la vraie raison.
         if (!this.claude.disponible) throw err;
-        this.journal.warn(`Gemini a échoué, on repasse sur Claude : ${propre(err).slice(0, 200)}`);
+        echecGemini = propre(err).slice(0, 300);
+        this.journal.warn(`Gemini a échoué, on repasse sur Claude : ${echecGemini.slice(0, 200)}`);
       }
     }
-    if (this.claude.disponible) return this.claude.completer(options);
+    if (this.claude.disponible) {
+      try {
+        return await this.claude.completer(options);
+      } catch (err) {
+        if (!echecGemini) throw err;
+        // Les deux ont échoué : on remonte l'échec de Claude, en lui accrochant
+        // celui de Gemini. L'appelant redacte les clés avant d'afficher quoi
+        // que ce soit.
+        const cause = (err as { cause?: unknown } | null)?.cause;
+        const detailClaude =
+          cause instanceof Error ? cause.message : err instanceof Error ? err.message : String(err);
+        throw new ServiceUnavailableException(
+          "Le service de rédaction est momentanément indisponible. Réessayez dans un instant.",
+          { cause: new Error(`Gemini : ${echecGemini} | Claude : ${detailClaude}`) },
+        );
+      }
+    }
     throw new ServiceUnavailableException(
       "Aucun moteur de rédaction n'est branché sur ce serveur. Pose GEMINI_API_KEY (ou ANTHROPIC_API_KEY) dans la configuration.",
     );
