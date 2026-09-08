@@ -15,9 +15,10 @@ import { useEffect, useState } from 'react';
  * association n'a aucun sens — c'est l'hôte qui décide du nom, pas le
  * déploiement.
  *
- * « Plus tard » ne fait pas disparaître la proposition : elle se réduit à une
- * pastille en bas à droite, qui reste. On la rouvre d'un geste quand on veut,
- * et le choix de l'avoir réduite se retient d'une visite à l'autre.
+ * ELLE NE S'OUVRE QU'UNE FOIS D'ELLE-MÊME. Ensuite elle vit en pastille, en
+ * bas à droite : « Plus tard » la réduit, la pastille la rouvre, et le site ne
+ * la remet plus jamais devant les yeux tout seul. Le choix se retient d'une
+ * visite à l'autre.
  */
 
 interface EvenementInstallation extends Event {
@@ -82,8 +83,14 @@ export function InstallPrompt() {
         setEtat('reduit');
         return;
       }
-      // On laisse la personne arriver sur la page avant de proposer quoi que ce soit.
-      window.setTimeout(() => setEtat('ouvert'), 12_000);
+      // On laisse la personne arriver sur la page avant de proposer quoi que ce
+      // soit — et on ne le propose QU'UNE FOIS. Dès cette ouverture, on retient
+      // la réduction : à partir de là, c'est la pastille qui rouvre, jamais le
+      // site de lui-même.
+      window.setTimeout(() => {
+        retenirReduction(true);
+        setEtat('ouvert');
+      }, 12_000);
     };
 
     const surInstallation = () => {
