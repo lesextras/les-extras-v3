@@ -24,20 +24,23 @@ const PROJETS = [
   {
     cle: 'association' as const,
     titre: 'Une association',
-    detail: "Déclarer une association loi 1901 : les statuts, la préfecture, le SIRET, le compte en banque, la première subvention.",
+    detail: "Les statuts, la préfecture, le SIRET, le compte en banque, la première subvention.",
     apres: '/association/chemin?bienvenue=1',
+    icone: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6',
   },
   {
     cle: 'academie' as const,
     titre: 'Un organisme de formation',
-    detail: "Déclarer une activité de formation : le SIRET, la première convention, la DREETS, puis la certification Qualiopi.",
+    detail: "Le SIRET, la première convention, la déclaration à la DREETS, puis la certification Qualiopi.",
     apres: '/academie/chemin?bienvenue=1',
+    icone: 'M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5',
   },
   {
     cle: 'les-deux' as const,
     titre: 'Les deux',
-    detail: "Une association qui forme suit les deux chemins. Un même compte porte les deux espaces, et tu passes de l'un à l'autre.",
+    detail: "Une association qui forme suit les deux chemins. Un même compte porte les deux espaces.",
     apres: '/chemin?bienvenue=1',
+    icone: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
   },
 ];
 export function FormulaireInscription({ avecAssociation = true }: { avecAssociation?: boolean }) {
@@ -89,28 +92,56 @@ export function FormulaireInscription({ avecAssociation = true }: { avecAssociat
       ) : (
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#4338CA]">1. Ce que tu veux créer</legend>
-          <div className="grid gap-2">
-            {PROJETS.map((p) => (
-              <label
-                key={p.cle}
-                className={`flex cursor-pointer gap-3 rounded-xl border-2 p-4 transition ${
-                  projet === p.cle ? 'border-[#4F46E5] bg-[#ECEBFC]' : 'border-[#E6E4F3] bg-white hover:border-[#C7C4F2]'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="projet"
-                  value={p.cle}
-                  checked={projet === p.cle}
-                  onChange={() => setProjet(p.cle)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-[#4F46E5]"
-                />
-                <span className="min-w-0">
-                  <span className="block text-[15px] font-extrabold text-[#1D1B5C]">{p.titre}</span>
-                  <span className="mt-0.5 block text-sm leading-relaxed text-[#3B3A66]">{p.detail}</span>
-                </span>
-              </label>
-            ))}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {PROJETS.map((p) => {
+              const choisi = projet === p.cle;
+              return (
+                <label
+                  key={p.cle}
+                  className={`flex cursor-pointer flex-col rounded-2xl border-2 p-5 transition ${
+                    choisi
+                      ? 'border-[#4F46E5] bg-[#ECEBFC] shadow-[0_6px_20px_rgba(79,70,229,0.12)]'
+                      : 'border-[#E6E4F3] bg-white hover:-translate-y-0.5 hover:border-[#C7C4F2]'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="projet"
+                    value={p.cle}
+                    checked={choisi}
+                    onChange={() => setProjet(p.cle)}
+                    className="sr-only"
+                  />
+                  <span
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
+                      choisi ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F4FC] text-[#4F46E5]'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d={p.icone} />
+                    </svg>
+                  </span>
+                  <span className="mt-3 block text-[17px] font-extrabold leading-snug text-[#1D1B5C]">{p.titre}</span>
+                  <span className="mt-1.5 block text-sm leading-relaxed text-[#3B3A66]">{p.detail}</span>
+                  <span
+                    className={`mt-4 inline-flex items-center gap-1.5 text-sm font-bold ${
+                      choisi ? 'text-[#4F46E5]' : 'text-[#6B6A8A]'
+                    }`}
+                  >
+                    <span
+                      className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+                        choisi ? 'border-[#4F46E5] bg-[#4F46E5] text-white' : 'border-[#C7C4F2]'
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {choisi ? <span className="text-[9px] leading-none">✓</span> : null}
+                    </span>
+                    {choisi ? 'C’est ce que je crée' : 'Choisir'}
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </fieldset>
       )}
