@@ -30,7 +30,7 @@ import {
 } from './types';
 
 /** Ce qu'on peut poser dans une formation. */
-type GenreContenu = 'chapitre' | 'lecon' | 'quiz' | 'devoir' | 'live';
+type GenreContenu = 'chapitre' | 'lecon' | 'quiz' | 'devoir' | 'live' | 'taches' | 'scorm';
 
 /**
  * L'ATELIER D'UNE FORMATION.
@@ -125,6 +125,52 @@ export function AtelierCours({
     if (cible < 0 || cible >= ids.length) return;
     [ids[index], ids[cible]] = [ids[cible], ids[index]];
     void agir(`/ecole/cours/${c.id}/contenu/ordre`, { methode: 'POST', corps: { ids } });
+  }
+
+  /** Le même rangement, mais dicté par la souris : la liste arrive déjà triée. */
+  const reordonnerListe = (ids: string[]) =>
+    agir(`/ecole/cours/${c.id}/contenu/ordre`, { methode: 'POST', corps: { ids } });
+
+  const reglerChapitre = (id: string, corps: Record<string, unknown>) =>
+    agir(`/ecole/cours/${c.id}/chapitres/${id}`, { methode: 'PATCH', corps });
+
+  /**
+   * UN PLAN PROPOSÉ PAR L'IA.
+   *
+   * On montre d'abord ce qui est proposé, on ne pose rien sans un « oui » :
+   * un plan qui s'écrit tout seul dans une formation existante est plus long
+   * à défaire qu'à écrire.
+   */
+  async function genererStructure() {
+    const consigne = window.prompt(
+      'Que doit couvrir cette formation ? (facultatif — laisse vide pour partir du titre)',
+      '',
+    );
+    if (consigne === null) return;
+    setOccupe(true);
+    try {
+      const d = await appel<{ chapitres: { titre: string; lecons: { titre: string; resume?: string }[] }[] }>(
+        `/ecole/cours/${c.id}/ia/structure`,
+        { methode: 'POST', corps: { consigne: consigne.trim() || undefined } },
+      );
+      const apercu = d.chapitres
+        .map((ch, i) => `${i + 1}. ${ch.titre}\n${ch.lecons.map((l) => `   · ${l.titre}`).join('\n')}`)
+        .join('\n');
+      if (!window.confirm(`Ajouter ce plan à la suite du contenu ?\n\n${apercu}`)) {
+        setOccupe(false);
+        return;
+      }
+      const maj = await appel<CoursComplet>(`/ecole/cours/${c.id}/ia/structure/poser`, {
+        methode: 'POST',
+        corps: { chapitres: d.chapitres },
+      });
+      setC(maj);
+      setMessage('Le plan est posé.');
+    } catch (err) {
+      setMessage(messageDe(err));
+    } finally {
+      setOccupe(false);
+    }
   }
 
   /* ------------------------------------------------- enregistrer un onglet */
@@ -479,6 +525,9 @@ export function AtelierCours({
             agir(`/ecole/cours/${c.id}/lecons/${leconId}/deplacer`, { methode: 'POST', corps: { chapitreId } })
           }
           reordonner={reordonnerContenu}
+          reordonnerListe={reordonnerListe}
+          reglerChapitre={reglerChapitre}
+          genererStructure={genererStructure}
           ouvrirLecon={setLeconOuverte}
           lectureOrdonnee={c.lectureOrdonnee}
           basculerLecture={(v) => void enregistrer({ lectureOrdonnee: v }, 'La lecture ordonnée')}
@@ -542,6 +591,7 @@ export function AtelierCours({
       {leconOuverte && leconOuverte.type !== 'QUIZ' && leconOuverte.type !== 'DEVOIR' ? (
         <EditeurLecon
           lecon={leconOuverte}
+          coursId={c.id}
           titreFormation={c.titre}
           adressePublique={c.statut === 'PUBLIE' ? lien : null}
           lecons={(c.contenu ?? []).flatMap((e) =>
@@ -620,6 +670,9 @@ function Contenu({
   basculerPublicationLecon,
   deplacerVers,
   reordonner,
+  reordonnerListe,
+  reglerChapitre,
+  genererStructure,
   ouvrirLecon,
   lectureOrdonnee,
   basculerLecture,
@@ -637,6 +690,9 @@ function Contenu({
   basculerPublicationLecon: (id: string, publie: boolean) => void;
   deplacerVers: (leconId: string, chapitreId: string) => void;
   reordonner: (index: number, sens: -1 | 1) => void;
+  reordonnerListe: (ids: string[]) => void;
+  reglerChapitre: (id: string, corps: Record<string, unknown>) => void;
+  genererStructure: () => void;
   ouvrirLecon: (l: Lecon) => void;
   lectureOrdonnee: boolean;
   basculerLecture: (v: boolean) => void;
@@ -647,6 +703,22 @@ function Contenu({
   // Un chapitre se replie : avec huit modules, la table des matières doit
   // tenir dans l'écran, comme chez Teachizy.
   const [plies, setPlies] = useState<Record<string, boolean>>({});
+  // Ce qu'on tient à la souris : « chapitre:<id> » ou « lecon:<id> ».
+  const [glisse, setGlisse] = useState<string | null>(null);
+
+  /** Déposer un élément sur un autre : celui qu'on tient prend sa place. */
+  const deposerSur = (cible: string) => {
+    if (!glisse || glisse === cible) return;
+    const cles = elements.map((e) => `${e.genre}:${e.id}`);
+    const de = cles.indexOf(glisse);
+    const vers = cles.indexOf(cible);
+    setGlisse(null);
+    if (de < 0 || vers < 0) return;
+    const copie = [...cles];
+    const [pris] = copie.splice(de, 1);
+    copie.splice(vers, 0, pris);
+    reordonnerListe(copie);
+  };
 
   return (
     <div className="grid gap-4">
@@ -657,7 +729,18 @@ function Contenu({
           titre="Imposer la lecture ordonnée"
           quoi="On n'ouvre une leçon qu'après avoir terminé la précédente."
         />
-        <MenuAjouter occupe={occupe} avecChapitre ajouter={(g) => ajouter(g)} />
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={genererStructure}
+            disabled={occupe}
+            className="rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-extrabold disabled:opacity-60"
+            style={{ borderColor: VERT.bord, color: VERT.fonce }}
+          >
+            Générer une structure
+          </button>
+          <MenuAjouter occupe={occupe} avecChapitre ajouter={(g) => ajouter(g)} />
+        </div>
       </div>
 
       {elements.length === 0 ? (
@@ -672,8 +755,33 @@ function Contenu({
 
       {elements.map((e, i) =>
         e.genre === 'chapitre' ? (
-          <section key={`ch-${e.id}`} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
+          <section
+            key={`ch-${e.id}`}
+            draggable={glisse === `chapitre:${e.id}`}
+            onDragStart={(ev) => ev.dataTransfer.setData('text/plain', e.id)}
+            onDragEnd={() => setGlisse(null)}
+            onDragOver={(ev) => {
+              if (glisse) ev.preventDefault();
+            }}
+            onDrop={(ev) => {
+              ev.preventDefault();
+              deposerSur(`chapitre:${e.id}`);
+            }}
+            className="rounded-2xl border bg-white p-5"
+            style={{ borderColor: VERT.bord, opacity: glisse === `chapitre:${e.id}` ? 0.5 : 1 }}
+          >
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                title="Déplacer ce chapitre"
+                aria-label="Déplacer ce chapitre"
+                onMouseDown={() => setGlisse(`chapitre:${e.id}`)}
+                onMouseUp={() => setGlisse(null)}
+                className="grid size-8 shrink-0 cursor-grab place-items-center rounded-lg border-2 bg-white text-sm font-extrabold active:cursor-grabbing"
+                style={{ borderColor: VERT.bord, color: VERT.texte }}
+              >
+                ⠿
+              </button>
               <BoutonIcone
                 titre={plies[e.id] ? 'Déplier ce chapitre' : 'Replier ce chapitre'}
                 onClick={() => setPlies((p) => ({ ...p, [e.id]: !p[e.id] }))}
@@ -694,6 +802,22 @@ function Contenu({
                 {e.lecons.length} contenu{e.lecons.length > 1 ? 's' : ''} pédagogique{e.lecons.length > 1 ? 's' : ''}
               </span>
               {e.publie === false ? <Pastille ton="attention">Brouillon</Pastille> : null}
+              <label className="flex shrink-0 items-center gap-1.5 text-sm" style={{ color: VERT.sourdine }}>
+                S’ouvre après
+                <input
+                  type="number"
+                  min={0}
+                  defaultValue={e.ouvertureJours ?? 0}
+                  onBlur={(ev) => {
+                    const v = Math.max(0, Number(ev.target.value) || 0);
+                    if (v !== (e.ouvertureJours ?? 0)) reglerChapitre(e.id, { ouvertureJours: v });
+                  }}
+                  className="w-16 rounded-lg border-2 bg-white px-2 py-1 text-sm font-bold"
+                  style={{ borderColor: VERT.bord, color: VERT.texte }}
+                  aria-label="Jours avant l’ouverture de ce chapitre"
+                />
+                jours
+              </label>
               <div className="flex shrink-0 items-center gap-1">
                 <BoutonIcone titre="Monter" onClick={() => reordonner(i, -1)} disabled={occupe || i === 0}>
                   ↑
@@ -739,7 +863,21 @@ function Contenu({
             )}
           </section>
         ) : (
-          <section key={`le-${e.id}`} className="rounded-2xl border bg-white p-2" style={{ borderColor: VERT.bord }}>
+          <section
+            key={`le-${e.id}`}
+            draggable={glisse === `lecon:${e.id}`}
+            onDragStart={(ev) => ev.dataTransfer.setData('text/plain', e.id)}
+            onDragEnd={() => setGlisse(null)}
+            onDragOver={(ev) => {
+              if (glisse) ev.preventDefault();
+            }}
+            onDrop={(ev) => {
+              ev.preventDefault();
+              deposerSur(`lecon:${e.id}`);
+            }}
+            className="rounded-2xl border bg-white p-2"
+            style={{ borderColor: VERT.bord, opacity: glisse === `lecon:${e.id}` ? 0.5 : 1 }}
+          >
             <ul>
               <LigneLecon
                 lecon={e}
@@ -904,7 +1042,9 @@ function MenuAjouter({
     { genre: 'lecon', nom: 'Leçon', quoi: 'Du texte, des vidéos, des images.' },
     { genre: 'quiz', nom: 'Quiz', quoi: 'Des questions, une note minimale.' },
     { genre: 'devoir', nom: 'Devoir', quoi: 'Un travail à rendre.' },
+    { genre: 'taches', nom: 'Tâches & missions', quoi: 'Une liste que l’apprenant coche.' },
     { genre: 'live', nom: 'Classe en direct', quoi: 'Un rendez-vous en visio.' },
+    { genre: 'scorm', nom: 'Contenu SCORM', quoi: 'Un paquet déjà déposé ailleurs.' },
   ];
 
   return (
