@@ -331,12 +331,6 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
             </button>
             {menu ? (
               <div className="absolute right-0 top-full mt-1 w-64 rounded-2xl border border-[#DDEBE4] bg-white p-2 shadow-lg">
-                {compte.espaceOuvert ? (
-                  <Link href="/academie/mon-academie" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#12312A] no-underline hover:bg-[#F2F7F5]">
-                    Mon académie
-                  </Link>
-                ) : null}
-
                 <Link href="/academie/mon-profil" className="block rounded-xl px-3 py-2 text-sm font-bold text-[#12312A] no-underline hover:bg-[#F2F7F5]">
                   Mon profil
                 </Link>
