@@ -3598,6 +3598,9 @@ model CodePromo {
   accountId String
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
+  /// À quoi sert ce code : pour s'y retrouver dans la liste.
+  description String?
+
   code   String
   type   TypeRemise @default(POURCENTAGE)
   /// Un pourcentage (1 à 100) ou un montant en centimes, selon le type.
@@ -3692,11 +3695,34 @@ model EcoleEnLigne {
 
   logoUrl     String?
   banniereUrl String?
-  couleur     String  @default("#0F5F3E")
+  faviconUrl  String?
+
+  /// LA COULEUR PRINCIPALE SUFFIT. Les cinq autres se règlent si on veut aller
+  /// plus loin ; vides, elles se déduisent de la principale.
+  couleur             String  @default("#0F5F3E")
+  couleurFond         String?
+  couleurTitres       String?
+  couleurTextes       String?
+  couleurBoutons      String?
+  couleurTexteBoutons String?
+
+  /// [{ "reseau": "instagram", "url": "https://..." }]
+  liensSociaux Json?
 
   contactEmail String?
   cgv          String?
   mentions     String?
+
+  /// Le certificat de réussite que l'apprenant édite lui-même à la fin.
+  certificatModele  String?
+  certificatsActifs Boolean @default(true)
+
+  /// Couper les commentaires d'un coup, sur toutes les formations.
+  commentairesActifs Boolean @default(true)
+
+  /// Les codes de suivi posés sur la boutique et l'espace apprenant.
+  googleAnalytics String?
+  pixelMeta       String?
 
   publiee Boolean @default(false)
 
@@ -3717,6 +3743,8 @@ model Affilie {
   commissionPourcent Int     @default(20)
   ventes             Int     @default(0)
   gainsCents         Int     @default(0)
+  /// Ce qui lui a déjà été versé : le reste est ce qu'on lui doit.
+  gainsVersesCents   Int     @default(0)
   actif              Boolean @default(true)
 
   createdAt DateTime @default(now())
