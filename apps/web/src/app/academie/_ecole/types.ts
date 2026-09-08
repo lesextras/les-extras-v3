@@ -38,34 +38,14 @@ export interface Quiz {
  * on les empile, on les déplace, on les retire. C'est la même chose que dans
  * un document — sauf qu'ici chaque morceau sait ce qu'il est.
  */
-export type TypeBloc =
-  | 'titre'
-  | 'texte'
-  | 'video'
-  | 'audio'
-  | 'image'
-  | 'separateur'
-  | 'information'
-  | 'fichier'
-  | 'pdf'
-  | 'lien'
-  | 'classe';
+/**
+ * Les blocs vivent dans `_shared/blocs-lecon` : la formatrice et l'apprenant
+ * doivent voir exactement la même chose, donc le type ET le rendu sont
+ * définis une seule fois, hors de l'espace académie.
+ */
+import type { Bloc } from '../../_shared/blocs';
 
-export interface Bloc {
-  id: string;
-  type: TypeBloc;
-  /** Texte riche : « texte » et « information ». */
-  html?: string;
-  /** Texte simple : « titre ». */
-  texte?: string;
-  /** L'adresse : vidéo, audio, image, fichier, PDF, lien, classe. */
-  url?: string;
-  legende?: string;
-  nom?: string;
-  ton?: 'info' | 'attention' | 'succes';
-  niveau?: number;
-  debut?: string;
-}
+export type { Bloc, TypeBloc } from '../../_shared/blocs';
 
 export interface Lecon {
   id: string;
@@ -368,19 +348,7 @@ export const NOM_TYPE_LECON: Record<TypeLecon, string> = {
 };
 
 /** Les blocs, tels qu'ils s'appellent dans la palette. */
-export const NOM_BLOC: Record<TypeBloc, string> = {
-  titre: 'Titre',
-  texte: 'Texte',
-  video: 'Vidéo',
-  audio: 'Audio',
-  image: 'Image',
-  separateur: 'Séparateur',
-  information: "Bloc d'information",
-  fichier: 'Fichier à télécharger',
-  pdf: 'Visionneuse PDF',
-  lien: 'Lien',
-  classe: 'Classe en direct',
-};
+export { NOM_BLOC } from '../../_shared/blocs';
 
 export const NOM_NIVEAU: Record<NiveauCours, string> = {
   TOUS: 'Tous niveaux',
