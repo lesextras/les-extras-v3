@@ -43,7 +43,9 @@ export function Atelier({
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
-  const reponses = reponsesInitiales;
+  // Ceinture et bretelles : si l'API changeait de forme, la page afficherait
+  // « aucune réponse » plutôt que de tomber en panne devant la personne.
+  const reponses = Array.isArray(reponsesInitiales) ? reponsesInitiales : [];
 
   const lien = `${origine}/f/${f.slug}`;
 

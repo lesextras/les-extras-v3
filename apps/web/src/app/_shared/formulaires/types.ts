@@ -62,6 +62,18 @@ export interface FormulaireComplet {
   adresse: string;
 }
 
+/**
+ * CE QUE L'API RENVOIE SUR /formulaires/:id/reponses — un objet, pas un
+ * tableau : le titre et les questions voyagent avec, pour que l'export tienne
+ * debout même si le formulaire a changé depuis.
+ */
+export interface ReponsesFormulaire {
+  titre: string;
+  champs: Champ[];
+  total: number;
+  reponses: Reponse[];
+}
+
 export interface Reponse {
   id: string;
   email: string | null;
