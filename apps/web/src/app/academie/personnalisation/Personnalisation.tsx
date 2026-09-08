@@ -6,13 +6,43 @@ import { BTN_PRIMAIRE, CARTE, CHAMP, Encart } from '../_ui';
 import type { Vitrine } from '../_ecole/types';
 
 /**
- * L'IMAGE DE MARQUE, EN TROIS RÉGLAGES.
+ * L'IMAGE DE MARQUE.
  *
- * Logo, bannière, couleur. Les images se donnent par leur adresse : on ne
+ * La couleur principale suffit : c'est le seul réglage obligatoire. Les cinq
+ * autres — le fond, les titres, les textes, les boutons, le texte des boutons
+ * — se règlent seulement si on veut aller plus loin ; laissées vides, elles se
+ * déduisent de la principale. Les images se donnent par leur adresse : on ne
  * stocke pas de fichier ici, on pointe vers celui qui existe déjà — souvent
  * celui du site. L'aperçu se met à jour pendant la saisie, pour qu'on voie
  * avant d'enregistrer.
  */
+
+/** Les réseaux sur lesquels une école peut renvoyer, dans l'ordre du choix. */
+const RESEAUX: { cle: string; nom: string }[] = [
+  { cle: 'site', nom: 'Site web' },
+  { cle: 'facebook', nom: 'Facebook' },
+  { cle: 'messenger', nom: 'Messenger' },
+  { cle: 'whatsapp', nom: 'WhatsApp' },
+  { cle: 'instagram', nom: 'Instagram' },
+  { cle: 'tiktok', nom: 'TikTok' },
+  { cle: 'linkedin', nom: 'LinkedIn' },
+  { cle: 'youtube', nom: 'YouTube' },
+  { cle: 'twitter', nom: 'X' },
+  { cle: 'vimeo', nom: 'Vimeo' },
+  { cle: 'soundcloud', nom: 'Soundcloud' },
+  { cle: 'spotify', nom: 'Spotify' },
+  { cle: 'pinterest', nom: 'Pinterest' },
+  { cle: 'github', nom: 'GitHub' },
+];
+
+/** Les cinq couleurs qu'on peut régler en plus de la principale. */
+const AUTRES_COULEURS: { cle: 'couleurFond' | 'couleurTitres' | 'couleurTextes' | 'couleurBoutons' | 'couleurTexteBoutons'; nom: string; defaut: string }[] = [
+  { cle: 'couleurFond', nom: "Couleur d'arrière-plan", defaut: '#F7F8F7' },
+  { cle: 'couleurTitres', nom: 'Couleur des titres', defaut: '#12312A' },
+  { cle: 'couleurTextes', nom: 'Couleur des textes', defaut: '#334A42' },
+  { cle: 'couleurBoutons', nom: 'Couleur des boutons', defaut: '' },
+  { cle: 'couleurTexteBoutons', nom: 'Couleur du texte des boutons', defaut: '#FFFFFF' },
+];
 
 /** Quelques couleurs qui fonctionnent, pour ne pas partir de rien. */
 const PALETTE = ['#1E9E6A', '#0F5F3E', '#4F46E5', '#C42B57', '#D4AF37', '#12203B', '#F5B400'];
@@ -34,6 +64,11 @@ export function Personnalisation({ vitrine }: { vitrine: Vitrine }) {
   const [enregistre, setEnregistre] = useState(false);
 
   const couleur = /^#[0-9a-fA-F]{6}$/.test(v.couleur ?? '') ? v.couleur : '#1E9E6A';
+  const liens = Array.isArray(v.liensSociaux) ? v.liensSociaux : [];
+  const [reseauNeuf, setReseauNeuf] = useState('site');
+  const [urlNeuve, setUrlNeuve] = useState('');
+
+  const poserLiens = (l: { reseau: string; url: string }[]) => set('liensSociaux', l);
 
   function set<K extends keyof Vitrine>(cle: K, valeur: Vitrine[K]) {
     setV((x) => ({ ...x, [cle]: valeur }));
@@ -50,7 +85,14 @@ export function Personnalisation({ vitrine }: { vitrine: Vitrine }) {
         corps: {
           logoUrl: v.logoUrl ?? '',
           banniereUrl: v.banniereUrl ?? '',
+          faviconUrl: v.faviconUrl ?? '',
           couleur,
+          couleurFond: v.couleurFond ?? '',
+          couleurTitres: v.couleurTitres ?? '',
+          couleurTextes: v.couleurTextes ?? '',
+          couleurBoutons: v.couleurBoutons ?? '',
+          couleurTexteBoutons: v.couleurTexteBoutons ?? '',
+          liensSociaux: liens,
         },
       });
       setV(maj);
@@ -104,6 +146,20 @@ export function Personnalisation({ vitrine }: { vitrine: Vitrine }) {
               </span>
             </label>
 
+            <label className="block">
+              <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Adresse de ton favicon</span>
+              <input
+                value={v.faviconUrl ?? ''}
+                onChange={(e) => set('faviconUrl', e.target.value)}
+                className={CHAMP}
+                maxLength={600}
+                placeholder="https://toulali.fr/favicon.png"
+              />
+              <span className="mt-1 block text-[13px] text-[#5E7A6E]">
+                La petite image de l&apos;onglet du navigateur. Carrée, 64 pixels, en PNG.
+              </span>
+            </label>
+
             <div>
               <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Ta couleur principale</span>
               <div className="flex flex-wrap items-center gap-3">
@@ -137,6 +193,116 @@ export function Personnalisation({ vitrine }: { vitrine: Vitrine }) {
               <p className="mt-2 text-[13px] text-[#5E7A6E]">
                 C&apos;est la couleur des boutons de ta page et de l&apos;espace apprenant.
               </p>
+            </div>
+          </div>
+
+          <details className="mt-5 rounded-xl border-2 border-[#DDEBE4] p-4">
+            <summary className="cursor-pointer text-[15px] font-extrabold text-[#12312A]">
+              Régler les autres couleurs
+            </summary>
+            <p className="mt-2 text-[13px] text-[#5E7A6E]">
+              Laisse un champ vide et la couleur se déduit de la principale. Tu n&apos;as pas
+              besoin d&apos;y toucher pour que ta page soit correcte.
+            </p>
+            <div className="mt-3 grid gap-3">
+              {AUTRES_COULEURS.map((c) => {
+                const val = (v[c.cle] as string | null) ?? '';
+                return (
+                  <div key={c.cle} className="flex flex-wrap items-center gap-3">
+                    <span className="min-w-[200px] text-[13px] font-bold text-[#12312A]">{c.nom}</span>
+                    <input
+                      type="color"
+                      value={/^#[0-9a-fA-F]{6}$/.test(val) ? val : c.defaut || couleur}
+                      onChange={(e) => set(c.cle, e.target.value.toUpperCase())}
+                      className="h-10 w-12 cursor-pointer rounded-lg border-2 border-[#DDEBE4] bg-white p-1"
+                      aria-label={c.nom}
+                    />
+                    <input
+                      value={val}
+                      onChange={(e) => set(c.cle, e.target.value.toUpperCase())}
+                      className={`${CHAMP} max-w-[130px] font-mono`}
+                      maxLength={9}
+                      placeholder={c.defaut || couleur}
+                    />
+                    {val ? (
+                      <button
+                        type="button"
+                        onClick={() => set(c.cle, '')}
+                        className="text-[13px] font-bold text-[#8A1B3D] underline underline-offset-4"
+                      >
+                        Effacer
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </details>
+
+          <div className="mt-5 rounded-xl border-2 border-[#DDEBE4] p-4">
+            <h3 className="text-[15px] font-extrabold text-[#12312A]">Tes liens sociaux</h3>
+            <p className="mt-1 text-[13px] text-[#5E7A6E]">
+              Ils s&apos;affichent en bas de ta page publique.
+            </p>
+
+            {liens.length ? (
+              <ul className="mt-3 grid gap-2">
+                {liens.map((l, i) => (
+                  <li key={`${l.reseau}-${i}`} className="flex flex-wrap items-center gap-2">
+                    <span className="min-w-[110px] text-[14px] font-bold text-[#12312A]">
+                      {RESEAUX.find((r) => r.cle === l.reseau)?.nom ?? l.reseau}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[14px] text-[#334A42]">{l.url}</span>
+                    <button
+                      type="button"
+                      onClick={() => poserLiens(liens.filter((_, j) => j !== i))}
+                      className="text-[13px] font-bold text-[#8A1B3D] underline underline-offset-4"
+                    >
+                      Retirer
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-[14px] text-[#5E7A6E]">Aucun lien pour le moment.</p>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-end gap-2">
+              <label className="block">
+                <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Réseau</span>
+                <select value={reseauNeuf} onChange={(e) => setReseauNeuf(e.target.value)} className={CHAMP}>
+                  {RESEAUX.map((r) => (
+                    <option key={r.cle} value={r.cle}>
+                      {r.nom}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block min-w-[220px] flex-1">
+                <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Adresse</span>
+                <input
+                  value={urlNeuve}
+                  onChange={(e) => setUrlNeuve(e.target.value)}
+                  className={CHAMP}
+                  placeholder="https://instagram.com/…"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = urlNeuve.trim();
+                  if (!/^https?:\/\//.test(url)) {
+                    setErreur('Un lien commence par https://');
+                    return;
+                  }
+                  setErreur(null);
+                  poserLiens([...liens, { reseau: reseauNeuf, url }]);
+                  setUrlNeuve('');
+                }}
+                className="rounded-xl border-2 border-[#DDEBE4] bg-white px-4 py-2 text-[14px] font-extrabold text-[#0F5F3E]"
+              >
+                Ajouter
+              </button>
             </div>
           </div>
 
