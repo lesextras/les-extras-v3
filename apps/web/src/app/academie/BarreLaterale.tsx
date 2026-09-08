@@ -299,7 +299,7 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
           <img src="/academie/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
           <span className="text-[15px] font-extrabold text-[#12312A]">Piloter</span>
         </Link>
-        {compte?.espaceOuvert ? <MenuEspaces compte={compte} /> : null}
+        {compte && (compte.espaceOuvert || (compte.espaces?.length ?? 0) > 0) ? <MenuEspaces compte={compte} /> : null}
         <Link href="/academie/centre-d-aide" className="hidden items-center gap-2 text-[15px] font-bold text-[#12312A] no-underline hover:text-[#0F5F3E] md:flex">
           {ICONES.aide} Centre d&apos;aide
         </Link>
