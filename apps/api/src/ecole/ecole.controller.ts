@@ -20,6 +20,9 @@ import {
   PackDto,
   ReordonnerDto,
   VenteDto,
+  LeconIaDto,
+  StructureIaDto,
+  TitreIaDto,
 } from './dto/ecole.dto';
 
 /**
@@ -349,5 +352,40 @@ export class EcoleController {
   @Get('statistiques')
   statistiques(@CurrentAccount() a: RequestAccount) {
     return this.ecole.statistiques(a.id);
+  }
+
+  /* --------------------------------------------------- l'aide à l'écriture */
+
+  /** Une proposition de plan. Rien n'est écrit tant qu'on ne la pose pas. */
+  @Post('cours/:id/ia/structure')
+  proposerStructure(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: StructureIaDto) {
+    return this.ecole.proposerStructure(a.id, id, dto);
+  }
+
+  /** Poser un plan proposé : les chapitres et leçons s'ajoutent à la suite. */
+  @Post('cours/:id/ia/structure/poser')
+  poserStructure(
+    @CurrentAccount() a: RequestAccount,
+    @Param('id') id: string,
+    @Body() body: { chapitres: { titre: string; lecons: { titre: string; resume?: string }[] }[] },
+  ) {
+    return this.ecole.poserStructure(a.id, id, body);
+  }
+
+  /** Des blocs proposés pour une leçon. */
+  @Post('cours/:id/lecons/:leconId/ia')
+  proposerLecon(
+    @CurrentAccount() a: RequestAccount,
+    @Param('id') id: string,
+    @Param('leconId') leconId: string,
+    @Body() dto: LeconIaDto,
+  ) {
+    return this.ecole.proposerLecon(a.id, id, leconId, dto);
+  }
+
+  /** Un titre et une description, à partir d'un sujet en une ligne. */
+  @Post('ia/titre')
+  proposerTitre(@Body() dto: TitreIaDto) {
+    return this.ecole.proposerTitre(dto);
   }
 }
