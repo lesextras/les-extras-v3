@@ -167,6 +167,60 @@ export default async function ComptabilitePage() {
         </p>
       </section>
 
+      {/* ------------------------------------------------- les versements attendus */}
+      <section id="versements" className="mb-10 scroll-mt-24">
+        <SousTitre>Les versements attendus</SousTitre>
+        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
+          Une subvention accordée n&apos;est pas une subvention versée : il y a souvent un acompte, puis un solde après le
+          compte rendu. Cette liste dit, dossier par dossier, ce qui a été promis et ce qui manque encore sur le compte.
+        </p>
+
+        {accordes.length ? (
+          <>
+            <div className={`${CARTE} divide-y divide-[#E6E4F3]`}>
+              {accordes.map((d) => (
+                <div key={d.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                  <div className="min-w-0">
+                    <Link href={`/espace/dossiers/${d.id}`} className="font-extrabold text-[#1D1B5C] no-underline hover:underline">
+                      {d.intitule}
+                    </Link>
+                    <p className="mt-0.5 text-sm text-[#6B6A8A]">
+                      {d.financeur}
+                      {d.dateDecision ? ` · accordée le ${dateCourte(d.dateDecision)}` : ''}
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-lg font-extrabold tabular-nums text-[#1D1B5C]">
+                    {formaterEuros(d.montantAccorde ?? 0)}
+                  </p>
+                </div>
+              ))}
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F5F4FC] px-5 py-4">
+                <div>
+                  <p className="font-extrabold text-[#1D1B5C]">Reste à encaisser</p>
+                  <p className="mt-0.5 text-sm text-[#6B6A8A]">
+                    {formaterEuros(subventionsAccordees)} accordés, {formaterEuros(subventionsEncaissees)} déjà notés au cahier de comptes.
+                  </p>
+                </div>
+                <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(resteAEncaisser)}</p>
+              </div>
+            </div>
+            <Encart ton={resteAEncaisser > 0 ? 'attention' : 'ok'}>
+              {resteAEncaisser > 0
+                ? "Quand l'argent arrive sur le compte, note-le en recette « Subvention » dans le cahier de comptes ci-dessous : cette ligne se met à jour toute seule."
+                : 'Tout ce qui a été accordé est noté au cahier de comptes. Rien ne traîne.'}
+            </Encart>
+          </>
+        ) : (
+          <Encart>
+            Aucune subvention accordée pour l&apos;instant. Dès qu&apos;un financeur dit oui, note le montant dans{' '}
+            <Link href="/espace/dossiers" className="font-bold underline underline-offset-4">
+              le dossier concerné
+            </Link>{' '}
+            : le versement attendu apparaîtra ici.
+          </Encart>
+        )}
+      </section>
+
       {/* -------------------------------------------------------------- les dons */}
       <section id="dons" className="mb-10 scroll-mt-24">
         <SousTitre>Les dons</SousTitre>
