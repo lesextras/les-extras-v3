@@ -4,11 +4,13 @@ import { AccountGuard } from '../common/guards/account.guard';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import type { RequestAccount } from '../common/types/request-context';
 import { AcademieService } from './academie.service';
+import { CertificationService } from './certification';
 import {
   EtapeAcademieFaiteDto,
   ModifierAcademieDto,
   ModifierReclamationDto,
   ModifierVeilleDto,
+  NotePreuveQualiopiDto,
   ReclamationDto,
   VeilleDto,
 } from './dto/academie.dto';
@@ -23,7 +25,28 @@ import {
 @Controller('academie')
 @UseGuards(JwtAuthGuard, AccountGuard)
 export class AcademieEspaceController {
-  constructor(private readonly academie: AcademieService) {}
+  constructor(
+    private readonly academie: AcademieService,
+    private readonly certification: CertificationService,
+  ) {}
+
+  /* ------------------------------------------------------- la certification */
+
+  /** Le référentiel entier, avec les preuves de CE compte. */
+  @Get('qualiopi')
+  qualiopi(@CurrentAccount() account: RequestAccount) {
+    return this.certification.referentiel(account.id);
+  }
+
+  /** Poser ou corriger la preuve d'un indicateur. */
+  @Patch('qualiopi/:indicatorId')
+  noterPreuve(
+    @CurrentAccount() account: RequestAccount,
+    @Param('indicatorId') indicatorId: string,
+    @Body() dto: NotePreuveQualiopiDto,
+  ) {
+    return this.certification.noter(account.id, indicatorId, dto);
+  }
 
   @Get('espace')
   espace(@CurrentAccount() account: RequestAccount) {

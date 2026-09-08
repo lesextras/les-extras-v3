@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AcademieService } from './academie.service';
 import { RepertoiresFormationService } from './repertoires';
+import { CertificationService } from './certification';
 import { AcademieEspaceController } from './academie-espace.controller';
 import { AcademieOuvertureController } from './academie-ouverture.controller';
 import { AcademiePublicController } from './academie-public.controller';
@@ -15,7 +16,7 @@ import { AcademiePublicController } from './academie-public.controller';
  */
 @Module({
   controllers: [AcademiePublicController, AcademieOuvertureController, AcademieEspaceController],
-  providers: [AcademieService, RepertoiresFormationService],
-  exports: [AcademieService, RepertoiresFormationService],
+  providers: [AcademieService, RepertoiresFormationService, CertificationService],
+  exports: [AcademieService, RepertoiresFormationService, CertificationService],
 })
 export class AcademieModule {}
