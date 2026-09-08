@@ -544,6 +544,11 @@ export function AtelierCours({
           lecon={leconOuverte}
           titreFormation={c.titre}
           adressePublique={c.statut === 'PUBLIE' ? lien : null}
+          lecons={(c.contenu ?? []).flatMap((e) =>
+            e.genre === 'chapitre'
+              ? e.lecons.map((l) => ({ id: l.id, titre: l.titre }))
+              : [{ id: e.id, titre: e.titre }],
+          )}
           fermer={() => setLeconOuverte(null)}
           enregistrer={async (patch) => {
             try {
