@@ -86,7 +86,7 @@ export const ICONES = {
  */
 const MENU: Entree[] = [
   { href: '/', libelle: 'Tableau de bord', icone: ICONES.boussole, accent: true },
-  { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
+  { href: '/association/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/espace/association', libelle: 'Mon association', icone: ICONES.association },
   { href: '/espace/projets', libelle: 'Mes projets', icone: ICONES.actions },
   { href: '/espace/repertoire', libelle: 'Mon équipe', icone: ICONES.droits },
@@ -108,11 +108,13 @@ const MON_COMPTE: Entree[] = [
 ];
 
 /** Les seules entrées qui s'ouvrent sans compte. Le reste attend la connexion. */
-const PUBLIC = ['/', '/chemin'];
+const PUBLIC = ['/', '/association', '/chemin', '/association/chemin'];
 
 /** Les pages qui n'ont plus d'entrée à elles : elles éclairent l'entrée qui les porte. */
 const PORTEES: Record<string, string> = {
   '/espace': '/',
+  '/association': '/',
+  '/chemin': '/association/chemin',
   '/espace/actions': '/espace/projets',
   '/espace/financeurs': '/espace/projets',
   '/espace/budget': '/espace/association',
@@ -146,6 +148,9 @@ export async function deconnecter() {
 /** La barre latérale sombre : la marque en haut, les entrées, la personne en bas. */
 export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
   const chemin = usePathname() ?? '/';
+  // La plateforme (l'accueil et la page des deux chemins) porte la marque DORÉE ;
+  // l'espace association porte la sienne, en rouge rosé.
+  const surLaPlateforme = chemin === '/' || chemin === '/chemin';
   const [ouvert, setOuvert] = useState(false);
   // Le groupe « Mon compte » s'ouvre tout seul quand on est sur l'une de ses pages.
   const [compteOuvert, setCompteOuvert] = useState(() => MON_COMPTE.some((e) => chemin.startsWith(e.href)));
@@ -193,10 +198,20 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
             <span className="mt-0.5 text-xs text-[#A9A6D9]">{compte.espaceOuvert ? 'Espace association ouvert' : 'Compte connecté'}</span>
           </>
         ) : (
-          <Link href="/" className="flex flex-col items-center gap-2 no-underline">
+          <Link href={surLaPlateforme ? '/' : '/association'} className="flex flex-col items-center gap-2 no-underline">
+            {/* Sur la plateforme, qui présente les deux espaces, la marque est dorée ;
+                dans l'espace association, elle reprend le rouge rosé de l'espace. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/association/marque.svg" alt="" width={56} height={56} className="h-14 w-14 rounded-2xl" />
-            <span className="text-sm font-extrabold leading-snug text-white">Piloter mon association</span>
+            <img
+              src={surLaPlateforme ? '/pilote/marque.svg' : '/association/marque.svg'}
+              alt=""
+              width={56}
+              height={56}
+              className="h-14 w-14 rounded-2xl"
+            />
+            <span className="text-sm font-extrabold leading-snug text-white">
+              {surLaPlateforme ? 'Piloter' : 'Piloter mon association'}
+            </span>
             <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A9A6D9]">par Toulali</span>
           </Link>
         )}
@@ -235,7 +250,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
         {/* La signature, tout en bas : d'où vient l'outil. */}
         <Link href="/" className="flex items-center justify-center gap-2 pt-3 no-underline">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/association/marque.svg" alt="" width={26} height={26} className="h-[26px] w-[26px] rounded-lg" />
+          <img src="/pilote/marque.svg" alt="" width={26} height={26} className="h-[26px] w-[26px] rounded-lg" />
           <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A9A6D9]">créé par Toulali</span>
         </Link>
       </div>
@@ -278,11 +293,11 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <Link href="/" className="flex items-center gap-2 no-underline lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/association/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
+          <img src="/pilote/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
           <span className="text-[15px] font-extrabold text-[#1D1B5C]">Piloter</span>
         </Link>
         {compte?.espaceOuvert ? <MenuEspaces compte={compte} /> : null}
-        <Link href="/chemin" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">
+        <Link href="/association/chemin" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">
           {ICONES.aide} Centre d&apos;aide
         </Link>
       </div>

@@ -1,15 +1,47 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { associationConnectee } from './_session';
-import { Accent } from './_ui';
+import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE_VIVE } from './_ui';
 
-export const metadata: Metadata = {
-  title: 'Piloter — par Toulali',
-  description:
-    "Un outil, deux espaces : piloter mon association (papiers, subventions, comptabilité) ou piloter mon académie (Qualiopi, catalogue, apprenants). Gratuit.",
-  alternates: { canonical: '/' },
-};
+/**
+ * DEUX PAGES, UN SEUL FICHIER.
+ *
+ * Le middleware sert `/` et `/association` avec ce fichier et pose l'adresse
+ * réelle dans l'en-tête `x-chemin` :
+ *   /             la plateforme, qui présente les deux espaces ;
+ *   /association  l'espace association, qui se présente lui-même.
+ */
+async function adresse() {
+  return (await headers()).get('x-chemin') ?? '/';
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  if ((await adresse()) === '/association') {
+    return {
+      title: 'Piloter mon association — par Toulali',
+      description:
+        "Le chemin en 12 étapes, le classeur qui prévient, les subventions, la comptabilité et les agréments. Gratuit, pendant que l'outil se construit.",
+      alternates: { canonical: '/association' },
+    };
+  }
+  return {
+    title: 'Piloter — par Toulali',
+    description:
+      "Un outil, deux espaces : piloter mon association (papiers, subventions, comptabilité) ou piloter mon académie (Qualiopi, catalogue, apprenants). Gratuit.",
+    alternates: { canonical: '/' },
+  };
+}
+
+export default async function AccueilPilote() {
+  // Connectée avec un espace ouvert : l'accueil, c'est le tableau de bord.
+  if (await associationConnectee()) redirect('/espace');
+  if ((await adresse()) === '/association') return <EspaceAssociation />;
+  return <Plateforme />;
+}
+
+/* ================================================================ plateforme */
 
 /**
  * LA PAGE D'ACCUEIL DE PILOTE.
@@ -22,10 +54,7 @@ export const metadata: Metadata = {
  * Tout bouge en CSS pur, sans une ligne de JavaScript, et tout s'arrête si la
  * personne a demandé moins d'animations.
  */
-export default async function AccueilPilote() {
-  // Connectée avec un espace ouvert : l'accueil, c'est le tableau de bord.
-  if (await associationConnectee()) redirect('/espace');
-
+function Plateforme() {
   return (
     <>
       <style>{ANIMATIONS}</style>
@@ -174,14 +203,97 @@ export default async function AccueilPilote() {
   );
 }
 
+/* ========================================================= espace association */
+
+/**
+ * `/association` — L'ESPACE ASSOCIATION SE PRÉSENTE.
+ *
+ * Même rôle que `/academie` pour l'académie : on dit ce que l'espace fait, on
+ * ouvre le chemin, et on laisse partir vers la création du compte. Pas de
+ * grande animation ici : c'est une page de travail, pas une vitrine.
+ */
+function EspaceAssociation() {
+  return (
+    <>
+      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#6B6A8A]">Par Toulali, centre de formation</p>
+      <h1 className="mt-2 text-4xl font-extrabold leading-[1.05] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-5xl">
+        Piloter mon <Accent>association</Accent>
+      </h1>
+      <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-[#3B3A66]">
+        Déclarer ton association, réunir ses papiers, demander tes premières subventions et tenir tes comptes. Le chemin est
+        balisé, les pièces sont listées, et l&apos;espace garde tout au même endroit.
+      </p>
+
+      <div className="mt-7 flex flex-wrap gap-3">
+        <Link href="/association/inscription?type=association" className={BTN_PRIMAIRE}>
+          Ouvrir mon espace, gratuit
+        </Link>
+        <Link href="/association/chemin" className={BTN_SECONDAIRE}>
+          Voir le chemin
+        </Link>
+      </div>
+
+      <div className="mt-10 grid gap-4 md:grid-cols-3">
+        {POURQUOI.map((c) => (
+          <div key={c.titre} className={`${CARTE_VIVE} p-6`}>
+            <h2 className="text-lg font-extrabold leading-snug text-[#1D1B5C]">{c.titre}</h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-[#3B3A66]">{c.texte}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8 rounded-2xl border-2 border-[#C7C4F2] bg-[#ECEBFC] p-6 sm:p-7">
+        <h2 className="text-xl font-extrabold tracking-tight text-[#1D1B5C]">Tu portes aussi un organisme de formation ?</h2>
+        <p className="mt-2 max-w-[62ch] leading-relaxed text-[#3B3A66]">
+          L&apos;espace académie tient la déclaration d&apos;activité, les trente-deux indicateurs Qualiopi et le catalogue. Un même
+          compte peut porter les deux : ce sont deux espaces, rien ne se mélange.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href="/academie"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#1E9E6A] px-5 py-3 text-base font-extrabold text-white no-underline transition hover:bg-[#17845A]"
+          >
+            Voir l&apos;espace académie
+            <span aria-hidden="true">→</span>
+          </Link>
+          <Link
+            href="/chemin"
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-[#C7C4F2] bg-white px-5 py-[10px] text-base font-extrabold text-[#4338CA] no-underline transition hover:border-[#4F46E5]"
+          >
+            Comparer les deux chemins
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const POURQUOI = [
+  {
+    titre: 'Le chemin, pas la paperasse',
+    texte:
+      "Douze étapes dans l'ordre où elles se posent vraiment : naître, vivre, demander. Chaque étape dit ce qu'il te faut, ce que ça coûte, et à quoi tu sais que c'est fini.",
+  },
+  {
+    titre: 'Le classeur qui prévient',
+    texte:
+      "Statuts, PV, récépissés, comptes annuels : tout se dépose une fois. L'espace sait ce qui manque et ce qui va bientôt manquer.",
+  },
+  {
+    titre: 'Les subventions, sans repartir de zéro',
+    texte:
+      "Ce que tu as déjà écrit sur l'association et sur tes projets remplit le dossier. Tu écris ce qui change, pas ce que tu as déjà dit.",
+  },
+];
+
 /* ------------------------------------------------------------------ données */
 
 const PORTES = [
   {
-    href: '/inscription?type=association',
+    href: '/association',
     titre: 'Mon association',
     phrase: 'Ses papiers, ses subventions, ses comptes.',
-    action: 'Créer mon espace association',
+    action: 'Ouvrir mon espace association',
     icone: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01M9 14h.01M15 14h.01',
     fond: 'border-2 border-[#C7C4F2] bg-[#ECEBFC]',
     halo: 'bg-[#4F46E5]',
@@ -193,10 +305,10 @@ const PORTES = [
     mots: ['Le chemin en 12 étapes', 'Classeur', 'Subventions', 'Comptabilité', 'Agréments'],
   },
   {
-    href: '/academie/inscription',
+    href: '/academie',
     titre: 'Mon académie',
     phrase: 'Sa certification, son catalogue, ses apprenants.',
-    action: 'Créer mon espace académie',
+    action: 'Ouvrir mon espace académie',
     icone: 'M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5',
     fond: 'border-2 border-[#B7E4CE] bg-[#E3F5EC]',
     halo: 'bg-[#1E9E6A]',
