@@ -639,6 +639,9 @@ function Contenu({
 }) {
   const elements = cours.contenu ?? [];
   const chapitres = elements.filter((e) => e.genre === 'chapitre') as ({ genre: 'chapitre' } & Chapitre)[];
+  // Un chapitre se replie : avec huit modules, la table des matières doit
+  // tenir dans l'écran, comme chez Teachizy.
+  const [plies, setPlies] = useState<Record<string, boolean>>({});
 
   return (
     <div className="grid gap-4">
@@ -666,6 +669,12 @@ function Contenu({
         e.genre === 'chapitre' ? (
           <section key={`ch-${e.id}`} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
             <div className="flex flex-wrap items-center gap-2">
+              <BoutonIcone
+                titre={plies[e.id] ? 'Déplier ce chapitre' : 'Replier ce chapitre'}
+                onClick={() => setPlies((p) => ({ ...p, [e.id]: !p[e.id] }))}
+              >
+                {plies[e.id] ? '⌄' : '⌃'}
+              </BoutonIcone>
               <input
                 defaultValue={e.titre}
                 onBlur={(ev) => {
@@ -700,7 +709,7 @@ function Contenu({
               </div>
             </div>
 
-            {e.lecons.length ? (
+            {plies[e.id] ? null : e.lecons.length ? (
               <ul className="mt-3 grid gap-2">
                 {e.lecons.map((l) => (
                   <LigneLecon
