@@ -3,12 +3,33 @@
 /**
  * Appels à l'API depuis le navigateur, toujours par le relais du site
  * (/api/proxy) : c'est lui qui porte le jeton et le compte actif.
+ *
+ * LE COMPTE, CÔTÉ NAVIGATEUR. Le relais choisit le compte avec le cookie
+ * « compte actif » de la session — qui peut être une association quand la
+ * personne en porte une en plus de son académie. Les pages, elles, sont
+ * rendues par le serveur sur le compte ACADEMIE désigné par `pilote_espace`.
+ * Pour que le navigateur parle du même compte que la page qu'il affiche, on
+ * transmet cet espace en en-tête : le relais le préfère au cookie.
  */
+export function espaceCourant(): string | null {
+  if (typeof document === 'undefined') return null;
+  const m = document.cookie.match(/(?:^|;\s*)pilote_espace=([^;]*)/);
+  if (!m) return null;
+  try {
+    const v = decodeURIComponent(m[1]).trim();
+    return v || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function appel<T = unknown>(
   path: string,
   init?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; form?: FormData },
 ): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
+  const espace = espaceCourant();
+  if (espace) headers['x-account-id'] = espace;
   let body: BodyInit | undefined;
   if (init?.form) body = init.form;
   else if (init?.body !== undefined) {
