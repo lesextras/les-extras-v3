@@ -792,13 +792,16 @@ function BlocEnPlace({ bloc, changer }: { bloc: Bloc; changer: (patch: Partial<B
         </div>
       )}
 
+      {/* L'anneau de mise au point du reste de l'application encercle ici toute
+          la largeur du bloc et se lit comme une erreur : le cadre vert du bloc
+          ouvert dit déjà où l'on écrit. */}
       <div
         ref={zone}
         contentEditable
         suppressContentEditableWarning
         onInput={dire}
         className={`${habit.cls} focus:outline-none`}
-        style={habit.st}
+        style={{ ...habit.st, boxShadow: 'none' }}
       />
 
       {bloc.type === 'information' ? (
