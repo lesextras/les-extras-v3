@@ -33,9 +33,42 @@ function comptesDe(session: Session): SessionAccount[] {
   return session.account ? [session.account] : [];
 }
 
+
+/**
+ * LES COMPTES VUS PAR L'API.
+ *
+ * Le cookie de session est écrit à la connexion : un espace ouvert APRÈS ne
+ * s'y trouve pas. Plutôt que d'obliger la personne à se reconnecter pour voir
+ * l'espace qu'elle vient d'ouvrir, on redemande la liste à l'API. On ne le
+ * fait que lorsque la session ne connaît aucun compte du type cherché : le cas
+ * courant ne coûte donc rien.
+ */
+interface AdhesionBrute {
+  account?: SessionAccount | null;
+}
+
+async function comptesFrais(session: Session): Promise<SessionAccount[]> {
+  try {
+    const moi = (await apiRequest('/auth/me', { token: session.token, cache: 'no-store' })) as {
+      memberships?: AdhesionBrute[];
+      user?: { memberships?: AdhesionBrute[] };
+    } | null;
+    const adhesions = moi?.memberships ?? moi?.user?.memberships ?? [];
+    return adhesions
+      .map((a) => a?.account)
+      .filter((c): c is SessionAccount => Boolean(c && c.id && c.type));
+  } catch {
+    // L'API ne répond pas : on s'en tient à ce que la session connaît.
+    return [];
+  }
+}
+
 /** Le compte actif parmi ceux d'un type donné, en respectant la préférence. */
 async function choisir(session: Session, type: string): Promise<SessionAccount | null> {
-  const candidats = comptesDe(session).filter((c) => (c.type as string) === type);
+  let candidats = comptesDe(session).filter((c) => (c.type as string) === type);
+  if (!candidats.length) {
+    candidats = (await comptesFrais(session)).filter((c) => (c.type as string) === type);
+  }
   if (!candidats.length) return null;
   try {
     const voulu = (await cookies()).get(COOKIE_ESPACE)?.value;
@@ -52,7 +85,11 @@ export async function sessionAcademie(chemin = '/academie'): Promise<SessionAcad
   if (!session) redirect(`/academie/connexion?next=${encodeURIComponent(chemin)}`);
   const compte = await choisir(session, TYPE_ACADEMIE);
   if (!compte) redirect('/academie/ouvrir-mon-espace');
-  return { session, compte, espaces: comptesDe(session) };
+  // L'espace qu'on vient d'ouvrir n'est pas encore dans le cookie de session :
+  // on l'ajoute à la liste, sinon le sélecteur ne le montrerait pas.
+  const connus = comptesDe(session);
+  const espaces = connus.some((c) => c.id === compte.id) ? connus : [...connus, compte];
+  return { session, compte, espaces };
 }
 
 /** L'académie de la personne connectée, s'il y en a une. Ne redirige jamais. */
