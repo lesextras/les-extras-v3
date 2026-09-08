@@ -20,6 +20,7 @@ export function CodesPromo({ initiaux, cours }: { initiaux: Promo[]; cours: Cour
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
+  const [description, setDescription] = useState('');
   const [code, setCode] = useState('');
   const [type, setType] = useState<TypeRemise>('POURCENTAGE');
   const [valeur, setValeur] = useState('');
@@ -51,6 +52,7 @@ export function CodesPromo({ initiaux, cours }: { initiaux: Promo[]; cours: Cour
       const cree = await appel<Promo>('/ecole/codes-promo', {
         methode: 'POST',
         corps: {
+          description: description.trim() || undefined,
           code: propre,
           type,
           valeur: type === 'POURCENTAGE' ? Math.round(n) : Math.round(n * 100),
@@ -62,6 +64,7 @@ export function CodesPromo({ initiaux, cours }: { initiaux: Promo[]; cours: Cour
       });
       setPromos((l) => [cree, ...l]);
       setCode('');
+      setDescription('');
       setValeur('');
       setChoisis([]);
       setRestreindre(false);
@@ -114,6 +117,20 @@ export function CodesPromo({ initiaux, cours }: { initiaux: Promo[]; cours: Cour
           Sans restriction, le code s&apos;applique à tous tes cours et à tous tes packs. Restreins-le seulement si tu
           fais une opération sur une formation précise.
         </p>
+
+        <label className="mb-4 block">
+          <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Description</span>
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className={CHAMP}
+            maxLength={200}
+            placeholder="Rentrée 2026 — 20 % sur le parcours complet"
+          />
+          <span className="mt-1 block text-[13px] text-[#5E7A6E]">
+            Elle ne sort nulle part : elle te sert à retrouver ce code dans la liste.
+          </span>
+        </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
@@ -224,6 +241,9 @@ export function CodesPromo({ initiaux, cours }: { initiaux: Promo[]; cours: Cour
                 </span>
                 <span className="min-w-[150px] flex-1">
                   <span className="block text-[16px] font-black text-[#0F5F3E]">-{remise(p)}</span>
+                  {p.description ? (
+                    <span className="block text-[14px] font-bold text-[#12312A]">{p.description}</span>
+                  ) : null}
                   <span className="block text-[13px] text-[#5E7A6E]">
                     {p.coursIds.length ? `${p.coursIds.length} cours concernés` : 'Tous les cours et packs'}
                     {p.expireLe ? ` · jusqu'au ${formaterDate(p.expireLe)}` : ''}
