@@ -191,6 +191,15 @@ export class EcoleController {
     return this.ecole.inscrireApprenant(a.id, id, dto);
   }
 
+  @Post('apprenants/:inscriptionId/bloquer')
+  bloquer(
+    @CurrentAccount() a: RequestAccount,
+    @Param('inscriptionId') inscriptionId: string,
+    @Body() dto: { bloquer?: boolean },
+  ) {
+    return this.ecole.bloquerApprenant(a.id, inscriptionId, dto?.bloquer !== false);
+  }
+
   @Delete('apprenants/:inscriptionId')
   retirer(@CurrentAccount() a: RequestAccount, @Param('inscriptionId') inscriptionId: string) {
     return this.ecole.retirerApprenant(a.id, inscriptionId);
