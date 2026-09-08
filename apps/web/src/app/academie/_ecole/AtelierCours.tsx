@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { appel, messageDe } from './api';
 import {
+  MODALITE_COURTE,
+  NOM_MODALITE,
   NOM_NIVEAU,
   NOM_TYPE_LECON,
   VERT,
@@ -12,35 +14,61 @@ import {
   nouvelIdentifiant,
   type Apprenant,
   type Chapitre,
+  type Commentaire,
   type CoursComplet,
   type Lecon,
+  type ModaliteCours,
   type NiveauCours,
   type QuestionQuiz,
   type Quiz,
   type TypeLecon,
+  type Vente,
 } from './types';
 
 /**
- * L'ATELIER D'UN COURS.
+ * L'ATELIER D'UNE FORMATION.
  *
- * Trois onglets : le contenu (chapitres et leçons), la fiche (ce qui se vend),
- * les apprenants (qui suit, où il en est). Rien n'est envoyé tant qu'on n'a pas
- * cliqué sur « Enregistrer » — sauf ce qui change la structure (ajouter un
- * chapitre, monter une leçon), qui s'écrit tout de suite et renvoie le cours
- * entier : c'est le serveur qui tient l'ordre, jamais le navigateur.
+ * Sept onglets, comme on lit une formation : le contenu qu'on enseigne, les
+ * paramètres qui la règlent, le prix qu'elle coûte, les descriptions qu'on
+ * lit avant de s'inscrire, les apprenants qui la suivent, ce qu'ils écrivent,
+ * et ce que les chiffres en disent.
+ *
+ * Le présentiel, la classe virtuelle et le mixte ne sont pas des formations
+ * d'un autre genre : c'est une option, choisie dans « Paramètres ».
+ *
+ * Rien n'est envoyé tant qu'on n'a pas cliqué sur « Enregistrer » — sauf ce
+ * qui change la structure (ajouter un chapitre, monter une leçon), qui s'écrit
+ * tout de suite et renvoie la formation entière : c'est le serveur qui tient
+ * l'ordre, jamais le navigateur.
  */
+
+type Onglet = 'contenu' | 'parametres' | 'prix' | 'descriptions' | 'apprenants' | 'commentaires' | 'statistiques';
+
+/** Ce que chaque modalité veut dire, en une ligne. */
+const QUOI_MODALITE: Record<ModaliteCours, string> = {
+  EN_LIGNE: 'Chacun avance quand il veut.',
+  PRESENTIEL: 'On se retrouve dans une salle.',
+  VIRTUEL: 'On se retrouve en visio.',
+  MIXTE: 'Des leçons en ligne, des rendez-vous en vrai.',
+};
+
 export function AtelierCours({
   cours: initial,
   apprenants: apprenantsInitiaux,
+  commentaires: commentairesInitiaux = [],
+  ventes = [],
   origine,
 }: {
   cours: CoursComplet;
   apprenants: Apprenant[];
+  commentaires?: Commentaire[];
+  ventes?: Vente[];
   origine: string;
 }) {
   const [c, setC] = useState<CoursComplet>(initial);
   const [apprenants, setApprenants] = useState(apprenantsInitiaux);
-  const [onglet, setOnglet] = useState<'contenu' | 'fiche' | 'apprenants'>('contenu');
+  const [commentaires, setCommentaires] = useState(commentairesInitiaux);
+  const [onglet, setOnglet] = useState<Onglet>('contenu');
   const [occupe, setOccupe] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -90,36 +118,71 @@ export function AtelierCours({
     void agir(`/ecole/cours/${c.id}/chapitres/${chapitre.id}/lecons/ordre`, { methode: 'POST', corps: { ids } });
   }
 
-  /* ---------------------------------------------------------------- fiche */
+  /* ------------------------------------------------- enregistrer un onglet */
 
-  async function enregistrerFiche() {
-    await agir(`/ecole/cours/${c.id}`, {
-      methode: 'PATCH',
-      corps: {
+  /** N'envoie que ce que l'onglet ouvert a modifié : le reste ne bouge pas. */
+  async function enregistrer(corps: Record<string, unknown>, quoi: string) {
+    await agir(`/ecole/cours/${c.id}`, { methode: 'PATCH', corps });
+    setMessage(`${quoi} : c'est enregistré.`);
+  }
+
+  const enregistrerParametres = () =>
+    enregistrer(
+      {
         titre: c.titre,
-        sousTitre: c.sousTitre ?? '',
-        description: c.description ?? '',
+        slug: c.slug,
         imageUrl: c.imageUrl ?? '',
-        bandeAnnonceUrl: c.bandeAnnonceUrl ?? '',
         niveau: c.niveau,
         categorie: c.categorie ?? '',
-        objectifs: c.objectifs,
-        prerequis: c.prerequis ?? '',
-        pourQui: c.pourQui ?? '',
         dureeMinutes: c.dureeMinutes,
+        modalite: c.modalite,
+        lieu: c.lieu ?? '',
+        lienVisio: c.lienVisio ?? '',
+        accesHandicap: c.accesHandicap ?? '',
+        lectureOrdonnee: c.lectureOrdonnee,
+        placesMax: c.placesMax ?? 0,
+        certificat: c.certificat,
+        commentairesActifs: c.commentairesActifs,
+        seoTitre: c.seoTitre ?? '',
+        seoDescription: c.seoDescription ?? '',
+      },
+      'Les paramètres',
+    );
+
+  const enregistrerPrix = () =>
+    enregistrer(
+      {
+        gratuit: c.gratuit,
         prixCents: c.prixCents,
         prixBarreCents: c.prixBarreCents ?? 0,
-        gratuit: c.gratuit,
-        certificat: c.certificat,
-        slug: c.slug,
+        tvaPourcent: c.tvaPourcent,
+        echeances: c.echeances,
       },
-    });
-    setMessage('La fiche est enregistrée.');
-  }
+      'Le prix',
+    );
+
+  const enregistrerDescriptions = () =>
+    enregistrer(
+      {
+        sousTitre: c.sousTitre ?? '',
+        description: c.description ?? '',
+        bandeAnnonceUrl: c.bandeAnnonceUrl ?? '',
+        objectifs: c.objectifs,
+        pourQui: c.pourQui ?? '',
+        prerequis: c.prerequis ?? '',
+      },
+      'Les descriptions',
+    );
 
   async function changerStatut(statut: CoursComplet['statut']) {
     await agir(`/ecole/cours/${c.id}`, { methode: 'PATCH', corps: { statut } });
-    setMessage(statut === 'PUBLIE' ? 'Le cours est publié.' : statut === 'ARCHIVE' ? 'Le cours est archivé.' : 'Le cours est repassé en brouillon.');
+    setMessage(
+      statut === 'PUBLIE'
+        ? 'La formation est publiée.'
+        : statut === 'ARCHIVE'
+          ? 'La formation est archivée.'
+          : 'La formation est repassée en brouillon.',
+    );
   }
 
   /* ----------------------------------------------------------- apprenants */
@@ -152,21 +215,92 @@ export function AtelierCours({
     }
   }
 
+  /* --------------------------------------------------------- commentaires */
+
+  const modifierCommentaire = (id: string, corps: Record<string, unknown>) =>
+    agir<Commentaire[]>(`/ecole/commentaires/${id}`, { methode: 'PATCH', corps }, (d) => setCommentaires(d));
+
+  async function supprimerCommentaire(id: string) {
+    setOccupe(true);
+    setErreur(null);
+    try {
+      await appel(`/ecole/commentaires/${id}`, { methode: 'DELETE' });
+      setCommentaires((p) => p.filter((x) => x.id !== id));
+    } catch (e) {
+      setErreur(messageDe(e));
+    } finally {
+      setOccupe(false);
+    }
+  }
+
   /* ------------------------------------------------------------------ vue */
+
+  const visibles = commentaires.filter((x) => !x.masque);
+  const sansReponse = visibles.filter((x) => !x.reponse).length;
+
+  const ONGLETS: [Onglet, string][] = [
+    ['contenu', 'Contenu'],
+    ['parametres', 'Paramètres'],
+    ['prix', 'Prix'],
+    ['descriptions', 'Descriptions'],
+    ['apprenants', `Apprenants (${apprenants.length})`],
+    ['commentaires', sansReponse ? `Commentaires (${sansReponse})` : 'Commentaires'],
+    ['statistiques', 'Statistiques'],
+  ];
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      {/* ------------------------------------------------------------ l'en-tête */}
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-3xl font-extrabold leading-tight tracking-tight" style={{ color: VERT.encre }}>
-            {c.titre}
-          </h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight" style={{ color: VERT.encre }}>
+              {c.titre}
+            </h1>
+            <span
+              className="rounded-full px-3 py-1 text-xs font-bold"
+              style={
+                c.statut === 'PUBLIE'
+                  ? { backgroundColor: VERT.clair, color: VERT.fonce }
+                  : c.statut === 'ARCHIVE'
+                    ? { backgroundColor: '#EFEFF4', color: '#5A5A6E' }
+                    : { backgroundColor: '#FEF3E2', color: '#7C3E06' }
+              }
+            >
+              {c.statut === 'PUBLIE' ? 'Publiée' : c.statut === 'ARCHIVE' ? 'Archivée' : 'Brouillon'}
+            </span>
+            <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: '#ECEBFC', color: '#4338CA' }}>
+              {MODALITE_COURTE[c.modalite]}
+            </span>
+          </div>
           <p className="mt-1.5 text-[15px]" style={{ color: VERT.sourdine }}>
             {c.chapitres.length} chapitre{c.chapitres.length > 1 ? 's' : ''} · {nbLecons} leçon{nbLecons > 1 ? 's' : ''} ·{' '}
-            {duree(c.dureeMinutes || c.dureeCalculee)} · {c.gratuit || c.prixCents === 0 ? 'Gratuit' : euros(c.prixCents)}
+            {duree(c.dureeMinutes || c.dureeCalculee)} · {c.gratuit || c.prixCents === 0 ? 'Gratuite' : euros(c.prixCents)}
+            {c.lieu ? ` · ${c.lieu}` : ''}
           </p>
         </div>
+
         <div className="flex flex-wrap gap-2">
+          <a
+            href={`/cours/${c.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-bold no-underline"
+            style={{ borderColor: VERT.bord, color: VERT.encre }}
+          >
+            Aperçu de la page
+          </a>
+          <button
+            type="button"
+            onClick={() => {
+              void navigator.clipboard?.writeText(lien);
+              setMessage('Le lien est copié.');
+            }}
+            className="rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-bold"
+            style={{ borderColor: VERT.bord, color: VERT.encre }}
+          >
+            Partager
+          </button>
           {c.statut === 'PUBLIE' ? (
             <button
               type="button"
@@ -185,14 +319,17 @@ export function AtelierCours({
               className="rounded-xl px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
               style={{ backgroundColor: VERT.fonce }}
             >
-              Publier le cours
+              Publier la formation
             </button>
           )}
         </div>
       </div>
 
       {c.statut === 'PUBLIE' ? (
-        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border px-5 py-4" style={{ borderColor: VERT.bord, backgroundColor: VERT.clair }}>
+        <div
+          className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border px-5 py-4"
+          style={{ borderColor: VERT.bord, backgroundColor: VERT.clair }}
+        >
           <span className="text-sm font-bold" style={{ color: VERT.fonce }}>
             Le lien à partager
           </span>
@@ -213,35 +350,38 @@ export function AtelierCours({
         </div>
       ) : null}
 
-      <div className="mb-5 flex flex-wrap gap-2 border-b" style={{ borderColor: VERT.bord }}>
-        {(
-          [
-            ['contenu', 'Le contenu'],
-            ['fiche', 'La fiche'],
-            ['apprenants', `Les apprenants (${apprenants.length})`],
-          ] as const
-        ).map(([cle, libelle]) => (
-          <button
-            key={cle}
-            type="button"
-            onClick={() => setOnglet(cle)}
-            className="-mb-px border-b-2 px-4 py-2.5 text-[15px] font-bold transition"
-            style={
-              onglet === cle
-                ? { borderColor: VERT.fonce, color: VERT.fonce }
-                : { borderColor: 'transparent', color: VERT.sourdine }
-            }
-          >
-            {libelle}
-          </button>
-        ))}
+      {/* -------------------------------------------------------- les onglets */}
+      <div className="mb-5 overflow-x-auto">
+        <div className="flex min-w-max gap-1 border-b" style={{ borderColor: VERT.bord }}>
+          {ONGLETS.map(([cle, libelle]) => (
+            <button
+              key={cle}
+              type="button"
+              onClick={() => setOnglet(cle)}
+              aria-current={onglet === cle ? 'page' : undefined}
+              className="-mb-px border-b-2 px-4 py-2.5 text-[15px] font-bold transition"
+              style={
+                onglet === cle
+                  ? { borderColor: VERT.fonce, color: VERT.fonce }
+                  : { borderColor: 'transparent', color: VERT.sourdine }
+              }
+            >
+              {libelle}
+            </button>
+          ))}
+        </div>
       </div>
 
       {erreur ? (
-        <p className="mb-4 rounded-2xl border border-[#F3B0C2] bg-[#FDE7EC] px-5 py-4 text-[15px] font-bold text-[#8A1B3D]">{erreur}</p>
+        <p className="mb-4 rounded-2xl border border-[#F3B0C2] bg-[#FDE7EC] px-5 py-4 text-[15px] font-bold text-[#8A1B3D]">
+          {erreur}
+        </p>
       ) : null}
       {message ? (
-        <p className="mb-4 rounded-2xl border px-5 py-4 text-[15px] font-bold" style={{ borderColor: VERT.bord, backgroundColor: VERT.clair, color: VERT.fonce }}>
+        <p
+          className="mb-4 rounded-2xl border px-5 py-4 text-[15px] font-bold"
+          style={{ borderColor: VERT.bord, backgroundColor: VERT.clair, color: VERT.fonce }}
+        >
           {message}
         </p>
       ) : null}
@@ -260,16 +400,43 @@ export function AtelierCours({
           supprimerLecon={supprimerLecon}
           deplacerLecon={deplacerLecon}
           enregistrerLecon={(id, patch) => agir(`/ecole/cours/${c.id}/lecons/${id}`, { methode: 'PATCH', corps: patch })}
+          lectureOrdonnee={c.lectureOrdonnee}
+          basculerLecture={(v) => void enregistrer({ lectureOrdonnee: v }, 'La lecture ordonnée')}
         />
       ) : null}
 
-      {onglet === 'fiche' ? (
-        <Fiche cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerFiche} />
+      {onglet === 'parametres' ? (
+        <Parametres cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerParametres} />
+      ) : null}
+
+      {onglet === 'prix' ? <Prix cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerPrix} /> : null}
+
+      {onglet === 'descriptions' ? (
+        <Descriptions cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerDescriptions} />
       ) : null}
 
       {onglet === 'apprenants' ? (
-        <Apprenants apprenants={apprenants} occupe={occupe} inscrire={inscrire} retirer={retirer} origine={origine} />
+        <Apprenants
+          apprenants={apprenants}
+          occupe={occupe}
+          inscrire={inscrire}
+          retirer={retirer}
+          origine={origine}
+          placesMax={c.placesMax}
+        />
       ) : null}
+
+      {onglet === 'commentaires' ? (
+        <Commentaires
+          commentaires={commentaires}
+          actifs={c.commentairesActifs}
+          occupe={occupe}
+          modifier={modifierCommentaire}
+          supprimer={supprimerCommentaire}
+        />
+      ) : null}
+
+      {onglet === 'statistiques' ? <StatsFormation cours={c} apprenants={apprenants} ventes={ventes} /> : null}
     </div>
   );
 }
@@ -289,6 +456,8 @@ function Contenu({
   supprimerLecon,
   deplacerLecon,
   enregistrerLecon,
+  lectureOrdonnee,
+  basculerLecture,
 }: {
   cours: CoursComplet;
   occupe: boolean;
@@ -302,9 +471,18 @@ function Contenu({
   supprimerLecon: (id: string) => void;
   deplacerLecon: (chapitre: Chapitre, index: number, sens: -1 | 1) => void;
   enregistrerLecon: (id: string, patch: Record<string, unknown>) => void;
+  lectureOrdonnee: boolean;
+  basculerLecture: (v: boolean) => void;
 }) {
   return (
     <div className="grid gap-4">
+      <Interrupteur
+        coche={lectureOrdonnee}
+        changer={basculerLecture}
+        titre="Imposer la lecture ordonnée"
+        quoi="On n'ouvre une leçon qu'après avoir terminé la précédente."
+      />
+
       {cours.chapitres.map((ch, i) => (
         <section key={ch.id} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
           <div className="flex flex-wrap items-center gap-2">
@@ -726,9 +904,328 @@ function EditeurQuiz({ quiz, setQuiz }: { quiz: Quiz; setQuiz: (q: Quiz) => void
   );
 }
 
-/* ============================================================ LA FICHE ==== */
+/* ========================================================= LES PARAMÈTRES == */
 
-function Fiche({
+/**
+ * LE TITRE, L'ADRESSE, ET SURTOUT LA MODALITÉ.
+ *
+ * Le présentiel, la classe virtuelle et le mixte ne sont pas des formations
+ * d'un autre genre : c'est la même formation, suivie autrement. On la choisit
+ * ici, et l'écran demande alors ce que cette modalité réclame — un lieu, un
+ * lien de visio, une façon d'y accéder quand on est en situation de handicap.
+ */
+function Parametres({
+  cours: c,
+  setCours,
+  occupe,
+  enregistrer,
+}: {
+  cours: CoursComplet;
+  setCours: (f: (p: CoursComplet) => CoursComplet) => void;
+  occupe: boolean;
+  enregistrer: () => void;
+}) {
+  const set = (patch: Partial<CoursComplet>) => setCours((p) => ({ ...p, ...patch }));
+  const enSalle = c.modalite === 'PRESENTIEL' || c.modalite === 'MIXTE';
+  const enVisio = c.modalite === 'VIRTUEL' || c.modalite === 'MIXTE';
+
+  return (
+    <div className="grid gap-4">
+      <Bloc titre="L'identité de la formation">
+        <div className="grid gap-3">
+          <Champ libelle="Titre">
+            <input value={c.titre} onChange={(e) => set({ titre: e.target.value })} className={CHAMP} />
+          </Champ>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Champ libelle="Adresse publique">
+              <div className="flex items-center gap-1">
+                <span className="shrink-0 text-sm" style={{ color: VERT.sourdine }}>
+                  /cours/
+                </span>
+                <input value={c.slug} onChange={(e) => set({ slug: e.target.value })} className={CHAMP} />
+              </div>
+            </Champ>
+            <Champ libelle="Image de couverture (adresse)">
+              <input
+                value={c.imageUrl ?? ''}
+                onChange={(e) => set({ imageUrl: e.target.value })}
+                className={CHAMP}
+                placeholder="https://…"
+              />
+            </Champ>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Champ libelle="Niveau">
+              <select value={c.niveau} onChange={(e) => set({ niveau: e.target.value as NiveauCours })} className={CHAMP}>
+                {(Object.keys(NOM_NIVEAU) as NiveauCours[]).map((n) => (
+                  <option key={n} value={n}>
+                    {NOM_NIVEAU[n]}
+                  </option>
+                ))}
+              </select>
+            </Champ>
+            <Champ libelle="Catégorie">
+              <input value={c.categorie ?? ''} onChange={(e) => set({ categorie: e.target.value })} className={CHAMP} />
+            </Champ>
+            <Champ libelle="Durée annoncée (min) — 0 pour additionner les leçons">
+              <input
+                type="number"
+                min={0}
+                value={c.dureeMinutes}
+                onChange={(e) => set({ dureeMinutes: Number(e.target.value) || 0 })}
+                className={CHAMP}
+              />
+            </Champ>
+          </div>
+        </div>
+      </Bloc>
+
+      <Bloc titre="Comment on la suit">
+        <p className="mb-4 text-[15px]" style={{ color: VERT.texte }}>
+          Une seule formation, une seule fiche. Le présentiel, la visio et le mixte se choisissent ici : la formation ne
+          change pas de nature, elle change de façon d&apos;être suivie.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {(Object.keys(NOM_MODALITE) as ModaliteCours[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => set({ modalite: m })}
+              aria-pressed={c.modalite === m}
+              className="rounded-xl border-2 px-4 py-3 text-left text-[15px] font-bold transition"
+              style={
+                c.modalite === m
+                  ? { borderColor: VERT.plein, backgroundColor: VERT.clair, color: VERT.fonce }
+                  : { borderColor: VERT.bord, backgroundColor: '#FFFFFF', color: VERT.texte }
+              }
+            >
+              {NOM_MODALITE[m]}
+              <span className="mt-0.5 block text-[13px] font-normal" style={{ color: VERT.sourdine }}>
+                {QUOI_MODALITE[m]}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {enSalle || enVisio ? (
+          <div className="mt-4 grid gap-3">
+            {enSalle ? (
+              <>
+                <Champ libelle="Le lieu (adresse complète)">
+                  <input
+                    value={c.lieu ?? ''}
+                    onChange={(e) => set({ lieu: e.target.value })}
+                    className={CHAMP}
+                    placeholder="12 rue…, 77000 Melun"
+                  />
+                </Champ>
+                <Champ libelle="L'accès en situation de handicap">
+                  <textarea
+                    rows={2}
+                    value={c.accesHandicap ?? ''}
+                    onChange={(e) => set({ accesHandicap: e.target.value })}
+                    className={CHAMP}
+                    placeholder="Plain-pied, ascenseur, place réservée…"
+                  />
+                </Champ>
+              </>
+            ) : null}
+            {enVisio ? (
+              <Champ libelle="Le lien de la visio">
+                <input
+                  value={c.lienVisio ?? ''}
+                  onChange={(e) => set({ lienVisio: e.target.value })}
+                  className={CHAMP}
+                  placeholder="https://…"
+                />
+              </Champ>
+            ) : null}
+            <p className="text-[14px]" style={{ color: VERT.sourdine }}>
+              {enSalle
+                ? "Sans lieu écrit, ni la convention ni l'émargement ne tiennent : la publication est refusée tant qu'il manque."
+                : 'Sans lien, personne ne peut rejoindre : la publication est refusée tant qu’il manque.'}
+            </p>
+          </div>
+        ) : null}
+      </Bloc>
+
+      <Bloc titre="Ce que la formation impose">
+        <div className="grid gap-2">
+          <Interrupteur
+            coche={c.lectureOrdonnee}
+            changer={(v) => set({ lectureOrdonnee: v })}
+            titre="Imposer la lecture ordonnée"
+            quoi="On n'ouvre une leçon qu'après avoir terminé la précédente."
+          />
+          <Interrupteur
+            coche={c.certificat}
+            changer={(v) => set({ certificat: v })}
+            titre="Attestation de fin de formation"
+            quoi="Émise dès que toutes les leçons sont faites."
+          />
+          <Interrupteur
+            coche={c.commentairesActifs}
+            changer={(v) => set({ commentairesActifs: v })}
+            titre="Les apprenants peuvent commenter"
+            quoi="Leurs questions arrivent dans l'onglet « Commentaires »."
+          />
+        </div>
+        <div className="mt-3 sm:max-w-xs">
+          <Champ libelle="Limiter le nombre d'inscriptions (0 : pas de limite)">
+            <input
+              type="number"
+              min={0}
+              value={c.placesMax ?? 0}
+              onChange={(e) => set({ placesMax: Number(e.target.value) || 0 })}
+              className={CHAMP}
+            />
+          </Champ>
+        </div>
+      </Bloc>
+
+      <Bloc titre="Le référencement">
+        <p className="mb-4 text-[15px]" style={{ color: VERT.texte }}>
+          Ce que lisent les moteurs de recherche. Vide, ils reprennent le titre et le sous-titre.
+        </p>
+        <div className="grid gap-3">
+          <Champ libelle="Titre pour les moteurs de recherche">
+            <input value={c.seoTitre ?? ''} onChange={(e) => set({ seoTitre: e.target.value })} className={CHAMP} />
+          </Champ>
+          <Champ libelle="Description pour les moteurs de recherche">
+            <textarea
+              rows={3}
+              value={c.seoDescription ?? ''}
+              onChange={(e) => set({ seoDescription: e.target.value })}
+              className={CHAMP}
+            />
+          </Champ>
+        </div>
+      </Bloc>
+
+      <Enregistrer occupe={occupe} onClick={enregistrer}>
+        Enregistrer les paramètres
+      </Enregistrer>
+    </div>
+  );
+}
+
+/* =============================================================== LE PRIX == */
+
+function Prix({
+  cours: c,
+  setCours,
+  occupe,
+  enregistrer,
+}: {
+  cours: CoursComplet;
+  setCours: (f: (p: CoursComplet) => CoursComplet) => void;
+  occupe: boolean;
+  enregistrer: () => void;
+}) {
+  const set = (patch: Partial<CoursComplet>) => setCours((p) => ({ ...p, ...patch }));
+  const gratuite = c.gratuit || c.prixCents === 0;
+  const echeance = c.echeances > 1 ? Math.round(c.prixCents / c.echeances) : c.prixCents;
+
+  return (
+    <div className="grid gap-4">
+      <Bloc titre="Ce que la formation coûte">
+        <div className="grid gap-2">
+          <Interrupteur
+            coche={c.gratuit}
+            changer={(v) => set({ gratuit: v })}
+            titre="Formation gratuite"
+            quoi="L'inscription se fait en ligne, tout de suite, sans paiement."
+          />
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Champ libelle="Prix TTC (en euros)">
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={(c.prixCents / 100).toString()}
+              onChange={(e) => set({ prixCents: Math.round((Number(e.target.value) || 0) * 100) })}
+              className={CHAMP}
+              disabled={c.gratuit}
+            />
+          </Champ>
+          <Champ libelle="Prix barré (le prix d'avant, facultatif)">
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={((c.prixBarreCents ?? 0) / 100).toString()}
+              onChange={(e) => set({ prixBarreCents: Math.round((Number(e.target.value) || 0) * 100) })}
+              className={CHAMP}
+              disabled={c.gratuit}
+            />
+          </Champ>
+          <Champ libelle="TVA (en %) — 0 si l'organisme en est exonéré">
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={c.tvaPourcent}
+              onChange={(e) => set({ tvaPourcent: Number(e.target.value) || 0 })}
+              className={CHAMP}
+              disabled={c.gratuit}
+            />
+          </Champ>
+          <Champ libelle="Facilités de paiement (nombre de fois)">
+            <select
+              value={String(c.echeances)}
+              onChange={(e) => set({ echeances: Number(e.target.value) || 1 })}
+              className={CHAMP}
+              disabled={c.gratuit}
+            >
+              {[1, 2, 3, 4, 6, 10, 12].map((n) => (
+                <option key={n} value={n}>
+                  {n === 1 ? 'En une fois' : `En ${n} fois`}
+                </option>
+              ))}
+            </select>
+          </Champ>
+        </div>
+      </Bloc>
+
+      <Bloc titre="Ce que la personne voit">
+        {gratuite ? (
+          <p className="text-[17px] font-extrabold" style={{ color: VERT.fonce }}>
+            Gratuite
+          </p>
+        ) : (
+          <>
+            <p className="text-[26px] font-black leading-none" style={{ color: VERT.fonce }}>
+              {euros(c.prixCents)}
+              {c.prixBarreCents ? (
+                <span className="ml-3 align-middle text-[17px] font-bold line-through" style={{ color: VERT.sourdine }}>
+                  {euros(c.prixBarreCents)}
+                </span>
+              ) : null}
+            </p>
+            <p className="mt-2 text-[15px]" style={{ color: VERT.texte }}>
+              {c.echeances > 1 ? `Réglable en ${c.echeances} fois ${euros(echeance)}. ` : 'Réglable en une fois. '}
+              {c.tvaPourcent ? `TVA ${c.tvaPourcent} %.` : 'Exonérée de TVA (article 261-4-4°a du CGI).'}
+            </p>
+          </>
+        )}
+        <p className="mt-4 rounded-xl px-4 py-3 text-[14px]" style={{ backgroundColor: '#FEF3E2', color: '#7C3E06' }}>
+          Le paiement en ligne n&apos;est pas encore branché : ce prix s&apos;affiche, et l&apos;encaissement se fait
+          ailleurs. Une fois payé, tu inscris la personne depuis l&apos;onglet « Apprenants » et tu enregistres la vente.
+        </p>
+      </Bloc>
+
+      <Enregistrer occupe={occupe} onClick={enregistrer}>
+        Enregistrer le prix
+      </Enregistrer>
+    </div>
+  );
+}
+
+/* ======================================================= LES DESCRIPTIONS == */
+
+function Descriptions({
   cours: c,
   setCours,
   occupe,
@@ -743,142 +1240,317 @@ function Fiche({
 
   return (
     <div className="grid gap-4">
-      <section className="rounded-2xl border bg-white p-5 sm:p-6" style={{ borderColor: VERT.bord }}>
-        <h2 className="text-lg font-extrabold tracking-tight" style={{ color: VERT.encre }}>
-          Ce que les gens lisent avant de s&apos;inscrire
-        </h2>
-        <div className="mt-4 grid gap-3">
-          <Champ libelle="Titre">
-            <input value={c.titre} onChange={(e) => set({ titre: e.target.value })} className={CHAMP} />
-          </Champ>
-          <Champ libelle="Sous-titre">
+      <Bloc titre="La vidéo de présentation">
+        <Champ libelle="Adresse de la vidéo">
+          <input
+            value={c.bandeAnnonceUrl ?? ''}
+            onChange={(e) => set({ bandeAnnonceUrl: e.target.value })}
+            className={CHAMP}
+            placeholder="https://…"
+          />
+        </Champ>
+        <p className="mt-2 text-[14px]" style={{ color: VERT.sourdine }}>
+          Trente secondes suffisent : qui parle, ce qu&apos;on apprend, à qui ça s&apos;adresse.
+        </p>
+      </Bloc>
+
+      <Bloc titre="Ce qu'on lit avant de s'inscrire">
+        <div className="grid gap-3">
+          <Champ libelle="Description courte — la phrase sous le titre">
             <input value={c.sousTitre ?? ''} onChange={(e) => set({ sousTitre: e.target.value })} className={CHAMP} />
           </Champ>
-          <Champ libelle="Description">
-            <textarea rows={6} value={c.description ?? ''} onChange={(e) => set({ description: e.target.value })} className={CHAMP} />
+          <Champ libelle="Description longue">
+            <textarea
+              rows={8}
+              value={c.description ?? ''}
+              onChange={(e) => set({ description: e.target.value })}
+              className={CHAMP}
+            />
           </Champ>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Champ libelle="Image de couverture (adresse)">
-              <input value={c.imageUrl ?? ''} onChange={(e) => set({ imageUrl: e.target.value })} className={CHAMP} placeholder="https://…" />
-            </Champ>
-            <Champ libelle="Bande-annonce (adresse)">
-              <input
-                value={c.bandeAnnonceUrl ?? ''}
-                onChange={(e) => set({ bandeAnnonceUrl: e.target.value })}
-                className={CHAMP}
-                placeholder="https://…"
-              />
-            </Champ>
-          </div>
+        </div>
+      </Bloc>
+
+      <Bloc titre="Les objectifs, le public, les prérequis">
+        <div className="grid gap-3">
           <Champ libelle="Ce qu'on saura faire à la fin (une ligne par objectif)">
             <textarea
-              rows={4}
+              rows={5}
               value={c.objectifs.join('\n')}
               onChange={(e) => set({ objectifs: e.target.value.split('\n') })}
               className={CHAMP}
             />
           </Champ>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Champ libelle="Pour qui">
-              <textarea rows={3} value={c.pourQui ?? ''} onChange={(e) => set({ pourQui: e.target.value })} className={CHAMP} />
+            <Champ libelle="Public cible">
+              <textarea rows={4} value={c.pourQui ?? ''} onChange={(e) => set({ pourQui: e.target.value })} className={CHAMP} />
             </Champ>
             <Champ libelle="Prérequis">
-              <textarea rows={3} value={c.prerequis ?? ''} onChange={(e) => set({ prerequis: e.target.value })} className={CHAMP} />
+              <textarea
+                rows={4}
+                value={c.prerequis ?? ''}
+                onChange={(e) => set({ prerequis: e.target.value })}
+                className={CHAMP}
+              />
             </Champ>
           </div>
         </div>
-      </section>
+      </Bloc>
 
-      <section className="rounded-2xl border bg-white p-5 sm:p-6" style={{ borderColor: VERT.bord }}>
-        <h2 className="text-lg font-extrabold tracking-tight" style={{ color: VERT.encre }}>
-          Le prix, la durée, l&apos;adresse
-        </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <Champ libelle="Niveau">
-            <select value={c.niveau} onChange={(e) => set({ niveau: e.target.value as NiveauCours })} className={CHAMP}>
-              {(Object.keys(NOM_NIVEAU) as NiveauCours[]).map((n) => (
-                <option key={n} value={n}>
-                  {NOM_NIVEAU[n]}
-                </option>
-              ))}
-            </select>
-          </Champ>
-          <Champ libelle="Catégorie">
-            <input value={c.categorie ?? ''} onChange={(e) => set({ categorie: e.target.value })} className={CHAMP} />
-          </Champ>
-          <Champ libelle="Durée annoncée (minutes) — 0 pour additionner les leçons">
-            <input
-              type="number"
-              min={0}
-              value={c.dureeMinutes}
-              onChange={(e) => set({ dureeMinutes: Number(e.target.value) || 0 })}
-              className={CHAMP}
-            />
-          </Champ>
-          <Champ libelle="Adresse publique">
-            <div className="flex items-center gap-1">
-              <span className="text-sm" style={{ color: VERT.sourdine }}>
-                /cours/
-              </span>
-              <input value={c.slug} onChange={(e) => set({ slug: e.target.value })} className={CHAMP} />
-            </div>
-          </Champ>
-          <Champ libelle="Prix (en euros)">
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={(c.prixCents / 100).toString()}
-              onChange={(e) => set({ prixCents: Math.round((Number(e.target.value) || 0) * 100) })}
-              className={CHAMP}
-              disabled={c.gratuit}
-            />
-          </Champ>
-          <Champ libelle="Prix barré (en euros, facultatif)">
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={((c.prixBarreCents ?? 0) / 100).toString()}
-              onChange={(e) => set({ prixBarreCents: Math.round((Number(e.target.value) || 0) * 100) })}
-              className={CHAMP}
-              disabled={c.gratuit}
-            />
-          </Champ>
-        </div>
+      <Enregistrer occupe={occupe} onClick={enregistrer}>
+        Enregistrer les descriptions
+      </Enregistrer>
+    </div>
+  );
+}
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          <label className="flex items-center gap-3 rounded-xl border px-4 py-3" style={{ borderColor: VERT.bord }}>
-            <input type="checkbox" checked={c.gratuit} onChange={(e) => set({ gratuit: e.target.checked })} className="h-4 w-4 accent-[#0F5F3E]" />
-            <span className="text-[15px] font-bold" style={{ color: VERT.encre }}>
-              Cours gratuit — l&apos;inscription se fait en ligne, tout de suite
-            </span>
-          </label>
-          <label className="flex items-center gap-3 rounded-xl border px-4 py-3" style={{ borderColor: VERT.bord }}>
-            <input
-              type="checkbox"
-              checked={c.certificat}
-              onChange={(e) => set({ certificat: e.target.checked })}
-              className="h-4 w-4 accent-[#0F5F3E]"
-            />
-            <span className="text-[15px] font-bold" style={{ color: VERT.encre }}>
-              Attestation de fin quand toutes les leçons sont faites
-            </span>
-          </label>
-        </div>
-      </section>
+/* ======================================================= LES COMMENTAIRES == */
 
-      <div>
-        <button
-          type="button"
-          onClick={enregistrer}
-          disabled={occupe}
-          className="rounded-xl px-6 py-3 text-base font-extrabold text-white disabled:opacity-60"
-          style={{ backgroundColor: VERT.fonce }}
-        >
-          Enregistrer la fiche
-        </button>
+function Commentaires({
+  commentaires,
+  actifs,
+  occupe,
+  modifier,
+  supprimer,
+}: {
+  commentaires: Commentaire[];
+  actifs: boolean;
+  occupe: boolean;
+  modifier: (id: string, corps: Record<string, unknown>) => void;
+  supprimer: (id: string) => void;
+}) {
+  const [brouillons, setBrouillons] = useState<Record<string, string>>({});
+
+  if (!commentaires.length) {
+    return (
+      <div className="grid gap-4">
+        {!actifs ? (
+          <p className="rounded-2xl px-5 py-4 text-[15px] font-bold" style={{ backgroundColor: '#FEF3E2', color: '#7C3E06' }}>
+            Les commentaires sont fermés sur cette formation. Rouvre-les depuis l&apos;onglet « Paramètres ».
+          </p>
+        ) : null}
+        <p className="rounded-2xl border bg-white px-5 py-6 text-center" style={{ borderColor: VERT.bord, color: VERT.texte }}>
+          Personne n&apos;a encore écrit. Les questions posées sous une leçon arrivent ici, et ta réponse s&apos;affiche
+          juste en dessous, pour tout le monde.
+        </p>
       </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3">
+      {commentaires.map((x) => (
+        <section
+          key={x.id}
+          className="rounded-2xl border bg-white p-5"
+          style={{ borderColor: VERT.bord, opacity: x.masque ? 0.6 : 1 }}
+        >
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-[15px] font-extrabold" style={{ color: VERT.encre }}>
+              {x.auteur}
+            </span>
+            <span className="text-sm" style={{ color: VERT.sourdine }}>
+              {dateCourte(x.le)}
+              {x.lecon ? ` · ${x.lecon.titre}` : ''}
+            </span>
+            {x.masque ? (
+              <span className="rounded-full bg-[#EFEFF4] px-2.5 py-0.5 text-xs font-bold text-[#5A5A6E]">Masqué</span>
+            ) : null}
+          </div>
+          <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed" style={{ color: VERT.texte }}>
+            {x.message}
+          </p>
+
+          {x.reponse ? (
+            <div className="mt-3 rounded-xl px-4 py-3" style={{ backgroundColor: VERT.clair }}>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: VERT.fonce }}>
+                Ta réponse · {dateCourte(x.reponduLe)}
+              </p>
+              <p className="mt-1 whitespace-pre-line text-[15px]" style={{ color: VERT.texte }}>
+                {x.reponse}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <textarea
+                rows={2}
+                value={brouillons[x.id] ?? ''}
+                onChange={(e) => setBrouillons((p) => ({ ...p, [x.id]: e.target.value }))}
+                placeholder="Répondre…"
+                className={CHAMP}
+              />
+            </div>
+          )}
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {x.reponse ? (
+              <button
+                type="button"
+                onClick={() => modifier(x.id, { reponse: '' })}
+                disabled={occupe}
+                className="rounded-lg border-2 bg-white px-3 py-1.5 text-sm font-bold disabled:opacity-60"
+                style={{ borderColor: VERT.bord, color: VERT.encre }}
+              >
+                Retirer la réponse
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  modifier(x.id, { reponse: brouillons[x.id] ?? '' });
+                  setBrouillons((p) => ({ ...p, [x.id]: '' }));
+                }}
+                disabled={occupe || !(brouillons[x.id] ?? '').trim()}
+                className="rounded-lg px-4 py-1.5 text-sm font-bold text-white disabled:opacity-60"
+                style={{ backgroundColor: VERT.fonce }}
+              >
+                Répondre
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => modifier(x.id, { masque: !x.masque })}
+              disabled={occupe}
+              className="rounded-lg border-2 bg-white px-3 py-1.5 text-sm font-bold disabled:opacity-60"
+              style={{ borderColor: VERT.bord, color: VERT.encre }}
+            >
+              {x.masque ? 'Réafficher' : 'Masquer'}
+            </button>
+            <button
+              type="button"
+              onClick={() => supprimer(x.id)}
+              disabled={occupe}
+              className="rounded-lg border border-[#F3B0C2] px-3 py-1.5 text-sm font-bold text-[#8A1B3D] disabled:opacity-60"
+            >
+              Supprimer
+            </button>
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+/* ====================================================== LES STATISTIQUES == */
+
+function StatsFormation({
+  cours: c,
+  apprenants,
+  ventes,
+}: {
+  cours: CoursComplet;
+  apprenants: Apprenant[];
+  ventes: Vente[];
+}) {
+  const nbLecons = c.chapitres.reduce((n, ch) => n + ch.lecons.length, 0);
+  const termines = apprenants.filter((a) => a.statut === 'TERMINEE' || a.progression >= 100).length;
+  const moyenne = apprenants.length
+    ? Math.round(apprenants.reduce((t, a) => t + a.progression, 0) / apprenants.length)
+    : 0;
+  const payees = ventes.filter((v) => v.statut === 'PAYEE' && v.cours?.id === c.id);
+  const caCents = payees.reduce((t, v) => t + (v.montantCents ?? 0), 0);
+
+  const inactifs = apprenants.filter((a) => {
+    if (a.progression >= 100) return false;
+    if (!a.derniereVisite) return true;
+    const d = new Date(a.derniereVisite).getTime();
+    return Number.isNaN(d) ? true : Date.now() - d >= 30 * 86400000;
+  });
+
+  const tranches = [
+    { nom: 'Pas commencé', n: apprenants.filter((a) => a.progression === 0).length },
+    { nom: 'Moins de la moitié', n: apprenants.filter((a) => a.progression > 0 && a.progression < 50).length },
+    { nom: 'Plus de la moitié', n: apprenants.filter((a) => a.progression >= 50 && a.progression < 100).length },
+    { nom: 'Terminé', n: apprenants.filter((a) => a.progression >= 100).length },
+  ];
+  const plafond = Math.max(1, ...tranches.map((t) => t.n));
+
+  return (
+    <div className="grid gap-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { t: 'Inscrits', v: String(apprenants.length), d: c.placesMax ? `sur ${c.placesMax} places` : 'sans limite de places' },
+          { t: 'Terminé la formation', v: String(termines), d: `${nbLecons} leçon${nbLecons > 1 ? 's' : ''} à faire` },
+          { t: 'Avancement moyen', v: `${moyenne} %`, d: moyenne >= 50 ? 'la formation avance' : 'à relancer' },
+          { t: 'Encaissé', v: euros(caCents), d: `${payees.length} vente${payees.length > 1 ? 's' : ''} payée${payees.length > 1 ? 's' : ''}` },
+        ].map((x) => (
+          <div key={x.t} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
+            <p className="text-[13px] font-bold uppercase tracking-wide" style={{ color: VERT.sourdine }}>
+              {x.t}
+            </p>
+            <p className="mt-1 text-[28px] font-black leading-none" style={{ color: VERT.fonce }}>
+              {x.v}
+            </p>
+            <p className="mt-1 text-[14px]" style={{ color: VERT.sourdine }}>
+              {x.d}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <Bloc titre="Où en sont les inscrits">
+        {apprenants.length ? (
+          <ul className="grid gap-2">
+            {tranches.map((t) => (
+              <li key={t.nom} className="flex items-center gap-3">
+                <span className="w-[170px] shrink-0 text-[15px] font-bold" style={{ color: VERT.texte }}>
+                  {t.nom}
+                </span>
+                <span className="h-3 overflow-hidden rounded-full" style={{ width: `${Math.round((t.n / plafond) * 100)}%`, minWidth: t.n ? 8 : 0, backgroundColor: VERT.plein }} />
+                <span className="tabular-nums text-[15px] font-bold" style={{ color: VERT.encre }}>
+                  {t.n}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[15px]" style={{ color: VERT.texte }}>
+            Personne n&apos;est encore inscrit : rien à mesurer pour l&apos;instant.
+          </p>
+        )}
+      </Bloc>
+
+      {inactifs.length ? (
+        <Bloc titre={`À relancer (${inactifs.length})`}>
+          <p className="mb-3 text-[15px]" style={{ color: VERT.texte }}>
+            Ces personnes n&apos;ont pas ouvert la formation depuis un mois, et ne l&apos;ont pas terminée.
+          </p>
+          <ul className="grid gap-2">
+            {inactifs.slice(0, 12).map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center gap-3 rounded-xl border px-4 py-2.5" style={{ borderColor: VERT.bord }}>
+                <span className="min-w-[200px] flex-1 text-[15px] font-bold" style={{ color: VERT.encre }}>
+                  {a.nom ?? a.email}
+                </span>
+                <span className="text-sm" style={{ color: VERT.sourdine }}>
+                  {a.progression} % · vu {dateCourte(a.derniereVisite)}
+                </span>
+                <a
+                  href={`mailto:${a.email}`}
+                  className="rounded-lg border-2 bg-white px-3 py-1.5 text-sm font-bold no-underline"
+                  style={{ borderColor: VERT.bord, color: VERT.encre }}
+                >
+                  Écrire
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Bloc>
+      ) : null}
+
+      <Bloc titre="Le contenu, chapitre par chapitre">
+        <ul className="grid gap-2">
+          {c.chapitres.map((ch) => (
+            <li key={ch.id} className="flex flex-wrap items-center gap-3 rounded-xl border px-4 py-2.5" style={{ borderColor: VERT.bord }}>
+              <span className="min-w-[200px] flex-1 text-[15px] font-bold" style={{ color: VERT.encre }}>
+                {ch.titre}
+              </span>
+              <span className="text-sm" style={{ color: VERT.sourdine }}>
+                {ch.lecons.length} leçon{ch.lecons.length > 1 ? 's' : ''} ·{' '}
+                {duree(ch.lecons.reduce((n, l) => n + l.dureeMinutes, 0))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Bloc>
     </div>
   );
 }
@@ -891,12 +1563,14 @@ function Apprenants({
   inscrire,
   retirer,
   origine,
+  placesMax,
 }: {
   apprenants: Apprenant[];
   occupe: boolean;
   inscrire: (email: string, prenom: string, nom: string) => void;
   retirer: (id: string) => void;
   origine: string;
+  placesMax?: number | null;
 }) {
   const [email, setEmail] = useState('');
   const [prenom, setPrenom] = useState('');
@@ -910,8 +1584,14 @@ function Apprenants({
         </h2>
         <p className="mt-1 text-[15px]" style={{ color: VERT.texte }}>
           Utile après un paiement encaissé ailleurs, ou pour une personne financée par son employeur. Chacun reçoit un
-          lien personnel : c&apos;est lui qui ouvre le cours.
+          lien personnel : c&apos;est lui qui ouvre la formation. Aucun compte n&apos;est créé à sa place.
         </p>
+        {placesMax ? (
+          <p className="mt-2 text-[14px] font-bold" style={{ color: apprenants.length >= placesMax ? '#8A1B3D' : VERT.sourdine }}>
+            {apprenants.length} inscrit{apprenants.length > 1 ? 's' : ''} sur {placesMax} place{placesMax > 1 ? 's' : ''}
+            {apprenants.length >= placesMax ? ' — la formation est complète.' : ''}
+          </p>
+        ) : null}
         <div className="mt-4 grid gap-3 sm:grid-cols-4">
           <input value={prenom} onChange={(e) => setPrenom(e.target.value)} placeholder="Prénom" className={CHAMP} />
           <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom" className={CHAMP} />
@@ -935,7 +1615,7 @@ function Apprenants({
 
       {apprenants.length === 0 ? (
         <p className="rounded-2xl border bg-white px-5 py-6 text-center" style={{ borderColor: VERT.bord, color: VERT.texte }}>
-          Personne n&apos;est encore inscrit à ce cours.
+          Personne n&apos;est encore inscrit à cette formation.
         </p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: VERT.bord }}>
@@ -1020,5 +1700,65 @@ function Champ({ libelle, children }: { libelle: string; children: React.ReactNo
       </span>
       {children}
     </label>
+  );
+}
+
+/** Une section de réglages : un titre, et ce qu'il y a dessous. */
+function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border bg-white p-5 sm:p-6" style={{ borderColor: VERT.bord }}>
+      <h2 className="mb-4 text-lg font-extrabold tracking-tight" style={{ color: VERT.encre }}>
+        {titre}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/** Une case à cocher qui dit ce qu'elle fait. */
+function Interrupteur({
+  coche,
+  changer,
+  titre,
+  quoi,
+}: {
+  coche: boolean;
+  changer: (v: boolean) => void;
+  titre: string;
+  quoi: string;
+}) {
+  return (
+    <label className="flex items-start gap-3 rounded-xl border px-4 py-3" style={{ borderColor: VERT.bord }}>
+      <input
+        type="checkbox"
+        checked={coche}
+        onChange={(e) => changer(e.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0 accent-[#0F5F3E]"
+      />
+      <span>
+        <span className="block text-[15px] font-bold" style={{ color: VERT.encre }}>
+          {titre}
+        </span>
+        <span className="block text-[14px]" style={{ color: VERT.sourdine }}>
+          {quoi}
+        </span>
+      </span>
+    </label>
+  );
+}
+
+function Enregistrer({ occupe, onClick, children }: { occupe: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={occupe}
+        className="rounded-xl px-6 py-3 text-base font-extrabold text-white disabled:opacity-60"
+        style={{ backgroundColor: VERT.fonce }}
+      >
+        {children}
+      </button>
+    </div>
   );
 }
