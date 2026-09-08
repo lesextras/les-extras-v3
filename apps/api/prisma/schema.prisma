@@ -279,6 +279,8 @@ model Account {
   organisation                  Organisation?
   /// Piloter mon academie : la fiche de l'organisme de formation.
   academie                      Academie?
+  /// Les formulaires que le compte compose lui-meme (les deux espaces).
+  formulaires                   Formulaire[]
 
   @@index([type])
   @@index([slug])
@@ -3188,4 +3190,86 @@ enum StatutReclamation {
   EN_COURS
   RESOLUE
   CLASSEE
+}
+
+// ---------------------------------------------------------------------------
+// LES FORMULAIRES — un constructeur libre, dans les deux espaces
+// ---------------------------------------------------------------------------
+
+/// UN FORMULAIRE QUE LA STRUCTURE COMPOSE ELLE-MÊME.
+///
+/// Le principe est celui d'un Google Forms : on ajoute les questions qu'on veut,
+/// dans l'ordre qu'on veut, et on publie une adresse à partager. Rien n'est
+/// imposé — ni le nombre de questions, ni leur nature.
+///
+/// Le formulaire appartient à un COMPTE, quel que soit son espace : une
+/// association l'utilise pour une adhésion ou une inscription à une sortie, une
+/// académie pour un positionnement avant l'entrée en formation ou une enquête
+/// de satisfaction (indicateurs Qualiopi 1, 2 et 30).
+model Formulaire {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  /// Le titre, tel qu'il s'affiche en haut de la page publique.
+  titre       String
+  /// Le texte d'introduction, facultatif, au-dessus de la première question.
+  introduction String? @db.Text
+  /// L'adresse publique : pilote.toulali.fr/f/<slug>. Unique sur tout le site.
+  slug        String  @unique
+
+  statut StatutFormulaire @default(BROUILLON)
+
+  /// Les questions, dans l'ordre. Chaque entrée :
+  /// { id, type, libelle, aide?, obligatoire, options?: string[], min?, max? }
+  /// On garde du JSON : la forme d'un formulaire change à chaque formulaire, et
+  /// une table de champs obligerait une migration à chaque nouveau type.
+  champs Json @default("[]")
+
+  /// Le mot qu'on affiche une fois la réponse envoyée.
+  remerciement String? @db.Text
+
+  /// Une seule réponse par personne connectée, si on le demande.
+  reponseUnique Boolean @default(false)
+  /// On demande l'adresse e-mail avant d'ouvrir les questions.
+  demanderEmail Boolean @default(false)
+  /// La date après laquelle le formulaire n'accepte plus de réponse.
+  fermeLe       DateTime?
+
+  reponses ReponseFormulaire[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, statut])
+  @@index([accountId, createdAt])
+}
+
+/// UNE RÉPONSE ENVOYÉE PAR QUELQU'UN.
+///
+/// Les valeurs sont rangées par identifiant de question :
+/// { "<idChamp>": "texte" | ["choix", "choix"] | 3 | "2026-09-08" }
+/// On garde l'e-mail à part : c'est lui qui sert à répondre, à relancer et à
+/// éviter les doublons.
+model ReponseFormulaire {
+  id           String     @id @default(cuid())
+  formulaireId String
+  formulaire   Formulaire @relation(fields: [formulaireId], references: [id], onDelete: Cascade)
+
+  email   String?
+  valeurs Json    @default("{}")
+
+  /// Ce que le navigateur a annoncé : utile pour repérer un envoi automatisé.
+  source String?
+
+  createdAt DateTime @default(now())
+
+  @@index([formulaireId, createdAt])
+  @@index([formulaireId, email])
+}
+
+enum StatutFormulaire {
+  BROUILLON
+  PUBLIE
+  FERME
 }
