@@ -343,26 +343,26 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
           </>
         ) : (
           <>
-            <Link href="/connexion" className="rounded-xl px-3 py-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:bg-[#F5F4FC]">
+            <Link href="/connexion" className="rounded-xl border-2 border-[#C7C4F2] bg-white px-3 py-1.5 text-[15px] font-bold text-[#1D1B5C] no-underline transition hover:border-[#4F46E5] hover:bg-[#F5F4FC]">
               Connexion
             </Link>
             {/* Deux portes, comme chez HelloAsso : pas encore d'association, ou déjà une. */}
             <Link
               href="/inscription?type=particulier"
-              className="hidden whitespace-nowrap rounded-xl border-2 border-[#C7C4F2] px-3 py-1.5 text-[13px] font-bold text-[#4338CA] no-underline transition hover:border-[#4F46E5] hover:bg-[#ECEBFC] md:inline-flex"
+              className="hidden whitespace-nowrap rounded-xl bg-[#4F46E5] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#4338CA] md:inline-flex"
             >
               Créer espace particulier
             </Link>
             <Link
               href="/inscription?type=association"
-              className="hidden whitespace-nowrap rounded-xl bg-[#4F46E5] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#4338CA] sm:inline-flex"
+              className="hidden whitespace-nowrap rounded-xl bg-[#C42B57] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#8A1B3D] sm:inline-flex"
             >
               Créer espace association
             </Link>
             {/* Troisième porte : un organisme de formation n'est pas une association. */}
             <Link
               href="/academie/inscription"
-              className="hidden whitespace-nowrap rounded-xl bg-[#1E9E6A] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#17845A] lg:inline-flex"
+              className="hidden whitespace-nowrap rounded-xl bg-[#0F5F3E] px-3 py-2 text-[13px] font-bold text-white no-underline transition hover:bg-[#0B4A30] lg:inline-flex"
             >
               Créer espace académie
             </Link>
