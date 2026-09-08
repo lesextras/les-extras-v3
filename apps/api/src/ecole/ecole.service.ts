@@ -678,6 +678,22 @@ export class EcoleService implements OnModuleInit {
     return { id: inscription.id, email: inscription.email, lien: `/apprendre/${inscription.jeton}` };
   }
 
+  /**
+   * BLOQUER OU ROUVRIR L'ACCÈS D'UN APPRENANT.
+   *
+   * Bloquer ne supprime rien : la personne garde son inscription et sa
+   * progression, elle ne peut simplement plus ouvrir le cours.
+   */
+  async bloquerApprenant(accountId: string, inscriptionId: string, bloquer: boolean) {
+    const i = await this.prisma.inscriptionCours.findFirst({ where: { id: inscriptionId, cours: { accountId } } });
+    if (!i) throw new NotFoundException("Cette inscription n'existe pas.");
+    await this.prisma.inscriptionCours.update({
+      where: { id: inscriptionId },
+      data: { statut: bloquer ? StatutInscriptionCours.SUSPENDUE : StatutInscriptionCours.ACTIVE },
+    });
+    return { bloque: bloquer };
+  }
+
   async retirerApprenant(accountId: string, inscriptionId: string) {
     const i = await this.prisma.inscriptionCours.findFirst({ where: { id: inscriptionId, cours: { accountId } } });
     if (!i) throw new NotFoundException("Cette inscription n'existe pas.");
@@ -751,6 +767,7 @@ export class EcoleService implements OnModuleInit {
     return this.prisma.codePromo.create({
       data: {
         accountId,
+        description: dto.description?.trim() || null,
         code,
         type: dto.type ?? TypeRemise.POURCENTAGE,
         valeur: dto.valeur ?? 10,
@@ -767,6 +784,7 @@ export class EcoleService implements OnModuleInit {
     if (!actuel) throw new NotFoundException("Ce code n'existe pas.");
 
     const data: Prisma.CodePromoUpdateInput = {};
+    if (dto.description !== undefined) data.description = dto.description.trim() || null;
     if (dto.code !== undefined) {
       const code = this.enCode(dto.code);
       if (!code) throw new BadRequestException("Ce code n'est pas utilisable.");
@@ -929,13 +947,34 @@ export class EcoleService implements OnModuleInit {
     if (dto.presentation !== undefined) data.presentation = dto.presentation.trim() || null;
     if (dto.logoUrl !== undefined) data.logoUrl = dto.logoUrl.trim() || null;
     if (dto.banniereUrl !== undefined) data.banniereUrl = dto.banniereUrl.trim() || null;
+    if (dto.faviconUrl !== undefined) data.faviconUrl = dto.faviconUrl.trim() || null;
+
+    // La couleur principale ne s'efface pas ; les cinq autres, si.
     if (dto.couleur !== undefined) {
       const c = dto.couleur.trim();
-      data.couleur = /^#[0-9a-fA-F]{6}$/.test(c) ? c : actuelle.couleur;
+      data.couleur = estUneCouleur(c) ? c : actuelle.couleur;
     }
+    if (dto.couleurFond !== undefined) data.couleurFond = couleurOuRien(dto.couleurFond);
+    if (dto.couleurTitres !== undefined) data.couleurTitres = couleurOuRien(dto.couleurTitres);
+    if (dto.couleurTextes !== undefined) data.couleurTextes = couleurOuRien(dto.couleurTextes);
+    if (dto.couleurBoutons !== undefined) data.couleurBoutons = couleurOuRien(dto.couleurBoutons);
+    if (dto.couleurTexteBoutons !== undefined) data.couleurTexteBoutons = couleurOuRien(dto.couleurTexteBoutons);
+
+    if (dto.liensSociaux !== undefined) {
+      data.liensSociaux = nettoyerLiens(dto.liensSociaux) as unknown as Prisma.InputJsonValue;
+    }
+
     if (dto.contactEmail !== undefined) data.contactEmail = dto.contactEmail.trim() || null;
     if (dto.cgv !== undefined) data.cgv = dto.cgv || null;
     if (dto.mentions !== undefined) data.mentions = dto.mentions || null;
+
+    if (dto.certificatModele !== undefined) data.certificatModele = dto.certificatModele.trim() || null;
+    if (dto.certificatsActifs !== undefined) data.certificatsActifs = dto.certificatsActifs;
+    if (dto.commentairesActifs !== undefined) data.commentairesActifs = dto.commentairesActifs;
+
+    if (dto.googleAnalytics !== undefined) data.googleAnalytics = dto.googleAnalytics.trim() || null;
+    if (dto.pixelMeta !== undefined) data.pixelMeta = dto.pixelMeta.trim() || null;
+
     if (dto.publiee !== undefined) data.publiee = dto.publiee;
 
     if (dto.slug !== undefined) {
@@ -981,6 +1020,7 @@ export class EcoleService implements OnModuleInit {
         ...(dto.nom !== undefined ? { nom: dto.nom.trim() || a.nom } : {}),
         ...(dto.email !== undefined ? { email: dto.email.trim().toLowerCase() } : {}),
         ...(dto.commissionPourcent !== undefined ? { commissionPourcent: dto.commissionPourcent } : {}),
+        ...(dto.gainsVersesCents !== undefined ? { gainsVersesCents: dto.gainsVersesCents } : {}),
         ...(dto.actif !== undefined ? { actif: dto.actif } : {}),
       },
     });
@@ -1095,7 +1135,16 @@ export class EcoleService implements OnModuleInit {
         presentation: ecole.presentation,
         logoUrl: ecole.logoUrl,
         banniereUrl: ecole.banniereUrl,
+        faviconUrl: ecole.faviconUrl,
         couleur: ecole.couleur,
+        couleurFond: ecole.couleurFond,
+        couleurTitres: ecole.couleurTitres,
+        couleurTextes: ecole.couleurTextes,
+        couleurBoutons: ecole.couleurBoutons,
+        couleurTexteBoutons: ecole.couleurTexteBoutons,
+        liensSociaux: Array.isArray(ecole.liensSociaux) ? ecole.liensSociaux : [],
+        googleAnalytics: ecole.googleAnalytics,
+        pixelMeta: ecole.pixelMeta,
         contactEmail: ecole.contactEmail,
       },
       cours: cours.map((c) => ({
@@ -1664,6 +1713,50 @@ export class EcoleService implements OnModuleInit {
 }
 
 /** Enlève les accents, met en minuscules, remplace le reste par des tirets. */
+/** Une couleur écrite en hexadécimal, la seule forme qu'on accepte. */
+function estUneCouleur(v: string) {
+  return /^#[0-9a-fA-F]{6}$/.test(v);
+}
+
+/** Une couleur, ou rien du tout — pour les couleurs qu'on peut laisser vides. */
+function couleurOuRien(brut: string) {
+  const c = brut.trim();
+  return estUneCouleur(c) ? c : null;
+}
+
+/** Les réseaux sur lesquels une école peut renvoyer. */
+const RESEAUX = new Set([
+  'site',
+  'facebook',
+  'messenger',
+  'whatsapp',
+  'instagram',
+  'tiktok',
+  'linkedin',
+  'youtube',
+  'twitter',
+  'vimeo',
+  'soundcloud',
+  'spotify',
+  'pinterest',
+  'github',
+]);
+
+/** On garde les liens dont le réseau est connu et l'adresse tient debout. */
+function nettoyerLiens(brut: unknown) {
+  if (!Array.isArray(brut)) return [];
+  const propres: { reseau: string; url: string }[] = [];
+  for (const l of brut.slice(0, 30)) {
+    if (!l || typeof l !== 'object') continue;
+    const lien = l as Record<string, unknown>;
+    const reseau = String(lien.reseau ?? '').trim().toLowerCase();
+    const url = String(lien.url ?? '').trim().slice(0, 600);
+    if (!RESEAUX.has(reseau) || !/^https?:\/\//.test(url)) continue;
+    propres.push({ reseau, url });
+  }
+  return propres;
+}
+
 /** Une leçon telle qu'elle est rangée en base. */
 type LeconEnBase = {
   id: string;
