@@ -1,6 +1,18 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { EnConstruction } from '../EnConstruction';
+import { apiAcademie, sessionAcademie } from '../_session';
+import { Encart, ORIGINE_SITE, Titre } from '../_ui';
+import {
+  FormulaireVitrine,
+  TableauAffilies,
+  TableauApprenants,
+  TableauClasses,
+  TableauPacks,
+  TableauPromos,
+  TableauVentes,
+} from '../_ecole/Boutique';
+import { VERT, euros, type Affilie, type Apprenant, type Classe, type CoursResume, type Pack, type Promo, type Statistiques, type Vente, type Vitrine } from '../_ecole/types';
 
 /**
  * LES ÉCRANS DU MENU QUI RESTENT À ÉCRIRE.
@@ -201,15 +213,287 @@ interface Params {
   params: Promise<{ section: string }>;
 }
 
+/**
+ * LES ÉCRANS DE L'ÉCOLE EN LIGNE, DÉJÀ ÉCRITS.
+ *
+ * Ils passent par cette route parce qu'ils tiennent chacun en un tableau : une
+ * page par fichier n'apporterait rien. Ce qui n'est pas dans cette liste tombe
+ * sur la description de l'écran à venir, comme avant.
+ */
+const REELLES: Record<string, { titre: string; surtitre: string; sousTitre: string }> = {
+  apprenants: {
+    titre: 'Qui apprend, et où il en est',
+    surtitre: 'Mes apprenants',
+    sousTitre:
+      "Toutes les personnes inscrites à un cours, leur avancement leçon par leçon, et le lien personnel qui leur ouvre le cours.",
+  },
+  ventes: {
+    titre: 'Ce qui rentre',
+    surtitre: 'Mes ventes',
+    sousTitre:
+      "Le paiement se fait où tu veux — virement, espèces, lien de paiement, facture OPCO. On note ici ce qui est entré, et le reste se calcule.",
+  },
+  'codes-promo': {
+    titre: 'Les codes de réduction',
+    surtitre: 'Mes codes promo',
+    sousTitre: "Un pourcentage ou un montant, avec une date de fin et un nombre d'utilisations si tu veux les compter.",
+  },
+  packs: {
+    titre: 'Plusieurs cours, un seul prix',
+    surtitre: 'Mes packs',
+    sousTitre: "Un pack réunit des cours à un prix qui n'est pas la somme des prix. C'est ce qui fait monter le panier.",
+  },
+  'classes-virtuelles': {
+    titre: 'Les rendez-vous en direct',
+    surtitre: 'Mes classes virtuelles',
+    sousTitre: "Une visio programmée, rattachée ou non à un cours. Le lien est ce que tu envoies aux inscrits.",
+  },
+  statistiques: {
+    titre: 'Ce que disent les chiffres',
+    surtitre: 'Mes statistiques',
+    sousTitre: "Les inscrits, l'avancement, ce qui se vend, et l'évolution des douze derniers mois.",
+  },
+  personnalisation: {
+    titre: 'La vitrine de mon école',
+    surtitre: 'Personnalisation',
+    sousTitre: "Une seule adresse à donner, qui rassemble tous tes cours — avec ton nom, ton logo, ta couleur.",
+  },
+  affiliation: {
+    titre: 'Ceux qui parlent de toi',
+    surtitre: 'Affiliation',
+    sousTitre: "Un partenaire partage un lien qui porte son code. Quand une vente arrive avec ce code, on sait à qui elle revient.",
+  },
+};
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { section } = await params;
+  const reelle = REELLES[section];
+  if (reelle) return { title: reelle.surtitre, robots: { index: false, follow: false } };
   const s = SECTIONS[section];
   return { title: s ? s.titre : 'Introuvable', robots: { index: false, follow: false } };
 }
 
 export default async function SectionPage({ params }: Params) {
   const { section } = await params;
+
+  const reelle = REELLES[section];
+  if (reelle) return <Ecran section={section} entete={reelle} />;
+
   const s = SECTIONS[section];
   if (!s) notFound();
   return <EnConstruction titre={s.titre} surtitre={s.surtitre} quoi={s.quoi} contenu={s.contenu} deja={s.deja} />;
+}
+
+/* ------------------------------------------------------------------ écrans */
+
+async function Ecran({
+  section,
+  entete,
+}: {
+  section: string;
+  entete: { titre: string; surtitre: string; sousTitre: string };
+}) {
+  const s = await sessionAcademie(`/academie/${section}`);
+
+  const enTete = (
+    <Titre surtitre={entete.surtitre} sousTitre={entete.sousTitre}>
+      {entete.titre}
+    </Titre>
+  );
+
+  if (section === 'apprenants') {
+    const { data, error } = await apiAcademie<Apprenant[]>(s, '/ecole/apprenants');
+    if (!data) return <Encart ton="attention">{error ?? 'La liste ne se charge pas.'}</Encart>;
+    return (
+      <>
+        {enTete}
+        <TableauApprenants apprenants={data} origine={ORIGINE_SITE} />
+      </>
+    );
+  }
+
+  if (section === 'ventes') {
+    const [v, c] = await Promise.all([
+      apiAcademie<Vente[]>(s, '/ecole/ventes'),
+      apiAcademie<CoursResume[]>(s, '/ecole/cours'),
+    ]);
+    if (!v.data) return <Encart ton="attention">{v.error ?? 'Les ventes ne se chargent pas.'}</Encart>;
+    return (
+      <>
+        {enTete}
+        <TableauVentes ventes={v.data} cours={c.data ?? []} />
+      </>
+    );
+  }
+
+  if (section === 'codes-promo') {
+    const { data, error } = await apiAcademie<Promo[]>(s, '/ecole/codes-promo');
+    if (!data) return <Encart ton="attention">{error ?? 'Les codes ne se chargent pas.'}</Encart>;
+    return (
+      <>
+        {enTete}
+        <TableauPromos promos={data} />
+      </>
+    );
+  }
+
+  if (section === 'packs') {
+    const [p, c] = await Promise.all([
+      apiAcademie<Pack[]>(s, '/ecole/packs'),
+      apiAcademie<CoursResume[]>(s, '/ecole/cours'),
+    ]);
+    if (!p.data) return <Encart ton="attention">{p.error ?? 'Les packs ne se chargent pas.'}</Encart>;
+    return (
+      <>
+        {enTete}
+        <TableauPacks packs={p.data} cours={c.data ?? []} />
+      </>
+    );
+  }
+
+  if (section === 'classes-virtuelles') {
+    const [cl, c] = await Promise.all([
+      apiAcademie<Classe[]>(s, '/ecole/classes'),
+      apiAcademie<CoursResume[]>(s, '/ecole/cours'),
+    ]);
+    if (!cl.data) return <Encart ton="attention">{cl.error ?? 'Les classes ne se chargent pas.'}</Encart>;
+    return (
+      <>
+        {enTete}
+        <TableauClasses classes={cl.data} cours={c.data ?? []} />
+      </>
+    );
+  }
+
+  if (section === 'personnalisation') {
+    const { data, error } = await apiAcademie<Vitrine>(s, '/ecole/vitrine');
+    if (!data) return <Encart ton="attention">{error ?? 'La vitrine ne se charge pas.'}</Encart>;
+    return (
+      <>
+        {enTete}
+        <FormulaireVitrine vitrine={data} origine={ORIGINE_SITE} />
+      </>
+    );
+  }
+
+  if (section === 'affiliation') {
+    const { data, error } = await apiAcademie<Affilie[]>(s, '/ecole/affilies');
+    if (!data) return <Encart ton="attention">{error ?? 'Les partenaires ne se chargent pas.'}</Encart>;
+    return (
+      <>
+        {enTete}
+        <TableauAffilies affilies={data} origine={ORIGINE_SITE} />
+      </>
+    );
+  }
+
+  const { data, error } = await apiAcademie<Statistiques>(s, '/ecole/statistiques');
+  if (!data) return <Encart ton="attention">{error ?? 'Les statistiques ne se chargent pas.'}</Encart>;
+  return (
+    <>
+      {enTete}
+      <Chiffres stats={data} />
+    </>
+  );
+}
+
+/* ------------------------------------------------------- les statistiques */
+
+function Chiffres({ stats }: { stats: Statistiques }) {
+  const maxMois = Math.max(1, ...stats.mois.map((m) => m.chiffreCents));
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Tuile libelle="Cours publiés" valeur={`${stats.coursPublies} / ${stats.coursTotal}`} />
+        <Tuile libelle="Apprenants" valeur={String(stats.apprenants)} detail={`${stats.apprenantsRecents} sur 30 jours`} />
+        <Tuile libelle="Avancement moyen" valeur={`${stats.progressionMoyenne} %`} detail={`${stats.termines} cours terminés`} />
+        <Tuile libelle="Encaissé" valeur={euros(stats.chiffreCents)} detail={`${euros(stats.chiffreMoisCents)} ce mois-ci`} />
+      </div>
+
+      <section className="rounded-2xl border bg-white p-5 sm:p-6" style={{ borderColor: VERT.bord }}>
+        <h2 className="text-lg font-extrabold tracking-tight" style={{ color: VERT.encre }}>
+          Les douze derniers mois
+        </h2>
+        <div className="mt-5 flex h-40 items-end gap-1.5">
+          {stats.mois.map((m) => (
+            <div key={m.mois} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+              <div
+                className="w-full rounded-t"
+                style={{
+                  height: `${Math.max(2, Math.round((m.chiffreCents / maxMois) * 130))}px`,
+                  backgroundColor: m.chiffreCents ? VERT.plein : VERT.clair,
+                }}
+                title={`${m.mois} : ${euros(m.chiffreCents)}`}
+              />
+              <span className="truncate text-[11px]" style={{ color: VERT.sourdine }}>
+                {m.mois.slice(5)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: VERT.bord }}>
+        <table className="w-full min-w-[640px] text-left text-[15px]">
+          <thead>
+            <tr style={{ backgroundColor: VERT.fond, color: VERT.sourdine }}>
+              <th className="px-4 py-3 font-bold">Cours</th>
+              <th className="px-4 py-3 font-bold">Apprenants</th>
+              <th className="px-4 py-3 font-bold">Terminés</th>
+              <th className="px-4 py-3 font-bold">Avancement moyen</th>
+              <th className="px-4 py-3 font-bold">Encaissé</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.parCours.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-6 text-center" style={{ color: VERT.texte }}>
+                  Aucun cours pour le moment.
+                </td>
+              </tr>
+            ) : (
+              stats.parCours.map((c) => (
+                <tr key={c.id} className="border-t" style={{ borderColor: VERT.bord }}>
+                  <td className="px-4 py-3 font-bold" style={{ color: VERT.encre }}>
+                    {c.titre}
+                  </td>
+                  <td className="px-4 py-3 tabular-nums" style={{ color: VERT.texte }}>
+                    {c.apprenants}
+                  </td>
+                  <td className="px-4 py-3 tabular-nums" style={{ color: VERT.texte }}>
+                    {c.termines}
+                  </td>
+                  <td className="px-4 py-3 tabular-nums" style={{ color: VERT.texte }}>
+                    {c.progressionMoyenne} %
+                  </td>
+                  <td className="px-4 py-3 tabular-nums font-bold" style={{ color: VERT.encre }}>
+                    {euros(c.chiffreCents)}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  );
+}
+
+function Tuile({ libelle, valeur, detail }: { libelle: string; valeur: string; detail?: string }) {
+  return (
+    <div className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
+      <p className="text-sm font-bold" style={{ color: VERT.sourdine }}>
+        {libelle}
+      </p>
+      <p className="mt-1 text-3xl font-extrabold tabular-nums" style={{ color: VERT.encre }}>
+        {valeur}
+      </p>
+      {detail ? (
+        <p className="mt-1 text-sm" style={{ color: VERT.sourdine }}>
+          {detail}
+        </p>
+      ) : null}
+    </div>
+  );
 }
