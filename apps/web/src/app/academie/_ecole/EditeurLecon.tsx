@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NOM_BLOC, VERT, nouvelIdentifiant, type Bloc, type Lecon, type TypeBloc } from './types';
 
 /**
@@ -138,7 +139,12 @@ export function EditeurLecon({
     return PALETTE.filter((t) => NOM_BLOC[t].toLowerCase().includes(q) || AIDE_BLOC[t].toLowerCase().includes(q));
   }, [cherche]);
 
-  return (
+  // Sans portail, l'écran plein reste enfermé dans la carte animée qui le porte.
+  const [monte, setMonte] = useState(false);
+  useEffect(() => setMonte(true), []);
+  if (!monte) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       {/* ------------------------------------------------------- la barre haute */}
       <header
@@ -407,7 +413,8 @@ export function EditeurLecon({
           </div>
         </main>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
