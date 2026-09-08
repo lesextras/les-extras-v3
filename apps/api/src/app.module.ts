@@ -54,6 +54,7 @@ import { AssociationModule } from './association/association.module';
 
 // --- Piloter mon académie (pilote.toulali.fr/academie) ---
 import { AcademieModule } from './academie/academie.module';
+import { FormulairesModule } from './formulaires/formulaires.module';
 
 @Module({
   imports: [
@@ -117,6 +118,7 @@ import { AcademieModule } from './academie/academie.module';
 
     // Piloter mon académie : fiche de l'organisme, chemin, veille, réclamations.
     AcademieModule,
+    FormulairesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
