@@ -128,9 +128,15 @@ export function Encaissement({ etat }: { etat: EtatStripe | null }) {
         </div>
       ) : null}
 
-      <p className="mt-3 text-xs leading-relaxed text-[#6B6A8A]">
-        Le dossier se remplit sur les pages de Stripe : pièce d&apos;identité, IBAN, représentant
-        légal. Rien de tout cela ne transite par cette application, et aucun mot de passe ne se
+      <div className="mt-3 text-xs leading-relaxed text-[#6B6A8A]">
+        <p>Le dossier se remplit sur les pages de Stripe. Trois pièces sont demandées.</p>
+        <ul className="mt-1.5 list-disc space-y-1 pl-5">
+          <li>Une pièce d&apos;identité</li>
+          <li>L&apos;IBAN de l&apos;association</li>
+          <li>Le représentant légal</li>
+        </ul>
+        <p className="mt-1.5">
+        Rien de tout cela ne transite par cette application, et aucun mot de passe ne se
         tape ici.
         {(etat?.commissionVentePourcent ?? 0) === 0 ? (
           <>
@@ -141,7 +147,8 @@ export function Encaissement({ etat }: { etat: EtatStripe | null }) {
             reste à la charge de la plateforme.
           </>
         ) : null}
-      </p>
+        </p>
+      </div>
     </div>
   );
 }
