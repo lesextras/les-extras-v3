@@ -347,7 +347,7 @@ export default async function LandingPage() {
                   est là. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
                 Renforts, ateliers, formations&nbsp;:{' '}
-                <span className="text-secondary">un seul réseau, un seul logiciel.</span>
+                <span className="text-secondary">son réseau dans un seul logiciel.</span>
               </h1>
               {/* TROIS LIGNES DEVENUES UNE. Sous un titre qui dit déjà les
                   trois usages et le logiciel, le paragraphe ne faisait que
