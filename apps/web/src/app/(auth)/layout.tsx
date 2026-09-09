@@ -24,11 +24,24 @@ export const metadata: Metadata = {
 
 /**
  * Layout des pages d'authentification : panneau de marque à gauche (desktop),
- * formulaire centré à droite.
+ * formulaire à droite.
+ *
+ * ⚠ LA MOITIÉ POUR LA MARQUE ÉTAIT TROP CHÈRE. L'écran était coupé en deux
+ * parts égales, et la colonne du formulaire retombait ensuite dans un
+ * `max-w-md` de 28 rem. Résultat sur la page d'inscription : les quatre
+ * profils devaient tenir dans quatre colonnes de cent pixels, et chaque
+ * intitulé se cassait en trois lignes — « Parent, particulier » débordait de
+ * sa carte. La colonne de gauche ne fait que RASSURER ; c'est celle de droite
+ * qu'on remplit.
+ *
+ * Elle prend donc un tiers, le formulaire deux tiers, et la boîte du contenu
+ * s'élargit en conséquence. Les pages courtes (connexion, mot de passe oublié)
+ * gardent leur largeur de lecture en se recentrant elles-mêmes : un champ
+ * d'adresse e-mail large de six cents pixels ne se lit pas mieux.
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
       {/* Panneau de marque */}
       <aside className="relative hidden overflow-hidden bg-gradient-to-br from-primary via-primary to-[hsl(182_80%_20%)] p-12 text-primary-foreground lg:flex lg:flex-col">
         <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
@@ -98,7 +111,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Logo />
         </div>
         <main id="main" className="flex flex-1 items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md">{children}</div>
+          <div className="w-full max-w-md lg:max-w-3xl">{children}</div>
         </main>
       </div>
     </div>
