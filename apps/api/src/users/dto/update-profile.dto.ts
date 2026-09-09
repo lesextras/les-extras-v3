@@ -34,6 +34,11 @@ export class UpdateProfileDto {
   @IsBoolean()
   hebdoOptIn?: boolean;
 
+  /** Notifications doublées d'un courriel (demandes, devis, dates, pièces). */
+  @IsOptional()
+  @IsBoolean()
+  notifMailOptIn?: boolean;
+
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -77,6 +82,17 @@ export class UpdateProfileDto {
   @IsArray()
   @IsString({ each: true })
   skills?: string[];
+
+  /**
+   * Liens publics : site, LinkedIn, Instagram, page Facebook, YouTube, TikTok.
+   * Facultatif. La validation fine (http(s) seulement, longueur, nombre) est
+   * faite au service : une adresse mal recopiee doit etre nettoyee, pas
+   * renvoyer une erreur de formulaire a quelqu'un qui a juste colle un lien.
+   */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  liens?: string[];
 
   @IsOptional()
   @IsString()
