@@ -3702,10 +3702,33 @@ model VenteCours {
   email String
   nom   String?
 
-  montantCents Int
-  codePromo    String?
+  /// CE QUI A ETE ENCAISSE A CE JOUR, en centimes.
+  ///
+  /// Sur un reglement en une fois, c'est le prix. Sur un echeancier, ce
+  /// montant AVANCE a chaque prelevement reussi : c'est la tresorerie reelle,
+  /// pas la promesse. Le prix convenu, lui, est dans `montantTotalCents`.
+  montantCents       Int
+  /// LE PRIX CONVENU EN ENTIER, quand il est etale.
+  ///
+  /// Nul sur les ventes d'avant l'echeancier, et sur les reglements en une
+  /// fois : `montantCents` dit alors tout. Les deux champs disent deux choses
+  /// differentes, et les confondre ferait compter deux fois le meme euro.
+  montantTotalCents  Int?
+  /// Le nombre d'echeances convenu. 1 = regle en une fois.
+  echeances          Int       @default(1)
+  /// Combien ont ete reellement encaissees.
+  echeancesPayees    Int       @default(1)
+  /// L'echeancier chez le prestataire. Unique : deux ventes ne peuvent pas
+  /// pointer le meme, et une relivraison de webhook ne cree pas de doublon.
+  stripeAbonnementId String?   @unique
+  /// UN PRELEVEMENT A ECHOUE. L'acces n'est PAS coupe automatiquement — c'est
+  /// l'organisme qui decide, apres avoir relance. Couper l'acces d'un
+  /// apprenant sur un incident de carte serait brutal et souvent injuste.
+  incidentAt         DateTime?
+  incidentMotif      String?
+  codePromo          String?
   /// Le code de l'affilié quand la vente vient d'un lien partagé.
-  affiliation  String?
+  affiliation        String?
 
   statut          StatutVente @default(PAYEE)
   moyen           String?
