@@ -33,7 +33,7 @@ import {
   initials,
 } from "../../../_shared/format";
 import { QrShare } from "../../../_shared/QrShare";
-import { PaiementAtelier } from "./PaiementAtelier";
+import { PaiementAtelier } from "../../../_shared/PaiementAtelier";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
 
 interface FaqItem { question: string; answer: string }
