@@ -13,6 +13,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreditsService } from './credits.service';
 import { EcoleService } from '../ecole/ecole.service';
 import { BoutiqueService } from '../boutique/boutique.service';
+import { StripeConnectService } from '../paiements/stripe-connect.service';
+import { MailService } from '../common/mail/mail.service';
 import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
 
 
@@ -144,6 +146,8 @@ export class BillingService {
     private readonly credits: CreditsService,
     private readonly ecole: EcoleService,
     private readonly boutique: BoutiqueService,
+    private readonly connect: StripeConnectService,
+    private readonly mail: MailService,
   ) {}
 
   private get secretKey(): string {
@@ -506,6 +510,114 @@ export class BillingService {
       return { received: true };
     }
 
+    // ═══════════════════════ LES ECHEANCES SUIVANTES D'UN REGLEMENT ETALE ══
+    //
+    // La premiere echeance arrive par `checkout.session.completed`, comme un
+    // paiement ordinaire. Les suivantes n'ont pas de session : elles arrivent
+    // en factures. C'est ici qu'on les compte, et surtout qu'on ARRETE
+    // l'echeancier des que le compte y est — un acheteur ne doit jamais etre
+    // preleve plus que ce qu'il a accepte.
+    if (event.type === 'invoice.paid' || event.type === 'invoice.payment_failed') {
+      const facture = event.data.object as unknown as {
+        id?: string;
+        subscription?: string | null;
+        billing_reason?: string | null;
+        amount_paid?: number;
+        amount_due?: number;
+      };
+      const abonnement = typeof facture.subscription === 'string' ? facture.subscription : null;
+      if (!abonnement) return { received: true, ignored: 'facture_sans_echeancier' };
+
+      const vente = await this.prisma.venteCours.findUnique({
+        where: { stripeAbonnementId: abonnement },
+        select: {
+          id: true,
+          echeances: true,
+          echeancesPayees: true,
+          montantCents: true,
+          email: true,
+          accountId: true,
+          coursId: true,
+        },
+      });
+      if (!vente) return { received: true, ignored: 'echeancier_inconnu' };
+
+      if (event.type === 'invoice.payment_failed') {
+        // ON NE COUPE PAS L'ACCES. Une carte qui expire n'est pas un impaye,
+        // et priver un apprenant de sa formation sur un incident technique
+        // ferait plus de degats que le centime en jeu. On previent, et
+        // l'organisme decide.
+        await this.prisma.venteCours.update({
+          where: { id: vente.id },
+          data: {
+            incidentAt: new Date(),
+            incidentMotif: `Prélèvement ${vente.echeancesPayees + 1} sur ${vente.echeances} refusé.`,
+          },
+        });
+        // On previent l'organisme : sans message, l'argent manque et
+        // personne ne s'en apercoit avant le bilan.
+        try {
+          const [compte, cours] = await Promise.all([
+            this.prisma.account.findUnique({
+              where: { id: vente.accountId },
+              select: { contactEmail: true },
+            }),
+            vente.coursId
+              ? this.prisma.cours.findUnique({
+                  where: { id: vente.coursId },
+                  select: { titre: true },
+                })
+              : Promise.resolve(null),
+          ]);
+          if (compte?.contactEmail) {
+            await this.mail.sendEcheanceRefusee({
+              to: compte.contactEmail,
+              formation: cours?.titre ?? 'une formation',
+              apprenant: vente.email,
+              rang: vente.echeancesPayees + 1,
+              total: vente.echeances,
+              montantCents: Number(facture.amount_due ?? 0),
+              lienEspace: 'https://pilote.toulali.fr/academie',
+            });
+          }
+        } catch {
+          this.logger.warn(`Alerte d'échéance refusée non envoyée pour la vente ${vente.id}.`);
+        }
+        this.logger.warn(`Échéance refusée sur la vente ${vente.id} (${vente.email}).`);
+        return { received: true };
+      }
+
+      // La premiere facture est deja comptee par la session : la recompter
+      // ferait avancer l'echeancier d'un cran de trop des la souscription.
+      if (facture.billing_reason === 'subscription_create') {
+        return { received: true, ignored: 'premiere_echeance_deja_comptee' };
+      }
+
+      const payees = Math.min(vente.echeances, vente.echeancesPayees + 1);
+      await this.prisma.venteCours.update({
+        where: { id: vente.id },
+        data: {
+          echeancesPayees: payees,
+          montantCents: vente.montantCents + Number(facture.amount_paid ?? 0),
+          incidentAt: null,
+          incidentMotif: null,
+        },
+      });
+
+      if (payees >= vente.echeances) {
+        // Le compte y est : on ferme, tout de suite. La periode en cours est
+        // payee, il n'y a rien a rembourser.
+        try {
+          await this.connect.arreterEcheancier(abonnement);
+          this.logger.log(`Échéancier ${abonnement} soldé et arrêté.`);
+        } catch {
+          // La date de fin posee a la souscription reste le filet.
+          this.logger.warn(`Échéancier ${abonnement} soldé mais non arrêté : la date de fin prendra le relais.`);
+        }
+      }
+      return { received: true };
+    }
+
     if (event.type !== 'checkout.session.completed') {
       return { received: true, ignored: event.type };
     }
@@ -618,6 +730,19 @@ export class BillingService {
       const montant = Number((session as unknown as { amount_total?: number }).amount_total ?? 0);
       const nom = session.metadata?.nom ?? null;
 
+      // L'ECHEANCIER, QUAND IL Y EN A UN.
+      //
+      // `amount_total` ne vaut alors que la PREMIERE echeance : c'est bien ce
+      // qui a ete encaisse, et le prix convenu est retenu a part. Confondre
+      // les deux ferait apparaitre un bootcamp a 3 400 EUR comme une vente de
+      // 850 EUR dans les recettes de l'organisme.
+      const nbEcheances = Math.max(1, Number(session.metadata?.echeances ?? 1) || 1);
+      const totalConvenu = Number(session.metadata?.total ?? 0) || montant;
+      const abonnementId =
+        typeof (session as unknown as { subscription?: string | null }).subscription === 'string'
+          ? (session as unknown as { subscription: string }).subscription
+          : null;
+
       // Le jeton d'accès, retenu hors de la transaction : c'est lui qu'on
       // enverra par courriel une fois la vente écrite.
       let jetonAcces: string | null = null;
@@ -647,9 +772,14 @@ export class BillingService {
             coursId,
             email,
             nom,
+            // Ce qui vient d'etre encaisse : la premiere echeance, ou le tout.
             montantCents: montant,
+            montantTotalCents: nbEcheances > 1 ? totalConvenu : null,
+            echeances: nbEcheances,
+            echeancesPayees: 1,
+            stripeAbonnementId: abonnementId,
             statut: 'PAYEE',
-            moyen: 'Stripe',
+            moyen: nbEcheances > 1 ? `Stripe (${nbEcheances} fois)` : 'Stripe',
             stripeSessionId: session.id,
             codePromo: session.metadata?.codePromo ?? null,
             affiliation: session.metadata?.affiliation ?? null,
@@ -690,6 +820,23 @@ export class BillingService {
           }
         }
       });
+
+      // LA DATE DE FIN DE L'ECHEANCIER, posee tout de suite.
+      //
+      // L'arret propre se fait au comptage des echeances, mais si un seul
+      // message du prestataire se perdait, le prelevement continuerait mois
+      // apres mois. Cette borne est ce qui rend cette panne impossible. Une
+      // marge de deux jours absorbe les decalages de facturation.
+      if (abonnementId && nbEcheances > 1) {
+        const fin = new Date();
+        fin.setMonth(fin.getMonth() + nbEcheances - 1);
+        fin.setDate(fin.getDate() + 2);
+        try {
+          await this.connect.bornerEcheancier(abonnementId, Math.floor(fin.getTime() / 1000));
+        } catch {
+          this.logger.warn(`Échéancier ${abonnementId} : date de fin non posée.`);
+        }
+      }
 
       // LE MESSAGE D'ACCÈS. Il part après la transaction, jamais dedans : un
       // serveur SMTP lent ne doit pas tenir une transaction ouverte, et un

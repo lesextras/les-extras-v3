@@ -54,7 +54,7 @@ function service(secretConfigure: string | null = SECRET) {
     // L'ecole et la boutique ne servent pas ces scenarios d'abonnement : on les
     // passe vides plutot que de les simuler, pour que le test continue de ne
     // parler que de ce qu'il verifie.
-    billing: new BillingService(prisma, config, credits as never, {} as never, {} as never),
+    billing: new BillingService(prisma, config, credits as never, {} as never, {} as never, {} as never, {} as never),
     subscription,
     invoice,
     credits,
@@ -321,6 +321,8 @@ describe('BillingService : règlement en ligne d’une facture', () => {
       prisma,
       config,
       { amorcerDotation: jest.fn() } as never,
+      {} as never,
+      {} as never,
       {} as never,
       {} as never,
     );
