@@ -5,11 +5,18 @@
 
 export type GlobalRole = 'USER' | 'ADMIN';
 export type UserStatus = 'PENDING' | 'VERIFIED' | 'BANNED' | 'ANONYMIZED';
-export type AccountType = 'ESTABLISHMENT' | 'FREELANCE';
+/**
+ * PARTICULIER (09/09/2026) : un parent ou un aidant qui réserve pour lui-même
+ * ou pour son enfant. Il réserve, paie et utilise LEX ; il ne publie rien.
+ * ASSOCIATION et ACADEMIE existent en base pour les sous-domaines « Piloter » :
+ * ils ne naviguent pas dans Les Extras, mais le type doit être connu ici pour
+ * qu'une session ne soit pas mal typée.
+ */
+export type AccountType = 'ESTABLISHMENT' | 'FREELANCE' | 'PARTICULIER' | 'ASSOCIATION' | 'ACADEMIE';
 export type AccountRole = 'OWNER' | 'ADMIN' | 'MANAGER' | 'MEMBER';
 
 /** Type de navigation/permissions côté UI (rôle métier effectif). */
-export type NavRole = 'FREELANCE' | 'ESTABLISHMENT' | 'ADMIN';
+export type NavRole = 'FREELANCE' | 'ESTABLISHMENT' | 'PARTICULIER' | 'ADMIN';
 
 export interface SessionUser {
   id: string;

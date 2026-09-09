@@ -11,7 +11,7 @@ export type LoginValues = z.infer<typeof loginSchema>;
 
 export const registerSchema = z
   .object({
-    accountType: z.enum(['ESTABLISHMENT', 'FREELANCE'], {
+    accountType: z.enum(['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER'], {
       required_error: 'Choisissez un type de compte.',
     }),
     /**

@@ -36,6 +36,7 @@ import {
   UsersRound,
   BellRing,
   Globe,
+  LifeBuoy,
 } from 'lucide-react';
 import type { NavRole, AccountType, AccountRole } from './types';
 
@@ -103,6 +104,7 @@ export function resolveNavRole(params: {
 }): NavRole {
   if (params.globalRole === 'ADMIN') return 'ADMIN';
   if (params.accountType === 'ESTABLISHMENT') return 'ESTABLISHMENT';
+  if (params.accountType === 'PARTICULIER') return 'PARTICULIER';
   return 'FREELANCE';
 }
 
@@ -188,6 +190,7 @@ const freelanceNav: NavSection[] = [
       // « Mon compte » n'est plus listé ici : il vit dans le menu de l'avatar,
       // en haut à droite, et dans la palette ⌘K. Deux chemins vers la même
       // page allongeaient le menu sans rien apporter.
+      { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],
   },
 ];
@@ -349,6 +352,7 @@ const establishmentNav: NavSection[] = [
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
       // juridiquement exact mais rarement ce que veut l'etablissement.
       { label: 'Temps de travail & congés', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Le planning d’équipe déjà posé, les demandes d’absence, les soldes, et les règles de votre convention : nuit, dimanche, fériés, heures supplémentaires, annualisation' , avance: true },
+      { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],
   },
 ];
@@ -394,6 +398,7 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Articles', href: '/admin/articles', icon: FileText, hint: 'Articles et pages éditoriales' },
       { label: 'Catégories', href: '/admin/categories', icon: Tags, hint: 'Taxonomie des missions et ateliers' },
+      { label: 'Messagerie interne', href: '/admin/assistance', icon: LifeBuoy, hint: 'Les messages écrits depuis un compte : problèmes, questions. On y répond dans le fil.' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
       { label: 'Le GAP', href: '/gap', icon: MessagesSquare, hint: 'Groupe d’Analyse de Pratique : suivre le fil des situations déposées et y répondre' },
@@ -404,6 +409,7 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis que vous avez reçus et ceux qu’il vous reste à donner' },
       { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations, votre équipe et vos invitations' },
+      { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],
   },
   {
@@ -504,6 +510,51 @@ const attenteRattachementNav: NavSection[] = [
   },
 ];
 
+/**
+ * LE MENU D'UN PARTICULIER — 9/09/2026.
+ *
+ * Un parent n'a rien à faire de RenforTeam, du vivier, des candidatures ou du
+ * temps de travail : il cherche un atelier pour son enfant, il le réserve, il
+ * veut sa facture, et il a des questions éducatives. Lui servir le menu d'un
+ * établissement serait lui montrer vingt portes dont dix-huit lui sont
+ * fermées — la façon la plus sûre de lui faire croire que le site n'est pas
+ * pour lui.
+ *
+ * Ce menu est donc court, et c'est sa qualité principale.
+ */
+const particulierNav: NavSection[] = [
+  {
+    items: [
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true },
+    ],
+  },
+  {
+    title: 'Trouver et réserver',
+    items: [
+      { label: 'Ateliers', href: '/ateliers', icon: Sparkles, essentiel: true, hint: 'Le catalogue : ateliers et interventions près de chez vous' },
+      { label: 'Formations', href: '/formations', icon: GraduationCap, hint: 'Les parcours ouverts à tous, la plupart gratuits' },
+      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Ce que vous avez réservé, les dates et les intervenants' },
+    ],
+  },
+  {
+    title: 'Mes outils',
+    items: [
+      { label: 'Générateur d’activités', href: '/dashboard/activites', icon: Lightbulb, hint: 'Une activité prête à faire, adaptée à l’âge et à ce que vous voulez travailler' },
+      { label: 'Appui scolaire', href: '/dashboard/appui-scolaire', icon: GraduationCap, hint: 'Fiches de révision, mémos et exercices, à partir de ce que vous décrivez' },
+      { label: 'Le GAP', href: '/gap', icon: MessagesSquare, hint: 'Déposez une situation, des professionnels vous répondent' },
+    ],
+  },
+  {
+    title: 'Mon compte',
+    items: [
+      { label: 'Mes factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos factures et vos règlements' },
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Sparkles, hint: 'Votre dotation offerte du mois et vos recharges' },
+      { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations et vos préférences d’e-mail' },
+      { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
+    ],
+  },
+];
+
 export function getNavForRole(
   role: NavRole,
   roleCompte?: AccountRole,
@@ -513,7 +564,13 @@ export function getNavForRole(
   if (options?.enAttenteRattachement) return attenteRattachementNav;
 
   const base =
-    role === 'ADMIN' ? adminNav : role === 'ESTABLISHMENT' ? establishmentNav : freelanceNav;
+    role === 'ADMIN'
+      ? adminNav
+      : role === 'ESTABLISHMENT'
+        ? establishmentNav
+        : role === 'PARTICULIER'
+          ? particulierNav
+          : freelanceNav;
 
   /**
    * Les outils avancés (gestion RH) sont masqués tant qu'on ne les a pas
