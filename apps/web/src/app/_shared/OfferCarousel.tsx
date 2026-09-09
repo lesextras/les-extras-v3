@@ -10,6 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { VisuelCarte } from "./VisuelCarte";
+import { VignetteSansPhoto } from "./VignetteSansPhoto";
 import { premierVisuel } from "@/lib/media";
 import { formatMoney } from "./format";
 import { EMOJI_PARCOURS, dureeLisible, estMaison } from "@/lib/mini-formations";
@@ -107,9 +108,13 @@ export function OfferCarousel({
               <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                 <div className="relative aspect-[16/11] bg-muted">
                   <VisuelCarte src={visuel} alt={o.title} sizes="320px">
-                    <div className="grid h-full place-items-center bg-warm-gradient text-sm text-muted-foreground">
-                      Les Extras
-                    </div>
+                    {/* Sans photo, la carte affichait un rectangle beige avec
+                        « Les Extras » au milieu — le même pour toutes. */}
+                    <VignetteSansPhoto
+                      graine={o.slug ?? o.id ?? o.title}
+                      libelle={o.categoryRef?.title ?? null}
+                      motif={o.freeOnline ? 'parcours' : basePath === '/formations' ? 'formation' : 'atelier'}
+                    />
                   </VisuelCarte>
                   {/* Le bandeau de thématique n'a de sens que sur les vignettes
                       qui ne l'écrivent pas déjà : la couverture d'une

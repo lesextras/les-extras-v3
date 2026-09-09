@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * « AJOUTER À L'ÉCRAN D'ACCUEIL ».
@@ -31,6 +31,14 @@ import { useEffect, useState } from 'react';
  *
  * La réduction ne vaut donc que pour la visite en cours : le site ne rouvre
  * pas la bannière après un « Plus tard », mais il la reproposera demain.
+ *
+ * ⚠ ET SUR LES AUTRES NAVIGATEURS QUI SE TAISENT. On n'ouvrait la bannière
+ * QUE si le navigateur avait prévenu. Il se tait dans bien des cas ordinaires
+ * (Firefox, Safari de bureau, Chrome qui juge le moment mal choisi), et alors
+ * plus rien ne proposait l'installation, alors qu'elle reste possible à la
+ * main dans tous ces navigateurs. On ouvre donc dans tous les cas, et c'est
+ * le chemin proposé qui change : un bouton quand le navigateur sait le faire,
+ * les deux gestes à suivre quand c'est à la personne de le faire.
  *
  * ⚠ SUR IPHONE, IL N'Y A PAS D'ÉVÉNEMENT. `beforeinstallprompt` est une
  * invention de Chromium. Safari ne l'émet jamais et n'expose aucune API
@@ -80,8 +88,10 @@ export function InstallPrompt() {
   const [evenement, setEvenement] = useState<EvenementInstallation | null>(null);
   const [etat, setEtat] = useState<'cache' | 'ouvert' | 'reduit'>('cache');
   const [nom, setNom] = useState(() => marque(''));
-  /** « navigateur » quand le navigateur sait installer, « iphone » quand c'est à la personne de le faire. */
-  const [voie, setVoie] = useState<'navigateur' | 'iphone'>('navigateur');
+  /** Comment on installe ici : le navigateur le fait, ou la personne le fait. */
+  const [voie, setVoie] = useState<'navigateur' | 'iphone' | 'manuel'>('navigateur');
+  /** Le navigateur a-t-il parlé ? Une référence, car le minuteur ne verrait pas l'état. */
+  const recu = useRef(false);
 
   useEffect(() => {
     setNom(marque(window.location.hostname));
@@ -91,6 +101,7 @@ export function InstallPrompt() {
 
     const surProposition = (e: Event) => {
       e.preventDefault();
+      recu.current = true;
       setEvenement(e as EvenementInstallation);
       // Douze secondes : le temps d'arriver, de regarder, de comprendre où on
       // est. Une bannière qui saute à la figure au premier pixel ne s'installe
@@ -106,15 +117,13 @@ export function InstallPrompt() {
     window.addEventListener('beforeinstallprompt', surProposition);
     window.addEventListener('appinstalled', surInstallation);
 
-    // Safari n'émettra jamais l'événement. On ouvre nous-mêmes, au même
-    // moment, avec le chemin à suivre.
-    let attente = 0;
-    if (surIphone()) {
-      attente = window.setTimeout(() => {
-        setVoie('iphone');
-        setEtat('ouvert');
-      }, 12_000);
-    }
+    // Douze secondes plus tard, si le navigateur n'a rien dit, c'est qu'il ne
+    // dira rien : on ouvre nous-mêmes, avec les gestes à faire.
+    const attente = window.setTimeout(() => {
+      if (recu.current) return;
+      setVoie(surIphone() ? 'iphone' : 'manuel');
+      setEtat('ouvert');
+    }, 12_000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', surProposition);
@@ -123,8 +132,8 @@ export function InstallPrompt() {
     };
   }, []);
 
-  const surApple = voie === 'iphone';
-  if (etat === 'cache' || (!evenement && !surApple)) return null;
+  const aLaMain = voie !== 'navigateur';
+  if (etat === 'cache' || (!evenement && !aLaMain)) return null;
 
   /** « Plus tard » : rangée pour cette visite, reproposée à la suivante. */
   function reduire() {
@@ -177,11 +186,17 @@ export function InstallPrompt() {
         <div className="min-w-0">
           <p className="text-base font-extrabold tracking-tight text-[#111]">{nom.titre}</p>
           <p className="mt-1 text-[15px] leading-relaxed text-[#444]">{nom.texte}</p>
-          {surApple ? (
+          {voie === 'iphone' ? (
             <ol className="mt-3 space-y-1.5 text-[15px] leading-relaxed text-[#444]">
               <li>1. Appuyez sur le bouton Partager, en bas de Safari</li>
               <li>2. Choisissez « Sur l&apos;écran d&apos;accueil »</li>
               <li>3. Appuyez sur « Ajouter »</li>
+            </ol>
+          ) : null}
+          {voie === 'manuel' ? (
+            <ol className="mt-3 space-y-1.5 text-[15px] leading-relaxed text-[#444]">
+              <li>1. Ouvrez le menu du navigateur, à droite de la barre d&apos;adresse</li>
+              <li>2. Choisissez « Installer » ou « Ajouter à l&apos;écran d&apos;accueil »</li>
             </ol>
           ) : null}
         </div>
@@ -195,7 +210,7 @@ export function InstallPrompt() {
         >
           Plus tard
         </button>
-        {surApple ? null : (
+        {aLaMain ? null : (
           <button
             type="button"
             onClick={installer}
