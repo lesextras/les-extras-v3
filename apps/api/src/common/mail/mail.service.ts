@@ -380,6 +380,40 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * UNE ECHEANCE A ETE REFUSEE, alerte a l'organisme.
+   *
+   * L'acces de l'apprenant n'est PAS coupe : une carte expiree n'est pas un
+   * impaye, et la decision de couper appartient a l'organisme, pas a un
+   * automatisme. Ce message est donc le seul moyen qu'il l'apprenne — sans
+   * lui, l'argent manque et personne ne s'en apercoit.
+   */
+  async sendEcheanceRefusee(data: {
+    to: string;
+    formation: string;
+    apprenant: string;
+    rang: number;
+    total: number;
+    montantCents: number;
+    lienEspace: string;
+  }): Promise<void> {
+    const euros = (c: number) => (c / 100).toFixed(2).replace('.', ',') + ' €';
+    await this.send(
+      data.to,
+      `Prélèvement refusé : ${data.formation}`,
+      this.layout(
+        'Un prélèvement a été refusé',
+        `Le prélèvement <b>${data.rang} sur ${data.total}</b> de <b>${euros(
+          data.montantCents,
+        )}</b> pour <b>${echapper(data.formation)}</b> a été refusé.` +
+          `<div style="margin-top:14px">Apprenant : <b>${echapper(data.apprenant)}</b>.</div>` +
+          `<div style="margin-top:14px">Son accès reste ouvert : une carte expirée n'est pas un impayé, et couper l'accès sur un incident technique serait souvent injuste. Le prestataire réessaiera de lui-même ; si l'incident persiste, recontactez cette personne pour qu'elle mette sa carte à jour.</div>` +
+          `<div style="margin-top:10px">Les prélèvements suivants restent programmés.</div>`,
+        { label: 'Voir mes ventes', url: data.lienEspace },
+      ),
+    );
+  }
+
+  /**
    * LE RECU D'UN ATELIER PAYE EN LIGNE, pour l'acheteur.
    *
    * Il porte deux choses que l'acheteur ne retrouvera nulle part ailleurs : le
