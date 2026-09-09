@@ -55,6 +55,31 @@ import {
  * même TVA, et pas la même personne responsable si la prestation n'a pas lieu.
  * La règle est donc posée ICI, dans le service, et pas seulement dans l'écran.
  */
+/**
+ * LES CONDITIONS D'ANNULATION PROPOSEES PAR DEFAUT.
+ *
+ * Elles ne sont pas la pour tenir lieu d'engagement a la place de
+ * l'intervenant : elles sont la parce qu'une page blanche fait renoncer. Sans
+ * proposition, il fallait rediger un texte juridique avant de pouvoir
+ * encaisser, et c'est exactement la ou tout le monde s'arrete.
+ *
+ * Le texte est donc PRE-REMPLI et MODIFIABLE. Il est ecrit dans la fiche au
+ * moment ou l'intervenant ouvre l'encaissement — jamais garde en memoire
+ * seulement : ce que l'acheteur a lu doit exister quelque part, et etre recopie
+ * tel quel dans son recu.
+ *
+ * Il est volontairement equilibre et prudent : report gratuit largement
+ * ouvert, seance due seulement au dernier moment, et remboursement integral
+ * quand c'est l'intervenant qui annule. Personne ne se sent lese en le lisant,
+ * ce qui est la seule facon qu'il soit garde tel quel sans y avoir reflechi.
+ */
+export const ANNULATION_PAR_DEFAUT = [
+  "Report ou annulation sans frais jusqu'a 7 jours avant la date convenue : la somme est integralement remboursee.",
+  "Entre 7 jours et 48 heures avant, la seance peut etre reportee une fois, a une date convenue ensemble.",
+  "Moins de 48 heures avant, ou en cas d'absence le jour meme, la seance est due.",
+  "Si j'annule, pour quelque raison que ce soit, la somme vous est integralement remboursee.",
+].join('\n');
+
 @Injectable()
 export class AteliersService {
   private readonly logger = new Logger(AteliersService.name);
@@ -91,13 +116,15 @@ export class AteliersService {
     if (!(prix > 0)) {
       manques.push('Indiquer un tarif sur cette fiche : on ne peut pas encaisser « sur devis ».');
     }
-    if (!service.annulationTexte?.trim()) {
-      manques.push('Écrire vos conditions d’annulation : elles sont affichées avant le paiement.');
-    }
+    // Les conditions ne figurent PAS dans les manques : une proposition est
+    // affichee d'emblee, et elle vaut engagement si elle est gardee telle
+    // quelle. C'est la difference entre un formulaire qu'on remplit et un
+    // formulaire qu'on abandonne.
 
     return {
       paiementEnLigne: service.paiementEnLigne,
-      annulationTexte: service.annulationTexte,
+      annulationTexte: service.annulationTexte ?? ANNULATION_PAR_DEFAUT,
+      annulationParDefaut: !service.annulationTexte?.trim(),
       prixCents: Math.round(prix * 100),
       manques,
       possible: manques.length === 0,
@@ -128,9 +155,21 @@ export class AteliersService {
           `Il manque encore quelque chose : ${etat.manques.join(' ')}`,
         );
       }
+      // Le texte propose devient le texte de la fiche. Tant qu'il n'est
+      // qu'affiche, il n'engage rien et ne peut pas etre recopie dans le recu
+      // de l'acheteur : ce qu'il a lu doit exister en base.
+      const fiche = await this.prisma.service.findUnique({
+        where: { id: serviceId },
+        select: { annulationTexte: true },
+      });
       await this.prisma.service.update({
         where: { id: serviceId },
-        data: { paiementEnLigne: true },
+        data: {
+          paiementEnLigne: true,
+          ...(fiche?.annulationTexte?.trim()
+            ? {}
+            : { annulationTexte: ANNULATION_PAR_DEFAUT }),
+        },
       });
     } else if (dto.paiementEnLigne === false) {
       await this.prisma.service.update({
@@ -280,6 +319,13 @@ export class AteliersService {
     }
 
     const racine = origine.replace(/\/$/, '');
+    // La page de retour est CHOISIE ICI, a partir d'une valeur fermee : un
+    // acheteur venu de son espace y revient, un visiteur revient sur la fiche
+    // publique. Aucune adresse ne vient du navigateur.
+    const retour =
+      dto.depuis === 'espace'
+        ? `${racine}/marketplace/services/${service.id}`
+        : `${racine}/ateliers/${service.id}`;
     const email = dto.email.trim().toLowerCase();
     const params: Record<string, string> = {
       mode: 'payment',
@@ -288,8 +334,8 @@ export class AteliersService {
       'line_items[0][price_data][currency]': 'eur',
       'line_items[0][price_data][unit_amount]': String(montant),
       'line_items[0][price_data][product_data][name]': service.title.slice(0, 200),
-      success_url: `${racine}/ateliers/${service.id}?paiement=succes&session={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${racine}/ateliers/${service.id}?paiement=annule`,
+      success_url: `${retour}?paiement=succes&session={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${retour}?paiement=annule`,
       'metadata[kind]': 'atelier',
       'metadata[serviceId]': service.id,
       'metadata[accountId]': service.accountId,
@@ -370,7 +416,7 @@ export class AteliersService {
         participants: m.participants ? Number(m.participants) || null : null,
         montantCents: montant,
         partPlateformeCents: Number(m.part) || 0,
-        annulationTexte: service.annulationTexte,
+        annulationTexte: service.annulationTexte ?? ANNULATION_PAR_DEFAUT,
         statut: StatutReservationAtelier.PAYEE,
         stripeSessionId: session.id,
         stripePaymentIntentId:
