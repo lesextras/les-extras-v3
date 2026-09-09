@@ -171,7 +171,7 @@ export default function RegisterPage() {
                 >
                   Je suis…
                 </FormLabel>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {accountTypes.map((t) => {
                     const active = selectedTile === t.key;
                     return (
@@ -189,7 +189,7 @@ export default function RegisterPage() {
                         }}
                         aria-pressed={active}
                         className={cn(
-                          'relative flex flex-col gap-2 rounded-xl border-2 p-4 text-left transition-all',
+                          'relative flex h-full min-w-0 flex-col gap-2 rounded-xl border-2 p-4 text-left transition-all',
                           active
                             ? 'border-primary bg-primary-soft/50 shadow-soft'
                             : 'border-border bg-card hover:border-primary/40',
@@ -208,8 +208,15 @@ export default function RegisterPage() {
                         >
                           <t.icon className="size-5" />
                         </span>
-                        <span className="text-sm font-semibold">{t.title}</span>
-                        <span className="text-xs text-muted-foreground">{t.desc}</span>
+                        {/* Un mot long ne doit ni déborder de la carte ni la
+                            faire grandir : la carte reste large de sa colonne,
+                            et c'est le mot qui se coupe. */}
+                        <span className="text-sm font-semibold leading-snug text-balance hyphens-auto [overflow-wrap:anywhere]" lang="fr">
+                          {t.title}
+                        </span>
+                        <span className="text-xs leading-relaxed text-muted-foreground hyphens-auto" lang="fr">
+                          {t.desc}
+                        </span>
                       </button>
                     );
                   })}
