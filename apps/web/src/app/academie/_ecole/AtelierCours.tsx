@@ -1933,11 +1933,15 @@ function Descriptions({
           </div>
         ) : (
           <div className="grid gap-3">
-            <p className="max-w-[70ch] text-[14px] leading-relaxed" style={{ color: VERT.sourdine }}>
-              Cette formation n&apos;a pas encore de fiche programme. C&apos;est le premier document qu&apos;un auditeur
-              demande et celui qu&apos;un financeur lit avant de dire oui ; c&apos;est aussi ce qui porte les sessions
-              datées, la convention et l&apos;émargement. Elle s&apos;ouvre à partir de ce qui est déjà écrit ici.
-            </p>
+            <div className="max-w-[70ch] text-[14px] leading-relaxed" style={{ color: VERT.sourdine }}>
+              <p>Cette formation n&apos;a pas encore de fiche programme.</p>
+              <ul className="mt-1.5 list-disc space-y-1 pl-5">
+                <li>C&apos;est le premier document qu&apos;un auditeur demande</li>
+                <li>C&apos;est celui qu&apos;un financeur lit avant de dire oui</li>
+                <li>C&apos;est elle qui porte les sessions datées, la convention et l&apos;émargement</li>
+              </ul>
+              <p className="mt-1.5">Elle s&apos;ouvre à partir de ce qui est déjà écrit ici.</p>
+            </div>
             <div>
               <button
                 type="button"

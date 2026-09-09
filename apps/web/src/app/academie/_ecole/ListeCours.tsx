@@ -201,12 +201,13 @@ export function ListeCours({
           <h2 className="text-xl font-extrabold tracking-tight" style={{ color: VERT.encre }}>
             Une formation, c&apos;est ton savoir-faire, découpé.
           </h2>
-          <p className="mx-auto mt-3 max-w-[62ch] leading-relaxed" style={{ color: VERT.texte }}>
-            Des chapitres, des leçons, des vidéos, des documents, des quiz. Tu écris, tu publies, tu partages
-            l&apos;adresse. Les inscrits avancent leçon par leçon, tu vois leur progression, et l&apos;attestation part
-            toute seule quand tout est fait. En ligne, en salle, en visio ou les deux : c&apos;est une option de la
-            formation, pas une autre liste.
-          </p>
+          <ul className="mx-auto mt-4 max-w-[52ch] space-y-2 text-left leading-relaxed" style={{ color: VERT.texte }}>
+            <li>Des chapitres et des leçons, avec vidéos, documents et quiz</li>
+            <li>Tu écris, tu publies, tu partages l&apos;adresse</li>
+            <li>Les inscrits avancent leçon par leçon, et tu vois leur progression</li>
+            <li>L&apos;attestation part toute seule quand tout est fait</li>
+            <li>En ligne, en salle, en visio ou les deux, c&apos;est une option de la formation</li>
+          </ul>
           <button
             type="button"
             onClick={creer}
