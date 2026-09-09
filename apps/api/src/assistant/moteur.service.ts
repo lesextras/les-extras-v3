@@ -1,5 +1,6 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ClaudeService } from './claude.service';
+import { MistralService } from './mistral.service';
 
 /**
  * LE MOTEUR DE RÉDACTION — GEMINI D'ABORD, CLAUDE EN SECOURS.
@@ -8,6 +9,7 @@ import { ClaudeService } from './claude.service';
  * reçoit un texte. Ce service choisit, dans cet ordre :
  *
  *   1. GEMINI_API_KEY est posée  → Google Gemini ;
+ *   1 bis. MISTRAL_API_KEY est posée → Mistral (repli, offre gratuite) ;
  *   2. sinon (ou en cas de panne) ANTHROPIC_API_KEY → Claude.
  *
  * Deux clés posées, c'est un filet : si Gemini refuse ou tombe, Claude prend
@@ -41,7 +43,10 @@ interface ReponseGemini {
 export class MoteurService {
   private readonly journal = new Logger(MoteurService.name);
 
-  constructor(private readonly claude: ClaudeService) {}
+  constructor(
+    private readonly claude: ClaudeService,
+    private readonly mistral: MistralService,
+  ) {}
 
   private get cleGemini(): string | undefined {
     const c = process.env.GEMINI_API_KEY?.trim();
@@ -50,12 +55,13 @@ export class MoteurService {
 
   /** Y a-t-il au moins un moteur branché sur ce serveur ? */
   get disponible(): boolean {
-    return Boolean(this.cleGemini) || this.claude.disponible;
+    return Boolean(this.cleGemini) || this.mistral.disponible || this.claude.disponible;
   }
 
   /** Le nom du moteur qui répondra, pour les écrans qui l'affichent. */
-  get moteur(): 'gemini' | 'claude' | null {
+  get moteur(): 'gemini' | 'mistral' | 'claude' | null {
     if (this.cleGemini) return 'gemini';
+    if (this.mistral.disponible) return 'mistral';
     if (this.claude.disponible) return 'claude';
     return null;
   }
@@ -66,15 +72,43 @@ export class MoteurService {
     // (une facturation à zéro, un réseau coupé) et ne voir que le second
     // envoie chercher la panne du mauvais côté.
     let echecGemini: string | null = null;
+    const unRepli = this.mistral.disponible || this.claude.disponible;
     if (this.cleGemini) {
       try {
         return await this.gemini(options, this.cleGemini);
       } catch (err) {
-        // Gemini a refusé : si Claude est branché, il prend le relais. Sinon on
-        // remonte l'échec tel quel, pour que l'écran dise la vraie raison.
-        if (!this.claude.disponible) throw err;
+        // Gemini a refusé : si un autre moteur est branché, il prend le relais.
+        // Sinon on remonte l'échec tel quel, pour que l'écran dise la vraie raison.
+        if (!unRepli) throw err;
         echecGemini = propre(err).slice(0, 300);
-        this.journal.warn(`Gemini a échoué, on repasse sur Claude : ${echecGemini.slice(0, 200)}`);
+        this.journal.warn(`Gemini a échoué, on essaie le moteur suivant : ${echecGemini.slice(0, 200)}`);
+      }
+    }
+    // MISTRAL AVANT CLAUDE, ET C'EST VOLONTAIRE.
+    //
+    // Les trois moteurs se facturent séparément de tout abonnement : un compte
+    // Claude payé ne donne AUCUN crédit d'API. Quand la caisse est vide, ce qui
+    // sauve l'outil, c'est le moteur qui a une offre gratuite. Gemini et
+    // Mistral en ont une ; Claude n'en a pas. L'ordre suit donc le coût :
+    // gratuit d'abord, payant en dernier.
+    if (this.mistral.disponible) {
+      try {
+        return await this.mistral.completer(options);
+      } catch (err) {
+        if (!this.claude.disponible) {
+          if (!echecGemini) throw err;
+          const c = (err as { cause?: unknown } | null)?.cause;
+          const d = c instanceof Error ? c.message : err instanceof Error ? err.message : String(err);
+          throw new ServiceUnavailableException(
+            "Le service de rédaction est momentanément indisponible. Réessayez dans un instant.",
+            { cause: new Error(`Gemini : ${echecGemini} | Mistral : ${d}`) },
+          );
+        }
+        const c = (err as { cause?: unknown } | null)?.cause;
+        echecGemini = `${echecGemini ? echecGemini + ' | ' : ''}Mistral : ${
+          c instanceof Error ? c.message : propre(err).slice(0, 200)
+        }`;
+        this.journal.warn(`Mistral a échoué, on repasse sur Claude.`);
       }
     }
     if (this.claude.disponible) {
@@ -95,7 +129,7 @@ export class MoteurService {
       }
     }
     throw new ServiceUnavailableException(
-      "Aucun moteur de rédaction n'est branché sur ce serveur. Pose GEMINI_API_KEY (ou ANTHROPIC_API_KEY) dans la configuration.",
+      "Aucun moteur de rédaction n'est branché sur ce serveur. Pose GEMINI_API_KEY, MISTRAL_API_KEY ou ANTHROPIC_API_KEY dans la configuration.",
     );
   }
 

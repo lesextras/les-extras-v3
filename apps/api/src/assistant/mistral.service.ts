@@ -45,7 +45,10 @@ export class MistralService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: process.env.MISTRAL_MODEL ?? 'mistral-large-latest',
+        // « small » par défaut : c'est le modèle que l'offre gratuite de
+        // Mistral laisse appeler. « large » se règle par MISTRAL_MODEL quand le
+        // compte est payant.
+        model: process.env.MISTRAL_MODEL ?? 'mistral-small-latest',
         temperature: options.temperature ?? 0.4,
         max_tokens: options.maxTokens ?? 2048,
         messages: [

@@ -6,6 +6,7 @@ import { PseudonymiseurService } from './pseudonymiseur.service';
 import { RegistrePseudoService } from './registre-pseudo.service';
 import { ClaudeService } from './claude.service';
 import { MistralService } from './mistral.service';
+import { MoteurService } from './moteur.service';
 import { MOTEUR_LEX } from './moteur-lex';
 import { TramesMaisonService } from './trames-maison.service';
 import { ExtractionService } from './extraction.service';
@@ -22,14 +23,23 @@ import { BillingModule } from '../billing/billing.module';
     PseudonymiseurService,
     ClaudeService,
     MistralService,
+    MoteurService,
     {
-      // Claude dès que sa clé est posée ; Mistral sinon. Le repli garde la
-      // plateforme utilisable si l'on décide de revenir en arrière : il suffit
-      // de retirer ANTHROPIC_API_KEY, sans toucher au code.
+      // LEX PASSE PAR LE MÊME MOTEUR QUE LE RESTE DE LA MAISON (08/09/2026).
+      //
+      // Avant : « Claude dès que sa clé est posée, Mistral sinon ». Le défaut
+      // saute dès que le compte Anthropic n'a plus de crédit : la clé est
+      // toujours là, donc Claude est toujours « disponible », donc LEX appelle
+      // un moteur qui répond « credit balance too low » — et le repli Mistral
+      // n'est jamais tenté, puisqu'on n'a jamais échoué à choisir, seulement à
+      // appeler.
+      //
+      // MoteurService, lui, essaie DANS L'ORDRE et repasse au suivant quand un
+      // moteur refuse : Gemini, puis Mistral, puis Claude. Les deux premiers
+      // ont une offre gratuite ; il suffit d'une seule clé pour que LEX marche.
       provide: MOTEUR_LEX,
-      useFactory: (claude: ClaudeService, mistral: MistralService) =>
-        claude.disponible ? claude : mistral,
-      inject: [ClaudeService, MistralService],
+      useFactory: (moteur: MoteurService) => moteur,
+      inject: [MoteurService],
     },
     TramesMaisonService,
     ExtractionService,
