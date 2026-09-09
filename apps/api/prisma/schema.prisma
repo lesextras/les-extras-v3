@@ -51,6 +51,8 @@ model User {
   documents                 Document[]
   uploadedFiles             FileAsset[]          @relation("FileUploader")
   notifications             Notification[]
+  supportTickets            SupportTicket[]      @relation("SupportAuteur")
+  supportMessages           SupportMessage[]     @relation("SupportMessageAuteur")
   messages                  Message[]
   reviewsAuthored           Review[]             @relation("ReviewAuthor")
   reviewsReceived           Review[]             @relation("ReviewTarget")
@@ -67,6 +69,12 @@ model User {
   /// Rendez-vous hebdomadaire du lundi. Activé par défaut, désactivable en un
   /// clic : un e-mail non désiré coûte plus cher qu'un e-mail non envoyé.
   hebdoOptIn                Boolean              @default(true)
+  /// COURRIEL DE NOTIFICATION (09/09/2026).
+  /// Les notifications qui appellent une action ou qui rassurent sont doublees
+  /// d'un courriel. Personne n'ouvre tous les jours une plateforme qu'il
+  /// n'utilise pas encore : sans cela, une demande recue restait invisible
+  /// jusqu'a la prochaine visite. Desactivable en un clic, comme le lundi.
+  notifMailOptIn            Boolean              @default(true)
   /// E-mail d'activation du lendemain de l'inscription (ActivationScheduler).
   /// Non nul = la décision d'envoyer (ou de s'abstenir) a été prise : elle ne
   /// se reprend jamais, ce message n'existe qu'une fois dans la vie du compte.
@@ -124,6 +132,12 @@ model Profile {
   radiusKm   Int?     @default(30)
   hourlyRate Decimal? @db.Decimal(8, 2)
   available  Boolean  @default(true)
+  /// LIENS PUBLICS DE L'INTERVENANT (09/09/2026).
+  /// Site, LinkedIn, Instagram, page Facebook, chaine YouTube, TikTok : ce qui
+  /// permet a un etablissement de VOIR le travail avant de reserver. Liste
+  /// libre plutot qu'une colonne par reseau : les reseaux changent, la
+  /// colonne resterait. Facultatif, comme tout le reste du profil.
+  liens      String[] @default([])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -310,6 +324,7 @@ model Account {
   commandesBoutique             CommandeBoutique[]
   /// Les ateliers payes en ligne sur les fiches de cet intervenant.
   reservationsAteliers          ReservationAtelier[]
+  supportTickets                SupportTicket[]
 
   @@index([type])
   @@index([slug])
@@ -1098,6 +1113,12 @@ enum AccountType {
   /// pilote sa certification Qualiopi, son catalogue et ses apprenants. Une même
   /// personne peut porter une association ET une académie : ce sont deux comptes.
   ACADEMIE
+  /// PARTICULIER (09/09/2026) : un parent, un aidant, une personne accompagnee
+  /// qui reserve pour elle-meme ou pour son enfant. Il reserve des ateliers et
+  /// des formations, voit ses factures et utilise LEX — mais il ne publie
+  /// rien, ne recoit aucune candidature et n'a pas d'equipe. Ce n'est ni un
+  /// etablissement (pas de renfort, pas de salaries) ni un intervenant.
+  PARTICULIER
 }
 
 enum AccountRole {
@@ -1799,6 +1820,69 @@ model Experience {
 }
 
 /// Demande de contact publique (repris de Symfony : Contact / NewRequest).
+/// MESSAGERIE INTERNE VERS LA PLATEFORME (09/09/2026).
+///
+/// Jusqu'ici, une personne inscrite qui rencontrait un probleme n'avait que le
+/// formulaire de contact public : elle re-saisissait son nom et son adresse,
+/// le message arrivait sans savoir de quel compte il venait, et la reponse
+/// partait par courriel, hors de toute trace. Un fil rattache au compte reste
+/// lisible des deux cotes, garde l'historique, et se retrouve.
+model SupportTicket {
+  id              String           @id @default(cuid())
+  /// Le compte depuis lequel le fil a ete ouvert (un utilisateur peut en avoir
+  /// plusieurs). SetNull : la suppression d'un compte n'efface pas l'echange.
+  accountId       String?
+  account         Account?         @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  userId          String
+  user            User             @relation("SupportAuteur", fields: [userId], references: [id], onDelete: Cascade)
+  sujet           String
+  categorie       SupportCategorie @default(AUTRE)
+  statut          SupportStatut    @default(OUVERT)
+  /// Date du dernier message, quel qu'en soit l'auteur : c'est le seul ordre
+  /// utile pour une boite de reception.
+  dernierAt       DateTime         @default(now())
+  /// Deux dates de lecture, une par cote : chacun voit ce qu'il n'a pas lu
+  /// sans marquer l'autre comme lu.
+  luParPersonneAt DateTime?
+  luParEquipeAt   DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  messages        SupportMessage[]
+
+  @@index([statut, dernierAt])
+  @@index([userId, dernierAt])
+}
+
+model SupportMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  /// Nul quand le message vient de l'equipe : c'est Les Extras qui parle, pas
+  /// une personne nommee, et la reponse ne doit pas designer un salarie.
+  auteurId  String?
+  auteur    User?         @relation("SupportMessageAuteur", fields: [auteurId], references: [id], onDelete: SetNull)
+  parEquipe Boolean       @default(false)
+  corps     String
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId, createdAt])
+}
+
+enum SupportStatut {
+  OUVERT
+  EN_COURS
+  RESOLU
+}
+
+enum SupportCategorie {
+  PROBLEME_TECHNIQUE
+  QUESTION_COMPTE
+  RESERVATION
+  FACTURATION
+  FICHE_ATELIER
+  AUTRE
+}
+
 model ContactRequest {
   id        String               @id @default(cuid())
   name      String
