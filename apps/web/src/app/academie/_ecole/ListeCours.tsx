@@ -18,9 +18,21 @@ import {
 /**
  * MES FORMATIONS.
  *
- * La liste, et le bouton qui en crée une. Créer demande deux choses — un titre
- * et une phrase de présentation — puis ouvre la formation, vide : on y pose
- * ensuite ce qu'on veut, une leçon suffit, le chapitre est facultatif.
+ * La liste, et le bouton qui en crée une. Créer demande UNE seule chose — le
+ * titre — puis ouvre la formation, vide : on y pose ensuite ce qu'on veut, une
+ * leçon suffit, le chapitre est facultatif.
+ *
+ * ⚠ PLUS DE FENÊTRE FLOTTANTE (08/09/2026). La création s'ouvrait dans une
+ * modale `fixed inset-0 grid place-items-center` : sur un écran d'ordinateur
+ * portable, la boîte était plus haute que la fenêtre, le bouton « Ajouter »
+ * passait sous le bord et il fallait deviner qu'on pouvait faire défiler DANS
+ * la boîte. Une fenêtre qui cache son propre bouton de validation n'est pas une
+ * fenêtre, c'est un piège. La création est donc une simple ligne posée dans la
+ * page, sous le bouton : rien à faire défiler, rien à fermer.
+ *
+ * La description courte est partie avec la fenêtre : elle se règle dans
+ * « Paramètres » de la formation, comme le prix et le reste. Demander deux
+ * champs pour créer une coquille vide, c'était un champ de trop.
  *
  * La modalité — en ligne, en présentiel, en visio, mixte — n'est pas une autre
  * liste : c'est une étiquette sur la formation, et un filtre au-dessus.
@@ -42,13 +54,11 @@ export function ListeCours({
   const [filtre, setFiltre] = useState<ModaliteCours | 'TOUTES'>(modaliteInitiale ?? 'TOUTES');
   const [ouvrirCreation, setOuvrirCreation] = useState(false);
   const [titreNeuf, setTitreNeuf] = useState('');
-  const [sousTitreNeuf, setSousTitreNeuf] = useState('');
 
   const visibles = filtre === 'TOUTES' ? cours : cours.filter((c) => (c.modalite ?? 'EN_LIGNE') === filtre);
 
   const creer = () => {
     setTitreNeuf('');
-    setSousTitreNeuf('');
     setErreur(null);
     setOuvrirCreation(true);
   };
@@ -64,7 +74,7 @@ export function ListeCours({
     try {
       const c = await appel<{ id: string }>('/ecole/cours', {
         methode: 'POST',
-        corps: { titre, ...(sousTitreNeuf.trim() ? { sousTitre: sousTitreNeuf.trim() } : {}) },
+        corps: { titre },
       });
       router.push(`/academie/formations/${c.id}`);
     } catch (e) {
@@ -110,14 +120,65 @@ export function ListeCours({
         </p>
         <button
           type="button"
-          onClick={creer}
+          onClick={() => (ouvrirCreation ? setOuvrirCreation(false) : creer())}
           disabled={occupe}
+          aria-expanded={ouvrirCreation}
+          aria-controls="creer-formation"
           className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-base font-bold text-white shadow-sm transition disabled:opacity-60"
           style={{ backgroundColor: VERT.fonce }}
         >
           <span aria-hidden="true">+</span> Nouvelle formation
         </button>
       </div>
+
+      {/* ---------------------------------------- créer : une ligne, sur place */}
+      {ouvrirCreation ? (
+        <div
+          id="creer-formation"
+          className="mb-5 rounded-2xl border-2 bg-white p-4 sm:p-5"
+          style={{ borderColor: VERT.bord }}
+        >
+          <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
+            Titre de la formation
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                autoFocus
+                value={titreNeuf}
+                onChange={(e) => setTitreNeuf(e.target.value)}
+                maxLength={128}
+                placeholder="Community manager, niveau essentiel"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void creerVraiment();
+                  if (e.key === 'Escape') setOuvrirCreation(false);
+                }}
+                className="min-w-0 flex-1 rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
+                style={{ borderColor: VERT.bord, color: VERT.encre }}
+              />
+              <button
+                type="button"
+                onClick={() => void creerVraiment()}
+                disabled={occupe}
+                className="rounded-xl px-5 py-2 text-sm font-extrabold text-white disabled:opacity-60"
+                style={{ backgroundColor: VERT.fonce }}
+              >
+                {occupe ? 'Création…' : 'Ajouter'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOuvrirCreation(false)}
+                className="rounded-xl border-2 bg-white px-4 py-2 text-sm font-extrabold"
+                style={{ borderColor: VERT.bord, color: VERT.texte }}
+              >
+                Annuler
+              </button>
+            </div>
+          </label>
+          <p className="mt-2 text-sm font-normal" style={{ color: VERT.sourdine }}>
+            Le titre suffit. Le contenu, le prix, la description et le reste se règlent ensuite,
+            dans la formation.
+          </p>
+        </div>
+      ) : null}
 
       {cours.length ? (
         <div className="mb-5 flex flex-wrap gap-2">
@@ -298,74 +359,6 @@ export function ListeCours({
         </ul>
       )}
 
-      {/* ------------------------------------------------- créer une formation */}
-      {ouvrirCreation ? (
-        <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/40 px-4 py-8">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6">
-            <h2 className="text-xl font-extrabold tracking-tight" style={{ color: VERT.encre }}>
-              Ajouter une formation
-            </h2>
-            <p className="mt-1 text-sm" style={{ color: VERT.sourdine }}>
-              Deux choses suffisent pour commencer. Tout le reste — le contenu, le prix, les
-              descriptions — se règle ensuite, dans la formation.
-            </p>
-
-            <label className="mt-5 grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
-              Titre
-              <input
-                autoFocus
-                value={titreNeuf}
-                onChange={(e) => setTitreNeuf(e.target.value)}
-                maxLength={128}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') void creerVraiment();
-                }}
-                className="rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
-                style={{ borderColor: VERT.bord, color: VERT.encre }}
-              />
-              <span className="text-right text-xs font-normal" style={{ color: VERT.sourdine }}>
-                {titreNeuf.length} / 128
-              </span>
-            </label>
-
-            <label className="mt-3 grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
-              Description courte
-              <textarea
-                rows={4}
-                value={sousTitreNeuf}
-                onChange={(e) => setSousTitreNeuf(e.target.value)}
-                maxLength={300}
-                className="rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
-                style={{ borderColor: VERT.bord, color: VERT.encre }}
-              />
-              <span className="text-xs font-normal" style={{ color: VERT.sourdine }}>
-                Cette phrase s&apos;affiche sous le titre, sur ta page et dans l&apos;espace apprenant.
-                Tu peux la laisser vide.
-              </span>
-            </label>
-
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setOuvrirCreation(false)}
-                className="rounded-xl border-2 bg-white px-4 py-2 text-sm font-extrabold"
-                style={{ borderColor: VERT.bord, color: VERT.texte }}
-              >
-                Fermer
-              </button>
-              <button
-                type="button"
-                onClick={() => void creerVraiment()}
-                disabled={occupe}
-                className="rounded-xl px-5 py-2 text-sm font-extrabold text-white disabled:opacity-60"
-                style={{ backgroundColor: VERT.fonce }}
-              >
-                {occupe ? 'Création…' : 'Ajouter'}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
