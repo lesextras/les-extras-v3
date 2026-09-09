@@ -5,7 +5,12 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ServiceCategory, ServiceStatus, StatutReservationAtelier } from '@prisma/client';
+import {
+  AccountType,
+  ServiceCategory,
+  ServiceStatus,
+  StatutReservationAtelier,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { StripeConnectService } from '../paiements/stripe-connect.service';
@@ -38,6 +43,17 @@ import {
  *
  * 3. Rien ne s'écrit avant que le prestataire ait confirmé le paiement. La
  *    page de retour ne fait pas foi : on relit la session chez lui.
+ *
+ * ET UNE QUATRIÈME, QUI TIENT LES TROIS AUTRES : SEUL UN INTERVENANT PEUT
+ * ENCAISSER UN ATELIER.
+ *
+ * Une fiche d'atelier peut appartenir, techniquement, à n'importe quel type de
+ * compte : rien dans `POST /services` ne l'interdit, et l'écran « Mes ateliers »
+ * n'est masqué aux autres que côté navigateur. Or un établissement ou une
+ * association qui encaisserait ici ne serait pas dans la même situation qu'un
+ * indépendant : ce n'est pas le même statut, pas la même facturation, pas la
+ * même TVA, et pas la même personne responsable si la prestation n'a pas lieu.
+ * La règle est donc posée ICI, dans le service, et pas seulement dans l'écran.
  */
 @Injectable()
 export class AteliersService {
@@ -218,10 +234,17 @@ export class AteliersService {
         annulationTexte: true,
         maxParticipants: true,
         category: true,
-        account: { select: { name: true } },
+        account: { select: { name: true, type: true } },
       },
     });
     if (!service) throw new NotFoundException("Cet atelier n'existe pas.");
+    // Le garde vaut aussi ICI, et pas seulement à l'activation : une fiche
+    // dont le compte changerait de type après coup resterait sinon payable.
+    if (service.account.type !== AccountType.FREELANCE) {
+      throw new BadRequestException(
+        'Cet atelier ne se règle pas en ligne : passez par la demande de devis.',
+      );
+    }
     if (!service.paiementEnLigne) {
       throw new BadRequestException(
         "Cet atelier ne se règle pas en ligne : passez par la demande de devis.",
@@ -469,11 +492,17 @@ export class AteliersService {
         category: true,
         paiementEnLigne: true,
         annulationTexte: true,
+        account: { select: { type: true } },
       },
     });
     if (!service) throw new NotFoundException("Cette fiche n'existe pas.");
     if (service.accountId !== accountId) {
       throw new ForbiddenException("Cette fiche n'est pas la vôtre.");
+    }
+    if (service.account.type !== AccountType.FREELANCE) {
+      throw new ForbiddenException(
+        'Seuls les intervenants peuvent proposer un atelier payé en ligne.',
+      );
     }
     if (service.category !== ServiceCategory.ATELIER) {
       throw new BadRequestException(
