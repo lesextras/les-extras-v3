@@ -33,6 +33,7 @@ import {
   initials,
 } from "../../../_shared/format";
 import { QrShare } from "../../../_shared/QrShare";
+import { PaiementAtelier } from "./PaiementAtelier";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
 
 interface FaqItem { question: string; answer: string }
@@ -73,6 +74,10 @@ interface ServiceDetail {
   images?: string[] | null;
   priceExtras?: PriceExtra[] | null;
   timeSlots?: string[] | null;
+  /** Le règlement immédiat, ouvert par l'intervenant sur cette fiche. */
+  paiementEnLigne?: boolean;
+  /** Ses conditions d'annulation, affichées avant le bouton de paiement. */
+  annulationTexte?: string | null;
   qualiopi?: boolean;
   price?: string | number | null;
   city?: string | null;
@@ -467,16 +472,42 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                   en dessous. Les deux chemins existent toujours ; c'est leur
                   ordre qui change. */}
               <div className="space-y-2">
-                <PublicQuoteForm serviceId={service.id} titre={service.title} principal />
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={`/marketplace/services/${service.id}`}>
-                    Réserver directement, j&apos;ai un compte
-                  </Link>
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                  Devis chiffré sous 48 h, sans engagement. Réservation immédiate si vous avez
-                  déjà un compte.
-                </p>
+                {/* QUAND L'INTERVENANT A OUVERT LE RÈGLEMENT IMMÉDIAT, c'est lui
+                    le premier geste : quelqu'un qui peut payer tout de suite ne
+                    veut pas attendre un devis. Le devis reste juste en dessous,
+                    parce qu'un établissement paie sur facture et ne paiera
+                    jamais par carte — les deux chemins servent deux acheteurs
+                    différents, aucun ne remplace l'autre. */}
+                {service.paiementEnLigne && prixNombre > 0 ? (
+                  <>
+                    <PaiementAtelier
+                      serviceId={service.id}
+                      titre={service.title}
+                      intervenant={service.account?.name ?? "l’intervenant"}
+                      prix={prixNombre}
+                      maxParticipants={service.maxParticipants}
+                      creneaux={service.timeSlots}
+                      annulationTexte={service.annulationTexte}
+                    />
+                    <PublicQuoteForm serviceId={service.id} titre={service.title} />
+                    <p className="text-center text-xs text-muted-foreground">
+                      Ou demandez un devis : chiffré sous 48 h, sans engagement.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <PublicQuoteForm serviceId={service.id} titre={service.title} principal />
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href={`/marketplace/services/${service.id}`}>
+                        Réserver directement, j&apos;ai un compte
+                      </Link>
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground">
+                      Devis chiffré sous 48 h, sans engagement. Réservation immédiate si vous avez
+                      déjà un compte.
+                    </p>
+                  </>
+                )}
               </div>
 
               <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
