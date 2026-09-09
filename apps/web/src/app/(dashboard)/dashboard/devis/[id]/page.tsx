@@ -124,8 +124,11 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
         <section className="space-y-2">
           <SectionTitle>Chiffrage</SectionTitle>
           <Card>
-            <CardContent className="p-0">
-              <table className="w-full text-sm">
+            {/* Six colonnes ne tiennent pas sur un telephone. Sans ce
+                conteneur, ce n'etait pas le tableau qui debordait : c'etait la
+                page entiere, qui se mettait a glisser lateralement. */}
+            <CardContent className="scrollbar-visible overflow-x-auto p-0">
+              <table className="w-full min-w-[560px] text-sm">
                 <thead className="border-b border-border text-left text-muted-foreground">
                   <tr>
                     <th className="p-3 font-medium">Prestation</th>
