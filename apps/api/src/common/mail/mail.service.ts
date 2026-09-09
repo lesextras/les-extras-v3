@@ -1976,6 +1976,117 @@ export class MailService implements OnModuleDestroy {
       ),
     );
   }
+
+  /**
+   * LA NOTIFICATION, DOUBLÉE D'UN COURRIEL — 9/09/2026.
+   *
+   * Toutes les notifications de l'application écrivaient dans la cloche et
+   * poussaient vers le téléphone. Aucune n'atteignait la boîte mail. Sur une
+   * plateforme qu'on n'ouvre pas encore tous les jours, cela revient à ne
+   * prévenir personne : une demande reçue, un devis à décider, une pièce
+   * réclamée restaient invisibles jusqu'à la prochaine visite — et la visite
+   * suivante arrivait parfois après la date de la prestation.
+   *
+   * Ce message n'invente rien : il reprend mot pour mot le titre et le corps
+   * de la notification, déjà écrits en français lisible, et ajoute le lien.
+   * Un seul gabarit pour tous les types, donc une seule chose à relire quand
+   * le texte d'une notification change.
+   *
+   * Il ne part QUE pour les types qui appellent une action ou qui rassurent
+   * (la liste vit dans NotificationsService), et jamais pour un type qui a
+   * déjà son propre courriel détaillé : deux messages pour un même événement
+   * valent moins qu'un seul.
+   */
+  /**
+   * LA MESSAGERIE INTERNE : LE MESSAGE REÇU PAR L'ASSOCIATION — 9/09/2026.
+   *
+   * Le fil vit dans l'application ; ce courriel n'est là que pour qu'on ne le
+   * rate pas. Il donne l'essentiel — qui écrit, avec quelle adresse, ce qu'il
+   * dit — pour qu'on puisse décider s'il faut ouvrir l'écran maintenant ou
+   * plus tard. On répond DANS la plateforme, jamais par retour de courriel :
+   * sinon la trace se perd, et la personne se retrouve avec deux endroits où
+   * chercher sa réponse.
+   */
+  async sendMessageAssistance(data: {
+    to: string;
+    de: string;
+    email?: string | null;
+    sujet: string;
+    message: string;
+    lien: string;
+  }): Promise<void> {
+    await this.send(
+      data.to,
+      `Assistance : ${data.sujet}`,
+      this.layout(
+        'Un message dans la messagerie interne',
+        `<p style="margin:0"><b>${echapper(data.de)}</b>${
+          data.email ? ` — ${echapper(data.email)}` : ''
+        } a écrit :</p>
+         <p style="margin:12px 0 0;padding:12px 14px;background:#F7F5F1;border-radius:10px;white-space:pre-wrap">${echapper(
+           data.message,
+         )}</p>
+         <p style="margin:16px 0 0;font-size:13px;color:#6b7280">Répondez depuis la plateforme :
+         la personne y retrouve tout l'échange, et la trace reste.</p>`,
+        { label: 'Ouvrir la conversation', url: `${this.webUrl}${data.lien}` },
+      ),
+    );
+  }
+
+  /**
+   * LA MESSAGERIE INTERNE : LA RÉPONSE REÇUE PAR LA PERSONNE.
+   *
+   * La réponse est recopiée en entier dans le courriel. Obliger quelqu'un à
+   * se connecter pour lire trois lignes, c'est le meilleur moyen qu'il ne les
+   * lise jamais — le lien sert à répondre, pas à lire.
+   */
+  async sendReponseAssistance(data: {
+    to: string;
+    prenom?: string | null;
+    sujet: string;
+    message: string;
+    lien: string;
+  }): Promise<void> {
+    await this.send(
+      data.to,
+      `Votre message : ${data.sujet}`,
+      this.layout(
+        `Bonjour${data.prenom ? ` ${echapper(data.prenom)}` : ''},`,
+        `<p style="margin:0">Voici notre réponse à propos de « ${echapper(data.sujet)} » :</p>
+         <p style="margin:12px 0 0;padding:12px 14px;background:#F7F5F1;border-radius:10px;white-space:pre-wrap">${echapper(
+           data.message,
+         )}</p>
+         <p style="margin:16px 0 0">Si ce n'est pas clair, ou s'il manque quelque chose, répondez
+         dans la conversation : elle reste ouverte.</p>
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">Les Extras · ADéPA</div>`,
+        { label: 'Répondre', url: `${this.webUrl}${data.lien}` },
+      ),
+    );
+  }
+
+  async sendNotification(data: {
+    to: string;
+    prenom?: string | null;
+    titre: string;
+    corps?: string | null;
+    lien?: string | null;
+  }): Promise<void> {
+    const reglages = `${this.webUrl}/dashboard/account?onglet=profil`;
+    const url = data.lien ? `${this.webUrl}${data.lien}` : null;
+    await this.send(
+      data.to,
+      data.titre,
+      this.layout(
+        `Bonjour${data.prenom ? ` ${echapper(data.prenom)}` : ''},`,
+        `<p style="margin:0">${echapper(data.corps ?? data.titre)}</p>
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">
+           Vous recevez ce message parce qu'il appelle une réponse de votre part.
+           <a href="${reglages}" style="color:#9ca3af">Ne plus recevoir les notifications par e-mail</a>.
+         </div>`,
+        url ? { label: 'Ouvrir dans mon espace', url } : undefined,
+      ),
+    );
+  }
 }
 
 /**
