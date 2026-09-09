@@ -385,10 +385,16 @@ export class PublicService {
       .sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
       .slice(0, 10);
 
+    // ⚠ ON EN RENVOIE PLUS QUE DIX, ET C'EST VOULU. L'accueil partage ces
+    // formations en DEUX rayons, les parcours gratuits de la maison d'un côté
+    // et les formations Qualiopi de l'autre. Dix au total, c'était donc au
+    // mieux dix cartes à se partager entre deux onglets, et souvent trois d'un
+    // côté et sept de l'autre. On en renvoie trente : chaque rayon a de quoi
+    // remplir ses dix, et la page coupe elle-même ce qu'elle affiche.
     const brutes = await this.prisma.formation.findMany({
       where: { status: 'PUBLISHED' },
       orderBy: [{ views: 'desc' }, { createdAt: 'desc' }],
-      take: 30,
+      take: 60,
       select: FORMATION_CARD_SELECT,
     });
     const satisfactions = await this.prisma.inscription.groupBy({
@@ -397,7 +403,7 @@ export class PublicService {
       _avg: { satisfaction: true },
     });
     void satisfactions; // agrégation par session : la note est portée par la fiche détail.
-    const formations = brutes.map(carteFormation).slice(0, 10);
+    const formations = brutes.map(carteFormation).slice(0, 30);
 
     return { ateliers: ateliersNotes, formations };
   }
