@@ -15,7 +15,10 @@ import { BTN_PRIMAIRE } from './_ui';
  * même catégorie. Sans pièce, tout part dans « Mes documents ».
  */
 
-const TYPES_ACCEPTES = 'application/pdf,image/jpeg,image/png,image/webp';
+// Le Word est accepté parce que la fabrique en produit : un document
+// téléchargé pour être complété doit pouvoir revenir.
+const TYPES_ACCEPTES =
+  'application/pdf,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx';
 
 export interface DepotProps {
   /** Code de la pièce du classeur à remplir, s'il y en a une. */
