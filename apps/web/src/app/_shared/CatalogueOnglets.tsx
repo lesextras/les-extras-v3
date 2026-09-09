@@ -20,7 +20,6 @@ import { OfferCarousel, type OfferCard } from "./OfferCarousel";
 export type RayonCatalogue = {
   cle: string;
   libelle: string;
-  chapeau?: string;
   items: OfferCard[];
   basePath: string;
   lien: { libelle: string; href: string };
@@ -35,7 +34,15 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
 
   return (
     <div>
-      <div role="tablist" aria-label="Rayons du catalogue" className="flex flex-wrap gap-2">
+      {/* CENTRÉS ET PLUS GRANDS. Ce sont les trois portes du catalogue : elles
+          se lisaient comme des filtres secondaires, calées à gauche en petit
+          corps. Au centre et en taille d'action, elles redeviennent le geste
+          qu'elles sont. */}
+      <div
+        role="tablist"
+        aria-label="Rayons du catalogue"
+        className="flex flex-wrap justify-center gap-3"
+      >
         {disponibles.map((r) => {
           const ouvert = r.cle === courant.cle;
           return (
@@ -49,8 +56,8 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
               onClick={() => setActif(r.cle)}
               className={
                 ouvert
-                  ? "rounded-full border border-foreground bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors"
-                  : "rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  ? "rounded-full border border-foreground bg-foreground px-7 py-3.5 text-base font-bold text-background shadow-soft transition-colors"
+                  : "rounded-full border border-border bg-card px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-primary-soft hover:text-primary"
               }
             >
               {r.libelle}
@@ -65,12 +72,16 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
         aria-labelledby={`onglet-${courant.cle}`}
         className="mt-8"
       >
-        {courant.chapeau ? (
-          <p className="mb-6 max-w-2xl text-muted-foreground">{courant.chapeau}</p>
-        ) : null}
+        {/* Plus de phrase de rayon ici : le titre de la section dit déjà à quoi
+            sert le catalogue, et chaque carte porte son public, sa durée et son
+            tarif. Une ligne de plus entre l'onglet et les fiches ne faisait que
+            retarder la lecture. */}
         <OfferCarousel items={courant.items} basePath={courant.basePath} />
-        <p className="mt-8">
-          <Button asChild variant="outline">
+        {/* À DROITE, ET EN COULEUR. En bas à gauche et en contour, il se
+            confondait avec le fond charbon : le seul lien qui mène au reste du
+            catalogue était le moins visible de la section. */}
+        <p className="mt-8 flex justify-end">
+          <Button asChild variant="primary" size="lg">
             <Link href={courant.lien.href}>
               {courant.lien.libelle} <ArrowRight />
             </Link>
