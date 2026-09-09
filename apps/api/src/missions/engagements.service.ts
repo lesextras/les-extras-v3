@@ -18,6 +18,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CommunityService } from '../community/community.service';
 import { MailService } from '../common/mail/mail.service';
 import { CiblageService, SELECT_CIBLAGE } from './ciblage.service';
+import { envoyerFicheReservation } from '../bookings/fiche-reservation';
 
 /**
  * LA FILE D'ENGAGEMENT.
@@ -329,6 +330,7 @@ export class EngagementsService {
       where: { id: engagement.id },
       data: { statut: EngagementStatut.ACCEPTE, decideAt: new Date(), bookingId: booking.id },
     });
+    await envoyerFicheReservation(this.prisma, this.mail, booking.id);
     // Les candidatures ouvertes et les autres engagements tombent ensemble.
     await this.prisma.booking.updateMany({
       where: { missionId, status: BookingStatus.REQUESTED, id: { not: booking.id } },

@@ -30,6 +30,7 @@ import { CiblageService } from './ciblage.service';
 import { EngagementsService } from './engagements.service';
 import { AuditService } from '../common/audit/audit.service';
 import type { CandidatMissionInterne } from '../matching/matching.service';
+import { envoyerFicheReservation } from '../bookings/fiche-reservation';
 
 /**
  * DIFFUSION CIBLÉE — les trois vagues de sollicitation.
@@ -1029,6 +1030,10 @@ export class MissionsService {
       where: { missionId, status: BookingStatus.REQUESTED, id: { not: booking.id } },
       data: { status: BookingStatus.CANCELLED, cancelReason: 'Mission pourvue par un autre intervenant.' },
     });
+
+    // La mission est pourvue : les deux parties reçoivent la même fiche, avec
+    // les coordonnées de l'autre. C'est de là que part la mise au point.
+    await envoyerFicheReservation(this.prisma, this.mail, booking.id);
 
     // La mission est pourvue : l'intervenant qui prend le relais est crédité.
     // C'est l'action la plus utile au réseau, c'est la mieux récompensée.
