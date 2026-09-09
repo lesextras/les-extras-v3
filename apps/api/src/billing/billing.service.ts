@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreditsService } from './credits.service';
+import { EcoleService } from '../ecole/ecole.service';
 import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
 
 
@@ -140,6 +141,7 @@ export class BillingService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly credits: CreditsService,
+    private readonly ecole: EcoleService,
   ) {}
 
   private get secretKey(): string {
@@ -614,20 +616,28 @@ export class BillingService {
       const montant = Number((session as unknown as { amount_total?: number }).amount_total ?? 0);
       const nom = session.metadata?.nom ?? null;
 
+      // Le jeton d'accès, retenu hors de la transaction : c'est lui qu'on
+      // enverra par courriel une fois la vente écrite.
+      let jetonAcces: string | null = null;
+
       await this.prisma.$transaction(async (tx) => {
         const inscription = await tx.inscriptionCours.findUnique({
           where: { coursId_email: { coursId, email } },
-          select: { id: true },
+          select: { id: true, jeton: true },
         });
         if (!inscription) {
-          await tx.inscriptionCours.create({
+          const creee = await tx.inscriptionCours.create({
             data: {
               coursId,
               email,
               nom,
               jeton: randomBytes(24).toString('base64url'),
             },
+            select: { jeton: true },
           });
+          jetonAcces = creee.jeton;
+        } else {
+          jetonAcces = inscription.jeton;
         }
         await tx.venteCours.create({
           data: {
@@ -651,7 +661,53 @@ export class BillingService {
             data: { usages: { increment: 1 } },
           });
         }
+
+        // L'AFFILIÉ EST PAYÉ SUR CETTE VENTE.
+        //
+        // La vente retenait déjà le code d'affiliation, mais les compteurs de
+        // l'affilié ne bougeaient pas : sa page affichait zéro vente et zéro
+        // gain, indéfiniment. On les met à jour ici, dans la même transaction
+        // que la vente, pour qu'un compteur ne puisse jamais avancer sans
+        // qu'une vente existe en face.
+        const parrain = session.metadata?.affiliation?.trim();
+        if (parrain) {
+          const a = await tx.affilie.findFirst({
+            where: { accountId, code: parrain, actif: true },
+            select: { id: true, commissionPourcent: true },
+          });
+          if (a) {
+            await tx.affilie.update({
+              where: { id: a.id },
+              data: {
+                ventes: { increment: 1 },
+                gainsCents: {
+                  increment: Math.round((montant * a.commissionPourcent) / 100),
+                },
+              },
+            });
+          }
+        }
       });
+
+      // LE MESSAGE D'ACCÈS. Il part après la transaction, jamais dedans : un
+      // serveur SMTP lent ne doit pas tenir une transaction ouverte, et un
+      // envoi qui échoue ne doit pas annuler une vente déjà encaissée.
+      if (jetonAcces) {
+        const cours = await this.prisma.cours.findUnique({
+          where: { id: coursId },
+          select: { titre: true },
+        });
+        await this.ecole.envoyerAcces({
+          email,
+          accountId,
+          titre: cours?.titre ?? 'votre formation',
+          jeton: jetonAcces,
+          paye: true,
+          montantCents: montant,
+          origine: session.metadata?.origine ?? null,
+        });
+      }
+
       this.logger.log(`Formation ${coursId} payée par ${email}`);
       return { received: true };
     }
