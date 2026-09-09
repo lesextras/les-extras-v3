@@ -21,6 +21,8 @@ interface PageCours {
   gratuit: boolean;
   prixCents: number;
   prixBarreCents: number | null;
+  /** Le nombre de prélèvements convenus. 1 = règlement en une fois. */
+  echeances?: number;
   certificat: boolean;
   ecole: { nom: string; slug: string | null; couleur: string; logoUrl: string | null };
   chapitres: {
@@ -158,8 +160,28 @@ export default async function PageDuCours({ params }: { params: Promise<{ slug: 
             </p>
             {c.prixBarreCents ? <p className="mt-1 text-[15px] font-bold text-[#5E7A6E] line-through">{prix(c.prixBarreCents)}</p> : null}
 
+            {/* LE RÈGLEMENT ÉTALÉ, DIT AVANT LE BOUTON.
+                Il était réglable côté organisme et invisible côté acheteur :
+                personne ne pouvait savoir que la formation se payait en
+                plusieurs fois, donc l'option ne servait à rien. Le montant
+                affiché est celui qui sera réellement prélevé, chaque mois. */}
+            {!c.gratuit && c.prixCents > 0 && (c.echeances ?? 1) > 1 ? (
+              <p className="mt-2 text-[15px] font-bold text-[#334A42]">
+                ou {c.echeances} × {prix(Math.round(c.prixCents / (c.echeances ?? 1)))} par mois
+              </p>
+            ) : null}
+
             <div className="mt-5">
-              <Rejoindre slug={c.slug} gratuit={c.gratuit || c.prixCents === 0} couleur={c.ecole.couleur} ecole={c.ecole.nom} />
+              <Rejoindre
+                slug={c.slug}
+                gratuit={c.gratuit || c.prixCents === 0}
+                couleur={c.ecole.couleur}
+                ecole={c.ecole.nom}
+                echeances={c.echeances ?? 1}
+                echeanceCents={
+                  (c.echeances ?? 1) > 1 ? Math.round(c.prixCents / (c.echeances ?? 1)) : null
+                }
+              />
             </div>
 
             <ul className="mt-6 grid gap-2 text-[15px] text-[#334A42]">

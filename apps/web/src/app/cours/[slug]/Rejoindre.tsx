@@ -15,11 +15,17 @@ export function Rejoindre({
   gratuit,
   couleur,
   ecole,
+  echeances = 1,
+  echeanceCents = null,
 }: {
   slug: string;
   gratuit: boolean;
   couleur: string;
   ecole: string;
+  /** Le nombre de prélèvements convenus. 1 = règlement en une fois. */
+  echeances?: number;
+  /** Le montant d'un prélèvement, en centimes. Nul en une fois. */
+  echeanceCents?: number | null;
 }) {
   const [email, setEmail] = useState('');
   const [prenom, setPrenom] = useState('');
@@ -28,6 +34,9 @@ export function Rejoindre({
   const [erreur, setErreur] = useState<string | null>(null);
   const [lien, setLien] = useState<string | null>(null);
   const [attente, setAttente] = useState(false);
+
+  /** Règlement étalé : il faut un nombre de fois ET un montant par fois. */
+  const etale = !gratuit && echeances > 1 && !!echeanceCents && echeanceCents > 0;
 
   /**
    * LE RETOUR DU PAIEMENT.
@@ -163,7 +172,10 @@ export function Rejoindre({
         className={CHAMP}
         autoComplete="email"
       />
-      {gratuit ? null : (
+      {/* Le champ code promo disparaît sur un règlement étalé : un prélèvement
+          remisé ne tomberait plus juste sur le nombre de fois convenu, et le
+          serveur refuserait. Mieux vaut ne pas proposer que refuser après. */}
+      {gratuit || etale ? null : (
         <input
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -178,16 +190,38 @@ export function Rejoindre({
         className="rounded-xl px-5 py-3.5 text-base font-extrabold text-white disabled:opacity-60"
         style={{ backgroundColor: couleur }}
       >
-        {occupe ? 'Ouverture…' : gratuit ? 'Commencer gratuitement' : 'Payer et commencer'}
+        {occupe
+          ? 'Ouverture…'
+          : gratuit
+            ? 'Commencer gratuitement'
+            : etale
+              ? `Payer ${euros(echeanceCents!)} et commencer`
+              : 'Payer et commencer'}
       </button>
       <p className="text-sm leading-relaxed text-[#5E7A6E]">
         {gratuit
           ? 'Pas de compte à créer. Ton adresse sert à retrouver ton avancement et à t’envoyer ton attestation.'
           : `Le paiement se fait sur la page sécurisée de notre prestataire — ${ecole} ne voit jamais ton numéro de carte. Ton accès s’ouvre au retour.`}
       </p>
+      {/* CE QUI VA ÊTRE PRÉLEVÉ, EN TOUTES LETTRES.
+          Un règlement étalé ne se devine pas : on dit le nombre de fois, le
+          montant de chaque fois, le rythme, et surtout que l'accès s'ouvre
+          dès le premier. Sans ces quatre phrases, l'acheteur découvre son
+          échéancier sur son relevé bancaire. */}
+      {etale ? (
+        <p className="rounded-xl bg-[#F2F9F5] p-3 text-sm leading-relaxed text-[#334A42]">
+          <span className="font-bold">
+            {echeances} prélèvements de {euros(echeanceCents!)}, un par mois.
+          </span>{' '}
+          Le premier aujourd&apos;hui, et ton accès s&apos;ouvre tout de suite. Le dernier dans{' '}
+          {echeances - 1} mois — après quoi plus rien n&apos;est prélevé.
+        </p>
+      ) : null}
     </form>
   );
 }
+
+const euros = (c: number) => (c / 100).toFixed(2).replace('.', ',') + ' €';
 
 const CHAMP =
   'w-full rounded-xl border border-[#CFE4D9] bg-white px-4 py-3 text-base text-[#12312A] placeholder:text-[#8FA79B] focus:border-[#1E9E6A] focus:outline-none focus:ring-4 focus:ring-[#E3F5EC]';
