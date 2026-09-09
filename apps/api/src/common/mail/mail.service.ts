@@ -318,6 +318,68 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * LE REÇU D'UNE COMMANDE DE BOUTIQUE.
+   *
+   * Il porte ce qu'on a promis. Un produit virtuel est remis ici, tout de
+   * suite, par son lien ; un objet à expédier n'est accompagné que de ce que
+   * l'association a écrit sur ses délais — on n'invente jamais une date.
+   */
+  async sendRecuBoutique(data: {
+    to: string;
+    boutique: { nom: string; couleur?: string | null };
+    lignes: { titre: string; quantite: number; virtuel: boolean; lien: string | null }[];
+    totalCents: number;
+    fraisPortCents: number;
+    livraisonTexte?: string | null;
+    lienBoutique: string;
+  }): Promise<void> {
+    const euros = (c: number) => (c / 100).toFixed(2).replace('.', ',') + ' €';
+    const lignes = data.lignes
+      .map((l) => {
+        const q = l.quantite > 1 ? ` × ${l.quantite}` : '';
+        const lien = l.virtuel && l.lien
+          ? ` — <a href="${l.lien}" style="color:inherit">ouvrir</a>`
+          : '';
+        return `<li style="margin:4px 0">${echapper(l.titre)}${q}${lien}</li>`;
+      })
+      .join('');
+    const port =
+      data.fraisPortCents > 0
+        ? `<div style="margin-top:6px">Dont frais d'expédition : <b>${euros(data.fraisPortCents)}</b></div>`
+        : '';
+    const aExpedier = data.lignes.some((l) => !l.virtuel);
+    const livraison =
+      aExpedier && data.livraisonTexte
+        ? `<div style="margin-top:14px;padding:12px;background:#f6f6f4;border-radius:10px">${echapper(
+            data.livraisonTexte,
+          )}</div>`
+        : '';
+    const virtuels = data.lignes.filter((l) => l.virtuel && l.lien).length;
+    const remise = virtuels
+      ? `<div style="margin-top:12px">${
+          virtuels > 1 ? 'Vos contenus sont' : 'Votre contenu est'
+        } accessible${virtuels > 1 ? 's' : ''} depuis ${
+          virtuels > 1 ? 'les liens' : 'le lien'
+        } ci-dessus. Gardez ce message.</div>`
+      : '';
+
+    await this.send(
+      data.to,
+      `Votre commande chez ${data.boutique.nom}`,
+      this.layoutEcole(
+        data.boutique,
+        'Votre commande est confirmée',
+        `Merci — votre règlement de <b>${euros(data.totalCents)}</b> est bien enregistré.` +
+          `<ul style="margin:14px 0;padding-left:18px">${lignes}</ul>` +
+          port +
+          remise +
+          livraison,
+        { label: 'Revenir à la boutique', url: data.lienBoutique },
+      ),
+    );
+  }
+
+  /**
    * LE LIEN D'ACCÈS À UNE FORMATION.
    *
    * Le message le plus important de toute l'académie : sans lui, une personne
