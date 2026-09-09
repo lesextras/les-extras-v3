@@ -21,7 +21,7 @@ export function ProfileForm({
   isFreelance,
   accountId,
 }: {
-  user: SessionUser & { phone?: string | null; hebdoOptIn?: boolean };
+  user: SessionUser & { phone?: string | null; hebdoOptIn?: boolean; notifMailOptIn?: boolean };
   profile?: Profile | null;
   isFreelance: boolean;
   accountId: string;
@@ -32,6 +32,7 @@ export function ProfileForm({
   const [photo, setPhoto] = useState<FichierDepose | null>(null);
   const [photoTouchee, setPhotoTouchee] = useState(false);
   const [hebdo, setHebdo] = useState(user.hebdoOptIn !== false);
+  const [notifMail, setNotifMail] = useState(user.notifMailOptIn !== false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,6 +46,7 @@ export function ProfileForm({
         lastName: String(fd.get("lastName") || "") || undefined,
         phone: String(fd.get("phone") || "") || undefined,
         hebdoOptIn: hebdo,
+        notifMailOptIn: notifMail,
       };
       // On ne touche à la photo que si la personne l'a modifiée pendant la
       // session : sinon on laisserait un champ vide écraser l'existant.
@@ -60,6 +62,14 @@ export function ProfileForm({
           skills: String(fd.get("skills") || "")
             .split(",")
             .map((s) => s.trim())
+            .filter(Boolean),
+          // Un lien par ligne. Le serveur répare ce qui se répare (schéma
+          // manquant, espaces, doublons) et écarte le reste sans rien dire :
+          // personne ne doit se battre avec un formulaire pour ajouter son
+          // Instagram.
+          liens: String(fd.get("liens") || "")
+            .split(/[\n,]/)
+            .map((l) => l.trim())
             .filter(Boolean),
         });
       }
@@ -138,6 +148,22 @@ export function ProfileForm({
                 placeholder="Internat, TSA, gestion de crise"
               />
             </Field>
+            {/* Ce qui décide un établissement, ce n'est pas un texte de
+                présentation : c'est de voir le travail. Facultatif, comme le
+                reste du profil. */}
+            <Field
+              label="Site et réseaux"
+              htmlFor="liens"
+              hint="Un lien par ligne · facultatif · six au maximum"
+            >
+              <Textarea
+                id="liens"
+                name="liens"
+                rows={3}
+                defaultValue={(profile?.liens ?? []).join("\n")}
+                placeholder={"https://www.linkedin.com/in/…\nhttps://www.instagram.com/…\nhttps://mon-site.fr"}
+              />
+            </Field>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <Field label="Ville" htmlFor="city">
                 <Input id="city" name="city" defaultValue={profile?.city ?? ""} />
@@ -189,6 +215,30 @@ export function ProfileForm({
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Les notifications par courriel. Séparées du rendez-vous du lundi :
+          l'une est une lettre d'information, l'autre concerne un engagement en
+          cours. On ne coupe pas les deux d'une même case. */}
+      <Card>
+        <CardContent className="pt-6">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={notifMail}
+              onChange={(e) => setNotifMail(e.target.checked)}
+              className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
+            />
+            <span className="text-sm">
+              <span className="font-medium">Recevoir les notifications par e-mail</span>
+              <span className="block text-muted-foreground">
+                Seulement celles qui attendent quelque chose de vous ou qui vous rassurent : une
+                demande reçue, un devis à décider, une date confirmée, une pièce réclamée. Les
+                autres restent dans la cloche.
+              </span>
+            </span>
+          </label>
+        </CardContent>
+      </Card>
 
       {/* Le rendez-vous du lundi : désactivable en un clic, sans détour par
           un e-mail de désinscription. */}

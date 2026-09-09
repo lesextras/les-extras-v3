@@ -5,7 +5,18 @@
 // robustes aux évolutions du backend.
 // ============================================================================
 
-export type AccountType = "ESTABLISHMENT" | "FREELANCE";
+/**
+ * PARTICULIER (09/09/2026) : un parent ou un aidant, client de plein droit.
+ * ASSOCIATION et ACADEMIE appartiennent aux sous-domaines « Piloter » : ils ne
+ * naviguent pas ici, mais le type doit les connaître pour qu'une session ne
+ * soit pas mal typée.
+ */
+export type AccountType =
+  | "ESTABLISHMENT"
+  | "FREELANCE"
+  | "PARTICULIER"
+  | "ASSOCIATION"
+  | "ACADEMIE";
 export type AccountRole = "OWNER" | "ADMIN" | "MANAGER" | "MEMBER";
 export type GlobalRole = "USER" | "ADMIN";
 
@@ -100,6 +111,8 @@ export interface Profile {
   hourlyRate?: string | number | null;
   available?: boolean;
   diplomaUrl?: string | null;
+  /** Site et réseaux publics de l'intervenant, affichés sur ses fiches. */
+  liens?: string[] | null;
 }
 
 export interface PublicUser {
