@@ -205,8 +205,14 @@ export class MoteurService {
    * modèles, avec une courte attente entre deux essais.
    */
   private async gemini(options: OptionsMoteur, cle: string): Promise<string> {
-    const modeles = await this.modelesGemini(cle);
-    const aEssayer = modeles.slice(0, 3);
+    let modeles = await this.modelesGemini(cle);
+    // Si la configuration n'impose qu'un modèle et qu'il vient d'être refusé,
+    // on va chercher la liste réelle plutôt que de rendre les armes.
+    if (modeles.length <= 1) {
+      this.modelesDecouverts = null;
+      modeles = await this.modelesGemini(cle);
+    }
+    const aEssayer = modeles.slice(0, 4);
     let dernier: unknown = null;
     for (let i = 0; i < aEssayer.length; i += 1) {
       try {
@@ -214,11 +220,20 @@ export class MoteurService {
       } catch (err) {
         dernier = err;
         const m = err instanceof Error ? err.message : String(err);
-        // Saturé ou trop de demandes : on attend un souffle et on passe au
-        // modèle suivant. Toute autre erreur (clé, contenu) remonte tout de
+        // On passe au modèle suivant dans DEUX cas :
+        //  • il est saturé (« high demand », 429, 503) — la seconde d'après,
+        //    ou le modèle d'à côté, répondra ;
+        //  • il n'existe plus (404) — c'est le cas d'un GEMINI_MODEL resté en
+        //    configuration après que Google l'a fermé. Sans ça, un nom périmé
+        //    dans la configuration bloque toute la chaîne, alors qu'on sait
+        //    déjà quoi mettre à la place.
+        // Toute autre erreur (clé refusée, contenu bloqué) remonte tout de
         // suite : réessayer ne la réparera pas.
-        if (!/429|503|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i.test(m)) throw err;
-        if (i < aEssayer.length - 1) await new Promise((r) => setTimeout(r, 1200));
+        const aRelancer =
+          /429|503|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i.test(m) ||
+          /404|no longer available|not found|not supported/i.test(m);
+        if (!aRelancer) throw err;
+        if (i < aEssayer.length - 1) await new Promise((r) => setTimeout(r, 800));
       }
     }
     throw dernier instanceof Error ? dernier : new Error('Gemini : aucun modèle disponible.');
