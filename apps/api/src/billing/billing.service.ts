@@ -12,6 +12,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreditsService } from './credits.service';
 import { EcoleService } from '../ecole/ecole.service';
+import { BoutiqueService } from '../boutique/boutique.service';
 import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
 
 
@@ -142,6 +143,7 @@ export class BillingService {
     private readonly config: ConfigService,
     private readonly credits: CreditsService,
     private readonly ecole: EcoleService,
+    private readonly boutique: BoutiqueService,
   ) {}
 
   private get secretKey(): string {
@@ -712,9 +714,64 @@ export class BillingService {
       return { received: true };
     }
 
+    // UNE COMMANDE DE BOUTIQUE.
+    //
+    // Comme pour la formation, rien n'a été créé au moment du clic : la
+    // commande et le décompte de stock naissent ici, une seule fois, garantis
+    // par l'unicité de `stripeSessionId`.
+    if (kind === 'boutique') {
+      const accountId = session.metadata?.accountId;
+      const email = session.metadata?.email?.trim().toLowerCase();
+      const brut = session.metadata?.panier;
+      if (!accountId || !email || !brut) {
+        this.logger.warn(`Webhook boutique: session incomplète ${session.id}`);
+        return { received: true };
+      }
+      let panier: { i: string; q: number }[] = [];
+      try {
+        const lu = JSON.parse(brut) as unknown;
+        if (Array.isArray(lu)) {
+          panier = lu
+            .filter(
+              (l): l is { i: string; q: number } =>
+                typeof (l as { i?: unknown }).i === 'string' &&
+                typeof (l as { q?: unknown }).q === 'number',
+            )
+            .map((l) => ({ i: l.i, q: Math.max(1, Math.min(50, Math.round(l.q))) }));
+        }
+      } catch {
+        panier = [];
+      }
+      if (!panier.length) {
+        this.logger.warn(`Webhook boutique: panier illisible ${session.id}`);
+        return { received: true };
+      }
+      const montant = Number(
+        (session as unknown as { amount_total?: number }).amount_total ?? 0,
+      );
+      await this.boutique.enregistrerCommandePayee({
+        sessionId: session.id,
+        accountId,
+        email,
+        montantCents: montant,
+        portCents: Number(session.metadata?.port ?? 0) || 0,
+        panier,
+        nom: session.metadata?.nom ?? null,
+        telephone: session.metadata?.tel ?? null,
+        adresse: session.metadata?.adresse ?? null,
+        codePostal: session.metadata?.cp ?? null,
+        ville: session.metadata?.ville ?? null,
+        pays: session.metadata?.pays ?? null,
+        origine: session.metadata?.origine ?? null,
+      });
+      this.logger.log(`Commande de boutique payée par ${email}`);
+      return { received: true };
+    }
+
     // Les paiements Stripe connus sont l'abonnement LEX, le règlement d'une
-    // facture, l'achat de crédits et l'achat d'une formation, tous traités
-    // plus haut. Toute autre session est ignorée sans erreur.
+    // facture, l'achat de crédits, l'achat d'une formation et la commande
+    // d'un produit de boutique, tous traités plus haut. Toute autre session
+    // est ignorée sans erreur.
     this.logger.warn(`Webhook: session sans traitement associé (${session.id})`);
     return { received: true };
   }

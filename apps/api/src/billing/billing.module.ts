@@ -3,12 +3,13 @@ import { BillingController } from './billing.controller';
 import { BillingService } from './billing.service';
 import { CreditsService } from './credits.service';
 import { EcoleModule } from '../ecole/ecole.module';
+import { BoutiqueModule } from '../boutique/boutique.module';
 
 @Module({
-  // L'école est importée pour une seule raison : quand le webhook confirme
-  // l'achat d'une formation, c'est elle qui sait écrire le message d'accès,
-  // aux couleurs de l'organisme. Aucune dépendance en sens inverse.
-  imports: [EcoleModule],
+  // Deux modules importés pour une seule raison : quand le webhook confirme
+  // un paiement, c'est l'école qui sait ouvrir l'accès à une formation, et la
+  // boutique qui sait écrire une commande. Aucune dépendance en sens inverse.
+  imports: [EcoleModule, BoutiqueModule],
   controllers: [BillingController],
   providers: [BillingService, CreditsService],
   // Exporté pour l'assistant : chaque génération LEX consomme un crédit.
