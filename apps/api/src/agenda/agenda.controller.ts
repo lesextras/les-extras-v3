@@ -26,6 +26,16 @@ export class AgendaController {
     return this.agenda.evenements(a.id, du, au);
   }
 
+  /**
+   * Déclaré AVANT `@Patch(':id')` et `@Delete(':id')` sans conséquence — mais
+   * la route est en GET et le `:id` n'existe qu'en PATCH/DELETE, donc aucune
+   * collision possible.
+   */
+  @Get('personnes')
+  personnes(@CurrentAccount() a: RequestAccount) {
+    return this.agenda.personnes(a.id);
+  }
+
   @Post()
   creer(
     @CurrentAccount() a: RequestAccount,

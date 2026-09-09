@@ -32,6 +32,8 @@ function prismaMock(over: Record<string, unknown> = {}) {
     formulaire: { findMany: jest.fn(async () => []) },
     reponseFormulaire: { findMany: jest.fn(async () => []) },
     organisation: { findUnique: jest.fn(async () => null) },
+    membership: { findMany: jest.fn(async () => []) },
+    contactAssociation: { findMany: jest.fn(async () => []) },
     dossierFinancement: vide,
     pieceAssociation: vide,
     actionAssociation: vide,
@@ -147,5 +149,55 @@ describe('AgendaService — la projection', () => {
     });
     await new AgendaService(prisma).evenements('acc_1', DU, AU);
     expect(dossiers.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('AgendaService — qui on peut convier', () => {
+  it('réunit l’équipe et le répertoire, sans doublon, en deux groupes', async () => {
+    const prisma = prismaMock({
+      membership: {
+        findMany: jest.fn(async () => [
+          { role: 'OWNER', user: { firstName: 'Sihame', lastName: 'Younous', email: 's@x.fr' } },
+          { role: 'MEMBER', user: { firstName: 'Karim', lastName: 'Belaïd', email: 'k@x.fr' } },
+          // Sans nom : on retombe sur l'adresse plutôt que sur rien.
+          { role: 'MEMBER', user: { firstName: null, lastName: null, email: 'stagiaire@x.fr' } },
+        ]),
+      },
+      organisation: { findUnique: jest.fn(async () => ({ id: 'org_1' })) },
+      contactAssociation: {
+        findMany: jest.fn(async () => [
+          { prenom: 'Karim', nom: 'Belaïd', poste: null, structure: 'Mairie' }, // déjà dans l'équipe
+          { prenom: 'Aline', nom: 'Roche', poste: 'Trésorière', structure: null },
+        ]),
+      },
+    });
+
+    const liste = await new AgendaService(prisma).personnes('acc_1');
+
+    expect(liste.map((p) => p.nom)).toEqual([
+      'Sihame Younous',
+      'Karim Belaïd',
+      'stagiaire@x.fr',
+      'Aline Roche',
+    ]);
+    expect(liste[0]).toMatchObject({ groupe: 'EQUIPE', detail: 'Responsable' });
+    expect(liste[3]).toMatchObject({ groupe: 'CONTACT', detail: 'Trésorière' });
+  });
+
+  it('ne propose que l’équipe quand le compte n’est pas une association', async () => {
+    const contacts = { findMany: jest.fn(async () => []) };
+    const prisma = prismaMock({
+      membership: {
+        findMany: jest.fn(async () => [
+          { role: 'OWNER', user: { firstName: 'Sihame', lastName: 'Younous', email: 's@x.fr' } },
+        ]),
+      },
+      organisation: { findUnique: jest.fn(async () => null) },
+      contactAssociation: contacts,
+    });
+
+    const liste = await new AgendaService(prisma).personnes('acc_1');
+    expect(liste).toHaveLength(1);
+    expect(contacts.findMany).not.toHaveBeenCalled();
   });
 });

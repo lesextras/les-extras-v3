@@ -373,6 +373,58 @@ export class AgendaService {
     return evenements;
   }
 
+  /**
+   * QUI ON PEUT CONVIER.
+   *
+   * Deux gisements, et pas un de plus : les membres du compte — l'équipe qui
+   * partage déjà cet agenda — et, quand le compte est une association, son
+   * répertoire de contacts. On ne va pas chercher les apprenants ni les
+   * acheteurs : convier quelqu'un à une réunion et l'avoir dans sa base ne
+   * sont pas la même chose, et confondre les deux fait des listes de trois
+   * cents noms où l'on ne trouve plus le trésorier.
+   *
+   * On renvoie des NOMS, pas des identifiants : le rendez-vous garde ses
+   * participants en texte, ce qui laisse écrire « la mairie » ou « les parents
+   * de Léa » — des personnes conviées qui n'auront jamais de compte.
+   */
+  async personnes(accountId: string): Promise<PersonneAgenda[]> {
+    const [membres, orga] = await Promise.all([
+      this.prisma.membership.findMany({
+        where: { accountId, status: 'ACTIVE' },
+        take: 200,
+        select: { role: true, user: { select: { firstName: true, lastName: true, email: true } } },
+      }),
+      this.prisma.organisation.findUnique({ where: { accountId }, select: { id: true } }),
+    ]);
+
+    const liste: PersonneAgenda[] = [];
+    const vus = new Set<string>();
+    const ajouter = (nom: string | null, detail: string | null, groupe: 'EQUIPE' | 'CONTACT') => {
+      const propre = (nom ?? '').trim();
+      if (!propre || vus.has(propre.toLowerCase())) return;
+      vus.add(propre.toLowerCase());
+      liste.push({ nom: propre, detail, groupe });
+    };
+
+    for (const m of membres) {
+      ajouter(nomComplet(m.user) ?? m.user?.email ?? null, LIBELLE_ROLE[m.role] ?? null, 'EQUIPE');
+    }
+
+    if (orga) {
+      const contacts = await this.prisma.contactAssociation.findMany({
+        where: { organisationId: orga.id },
+        orderBy: { nom: 'asc' },
+        take: 300,
+        select: { prenom: true, nom: true, poste: true, structure: true },
+      });
+      for (const c of contacts) {
+        ajouter(`${c.prenom} ${c.nom}`.trim(), c.poste ?? c.structure ?? null, 'CONTACT');
+      }
+    }
+
+    return liste;
+  }
+
   /* ------------------------------------------------------------------ */
   /* Écriture — uniquement les rendez-vous                               */
   /* ------------------------------------------------------------------ */
@@ -444,6 +496,12 @@ export type SourceEvenement =
   | 'PIECE'
   | 'ACTION';
 
+export interface PersonneAgenda {
+  nom: string;
+  detail: string | null;
+  groupe: 'EQUIPE' | 'CONTACT';
+}
+
 export interface EvenementAgenda {
   id: string;
   source: SourceEvenement;
@@ -467,6 +525,14 @@ export interface EvenementAgenda {
 /* -------------------------------------------------------------------- */
 /* Outils                                                                */
 /* -------------------------------------------------------------------- */
+
+/** Le rôle, dit comme on le dit à l'oral. */
+const LIBELLE_ROLE: Record<string, string> = {
+  OWNER: 'Responsable',
+  ADMIN: 'Administration',
+  MANAGER: 'Encadrement',
+  MEMBER: 'Équipe',
+};
 
 function bornerDate(v?: string): Date | null {
   if (!v) return null;
