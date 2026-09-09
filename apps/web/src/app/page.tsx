@@ -190,6 +190,60 @@ const TOUT_EN_UN = [
   },
 ];
 
+// ────────────────────────────────────────────────────────────── les tarifs
+//
+// TROIS COLONNES, PARCE QU'IL Y A TROIS PRIX.
+//
+// Le prix tenait dans une seule carte avec trois lignes en petit corps : de
+// loin, la page disait « un tarif », alors qu'il y en a trois et qu'ils ne se
+// ressemblent pas — gratuit pour toujours, sur devis, et un abonnement. Trois
+// colonnes de même largeur, chacune avec SON prix en grand, c'est ce qui se
+// lit d'un coup d'œil et ce qu'on va comparer.
+//
+// ⚠ AUCUN CHIFFRE N'EST INVENTÉ ICI : les trois montants sont ceux qui
+// figuraient déjà sur la page. Un prix affiché est un engagement.
+const TARIFS = [
+  {
+    kicker: 'Renforts et ateliers',
+    prix: '0 €',
+    precision: 'gratuit pour toujours',
+    points: [
+      'Publication, diffusion et relances',
+      'Devis et feuille de mission édités',
+      '0 % de commission : l’intervenant touche son tarif en entier',
+    ],
+    lien: { libelle: 'Publier un besoin', href: '/renforteam' },
+    trait: 'bg-primary',
+    teinte: 'text-primary',
+  },
+  {
+    kicker: 'Formations Qualiopi',
+    prix: 'Sur devis',
+    precision: 'selon la durée et l’effectif',
+    points: [
+      'Dans votre établissement',
+      'Certifiées Qualiopi',
+      'Finançables par votre OPCO',
+    ],
+    lien: { libelle: 'Voir les formations', href: '/formations' },
+    trait: 'bg-secondary',
+    teinte: 'text-secondary',
+  },
+  {
+    kicker: 'LEX, pour les écrits',
+    prix: '19 €',
+    precision: 'par mois, pour 200 générations',
+    points: [
+      '15 générations offertes chaque mois',
+      'Sans carte bancaire pour commencer',
+      'Rapports, projets, comptes rendus',
+    ],
+    lien: { libelle: 'Le détail de LEX', href: '#offre-lex' },
+    trait: 'bg-amber-500',
+    teinte: 'text-amber-500',
+  },
+];
+
 // Le bandeau défilant : ce que le même logiciel porte, d'un besoin à l'autre.
 const BANDEAU = [
   'Planning partagé',
@@ -262,7 +316,7 @@ export default async function LandingPage() {
   ];
 
   return (
-    <div className="theme-sombre flex min-h-screen flex-col bg-background text-foreground">
+    <div className="theme-sombre bg-ivoire-degrade flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
 
       <main id="main" className="flex-1">
@@ -296,8 +350,9 @@ export default async function LandingPage() {
                   trois usages et le logiciel, le paragraphe ne faisait que
                   répéter — et les trois repères chiffrés, juste dessous,
                   disaient le reste mieux que lui. */}
-              <p className="animate-fade-in-up stagger-2 mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
-                Vous publiez, le réseau répond. Devis, feuille de mission et facture suivent.
+              <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
+                Vous publiez votre besoin, un intervenant du réseau répond. Devis et feuille de
+                mission suivent, sans commission.
               </p>
 
               {/* LA BARRE DE RECHERCHE A QUITTÉ LE HÉROS.
@@ -439,7 +494,7 @@ export default async function LandingPage() {
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {USAGES.map((u, i) => (
               <Reveal key={u.kicker} delay={i * 110} className="h-full">
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
+                <div className="reflet group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
                   <span
                     className={`animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full ${u.trait}`}
                     aria-hidden
@@ -516,7 +571,7 @@ export default async function LandingPage() {
         <DeuxPortes />
 
         {/* ═══ 4. LE TOUT-EN-UN : ce que le logiciel fait, pour les trois ═══ */}
-        <section className="bg-card">
+        <section className="bg-nacre">
           <div className="section">
             <Reveal className="max-w-3xl">
               <span className="eyebrow">Tout-en-un</span>
@@ -655,13 +710,15 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ══════════════════════════ 7. LE PRIX, EN UNE LIGNE ════════════════
+        {/* ═══════════════════════════ 7. LE PRIX, EN TROIS COLONNES ═════════
             « Gratuit des deux côtés » est l'argument le plus fort du site : il
             méritait une section à lui, pas deux moitiés éloignées de six
-            écrans. Trois cartes-tarifs de la taille d'un comparatif SaaS
-            laissaient croire à trois formules à choisir — il n'y en a qu'une,
-            et elle est gratuite. */}
-        <section id="tarifs" className="scroll-mt-24 bg-card">
+            écrans. Elle a d'abord tenu dans une carte unique — mais il y a bien
+            TROIS prix, et ils ne se ressemblent pas : gratuit pour toujours,
+            sur devis, et un abonnement. En petit corps sur une seule carte, la
+            page avait l'air de n'en annoncer qu'un. En trois colonnes, chacun
+            avec son montant en grand, on les compare d'un coup d'œil. */}
+        <section id="tarifs" className="scroll-mt-24 bg-nacre">
           <div className="section">
             <Reveal className="max-w-3xl">
               <span className="eyebrow">Tarifs</span>
@@ -670,47 +727,48 @@ export default async function LandingPage() {
               </h2>
             </Reveal>
 
-            <Reveal delay={100} className="mt-8">
-              <div className="rounded-2xl border border-border bg-background p-8 shadow-card md:p-10">
-                <p className="text-3xl font-bold tracking-tight text-foreground md:text-4xl text-balance">
-                  0 € — de la publication à la facture.
-                </p>
-                <ul className="mt-8 grid gap-6 md:grid-cols-3">
-                  <li className="border-l-2 border-primary pl-4">
-                    <strong className="block text-sm font-bold text-foreground">
-                      Renforts et ateliers
-                    </strong>
-                    <span className="mt-1 block text-sm text-muted-foreground">
-                      Gratuit, 0 % de commission. L’intervenant touche son tarif en entier.
-                    </span>
-                  </li>
-                  <li className="border-l-2 border-secondary pl-4">
-                    <strong className="block text-sm font-bold text-foreground">
-                      Formations Qualiopi
-                    </strong>
-                    <span className="mt-1 block text-sm text-muted-foreground">
-                      Sur devis, finançables par votre OPCO.
-                    </span>
-                  </li>
-                  <li className="border-l-2 border-amber-500 pl-4">
-                    <strong className="block text-sm font-bold text-foreground">LEX</strong>
-                    <span className="mt-1 block text-sm text-muted-foreground">
-                      15 générations offertes par mois, puis 19 €/mois pour 200.
-                    </span>
-                  </li>
-                </ul>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button asChild variant="outline">
-                    <Link href="/formations">
-                      Voir les formations <ArrowRight />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link href="#offre-lex">Le détail de LEX</Link>
-                  </Button>
-                </div>
-                <p className="mt-6 text-sm text-muted-foreground">Montants HT.</p>
-              </div>
+            <div className="mt-10 grid gap-6 md:grid-cols-3">
+              {TARIFS.map((tarif, i) => (
+                <Reveal key={tarif.kicker} delay={i * 110} className="h-full">
+                  <div className="reflet group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-background p-6 shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl md:p-7">
+                    <span
+                      className={`animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full ${tarif.trait}`}
+                      aria-hidden
+                    />
+                    <div className="pl-3">
+                      <span className={`text-xs font-bold uppercase tracking-[0.14em] ${tarif.teinte}`}>
+                        {tarif.kicker}
+                      </span>
+                      <p className="mt-3 text-4xl font-bold tracking-tight text-foreground">
+                        {tarif.prix}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">{tarif.precision}</p>
+                      <ul className="mt-5 space-y-2">
+                        {tarif.points.map((p) => (
+                          <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                            <Check className={`mt-0.5 size-4 shrink-0 ${tarif.teinte}`} aria-hidden />
+                            <span>{p}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        href={tarif.lien.href}
+                        className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                      >
+                        {tarif.lien.libelle}
+                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                      </Link>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={340}>
+              <p className="mt-6 text-sm text-muted-foreground">
+                Montants HT. L’association ne prélève aucune commission sur les renforts et les
+                ateliers : vous payez l’intervenant, à son tarif.
+              </p>
             </Reveal>
           </div>
         </section>
