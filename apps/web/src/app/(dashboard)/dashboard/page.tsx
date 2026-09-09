@@ -16,6 +16,7 @@ import {
 } from "../../_shared/SuiviRattachement";
 import { fullName } from "../../_shared/format";
 import type { Booking, Mission, Service } from "../../_shared/types";
+import { AccueilParticulier } from "./AccueilParticulier";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
 
@@ -31,6 +32,25 @@ interface DashStats {
 
 export default async function DashboardPage() {
   const session = await requireSession();
+
+  // ⚠ LE PARTICULIER A SON PROPRE ACCUEIL (09/09/2026). Ce hub est bâti pour
+  // deux métiers — chercher du renfort, ou vendre des interventions. Un parent
+  // ne fait ni l'un ni l'autre : lui servir « missions publiées » et « taux de
+  // remplissage » revient à lui dire que le site n'est pas pour lui. On
+  // bifurque avant tous les appels, dont la plupart ne le concernent pas.
+  if (session.account.type === "PARTICULIER") {
+    const [moiParticulier, reservationsParticulier] = await Promise.all([
+      fetchApi<{ firstName?: string | null }>(session, "/auth/me"),
+      fetchApi<Booking[]>(session, "/bookings?scope=account&take=5"),
+    ]);
+    return (
+      <AccueilParticulier
+        prenom={moiParticulier.data?.firstName ?? session.user.firstName}
+        reservations={reservationsParticulier.data ?? []}
+      />
+    );
+  }
+
   const isEstablishment = session.account.type === "ESTABLISHMENT";
 
   const [moi, stats, missions, bookings, services, repartition] = await Promise.all([
