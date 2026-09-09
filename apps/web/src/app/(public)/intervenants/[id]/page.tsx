@@ -11,6 +11,7 @@ import { metaPublique } from "@/lib/meta";
 import { fetchPublic } from "../../../_shared/server";
 import { exigerFiche, metaIntrouvable } from "../../../_shared/fiche-publique";
 import { formatMoney, formatDate, fullName, initials } from "../../../_shared/format";
+import { LiensIntervenant } from "@/app/_shared/LiensIntervenant";
 
 interface VendorService {
   id: string;
@@ -33,7 +34,12 @@ interface Vendor {
   owner?: {
     firstName?: string | null;
     lastName?: string | null;
-    profile?: { job?: string | null; bio?: string | null; skills?: string[] | null } | null;
+    profile?: {
+      job?: string | null;
+      bio?: string | null;
+      skills?: string[] | null;
+      liens?: string[] | null;
+    } | null;
   } | null;
   services: VendorService[];
   reviews: {
@@ -149,6 +155,8 @@ export default async function VendorPage({ params: paramsPromesse }: { params: P
           </CardContent>
         </Card>
       ) : null}
+
+      <LiensIntervenant liens={vendor.owner?.profile?.liens} />
 
       {competences.length > 0 ? (
         <div className="flex flex-wrap gap-2">
