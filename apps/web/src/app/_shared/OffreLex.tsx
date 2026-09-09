@@ -68,17 +68,17 @@ const GARANTIES = [
   {
     icone: ShieldCheck,
     titre: "Les noms ne sortent jamais",
-    texte: "Prénoms, dates et coordonnées deviennent des jetons avant l’envoi au modèle.",
+    texte: "Prénoms et coordonnées sont remplacés avant l’envoi.",
   },
   {
     icone: Lock,
     titre: "Rien n’est enregistré sans vous",
-    texte: "Ni les notes brutes, ni le brouillon. Seule la version validée est gardée.",
+    texte: "Seule la version que vous validez est gardée.",
   },
   {
     icone: Scale,
     titre: "LEX propose, vous décidez",
-    texte: "Aucun diagnostic, aucune décision : la responsabilité de l’écrit reste la vôtre.",
+    texte: "Aucun diagnostic : l’écrit reste le vôtre.",
   },
 ];
 
@@ -126,28 +126,33 @@ export function OffreLex() {
         })}
       </ul>
 
-      {/* Une barre pleine à la couleur de la maison : elle referme le bloc et
-          tient aussi bien sur fond clair que sur fond sombre, ce qu'un aplat
-          gris ne faisait pas. */}
-      <div className="overflow-hidden rounded-2xl bg-primary text-primary-foreground shadow-xl">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-white/20 px-6 py-4 md:px-8">
-          <h3 className="text-base font-bold tracking-tight text-primary-foreground">
+      {/* ⚠ CE BANDEAU ÉTAIT UN APLAT FRAMBOISE, ET IL NE SE LISAIT PAS.
+          Du blanc sur du rose vif, en petit corps, sur trois colonnes serrées :
+          les trois garanties les plus importantes du produit — celles qu'une
+          direction lit avant de signer — étaient les moins lisibles de la page.
+
+          Elles reviennent sur fond clair, en texte de lecture, avec de l'air
+          entre les colonnes. La framboise reste, mais là où elle sert : le
+          filet du haut, les pastilles, le titre. Une couleur d'accent
+          n'accentue plus rien quand elle couvre tout. */}
+      <div className="reflet overflow-hidden rounded-2xl border border-border bg-nacre shadow-card">
+        <span className="block h-1.5 w-full bg-primary" aria-hidden />
+        <div className="px-6 pt-7 md:px-9">
+          <h3 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
             Utilisable dans le médico-social
           </h3>
-          <p className="text-sm text-primary-foreground/75">Trois garanties, pas des intentions.</p>
+          <p className="mt-1 text-base text-muted-foreground">Trois garanties, pas des intentions.</p>
         </div>
-        <ul className="grid gap-px bg-white/20 md:grid-cols-3">
+        <ul className="grid gap-7 px-6 py-7 md:grid-cols-3 md:gap-9 md:px-9 md:py-9">
           {GARANTIES.map((g) => {
             const Icone = g.icone;
             return (
-              <li key={g.titre} className="bg-primary px-6 py-5 md:px-8">
-                <div className="flex items-center gap-2.5">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/20 text-primary-foreground">
-                    <Icone className="size-4" aria-hidden />
-                  </span>
-                  <span className="text-sm font-bold">{g.titre}</span>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/80">{g.texte}</p>
+              <li key={g.titre}>
+                <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
+                  <Icone className="size-5" aria-hidden />
+                </span>
+                <h4 className="mt-3.5 text-base font-bold text-foreground">{g.titre}</h4>
+                <p className="mt-1.5 text-base leading-relaxed text-muted-foreground">{g.texte}</p>
               </li>
             );
           })}
