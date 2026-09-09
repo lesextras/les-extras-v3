@@ -267,14 +267,15 @@ export default async function LandingPage() {
     formations: OfferCard[];
   }>('/public/highlights');
 
-  // TROIS CARTES PAR RAYON, PAS DIX ET SEPT.
+  // DIX CARTES PAR RAYON.
   //
-  // La vitrine affichait dix ateliers, sept mini-formations et trois formations
-  // en intra : vingt cartes produit, soit 44 % du poids de la page. Une page
-  // d'accueil qui déroule l'inventaire devient une page de catégorie — or son
-  // travail est de qualifier et d'orienter, pas de lister. Le catalogue a ses
-  // propres pages, et chaque rayon porte son lien vers elles.
-  const VITRINE = 3;
+  // Les trois rayons ne sont plus trois sections empilées mais trois onglets
+  // d'un carrousel : on n'en voit qu'un à la fois, et il défile latéralement.
+  // Le poids de la page ne dépend donc plus du nombre de fiches, et une vitrine
+  // à trois cartes donnait à croire que le catalogue était vide. Dix par rayon,
+  // c'est ce que les répertoires renvoient et ce qu'un carrousel porte sans
+  // peser.
+  const VITRINE = 10;
 
   // ⚠ L'ORDRE VIENT DE `featured`, PAS DES VUES. `/public/highlights` trie par
   // `featured` puis par nombre de vues. Les trois fiches mises en avant sont
