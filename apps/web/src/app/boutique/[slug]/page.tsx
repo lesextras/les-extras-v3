@@ -37,9 +37,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const v = await charger(slug);
-  if (!v) return { title: 'Boutique introuvable' };
+  // TITRE ABSOLU, VOLONTAIREMENT.
+  //
+  // Le gabarit de titre de l'application ajoute « · LES EXTRAS » a toute page
+  // qui ne s'y oppose pas. Ici, la page est la boutique d'une association, et
+  // elle s'ouvre depuis pilote.toulali.fr : y accoler le nom de la place de
+  // marche affiche la mauvaise marque a l'acheteur, dans son onglet et dans
+  // l'apercu du lien qu'on lui partage.
+  if (!v) return { title: { absolute: 'Boutique introuvable' } };
   return {
-    title: v.boutique.nom,
+    title: { absolute: v.boutique.nom },
     description: v.boutique.sousTitre ?? undefined,
     alternates: { canonical: `/boutique/${v.boutique.slug}` },
   };
