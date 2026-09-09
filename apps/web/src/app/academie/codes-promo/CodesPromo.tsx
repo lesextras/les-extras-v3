@@ -145,7 +145,7 @@ export function CodesPromo({ initiaux, cours }: { initiaux: Promo[]; cours: Cour
             />
             <span className="mt-1 block text-[13px] text-[#5E7A6E]">C&apos;est ce que la personne tape en payant.</span>
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Type</span>
               <select value={type} onChange={(e) => setType(e.target.value as TypeRemise)} className={CHAMP}>
