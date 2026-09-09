@@ -30,11 +30,14 @@ const INTERVENANT = 'acc-freelance';
  * Dans les deux cas `booking.accountId` est le DEMANDEUR, et c'est le SOLLICITÉ
  * — le propriétaire de la mission ou de la fiche — qui fait avancer le dossier.
  */
-function fabrique(flux: 'renfort' | 'atelier' = 'renfort') {
+function fabrique(flux: 'renfort' | 'atelier' = 'renfort', creeIlYaMs = 0) {
   const renfort = flux === 'renfort';
   const etat = {
     booking: {
       id: 'bk1',
+      // La date de création fait courir le délai d'annulation de 48 heures
+      // ouvert au côté qui fait venir. Par défaut : à l'instant.
+      createdAt: new Date(Date.now() - creeIlYaMs),
       // Renfort : le candidat crée la réservation.
       // Atelier : c'est l'établissement qui réserve.
       accountId: renfort ? INTERVENANT : ETABLISSEMENT,
@@ -74,6 +77,15 @@ function fabrique(flux: 'renfort' | 'atelier' = 'renfort') {
     },
     user: {
       findUnique: jest.fn(async () => ({ email: 'direction@mecs.fr' })),
+    },
+    // Les coordonnées vers qui renvoyer quand le délai de 48 h est passé.
+    account: {
+      findUnique: jest.fn(async () => ({
+        name: 'Léa Martin',
+        contactEmail: 'lea@exemple.fr',
+        phone: '06 00 00 00 00',
+        owner: { email: 'lea@exemple.fr' },
+      })),
     },
   };
   const notifications = {
@@ -220,6 +232,23 @@ describe('Seul le sollicité fait avancer la réservation', () => {
     await expect(service.start('bk1', INTERVENANT)).rejects.toThrow(ForbiddenException);
     await service.start('bk1', ETABLISSEMENT);
     await expect(service.complete('bk1', INTERVENANT)).rejects.toThrow(ForbiddenException);
+  });
+
+  it("passé quarante-huit heures, l'établissement ne peut plus annuler seul", async () => {
+    // La règle posée le 09/09/2026 : au-delà de 48 h, la personne d'en face a
+    // bloqué sa journée. Cela ne se défait plus d'un clic, cela se dit — et le
+    // message de refus doit donner de quoi appeler.
+    const tard = fabrique('atelier', 72 * 60 * 60 * 1000);
+    await expect(
+      tard.service.cancel('bk1', ETABLISSEMENT, { reason: 'Séjour annulé.' } as never),
+    ).rejects.toThrow(/Léa Martin/);
+    expect(tard.etat.booking.status).toBe(BookingStatus.REQUESTED);
+
+    // L'INTERVENANT, lui, peut toujours se désister : une plateforme qui le
+    // bloquerait l'obligerait au mensonge ou à l'abandon silencieux.
+    const cote = fabrique('atelier', 72 * 60 * 60 * 1000);
+    await cote.service.cancel('bk1', INTERVENANT, { reason: 'Arrêt maladie.' } as never);
+    expect(cote.etat.booking.status).toBe(BookingStatus.CANCELLED);
   });
 
   it('mais le demandeur garde le droit de renoncer, des deux côtés', async () => {

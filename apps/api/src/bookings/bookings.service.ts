@@ -691,8 +691,11 @@ export class BookingsService {
       ? booking.accountId
       : booking.service?.accountId ?? null;
 
-    if (cotéAccueil === accountId) {
-      const limite = new Date(booking.createdAt.getTime() + FENETRE_ANNULATION_MS);
+    // Une date de création manquante n'enferme personne : on n'oppose un délai
+    // que si l'on sait de quand il court.
+    const depuis = booking.createdAt ? new Date(booking.createdAt).getTime() : null;
+    if (cotéAccueil === accountId && depuis !== null) {
+      const limite = new Date(depuis + FENETRE_ANNULATION_MS);
       if (Date.now() > limite.getTime()) {
         const contact = await this.contactDe(cotéIntervenant);
         throw new BadRequestException(
@@ -717,10 +720,15 @@ export class BookingsService {
   /** Les coordonnées d'un compte, pour pouvoir renvoyer vers une personne. */
   private async contactDe(accountId: string | null) {
     if (!accountId) return null;
-    const a = await this.prisma.account.findUnique({
-      where: { id: accountId },
-      select: { name: true, contactEmail: true, phone: true, owner: { select: { email: true } } },
-    });
+    // Le refus doit partir même si la lecture échoue : mieux vaut « contactez
+    // l'intervenant » qu'une erreur technique au moment où quelqu'un essaie
+    // d'annuler.
+    const a = await this.prisma.account
+      .findUnique({
+        where: { id: accountId },
+        select: { name: true, contactEmail: true, phone: true, owner: { select: { email: true } } },
+      })
+      .catch(() => null);
     if (!a) return null;
     return {
       nom: a.name,
