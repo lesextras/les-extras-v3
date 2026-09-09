@@ -16,6 +16,8 @@ import { AlertCircle, CheckCircle2, CreditCard } from "lucide-react";
 interface Conditions {
   paiementEnLigne: boolean;
   annulationTexte: string | null;
+  /** Vrai tant que l'intervenant n'a pas écrit les siennes. */
+  annulationParDefaut?: boolean;
   prixCents: number;
   manques: string[];
   possible: boolean;
@@ -115,15 +117,17 @@ export function EncaisserAtelier({
         <label className="grid gap-1 text-xs text-muted-foreground">
           Vos conditions d&apos;annulation
           <Textarea
-            rows={3}
+            rows={5}
             value={texte}
             onChange={(e) => setTexte(e.target.value)}
-            placeholder="Report gratuit jusqu’à 7 jours avant. Au-delà, la séance est due."
           />
           <span>
-            Affichées avant le bouton de paiement, et recopiées dans le reçu de l&apos;acheteur.
-            On ne prend pas l&apos;argent de quelqu&apos;un sans lui avoir dit à quelles
-            conditions il le récupère.
+            {etat.annulationParDefaut
+              ? "Ce texte vous est proposé : gardez-le tel quel, ou réécrivez-le à votre façon. Il devient le vôtre dès que vous ouvrez le règlement en ligne."
+              : "Ce sont vos conditions, telles que vous les avez écrites."}{" "}
+            Elles s&apos;affichent avant le bouton de paiement et sont recopiées dans le reçu de
+            l&apos;acheteur. On ne prend pas l&apos;argent de quelqu&apos;un sans lui avoir dit à
+            quelles conditions il le récupère.
           </span>
         </label>
 
