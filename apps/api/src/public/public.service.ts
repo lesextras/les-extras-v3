@@ -74,6 +74,12 @@ const PUBLIC_DETAIL_SELECT = {
   faq: true,
   priceExtras: true,
   timeSlots: true,
+  /// Le règlement immédiat, quand l'intervenant l'a ouvert sur cette fiche.
+  /// La demande de devis reste affichée dans tous les cas : ce chemin s'ajoute
+  /// aux autres, il ne les remplace pas.
+  paiementEnLigne: true,
+  /// Affiché AVANT le bouton de paiement, jamais après.
+  annulationTexte: true,
   views: true,
   requestsCount: true,
   updatedAt: true,
