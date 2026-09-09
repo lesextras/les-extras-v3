@@ -71,7 +71,7 @@ import { fetchPublic } from './_shared/server';
 // Les visuels de la médiathèque WordPress passent par `wp()` : ils ont déjà
 // déménagé deux fois, et les URL écrites en dur sont celles qui survivent au
 // déménagement puis cassent seules. Voir `lib/media.ts`.
-import { wp } from '@/lib/media';
+import { premierVisuel, wp } from '@/lib/media';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { CatalogueOnglets } from './_shared/CatalogueOnglets';
 import { estMaison } from '@/lib/mini-formations';
@@ -280,19 +280,32 @@ export default async function LandingPage() {
   // ⚠ L'ORDRE VIENT DE LA DATE, PAS DE LA NOTE NI DES VUES. `/public/highlights`
   // renvoie les fiches publiées les plus récentes d'abord : la vitrine montre
   // ce qui vient d'arriver, et publier une fiche se voit le jour même.
-  const ateliersUne = (unes?.ateliers ?? []).slice(0, VITRINE);
+  // ⚠ LES FICHES AVEC PHOTO PASSENT DEVANT, À DATE ÉGALE DE SÉLECTION. La
+  // sélection reste celle des dernières publiées ; c'est seulement l'ordre
+  // d'affichage qui change à l'intérieur. Une carte avec photo arrête l'œil,
+  // une vignette dessinée non — mettre la seconde en tête du carrousel, c'est
+  // se priver du seul moment où le visiteur regarde vraiment.
+  //
+  // `sort` est stable en JavaScript : à photo égale, l'ordre par date est
+  // conservé tel quel. Aucune fiche n'est écartée, aucune n'est ajoutée.
+  const photoDabord = <T extends { images?: string[] | null }>(liste: T[]) =>
+    [...liste].sort(
+      (a, b) => Number(Boolean(premierVisuel(b.images))) - Number(Boolean(premierVisuel(a.images))),
+    );
+
+  const ateliersUne = photoDabord((unes?.ateliers ?? []).slice(0, VITRINE));
 
   // Le même partage que sur /formations : les mini-formations gratuites de la
   // maison d'un côté, les formations Qualiopi vendues en intra de l'autre. Une
   // mini-formation gratuite et une formation en intra ne s'adressent pas aux
   // mêmes personnes et n'ont pas le même prix : dans la même ligne, chacune
   // brouillait l'autre. Elles sont maintenant deux onglets.
-  const gratuites = (unes?.formations ?? [])
-    .filter((f) => f.freeOnline && estMaison(f.account?.name))
-    .slice(0, VITRINE);
-  const payantes = (unes?.formations ?? [])
-    .filter((f) => !(f.freeOnline && estMaison(f.account?.name)))
-    .slice(0, VITRINE);
+  const gratuites = photoDabord(
+    (unes?.formations ?? []).filter((f) => f.freeOnline && estMaison(f.account?.name)).slice(0, VITRINE),
+  );
+  const payantes = photoDabord(
+    (unes?.formations ?? []).filter((f) => !(f.freeOnline && estMaison(f.account?.name))).slice(0, VITRINE),
+  );
 
   const rayons = [
     {
