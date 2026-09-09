@@ -18,24 +18,29 @@ import {
 /**
  * MES FORMATIONS.
  *
- * La liste, et le bouton qui en crée une. Créer demande UNE seule chose — le
- * titre — puis ouvre la formation, vide : on y pose ensuite ce qu'on veut, une
- * leçon suffit, le chapitre est facultatif.
+ * La liste, et le bouton qui en crée une. Créer ouvre une fenêtre — la même
+ * que Teachizy, relevée sur place le 09/09/2026 : un titre, une description
+ * courte, un « Générer » par champ, « Fermer » et « Ajouter ». Puis la
+ * formation s'ouvre, vide : on y pose ensuite ce qu'on veut, une leçon suffit,
+ * le chapitre est facultatif.
  *
- * ⚠ PLUS DE FENÊTRE FLOTTANTE (08/09/2026). La création s'ouvrait dans une
- * modale `fixed inset-0 grid place-items-center` : sur un écran d'ordinateur
- * portable, la boîte était plus haute que la fenêtre, le bouton « Ajouter »
- * passait sous le bord et il fallait deviner qu'on pouvait faire défiler DANS
- * la boîte. Une fenêtre qui cache son propre bouton de validation n'est pas une
- * fenêtre, c'est un piège. La création est donc une simple ligne posée dans la
- * page, sous le bouton : rien à faire défiler, rien à fermer.
+ * ⚠ CE QUI AVAIT CASSÉ, ET POURQUOI (08-09/09/2026).
  *
- * La description courte est partie avec la fenêtre : elle se règle dans
- * « Paramètres » de la formation, comme le prix et le reste. Demander deux
- * champs pour créer une coquille vide, c'était un champ de trop.
+ * Notre fenêtre portait, en plus des deux champs, un chapeau de trois lignes,
+ * un compteur de caractères et deux phrases d'aide : la carte montait à ~690 px
+ * quand l'écran d'un portable en fait 640. Le bouton « Ajouter » passait sous
+ * le bord, et il fallait deviner qu'on pouvait faire défiler DANS la boîte.
+ * J'ai d'abord supprimé la fenêtre — c'était une erreur : Teachizy en a une, et
+ * elle doit rester.
  *
- * La modalité — en ligne, en présentiel, en visio, mixte — n'est pas une autre
- * liste : c'est une étiquette sur la formation, et un filtre au-dessus.
+ * La vraie correction tient en trois points, et ils sont à garder :
+ *   1. la carte porte EXACTEMENT ce que porte celle de Teachizy, rien de plus
+ *      (leur carte fait 494 px de haut : c'est ce qui la fait tenir) ;
+ *   2. `max-h` + `overflow-y-auto` sur la carte : si l'écran est vraiment
+ *      minuscule, c'est la carte qui défile, jamais le bouton qui disparaît ;
+ *   3. le voile s'aligne en haut (`items-start`) et non au centre : centré,
+ *      un contenu plus haut que la fenêtre voit son haut ET son bas coupés,
+ *      et aucun défilement ne les rattrape.
  */
 export function ListeCours({
   cours: initiaux,
@@ -54,14 +59,46 @@ export function ListeCours({
   const [filtre, setFiltre] = useState<ModaliteCours | 'TOUTES'>(modaliteInitiale ?? 'TOUTES');
   const [ouvrirCreation, setOuvrirCreation] = useState(false);
   const [titreNeuf, setTitreNeuf] = useState('');
+  const [sousTitreNeuf, setSousTitreNeuf] = useState('');
+  /** Quel champ l'IA est en train d'écrire : rien, le titre, ou la description. */
+  const [ecrit, setEcrit] = useState<'titre' | 'description' | null>(null);
 
   const visibles = filtre === 'TOUTES' ? cours : cours.filter((c) => (c.modalite ?? 'EN_LIGNE') === filtre);
 
   const creer = () => {
     setTitreNeuf('');
+    setSousTitreNeuf('');
     setErreur(null);
     setOuvrirCreation(true);
   };
+
+  /**
+   * « GÉNÉRER », COMME CHEZ TEACHIZY.
+   *
+   * Le sujet, c'est ce qui est déjà écrit : le titre s'il y en a un, sinon la
+   * description. Sans rien, on ne devine pas — on le dit.
+   */
+  async function generer(champ: 'titre' | 'description') {
+    const sujet = (titreNeuf.trim() || sousTitreNeuf.trim()).slice(0, 400);
+    if (sujet.length < 3) {
+      setErreur('Écris d’abord un mot sur le sujet : l’IA part de là.');
+      return;
+    }
+    setEcrit(champ);
+    setErreur(null);
+    try {
+      const p = await appel<{ titre: string; description: string }>('/ecole/ia/titre', {
+        methode: 'POST',
+        corps: { sujet },
+      });
+      if (champ === 'titre' && p.titre) setTitreNeuf(p.titre.slice(0, 128));
+      if (champ === 'description' && p.description) setSousTitreNeuf(p.description.slice(0, 300));
+    } catch (e) {
+      setErreur(messageDe(e));
+    } finally {
+      setEcrit(null);
+    }
+  }
 
   async function creerVraiment() {
     const titre = titreNeuf.trim();
@@ -74,7 +111,7 @@ export function ListeCours({
     try {
       const c = await appel<{ id: string }>('/ecole/cours', {
         methode: 'POST',
-        corps: { titre },
+        corps: { titre, ...(sousTitreNeuf.trim() ? { sousTitre: sousTitreNeuf.trim() } : {}) },
       });
       router.push(`/academie/formations/${c.id}`);
     } catch (e) {
@@ -120,65 +157,14 @@ export function ListeCours({
         </p>
         <button
           type="button"
-          onClick={() => (ouvrirCreation ? setOuvrirCreation(false) : creer())}
+          onClick={creer}
           disabled={occupe}
-          aria-expanded={ouvrirCreation}
-          aria-controls="creer-formation"
           className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-base font-bold text-white shadow-sm transition disabled:opacity-60"
           style={{ backgroundColor: VERT.fonce }}
         >
           <span aria-hidden="true">+</span> Nouvelle formation
         </button>
       </div>
-
-      {/* ---------------------------------------- créer : une ligne, sur place */}
-      {ouvrirCreation ? (
-        <div
-          id="creer-formation"
-          className="mb-5 rounded-2xl border-2 bg-white p-4 sm:p-5"
-          style={{ borderColor: VERT.bord }}
-        >
-          <label className="grid gap-1.5 text-sm font-bold" style={{ color: VERT.texte }}>
-            Titre de la formation
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                autoFocus
-                value={titreNeuf}
-                onChange={(e) => setTitreNeuf(e.target.value)}
-                maxLength={128}
-                placeholder="Community manager, niveau essentiel"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') void creerVraiment();
-                  if (e.key === 'Escape') setOuvrirCreation(false);
-                }}
-                className="min-w-0 flex-1 rounded-xl border-2 px-3 py-2 text-[15px] font-normal focus:outline-none"
-                style={{ borderColor: VERT.bord, color: VERT.encre }}
-              />
-              <button
-                type="button"
-                onClick={() => void creerVraiment()}
-                disabled={occupe}
-                className="rounded-xl px-5 py-2 text-sm font-extrabold text-white disabled:opacity-60"
-                style={{ backgroundColor: VERT.fonce }}
-              >
-                {occupe ? 'Création…' : 'Ajouter'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setOuvrirCreation(false)}
-                className="rounded-xl border-2 bg-white px-4 py-2 text-sm font-extrabold"
-                style={{ borderColor: VERT.bord, color: VERT.texte }}
-              >
-                Annuler
-              </button>
-            </div>
-          </label>
-          <p className="mt-2 text-sm font-normal" style={{ color: VERT.sourdine }}>
-            Le titre suffit. Le contenu, le prix, la description et le reste se règlent ensuite,
-            dans la formation.
-          </p>
-        </div>
-      ) : null}
 
       {cours.length ? (
         <div className="mb-5 flex flex-wrap gap-2">
@@ -359,6 +345,106 @@ export function ListeCours({
         </ul>
       )}
 
+      {/* ------------------------------------------------- créer une formation
+          Le voile s'aligne EN HAUT et la carte plafonne à 90 % de la hauteur :
+          sur un petit écran, c'est la carte qui défile, et « Ajouter » reste
+          toujours atteignable. Voir le grand commentaire en tête de fichier. */}
+      {ouvrirCreation ? (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ajouter une formation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setOuvrirCreation(false);
+          }}
+        >
+          <div className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6">
+            <h2 className="text-xl font-extrabold tracking-tight" style={{ color: VERT.encre }}>
+              Ajouter une formation
+            </h2>
+
+            <div className="mt-5 grid gap-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="titre-neuf" className="text-sm font-bold" style={{ color: VERT.texte }}>
+                  Titre
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void generer('titre')}
+                  disabled={ecrit !== null || occupe}
+                  className="rounded-lg border-2 px-2.5 py-1 text-xs font-bold disabled:opacity-60"
+                  style={{ borderColor: VERT.bord, color: VERT.fonce }}
+                >
+                  {ecrit === 'titre' ? 'Écriture…' : 'Générer'}
+                </button>
+              </div>
+              <input
+                id="titre-neuf"
+                autoFocus
+                value={titreNeuf}
+                onChange={(e) => setTitreNeuf(e.target.value)}
+                maxLength={128}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void creerVraiment();
+                  if (e.key === 'Escape') setOuvrirCreation(false);
+                }}
+                className="rounded-xl border-2 px-3 py-2 text-[15px] focus:outline-none"
+                style={{ borderColor: VERT.bord, color: VERT.encre }}
+              />
+            </div>
+
+            <div className="mt-4 grid gap-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="sous-titre-neuf" className="text-sm font-bold" style={{ color: VERT.texte }}>
+                  Description courte
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void generer('description')}
+                  disabled={ecrit !== null || occupe}
+                  className="rounded-lg border-2 px-2.5 py-1 text-xs font-bold disabled:opacity-60"
+                  style={{ borderColor: VERT.bord, color: VERT.fonce }}
+                >
+                  {ecrit === 'description' ? 'Écriture…' : 'Générer'}
+                </button>
+              </div>
+              <textarea
+                id="sous-titre-neuf"
+                rows={2}
+                value={sousTitreNeuf}
+                onChange={(e) => setSousTitreNeuf(e.target.value)}
+                maxLength={300}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setOuvrirCreation(false);
+                }}
+                className="rounded-xl border-2 px-3 py-2 text-[15px] focus:outline-none"
+                style={{ borderColor: VERT.bord, color: VERT.encre }}
+              />
+            </div>
+
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setOuvrirCreation(false)}
+                className="rounded-xl border-2 bg-white px-4 py-2 text-sm font-extrabold"
+                style={{ borderColor: VERT.bord, color: VERT.texte }}
+              >
+                Fermer
+              </button>
+              <button
+                type="button"
+                onClick={() => void creerVraiment()}
+                disabled={occupe}
+                className="rounded-xl px-5 py-2 text-sm font-extrabold text-white disabled:opacity-60"
+                style={{ backgroundColor: VERT.fonce }}
+              >
+                {occupe ? 'Création…' : 'Ajouter'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
