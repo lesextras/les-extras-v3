@@ -789,15 +789,15 @@ export default async function LandingPage() {
                 <div>
                   <span className="eyebrow">
                     <HeartHandshake className="size-3.5" />
-                    L’association qui porte Les Extras
+                    ADéPA porte Les Extras
                   </span>
                   <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                    Derrière le réseau, il y a l’ADéPA.
+                    Derrière le réseau, il y a ADéPA.
                   </h2>
                   <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
                     Association éducative de Melun, en Seine-et-Marne. Elle agit pour l’insertion
                     des enfants, des adolescents et des familles par l’éducation, l’animation et la
-                    prévention. Les Extras est l’un de ses dispositifs — c’est ce qui explique les
+                    prévention. Les Extras est l’un de ses dispositifs, et c’est ce qui explique les
                     0 % de commission.
                   </p>
                   <ul className="mt-6 space-y-2.5">
@@ -820,7 +820,7 @@ export default async function LandingPage() {
                   {[
                     {
                       icone: BookOpen,
-                      titre: 'Découvrir l’association',
+                      titre: 'Découvrir ADéPA',
                       texte: 'Son histoire, ses actions, ce qu’elle défend.',
                       href: 'https://adepa77.fr/notre-histoire/',
                     },
@@ -833,7 +833,7 @@ export default async function LandingPage() {
                     {
                       icone: Users,
                       titre: 'Rejoindre l’équipe',
-                      texte: 'Bénévole, intervenant, formateur : il y a de la place.',
+                      texte: 'Bénévole, intervenant ou formateur, il y a de la place.',
                       href: 'https://adepa77.fr/rejoignez-nous/',
                     },
                   ].map((porte) => {
