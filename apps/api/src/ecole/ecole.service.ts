@@ -1781,19 +1781,35 @@ export class EcoleService implements OnModuleInit {
 
       const quelleCle = this.moteur.moteur === 'gemini' ? 'GEMINI_API_KEY' : 'ANTHROPIC_API_KEY';
       const quelModele = this.moteur.moteur === 'gemini' ? 'GEMINI_MODEL' : 'ANTHROPIC_MODEL';
-      if (/401|403|API key not valid|PERMISSION_DENIED|unauthor|invalid x-api-key/i.test(detail)) {
+
+      // ⚠ NE PAS CLASSER SUR LE DÉTAIL ENTIER (09/09/2026).
+      //
+      // Quand tous les moteurs tombent, `cause` contient « Gemini : … |
+      // Claude : … ». Le refus de Claude (« credit balance too low ») contient
+      // le mot « credit » : il attrapait le filtre « quota » et l'écran
+      // annonçait un quota atteint — alors que la vraie panne, celle du moteur
+      // qu'on essaie EN PREMIER, restait invisible. On classe donc sur la part
+      // de Gemini quand elle existe, et on montre le détail complet : à ce
+      // stade, savoir pourquoi vaut mieux qu'une phrase ronde.
+      const partGemini = /Gemini\s*:/.test(detail)
+        ? detail.slice(detail.indexOf('Gemini'), detail.indexOf('| Claude') > 0 ? detail.indexOf('| Claude') : undefined)
+        : detail;
+      const aClasser = partGemini || detail;
+      const suffixe = ` (détail : ${detail.slice(0, 220)})`;
+
+      if (/401|403|API key not valid|PERMISSION_DENIED|unauthor|invalid x-api-key/i.test(aClasser)) {
         throw new ServiceUnavailableException(
-          `La clé du moteur de rédaction est refusée. Recopie ${quelleCle} en entier dans la configuration du serveur, sans espace ni retour à la ligne.`,
+          `La clé du moteur de rédaction est refusée. Recopie ${quelleCle} en entier dans la configuration du serveur, sans espace ni retour à la ligne.${suffixe}`,
         );
       }
-      if (/quota|RESOURCE_EXHAUSTED|429|rate.?limit|billing|credit|402/i.test(detail)) {
+      if (/quota|RESOURCE_EXHAUSTED|429|rate.?limit|billing|credit|402/i.test(aClasser)) {
         throw new ServiceUnavailableException(
-          "Le moteur de rédaction a atteint son quota. Réessaie plus tard, ou recharge le compte du modèle.",
+          `Le moteur de rédaction a atteint son quota. Réessaie plus tard, ou recharge le compte du modèle.${suffixe}`,
         );
       }
-      if (/404|NOT_FOUND|not_found|model/i.test(detail)) {
+      if (/404|NOT_FOUND|not_found|model/i.test(aClasser)) {
         throw new ServiceUnavailableException(
-          `Le modèle demandé n'existe pas. Vérifie ${quelModele} dans la configuration du serveur.`,
+          `Le modèle demandé n'existe pas. Vérifie ${quelModele} dans la configuration du serveur.${suffixe}`,
         );
       }
       throw new ServiceUnavailableException(
