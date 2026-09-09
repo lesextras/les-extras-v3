@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { appel } from '../../_client';
 import { CARTE, Encart } from '../../_ui';
-import type { EtatStripe } from './_types';
+import { euros, type EtatStripe } from './_types';
 
 /**
  * LE COMPTE D'ENCAISSEMENT DE L'ASSOCIATION.
@@ -104,15 +104,41 @@ export function Encaissement({ etat }: { etat: EtatStripe | null }) {
         ) : null}
       </div>
 
+      {pret && etat?.exemple ? (
+        <div className="mt-4 rounded-xl bg-[#F5F4FC] p-4 text-sm leading-relaxed text-[#3B3A66]">
+          <p className="font-extrabold text-[#1D1B5C]">Sur une vente de 100 €</p>
+          <ul className="mt-2 grid gap-1">
+            <li className="flex items-center justify-between gap-3">
+              <span>Frais du prestataire de paiement</span>
+              <span className="font-bold tabular-nums">
+                {euros(etat.exemple.fraisPrestataireCents)}
+              </span>
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Part de la plateforme</span>
+              <span className="font-bold tabular-nums">
+                {euros(etat.exemple.partPlateformeCents)}
+              </span>
+            </li>
+            <li className="flex items-center justify-between gap-3 border-t border-[#D9D6EE] pt-1 font-extrabold text-[#0F5F3E]">
+              <span>Versé à l&apos;association</span>
+              <span className="tabular-nums">{euros(etat.exemple.verseCents)}</span>
+            </li>
+          </ul>
+        </div>
+      ) : null}
+
       <p className="mt-3 text-xs leading-relaxed text-[#6B6A8A]">
         Le dossier se remplit sur les pages de Stripe : pièce d&apos;identité, IBAN, représentant
         légal. Rien de tout cela ne transite par cette application, et aucun mot de passe ne se
         tape ici.
-        {pret && (etat?.commissionVentePourcent ?? 0) === 0 ? (
+        {(etat?.commissionVentePourcent ?? 0) === 0 ? (
           <>
             {' '}
-            Aucune part n&apos;est retenue par la plateforme sur ces ventes ; les frais du
-            prestataire de paiement restent à sa charge.
+            La plateforme ne prend aucune part sur ces ventes : elle ne retient que ce que le
+            prestataire de paiement lui facture — 1,5 % plus 25 centimes, le tarif standard pour
+            une carte européenne. Une carte non européenne coûte un peu plus cher : cet écart-là
+            reste à la charge de la plateforme.
           </>
         ) : null}
       </p>

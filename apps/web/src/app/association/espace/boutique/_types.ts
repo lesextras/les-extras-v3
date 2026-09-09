@@ -77,6 +77,13 @@ export interface EtatStripe {
   paiementsActifs: boolean;
   aFournir: string[];
   commissionVentePourcent: number;
+  /** Ce qui serait retenu sur une vente de 100 €, pour l'expliquer sans jargon. */
+  exemple?: {
+    montantCents: number;
+    fraisPrestataireCents: number;
+    partPlateformeCents: number;
+    verseCents: number;
+  };
 }
 
 export const LIBELLE_STATUT_COMMANDE: Record<StatutCommande, string> = {
