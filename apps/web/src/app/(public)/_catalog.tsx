@@ -148,10 +148,14 @@ function CarteCatalogue({ item }: { item: CatalogItem }) {
                 <span className="truncate">{organisme}</span>
               </p>
             ) : null}
+            {/* « Se déplace » et pas seulement le nom du territoire : sans le
+                verbe, un directeur lit une adresse — le lieu où l'atelier se
+                tiendrait — alors que c'est l'inverse qu'on lui dit. En
+                présentiel, c'est l'intervenant qui vient à lui. */}
             {ville ? (
-              <p className="flex items-center gap-1.5">
-                <MapPin className="size-3.5 shrink-0" />
-                <span className="truncate">{ville}</span>
+              <p className="flex items-center gap-1.5 font-medium text-foreground">
+                <MapPin className="size-3.5 shrink-0 text-primary" />
+                <span className="truncate">Se déplace : {ville}</span>
               </p>
             ) : null}
             {(item.publicTargets?.length ?? 0) > 0 ? (
