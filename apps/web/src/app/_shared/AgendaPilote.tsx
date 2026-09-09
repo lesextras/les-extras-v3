@@ -53,6 +53,12 @@ export interface EvenementAgenda {
   par: string | null;
 }
 
+export interface PersonneAgenda {
+  nom: string;
+  detail: string | null;
+  groupe: 'EQUIPE' | 'CONTACT';
+}
+
 interface Props {
   /** La teinte de l'espace : vert bouteille pour l'académie, indigo pour l'association. */
   teinte: Teinte;
@@ -135,6 +141,23 @@ function pourChamp(d: Date) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+function brouillonVide(): Brouillon {
+  const n = new Date();
+  n.setMinutes(0, 0, 0);
+  return {
+    id: null,
+    titre: '',
+    categorie: 'RENDEZ_VOUS',
+    debut: pourChamp(n),
+    fin: '',
+    journeeEntiere: false,
+    lieu: '',
+    lien: '',
+    participants: '',
+    description: '',
+  };
+}
+
 /* ------------------------------------------------------------ habillage */
 
 /**
@@ -178,6 +201,12 @@ export default function AgendaPilote({ teinte, appel }: Props) {
   const [jourOuvert, setJourOuvert] = useState<string | null>(null);
   const [formulaire, setFormulaire] = useState<Brouillon | null>(null);
   const zoneJour = useRef<HTMLDivElement | null>(null);
+  /* Le rendez-vous qu'on tient pendant le glissé. Une référence et non un
+     état : le changer ne doit pas re-rendre la grille quarante fois pendant
+     qu'on traverse le mois. */
+  const glisse = useRef<EvenementAgenda | null>(null);
+  const [surZone, setSurZone] = useState<string | null>(null);
+  const [personnes, setPersonnes] = useState<PersonneAgenda[]>([]);
 
   const cases = useMemo(() => grilleDuMois(mois), [mois]);
 
@@ -204,6 +233,20 @@ export default function AgendaPilote({ teinte, appel }: Props) {
     void charger();
   }, [charger]);
 
+  // Qui on peut convier : l'équipe du compte, et le répertoire de contacts
+  // quand il y en a un. Chargé une fois, pas à chaque changement de mois.
+  useEffect(() => {
+    let vivant = true;
+    appel<PersonneAgenda[]>('/agenda/personnes')
+      .then((l) => {
+        if (vivant && Array.isArray(l)) setPersonnes(l);
+      })
+      .catch(() => undefined);
+    return () => {
+      vivant = false;
+    };
+  }, [appel]);
+
   /** Les événements rangés par jour : la grille n'a plus qu'à piocher. */
   const parJour = useMemo(() => {
     const carte = new Map<string, EvenementAgenda[]>();
@@ -225,9 +268,21 @@ export default function AgendaPilote({ teinte, appel }: Props) {
       .slice(0, 60);
   }, [evenements]);
 
+  /**
+   * CLIQUER UN JOUR, C'EST DÉJÀ COMMENCER À ÉCRIRE.
+   *
+   * Le clic ouvrait le détail du jour, et il fallait un second clic pour
+   * atteindre le formulaire. On ouvre les deux d'un coup : le jour à gauche,
+   * la saisie déjà datée à droite. Qui voulait seulement regarder n'a qu'à
+   * lire ; qui voulait poser un rendez-vous a le curseur au bon endroit.
+   */
   const ouvrirJour = (k: string) => {
     setJourOuvert(k);
-    setFormulaire(null);
+    const j = new Date(`${k}T12:00:00`);
+    j.setHours(9, 0, 0, 0);
+    setFormulaire((f) =>
+      f && f.id ? f : { ...brouillonVide(), debut: pourChamp(j) },
+    );
     window.setTimeout(() => zoneJour.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
   };
 
@@ -235,18 +290,7 @@ export default function AgendaPilote({ teinte, appel }: Props) {
     const base = jour ? new Date(jour) : new Date();
     if (jour) base.setHours(9, 0, 0, 0);
     else base.setMinutes(0, 0, 0);
-    setFormulaire({
-      id: null,
-      titre: '',
-      categorie: 'RENDEZ_VOUS',
-      debut: pourChamp(base),
-      fin: '',
-      journeeEntiere: false,
-      lieu: '',
-      lien: '',
-      participants: '',
-      description: '',
-    });
+    setFormulaire({ ...brouillonVide(), debut: pourChamp(base) });
     window.setTimeout(() => zoneJour.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
   };
 
@@ -284,6 +328,48 @@ export default function AgendaPilote({ teinte, appel }: Props) {
     if (b.id) await appel(`/agenda/${b.id}`, { method: 'PATCH', body: corps });
     else await appel('/agenda', { method: 'POST', body: corps });
     setFormulaire(null);
+    await charger();
+  };
+
+  /**
+   * DÉPOSER UN RENDEZ-VOUS SUR UN AUTRE JOUR.
+   *
+   * On garde l'heure et la durée : déplacer une réunion de mardi à jeudi ne
+   * veut pas dire la remettre à neuf heures. Et on écrit tout de suite dans la
+   * grille avant que l'API réponde — sinon le rendez-vous saute une seconde à
+   * son ancienne place, ce qui donne l'impression que le geste a raté.
+   */
+  const deplacer = async (jour: Date) => {
+    const e = glisse.current;
+    glisse.current = null;
+    if (!e || !e.rendezVousId) return;
+
+    const ancien = new Date(e.debut);
+    const nouveauDebut = new Date(jour);
+    nouveauDebut.setHours(ancien.getHours(), ancien.getMinutes(), 0, 0);
+    const ecart = nouveauDebut.getTime() - ancien.getTime();
+    if (ecart === 0) return;
+    const nouvelleFin = e.fin ? new Date(new Date(e.fin).getTime() + ecart) : null;
+
+    setEvenements((liste) =>
+      liste.map((x) =>
+        x.id === e.id
+          ? { ...x, debut: nouveauDebut.toISOString(), fin: nouvelleFin ? nouvelleFin.toISOString() : null }
+          : x,
+      ),
+    );
+
+    try {
+      await appel(`/agenda/${e.rendezVousId}`, {
+        method: 'PATCH',
+        body: {
+          debut: nouveauDebut.toISOString(),
+          ...(nouvelleFin ? { fin: nouvelleFin.toISOString() } : {}),
+        },
+      });
+    } catch (err) {
+      setErreur(err instanceof Error ? err.message : 'Le déplacement n’a pas été enregistré.');
+    }
     await charger();
   };
 
@@ -410,17 +496,42 @@ export default function AgendaPilote({ teinte, appel }: Props) {
               const horsMois = jour.getMonth() !== mois.getMonth();
               const estAujourdhui = k === aujourdhui;
               const choisi = k === jourOuvert;
+              const survole = k === surZone;
               return (
-                <button
+                /* La case n'est plus un bouton : elle doit accueillir un
+                   rendez-vous qu'on lui dépose, et un bouton n'est pas une
+                   zone de dépôt fiable. Elle garde le rôle, le focus clavier
+                   et Entrée / Espace, donc rien ne se perd. */
+                <div
                   key={k}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => ouvrirJour(k)}
+                  onKeyDown={(ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                      ev.preventDefault();
+                      ouvrirJour(k);
+                    }
+                  }}
+                  onDragOver={(ev) => {
+                    if (!glisse.current) return;
+                    ev.preventDefault();
+                    ev.dataTransfer.dropEffect = 'move';
+                    if (surZone !== k) setSurZone(k);
+                  }}
+                  onDragLeave={() => setSurZone((v) => (v === k ? null : v))}
+                  onDrop={(ev) => {
+                    ev.preventDefault();
+                    setSurZone(null);
+                    void deplacer(jour);
+                  }}
                   aria-label={`${jourLong(jour)} — ${duJour.length} élément${duJour.length > 1 ? 's' : ''}`}
                   aria-pressed={choisi}
-                  className="min-h-[104px] border-b border-r p-1.5 text-left align-top transition hover:bg-black/[0.03] focus:outline-none focus:ring-2 focus:ring-inset"
+                  className="min-h-[104px] cursor-pointer border-b border-r p-1.5 text-left align-top transition hover:bg-black/[0.03] focus:outline-none focus:ring-2 focus:ring-inset"
                   style={{
                     borderColor: t.bord,
-                    background: choisi ? t.clair : horsMois ? '#FAFAFA' : '#fff',
+                    background: survole ? t.clair : choisi ? t.clair : horsMois ? '#FAFAFA' : '#fff',
+                    boxShadow: survole ? `inset 0 0 0 2px ${t.plein}` : undefined,
                     opacity: horsMois ? 0.55 : 1,
                   }}
                 >
@@ -440,9 +551,28 @@ export default function AgendaPilote({ teinte, appel }: Props) {
                       return (
                         <span
                           key={e.id}
-                          className="block truncate rounded-md border px-1.5 py-0.5 text-[11px] font-bold leading-4"
+                          /* Seul un rendez-vous se déplace : les autres dates
+                             appartiennent à leur écran d'origine, et les
+                             tirer ici ne changerait rien là-bas. */
+                          draggable={e.modifiable}
+                          onDragStart={(ev) => {
+                            glisse.current = e;
+                            ev.dataTransfer.effectAllowed = 'move';
+                            ev.dataTransfer.setData('text/plain', e.id);
+                          }}
+                          onDragEnd={() => {
+                            glisse.current = null;
+                            setSurZone(null);
+                          }}
+                          onClick={(ev) => {
+                            if (!e.modifiable) return;
+                            ev.stopPropagation();
+                            ouvrirJour(k);
+                            editer(e);
+                          }}
+                          className={`block truncate rounded-md border px-1.5 py-0.5 text-[11px] font-bold leading-4 ${e.modifiable ? 'cursor-grab active:cursor-grabbing' : ''}`}
                           style={{ background: s.fond, color: s.texte, borderColor: s.bord }}
-                          title={e.titre}
+                          title={e.detail ? `${e.titre} — ${e.detail}` : e.titre}
                         >
                           {e.journeeEntiere ? '' : `${heure(e.debut)} `}
                           {e.titre}
@@ -455,7 +585,7 @@ export default function AgendaPilote({ teinte, appel }: Props) {
                       </span>
                     ) : null}
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -512,6 +642,7 @@ export default function AgendaPilote({ teinte, appel }: Props) {
         {formulaire ? (
           <Formulaire
             t={t}
+            personnes={personnes}
             brouillon={formulaire}
             onChange={setFormulaire}
             onAnnuler={() => setFormulaire(null)}
@@ -644,6 +775,7 @@ interface Brouillon {
 
 function Formulaire({
   t,
+  personnes,
   brouillon,
   onChange,
   onAnnuler,
@@ -651,6 +783,7 @@ function Formulaire({
   onSupprimer,
 }: {
   t: Classes;
+  personnes: PersonneAgenda[];
   brouillon: Brouillon;
   onChange: (b: Brouillon) => void;
   onAnnuler: () => void;
@@ -783,17 +916,12 @@ function Formulaire({
         />
       </div>
 
-      <div>
-        <label className={label} style={{ color: t.encre }} htmlFor="rdv-participants">
-          Personnes attendues <span className="font-normal opacity-70">(séparées par des virgules)</span>
-        </label>
-        <input
-          id="rdv-participants"
-          className={t.champ}
-          value={brouillon.participants}
-          onChange={(e) => maj({ participants: e.target.value })}
-        />
-      </div>
+      <ChoixPersonnes
+        t={t}
+        personnes={personnes}
+        valeur={brouillon.participants}
+        onChange={(v) => maj({ participants: v })}
+      />
 
       <div>
         <label className={label} style={{ color: t.encre }} htmlFor="rdv-description">
@@ -842,5 +970,106 @@ function Formulaire({
         ) : null}
       </div>
     </form>
+  );
+}
+
+/**
+ * QUI EST ATTENDU.
+ *
+ * Le champ était une ligne de texte à virgules : personne n'écrit deux fois le
+ * même nom de la même façon, et « Mme Dubois », « dubois », « Christine D. »
+ * finissaient par désigner trois personnes différentes dans une même semaine.
+ *
+ * On propose donc ce que le compte connaît déjà — l'équipe et, pour une
+ * association, son répertoire de contacts — en deux groupes séparés : convier
+ * un collègue et convier un partenaire ne sont pas le même geste. La saisie
+ * libre reste ouverte à côté, parce qu'on convie aussi la mairie, un parent,
+ * ou quelqu'un qui n'aura jamais de compte ici.
+ *
+ * La valeur reste une chaîne à virgules : c'est le format que le rendez-vous
+ * stocke, et le traduire dans les deux sens à chaque frappe coûterait plus que
+ * ce que ça rapporte.
+ */
+function ChoixPersonnes({
+  t,
+  personnes,
+  valeur,
+  onChange,
+}: {
+  t: Classes;
+  personnes: PersonneAgenda[];
+  valeur: string;
+  onChange: (v: string) => void;
+}) {
+  const choisis = valeur
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const basculer = (nom: string) => {
+    const dedans = choisis.some((c) => c.toLowerCase() === nom.toLowerCase());
+    const suite = dedans
+      ? choisis.filter((c) => c.toLowerCase() !== nom.toLowerCase())
+      : [...choisis, nom];
+    onChange(suite.join(', '));
+  };
+
+  const groupes: Array<{ cle: PersonneAgenda['groupe']; titre: string }> = [
+    { cle: 'EQUIPE', titre: 'Mon équipe' },
+    { cle: 'CONTACT', titre: 'Mes contacts' },
+  ];
+
+  return (
+    <div>
+      <span className="mb-1 block text-[13px] font-extrabold" style={{ color: t.encre }}>
+        Qui est attendu
+      </span>
+
+      {groupes.map((g) => {
+        const liste = personnes.filter((p) => p.groupe === g.cle);
+        if (!liste.length) return null;
+        return (
+          <div key={g.cle} className="mb-2">
+            <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide" style={{ color: t.encre, opacity: 0.6 }}>
+              {g.titre}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {liste.map((p) => {
+                const actif = choisis.some((c) => c.toLowerCase() === p.nom.toLowerCase());
+                return (
+                  <button
+                    key={`${g.cle}-${p.nom}`}
+                    type="button"
+                    onClick={() => basculer(p.nom)}
+                    aria-pressed={actif}
+                    title={p.detail ?? undefined}
+                    className="rounded-full border px-2.5 py-1 text-[12px] font-bold transition"
+                    style={
+                      actif
+                        ? { background: t.plein, borderColor: t.plein, color: '#fff' }
+                        : { background: '#fff', borderColor: t.bord, color: t.encre }
+                    }
+                  >
+                    {actif ? '✓ ' : ''}
+                    {p.nom}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      <label className="mb-1 mt-2 block text-[12px] font-bold" style={{ color: t.encre, opacity: 0.75 }} htmlFor="rdv-participants">
+        Ou quelqu’un d’autre <span className="font-normal">(séparez par des virgules)</span>
+      </label>
+      <input
+        id="rdv-participants"
+        className={t.champ}
+        value={valeur}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="La mairie, les parents de Léa…"
+      />
+    </div>
   );
 }
