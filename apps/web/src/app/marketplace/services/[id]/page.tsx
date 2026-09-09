@@ -13,6 +13,7 @@ import { Star, Clock, Users, MapPin, Package, Eye, BadgeCheck } from "lucide-rea
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { BookServiceModal } from "../../../_shared/modals/BookServiceModal";
 import { RequestQuoteModal } from "../../../_shared/modals/RequestQuoteModal";
+import { EncaisserAtelier } from "../../../_shared/EncaisserAtelier";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -101,6 +102,8 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
   if (!service) notFound();
 
   const isEstablishment = session.account.type === "ESTABLISHMENT";
+  /** La fiche m'appartient : je la règle, je ne l'achète pas. */
+  const estMaFiche = service.account?.id === session.account.id;
   const images = service.images ?? [];
   const publics = service.publicTargets?.length
     ? service.publicTargets
@@ -359,6 +362,13 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
               )}
             </CardContent>
           </Card>
+
+          {/* L'intervenant sur SA fiche : le réglage du règlement immédiat.
+              Nulle part ailleurs — on ne montre pas à un acheteur les réglages
+              d'encaissement de celui à qui il achète. */}
+          {estMaFiche ? (
+            <EncaisserAtelier serviceId={service.id} accountId={session.account.id} />
+          ) : null}
 
           {/* Intervenant */}
           {service.account ? (
