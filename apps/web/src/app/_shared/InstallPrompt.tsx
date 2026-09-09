@@ -92,6 +92,8 @@ export function InstallPrompt() {
   const [voie, setVoie] = useState<'navigateur' | 'iphone' | 'manuel'>('navigateur');
   /** Le navigateur a-t-il parlé ? Une référence, car le minuteur ne verrait pas l'état. */
   const recu = useRef(false);
+  /** L'application est-elle déjà installée sur cette machine ? */
+  const dejaLa = useRef(false);
 
   useEffect(() => {
     setNom(marque(window.location.hostname));
@@ -99,9 +101,32 @@ export function InstallPrompt() {
     // Déjà installé : rien à proposer.
     if (window.matchMedia?.('(display-mode: standalone)').matches) return;
 
+    // Déjà installée sur cette machine, mais ouverte dans un onglet. Le
+    // navigateur ne proposera plus rien, et il a raison : l'icône existe déjà.
+    // Lui répéter d'installer n'a aucun sens, on se tait.
+    let annule = false;
+    const liees = (
+      navigator as Navigator & {
+        getInstalledRelatedApps?: () => Promise<unknown[]>;
+      }
+    ).getInstalledRelatedApps;
+    if (liees) {
+      void liees
+        .call(navigator)
+        .then((apps) => {
+          if (!annule && Array.isArray(apps) && apps.length > 0) dejaLa.current = true;
+        })
+        .catch(() => undefined);
+    }
+
     const surProposition = (e: Event) => {
       e.preventDefault();
       recu.current = true;
+      // ⚠ IL PEUT PARLER APRÈS COUP, ET C'EST FRÉQUENT. Chrome attend parfois
+      // plus de douze secondes avant d'annoncer qu'il sait installer. On avait
+      // alors déjà basculé sur les gestes à faire à la main, et le bouton
+      // n'apparaissait plus de la visite — alors qu'un seul clic suffisait.
+      setVoie('navigateur');
       setEvenement(e as EvenementInstallation);
       // Douze secondes : le temps d'arriver, de regarder, de comprendre où on
       // est. Une bannière qui saute à la figure au premier pixel ne s'installe
@@ -120,7 +145,7 @@ export function InstallPrompt() {
     // Douze secondes plus tard, si le navigateur n'a rien dit, c'est qu'il ne
     // dira rien : on ouvre nous-mêmes, avec les gestes à faire.
     const attente = window.setTimeout(() => {
-      if (recu.current) return;
+      if (recu.current || dejaLa.current) return;
       setVoie(surIphone() ? 'iphone' : 'manuel');
       setEtat('ouvert');
     }, 12_000);
@@ -128,6 +153,7 @@ export function InstallPrompt() {
     return () => {
       window.removeEventListener('beforeinstallprompt', surProposition);
       window.removeEventListener('appinstalled', surInstallation);
+      annule = true;
       if (attente) window.clearTimeout(attente);
     };
   }, []);
