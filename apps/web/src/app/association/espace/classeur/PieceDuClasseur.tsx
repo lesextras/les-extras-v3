@@ -136,8 +136,14 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
       {ouvert ? (
         <form onSubmit={enregistrer} className="mt-4 grid gap-3 border-t border-[#E6E4F3] pt-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-            <span className="font-bold">Fichiers (PDF, JPEG, PNG ou WEBP)</span>
-            <input ref={fichierRef} type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" className="text-sm" />
+            <span className="font-bold">Fichiers (PDF, Word, JPEG, PNG ou WEBP)</span>
+            <input
+              ref={fichierRef}
+              type="file"
+              multiple
+              accept="application/pdf,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
+              className="text-sm"
+            />
             <span className="text-xs text-[#6B6A8A]">
               Tu peux en déposer plusieurs : le premier prend la place du papier, les autres sont rangés dans « Mes documents ».
             </span>
