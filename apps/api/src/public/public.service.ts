@@ -359,9 +359,22 @@ export class PublicService {
   }
 
   /**
-   * Mises en avant de la page d'accueil : les dix ateliers et les dix formations
-   * les mieux notés. À défaut d'avis — cas d'un catalogue jeune — on classe par
-   * mise en avant puis par consultations, jamais au hasard.
+   * Mises en avant de la page d'accueil : les dernières fiches publiées.
+   *
+   * ⚠ L'ORDRE A CHANGÉ LE 9/09/2026, ET C'EST VOULU. On classait par note, puis
+   * par mise en avant, puis par consultations. Trois classements qui ont le même
+   * défaut : ils figent la vitrine. Une fiche notée quatre étoiles il y a six
+   * mois reste devant une fiche publiée hier, qui n'a par construction ni avis
+   * ni consultations. Résultat, l'accueil montrait toujours les mêmes, et
+   * publier une fiche ne se voyait nulle part.
+   *
+   * On classe donc par date, la plus récente d'abord. Une vitrine dit ce qui
+   * est nouveau ; le mérite se juge sur la page du catalogue, qui garde ses
+   * tris.
+   *
+   * (Faute de colonne « publiée le », c'est la date de création de la fiche qui
+   * fait foi. Elle en est très proche : une fiche se publie peu après avoir été
+   * écrite.)
    */
   async highlights() {
     // Le bloc « ateliers » de l'accueil prenait TOUTES les fiches publiées,
@@ -375,15 +388,17 @@ export class PublicService {
         ...VITRINE,
         category: { not: ServiceCategory.FORMATION },
       },
-      orderBy: [{ featured: 'desc' }, { views: 'desc' }, { createdAt: 'desc' }],
-      take: 30,
+      orderBy: [{ createdAt: 'desc' }],
+      take: 10,
       select: PUBLIC_SELECT,
     });
+    // Les notes servent l'affichage des étoiles, plus le classement : elles ne
+    // réordonnent donc plus la liste.
     const notes = await this.noteParService(ateliers.map((a) => a.id));
-    const ateliersNotes = ateliers
-      .map((a) => ({ ...a, ...(notes.get(a.id) ?? { rating: null, reviewsCount: 0 }) }))
-      .sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
-      .slice(0, 10);
+    const ateliersNotes = ateliers.map((a) => ({
+      ...a,
+      ...(notes.get(a.id) ?? { rating: null, reviewsCount: 0 }),
+    }));
 
     // ⚠ ON EN RENVOIE PLUS QUE DIX, ET C'EST VOULU. L'accueil partage ces
     // formations en DEUX rayons, les parcours gratuits de la maison d'un côté
@@ -393,7 +408,7 @@ export class PublicService {
     // remplir ses dix, et la page coupe elle-même ce qu'elle affiche.
     const brutes = await this.prisma.formation.findMany({
       where: { status: 'PUBLISHED' },
-      orderBy: [{ views: 'desc' }, { createdAt: 'desc' }],
+      orderBy: [{ createdAt: 'desc' }],
       take: 60,
       select: FORMATION_CARD_SELECT,
     });
