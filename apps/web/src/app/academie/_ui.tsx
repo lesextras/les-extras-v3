@@ -78,7 +78,11 @@ export function Coque({
         <BarreLaterale compte={compte} />
         <div className="min-w-0">
           <BarreHaut compte={compte} />
-          <main id="main" className="monte mx-auto w-full max-w-[1120px] px-4 py-6 sm:px-8 sm:py-8">
+          {/* ⚠ PAS DE `.monte` ICI : son `transform` faisait de <main> le bloc de
+              référence de tout `position: fixed` écrit dedans, et les fenêtres
+              se retrouvaient enfermées dans la colonne. Les blocs de contenu
+              gardent leur propre `monte-1..6`. Voir `_ecole/Portail.tsx`. */}
+          <main id="main" className="mx-auto w-full max-w-[1120px] px-4 py-6 sm:px-8 sm:py-8">
             {children}
           </main>
           {mentions ? (
