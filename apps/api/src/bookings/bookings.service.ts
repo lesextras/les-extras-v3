@@ -16,8 +16,17 @@ import { CreateTimeEntryDto } from './dto/time-entry.dto';
 import { QueryBookingsDto } from './dto/query-bookings.dto';
 import { numeroSuivant, prefixeAnnee } from '../invoices/numerotation';
 import { Constat, evaluerCreneau, PLAFONDS } from '../planning/conformite-horaire';
+import { FENETRE_ANNULATION_MS } from './fiche-reservation';
 
 /** Transitions autorisées du cycle de vie d'un booking. */
+/**
+ * LA FENÊTRE PENDANT LAQUELLE UNE RÉSERVATION S'ANNULE DEPUIS LA PLATEFORME.
+ *
+ * Quarante-huit heures après la demande. Au-delà, l'annulation existe toujours
+ * — elle se règle simplement entre les deux personnes, comme n'importe quel
+ * engagement pris entre adultes.
+ */
+
 /**
  * LES ÉTATS D'UNE RÉSERVATION, EN FRANÇAIS.
  *
@@ -652,8 +661,50 @@ export class BookingsService {
     });
   }
 
-  /** Annulation : ouverte aux DEUX parties, jusqu'au bout. */
-  cancel(id: string, accountId: string, dto: CancelBookingDto) {
+  /**
+   * ANNULATION.
+   *
+   * Côté INTERVENANT, toujours possible : il peut tomber malade, et une
+   * plateforme qui l'empêcherait de se désister l'obligerait à un mensonge ou
+   * à un abandon silencieux, ce qui est pire.
+   *
+   * Côté DEMANDEUR, quarante-huit heures. Passé ce délai, la personne d'en
+   * face a probablement bloqué sa journée, prévu du matériel, refusé autre
+   * chose : cela ne se défait plus d'un clic dans une interface, cela se dit
+   * de vive voix. Le message de refus donne donc le nom et l'adresse de
+   * l'intervenant, pour que « ce n'est plus possible ici » soit suivi de « et
+   * voici où ».
+   */
+  async cancel(id: string, accountId: string, dto: CancelBookingDto) {
+    const booking = await this.loadForAccount(id, accountId);
+
+    // Le délai de 48 heures vise CELUI QUI FAIT VENIR, jamais celui qui vient.
+    // L'inversion est piégeuse : sur un ATELIER, c'est l'établissement qui
+    // porte la réservation et l'intervenant qui tient la fiche ; sur un
+    // RENFORT, c'est l'inverse — l'établissement publie la mission et c'est
+    // l'intervenant qui porte la réservation en la prenant. Se tromper ici,
+    // c'est enfermer dans le délai celui qui vient dépanner.
+    const cotéAccueil = booking.missionId
+      ? booking.mission?.accountId ?? null
+      : booking.accountId;
+    const cotéIntervenant = booking.missionId
+      ? booking.accountId
+      : booking.service?.accountId ?? null;
+
+    if (cotéAccueil === accountId) {
+      const limite = new Date(booking.createdAt.getTime() + FENETRE_ANNULATION_MS);
+      if (Date.now() > limite.getTime()) {
+        const contact = await this.contactDe(cotéIntervenant);
+        throw new BadRequestException(
+          `Le délai d'annulation de 48 heures est passé. Contactez directement ${
+            contact?.nom ?? "l'intervenant"
+          }${contact?.email ? ` (${contact.email})` : ''}${
+            contact?.telephone ? ` — ${contact.telephone}` : ''
+          } pour convenir de la suite.`,
+        );
+      }
+    }
+
     return this.transition(
       id,
       accountId,
@@ -661,6 +712,21 @@ export class BookingsService {
       { cancelReason: dto.reason },
       'les-deux',
     );
+  }
+
+  /** Les coordonnées d'un compte, pour pouvoir renvoyer vers une personne. */
+  private async contactDe(accountId: string | null) {
+    if (!accountId) return null;
+    const a = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { name: true, contactEmail: true, phone: true, owner: { select: { email: true } } },
+    });
+    if (!a) return null;
+    return {
+      nom: a.name,
+      email: a.contactEmail ?? a.owner?.email ?? null,
+      telephone: a.phone ?? null,
+    };
   }
 
   // ── Pointage : temps travaillé (freelance déclare, établissement valide) ─────
