@@ -787,7 +787,24 @@ export default async function LandingPage() {
             <div className="reflet relative overflow-hidden rounded-3xl border border-border bg-nacre p-7 shadow-card md:p-12">
               <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
                 <div>
-                  <span className="eyebrow">
+                  {/* LE LOGO, ET PAS SEULEMENT LE NOM. Le bloc parlait d'une
+                      association que le visiteur ne reconnaissait nulle part :
+                      son nom était écrit trois fois, sa marque zéro.
+                      Le dessin est posé ici en SVG plutôt qu'en fichier image,
+                      pour une raison de lisibilité : sa partie sombre est en
+                      `currentColor`, donc elle suit la couleur du texte et se
+                      lit sur le fond clair comme sur le fond sombre. Un PNG,
+                      lui, aurait disparu dans l'un des deux. */}
+                  <span
+                    className="mb-5 grid size-14 place-items-center rounded-2xl border border-border bg-background shadow-soft"
+                    aria-hidden
+                  >
+                    <svg viewBox="0 0 160 152" className="size-8 text-foreground" role="presentation" focusable="false">
+                      <path fill="currentColor" d="M79.5 0 133 98h-30.5L79.5 55.5 30 152H0Z" />
+                      <path fill="#EF4E4A" d="M117 124.5h29.5L160 152h-31Z" />
+                    </svg>
+                  </span>
+                  <span className="eyebrow flex w-fit">
                     <HeartHandshake className="size-3.5" />
                     ADéPA porte Les Extras
                   </span>
