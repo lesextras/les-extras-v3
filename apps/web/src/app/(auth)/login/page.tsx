@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-md">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Se connecter</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
