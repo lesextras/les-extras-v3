@@ -42,11 +42,15 @@ const PAGE_CHOIX_CHEMIN = `${PREFIXE_ASSOCIATION}/choisir-le-chemin`;
  * LES PAGES QUI NE SONT DANS AUCUN ESPACE.
  *
  * Un formulaire partagé, la vitrine d'une école en ligne, la page d'un cours,
- * et le cours qu'on suit avec son lien personnel. Elles s'ouvrent sans session,
- * sans barre latérale, et se servent telles quelles : ni réécriture vers un
- * espace, ni redirection vers la connexion.
+ * le cours qu'on suit avec son lien personnel, la boutique d'une association,
+ * et les médias d'une leçon. Elles s'ouvrent sans session, sans barre
+ * latérale, et se servent telles quelles : ni réécriture vers un espace, ni
+ * redirection vers la connexion.
+ *
+ * Oublier d'inscrire ici une adresse publique ne se voit pas tout de suite :
+ * elle part se faire réécrire dans l'espace association et répond 404.
  */
-const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre'];
+const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre', '/boutique', '/medias'];
 
 /** L'administration de Piloter : une seule adresse, sur le domaine de Piloter. */
 const ADMINISTRATION = '/administration';
