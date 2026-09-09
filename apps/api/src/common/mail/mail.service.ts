@@ -380,6 +380,50 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * UNE RESERVATION EST ANNULEE — avec le motif, a celui qui ne l'a pas annulee.
+   *
+   * L'annulation ne partait nulle part : elle ne laissait qu'une notification
+   * dans l'application, ou etait ecrit « est desormais CANCELLED ». Un
+   * intervenant qui avait bloque sa date l'apprenait donc en se connectant,
+   * s'il se connectait, et sans jamais savoir pourquoi. Or le motif etait
+   * OBLIGATOIRE a la saisie : il existait, et personne ne le lisait.
+   *
+   * Le message part a l'autre partie, jamais a celle qui vient d'annuler.
+   */
+  async sendReservationAnnulee(data: {
+    to: string;
+    titre: string;
+    motif: string;
+    parQui: string;
+    date?: Date | string | null;
+    lien: string;
+  }): Promise<void> {
+    const quand = data.date
+      ? new Date(data.date).toLocaleDateString('fr-FR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : null;
+    await this.send(
+      data.to,
+      `Annulation : ${data.titre}`,
+      this.layout(
+        'Une réservation a été annulée',
+        `<b>${echapper(data.titre)}</b>${
+          quand ? `, prévu le <b>${echapper(quand)}</b>,` : ''
+        } vient d'être annulé par <b>${echapper(data.parQui)}</b>.` +
+          `<div style="margin-top:14px;padding:12px;background:#f6f6f4;border-radius:10px"><b>Motif indiqué</b><br>${echapper(
+            data.motif,
+          )}</div>` +
+          `<div style="margin-top:14px">La date se libère de votre côté. Si quelque chose vous semble anormal, répondez à ce message.</div>`,
+        { label: 'Voir la réservation', url: data.lien },
+      ),
+    );
+  }
+
+  /**
    * UNE ECHEANCE A ETE REFUSEE, alerte a l'organisme.
    *
    * L'acces de l'apprenant n'est PAS coupe : une carte expiree n'est pas un
