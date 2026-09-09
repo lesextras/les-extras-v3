@@ -56,6 +56,8 @@ import { AssociationModule } from './association/association.module';
 import { AcademieModule } from './academie/academie.module';
 import { FormulairesModule } from './formulaires/formulaires.module';
 import { EcoleModule } from './ecole/ecole.module';
+import { PaiementsModule } from './paiements/paiements.module';
+import { BoutiqueModule } from './boutique/boutique.module';
 import { AdministrationModule } from './administration/administration.module';
 
 @Module({
@@ -122,6 +124,10 @@ import { AdministrationModule } from './administration/administration.module';
     AcademieModule,
     FormulairesModule,
   EcoleModule,
+  // Le compte d'encaissement de l'organisme : l'école et la boutique s'en
+  // servent toutes les deux pour savoir où doit aller l'argent d'une vente.
+  PaiementsModule,
+  BoutiqueModule,
   AdministrationModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
