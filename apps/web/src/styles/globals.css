@@ -570,3 +570,32 @@
     }
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNE BARRE DE DÉFILEMENT QU'ON VOIT.
+
+   Les systèmes récents masquent la barre horizontale tant qu'on ne fait pas
+   défiler. Sur un tableau plus large que l'écran, plus rien n'indique alors
+   qu'une colonne attend à droite — et c'est justement là que se trouvent les
+   boutons d'action. On la rend permanente, fine et discrète, mais présente.
+
+   `scrollbar-color` couvre Firefox, les pseudo-éléments couvrent les autres.
+   ═════════════════════════════════════════════════════════════════════════ */
+.scrollbar-visible {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+.scrollbar-visible::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 9999px;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground));
+}
