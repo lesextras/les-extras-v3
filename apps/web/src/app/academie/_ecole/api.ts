@@ -64,7 +64,7 @@ export async function deposerMedia(fichier: File): Promise<{ id: string; nom: st
     );
   }
   const media = data as { id: string; nom: string; url: string; taille: number; type: string };
-  // L'API renvoie une adresse relative à elle-même ; le navigateur, lui, passe
-  // toujours par le proxy de même origine.
-  return { ...media, url: `/api/proxy${media.url}` };
+  // Le navigateur ne passe pas par le proxy générique : une vidéo se lit par
+  // tranches, et c'est /medias/<id> qui sait relayer une demande d'intervalle.
+  return { ...media, url: `/medias/${media.id}` };
 }
