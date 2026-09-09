@@ -52,6 +52,14 @@ export interface PieceJointe {
   type: string;
 }
 
+/**
+ * La pile de polices des courriels. Aucune police distante : un @font-face
+ * dans un message est ignoré par la plupart des clients et bloqué par les
+ * autres — on prend celle du système, qui est déjà installée partout.
+ */
+const POLICE =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
 @Injectable()
 export class MailService implements OnModuleDestroy {
   private readonly logger = new Logger(MailService.name);
@@ -266,21 +274,62 @@ export class MailService implements OnModuleDestroy {
     };
   }
 
+  /**
+   * LE GABARIT DES COURRIELS — refonte du 9/09/2026.
+   *
+   * ⚠ CE QUI N'ALLAIT PAS. L'ancien gabarit était une pile de `<div>` avec des
+   * `border-radius` et un `<a>` en `inline-block` : trois choses qu'Outlook
+   * ignore ou casse. Le bouton s'y affichait comme un lien nu, la carte perdait
+   * ses bords, et le bleu marine du gabarit ne correspondait à aucune couleur
+   * du site — celui qui recevait le message ne reconnaissait pas la maison
+   * qu'il venait de quitter.
+   *
+   * CE QUI CHANGE, ET POURQUOI :
+   *  1. TABLES, pas de div. C'est la seule mise en page qu'Outlook (moteur de
+   *     Word) rende correctement. Ce n'est pas du HTML démodé, c'est du HTML
+   *     qui arrive intact.
+   *  2. UN BOUTON QUI EN EST UN : le fond porte sur la cellule (`bgcolor`) et
+   *     le rembourrage sur le lien. Outlook perd l'arrondi, jamais le bouton.
+   *  3. LES COULEURS DU SITE : bleu nuit #183767 pour l'identité, framboise
+   *     #C91D42 pour l'action — les deux couleurs des écrans. Un courriel doit
+   *     ressembler à l'endroit où il conduit.
+   *  4. UN TEXTE D'APERÇU. Ce que la boîte de réception affiche après l'objet
+   *     décide de l'ouverture. Sans lui, Gmail y met « Bonjour, » suivi du
+   *     début du gabarit. On le fabrique à partir du corps lui-même, pour
+   *     qu'il dise toujours la vérité sans que personne ait à y penser.
+   *  5. LA SIGNATURE DE L'ASSOCIATION en pied de message, et les mentions qui
+   *     doivent y être : qui écrit, d'où, et comment répondre.
+   *
+   * `color-scheme: light` est volontaire : sans lui, certains clients
+   * inversent les couleurs eux-mêmes et transforment un texte foncé sur fond
+   * clair en texte foncé sur fond foncé.
+   */
   private layout(title: string, bodyHtml: string, cta?: { label: string; url: string }): string {
-    const button = cta
-      ? `<a href="${cta.url}" style="display:inline-block;background:#183767;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600">${cta.label}</a>`
-      : '';
-    return `<!doctype html><html><body style="margin:0;background:#FAF7F2;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1A1A">
-      <div style="max-width:520px;margin:0 auto;padding:32px 20px">
-        <div style="background:#fff;border:1px solid #ece7df;border-radius:16px;padding:32px">
-          <div style="font-weight:800;font-size:18px;color:#183767;letter-spacing:.5px">LES EXTRAS</div>
-          <h1 style="font-size:22px;margin:18px 0 10px">${title}</h1>
-          <div style="font-size:15px;line-height:1.6;color:#374151">${bodyHtml}</div>
-          <div style="margin:24px 0">${button}</div>
-          <div style="font-size:12px;color:#9ca3af">Si le bouton ne fonctionne pas, copiez ce lien : ${cta ? cta.url : ''}</div>
-        </div>
-        <div style="text-align:center;font-size:12px;color:#9ca3af;margin-top:16px">Le renfort médico-social, sereinement.</div>
-      </div></body></html>`;
+    return this.coque({
+      titre: title,
+      corps: bodyHtml,
+      cta,
+      teinte: '#183767',
+      action: '#C91D42',
+      entete: `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="padding-right:12px;line-height:0">
+              <img src="${this.webUrl}/icons/icon-192.png" width="40" height="40" alt=""
+                   style="display:block;border:0;border-radius:9px" />
+            </td>
+            <td style="font-family:${POLICE};color:#ffffff">
+              <div style="font-size:17px;font-weight:700;letter-spacing:1.2px">LES EXTRAS</div>
+              <div style="font-size:12px;color:#b9c6db;padding-top:2px">Le renfort médico-social, sereinement</div>
+            </td>
+          </tr></table>`,
+      pied: `<a href="${this.webUrl}" style="text-decoration:none;line-height:0;display:block">
+              <img src="${this.webUrl}/email/signature.gif" width="600" alt="Les Extras — les intervenants socio-éducatifs du médico-social, en ligne sur les-extras.fr"
+                   style="display:block;width:100%;max-width:600px;height:auto;border:0" />
+            </a>`,
+      mentions: `Les Extras est un dispositif de l’association ADéPA · Melun (77)<br />
+            <a href="mailto:contact@les-extras.fr" style="color:#6b7280;text-decoration:underline">contact@les-extras.fr</a>
+            &nbsp;·&nbsp;
+            <a href="${this.webUrl}" style="color:#6b7280;text-decoration:underline">les-extras.fr</a>`,
+    });
   }
 
   /**
@@ -290,6 +339,9 @@ export class MailService implements OnModuleDestroy {
    * L'acheteur a payé sur la boutique de l'organisme : c'est ce nom-là et cette
    * couleur-là qu'il doit retrouver dans sa boîte, sinon il prend le message
    * pour une erreur — ou pour une tentative d'hameçonnage.
+   *
+   * Même charpente que le gabarit maison, mais rien de Les Extras à l'écran :
+   * ni le logo, ni la bannière. On emprunte la solidité, pas l'identité.
    */
   private layoutEcole(
     marque: { nom: string; couleur?: string | null },
@@ -300,21 +352,109 @@ export class MailService implements OnModuleDestroy {
     const teinte = /^#[0-9a-fA-F]{6}$/.test(marque.couleur ?? '')
       ? (marque.couleur as string)
       : '#0F5F3E';
-    const nom = echapper(marque.nom).toUpperCase();
-    const button = cta
-      ? `<a href="${cta.url}" style="display:inline-block;background:${teinte};color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600">${cta.label}</a>`
+    const nom = echapper(marque.nom);
+    return this.coque({
+      titre: title,
+      corps: bodyHtml,
+      cta,
+      teinte,
+      action: teinte,
+      entete: `<div style="font-family:${POLICE};color:#ffffff;font-size:17px;font-weight:700;letter-spacing:.6px">${nom.toUpperCase()}</div>`,
+      mentions: `Ce lien est personnel : il ouvre votre formation, ne le transmettez pas.<br />
+            Message envoyé par ${nom} via Les Extras.`,
+    });
+  }
+
+  /**
+   * La charpente commune : en-tête coloré, carte blanche, bouton, pied.
+   *
+   * Un seul endroit à relire quand le rendu doit changer — et donc un seul
+   * endroit qui peut casser dans les vingt clients de messagerie.
+   */
+  private coque(o: {
+    titre: string;
+    corps: string;
+    cta?: { label: string; url: string };
+    teinte: string;
+    action: string;
+    entete: string;
+    pied?: string;
+    mentions: string;
+  }): string {
+    // Le texte d'aperçu vient du corps : il dit toujours la vérité, et il ne
+    // demande à personne de penser à l'écrire.
+    const apercu = versionTexte(o.corps).replace(/\s+/g, ' ').trim().slice(0, 140);
+
+    // ⚠ UN CHEMIN N'EST PAS UNE ADRESSE. Plusieurs appels passent « /dashboard/… »
+    // en pensant que le gabarit le complèterait : dans un courriel, ce lien ne
+    // mène nulle part. On le complète ici, une fois, pour tout le monde.
+    const cible = o.cta
+      ? /^https?:\/\//i.test(o.cta.url)
+        ? o.cta.url
+        : `${this.webUrl}${o.cta.url.startsWith('/') ? '' : '/'}${o.cta.url}`
       : '';
-    return `<!doctype html><html><body style="margin:0;background:#F7F7F5;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1A1A">
-      <div style="max-width:520px;margin:0 auto;padding:32px 20px">
-        <div style="background:#fff;border:1px solid #e8e6e1;border-radius:16px;padding:32px">
-          <div style="font-weight:800;font-size:16px;color:${teinte};letter-spacing:.5px">${nom}</div>
-          <h1 style="font-size:22px;margin:18px 0 10px">${title}</h1>
-          <div style="font-size:15px;line-height:1.6;color:#374151">${bodyHtml}</div>
-          <div style="margin:24px 0">${button}</div>
-          <div style="font-size:12px;color:#9ca3af">Si le bouton ne fonctionne pas, copiez ce lien : ${cta ? cta.url : ''}</div>
-        </div>
-        <div style="text-align:center;font-size:12px;color:#9ca3af;margin-top:16px">Ce lien est personnel : il ouvre votre formation, ne le transmettez pas.</div>
-      </div></body></html>`;
+
+    const bouton = o.cta
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 4px">
+              <tr>
+                <td align="center" bgcolor="${o.action}" style="border-radius:10px">
+                  <a href="${cible}"
+                     style="display:inline-block;padding:14px 30px;font-family:${POLICE};font-size:15px;font-weight:600;line-height:20px;color:#ffffff;text-decoration:none;border-radius:10px">${o.cta.label}</a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:14px 0 0;font-family:${POLICE};font-size:12px;line-height:18px;color:#9ca3af">
+              Si le bouton ne fonctionne pas, copiez ce lien :<br />
+              <a href="${cible}" style="color:#9ca3af;text-decoration:underline;word-break:break-all">${cible}</a>
+            </p>`
+      : '';
+
+    return `<!doctype html>
+<html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="x-apple-disable-message-reformatting" />
+<meta name="color-scheme" content="light" />
+<meta name="supported-color-schemes" content="light" />
+<title>${echapper(o.titre)}</title>
+<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+<style>
+  a { color: ${o.teinte}; }
+  @media only screen and (max-width:620px) {
+    .coque { width:100% !important; }
+    .marge { padding-left:20px !important; padding-right:20px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#F1EDE6;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all">${echapper(apercu)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F1EDE6">
+    <tr>
+      <td align="center" style="padding:28px 12px">
+        <table role="presentation" class="coque" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#ffffff;border-radius:14px;overflow:hidden">
+          <tr>
+            <td class="marge" style="background-color:${o.teinte};padding:22px 32px">${o.entete}</td>
+          </tr>
+          <tr>
+            <td class="marge" style="padding:34px 32px 30px">
+              <h1 style="margin:0 0 16px;font-family:${POLICE};font-size:22px;line-height:30px;font-weight:700;color:#151515">${echapper(o.titre)}</h1>
+              <div style="font-family:${POLICE};font-size:15px;line-height:24px;color:#3d4451">${o.corps}</div>
+              ${bouton}
+            </td>
+          </tr>
+          ${o.pied ? `<tr><td style="line-height:0;font-size:0">${o.pied}</td></tr>` : ''}
+          <tr>
+            <td class="marge" style="background-color:#FBF9F6;border-top:1px solid #EDE7DE;padding:20px 32px">
+              <p style="margin:0;font-family:${POLICE};font-size:12px;line-height:19px;color:#6b7280">${o.mentions}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
   }
 
   /**
@@ -428,7 +568,7 @@ export class MailService implements OnModuleDestroy {
       });
 
     const ligne = (cle: string, valeur: string) =>
-      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;white-space:nowrap">${cle}</td><td style="padding:4px 0"><b>${valeur}</b></td></tr>`;
+      `<tr><td style="padding:7px 14px 7px 0;color:#6b7280;white-space:nowrap;font-size:14px">${cle}</td><td style="padding:7px 0;font-size:14px"><b>${valeur}</b></td></tr>`;
 
     const lignes = [
       ligne('Référence', echapper(data.reference)),
@@ -439,7 +579,7 @@ export class MailService implements OnModuleDestroy {
     ].join('');
 
     const coordonnees = (titre: string, p: { nom: string; email?: string | null; telephone?: string | null; ville?: string | null }) =>
-      `<div style="margin-top:10px"><div style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:.06em">${titre}</div>` +
+      `<div style="margin-top:20px"><div style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600">${titre}</div>` +
       `<div><b>${echapper(p.nom)}</b></div>` +
       (p.email ? `<div><a href="mailto:${echapper(p.email)}" style="color:inherit">${echapper(p.email)}</a></div>` : '') +
       (p.telephone ? `<div>${echapper(p.telephone)}</div>` : '') +
@@ -447,11 +587,11 @@ export class MailService implements OnModuleDestroy {
       '</div>';
 
     const alerte = data.depassement
-      ? `<div style="margin-top:14px;padding:12px;background:#fdf2f2;border-radius:10px">Cette demande porte sur <b>${data.participants}</b> participants, au-delà des <b>${data.depassement}</b> annoncés sur la fiche. À caler entre vous avant de confirmer.</div>`
+      ? `<div style="margin-top:18px;padding:14px 16px;background:#FCEDEE;border-radius:10px;font-size:14px">Cette demande porte sur <b>${data.participants}</b> participants, au-delà des <b>${data.depassement}</b> annoncés sur la fiche. À caler entre vous avant de confirmer.</div>`
       : '';
 
     const mot = data.note
-      ? `<div style="margin-top:14px;padding:12px;background:#f6f6f4;border-radius:10px"><b>Précisions du demandeur</b><br>${echapper(
+      ? `<div style="margin-top:18px;padding:14px 16px;background:#F7F5F1;border-radius:10px;font-size:14px"><b>Précisions du demandeur</b><br>${echapper(
           data.note,
         )}</div>`
       : '';
@@ -467,12 +607,12 @@ export class MailService implements OnModuleDestroy {
 
     const annulation =
       data.role === 'demandeur'
-        ? `<div style="margin-top:16px;padding:12px;border:1px solid #e5e7eb;border-radius:10px"><b>Vous pouvez annuler jusqu'au ${echapper(
+        ? `<div style="margin-top:18px;padding:14px 16px;background:#FDF3E7;border-radius:10px;font-size:14px"><b>Vous pouvez annuler jusqu'au ${echapper(
             heure(data.finAnnulation),
           )}</b><br>Passé ce délai, l'annulation ne se fait plus depuis la plateforme : contactez directement ${echapper(
             data.intervenant.nom,
           )}, qui aura peut-être déjà réservé sa journée.</div>`
-        : `<div style="margin-top:16px;padding:12px;border:1px solid #e5e7eb;border-radius:10px">${echapper(
+        : `<div style="margin-top:18px;padding:14px 16px;background:#FDF3E7;border-radius:10px;font-size:14px">${echapper(
             data.demandeur.nom,
           )} peut annuler depuis la plateforme jusqu'au <b>${echapper(
             heure(data.finAnnulation),
@@ -485,7 +625,7 @@ export class MailService implements OnModuleDestroy {
         : `Votre réservation : ${data.prestation}`,
       this.layout(
         data.role === 'intervenant' ? 'Vous avez une réservation' : 'Votre réservation est enregistrée',
-        `<table style="border-collapse:collapse;font-size:14px">${lignes}</table>` +
+        `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#F7F5F1;border-radius:10px;margin:4px 0 6px"><tr><td style="padding:6px 16px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">${lignes}</table></td></tr></table>` +
           alerte +
           mot +
           coordonnees(data.role === 'intervenant' ? 'Le demandeur' : "L'intervenant",
