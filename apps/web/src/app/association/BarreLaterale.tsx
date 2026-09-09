@@ -82,6 +82,8 @@ export const ICONES = {
   versements: i('M2 7h20v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zM2 11h20M6 16h4'),
   reglages: i('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM4.6 15.5l-1.7 1a9.6 9.6 0 0 1 0-9l1.7 1M19.4 8.5l1.7-1a9.6 9.6 0 0 1 0 9l-1.7-1M8.5 4.6l-1-1.7a9.6 9.6 0 0 1 9 0l-1 1.7M8.5 19.4l-1 1.7a9.6 9.6 0 0 0 9 0l-1-1.7'),
   cles: i('M21 2l-2 2m-7.6 7.6a5 5 0 1 1-7.1 7.1 5 5 0 0 1 7.1-7.1zM15.5 7.5L19 4l2 2-3.5 3.5z'),
+  /// L'auvent d'une boutique : le tracé le plus lisible à 18 pixels.
+  boutique: i('M4 9h16l-1 11H5zM8 9V6a4 4 0 0 1 8 0v3'),
   administration: i('M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6zM12 9v4M12 16h.01'),
 };
 
@@ -100,7 +102,7 @@ const MENU: Entree[] = [
   { href: '/espace/repertoire', libelle: 'Mon équipe', icone: ICONES.droits },
   { href: '/espace/partenaires', libelle: 'Mes contacts', icone: ICONES.partenaires },
   { href: '/espace/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
-  { href: '/espace/boutique', libelle: 'Ma boutique', icone: ICONES.vitrine },
+  { href: '/espace/boutique', libelle: 'Ma boutique', icone: ICONES.boutique },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
