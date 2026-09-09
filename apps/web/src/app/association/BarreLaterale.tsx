@@ -100,6 +100,7 @@ const MENU: Entree[] = [
   { href: '/espace/repertoire', libelle: 'Mon équipe', icone: ICONES.droits },
   { href: '/espace/partenaires', libelle: 'Mes contacts', icone: ICONES.partenaires },
   { href: '/espace/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
+  { href: '/espace/boutique', libelle: 'Ma boutique', icone: ICONES.vitrine },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
