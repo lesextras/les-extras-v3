@@ -59,11 +59,15 @@ export default async function VerifierPage({ searchParams }: { searchParams: Pro
         <div className="mt-8 max-w-[70ch]">
           <Encart ton="attention">
             <p className="font-extrabold">Aucune association trouvée pour « {q} ».</p>
-            <p className="mt-2">
-              Trois causes fréquentes : le nom tapé n&apos;est pas celui déclaré en préfecture (essaie un seul mot du nom) ;
-              l&apos;association n&apos;a pas encore de numéro SIRET, donc elle n&apos;est pas dans le répertoire des entreprises ; ou
-              elle vient d&apos;être déclarée et n&apos;y est pas encore.
-            </p>
+            <p className="mt-2 font-bold">Trois causes fréquentes.</p>
+            <ul className="mt-1.5 list-disc space-y-1 pl-5">
+              <li>Le nom tapé n&apos;est pas celui déclaré en préfecture, essaie un seul mot du nom</li>
+              <li>
+                L&apos;association n&apos;a pas encore de numéro SIRET, donc elle n&apos;est pas dans le
+                répertoire des entreprises
+              </li>
+              <li>Elle vient d&apos;être déclarée et n&apos;y est pas encore</li>
+            </ul>
             <p className="mt-2">
               Pas de SIRET ?{' '}
               <Link href="/chemin/obtenir-le-siret" className="font-bold underline underline-offset-4">
