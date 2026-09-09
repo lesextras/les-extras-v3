@@ -31,11 +31,31 @@ import { useEffect, useState } from 'react';
  *
  * La réduction ne vaut donc que pour la visite en cours : le site ne rouvre
  * pas la bannière après un « Plus tard », mais il la reproposera demain.
+ *
+ * ⚠ SUR IPHONE, IL N'Y A PAS D'ÉVÉNEMENT. `beforeinstallprompt` est une
+ * invention de Chromium. Safari ne l'émet jamais et n'expose aucune API
+ * d'installation : sur iPhone et iPad, la proposition ne s'affichait donc
+ * jamais, alors que l'ajout à l'écran d'accueil y fonctionne parfaitement. Il
+ * se fait à la main, par le menu Partager. On montre donc la même bannière,
+ * avec le chemin à suivre à la place du bouton, puisque c'est la personne qui
+ * appuie.
  */
 
 interface EvenementInstallation extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+/**
+ * iPhone ou iPad. Depuis iPadOS 13, un iPad se présente comme un Macintosh :
+ * on le reconnaît à son écran tactile. Et il faut que ce soit Safari, car un
+ * Chrome ou un Firefox sur iOS n'ajoute rien à l'écran d'accueil.
+ */
+function surIphone() {
+  const ua = navigator.userAgent;
+  const pomme = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  return pomme && safari;
 }
 
 /** Ce que le site s'appelle, là où on est. */
@@ -60,6 +80,8 @@ export function InstallPrompt() {
   const [evenement, setEvenement] = useState<EvenementInstallation | null>(null);
   const [etat, setEtat] = useState<'cache' | 'ouvert' | 'reduit'>('cache');
   const [nom, setNom] = useState(() => marque(''));
+  /** « navigateur » quand le navigateur sait installer, « iphone » quand c'est à la personne de le faire. */
+  const [voie, setVoie] = useState<'navigateur' | 'iphone'>('navigateur');
 
   useEffect(() => {
     setNom(marque(window.location.hostname));
@@ -83,13 +105,26 @@ export function InstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', surProposition);
     window.addEventListener('appinstalled', surInstallation);
+
+    // Safari n'émettra jamais l'événement. On ouvre nous-mêmes, au même
+    // moment, avec le chemin à suivre.
+    let attente = 0;
+    if (surIphone()) {
+      attente = window.setTimeout(() => {
+        setVoie('iphone');
+        setEtat('ouvert');
+      }, 12_000);
+    }
+
     return () => {
       window.removeEventListener('beforeinstallprompt', surProposition);
       window.removeEventListener('appinstalled', surInstallation);
+      if (attente) window.clearTimeout(attente);
     };
   }, []);
 
-  if (etat === 'cache' || !evenement) return null;
+  const surApple = voie === 'iphone';
+  if (etat === 'cache' || (!evenement && !surApple)) return null;
 
   /** « Plus tard » : rangée pour cette visite, reproposée à la suivante. */
   function reduire() {
@@ -142,6 +177,13 @@ export function InstallPrompt() {
         <div className="min-w-0">
           <p className="text-base font-extrabold tracking-tight text-[#111]">{nom.titre}</p>
           <p className="mt-1 text-[15px] leading-relaxed text-[#444]">{nom.texte}</p>
+          {surApple ? (
+            <ol className="mt-3 space-y-1.5 text-[15px] leading-relaxed text-[#444]">
+              <li>1. Appuyez sur le bouton Partager, en bas de Safari</li>
+              <li>2. Choisissez « Sur l&apos;écran d&apos;accueil »</li>
+              <li>3. Appuyez sur « Ajouter »</li>
+            </ol>
+          ) : null}
         </div>
       </div>
 
@@ -153,13 +195,15 @@ export function InstallPrompt() {
         >
           Plus tard
         </button>
-        <button
-          type="button"
-          onClick={installer}
-          className="rounded-xl bg-[#4F46E5] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#4338CA]"
-        >
-          Installer
-        </button>
+        {surApple ? null : (
+          <button
+            type="button"
+            onClick={installer}
+            className="rounded-xl bg-[#4F46E5] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#4338CA]"
+          >
+            Installer
+          </button>
+        )}
       </div>
     </div>
   );
