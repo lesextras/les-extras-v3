@@ -18,6 +18,22 @@ import { numeroSuivant, prefixeAnnee } from '../invoices/numerotation';
 import { Constat, evaluerCreneau, PLAFONDS } from '../planning/conformite-horaire';
 
 /** Transitions autorisées du cycle de vie d'un booking. */
+/**
+ * LES ÉTATS D'UNE RÉSERVATION, EN FRANÇAIS.
+ *
+ * Les notifications affichaient le nom interne de l'état : « est désormais
+ * CANCELLED ». Ce n'est pas une langue qu'on parle à quelqu'un dont on vient
+ * d'annuler l'intervention.
+ */
+const ETAT_EN_CLAIR: Partial<Record<BookingStatus, string>> = {
+  [BookingStatus.REQUESTED]: 'nouvelle demande à traiter',
+  [BookingStatus.ACCEPTED]: 'acceptée, la date reste à confirmer',
+  [BookingStatus.CONFIRMED]: 'date confirmée',
+  [BookingStatus.IN_PROGRESS]: 'en cours',
+  [BookingStatus.COMPLETED]: 'terminée',
+  [BookingStatus.CANCELLED]: 'annulée',
+};
+
 const TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
   [BookingStatus.REQUESTED]: [BookingStatus.ACCEPTED, BookingStatus.CANCELLED],
   [BookingStatus.ACCEPTED]: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
@@ -456,9 +472,66 @@ export class BookingsService {
       await this.notifications.create(userId, {
         type: 'BOOKING_STATUS',
         title: 'Réservation mise à jour',
-        body: `« ${label} » est désormais ${next}.`,
+        // ÉCRIT EN FRANÇAIS, et pas avec le nom interne de l'état. « est
+        // désormais CANCELLED » était ce que lisait un intervenant dont la
+        // date venait de sauter.
+        body: `« ${label} » : ${ETAT_EN_CLAIR[next] ?? next}.`,
         link: `/dashboard/reservations#${id}`,
       });
+    }
+
+    // L'ANNULATION SE DIT PAR COURRIEL, ET ELLE SE DIT AVEC SON MOTIF.
+    //
+    // Le motif est obligatoire a la saisie — il existait donc deja, et
+    // personne ne le recevait. Une date bloquee qui se libere sans un mot,
+    // c'est la chose la plus desagreable que cette place de marche puisse
+    // faire vivre a un intervenant.
+    //
+    // Le message ne part qu'a l'AUTRE partie : celle qui vient d'annuler sait
+    // deja, et se recevoir sa propre annulation ferait douter de l'envoi.
+    if (next === BookingStatus.CANCELLED) {
+      try {
+        const auteur = accountId;
+        const destinataires = new Set<string>();
+        if (booking.account?.ownerId && booking.accountId !== auteur) {
+          destinataires.add(booking.account.ownerId);
+        }
+        const offreurCompte =
+          booking.mission?.accountId ?? booking.service?.accountId ?? null;
+        if (offerOwner && offreurCompte !== auteur) destinataires.add(offerOwner);
+
+        if (destinataires.size > 0) {
+          const [users, quiAnnule] = await Promise.all([
+            this.prisma.user.findMany({
+              where: { id: { in: [...destinataires] } },
+              select: { email: true },
+            }),
+            this.prisma.account.findUnique({
+              where: { id: auteur },
+              select: { name: true },
+            }),
+          ]);
+          const motif =
+            typeof (extra as { cancelReason?: string }).cancelReason === 'string'
+              ? (extra as { cancelReason: string }).cancelReason
+              : 'Aucun motif indiqué.';
+          for (const u of users) {
+            if (!u.email) continue;
+            await this.mail.sendReservationAnnulee({
+              to: u.email,
+              titre: label,
+              motif,
+              parQui: quiAnnule?.name ?? "l'autre partie",
+              date: booking.scheduledAt,
+              lien: `https://les-extras.fr/dashboard/reservations#${id}`,
+            });
+          }
+        }
+      } catch (e) {
+        this.logger.warn(
+          `Message d'annulation non envoyé (${id}) : ${(e as Error).message}`,
+        );
+      }
     }
 
     // Email de confirmation à l'établissement réservant (n'échoue jamais la requête).
