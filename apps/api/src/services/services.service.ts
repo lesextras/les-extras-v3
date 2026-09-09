@@ -164,7 +164,7 @@ export class ServicesService {
                 id: true,
                 firstName: true,
                 lastName: true,
-                profile: { select: { job: true, bio: true } },
+                profile: { select: { job: true, bio: true, liens: true } },
               },
             },
           },
