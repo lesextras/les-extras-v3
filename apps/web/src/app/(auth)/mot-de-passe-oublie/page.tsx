@@ -75,7 +75,7 @@ export default function MotDePasseOubliePage() {
 
   if (envoye) {
     return (
-      <div>
+      <div className="mx-auto w-full max-w-md">
         <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
           <MailCheck className="size-6" />
         </span>
@@ -105,7 +105,7 @@ export default function MotDePasseOubliePage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-md">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Mot de passe oublié</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
