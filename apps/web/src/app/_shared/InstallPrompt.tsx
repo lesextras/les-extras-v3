@@ -66,9 +66,25 @@ function surIphone() {
   return pomme && safari;
 }
 
+/**
+ * OÙ L'ON PROPOSE D'INSTALLER, ET OÙ L'ON SE TAIT.
+ *
+ * Sur Piloter, oui : c'est un outil de travail qu'on rouvre dix fois par jour,
+ * l'icône sur l'écran d'accueil a du sens.
+ *
+ * Sur Les Extras, non, pour l'instant. La proposition a été retirée le temps de
+ * revoir la question : une application web ne se télécharge pas comme un
+ * logiciel, et la bannière promettait quelque chose qu'elle ne tenait pas.
+ * Le texte Les Extras reste écrit juste en dessous, prêt à resservir le jour où
+ * on la remet.
+ */
+function surPilote(hote: string) {
+  return hote.startsWith('pilote.') || hote.includes('toulali');
+}
+
 /** Ce que le site s'appelle, là où on est. */
 function marque(hote: string) {
-  if (hote.startsWith('pilote.') || hote.includes('toulali')) {
+  if (surPilote(hote)) {
     return {
       nom: 'Piloter',
       titre: "Installer l'application Piloter",
@@ -97,6 +113,9 @@ export function InstallPrompt() {
 
   useEffect(() => {
     setNom(marque(window.location.hostname));
+
+    // Retrait provisoire côté Les Extras. Piloter garde sa bannière.
+    if (!surPilote(window.location.hostname)) return;
 
     // Déjà installé : rien à proposer.
     if (window.matchMedia?.('(display-mode: standalone)').matches) return;
