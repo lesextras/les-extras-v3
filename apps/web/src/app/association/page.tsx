@@ -128,11 +128,17 @@ function Plateforme() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
             </svg>
           </span>
-          <span className="min-w-0 flex-1">
+          {/* ⚠ SUR TÉLÉPHONE, CETTE CARTE SE CASSAIT EN UN MOT PAR LIGNE.
+              Le texte était `flex-1 min-w-0` et le bouton `shrink-0` : dans un
+              conteneur étroit, le texte se réduisait jusqu'à la largeur d'un
+              mot au lieu de passer à la ligne, et le bouton se posait par-dessus.
+              On lui donne une largeur de base : la somme « texte + bouton »
+              dépasse alors la ligne, et `flex-wrap` fait ce pour quoi il est là. */}
+          <span className="min-w-0 flex-1 basis-[15rem]">
             <span className="block text-2xl font-extrabold leading-tight text-[#7C3E06]">Pas encore de structure ?</span>
             <span className="mt-1 block text-[#7C3E06]/85">Ouvre un espace particulier. Tu suivras le chemin, et tu créeras ta structure en route.</span>
           </span>
-          <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#7C3E06] px-5 py-3 text-base font-extrabold text-white">
+          <span className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[#7C3E06] px-5 py-3 text-base font-extrabold text-white sm:w-auto">
             Créer mon espace
             <span className="inline-block transition-transform duration-300 group-hover:translate-x-1.5">→</span>
           </span>
