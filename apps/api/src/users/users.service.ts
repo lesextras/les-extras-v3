@@ -50,6 +50,7 @@ const USER_PUBLIC_SELECT = {
   /// personne et re-cochait la case : chaque enregistrement re-abonnait
   /// silencieusement au courriel hebdomadaire quelqu'un qui s'etait desinscrit.
   hebdoOptIn: true,
+  notifMailOptIn: true,
   createdAt: true,
   profile: true,
   qualifications: { orderBy: { createdAt: 'desc' } },
@@ -81,6 +82,7 @@ export class UsersService {
     if (dto.phone !== undefined) userData.phone = dto.phone;
     if (dto.avatarUrl !== undefined) userData.avatarUrl = dto.avatarUrl;
     if (dto.hebdoOptIn !== undefined) userData.hebdoOptIn = dto.hebdoOptIn;
+    if (dto.notifMailOptIn !== undefined) userData.notifMailOptIn = dto.notifMailOptIn;
     if (dto.avatarFileId !== undefined) {
       // Prisma n'accepte pas la clé étrangère brute sur un UserUpdateInput :
       // il faut passer par la relation. Chaîne vide = on retire la photo.
@@ -93,6 +95,7 @@ export class UsersService {
     if (dto.bio !== undefined) profileData.bio = dto.bio;
     if (dto.job !== undefined) profileData.job = dto.job;
     if (dto.skills !== undefined) profileData.skills = dto.skills;
+    if (dto.liens !== undefined) profileData.liens = nettoyerLiens(dto.liens);
     if (dto.siret !== undefined) profileData.siret = dto.siret;
     if (dto.diplomaUrl !== undefined) profileData.diplomaUrl = dto.diplomaUrl;
     if (dto.city !== undefined) profileData.city = dto.city;
@@ -956,4 +959,43 @@ export class UsersService {
         "Votre compte est anonymisé et désactivé. Vous allez être déconnecté et ne pourrez plus vous reconnecter. Cette opération est définitive.",
     };
   }
+}
+
+/**
+ * NETTOYAGE DES LIENS PUBLICS — 9/09/2026.
+ *
+ * Ce que quelqu'un colle depuis son téléphone, c'est rarement une URL propre :
+ * « linkedin.com/in/… » sans schéma, une adresse avec des espaces autour, deux
+ * fois le même lien, ou un « javascript: » recopié par accident depuis une
+ * page. On répare ce qui se répare et on jette le reste, sans renvoyer
+ * d'erreur : personne ne doit se battre avec un formulaire pour ajouter son
+ * Instagram.
+ *
+ * Seuls http et https passent. C'est la règle qui compte : ces adresses
+ * finissent dans un `href` sur une page publique, et un lien `javascript:` y
+ * serait une porte ouverte.
+ */
+export function nettoyerLiens(liens: string[]): string[] {
+  const vus = new Set<string>();
+  const propres: string[] = [];
+  for (const brut of liens) {
+    const texte = String(brut ?? '').trim();
+    if (!texte) continue;
+    const candidat = /^https?:\/\//i.test(texte) ? texte : `https://${texte}`;
+    let url: URL;
+    try {
+      url = new URL(candidat);
+    } catch {
+      continue;
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') continue;
+    if (!url.hostname.includes('.')) continue;
+    const final = url.toString().slice(0, 300);
+    const cle = final.toLowerCase().replace(/\/$/, '');
+    if (vus.has(cle)) continue;
+    vus.add(cle);
+    propres.push(final);
+    if (propres.length >= 6) break;
+  }
+  return propres;
 }
