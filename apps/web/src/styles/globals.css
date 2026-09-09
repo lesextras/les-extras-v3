@@ -351,8 +351,55 @@
   }
   .bg-warm-gradient {
     background-image:
-      radial-gradient(60% 60% at 85% 0%, hsl(var(--secondary) / 0.10) 0%, transparent 60%),
-      radial-gradient(50% 50% at 0% 100%, hsl(var(--primary) / 0.10) 0%, transparent 55%);
+      radial-gradient(60% 60% at 85% 0%, hsl(var(--secondary) / 0.16) 0%, transparent 62%),
+      radial-gradient(55% 55% at 0% 100%, hsl(var(--primary) / 0.15) 0%, transparent 58%),
+      radial-gradient(70% 45% at 50% 110%, hsl(var(--secondary) / 0.08) 0%, transparent 60%);
+  }
+
+  /*
+   * LE CLAIR N'EST PLUS UN MUR BLANC.
+   *
+   * En thème clair, une section sur deux était un aplat blanc pur : sur un
+   * écran de bureau, cela fait une page qui éblouit et où plus rien ne
+   * distingue une section de la suivante. Le blanc reste la base — c'est ce
+   * qui rend le texte lisible — mais il porte maintenant deux voiles très
+   * dilués aux couleurs de la maison, posés dans des coins opposés. On ne les
+   * voit pas ; on voit que la page a une profondeur.
+   *
+   * Les couleurs viennent des variables du thème, donc le même utilitaire
+   * fonctionne en sombre sans rien éclaircir de travers.
+   */
+  .bg-nacre {
+    background-color: hsl(var(--card));
+    background-image:
+      radial-gradient(75% 60% at 100% 0%, hsl(var(--secondary) / 0.09) 0%, transparent 62%),
+      radial-gradient(65% 55% at 0% 100%, hsl(var(--primary) / 0.08) 0%, transparent 58%);
+  }
+
+  /* La même idée sur le fond ivoire de la page, en plus discret encore. */
+  .bg-ivoire-degrade {
+    background-image:
+      radial-gradient(50% 40% at 12% 0%, hsl(var(--primary) / 0.06) 0%, transparent 60%),
+      radial-gradient(45% 45% at 95% 40%, hsl(var(--secondary) / 0.06) 0%, transparent 60%);
+  }
+
+  /*
+   * LE REFLET D'UNE CARTE.
+   *
+   * Une lumière rasante en haut à gauche, comme sur une surface vernie. En
+   * `soft-light`, elle éclaircit le clair sans blanchir le sombre : la même
+   * classe tient dans les deux thèmes. `pointer-events: none` est
+   * indispensable — sans lui, le voile mange les clics de la carte.
+   */
+  .reflet { position: relative; }
+  .reflet::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image: linear-gradient(155deg, hsl(0 0% 100% / 0.5) 0%, hsl(0 0% 100% / 0) 45%);
+    mix-blend-mode: soft-light;
   }
 
   /* Dégradé de marque appliqué au texte (titres accentués) */
@@ -554,17 +601,35 @@
      page d'accueil coûtent plus cher que ce qu'elles font gagner. */
   .lex-perso { overflow: visible; }
 
+  /* IL SE DÉPLACE, IL NE RESPIRE PLUS SEULEMENT.
+     Un aller-retour vertical de sept pixels se lit comme un défaut de rendu :
+     l'œil le prend pour un tremblement, pas pour un déplacement. Le personnage
+     fait maintenant un vrai tour — il part à gauche, remonte, passe à droite,
+     redescend — sur une boucle assez longue (neuf secondes) pour qu'aucune
+     étape ne paraisse pressée. */
   @keyframes lex-flotte {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-7px); }
+    0%   { transform: translate(0, 0); }
+    14%  { transform: translate(-16px, -9px); }
+    32%  { transform: translate(8px, -18px); }
+    52%  { transform: translate(19px, 2px); }
+    72%  { transform: translate(3px, 13px); }
+    88%  { transform: translate(-13px, -3px); }
+    100% { transform: translate(0, 0); }
   }
-  .lex-flotte { animation: lex-flotte 4.2s ease-in-out infinite; }
+  .lex-flotte { animation: lex-flotte 9s ease-in-out infinite; }
 
+  /* L'ombre suit le pas, sinon le personnage a l'air décollé de son sol :
+     elle glisse avec lui et s'étire quand il est haut. */
   @keyframes lex-ombre {
-    0%, 100% { transform: scaleX(1);    opacity: 0.16; }
-    50%      { transform: scaleX(0.88); opacity: 0.10; }
+    0%   { transform: translateX(0) scaleX(1);      opacity: 0.16; }
+    14%  { transform: translateX(-16px) scaleX(0.93); opacity: 0.13; }
+    32%  { transform: translateX(8px) scaleX(0.84);   opacity: 0.09; }
+    52%  { transform: translateX(19px) scaleX(0.99);  opacity: 0.15; }
+    72%  { transform: translateX(3px) scaleX(1.05);   opacity: 0.18; }
+    88%  { transform: translateX(-13px) scaleX(0.96); opacity: 0.14; }
+    100% { transform: translateX(0) scaleX(1);      opacity: 0.16; }
   }
-  .lex-ombre { transform-origin: 100px 206px; animation: lex-ombre 4.2s ease-in-out infinite; }
+  .lex-ombre { transform-origin: 100px 206px; animation: lex-ombre 9s ease-in-out infinite; }
 
   /* Le clignement occupe 4 % du cycle : au-delà, le personnage a l'air de
      dormir plutôt que de cligner. */
