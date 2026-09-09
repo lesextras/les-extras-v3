@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClaudeService } from '../assistant/claude.service';
 import { MoteurService } from '../assistant/moteur.service';
+import { MistralService } from '../assistant/mistral.service';
 import { EcoleService } from './ecole.service';
 import { EcoleController } from './ecole.controller';
 import { EcolePublicController } from './ecole-public.controller';
@@ -17,8 +18,9 @@ import { EcolePublicController } from './ecole-public.controller';
  */
 @Module({
   controllers: [EcolePublicController, EcoleController],
-  // MoteurService (Gemini, Claude en secours) sert l'aide à l'écriture.
-  providers: [EcoleService, MoteurService, ClaudeService],
+  // MoteurService sert l'aide à l'écriture : Gemini, puis Mistral, puis Claude.
+  // Les trois se facturent séparément ; les deux premiers ont une offre gratuite.
+  providers: [EcoleService, MoteurService, ClaudeService, MistralService],
   exports: [EcoleService],
 })
 export class EcoleModule {}
