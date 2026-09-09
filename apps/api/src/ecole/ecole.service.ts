@@ -264,7 +264,30 @@ export class EcoleService implements OnModuleInit {
     if (dto.lectureOrdonnee !== undefined) data.lectureOrdonnee = dto.lectureOrdonnee;
     if (dto.placesMax !== undefined) data.placesMax = dto.placesMax || null;
     if (dto.tvaPourcent !== undefined) data.tvaPourcent = dto.tvaPourcent;
-    if (dto.echeances !== undefined) data.echeances = dto.echeances;
+    if (dto.echeances !== undefined) {
+      // UN ECHEANCIER DOIT TOMBER JUSTE.
+      //
+      // Un prestataire de paiement preleve N fois le MEME montant : il n'y a
+      // pas de « derniere echeance qui absorbe la difference ». Un prix de
+      // 190 EUR en trois fois donnerait 63,33 x 3 = 189,99 EUR, et l'organisme
+      // encaisserait un centime de moins que son prix affiche, indefiniment.
+      // On refuse ici, pendant qu'on peut encore changer le chiffre, plutot
+      // qu'au moment ou un acheteur essaie de payer.
+      const n = dto.echeances;
+      const prix = dto.prixCents !== undefined ? dto.prixCents : undefined;
+      const prixEffectif =
+        prix !== undefined
+          ? prix
+          : (await this.prisma.cours.findUnique({ where: { id }, select: { prixCents: true } }))
+              ?.prixCents ?? 0;
+      if (n > 1 && prixEffectif > 0 && prixEffectif % n !== 0) {
+        const euros = (c: number) => (c / 100).toFixed(2).replace('.', ',');
+        throw new BadRequestException(
+          `${euros(prixEffectif)} € ne se divise pas exactement en ${n} : chaque prélèvement doit être identique. Ajuste le prix ou le nombre de fois.`,
+        );
+      }
+      data.echeances = n;
+    }
     if (dto.seoTitre !== undefined) data.seoTitre = dto.seoTitre.trim() || null;
     if (dto.seoDescription !== undefined) data.seoDescription = dto.seoDescription.trim() || null;
     if (dto.commentairesActifs !== undefined) data.commentairesActifs = dto.commentairesActifs;
@@ -1851,7 +1874,15 @@ export class EcoleService implements OnModuleInit {
     }
     const cours = await this.prisma.cours.findUnique({
       where: { slug },
-      select: { id: true, accountId: true, titre: true, prixCents: true, gratuit: true, statut: true },
+      select: {
+        id: true,
+        accountId: true,
+        titre: true,
+        prixCents: true,
+        gratuit: true,
+        statut: true,
+        echeances: true,
+      },
     });
     if (!cours || cours.statut !== StatutCours.PUBLIE) throw new NotFoundException("Cette formation n'existe pas.");
     if (cours.gratuit || cours.prixCents <= 0) {
@@ -1865,17 +1896,41 @@ export class EcoleService implements OnModuleInit {
     });
     if (deja) return { deja: true, lien: `/apprendre/${deja.jeton}` };
 
-    const remise = await this.remisePour(cours.accountId, cours.id, dto.codePromo);
+    // ETALER ET REMISER NE SE COMBINENT PAS.
+    //
+    // Un code promo change le montant, et un montant remise ne tombe presque
+    // jamais juste sur N prelevements identiques. Plutot que de rogner la
+    // remise en douce ou de laisser filer des centimes, on le dit.
+    const etale = cours.echeances > 1;
+    if (etale && dto.codePromo?.trim()) {
+      throw new BadRequestException(
+        "Un code promo ne s'applique pas à un règlement en plusieurs fois. Choisis l'un ou l'autre.",
+      );
+    }
+
+    const remise = etale ? 0 : await this.remisePour(cours.accountId, cours.id, dto.codePromo);
     const montant = Math.max(0, cours.prixCents - remise);
     if (montant <= 0) throw new BadRequestException('Ce code ramène le prix à zéro : inscris-toi directement.');
 
+    // Le garde-fou du dernier moment : la fiche a pu etre enregistree avant
+    // que la regle existe. On ne prend pas l'argent d'un acheteur sur un
+    // echeancier bancal.
+    if (etale && montant % cours.echeances !== 0) {
+      throw new BadRequestException(
+        "Le règlement en plusieurs fois n'est pas disponible sur cette formation pour le moment.",
+      );
+    }
+
+    const echeance = etale ? montant / cours.echeances : montant;
     const racine = origine.replace(/\/$/, '');
     const params: Record<string, string> = {
-      mode: 'payment',
+      mode: etale ? 'subscription' : 'payment',
       'line_items[0][quantity]': '1',
       'line_items[0][price_data][currency]': 'eur',
-      'line_items[0][price_data][unit_amount]': String(montant),
-      'line_items[0][price_data][product_data][name]': cours.titre.slice(0, 200),
+      'line_items[0][price_data][unit_amount]': String(echeance),
+      'line_items[0][price_data][product_data][name]': etale
+        ? `${cours.titre.slice(0, 170)} (${cours.echeances} fois)`
+        : cours.titre.slice(0, 200),
       customer_email: email,
       // LA FICHE DE LA FORMATION EST SUR /cours/<slug>, PAS SUR /ecole/<slug>.
       // /ecole/<slug> est la vitrine de l'organisme : y renvoyer après le
@@ -1890,7 +1945,23 @@ export class EcoleService implements OnModuleInit {
       'metadata[coursId]': cours.id,
       'metadata[accountId]': cours.accountId,
       'metadata[email]': email,
+      'metadata[echeances]': String(etale ? cours.echeances : 1),
+      'metadata[total]': String(montant),
     };
+
+    if (etale) {
+      params['line_items[0][price_data][recurring][interval]'] = 'month';
+      // Les metadonnees de la SESSION ne suivent pas sur les prelevements
+      // suivants : seules celles de l'abonnement voyagent avec chaque facture.
+      // Sans elles, la deuxieme echeance arriverait sans savoir quelle vente
+      // elle paie.
+      params['subscription_data[metadata][kind]'] = 'cours';
+      params['subscription_data[metadata][coursId]'] = cours.id;
+      params['subscription_data[metadata][accountId]'] = cours.accountId;
+      params['subscription_data[metadata][email]'] = email;
+      params['subscription_data[metadata][echeances]'] = String(cours.echeances);
+    }
+
     if (dto.nom?.trim()) params['metadata[nom]'] = dto.nom.trim().slice(0, 120);
     if (dto.codePromo?.trim()) params['metadata[codePromo]'] = dto.codePromo.trim().slice(0, 40);
     if (dto.affiliation?.trim()) params['metadata[affiliation]'] = dto.affiliation.trim().slice(0, 40);
@@ -1900,7 +1971,12 @@ export class EcoleService implements OnModuleInit {
     // Sans compte relié, cette ligne n'ajoute rien et la vente suit le chemin
     // historique : encaissée par la plateforme. C'est ce qui permet de poser
     // le versement direct sans rien changer pour les comptes déjà en place.
-    Object.assign(params, await this.connect.parametresDeVersement(cours.accountId, montant));
+    Object.assign(
+      params,
+      etale
+        ? await this.connect.parametresDeVersementAbonnement(cours.accountId, echeance)
+        : await this.connect.parametresDeVersement(cours.accountId, montant),
+    );
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
