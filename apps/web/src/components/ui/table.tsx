@@ -1,10 +1,33 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
+/**
+ * UN TABLEAU QUI DIT QU'IL DEFILE.
+ *
+ * Le defilement horizontal existait deja, mais RIEN ne le signalait : sur un
+ * ecran etroit, la derniere colonne — celle des actions — sortait du cadre et
+ * on la croyait absente. Un tableau dont on ignore qu'il defile est un tableau
+ * ampute.
+ *
+ * Deux ajouts, et deux seulement. Une barre de defilement toujours visible
+ * (`scrollbar-visible`, definie dans la feuille globale) : c'est le signal le
+ * plus universel, il n'a besoin d'aucune explication. Et un degrade sur le
+ * bord droit, ancre au conteneur, qui suggere la matiere qui continue.
+ *
+ * Le degrade est purement decoratif et ne capte pas le pointeur, sinon il
+ * volerait les clics de la derniere colonne — exactement celle qu'on cherche
+ * a rendre accessible.
+ */
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-x-auto rounded-lg border border-border">
-      <table ref={ref} className={cn('w-full caption-bottom text-sm', className)} {...props} />
+    <div className="relative w-full rounded-lg border border-border">
+      <div className="scrollbar-visible w-full overflow-x-auto rounded-lg">
+        <table ref={ref} className={cn('w-full caption-bottom text-sm', className)} {...props} />
+      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 w-8 rounded-r-lg bg-gradient-to-l from-background to-transparent sm:hidden"
+      />
     </div>
   ),
 );
