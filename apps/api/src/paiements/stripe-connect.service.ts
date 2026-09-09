@@ -45,7 +45,7 @@ export class StripeConnectService {
   private async appel<T>(
     chemin: string,
     params?: Record<string, string>,
-    methode: 'GET' | 'POST' = 'POST',
+    methode: 'GET' | 'POST' | 'DELETE' = 'POST',
     /**
      * Le compte connecte AU NOM DUQUEL agir (`acct_...`).
      *
@@ -58,7 +58,7 @@ export class StripeConnectService {
   ): Promise<T> {
     const corps = params ? new URLSearchParams(params).toString() : undefined;
     const url =
-      methode === 'GET' && corps
+      methode !== 'POST' && corps
         ? `https://api.stripe.com/v1/${chemin}?${corps}`
         : `https://api.stripe.com/v1/${chemin}`;
     const res = await fetch(url, {
@@ -345,6 +345,72 @@ export class StripeConnectService {
     const params: Record<string, string> = {};
     if (retenu > 0) params['payment_intent_data[application_fee_amount]'] = String(retenu);
     return { compte: compte.stripeCompteId, params, partPlateformeCents: retenu };
+  }
+
+  /**
+   * LES PARAMETRES DE VERSEMENT POUR UN ECHEANCIER.
+   *
+   * Le prestataire ne prend pas les memes reglages sur un abonnement que sur
+   * un paiement unique : la part de la plateforme s'y exprime en POURCENTAGE
+   * de chaque prelevement, pas en centimes. On convertit donc la retenue
+   * — frais avances + part de la plateforme — en un pourcentage de l'echeance.
+   *
+   * Le calcul se fait sur UNE echeance, et il le faut : les frais du
+   * prestataire comportent une part fixe de 25 centimes qui est prelevee a
+   * CHAQUE prelevement. Un echeancier en quatre fois coute donc quatre fois
+   * cette part fixe, et c'est exactement ce que ce pourcentage recupere.
+   *
+   * Renvoie un objet vide quand aucun compte n'est relie : la vente suit alors
+   * le chemin historique, sur le compte de la plateforme.
+   */
+  async parametresDeVersementAbonnement(
+    accountId: string,
+    montantEcheanceCents: number,
+  ): Promise<Record<string, string>> {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { stripeCompteId: true, stripeComptePret: true, commissionVentePourcent: true },
+    });
+    if (!compte?.stripeCompteId || !compte.stripeComptePret) return {};
+    if (montantEcheanceCents <= 0) return {};
+
+    const params: Record<string, string> = {
+      'subscription_data[transfer_data][destination]': compte.stripeCompteId,
+    };
+    const frais = StripeConnectService.fraisPrestataire(montantEcheanceCents);
+    const part = Math.floor((montantEcheanceCents * compte.commissionVentePourcent) / 100);
+    const retenu = Math.min(frais + part, Math.max(0, montantEcheanceCents - 1));
+    if (retenu > 0) {
+      // Deux decimales : c'est la precision acceptee, et elle suffit — l'ecart
+      // residuel sur une echeance se compte en fractions de centime.
+      const pourcent = Math.min(100, Math.round((retenu / montantEcheanceCents) * 10000) / 100);
+      if (pourcent > 0) params['subscription_data[application_fee_percent]'] = String(pourcent);
+    }
+    return params;
+  }
+
+  /**
+   * ARRETE UN ECHEANCIER, tout de suite.
+   *
+   * Appele des que la derniere echeance est encaissee. C'est la garantie
+   * qu'un acheteur ne sera jamais preleve plus que ce qu'il a accepte — la
+   * seule erreur vraiment grave que ce mecanisme puisse commettre.
+   */
+  async arreterEcheancier(abonnementId: string): Promise<void> {
+    await this.appel(`subscriptions/${abonnementId}`, undefined, 'DELETE');
+  }
+
+  /**
+   * POSE UNE DATE DE FIN sur un echeancier, en secondes depuis l'epoque.
+   *
+   * Ceinture ET bretelles : l'arret propre se fait au comptage des echeances,
+   * mais si un message du prestataire se perdait, cette date coupe malgre
+   * tout. Sans elle, un webhook manque signifierait prelever indefiniment.
+   */
+  async bornerEcheancier(abonnementId: string, finTimestamp: number): Promise<void> {
+    await this.appel(`subscriptions/${abonnementId}`, {
+      cancel_at: String(finTimestamp),
+    });
   }
 
   /** Ouvre une page de paiement SUR le compte de l'organisme. */
