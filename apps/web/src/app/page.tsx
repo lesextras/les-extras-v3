@@ -277,10 +277,9 @@ export default async function LandingPage() {
   // peser.
   const VITRINE = 10;
 
-  // ⚠ L'ORDRE VIENT DE `featured`, PAS DES VUES. `/public/highlights` trie par
-  // `featured` puis par nombre de vues. Les trois fiches mises en avant sont
-  // posées par `seed-fiches-ateliers.js` (MISE_EN_AVANT) et se changent depuis
-  // l'administration.
+  // ⚠ L'ORDRE VIENT DE LA DATE, PAS DE LA NOTE NI DES VUES. `/public/highlights`
+  // renvoie les fiches publiées les plus récentes d'abord : la vitrine montre
+  // ce qui vient d'arriver, et publier une fiche se voit le jour même.
   const ateliersUne = (unes?.ateliers ?? []).slice(0, VITRINE);
 
   // Le même partage que sur /formations : les mini-formations gratuites de la
