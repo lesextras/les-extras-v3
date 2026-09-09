@@ -28,6 +28,29 @@ import type {
  * L'argent va où l'association a dit qu'il devait aller : si elle a relié son
  * propre compte d'encaissement, il lui est viré directement.
  */
+
+/**
+ * ADRESSES QUE LA BOUTIQUE NE PEUT PAS PRENDRE.
+ *
+ * Aucune ne casse le routage — `/boutique/<slug>` est un segment a part. Elles
+ * sont refusees parce qu'elles TROMPENT celui qui recoit le lien : une adresse
+ * « admin » ou « paiement » sur un lien partage par QR code ressemble a une
+ * page officielle de la plateforme, et c'est exactement ce dont se sert un
+ * hameconnage.
+ */
+const ADRESSES_RESERVEES = new Set([
+  'admin',
+  'api',
+  'boutique',
+  'commande',
+  'compte',
+  'connexion',
+  'paiement',
+  'panier',
+  'stripe',
+  'support',
+]);
+
 @Injectable()
 export class BoutiqueService {
   constructor(
@@ -86,6 +109,30 @@ export class BoutiqueService {
         throw new BadRequestException('La couleur s’écrit sous la forme #0F5F3E.');
       }
       data.couleur = c || '#0F5F3E';
+    }
+    if (dto.slug !== undefined) {
+      // On normalise AVANT de juger : la personne tape « ADéPA Boutique », on
+      // range « adepa-boutique ». Refuser sa saisie telle quelle serait lui
+      // demander de connaitre nos regles d'ecriture.
+      const demande = this.normaliser(dto.slug);
+      if (demande.length < 3) {
+        throw new BadRequestException(
+          'L’adresse doit faire au moins trois caractères : des lettres, des chiffres, des tirets.',
+        );
+      }
+      if (ADRESSES_RESERVEES.has(demande)) {
+        throw new BadRequestException('Cette adresse est réservée. Choisis-en une autre.');
+      }
+      const prise = await this.prisma.boutique.findUnique({
+        where: { slug: demande },
+        select: { accountId: true },
+      });
+      if (prise && prise.accountId !== accountId) {
+        throw new BadRequestException(
+          'Cette adresse est déjà prise par une autre boutique. Essaie une variante.',
+        );
+      }
+      data.slug = demande;
     }
     if (dto.publiee !== undefined) data.publiee = dto.publiee;
 
