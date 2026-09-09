@@ -11,6 +11,7 @@ import { randomBytes } from 'node:crypto';
 import { MoteurService } from '../assistant/moteur.service';
 import { FormationType, Prisma, StatutCours, StatutInscriptionCours, StatutVente, TypeLecon, TypeRemise } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../common/mail/mail.service';
 import { corrigerQuiz, nettoyerQuiz, quizSansReponses, quizUtilisable, type Quiz } from './quiz';
 import type {
   AffilieDto,
@@ -56,6 +57,7 @@ export class EcoleService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly moteur: MoteurService,
     private readonly config: ConfigService,
+    private readonly mail: MailService,
   ) {}
 
   /**
@@ -1309,6 +1311,17 @@ export class EcoleService implements OnModuleInit {
         jeton: this.nouveauJeton(),
       },
     });
+
+    // LE LIEN PART AUSSI PAR COURRIEL. L'afficher à l'écran ne suffit pas :
+    // une personne qui ferme l'onglet n'a plus aucun moyen de revenir.
+    await this.envoyerAcces({
+      email,
+      accountId: cours.accountId,
+      titre: cours.titre,
+      jeton: inscription.jeton,
+      paye: false,
+    });
+
     return { lien: `/apprendre/${inscription.jeton}`, dejaInscrit: false };
   }
 
@@ -1862,9 +1875,16 @@ export class EcoleService implements OnModuleInit {
       'line_items[0][price_data][unit_amount]': String(montant),
       'line_items[0][price_data][product_data][name]': cours.titre.slice(0, 200),
       customer_email: email,
-      success_url: `${racine}/ecole/${slug}?paiement=succes&session={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${racine}/ecole/${slug}?paiement=annule`,
+      // LA FICHE DE LA FORMATION EST SUR /cours/<slug>, PAS SUR /ecole/<slug>.
+      // /ecole/<slug> est la vitrine de l'organisme : y renvoyer après le
+      // paiement affichait « École introuvable » à quelqu'un qui venait de
+      // payer, et le code qui ouvre l'accès au retour ne s'exécutait jamais.
+      success_url: `${racine}/cours/${slug}?paiement=succes&session={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${racine}/cours/${slug}?paiement=annule`,
       'metadata[kind]': 'cours',
+      // D'où vient l'achat : le message d'accès doit renvoyer sur la boutique
+      // où la personne a payé, pas sur une autre adresse de la plateforme.
+      'metadata[origine]': racine.slice(0, 120),
       'metadata[coursId]': cours.id,
       'metadata[accountId]': cours.accountId,
       'metadata[email]': email,
@@ -1883,6 +1903,55 @@ export class EcoleService implements OnModuleInit {
       throw new BadRequestException(json.error?.message ?? "Le paiement n'a pas pu s'ouvrir.");
     }
     return { deja: false, url: json.url };
+  }
+
+  /**
+   * ENVOIE LE LIEN D'ACCÈS À UNE FORMATION.
+   *
+   * Partagée par l'inscription gratuite et par le webhook de paiement, pour
+   * que les deux chemins écrivent exactement le même message. Ne lève jamais :
+   * un courriel qui ne part pas ne doit pas défaire une inscription déjà
+   * enregistrée — la trace reste dans le journal des envois.
+   */
+  async envoyerAcces(params: {
+    email: string;
+    accountId: string;
+    titre: string;
+    jeton: string;
+    paye: boolean;
+    montantCents?: number | null;
+    origine?: string | null;
+  }): Promise<void> {
+    try {
+      const ecole = await this.prisma.ecoleEnLigne.findUnique({
+        where: { accountId: params.accountId },
+        select: { nom: true, couleur: true },
+      });
+      const compte = ecole
+        ? null
+        : await this.prisma.account.findUnique({
+            where: { id: params.accountId },
+            select: { name: true },
+          });
+      const racine =
+        params.origine?.replace(/\/$/, '') ||
+        this.config.get<string>('APP_WEB_URL')?.replace(/\/$/, '') ||
+        '';
+      await this.mail.sendAccesFormation({
+        to: params.email,
+        ecole: {
+          nom: ecole?.nom || compte?.name || 'Votre organisme de formation',
+          couleur: ecole?.couleur ?? null,
+        },
+        formation: params.titre,
+        lien: `${racine}/apprendre/${params.jeton}`,
+        paye: params.paye,
+        montantCents: params.montantCents ?? null,
+      });
+    } catch {
+      // Volontairement muet : MailService journalise déjà l'échec, et
+      // l'inscription ne doit pas dépendre de la disponibilité du serveur SMTP.
+    }
   }
 
   /** Le lien d'accès d'un achat, une fois Stripe passé par le webhook. */
