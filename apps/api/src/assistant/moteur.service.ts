@@ -152,12 +152,13 @@ export class MoteurService {
    * `GEMINI_MODEL` reste prioritaire quand il est posé — mais il n'est plus une
    * impasse : s'il désigne un modèle fermé, on redécouvre au lieu de refuser.
    */
-  private modeleChoisi: string | null = null;
+  private modelesDecouverts: string[] | null = null;
 
-  private async modeleGemini(cle: string): Promise<string> {
+  /** Les modèles à essayer, dans l'ordre : l'imposé d'abord, puis la liste. */
+  private async modelesGemini(cle: string): Promise<string[]> {
     const impose = process.env.GEMINI_MODEL?.trim();
-    if (impose && !this.modeleRefuse.has(impose)) return impose;
-    if (this.modeleChoisi) return this.modeleChoisi;
+    const tete = impose && !this.modeleRefuse.has(impose) ? [impose] : [];
+    if (this.modelesDecouverts) return [...tete, ...this.modelesDecouverts.filter((m) => !this.modeleRefuse.has(m))];
 
     try {
       const r = await fetch(`${GEMINI_RACINE}?key=${encodeURIComponent(cle)}&pageSize=200`);
@@ -170,29 +171,60 @@ export class MoteurService {
           // Ni les aperçus, ni les expérimentaux : ils disparaissent sans
           // prévenir, et c'est exactement ce qu'on cherche à ne plus subir.
           .filter((n) => !/preview|exp|thinking|image|tts|embedding|live/i.test(n));
-        const choisi =
-          noms.find((n) => /flash-latest/.test(n)) ??
-          noms.find((n) => /flash-lite/.test(n)) ??
-          noms.find((n) => /flash/.test(n)) ??
-          noms.find((n) => /latest/.test(n)) ??
-          noms[0];
-        if (choisi) {
-          this.journal.log(`Gemini : modèle retenu « ${choisi} ».`);
-          this.modeleChoisi = choisi;
-          return choisi;
+        // L'ORDRE DE PRÉFÉRENCE EST AUSSI UN ORDRE DE REPLI.
+        //
+        // L'offre gratuite sature aux heures pleines : le premier modèle
+        // répond « high demand ». On garde donc TOUTE la liste, la plus
+        // légère d'abord — un modèle « lite » est moins demandé, donc plus
+        // souvent disponible — et l'appel descend la liste au lieu d'échouer.
+        const rang = (n: string) =>
+          /flash-lite/.test(n) ? 0 : /flash-latest/.test(n) ? 1 : /flash/.test(n) ? 2 : /latest/.test(n) ? 3 : 4;
+        const ordonnes = [...noms].sort((a, b) => rang(a) - rang(b));
+        if (ordonnes.length) {
+          this.journal.log(`Gemini : modèles disponibles « ${ordonnes.slice(0, 4).join(', ')} ».`);
+          this.modelesDecouverts = ordonnes;
+          return [...tete, ...ordonnes];
         }
       }
     } catch {
       // Pas de liste : on retombe sur le défaut, l'appel dira ce qui cloche.
     }
-    return impose || MODELE_PAR_DEFAUT;
+    return tete.length ? tete : [MODELE_PAR_DEFAUT];
   }
 
   /** Les modèles que Google a fermés : on ne les redemande pas. */
   private readonly modeleRefuse = new Set<string>();
 
+  /**
+   * UN REFUS N'EST PAS UNE PANNE (09/09/2026).
+   *
+   * L'offre gratuite de Gemini répond « This model is currently experiencing
+   * high demand » aux heures pleines. Abandonner au premier refus, c'est
+   * afficher une erreur alors que la demande suivante, deux secondes plus
+   * tard ou sur le modèle d'à côté, aboutit. On descend donc la liste des
+   * modèles, avec une courte attente entre deux essais.
+   */
   private async gemini(options: OptionsMoteur, cle: string): Promise<string> {
-    const modele = await this.modeleGemini(cle);
+    const modeles = await this.modelesGemini(cle);
+    const aEssayer = modeles.slice(0, 3);
+    let dernier: unknown = null;
+    for (let i = 0; i < aEssayer.length; i += 1) {
+      try {
+        return await this.geminiUneFois(options, cle, aEssayer[i]);
+      } catch (err) {
+        dernier = err;
+        const m = err instanceof Error ? err.message : String(err);
+        // Saturé ou trop de demandes : on attend un souffle et on passe au
+        // modèle suivant. Toute autre erreur (clé, contenu) remonte tout de
+        // suite : réessayer ne la réparera pas.
+        if (!/429|503|high demand|overloaded|UNAVAILABLE|RESOURCE_EXHAUSTED/i.test(m)) throw err;
+        if (i < aEssayer.length - 1) await new Promise((r) => setTimeout(r, 1200));
+      }
+    }
+    throw dernier instanceof Error ? dernier : new Error('Gemini : aucun modèle disponible.');
+  }
+
+  private async geminiUneFois(options: OptionsMoteur, cle: string, modele: string): Promise<string> {
     // Gemini parle en « tours » : l'assistant s'appelle « model » chez lui.
     const fil = (options.historique ?? []).map((m) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -232,7 +264,7 @@ export class MoteurService {
       // marque, on efface le choix courant, et le prochain appel redécouvre.
       if (reponse.status === 404 || /no longer available|not found|not supported/i.test(detail)) {
         this.modeleRefuse.add(modele);
-        if (this.modeleChoisi === modele) this.modeleChoisi = null;
+        this.modelesDecouverts = this.modelesDecouverts?.filter((m) => m !== modele) ?? null;
       }
       throw new Error(`Gemini ${reponse.status} (modèle ${modele}) : ${detail}`);
     }
