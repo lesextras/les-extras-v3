@@ -32,7 +32,18 @@ export const REGLES: Record<FileKind, RegleFamille> = {
   },
   COMPLIANCE: {
     tailleMax: 10 * Mo,
-    types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'],
+    // ⚠ LE WORD EST ICI PARCE QUE LE SITE EN FABRIQUE. La fabrique de documents
+    // propose ses modèles au choix en PDF ou en Word, précisément pour qu'on
+    // puisse les reprendre et les compléter. Le classeur, lui, ne reprenait que
+    // le PDF : on pouvait donc télécharger ses statuts en Word, les finir chez
+    // soi, et ne plus pouvoir les redéposer. Un aller sans retour.
+    types: [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      DOCX,
+    ],
     libelle: 'pièce de conformité',
   },
   MISSION: {

@@ -84,7 +84,7 @@ export class FilesService {
     const type = typeReel(fichier.buffer, fichier.mimetype);
     if (!type) {
       throw new BadRequestException(
-        'Le format de ce fichier n’a pas pu être reconnu. Formats acceptés : PDF, JPEG, PNG, WEBP.',
+        'Le format de ce fichier n’a pas pu être reconnu. Formats acceptés selon le document : PDF, Word, JPEG, PNG, WEBP.',
       );
     }
     if (!regle.types.includes(type)) {
