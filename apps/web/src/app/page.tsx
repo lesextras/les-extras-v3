@@ -57,6 +57,9 @@ import {
   FileSignature,
   Timer,
   Euro,
+  Check,
+  Boxes,
+  Handshake,
 } from 'lucide-react';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
@@ -76,6 +79,7 @@ import { IllustrationReseau } from './_shared/Illustrations';
 import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
+import { Mascotte } from './_shared/Mascotte';
 
 /**
  * L'accueil n'avait aucune canonique : les visites arrivant avec un
@@ -119,12 +123,8 @@ const USAGES = [
     kicker: 'Renfort',
     titre: 'Absorber une absence',
     texte:
-      'Éducateur, moniteur, AES, psychologue. L’offre descend d’abord vers vos salariés, puis vers vos remplaçants habituels, puis vers le réseau.',
-    points: [
-      'Diffusion en cascade, relance automatique',
-      'Feuille de mission éditée à l’acceptation',
-      'Heures pointées, export paie',
-    ],
+      'Éducateur, moniteur, AES, psychologue.',
+    points: ['Diffusion en cascade', 'Feuille de mission éditée', 'Heures pointées, export paie'],
     href: '/renforteam',
     action: 'Comprendre le renfort',
     image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
@@ -136,12 +136,8 @@ const USAGES = [
     kicker: 'Atelier',
     titre: 'Programmer une médiation',
     texte:
-      'Musicothérapie, théâtre, psycho-boxe, slam, socio-esthétique, activité physique adaptée. Animés chez vous par un intervenant du réseau.',
-    points: [
-      'Catalogue avec public, durée et tarif affichés',
-      'Devis sous 48 h, feuille de mission et facture',
-      'Le tarif affiché est le tarif payé',
-    ],
+      'Musicothérapie, théâtre, psycho-boxe, slam, socio-esthétique.',
+    points: ['Public, durée et tarif affichés', 'Devis sous 48 h', 'Le tarif affiché est le tarif payé'],
     href: '/ateliers',
     action: 'Parcourir les ateliers',
     image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
@@ -153,12 +149,8 @@ const USAGES = [
     kicker: 'Formation',
     titre: 'Faire monter l’équipe',
     texte:
-      'Analyse des pratiques, accueil du public en difficulté, gestion de la violence. Dans votre établissement, animées par les formateurs du réseau.',
-    points: [
-      'Certifiées Qualiopi, finançables par votre OPCO',
-      'Émargement et attestations automatiques',
-      'Des parcours en ligne gratuits, en plus',
-    ],
+      'Analyse des pratiques, gestion de la violence, accueil du public.',
+    points: ['Qualiopi, finançable OPCO', 'Émargement et attestations', 'Des parcours gratuits en plus'],
     href: '/formations',
     action: 'Voir les formations',
     image: wp('/wp-content/uploads/2025/02/lever-vous-400x400.jpeg'),
@@ -176,25 +168,25 @@ const TOUT_EN_UN = [
     icone: Megaphone,
     titre: 'Il diffuse',
     texte:
-      'Un seul formulaire pour les trois besoins. Les intervenants dont le profil correspond sont prévenus, avec relance automatique.',
+      'Un formulaire pour les trois besoins. Les bons profils sont prévenus, et relancés.',
   },
   {
     icone: FileSignature,
     titre: 'Il formalise',
     texte:
-      'Devis sous 48 h, feuille de mission éditée, facture générée. Le contrat de travail, lui, reste rédigé par l’établissement.',
+      'Devis sous 48 h, feuille de mission, facture. Le contrat reste le vôtre.',
   },
   {
     icone: ShieldCheck,
     titre: 'Il vérifie',
     texte:
-      'Diplômes, bulletin n° 3 du casier, URSSAF, assurance : réunis une fois, avec alerte avant l’échéance.',
+      'Diplômes, casier, URSSAF, assurance : réunis une fois, alerte avant l’échéance.',
   },
   {
     icone: Timer,
     titre: 'Il compte',
     texte:
-      'Heures pointées, congés et soldes, export paie. Émargement et attestations pour les formations.',
+      'Heures, congés, export paie. Émargement et attestations.',
   },
 ];
 
@@ -249,8 +241,6 @@ export default async function LandingPage() {
     {
       cle: 'ateliers',
       libelle: 'Ateliers',
-      chapeau:
-        'Médiations clés en main, animées chez vous par un intervenant du réseau. Public, durée et tarif affichés.',
       items: ateliersUne,
       basePath: '/ateliers',
       lien: { libelle: 'Tout le catalogue', href: '/ateliers' },
@@ -258,8 +248,6 @@ export default async function LandingPage() {
     {
       cle: 'qualiopi',
       libelle: 'Formations Qualiopi',
-      chapeau:
-        'Montée en compétences des équipes, dans votre établissement, finançable par votre OPCO.',
       items: payantes,
       basePath: '/formations',
       lien: { libelle: 'Toutes les formations', href: '/formations' },
@@ -267,8 +255,6 @@ export default async function LandingPage() {
     {
       cle: 'gratuits',
       libelle: 'Parcours gratuits',
-      chapeau:
-        'Une compétence par parcours, quatre modules, une fiche A4 à imprimer. Sans carte bancaire.',
       items: gratuites,
       basePath: '/formations',
       lien: { libelle: 'Tous les parcours gratuits', href: '/formations' },
@@ -306,10 +292,12 @@ export default async function LandingPage() {
                 Renforts, ateliers, formations&nbsp;:{' '}
                 <span className="text-secondary">un seul réseau, un seul logiciel.</span>
               </h1>
-              <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Vous publiez votre besoin, un intervenant du réseau répond. Le devis, la feuille de
-                mission, les heures et la facture suivent au même endroit. Gratuit des deux côtés,
-                sans commission.
+              {/* TROIS LIGNES DEVENUES UNE. Sous un titre qui dit déjà les
+                  trois usages et le logiciel, le paragraphe ne faisait que
+                  répéter — et les trois repères chiffrés, juste dessous,
+                  disaient le reste mieux que lui. */}
+              <p className="animate-fade-in-up stagger-2 mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
+                Vous publiez, le réseau répond. Devis, feuille de mission et facture suivent.
               </p>
 
               {/* LA BARRE DE RECHERCHE A QUITTÉ LE HÉROS.
@@ -444,8 +432,7 @@ export default async function LandingPage() {
               Le réseau répond aux trois. Le logiciel gère les trois.
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              Un renfort, un atelier, une formation : on publie une fois, et tout ce qui suit est
-              édité au même endroit.
+              On publie une fois. Tout ce qui suit est édité au même endroit.
             </p>
           </Reveal>
 
@@ -479,10 +466,9 @@ export default async function LandingPage() {
                     <ul className="mt-4 space-y-2">
                       {u.points.map((p) => (
                         <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                          <span
-                            className={`mt-[7px] size-2 shrink-0 rounded-full border-[1.5px] ${u.puce}`}
-                            aria-hidden
-                          />
+                          {/* Une coche plutôt qu'un point : elle dit « c'est
+                              compris », le point ne disait rien. */}
+                          <Check className={`mt-0.5 size-4 shrink-0 ${u.teinte}`} aria-hidden />
                           <span>{p}</span>
                         </li>
                       ))}
@@ -503,11 +489,9 @@ export default async function LandingPage() {
           {/* Et par-dessus les trois, le même logiciel. */}
           <Reveal delay={120}>
             <div className="marquee-hover mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 overflow-hidden rounded-2xl border border-border bg-gradient-to-r from-card via-primary-soft to-card px-6 py-5">
-              <p className="text-sm text-muted-foreground">
-                <strong className="font-semibold text-foreground">
-                  Et par-dessus les trois, le même logiciel.
-                </strong>{' '}
-                Rien ne se ressaisit d’un besoin à l’autre.
+              <p className="flex items-center gap-2 text-sm">
+                <Boxes className="size-4 shrink-0 text-primary" aria-hidden />
+                <strong className="font-semibold text-foreground">Le même logiciel pour les trois.</strong>
               </p>
               <div
                 className="min-w-[220px] flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]"
@@ -585,14 +569,18 @@ export default async function LandingPage() {
               <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
                 Le catalogue, en un seul endroit
               </h2>
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Vous réservez{' '}
-                <strong className="font-semibold text-foreground">
-                  directement auprès de l’intervenant
-                </strong>
-                . L’association ne prélève{' '}
-                <strong className="font-semibold text-foreground">aucune commission</strong>.
-              </p>
+              {/* Deux repères au lieu d'une phrase : ce sont les deux seules
+                  choses à retenir avant d'ouvrir le catalogue. */}
+              <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-base text-muted-foreground">
+                <span className="inline-flex items-center gap-2">
+                  <Handshake className="size-5 text-primary" aria-hidden />
+                  Vous réservez directement auprès de l’intervenant
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Euro className="size-5 text-primary" aria-hidden />
+                  Aucune commission
+                </span>
+              </div>
             </Reveal>
 
             {/* ⚠ QUAND L'API NE RÉPOND PAS, LA VITRINE DISPARAISSAIT EN SILENCE.
@@ -639,15 +627,18 @@ export default async function LandingPage() {
           className="scroll-mt-24 border-y border-border bg-gradient-to-b from-primary/[0.07] via-background to-background"
         >
           <div className="section">
-            <Reveal className="max-w-3xl">
+            <Reveal className="flex max-w-3xl items-start gap-5">
+              {/* Le personnage tient le stylo : c'est la section des écrits. */}
+              <Mascotte className="hidden w-24 shrink-0 sm:block" />
+              <div>
               <span className="eyebrow">Pour celles et ceux qui font le terrain</span>
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
                 Le métier ne s’arrête pas à la fin de la journée
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Restent les écrits, les séances à préparer, et la situation qui tourne en boucle.
                 LEX pour les écrits, le GAP pour la pratique.
               </p>
+              </div>
             </Reveal>
 
             <div id="offre-lex" className="mt-12 scroll-mt-24">
@@ -690,8 +681,7 @@ export default async function LandingPage() {
                       Renforts et ateliers
                     </strong>
                     <span className="mt-1 block text-sm text-muted-foreground">
-                      Gratuit pour toujours, 0 % de commission. L’intervenant touche son tarif en
-                      entier.
+                      Gratuit, 0 % de commission. L’intervenant touche son tarif en entier.
                     </span>
                   </li>
                   <li className="border-l-2 border-secondary pl-4">
@@ -699,14 +689,13 @@ export default async function LandingPage() {
                       Formations Qualiopi
                     </strong>
                     <span className="mt-1 block text-sm text-muted-foreground">
-                      Sur devis, facturées par l’association ADéPA, finançables par votre OPCO.
+                      Sur devis, finançables par votre OPCO.
                     </span>
                   </li>
                   <li className="border-l-2 border-amber-500 pl-4">
                     <strong className="block text-sm font-bold text-foreground">LEX</strong>
                     <span className="mt-1 block text-sm text-muted-foreground">
-                      15 générations offertes chaque mois, sans carte bancaire, puis 19 €/mois pour
-                      200.
+                      15 générations offertes par mois, puis 19 €/mois pour 200.
                     </span>
                   </li>
                 </ul>
@@ -720,9 +709,7 @@ export default async function LandingPage() {
                     <Link href="#offre-lex">Le détail de LEX</Link>
                   </Button>
                 </div>
-                <p className="mt-6 text-sm text-muted-foreground">
-                  Montants HT. Formations Qualiopi finançables par votre OPCO.
-                </p>
+                <p className="mt-6 text-sm text-muted-foreground">Montants HT.</p>
               </div>
             </Reveal>
           </div>
@@ -738,6 +725,10 @@ export default async function LandingPage() {
                 aria-hidden
               />
               <div className="relative mx-auto max-w-2xl">
+                {/* Il salue : c'est la dernière chose que voit le visiteur
+                    avant de décider, et un bloc noir de texte centré ne
+                    donnait envie à personne. */}
+                <Mascotte className="mx-auto mb-2 w-32 md:w-40" stylo={false} />
                 <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
                   Ouvrez un compte, regardez, décidez ensuite
                 </h2>
