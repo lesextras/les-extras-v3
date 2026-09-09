@@ -51,7 +51,12 @@ export default async function AccountPage({
   // modifications de prénom, nom ou téléphone ne s'affichaient qu'après une
   // reconnexion.
   const profileRes = await fetchApi<
-    typeof session.user & { phone?: string | null; hebdoOptIn?: boolean; profile?: Profile | null }
+    typeof session.user & {
+      phone?: string | null;
+      hebdoOptIn?: boolean;
+      notifMailOptIn?: boolean;
+      profile?: Profile | null;
+    }
   >(session, "/users/me");
 
   const user = profileRes.data ?? session.user;
