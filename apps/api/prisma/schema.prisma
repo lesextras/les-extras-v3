@@ -213,6 +213,21 @@ model Account {
   commissionRate     Decimal?       @db.Decimal(5, 4)
   /// Solde de points de fidélité (10 points = 1 € de réduction).
   points             Int            @default(0)
+  /// LE COMPTE STRIPE DE CET ORGANISME (Stripe Connect).
+  ///
+  /// Tant qu'il est vide, une vente est encaissée sur le compte Stripe de la
+  /// plateforme : c'est le fonctionnement historique, et il reste valable
+  /// pour ADéPA elle-même. Dès qu'un organisme relie le sien, l'argent de ses
+  /// ventes lui est viré directement — la plateforme ne le détient jamais.
+  stripeCompteId     String?
+  /// Vrai seulement quand Stripe déclare le compte capable d'encaisser. On ne
+  /// le déduit jamais de la seule existence de l'identifiant : un dossier
+  /// commencé et abandonné laisse un compte créé mais inutilisable.
+  stripeComptePret   Boolean        @default(false)
+  /// Ce que la plateforme retient sur chaque vente encaissée pour ce compte,
+  /// en pour cent. À zéro, rien n'est retenu — et les frais du prestataire de
+  /// paiement restent alors à la charge de la plateforme.
+  commissionVentePourcent Int       @default(0)
   ownerId            String
   owner              User           @relation("AccountOwner", fields: [ownerId], references: [id])
   articles           Article[]      @relation("AccountArticles")
@@ -289,6 +304,10 @@ model Account {
   classesVirtuelles             ClasseVirtuelle[]
   ecoleEnLigne                  EcoleEnLigne?
   affilies                      Affilie[]
+  /// La boutique de l'association : ce qu'elle vend en dehors des formations.
+  boutique                      Boutique?
+  produitsBoutique              ProduitBoutique[]
+  commandesBoutique             CommandeBoutique[]
 
   @@index([type])
   @@index([slug])
@@ -3782,4 +3801,178 @@ model Affilie {
 
   @@unique([accountId, code])
   @@index([accountId, actif])
+}
+
+/* ═══════════════════════════════════════════════════ LA BOUTIQUE ══════ */
+
+/// LA BOUTIQUE D'UNE ASSOCIATION.
+///
+/// Une association vend autre chose que des formations : des places, des
+/// t-shirts, un livret, un enregistrement. Cette fiche est la vitrine — un
+/// nom, une adresse, des couleurs — exactement ce que `EcoleEnLigne` est à
+/// l'académie. Les deux sont volontairement séparées : une association peut
+/// tenir une boutique sans avoir d'école, et l'inverse.
+model Boutique {
+  id        String  @id @default(cuid())
+  accountId String  @unique
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  nom          String
+  /// L'adresse publique : /boutique/<slug>.
+  slug         String  @unique
+  sousTitre    String?
+  presentation String?
+
+  logoUrl     String?
+  banniereUrl String?
+
+  couleur String @default("#0F5F3E")
+
+  contactEmail String?
+  cgv          String?
+  mentions     String?
+
+  /// Ce qu'on écrit sur la page quand une commande contient un objet à
+  /// expédier : délais, points de retrait, ce qui est possible et ce qui ne
+  /// l'est pas. Vide, rien ne s'affiche — on n'invente pas de délai.
+  livraisonTexte String?
+
+  publiee Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// CE QUI EST VENDU.
+///
+/// Deux natures, et la différence n'est pas décorative : un objet réel se
+/// compte, s'expédie et demande une adresse ; un produit virtuel se remet à
+/// l'instant du paiement, sans stock ni port.
+model ProduitBoutique {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  titre       String
+  /// L'adresse publique : /boutique/<boutique>/<slug>.
+  slug        String
+  description String?
+  imageUrl    String?
+
+  nature NatureProduit @default(REEL)
+
+  /// En centimes : on ne stocke jamais un prix en flottant.
+  prixCents      Int  @default(0)
+  prixBarreCents Int?
+  /// La TVA appliquée au prix, en pour cent. 0 pour un organisme exonéré.
+  tvaPourcent    Int  @default(0)
+
+  /// PRODUIT RÉEL — ce qui reste. Vide : on ne compte pas.
+  stock          Int?
+  /// PRODUIT RÉEL — les frais d'expédition, en centimes. 0 : remise en main
+  /// propre, ou port offert.
+  livraisonCents Int  @default(0)
+
+  /// PRODUIT VIRTUEL — le fichier remis après le paiement (médiathèque), ou
+  /// l'adresse d'un contenu hébergé ailleurs. L'un ou l'autre suffit.
+  fichierUrl String?
+  lienUrl    String?
+
+  statut StatutProduit @default(BROUILLON)
+  ordre  Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lignes LigneCommande[]
+
+  @@unique([accountId, slug])
+  @@index([accountId, statut])
+  @@index([accountId, ordre])
+}
+
+enum NatureProduit {
+  /// Un objet : il se compte, il s'expédie ou se remet en main propre.
+  REEL
+  /// Un fichier ou un accès : il se remet au moment du paiement.
+  VIRTUEL
+}
+
+enum StatutProduit {
+  BROUILLON
+  PUBLIE
+  ARCHIVE
+}
+
+/// UNE COMMANDE.
+///
+/// Rien n'est créé au moment du clic : la commande naît quand le paiement est
+/// confirmé, comme pour l'achat d'une formation. `stripeSessionId` est unique,
+/// si bien qu'une notification relivrée retombe sur la commande existante et
+/// n'en crée pas une deuxième.
+model CommandeBoutique {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  email     String
+  nom       String?
+  telephone String?
+
+  /// L'adresse d'expédition, renseignée seulement si la commande contient un
+  /// objet réel.
+  adresse    String?
+  codePostal String?
+  ville      String?
+  pays       String?
+
+  totalCents     Int @default(0)
+  fraisPortCents Int @default(0)
+
+  statut StatutCommande @default(PAYEE)
+
+  stripeSessionId String? @unique
+  /// Ce que l'association note pour elle-même : un numéro de suivi, un
+  /// rendez-vous de remise.
+  note            String?
+
+  lignes LigneCommande[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, statut])
+  @@index([accountId, createdAt])
+}
+
+enum StatutCommande {
+  PAYEE
+  PREPAREE
+  EXPEDIEE
+  REMISE
+  ANNULEE
+  REMBOURSEE
+}
+
+/// UNE LIGNE DE COMMANDE.
+///
+/// Le titre et le prix sont recopiés, pas seulement référencés : le jour où le
+/// produit change de prix ou disparaît, la commande passée doit rester lisible
+/// telle qu'elle a été payée.
+model LigneCommande {
+  id         String           @id @default(cuid())
+  commandeId String
+  commande   CommandeBoutique @relation(fields: [commandeId], references: [id], onDelete: Cascade)
+
+  produitId String?
+  produit   ProduitBoutique? @relation(fields: [produitId], references: [id], onDelete: SetNull)
+
+  titre     String
+  nature    NatureProduit @default(REEL)
+  prixCents Int
+  quantite  Int           @default(1)
+  /// Ce qui a été remis pour un produit virtuel, figé au moment de la vente.
+  remisUrl  String?
+
+  @@index([commandeId])
 }
