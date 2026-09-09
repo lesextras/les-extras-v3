@@ -8,7 +8,6 @@ import {
   ArrowRight,
   ShieldCheck,
   CalendarClock,
-  GraduationCap,
   Building2,
   Sparkles,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchPublic } from "../../_shared/server";
 import { VisuelCarte } from "../../_shared/VisuelCarte";
+import { VignetteSansPhoto } from "../../_shared/VignetteSansPhoto";
 import { premierVisuel } from "@/lib/media";
 import { PageHeader, EmptyState } from "../../_shared/ui";
 import { RangeeDefilante } from "../../_shared/RangeeDefilante";
@@ -102,14 +102,11 @@ function CarteFormation({ f, rang }: { f: FormationCard; rang: number }) {
           sizes="(max-width: 640px) 100vw, 33vw"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         >
-          <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
-            <span className="flex flex-col items-center gap-1.5 text-center">
-              <GraduationCap className="size-6 text-primary/70" aria-hidden />
-              <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
-                {f.categoryRef?.title ?? "Formation"}
-              </span>
-            </span>
-          </span>
+          <VignetteSansPhoto
+            graine={f.slug ?? f.id ?? f.title}
+            libelle={f.categoryRef?.title ?? null}
+            motif={f.freeOnline ? 'parcours' : 'formation'}
+          />
         </VisuelCarte>
         {/* Le bandeau de thématique n'a de sens que sur les vignettes qui ne
             l'écrivent pas déjà : la couverture d'une mini-formation le porte
