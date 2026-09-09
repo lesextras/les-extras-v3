@@ -53,6 +53,7 @@ model User {
   notifications             Notification[]
   supportTickets            SupportTicket[]      @relation("SupportAuteur")
   supportMessages           SupportMessage[]     @relation("SupportMessageAuteur")
+  rendezVous                RendezVous[]         @relation("RendezVousAuteur")
   messages                  Message[]
   reviewsAuthored           Review[]             @relation("ReviewAuthor")
   reviewsReceived           Review[]             @relation("ReviewTarget")
@@ -325,6 +326,7 @@ model Account {
   /// Les ateliers payes en ligne sur les fiches de cet intervenant.
   reservationsAteliers          ReservationAtelier[]
   supportTickets                SupportTicket[]
+  rendezVous                    RendezVous[]
 
   @@index([type])
   @@index([slug])
@@ -4181,4 +4183,62 @@ enum StatutReservationAtelier {
   REALISEE
   ANNULEE
   REMBOURSEE
+}
+
+
+/// UN RENDEZ-VOUS POSE A LA MAIN DANS L'AGENDA.
+///
+/// L'agenda de Pilote montre surtout des dates QU'ON N'Y SAISIT PAS : une
+/// session de formation, la cloture d'un formulaire, l'echeance d'un dossier
+/// de subvention. Ces dates vivent dans leurs propres tables et l'agenda va
+/// les y lire — les recopier ici les ferait diverger a la premiere
+/// modification.
+///
+/// Reste ce que l'agenda est seul a connaitre : le rendez-vous avec la mairie,
+/// la reunion d'equipe, la relance a ne pas oublier. C'est cette table.
+///
+/// Elle est portee par le COMPTE et non par la personne : toute l'equipe voit
+/// le meme agenda, c'est la demande. `creePar` dit seulement qui l'a inscrit.
+model RendezVous {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  titre       String
+  description String? @db.Text
+  lieu        String?
+  /// Le lien de visio, quand la rencontre se tient a distance.
+  lien        String?
+
+  debut          DateTime
+  fin            DateTime?
+  /// Une journee entiere : on n'affiche alors aucune heure.
+  journeeEntiere Boolean  @default(false)
+
+  categorie CategorieRendezVous @default(RENDEZ_VOUS)
+
+  /// Les personnes attendues, par leur nom. Un agenda d'equipe n'a pas besoin
+  /// de comptes utilisateurs pour noter que le tresorier est convie.
+  participants String[] @default([])
+
+  /// Un rappel par courriel, ce nombre de minutes avant le debut.
+  rappelMinutes Int?
+  rappelEnvoye  Boolean @default(false)
+
+  creeParId String?
+  creePar   User?   @relation("RendezVousAuteur", fields: [creeParId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, debut])
+}
+
+enum CategorieRendezVous {
+  RENDEZ_VOUS
+  REUNION
+  APPEL
+  VISITE
+  ECHEANCE
+  AUTRE
 }
