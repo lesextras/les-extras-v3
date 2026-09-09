@@ -131,14 +131,14 @@ model Profile {
 /// Un COMPTE (tenant). Soit une organisation ESTABLISHMENT (ex: une MECS),
 /// soit le compte individuel d'un FREELANCE. Peut avoir plusieurs membres.
 model Account {
-  id                 String         @id @default(cuid())
-  name               String
-  type               AccountType
+  id                      String         @id @default(cuid())
+  name                    String
+  type                    AccountType
   /// Validation hierarchique : si active, une mission publiee par un MANAGER
   /// attend l'approbation d'un OWNER/ADMIN avant diffusion.
-  validationMissions Boolean        @default(false)
+  validationMissions      Boolean        @default(false)
   /// Parrainage : compte intervenant qui a invite celui-ci (fige a l'inscription).
-  parrainAccountId   String?
+  parrainAccountId        String?
   /// Profil SALARIE, choisi a l'inscription et fige ensuite.
   ///
   /// La tuile « Salarie » existait a l'ecran mais ne survivait pas au clic :
@@ -149,32 +149,32 @@ model Account {
   /// Tant qu'aucun etablissement ne l'a rattache, son compte n'ouvre que LEX
   /// et sa demande de rattachement (`AttachmentRequest`). Le rattachement se
   /// fait par Membership, et une meme adresse peut en avoir plusieurs.
-  profilSalarie      Boolean        @default(false)
-  slug               String         @unique
+  profilSalarie           Boolean        @default(false)
+  slug                    String         @unique
   /// Attribution — d'où vient ce compte. Renseigné une fois, à l'inscription,
   /// et jamais modifié ensuite : c'est la campagne qui a amené la personne.
   /// utm_source, sinon domaine référent, sinon « direct ».
-  source             String?
+  source                  String?
   /// utm_medium : cpc, social, email, referral...
-  sourceMedium       String?
+  sourceMedium            String?
   /// utm_campaign : nom de l'annonce, pour comparer deux créations.
-  sourceCampaign     String?
+  sourceCampaign          String?
   /// Page d'arrivée : sait-on vers quoi l'annonce pointait.
-  sourceLanding      String?
+  sourceLanding           String?
   // Coordonnées structure
-  legalName          String?
-  siret              String?
-  address            String?
-  city               String?
-  postalCode         String?
-  phone              String?
+  legalName               String?
+  siret                   String?
+  address                 String?
+  city                    String?
+  postalCode              String?
+  phone                   String?
   /// Mention de TVA à afficher sur les factures émises par ce compte (ex.
   /// « TVA non applicable, art. 293 B du CGI » ou « TVA 20 % — n° FR... »).
   /// Laissé vide, la mention par défaut (non assujetti) reste affichée : elle
   /// est vraie pour la grande majorité des comptes (auto-entrepreneurs en
   /// franchise en base, association ADéPA), mais un émetteur assujetti à la
   /// TVA doit pouvoir la corriger lui-même plutôt que de laisser un taux faux.
-  vatMention         String?
+  vatMention              String?
   /// Coordonnées bancaires de l'émetteur, imprimées dans la section
   /// « Règlement » de ses factures. Le produit annonce un règlement par
   /// virement, mais aucun champ ne portait l'IBAN : la facture partait donc
@@ -190,53 +190,53 @@ model Account {
   /// Donnée à diffusion maîtrisée : ne l'exposer que dans les réponses déjà
   /// réservées aux parties de la facture (émetteur, payeur, administration),
   /// jamais dans le catalogue public ni dans une liste de comptes.
-  iban               String?
+  iban                    String?
   /// BIC de la banque. Facultatif même quand l'IBAN est renseigné : il n'est
   /// plus exigé pour un virement SEPA à l'intérieur de l'Espace européen.
-  bic                String?
+  bic                     String?
   /// Adresse de contact publique du compte. Pour un compte intervenant créé
   /// depuis un poste salarié, c'est OBLIGATOIREMENT un contact personnel : les
   /// sollicitations d'activité indépendante ne doivent jamais arriver sur la
   /// messagerie de l'employeur.
-  contactEmail       String?
-  logoUrl            String?
+  contactEmail            String?
+  logoUrl                 String?
   // Crédits LEX : un crédit = une génération (voir CreditsService).
-  credits            Int            @default(0)
+  credits                 Int            @default(0)
   /// Accès LEX illimité accordé à la main (exonération de crédits).
-  isMember           Boolean        @default(false)
+  isMember                Boolean        @default(false)
   /// Essai Découverte : recharge quotidienne gratuite jusqu'à cette date.
   /// Non nul = l'essai a été utilisé (il ne se réclame qu'une fois).
-  lexTrialEndsAt     DateTime?
+  lexTrialEndsAt          DateTime?
   /// Taux de commission ADéPA appliqué aux prestations externes de ce compte
   /// (null = taux par défaut de la plateforme). Modèle prestataire : ADéPA
   /// facture l'établissement, l'intervenant facture ADéPA.
-  commissionRate     Decimal?       @db.Decimal(5, 4)
+  commissionRate          Decimal?       @db.Decimal(5, 4)
   /// Solde de points de fidélité (10 points = 1 € de réduction).
-  points             Int            @default(0)
+  points                  Int            @default(0)
   /// LE COMPTE STRIPE DE CET ORGANISME (Stripe Connect).
   ///
   /// Tant qu'il est vide, une vente est encaissée sur le compte Stripe de la
   /// plateforme : c'est le fonctionnement historique, et il reste valable
   /// pour ADéPA elle-même. Dès qu'un organisme relie le sien, l'argent de ses
   /// ventes lui est viré directement — la plateforme ne le détient jamais.
-  stripeCompteId     String?
+  stripeCompteId          String?
   /// Vrai seulement quand Stripe déclare le compte capable d'encaisser. On ne
   /// le déduit jamais de la seule existence de l'identifiant : un dossier
   /// commencé et abandonné laisse un compte créé mais inutilisable.
-  stripeComptePret   Boolean        @default(false)
+  stripeComptePret        Boolean        @default(false)
   /// Ce que la plateforme retient sur chaque vente encaissée pour ce compte,
   /// en pour cent. À zéro, rien n'est retenu — et les frais du prestataire de
   /// paiement restent alors à la charge de la plateforme.
-  commissionVentePourcent Int       @default(0)
-  ownerId            String
-  owner              User           @relation("AccountOwner", fields: [ownerId], references: [id])
-  articles           Article[]      @relation("AccountArticles")
-  loyaltyPoints      LoyaltyPoint[]
-  ideas              Idea[]
-  questions          Question[]     @relation("AccountQuestions")
-  answers            Answer[]       @relation("AccountAnswers")
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  commissionVentePourcent Int            @default(0)
+  ownerId                 String
+  owner                   User           @relation("AccountOwner", fields: [ownerId], references: [id])
+  articles                Article[]      @relation("AccountArticles")
+  loyaltyPoints           LoyaltyPoint[]
+  ideas                   Idea[]
+  questions               Question[]     @relation("AccountQuestions")
+  answers                 Answer[]       @relation("AccountAnswers")
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
 
   /// Date d'envoi de l'ENQUÊTE de satisfaction « première mise en ligne ».
   /// Non nul = déjà partie, on ne redemande pas. Voir `enquete.scheduler.ts` :
@@ -308,6 +308,8 @@ model Account {
   boutique                      Boutique?
   produitsBoutique              ProduitBoutique[]
   commandesBoutique             CommandeBoutique[]
+  /// Les ateliers payes en ligne sur les fiches de cet intervenant.
+  reservationsAteliers          ReservationAtelier[]
 
   @@index([type])
   @@index([slug])
@@ -576,14 +578,29 @@ model Service {
   /// l'intervenant — et parce qu'effacer une donnée saisie à la main ne se fait
   /// pas. Voir `src/common/territoires.ts` pour le référentiel et la lecture.
   departements    String[]        @default([])
+  /// PAIEMENT EN LIGNE DE CET ATELIER, active par l'intervenant lui-meme.
+  ///
+  /// Faux par defaut, et il faut quatre choses pour le passer a vrai : un
+  /// compte d'encaissement relie et pret, un SIRET declare, un prix, et une
+  /// politique d'annulation ecrite. Voir `ServicesService.reglerPaiement()`.
+  ///
+  /// Le devis et la facture ne bougent pas : cette option AJOUTE un chemin,
+  /// elle n'en remplace aucun.
+  paiementEnLigne Boolean         @default(false)
+  /// CE QUI SE PASSE SI ON ANNULE, ecrit par l'intervenant, affiche AVANT le
+  /// bouton de paiement. Obligatoire pour encaisser en ligne : on ne prend pas
+  /// l'argent de quelqu'un sans lui avoir dit a quelles conditions il le
+  /// recupere.
+  annulationTexte String?
   status          ServiceStatus   @default(DRAFT)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  bookings  Booking[]
-  quotes    Quote[]
-  reviews   Review[]   @relation("ServiceReviews")
-  favorites Favorite[]
+  bookings     Booking[]
+  quotes       Quote[]
+  reviews      Review[]             @relation("ServiceReviews")
+  favorites    Favorite[]
+  reservations ReservationAtelier[]
 
   @@index([status])
   @@index([accountId])
@@ -1859,12 +1876,12 @@ model FileAsset {
   account      Account? @relation("FileAccount", fields: [accountId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
 
-  complianceDocuments ComplianceDocument[]
-  tramesMaison        TrameMaison[]        @relation("TrameSource")
-  missions            ReliefMission[]
-  documents           Document[]
-  avatarOf            User[]               @relation("UserAvatar")
-  piecesAssociation   PieceAssociation[]   @relation("PieceAssociationFichier")
+  complianceDocuments  ComplianceDocument[]
+  tramesMaison         TrameMaison[]         @relation("TrameSource")
+  missions             ReliefMission[]
+  documents            Document[]
+  avatarOf             User[]                @relation("UserAvatar")
+  piecesAssociation    PieceAssociation[]    @relation("PieceAssociationFichier")
   documentsAssociation DocumentAssociation[] @relation("DocumentAssociationFichier")
 
   @@index([uploaderId])
@@ -2674,29 +2691,29 @@ model EmailEnvoye {
 /// libre en base pour la rejouer telle quelle — on stocke des champs, qu'on
 /// sait relire, expliquer à la personne et corriger.
 model AlerteRecherche {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// Le compte au nom duquel l'alerte a été posée. Sert à l'affichage, pas au
   /// filtrage : ce qui est public l'est pour tout le monde.
-  accountId    String?
-  account      Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  accountId      String?
+  account        Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
   /// 'atelier' | 'formation' | 'all' — le rayon du catalogue.
-  type         String   @default("all")
+  type           String    @default("all")
   /// Codes INSEE. Vide = partout. Voir `common/territoires.ts`.
-  departements String[] @default([])
-  categorie    String?
-  publicVise   String?
-  recherche    String?
-  budgetMax    Decimal? @db.Decimal(10, 2)
-  actif        Boolean  @default(true)
+  departements   String[]  @default([])
+  categorie      String?
+  publicVise     String?
+  recherche      String?
+  budgetMax      Decimal?  @db.Decimal(10, 2)
+  actif          Boolean   @default(true)
   /// Dernière fois qu'un courriel est parti pour cette alerte. C'est la borne
   /// qui évite de renvoyer deux fois la même fiche.
   dernierEnvoiAt DateTime?
   /// Nombre de fiches déjà signalées, pour la page de gestion.
-  signalees    Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  signalees      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([userId])
   @@index([actif])
@@ -2845,11 +2862,11 @@ model Organisation {
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
-  pieces    PieceAssociation[]
-  dossiers  DossierFinancement[]
-  contacts  ContactAssociation[]
-  documents DocumentAssociation[]
-  actions   ActionAssociation[]
+  pieces     PieceAssociation[]
+  dossiers   DossierFinancement[]
+  contacts   ContactAssociation[]
+  documents  DocumentAssociation[]
+  actions    ActionAssociation[]
   mouvements MouvementAssociation[]
 
   @@index([siren])
@@ -2887,39 +2904,39 @@ enum NatureDossier {
 }
 
 model DossierFinancement {
-  id              String       @id @default(cuid())
-  organisationId  String
-  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  id                  String        @id @default(cuid())
+  organisationId      String
+  organisation        Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   /// Code d'un dispositif du référentiel, s'il en vient.
-  dispositifCode  String?
-  financeur       String
-  intitule        String
+  dispositifCode      String?
+  financeur           String
+  intitule            String
   /// Une subvention qu'on demande, ou un appel à projet auquel on répond.
-  nature          NatureDossier @default(SUBVENTION)
+  nature              NatureDossier @default(SUBVENTION)
   /// Ce que le financeur demande, recopié de l'appel : à qui il s'adresse, pour quoi.
-  description     String?
+  description         String?
   /// L'idée de projet qu'on va lui proposer.
-  ideeProjet      String?
+  ideeProjet          String?
   /// Le plafond annoncé par le financeur.
-  montantMax      Decimal?     @db.Decimal(12, 2)
-  etat            EtatDossier  @default(REPERE)
-  montantDemande  Decimal?     @db.Decimal(12, 2)
-  montantAccorde  Decimal?     @db.Decimal(12, 2)
-  dateLimiteDepot DateTime?
-  dateDepot       DateTime?
-  dateDecision    DateTime?
-  dateCompteRendu DateTime?
+  montantMax          Decimal?      @db.Decimal(12, 2)
+  etat                EtatDossier   @default(REPERE)
+  montantDemande      Decimal?      @db.Decimal(12, 2)
+  montantAccorde      Decimal?      @db.Decimal(12, 2)
+  dateLimiteDepot     DateTime?
+  dateDepot           DateTime?
+  dateDecision        DateTime?
+  dateCompteRendu     DateTime?
   /// Codes des pièces exigées par ce financeur.
-  piecesExigees   String[]     @default([])
-  notes           String?
+  piecesExigees       String[]      @default([])
+  notes               String?
   /// Budget prévisionnel et réalisé : lignes { libelle, montant, sens: 'DEPENSE' | 'RECETTE' }.
-  budgetPrevu     Json?
-  budgetRealise   Json?
+  budgetPrevu         Json?
+  budgetRealise       Json?
   /// Le compte rendu : ce que l'action a produit, en quelques phrases.
-  bilanAction     String?
+  bilanAction         String?
   nombreBeneficiaires Int?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   @@index([organisationId, etat])
   @@index([organisationId, dateLimiteDepot])
@@ -2993,29 +3010,29 @@ enum EtatAction {
 /// Les actions de l'association : ce qu'elle fait vraiment sur le terrain.
 /// C'est la matière du rapport d'activité et des dossiers de subvention.
 model ActionAssociation {
-  id             String       @id @default(cuid())
-  organisationId String
-  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  intitule       String
+  id              String       @id @default(cuid())
+  organisationId  String
+  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  intitule        String
   /// À quoi ça sert, pour qui, en deux phrases.
-  resume         String?
-  lieu           String?
-  dateDebut      DateTime?
-  dateFin        DateTime?
-  etat           EtatAction   @default(PREVUE)
+  resume          String?
+  lieu            String?
+  dateDebut       DateTime?
+  dateFin         DateTime?
+  etat            EtatAction   @default(PREVUE)
   /// Combien de personnes en ont profité.
-  beneficiaires  Int?
+  beneficiaires   Int?
   /// Combien de bénévoles, et combien d'heures données.
-  benevoles      Int?
+  benevoles       Int?
   heuresBenevoles Int?
   /// Ce que l'action a coûté, en euros.
-  cout           Int?
+  cout            Int?
   /// Avec qui : la mairie, une école, une autre association.
-  partenaires    String?
+  partenaires     String?
   /// Ce qu'on en retient, une fois l'action finie.
-  bilan          String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  bilan           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([organisationId])
 }
@@ -3106,9 +3123,9 @@ model Academie {
   /// Numéro de déclaration d'activité délivré par la DREETS. Non bloquant à
   /// l'ouverture : une académie en cours de déclaration ouvre son espace et le
   /// renseigne le jour où elle l'a.
-  nda          String?
-  ndaDeposeLe  DateTime?
-  dreets       String?
+  nda         String?
+  ndaDeposeLe DateTime?
+  dreets      String?
 
   siren String?
   siret String?
@@ -3124,18 +3141,18 @@ model Academie {
 
   /// Où en est la certification. C'est ce champ qui décide de ce que l'accueil
   /// met en avant le premier jour.
-  qualiopi          EtatQualiopi @default(PAS_ENGAGE)
-  certificateur     String?
-  auditPrevuLe      DateTime?
-  certifieDu        DateTime?
-  certifieAu        DateTime?
+  qualiopi      EtatQualiopi @default(PAS_ENGAGE)
+  certificateur String?
+  auditPrevuLe  DateTime?
+  certifieDu    DateTime?
+  certifieAu    DateTime?
 
   /// Obligation d'affichage du référent handicap (critère 3).
   referentHandicap    String?
   referentPedagogique String?
 
   /// Ce qu'on affiche en une phrase, et le texte long de la page publique.
-  resume      String?
+  resume       String?
   presentation String?
 
   /// Les étapes du chemin cochées à la main. Le reste se déduit des données.
@@ -3167,12 +3184,12 @@ model VeilleEntree {
   academieId String
   academie   Academie @relation(fields: [academieId], references: [id], onDelete: Cascade)
 
-  type       TypeVeille
-  date       DateTime
-  titre      String
-  source     String?
-  lien       String?
-  resume     String?
+  type        TypeVeille
+  date        DateTime
+  titre       String
+  source      String?
+  lien        String?
+  resume      String?
   /// Ce qu'on en a fait : c'est cette colonne que l'auditeur regarde vraiment.
   consequence String?
 
@@ -3197,14 +3214,14 @@ model Reclamation {
   academieId String
   academie   Academie @relation(fields: [academieId], references: [id], onDelete: Cascade)
 
-  recueLe     DateTime
-  origine     OrigineReclamation @default(APPRENANT)
-  auteur      String?
-  objet       String
-  detail      String?
-  traitement  String?
-  clotureeLe  DateTime?
-  statut      StatutReclamation @default(OUVERTE)
+  recueLe    DateTime
+  origine    OrigineReclamation @default(APPRENANT)
+  auteur     String?
+  objet      String
+  detail     String?
+  traitement String?
+  clotureeLe DateTime?
+  statut     StatutReclamation  @default(OUVERTE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3248,11 +3265,11 @@ model Formulaire {
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   /// Le titre, tel qu'il s'affiche en haut de la page publique.
-  titre       String
+  titre        String
   /// Le texte d'introduction, facultatif, au-dessus de la première question.
   introduction String? @db.Text
   /// L'adresse publique : pilote.toulali.fr/f/<slug>. Unique sur tout le site.
-  slug        String  @unique
+  slug         String  @unique
 
   statut StatutFormulaire @default(BROUILLON)
 
@@ -3266,9 +3283,9 @@ model Formulaire {
   remerciement String? @db.Text
 
   /// Une seule réponse par personne connectée, si on le demande.
-  reponseUnique Boolean @default(false)
+  reponseUnique Boolean   @default(false)
   /// On demande l'adresse e-mail avant d'ouvrir les questions.
-  demanderEmail Boolean @default(false)
+  demanderEmail Boolean   @default(false)
   /// La date après laquelle le formulaire n'accepte plus de réponse.
   fermeLe       DateTime?
 
@@ -3438,14 +3455,14 @@ model ChapitreCours {
   coursId String
   cours   Cours  @relation(fields: [coursId], references: [id], onDelete: Cascade)
 
-  titre  String
-  resume String?
-  ordre  Int     @default(0)
+  titre          String
+  resume         String?
+  ordre          Int     @default(0)
   /// Un chapitre en brouillon reste écrit, mais ne se lit pas.
-  publie Boolean @default(true)
+  publie         Boolean @default(true)
   /// Diffusion progressive : le chapitre ne s'ouvre qu'au bout de N jours
   /// comptés depuis l'inscription. Zéro : disponible tout de suite.
-  ouvertureJours Int @default(0)
+  ouvertureJours Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3466,10 +3483,10 @@ model LeconCours {
   coursId    String?
   cours      Cours?         @relation("LeconRacine", fields: [coursId], references: [id], onDelete: Cascade)
 
-  titre   String
-  type    TypeLecon @default(TEXTE)
+  titre      String
+  type       TypeLecon @default(TEXTE)
   /// Le texte de la leçon, écrit dans l'atelier. Ancien format : voir « blocs ».
-  contenu String?
+  contenu    String?
   /// L'adresse de la vidéo ou de l'audio hébergé (aucun fichier ici).
   videoUrl   String?
   fichierUrl String?
@@ -3481,19 +3498,19 @@ model LeconCours {
   /// Les leçons écrites avant les blocs sont converties au démarrage.
   blocs Json?
 
-  dureeMinutes Int     @default(0)
+  dureeMinutes   Int     @default(0)
   /// Quand la durée est imposée, la leçon ne peut pas être cochée avant que
   /// ce temps se soit écoulé depuis sa première ouverture.
-  dureeImposee Boolean @default(false)
+  dureeImposee   Boolean @default(false)
   /// Une leçon d'aperçu se lit sans avoir acheté le cours.
-  apercu       Boolean @default(false)
+  apercu         Boolean @default(false)
   /// Une leçon en brouillon reste écrite, mais ne se lit pas.
-  publie       Boolean @default(true)
+  publie         Boolean @default(true)
   /// Diffusion progressive : voir ChapitreCours.ouvertureJours.
-  ouvertureJours Int @default(0)
+  ouvertureJours Int     @default(0)
 
   /// TÂCHES & MISSIONS : [{ "id", "texte" }] — une liste que l'apprenant coche.
-  taches Json?
+  taches   Json?
   /// CONTENU SCORM : l'adresse de l'index d'un paquet déposé ailleurs.
   scormUrl String?
 
@@ -3571,15 +3588,15 @@ model ProgressionLecon {
   leconId       String
   lecon         LeconCours       @relation(fields: [leconId], references: [id], onDelete: Cascade)
 
-  faite   Boolean   @default(false)
-  faiteLe DateTime?
+  faite     Boolean   @default(false)
+  faiteLe   DateTime?
   /// La première ouverture de la leçon : c'est elle qui rend la durée minimum
   /// vérifiable côté serveur, plutôt que de croire le navigateur.
   ouverteLe DateTime?
   /// Les tâches cochées : ["id", "id"…]
-  taches  Json?
+  taches    Json?
   /// La note du quiz, sur 100, quand la leçon en portait un.
-  score   Int?
+  score     Int?
 
   @@unique([inscriptionId, leconId])
   @@index([leconId])
@@ -3624,10 +3641,10 @@ model PackCours {
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   titre       String
-  slug        String  @unique
+  slug        String   @unique
   description String?
   imageUrl    String?
-  prixCents   Int     @default(0)
+  prixCents   Int      @default(0)
   /// Les cours du pack, dans l'ordre où on les propose.
   coursIds    String[] @default([])
 
@@ -3682,19 +3699,19 @@ model VenteCours {
   cours   Cours?  @relation(fields: [coursId], references: [id], onDelete: SetNull)
   packId  String?
 
-  email  String
-  nom    String?
+  email String
+  nom   String?
 
   montantCents Int
   codePromo    String?
   /// Le code de l'affilié quand la vente vient d'un lien partagé.
   affiliation  String?
 
-  statut StatutVente @default(PAYEE)
-  moyen  String?
+  statut          StatutVente @default(PAYEE)
+  moyen           String?
   /// La session Stripe qui a payé cette vente. Unique : une relivraison du
   /// webhook retombe dessus et n'inscrit personne deux fois.
-  stripeSessionId String? @unique
+  stripeSessionId String?     @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3803,7 +3820,9 @@ model Affilie {
   @@index([accountId, actif])
 }
 
-/* ═══════════════════════════════════════════════════ LA BOUTIQUE ══════ */
+/**
+ * ═══════════════════════════════════════════════════ LA BOUTIQUE ══════
+ */
 
 /// LA BOUTIQUE D'UNE ASSOCIATION.
 ///
@@ -3975,4 +3994,84 @@ model LigneCommande {
   remisUrl  String?
 
   @@index([commandeId])
+}
+
+/// ═══════════════════════════════════════════════════════════════════════
+/// RESERVATION D'ATELIER PAYEE EN LIGNE.
+///
+/// Volontairement A COTE de `Booking`, pas dedans. Un `Booking` part d'un
+/// compte etabli sur la plateforme et se termine en devis puis en facture ;
+/// c'est le chemin historique, il marche, et il continue d'exister sans une
+/// ligne de changement. Ici, la personne peut n'avoir aucun compte : elle
+/// arrive sur la fiche, choisit une date, paie, et c'est tout. Melanger les
+/// deux aurait oblige a rendre `Booking.accountId` facultatif, c'est-a-dire a
+/// fragiliser le tunnel qui fait vivre la place de marche pour ajouter un
+/// chemin neuf. On prefere deux objets clairs a un objet ambigu.
+///
+/// L'ARGENT NE PASSE PAS PAR LA PLATEFORME. Le paiement est encaisse
+/// directement sur le compte Stripe de l'intervenant : c'est lui le vendeur,
+/// c'est lui qui delivre la prestation, c'est lui qui rembourse, et c'est lui
+/// qui porte une contestation de carte. La plateforme ne retient que sa part,
+/// nulle par defaut.
+model ReservationAtelier {
+  id        String  @id @default(cuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  /// Le compte de l'intervenant : celui qui encaisse et qui rendra le service.
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  /// L'ACHETEUR. Il n'a pas de compte, et on ne lui en impose pas : exiger une
+  /// inscription avant de payer, c'est perdre la vente.
+  email        String
+  nom          String?
+  telephone    String?
+  organisation String?
+  message      String?
+
+  /// Ce qui a ete demande. La date reste un SOUHAIT tant que l'intervenant ne
+  /// l'a pas confirmee : la fiche n'a pas d'agenda, et laisser croire a un
+  /// creneau reserve serait un mensonge.
+  dateSouhaitee DateTime?
+  creneau       String?
+  participants  Int?
+
+  /// Ce qui a ete paye, en centimes, au moment ou ca l'a ete. Fige : le prix
+  /// de la fiche peut changer demain, pas ce qui a ete encaisse hier.
+  montantCents        Int
+  /// La part retenue par la plateforme sur ce paiement, en centimes.
+  partPlateformeCents Int     @default(0)
+  /// Le texte des conditions d'annulation TEL QU'AFFICHE au moment de payer.
+  /// Recopie ici a dessein : l'intervenant peut le reecrire plus tard, mais
+  /// l'acheteur n'a accepte que celui-la.
+  annulationTexte     String?
+
+  statut StatutReservationAtelier @default(PAYEE)
+
+  /// La session de paiement, sur le compte de l'intervenant. Unique : c'est la
+  /// cle qui empeche d'enregistrer deux fois la meme reservation quand la page
+  /// de retour est rechargee.
+  stripeSessionId       String? @unique
+  stripePaymentIntentId String?
+
+  payeeAt               DateTime?
+  rembourseeAt          DateTime?
+  montantRembourseCents Int?
+  /// Note de l'intervenant sur cette reservation. Jamais montree a l'acheteur.
+  noteInterne           String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, statut])
+  @@index([serviceId])
+  @@index([email])
+}
+
+enum StatutReservationAtelier {
+  PAYEE
+  CONFIRMEE
+  REALISEE
+  ANNULEE
+  REMBOURSEE
 }
