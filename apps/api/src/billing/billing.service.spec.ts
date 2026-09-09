@@ -51,7 +51,10 @@ function service(secretConfigure: string | null = SECRET) {
   // capture pour vérifier que l'abonné n'attend pas le 1er du mois.
   const credits = { amorcerDotation: jest.fn().mockResolvedValue(undefined) };
   return {
-    billing: new BillingService(prisma, config, credits as never),
+    // L'ecole et la boutique ne servent pas ces scenarios d'abonnement : on les
+    // passe vides plutot que de les simuler, pour que le test continue de ne
+    // parler que de ce qu'il verifie.
+    billing: new BillingService(prisma, config, credits as never, {} as never, {} as never),
     subscription,
     invoice,
     credits,
@@ -314,7 +317,13 @@ describe('BillingService : règlement en ligne d’une facture', () => {
     const config = {
       get: jest.fn((clef: string) => (clef === 'PLATFORM_ACCOUNT_ID' ? undefined : 'sk_test_x')),
     } as never;
-    return new BillingService(prisma, config, { amorcerDotation: jest.fn() } as never);
+    return new BillingService(
+      prisma,
+      config,
+      { amorcerDotation: jest.fn() } as never,
+      {} as never,
+      {} as never,
+    );
   }
 
   it('refuse le paiement à l’ÉMETTEUR de la facture', async () => {
