@@ -87,7 +87,7 @@ export function QrShare({
           <p className="text-center text-xs text-muted-foreground">
             À imprimer sur une affiche ou à projeter en réunion.
           </p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <Button variant="outline" size="sm" onClick={telecharger}>
               <Download className="size-4" /> PNG
             </Button>

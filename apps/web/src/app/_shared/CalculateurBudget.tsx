@@ -45,7 +45,7 @@ export function CalculateurBudget() {
           <PiggyBank className="size-4 text-primary" /> Votre établissement
         </p>
         <Champ label="Jeunes / résidents accueillis" valeur={jeunes} setValeur={setJeunes} />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Champ label="Ateliers par mois" valeur={ateliersParMois} setValeur={setAteliersParMois} />
           <Champ label="Mois d'activité" valeur={mois} setValeur={setMois} />
         </div>

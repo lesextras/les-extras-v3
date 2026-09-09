@@ -129,7 +129,7 @@ export function AdminServicesTable({
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                         {formatMoney(s.price)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell>
                         <Completude service={s} />
                       </TableCell>
                       <TableCell>
@@ -137,7 +137,7 @@ export function AdminServicesTable({
                           {SERVICE_STATUS_LABEL[s.status] ?? s.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell>
                         <ModerateServiceActions
                           serviceId={s.id}
                           accountId={accountId}
@@ -168,7 +168,7 @@ function Completude({ service }: { service: Service }) {
         : "text-secondary";
   return (
     <div className="min-w-[7rem]">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="h-1.5 w-14 overflow-hidden rounded-full bg-muted">
           <div
             className={c.pourcentage >= 100 ? "h-full bg-emerald-500" : c.pourcentage >= 70 ? "h-full bg-primary" : "h-full bg-secondary"}

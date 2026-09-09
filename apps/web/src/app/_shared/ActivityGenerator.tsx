@@ -86,7 +86,7 @@ export function ActivityGenerator() {
             Décrivez la situation avec vos mots. Les noms éventuels sont masqués avant tout traitement.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="duree" className="text-sm font-medium">Durée disponible</label>
             <input id="duree" name="duree" placeholder="Ex : 1 h 30"

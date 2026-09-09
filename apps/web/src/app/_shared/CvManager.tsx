@@ -138,7 +138,7 @@ export function CvManager({ accountId }: { accountId: string }) {
           <Field label="Intitulé du diplôme / de la formation" htmlFor="q-title" required>
             <Input id="q-title" name="title" required placeholder="DEES, Diplôme d'État d'éducateur spécialisé" />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Établissement" htmlFor="q-org">
               <Input id="q-org" name="organization" placeholder="IRTS, IFEN…" />
             </Field>

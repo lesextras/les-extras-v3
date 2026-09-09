@@ -129,7 +129,7 @@ export function AdminMissionsTable({
                       </TableCell>
                       {/* Sans nowrap, les quatre boutons repliaient et la
                           colonne se tronquait sur écran standard. */}
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell>
                         <ModerateMissionActions
                           missionId={m.id}
                           accountId={accountId}

@@ -70,7 +70,7 @@ export function CalculateurRemplacement() {
         <p className="inline-flex items-center gap-2 text-sm font-semibold">
           <Calculator className="size-4 text-primary" /> Vos paramètres
         </p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Champ label="Heures / semaine" valeur={heures} setValeur={setHeures} suffixe="h" />
           <Champ label="Durée" valeur={semaines} setValeur={setSemaines} suffixe="sem." />
         </div>
@@ -98,7 +98,7 @@ export function CalculateurRemplacement() {
           pas={1}
           aide="Tarif négocié en direct, tout compris, facturé par l'intervenant."
         />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Champ label="Heures admin. évitées" valeur={heuresAdmin} setValeur={setHeuresAdmin} suffixe="h" />
           <Champ label="Coût horaire chargé" valeur={coutHeureAdmin} setValeur={setCoutHeureAdmin} suffixe="€/h" />
         </div>

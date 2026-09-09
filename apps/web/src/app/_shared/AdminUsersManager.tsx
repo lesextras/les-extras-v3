@@ -165,7 +165,7 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
               <div className="hidden lg:block" />
               <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} placeholder="Prénom" />
               <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} placeholder="Nom" />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}>
                   <SelectTrigger><SelectValue placeholder="Rôle" /></SelectTrigger>
                   <SelectContent>

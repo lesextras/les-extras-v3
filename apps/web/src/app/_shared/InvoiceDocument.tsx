@@ -277,8 +277,8 @@ export function InvoiceDocument({ invoice }: { invoice: DocInvoice }) {
         </section>
 
         {/* Lignes */}
-        <section className="mt-10">
-          <table className="w-full text-sm">
+        <section className="scrollbar-visible mt-10 overflow-x-auto">
+          <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="border-b border-neutral-200 text-left text-[11px] uppercase tracking-widest text-neutral-400">
                 <th className="pb-2 font-medium">Désignation</th>
