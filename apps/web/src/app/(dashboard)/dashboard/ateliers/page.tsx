@@ -13,6 +13,10 @@ import { completude } from "@/lib/completude-fiche";
 import { BookingActions } from "../../../_shared/BookingActions";
 import { BlocParrainage } from "../../../_shared/BlocParrainage";
 import { SERVICE_STATUS_LABEL } from "../../../_shared/format";
+import {
+  ReservationsPayees,
+  type ReservationPayee,
+} from "../../../_shared/ReservationsPayees";
 import type { Booking, Service } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Mes ateliers" };
@@ -58,10 +62,16 @@ export default async function AteliersPage({
     );
   }
 
-  const [services, bookings] = await Promise.all([
+  const [services, bookings, payees] = await Promise.all([
     fetchApi<Service[]>(session, "/services?scope=account"),
     fetchApi<Booking[]>(session, "/bookings?scope=account&kind=service"),
+    // Les ateliers réglés en ligne : un tunnel à part, où l'argent est déjà
+    // arrivé. Une erreur ici ne doit pas emporter la page entière — le
+    // catalogue et les réservations classiques comptent davantage.
+    fetchApi<ReservationPayee[]>(session, "/ateliers/reservations"),
   ]);
+  const listePayees = payees.data ?? [];
+  const aConfirmer = listePayees.filter((r) => r.statut === "PAYEE").length;
 
   // LES RÉSERVATIONS QUI DEMANDENT UN GESTE — pas seulement les nouvelles.
   //
@@ -161,6 +171,24 @@ export default async function AteliersPage({
             ))}
           </CardContent>
         </Card>
+      ) : null}
+
+      {listePayees.length > 0 ? (
+        <section id="payes" className="space-y-4 scroll-mt-24">
+          <SectionTitle
+            title={
+              aConfirmer > 0
+                ? `Ateliers payés en ligne (${aConfirmer} à confirmer)`
+                : "Ateliers payés en ligne"
+            }
+          />
+          <p className="max-w-prose text-sm text-muted-foreground">
+            L&apos;argent est déjà sur votre compte : ces personnes ont payé sans passer par un
+            devis. Il reste à confirmer la date avec elles — ou à les rembourser si vous ne pouvez
+            pas assurer l&apos;atelier.
+          </p>
+          <ReservationsPayees initiales={listePayees} accountId={session.account.id} />
+        </section>
       ) : null}
 
       <section className="space-y-4">
