@@ -7,7 +7,7 @@
 // personne ne lit debout. Chaque outil porte maintenant sa couleur, le détail
 // tient en une ligne, et les garanties passent sur une bande sombre — c’est
 // elle qui referme le bloc au lieu de le laisser se dissoudre.
-import { PenLine, Lightbulb, FileText, MessageCircle, ShieldCheck, Lock, Scale } from "lucide-react";
+import { PenLine, Lightbulb, FileText, MessageCircle, ShieldCheck, Lock, Scale, Check } from "lucide-react";
 
 const PRODUITS = [
   {
@@ -68,17 +68,26 @@ const GARANTIES = [
   {
     icone: ShieldCheck,
     titre: "Les noms ne sortent jamais",
-    texte: "Prénoms et coordonnées sont remplacés avant l’envoi.",
+    points: [
+      "Prénoms, dates et coordonnées deviennent des jetons",
+      "Le remplacement se fait avant l’envoi au modèle",
+    ],
   },
   {
     icone: Lock,
     titre: "Rien n’est enregistré sans vous",
-    texte: "Seule la version que vous validez est gardée.",
+    points: [
+      "Ni les notes brutes, ni le brouillon",
+      "Seule la version que vous validez est gardée",
+    ],
   },
   {
     icone: Scale,
     titre: "LEX propose, vous décidez",
-    texte: "Aucun diagnostic : l’écrit reste le vôtre.",
+    points: [
+      "Aucun diagnostic, aucune décision",
+      "La responsabilité de l’écrit reste la vôtre",
+    ],
   },
 ];
 
@@ -143,16 +152,29 @@ export function OffreLex() {
           </h3>
           <p className="mt-1 text-base text-muted-foreground">Trois garanties, pas des intentions.</p>
         </div>
-        <ul className="grid gap-7 px-6 py-7 md:grid-cols-3 md:gap-9 md:px-9 md:py-9">
+        {/* Trois colonnes bâties comme celles de « Trois besoins, un même
+            chemin » : l'icône et le titre centrés en tête de colonne, puis une
+            liste à puces alignée à gauche — une puce se lit, un paragraphe se
+            saute. Le corps est celui du texte courant, pas du petit texte. */}
+        <ul className="grid gap-9 px-6 py-8 md:grid-cols-3 md:gap-10 md:px-9 md:py-10">
           {GARANTIES.map((g) => {
             const Icone = g.icone;
             return (
               <li key={g.titre}>
-                <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
-                  <Icone className="size-5" aria-hidden />
+                <span className="mx-auto grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">
+                  <Icone className="size-6" aria-hidden />
                 </span>
-                <h4 className="mt-3.5 text-base font-bold text-foreground">{g.titre}</h4>
-                <p className="mt-1.5 text-base leading-relaxed text-muted-foreground">{g.texte}</p>
+                <h4 className="mt-4 text-center text-lg font-bold leading-snug text-foreground text-balance">
+                  {g.titre}
+                </h4>
+                <ul className="mt-4 space-y-2.5">
+                  {g.points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-2.5 text-base leading-relaxed text-muted-foreground">
+                      <Check className="mt-1 size-4 shrink-0 text-primary" aria-hidden />
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
               </li>
             );
           })}
