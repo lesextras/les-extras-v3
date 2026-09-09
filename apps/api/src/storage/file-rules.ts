@@ -60,6 +60,23 @@ export const REGLES: Record<FileKind, RegleFamille> = {
     types: ['application/pdf', DOCX, 'text/plain', 'text/markdown'],
     libelle: "modèle d'écrit",
   },
+  MEDIA: {
+    // LA MÉDIATHÈQUE D'UNE FORMATION : les vidéos et les documents qui font le
+    // contenu d'une leçon. C'est la seule famille lourde, et la seule dont les
+    // fichiers sont servis publiquement — un apprenant qui suit un cours n'a
+    // pas de compte, il ouvre un lien.
+    tailleMax: 150 * Mo,
+    types: [
+      'video/mp4',
+      'audio/mpeg',
+      'audio/mp4',
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ],
+    libelle: 'pièce de médiathèque',
+  },
   FORMATION: {
     tailleMax: 20 * Mo,
     types: [
@@ -74,10 +91,21 @@ export const REGLES: Record<FileKind, RegleFamille> = {
   },
 };
 
-/** La plus grande taille tolérée, toutes familles confondues. */
+/**
+ * La plus grande taille tolérée sur la route de dépôt ordinaire.
+ *
+ * La médiathèque en est volontairement exclue : elle a sa propre route et sa
+ * propre limite. Sans cette séparation, n'importe quel dépôt pourrait charger
+ * cent cinquante mégaoctets en mémoire avant d'être refusé.
+ */
 export const TAILLE_MAX_GLOBALE = Math.max(
-  ...Object.values(REGLES).map((r) => r.tailleMax),
+  ...Object.entries(REGLES)
+    .filter(([cle]) => cle !== 'MEDIA')
+    .map(([, r]) => r.tailleMax),
 );
+
+/** La limite propre à la médiathèque (vidéos de leçon). */
+export const TAILLE_MAX_MEDIA = REGLES.MEDIA.tailleMax;
 
 /**
  * Déduit le type réel à partir des premiers octets. Renvoie `null` si la
@@ -114,6 +142,20 @@ export function typeReel(buffer: Buffer, typeDeclare: string): string | null {
     buffer.subarray(8, 12).toString('latin1') === 'WEBP'
   ) {
     return 'image/webp';
+  }
+  // MP4 / M4A : la taille de la boîte, puis « ftyp » en position 4.
+  if (buffer.subarray(4, 8).toString('latin1') === 'ftyp') {
+    const marque = buffer.subarray(8, 12).toString('latin1');
+    // Les marques audio d'Apple commencent par M4A / M4B ; tout le reste
+    // (isom, mp42, avc1, qt…) est servi comme une vidéo MP4.
+    return /^M4A|^M4B/.test(marque) ? 'audio/mp4' : 'video/mp4';
+  }
+  // MP3 : soit une étiquette « ID3 », soit directement une trame MPEG.
+  if (buffer.subarray(0, 3).toString('latin1') === 'ID3') {
+    return 'audio/mpeg';
+  }
+  if (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0) {
+    return 'audio/mpeg';
   }
   // Texte brut : aucun nombre magique. On ne l'accepte que s'il est déclaré
   // comme tel ET qu'il ne commence pas par une signature binaire connue —

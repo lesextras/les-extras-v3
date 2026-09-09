@@ -145,6 +145,11 @@ export class FilesService {
   private static readonly FAMILLES_PUBLIQUES: ReadonlySet<FileKind> = new Set([
     FileKind.ARTICLE,
     FileKind.SERVICE,
+    // La médiathèque d'une formation : l'apprenant ouvre son cours avec un
+    // jeton, sans compte, et le lecteur vidéo du navigateur ne sait pas
+    // présenter d'en-tête d'authentification. La clé de stockage n'est jamais
+    // exposée et l'identifiant n'est pas devinable.
+    FileKind.MEDIA,
   ]);
 
   /** Lecture PUBLIQUE d'une illustration, réservée aux familles ci-dessus. */
@@ -155,6 +160,53 @@ export class FilesService {
     }
     const flux = await this.storage.lire(asset.storageKey);
     return { flux, nom: asset.originalName, type: asset.mimeType, taille: asset.size };
+  }
+
+  /**
+   * LA FICHE D'UN MÉDIA PUBLIC, sans son contenu.
+   *
+   * Le contrôleur en a besoin avant de lire quoi que ce soit : il doit
+   * connaître la taille du fichier pour répondre à une demande d'intervalle,
+   * et sa clé de stockage pour aller chercher la tranche demandée.
+   */
+  async fichePublicMedia(fileId: string) {
+    const asset = await this.prisma.fileAsset.findUnique({ where: { id: fileId } });
+    if (!asset || asset.kind !== FileKind.MEDIA) {
+      throw new NotFoundException('Média introuvable.');
+    }
+    return {
+      cle: asset.storageKey,
+      nom: asset.originalName,
+      type: asset.mimeType,
+      taille: asset.size,
+    };
+  }
+
+  /** Une tranche d'octets d'un média public — pour le déplacement du curseur. */
+  async lireTranche(cle: string, debut: number, longueur: number): Promise<Readable> {
+    return this.storage.lirePartiel(cle, debut, longueur);
+  }
+
+  /** Le média entier, quand aucun intervalle n'est demandé. */
+  async lireEntier(cle: string): Promise<Readable> {
+    return this.storage.lire(cle);
+  }
+
+  /** Les médias déposés par une académie, du plus récent au plus ancien. */
+  async listerMedias(accountId: string) {
+    const assets = await this.prisma.fileAsset.findMany({
+      where: { accountId, kind: FileKind.MEDIA },
+      orderBy: { createdAt: 'desc' },
+      take: 300,
+    });
+    return assets.map((a) => ({
+      id: a.id,
+      nom: a.originalName,
+      type: a.mimeType,
+      taille: a.size,
+      deposeLe: a.createdAt,
+      url: `/public/medias/${a.id}`,
+    }));
   }
 
   async telecharger(
@@ -322,7 +374,14 @@ export class FilesService {
       taille: asset.size,
       famille: asset.kind,
       deposeLe: asset.createdAt,
-      url: `/files/${asset.id}`,
+      // Un média de formation se lit sans compte : on rend tout de suite
+      // l'adresse publique, celle qu'on collera dans une leçon.
+      // Adresse relative à l'API, comme pour les autres familles : c'est la
+      // couche web qui la préfixe de son proxy.
+      url:
+        asset.kind === FileKind.MEDIA
+          ? `/public/medias/${asset.id}`
+          : `/files/${asset.id}`,
     };
   }
 }

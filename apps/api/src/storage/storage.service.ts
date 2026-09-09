@@ -133,6 +133,19 @@ export class StorageService implements OnModuleInit {
   }
 
   /**
+   * FLUX PARTIEL — la lecture par tranches.
+   *
+   * Un lecteur vidéo ne télécharge pas le fichier entier avant de démarrer :
+   * il demande un intervalle d'octets, puis un autre quand la personne déplace
+   * le curseur. Sans cette méthode, la vidéo se lit d'un bout à l'autre mais
+   * ne se déplace pas, et la barre de progression reste inerte.
+   */
+  async lirePartiel(cle: string, debut: number, longueur: number): Promise<Readable> {
+    const client = this.exigerDisponible();
+    return client.getPartialObject(this.bucket, cle, debut, longueur);
+  }
+
+  /**
    * Supprime un objet. Ne lève jamais : un objet déjà absent n'est pas une
    * erreur, et un effacement RGPD ne doit pas échouer à cause du dépôt.
    */

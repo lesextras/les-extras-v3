@@ -20,7 +20,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import type { RequestUser, RequestAccount } from '../common/types/request-context';
 import { FilesService, FichierRecu } from './files.service';
-import { TAILLE_MAX_GLOBALE } from './file-rules';
+import { TAILLE_MAX_GLOBALE, TAILLE_MAX_MEDIA } from './file-rules';
 
 /**
  * DÉPÔT ET TÉLÉCHARGEMENT DE DOCUMENTS.
@@ -38,6 +38,46 @@ export class FilesController {
   constructor(private readonly files: FilesService) {}
 
   /**
+   * DÉPÔT D'UN MÉDIA DE FORMATION — vidéo, audio, document d'une leçon.
+   *
+   * Route séparée du dépôt ordinaire, et déclarée avant lui : elle seule
+   * accepte les gros fichiers. Mélanger les deux reviendrait à laisser
+   * n'importe quel dépôt charger cent cinquante mégaoctets en mémoire avant
+   * d'être refusé.
+   *
+   * Un compte actif est exigé ici : un média appartient à une académie.
+   */
+  @Post('media')
+  @Throttle({ default: { limit: 20, ttl: 300_000 } })
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: TAILLE_MAX_MEDIA, files: 1 } }),
+  )
+  async deposerMedia(
+    @UploadedFile() fichier: FichierRecu,
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account?: RequestAccount,
+  ) {
+    if (!account?.id) {
+      throw new BadRequestException(
+        'Choisis l’académie concernée avant de déposer une vidéo.',
+      );
+    }
+    return this.files.deposer({
+      fichier,
+      famille: FileKind.MEDIA,
+      userId: user.id,
+      accountId: account.id,
+    });
+  }
+
+  /** La médiathèque de l'académie active. */
+  @Get('medias')
+  async medias(@CurrentAccount() account?: RequestAccount) {
+    if (!account?.id) return [];
+    return this.files.listerMedias(account.id);
+  }
+
+  /**
    * Dépose un document. Champ de formulaire : `file`. Le tampon reste en
    * mémoire (les fichiers sont petits) et part aussitôt vers le dépôt.
    */
@@ -53,6 +93,11 @@ export class FilesController {
     @CurrentAccount() account?: RequestAccount,
   ) {
     const cle = famille?.toUpperCase();
+    if (cle === FileKind.MEDIA) {
+      throw new BadRequestException(
+        'Une vidéo de formation se dépose sur sa propre route (/files/media).',
+      );
+    }
     if (!cle || !(cle in FileKind)) {
       throw new BadRequestException(
         'Famille de document inconnue. Attendu : compliance, mission, avatar, formation, article ou service.',
