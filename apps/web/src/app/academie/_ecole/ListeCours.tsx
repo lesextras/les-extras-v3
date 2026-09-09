@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { appel, messageDe } from './api';
+import { Portail } from './Portail';
 import {
   MODALITE_COURTE,
   NOM_MODALITE,
@@ -350,6 +351,7 @@ export function ListeCours({
           sur un petit écran, c'est la carte qui défile, et « Ajouter » reste
           toujours atteignable. Voir le grand commentaire en tête de fichier. */}
       {ouvrirCreation ? (
+        <Portail>
         <div
           className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-8"
           role="dialog"
@@ -444,6 +446,7 @@ export function ListeCours({
             </div>
           </div>
         </div>
+        </Portail>
       ) : null}
     </div>
   );

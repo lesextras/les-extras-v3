@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { appel, messageDe } from './api';
+import { Portail } from './Portail';
 import { EditeurLecon } from './EditeurLecon';
 import {
   MODALITE_COURTE,
@@ -623,6 +624,7 @@ export function AtelierCours({
 
       {/* Un quiz et un devoir s'écrivent avec leurs propres champs. */}
       {leconOuverte && (leconOuverte.type === 'QUIZ' || leconOuverte.type === 'DEVOIR') ? (
+        <Portail>
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 px-4 py-8">
           <div className="mx-auto max-w-3xl rounded-2xl bg-white p-5">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -650,6 +652,7 @@ export function AtelierCours({
             />
           </div>
         </div>
+        </Portail>
       ) : null}
     </div>
   );
