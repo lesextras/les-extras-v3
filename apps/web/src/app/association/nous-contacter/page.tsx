@@ -21,9 +21,15 @@ export default function NousContacterPage() {
       <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-4xl">
         Nous <Accent>contacter</Accent>
       </h1>
-      <p className="mt-3 max-w-[65ch] text-lg leading-relaxed">
-        Une question, quelque chose qui ne marche pas, une idée à nous soumettre, ou l&apos;envie de travailler ensemble : écris-nous. C&apos;est une petite
-        équipe associative qui lit, et qui répond.
+      <p className="mt-3 max-w-[65ch] text-lg leading-relaxed">Écris-nous.</p>
+      <ul className="mt-3 max-w-[65ch] space-y-1.5 text-lg leading-relaxed">
+        <li>Une question</li>
+        <li>Quelque chose qui ne marche pas</li>
+        <li>Une idée à nous soumettre</li>
+        <li>L&apos;envie de travailler ensemble</li>
+      </ul>
+      <p className="mt-3 max-w-[65ch] leading-relaxed text-[#3B3A66]">
+        C&apos;est une petite équipe associative qui lit, et qui répond.
       </p>
 
       <div className="mt-8 grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start">
