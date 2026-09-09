@@ -14,6 +14,7 @@ import { MailService } from '../common/mail/mail.service';
 import { CreateQuoteRequestDto, SendQuoteDto } from './dto/quote.dto';
 import { totauxDevis } from './totaux';
 import { SELECT_PARTIE, figerPartie } from './parties';
+import { envoyerFicheReservation } from '../bookings/fiche-reservation';
 
 /**
  * DURÉE DE VALIDITÉ PAR DÉFAUT, EN JOURS.
@@ -427,6 +428,11 @@ export class QuotesService {
         link: `/dashboard/devis/${id}`,
       });
     }
+
+    // Devis accepté : la prestation est engagée, les deux parties reçoivent la
+    // fiche récapitulative avec les coordonnées de l'autre.
+    await envoyerFicheReservation(this.prisma, this.mail, result.booking.id);
+
     return result.accepted;
   }
 
