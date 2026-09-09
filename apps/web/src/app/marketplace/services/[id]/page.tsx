@@ -15,6 +15,7 @@ import { BookServiceModal } from "../../../_shared/modals/BookServiceModal";
 import { RequestQuoteModal } from "../../../_shared/modals/RequestQuoteModal";
 import { EncaisserAtelier } from "../../../_shared/EncaisserAtelier";
 import { PaiementAtelier } from "../../../_shared/PaiementAtelier";
+import { LiensIntervenant } from "../../../_shared/LiensIntervenant";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -81,7 +82,7 @@ interface ServiceDetail {
       id: string;
       firstName?: string | null;
       lastName?: string | null;
-      profile?: { job?: string | null; bio?: string | null } | null;
+      profile?: { job?: string | null; bio?: string | null; liens?: string[] | null } | null;
     } | null;
   } | null;
   reviews?: ReviewItem[];
@@ -107,7 +108,13 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
   const { data: service } = await fetchApi<ServiceDetail>(session, `/services/${params.id}`);
   if (!service) notFound();
 
-  const isEstablishment = session.account.type === "ESTABLISHMENT";
+  // ⚠ QUI PEUT RÉSERVER (09/09/2026). Un parent qui cherche un atelier pour son
+  // enfant réserve exactement comme un établissement : il choisit une date, un
+  // nombre de participants, et il reçoit sa facture. Le compte PARTICULIER
+  // n'est donc pas un compte au rabais — c'est un client de plein droit, et le
+  // seul type qui ne réserve pas ici est l'intervenant, qui propose.
+  const peutReserver =
+    session.account.type === "ESTABLISHMENT" || session.account.type === "PARTICULIER";
   /** La fiche m'appartient : je la règle, je ne l'achète pas. */
   const estMaFiche = service.account?.id === session.account.id;
   /**
@@ -364,7 +371,7 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                 />
               ) : null}
 
-              {isEstablishment ? (
+              {peutReserver ? (
                 <div className="space-y-2">
                   <BookServiceModal
                     serviceId={service.id}
@@ -389,7 +396,7 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                 </div>
               ) : estPayableEnLigne ? null : (
                 <p className="text-center text-xs text-muted-foreground">
-                  Seuls les établissements peuvent réserver.
+                  Un compte intervenant propose des ateliers, il n&apos;en réserve pas.
                 </p>
               )}
             </CardContent>
@@ -431,6 +438,7 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                     {owner.profile.bio}
                   </p>
                 ) : null}
+                <LiensIntervenant liens={owner?.profile?.liens} />
                 <Button asChild variant="outline" size="sm" className="w-full">
                   <Link href={`/intervenants/${service.account.id}`}>
                     Voir toutes ses interventions
