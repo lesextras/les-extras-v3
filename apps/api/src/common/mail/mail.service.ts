@@ -380,6 +380,124 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * LA FICHE DE RESERVATION, envoyee AUX DEUX PARTIES.
+   *
+   * Jusqu'ici, seul l'intervenant recevait un message ; celui qui reservait
+   * n'avait rien, alors que c'est lui qui vient d'engager quelque chose. Et
+   * aucun des deux ne recevait les coordonnees de l'autre : la place de marche
+   * mettait deux personnes en relation sans leur donner de quoi se parler.
+   *
+   * Ce message porte donc trois choses. Le recapitulatif de ce qui a ete
+   * demande. Les coordonnees des DEUX parties, pour que l'intervenant puisse
+   * appeler et etablir son devis. Et la fenetre d'annulation, dite d'emblee :
+   * quarante-huit heures, apres quoi cela se regle entre eux.
+   *
+   * ⚠ On ne parle jamais de « contrat » : la plateforme n'en produit pas. Elle
+   * produit un devis et une feuille de mission, et c'est ce qu'on annonce.
+   */
+  async sendFicheReservation(data: {
+    to: string;
+    /** Ce que le destinataire est dans cette reservation. */
+    role: 'demandeur' | 'intervenant';
+    reference: string;
+    prestation: string;
+    quand?: Date | string | null;
+    participants?: number | null;
+    note?: string | null;
+    tarif?: string | null;
+    /** Depasse ce que la fiche annonce : a dire, pas a taire. */
+    depassement?: number | null;
+    demandeur: { nom: string; email?: string | null; telephone?: string | null; ville?: string | null };
+    intervenant: { nom: string; email?: string | null; telephone?: string | null };
+    finAnnulation: Date;
+    lien: string;
+  }): Promise<void> {
+    const jour = (d: Date | string) =>
+      new Date(d).toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    const heure = (d: Date) =>
+      new Date(d).toLocaleString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+    const ligne = (cle: string, valeur: string) =>
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280;white-space:nowrap">${cle}</td><td style="padding:4px 0"><b>${valeur}</b></td></tr>`;
+
+    const lignes = [
+      ligne('Référence', echapper(data.reference)),
+      ligne('Prestation', echapper(data.prestation)),
+      data.quand ? ligne('Date souhaitée', echapper(jour(data.quand))) : ligne('Date', 'à convenir entre vous'),
+      data.participants ? ligne('Participants', String(data.participants)) : '',
+      data.tarif ? ligne('Tarif annoncé', echapper(data.tarif)) : '',
+    ].join('');
+
+    const coordonnees = (titre: string, p: { nom: string; email?: string | null; telephone?: string | null; ville?: string | null }) =>
+      `<div style="margin-top:10px"><div style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:.06em">${titre}</div>` +
+      `<div><b>${echapper(p.nom)}</b></div>` +
+      (p.email ? `<div><a href="mailto:${echapper(p.email)}" style="color:inherit">${echapper(p.email)}</a></div>` : '') +
+      (p.telephone ? `<div>${echapper(p.telephone)}</div>` : '') +
+      (p.ville ? `<div style="color:#6b7280">${echapper(p.ville)}</div>` : '') +
+      '</div>';
+
+    const alerte = data.depassement
+      ? `<div style="margin-top:14px;padding:12px;background:#fdf2f2;border-radius:10px">Cette demande porte sur <b>${data.participants}</b> participants, au-delà des <b>${data.depassement}</b> annoncés sur la fiche. À caler entre vous avant de confirmer.</div>`
+      : '';
+
+    const mot = data.note
+      ? `<div style="margin-top:14px;padding:12px;background:#f6f6f4;border-radius:10px"><b>Précisions du demandeur</b><br>${echapper(
+          data.note,
+        )}</div>`
+      : '';
+
+    const suite =
+      data.role === 'intervenant'
+        ? `<div style="margin-top:16px">À vous de reprendre contact avec ${echapper(
+            data.demandeur.nom,
+          )} pour caler la date et établir votre devis. Les Extras ne s'interpose pas : la prestation se convient entre vous, et la plateforme met en forme le devis puis la feuille de mission.</div>`
+        : `<div style="margin-top:16px">${echapper(
+            data.intervenant.nom,
+          )} va vous recontacter pour caler la date et vous adresser son devis. Vous pouvez aussi le joindre directement avec les coordonnées ci-dessus.</div>`;
+
+    const annulation =
+      data.role === 'demandeur'
+        ? `<div style="margin-top:16px;padding:12px;border:1px solid #e5e7eb;border-radius:10px"><b>Vous pouvez annuler jusqu'au ${echapper(
+            heure(data.finAnnulation),
+          )}</b><br>Passé ce délai, l'annulation ne se fait plus depuis la plateforme : contactez directement ${echapper(
+            data.intervenant.nom,
+          )}, qui aura peut-être déjà réservé sa journée.</div>`
+        : `<div style="margin-top:16px;padding:12px;border:1px solid #e5e7eb;border-radius:10px">${echapper(
+            data.demandeur.nom,
+          )} peut annuler depuis la plateforme jusqu'au <b>${echapper(
+            heure(data.finAnnulation),
+          )}</b>. Au-delà, l'annulation passe par vous.</div>`;
+
+    await this.send(
+      data.to,
+      data.role === 'intervenant'
+        ? `Réservation reçue : ${data.prestation}`
+        : `Votre réservation : ${data.prestation}`,
+      this.layout(
+        data.role === 'intervenant' ? 'Vous avez une réservation' : 'Votre réservation est enregistrée',
+        `<table style="border-collapse:collapse;font-size:14px">${lignes}</table>` +
+          alerte +
+          mot +
+          coordonnees(data.role === 'intervenant' ? 'Le demandeur' : "L'intervenant",
+            data.role === 'intervenant' ? data.demandeur : data.intervenant) +
+          suite +
+          annulation,
+        { label: 'Voir la réservation', url: data.lien },
+      ),
+    );
+  }
+
+  /**
    * UNE RESERVATION EST ANNULEE — avec le motif, a celui qui ne l'a pas annulee.
    *
    * L'annulation ne partait nulle part : elle ne laissait qu'une notification
