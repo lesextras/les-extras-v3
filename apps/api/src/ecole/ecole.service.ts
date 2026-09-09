@@ -12,6 +12,7 @@ import { MoteurService } from '../assistant/moteur.service';
 import { FormationType, Prisma, StatutCours, StatutInscriptionCours, StatutVente, TypeLecon, TypeRemise } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
+import { StripeConnectService } from '../paiements/stripe-connect.service';
 import { corrigerQuiz, nettoyerQuiz, quizSansReponses, quizUtilisable, type Quiz } from './quiz';
 import type {
   AffilieDto,
@@ -58,6 +59,7 @@ export class EcoleService implements OnModuleInit {
     private readonly moteur: MoteurService,
     private readonly config: ConfigService,
     private readonly mail: MailService,
+    private readonly connect: StripeConnectService,
   ) {}
 
   /**
@@ -1892,6 +1894,13 @@ export class EcoleService implements OnModuleInit {
     if (dto.nom?.trim()) params['metadata[nom]'] = dto.nom.trim().slice(0, 120);
     if (dto.codePromo?.trim()) params['metadata[codePromo]'] = dto.codePromo.trim().slice(0, 40);
     if (dto.affiliation?.trim()) params['metadata[affiliation]'] = dto.affiliation.trim().slice(0, 40);
+
+    // L'ARGENT VA CHEZ L'ORGANISME QUAND IL A RELIÉ SON COMPTE.
+    //
+    // Sans compte relié, cette ligne n'ajoute rien et la vente suit le chemin
+    // historique : encaissée par la plateforme. C'est ce qui permet de poser
+    // le versement direct sans rien changer pour les comptes déjà en place.
+    Object.assign(params, await this.connect.parametresDeVersement(cours.accountId, montant));
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
