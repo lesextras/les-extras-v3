@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchPublic } from "../_shared/server";
 import { VisuelCarte } from "../_shared/VisuelCarte";
+import { VignetteSansPhoto } from "../_shared/VignetteSansPhoto";
 import { premierVisuel } from "@/lib/media";
 import { FavoriteButton } from "../_shared/FavoriteButton";
 import { PageHeader, EmptyState } from "../_shared/ui";
@@ -92,18 +93,13 @@ function CarteCatalogue({ item }: { item: CatalogItem }) {
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         >
           {/* Sans photo, une vignette qui a l'air « en panne » ne se
-      clique pas : on affiche un visuel intentionnel, dégradé
-      de marque + catégorie de la fiche. */}
-          <span className="grid h-full place-items-center bg-gradient-to-br from-primary/25 via-primary/10 to-secondary/20">
-            <span className="flex flex-col items-center gap-1.5 text-center">
-              <Star className="size-6 text-primary/70" aria-hidden />
-              <span className="px-4 text-xs font-semibold uppercase tracking-wider text-foreground/60">
-                {item.categoryRef?.title ??
-                  SERVICE_CATEGORY_LABEL[item.category] ??
-                  "Les Extras"}
-              </span>
-            </span>
-          </span>
+      clique pas : on affiche une scène dessinée, propre à la fiche. */}
+          <VignetteSansPhoto
+            graine={item.slug ?? item.id ?? item.title}
+            libelle={
+              item.categoryRef?.title ?? SERVICE_CATEGORY_LABEL[item.category] ?? null
+            }
+          />
         </VisuelCarte>
         {item.categoryRef?.title ? (
           <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
