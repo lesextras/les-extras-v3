@@ -188,7 +188,7 @@ export default async function AdminRetoursPage() {
           />
         ) : (
           <Card>
-            <CardHeader className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-3 text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+            <CardHeader className="hidden gap-3 text-[11px] sm:grid sm:grid-cols-[1fr_auto_auto_auto_auto] font-bold uppercase tracking-[0.08em] text-muted-foreground">
               <span>Compte</span>
               <span className="text-right">Global</span>
               <span className="text-right">Site</span>
@@ -198,7 +198,7 @@ export default async function AdminRetoursPage() {
             <CardContent className="divide-y divide-border p-0">
               {d.recents.map((r) => (
                 <div key={r.id} className="space-y-2 px-6 py-4">
-                  <div className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-3 text-sm">
+                  <div className="grid grid-cols-2 items-center gap-3 text-sm sm:grid-cols-[1fr_auto_auto_auto_auto]">
                     <span className="min-w-0 truncate font-medium text-foreground">{qui(r)}</span>
                     <span className="text-right"><Note valeur={r.noteGlobale} /></span>
                     <span className="text-right"><Note valeur={r.noteSite} /></span>
