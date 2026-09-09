@@ -380,6 +380,106 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * LE RECU D'UN ATELIER PAYE EN LIGNE, pour l'acheteur.
+   *
+   * Il porte deux choses que l'acheteur ne retrouvera nulle part ailleurs : le
+   * nom de CELUI QUI L'A ENCAISSE — l'intervenant, pas la plateforme, et son
+   * releve bancaire le confirmera — et les conditions d'annulation telles
+   * qu'elles etaient au moment de payer.
+   */
+  async sendRecuAtelier(data: {
+    to: string;
+    atelier: string;
+    intervenant: string;
+    montantCents: number;
+    dateSouhaitee?: string | null;
+    creneau?: string | null;
+    participants?: number | null;
+    annulationTexte?: string | null;
+    lienFiche: string;
+  }): Promise<void> {
+    const euros = (c: number) => (c / 100).toFixed(2).replace('.', ',') + ' €';
+    const details: string[] = [];
+    if (data.dateSouhaitee) details.push(`Date souhaitée : <b>${echapper(data.dateSouhaitee)}</b>`);
+    if (data.creneau) details.push(`Créneau : <b>${echapper(data.creneau)}</b>`);
+    if (data.participants) details.push(`Participants : <b>${data.participants}</b>`);
+    const bloc = details.length
+      ? `<ul style="margin:14px 0;padding-left:18px"><li style="margin:4px 0">${details.join(
+          '</li><li style="margin:4px 0">',
+        )}</li></ul>`
+      : '';
+    const annulation = data.annulationTexte
+      ? `<div style="margin-top:14px;padding:12px;background:#f6f6f4;border-radius:10px"><b>En cas d'annulation</b><br>${echapper(
+          data.annulationTexte,
+        )}</div>`
+      : '';
+
+    await this.send(
+      data.to,
+      `Votre réservation : ${data.atelier}`,
+      this.layout(
+        'Votre réservation est enregistrée',
+        `Votre règlement de <b>${euros(data.montantCents)}</b> pour <b>${echapper(
+          data.atelier,
+        )}</b> est bien reçu.` +
+          bloc +
+          `<div style="margin-top:14px">Cette prestation est vendue et assurée par <b>${echapper(
+            data.intervenant,
+          )}</b>, qui a encaissé votre règlement et vous recontacte pour caler la date. C'est son nom qui apparaît sur votre relevé bancaire.</div>` +
+          `<div style="margin-top:10px">La date indiquée reste un souhait tant que ${echapper(
+            data.intervenant,
+          )} ne l'a pas confirmée.</div>` +
+          annulation,
+        { label: "Revoir la fiche de l'atelier", url: data.lienFiche },
+      ),
+    );
+  }
+
+  /** L'alerte a l'intervenant : quelqu'un vient de payer son atelier. */
+  async sendReservationAtelierPayee(data: {
+    to: string;
+    atelier: string;
+    montantCents: number;
+    acheteur: string;
+    email: string;
+    telephone?: string | null;
+    dateSouhaitee?: string | null;
+    creneau?: string | null;
+    participants?: number | null;
+    message?: string | null;
+    lienEspace: string;
+  }): Promise<void> {
+    const euros = (c: number) => (c / 100).toFixed(2).replace('.', ',') + ' €';
+    const l: string[] = [`Contact : <b>${echapper(data.acheteur)}</b> — ${echapper(data.email)}`];
+    if (data.telephone) l.push(`Téléphone : <b>${echapper(data.telephone)}</b>`);
+    if (data.dateSouhaitee) l.push(`Date souhaitée : <b>${echapper(data.dateSouhaitee)}</b>`);
+    if (data.creneau) l.push(`Créneau : <b>${echapper(data.creneau)}</b>`);
+    if (data.participants) l.push(`Participants : <b>${data.participants}</b>`);
+    const mot = data.message
+      ? `<div style="margin-top:14px;padding:12px;background:#f6f6f4;border-radius:10px">${echapper(
+          data.message,
+        )}</div>`
+      : '';
+
+    await this.send(
+      data.to,
+      `Atelier payé : ${data.atelier}`,
+      this.layout(
+        'Un atelier vient de vous être payé',
+        `<b>${euros(data.montantCents)}</b> viennent d'être encaissés sur votre compte pour <b>${echapper(
+          data.atelier,
+        )}</b>.` +
+          `<ul style="margin:14px 0;padding-left:18px"><li style="margin:4px 0">${l.join(
+            '</li><li style="margin:4px 0">',
+          )}</li></ul>` +
+          mot +
+          `<div style="margin-top:14px">À vous de recontacter cette personne pour confirmer la date. Si vous ne pouvez pas assurer l'atelier, remboursez-la depuis votre espace : le remboursement part de votre compte.</div>`,
+        { label: 'Voir la réservation', url: data.lienEspace },
+      ),
+    );
+  }
+
+  /**
    * LE LIEN D'ACCÈS À UNE FORMATION.
    *
    * Le message le plus important de toute l'académie : sans lui, une personne
