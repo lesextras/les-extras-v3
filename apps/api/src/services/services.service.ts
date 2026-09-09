@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { BookingStatus, Prisma, ServiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { envoyerFicheReservation } from '../bookings/fiche-reservation';
 import { slugLibre } from './slug-service';
 import { CommunityService } from '../community/community.service';
 import { PointReason } from '@prisma/client';
@@ -407,6 +408,13 @@ export class ServicesService {
         })
         .catch(() => undefined);
     }
+
+    // ⚠ LA FICHE DE RÉSERVATION, AUX DEUX PARTIES (9/09/2026).
+    //
+    // Jusqu'ici seul l'intervenant recevait un courriel, et il n'y trouvait ni
+    // les coordonnées de celui qui réservait, ni la règle des 48 heures. Les
+    // deux se retrouvaient donc engagés sans savoir comment se joindre.
+    await envoyerFicheReservation(this.prisma, this.mail, booking.id);
 
     return booking;
   }
