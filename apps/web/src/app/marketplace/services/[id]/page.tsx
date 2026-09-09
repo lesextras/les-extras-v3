@@ -14,6 +14,7 @@ import { requireSession, fetchApi } from "../../../_shared/server";
 import { BookServiceModal } from "../../../_shared/modals/BookServiceModal";
 import { RequestQuoteModal } from "../../../_shared/modals/RequestQuoteModal";
 import { EncaisserAtelier } from "../../../_shared/EncaisserAtelier";
+import { PaiementAtelier } from "../../../_shared/PaiementAtelier";
 import {
   SERVICE_CATEGORY_LABEL,
   formatMoney,
@@ -59,6 +60,11 @@ interface ServiceDetail {
   faq?: FaqItem[] | null;
   images?: string[] | null;
   priceExtras?: PriceExtra[] | null;
+  timeSlots?: string[] | null;
+  /** Le règlement immédiat, ouvert par l'intervenant sur cette fiche. */
+  paiementEnLigne?: boolean;
+  /** Ses conditions d'annulation, affichées avant le bouton de paiement. */
+  annulationTexte?: string | null;
   price?: string | number | null;
   city?: string | null;
   views?: number | null;
@@ -104,6 +110,13 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
   const isEstablishment = session.account.type === "ESTABLISHMENT";
   /** La fiche m'appartient : je la règle, je ne l'achète pas. */
   const estMaFiche = service.account?.id === session.account.id;
+  /**
+   * Réglable tout de suite. Jamais sur sa propre fiche : on ne s'achète pas
+   * son propre atelier, et un bouton « payer » sur sa propre annonce ne veut
+   * rien dire.
+   */
+  const estPayableEnLigne =
+    !estMaFiche && service.paiementEnLigne === true && Number(service.price) > 0;
   const images = service.images ?? [];
   const publics = service.publicTargets?.length
     ? service.publicTargets
@@ -332,6 +345,25 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                 </div>
               ) : null}
 
+              {/* LE RÈGLEMENT IMMÉDIAT, quand l'intervenant l'a ouvert.
+                  Il passe devant, et il s'affiche pour TOUT visiteur, pas
+                  seulement pour un établissement : quelqu'un qui peut payer
+                  tout de suite n'a aucune raison d'attendre un devis, et
+                  « seuls les établissements peuvent réserver » était un
+                  cul-de-sac pour tous les autres comptes. */}
+              {estPayableEnLigne ? (
+                <PaiementAtelier
+                  serviceId={service.id}
+                  titre={service.title}
+                  intervenant={service.account?.name ?? "l’intervenant"}
+                  prix={Number(service.price)}
+                  maxParticipants={service.maxParticipants}
+                  creneaux={service.timeSlots}
+                  annulationTexte={service.annulationTexte}
+                  depuis="espace"
+                />
+              ) : null}
+
               {isEstablishment ? (
                 <div className="space-y-2">
                   <BookServiceModal
@@ -355,7 +387,7 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                     Réservation immédiate, ou devis chiffré si votre besoin est spécifique.
                   </p>
                 </div>
-              ) : (
+              ) : estPayableEnLigne ? null : (
                 <p className="text-center text-xs text-muted-foreground">
                   Seuls les établissements peuvent réserver.
                 </p>
