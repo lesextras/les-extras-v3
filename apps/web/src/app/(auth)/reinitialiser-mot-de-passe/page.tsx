@@ -50,7 +50,7 @@ function Formulaire() {
   // dit tout de suite plutôt que d'afficher un formulaire qui échouera.
   if (!token) {
     return (
-      <div>
+      <div className="mx-auto w-full max-w-md">
         <span className="grid size-12 place-items-center rounded-2xl bg-destructive/10 text-destructive">
           <AlertTriangle className="size-6" />
         </span>
@@ -98,7 +98,7 @@ function Formulaire() {
   }
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-md">
       <div className="mb-8">
         <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
           <KeyRound className="size-6" />
