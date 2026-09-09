@@ -24,6 +24,12 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/dashboard',
     scope: '/',
     display: 'standalone',
+    // ⚠ ELLE SE DÉCLARE ELLE-MÊME COMME APPLICATION LIÉE. C'est la seule façon
+    // pour `navigator.getInstalledRelatedApps()` de répondre « oui, elle est
+    // déjà installée ». Sans elle, la question reste sans réponse, et on
+    // propose l'installation à quelqu'un qui a déjà l'icône sur son bureau.
+    related_applications: [{ platform: 'webapp', url: '/manifest.webmanifest' }],
+    prefer_related_applications: false,
     orientation: 'portrait',
     theme_color: '#183767',
     background_color: '#FAF7F2',
