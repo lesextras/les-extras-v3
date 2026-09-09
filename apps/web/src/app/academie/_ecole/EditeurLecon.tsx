@@ -501,7 +501,7 @@ export function EditeurLecon({
                 className="mb-3 w-full rounded-xl border-2 px-3 py-2 text-[15px] focus:outline-none"
                 style={{ borderColor: VERT.bord, color: VERT.encre }}
               />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {palette.map((t) => (
                   <button
                     key={t}
