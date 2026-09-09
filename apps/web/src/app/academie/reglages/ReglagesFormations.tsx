@@ -62,11 +62,14 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
         className={`${CARTE} mb-5 p-5`}
       >
         <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Le certificat de réussite</h2>
-        <p className="mb-4 text-[15px] leading-relaxed text-[#334A42]">
-          L&apos;apprenant l&apos;édite lui-même, une fois toutes les leçons terminées. C&apos;est un
-          document de fin de parcours : il n&apos;a pas la valeur d&apos;un diplôme, et ne remplace
-          pas l&apos;attestation de fin de formation que tu délivres au titre de Qualiopi.
-        </p>
+        <ul className="mb-4 space-y-1.5 text-[15px] leading-relaxed text-[#334A42]">
+          <li>L&apos;apprenant l&apos;édite lui-même, une fois toutes les leçons terminées</li>
+          <li>C&apos;est un document de fin de parcours, il n&apos;a pas la valeur d&apos;un diplôme</li>
+          <li>
+            Il ne remplace pas l&apos;attestation de fin de formation que tu délivres au titre de
+            Qualiopi
+          </li>
+        </ul>
 
         <label className="mb-4 flex items-start gap-2 text-[15px] text-[#334A42]">
           <input
