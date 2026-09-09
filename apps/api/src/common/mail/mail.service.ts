@@ -284,6 +284,79 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * LE GABARIT D'UNE ÉCOLE.
+   *
+   * Une académie qui vend une formation n'écrit pas au nom de LES EXTRAS.
+   * L'acheteur a payé sur la boutique de l'organisme : c'est ce nom-là et cette
+   * couleur-là qu'il doit retrouver dans sa boîte, sinon il prend le message
+   * pour une erreur — ou pour une tentative d'hameçonnage.
+   */
+  private layoutEcole(
+    marque: { nom: string; couleur?: string | null },
+    title: string,
+    bodyHtml: string,
+    cta?: { label: string; url: string },
+  ): string {
+    const teinte = /^#[0-9a-fA-F]{6}$/.test(marque.couleur ?? '')
+      ? (marque.couleur as string)
+      : '#0F5F3E';
+    const nom = echapper(marque.nom).toUpperCase();
+    const button = cta
+      ? `<a href="${cta.url}" style="display:inline-block;background:${teinte};color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600">${cta.label}</a>`
+      : '';
+    return `<!doctype html><html><body style="margin:0;background:#F7F7F5;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1A1A">
+      <div style="max-width:520px;margin:0 auto;padding:32px 20px">
+        <div style="background:#fff;border:1px solid #e8e6e1;border-radius:16px;padding:32px">
+          <div style="font-weight:800;font-size:16px;color:${teinte};letter-spacing:.5px">${nom}</div>
+          <h1 style="font-size:22px;margin:18px 0 10px">${title}</h1>
+          <div style="font-size:15px;line-height:1.6;color:#374151">${bodyHtml}</div>
+          <div style="margin:24px 0">${button}</div>
+          <div style="font-size:12px;color:#9ca3af">Si le bouton ne fonctionne pas, copiez ce lien : ${cta ? cta.url : ''}</div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:#9ca3af;margin-top:16px">Ce lien est personnel : il ouvre votre formation, ne le transmettez pas.</div>
+      </div></body></html>`;
+  }
+
+  /**
+   * LE LIEN D'ACCÈS À UNE FORMATION.
+   *
+   * Le message le plus important de toute l'académie : sans lui, une personne
+   * qui paie puis ferme son onglet a perdu ce qu'elle vient d'acheter. Il part
+   * après un paiement confirmé comme après une inscription gratuite.
+   */
+  async sendAccesFormation(data: {
+    to: string;
+    ecole: { nom: string; couleur?: string | null };
+    formation: string;
+    lien: string;
+    paye: boolean;
+    montantCents?: number | null;
+  }): Promise<void> {
+    const formation = echapper(data.formation);
+    const prix =
+      data.paye && data.montantCents
+        ? ` Votre règlement de <b>${(data.montantCents / 100)
+            .toFixed(2)
+            .replace('.', ',')} €</b> est bien enregistré ; votre reçu vous parvient séparément.`
+        : '';
+    const corps = data.paye
+      ? `Merci — votre inscription à <b>« ${formation} »</b> est confirmée.${prix} Le bouton ci-dessous ouvre votre formation. Gardez ce message : c'est votre accès, et il reste valable.`
+      : `Votre inscription à <b>« ${formation} »</b> est enregistrée. Le bouton ci-dessous ouvre votre formation. Gardez ce message : c'est votre accès, et il reste valable.`;
+    await this.send(
+      data.to,
+      data.paye
+        ? `Votre accès à « ${data.formation} »`
+        : `Votre inscription à « ${data.formation} »`,
+      this.layoutEcole(
+        data.ecole,
+        data.paye ? 'Votre formation est ouverte' : 'Votre inscription est enregistrée',
+        corps,
+        { label: 'Ouvrir ma formation', url: data.lien },
+      ),
+    );
+  }
+
+  /**
    * Envoi effectif. Ne lève jamais : un e-mail qui ne part pas ne doit pas
    * faire échouer l'inscription, la candidature ou la facture qui l'a
    * déclenché. En revanche il LAISSE UNE TRACE dans les journaux — c'est ce
@@ -1676,3 +1749,16 @@ export const TUNNEL_ACCUEIL: {
     chemin: '/formations',
   },
 ];
+
+/**
+ * Échappe ce qui vient de la base avant de l'écrire dans du HTML. Le nom d'une
+ * école et le titre d'une formation sont saisis par un utilisateur : sans cela,
+ * une apostrophe typographique passe, mais un chevron casse le message.
+ */
+function echapper(texte: string): string {
+  return String(texte ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
