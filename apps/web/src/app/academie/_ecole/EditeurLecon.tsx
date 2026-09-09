@@ -12,7 +12,7 @@ import {
   type ChampBloc,
 } from '../../_shared/blocs';
 import { BlocRendu } from '../../_shared/blocs-lecon';
-import { appel, messageDe } from './api';
+import { appel, deposerMedia, messageDe } from './api';
 import { VERT, nouvelIdentifiant, type Bloc, type Lecon, type TypeBloc } from './types';
 
 /**
@@ -713,6 +713,34 @@ function ReglagesBloc({
   const cadre = { borderColor: VERT.bord, color: VERT.encre };
   const champs = CHAMPS_BLOC[bloc.type] ?? [];
 
+  // LE DÉPÔT DIRECT. Les blocs ci-dessous montrent un fichier hébergé : on doit
+  // pouvoir le déposer ici plutôt que d'aller le poser ailleurs et revenir
+  // coller une adresse. C'est ce qui rend l'académie autonome.
+  const DEPOSABLES: Partial<Record<TypeBloc, string>> = {
+    video: 'video/mp4',
+    audio: 'audio/mpeg,audio/mp4',
+    image: 'image/jpeg,image/png,image/webp',
+    pdf: 'application/pdf',
+    fichier: 'application/pdf,image/jpeg,image/png,image/webp,video/mp4,audio/mpeg',
+  };
+  const accepte = DEPOSABLES[bloc.type];
+  const [envoi, setEnvoi] = useState(false);
+  const [erreurDepot, setErreurDepot] = useState<string | null>(null);
+
+  async function deposer(fichier: File | undefined) {
+    if (!fichier) return;
+    setEnvoi(true);
+    setErreurDepot(null);
+    try {
+      const media = await deposerMedia(fichier);
+      changer({ url: media.url, ...(bloc.nom ? {} : { nom: media.nom }) });
+    } catch (e) {
+      setErreurDepot(messageDe(e));
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
   // Une fonction, pas un composant : un composant redéfini à chaque frappe
   // serait remonté, et la zone de saisie perdrait le curseur.
   const etiquette = (cle: string, quoi: string, contenu: React.ReactNode, aide?: string) => (
@@ -780,15 +808,44 @@ function ReglagesBloc({
         if (c === 'url') {
           return etiquette(
             c,
-            'L’adresse',
-            <input
-              autoFocus
-              value={bloc.url ?? ''}
-              onChange={(e) => changer({ url: e.target.value })}
-              className={champ}
-              style={cadre}
-              placeholder={placeholderUrl[bloc.type] ?? 'https://…'}
-            />,
+            accepte ? 'Le fichier, ou son adresse' : 'L’adresse',
+            <div className="grid gap-2">
+              <input
+                autoFocus
+                value={bloc.url ?? ''}
+                onChange={(e) => changer({ url: e.target.value })}
+                className={champ}
+                style={cadre}
+                placeholder={placeholderUrl[bloc.type] ?? 'https://…'}
+              />
+              {accepte ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <label
+                    className="cursor-pointer rounded-xl border-2 px-3 py-1.5 text-[13px] font-bold"
+                    style={{ borderColor: VERT.bord, color: VERT.texte }}
+                  >
+                    {envoi ? 'Dépôt en cours…' : 'Déposer un fichier'}
+                    <input
+                      type="file"
+                      accept={accepte}
+                      className="hidden"
+                      disabled={envoi}
+                      onChange={(e) => {
+                        void deposer(e.target.files?.[0]);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                  <span className="text-xs font-normal" style={{ color: VERT.sourdine }}>
+                    150 Mo maximum. Le fichier est hébergé ici : il reste
+                    disponible même si tu quittes un autre service.
+                  </span>
+                </div>
+              ) : null}
+              {erreurDepot ? (
+                <span className="text-xs font-bold text-red-700">{erreurDepot}</span>
+              ) : null}
+            </div>,
           );
         }
         if (c === 'nom') {
