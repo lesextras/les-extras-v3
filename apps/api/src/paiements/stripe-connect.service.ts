@@ -46,6 +46,15 @@ export class StripeConnectService {
     chemin: string,
     params?: Record<string, string>,
     methode: 'GET' | 'POST' = 'POST',
+    /**
+     * Le compte connecte AU NOM DUQUEL agir (`acct_...`).
+     *
+     * Sans lui, l'appel se fait pour la plateforme. Avec lui, Stripe traite la
+     * demande comme si elle venait du compte de l'organisme : c'est ce qui
+     * distingue un paiement encaisse chez lui d'un paiement encaisse chez nous
+     * puis reverse.
+     */
+    compteConnecte?: string,
   ): Promise<T> {
     const corps = params ? new URLSearchParams(params).toString() : undefined;
     const url =
@@ -56,6 +65,7 @@ export class StripeConnectService {
       method: methode,
       headers: {
         Authorization: `Bearer ${this.cle()}`,
+        ...(compteConnecte ? { 'Stripe-Account': compteConnecte } : {}),
         ...(methode === 'POST' ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
       },
       body: methode === 'POST' ? corps : undefined,
@@ -273,6 +283,122 @@ export class StripeConnectService {
     const retenu = Math.min(frais + part, Math.max(0, montantCents - 1));
     if (retenu > 0) params['payment_intent_data[application_fee_amount]'] = String(retenu);
     return params;
+  }
+
+  /* ══════════════════════════════ la vente encaissee par l'organisme ══════ */
+
+  /**
+   * LE COMPTE D'ENCAISSEMENT D'UN ORGANISME, quand il est utilisable.
+   *
+   * Renvoie `null` des qu'il manque quelque chose. Aucun appel ne doit se
+   * rabattre silencieusement sur le compte de la plateforme : sur une vente
+   * directe, encaisser a la place de quelqu'un serait exactement le contraire
+   * de ce qui est promis a l'acheteur sur la fiche.
+   */
+  async compteEncaisseur(accountId: string): Promise<string | null> {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { stripeCompteId: true, stripeComptePret: true },
+    });
+    if (!compte?.stripeCompteId || !compte.stripeComptePret) return null;
+    return compte.stripeCompteId;
+  }
+
+  /**
+   * UN PAIEMENT ENCAISSE DIRECTEMENT PAR L'ORGANISME.
+   *
+   * Deux facons de faire passer l'argent chez quelqu'un d'autre existent chez
+   * le prestataire, et elles ne se valent pas.
+   *
+   * Le VERSEMENT (`parametresDeVersement`, plus haut) encaisse sur le compte de
+   * la plateforme puis reverse : c'est la plateforme qui figure sur le releve
+   * bancaire de l'acheteur, c'est elle qui avance les frais, et c'est elle qui
+   * se fait reprendre l'argent en cas de contestation de carte — meme si
+   * l'organisme a deja ete paye. C'est acceptable quand la plateforme vend ses
+   * propres produits.
+   *
+   * La VENTE DIRECTE, ici, encaisse SUR le compte de l'organisme. Il est le
+   * vendeur : son nom sur le releve, ses frais de prestataire, sa
+   * responsabilite en cas de litige, et lui seul peut rembourser. C'est la
+   * seule forme honnete quand la prestation est rendue par lui et pas par
+   * nous. La plateforme ne retient que sa part, nulle par defaut — d'ou
+   * l'absence, ici, de la recuperation de frais qui existe sur le versement :
+   * ces frais-la ne sont plus les siens.
+   *
+   * Renvoie `null` quand l'organisme n'a pas de compte utilisable. L'appelant
+   * doit alors REFUSER la vente, pas la basculer ailleurs.
+   */
+  async venteDirecte(
+    accountId: string,
+    montantCents: number,
+  ): Promise<{ compte: string; params: Record<string, string>; partPlateformeCents: number } | null> {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { stripeCompteId: true, stripeComptePret: true, commissionVentePourcent: true },
+    });
+    if (!compte?.stripeCompteId || !compte.stripeComptePret) return null;
+
+    const part = Math.floor((montantCents * compte.commissionVentePourcent) / 100);
+    // Jamais tout le montant : un versement nul ferait passer l'organisme pour
+    // paye alors qu'il ne toucherait rien.
+    const retenu = Math.min(part, Math.max(0, montantCents - 1));
+    const params: Record<string, string> = {};
+    if (retenu > 0) params['payment_intent_data[application_fee_amount]'] = String(retenu);
+    return { compte: compte.stripeCompteId, params, partPlateformeCents: retenu };
+  }
+
+  /** Ouvre une page de paiement SUR le compte de l'organisme. */
+  async ouvrirPaiementDirect(
+    compte: string,
+    params: Record<string, string>,
+  ): Promise<{ id: string; url: string }> {
+    return this.appel<{ id: string; url: string }>(
+      'checkout/sessions',
+      params,
+      'POST',
+      compte,
+    );
+  }
+
+  /**
+   * L'ETAT D'UN PAIEMENT, relu sur le compte de l'organisme.
+   *
+   * Sert au retour de l'acheteur : on ne croit pas la page de retour sur
+   * parole, on redemande au prestataire si l'argent est bien la.
+   */
+  async lireSessionDirecte(compte: string, sessionId: string) {
+    return this.appel<{
+      id: string;
+      payment_status?: string;
+      status?: string;
+      amount_total?: number;
+      currency?: string;
+      payment_intent?: string;
+      customer_details?: { email?: string | null; name?: string | null };
+      metadata?: Record<string, string>;
+    }>(`checkout/sessions/${sessionId}`, undefined, 'GET', compte);
+  }
+
+  /**
+   * REMBOURSE, sur le compte de l'organisme et avec son argent.
+   *
+   * La part retenue par la plateforme est rendue en meme temps
+   * (`refund_application_fee`) : garder une commission sur une prestation qui
+   * n'a pas eu lieu ne se defend pas.
+   */
+  async rembourserDirect(compte: string, paymentIntentId: string, montantCents?: number) {
+    const params: Record<string, string> = {
+      payment_intent: paymentIntentId,
+      refund_application_fee: 'true',
+      'metadata[origine]': 'les-extras',
+    };
+    if (montantCents !== undefined) params.amount = String(montantCents);
+    return this.appel<{ id: string; status?: string; amount?: number }>(
+      'refunds',
+      params,
+      'POST',
+      compte,
+    );
   }
 
   /**
