@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -65,6 +66,34 @@ export class FilesController {
     return this.files.deposer({
       fichier,
       famille: FileKind.MEDIA,
+      userId: user.id,
+      accountId: account.id,
+    });
+  }
+
+  /**
+   * RAPATRIER UN MÉDIA DEPUIS SON ADRESSE.
+   *
+   * Le serveur va chercher le fichier lui-même : c'est le seul moyen de
+   * reprendre une vidéo de plusieurs dizaines de mégaoctets sans la faire
+   * transiter par le navigateur.
+   */
+  @Post('media/importer')
+  @Throttle({ default: { limit: 60, ttl: 300_000 } })
+  async importerMedia(
+    @Body() corps: { url?: string; nom?: string },
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account?: RequestAccount,
+  ) {
+    if (!account?.id) {
+      throw new BadRequestException('Choisis l’académie concernée avant d’importer un média.');
+    }
+    if (!corps?.url?.trim()) {
+      throw new BadRequestException("Indique l'adresse du fichier à rapatrier.");
+    }
+    return this.files.importerMedia({
+      url: corps.url.trim(),
+      nom: corps.nom?.trim() || null,
       userId: user.id,
       accountId: account.id,
     });

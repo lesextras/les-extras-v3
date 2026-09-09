@@ -192,6 +192,67 @@ export class FilesService {
     return this.storage.lire(cle);
   }
 
+  /**
+   * RAPATRIER UN MÉDIA DEPUIS SON ADRESSE.
+   *
+   * Sert à une seule chose, mais elle compte : reprendre chez soi les vidéos
+   * et les documents d'une formation encore hébergés chez un prestataire
+   * qu'on s'apprête à quitter. Le fichier est téléchargé par le serveur, puis
+   * déposé comme n'importe quel média — mêmes règles de format et de taille.
+   *
+   * L'adresse est fournie par un membre du compte, jamais par un visiteur, et
+   * seuls http(s) sont acceptés : on ne va pas lire un fichier local du
+   * serveur parce qu'on nous l'a demandé.
+   */
+  async importerMedia(params: {
+    url: string;
+    nom?: string | null;
+    userId: string;
+    accountId: string;
+  }): Promise<FichierResume> {
+    let cible: URL;
+    try {
+      cible = new URL(params.url);
+    } catch {
+      throw new BadRequestException("Cette adresse n'est pas valide.");
+    }
+    if (cible.protocol !== 'https:' && cible.protocol !== 'http:') {
+      throw new BadRequestException('Seules les adresses http et https sont acceptées.');
+    }
+
+    let reponse: Response;
+    try {
+      reponse = await fetch(cible.toString(), { redirect: 'follow' });
+    } catch (e) {
+      throw new BadRequestException(
+        `Le fichier n'a pas pu être récupéré : ${(e as Error).message.slice(0, 120)}`,
+      );
+    }
+    if (!reponse.ok) {
+      throw new BadRequestException(
+        `Le fichier n'a pas pu être récupéré (réponse ${reponse.status}).`,
+      );
+    }
+
+    const octets = Buffer.from(await reponse.arrayBuffer());
+    const nom =
+      params.nom?.trim() ||
+      decodeURIComponent(cible.pathname.split('/').pop() || '') ||
+      'media';
+
+    return this.deposer({
+      fichier: {
+        originalname: nom,
+        mimetype: reponse.headers.get('content-type')?.split(';')[0]?.trim() || '',
+        size: octets.length,
+        buffer: octets,
+      },
+      famille: FileKind.MEDIA,
+      userId: params.userId,
+      accountId: params.accountId,
+    });
+  }
+
   /** Les médias déposés par une académie, du plus récent au plus ancien. */
   async listerMedias(accountId: string) {
     const assets = await this.prisma.fileAsset.findMany({
