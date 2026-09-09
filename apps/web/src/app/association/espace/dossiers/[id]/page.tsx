@@ -74,7 +74,12 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
       </header>
 
       {/* ------------------------------------------------------ les moments */}
-      <ol className="mb-6 grid grid-cols-5 gap-1 overflow-x-auto">
+      {/* UNE GRILLE A CINQ COLONNES NE DEFILE PAS : elle repartit en cinq
+          parts egales et ecrase chaque etape a une soixantaine de pixels. Le
+          `overflow-x-auto` qui l'accompagnait ne servait donc a rien. En
+          rangee de largeur libre, les etapes gardent leur taille et c'est la
+          rangee qui glisse. */}
+      <ol className="scrollbar-visible mb-6 flex gap-1 overflow-x-auto sm:grid sm:grid-cols-5">
         {MOMENTS.map((m, i) => {
           const fait = i < indexMoment || (i === indexMoment && d.etat === 'SOLDE');
           const courant = i === indexMoment;

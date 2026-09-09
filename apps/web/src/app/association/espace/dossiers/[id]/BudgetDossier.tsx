@@ -43,7 +43,7 @@ function Tableau({
       <ul className="space-y-2">
         {lignes.map((l, i) =>
           l.sens === sens ? (
-            <li key={i} className="grid grid-cols-[minmax(0,1fr)_110px_auto] items-center gap-2">
+            <li key={i} className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_110px_auto] items-center gap-2">
               <input type="text" maxLength={160} value={l.libelle} onChange={(e) => onChange(lignes.map((x, j) => (j === i ? { ...x, libelle: e.target.value } : x)))} className={CHAMP} placeholder="Quoi ?" />
               <input type="number" min={0} step={1} value={l.montant || ''} onChange={(e) => onChange(lignes.map((x, j) => (j === i ? { ...x, montant: Number(e.target.value) } : x)))} className={`${CHAMP} text-right tabular-nums`} placeholder="€" />
               <button type="button" onClick={() => onChange(lignes.filter((_, j) => j !== i))} className="rounded-lg px-2 py-1 text-sm text-[#8A2419] hover:bg-[#FDE8E6]" aria-label="Retirer la ligne">
