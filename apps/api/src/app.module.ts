@@ -60,6 +60,7 @@ import { PaiementsModule } from './paiements/paiements.module';
 import { BoutiqueModule } from './boutique/boutique.module';
 import { AteliersModule } from './ateliers/ateliers.module';
 import { SupportModule } from './support/support.module';
+import { AgendaModule } from './agenda/agenda.module';
 import { AdministrationModule } from './administration/administration.module';
 
 @Module({
@@ -133,6 +134,7 @@ import { AdministrationModule } from './administration/administration.module';
   AteliersModule,
   SupportModule,
   AdministrationModule,
+  AgendaModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
