@@ -97,7 +97,7 @@ export function AdminServicesTable({
       ) : (
         <Card>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -106,7 +106,15 @@ export function AdminServicesTable({
                     <TableHead>Tarif</TableHead>
                     <TableHead>Fiche</TableHead>
                     <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Modération</TableHead>
+                    {/* LA COLONNE QU'ON VIENT CHERCHER, EPINGLEE A DROITE.
+                        Le tableau est plus large que l'ecran des qu'il y a un
+                        peu de contenu, et c'est TOUJOURS cette colonne-la qui
+                        sortait du cadre — celle qui porte les seules actions
+                        de la page. Epinglee, elle reste sous les yeux pendant
+                        qu'on fait defiler le reste. */}
+                    <TableHead className="sticky right-0 z-10 bg-card text-right shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.35)]">
+                      Modération
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -137,7 +145,7 @@ export function AdminServicesTable({
                           {SERVICE_STATUS_LABEL[s.status] ?? s.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="sticky right-0 z-10 bg-card shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.35)]">
                         <ModerateServiceActions
                           serviceId={s.id}
                           accountId={accountId}

@@ -99,7 +99,9 @@ export function AdminMissionsTable({
                     <TableHead>Catégorie</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Modération</TableHead>
+                    <TableHead className="sticky right-0 z-10 bg-card text-right shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.35)]">
+                      Modération
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -127,9 +129,12 @@ export function AdminMissionsTable({
                       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                         {formatDate(m.startDate)}
                       </TableCell>
-                      {/* Sans nowrap, les quatre boutons repliaient et la
-                          colonne se tronquait sur écran standard. */}
-                      <TableCell>
+                      {/* EPINGLEE A DROITE : c'est la colonne qu'on vient
+                          chercher, et c'etait toujours celle qui sortait du
+                          cadre. Elle reste visible pendant qu'on fait defiler
+                          le reste, et les boutons peuvent enfin replier au
+                          lieu de pousser la largeur. */}
+                      <TableCell className="sticky right-0 z-10 bg-card shadow-[-8px_0_12px_-8px_rgba(0,0,0,0.35)]">
                         <ModerateMissionActions
                           missionId={m.id}
                           accountId={accountId}
