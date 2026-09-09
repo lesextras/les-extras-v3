@@ -105,7 +105,7 @@ export default async function AdminJournalPage() {
                           <div className="text-xs text-muted-foreground">{entry.account.name}</div>
                         ) : null}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell>
                         <Badge variant="secondary" className="font-mono text-[11px]">
                           {entry.action}
                         </Badge>
