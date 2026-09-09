@@ -58,6 +58,7 @@ import { FormulairesModule } from './formulaires/formulaires.module';
 import { EcoleModule } from './ecole/ecole.module';
 import { PaiementsModule } from './paiements/paiements.module';
 import { BoutiqueModule } from './boutique/boutique.module';
+import { AteliersModule } from './ateliers/ateliers.module';
 import { AdministrationModule } from './administration/administration.module';
 
 @Module({
@@ -128,6 +129,7 @@ import { AdministrationModule } from './administration/administration.module';
   // servent toutes les deux pour savoir où doit aller l'argent d'une vente.
   PaiementsModule,
   BoutiqueModule,
+  AteliersModule,
   AdministrationModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
