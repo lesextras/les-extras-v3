@@ -15,18 +15,28 @@ import { useEffect, useState } from 'react';
  * association n'a aucun sens — c'est l'hôte qui décide du nom, pas le
  * déploiement.
  *
- * ELLE NE S'OUVRE QU'UNE FOIS D'ELLE-MÊME. Ensuite elle vit en pastille, en
- * bas à droite : « Plus tard » la réduit, la pastille la rouvre, et le site ne
- * la remet plus jamais devant les yeux tout seul. Le choix se retient d'une
- * visite à l'autre.
+ * ELLE S'OUVRE À CHAQUE VISITE, ET SE RANGE À GAUCHE. Deux corrections du
+ * 9/09/2026 :
+ *
+ *  1. Elle ne s'ouvrait qu'une fois dans la vie du navigateur. Une seule
+ *     occasion de voir la proposition, souvent au mauvais moment — et si on
+ *     répondait « Plus tard » ce jour-là, on ne la revoyait plus jamais. Elle
+ *     revient donc à chaque ouverture du site, douze secondes après l'arrivée.
+ *     Fermer reste sans effet sur la visite suivante : c'est le sens de
+ *     « Plus tard ».
+ *
+ *  2. La pastille réduite était en bas à DROITE, exactement là où vivent déjà
+ *     le retour en haut de page et l'assistant : elle les cachait. Elle passe
+ *     à gauche, où rien ne se trouve.
+ *
+ * La réduction ne vaut donc que pour la visite en cours : le site ne rouvre
+ * pas la bannière après un « Plus tard », mais il la reproposera demain.
  */
 
 interface EvenementInstallation extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
-
-const MEMOIRE = 'installation-reduite';
 
 /** Ce que le site s'appelle, là où on est. */
 function marque(hote: string) {
@@ -46,23 +56,6 @@ function marque(hote: string) {
   };
 }
 
-function dejaReduite() {
-  try {
-    return window.localStorage.getItem(MEMOIRE) === 'oui';
-  } catch {
-    return false;
-  }
-}
-
-function retenirReduction(reduite: boolean) {
-  try {
-    if (reduite) window.localStorage.setItem(MEMOIRE, 'oui');
-    else window.localStorage.removeItem(MEMOIRE);
-  } catch {
-    /* navigation privée : on oublie, ce n'est pas grave */
-  }
-}
-
 export function InstallPrompt() {
   const [evenement, setEvenement] = useState<EvenementInstallation | null>(null);
   const [etat, setEtat] = useState<'cache' | 'ouvert' | 'reduit'>('cache');
@@ -73,30 +66,19 @@ export function InstallPrompt() {
 
     // Déjà installé : rien à proposer.
     if (window.matchMedia?.('(display-mode: standalone)').matches) return;
-    const reduite = dejaReduite();
 
     const surProposition = (e: Event) => {
       e.preventDefault();
       setEvenement(e as EvenementInstallation);
-      // Réduite une fois, elle le reste : c'est la pastille qui la rouvre.
-      if (reduite) {
-        setEtat('reduit');
-        return;
-      }
-      // On laisse la personne arriver sur la page avant de proposer quoi que ce
-      // soit — et on ne le propose QU'UNE FOIS. Dès cette ouverture, on retient
-      // la réduction : à partir de là, c'est la pastille qui rouvre, jamais le
-      // site de lui-même.
-      window.setTimeout(() => {
-        retenirReduction(true);
-        setEtat('ouvert');
-      }, 12_000);
+      // Douze secondes : le temps d'arriver, de regarder, de comprendre où on
+      // est. Une bannière qui saute à la figure au premier pixel ne s'installe
+      // pas, elle se ferme.
+      window.setTimeout(() => setEtat('ouvert'), 12_000);
     };
 
     const surInstallation = () => {
       setEtat('cache');
       setEvenement(null);
-      retenirReduction(false);
     };
 
     window.addEventListener('beforeinstallprompt', surProposition);
@@ -109,8 +91,8 @@ export function InstallPrompt() {
 
   if (etat === 'cache' || !evenement) return null;
 
+  /** « Plus tard » : rangée pour cette visite, reproposée à la suivante. */
   function reduire() {
-    retenirReduction(true);
     setEtat('reduit');
   }
 
@@ -126,7 +108,9 @@ export function InstallPrompt() {
     setEvenement(null);
   }
 
-  // RÉDUITE : une pastille discrète, au-dessus de la boussole, qui la rouvre.
+  // RÉDUITE : une pastille discrète EN BAS À GAUCHE. À droite, elle recouvrait
+  // le retour en haut de page et l'assistant — trois ronds au même endroit,
+  // dont deux invisibles.
   if (etat === 'reduit') {
     return (
       <button
@@ -134,7 +118,7 @@ export function InstallPrompt() {
         onClick={() => setEtat('ouvert')}
         aria-label={nom.titre}
         title={nom.titre}
-        className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#4F46E5] shadow-[0_10px_30px_rgba(0,0,0,0.2)] ring-1 ring-black/10 transition hover:bg-[#ECEBFC]"
+        className="fixed bottom-5 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#4F46E5] shadow-[0_10px_30px_rgba(0,0,0,0.2)] ring-1 ring-black/10 transition hover:bg-[#ECEBFC]"
       >
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 3v12M8 11l4 4 4-4M4 21h16" />
