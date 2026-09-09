@@ -104,6 +104,8 @@ export class StripeConnectService {
         paiementsActifs: false,
         aFournir: [] as string[],
         commissionVentePourcent: compte.commissionVentePourcent,
+        // Un exemple sur cent euros : c'est plus parlant qu'un pourcentage.
+        exemple: this.estimation(10000, compte.commissionVentePourcent),
       };
     }
 
@@ -130,6 +132,7 @@ export class StripeConnectService {
       paiementsActifs: Boolean(distant.charges_enabled),
       aFournir: distant.requirements?.currently_due ?? [],
       commissionVentePourcent: compte.commissionVentePourcent,
+      exemple: this.estimation(10000, compte.commissionVentePourcent),
     };
   }
 
@@ -219,6 +222,23 @@ export class StripeConnectService {
   /* ═════════════════════════════════════ ce que la vente en fait ══════ */
 
   /**
+   * CE QUE LE PRESTATAIRE DE PAIEMENT PRÉLÈVE, en centimes.
+   *
+   * Sur un versement direct, c'est la plateforme qui règle les frais du
+   * prestataire, même quand l'argent part chez l'organisme. Sans les
+   * répercuter, la plateforme paierait de sa poche chaque vente faite par
+   * quelqu'un d'autre — ce n'est pas tenable.
+   *
+   * Le barème retenu est le tarif standard européen : 1,5 % du montant plus
+   * 25 centimes. Une carte non européenne coûte davantage ; dans ce cas la
+   * plateforme reste très légèrement en dessous du compte, et c'est assumé —
+   * mieux vaut sous-estimer que prélever à l'organisme plus que le coût réel.
+   */
+  private static fraisPrestataire(montantCents: number): number {
+    return Math.round(montantCents * 0.015) + 25;
+  }
+
+  /**
    * LES PARAMÈTRES À AJOUTER À UN PAIEMENT pour que l'argent aille chez
    * l'organisme et non chez la plateforme.
    *
@@ -226,9 +246,14 @@ export class StripeConnectService {
    * alors comme avant, sur le compte de la plateforme. C'est ce qui permet de
    * poser ce mécanisme sans rien casser de ce qui tourne déjà.
    *
-   * Le prélèvement est calculé sur le montant réellement encaissé. À 0 %, rien
-   * n'est prélevé — et les frais du prestataire restent alors à la charge de
-   * la plateforme, ce que l'écran dit sans détour.
+   * Ce qui est retenu se lit en deux parts. La première couvre les frais du
+   * prestataire de paiement, que la plateforme avance : elle n'est pas un
+   * gain, elle remet les comptes à zéro. La seconde est la part que la
+   * plateforme décide de prendre en plus — à zéro par défaut, et c'est le
+   * réglage recommandé : la plateforme ne perd rien et ne prend rien.
+   *
+   * Le total ne peut jamais dépasser le montant encaissé : on ne renvoie pas
+   * un organisme avec un versement négatif.
    */
   async parametresDeVersement(
     accountId: string,
@@ -243,8 +268,25 @@ export class StripeConnectService {
     const params: Record<string, string> = {
       'payment_intent_data[transfer_data][destination]': compte.stripeCompteId,
     };
+    const frais = StripeConnectService.fraisPrestataire(montantCents);
     const part = Math.floor((montantCents * compte.commissionVentePourcent) / 100);
-    if (part > 0) params['payment_intent_data[application_fee_amount]'] = String(part);
+    const retenu = Math.min(frais + part, Math.max(0, montantCents - 1));
+    if (retenu > 0) params['payment_intent_data[application_fee_amount]'] = String(retenu);
     return params;
+  }
+
+  /**
+   * CE QUE L'ÉCRAN AFFICHE : ce qui serait retenu sur une vente donnée. Sert
+   * uniquement à montrer un exemple honnête, jamais à décider quoi que ce soit.
+   */
+  estimation(montantCents: number, commissionVentePourcent: number) {
+    const frais = StripeConnectService.fraisPrestataire(montantCents);
+    const part = Math.floor((montantCents * commissionVentePourcent) / 100);
+    return {
+      montantCents,
+      fraisPrestataireCents: frais,
+      partPlateformeCents: part,
+      verseCents: Math.max(0, montantCents - frais - part),
+    };
   }
 }
