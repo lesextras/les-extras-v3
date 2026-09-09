@@ -1807,6 +1807,13 @@ enum FileKind {
   /// noms de personnes accompagnées : accès restreint à son déposant et aux
   /// responsables du compte, jamais d'URL publique.
   TRAME
+  /// MÉDIATHÈQUE D'UNE FORMATION : la vidéo, l'audio ou le document qui fait
+  /// le contenu d'une leçon. Lisible sans authentification, comme ARTICLE et
+  /// SERVICE — un apprenant ouvre son cours avec un jeton, pas avec un compte,
+  /// et le lecteur vidéo du navigateur ne sait pas présenter d'en-tête.
+  /// C'est la famille qui rend l'académie autonome : sans elle, les vidéos
+  /// resteraient hébergées chez un prestataire extérieur.
+  MEDIA
 }
 
 /// Un fichier réellement stocké (objet dans le dépôt privé), avec sa fiche
