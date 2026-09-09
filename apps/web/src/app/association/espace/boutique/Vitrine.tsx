@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { appel } from '../../_client';
 import { CARTE, Encart } from '../../_ui';
+import { Partage } from './Partage';
 import type { Vitrine as VitrineType } from './_types';
 
 /**
@@ -13,6 +14,14 @@ import type { Vitrine as VitrineType } from './_types';
  */
 export function Vitrine({ initiale }: { initiale: VitrineType }) {
   const [v, setV] = useState(initiale);
+  /**
+   * L'etat REELLEMENT enregistre, distinct de la saisie en cours.
+   *
+   * Le QR code et le lien de partage doivent pointer vers l'adresse qui
+   * fonctionne AUJOURD'HUI, pas vers celle qu'on est en train de taper. Sans
+   * cette distinction, on imprime une affiche vers une page qui n'existe pas.
+   */
+  const [enregistree, setEnregistree] = useState(initiale);
   const [erreur, setErreur] = useState<string | null>(null);
   const [dit, setDit] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
@@ -20,6 +29,19 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
   const champ =
     'w-full rounded-xl border-2 border-[#E6E4F3] px-3 py-2 text-[15px] text-[#1D1B5C] focus:outline-none';
   const etiquette = 'grid gap-1 text-sm font-bold text-[#3B3A66]';
+
+  /**
+   * L'adresse telle que le serveur la rangera. Meme regle que `normaliser()`
+   * cote API : on montre le resultat AVANT d'enregistrer, plutot que de faire
+   * decouvrir apres coup que « ADéPA Boutique » est devenu autre chose.
+   */
+  const apercu = v.slug
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
 
   async function sauver(extra?: Partial<VitrineType>) {
     setOccupe(true);
@@ -30,6 +52,7 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
         method: 'PATCH',
         body: {
           nom: v.nom,
+          slug: v.slug,
           sousTitre: v.sousTitre ?? '',
           presentation: v.presentation ?? '',
           logoUrl: v.logoUrl ?? '',
@@ -43,6 +66,7 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
         },
       });
       setV(maj);
+      setEnregistree(maj);
       setDit('Enregistré.');
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "La vitrine n'a pas été enregistrée.");
@@ -59,12 +83,12 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
           <p className="mt-0.5 text-sm text-[#6B6A8A]">
             Adresse publique :{' '}
             <a
-              href={`/boutique/${v.slug}`}
+              href={`/boutique/${enregistree.slug}`}
               target="_blank"
               rel="noopener"
               className="font-bold text-[#4F46E5] underline underline-offset-4"
             >
-              /boutique/{v.slug}
+              /boutique/{enregistree.slug}
             </a>
           </p>
         </div>
@@ -104,6 +128,32 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
           />
         </label>
       </div>
+
+      <label className={etiquette}>
+        L&apos;adresse de la boutique
+        <span className="flex items-center gap-0 overflow-hidden rounded-xl border-2 border-[#E6E4F3] focus-within:border-[#C7C4F2]">
+          <span className="shrink-0 bg-[#F3F2FD] px-3 py-2 text-[15px] font-normal text-[#6B6A8A]">
+            /boutique/
+          </span>
+          <input
+            value={v.slug}
+            onChange={(e) => setV({ ...v, slug: e.target.value })}
+            className="w-full border-0 px-3 py-2 text-[15px] text-[#1D1B5C] focus:outline-none"
+            placeholder="adepa"
+          />
+        </span>
+        <span className="text-xs font-normal text-[#6B6A8A]">
+          C&apos;est ce qu&apos;on lit sur le lien et ce qui sert au QR code : plus c&apos;est
+          court, plus c&apos;est facile à dire à voix haute et à scanner.{' '}
+          {apercu && apercu !== v.slug ? (
+            <>
+              Ce sera enregistré sous <strong className="text-[#1D1B5C]">/boutique/{apercu}</strong>.
+            </>
+          ) : null}{' '}
+          Changer l&apos;adresse casse les liens et les QR codes déjà partagés : l&apos;ancienne ne
+          mène plus nulle part.
+        </span>
+      </label>
 
       <label className={etiquette}>
         La présentation
@@ -193,6 +243,13 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
         </button>
         {dit ? <span className="text-sm font-bold text-[#0F5F3E]">{dit}</span> : null}
       </div>
+
+      <Partage
+        slug={enregistree.slug}
+        nom={enregistree.nom}
+        publiee={enregistree.publiee}
+        modifie={apercu !== enregistree.slug}
+      />
     </div>
   );
 }
