@@ -60,6 +60,9 @@ import {
   Check,
   Boxes,
   Handshake,
+  HeartHandshake,
+  BookOpen,
+  Users,
 } from 'lucide-react';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
@@ -773,7 +776,96 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════════════════════ 8. OUVRIR UN COMPTE ════════════════ */}
+        {/* ═════════════════════════ 8. L'ASSOCIATION QUI PORTE TOUT ÇA ══════
+            Les Extras n'est pas une entreprise : c'est le dispositif d'une
+            association. C'est ce qui explique les 0 % de commission, et c'est
+            ce que la page ne disait qu'en petit, dans une ligne de pied de
+            page. Une association vit de ses adhérents et de ses bénévoles :
+            si on ne le demande jamais, personne ne le propose. */}
+        <section id="adepa" className="scroll-mt-24 section">
+          <Reveal>
+            <div className="reflet relative overflow-hidden rounded-3xl border border-border bg-nacre p-7 shadow-card md:p-12">
+              <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+                <div>
+                  <span className="eyebrow">
+                    <HeartHandshake className="size-3.5" />
+                    L’association qui porte Les Extras
+                  </span>
+                  <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                    Derrière le réseau, il y a l’ADéPA.
+                  </h2>
+                  <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                    Association éducative de Melun, en Seine-et-Marne. Elle agit pour l’insertion
+                    des enfants, des adolescents et des familles par l’éducation, l’animation et la
+                    prévention. Les Extras est l’un de ses dispositifs — c’est ce qui explique les
+                    0 % de commission.
+                  </p>
+                  <ul className="mt-6 space-y-2.5">
+                    {[
+                      'Pas d’actionnaire, pas d’abonnement',
+                      'Ce que rapportent les formations revient aux actions de terrain',
+                      'Un don ouvre droit à un reçu fiscal',
+                    ].map((p) => (
+                      <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                        <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Trois portes, du plus léger au plus engageant : on regarde,
+                    on adhère, on rejoint. */}
+                <div className="grid gap-3">
+                  {[
+                    {
+                      icone: BookOpen,
+                      titre: 'Découvrir l’association',
+                      texte: 'Son histoire, ses actions, ce qu’elle défend.',
+                      href: 'https://adepa77.fr/notre-histoire/',
+                    },
+                    {
+                      icone: HeartHandshake,
+                      titre: 'Devenir adhérent',
+                      texte: 'Faire partie de l’aventure et soutenir ce qui se construit ici.',
+                      href: 'https://adepa77.fr/devenir-adherent/',
+                    },
+                    {
+                      icone: Users,
+                      titre: 'Rejoindre l’équipe',
+                      texte: 'Bénévole, intervenant, formateur : il y a de la place.',
+                      href: 'https://adepa77.fr/rejoignez-nous/',
+                    },
+                  ].map((porte) => {
+                    const Icone = porte.icone;
+                    return (
+                      <a
+                        key={porte.titre}
+                        href={porte.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-start gap-4 rounded-2xl border border-border bg-background p-5 no-underline transition duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
+                      >
+                        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                          <Icone className="size-5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-bold text-foreground">{porte.titre}</span>
+                          <span className="mt-0.5 block text-sm text-muted-foreground">
+                            {porte.texte}
+                          </span>
+                        </span>
+                        <ArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* ═══════════════════════════════ 9. OUVRIR UN COMPTE ════════════════ */}
         <section className="section">
           <Reveal>
             <div className="relative overflow-hidden rounded-3xl bloc-nuit bg-[hsl(222,21%,15%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">
