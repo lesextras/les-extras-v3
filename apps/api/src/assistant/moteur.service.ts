@@ -135,8 +135,64 @@ export class MoteurService {
 
   /* ------------------------------------------------------------------ gemini */
 
+  /**
+   * QUEL MODÈLE GEMINI ? ON DEMANDE À GOOGLE, ON NE DEVINE PAS (09/09/2026).
+   *
+   * `gemini-2.5-flash` a été fermé aux nouveaux comptes : l'API répondait
+   * « This model is no longer available to new users », et l'outil restait muet
+   * pendant qu'on cherchait du côté des clés et des quotas. Le nom d'un modèle
+   * a une date de péremption ; l'écrire en dur, c'est reprogrammer la panne.
+   *
+   * On interroge donc `models.list` une fois, on garde le premier modèle qui
+   * sait vraiment répondre (`generateContent`), et on préfère la famille
+   * « flash » — la plus rapide et la seule vraiment servie par l'offre
+   * gratuite. Le choix est gardé en mémoire pour la vie du serveur, et jeté dès
+   * qu'un appel échoue sur un modèle disparu : le prochain appel redécouvre.
+   *
+   * `GEMINI_MODEL` reste prioritaire quand il est posé — mais il n'est plus une
+   * impasse : s'il désigne un modèle fermé, on redécouvre au lieu de refuser.
+   */
+  private modeleChoisi: string | null = null;
+
+  private async modeleGemini(cle: string): Promise<string> {
+    const impose = process.env.GEMINI_MODEL?.trim();
+    if (impose && !this.modeleRefuse.has(impose)) return impose;
+    if (this.modeleChoisi) return this.modeleChoisi;
+
+    try {
+      const r = await fetch(`${GEMINI_RACINE}?key=${encodeURIComponent(cle)}&pageSize=200`);
+      if (r.ok) {
+        const j = (await r.json()) as { models?: { name?: string; supportedGenerationMethods?: string[] }[] };
+        const noms = (j.models ?? [])
+          .filter((m) => (m.supportedGenerationMethods ?? []).includes('generateContent'))
+          .map((m) => String(m.name ?? '').replace(/^models\//, ''))
+          .filter((n) => n && !this.modeleRefuse.has(n))
+          // Ni les aperçus, ni les expérimentaux : ils disparaissent sans
+          // prévenir, et c'est exactement ce qu'on cherche à ne plus subir.
+          .filter((n) => !/preview|exp|thinking|image|tts|embedding|live/i.test(n));
+        const choisi =
+          noms.find((n) => /flash-latest/.test(n)) ??
+          noms.find((n) => /flash-lite/.test(n)) ??
+          noms.find((n) => /flash/.test(n)) ??
+          noms.find((n) => /latest/.test(n)) ??
+          noms[0];
+        if (choisi) {
+          this.journal.log(`Gemini : modèle retenu « ${choisi} ».`);
+          this.modeleChoisi = choisi;
+          return choisi;
+        }
+      }
+    } catch {
+      // Pas de liste : on retombe sur le défaut, l'appel dira ce qui cloche.
+    }
+    return impose || MODELE_PAR_DEFAUT;
+  }
+
+  /** Les modèles que Google a fermés : on ne les redemande pas. */
+  private readonly modeleRefuse = new Set<string>();
+
   private async gemini(options: OptionsMoteur, cle: string): Promise<string> {
-    const modele = process.env.GEMINI_MODEL?.trim() || MODELE_PAR_DEFAUT;
+    const modele = await this.modeleGemini(cle);
     // Gemini parle en « tours » : l'assistant s'appelle « model » chez lui.
     const fil = (options.historique ?? []).map((m) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -172,7 +228,13 @@ export class MoteurService {
     const donnees = (await reponse.json().catch(() => null)) as ReponseGemini | null;
     if (!reponse.ok) {
       const detail = donnees?.error?.message ?? `HTTP ${reponse.status}`;
-      throw new Error(`Gemini ${reponse.status} : ${detail}`);
+      // Un modèle fermé n'est pas une panne : c'est un nom à oublier. On le
+      // marque, on efface le choix courant, et le prochain appel redécouvre.
+      if (reponse.status === 404 || /no longer available|not found|not supported/i.test(detail)) {
+        this.modeleRefuse.add(modele);
+        if (this.modeleChoisi === modele) this.modeleChoisi = null;
+      }
+      throw new Error(`Gemini ${reponse.status} (modèle ${modele}) : ${detail}`);
     }
 
     const bloque = donnees?.promptFeedback?.blockReason;
