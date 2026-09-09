@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { associationConnectee } from './_session';
-import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE_VIVE } from './_ui';
+import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE_VIVE, FormulaireRecherche } from './_ui';
 
 /**
  * DEUX PAGES, UN SEUL FICHIER.
@@ -145,6 +145,9 @@ function Plateforme() {
         </Link>
       </section>
 
+      {/* ------------------------------------- retrouver son association tout de suite */}
+      <RechercheRepertoires />
+
       {/* ------------------------------------------------- le bandeau qui défile */}
       <section className="mt-10 overflow-hidden rounded-[24px] border border-[#E6E4F3] bg-white py-6">
         <p className="mb-4 px-6 text-sm font-extrabold uppercase tracking-[0.16em] text-[#6B6A8A]">Ce qu&apos;il y a dedans</p>
@@ -277,6 +280,10 @@ function EspaceAssociation() {
         </Link>
       </div>
 
+      <div className="mt-10">
+        <RechercheRepertoires />
+      </div>
+
       <div className="mt-10 grid gap-4 md:grid-cols-3">
         {POURQUOI.map((c) => (
           <div key={c.titre} className={`${CARTE_VIVE} p-6`}>
@@ -309,6 +316,40 @@ function EspaceAssociation() {
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * VOIR SON ASSOCIATION SANS OUVRIR DE COMPTE.
+ *
+ * C'est la premiere chose que cherche quelqu'un qui arrive ici, et c'est aussi
+ * la plus rassurante : son association est deja connue de l'administration, et
+ * on le lui montre avant de lui demander quoi que ce soit. Le formulaire part
+ * en `method="get"` vers `/verifier`, sans JavaScript, donc il marche partout
+ * et au premier chargement.
+ */
+function RechercheRepertoires() {
+  return (
+    <section className="rounded-[24px] border-2 border-[#C7C4F2] bg-white p-6 sm:p-8">
+      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#6B6A8A]">
+        Sans compte, tout de suite
+      </p>
+      <h2 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-3xl">
+        Où en est <Accent>ton association</Accent> ?
+      </h2>
+      <p className="mt-3 max-w-[62ch] leading-relaxed text-[#3B3A66]">
+        Tape son nom, son sigle, son numéro SIREN ou son numéro RNA. On lit les répertoires publics
+        et on te dit ce qui est déjà prouvé pour un dossier de subvention.
+      </p>
+      <div className="mt-5">
+        <FormulaireRecherche />
+      </div>
+      <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-[#6B6A8A]">
+        <li>Aucune inscription</li>
+        <li>Répertoires officiels</li>
+        <li>Réponse immédiate</li>
+      </ul>
+    </section>
   );
 }
 
