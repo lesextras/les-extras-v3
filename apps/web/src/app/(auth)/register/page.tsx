@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, Building2, UserRound, Briefcase, ArrowRight, Check } from 'lucide-react';
+import { Mail, Lock, Building2, UserRound, Briefcase, Heart, ArrowRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { registerSchema, type RegisterValues } from '@/lib/validation';
 import { register as registerAccount } from '@/lib/auth-client';
@@ -53,6 +53,15 @@ const accountTypes = [
     icon: UserRound,
     title: 'Professionnel',
     desc: 'Éducateur, moniteur, thérapeute… Je propose mes services en indépendant.',
+  },
+  {
+    // Ajouté le 09/09/2026. Des parents écrivaient déjà pour demander un
+    // atelier ou un conseil : ils n'avaient aucune case où se ranger, et
+    // devaient se déclarer « établissement » pour pouvoir réserver.
+    key: 'PARTICULIER' as const,
+    icon: Heart,
+    title: 'Parent, particulier',
+    desc: 'Je cherche un atelier, une activité ou un conseil pour mon enfant ou mon proche.',
   },
 ];
 
@@ -158,11 +167,11 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel
                   required
-                  hint="Établissement si vous cherchez du renfort ; Salarié si vous travaillez déjà pour l’un d’eux ; Professionnel si vous intervenez en indépendant. Vous pourrez créer un second compte plus tard si besoin."
+                  hint="Établissement si vous cherchez du renfort ; Salarié si vous travaillez déjà pour l’un d’eux ; Professionnel si vous intervenez en indépendant ; Parent si vous cherchez pour votre enfant ou votre proche. Vous pourrez créer un second compte plus tard si besoin."
                 >
                   Je suis…
                 </FormLabel>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {accountTypes.map((t) => {
                     const active = selectedTile === t.key;
                     return (
