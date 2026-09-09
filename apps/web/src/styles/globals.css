@@ -544,6 +544,56 @@
     animation: trait-descend 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+
+  /* ═══════════════════════════════ LEX, LE PERSONNAGE ═══════════════════════
+     Quatre mouvements, tous lents et tous décalés : le personnage flotte,
+     cligne des yeux, salue, et son antenne bat. Décalés parce qu'un
+     personnage dont tout bouge en même temps ressemble à une image qui
+     saute — c'est le déphasage qui donne l'impression du vivant.
+     `will-change` est volontairement absent : quatre couches promues sur une
+     page d'accueil coûtent plus cher que ce qu'elles font gagner. */
+  .lex-perso { overflow: visible; }
+
+  @keyframes lex-flotte {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
+  }
+  .lex-flotte { animation: lex-flotte 4.2s ease-in-out infinite; }
+
+  @keyframes lex-ombre {
+    0%, 100% { transform: scaleX(1);    opacity: 0.16; }
+    50%      { transform: scaleX(0.88); opacity: 0.10; }
+  }
+  .lex-ombre { transform-origin: 100px 206px; animation: lex-ombre 4.2s ease-in-out infinite; }
+
+  /* Le clignement occupe 4 % du cycle : au-delà, le personnage a l'air de
+     dormir plutôt que de cligner. */
+  @keyframes lex-yeux {
+    0%, 92%, 100% { transform: scaleY(1); }
+    95%           { transform: scaleY(0.08); }
+  }
+  .lex-yeux { transform-origin: 100px 75px; animation: lex-yeux 5.5s ease-in-out infinite; }
+
+  @keyframes lex-salut {
+    0%, 60%, 100% { transform: rotate(0deg); }
+    68%           { transform: rotate(-22deg); }
+    76%           { transform: rotate(6deg); }
+    84%           { transform: rotate(-16deg); }
+  }
+  .lex-salut { animation: lex-salut 6.5s ease-in-out infinite; }
+
+  @keyframes lex-lueur {
+    0%, 100% { opacity: 1;    r: 6; }
+    50%      { opacity: 0.45; r: 4.6; }
+  }
+  .lex-lueur { animation: lex-lueur 2.6s ease-in-out infinite; }
+
+  @keyframes lex-echarpe {
+    0%, 100% { transform: rotate(0deg); }
+    50%      { transform: rotate(7deg); }
+  }
+  .lex-echarpe { transform-origin: 134px 150px; animation: lex-echarpe 3.4s ease-in-out infinite; }
+
   /* Respect des préférences de mouvement réduit */
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -563,7 +613,13 @@
     .animate-panoramique,
     .animate-halo,
     .animate-halo-2,
-    .animate-anneau {
+    .animate-anneau,
+    .lex-flotte,
+    .lex-ombre,
+    .lex-yeux,
+    .lex-salut,
+    .lex-lueur,
+    .lex-echarpe {
       animation: none !important;
       transform: none !important;
       opacity: 1 !important;
