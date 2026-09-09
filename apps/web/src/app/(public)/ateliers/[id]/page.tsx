@@ -35,6 +35,7 @@ import {
 import { QrShare } from "../../../_shared/QrShare";
 import { PaiementAtelier } from "../../../_shared/PaiementAtelier";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
+import { LiensIntervenant } from "@/app/_shared/LiensIntervenant";
 
 interface FaqItem { question: string; answer: string }
 interface PriceExtra { label: string; price: number | string }
@@ -98,7 +99,7 @@ interface ServiceDetail {
       id: string;
       firstName?: string | null;
       lastName?: string | null;
-      profile?: { job?: string | null; bio?: string | null } | null;
+      profile?: { job?: string | null; bio?: string | null; liens?: string[] | null } | null;
     } | null;
   } | null;
   reviews?: ReviewItem[];
@@ -571,6 +572,7 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 {owner?.profile?.bio ? (
                   <p className="line-clamp-4 text-sm text-muted-foreground">{owner.profile.bio}</p>
                 ) : null}
+                <LiensIntervenant liens={owner?.profile?.liens} />
                 <Button asChild variant="outline" size="sm" className="w-full">
                   <Link href={`/intervenants/${service.account.id}`}>
                     Voir toutes ses interventions
