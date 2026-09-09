@@ -17,6 +17,9 @@ import { NatureProduit, StatutCommande, StatutProduit } from '@prisma/client';
 /** La vitrine de la boutique. */
 export class BoutiqueDto {
   @IsOptional() @IsString() @MaxLength(120) nom?: string;
+  /// L'adresse publique, choisie par l'association. Normalisee cote service :
+  /// ce qui arrive ici est ce que la personne a tape, pas ce qui sera retenu.
+  @IsOptional() @IsString() @MaxLength(60) slug?: string;
   @IsOptional() @IsString() @MaxLength(160) sousTitre?: string;
   @IsOptional() @IsString() @MaxLength(4000) presentation?: string;
   @IsOptional() @IsString() @MaxLength(500) logoUrl?: string;
