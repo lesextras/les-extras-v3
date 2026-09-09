@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, MessageSquare } from "lucide-react";
+import { Eye, MapPin, MessageSquare } from "lucide-react";
 import {
   MISSION_CATEGORY_LABEL,
   SERVICE_CATEGORY_LABEL,
@@ -12,6 +12,7 @@ import {
   formatDate,
   formatMoney,
 } from "./format";
+import { resumeTerritoire } from "@/lib/territoires";
 import type { Booking, Mission, Service } from "./types";
 
 export function MissionCard({ mission, href }: { mission: Mission; href?: string }) {
@@ -90,8 +91,23 @@ export function ServiceCard({
         <div className="flex flex-wrap gap-3 text-xs">
           {service.duration ? <span>⏱ {service.duration}</span> : null}
           {service.maxParticipants ? <span>👥 {service.maxParticipants} max</span> : null}
-          {service.city ? <span>📍 {service.city}</span> : null}
         </div>
+        {/* OÙ L'INTERVENANT SE DÉPLACE — la question qui décide.
+            Un atelier se tient dans l'établissement ou chez la famille : si
+            l'intervenant ne vient pas jusqu'à eux, tout le reste de la fiche
+            est sans objet. Le périmètre sortait d'un `city` en texte libre,
+            perdu au milieu de la durée et du nombre de places ; il est
+            maintenant lu des départements couverts et posé sur sa propre
+            ligne, en évidence. `city` reste le repli pour les fiches d'avant
+            la bascule. */}
+        {resumeTerritoire(service.departements ?? []) ?? service.city ? (
+          <p className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+            <MapPin className="size-3.5 shrink-0 text-primary" aria-hidden />
+            <span className="line-clamp-1">
+              Se déplace : {resumeTerritoire(service.departements ?? []) ?? service.city}
+            </span>
+          </p>
+        ) : null}
       </CardContent>
       <CardFooter className="justify-between">
         {audience ? (

@@ -181,6 +181,15 @@ export interface Service {
   publicTarget?: string | null;
   price?: string | number | null;
   city?: string | null;
+  /**
+   * LES DÉPARTEMENTS RÉELLEMENT COUVERTS, en codes INSEE.
+   *
+   * `city` est du texte libre et dit la ville de base de l'intervenant, pas
+   * jusqu'où il se déplace. Pour un atelier en présentiel — dans un
+   * établissement, chez des parents — c'est le périmètre qui décide, pas la
+   * ville. Voir `lib/territoires.ts`.
+   */
+  departements?: string[] | null;
   status: ServiceStatus;
   /**
    * Le contenu pédagogique. Ces champs existent en base depuis le début mais
