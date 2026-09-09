@@ -232,7 +232,7 @@ export function Ventes({ initiales, cours, packs }: { initiales: Vente[]; cours:
               <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Montant</span>
               <input value={montant} onChange={(e) => setMontant(e.target.value)} className={CHAMP} inputMode="decimal" placeholder="790" required />
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Moyen</span>
                 <input value={moyen} onChange={(e) => setMoyen(e.target.value)} className={CHAMP} maxLength={60} />
