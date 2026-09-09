@@ -164,12 +164,12 @@ export default function InformationsReglementairesPage() {
           <Building2 className="size-5 text-primary" />
           L’organisme de formation
         </h2>
-        <div className="overflow-hidden rounded-2xl border border-border">
+        <div className="overflow-x-auto rounded-2xl border border-border">
           <table className="w-full text-sm">
             <tbody>
               {IDENTITE.map(([cle, valeur], i) => (
                 <tr key={cle} className={i % 2 ? "bg-card" : "bg-muted/40"}>
-                  <th className="w-56 border-b border-border px-4 py-3 text-left align-top font-medium text-foreground">
+                  <th className="sm:w-56 border-b border-border px-4 py-3 text-left align-top font-medium text-foreground">
                     {cle}
                   </th>
                   <td className="border-b border-border px-4 py-3 align-top text-foreground/80">
@@ -233,12 +233,12 @@ export default function InformationsReglementairesPage() {
           <CalendarClock className="size-5 text-primary" />
           Délais d’accès
         </h2>
-        <div className="overflow-hidden rounded-2xl border border-border">
+        <div className="overflow-x-auto rounded-2xl border border-border">
           <table className="w-full text-sm">
             <tbody>
               {DELAIS.map(([quoi, delai], i) => (
                 <tr key={quoi} className={i % 2 ? "bg-card" : "bg-muted/40"}>
-                  <th className="w-64 border-b border-border px-4 py-3 text-left align-top font-medium text-foreground">
+                  <th className="sm:w-64 border-b border-border px-4 py-3 text-left align-top font-medium text-foreground">
                     {quoi}
                   </th>
                   <td className="border-b border-border px-4 py-3 align-top text-foreground/80">
