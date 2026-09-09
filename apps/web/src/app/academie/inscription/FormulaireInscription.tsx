@@ -5,6 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { appel, connecter, ouvrirAcademie } from '../_client';
 import { BTN_PRIMAIRE, CHAMP } from '../_ui';
 import { LIBELLES_QUALIOPI, type EtatQualiopi } from '../_types';
+import { ChoixAcademie, type OrganismeTrouve } from '../ChoixAcademie';
 
 /**
  * L'INSCRIPTION EN UN ÉCRAN.
@@ -19,6 +20,9 @@ export function FormulaireInscription() {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [nomAcademie, setNomAcademie] = useState('');
+  // L'organisme retrouve dans les repertoires publics. C'est lui qui remplit
+  // le SIRET, le NDA et l'etat Qualiopi, pour qu'on n'ait rien a recopier.
+  const [choisi, setChoisi] = useState<OrganismeTrouve | null>(null);
   const [siret, setSiret] = useState('');
   const [nda, setNda] = useState('');
   const [qualiopi, setQualiopi] = useState<EtatQualiopi>('PAS_ENGAGE');
@@ -39,9 +43,12 @@ export function FormulaireInscription() {
       // 2. La session.
       await connecter(email.trim(), motDePasse);
       // 3. L'espace de l'académie.
-      await ouvrirAcademie(nomAcademie, {
-        siret: siret.replace(/\s/g, '') || undefined,
-        nda: nda.trim() || undefined,
+      await ouvrirAcademie(choisi?.nom ?? nomAcademie, {
+        // Le SIREN retrouve dans les repertoires pre-remplit la fiche cote
+        // serveur, adresse et declaration d'activite comprises.
+        siren: choisi?.siren,
+        siret: siret.replace(/\s/g, '') || choisi?.siret || undefined,
+        nda: nda.trim() || choisi?.declaration?.nda || undefined,
         qualiopi,
       });
       window.location.href = '/academie?bienvenue=1';
@@ -57,20 +64,38 @@ export function FormulaireInscription() {
     <form onSubmit={soumettre} className="flex flex-col gap-6">
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-1 text-sm font-extrabold uppercase tracking-[0.12em] text-[#0F5F3E]">1. Ton académie</legend>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-bold text-[#12312A]">Son nom</span>
-          <input type="text" required minLength={2} maxLength={160} value={nomAcademie} onChange={(e) => setNomAcademie(e.target.value)} className={CHAMP} />
-        </label>
+        <ChoixAcademie
+          libelle="Son nom"
+          nom={nomAcademie}
+          onNom={setNomAcademie}
+          choisi={choisi}
+          onChoisi={(o) => {
+            setChoisi(o);
+            // Ce que les repertoires savent, on le pose dans les champs. La
+            // personne voit ce qui a ete rempli, et peut le corriger.
+            if (o) {
+              if (o.siret) setSiret(o.siret);
+              if (o.declaration?.nda) setNda(o.declaration.nda);
+              if (o.declaration?.certifie) setQualiopi('CERTIFIE');
+            }
+          }}
+        />
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold text-[#12312A]">SIRET</span>
             <input type="text" inputMode="numeric" maxLength={17} value={siret} onChange={(e) => setSiret(e.target.value)} className={CHAMP} />
-            <span className="text-xs text-[#5E7A6E]">Facultatif — quatorze chiffres.</span>
+            <span className="text-xs text-[#5E7A6E]">
+              {choisi?.siret ? 'Trouvé dans les répertoires publics.' : 'Facultatif, quatorze chiffres.'}
+            </span>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold text-[#12312A]">Numéro de déclaration (NDA)</span>
             <input type="text" maxLength={20} value={nda} onChange={(e) => setNda(e.target.value)} className={CHAMP} />
-            <span className="text-xs text-[#5E7A6E]">Facultatif — tu peux entrer sans, et le renseigner après.</span>
+            <span className="text-xs text-[#5E7A6E]">
+              {choisi?.declaration?.nda
+                ? 'Trouvé dans la liste publique des organismes de formation.'
+                : 'Facultatif, tu peux entrer sans et le renseigner après.'}
+            </span>
           </label>
         </div>
         <label className="flex flex-col gap-1 text-sm">
