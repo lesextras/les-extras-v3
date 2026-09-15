@@ -1,5 +1,5 @@
 import { IsEnum, IsISO8601, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { MissionCategory, MissionStatus, MissionVisibility } from '@prisma/client';
+import { MissionCategory, MissionVisibility } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsNumber } from 'class-validator';
 
