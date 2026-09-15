@@ -433,7 +433,7 @@ function page(f, index) {
    réduisent : une fiche coupée serait inutilisable, une fiche à 90 % reste
    parfaitement lisible à l'impression. */
 (function () {
-  var H = 1754, PAD = 48, GAP = 12;
+  var H = 1754, PAD = 48, ESPACE = 12;
   var kids = [].filter.call(document.body.children, function (e) {
     return e.tagName !== 'SCRIPT';
   });
@@ -445,13 +445,13 @@ function page(f, index) {
   /* 1. le contenu déborde : on réduit les grands encadrés, pas la page */
   var gros = document.querySelectorAll('.mid .boxc, .arbox .boxc, .bot .boxc, .note');
   var z = 1;
-  for (var i = 0; i < 30 && libre(GAP) < 0; i++) {
+  for (var i = 0; i < 30 && libre(ESPACE) < 0; i++) {
     z -= 0.015;
     [].forEach.call(gros, function (e) { e.style.zoom = z; });
   }
 
   /* 2. il reste de la place : elle devient de la respiration entre encadrés */
-  var g = Math.min(34, GAP + Math.max(0, libre(GAP)) / (kids.length - 1));
+  var g = Math.min(34, ESPACE + Math.max(0, libre(ESPACE)) / (kids.length - 1));
   document.body.style.gap = g + 'px';
 })();
 </script>

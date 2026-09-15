@@ -41,7 +41,7 @@ antérieures — demander à Siham l'état courant avant d'y toucher.
   1. **Formations Qualiopi** — facturées AU DEVIS par l'association (certifiée
      Qualiopi), qui fait appel aux formateurs du réseau Les Extras.
   2. **LEX, l'assistant IA** — à crédits : 1 crédit = 1 génération
-     (écrit pro, activité, fiche, GAPiste). Le bot d'aide `chat` est GRATUIT.
+     (écrit pro, activité, fiche). Le bot d'aide `chat` est GRATUIT.
 - **⚠ CETTE GRILLE A CHANGÉ — la source de vérité est le CODE**, pas ce
   document : `apps/api/src/billing/billing.service.ts` (`SUBSCRIPTION_PLANS`,
   `CREDIT_PACKS`, `ESTABLISHMENT_PLAN`) et `credits.constants.ts`. Le
@@ -116,8 +116,7 @@ Points structurants :
     avant, « Mme Martin » revenait « Martin ». `restaurer()` tolère casse et
     espaces. `resume()` renvoie `roles[]`, affichés dans le studio — la preuve
     plutôt que la promesse. Nettoyage des jetons résiduels centralisé dans
-    `nettoyerJetonsResiduels()` (4 copies auparavant) + `estJetonRole()` réutilisé
-    par le GAP.
+    `nettoyerJetonsResiduels()` (4 copies auparavant) + `estJetonRole()`.
   - **NON à « garder les prénoms »** (question de Siham, 4/8/2026) : un prénom
     + un contexte d'établissement identifie une personne (individualisation,
     corrélation, inférence — les 3 critères CNIL). Ce serait de la
@@ -1470,8 +1469,11 @@ C'est de là que vient la demande.
 - `lib/nav.ts` : les trois entrées retirées des **quatre** menus. Deux sections
   se sont retrouvées à une seule entrée et ont donc été dissoutes en bloc sans
   titre, selon la règle déjà écrite dans ce fichier (« deux entrées ne font pas
-  une rubrique ») : « LEX & analyse de pratique » côté établissement ne garde
+  une rubrique ») : « LEX & analyse de pratique » côté établissement ne gardait
   que le GAP, et la section « LEX » du salarié en attente ne garde que le solde.
+  **Périmé depuis le 15/09/2026** : le GAP a été retiré de l'offre, cette entrée
+  et la section qui la portait n'existent plus (voir la note « RETRAIT DU GAP »
+  ci-dessous).
 - **`LEX · Crédits` reste dans le menu de gauche**, et c'est délibéré : c'est la
   seule des entrées qui parle d'argent, elle est filtrée par rôle
   (`OWNER/ADMIN/MANAGER`) sur les menus d'établissement, et **la barre du haut
@@ -3230,3 +3232,65 @@ aux exigences Google/Yahoo/Microsoft ». Le sous-domaine `news`, lui, est
 entièrement vert. À corriger un jour dans la zone `adepa77.fr` : ajouter
 `rua=mailto:…` au TXT `_dmarc`. Pas urgent, mais c'est le domaine de la
 plateforme.
+
+---
+
+## RETRAIT DU GAP — 15/09/2026
+
+Le groupe d'analyse de pratique (GAP, « Entraide ») a été **retiré de l'offre**.
+LEX reste entier — écriture, activités, fiches — et perd seulement son rôle de
+GAPiste. 28 fichiers modifiés, 18 supprimés, ~3 000 lignes retirées.
+
+**Supprimé** : le module API `questions` (c'était ça, le backend du GAP — une
+recherche sur « gap » ne le trouve pas), les pages `/gap` et `/dashboard/gap`,
+les composants `GapVitrine` / `GapFil` / `BlocGap` / `ReponseGap` / `LexGapiste`
+/ `PoserQuestion` / `ActionsSituation` / `gap.ts`, la route
+`POST /assistant/gapiste`, l'endpoint `GET /public/gap/apercu`, les entrées des
+quatre menus et la section d'accueil.
+
+`hebdo.scheduler.ts` interrogeait `prisma.question` **sans jamais nommer le
+GAP** : non traité, l'e-mail hebdomadaire du lundi plantait pour tous les
+intervenants.
+
+### Ce qui reste, et pourquoi — NE PAS « finir le ménage »
+
+- **`'GAP'` dans la liste d'acronymes de `pseudonymiseur.service.ts`.** Les
+  professionnels écrivent « GAP » dans leurs textes pour parler de l'analyse de
+  pratique de LEUR établissement. Sans cette entrée, LEX prendrait l'acronyme
+  pour un nom de personne : le retirer **dégraderait l'anonymisation**.
+- **`GAP = 12` dans `fiches-recap.js`** était une constante d'espacement A4,
+  sans rapport ; renommée en `ESPACE` le 15/09 pour ne plus polluer les
+  recherches.
+- **`LEX_GAPISTE` et `REMBOURSEMENT_LEX_GAPISTE`** (`adhesion/page.tsx`) : ce
+  sont les libellés d'écritures **déjà passées** au grand livre des crédits. Les
+  retirer afficherait des lignes sans libellé dans l'historique des adhérents.
+  Plus aucune écriture de ce type ne peut être créée.
+- **`POINTS.REPONSE` / `REPONSE_RETENUE`** : l'énumération `PointReason` est
+  utilisée par des points **déjà crédités**. Seul le barème affiché ne propose
+  plus de les gagner.
+- **`MissionCategory.ANALYSE_PRATIQUES`** et la fiche psychologue de
+  `renfort/donnees.ts` : « analyse de pratique » désigne aussi une **prestation
+  de renfort**, donc du chiffre d'affaires. Rien à voir avec le dispositif
+  retiré.
+- **Les modèles Prisma `Question` / `Answer` / `AnswerVote`** restent en base.
+  Le schéma n'est pas modifié, donc **aucune migration, donc aucun risque au
+  déploiement**. Plus aucune route ni page n'y accède : les données sont inertes
+  et invisibles. Ce sont des situations professionnelles réelles déposées par
+  des professionnels et les réponses de leurs pairs — elles ne se détruisent pas
+  sur une consigne implicite. Pour les effacer : **export d'abord, migration
+  ensuite**, et seulement sur demande explicite de Siham.
+
+### Les redirections
+
+`/gap`, `/gap/poser` et `/gap/<id>` étaient indexés, et `/entraide` pointait
+déjà sur `/gap` — sans correction, cette redirection existante serait devenue
+une redirection vers un 404. Posées dans `next.config.mjs`, la règle la plus
+spécifique d'abord. `permanent: true` sort un **308**, pas un 301 : c'est le
+comportement de Next, et Google les traite de la même façon.
+
+### Le piège à ne jamais oublier
+
+**`gap` est une classe Tailwind** (`gap-3`, `gap-1.5`…) et tient l'espacement de
+tous les `flex` et `grid` du site. Un chercher-remplacer sur « gap » colle tous
+les éléments de **toutes les pages** — sans faire échouer le build, donc en
+partant en production sans prévenir. Aucune classe `gap-*` n'a été touchée.

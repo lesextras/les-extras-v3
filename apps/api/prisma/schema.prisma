@@ -2413,6 +2413,16 @@ model IdeaVote {
 /// ─────────────────────────────────────────────────────────────────────────
 /// ENTRAIDE — questions de terrain entre professionnels, par métier.
 ///
+/// ⚠ DISPOSITIF RETIRÉ DE L'OFFRE LE 15/09/2026. Plus aucune route ni page
+/// n'accède à ces trois modèles : ils sont INERTES et invisibles. Ils restent
+/// en base volontairement, et le schéma n'est pas modifié — donc aucune
+/// migration, donc aucun risque au déploiement.
+///
+/// Ce sont des situations professionnelles réelles déposées par des
+/// professionnels et les réponses de leurs pairs. Pour les effacer :
+/// export d'abord, migration ensuite, et seulement sur demande explicite.
+/// Voir la note « RETRAIT DU GAP » dans CLAUDE.md.
+///
 /// Une question n'est pas un sujet, c'est une SITUATION : ce qui se passe,
 /// et ce qui a déjà été tenté. Les prénoms sont masqués à l'enregistrement :
 /// on parle de personnes accompagnées réelles.
