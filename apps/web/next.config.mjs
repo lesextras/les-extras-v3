@@ -272,7 +272,22 @@ const nextConfig = {
       //
       // La redirection appartient à la configuration, pas à un composant.
       { source: '/etablissements', destination: '/renforteam', permanent: true },
-      { source: '/entraide', destination: '/gap', permanent: true },
+      /**
+       * LE GAP A ÉTÉ RETIRÉ DE L'OFFRE (15/09/2026).
+       *
+       * /gap, /gap/poser et /gap/<id> étaient indexés, et /entraide pointait
+       * déjà dessus. Un 404 sur des adresses référencées coûte au domaine
+       * entier, pas seulement à ces pages : on redirige donc en 301, qui
+       * transmet l'antériorité à l'accueil.
+       *
+       * L'ordre compte : la règle la plus spécifique d'abord, sinon `/gap`
+       * avalerait ses propres sous-chemins avant qu'ils ne soient évalués.
+       */
+      { source: '/gap/:chemin*', destination: '/', permanent: true },
+      { source: '/gap', destination: '/', permanent: true },
+      { source: '/dashboard/gap/:chemin*', destination: '/dashboard', permanent: true },
+      { source: '/dashboard/gap', destination: '/dashboard', permanent: true },
+      { source: '/entraide', destination: '/', permanent: true },
       { source: '/listing/:slug', destination: '/ateliers', permanent: true },
       { source: '/listing-category/:slug', destination: '/ateliers', permanent: true },
     ];

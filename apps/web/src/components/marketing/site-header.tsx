@@ -14,7 +14,6 @@ const links = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
   { label: 'RenforTeam', href: '/renforteam' },
-  { label: 'Le GAP', href: '/gap' },
   { label: 'Édublog', href: '/edublog' },
   // « Tarifs » et « Aide » ont quitté la barre le 5/8/2026 (demande Siham).
   // Sept entrées, c'était trop : les produits — ce qu'on est venu chercher —

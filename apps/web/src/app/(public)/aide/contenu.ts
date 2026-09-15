@@ -145,7 +145,7 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "adhesion",
         question: "Comment fonctionnent les crédits LEX ?",
         reponse: [
-          "LEX, l'assistant IA (écriture professionnelle, générateur d'activités, fiches pré-remplies, GAPiste), fonctionne à crédits : un crédit par génération. Chaque compte reçoit 15 générations offertes à son ouverture puis le 1er de chaque mois, sans carte bancaire et sans date de fin ; ce qui n'est pas consommé se reporte jusqu'à trois mois. Au-delà, vous rechargez par packs ou par un abonnement à dotation mensuelle.",
+          "LEX, l'assistant IA (écriture professionnelle, générateur d'activités, fiches pré-remplies), fonctionne à crédits : un crédit par génération. Chaque compte reçoit 15 générations offertes à son ouverture puis le 1er de chaque mois, sans carte bancaire et sans date de fin ; ce qui n'est pas consommé se reporte jusqu'à trois mois. Au-delà, vous rechargez par packs ou par un abonnement à dotation mensuelle.",
           "Votre consommation, votre solde et les tarifs sont visibles dans votre espace, page « LEX, Crédits & abonnement ». Le bot d'aide, lui, reste gratuit. Les recettes soutiennent les actions de l'association.",
         ],
       },
@@ -204,14 +204,6 @@ export const RUBRIQUES: Rubrique[] = [
     resume: "Ce que nous stockons, ce que nous ne stockons pas.",
     icone: "shield",
     articles: [
-      {
-        slug: "anonymat-du-gap",
-        question: "Le GAP est-il vraiment anonyme ?",
-        reponse: [
-          "Vous publiez sous un libellé de métier, jamais sous votre nom. Les prénoms détectés dans votre texte sont remplacés à l'enregistrement, et ne sont stockés nulle part en clair.",
-          "Rien n'est visible depuis le site et rien n'est indexé par les moteurs de recherche : un compte est nécessaire pour lire comme pour écrire.",
-        ],
-      },
       {
         slug: "assistant-ia",
         question: "Que devient ce que j'écris dans LEX ?",

@@ -39,7 +39,7 @@ export const BAREME = {
   MISSION: 50,
   AVIS: 25,
   IDEE: 40,
-  /// Répondre à un pair dans le GAP (groupe d'analyse de pratique).
+  /// Répondre à un pair. Conservé pour l'historique des points déjà crédités.
   REPONSE: 15,
   /// Réponse désignée comme utile par celui qui avait le problème : c'est le
   /// seul signal de qualité qui vaille, il est le mieux récompensé après la

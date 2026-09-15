@@ -31,7 +31,7 @@
 //   3. l'aiguillage, deux portes ;
 //   4. le tout-en-un : il diffuse, il formalise, il vérifie, il compte ;
 //   5. le catalogue, en un bloc à onglets ;
-//   6. LEX et le GAP ;
+//   6. LEX ;
 //   7. le prix, en une ligne ;
 //   8. ouvrir un compte.
 //
@@ -78,8 +78,6 @@ import { estMaison } from '@/lib/mini-formations';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { OffreLex } from './_shared/OffreLex';
-import { IllustrationReseau } from './_shared/Illustrations';
-import { BlocGap } from './_shared/BlocGap';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
 import { Mascotte } from './_shared/Mascotte';
@@ -688,11 +686,11 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════════════════════ 6. LEX ET LE GAP ═══════════════════
-            L'essai, le détail de l'offre puis le GAP se suivaient en trois
-            sections : trois titres, trois respirations, trois fois la même
-            promesse. Tout tient ici, sur la bande claire qui sert déjà de
-            repère au milieu du fond charbon. */}
+        {/* ═══════════════════════════════ 6. LEX ═══════════════════════════
+            L'essai et le détail de l'offre se suivaient en deux sections :
+            deux titres, deux respirations, deux fois la même promesse. Tout
+            tient ici, sur la bande claire qui sert déjà de repère au milieu
+            du fond charbon. */}
         <section
           id="lex"
           className="scroll-mt-24 border-y border-border bg-gradient-to-b from-primary/[0.07] via-background to-background"
@@ -707,7 +705,7 @@ export default async function LandingPage() {
                 Le métier ne s’arrête pas à la fin de la journée
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                LEX pour les écrits, le GAP pour la pratique.
+                LEX pour les écrits professionnels.
               </p>
               </div>
             </Reveal>
@@ -715,12 +713,6 @@ export default async function LandingPage() {
             <div id="offre-lex" className="mt-12 scroll-mt-24">
               <Reveal>
                 <OffreLex />
-              </Reveal>
-            </div>
-
-            <div id="gap" className="mt-14 scroll-mt-24">
-              <Reveal>
-                <BlocGap illustration={<IllustrationReseau className="w-full max-w-sm" />} />
               </Reveal>
             </div>
           </div>

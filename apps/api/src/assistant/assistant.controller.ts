@@ -19,7 +19,7 @@ import { ExtractionService } from './extraction.service';
 import { CreditsService } from '../billing/credits.service';
 import { catalogueChoix } from './options';
 import type { FichierRecu } from '../storage/files.service';
-import { ActiviteDto, ApercuMasquageDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, EnvoyerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto, GapisteDto } from './dto/assistant.dto';
+import { ActiviteDto, ApercuMasquageDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, EnvoyerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
@@ -27,7 +27,7 @@ import { ActiviteDto, ApercuMasquageDto, AppuiScolaireDto, ChatDto, EnregistrerD
  * vivent dans le compte, cloisonnés par auteur.
  *
  * LEX est le produit payant de la plateforme : chaque GÉNÉRATION (écrit,
- * activité, fiche, tour de GAPiste) consomme UN crédit, débité par
+ * activité, fiche) consomme UN crédit, débité par
  * `avecCredit` qui rembourse si la génération échoue. Le bot d'aide `chat`,
  * lui, reste gratuit : aider à se servir d'une plateforme gratuite ne se
  * facture pas. Les ADMIN de la plateforme ne consomment rien.
@@ -295,25 +295,6 @@ export class AssistantController {
   @Post('chat')
   chat(@Body() dto: ChatDto) {
     return this.assistant.chat('dashboard', dto.message, dto.historique);
-  }
-
-  /**
-   * LEX le GAPiste — animation du groupe d'analyse de pratique.
-   *
-   * Payant comme le reste de LEX (un crédit par tour de parole généré) :
-   * le GAP entre pairs, lui, reste ouvert à tous les comptes.
-   */
-  @Throttle({ default: { limit: 40, ttl: 3_600_000 } })
-  @UseGuards(MemberGuard)
-  @Post('gapiste')
-  gapiste(
-    @CurrentUser() user: RequestUser,
-    @CurrentAccount() account: RequestAccount,
-    @Body() dto: GapisteDto,
-  ) {
-    return this.payer(user, account, 'LEX_GAPISTE', () =>
-      this.assistant.gapiste(dto.message, dto.historique, dto.contexte),
-    );
   }
 
   /** Pré-remplissage d'une fiche atelier/formation depuis un brief. */

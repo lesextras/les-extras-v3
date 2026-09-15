@@ -3,7 +3,6 @@ import { Cron } from '@nestjs/schedule';
 import {
   AccountType,
   MissionStatus,
-  QuestionStatus,
   ServiceStatus,
   UserStatus,
 } from '@prisma/client';
@@ -58,18 +57,12 @@ export class HebdoScheduler {
     });
 
     // Contenus communs, lus une seule fois pour tout le monde.
-    const [missions, questions, formations, ateliers] = await Promise.all([
+    const [missions, formations, ateliers] = await Promise.all([
       this.prisma.reliefMission.findMany({
         where: { status: MissionStatus.PUBLISHED, startDate: { gte: new Date() } },
         orderBy: { createdAt: 'desc' },
         take: 40,
         select: { id: true, title: true, city: true, job: true },
-      }),
-      this.prisma.question.findMany({
-        where: { status: QuestionStatus.OUVERTE, answers: { none: {} } },
-        orderBy: { createdAt: 'desc' },
-        take: 40,
-        select: { id: true, title: true, metier: true },
       }),
       this.prisma.formation.findMany({
         where: { createdAt: { gte: semaine } },
@@ -121,7 +114,6 @@ export class HebdoScheduler {
       const compte = u.memberships[0]?.account;
       if (!compte) continue;
       const ville = compte.city ?? u.profile?.city ?? null;
-      const metier = u.profile?.job ?? null;
 
       // Un établissement ne reçoit pas d'offres de missions : il en publie.
       const sesMissions =
@@ -132,22 +124,13 @@ export class HebdoScheduler {
               .map((m) => ({ titre: m.title, ville: m.city, id: m.id }))
           : [];
 
-      // Priorité aux questions de son métier, complétées par les autres.
-      const sesQuestions = [
-        ...questions.filter((q) => metier && q.metier === metier),
-        ...questions.filter((q) => !metier || q.metier !== metier),
-      ]
-        .slice(0, 3)
-        .map((q) => ({ titre: q.title, metier: q.metier, id: q.id }));
-
       // Règle n°2 : rien à dire, rien d'envoyé.
-      if (sesMissions.length + sesQuestions.length + nouveautes.length === 0) continue;
+      if (sesMissions.length + nouveautes.length === 0) continue;
 
       await this.mail
         .sendRendezVousHebdo(u.email, {
           prenom: u.firstName,
           missions: sesMissions,
-          questions: sesQuestions,
           nouveautes,
           points: compte.points,
         })

@@ -16,7 +16,7 @@ function longueurRendue(t: ReturnType<typeof titreSeo>): number {
 
 describe('titreSeo', () => {
   it('laisse intact un titre qui tient avec le suffixe', () => {
-    expect(titreSeo('Le GAP, un espace de parole')).toBe('Le GAP, un espace de parole');
+    expect(titreSeo('Un espace de parole entre pairs')).toBe('Un espace de parole entre pairs');
   });
 
   it("coupe au « : » quand le sujet seul est consistant", () => {

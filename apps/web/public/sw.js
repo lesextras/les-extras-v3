@@ -145,7 +145,7 @@ self.addEventListener('push', (event) => {
     body: donnees.corps || '',
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
-    // Le tag regroupe : deux réponses au même GAP ne font qu'une ligne.
+    // Le tag regroupe : deux notifications d'un même fil ne font qu'une ligne.
     tag: donnees.tag || 'lesextras',
     renotify: true,
     data: { lien: donnees.lien || '/dashboard' },

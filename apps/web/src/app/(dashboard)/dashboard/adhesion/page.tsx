@@ -379,7 +379,6 @@ export default async function LexCreditsPage({
                 "LEX · Assistant d'écriture : notes brutes transformées en écrit professionnel",
                 "LEX · Générateur d'activités éducatives et thérapeutiques",
                 "LEX · Aide au remplissage des fiches ateliers et formations",
-                "LEX · GAPiste : animation du groupe d'analyse de pratique",
               ].map((i) => (
                 <li key={i} className="flex gap-2 text-sm text-muted-foreground">
                   <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />

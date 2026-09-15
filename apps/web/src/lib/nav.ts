@@ -30,7 +30,6 @@ import {
   Lightbulb,
   Award,
   UserPlus,
-  MessagesSquare,
   FileSignature,
   ShieldAlert,
   UsersRound,
@@ -147,7 +146,6 @@ const freelanceNav: NavSection[] = [
       // planning, comme côté établissement.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
-      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP, groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
       // Les trois outils LEX sont remontés dans la barre du haut le
       // 03/09/2026 (voir header.tsx). Ils occupaient les trois dernières
       // lignes de cette section dans les QUATRE menus du fichier.
@@ -201,7 +199,7 @@ const establishmentNav: NavSection[] = [
       // Pas de `hint` : « Tableau de bord » se comprend sans explication, et
       // un « i » sur chaque ligne finit par former une colonne de bruit qui
       // concurrence les icônes de gauche. On les garde pour les entrées dont
-      // le nom seul ne suffit pas (Vivier, Analyse de pratique…).
+      // le nom seul ne suffit pas (Vivier…).
       { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true },
     ],
   },
@@ -270,14 +268,6 @@ const establishmentNav: NavSection[] = [
   // travail d'administration sous la ligne de flottaison. Les trois outils
   // vivent donc dans un menu déroulant à droite du Catalogue (header.tsx).
   //
-  // La section « LEX & analyse de pratique » n'a plus qu'une entrée : le GAP.
-  // Une entrée ne fait pas une rubrique — elle rejoint donc le bloc sans
-  // titre, comme les autres cas du fichier.
-  {
-    items: [
-      { label: 'Analyse de pratique', href: '/gap', icon: MessagesSquare, essentiel: true, hint: 'Le GAP, groupe d’analyse de la pratique en ligne : déposez une situation, recevez les retours de professionnels, anonymement' },
-    ],
-  },
   {
     title: 'Mon établissement',
     // ORDRE DEMANDÉ PAR SIHAM LE 20/08/2026 — il suit le quotidien d'une
@@ -401,7 +391,6 @@ const adminNav: NavSection[] = [
       { label: 'Messagerie interne', href: '/admin/assistance', icon: LifeBuoy, hint: 'Les messages écrits depuis un compte : problèmes, questions. On y répond dans le fil.' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
-      { label: 'Le GAP', href: '/gap', icon: MessagesSquare, hint: 'Groupe d’Analyse de Pratique : suivre le fil des situations déposées et y répondre' },
     ],
   },
   {
@@ -541,7 +530,6 @@ const particulierNav: NavSection[] = [
     items: [
       { label: 'Générateur d’activités', href: '/dashboard/activites', icon: Lightbulb, hint: 'Une activité prête à faire, adaptée à l’âge et à ce que vous voulez travailler' },
       { label: 'Appui scolaire', href: '/dashboard/appui-scolaire', icon: GraduationCap, hint: 'Fiches de révision, mémos et exercices, à partir de ce que vous décrivez' },
-      { label: 'Le GAP', href: '/gap', icon: MessagesSquare, hint: 'Déposez une situation, des professionnels vous répondent' },
     ],
   },
   {

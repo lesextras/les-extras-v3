@@ -107,7 +107,7 @@ export function IllustrationEcrit({ className }: Props) {
   );
 }
 
-/** Des professionnels isolés qui deviennent un réseau. Illustre le GAP. */
+/** Des professionnels isolés qui deviennent un réseau. */
 export function IllustrationReseau({ className }: Props) {
   const noeuds = [
     { x: 210, y: 46 },

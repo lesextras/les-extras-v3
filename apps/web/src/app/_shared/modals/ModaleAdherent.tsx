@@ -22,7 +22,6 @@ const BENEFICES = [
   "L'assistant d'écriture : notes brutes vers écrit professionnel",
   "Le générateur d'activités éducatives",
   "Le pré-remplissage de vos fiches ateliers et formations",
-  "LEX le GAPiste, animateur du groupe d'analyse de pratique",
 ];
 
 export function ModaleAdherent({
