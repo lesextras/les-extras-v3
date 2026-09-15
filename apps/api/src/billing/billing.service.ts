@@ -74,7 +74,7 @@ export const SUBSCRIPTION_PLANS = [
     label: 'LEX',
     amountCents: 1900,
     monthlyCredits: 200,
-    perks: '200 générations par mois, reportables, écriture, activités, fiches, GAPiste',
+    perks: '200 générations par mois, reportables, écriture, activités, fiches',
   },
   {
     id: 'plan-pro',

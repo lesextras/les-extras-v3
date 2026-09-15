@@ -1025,7 +1025,6 @@ export class MailService implements OnModuleDestroy {
       : [
           'Publiez votre premier atelier : c’est gratuit, et vous gardez 100 % de votre tarif.',
           'Consultez les missions de renfort qui correspondent à votre métier et à votre secteur.',
-          'Ouvrez le GAP : déposez une situation, ou répondez à un collègue qui attend un retour.',
         ];
 
     await this.send(
@@ -1189,7 +1188,6 @@ export class MailService implements OnModuleDestroy {
     data: {
       prenom?: string | null;
       missions: { titre: string; ville?: string | null; id: string }[];
-      questions: { titre: string; metier: string; id: string }[];
       nouveautes: { titre: string; lien: string }[];
       points?: number;
     },
@@ -1215,14 +1213,6 @@ export class MailService implements OnModuleDestroy {
             `<a href="${this.webUrl}/marketplace/missions/${m.id}" style="color:#1A1A1A">${m.titre}</a>${m.ville ? `, ${m.ville}` : ''}`,
         ),
         data.missions.length ? { label: 'Voir toutes les missions', url: `${this.webUrl}/dashboard/opportunites` } : undefined,
-      ),
-      bloc(
-        'Des collègues attendent un retour dans le GAP',
-        data.questions.map(
-          (q) =>
-            `<a href="${this.webUrl}/dashboard/gap/${q.id}" style="color:#1A1A1A">${q.titre}</a> <span style="color:#9ca3af">, ${q.metier}</span>`,
-        ),
-        data.questions.length ? { label: 'Ouvrir le GAP', url: `${this.webUrl}/dashboard/gap` } : undefined,
       ),
       bloc(
         'Nouveau cette semaine',

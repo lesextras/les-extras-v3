@@ -12,7 +12,7 @@ import {
   TextRun,
   WidthType,
 } from 'docx';
-import type { Bloc, DocumentFabrique } from './fabrique';
+import type { DocumentFabrique } from './fabrique';
 
 /**
  * DEUX RENDUS D'UN MÊME DOCUMENT.

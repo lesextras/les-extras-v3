@@ -18,7 +18,7 @@
  *    comme un fichier : plus de rendu serveur par visiteur, plus de
  *    `no-store` — c'est le temps de première réponse de tout le site public
  *    qui change, campagne publicitaire comprise ;
- *  - les pages qui lisent `searchParams` (catalogue filtré, Édublog, GAP)
+ *  - les pages qui lisent `searchParams` (catalogue filtré, Édublog)
  *    redeviennent dynamiques D'ELLES-MÊMES à la requête : Next le déduit,
  *    rien à déclarer ;
  *  - les fiches ([id], [slug]) se génèrent à la première visite puis se

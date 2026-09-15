@@ -138,10 +138,10 @@ function EcranTelephone() {
             Il y a 2 h
           </p>
           <p className="mt-1 text-[12px] font-semibold leading-snug text-foreground">
-            Une réponse à votre situation
+            Une candidature reçue
           </p>
           <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-            Un·e éducateur spécialisé a répondu dans le GAP.
+            Un·e éducateur spécialisé s'est positionné sur votre renfort.
           </p>
         </div>
       </div>

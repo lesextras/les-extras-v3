@@ -219,7 +219,7 @@ export function BasculeNotifications() {
       </p>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
         {actif
-          ? "Un renfort publié, une réponse au GAP, une mission acceptée : vous êtes prévenu même application fermée."
+          ? "Un renfort publié, une candidature reçue, une mission acceptée : vous êtes prévenu même application fermée."
           : "Un renfort à couvrir ce soir ne peut pas attendre le prochain e-mail. Activez pour être prévenu tout de suite."}
       </p>
 

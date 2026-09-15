@@ -17,11 +17,9 @@
  * sigle du métier, parce que personne ne se présente comme « accompagnant
  * éducatif et social » mais tout le monde dit « AES ».
  *
- * Cette liste est propre à l'inscription des INTERVENANTS. Celle de
- * `app/_shared/gap.ts` sert au fil d'entraide : ses regroupements (« AES /
- * AMP », « Chef de service / Direction », « Autre ») conviennent à un filtre
- * de discussion, pas à un moteur de correspondance qui doit distinguer un
- * psychomotricien d'un ergothérapeute. On ne les fusionne donc pas.
+ * Cette liste est propre à l'inscription des INTERVENANTS : elle doit
+ * distinguer un psychomotricien d'un ergothérapeute, parce qu'elle alimente
+ * un moteur de correspondance et pas un simple filtre d'affichage.
  *
  * Un intervenant dont l'intitulé exact ne figure pas ici choisit le plus
  * proche, puis précise depuis « Mon profil » — le champ y reste libre.

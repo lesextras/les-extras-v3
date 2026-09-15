@@ -87,7 +87,6 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       // #lex, #gap, #marketplace, #tarifs) : le lien ne bougeait pas la page.
       // La page qui répond vraiment à la question, c'est le mode d'emploi.
       { label: 'Comment ça marche', href: '/mode-demploi' },
-      { label: 'Le GAP', href: '/gap' },
       { label: 'L’Édublog', href: '/edublog' },
       { label: 'Centre d’aide', href: '/aide' },
       { label: 'Recevoir le catalogue', href: '/catalogue' },
