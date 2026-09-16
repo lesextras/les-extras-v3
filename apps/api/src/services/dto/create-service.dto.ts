@@ -35,7 +35,7 @@ export class PriceExtraDto {
   @Min(0)
   price!: number;
 }
-import { ServiceCategory } from '@prisma/client';
+import { FormatIntervention, ServiceCategory } from '@prisma/client';
 
 /** Création d'un atelier / Éducat'heures par un FREELANCE (statut DRAFT). */
 export class CreateServiceDto {
@@ -101,6 +101,23 @@ export class CreateServiceDto {
   @IsInt()
   @Min(0)
   durationMinutes?: number;
+
+  /**
+   * COLLECTIF (un atelier) ou INDIVIDUEL (un renfort personnalisé).
+   *
+   * ⚠ LE RENFORT PERSONNALISÉ N'EST PAS UN QUATRIÈME OBJET DU PRODUIT : c'est
+   * un atelier à une personne. Il emprunte les mêmes rails — fiche, demande de
+   * devis, contrat de prestation, facture émise par la structure de
+   * l'intervenant — et c'est exactement ce qui le distingue du REMPLACEMENT de
+   * poste, qui passe par `ReliefMission` et se conclut en CDD salarié
+   * (CE 11/02/2025, n° 491128).
+   *
+   * Absent, le format vaut COLLECTIF : c'est ce qu'étaient toutes les fiches
+   * avant ce champ.
+   */
+  @IsOptional()
+  @IsEnum(FormatIntervention)
+  format?: FormatIntervention;
 
   /** Publics visés : Adolescent, Enfant, Handicap, Sénior… */
   @IsOptional()

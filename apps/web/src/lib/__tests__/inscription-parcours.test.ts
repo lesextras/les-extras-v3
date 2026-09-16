@@ -53,6 +53,35 @@ describe('parcours d’inscription', () => {
       }
     });
 
+    /**
+     * ⚠ LA STRUCTURE VIENT APRÈS LA CRÉATION DU COMPTE, ET C'EST LA RÈGLE.
+     *
+     * Elle est facultative pour entrer et exigée pour publier — le refus est
+     * posé côté serveur, au moment de la publication. La déplacer avant
+     * « identite » reviendrait à demander un SIRET à quelqu'un qui vient
+     * seulement se rendre disponible pour un remplacement en CDD, c'est-à-dire
+     * à fermer la porte à ceux pour qui elle a été ouverte.
+     */
+    it('demande sa structure à l’intervenant, APRÈS la création du compte', () => {
+      const cles = PARCOURS.FREELANCE.map((e) => e.cle);
+      expect(cles).toContain('structure');
+      expect(cles.indexOf('structure')).toBeGreaterThan(cles.indexOf('identite'));
+    });
+
+    it('demande à l’intervenant ce qu’il vient faire', () => {
+      expect(PARCOURS.FREELANCE.map((e) => e.cle)).toContain('activites');
+    });
+
+    /**
+     * ⚠ LE COMPTE PARTICULIER N'EST PLUS SEULEMENT CELUI D'UN PARENT : il
+     * ouvre aussi la porte à quelqu'un qui veut faire des remplacements en
+     * CDD. C'est le chemin le plus propre juridiquement, et c'est ce qui manque
+     * le plus au renfort. Retirer cette étape referme cette porte.
+     */
+    it('demande au particulier ce qu’il vient chercher', () => {
+      expect(PARCOURS.PARTICULIER.map((e) => e.cle)).toContain('disponibilite');
+    });
+
     it('tient en quatre étapes au plus', () => {
       for (const type of Object.keys(PARCOURS) as CleCompte[]) {
         expect(PARCOURS[type].length).toBeLessThanOrEqual(4);
@@ -88,6 +117,44 @@ describe('parcours d’inscription', () => {
     });
 
     /**
+     * ⚠ LE RECTO DIT POURQUOI, PAS SEULEMENT QUI. Le verso ne se lit qu'au
+     * survol — c'est-à-dire jamais sur un téléphone, et jamais avant d'avoir
+     * décidé. Une carte sans sa phrase de bénéfice laisse le visiteur choisir
+     * sur la seule foi de son intitulé.
+     */
+    it('chaque carte dit en une phrase pourquoi on ouvrirait ce compte', () => {
+      for (const c of CHOIX_COMPTE) {
+        expect(c.benefice.length).toBeGreaterThan(30);
+        // Une phrase, pas un paragraphe : elle tient sous le titre.
+        expect(c.benefice.length).toBeLessThanOrEqual(90);
+      }
+    });
+
+    /**
+     * ⚠ TROIS TEINTES DISTINCTES. Trois portes vers trois produits différents
+     * ne doivent pas se ressembler trait pour trait : c'est le contour qui les
+     * sépare, et deux cartes de la même couleur annuleraient tout l'effet.
+     */
+    it('porte trois teintes différentes', () => {
+      const teintes = CHOIX_COMPTE.map((c) => c.teinte);
+      expect(new Set(teintes).size).toBe(3);
+    });
+
+    /**
+     * ⚠ LA PASTILLE NE RÉPÈTE PAS LE TITRE. Elle est l'étiquette qu'on repère
+     * sans lire ; le titre est la phrase qu'on lit. Y recopier le titre
+     * supprimerait tout son intérêt.
+     */
+    it('porte une catégorie courte, distincte du titre', () => {
+      for (const c of CHOIX_COMPTE) {
+        expect(c.categorie.length).toBeGreaterThan(3);
+        expect(c.categorie.length).toBeLessThanOrEqual(20);
+        expect(c.categorie).not.toBe(c.titre);
+      }
+      expect(new Set(CHOIX_COMPTE.map((c) => c.categorie)).size).toBe(3);
+    });
+
+    /**
      * ⚠ LE VERSO EST CONTRAINT PAR LA HAUTEUR DE LA CARTE (`min-h` dans
      * CarteChoix.tsx) : il est en `absolute inset-0`, donc du texte trop long
      * se fait couper au survol. Ce plafond est volontairement bas.
@@ -102,6 +169,18 @@ describe('parcours d’inscription', () => {
     it('aucune carte ne parle de « salarié » comme d’une situation à part', () => {
       const titres = CHOIX_COMPTE.map((c) => c.titre.toLowerCase());
       expect(titres.some((t) => t.startsWith('salarié'))).toBe(false);
+    });
+
+    /**
+     * ⚠ « PARENT » A ÉTÉ RETIRÉ DU NOM, et il ne doit pas revenir. Le compte
+     * particulier ne sert plus seulement à réserver pour un enfant : il ouvre
+     * aussi aux remplacements en CDD. Le remettre dans le titre exclurait
+     * d'un mot la moitié des gens à qui cette carte s'adresse.
+     */
+    it('la carte particulier ne se dit plus « parent »', () => {
+      const particulier = CHOIX_COMPTE.find((c) => c.key === 'PARTICULIER');
+      expect(particulier?.titre.toLowerCase()).not.toContain('parent');
+      expect(particulier?.categorie.toLowerCase()).not.toContain('parent');
     });
   });
 

@@ -3456,3 +3456,140 @@ vient d'une page d'atterrissage où elle a déjà choisi. Les seuls liens qui le
 portent sont ceux-là (`comparatif-plateformes-remplacement`, `mode-demploi`,
 `renforteam`). **Aucun bouton « Créer un compte » générique ne doit passer ce
 paramètre** — sinon les cartes disparaissent pour tout le monde.
+
+---
+
+## RENFORT PERSONNALISÉ, VIVIER OUVERT, STRUCTURE JURIDIQUE — 16/09/2026
+
+Trois demandes de Siham, et une distinction qu'elle a posée elle-même et qui
+tient tout le reste :
+
+> **Ce n'est pas la personne qui choisit le montage, c'est le BESOIN.**
+
+- **Un poste à couvrir** (une éducatrice arrêtée) → **CDD salarié**, et rien
+  d'autre. C'est `ReliefMission`, et cela se conclut par un contrat de travail
+  que l'établissement signe directement.
+- **Un besoin nommé, en plus de l'équipe** (un enfant à accompagner sur ses
+  sorties, un suivi individuel) → **renfort personnalisé**, une prestation
+  facturée par la structure de l'intervenant. C'est un `Service` de format
+  `INDIVIDUEL` : fiche, devis, contrat de prestation.
+
+⚠ **POURQUOI CETTE LIGNE EXISTE.** Le Conseil d'État a jugé le 11/02/2025
+(n° 491128, affaire Mediflash) qu'un remplacement de poste en établissement ne
+se fait pas sous statut d'indépendant ; la LFSS 2025 (art. 70) a resserré
+l'intérim en ESSMS. Un indépendant qui facturerait un remplacement, c'est une
+requalification pour lui et un risque de travail dissimulé pour la maison. **Ce
+défaut ne se voit jamais à l'écran** : tout fonctionne, la mission se pourvoit,
+les documents s'impriment. Il se découvre au contrôle.
+
+⚠ **« RENFORT » DÉSIGNE DÉSORMAIS DEUX CHOSES AUX CONTRATS OPPOSÉS.** Les deux
+ne s'affichent jamais côte à côte sans leur montage écrit dessus —
+« Remplacement · CDD » et « Renfort personnalisé · prestation ». Les libellés
+sont calculés **par le serveur** (`LIBELLE_MONTAGE`, `disponibilites.service.ts`) :
+deux écrans qui traduiraient chacun l'énumération finiraient par ne plus dire
+la même chose du même montage juridique.
+
+### Ce qui a été posé
+
+| Où | Quoi |
+|---|---|
+| `Interet` (enum) | ATELIERS · FORMATIONS · RENFORT_CDD · RENFORT_PERSONNALISE |
+| `Account.interets` | ce que la personne vient faire, déclaré à l'inscription |
+| `DisponibiliteRenfort` | le vivier ouvert : consentement, montages, métier, départements, fraîcheur |
+| `Service.format` | COLLECTIF (atelier) ou INDIVIDUEL (renfort personnalisé) |
+| `Structure.siret` | c'est le SIRET, pas le SIREN, qui s'imprime sur une facture |
+| `disponibilites/` | module API : déclarer, confirmer, se retirer, lire le vivier |
+| `StructureRequiseSiPublicationGuard` | jumeau de `EmailVerifieSiPublicationGuard` |
+
+Migration `20260916160000_interets_structure_disponibilite` — rejouable,
+vérifiée sur PostgreSQL 16 réel, **zéro dérive** (`migrate diff` rend « No
+difference detected »). 703 tests API, 117 tests web.
+
+### ⚠ CE QU'IL NE FAUT PAS DÉFAIRE
+
+- **UNE LISTE D'INTÉRÊTS VIDE NE REFUSE RIEN.** Tous les comptes créés avant le
+  16/09/2026 l'ont vide. Refuser sur une absence de déclaration fermerait
+  RenforTeam à tout le monde du jour au lendemain, sans qu'aucune alerte ne le
+  signale. On ne restreint que sur un choix **explicitement fait**
+  (`ciblage.service.ts`, et le test « ne refuse RIEN à un compte qui n'a rien
+  déclaré » dans `acces-reponse.spec.ts`).
+- **LA STRUCTURE EST EXIGÉE POUR PUBLIER, JAMAIS POUR S'INSCRIRE.** Deux
+  populations entières y perdraient leur compte : celles et ceux qui viennent
+  faire des remplacements en CDD (donc en salarié : ils n'ont pas de SIRET, et
+  c'est normal), et celles et ceux qui sont en cours d'immatriculation, en
+  portage, ou dont une association facture pour eux. Le refus est posé au
+  moment de la publication, et son message nomme l'écran où aller.
+- **DEUX VIVIERS, ET ILS NE DISENT PAS LA MÊME CHOSE.** `PoolMember`
+  (`/dashboard/vivier`) est le carnet d'adresses d'UN établissement, et c'est
+  lui qui alimente le palier `RESERVED` de la cascade. `DisponibiliteRenfort`
+  (`/dashboard/vivier-ouvert`) est alimenté par les personnes elles-mêmes. Les
+  fondre remplirait « mes intervenants » de gens jamais rencontrés et
+  fausserait le ciblage des missions.
+- **AUCUNE COORDONNÉE NE SORT DU VIVIER OUVERT.** Un profil, un métier, un
+  territoire, et la messagerie. Une liste de personnes avec leurs numéros
+  s'aspire en une après-midi, et c'est tout le modèle qui sort avec elle. Un
+  test le vérifie sur la charge utile elle-même.
+- **`actif` EST UN CONSENTEMENT, PAS UN RÉGLAGE D'AFFICHAGE.** Décoché par
+  défaut, séparé des cases d'activité, retirable en un clic depuis
+  `/dashboard/disponibilite`. Quelqu'un qui cherche du travail ne doit pas
+  découvrir qu'il est listé parce qu'il a coché une case sur un autre sujet.
+- **SE RETIRER N'EFFACE RIEN** : `actif: false` rend invisible tout de suite ;
+  le métier, le territoire et la présentation restent. Supprimer obligerait à
+  tout ressaisir pour revenir trois semaines plus tard.
+- **LA FRAÎCHEUR FAIT VIVRE OU MOURIR LA LISTE.** Relance à 38 jours, mise en
+  veille à 45 (`DisponibilitesScheduler`, 9 h 30 — entre les alertes de 8 h 15
+  et le tunnel de 10 h 15, la réserve quotidienne de courriels est étroite). La
+  veille **ne supprime pas**. Le verrou `relanceeLe` est posé AVANT l'envoi,
+  comme partout ailleurs.
+- **ON NE PROMET AUCUNE VÉRIFICATION.** Identité, diplômes, extrait de casier :
+  c'est l'établissement qui contrôle à l'embauche, et les deux écrans le
+  disent. C'est la même raison qui avait fait retirer « intervenants vérifiés »
+  de la fiche atelier.
+
+### Le SIRET, et pourquoi c'est lui qu'on demande
+
+`EntiteLegale` lisait `siren` mais pas `siege.siret`, alors que l'annuaire le
+renvoie et que deux autres modules du dépôt le lisaient déjà. Or c'est le SIRET
+que les gens ont sous la main — il est sur l'avis de situation et sur leurs
+factures — et c'est lui que la loi exige sur un document commercial (art. 242
+nonies A, ann. II du CGI). **Le SIREN se déduit donc du SIRET** (ses neuf
+premiers chiffres), on ne fait pas saisir deux numéros dont l'un contient
+l'autre. Une recherche à quatorze chiffres est réduite à neuf avant d'interroger
+l'annuaire, qui n'indexe que les entités légales.
+
+⚠ **`rattacher()` FAIT DESCENDRE LE SIRET SUR `Account.siret`, et ne l'écrase
+jamais** : c'est `Account.siret` qui s'imprime sur les factures, pas celui de la
+structure. On ne remplit que le vide — une saisie humaine ne se corrige pas
+toute seule au détour d'un rattachement.
+
+### Les écrans
+
+| Adresse | Quoi |
+|---|---|
+| `/register` | 4 étapes pour un intervenant (situation, identifiants, **structure**, **ce que vous voulez faire**), 3 pour un particulier (situation, identifiants, **ce que vous cherchez**). |
+| `/dashboard/disponibilite` | Ce que j'accepte de faire, où je me déplace, et si je suis visible. **C'est l'adresse du courriel de relance** : la déplacer oblige à reprendre `sendRelanceDisponibilite`. |
+| `/dashboard/vivier-ouvert` | Les personnes disponibles, filtrées par montage, métier et département. |
+
+### Le compte particulier n'est plus celui d'un parent
+
+« Parent » a été retiré du nom : le compte ouvre aussi aux **remplacements en
+CDD** — étudiant, professionnel entre deux postes, retraité du secteur. C'est le
+chemin le plus propre juridiquement (salarié, donc ni structure ni SIRET) et
+c'est ce qui manque le plus au renfort : **des bras, pas des demandes.** Il n'y a
+délibérément pas de case « renfort personnalisé » sur ce compte — facturer une
+prestation demande une structure ; qui veut s'y mettre passe en compte
+intervenant, et son adresse publique ne bouge pas (elle porte déjà son nom).
+
+### Les cartes d'inscription
+
+Trois teintes de la palette (`primary`, `secondary`, `success`) portées par le
+contour, une pastille de catégorie à côté de l'icône, un titre à la première
+personne en gros, et **une phrase de bénéfice sur le RECTO** — le verso ne se
+lit qu'au survol, c'est-à-dire jamais sur un téléphone et jamais avant d'avoir
+décidé.
+
+⚠ **AUCUN EFFET DE SURVOL NE PASSE PAR UNE TRANSFORMATION** (`CarteChoix.tsx`).
+Le relief se fait à l'ombre et à la bordure. Une carte qui se soulève de deux
+pixels ne vaut pas le risque de rouvrir le défaut d'août — les trois versos
+affichés en permanence et EN MIROIR, parce qu'un `<button>` qui gère son
+débordement force `transform-style: flat`.

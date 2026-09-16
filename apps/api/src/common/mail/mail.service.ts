@@ -2112,6 +2112,40 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
+  /**
+   * « TOUJOURS DISPONIBLE ? » — la relance qui tient le vivier à jour.
+   *
+   * ⚠ ELLE NE VEND RIEN ET NE PROPOSE RIEN. C'est une question de service,
+   * posée une seule fois par période, à quelqu'un qui a explicitement demandé
+   * à figurer dans une liste. Y glisser une actualité ou un parcours en
+   * ferait un message éditorial, soumis à un autre consentement.
+   *
+   * Le message dit ce qui se passe si l'on ne répond pas — la ligne passe en
+   * veille, elle n'est pas supprimée — parce qu'une relance qui menace sans
+   * dire de quoi fait surtout se désabonner.
+   */
+  async sendRelanceDisponibilite(
+    to: string,
+    data: { prenom?: string | null; jours: number },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    await this.send(
+      to,
+      'Êtes-vous toujours disponible ?',
+      this.layout(
+        `Bonjour${data.prenom ? ` ${e(data.prenom)}` : ''},`,
+        `Vous figurez parmi les personnes disponibles que les établissements
+         peuvent contacter. Pour que la liste reste utile, nous vérifions de
+         temps en temps qu'elle est à jour.
+         <br><br>
+         Un clic suffit. Sans réponse d'ici ${data.jours} jours, votre fiche se
+         met simplement <b>en veille</b> : elle n'est pas supprimée, et vous la
+         réactivez quand vous voulez depuis votre espace.`,
+        { label: 'Je suis toujours disponible', url: `${this.webUrl}/dashboard/disponibilite` },
+      ),
+    );
+  }
+
   async sendContactNotification(data: {
     name: string;
     email: string;

@@ -159,6 +159,16 @@ const freelanceNav: NavSection[] = [
       // planning, comme côté établissement.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      /**
+       * ⚠ SE RENDRE VISIBLE EST UN GESTE QU'IL FAUT POUVOIR DÉFAIRE EN UN CLIC.
+       *
+       * Cette entrée n'est pas un réglage de plus : c'est la page où quelqu'un
+       * qui cherche du travail se met dans une liste consultée par des
+       * établissements — et où il se retire. Enterrée dans les paramètres, on
+       * ne la retrouve pas le jour où l'on a retrouvé un poste, et la liste
+       * devient fausse.
+       */
+      { label: 'Ma disponibilité', href: '/dashboard/disponibilite', icon: UserPlus, hint: 'Ce que vous acceptez de faire, où vous pouvez vous déplacer, et si les établissements peuvent vous voir' },
       // Les trois outils LEX sont remontés dans la barre du haut le
       // 03/09/2026 (voir header.tsx). Ils occupaient les trois dernières
       // lignes de cette section dans les QUATRE menus du fichier.
@@ -325,6 +335,18 @@ const establishmentNav: NavSection[] = [
       // juste au-dessus. Ce sont les gens qu'on rappelle et qu'on embauche
       // soi-même en contrat court — le pendant humain de « Contrats CDD ».
       { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
+      /**
+       * ⚠ DEUX VIVIERS, ET ILS NE DISENT PAS LA MÊME CHOSE.
+       *
+       * Celui du dessus est VOTRE carnet d'adresses : les gens que vous avez
+       * déjà fait venir, et c'est lui qui alimente le palier « réseau » de la
+       * diffusion. Celui-ci est alimenté par les personnes elles-mêmes, et
+       * vous y trouverez des gens que vous ne connaissez pas encore.
+       *
+       * Les fondre remplirait « mes intervenants » de gens jamais rencontrés
+       * et fausserait le ciblage de vos missions.
+       */
+      { label: 'Personnes disponibles', href: '/dashboard/vivier-ouvert', icon: UsersRound, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Celles et ceux qui se déclarent disponibles pour un remplacement en CDD ou un renfort personnalisé, près de chez vous' },
       { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
@@ -575,6 +597,14 @@ const particulierNav: NavSection[] = [
     title: 'Mon compte',
     items: [
       { label: 'Mes factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos factures et vos règlements' },
+      /**
+       * ⚠ UN PARTICULIER PEUT AUSSI VENIR TRAVAILLER, depuis le 16/09/2026.
+       * Étudiant, professionnel entre deux postes, retraité du secteur : le
+       * remplacement se fait en CDD, donc en salarié, donc sans structure ni
+       * SIRET. C'est le chemin le plus propre juridiquement, et c'est ce qui
+       * manque le plus au renfort — des bras, pas des demandes.
+       */
+      { label: 'Ma disponibilité', href: '/dashboard/disponibilite', icon: UserPlus, hint: 'Proposer vos disponibilités pour des remplacements en CDD, et vous retirer de la liste quand vous voulez' },
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Sparkles, hint: 'Votre dotation offerte du mois et vos recharges' },
       { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations et vos préférences d’e-mail' },
       { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },

@@ -17,6 +17,7 @@ import { GROUPES_DROITS } from '@/lib/droits';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 /* ------------------------------------------------------------------------ */
 /* Outils communs                                                            */
@@ -196,6 +197,8 @@ interface EntiteLegale {
   nom: string;
   sigle: string | null;
   siren: string;
+  /** Le numéro que les gens ont sous la main : il est sur leurs factures. */
+  siret: string | null;
   formeJuridique: string | null;
   adresse: string | null;
   ville: string | null;
@@ -206,6 +209,7 @@ interface StructureDeclaree {
   id: string;
   nom: string;
   siren: string | null;
+  siret?: string | null;
   formeJuridique: string | null;
   ville: string | null;
   verifiee: boolean;
@@ -224,15 +228,7 @@ export interface LieuDeTravail {
   /** Structure déjà déclarée sur la plateforme. */
   structureId: string | null;
   /** Structure venue de l'annuaire, ou saisie à la main. */
-  structure: {
-    nom: string;
-    siren?: string;
-    formeJuridique?: string;
-    adresse?: string;
-    ville?: string;
-    codePostal?: string;
-    verifiee?: boolean;
-  } | null;
+  structure: StructureChoisie | null;
   /** Nom du service, tel qu'écrit. */
   service: string;
 }
@@ -243,6 +239,31 @@ export const LIEU_VIDE: LieuDeTravail = {
   structure: null,
   service: '',
 };
+
+/**
+ * CE QU'ON RETIENT D'UNE STRUCTURE, d'où qu'elle vienne.
+ *
+ * ⚠ `siret` EST LÀ PARCE QUE C'EST LUI QUI S'IMPRIME SUR UNE FACTURE. Le
+ * SIREN identifie l'entité, le SIRET identifie l'établissement qui émet — et
+ * c'est le second que la loi exige sur un document commercial. Le serveur
+ * déduit le SIREN du SIRET, jamais l'inverse.
+ */
+export interface StructureChoisie {
+  nom: string;
+  siren?: string;
+  siret?: string;
+  formeJuridique?: string;
+  adresse?: string;
+  ville?: string;
+  codePostal?: string;
+  verifiee?: boolean;
+}
+
+/** Ce que le champ manipule : une structure déjà déclarée, ou une nouvelle. */
+export interface ChoixStructure {
+  structureId: string | null;
+  structure: StructureChoisie | null;
+}
 
 /**
  * LA STRUCTURE — retrouvée, pas saisie.
@@ -256,12 +277,14 @@ export const LIEU_VIDE: LieuDeTravail = {
  * de petites associations ne se trouvent pas dans l'annuaire ; les obliger à
  * choisir dans une liste où elles ne figurent pas, c'est les mettre dehors.
  */
-function ChampStructure({
-  lieu,
-  setLieu,
+export function ChampStructure({
+  valeur,
+  onChange,
+  placeholder = 'Fondation Poidatz, Mairie de Melun, 820051852…',
 }: {
-  lieu: LieuDeTravail;
-  setLieu: React.Dispatch<React.SetStateAction<LieuDeTravail>>;
+  valeur: ChoixStructure;
+  onChange: (v: ChoixStructure) => void;
+  placeholder?: string;
 }) {
   const [recherche, setRecherche] = React.useState('');
   const requete = useValeurRetardee(recherche);
@@ -269,7 +292,7 @@ function ChampStructure({
   const [declarees, setDeclarees] = React.useState<StructureDeclaree[]>([]);
   const [annuaire, setAnnuaire] = React.useState<EntiteLegale[]>([]);
 
-  const choisie = lieu.structure?.nom ?? null;
+  const choisie = valeur.structure?.nom ?? null;
 
   React.useEffect(() => {
     const texte = requete.trim();
@@ -310,7 +333,7 @@ function ChampStructure({
         <Landmark aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{choisie}</span>
-          {lieu.structure?.verifiee && (
+          {valeur.structure?.verifiee && (
             <span className="block text-xs text-muted-foreground">
               Entité vérifiée à l’annuaire public
             </span>
@@ -319,7 +342,7 @@ function ChampStructure({
         <button
           type="button"
           onClick={() => {
-            setLieu((l) => ({ ...l, structure: null, structureId: null }));
+            onChange({ structure: null, structureId: null });
             setRecherche('');
           }}
           className="shrink-0 text-xs font-medium text-primary hover:underline"
@@ -335,7 +358,7 @@ function ChampStructure({
       <Input
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
-        placeholder="Fondation Poidatz, Mairie de Melun, 820051852…"
+        placeholder={placeholder}
         leftIcon={chargement ? <Loader2 className="animate-spin" /> : <Search />}
         autoComplete="off"
       />
@@ -350,11 +373,10 @@ function ChampStructure({
               key={st.id}
               type="button"
               onClick={() =>
-                setLieu((l) => ({
-                  ...l,
+                onChange({
                   structureId: st.id,
                   structure: { nom: st.nom, verifiee: st.verifiee },
-                }))
+                })
               }
               className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/50"
             >
@@ -383,12 +405,12 @@ function ChampStructure({
               key={e.siren}
               type="button"
               onClick={() =>
-                setLieu((l) => ({
-                  ...l,
+                onChange({
                   structureId: null,
                   structure: {
                     nom: e.nom,
                     siren: e.siren,
+                    siret: e.siret ?? undefined,
                     formeJuridique: e.formeJuridique ?? undefined,
                     adresse: e.adresse ?? undefined,
                     ville: e.ville ?? undefined,
@@ -397,7 +419,7 @@ function ChampStructure({
                     // liste : une saisie manuelle ne l'est jamais.
                     verifiee: true,
                   },
-                }))
+                })
               }
               className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/50"
             >
@@ -420,11 +442,10 @@ function ChampStructure({
         <button
           type="button"
           onClick={() =>
-            setLieu((l) => ({
-              ...l,
+            onChange({
               structureId: null,
               structure: { nom: recherche.trim(), verifiee: false },
-            }))
+            })
           }
           className="w-full rounded-lg border border-dashed border-border p-2.5 text-left text-xs text-muted-foreground transition-colors hover:border-primary/50"
           lang="fr"
@@ -482,7 +503,10 @@ export function EtapeLieuDeTravail({
           d’autres sites de vous retrouver.
         </p>
         <div className="mt-3">
-          <ChampStructure lieu={lieu} setLieu={setLieu} />
+          <ChampStructure
+            valeur={{ structureId: lieu.structureId, structure: lieu.structure }}
+            onChange={(v) => setLieu((l) => ({ ...l, ...v }))}
+          />
         </div>
       </div>
 
@@ -859,4 +883,577 @@ export function EtapePoste({ onFait }: { onFait: () => void }) {
       </Button>
     </div>
   );
+}
+
+/* ------------------------------------------------------------------------ */
+/* Intervenant indépendant : sa structure, puis ce qu'il vient faire         */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * VOTRE STRUCTURE — le SIRET, et rien d'autre.
+ *
+ * ⚠ FACULTATIVE ICI, EXIGÉE POUR PUBLIER, et c'est toute la règle. Quelqu'un
+ * qui vient regarder le catalogue, répondre à un message ou préparer un
+ * brouillon n'a besoin d'aucun numéro. Mais une fiche publiée est une offre de
+ * prestation : elle produit des devis, des contrats et des factures, qui
+ * portent tous le SIRET de l'émetteur. Le refus est donc posé à la
+ * publication, jamais ici — on ferme la porte de la publication, on ne mure
+ * pas la création de compte.
+ *
+ * ⚠ LA SORTIE « JE N'AI PAS ENCORE DE STRUCTURE » N'EST PAS UNE POLITESSE.
+ * Beaucoup arrivent en cours d'immatriculation, en portage salarial, ou
+ * salariés d'une association qui facturera pour eux. Sans cette sortie, l'écran
+ * dirait à ces gens-là qu'ils n'ont rien à faire ici — alors qu'ils peuvent
+ * déjà tout faire sauf publier.
+ */
+export function EtapeStructure({ onFait }: { onFait: () => void }) {
+  const [choix, setChoix] = React.useState<ChoixStructure>({
+    structureId: null,
+    structure: null,
+  });
+  const [envoi, setEnvoi] = React.useState(false);
+  const [erreur, setErreur] = React.useState<string | null>(null);
+
+  async function valider() {
+    if (!choix.structureId && !choix.structure) {
+      onFait();
+      return;
+    }
+    setEnvoi(true);
+    setErreur(null);
+    try {
+      await apiRequest('/structures/rattacher', {
+        method: 'POST',
+        body: choix.structureId ? { structureId: choix.structureId } : choix.structure,
+      });
+      lancerConfettis();
+      onFait();
+    } catch (e) {
+      // Le compte existe déjà : un rattachement raté ne doit pas donner
+      // l'impression que l'inscription a échoué.
+      setErreur(
+        e instanceof Error
+          ? e.message
+          : 'Nous n’avons pas pu enregistrer votre structure. Vous pourrez le faire depuis votre espace.',
+      );
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <Encart icone={ShieldCheck} titre="Votre SIRET suffit">
+        Tapez-le, ou tapez le nom de votre entreprise : nous retrouvons le reste
+        dans l’annuaire public. C’est ce numéro qui figurera sur vos devis et
+        vos factures — la loi l’exige sur tout document commercial.
+      </Encart>
+
+      <Carte
+        titre="L’entité qui facture vos interventions"
+        aide="Micro-entreprise, entreprise individuelle, association, société. Facultatif pour entrer — nécessaire pour publier une fiche."
+      >
+        <ChampStructure
+          valeur={choix}
+          onChange={setChoix}
+          placeholder="Votre SIRET, ou le nom de votre entreprise…"
+        />
+      </Carte>
+
+      {erreur && (
+        <Encart ton="alerte" icone={TriangleAlert}>
+          {erreur}
+        </Encart>
+      )}
+
+      <Encart>
+        <strong className="text-foreground">Pas encore de structure ?</strong> C’est
+        très bien aussi. Vous pouvez tout faire ici — être contacté, échanger,
+        préparer vos fiches, vous rendre disponible pour des remplacements en CDD
+        — et vous la déclarerez le jour où vous voudrez publier.
+      </Encart>
+
+      <Button
+        type="button"
+        className="w-full"
+        size="lg"
+        loading={envoi}
+        onClick={() => void valider()}
+      >
+        {choix.structureId || choix.structure ? 'Enregistrer ma structure' : 'Continuer'}
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * CE QUE VOUS VOULEZ FAIRE.
+ *
+ * ⚠⚠ LES DEUX DERNIÈRES CASES SONT DEUX MONTAGES JURIDIQUES DIFFÉRENTS, ET
+ * L'ÉCRAN DOIT LE DIRE.
+ *
+ * Remplacer quelqu'un sur un poste ne se fait qu'en CDD salarié : le Conseil
+ * d'État l'a tranché le 11/02/2025 (n° 491128). Intervenir EN PLUS, sur un
+ * besoin nommé — un enfant à accompagner, un groupe qui décroche — est une
+ * prestation ordinaire, facturée par la structure de l'intervenant.
+ *
+ * Ce n'est donc pas la personne qui choisit le montage, c'est le BESOIN. Les
+ * deux cases existent, et chacune porte le contrat qui va avec : un chef de
+ * service pressé ne lit pas, il clique, et « renfort » désigne ici deux choses
+ * aux conséquences opposées.
+ */
+interface Activite {
+  cle: string;
+  titre: string;
+  aide: string;
+  /** Le montage, quand il y en a un. Affiché tel quel, jamais paraphrasé. */
+  montage?: string;
+}
+
+const ACTIVITES: Activite[] = [
+  {
+    cle: 'ATELIERS',
+    titre: 'Proposer des ateliers',
+    aide: 'Votre fiche au catalogue, les demandes de devis vous arrivent ici.',
+  },
+  {
+    cle: 'FORMATIONS',
+    titre: 'Proposer des formations',
+    aide: 'En intra, dans les établissements, ou au catalogue de l’association.',
+  },
+  {
+    cle: 'RENFORT_CDD',
+    titre: 'Faire des remplacements',
+    aide: 'Un poste à couvrir, une absence : l’établissement vous embauche.',
+    montage: 'CDD salarié',
+  },
+  {
+    cle: 'RENFORT_PERSONNALISE',
+    titre: 'Intervenir en renfort personnalisé',
+    aide: 'Un besoin nommé, en plus de l’équipe : un accompagnement, un suivi individuel.',
+    montage: 'Prestation facturée par votre structure',
+  },
+];
+
+/** Les deux activités qui rendent visible dans le vivier. */
+const MONTAGES = ['RENFORT_CDD', 'RENFORT_PERSONNALISE'];
+
+function CaseActivite({
+  activite,
+  coche,
+  onBascule,
+}: {
+  activite: Activite;
+  coche: boolean;
+  onBascule: () => void;
+}) {
+  return (
+    <label
+      className={cn(
+        'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
+        coche ? 'border-primary bg-primary-soft/30' : 'border-border bg-card hover:border-primary/40',
+      )}
+    >
+      <input
+        type="checkbox"
+        checked={coche}
+        onChange={onBascule}
+        className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
+      />
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-medium">{activite.titre}</span>
+        <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground" lang="fr">
+          {activite.aide}
+        </span>
+        {activite.montage && (
+          <span className="mt-1.5 inline-block rounded-full bg-secondary/10 px-2 py-0.5 text-[11px] font-semibold text-secondary">
+            {activite.montage}
+          </span>
+        )}
+      </span>
+    </label>
+  );
+}
+
+/**
+ * LE CONSENTEMENT À FIGURER DANS LE VIVIER.
+ *
+ * ⚠ IL EST SÉPARÉ DES CASES D'ACTIVITÉ, ET IL DOIT LE RESTER. Dire « je veux
+ * faire des remplacements » est une intention ; accepter d'être vu par des
+ * dizaines d'établissements est autre chose. Quelqu'un qui cherche du travail
+ * ne doit pas découvrir qu'il est listé parce qu'il a coché une case sur un
+ * autre sujet.
+ *
+ * ⚠ AUCUNE COORDONNÉE N'EST DEMANDÉE ICI, et l'écran le dit. Les
+ * établissements écrivent par la messagerie ; le numéro s'ouvre quand la
+ * demande est confirmée.
+ */
+function BlocVisibilite({
+  actif,
+  setActif,
+  metier,
+  setMetier,
+  departements,
+  setDepartements,
+  presentation,
+  setPresentation,
+}: {
+  actif: boolean;
+  setActif: (v: boolean) => void;
+  metier: string;
+  setMetier: (v: string) => void;
+  departements: string;
+  setDepartements: (v: string) => void;
+  presentation: string;
+  setPresentation: (v: string) => void;
+}) {
+  return (
+    <Carte
+      titre="Être visible des établissements"
+      aide="Votre profil apparaît dans la liste que consultent les établissements qui cherchent quelqu’un. Ils vous écrivent ici ; vos coordonnées ne sont jamais affichées."
+    >
+      <label
+        className={cn(
+          'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
+          actif ? 'border-primary bg-primary-soft/30' : 'border-border bg-card',
+        )}
+      >
+        <input
+          type="checkbox"
+          checked={actif}
+          onChange={() => setActif(!actif)}
+          className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
+        />
+        <span className="text-sm font-medium">
+          Oui, affichez-moi dans la liste des personnes disponibles
+        </span>
+      </label>
+
+      {actif && (
+        <div className="mt-3 space-y-3">
+          <div>
+            <label htmlFor="metier" className="text-xs font-semibold">
+              Votre métier
+            </label>
+            <Input
+              id="metier"
+              value={metier}
+              onChange={(e) => setMetier(e.target.value)}
+              placeholder="Éducateur spécialisé, AES, moniteur-éducateur…"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label htmlFor="departements" className="text-xs font-semibold">
+              Où vous pouvez vous déplacer
+            </label>
+            <Input
+              id="departements"
+              value={departements}
+              onChange={(e) => setDepartements(e.target.value)}
+              placeholder="77, 91, 94"
+              className="mt-1"
+            />
+            <Aide>
+              Les numéros de département, séparés par des virgules. Ceux que nous
+              ne reconnaissons pas sont simplement ignorés.
+            </Aide>
+          </div>
+          <div>
+            <label htmlFor="presentation" className="text-xs font-semibold">
+              Deux lignes sur vous <span className="font-normal text-muted-foreground">(facultatif)</span>
+            </label>
+            <Textarea
+              id="presentation"
+              value={presentation}
+              onChange={(e) => setPresentation(e.target.value)}
+              placeholder="Dix ans en MECS, habitué aux adolescents. Disponible en semaine."
+              className="mt-1 min-h-[72px]"
+              maxLength={600}
+            />
+            <Aide>
+              Ce n’est pas un CV. N’y mettez ni téléphone ni adresse : les
+              établissements vous écrivent par la messagerie.
+            </Aide>
+          </div>
+        </div>
+      )}
+    </Carte>
+  );
+}
+
+export function EtapeActivites({ onFait }: { onFait: () => void }) {
+  const [choisies, setChoisies] = React.useState<string[]>([]);
+  const [actif, setActif] = React.useState(false);
+  const [metier, setMetier] = React.useState('');
+  const [departements, setDepartements] = React.useState('');
+  const [presentation, setPresentation] = React.useState('');
+  const [envoi, setEnvoi] = React.useState(false);
+  const [erreur, setErreur] = React.useState<string | null>(null);
+
+  const proposeUnMontage = choisies.some((c) => MONTAGES.includes(c));
+
+  function bascule(cle: string) {
+    setChoisies((liste) =>
+      liste.includes(cle) ? liste.filter((c) => c !== cle) : [...liste, cle],
+    );
+  }
+
+  async function valider() {
+    setEnvoi(true);
+    setErreur(null);
+    try {
+      await apiRequest('/disponibilites/moi', {
+        method: 'PATCH',
+        body: {
+          interets: choisies,
+          // On n'envoie la disponibilité que si elle a un sens : sans montage
+          // coché, le serveur refuserait un consentement qui ne porte sur rien.
+          ...(proposeUnMontage
+            ? {
+                actif,
+                montages: choisies.filter((c) => MONTAGES.includes(c)),
+                metier: metier.trim(),
+                departements: decouperCodes(departements),
+                presentation: presentation.trim(),
+              }
+            : {}),
+        },
+      });
+      lancerConfettis();
+      onFait();
+    } catch (e) {
+      setErreur(
+        e instanceof Error
+          ? e.message
+          : 'Nous n’avons pas pu enregistrer vos choix. Vous les retrouverez dans votre espace.',
+      );
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <Carte
+        titre="Ce que vous voulez faire"
+        aide="Plusieurs réponses possibles, et tout se change plus tard depuis votre espace."
+      >
+        <div className="space-y-2">
+          {ACTIVITES.map((a) => (
+            <CaseActivite
+              key={a.cle}
+              activite={a}
+              coche={choisies.includes(a.cle)}
+              onBascule={() => bascule(a.cle)}
+            />
+          ))}
+        </div>
+      </Carte>
+
+      {proposeUnMontage && (
+        <BlocVisibilite
+          actif={actif}
+          setActif={setActif}
+          metier={metier}
+          setMetier={setMetier}
+          departements={departements}
+          setDepartements={setDepartements}
+          presentation={presentation}
+          setPresentation={setPresentation}
+        />
+      )}
+
+      {erreur && (
+        <Encart ton="alerte" icone={TriangleAlert}>
+          {erreur}
+        </Encart>
+      )}
+
+      <Button
+        type="button"
+        className="w-full"
+        size="lg"
+        loading={envoi}
+        onClick={() => void valider()}
+      >
+        Terminer mon inscription
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * LE PARTICULIER — et ce qu'il peut faire de plus qu'avant.
+ *
+ * ⚠ CE COMPTE N'EST PLUS SEULEMENT CELUI D'UN PARENT. Il ouvre aussi la porte
+ * à quelqu'un qui veut faire des remplacements en établissement : étudiant,
+ * professionnel entre deux postes, retraité du secteur. C'est le chemin le plus
+ * propre juridiquement — un remplacement se fait en CDD, donc en salarié, donc
+ * sans structure ni SIRET à fournir — et c'est ce qui manque le plus au
+ * renfort : des bras, pas des demandes.
+ *
+ * ⚠ IL N'Y A PAS DE CASE « RENFORT PERSONNALISÉ » ICI, et c'est volontaire :
+ * facturer une prestation demande une structure. Celui qui veut s'y mettre
+ * passe en compte intervenant indépendant, en ajoutant la sienne — l'adresse
+ * publique du compte ne bouge pas, elle porte déjà son nom.
+ */
+export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
+  const [reserver, setReserver] = React.useState(true);
+  const [remplacer, setRemplacer] = React.useState(false);
+  const [actif, setActif] = React.useState(false);
+  const [metier, setMetier] = React.useState('');
+  const [departements, setDepartements] = React.useState('');
+  const [presentation, setPresentation] = React.useState('');
+  const [envoi, setEnvoi] = React.useState(false);
+  const [erreur, setErreur] = React.useState<string | null>(null);
+
+  async function valider() {
+    setEnvoi(true);
+    setErreur(null);
+    try {
+      await apiRequest('/disponibilites/moi', {
+        method: 'PATCH',
+        body: {
+          interets: remplacer ? ['RENFORT_CDD'] : [],
+          ...(remplacer
+            ? {
+                actif,
+                montages: ['RENFORT_CDD'],
+                metier: metier.trim(),
+                departements: decouperCodes(departements),
+                presentation: presentation.trim(),
+              }
+            : {}),
+        },
+      });
+      lancerConfettis();
+      onFait();
+    } catch (e) {
+      setErreur(
+        e instanceof Error
+          ? e.message
+          : 'Nous n’avons pas pu enregistrer vos choix. Vous les retrouverez dans votre espace.',
+      );
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <Carte
+        titre="Que venez-vous faire ?"
+        aide="Les deux sont possibles, et rien n’est définitif."
+      >
+        <div className="space-y-2">
+          <label
+            className={cn(
+              'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
+              reserver ? 'border-primary bg-primary-soft/30' : 'border-border bg-card',
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={reserver}
+              onChange={() => setReserver(!reserver)}
+              className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">
+                Réserver pour mon enfant ou mon proche
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground" lang="fr">
+                Ateliers, formations, suivi de vos inscriptions et de vos factures.
+              </span>
+            </span>
+          </label>
+
+          <label
+            className={cn(
+              'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
+              remplacer ? 'border-primary bg-primary-soft/30' : 'border-border bg-card',
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={remplacer}
+              onChange={() => setRemplacer(!remplacer)}
+              className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">
+                Faire des remplacements en établissement
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground" lang="fr">
+                Vous êtes embauché en CDD par l’établissement, pour la durée du
+                remplacement. Aucune structure ni SIRET à fournir.
+              </span>
+              <span className="mt-1.5 inline-block rounded-full bg-secondary/10 px-2 py-0.5 text-[11px] font-semibold text-secondary">
+                CDD salarié
+              </span>
+            </span>
+          </label>
+        </div>
+      </Carte>
+
+      {remplacer && (
+        <>
+          <BlocVisibilite
+            actif={actif}
+            setActif={setActif}
+            metier={metier}
+            setMetier={setMetier}
+            departements={departements}
+            setDepartements={setDepartements}
+            presentation={presentation}
+            setPresentation={setPresentation}
+          />
+          {/*
+            ⚠ ON NE PROMET AUCUNE VÉRIFICATION, et il ne faut jamais en
+            promettre : la plateforme ne contrôle ni identité ni casier. La
+            mention « intervenants vérifiés » a été retirée de la fiche atelier
+            pour cette raison exacte. C'est l'établissement qui vérifie à
+            l'embauche, et l'écran le dit aux deux bouts.
+          */}
+          <Encart ton="alerte" icone={TriangleAlert} titre="Ce que l’établissement vérifiera">
+            Une embauche en établissement demande des pièces — identité, diplômes,
+            extrait de casier judiciaire selon le poste. C’est l’établissement qui
+            les contrôle au moment de l’embauche : rien n’est vérifié ici.
+          </Encart>
+        </>
+      )}
+
+      {erreur && (
+        <Encart ton="alerte" icone={TriangleAlert}>
+          {erreur}
+        </Encart>
+      )}
+
+      <Button
+        type="button"
+        className="w-full"
+        size="lg"
+        loading={envoi}
+        onClick={() => void valider()}
+      >
+        Terminer mon inscription
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * « 77, 91, 94 » → ['77', '91', '94'].
+ *
+ * On ne valide rien ici : le serveur confronte au référentiel des
+ * départements, qui fait foi, et ignore ce qu'il ne reconnaît pas. Une
+ * validation côté écran se désynchroniserait du référentiel au premier ajout.
+ */
+function decouperCodes(texte: string): string[] {
+  return texte
+    .split(/[,;\s]+/)
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .slice(0, 101);
 }

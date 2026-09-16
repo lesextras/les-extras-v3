@@ -11,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ServiceCategory } from '@prisma/client';
+import { FormatIntervention, ServiceCategory } from '@prisma/client';
 import { FaqItemDto, PriceExtraDto } from '../../services/dto/create-service.dto';
 
 /**
@@ -71,6 +71,8 @@ export class UpdateServiceAdminDto {
   @IsOptional() @IsString() @MaxLength(120) duration?: string;
   /** Durée normalisée, pour le tri et les filtres. */
   @IsOptional() @IsInt() @Min(0) durationMinutes?: number;
+  /** COLLECTIF (atelier) ou INDIVIDUEL (renfort personnalisé). */
+  @IsOptional() @IsEnum(FormatIntervention) format?: FormatIntervention;
   @IsOptional() @IsInt() @Min(1) maxParticipants?: number;
   @IsOptional() @IsArray() @IsString({ each: true }) timeSlots?: string[];
 

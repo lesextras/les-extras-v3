@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowRight, Check, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Check, Sparkles, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -27,17 +27,127 @@ import { cn } from '@/lib/utils';
  * n'a plus rien à masquer, et le `rotateY(180deg)` du verso se rend comme une
  * simple symétrie en 2D. **Ne remontez pas la rotation sur le bouton.**
  *
+ * ⚠ POUR LA MÊME RAISON, AUCUN EFFET DE SURVOL NE PASSE PAR UNE
+ * TRANSFORMATION. Pas de `-translate-y`, pas de `scale` : le relief au survol
+ * se fait à l'ombre et à la bordure. Une carte qui se soulève de deux pixels
+ * ne vaut pas le risque de rouvrir le défaut ci-dessus.
+ *
  * ⚠ LE SURVOL SEUL NE SUFFIT PAS, d'où `focus-within` dans la feuille de
  * style : sur un téléphone il n'y a pas de survol, à la tabulation non plus.
  * Le texte du verso reste dans le DOM (jamais `display:none`) pour qu'un
  * lecteur d'écran le lise. Une information cachée derrière un mouvement est
  * une information perdue pour une partie des gens.
  */
+
+/**
+ * LES TROIS TEINTES — une par compte, et c'est le contour qui les sépare.
+ *
+ * Les trois cartes étaient identiques : même bordure grise, même pastille
+ * rose, même bouton. Trois portes qui mènent à trois produits différents se
+ * ressemblaient trait pour trait, et il fallait lire pour les distinguer.
+ *
+ * ⚠ LES TROIS TEINTES VIENNENT DE LA PALETTE, ELLES NE SONT PAS INVENTÉES :
+ * `primary` (framboise), `secondary` (terracotta) et `success` (vert) sont
+ * déjà définies pour le thème clair ET le thème sombre dans `globals.css`.
+ * Une quatrième couleur écrite en dur ici serait juste sur cet écran et
+ * fausse partout ailleurs — et invisible en thème sombre.
+ *
+ * ⚠ ON TRAVAILLE EN OPACITÉ (`/10`, `/30`) PLUTÔT QU'AVEC DES JETONS
+ * « soft » : `success` n'en a pas, et une couleur posée en transparence sur
+ * la carte reste lisible dans les deux thèmes sans qu'on ait à redéfinir quoi
+ * que ce soit.
+ */
+export type TeinteCarte = 'framboise' | 'terracotta' | 'vert';
+
+interface Habillage {
+  bordure: string;
+  bordureActive: string;
+  fond: string;
+  fondActif: string;
+  pastille: string;
+  pastilleActive: string;
+  titre: string;
+  action: string;
+  actionActive: string;
+  puce: string;
+  coche: string;
+  verso: string;
+}
+
+const TEINTES: Record<TeinteCarte, Habillage> = {
+  framboise: {
+    bordure: 'border-primary/30',
+    bordureActive: 'border-primary',
+    fond: 'bg-gradient-to-b from-primary/[0.07] to-card',
+    fondActif: 'bg-gradient-to-b from-primary/20 to-card',
+    pastille: 'bg-primary/10 text-primary',
+    pastilleActive: 'bg-primary text-primary-foreground',
+    titre: 'text-primary',
+    action: 'border-primary/40 bg-card text-primary',
+    actionActive: 'border-transparent bg-primary text-primary-foreground',
+    puce: 'bg-primary',
+    coche: 'bg-primary text-primary-foreground',
+    verso: 'bg-gradient-to-b from-primary/[0.12] to-card',
+  },
+  terracotta: {
+    bordure: 'border-secondary/30',
+    bordureActive: 'border-secondary',
+    fond: 'bg-gradient-to-b from-secondary/[0.07] to-card',
+    fondActif: 'bg-gradient-to-b from-secondary/20 to-card',
+    pastille: 'bg-secondary/10 text-secondary',
+    pastilleActive: 'bg-secondary text-secondary-foreground',
+    titre: 'text-secondary',
+    action: 'border-secondary/40 bg-card text-secondary',
+    actionActive: 'border-transparent bg-secondary text-secondary-foreground',
+    puce: 'bg-secondary',
+    coche: 'bg-secondary text-secondary-foreground',
+    verso: 'bg-gradient-to-b from-secondary/[0.12] to-card',
+  },
+  vert: {
+    bordure: 'border-success/30',
+    bordureActive: 'border-success',
+    fond: 'bg-gradient-to-b from-success/[0.07] to-card',
+    fondActif: 'bg-gradient-to-b from-success/20 to-card',
+    pastille: 'bg-success/10 text-success',
+    pastilleActive: 'bg-success text-success-foreground',
+    titre: 'text-success',
+    action: 'border-success/40 bg-card text-success',
+    actionActive: 'border-transparent bg-success text-success-foreground',
+    puce: 'bg-success',
+    coche: 'bg-success text-success-foreground',
+    verso: 'bg-gradient-to-b from-success/[0.12] to-card',
+  },
+};
+
 export interface ChoixCompte {
   key: string;
   icon: LucideIcon;
+  /**
+   * LA CATÉGORIE, à côté de l'icône — « Établissement », « Professionnel »,
+   * « Particulier ».
+   *
+   * ⚠ ELLE NE RÉPÈTE PAS LE TITRE. Le titre est une phrase à la première
+   * personne, qui demande d'être lue ; cette pastille est l'étiquette qu'on
+   * repère sans lire, du coin de l'œil, et c'est elle qui dit en un mot de
+   * quel compte il s'agit. Y remettre le texte du titre supprimerait tout son
+   * intérêt.
+   */
+  categorie: string;
+  /** Ce que la personne dit d'elle, à la première personne. */
   titre: string;
+  /** Qui c'est — les métiers, la situation. */
   accroche: string;
+  /**
+   * POURQUOI ON OUVRIRAIT CE COMPTE — une phrase, sur le recto.
+   *
+   * ⚠ Elle dit un BÉNÉFICE, pas une fonctionnalité. Le recto disait qui vous
+   * êtes et laissait un grand vide au milieu de la carte ; il ne disait nulle
+   * part ce qu'on vient chercher. Le verso, lui, ne se lit qu'au survol —
+   * c'est-à-dire jamais sur un téléphone, et jamais avant d'avoir décidé.
+   */
+  benefice: string;
+  /** La teinte qui distingue cette carte des deux autres. */
+  teinte: TeinteCarte;
   /** Le verso : ce que la personne a besoin de savoir pour choisir. */
   detail: string;
   /** Deux ou trois points concrets, au verso. */
@@ -56,18 +166,16 @@ export interface ChoixCompte {
  * le survol, donc un appel à l'action posé sur une seule face disparaîtrait
  * exactement au moment où la personne vient de finir de lire.
  */
-function AppelAction({ actif }: { actif: boolean }) {
+function AppelAction({ actif, habillage }: { actif: boolean; habillage: Habillage }) {
   return (
     <span
       className={cn(
-        'mt-auto flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors',
-        actif
-          ? 'border-transparent bg-primary text-primary-foreground'
-          : 'border-primary/35 bg-card text-primary',
+        'mt-auto flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors',
+        actif ? habillage.actionActive : habillage.action,
       )}
     >
       Créer un compte
-      <ArrowRight aria-hidden className="size-3.5" />
+      <ArrowRight aria-hidden className="size-4" />
     </span>
   );
 }
@@ -85,9 +193,10 @@ export function CarteChoix({
   retournee?: boolean;
 }) {
   const Icone = choix.icon;
+  const h = TEINTES[choix.teinte];
 
   return (
-    <div className="carte-3d h-full" data-retournee={retournee ? 'true' : undefined}>
+    <div className="carte-3d group h-full" data-retournee={retournee ? 'true' : undefined}>
       <button
         type="button"
         onClick={onSelect}
@@ -102,65 +211,116 @@ export function CarteChoix({
             // se faisait couper au milieu d'une phrase, les trois points
             // disparaissant entièrement. Toute modification du verso doit être
             // revérifiée AU SURVOL, pas seulement dans le code.
-            'carte-3d-face grid min-h-[17rem] w-full rounded-xl border-2',
-            actif ? 'border-primary shadow-soft' : 'border-border hover:border-primary/40',
+            'carte-3d-face grid min-h-[22rem] w-full rounded-2xl border-2 transition-shadow duration-300',
+            actif ? h.bordureActive : h.bordure,
+            actif ? 'shadow-card' : 'shadow-soft group-hover:shadow-card',
           )}
         >
           {/* RECTO — en flux : c'est lui qui donne sa hauteur à la carte. */}
           <span
             className={cn(
-              'carte-recto flex flex-col gap-2 rounded-[inherit] p-4',
-              actif ? 'bg-primary-soft/50' : 'bg-card',
+              'carte-recto flex flex-col gap-2.5 rounded-[inherit] p-5',
+              actif ? h.fondActif : h.fond,
             )}
           >
             {actif && (
-              <span className="absolute right-3 top-3 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground">
-                <Check className="size-3" />
+              <span
+                className={cn(
+                  'absolute right-3.5 top-3.5 grid size-6 place-items-center rounded-full',
+                  h.coche,
+                )}
+              >
+                <Check className="size-3.5" />
               </span>
             )}
-            <span
-              className={cn(
-                'grid size-10 place-items-center rounded-lg',
-                actif ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground',
-              )}
-            >
-              <Icone className="size-5" />
+            {/* L'icône et l'étiquette de catégorie, sur la même ligne. */}
+            <span className="flex items-center gap-3">
+              <span
+                className={cn(
+                  'grid size-12 shrink-0 place-items-center rounded-xl transition-colors',
+                  actif ? h.pastilleActive : h.pastille,
+                )}
+              >
+                <Icone className="size-6" />
+              </span>
+              <span
+                className={cn(
+                  'rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide',
+                  h.pastille,
+                )}
+              >
+                {choix.categorie}
+              </span>
             </span>
             {/*
               ⚠ PAS DE CÉSURE SUR LE TITRE. `hyphens-auto` coupait
               « intervenant » en « interve- / nant » au milieu d'une carte à
               moitié vide : un mot brisé se lit deux fois plus lentement, et
-              donne l'impression d'un défaut d'affichage. Les titres sont
-              courts et connus — on les laisse passer à la ligne entiers.
+              donne l'impression d'un défaut d'affichage.
+
+              ⚠ LA HAUTEUR DU TITRE EST FIXÉE À DEUX LIGNES. « Intervenant
+              indépendant » en passe forcément deux ; sans plancher, les trois
+              accroches ne s'alignaient plus et la rangée paraissait bancale.
             */}
-            <span className="text-sm font-semibold leading-snug text-balance" lang="fr">
+            <span
+              className={cn(
+                'flex min-h-[2.4em] items-start text-lg font-semibold leading-tight text-balance',
+                actif ? h.titre : 'text-foreground',
+              )}
+              lang="fr"
+            >
               {choix.titre}
             </span>
-            <span className="text-xs leading-relaxed text-muted-foreground" lang="fr">
+            <span className="text-sm leading-relaxed text-muted-foreground" lang="fr">
               {choix.accroche}
             </span>
-            <AppelAction actif={actif} />
+            {/*
+              LE POURQUOI. Il occupe la place que le recto laissait vide, et
+              c'est la seule phrase de la carte qui parle de ce qu'on gagne.
+            */}
+            <span
+              className={cn(
+                'flex gap-2 rounded-lg px-3 py-2.5 text-xs font-medium leading-relaxed',
+                h.pastille,
+              )}
+              lang="fr"
+            >
+              <Sparkles aria-hidden className="mt-px size-3.5 shrink-0" />
+              <span>{choix.benefice}</span>
+            </span>
+            <AppelAction actif={actif} habillage={h} />
           </span>
 
           {/* VERSO — superposé, jamais en flux (sinon la carte ferait le double). */}
-          <span className="carte-verso flex flex-col gap-2 overflow-hidden rounded-[inherit] bg-accent p-4 text-accent-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+          <span
+            className={cn(
+              'carte-verso flex flex-col gap-2.5 overflow-hidden rounded-[inherit] p-5',
+              h.verso,
+            )}
+          >
+            <span
+              className={cn('text-xs font-semibold uppercase tracking-wide', h.titre)}
+              lang="fr"
+            >
               {choix.titre}
             </span>
-            <span className="text-xs leading-relaxed" lang="fr">
+            <span className="text-sm leading-relaxed" lang="fr">
               {choix.detail}
             </span>
             {choix.points && choix.points.length > 0 && (
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {choix.points.map((p) => (
-                  <li key={p} className="flex gap-1.5 text-[11px] leading-snug">
-                    <span aria-hidden className="mt-[3px] size-1 shrink-0 rounded-full bg-primary" />
+                  <li key={p} className="flex gap-2 text-xs leading-snug" lang="fr">
+                    <span
+                      aria-hidden
+                      className={cn('mt-[5px] size-1.5 shrink-0 rounded-full', h.puce)}
+                    />
                     <span>{p}</span>
                   </li>
                 ))}
               </ul>
             )}
-            <AppelAction actif={actif} />
+            <AppelAction actif={actif} habillage={h} />
           </span>
         </span>
       </button>

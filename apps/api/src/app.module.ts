@@ -63,6 +63,7 @@ import { AgendaModule } from './agenda/agenda.module';
 import { AdministrationModule } from './administration/administration.module';
 import { StructuresModule } from './structures/structures.module';
 import { OrganisationModule } from './organisation/organisation.module';
+import { DisponibilitesModule } from './disponibilites/disponibilites.module';
 
 @Module({
   imports: [
@@ -139,6 +140,7 @@ import { OrganisationModule } from './organisation/organisation.module';
   // organigramme (16/09/2026).
   StructuresModule,
   OrganisationModule,
+  DisponibilitesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

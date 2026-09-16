@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
 import { EmailVerifieSiPublicationGuard } from '../common/guards/email-verifie.guard';
+import { StructureRequiseSiPublicationGuard } from '../common/guards/structure-requise.guard';
 import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { ServicesService } from './services.service';
@@ -66,11 +67,23 @@ export class ServicesController {
   }
 
   /**
-   * Modifier — et, quand `status: PUBLISHED` est envoyé, publier. Le garde ne
-   * se déclenche que dans ce second cas (voir EmailVerifieSiPublicationGuard).
+   * Modifier — et, quand `status: PUBLISHED` est envoyé, publier. Les deux
+   * derniers gardes ne se déclenchent que dans ce second cas : corriger un
+   * brouillon reste possible sans adresse confirmée et sans structure.
+   *
+   * ⚠ LES DEUX EXIGENCES SONT DE MÊME NATURE — on ne bloque que ce qui peut
+   * nuire à quelqu'un d'autre. Une adresse non confirmée, c'est du spam de
+   * catalogue ; une fiche publiée sans structure, ce sont des devis et des
+   * factures portant « SIRET : Non renseigné » envoyés à des établissements
+   * publics.
    */
   @Patch(':id')
-  @UseGuards(AccountGuard, AccountRolesGuard, EmailVerifieSiPublicationGuard)
+  @UseGuards(
+    AccountGuard,
+    AccountRolesGuard,
+    EmailVerifieSiPublicationGuard,
+    StructureRequiseSiPublicationGuard,
+  )
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   update(
     @Param('id') id: string,

@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { CibleDiffusion, MissionVisibility } from '@prisma/client';
+import { CibleDiffusion, Interet, MissionVisibility } from '@prisma/client';
 import { CiblageService } from './ciblage.service';
 
 /**
@@ -33,6 +33,8 @@ function prismaMock(options: {
   connus?: string[];
   ownerId?: string | null;
   estSalarie?: boolean;
+  /** Ce que le compte a déclaré vouloir faire. Non fourni = rien déclaré. */
+  interets?: Interet[];
 }) {
   return {
     poolMember: {
@@ -46,7 +48,10 @@ function prismaMock(options: {
     booking: { findMany: jest.fn() },
     $transaction: jest.fn().mockResolvedValue([[], []]),
     account: {
-      findUnique: jest.fn().mockResolvedValue({ ownerId: options.ownerId ?? null }),
+      findUnique: jest.fn().mockResolvedValue({
+        ownerId: options.ownerId ?? null,
+        interets: options.interets ?? [],
+      }),
     },
     membership: {
       findFirst: jest.fn().mockResolvedValue(options.estSalarie ? { id: 'mb1' } : null),
@@ -107,5 +112,75 @@ describe('Accès aux réponses : garde-fou travail dissimulé', () => {
     await expect(
       ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'son-compte-perso'),
     ).resolves.toBeUndefined();
+  });
+});
+
+/**
+ * LE MONTAGE — la quatrième règle de `assertReponseAutorisee`.
+ *
+ * ⚠ CE N'EST PAS LA PERSONNE QUI CHOISIT LE MONTAGE, C'EST LE BESOIN.
+ *
+ * Une `ReliefMission` est un REMPLACEMENT : quelqu'un manque sur un poste, et
+ * cela ne se couvre qu'en CDD salarié. Le Conseil d'État l'a tranché le
+ * 11/02/2025 (n° 491128, affaire Mediflash) et la LFSS 2025 (art. 70) a
+ * resserré l'intérim en ESSMS. Un indépendant qui facturerait un remplacement
+ * de poste, c'est une requalification pour lui et un risque de travail
+ * dissimulé pour la maison.
+ *
+ * Intervenir EN PLUS, sur un besoin nommé, est autre chose — le « renfort
+ * personnalisé » — et cela passe par une fiche, un devis et un contrat de
+ * prestation, jamais par ici.
+ *
+ * ⚠ CE DÉFAUT NE SE VOIT PAS À L'ÉCRAN. Tout fonctionne : la mission se
+ * pourvoit, la proposition d'engagement s'imprime. Il se découvre au contrôle,
+ * des mois plus tard, et c'est l'établissement qui paie.
+ */
+describe('Accès aux réponses : le montage juridique', () => {
+  it('refuse quelqu’un qui a déclaré ne vouloir que du renfort personnalisé', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ interets: [Interet.RENFORT_PERSONNALISE, Interet.ATELIERS] }) as never,
+    );
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'un-independant'),
+    ).rejects.toThrow(/CDD/);
+  });
+
+  it('laisse passer qui a déclaré vouloir des remplacements en CDD', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ interets: [Interet.RENFORT_CDD] }) as never,
+    );
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'un-remplacant'),
+    ).resolves.toBeUndefined();
+  });
+
+  /**
+   * ⚠⚠ CE TEST PROTÈGE TOUS LES COMPTES ANTÉRIEURS, ET IL NE FAUT PAS LE
+   * « RÉPARER » EN EXIGEANT UNE DÉCLARATION.
+   *
+   * Les centres d'intérêt sont arrivés le 16/09/2026 : tous les comptes créés
+   * avant ce jour ont une liste VIDE. Refuser sur une absence de déclaration
+   * fermerait RenforTeam à tout le monde du jour au lendemain, sans qu'aucun
+   * test ni aucune alerte ne le signale — on ne restreint que sur un choix
+   * explicitement fait.
+   */
+  it('ne refuse RIEN à un compte qui n’a rien déclaré', async () => {
+    const ciblage = new CiblageService(prismaMock({ interets: [] }) as never);
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'compte-ancien'),
+    ).resolves.toBeUndefined();
+  });
+
+  it('le message dit par où passer, il ne se contente pas de refuser', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ interets: [Interet.ATELIERS] }) as never,
+    );
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'un-animateur'),
+    ).rejects.toThrow(/renfort personnalisé/i);
   });
 });

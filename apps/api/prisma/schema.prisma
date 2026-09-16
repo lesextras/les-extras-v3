@@ -279,6 +279,19 @@ model Account {
   retours          RetourExperience[]
   alertesRecherche AlerteRecherche[]
 
+  /// CE QUE LA PERSONNE VEUT FAIRE ICI, déclaré à l'inscription.
+  ///
+  /// Ce n'est pas une statistique : ces cases décident de ce que le compte
+  /// voit — les demandes qui lui arrivent, les alertes, les rubriques de son
+  /// espace — et elles décident du MONTAGE sur lequel il peut s'engager.
+  ///
+  /// ⚠ VIDE VEUT DIRE « PAS ENCORE DÉCLARÉ », PAS « RIEN ». Tous les comptes
+  /// créés avant cette liste l'ont vide : aucune règle ne doit refuser quoi
+  /// que ce soit sur une liste vide, sinon on ferme le produit à tout le
+  /// monde d'un coup. On ne restreint que sur un choix explicitement fait.
+  interets      Interet[]
+  disponibilite DisponibiliteRenfort?
+
   memberships                   Membership[]
   invitations                   Invitation[]
   reliefMissions                ReliefMission[]      @relation("MissionAccount")
@@ -615,6 +628,16 @@ model Structure {
   nomNormalise   String   @unique
   /// Numéro SIREN à 9 chiffres quand la structure vient de l'annuaire public.
   siren          String?  @unique
+  /// SIRET du siège, 14 chiffres — les 9 du SIREN suivis des 5 du siège.
+  ///
+  /// ⚠ IL N'EST PAS UNIQUE, ET C'EST VOLONTAIRE. Le SIREN l'est déjà, et
+  /// c'est lui qui dédoublonne. Poser une seconde contrainte d'unicité ferait
+  /// échouer une saisie manuelle maladroite par une erreur de base illisible,
+  /// là où le rapprochement par SIREN a déjà fait le travail.
+  ///
+  /// C'est ce numéro-là qui s'imprime sur les factures d'un intervenant : une
+  /// facture porte le SIRET de l'établissement qui émet, pas le SIREN.
+  siret          String?
   formeJuridique String?
   adresse        String?
   ville          String?
@@ -629,6 +652,91 @@ model Structure {
   comptes Account[]
 
   @@index([nomNormalise])
+}
+
+/// CE QU'UNE PERSONNE VIENT FAIRE — déclaré, jamais deviné.
+///
+/// ⚠ LES DEUX DERNIÈRES VALEURS SONT DEUX MONTAGES JURIDIQUES DIFFÉRENTS, ET
+/// C'EST TOUTE LA RAISON DE CETTE ÉNUMÉRATION.
+///
+/// Remplacer quelqu'un sur un poste, dans le planning d'un établissement, ne
+/// se fait qu'en CDD : le Conseil d'État l'a tranché le 11/02/2025 (n° 491128,
+/// affaire Mediflash) et la LFSS 2025 a resserré l'intérim en ESSMS. Un
+/// indépendant qui facturerait un remplacement de poste, c'est une
+/// requalification pour lui et un risque de travail dissimulé pour la maison.
+///
+/// Intervenir EN PLUS, sur un besoin nommé — un enfant à accompagner sur ses
+/// sorties, un groupe qui décroche, un suivi individuel à mettre en place —
+/// est une prestation ordinaire, facturée par la structure de l'intervenant.
+/// C'est le « renfort personnalisé », et il emprunte les rails des ateliers
+/// (fiche, devis, contrat de prestation), pas ceux du CDD.
+enum Interet {
+  /// Proposer des ateliers au catalogue.
+  ATELIERS
+  /// Proposer des formations.
+  FORMATIONS
+  /// Être contacté pour des vacations de remplacement, en CDD salarié.
+  RENFORT_CDD
+  /// Intervenir en renfort personnalisé, facturé par sa structure.
+  RENFORT_PERSONNALISE
+}
+
+/// LE VIVIER OUVERT — les personnes qui se déclarent disponibles.
+///
+/// ⚠ CE N'EST PAS `PoolMember`, ET LES DEUX NE DOIVENT PAS ÊTRE FONDUS.
+/// `PoolMember` est le carnet d'adresses d'UN établissement : les gens qu'il a
+/// déjà fait venir, et c'est lui qui alimente le palier RESERVED de la cascade
+/// de diffusion. Celui-ci est l'inverse : il est alimenté par les personnes
+/// elles-mêmes et il est visible d'établissements qui ne les connaissent pas.
+/// Les mélanger remplirait « mes intervenants » de gens jamais rencontrés et
+/// casserait le ciblage.
+///
+/// ⚠ `actif` EST UN CONSENTEMENT, PAS UN RÉGLAGE D'AFFICHAGE. Quelqu'un qui
+/// cherche du travail ne doit pas découvrir qu'il est listé : la case est
+/// décochée par défaut, et la décocher retire la ligne de la liste tout de
+/// suite.
+///
+/// ⚠ LES COORDONNÉES NE SONT PAS ICI, ET N'ONT RIEN À Y FAIRE. Un
+/// établissement voit un profil et écrit par la messagerie ; les coordonnées
+/// s'ouvrent quand la demande est confirmée (voir `conversations/masquage.ts`).
+/// Une liste de personnes avec leurs numéros s'aspire en une après-midi.
+model DisponibiliteRenfort {
+  id        String  @id @default(cuid())
+  accountId String  @unique
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  /// Consentement explicite à figurer dans la liste. Faux = invisible.
+  actif        Boolean   @default(false)
+  /// Les montages sur lesquels la personne accepte d'intervenir. Une liste
+  /// vide avec `actif` vrai n'a pas de sens : le service la refuse.
+  montages     Interet[]
+  /// Métier déclaré, tel que la personne l'écrit. Sert au filtre.
+  metier       String?
+  /// Départements où elle peut se déplacer (codes INSEE, voir territoires.ts).
+  departements String[]  @default([])
+  /// Deux ou trois lignes libres. Ce n'est pas un CV.
+  presentation String?
+  /// À partir de quand elle est disponible, si ce n'est pas tout de suite.
+  aPartirDu    DateTime?
+
+  /// ⚠ LA FRAÎCHEUR EST CE QUI FAIT VIVRE OU MOURIR CETTE LISTE.
+  ///
+  /// Une disponibilité vieille de huit mois fait perdre son temps à
+  /// l'établissement, et il n'y revient pas. `confirmeeLe` est la dernière
+  /// fois où la personne a dit « toujours dispo » ; passé le délai,
+  /// `enVeille` passe à vrai et la ligne sort de la liste sans être
+  /// supprimée — elle revient d'un clic.
+  confirmeeLe DateTime  @default(now())
+  enVeille    Boolean   @default(false)
+  /// Verrou de relance : posé AVANT l'envoi, comme partout ailleurs. Un
+  /// doublon dans une boîte coûte plus cher qu'un message manquant.
+  relanceeLe  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([actif, enVeille])
+  @@index([confirmeeLe])
 }
 
 /// DEMANDE DE NIVEAU — le seul passage par Les Extras.
@@ -836,7 +944,7 @@ model ReliefMission {
 
 /// Atelier / service proposé par un FREELANCE.
 model Service {
-  id              String          @id @default(cuid())
+  id              String             @id @default(cuid())
   /// Adresse lisible de la fiche publique : `/ateliers/atelier-psycho-boxe`
   /// au lieu de `/ateliers/cms3it0g70015lt1wyr4sbhqr`. Le mot-clé le plus fort
   /// de la fiche n'était nulle part dans son adresse, et l'adresse était
@@ -846,21 +954,31 @@ model Service {
   /// toujours. Une fiche sans slug s'affiche exactement comme avant — rien ne
   /// dépend de ce champ pour fonctionner. En PostgreSQL, une contrainte
   /// d'unicité laisse passer autant de NULL qu'on veut.
-  slug            String?         @unique
+  slug            String?            @unique
   accountId       String
-  account         Account         @relation("ServiceAccount", fields: [accountId], references: [id], onDelete: Cascade)
+  account         Account            @relation("ServiceAccount", fields: [accountId], references: [id], onDelete: Cascade)
   title           String
   description     String
-  category        ServiceCategory @default(ATELIER)
+  category        ServiceCategory    @default(ATELIER)
   categoryId      String?
-  categoryRef     Category?       @relation("ServiceCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryRef     Category?          @relation("ServiceCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
   duration        String? // "2H" — libellé libre historique
   /// Durée normalisée en minutes (480 = 8 h) — sert au tri et aux filtres.
   durationMinutes Int?
   maxParticipants Int?
+  /// COLLECTIF (un atelier) ou INDIVIDUEL (un renfort personnalisé).
+  ///
+  /// ⚠ LE RENFORT PERSONNALISÉ N'EST PAS UN QUATRIÈME OBJET DU PRODUIT :
+  /// c'est un atelier à une personne. Il emprunte exactement les mêmes rails
+  /// — fiche, demande de devis, contrat de prestation, facture émise par la
+  /// structure de l'intervenant — et c'est précisément ce qui le distingue du
+  /// remplacement de poste, qui passe, lui, par `ReliefMission` et se conclut
+  /// en CDD. Un seul champ sépare les deux catalogues ; deux modèles
+  /// parallèles auraient fini par diverger.
+  format          FormatIntervention @default(COLLECTIF)
   publicTarget    String? // "Adultes en situation de handicap"
   /// Publics visés, en liste (Adolescent, Enfant, Handicap, Sénior…).
-  publicTargets   String[]        @default([])
+  publicTargets   String[]           @default([])
   /// Matériel nécessaire et prérequis, tels qu'annoncés à l'établissement.
   material        String?
   prerequisites   String?
@@ -871,14 +989,14 @@ model Service {
   /// Questions fréquentes : [{ question, answer }].
   faq             Json?
   /// Galerie : URLs (fichier déposé /api/files/... ou image externe).
-  images          String[]        @default([])
+  images          String[]           @default([])
   /// Options facturables en supplément : [{ label, price }].
   priceExtras     Json?
   /// Mise en avant sur la marketplace et validation par l'équipe.
-  featured        Boolean         @default(false)
-  verified        Boolean         @default(false)
+  featured        Boolean            @default(false)
+  verified        Boolean            @default(false)
   /// Compteur de consultations de la fiche.
-  views           Int             @default(0)
+  views           Int                @default(0)
   /// Identifiant d'origine (import du catalogue historique) : clé d'idempotence.
   /// Index simple et non unique : une contrainte UNIQUE bloquerait `prisma db push`
   /// au démarrage du conteneur (avertissement de perte de données). L'unicité est
@@ -886,14 +1004,14 @@ model Service {
   sourceId        String?
   /// Repères affichés sur la fiche (modèle les-extras.fr).
   /// Nombre de demandes reçues : sert la preuve sociale « X demandes / semaine ».
-  requestsCount   Int             @default(0)
+  requestsCount   Int                @default(0)
   /// Créneaux horaires proposés à la réservation : ["9h-12h", "14h-17h"].
-  timeSlots       String[]        @default([])
+  timeSlots       String[]           @default([])
   /// Formation couverte par la certification Qualiopi d'ADéPA (finançable OPCO).
-  qualiopi        Boolean         @default(false)
-  price           Decimal?        @db.Decimal(10, 2)
+  qualiopi        Boolean            @default(false)
+  price           Decimal?           @db.Decimal(10, 2)
   /// Coût en crédits d'une réservation de cet atelier par un établissement.
-  creditCost      Int             @default(1)
+  creditCost      Int                @default(1)
   city            String?
   /// LES DÉPARTEMENTS RÉELLEMENT COUVERTS, en codes INSEE ("77", "91"…).
   ///
@@ -907,7 +1025,7 @@ model Service {
   /// `city` reste, parce qu'il dit une autre chose — la ville de base de
   /// l'intervenant — et parce qu'effacer une donnée saisie à la main ne se fait
   /// pas. Voir `src/common/territoires.ts` pour le référentiel et la lecture.
-  departements    String[]        @default([])
+  departements    String[]           @default([])
   /// PAIEMENT EN LIGNE DE CET ATELIER, active par l'intervenant lui-meme.
   ///
   /// Faux par defaut, et il faut quatre choses pour le passer a vrai : un
@@ -916,15 +1034,15 @@ model Service {
   ///
   /// Le devis et la facture ne bougent pas : cette option AJOUTE un chemin,
   /// elle n'en remplace aucun.
-  paiementEnLigne Boolean         @default(false)
+  paiementEnLigne Boolean            @default(false)
   /// CE QUI SE PASSE SI ON ANNULE, ecrit par l'intervenant, affiche AVANT le
   /// bouton de paiement. Obligatoire pour encaisser en ligne : on ne prend pas
   /// l'argent de quelqu'un sans lui avoir dit a quelles conditions il le
   /// recupere.
   annulationTexte String?
-  status          ServiceStatus   @default(DRAFT)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  status          ServiceStatus      @default(DRAFT)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
   bookings     Booking[]
   quotes       Quote[]
@@ -1690,6 +1808,14 @@ enum ServiceCategory {
   MEDIATION
   ART_THERAPIE
   PREVENTION
+}
+
+/// Le format d'une fiche : à plusieurs, ou pour une seule personne.
+enum FormatIntervention {
+  /// Un atelier : un groupe, une salle, un nombre de participants.
+  COLLECTIF
+  /// Un renfort personnalisé : une personne nommée, un objectif, des séances.
+  INDIVIDUEL
 }
 
 enum ServiceStatus {

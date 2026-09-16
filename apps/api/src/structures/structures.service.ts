@@ -26,11 +26,20 @@ import { RequestAccount } from '../common/types/request-context';
 /** L'annuaire public des entreprises — déjà utilisé par le module association. */
 const API_RECHERCHE = 'https://recherche-entreprises.api.gouv.fr/search';
 
+/** Quatorze chiffres, espaces déjà retirés. */
+const SIRET = /^\d{14}$/;
+
 /** Une entité trouvée dans l'annuaire public, réduite à ce qui nous sert. */
 export interface EntiteLegale {
   nom: string;
   sigle: string | null;
   siren: string;
+  /**
+   * SIRET du siège — 14 chiffres. L'annuaire le renvoie, nous ne le lisions
+   * pas, et c'est pourtant LUI qui s'imprime sur une facture : une facture
+   * porte le SIRET de l'établissement émetteur, pas le SIREN de l'entité.
+   */
+  siret: string | null;
   formeJuridique: string | null;
   adresse: string | null;
   ville: string | null;
@@ -44,6 +53,7 @@ interface ResultatBrut {
   siren?: string;
   nature_juridique?: string | null;
   siege?: {
+    siret?: string | null;
     adresse?: string | null;
     libelle_commune?: string | null;
     code_postal?: string | null;
@@ -94,10 +104,22 @@ export class StructuresService {
     const texte = (q ?? '').trim();
     if (texte.length < 3) {
       throw new BadRequestException(
-        'Indiquez au moins trois caractères : un nom ou un numéro SIREN.',
+        'Indiquez au moins trois caractères : un nom, un SIREN ou un SIRET.',
       );
     }
-    const params = new URLSearchParams({ q: texte, per_page: '10', page: '1' });
+    /**
+     * ⚠ UN SIRET SE CHERCHE PAR SES NEUF PREMIERS CHIFFRES.
+     *
+     * L'annuaire indexe les entités légales par SIREN ; interrogé avec les
+     * quatorze chiffres d'un SIRET, il ne rend rien. Or c'est le SIRET que les
+     * gens ont sous la main — il est sur leur avis de situation, sur leurs
+     * factures, et c'est celui qu'on leur demande partout ailleurs. On le
+     * réduit donc ici plutôt que de leur répondre « aucun résultat ».
+     */
+    const recherche = SIRET.test(texte.replace(/\s+/g, ''))
+      ? texte.replace(/\s+/g, '').slice(0, 9)
+      : texte;
+    const params = new URLSearchParams({ q: recherche, per_page: '10', page: '1' });
     const brut = await this.appeler<{ results?: ResultatBrut[] }>(
       `${API_RECHERCHE}?${params.toString()}`,
     );
@@ -114,6 +136,7 @@ export class StructuresService {
       nom,
       sigle: r.sigle?.trim() || null,
       siren: r.siren,
+      siret: r.siege?.siret?.trim() || null,
       formeJuridique: LIBELLES_NATURE[nature] ?? (nature || null),
       adresse: r.siege?.adresse?.trim() || null,
       ville: r.siege?.libelle_commune?.trim() || null,
@@ -137,6 +160,7 @@ export class StructuresService {
           { nom: { contains: texte, mode: 'insensitive' } },
           { nomNormalise: { contains: normaliserNom(texte) } },
           { siren: texte.replace(/\s+/g, '') },
+          { siret: texte.replace(/\s+/g, '') },
         ],
       },
       take: 10,
@@ -154,6 +178,7 @@ export class StructuresService {
   async trouverOuCreer(entree: {
     nom: string;
     siren?: string | null;
+    siret?: string | null;
     formeJuridique?: string | null;
     adresse?: string | null;
     ville?: string | null;
@@ -164,14 +189,38 @@ export class StructuresService {
     if (nom.length < 2) {
       throw new BadRequestException('Le nom de la structure est trop court.');
     }
-    const siren = (entree.siren ?? '').replace(/\s+/g, '') || null;
+    const siret = (entree.siret ?? '').replace(/\s+/g, '') || null;
+    if (siret && !SIRET.test(siret)) {
+      throw new BadRequestException('Un numéro SIRET compte exactement quatorze chiffres.');
+    }
+    /**
+     * ⚠ LE SIREN SE DÉDUIT DU SIRET, ET C'EST VOULU.
+     *
+     * Les gens ont leur SIRET sous la main, pas leur SIREN : il est sur l'avis
+     * de situation, sur les factures, et c'est celui qu'on leur demande
+     * partout. Les neuf premiers chiffres d'un SIRET SONT le SIREN — le
+     * déduire évite de faire saisir deux numéros dont l'un est contenu dans
+     * l'autre, et de les voir se contredire.
+     */
+    const siren =
+      ((entree.siren ?? '').replace(/\s+/g, '') || siret?.slice(0, 9)) || null;
     if (siren && !/^\d{9}$/.test(siren)) {
       throw new BadRequestException('Un numéro SIREN compte exactement neuf chiffres.');
     }
 
     if (siren) {
       const parSiren = await this.prisma.structure.findUnique({ where: { siren } });
-      if (parSiren) return parSiren;
+      if (parSiren) {
+        // Même logique que pour le SIREN plus bas : on complète ce qui manque
+        // plutôt que de laisser une fiche à moitié vide.
+        if (siret && !parSiren.siret) {
+          return this.prisma.structure.update({
+            where: { id: parSiren.id },
+            data: { siret },
+          });
+        }
+        return parSiren;
+      }
     }
 
     const nomNormalise = normaliserNom(nom);
@@ -182,10 +231,14 @@ export class StructuresService {
     if (parNom) {
       // Une structure trouvée par son nom et à qui il manque son SIREN gagne
       // celui qu'on vient d'apporter : on complète, on ne duplique pas.
-      if (siren && !parNom.siren) {
+      if ((siren && !parNom.siren) || (siret && !parNom.siret)) {
         return this.prisma.structure.update({
           where: { id: parNom.id },
-          data: { siren, verifiee: entree.verifiee ?? parNom.verifiee },
+          data: {
+            ...(siren && !parNom.siren ? { siren } : {}),
+            ...(siret && !parNom.siret ? { siret } : {}),
+            verifiee: entree.verifiee ?? parNom.verifiee,
+          },
         });
       }
       return parNom;
@@ -196,6 +249,7 @@ export class StructuresService {
         nom,
         nomNormalise,
         siren,
+        siret,
         formeJuridique: entree.formeJuridique ?? null,
         adresse: entree.adresse ?? null,
         ville: entree.ville ?? null,
@@ -212,6 +266,7 @@ export class StructuresService {
       structureId?: string;
       nom?: string;
       siren?: string;
+      siret?: string;
       formeJuridique?: string;
       adresse?: string;
       ville?: string;
@@ -230,6 +285,7 @@ export class StructuresService {
       const structure = await this.trouverOuCreer({
         nom: dto.nom,
         siren: dto.siren,
+        siret: dto.siret,
         formeJuridique: dto.formeJuridique,
         adresse: dto.adresse,
         ville: dto.ville,
@@ -242,12 +298,33 @@ export class StructuresService {
       if (!existe) throw new NotFoundException('Structure introuvable.');
     }
 
+    /**
+     * ⚠ LE SIRET DESCEND SUR LE COMPTE, ET IL NE L'ÉCRASE JAMAIS.
+     *
+     * C'est `Account.siret` qui s'imprime sur les factures, les devis et les
+     * contrats — pas celui de la structure. Un intervenant qui vient de
+     * déclarer sa structure n'aurait sinon toujours rien sur ses documents,
+     * et aurait à ressaisir le même numéro dans ses paramètres.
+     *
+     * On ne remplit que le vide : un compte qui portait déjà un SIRET l'a
+     * reçu de quelqu'un qui l'a tapé, et une saisie humaine ne se corrige pas
+     * toute seule au détour d'un rattachement.
+     */
+    const structure = await this.prisma.structure.findUnique({ where: { id: structureId } });
+    const compte = await this.prisma.account.findUnique({
+      where: { id: account.id },
+      select: { siret: true },
+    });
+    const siretADescendre =
+      structure?.siret && !compte?.siret?.trim() ? structure.siret : undefined;
+
     return this.prisma.account.update({
       where: { id: account.id },
-      data: { structureId },
+      data: { structureId, ...(siretADescendre ? { siret: siretADescendre } : {}) },
       select: {
         id: true,
         name: true,
+        siret: true,
         structure: true,
       },
     });

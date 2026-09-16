@@ -25,12 +25,23 @@ import {
 import { CarteChoix } from './CarteChoix';
 import { CHOIX_COMPTE, PARCOURS, type CleCompte, type CleEtape } from './parcours';
 import { Progression } from './Progression';
-import { EtapeLieuDeTravail, EtapePoste, LIEU_VIDE, type LieuDeTravail } from './Etapes';
+import {
+  EtapeActivites,
+  EtapeDisponibilite,
+  EtapeLieuDeTravail,
+  EtapePoste,
+  EtapeStructure,
+  LIEU_VIDE,
+  type LieuDeTravail,
+} from './Etapes';
 
 /**
  * L'INSCRIPTION, EN ÉTAPES.
  *
- * Ordre : votre situation → vos identifiants → où vous travaillez → votre poste.
+ * Ordre, selon le compte :
+ *   établissement → situation, identifiants, où vous travaillez, votre poste
+ *   intervenant   → situation, identifiants, votre structure, ce que vous faites
+ *   particulier   → situation, identifiants, ce que vous cherchez
  *
  * ⚠⚠ LA SITUATION VIENT AVANT LES IDENTIFIANTS, ET C'EST CE QUI PERMET DE CRÉER
  * LE COMPTE JUSTE DU PREMIER COUP.
@@ -193,7 +204,16 @@ export default function RegisterPage() {
         router.refresh();
         return;
       }
+      /**
+       * ⚠ CHAQUE TYPE DE COMPTE A SA SUITE, ET AUCUNE N'EST BLOQUANTE.
+       * Un intervenant déclare sa structure puis ce qu'il vient faire ; un
+       * particulier dit s'il vient réserver, se rendre disponible, ou les deux.
+       * Toutes ces étapes se repassent depuis l'espace — le compte, lui, est
+       * déjà créé et complet.
+       */
       if (typeChoisi === 'ESTABLISHMENT') allerA('etablissement');
+      else if (typeChoisi === 'FREELANCE') allerA('structure');
+      else if (typeChoisi === 'PARTICULIER') allerA('disponibilite');
       else terminer();
     } catch (err) {
       toast({
@@ -588,6 +608,53 @@ export default function RegisterPage() {
               <ArrowLeft />
               Retour
             </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={terminer}>
+              Je le ferai plus tard
+            </Button>
+          </div>
+        </>
+      )}
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Intervenant indépendant — étape 3 : sa structure                   */}
+      {/* ---------------------------------------------------------------- */}
+      {etape === 'structure' && (
+        <>
+          <EtapeStructure onFait={() => allerA('activites')} />
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <span />
+            <Button type="button" variant="ghost" size="sm" onClick={terminer}>
+              Je le ferai plus tard
+            </Button>
+          </div>
+        </>
+      )}
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Intervenant indépendant — étape 4 : ce qu'il vient faire           */}
+      {/* ---------------------------------------------------------------- */}
+      {etape === 'activites' && (
+        <>
+          <EtapeActivites onFait={terminer} />
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => allerA('structure')}>
+              <ArrowLeft />
+              Retour
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={terminer}>
+              Je le ferai plus tard
+            </Button>
+          </div>
+        </>
+      )}
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Particulier — étape 3 : ce qu'il vient chercher                    */}
+      {/* ---------------------------------------------------------------- */}
+      {etape === 'disponibilite' && (
+        <>
+          <EtapeDisponibilite onFait={terminer} />
+          <div className="mt-3 flex items-center justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={terminer}>
               Je le ferai plus tard
             </Button>

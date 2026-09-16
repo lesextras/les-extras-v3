@@ -30,6 +30,17 @@ export class RattacherStructureDto {
   @Matches(/^\d{9}$/, { message: 'Un numéro SIREN compte exactement neuf chiffres.' })
   siren?: string;
 
+  /**
+   * ⚠ C'EST CE NUMÉRO-LÀ QUE LES GENS ONT SOUS LA MAIN, pas le SIREN : il est
+   * sur l'avis de situation, sur les factures, et c'est celui qu'on leur
+   * demande partout ailleurs. Le service en déduit le SIREN (ses neuf premiers
+   * chiffres), plutôt que de faire saisir deux numéros dont l'un contient
+   * l'autre — et qui finiraient par se contredire.
+   */
+  @IsOptional()
+  @Matches(/^\d{14}$/, { message: 'Un numéro SIRET compte exactement quatorze chiffres.' })
+  siret?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(120)

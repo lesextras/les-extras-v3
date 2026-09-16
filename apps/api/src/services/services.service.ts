@@ -62,6 +62,9 @@ export class ServicesService {
         categoryId: dto.categoryId ?? undefined,
         duration: dto.duration,
         durationMinutes: dto.durationMinutes,
+        // Absent, le défaut du schéma vaut COLLECTIF : c'est ce qu'étaient
+        // toutes les fiches avant que le renfort personnalisé existe.
+        format: dto.format ?? undefined,
         maxParticipants: dto.maxParticipants,
         publicTarget: dto.publicTarget,
         publicTargets: dto.publicTargets ?? [],

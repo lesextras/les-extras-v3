@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { BookingStatus, CibleDiffusion, MissionVisibility } from '@prisma/client';
+import { BookingStatus, CibleDiffusion, Interet, MissionVisibility } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -224,6 +224,9 @@ export class CiblageService {
    *  3. le garde-fou juridique : un salarié ne se facture pas en indépendant
    *     à son propre employeur — c'est du travail dissimulé, et la plateforme
    *     ne doit pas en être l'instrument.
+   *  4. le montage : une mission de renfort est un REMPLACEMENT DE POSTE, elle
+   *     se conclut en CDD. Qui a déclaré ne pas vouloir de CDD n'a rien à y
+   *     faire.
    *
    * Toute nouvelle voie de réponse doit appeler CETTE méthode. Ne recopiez
    * pas les contrôles ailleurs : c'est précisément la recopie incomplète qui
@@ -236,8 +239,32 @@ export class CiblageService {
     // que le premier palier a besoin de savoir s'il s'agit d'un salarié maison.
     const compte = await this.prisma.account.findUnique({
       where: { id: accountId },
-      select: { ownerId: true, profilSalarie: true },
+      select: { ownerId: true, profilSalarie: true, interets: true },
     });
+
+    /**
+     * ⚠ LE BESOIN CHOISIT LE MONTAGE, PAS LA PERSONNE.
+     *
+     * Une `ReliefMission` est un remplacement : quelqu'un manque sur un poste,
+     * et cela ne se couvre qu'en CDD salarié (CE 11/02/2025, n° 491128 ;
+     * LFSS 2025, art. 70). Intervenir EN PLUS, sur un besoin nommé, est une
+     * autre chose — le « renfort personnalisé » — et cela passe par une fiche,
+     * un devis et un contrat de prestation, pas par ici.
+     *
+     * Quelqu'un qui a déclaré vouloir seulement du renfort personnalisé est
+     * donc refusé sur cette voie, et le message lui dit par où passer.
+     *
+     * ⚠ UNE LISTE VIDE NE REFUSE RIEN, ET C'EST ESSENTIEL. Tous les comptes
+     * créés avant les centres d'intérêt l'ont vide : refuser sur une absence
+     * de déclaration fermerait RenforTeam à tout le monde du jour au
+     * lendemain. On ne restreint que sur un choix explicitement fait.
+     */
+    const interets = compte?.interets ?? [];
+    if (interets.length > 0 && !interets.includes(Interet.RENFORT_CDD)) {
+      throw new BadRequestException(
+        'Un renfort se conclut en CDD avec l’établissement. Pour y répondre, cochez « être contacté pour des remplacements en CDD » dans votre espace — ou proposez un renfort personnalisé, qui se facture par votre structure.',
+      );
+    }
     const salarieMaison = compte?.ownerId
       ? await this.prisma.membership.findFirst({
           where: { accountId: mission.accountId, userId: compte.ownerId },

@@ -18,12 +18,40 @@ import type { ChoixCompte } from './CarteChoix';
  * puis une question à laquelle chacun sait répondre parce qu'elle porte sur son
  * métier et pas sur une catégorie de logiciel.
  */
+/**
+ * CE QUE PORTE CHAQUE CARTE, ET POURQUOI — quatre champs, quatre rôles.
+ *
+ * Les trois cartes se ressemblaient trait pour trait : même bordure grise,
+ * même pastille rose, titre en petits caractères à la taille de l'accroche
+ * grise. Rien ne ressortait, et il fallait les lire en entier pour savoir
+ * laquelle était la sienne.
+ *
+ *   `categorie` — l'étiquette qu'on repère SANS lire, du coin de l'œil.
+ *   `titre`     — la phrase à la première personne, en gros : on s'y reconnaît.
+ *   `accroche`  — les métiers, pour lever le doute qui reste.
+ *   `benefice`  — POURQUOI on ouvrirait ce compte. Une phrase, et c'est la
+ *                 seule qui parle de ce qu'on gagne. Elle est sur le RECTO :
+ *                 le verso ne se lit qu'au survol, c'est-à-dire jamais sur un
+ *                 téléphone et jamais avant d'avoir décidé.
+ *
+ * ⚠ `categorie` NE RÉPÈTE PAS `titre`. Les deux disent la même chose de deux
+ * façons volontairement différentes — un mot qu'on repère, une phrase qu'on
+ * lit. Y recopier le titre supprimerait tout l'intérêt de la pastille.
+ *
+ * ⚠ CHAQUE CARTE A SA TEINTE, et c'est le contour qui la porte. Trois portes
+ * vers trois produits différents ne doivent pas se ressembler. Les teintes
+ * viennent de la palette du site — voir `TEINTES` dans CarteChoix.tsx, qui
+ * explique pourquoi on n'en invente pas une quatrième.
+ */
 export const CHOIX_COMPTE: (ChoixCompte & { key: CleCompte })[] = [
   {
     key: 'ESTABLISHMENT',
     icon: Building2,
+    teinte: 'framboise',
+    categorie: 'Établissement',
     titre: 'Je travaille en établissement',
-    accroche: 'Direction, chef de service, coordinateur, salarié.',
+    accroche: 'Direction, chef de service, coordinateur ou salarié.',
+    benefice: 'Trouver un remplaçant ou un atelier en quelques heures, sans commission.',
     // ⚠ Le verso est contraint par la hauteur de la carte : ces textes tiennent
     // en trois lignes, pas plus. Les rallonger les fait couper au survol.
     detail:
@@ -38,22 +66,32 @@ export const CHOIX_COMPTE: (ChoixCompte & { key: CleCompte })[] = [
   {
     key: 'FREELANCE',
     icon: UserRound,
+    teinte: 'terracotta',
+    categorie: 'Professionnel',
     titre: 'Je suis intervenant indépendant',
-    accroche: 'Éducateur, moniteur, thérapeute, formateur.',
+    accroche: 'Éducateur, moniteur, thérapeute, formateur, à mon compte.',
+    benefice: 'Être trouvé par les établissements, et éditer vos devis et factures ici.',
     detail:
-      'Vous proposez vos ateliers à votre compte : fiches publiées, demandes de ' +
-      'devis reçues, documents édités ici.',
+      'Vous proposez vos ateliers, vos formations et vos renforts personnalisés ' +
+      'à votre compte, et vous facturez par votre structure.',
     points: ['Publication au catalogue', '0 % de commission', 'Devis et factures édités'],
   },
   {
     key: 'PARTICULIER',
     icon: Heart,
-    titre: 'Je suis parent ou particulier',
+    teinte: 'vert',
+    categorie: 'Particulier',
+    titre: 'Je suis un particulier',
     accroche: 'Pour mon enfant, mon proche, ou moi-même.',
+    benefice: 'Inscrire un proche à un atelier, ou se rendre disponible près de chez soi.',
     detail:
-      'Vous réservez pour votre enfant ou votre proche, suivez vos inscriptions ' +
-      'et retrouvez vos factures. Aucune sollicitation professionnelle.',
-    points: ['Réservation d’ateliers', 'Inscription aux formations', 'Aucune publication'],
+      'Vous réservez pour un proche — et vous pouvez aussi proposer vos ' +
+      'disponibilités pour des remplacements en CDD dans un établissement.',
+    points: [
+      'Réservation d’ateliers',
+      'Inscription aux formations',
+      'Remplacements en CDD, si vous le souhaitez',
+    ],
   },
 ];
 
@@ -65,7 +103,14 @@ export const CHOIX_COMPTE: (ChoixCompte & { key: CleCompte })[] = [
 export type CleCompte = 'ESTABLISHMENT' | 'FREELANCE' | 'PARTICULIER';
 
 /** Les étapes du parcours, dans l'ordre. */
-export type CleEtape = 'profil' | 'etablissement' | 'identite' | 'poste';
+export type CleEtape =
+  | 'profil'
+  | 'identite'
+  | 'etablissement'
+  | 'poste'
+  | 'structure'
+  | 'activites'
+  | 'disponibilite';
 
 export interface Etape {
   cle: CleEtape;
@@ -133,6 +178,50 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
         'Ce que vous faites, et ce que vous pouvez engager pour votre établissement. C’est cette déclaration qui décide de ce que vous voyez et de ce que vous pouvez faire.',
     },
   ],
-  FREELANCE: [ETAPE_PROFIL, ETAPE_IDENTITE],
-  PARTICULIER: [ETAPE_PROFIL, ETAPE_IDENTITE],
+  /**
+   * ⚠ LA STRUCTURE JURIDIQUE EST FACULTATIVE ICI, ET EXIGÉE POUR PUBLIER.
+   *
+   * Un intervenant qui vient regarder, répondre à un message ou préparer une
+   * fiche n'a besoin d'aucun numéro. Mais publier une fiche, c'est proposer une
+   * prestation facturée : là, la structure qui émettra la facture doit exister.
+   * Le refus est donc posé à la publication (`StructureRequisePourPublierGuard`
+   * côté API), jamais à l'inscription — on ferme la porte de la publication, on
+   * ne mure pas la création de compte.
+   */
+  FREELANCE: [
+    ETAPE_PROFIL,
+    ETAPE_IDENTITE,
+    {
+      cle: 'structure',
+      titre: 'Votre structure',
+      explication:
+        'Ce qui facturera vos interventions. Facultatif pour entrer, nécessaire pour publier une fiche — et vous pouvez le compléter plus tard.',
+    },
+    {
+      cle: 'activites',
+      titre: 'Ce que vous voulez faire',
+      explication:
+        'Ce que vous cochez décide de ce que vous verrez : les demandes qui vous arrivent, les alertes, et les rubriques de votre espace.',
+    },
+  ],
+  /**
+   * ⚠ LE COMPTE PARTICULIER N'EST PLUS SEULEMENT CELUI D'UN PARENT.
+   *
+   * Il ouvre aussi la porte à quelqu'un qui veut faire des remplacements en
+   * établissement — étudiant, professionnel entre deux postes, retraité du
+   * secteur. C'est le chemin le plus propre juridiquement : un remplacement se
+   * fait en CDD, donc en salarié, donc sans structure ni SIRET à fournir.
+   *
+   * Et c'est ce qui manque le plus au renfort : des bras, pas des demandes.
+   */
+  PARTICULIER: [
+    ETAPE_PROFIL,
+    ETAPE_IDENTITE,
+    {
+      cle: 'disponibilite',
+      titre: 'Ce que vous cherchez',
+      explication:
+        'Réserver pour un proche, proposer vos disponibilités pour des remplacements, ou les deux. Rien n’est définitif : tout se change depuis votre espace.',
+    },
+  ],
 };
