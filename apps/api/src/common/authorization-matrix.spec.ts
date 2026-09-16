@@ -59,9 +59,28 @@ describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
     it('lister les membres : tout membre actif', () => {
       expect(rolesOf(MembershipsController, 'list')).toBeUndefined();
     });
-    it('inviter / renvoyer / révoquer : Direction + Administrateur', () => {
+    /**
+     * ⚠ LE GARDE DE RÔLE A ÉTÉ RETIRÉ DES INVITATIONS LE 16/09/2026, ET
+     * L'ABSENCE DE MÉTADONNÉE EST ICI LE COMPORTEMENT ATTENDU.
+     *
+     * Il exigeait OWNER ou ADMIN, c'est-à-dire la direction. Un chef de service
+     * arrivé seul — le cas que ce produit doit servir en priorité — ne pouvait
+     * donc inviter personne tant que sa direction n'avait pas ouvert de compte.
+     * Il n'avait rien à faire sur la plateforme.
+     *
+     * Le droit d'inviter est devenu une CAPACITÉ (`Capacite.INVITER_MEMBRES`),
+     * vérifiée dans `InvitationsService`, où l'on sait aussi rabattre le niveau,
+     * les droits et les services à ce que l'invitant détient réellement. Un
+     * garde de rôle ne sait rien faire de tout cela : il aurait laissé passer un
+     * ADMIN invitant hors de son périmètre, et refusé un responsable invitant
+     * dans le sien. Les règles sont couvertes par `common/perimetre.spec.ts`.
+     *
+     * NE PAS « RÉPARER » CE TEST en remettant @AccountRoles sur le contrôleur :
+     * cela refermerait la porte sur les premiers utilisateurs du produit.
+     */
+    it('inviter / renvoyer / révoquer : plus de garde de rôle — c’est une capacité', () => {
       for (const m of ['create', 'resend', 'revoke', 'list']) {
-        expect(rolesOf(InvitationsController, m)).toEqual(ADMINS);
+        expect(rolesOf(InvitationsController, m)).toBeUndefined();
       }
     });
     it('accepter une invitation : tout utilisateur connecté', () => {

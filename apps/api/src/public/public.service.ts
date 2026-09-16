@@ -1321,4 +1321,34 @@ export class PublicService {
       palier,
     };
   }
+
+  /**
+   * LES ÉTABLISSEMENTS DÉJÀ DÉCLARÉS, pour le parcours d'inscription.
+   *
+   * ⚠ ORGANISATIONS SEULEMENT. Nom, ville, structure de rattachement : rien
+   * qui désigne une personne, aucun effectif, aucune adresse de contact.
+   * Ajouter un seul de ces champs changerait la nature de la route — d'un
+   * annuaire d'organisations à un fichier de prospection.
+   */
+  async rechercherEtablissements(q: string) {
+    const texte = (q ?? '').trim();
+    if (texte.length < 2) return [];
+    return this.prisma.account.findMany({
+      where: {
+        type: 'ESTABLISHMENT',
+        OR: [
+          { name: { contains: texte, mode: 'insensitive' } },
+          { legalName: { contains: texte, mode: 'insensitive' } },
+        ],
+      },
+      take: 10,
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        structure: { select: { id: true, nom: true } },
+      },
+    });
+  }
 }

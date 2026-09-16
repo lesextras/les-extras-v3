@@ -64,6 +64,24 @@ export const REGLES: Record<FileKind, RegleFamille> = {
     types: ['image/jpeg', 'image/png', 'image/webp'],
     libelle: "photo d'atelier",
   },
+  MESSAGE: {
+    // PIÈCE JOINTE D'UN FIL DE DISCUSSION.
+    //
+    // ⚠ JAMAIS PUBLIQUE — elle n'est pas dans `FAMILLES_PUBLIQUES` et ne doit
+    // pas y entrer. Un fil du médico-social peut porter un compte rendu, une
+    // photo d'atelier prise dans un établissement, un planning nominatif :
+    // l'accès se vérifie fil par fil, participant par participant.
+    tailleMax: 10 * Mo,
+    types: [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      DOCX,
+      'text/plain',
+    ],
+    libelle: 'pièce jointe de message',
+  },
   TRAME: {
     tailleMax: 10 * Mo,
     // Un modèle d'écrit est un document, jamais une image : accepter un scan

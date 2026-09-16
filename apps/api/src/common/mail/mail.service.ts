@@ -1077,6 +1077,33 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * NOUVEAU MESSAGE DANS UN FIL DE DISCUSSION.
+   *
+   * ⚠ LE CONTENU DU MESSAGE NE PART JAMAIS PAR COURRIEL, et ce n'est pas un
+   * oubli d'ergonomie. Un fil du médico-social peut porter le nom d'un jeune,
+   * une situation, un compte rendu ; le courriel traverse des serveurs qu'on ne
+   * maîtrise pas, atterrit dans des boîtes partagées et reste indexé des années.
+   * Le message dit QU'IL Y A un message, QUI l'a écrit, et où le lire. C'est
+   * exactement ce qu'il faut pour revenir, et rien de plus.
+   */
+  async sendNouveauMessage(
+    to: string,
+    data: { auteur: string; conversationId: string; prenom?: string | null },
+  ): Promise<void> {
+    const url = `${this.webUrl}/dashboard/inbox?c=${encodeURIComponent(data.conversationId)}`;
+    await this.send(
+      to,
+      `${data.auteur} vous a écrit sur LES EXTRAS`,
+      this.layout(
+        'Vous avez un nouveau message',
+        `${data.prenom ? `Bonjour ${data.prenom}, ` : ''}<b>${data.auteur}</b> vous a écrit sur LES EXTRAS. ` +
+          `Le message est lisible dans votre espace — il ne figure pas dans ce courriel.`,
+        { label: 'Ouvrir la conversation', url },
+      ),
+    );
+  }
+
+  /**
    * LE CODE DE SIGNATURE.
    *
    * Le code voyage par un canal distinct de celui où l'on signe : c'est ce

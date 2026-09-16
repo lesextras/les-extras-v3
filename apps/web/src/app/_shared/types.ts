@@ -247,14 +247,45 @@ export interface Booking {
   createdAt: string;
 }
 
+export type TypeConversation =
+  | 'MISSION'
+  | 'INTERNE'
+  | 'SERVICE'
+  | 'INTERVENANT'
+  | 'SUPPORT';
+
 export interface Conversation {
   id: string;
+  /** Un fil porte toujours son contexte — voir `conversations.service.ts`. */
+  type?: TypeConversation;
+  /** Titre calculé côté serveur : sujet, sinon nom du contexte. */
+  titre?: string;
+  sujet?: string | null;
   missionId?: string | null;
   mission?: Mission | null;
+  orgUnit?: { id: string; name: string } | null;
+  account?: { id: string; name: string } | null;
+  quote?: { id: string; status: string } | null;
+  booking?: { id: string; status: string } | null;
+  fermee?: boolean;
+  dernierMessageAt?: string | null;
   participants?: PublicUser[];
   lastMessage?: Message | null;
   unreadCount?: number;
+  /** Phrase affichée en tête de fil (données d'usagers). */
+  avertissement?: string;
+  /**
+   * Faux dans un fil avec un intervenant tant que la demande n'est pas
+   * confirmée : les coordonnées sont alors retirées des messages.
+   */
+  coordonneesOuvertes?: boolean;
+  explicationMasquage?: string | null;
   updatedAt: string;
+}
+
+export interface PieceMessage {
+  id: string;
+  fileAsset: { id: string; originalName: string; mimeType: string; size: number };
 }
 
 export interface Message {
@@ -263,6 +294,12 @@ export interface Message {
   senderId: string;
   sender?: PublicUser | null;
   body: string;
+  /** SYSTEME : écrit par la plateforme (arrivée d'un participant, fil clos). */
+  type?: 'TEXTE' | 'SYSTEME';
+  coordonneesMasquees?: boolean;
+  modifieLe?: string | null;
+  supprimeLe?: string | null;
+  pieces?: PieceMessage[];
   readAt?: string | null;
   createdAt: string;
 }
