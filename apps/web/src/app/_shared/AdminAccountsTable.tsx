@@ -27,6 +27,28 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { EmptyState } from "./ui";
+import { formatDate } from "./format";
+
+/**
+ * L'échéance, calculée à l'identique de `common/suppression-compte.ts` côté
+ * serveur : trois mois de calendrier, avec le dernier jour du mois quand le
+ * quantième n'existe pas (31 novembre).
+ *
+ * ⚠ CE CALCUL NE FAIT PAS FOI, c'est le serveur qui pose la date. Il ne sert
+ * qu'à annoncer l'échéance AVANT le clic — sans elle, « trois mois » oblige la
+ * personne à faire le calcul elle-même au moment de décider.
+ */
+function dansTroisMois(depuis = new Date()): Date {
+  const cible = new Date(depuis.getTime());
+  const jour = cible.getDate();
+  cible.setDate(1);
+  cible.setMonth(cible.getMonth() + 3);
+  const dernier = new Date(cible.getFullYear(), cible.getMonth() + 1, 0).getDate();
+  cible.setDate(Math.min(jour, dernier));
+  return cible;
+}
+
+const dateFr = (d: Date) => formatDate(d);
 
 export interface AdminMembership {
   id: string;
@@ -53,6 +75,10 @@ export interface AdminAccount {
    * il a quitté les recherches, l'annuaire, la vitrine et la marketplace.
    */
   archivedAt?: string | null;
+  /** Date de la suppression réelle. Nulle = aucune suppression programmée. */
+  suppressionPrevueLe?: string | null;
+  /** Ce qui a empêché le planificateur de supprimer, écrit par lui. */
+  suppressionMotifBlocage?: string | null;
   owner?: { email?: string; firstName?: string | null; lastName?: string | null } | null;
   memberships?: AdminMembership[];
   _count?: { memberships?: number; reliefMissions?: number; services?: number; bookings?: number };
@@ -127,16 +153,22 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
   }
 
   /**
-   * ARCHIVER — LA SORTIE À PROPOSER AVANT LA SUPPRESSION.
+   * ARCHIVER / RÉTABLIR.
    *
-   * ⚠ Le bouton rouge juste à côté fait un `account.delete` EN CASCADE :
-   * rattachements, fiches, missions, réservations et FACTURES. Une facture
-   * émise ne se supprime pas (art. 242 nonies A, ann. II du CGI). Archiver
-   * répond à la vraie demande — « je ne veux plus voir ce compte » — sans rien
-   * détruire, et se défait d'un clic.
+   * Archiver répond à « je ne veux plus voir ce compte » : il quitte les
+   * recherches, l'annuaire, la vitrine et la place de marché, rien n'est
+   * détruit, et ça se défait d'un clic. Sans échéance : un compte simplement
+   * archivé reste indéfiniment — c'est le cas des comptes de test et des
+   * doublons.
+   *
+   * ⚠⚠ RÉTABLIR ANNULE AUSSI LA SUPPRESSION PROGRAMMÉE, et le message doit le
+   * dire quand il y en avait une. Quelqu'un qui rétablit un compte sans le
+   * savoir croirait l'avoir sauvé et le perdrait quand même à l'échéance ;
+   * l'inverse — croire qu'il reste condamné — fait recommencer la manœuvre.
    */
   async function basculerArchive(a: AdminAccount) {
     const archive = !a.archivedAt;
+    const avaitEcheance = Boolean(a.suppressionPrevueLe);
     setBusy(a.id);
     try {
       await apiRequest(`/admin/accounts/${a.id}/archiver`, {
@@ -147,7 +179,9 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
         title: archive ? `« ${a.name} » archivé` : `« ${a.name} » rétabli`,
         description: archive
           ? "Il ne s’affiche plus dans les recherches ni sur le site public. Rien n’est supprimé."
-          : "Il réapparaît dans les recherches et sur le site public.",
+          : avaitEcheance
+            ? "Il réapparaît partout, et sa suppression programmée est annulée."
+            : "Il réapparaît dans les recherches et sur le site public.",
         variant: "success",
       });
       router.refresh();
@@ -162,23 +196,42 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
     }
   }
 
-  async function remove(id: string) {
-    // ⚠ L'AVERTISSEMENT NOMME LES FACTURES, et il doit continuer à le faire :
-    // c'est la conséquence que personne n'a en tête en cliquant, et la seule
-    // qui ne se rattrape pas.
+  /**
+   * SUPPRIMER, C'EST ARCHIVER TROIS MOIS — décision de Siham, 16/09/2026.
+   *
+   * ⚠⚠ RIEN N'EST DÉTRUIT AU MOMENT DU CLIC, et l'avertissement doit le dire.
+   * Il annonçait une destruction immédiate en cascade, factures comprises : la
+   * phrase était exacte à l'époque, elle serait fausse aujourd'hui — et un
+   * avertissement plus effrayant que la réalité fait renoncer à un geste devenu
+   * sûr, ou pire, cesser d'être lu.
+   *
+   * ⚠ LA DATE EST ANNONCÉE AVANT LE CLIC. « Trois mois » sans date oblige à
+   * faire le calcul soi-même, et c'est exactement l'information dont on a
+   * besoin pour décider : jusqu'à quand peut-on revenir en arrière.
+   */
+  async function remove(a: AdminAccount) {
+    const echeance = dateFr(dansTroisMois());
     if (
       !window.confirm(
-        "Supprimer DÉFINITIVEMENT ce compte ? Ses rattachements, ses fiches, ses missions, ses réservations ET SES FACTURES seront détruits avec lui. Une facture émise ne se supprime pas légalement : préférez « Archiver », qui le retire de la vue sans rien effacer.",
+        `Supprimer « ${a.name} » ?\n\n` +
+          `Le compte est archivé immédiatement : il disparaît des recherches, de l’annuaire, de la vitrine et de la place de marché. ` +
+          `Rien n’est détruit aujourd’hui.\n\n` +
+          `Sa suppression réelle est programmée au ${echeance}. Jusque-là, « Rétablir » annule tout et le compte revient comme il était.\n\n` +
+          `S’il a émis une facture ou signé un contrat de travail, il ne sera pas supprimé à cette date : la loi impose de les conserver. L’écran vous dira alors pourquoi.`,
       )
     )
       return;
-    setBusy(id);
+    setBusy(a.id);
     try {
-      await apiRequest(`/admin/accounts/${id}`, { method: "DELETE" });
-      toast({ title: "Compte supprimé" });
+      await apiRequest(`/admin/accounts/${a.id}`, { method: "DELETE" });
+      toast({
+        title: `« ${a.name} » archivé`,
+        description: `Suppression programmée le ${echeance}. Vous pouvez le rétablir jusque-là.`,
+        variant: "success",
+      });
       router.refresh();
     } catch (err) {
-      toast({ title: "Suppression impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
+      toast({ title: "Action impossible", description: err instanceof Error ? err.message : undefined, variant: "error" });
     } finally {
       setBusy(null);
     }
@@ -325,6 +378,27 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                                 Archivé
                               </Badge>
                             ) : null}
+                            {/*
+                              ⚠ L'ÉCHÉANCE SE VOIT DANS LA LISTE, PAS AILLEURS.
+                              Un compte qui va être détruit dans trois mois et un
+                              compte simplement rangé se ressemblent trait pour
+                              trait : sans cette pastille, on ne distingue pas
+                              celui qu'il faut rétablir avant qu'il ne soit trop
+                              tard de celui qu'on a volontairement mis de côté.
+                            */}
+                            {a.suppressionPrevueLe && !a.suppressionMotifBlocage ? (
+                              <Badge variant="outline" className="border-destructive/50 text-destructive">
+                                Suppression le {formatDate(a.suppressionPrevueLe)}
+                              </Badge>
+                            ) : null}
+                            {/* Le planificateur a refusé : on affiche SA phrase,
+                                pas une reformulation. C'est elle qui dit ce que
+                                la loi impose de garder. */}
+                            {a.suppressionMotifBlocage ? (
+                              <Badge variant="outline" className="border-warning/50 text-warning" title={a.suppressionMotifBlocage}>
+                                Suppression bloquée
+                              </Badge>
+                            ) : null}
                           </div>
                           <p className="truncate text-xs text-muted-foreground">
                             {[a.city, a.owner?.email].filter(Boolean).join(" · ") || ", "}
@@ -333,6 +407,19 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                             {a._count?.reliefMissions ?? 0} mission(s) · {a._count?.services ?? 0} atelier(s) ·{" "}
                             {a.isMember ? "LEX illimité" : `${a.credits ?? 0} crédit(s) LEX`}
                           </p>
+                          {/*
+                            ⚠ LA PHRASE DU PLANIFICATEUR, EN ENTIER ET TELLE
+                            QUELLE. Une pastille « Suppression bloquée » sans son
+                            motif laisse croire à une panne, et quelqu'un
+                            finirait par chercher comment forcer. Ce qu'elle dit
+                            — trois factures émises, un contrat de travail — est
+                            précisément ce que la loi impose de garder.
+                          */}
+                          {a.suppressionMotifBlocage ? (
+                            <p className="mt-1.5 rounded-md border border-warning/40 bg-warning/5 px-2.5 py-1.5 text-xs leading-relaxed text-warning">
+                              {a.suppressionMotifBlocage}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -372,7 +459,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                         >
                           {a.archivedAt ? "Rétablir" : "Archiver"}
                         </Button>
-                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>
+                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a)}>Supprimer</Button>
                       </div>
                     </div>
 

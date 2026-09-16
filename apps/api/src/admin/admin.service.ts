@@ -22,6 +22,7 @@ import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
 import { UpdateCategoryDto } from './dto/category-admin.dto';
 import { AuditService } from '../common/audit/audit.service';
+import { MOIS_AVANT_SUPPRESSION, dansNMois } from '../common/suppression-compte';
 import { UpdateArticleDto } from './dto/article-admin.dto';
 import {
   CreateFormationAdminDto,
@@ -839,6 +840,15 @@ export class AdminService {
    * savoir QUAND un compte a disparu des listes est la première question qu'on
    * se pose quand quelqu'un signale qu'il ne se trouve plus.
    */
+  /**
+   * ARCHIVER / RÉTABLIR.
+   *
+   * ⚠⚠ RÉTABLIR ANNULE AUSSI LA SUPPRESSION PROGRAMMÉE, et ce n'est pas un
+   * effet de bord : c'est la seule porte de sortie. Si « Rétablir » se
+   * contentait d'effacer `archivedAt`, le compte redeviendrait visible puis
+   * serait détruit à l'échéance — quelqu'un croirait l'avoir sauvé et le
+   * perdrait quand même, trois mois plus tard, sans que rien ne le prévienne.
+   */
   async archiverCompte(id: string, archive: boolean) {
     const compte = await this.prisma.account.findUnique({
       where: { id },
@@ -847,17 +857,66 @@ export class AdminService {
     if (!compte) throw new NotFoundException('Compte introuvable.');
     const maj = await this.prisma.account.update({
       where: { id },
-      data: { archivedAt: archive ? new Date() : null },
-      select: { id: true, name: true, archivedAt: true },
+      data: archive
+        ? { archivedAt: new Date() }
+        : { archivedAt: null, suppressionPrevueLe: null, suppressionMotifBlocage: null },
+      select: {
+        id: true,
+        name: true,
+        archivedAt: true,
+        suppressionPrevueLe: true,
+      },
     });
     return maj;
   }
 
+  /**
+   * SUPPRIMER UN COMPTE, C'EST L'ARCHIVER TROIS MOIS — décision de Siham,
+   * 16/09/2026.
+   *
+   * ⚠⚠ CETTE MÉTHODE NE DÉTRUIT PLUS RIEN. Elle archivait autrefois d'un côté
+   * et détruisait de l'autre ; elle fait maintenant les deux gestes d'un coup :
+   * le compte sort de toutes les vues, et la date de sa suppression réelle est
+   * posée à trois mois. La destruction elle-même est le travail de
+   * `ComptesScheduler`, une fois le délai écoulé.
+   *
+   * Ce que ça répare : la suppression était immédiate, en cascade, et
+   * irréversible — sur un bouton qu'on clique en croyant ranger. Trois mois,
+   * c'est le temps qu'il faut pour que quelqu'un s'aperçoive qu'un compte
+   * manque.
+   *
+   * ⚠ LA DATE D'ARCHIVAGE D'ORIGINE EST CONSERVÉE si le compte était déjà
+   * archivé. « Depuis quand ce compte a-t-il disparu » est la première question
+   * qu'on pose quand on ne le retrouve plus ; la réécrire au moment de
+   * programmer la suppression effacerait la réponse.
+   */
   async deleteAccount(id: string) {
-    const account = await this.prisma.account.findUnique({ where: { id } });
+    const account = await this.prisma.account.findUnique({
+      where: { id },
+      select: { id: true, name: true, archivedAt: true },
+    });
     if (!account) throw new NotFoundException('Compte introuvable.');
-    await this.prisma.account.delete({ where: { id } });
-    return { deleted: true };
+
+    const maj = await this.prisma.account.update({
+      where: { id },
+      data: {
+        archivedAt: account.archivedAt ?? new Date(),
+        suppressionPrevueLe: dansNMois(new Date(), MOIS_AVANT_SUPPRESSION),
+        // Une nouvelle échéance repart d'une page blanche : un blocage relevé
+        // il y a trois mois ne dit rien de la situation d'aujourd'hui.
+        suppressionMotifBlocage: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        archivedAt: true,
+        suppressionPrevueLe: true,
+      },
+    });
+
+    // `deleted: false` est important pour l'écran : il ne doit pas annoncer une
+    // destruction qui n'a pas eu lieu.
+    return { deleted: false, programme: true, ...maj };
   }
 
   // --- Catégories (taxonomie éditable) -----------------------------------

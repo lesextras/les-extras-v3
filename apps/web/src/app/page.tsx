@@ -741,14 +741,31 @@ export default async function LandingPage() {
               {/* Le personnage tient le stylo : c'est la section des écrits. */}
               <Mascotte className="hidden w-24 shrink-0 sm:block" />
               <div>
-              <span className="eyebrow">Pour celles et ceux qui font le terrain</span>
-              {/* Le nom du service est DANS le titre : la ligne grise en
-                  dessous ne suffisait pas à faire retenir « LEX ». */}
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                LEX — le métier ne s’arrête pas à la fin de la journée
+              {/*
+                ⚠ TITRE ET SOUS-TITRE, 16/09/2026 (demande de Siham).
+
+                « Pour celles et ceux qui font le terrain » était en pastille
+                grise au-dessus du titre — c'est-à-dire à l'endroit qu'on saute.
+                C'est pourtant la seule ligne de la section qui dise À QUI elle
+                s'adresse, et c'est ce qui fait s'arrêter un éducateur. Elle
+                devient donc le titre, avec le nom du service devant : « LEX »
+                seul ne dit rien à quelqu'un qui le lit pour la première fois.
+
+                La phrase qui était le titre — « le métier ne s'arrête pas à la
+                fin de la journée » — passe en sous-titre : elle dit le problème,
+                pas le public, et un problème se lit après avoir su qu'on est
+                concerné.
+
+                ⚠ PLUS D'EYEBROW ICI. Reposer une pastille au-dessus rendrait
+                trois lignes de titre pour une section, et on serait revenu au
+                point de départ.
+              */}
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                LEX, pour celles et ceux qui{' '}
+                <span className="text-gradient-brand">font le terrain</span>
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                LEX pour les écrits professionnels.
+                Le métier ne s’arrête pas à la fin de la journée.
               </p>
               </div>
             </Reveal>

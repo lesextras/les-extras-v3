@@ -69,10 +69,22 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
               aria-selected={ouvert}
               aria-controls={`rayon-${r.cle}`}
               onClick={() => setActif(r.cle)}
+              /*
+                ⚠ L'ONGLET OUVERT EST EN ROSE DE LA MARQUE, PAS EN NOIR
+                (16/09/2026, demande de Siham). Le noir plein était emprunté au
+                fond charbon : sur l'accueil, il se lisait comme un bloc éteint
+                plutôt que comme l'onglet actif, et rien sur la page n'utilise
+                cette couleur pour dire « c'est ici ». Le rose est la couleur
+                d'action du site, du bouton du héros jusqu'aux liens de carte.
+
+                ⚠ ET DEUX CRANS PLUS PETIT : `text-lg py-4` en faisait deux
+                pavés plus hauts que le bouton principal du héros — un onglet
+                n'est pas l'action principale de la page, il choisit un rayon.
+              */
               className={
-                "w-full basis-0 rounded-full px-7 py-4 text-lg tracking-wide transition-colors sm:flex-1 " +
+                "w-full basis-0 rounded-full px-5 py-2.5 text-sm tracking-wide transition-colors sm:flex-1 " +
                 (ouvert
-                  ? "border border-foreground bg-foreground font-bold text-background shadow-soft"
+                  ? "border border-primary bg-primary font-bold text-primary-foreground shadow-soft"
                   : "border border-border bg-card font-semibold text-foreground hover:border-primary/50 hover:bg-primary-soft hover:text-primary")
               }
             >

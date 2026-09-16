@@ -384,11 +384,45 @@ model Account {
   /// qu'on voulait seulement sortir d'un annuaire.
   archivedAt DateTime?
 
+  /// SUPPRIMER, C'EST ARCHIVER TROIS MOIS — décision de Siham, 16/09/2026.
+  ///
+  /// ⚠⚠ `DELETE /admin/accounts/:id` NE DÉTRUIT PLUS RIEN LE JOUR OÙ ON CLIQUE.
+  /// Il archive le compte (il disparaît des recherches, de l'annuaire, de la
+  /// vitrine et de la place de marché) et pose ici la date à laquelle il sera
+  /// réellement supprimé. Pendant tout ce délai, « Rétablir » annule les deux
+  /// et le compte revient exactement comme il était.
+  ///
+  /// Ce que cela répare : la suppression était immédiate et définitive, sur un
+  /// bouton qu'on clique en croyant ranger. Trois mois, c'est le temps qu'il
+  /// faut pour que quelqu'un s'aperçoive qu'un compte manque.
+  ///
+  /// ⚠ NULL NE VEUT PAS DIRE « JAMAIS SUPPRIMÉ » : il veut dire « aucune
+  /// suppression programmée ». Un compte simplement archivé a `archivedAt`
+  /// rempli et ce champ nul — il reste indéfiniment, c'est le cas des comptes
+  /// de test et des doublons.
+  suppressionPrevueLe DateTime?
+
+  /// POURQUOI L'ÉCHÉANCE N'A PAS PU ÊTRE EXÉCUTÉE.
+  ///
+  /// ⚠⚠ UN COMPTE QUI A ÉMIS UNE FACTURE OU SIGNÉ UN CDD NE PEUT PAS ÊTRE
+  /// SUPPRIMÉ, ET AUCUN DÉLAI N'Y CHANGE RIEN. `Invoice` et `ContratCDD` sont
+  /// en `onDelete: Cascade` : détruire le compte détruirait les documents. Or
+  /// une facture émise se conserve (art. 242 nonies A, ann. II du CGI ; art.
+  /// L123-22 du code de commerce : dix ans) et un contrat de travail aussi.
+  ///
+  /// Le planificateur écrit donc ici, en toutes lettres, ce qui l'a arrêté —
+  /// « 3 facture(s) émise(s) » — et l'écran d'administration l'affiche. Sans
+  /// cette phrase, le compte resterait indéfiniment « à supprimer » sans que
+  /// personne ne sache pourquoi, et quelqu'un finirait par forcer.
+  suppressionMotifBlocage String?
+
   @@index([type])
   @@index([slug])
   @@index([source])
   @@index([structureId])
   @@index([archivedAt])
+  /// Le planificateur balaie sur cette colonne, une fois par jour.
+  @@index([suppressionPrevueLe])
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
