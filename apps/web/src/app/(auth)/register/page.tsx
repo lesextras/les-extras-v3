@@ -32,7 +32,7 @@ import {
   EtapePoste,
   EtapeStructure,
   LIEU_VIDE,
-  RechercheEtablissement,
+  RechercheLieu,
   type LieuDeTravail,
 } from './Etapes';
 
@@ -325,10 +325,10 @@ export default function RegisterPage() {
                 name="organizationName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Nom de l’établissement</FormLabel>
+                    <FormLabel required>Votre établissement</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="MECS Les Tilleuls"
+                        placeholder="ESAT Corail, DAIS, MECS Les Tilleuls…"
                         autoComplete="organization"
                         leftIcon={<Building2 />}
                         {...field}
@@ -336,9 +336,8 @@ export default function RegisterPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Le lieu où vous travaillez, pas la structure qui le gère —
-                      nous vous demanderons celle-ci ensuite. C’est ce nom qui
-                      apparaîtra sur vos devis et vos factures.
+                      Tapez son nom : nous vous proposons l’établissement s’il est
+                      déjà là, et l’association qui le gère.
                     </FormDescription>
                     <FormMessage />
 
@@ -382,8 +381,9 @@ export default function RegisterPage() {
                         </button>
                       </div>
                     ) : (
-                      <RechercheEtablissement
+                      <RechercheLieu
                         nom={field.value ?? ''}
+                        structureChoisie={lieu.structure}
                         onRejoindre={(etablissement) => {
                           setLieu((l) => ({ ...l, rejoindre: etablissement }));
                           // Le nom saisi devient celui de l'établissement
@@ -393,6 +393,7 @@ export default function RegisterPage() {
                             shouldValidate: true,
                           });
                         }}
+                        onStructure={(v) => setLieu((l) => ({ ...l, ...v }))}
                       />
                     )}
                   </FormItem>
