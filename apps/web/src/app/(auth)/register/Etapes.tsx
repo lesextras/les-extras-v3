@@ -8,8 +8,10 @@ import {
   Loader2,
   Search,
   ShieldCheck,
+  Sparkles,
   TriangleAlert,
   Users,
+  type LucideIcon,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { lancerConfettis } from '@/lib/confetti';
@@ -106,35 +108,75 @@ export interface EtablissementExistant {
  * dans l'organigramme, elle n'est plus seule — mais non vérifiée : elle ne voit
  * rien de l'établissement tant qu'un responsable ne l'a pas confirmée.
  */
-export function RechercheEtablissement({
+/**
+ * LA RECHERCHE DU LIEU DE TRAVAIL — établissement ET structure, en un champ.
+ *
+ * ⚠⚠ LES DEUX ÉTAIENT DEUX QUESTIONS, ET C'ÉTAIT UNE QUESTION DE TROP.
+ *
+ * On demandait « votre établissement » d'un côté et « votre structure » de
+ * l'autre, sur deux écrans différents. Or personne ne parle comme ça : on dit
+ * « l'ESAT Corail de l'association ADSEA », « le DAIS de l'ADSEA ». Séparer
+ * obligeait la personne à découper une phrase qu'elle a dans la tête d'un seul
+ * tenant — et beaucoup laissaient la structure vide, ce qui empêche ensuite
+ * leurs collègues des autres sites de les retrouver.
+ *
+ * Une seule frappe interroge donc les DEUX annuaires en parallèle :
+ *
+ *   — les établissements DÉJÀ sur Les Extras → « c'est le mien », et on se
+ *     rattache au lieu d'en créer un douzième homonyme ;
+ *   — l'annuaire public des entreprises → c'est la STRUCTURE qui gère, on la
+ *     rattache et le nom saisi reste celui de l'établissement.
+ *
+ * ⚠ CHOISIR UNE ENTITÉ DE L'ANNUAIRE NE RENOMME PAS L'ÉTABLISSEMENT. Le nom
+ * saisi fixe le nom du compte ET son slug : le remplacer par « ADSEA »
+ * donnerait la même adresse publique aux quinze établissements du groupe.
+ */
+export function RechercheLieu({
   nom,
+  structureChoisie,
   onRejoindre,
+  onStructure,
 }: {
   nom: string;
+  structureChoisie: StructureChoisie | null;
   onRejoindre: (etablissement: EtablissementExistant) => void;
+  onStructure: (v: ChoixStructure) => void;
 }) {
   const requete = useValeurRetardee(nom, 450);
-  const [resultats, setResultats] = React.useState<EtablissementExistant[]>([]);
+  const [etablissements, setEtablissements] = React.useState<EtablissementExistant[]>([]);
+  const [declarees, setDeclarees] = React.useState<StructureDeclaree[]>([]);
+  const [annuaire, setAnnuaire] = React.useState<EntiteLegale[]>([]);
   const [chargement, setChargement] = React.useState(false);
 
   React.useEffect(() => {
     const texte = requete.trim();
     if (texte.length < 3) {
-      setResultats([]);
+      setEtablissements([]);
+      setDeclarees([]);
+      setAnnuaire([]);
       return;
     }
     let annule = false;
     setChargement(true);
-    apiRequest<EtablissementExistant[]>(
-      `/public/etablissements?q=${encodeURIComponent(texte)}`,
-    )
-      .then((r) => {
-        if (!annule) setResultats(r);
-      })
-      .catch(() => {
-        // Une recherche qui échoue ne doit pas bloquer la création : on
-        // retombe simplement sur le comportement d'avant.
-        if (!annule) setResultats([]);
+    /**
+     * ⚠ CHAQUE RECHERCHE A SON PROPRE `.catch()`. L'annuaire public de l'État
+     * est lent et parfois indisponible ; s'il tombe, la liste des
+     * établissements déjà déclarés doit continuer de s'afficher — c'est elle
+     * qui évite les doublons, et c'est le plus coûteux des trois.
+     */
+    Promise.all([
+      apiRequest<EtablissementExistant[]>(
+        `/public/etablissements?q=${encodeURIComponent(texte)}`,
+      ).catch(() => [] as EtablissementExistant[]),
+      apiRequest<{ declarees: StructureDeclaree[]; annuaire: EntiteLegale[] }>(
+        `/public/structures?q=${encodeURIComponent(texte)}`,
+      ).catch(() => ({ declarees: [], annuaire: [] })),
+    ])
+      .then(([etabs, structures]) => {
+        if (annule) return;
+        setEtablissements(etabs ?? []);
+        setDeclarees(structures.declarees ?? []);
+        setAnnuaire(structures.annuaire ?? []);
       })
       .finally(() => {
         if (!annule) setChargement(false);
@@ -144,47 +186,128 @@ export function RechercheEtablissement({
     };
   }, [requete]);
 
-  if (chargement && resultats.length === 0) return null;
-  if (resultats.length === 0) return null;
+  const rien =
+    etablissements.length === 0 && declarees.length === 0 && annuaire.length === 0;
+
+  // La structure retenue prend la place de la liste : la question est réglée.
+  if (structureChoisie) {
+    return (
+      <div className="mt-2 flex items-start gap-2.5 rounded-lg border-2 border-primary/45 bg-primary-soft/30 p-3">
+        <Landmark aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium">
+            {structureChoisie.nom}
+          </span>
+          <span className="block text-xs text-muted-foreground" lang="fr">
+            La structure qui gère votre établissement.
+          </span>
+        </span>
+        <button
+          type="button"
+          onClick={() => onStructure({ structureId: null, structure: null })}
+          className="shrink-0 text-xs font-medium text-primary hover:underline"
+        >
+          Changer
+        </button>
+      </div>
+    );
+  }
+
+  if (chargement || rien) return null;
 
   return (
-    <div className="space-y-2.5 rounded-lg border-2 border-primary/35 bg-primary-soft/30 p-3.5">
-      <p className="text-sm font-semibold">
-        {resultats.length === 1
-          ? 'Cet établissement est déjà sur Les Extras'
-          : 'Ces établissements sont déjà sur Les Extras'}
-      </p>
-      <p className="text-xs leading-relaxed text-muted-foreground" lang="fr">
-        Si c’est le vôtre, rattachez-vous plutôt que d’en créer un second : vous
-        retrouverez vos collègues, leurs services et l’organigramme.
-      </p>
-      <div className="space-y-1.5">
-        {resultats.map((e) => (
-          <button
-            key={e.id}
-            type="button"
-            onClick={() => onRejoindre(e)}
-            className="flex w-full items-start gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-primary/60"
-          >
-            <Building aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium">{e.name}</span>
-              <span className="block text-xs text-muted-foreground">
-                {[e.city, e.structure?.nom].filter(Boolean).join(' · ') ||
-                  'Établissement déclaré'}
+    <div className="mt-2 space-y-2.5 rounded-lg border-2 border-primary/35 bg-primary-soft/30 p-3.5">
+      {etablissements.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+            Déjà sur Les Extras
+          </p>
+          {etablissements.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => onRejoindre(e)}
+              className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/60"
+            >
+              <Building aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">{e.name}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {[e.city, e.structure?.nom].filter(Boolean).join(' · ') ||
+                    'Établissement déclaré'}
+                </span>
               </span>
-            </span>
-            <span className="shrink-0 self-center text-xs font-medium text-primary">
-              C’est le mien
-            </span>
-          </button>
-        ))}
-      </div>
-      <Aide>
-        Votre rattachement sera visible par vos collègues mais marqué « à
-        confirmer » jusqu’à ce qu’un responsable le valide. Vous n’accédez à
-        aucune donnée de l’établissement avant cette confirmation.
-      </Aide>
+              <span className="shrink-0 self-center text-xs font-medium text-primary">
+                C’est le mien
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(declarees.length > 0 || annuaire.length > 0) && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            L’association ou le groupe qui gère
+          </p>
+          {declarees.map((st) => (
+            <button
+              key={st.id}
+              type="button"
+              onClick={() =>
+                onStructure({
+                  structureId: st.id,
+                  structure: { nom: st.nom, verifiee: st.verifiee },
+                })
+              }
+              className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/50"
+            >
+              <Users aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">{st.nom}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {[st.formeJuridique, st.ville].filter(Boolean).join(' · ') ||
+                    'Structure déclarée'}
+                </span>
+              </span>
+            </button>
+          ))}
+          {annuaire.map((e) => (
+            <button
+              key={e.siren}
+              type="button"
+              onClick={() =>
+                onStructure({
+                  structureId: null,
+                  structure: {
+                    nom: e.nom,
+                    siren: e.siren,
+                    siret: e.siret ?? undefined,
+                    formeJuridique: e.formeJuridique ?? undefined,
+                    adresse: e.adresse ?? undefined,
+                    ville: e.ville ?? undefined,
+                    codePostal: e.codePostal ?? undefined,
+                    verifiee: true,
+                  },
+                })
+              }
+              className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/50"
+            >
+              <ShieldCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">
+                  {e.nom}
+                  {e.sigle ? ` (${e.sigle})` : ''}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {[e.formeJuridique, e.ville].filter(Boolean).join(' · ') ||
+                    'Annuaire public'}
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -492,32 +615,25 @@ export function EtapeLieuDeTravail({
   return (
     <div className="space-y-4">
       {/*
-        ⚠ TROIS CARTES, ET UNE LIGNE DANS CHACUNE.
+        ⚠ LA STRUCTURE N'EST PLUS DEMANDÉE ICI : elle est FUSIONNÉE avec le nom
+        de l'établissement, à l'étape des identifiants.
 
-        Cet écran portait trois paragraphes d'explication au-dessus de deux
-        champs facultatifs — plus de texte que de formulaire. Personne ne lit
-        un écran d'inscription : on y cherche le champ. Chaque aide tient donc
-        en une ligne, et ce qui ne tenait pas en une ligne n'avait pas sa place
-        ici.
+        On posait deux questions — « votre établissement », puis « votre
+        structure », sur deux écrans. Personne ne parle comme ça : on dit
+        « l'ESAT Corail de l'association ADSEA ». Séparer obligeait à découper
+        une phrase qu'on a dans la tête d'un seul tenant, et beaucoup laissaient
+        la structure vide — ce qui empêche ensuite les collègues des autres
+        sites de se retrouver. Une seule frappe interroge maintenant les deux
+        annuaires (voir `RechercheLieu`).
 
-        ⚠ LE NOM DE L'ÉTABLISSEMENT N'EST PLUS ICI, ET IL NE DOIT PAS Y
-        REVENIR : il fixe le slug, posé à la création du compte.
+        ⚠ NE PAS LA REMETTRE ICI. Deux endroits pour la même question, c'est
+        exactement ce qu'on vient de retirer.
       */}
       <Carte titre="C’est une déclaration, comme sur LinkedIn">
         <Aide>
           Vous dites où vous êtes en poste. Rien n’est vérifié, et vous
           n’attendez l’autorisation de personne.
         </Aide>
-      </Carte>
-
-      <Carte
-        titre="Votre structure"
-        aide="L’association, la fondation ou la mairie qui gère votre établissement. Facultatif."
-      >
-        <ChampStructure
-          valeur={{ structureId: lieu.structureId, structure: lieu.structure }}
-          onChange={(v) => setLieu((l) => ({ ...l, ...v }))}
-        />
       </Carte>
 
       <Carte titre="Votre service" aide="Internat, pôle jour, SESSAD… Facultatif.">
@@ -539,11 +655,19 @@ export function EtapeLieuDeTravail({
 
 type Niveau = 'DIRECTION' | 'RESPONSABLE' | 'SALARIE';
 
+/**
+ * ⚠ DEUX LIGNES PAR NIVEAU, PAS TROIS.
+ *
+ * Chaque niveau portait son intitulé, ses exemples de poste ET une phrase sur
+ * ce qu'il ouvre : neuf lignes pour trois boutons radio, avant même la liste
+ * des droits. On choisit son niveau sur son MÉTIER — « je suis chef de
+ * service » —, pas sur une description de périmètre qu'on lira de toute façon
+ * après coup dans « Mon poste ».
+ */
 const NIVEAUX: {
   cle: Niveau;
   titre: string;
   exemples: string;
-  ceQueCaDonne: string;
   /** Vrai quand le niveau demande une validation de Les Extras. */
   valide: boolean;
 }[] = [
@@ -551,24 +675,18 @@ const NIVEAUX: {
     cle: 'DIRECTION',
     titre: 'Direction',
     exemples: 'Directeur, directrice adjointe, pilote des opérations',
-    ceQueCaDonne:
-      'Tous les services, tous les salariés de l’établissement, et tous les droits.',
     valide: true,
   },
   {
     cle: 'RESPONSABLE',
     titre: 'Responsable',
     exemples: 'Chef de service, coordinateur',
-    ceQueCaDonne:
-      'Les personnes des services que vous encadrez. Vous pouvez inviter votre équipe et lui accorder des droits, sans attendre personne.',
     valide: false,
   },
   {
     cle: 'SALARIE',
     titre: 'Salarié',
     exemples: 'Éducateur, moniteur, AES, veilleur, psychologue…',
-    ceQueCaDonne:
-      'Vos demandes, votre planning, vos inscriptions. Vous pouvez vous porter volontaire pour un renfort interne ou un CDD.',
     valide: false,
   },
 ];
@@ -705,12 +823,18 @@ function ListeDroits({
           >
             {groupe.titre}
           </legend>
-          {groupe.intro && (
-            <p className="mb-1.5 text-xs leading-relaxed text-muted-foreground" lang="fr">
+          {/*
+            ⚠ L'INTRO N'EST GARDÉE QUE SUR LE GROUPE SENSIBLE. Ailleurs elle
+            reformulait le titre du groupe, et cet écran portait déjà treize
+            cases avec chacune sa ligne d'aide : quarante lignes pour cocher
+            trois choses.
+          */}
+          {groupe.sensible && groupe.intro && (
+            <p className="mb-1.5 text-xs leading-relaxed text-secondary" lang="fr">
               {groupe.intro}
             </p>
           )}
-          <div className="space-y-1.5">
+          <div className="grid gap-1.5 sm:grid-cols-2">
             {groupe.droits.map((d) => {
               const coche = droits.includes(d.cle);
               return (
@@ -735,10 +859,13 @@ function ListeDroits({
                     }
                     className="mt-0.5 size-4 shrink-0 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                  <span className="min-w-0">
-                    <span className="block text-sm leading-snug">{d.libelle}</span>
-                    <span className="block text-xs text-muted-foreground">{d.aide}</span>
-                  </span>
+                  {/*
+                    ⚠ LE LIBELLÉ SEUL, SANS SA LIGNE D'AIDE. Les intitulés se
+                    suffisent — « Voir les factures », « Gérer le planning » —
+                    et l'aide complète reste sur « Mon poste », où l'on vient
+                    délibérément régler ses droits. Ici, on coche.
+                  */}
+                  <span className="min-w-0 text-sm leading-snug">{d.libelle}</span>
                 </label>
               );
             })}
@@ -793,10 +920,7 @@ export function EtapePoste({ onFait }: { onFait: () => void }) {
         <ChampPoste poste={poste} setPoste={setPoste} cadre={cadre} setCadre={setCadre} />
       </Carte>
 
-      <Carte
-        titre="Votre niveau de responsabilité"
-        aide="C’est lui qui décide de ce que vous voyez : votre équipe, vos services, ou tout l’établissement."
-      >
+      <Carte titre="Votre niveau de responsabilité" aide="Il décide de ce que vous voyez.">
         <fieldset className="space-y-2">
           <legend className="sr-only">Votre niveau de responsabilité</legend>
           {NIVEAUX.map((n) => {
@@ -821,48 +945,32 @@ export function EtapePoste({ onFait }: { onFait: () => void }) {
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold">{n.titre}</span>
                   <span className="block text-xs text-muted-foreground">{n.exemples}</span>
-                  <span className="mt-1 block text-xs leading-relaxed" lang="fr">
-                    {n.ceQueCaDonne}
-                  </span>
                 </span>
               </label>
             );
           })}
         </fieldset>
 
+        {/*
+          ⚠ CET AVERTISSEMENT RESTE, ET IL RESTE COMPLET DANS SON IDÉE : c'est
+          le seul endroit où l'on dit qu'une direction déclarée ne voit rien de
+          plus tant qu'elle n'est pas validée. Le raccourcir jusqu'à supprimer
+          cette phrase ferait croire à un accès immédiat.
+        */}
         {choisi.valide && (
           <div className="mt-3">
-            <Encart ton="alerte" icone={TriangleAlert} titre="Ce niveau est validé par Les Extras">
-              La direction est le seul niveau qui donne la vue sur des équipes que
-              vous n’avez pas constituées vous-même : nous le vérifions donc à la
-              main. Votre demande part en même temps que cette déclaration, et
-              <strong> en attendant, votre compte fonctionne comme celui d’un salarié</strong> —
-              vous ne perdez rien, vous n’avez simplement pas encore la vue complète.
+            <Encart ton="alerte" icone={TriangleAlert} titre="Validé à la main par Les Extras">
+              En attendant, votre compte fonctionne comme celui d’un salarié.
             </Encart>
           </div>
         )}
       </Carte>
 
       <Carte
-        titre="Ce que vous pouvez engager pour votre établissement"
-        aide={
-          <>
-            Ces réponses sont déclaratives : elles décident notamment si votre
-            bouton dit « Réserver » ou « Demander un devis ». Elles figureront sur
-            les demandes que vous émettez, avec votre poste — c’est ce qui permet à
-            votre établissement de savoir qui a engagé quoi.
-          </>
-        }
+        titre="Ce que vous pouvez engager"
+        aide="Déclaratif, et sans aucun paiement en jeu : cela décide surtout si votre bouton dit « Réserver » ou « Demander un devis »."
       >
         <ListeDroits droits={droits} setDroits={setDroits} />
-
-        <div className="mt-3">
-          <Encart icone={ShieldCheck} titre="Il n’y a aucun paiement sur la plateforme">
-            Ces droits n’engagent jamais d’argent : la mise en relation et la
-            contractualisation sont gratuites. Ils disent seulement ce que vous
-            pouvez engager au nom de votre établissement.
-          </Encart>
-        </div>
       </Carte>
 
       {erreur && (
@@ -936,15 +1044,9 @@ export function EtapeStructure({ onFait }: { onFait: () => void }) {
 
   return (
     <div className="space-y-4">
-      <Encart icone={ShieldCheck} titre="Votre SIRET suffit">
-        Tapez-le, ou tapez le nom de votre entreprise : nous retrouvons le reste
-        dans l’annuaire public. C’est ce numéro qui figurera sur vos devis et
-        vos factures — la loi l’exige sur tout document commercial.
-      </Encart>
-
       <Carte
         titre="L’entité qui facture vos interventions"
-        aide="Micro-entreprise, entreprise individuelle, association, société. Facultatif pour entrer — nécessaire pour publier une fiche."
+        aide="Micro-entreprise, association, société. Facultatif pour entrer, nécessaire pour publier."
       >
         <ChampStructure
           valeur={choix}
@@ -952,6 +1054,17 @@ export function EtapeStructure({ onFait }: { onFait: () => void }) {
           placeholder="Votre SIRET, ou le nom de votre entreprise…"
         />
       </Carte>
+
+      {/*
+        ⚠ L'AIDE VIENT APRÈS LE CHAMP, PAS AVANT. Placée au-dessus, elle se
+        lisait comme une consigne à traiter avant d'avoir vu ce qu'on demandait
+        — et sur un écran d'inscription, un paragraphe qui précède le premier
+        champ est un paragraphe sauté.
+      */}
+      <Encart icone={ShieldCheck} titre="Votre SIRET suffit">
+        Nous retrouvons le reste dans l’annuaire public. C’est ce numéro qui
+        figurera sur vos devis et vos factures.
+      </Encart>
 
       {erreur && (
         <Encart ton="alerte" icone={TriangleAlert}>
@@ -1291,6 +1404,68 @@ export function EtapeActivites({ onFait }: { onFait: () => void }) {
  * passe en compte intervenant indépendant, en ajoutant la sienne — l'adresse
  * publique du compte ne bouge pas, elle porte déjà son nom.
  */
+/**
+ * UNE CARTE D'USAGE — un choix entier du compte, pas une case d'un réglage.
+ *
+ * ⚠ C'EST UNE CASE À COCHER DÉGUISÉE EN CARTE, pas un `<button>` : l'état
+ * coché doit rester lisible par un lecteur d'écran. Même raison que
+ * `ChampPoste` plus haut dans ce fichier.
+ */
+function CarteUsage({
+  icone: Icone,
+  titre,
+  aide,
+  etiquette,
+  actif,
+  onBascule,
+}: {
+  icone: LucideIcon;
+  titre: string;
+  aide: string;
+  etiquette?: string;
+  actif: boolean;
+  onBascule: () => void;
+}) {
+  return (
+    <label
+      className={cn(
+        'flex cursor-pointer flex-col gap-2 rounded-xl border-2 p-4 transition-colors',
+        actif
+          ? 'border-primary bg-primary-soft/30'
+          : 'border-border bg-card hover:border-primary/40',
+      )}
+    >
+      <span className="flex items-center gap-2.5">
+        <span
+          className={cn(
+            'grid size-9 shrink-0 place-items-center rounded-lg',
+            actif ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground',
+          )}
+        >
+          <Icone className="size-4" />
+        </span>
+        <input
+          type="checkbox"
+          checked={actif}
+          onChange={onBascule}
+          className="ml-auto size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
+        />
+      </span>
+      <span className="block text-sm font-semibold leading-snug" lang="fr">
+        {titre}
+      </span>
+      <span className="block text-xs leading-relaxed text-muted-foreground" lang="fr">
+        {aide}
+      </span>
+      {etiquette && (
+        <span className="mt-auto inline-block w-fit rounded-full bg-secondary/10 px-2 py-0.5 text-[11px] font-semibold text-secondary">
+          {etiquette}
+        </span>
+      )}
+    </label>
+  );
+}
+
 export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
   const [reserver, setReserver] = React.useState(true);
   const [remplacer, setRemplacer] = React.useState(false);
@@ -1335,58 +1510,34 @@ export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
 
   return (
     <div className="space-y-4">
+      {/*
+        ⚠ DEUX CARTES CÔTE À CÔTE, PAS DEUX LIGNES DE CASES À COCHER.
+
+        Ce sont deux usages entiers du compte — venir réserver, ou venir
+        travailler —, pas deux options d'un même réglage. Les empiler en cases
+        les faisait lire comme une liste de préférences, et la seconde, qui est
+        la nouveauté, passait inaperçue sous la première.
+      */}
       <Carte
-        titre="Que venez-vous faire ?"
+        titre="Ce qui vous intéresse"
         aide="Les deux sont possibles, et rien n’est définitif."
       >
-        <div className="space-y-2">
-          <label
-            className={cn(
-              'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
-              reserver ? 'border-primary bg-primary-soft/30' : 'border-border bg-card',
-            )}
-          >
-            <input
-              type="checkbox"
-              checked={reserver}
-              onChange={() => setReserver(!reserver)}
-              className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
-            />
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium">
-                Réserver pour mon enfant ou mon proche
-              </span>
-              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground" lang="fr">
-                Ateliers, formations, suivi de vos inscriptions et de vos factures.
-              </span>
-            </span>
-          </label>
-
-          <label
-            className={cn(
-              'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
-              remplacer ? 'border-primary bg-primary-soft/30' : 'border-border bg-card',
-            )}
-          >
-            <input
-              type="checkbox"
-              checked={remplacer}
-              onChange={() => setRemplacer(!remplacer)}
-              className="mt-0.5 size-4 shrink-0 rounded border-input accent-[hsl(var(--primary))]"
-            />
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium">
-                Faire des remplacements en établissement
-              </span>
-              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground" lang="fr">
-                Vous êtes embauché en CDD par l’établissement, pour la durée du
-                remplacement. Aucune structure ni SIRET à fournir.
-              </span>
-              <span className="mt-1.5 inline-block rounded-full bg-secondary/10 px-2 py-0.5 text-[11px] font-semibold text-secondary">
-                CDD salarié
-              </span>
-            </span>
-          </label>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <CarteUsage
+            icone={Sparkles}
+            titre="Réserver un atelier ou une formation"
+            aide="Pour votre enfant, votre proche, ou vous-même."
+            actif={reserver}
+            onBascule={() => setReserver(!reserver)}
+          />
+          <CarteUsage
+            icone={Users}
+            titre="Faire du renfort en CDD"
+            aide="L’établissement vous embauche. Aucune structure ni SIRET à fournir."
+            etiquette="CDD salarié"
+            actif={remplacer}
+            onBascule={() => setRemplacer(!remplacer)}
+          />
         </div>
       </Carte>
 
