@@ -66,7 +66,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative my-auto max-w-md">
           <h2 className="text-3xl font-bold leading-tight text-white text-balance drop-shadow-sm">
-            Le renfort médico-social, réuni au même endroit.
+            Le réseau éducatif du médico-social réuni au même endroit.
           </h2>
           <p className="mt-4 text-primary-foreground/80">
             RenforTeam, ateliers, planning, messagerie et factures. Un espace clair pour les

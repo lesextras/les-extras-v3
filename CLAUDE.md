@@ -3650,3 +3650,56 @@ réécrire, sous aucune forme.
 - **« Où vous travaillez » : trois cartes, une ligne dans chacune.** L'écran
   portait trois paragraphes au-dessus de deux champs facultatifs. Personne ne
   lit un écran d'inscription : on y cherche le champ.
+
+### L'ÉTABLISSEMENT ET SA STRUCTURE NE FONT PLUS QU'UN CHAMP (16/09/2026, soir)
+
+Demande de Siham : « fusionne votre établissement et votre structure (intitulé
+juste votre établissement) — exemple : ESAT Corail de l'association ADSEA ».
+
+On posait deux questions, sur deux écrans. **Personne ne parle comme ça** : on
+dit « l'ESAT Corail de l'ADSEA », d'un seul tenant. Séparer obligeait à découper
+une phrase qu'on a dans la tête entière, et beaucoup laissaient la structure
+vide — ce qui empêche ensuite les collègues des autres sites de se retrouver.
+
+`RechercheLieu` (`register/Etapes.tsx`) interroge donc **les deux annuaires en
+parallèle** sous le seul champ « Votre établissement » :
+
+- les établissements DÉJÀ sur Les Extras → « c'est le mien », rattachement au
+  lieu d'un douzième homonyme ;
+- l'annuaire public → c'est la STRUCTURE qui gère, on la rattache.
+
+⚠ **CHOISIR UNE ENTITÉ DE L'ANNUAIRE NE RENOMME PAS L'ÉTABLISSEMENT.** Le nom
+saisi fixe le nom du compte ET son slug : le remplacer par « ADSEA » donnerait
+la même adresse publique aux quinze établissements du groupe.
+
+⚠ **CHAQUE RECHERCHE A SON PROPRE `.catch()`.** L'annuaire public de l'État est
+lent et parfois indisponible ; s'il tombe, la liste des établissements déjà
+déclarés doit continuer de s'afficher — c'est elle qui évite le doublon
+d'établissement, le plus coûteux des trois.
+
+⚠ **LA STRUCTURE N'EST PLUS DEMANDÉE À L'ÉTAPE SUIVANTE**, qui ne porte plus
+que le service. Ne pas l'y remettre : deux endroits pour la même question,
+c'est ce qu'on vient de retirer.
+
+### Moins de texte, partout sur l'inscription
+
+Trois écrans portaient plus d'explication que de formulaire. Personne ne lit un
+écran d'inscription : on y cherche le champ.
+
+- **« Votre service »** : trois paragraphes au-dessus de deux champs facultatifs
+  → trois cartes, une ligne dans chacune.
+- **« Votre poste et vos droits »** : chaque niveau portait intitulé + exemples
+  + une phrase de périmètre (neuf lignes pour trois boutons radio) → deux
+  lignes. On choisit son niveau sur son MÉTIER, pas sur une description qu'on
+  relira dans « Mon poste ». Les treize droits portaient chacun leur ligne
+  d'aide → le libellé seul, sur deux colonnes ; l'aide complète reste sur
+  « Mon poste », où l'on vient délibérément régler ses droits.
+- ⚠ **L'AVERTISSEMENT « direction validée à la main » RESTE** : c'est le seul
+  endroit qui dit qu'une direction déclarée ne voit rien de plus tant qu'elle
+  n'est pas validée. Le supprimer ferait croire à un accès immédiat.
+
+⚠ **LE RECTANGLE « CRÉER UN COMPTE » A ÉTÉ RETIRÉ DES CARTES.** Il y en avait un
+sur chaque face : trois boutons identiques sous trois cartes qui SONT déjà des
+boutons — la même action écrite quatre fois sur le même écran. Si quelqu'un le
+remet, c'était un `<span>`, jamais un `<button>` : un bouton dans un bouton est
+du HTML invalide que chaque navigateur répare à sa façon.
