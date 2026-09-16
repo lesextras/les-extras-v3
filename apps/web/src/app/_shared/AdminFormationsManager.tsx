@@ -53,6 +53,16 @@ export interface AdminFormation {
   certificationName?: string | null;
   /** Prix de l'attestation de suivi, en centimes. Nul = vente fermée. */
   attestationPrixCents?: number | null;
+  /* La vitrine : voir l'en-tête de `AdminFormationForm`. */
+  images?: string[] | null;
+  city?: string | null;
+  publicTargets?: string[] | null;
+  durationMinutes?: number | null;
+  methodology?: string | null;
+  evaluation?: string | null;
+  faq?: { question: string; answer: string }[] | null;
+  freeOnline?: boolean;
+  enrollUrl?: string | null;
   categoryRef?: { id: string; title: string } | null;
   ownerAccount?: { id: string; name?: string | null } | null;
   _count?: { sessions?: number };
@@ -87,6 +97,28 @@ function toInitialValues(f: AdminFormation): Partial<FormationFormValues> {
     // « pas en vente », ce qui est exactement son état.
     attestationPrixEuros:
       f.attestationPrixCents != null ? String(f.attestationPrixCents / 100) : "",
+    /*
+      ⚠ TOUT CE QUI EST RELU DOIT ÊTRE RÉÉCRIT. Un champ oublié ici rouvre
+      VIDE dans le formulaire, et comme le formulaire renvoie l'état complet,
+      il est effacé en base à l'enregistrement suivant — sans que personne ne
+      l'ait demandé, et sans que rien ne le signale. C'est la faute la plus
+      coûteuse de ce fichier : on croit corriger un titre, on vide la fiche.
+    */
+    images: f.images ?? [],
+    city: f.city ?? "",
+    publicTargets: f.publicTargets ?? [],
+    durationMinutes: f.durationMinutes != null ? String(f.durationMinutes) : "",
+    methodology: f.methodology ?? "",
+    evaluation: f.evaluation ?? "",
+    // La FAQ voyage en JSON libre : on n'y garde que les paires exploitables,
+    // sinon une ligne mal formée casserait le formulaire à l'ouverture.
+    faq: Array.isArray(f.faq)
+      ? f.faq
+          .filter((x) => x && typeof x.question === "string" && typeof x.answer === "string")
+          .map((x) => ({ question: x.question, answer: x.answer }))
+      : [],
+    freeOnline: Boolean(f.freeOnline),
+    enrollUrl: f.enrollUrl ?? "",
   };
 }
 

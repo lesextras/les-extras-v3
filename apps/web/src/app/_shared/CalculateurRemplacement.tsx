@@ -147,8 +147,8 @@ export function CalculateurRemplacement() {
               : "l'intérim reste moins cher avec ces paramètres, ajustez le tarif ou le coefficient"}
           </p>
           <Button asChild variant="secondary" className="mt-5">
-            <Link href="/register">
-              Publier un besoin de renfort
+            <Link href="/register?type=etablissement&next=/dashboard/renforts">
+              Publier un besoin
               <ArrowRight />
             </Link>
           </Button>

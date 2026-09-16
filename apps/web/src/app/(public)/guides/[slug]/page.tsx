@@ -218,7 +218,7 @@ export default async function GuideEcritPage({
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Button asChild>
-            <Link href="/register">Essayer LEX gratuitement</Link>
+            <Link href="/register">Créer un compte</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/confiance-lex">Comment vos données sont protégées</Link>

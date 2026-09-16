@@ -249,7 +249,7 @@ Vous acceptez une mission et l’établissement vous{" "}
 
       <div className="mt-10 flex flex-col items-center gap-3 text-center">
         <Link
-          href="/register"
+          href="/register?type=intervenant"
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-[15px] font-semibold text-primary-foreground"
         >
           Créer mon compte intervenant

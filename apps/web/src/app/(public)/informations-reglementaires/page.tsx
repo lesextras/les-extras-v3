@@ -44,13 +44,29 @@ export const metadata: Metadata = metaPublique({
  *    Publier un taux inventé serait une faute lourde vis-à-vis d'un financeur ;
  *    une page qui dit honnêtement « pas encore » vaut mieux qu'un pourcentage
  *    invérifiable. À REMPLIR dès la fin de la première session.
- * 2. AUCUN MÉDIATEUR DE LA CONSOMMATION N'EST NOMMÉ. L'article L612-1 du code
- *    de la consommation l'impose dès qu'on vend à un particulier. Tant que
- *    l'association n'a pas adhéré à un médiateur référencé par la CECMC,
- *    l'attestation de suivi à 20 € N'EST PAS MISE EN VENTE : la fiche annonce
- *    le prix et renvoie au contact, les conditions sont communiquées avant tout
- *    paiement, et aucun tunnel d'achat n'existe. Inventer un nom de médiateur
- *    serait pire que de ne rien écrire.
+ * 2. AUCUN MÉDIATEUR DE LA CONSOMMATION N'EST NOMMÉ, et l'article L612-1 du
+ *    code de la consommation l'impose dès qu'on vend à un particulier.
+ *
+ *    ⚠ CE PARAGRAPHE A CHANGÉ DE NATURE LE 16/09/2026. Il disait « aucun
+ *    tunnel d'achat n'existe » : c'était vrai quand il a été écrit, ça ne
+ *    l'est plus. Le tunnel a été construit le 16/09 et Siham a décidé d'ouvrir
+ *    la vente, en écrivant qu'elle en prend le risque et la responsabilité.
+ *    Une page réglementaire qui décrirait un état dépassé serait pire
+ *    qu'inutile : c'est précisément celle qu'un contrôleur lit.
+ *
+ *    La page dit donc maintenant l'état réel — pas de médiateur désigné, tous
+ *    les autres droits applicables, rétractation en tête — sans rien inventer.
+ *    ⚠ INVENTER UN NOM DE MÉDIATEUR RESTE PIRE QUE DE NE RIEN ÉCRIRE : une
+ *    clause de médiation nulle dans les CGV d'un organisme certifié Qualiopi
+ *    coûte plus cher que son absence. Le nom ne s'écrit qu'avec un numéro de
+ *    référencement CECMC.
+ *
+ * 3. AUCUN MONTANT N'EST ÉCRIT SUR CETTE PAGE, et c'est volontaire. Le prix de
+ *    l'attestation vit en base, fiche par fiche (`Formation.attestationPrixCents`),
+ *    parce que c'est lui qui ouvre et ferme la vente. Un montant recopié ici
+ *    finirait par contredire celui de la fiche — deux prix pour le même
+ *    document, c'est-à-dire la pratique commerciale trompeuse que tout le
+ *    reste de cette chaîne évite (art. L121-1 c. conso).
  */
 
 const RELEVE_LE = "2 septembre 2026";
@@ -276,7 +292,8 @@ export default function InformationsReglementairesPage() {
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-foreground/80">
             Une attestation de suivi nominative peut être délivrée à l’issue d’une
-            mini-formation gratuite, pour 20 €, à la demande. Elle indique que vous avez
+            mini-formation gratuite, à la demande, au prix indiqué sur la fiche de la
+            formation. Elle indique que vous avez
             suivi le parcours. <strong>Ce n’est ni un diplôme, ni une certification
             professionnelle inscrite au RNCP ou au RS, ni une action de formation
             certifiée Qualiopi.</strong> Nous employons volontairement le mot
@@ -374,11 +391,16 @@ export default function InformationsReglementairesPage() {
             dispositif.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-foreground/80">
-            <strong>Conséquence assumée, et elle est concrète :</strong> l’attestation de
-            suivi à 20 € n’est pas mise en vente en ligne. Les fiches annoncent son prix
-            et renvoient au contact ; les conditions sont communiquées avant tout
-            paiement. Aucun tunnel d’achat n’existe tant que le médiateur n’est pas
-            désigné et que les conditions générales de vente ne sont pas publiées.
+            <strong>Ce que cela change pour vous, concrètement :</strong> vous ne
+            disposez pas encore de ce recours gratuit pour l’attestation de suivi. Tous
+            vos autres droits s’appliquent normalement, et d’abord le droit de
+            rétractation de quatorze jours (articles L. 221-18 et suivants du code de la
+            consommation) : il ne s’éteint que si vous demandez expressément que
+            l’attestation soit établie avant la fin de ce délai. Les conditions
+            générales de vente sont publiées et vous sont communiquées avant tout
+            paiement. Toute réclamation se traite directement avec l’association, avec
+            accusé de réception, et cette rubrique portera le nom, l’adresse postale et
+            l’adresse du site du médiateur dès son référencement.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-foreground/80">
             Cette rubrique portera le nom, l’adresse postale et l’adresse du site du

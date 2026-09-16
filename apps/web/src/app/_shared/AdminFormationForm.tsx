@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Field, Textarea } from "./form-fields";
+import { FileUpload, type FichierDepose } from "./FileUpload";
+import { PUBLICS_FORMATION } from "@/lib/publics-formation";
 
 export type FormationType = "CERTIFIANTE" | "INTERNE";
 
@@ -42,6 +44,42 @@ export interface FormationFormValues {
    * 0,20 € — et personne ne relit un montant qu'il vient d'écrire.
    */
   attestationPrixEuros: string;
+
+  /*
+    ⚠⚠ LA VITRINE — AJOUTÉE LE 16/09/2026, ET C'EST UNE RÉPARATION.
+
+    Ces sept champs existaient en base et étaient absents du formulaire ET des
+    DTO de l'administration. Une formation créée ici arrivait donc au catalogue
+    sans photo, sans ville, sans public filtrable et sans durée en minutes — à
+    côté d'une carte d'atelier qui porte les quatre. On avait corrigé la CARTE
+    le 3/09 ; on n'avait jamais donné le moyen de la remplir autrement que par
+    un script de seed, c'est-à-dire par un commit.
+  */
+  images: string[];
+  city: string;
+  publicTargets: string[];
+  /**
+   * ⚠ MINUTES, et pas seulement heures. `durationHours` est un entier : 45
+   * minutes y valent 0 (durée effacée sur la fiche) ou 1 (durée fausse sur un
+   * document que des financeurs lisent). Les douze parcours gratuits sont
+   * tous sous l'heure.
+   */
+  durationMinutes: string;
+  methodology: string;
+  evaluation: string;
+  faq: { question: string; answer: string }[];
+
+  /**
+   * MINI-FORMATION GRATUITE EN LIGNE.
+   *
+   * ⚠ Les deux champs vont ENSEMBLE : une fiche gratuite sans adresse affiche
+   * un bouton unique qui ne mène nulle part, et l'API refuse la combinaison
+   * (`assertModeGratuitCoherent`). Le formulaire refuse donc avant l'envoi —
+   * un formulaire long qui part et revient en erreur fait perdre de vue le
+   * champ fautif, qui est pourtant à l'écran.
+   */
+  freeOnline: boolean;
+  enrollUrl: string;
 }
 
 export const EMPTY_FORMATION: FormationFormValues = {
@@ -58,6 +96,15 @@ export const EMPTY_FORMATION: FormationFormValues = {
   certifying: false,
   certificationName: "",
   attestationPrixEuros: "",
+  images: [],
+  city: "",
+  publicTargets: [],
+  durationMinutes: "",
+  methodology: "",
+  evaluation: "",
+  faq: [],
+  freeOnline: false,
+  enrollUrl: "",
 };
 
 /** Transforme les valeurs du formulaire en payload API (types nettoyés). */
@@ -86,6 +133,21 @@ export function toFormationPayload(v: FormationFormValues) {
     attestationPrixCents: v.attestationPrixEuros.trim()
       ? Math.round(Number(v.attestationPrixEuros.replace(",", ".")) * 100) || null
       : null,
+
+    // LA VITRINE. `undefined` quand c'est vide : le service ne touche alors
+    // pas au champ. Les tableaux, eux, sont toujours envoyés — sinon on ne
+    // pourrait jamais RETIRER une photo ou décocher un public.
+    images: v.images,
+    city: v.city.trim() || undefined,
+    publicTargets: v.publicTargets,
+    durationMinutes: v.durationMinutes ? Number(v.durationMinutes) : undefined,
+    methodology: v.methodology.trim() || undefined,
+    evaluation: v.evaluation.trim() || undefined,
+    // Les paires incomplètes sont écartées ici : une question sans réponse
+    // s'afficherait en accordéon vide sur la fiche publique.
+    faq: v.faq.filter((f) => f.question.trim() && f.answer.trim()),
+    freeOnline: v.freeOnline,
+    enrollUrl: v.freeOnline ? v.enrollUrl.trim() || undefined : undefined,
   };
 }
 
@@ -110,6 +172,7 @@ export function AdminFormationForm({
   onCancel: () => void;
 }) {
   const [v, setV] = useState<FormationFormValues>({ ...EMPTY_FORMATION, ...initial });
+  const [erreur, setErreur] = useState<string | null>(null);
   const isInterne = v.type === "INTERNE";
 
   function set<K extends keyof FormationFormValues>(k: K, val: FormationFormValues[K]) {
@@ -120,6 +183,20 @@ export function AdminFormationForm({
     <form
       onSubmit={(e) => {
         e.preventDefault();
+        /*
+          ⚠ LE REFUS EST PRONONCÉ ICI, AVANT L'ENVOI, et pas récupéré du 400 de
+          l'API. Un formulaire long qui part et revient en erreur fait perdre
+          de vue le champ fautif, qui est pourtant à l'écran. L'API garde la
+          même règle — c'est elle qui fait foi, le client n'est qu'une
+          politesse.
+        */
+        if (v.freeOnline && !v.enrollUrl.trim()) {
+          setErreur(
+            "Une formation gratuite en ligne doit indiquer l’adresse où elle se suit.",
+          );
+          return;
+        }
+        setErreur(null);
         onSubmit(v);
       }}
       className="space-y-4"
@@ -243,6 +320,248 @@ export function AdminFormationForm({
         />
       </Field>
 
+      {/* ═══════════════ LA VITRINE PUBLIQUE ═══════════════
+          Replié par défaut : rien ici n'est obligatoire pour enregistrer un
+          programme, et ce sont pourtant ces champs qui font la différence
+          entre une carte de catalogue qu'on survole et une fiche qu'on ouvre.
+          Les laisser hors du formulaire — ce qui était le cas jusqu'au
+          16/09/2026 — condamnait toute formation saisie à la main à rester
+          plus pauvre qu'un atelier. */}
+      <details className="rounded-xl border border-border p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground">
+          La vitrine publique — photo, ville, publics, méthode
+        </summary>
+        <div className="mt-4 space-y-4">
+          <Field
+            label="Photo de la fiche"
+            hint="Une seule suffit. Elle s’affiche sur la carte du catalogue et en tête de la fiche."
+          >
+            {v.images.length ? (
+              <div className="mb-2 flex flex-wrap gap-2">
+                {v.images.map((url, i) => (
+                  <div
+                    key={url}
+                    className="relative size-20 overflow-hidden rounded-lg border border-border"
+                  >
+                    {/* Vignette locale : `next/image` refuserait une adresse
+                        relative servie par le proxy, et 80 px n'ont pas besoin
+                        d'être optimisés. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="size-full object-cover" />
+                    <button
+                      type="button"
+                      aria-label={`Retirer la photo ${i + 1}`}
+                      onClick={() =>
+                        set(
+                          "images",
+                          v.images.filter((x) => x !== url),
+                        )
+                      }
+                      className="absolute right-0.5 top-0.5 rounded-full bg-black/70 px-1.5 text-xs text-white"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {/*
+              ⚠ FAMILLE « service », ET C'EST VOLONTAIRE. C'est la seule
+              famille d'image de fiche qui soit PUBLIQUE
+              (`FAMILLES_PUBLIQUES` dans `storage/files.service.ts`) : une
+              photo déposée dans une autre famille répondrait 401 au visiteur
+              non connecté du catalogue. Le nom de la famille dit le RÔLE —
+              illustration publique d'une fiche —, pas la table.
+            */}
+            <FileUpload
+              famille="service"
+              label="Ajouter une photo"
+              aide="ou glissez l’image ici · 5 Mo maximum"
+              onChange={(f: FichierDepose | null) => {
+                if (!f) return;
+                set("images", [...v.images, `/api/proxy/public/images/${f.id}`]);
+              }}
+            />
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Ville"
+              htmlFor="f-city"
+              hint="Où la formation se déroule. Laissez vide si elle est en ligne."
+            >
+              <Input
+                id="f-city"
+                value={v.city}
+                onChange={(e) => set("city", e.target.value)}
+                placeholder="Melun"
+              />
+            </Field>
+            <Field
+              label="Durée (minutes)"
+              htmlFor="f-minutes"
+              hint="Pour ce qui dure moins d’une heure. N’en remplissez qu’une des deux : heures ou minutes."
+            >
+              <Input
+                id="f-minutes"
+                type="number"
+                min={1}
+                value={v.durationMinutes}
+                onChange={(e) => set("durationMinutes", e.target.value)}
+                placeholder="45"
+              />
+            </Field>
+          </div>
+
+          <Field
+            label="Publics concernés"
+            hint="Sert au filtre du catalogue : cochez tout ce qui s’applique. Ce sont ceux qui SUIVENT la formation."
+          >
+            <div className="flex flex-wrap gap-2">
+              {PUBLICS_FORMATION.map((pub) => {
+                const actif = v.publicTargets.includes(pub);
+                return (
+                  <button
+                    key={pub}
+                    type="button"
+                    aria-pressed={actif}
+                    onClick={() =>
+                      set(
+                        "publicTargets",
+                        actif
+                          ? v.publicTargets.filter((x) => x !== pub)
+                          : [...v.publicTargets, pub],
+                      )
+                    }
+                    className={
+                      actif
+                        ? "rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                        : "rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    }
+                  >
+                    {pub}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <Field label="Méthodes mobilisées" htmlFor="f-methodology">
+            <Textarea
+              id="f-methodology"
+              rows={2}
+              value={v.methodology}
+              onChange={(e) => set("methodology", e.target.value)}
+              placeholder="Apports théoriques, études de cas, mises en situation…"
+            />
+          </Field>
+
+          <Field
+            label="Modalités d’évaluation"
+            htmlFor="f-evaluation"
+            hint="Attendu Qualiopi : comment on vérifie que l’objectif est atteint."
+          >
+            <Textarea
+              id="f-evaluation"
+              rows={2}
+              value={v.evaluation}
+              onChange={(e) => set("evaluation", e.target.value)}
+              placeholder="Quiz d’autocorrection en fin de module, mise en situation commentée…"
+            />
+          </Field>
+
+          <Field
+            label="Questions fréquentes"
+            hint="Chaque paire s’affiche en accordéon sur la fiche. Une paire incomplète est ignorée."
+          >
+            <div className="space-y-2">
+              {v.faq.map((item, i) => (
+                <div key={i} className="rounded-lg border border-border p-2">
+                  <Input
+                    aria-label={`Question ${i + 1}`}
+                    value={item.question}
+                    onChange={(e) =>
+                      set(
+                        "faq",
+                        v.faq.map((f, j) =>
+                          j === i ? { ...f, question: e.target.value } : f,
+                        ),
+                      )
+                    }
+                    placeholder="La formation est-elle vraiment gratuite ?"
+                  />
+                  <Textarea
+                    aria-label={`Réponse ${i + 1}`}
+                    rows={2}
+                    className="mt-2"
+                    value={item.answer}
+                    onChange={(e) =>
+                      set(
+                        "faq",
+                        v.faq.map((f, j) => (j === i ? { ...f, answer: e.target.value } : f)),
+                      )
+                    }
+                    placeholder="Oui, du premier au dernier module."
+                  />
+                  <div className="mt-2 flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => set("faq", v.faq.filter((_, j) => j !== i))}
+                    >
+                      Retirer
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => set("faq", [...v.faq, { question: "", answer: "" }])}
+              >
+                Ajouter une question
+              </Button>
+            </div>
+          </Field>
+
+          {/*
+            ⚠ LE MODE GRATUIT EN LIGNE BASCULE TOUTE LA FICHE : prix affiché
+            « Gratuit », bouton unique vers l’adresse ci-dessous, ni session ni
+            formulaire de devis. Cocher sans adresse donne un bouton qui ne
+            mène nulle part — l’API le refuse, et le formulaire aussi.
+          */}
+          <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <input
+                type="checkbox"
+                className="size-4 rounded border-input accent-primary"
+                checked={v.freeOnline}
+                onChange={(e) => set("freeOnline", e.target.checked)}
+              />
+              Mini-formation gratuite, suivie en ligne
+            </label>
+            {v.freeOnline ? (
+              <Field
+                label="Adresse où la formation se suit"
+                htmlFor="f-enroll"
+                required
+                hint="Sans elle, le seul bouton de la fiche publique ne mène nulle part."
+              >
+                <Input
+                  id="f-enroll"
+                  type="url"
+                  value={v.enrollUrl}
+                  onChange={(e) => set("enrollUrl", e.target.value)}
+                  placeholder="https://toulali.teachizy.fr/formations/..."
+                />
+              </Field>
+            ) : null}
+          </div>
+        </div>
+      </details>
+
       <Field label="Catégorie">
         <Select
           value={v.categoryId || "__none"}
@@ -302,6 +621,15 @@ export function AdminFormationForm({
           ) : null}
         </div>
       )}
+
+      {erreur ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          {erreur}
+        </p>
+      ) : null}
 
       <DialogFooter>
         <Button type="button" variant="ghost" onClick={onCancel}>

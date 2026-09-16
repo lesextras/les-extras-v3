@@ -146,14 +146,44 @@ export function TramesMaisonPanel({
     onChange();
   }
 
+  /**
+   * ⚠ L'ÉCHEC NE DOIT PAS ÊTRE AVALÉ — corrigé le 16/09/2026.
+   *
+   * Cette fonction faisait `.catch(() => undefined)` puis appelait `onChange()`
+   * SANS CONDITION : la liste se rafraîchissait, la trame revenait dans son
+   * état d'origine, et rien ne disait pourquoi. Or le refus le plus probable
+   * n'est pas une panne, c'est un DROIT : publier une trame à la portée
+   * ÉTABLISSEMENT est réservé aux rôles OWNER, ADMIN et MANAGER. Un éducateur
+   * simple membre cliquait donc sur un interrupteur qui ne bougeait jamais,
+   * sans jamais apprendre que ce n'était pas pour lui.
+   *
+   * La suppression, juste au-dessus, avait déjà reçu ce traitement ; il n'avait
+   * pas été reporté ici. Le message distingue le refus de droit du reste :
+   * « réessayez » sur un refus de droit fait réessayer indéfiniment.
+   */
   async function basculerPortee(t: TrameMaison) {
-    await fetch(`/api/proxy/assistant/trames-maison/${t.id}`, {
+    const versEtablissement = t.portee !== "ETABLISSEMENT";
+    const r = await fetch(`/api/proxy/assistant/trames-maison/${t.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        portee: t.portee === "ETABLISSEMENT" ? "PERSONNELLE" : "ETABLISSEMENT",
+        portee: versEtablissement ? "ETABLISSEMENT" : "PERSONNELLE",
       }),
-    }).catch(() => undefined);
+    }).catch(() => null);
+
+    if (!r || !r.ok) {
+      const refusDeDroit = r?.status === 403;
+      toast({
+        title: refusDeDroit
+          ? "Réservé aux responsables du compte"
+          : "Changement impossible",
+        description: refusDeDroit
+          ? "Publier une trame pour toute l’équipe demande le rôle propriétaire, administrateur ou responsable."
+          : "La portée de la trame n’a pas pu être changée. Réessayez dans un instant.",
+        variant: "error",
+      });
+      return;
+    }
     onChange();
   }
 

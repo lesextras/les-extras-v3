@@ -46,7 +46,16 @@ export const metadata: Metadata = {
     'renfort médico-social',
     'remplacement éducateur',
     'EHPAD',
-    'freelance médico-social',
+    /*
+      ⚠ « FREELANCE » A ÉTÉ RETIRÉ D'ICI LE 16/09/2026, ET NE DOIT PAS REVENIR.
+
+      C'est le vocabulaire que le Conseil d'État a écarté le 11/02/2025
+      (n° 491128) : un remplacement de poste en établissement ne se fait pas
+      sous statut d'indépendant. On écrit « remplaçant en CDD » pour le renfort
+      et « intervenant » pour les ateliers — partout, y compris dans les
+      métadonnées que personne ne lit. Une balise `keywords` ne pèse rien pour
+      Google depuis 2009 ; le mot, lui, pèse le jour où quelqu'un cite la page.
+    */
   ],
   openGraph: {
     type: 'website',

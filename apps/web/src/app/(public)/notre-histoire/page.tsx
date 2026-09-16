@@ -97,7 +97,7 @@ export default function NotreHistoirePage() {
         </p>
         <Button asChild>
           <Link href="/register">
-            Rejoindre le réseau
+            Créer un compte
             <ArrowRight />
           </Link>
         </Button>

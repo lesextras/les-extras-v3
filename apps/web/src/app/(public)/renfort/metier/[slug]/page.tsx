@@ -81,7 +81,7 @@ export default async function MetierPage({ params: paramsPromesse }: { params: P
 
       <div className="mt-7 flex flex-wrap gap-3">
         <Link
-          href="/register"
+          href="/register?type=etablissement&next=/dashboard/renforts"
           className="inline-flex h-11 items-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
         >
           Publier un besoin

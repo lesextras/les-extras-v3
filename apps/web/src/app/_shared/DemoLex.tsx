@@ -351,7 +351,7 @@ export function DemoLex() {
             ) : null}
             <Button asChild className="mt-5">
               <Link href="/register">
-                Utiliser LEX sans limite
+                Créer un compte
                 <ArrowRight />
               </Link>
             </Button>

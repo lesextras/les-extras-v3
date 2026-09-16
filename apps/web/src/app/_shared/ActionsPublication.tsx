@@ -13,9 +13,10 @@ import { ProposerFormationModal } from './ProposerFormationModal';
 import { ServiceModal } from "./modals/ServiceModal";
 import { Button } from "@/components/ui/button";
 import type { AccountRole, AccountType } from "@/lib/types";
-
-/** Rôles autorisés à publier, à l'identique de l'API. */
-const PEUT_PUBLIER: AccountRole[] = ["OWNER", "ADMIN", "MANAGER"];
+// ⚠ La règle vit dans `lib/publication.ts` depuis le 16/09/2026 : elle était
+// écrite ici et NULLE PART AILLEURS, alors que `/dashboard/ateliers` monte la
+// même modale à trois endroits sans regarder le rôle.
+import { peutPublier } from "@/lib/publication";
 
 export function ActionsPublication({
   accountId,
@@ -26,7 +27,7 @@ export function ActionsPublication({
   accountType: AccountType;
   role: AccountRole;
 }) {
-  if (!PEUT_PUBLIER.includes(role)) return null;
+  if (!peutPublier(role)) return null;
 
   const etablissement = accountType === "ESTABLISHMENT";
 

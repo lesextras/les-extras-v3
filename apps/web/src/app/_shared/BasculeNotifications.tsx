@@ -129,16 +129,32 @@ export function BasculeNotifications() {
     try {
       const inscription = await navigator.serviceWorker.ready;
       const abonnement = await inscription.pushManager.getSubscription();
+      let serveurPrevenu = true;
       if (abonnement) {
-        await fetch("/api/proxy/push/abonnement", {
+        const r = await fetch("/api/proxy/push/abonnement", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ endpoint: abonnement.endpoint }),
-        }).catch(() => undefined);
+        }).catch(() => null);
+        serveurPrevenu = Boolean(r?.ok);
         await abonnement.unsubscribe().catch(() => undefined);
       }
       setEtat("inactif");
-      setMessage("Notifications désactivées sur cet appareil.");
+      /*
+        ⚠ NE PAS ANNONCER UNE COUPURE QUI N'A PAS EU LIEU (16/09/2026).
+
+        Le désabonnement du navigateur suffit à arrêter les notifications SUR
+        CET APPAREIL, et c'est bien ce que la personne a demandé : le message
+        de succès reste donc vrai dans tous les cas. Mais si le serveur n'a pas
+        été prévenu, l'abonnement mort reste en base et sera retenté à chaque
+        envoi. On le dit — et on dit quoi faire — plutôt que d'annoncer un
+        résultat propre sur une opération à moitié faite.
+      */
+      setMessage(
+        serveurPrevenu
+          ? "Notifications désactivées sur cet appareil."
+          : "Notifications coupées sur cet appareil. Le serveur n’a pas pu être prévenu : rouvrez cette page une fois connectée pour terminer.",
+      );
     } finally {
       setOccupe(false);
     }

@@ -186,7 +186,7 @@ Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte empor
             </ul>
             <Button asChild variant="outline" className="w-full">
               <Link href="/register?type=etablissement&next=/dashboard/renforts">
-                Créer un compte établissement
+                Publier un besoin
               </Link>
             </Button>
           </CardContent>
@@ -215,7 +215,7 @@ Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte empor
             </ul>
             <Button asChild variant="outline" className="w-full">
               <Link href="/register?next=/dashboard/opportunites">
-                Créer un compte intervenant
+                Je cherche des missions
               </Link>
             </Button>
           </CardContent>
@@ -317,7 +317,7 @@ Un incident technique de notre côté, pas une absence de besoins. Réessayez da
               </p>
               <Button asChild>
                 <Link href="/register?next=/dashboard/opportunites">
-                  Voir les missions <ArrowRight className="size-4" />
+                  Je cherche des missions <ArrowRight className="size-4" />
                 </Link>
               </Button>
             </div>
@@ -363,7 +363,7 @@ Vous êtes intervenant ? C’est l’établissement qui vous embauche en CDD : a
             <div className="flex flex-wrap justify-center gap-3 pt-4">
               <Button asChild size="lg" variant="outline">
                 <Link href="/register?next=/dashboard/opportunites">
-                  Créer mon compte intervenant
+                  Je cherche des missions
                 </Link>
               </Button>
               <Button asChild size="lg" variant="ghost">
