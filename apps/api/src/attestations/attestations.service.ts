@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { StatutAttestation } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
+import { attestationSuiviPdf } from '../documents/attestation-suivi.pdf';
 import { CommanderAttestationDto } from './dto/attestation.dto';
 
 /**
@@ -31,6 +32,32 @@ import { CommanderAttestationDto } from './dto/attestation.dto';
  * Aucun ne l'est à ce jour. Le tunnel est construit et attend une décision qui
  * n'est pas technique.
  */
+/**
+ * Ce que le PDF a besoin de savoir du parcours — écrit UNE FOIS, parce que deux
+ * chemins y mènent (la délivrance et l'aperçu de l'administration) et qu'un
+ * champ oublié d'un côté produirait deux documents différents pour la même
+ * commande.
+ */
+const SELECT_FORMATION = {
+  id: true,
+  title: true,
+  slug: true,
+  summary: true,
+  objectives: true,
+  durationHours: true,
+  durationMinutes: true,
+  ownerAccount: { select: { name: true, city: true } },
+} as const;
+
+type FormationDocument = {
+  title: string;
+  summary: string | null;
+  objectives: string | null;
+  durationHours: number | null;
+  durationMinutes: number | null;
+  ownerAccount: { name: string; city: string | null } | null;
+};
+
 @Injectable()
 export class AttestationsService {
   private readonly logger = new Logger(AttestationsService.name);
@@ -277,7 +304,7 @@ export class AttestationsService {
   async delivrer(id: string) {
     const demande = await this.prisma.demandeAttestation.findUnique({
       where: { id },
-      include: { formation: { select: { title: true, slug: true } } },
+      include: { formation: { select: SELECT_FORMATION } },
     });
     if (!demande) throw new NotFoundException('Commande introuvable.');
     if (demande.statut === StatutAttestation.DELIVREE) {
@@ -295,21 +322,92 @@ export class AttestationsService {
       );
     }
 
+    const delivreeLe = new Date();
     await this.prisma.demandeAttestation.update({
       where: { id },
-      data: { statut: StatutAttestation.DELIVREE, delivreeLe: new Date() },
+      data: { statut: StatutAttestation.DELIVREE, delivreeLe },
+    });
+
+    /**
+     * ⚠ LE PDF NE DOIT PAS POUVOIR EMPÊCHER LA DÉLIVRANCE. Si sa fabrication
+     * échoue, le message part sans pièce jointe et le dit — l'association
+     * renvoie le document à la main. L'inverse (une commande payée qui reste
+     * indéfiniment « à délivrer » parce qu'une police manque) coûte bien plus
+     * cher, et se découvre par une réclamation.
+     */
+    const piece = await this.document(demande, delivreeLe).catch((e: unknown) => {
+      this.logger.error(
+        `Attestation ${demande.id} : PDF non produit — ${(e as Error).message}`,
+      );
+      return undefined;
     });
 
     await this.mail
-      .sendAttestationDelivree({
-        to: demande.email,
-        prenom: demande.prenom,
-        nom: demande.nom,
-        formation: demande.formation.title,
-      })
+      .sendAttestationDelivree(
+        {
+          to: demande.email,
+          prenom: demande.prenom,
+          nom: demande.nom,
+          formation: demande.formation.title,
+        },
+        piece,
+      )
       .catch(() => undefined);
 
-    return { delivree: true };
+    return { delivree: true, document: Boolean(piece) };
+  }
+
+  /**
+   * LE DOCUMENT LUI-MÊME.
+   *
+   * ⚠ IL NE PART PAS DE `documents/formation.pdf.ts`, et il ne peut pas : cette
+   * pièce-là naît d'une `Inscription` à une SESSION, avec des émargements, un
+   * formateur et un lieu. Un acheteur sans compte n'a rien de tout cela, et lui
+   * fabriquer une session fictive pour produire un document serait exactement
+   * ce qu'on ne fait pas.
+   */
+  private async document(
+    demande: {
+      id: string;
+      prenom: string;
+      nom: string;
+      payeeLe: Date | null;
+      delivreeLe: Date | null;
+      formation: FormationDocument;
+    },
+    delivreeLe?: Date,
+  ) {
+    const contenu = await attestationSuiviPdf({
+      demande: {
+        id: demande.id,
+        prenom: demande.prenom,
+        nom: demande.nom,
+        payeeLe: demande.payeeLe,
+        delivreeLe: delivreeLe ?? demande.delivreeLe,
+      },
+      formation: demande.formation,
+    });
+    return {
+      nom: `attestation-de-suivi-${demande.id.slice(-8)}.pdf`,
+      contenu,
+      type: 'application/pdf',
+    };
+  }
+
+  /**
+   * L'APERÇU DE L'ADMINISTRATION — le même document, avant de l'envoyer.
+   *
+   * ⚠ IL NE CHANGE AUCUN STATUT. Regarder n'est pas délivrer : sans cette
+   * séparation, la seule façon de vérifier l'orthographe d'un nom serait
+   * d'envoyer le document à la personne, c'est-à-dire trop tard.
+   */
+  async apercu(id: string) {
+    const demande = await this.prisma.demandeAttestation.findUnique({
+      where: { id },
+      include: { formation: { select: SELECT_FORMATION } },
+    });
+    if (!demande) throw new NotFoundException('Commande introuvable.');
+    return this.document(demande);
   }
 
   /**

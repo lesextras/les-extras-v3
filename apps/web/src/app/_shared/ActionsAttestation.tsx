@@ -8,9 +8,33 @@
 // panne, et on finit par cliquer trois fois.
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+
+/**
+ * L'APERÇU DU DOCUMENT — et il ne délivre rien.
+ *
+ * ⚠ REGARDER N'EST PAS DÉLIVRER. Sans ce lien, la seule façon de vérifier
+ * l'orthographe d'un nom sur la pièce serait de l'envoyer à la personne,
+ * c'est-à-dire trop tard : une attestation nominative mal orthographiée se
+ * rectifie sans frais, mais elle est déjà partie.
+ */
+function VoirLeDocument({ id }: { id: string }) {
+  return (
+    <Button asChild size="sm" variant="ghost">
+      <a
+        href={`/api/proxy/attestations/admin/${id}/document.pdf`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <FileText />
+        Voir
+      </a>
+    </Button>
+  );
+}
 
 export function ActionsAttestation({
   id,
@@ -72,11 +96,20 @@ export function ActionsAttestation({
     }
   }
 
-  if (statut === "DELIVREE" || statut === "ANNULEE") {
+  if (statut === "ANNULEE") {
     return <span className="text-xs text-muted-foreground">—</span>;
   }
   if (statut === "EN_ATTENTE_PAIEMENT") {
     return <span className="text-xs text-muted-foreground">En attente du paiement</span>;
+  }
+  // Une commande délivrée garde son document sous la main : c'est ce qui permet
+  // de le renvoyer quand un courriel se perd, sans rien re-déclencher.
+  if (statut === "DELIVREE") {
+    return (
+      <div className="flex justify-end">
+        <VoirLeDocument id={id} />
+      </div>
+    );
   }
 
   const limite = bloqueeJusquA
@@ -85,6 +118,7 @@ export function ActionsAttestation({
 
   return (
     <div className="flex justify-end gap-2">
+      <VoirLeDocument id={id} />
       <Button
         size="sm"
         disabled={busy || Boolean(bloqueeJusquA)}

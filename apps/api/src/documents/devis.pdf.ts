@@ -379,7 +379,8 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
     doc.x = MARGE;
   }
 
-  doc.flushPages();
+  // ⚠ Pas de `flushPages()` ici : il viderait le tampon de pages et `pied()`
+  // n'aurait plus aucune page à parcourir — le pied disparaîtrait sans erreur.
   pied(
     doc,
     `Devis ${q.reference} · ${prestataire.legalName ?? prestataire.name} · document généré par Les Extras`,

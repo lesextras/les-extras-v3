@@ -30,6 +30,26 @@ export function nouveauDocument(titre: string, auteur: string) {
     size: 'A4',
     margins: { top: MARGE, bottom: MARGE, left: MARGE, right: MARGE },
     info: { Title: titre, Author: auteur, Creator: 'Les Extras' },
+    /**
+     * ⚠⚠ SANS `bufferPages`, LE PIED DE PAGE N'EXISTAIT SUR AUCUN DOCUMENT.
+     *
+     * `pied()` parcourt `doc.bufferedPageRange()` pour écrire sa mention et la
+     * pagination sur chaque page. Sans cette option, pdfkit écrit les pages au
+     * fil de l'eau, la plage rendue est VIDE (count 0), la boucle ne tourne
+     * jamais — et rien n'échoue. Le défaut était donc invisible : factures,
+     * contrats CDD, devis, propositions, attestations et feuilles d'émargement
+     * sortaient tous sans leur pied ET SANS « Page N / M ».
+     *
+     * La pagination n'est pas décorative. Sur un contrat de travail ou une
+     * feuille d'émargement de plusieurs pages, elle est ce qui permet de voir
+     * qu'il n'en manque pas — c'est exactement ce qu'un contrôle regarde.
+     *
+     * ⚠ COROLLAIRE : ON N'APPELLE PLUS `doc.flushPages()` AVANT `pied()`.
+     * Vider le tampon écrit les pages et remet la plage à zéro : le pied
+     * redeviendrait muet, de la même façon silencieuse. C'est `doc.end()` qui
+     * vide le tampon, après que le pied a été posé.
+     */
+    bufferPages: true,
   });
   const morceaux: Buffer[] = [];
   doc.on('data', (m: Buffer) => morceaux.push(m));
@@ -174,6 +194,14 @@ export function ligne(doc: Doc, libelle: string, valeur: string) {
 export function encadre(doc: Doc, texte: string) {
   garderPlace(doc, 80);
   const debut = doc.y;
+  /**
+   * ⚠ ON POSE LA POLICE AVANT DE MESURER. `heightOfString` mesure avec la
+   * police et le corps COURANTS — c'est-à-dire, ici, ceux que le bloc précédent
+   * a laissés (9,5 pt le plus souvent, parfois 12 ou 15). Le cadre était donc
+   * dessiné pour un texte plus gros que celui qu'on allait y écrire, et gardait
+   * une bande vide sous la dernière ligne, variable d'un document à l'autre.
+   */
+  doc.font('Helvetica').fontSize(9);
   const hauteur =
     doc.heightOfString(texte, { width: LARGEUR_UTILE - 24, lineGap: 2 }) + 20;
   doc
@@ -257,6 +285,20 @@ export function pied(doc: Doc, mention: string) {
   const plage = doc.bufferedPageRange();
   for (let i = plage.start; i < plage.start + plage.count; i++) {
     doc.switchToPage(i);
+    /**
+     * ⚠⚠ LA MARGE BASSE EST ANNULÉE LE TEMPS D'ÉCRIRE LE PIED, ET C'EST
+     * INDISPENSABLE. Le pied se pose sous la marge du document (y = 802 pour
+     * une marge de 56 sur une page A4 de 842) : pdfkit considère alors qu'il
+     * n'y a plus de place et AJOUTE UNE PAGE — une par appel à `text()`, donc
+     * deux par page existante. Le document doublait de volume et se terminait
+     * par des pages blanches, sans qu'aucune erreur ne soit levée.
+     *
+     * On remet la marge d'origine aussitôt : elle sert encore si quelque chose
+     * écrit après (rien ne le fait aujourd'hui, mais un pied de page ne doit
+     * pas laisser le document dans un état qu'on n'a pas choisi).
+     */
+    const margeBasse = doc.page.margins.bottom;
+    doc.page.margins.bottom = 0;
     const y = 842 - MARGE + 16;
     doc
       .fillColor(GRIS_CLAIR)
@@ -268,6 +310,7 @@ export function pied(doc: Doc, mention: string) {
         align: 'right',
         lineBreak: false,
       });
+    doc.page.margins.bottom = margeBasse;
   }
 }
 

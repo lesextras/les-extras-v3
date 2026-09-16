@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { StatutAttestation } from '@prisma/client';
 import { AttestationsService } from './attestations.service';
+import * as pdf from '../documents/attestation-suivi.pdf';
 
 /**
  * L'ATTESTATION DE SUIVI — ce que la loi impose, et que le code doit tenir.
@@ -188,8 +189,121 @@ describe('Attestation : le droit de rétractation', () => {
     });
     const { svc, mail } = service(prisma);
 
-    await expect(svc.delivrer('d1')).resolves.toEqual({ delivree: true });
+    await expect(svc.delivrer('d1')).resolves.toEqual({
+      delivree: true,
+      document: true,
+    });
     expect(mail.sendAttestationDelivree).toHaveBeenCalled();
+  });
+});
+
+describe('Attestation : le document remis', () => {
+  function demandeADelivrer() {
+    return {
+      id: 'cmdemande0001abcd',
+      statut: StatutAttestation.PAYEE,
+      livrableLe: new Date(Date.now() - 86_400_000),
+      payeeLe: new Date(Date.now() - 15 * 86_400_000),
+      delivreeLe: null,
+      email: 'camille@exemple.fr',
+      prenom: 'Camille',
+      nom: 'Durand',
+      formation: {
+        id: 'f1',
+        title: 'Les premières minutes d’une crise',
+        slug: 'crise',
+        summary: 'Réduire ce que l’adulte ajoute pendant la crise.',
+        objectives: 'Repérer les trois secondes qui précèdent.',
+        durationHours: null,
+        durationMinutes: 45,
+        ownerAccount: { name: 'ADéPA', city: 'Melun' },
+      },
+    };
+  }
+
+  /**
+   * ⚠ LE PDF PART EN PIÈCE JOINTE, PAS DERRIÈRE UN LIEN. L'acheteur n'a pas de
+   * compte : un lien demanderait un jeton, une validité et une page publique de
+   * plus pour un document qu'on peut joindre — et une pièce jointe s'archive
+   * dans sa boîte, là où un lien expire.
+   */
+  it('joint le document au message de délivrance', async () => {
+    const prisma = prismaMock({ demande: demandeADelivrer() });
+    const { svc, mail } = service(prisma);
+
+    await svc.delivrer('cmdemande0001abcd');
+
+    const piece = mail.sendAttestationDelivree.mock.calls[0][1];
+    expect(piece.type).toBe('application/pdf');
+    expect(piece.nom).toMatch(/^attestation-de-suivi-.*\.pdf$/);
+    expect(piece.contenu.subarray(0, 4).toString()).toBe('%PDF');
+    expect(piece.contenu.length).toBeGreaterThan(2000);
+  });
+
+  /**
+   * ⚠ REGARDER N'EST PAS DÉLIVRER. Sans cette séparation, la seule façon de
+   * vérifier l'orthographe d'un nom sur le document serait de l'envoyer à la
+   * personne — c'est-à-dire trop tard.
+   */
+  it('l’aperçu ne change aucun statut et n’envoie rien', async () => {
+    const prisma = prismaMock({ demande: demandeADelivrer() });
+    const { svc, mail } = service(prisma);
+
+    const piece = await svc.apercu('cmdemande0001abcd');
+
+    expect(piece.contenu.subarray(0, 4).toString()).toBe('%PDF');
+    expect(prisma.demandeAttestation.update).not.toHaveBeenCalled();
+    expect(mail.sendAttestationDelivree).not.toHaveBeenCalled();
+  });
+
+  /**
+   * ⚠ UN PDF QUI NE SE FABRIQUE PAS NE DOIT PAS BLOQUER UNE COMMANDE PAYÉE.
+   * L'inverse — une commande qui reste indéfiniment « à délivrer » parce qu'une
+   * police manque — se découvre par une réclamation, des semaines plus tard.
+   */
+  it('délivre quand même si le document ne se fabrique pas', async () => {
+    const prisma = prismaMock({ demande: demandeADelivrer() });
+    const { svc, mail } = service(prisma);
+    const panne = jest
+      .spyOn(pdf, 'attestationSuiviPdf')
+      .mockRejectedValue(new Error('police introuvable'));
+
+    try {
+      const r = (await svc.delivrer('cmdemande0001abcd')) as {
+        delivree: boolean;
+        document: boolean;
+      };
+      expect(r).toEqual({ delivree: true, document: false });
+      // Le message part quand même, sans pièce jointe — et il le dit.
+      expect(mail.sendAttestationDelivree).toHaveBeenCalled();
+      expect(mail.sendAttestationDelivree.mock.calls[0][1]).toBeUndefined();
+    } finally {
+      panne.mockRestore();
+    }
+  });
+
+  /**
+   * ⚠ « CERTIFICAT » EST INTERDIT DANS LE DOCUMENT AUSSI. Même règle, même
+   * raison que pour le service : un certificat désigne une certification
+   * enregistrée au RNCP ou au Répertoire spécifique ; Qualiopi certifie un
+   * PROCESSUS. « certification professionnelle » reste autorisé — c'est
+   * précisément la mention qui doit figurer sur la pièce.
+   */
+  it('n’écrit jamais « certificat » sur la pièce', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const source: string = require('node:fs').readFileSync(
+      require('node:path').join(__dirname, '..', 'documents', 'attestation-suivi.pdf.ts'),
+      'utf8',
+    );
+    const sansCommentaires = source
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '');
+    expect(sansCommentaires.match(/certificat(?!ion)/gi) ?? []).toEqual([]);
+    expect(/attestation de suivi/i.test(sansCommentaires)).toBe(true);
+    // Et ce que la pièce n'ouvre pas est écrit dessus, pas seulement dans les CGV.
+    expect(/ni un diplôme, ni une certification professionnelle/i.test(source)).toBe(
+      true,
+    );
   });
 });
 

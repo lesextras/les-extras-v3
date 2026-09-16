@@ -172,7 +172,8 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
 
   signatures(doc, `Pour l'employeur, ${employeur.legalName ?? employeur.name}`, `Le salarié, ${salarie}`);
 
-  doc.flushPages();
+  // ⚠ Pas de `flushPages()` ici : il viderait le tampon de pages et `pied()`
+  // n'aurait plus aucune page à parcourir — le pied disparaîtrait sans erreur.
   pied(
     doc,
     `Contrat ${c.id.slice(-8).toUpperCase()} · ${employeur.legalName ?? employeur.name} · document généré par Les Extras`,

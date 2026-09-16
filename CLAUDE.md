@@ -4031,8 +4031,116 @@ sur PostgreSQL 16 réel. 735 tests API, 117 web.
 ### Ce qui reste avant d'encaisser
 
 1. **Le médiateur CECMC.** Sans lui, la clause des CGV est nulle.
-2. **Le PDF de l'attestation.** `documents/formation.pdf.ts` sait déjà produire
-   une attestation, mais depuis une `Inscription` — un acheteur sans compte n'en
-   a pas. Aujourd'hui la délivrance envoie un courriel ; le document joint est
-   le chantier suivant.
-3. **Poser le prix** sur les fiches concernées, dans l'administration.
+2. **Poser le prix** sur les fiches concernées, dans l'administration.
+
+*(Le PDF, qui figurait ici, est fait — voir la section suivante.)*
+
+### ⚠ LE DÉPLOIEMENT DU 16/09 A ÉCHOUÉ UNE FOIS, ET LA CAUSE VAUT D'ÊTRE SUE
+
+Le premier déploiement de `86e00a0` est tombé en **Échec** après 4 m 35 s. Rien
+dans le journal : pas une erreur, pas un « Error », pas un `successfully
+started`. Le conteneur bootait encore (routes en cours de mappage) **deux
+minutes et quart** après son lancement, et la fenêtre de la vérification de
+santé a expiré avant la fin.
+
+La cause : le Dockerfile fait `prisma db push` **au démarrage**, avant Nest. La
+migration des attestations crée une table et une énumération ; ce premier
+`db push` a mangé le délai de santé. Le schéma, lui, a bien été appliqué avant
+que le conteneur ne soit tué.
+
+**Le remède est donc simplement de relancer** : au second passage `db push` n'a
+plus rien à faire, le boot est rapide, la santé passe. Vérifié en direct —
+`POST /api/attestations` est passé de 404 à **400**, `GET
+/api/attestations/admin` à **401**.
+
+⚠ **NE PAS TOUCHER AU CODE APRÈS UN ÉCHEC DE CE TYPE.** Un déploiement qui
+échoue sans une seule erreur dans le journal, sur un commit qui ajoute une
+table, est un délai de santé, pas un bogue. Relancer d'abord, lire ensuite.
+
+⚠ **Coolify traduit son interface en français et le résultat trompe** : l'état
+« Running » s'affiche « Course », la section Deployment « Refroidir ». Et le
+journal est une liste **virtualisée** : `get_page_text` n'en rend qu'une
+fenêtre. Pour le lire en entier, passer par le champ « Trouver dans les
+journaux » (il filtre sur la totalité), pas par le défilement.
+
+## LE PDF DE L'ATTESTATION, ET LE PIED DE PAGE DE TOUS LES DOCUMENTS — 16/09/2026
+
+### `documents/attestation-suivi.pdf.ts`
+
+⚠ **CE N'EST PAS `formation.pdf.ts`, ET ÇA NE POUVAIT PAS L'ÊTRE.**
+L'attestation d'assiduité de ce fichier-là part d'une `Inscription` : un
+apprenant inscrit à une SESSION, des émargements, un formateur, un lieu, des
+demi-journées. L'acheteur n'a rien de tout cela — il n'a pas de compte, il suit
+le parcours sur la plateforme pédagogique. Lui fabriquer une session fictive
+pour produire un document aurait été exactement ce qu'on ne fait pas.
+
+⚠ **L'ASSIDUITÉ N'EST PAS MESURÉE, ET LE DOCUMENT LE DIT.** Rien, dans ce
+dépôt, ne relie une adresse e-mail à une progression sur Teachizy. La pièce
+porte donc un encadré « Portée de la présente attestation » : établie **sur la
+déclaration** de la personne, elle ne constate ni présence contrôlée ni
+résultat à une évaluation. Un document qui laisserait croire à une présence
+vérifiée serait la pratique commerciale trompeuse (art. L121-1 c. conso) que
+toute cette chaîne évite. **Ne pas retirer cet encadré pour « faire plus
+sérieux » : c'est lui qui rend la pièce défendable.**
+
+Le second encadré dit ce qu'elle n'ouvre pas — ni diplôme, ni certification
+professionnelle, ni RNCP, ni Répertoire spécifique, aucun titre, aucun droit à
+exercer — avec le NDA et la réserve d'usage.
+
+- **La pièce part en PIÈCE JOINTE du message de délivrance**, pas derrière un
+  lien : l'acheteur n'a pas de compte, un lien demanderait un jeton, une durée
+  de validité et une page publique de plus — et une pièce jointe s'archive dans
+  sa boîte là où un lien expire.
+- ⚠ **UN PDF QUI NE SE FABRIQUE PAS NE BLOQUE PAS LA DÉLIVRANCE.** Le message
+  part sans pièce et le dit ; l'association renvoie le document à la main.
+  L'inverse — une commande payée qui reste « à délivrer » parce qu'une police
+  manque — se découvre par une réclamation, des semaines plus tard.
+- `GET /attestations/admin/:id/document.pdf` (AdminGuard) rend **le même
+  document sans rien délivrer**. ⚠ Regarder n'est pas délivrer : sans cette
+  route, la seule façon de vérifier l'orthographe d'un nom serait d'envoyer la
+  pièce à la personne, c'est-à-dire trop tard. Bouton « Voir » sur
+  `/admin/attestations`, y compris sur les commandes déjà délivrées — c'est ce
+  qui permet de renvoyer le document quand un courriel se perd.
+- `SELECT_FORMATION` est écrit **une seule fois** : deux chemins mènent au PDF
+  (délivrance et aperçu), et un champ oublié d'un côté produirait deux
+  documents différents pour la même commande.
+- La durée s'affiche **dans l'unité saisie** (`durationMinutes` d'abord) : 45
+  minutes arrondies en heures vaudraient 0 ou 1 sur un document remis à
+  quelqu'un.
+
+### ⚠⚠ LE PIED DE PAGE N'EXISTAIT SUR AUCUN DOCUMENT — DEPUIS TOUJOURS
+
+Trouvé en regardant le premier rendu de l'attestation. **Deux défauts
+superposés, et aucun des deux ne levait la moindre erreur :**
+
+1. `nouveauDocument` n'ouvrait pas le document avec **`bufferPages`**. `pied()`
+   parcourt `doc.bufferedPageRange()` : la plage était VIDE (`count` 0), la
+   boucle ne tournait jamais. **Factures, contrats CDD, devis, propositions,
+   attestations, certificats de réalisation et feuilles d'émargement sortaient
+   tous sans leur mention de pied ET SANS « Page N / M ».** Une feuille
+   d'émargement ou un CDD non paginés, ce sont des pages qu'on peut retirer sans
+   que cela se voie — précisément ce qu'un contrôle regarde.
+2. `bufferPages` posé, le pied s'écrit à y = 802 sur une page de 842 avec une
+   marge de 56 : **sous la marge basse**. pdfkit en concluait qu'il manquait de
+   place et **ajoutait une page à chaque appel à `text()`** — une attestation
+   d'une page en faisait trois, dont deux blanches. `pied()` annule donc la
+   marge basse le temps d'écrire, et la remet.
+
+⚠ **COROLLAIRE : `doc.flushPages()` A ÉTÉ RETIRÉ DES SIX GÉNÉRATEURS.** Vider
+le tampon avant `pied()` remet la plage à zéro et le pied redevient muet, de la
+même façon silencieuse. C'est `doc.end()` qui vide le tampon, après le pied.
+
+⚠ **`encadre()` mesurait avec la MAUVAISE POLICE.** `heightOfString` mesure
+avec le corps courant — celui que le bloc précédent a laissé (9,5 pt, parfois
+12 ou 15) — alors que le texte s'écrit en 9 pt. Le cadre gardait une bande vide
+sous sa dernière ligne, variable d'un document à l'autre. La police est
+maintenant posée **avant** la mesure.
+
+**`documents/pied-de-page.spec.ts` verrouille les trois.** ⚠ Il ne cherche pas
+la chaîne « Page 1 / 1 » telle quelle dans le fichier : pdfkit compresse ses
+flux et y découpe chaque mot en morceaux hexadécimaux séparés par du crénage
+(`[<50> 40 <616765…> 0] TJ`). Le test décompresse et recolle les morceaux —
+un test naïf passerait pour une preuve sans en être une. Il vérifie aussi le
+**nombre de pages**, seule assertion qui attrape le second défaut.
+
+**742 tests API / 63 suites, 117 tests web.**

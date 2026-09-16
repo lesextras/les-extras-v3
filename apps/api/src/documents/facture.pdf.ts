@@ -285,7 +285,8 @@ export async function facturePdf(d: DonneesFacturePdf): Promise<Buffer> {
     `Document comptable à conserver. Facture ${f.number}, ${emise ? 'émise' : 'établie'} le ${dateFr(emission)} par ${emetteur.legalName ?? emetteur.name}. En cas de désaccord sur son contenu, contactez l'émetteur${echeance ? ` avant le ${dateFr(echeance)}` : ' sans attendre'}.`,
   );
 
-  doc.flushPages();
+  // ⚠ Pas de `flushPages()` ici : il viderait le tampon de pages et `pied()`
+  // n'aurait plus aucune page à parcourir — le pied disparaîtrait sans erreur.
   pied(
     doc,
     `Facture ${f.number} · ${emetteur.legalName ?? emetteur.name} · document généré par Les Extras`,

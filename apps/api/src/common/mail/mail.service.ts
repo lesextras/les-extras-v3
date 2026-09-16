@@ -2075,12 +2075,27 @@ export class MailService implements OnModuleDestroy {
   }
 
   /** L'attestation est délivrée. */
-  async sendAttestationDelivree(data: {
-    to: string;
-    prenom: string;
-    nom: string;
-    formation: string;
-  }): Promise<void> {
+  /**
+   * ⚠ LE DOCUMENT EST EN PIÈCE JOINTE, PAS DERRIÈRE UN LIEN. L'acheteur n'a pas
+   * de compte : un lien de téléchargement demanderait un jeton, donc une colonne,
+   * une durée de validité et une page publique de plus — trois choses à tenir
+   * pour un document de deux pages qu'on peut simplement joindre. Et une pièce
+   * jointe s'archive dans la boîte de la personne, là où un lien finit par
+   * expirer.
+   *
+   * `piece` reste facultative : si la fabrication du PDF échoue, le message part
+   * quand même, et l'association renvoie le document à la main. Un acheteur qui
+   * a payé doit recevoir quelque chose.
+   */
+  async sendAttestationDelivree(
+    data: {
+      to: string;
+      prenom: string;
+      nom: string;
+      formation: string;
+    },
+    piece?: PieceJointe,
+  ): Promise<void> {
     await this.send(
       data.to,
       `Votre attestation de suivi est prête`,
@@ -2089,6 +2104,11 @@ export class MailService implements OnModuleDestroy {
         `<p>Voici votre <b>attestation de suivi</b> du parcours
          « ${echapper(data.formation)} », établie au nom de
          ${echapper(data.prenom)} ${echapper(data.nom)}.</p>
+         ${
+           piece
+             ? `<p style="margin:12px 0 0">Le document est <b>joint à ce message</b>, au format PDF.</p>`
+             : `<p style="margin:12px 0 0">Le document vous parvient séparément, sous quelques jours.</p>`
+         }
          <p style="margin:12px 0 0">Elle atteste que vous avez suivi ce parcours.
          <b>Ce n’est ni un diplôme, ni une certification professionnelle.</b></p>
          <p style="margin:12px 0 0">Une erreur sur votre nom ou sur l’intitulé&nbsp;? Répondez à ce
@@ -2097,6 +2117,7 @@ export class MailService implements OnModuleDestroy {
            Siham, pour l’association ADéPA.
          </div>`,
       ),
+      piece ? [piece] : undefined,
     );
   }
 

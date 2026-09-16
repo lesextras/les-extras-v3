@@ -220,7 +220,8 @@ export async function formationPdf(
   doc.y = y + 92;
   doc.x = MARGE;
 
-  doc.flushPages();
+  // ⚠ Pas de `flushPages()` ici : il viderait le tampon de pages et `pied()`
+  // n'aurait plus aucune page à parcourir — le pied disparaîtrait sans erreur.
   pied(
     doc,
     `${titre} · ${organisme} · référence ${i.id.slice(-8).toUpperCase()}`,
@@ -367,7 +368,8 @@ export async function emargementPdf(d: DonneesEmargementPdf): Promise<Buffer> {
     );
   }
 
-  doc.flushPages();
+  // ⚠ Pas de `flushPages()` ici : il viderait le tampon de pages et `pied()`
+  // n'aurait plus aucune page à parcourir — le pied disparaîtrait sans erreur.
   pied(doc, `Feuille d'émargement · ${organisme} · session ${s.id.slice(-8).toUpperCase()}`);
   doc.end();
   return termine;

@@ -166,7 +166,8 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
     "1. Vous acceptez cette proposition. 2. Votre établissement établit le contrat à durée déterminée : depuis l'écran Contrats CDD, les éléments ci-dessus sont repris automatiquement et il ne reste qu'à compléter les mentions qui relèvent de vous, convention collective, caisse de retraite complémentaire, organisme de prévoyance. 3. L'outil vérifie que rien ne manque au regard de l'article L. 1242-12 avant de vous laisser transmettre le contrat au salarié, calcule la période d'essai, l'indemnité de fin de contrat et le délai de carence, et contrôle que les plafonds de durée du travail sont respectés : tous employeurs confondus.",
   );
 
-  doc.flushPages();
+  // ⚠ Pas de `flushPages()` ici : il viderait le tampon de pages et `pied()`
+  // n'aurait plus aucune page à parcourir — le pied disparaîtrait sans erreur.
   pied(
     doc,
     `Proposition ${d.booking.id.slice(-8).toUpperCase()} · Les Extras, ADéPA77 · ce document n'est pas un contrat de travail`,
