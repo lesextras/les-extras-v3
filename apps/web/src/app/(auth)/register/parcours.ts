@@ -106,7 +106,6 @@ export type CleCompte = 'ESTABLISHMENT' | 'FREELANCE' | 'PARTICULIER';
 export type CleEtape =
   | 'profil'
   | 'identite'
-  | 'etablissement'
   | 'poste'
   | 'structure'
   | 'activites'
@@ -134,7 +133,21 @@ const ETAPE_IDENTITE: Etape = {
 };
 
 /**
- * QUATRE ÉTAPES — ET L'ORDRE N'EST PAS ARBITRAIRE.
+ * ⚠ L'ÉTAPE « votre service » N'EXISTE PLUS, ET IL NE FAUT PAS LA REMETTRE.
+ *
+ * Elle ne portait qu'un champ facultatif et une phrase d'explication : un
+ * écran entier — titre, lecture, bouton Continuer — pour taper « Internat ».
+ * Le service est maintenant demandé avec l'établissement, l'entité employeuse
+ * et le poste, sur l'étape des identifiants : « l'ESAT Corail de l'ADSEA,
+ * internat, chef de service » est une seule phrase, elle se remplit d'un seul
+ * tenant.
+ *
+ * Ce qui reste ici est ce qui ne tient pas sur une ligne : le niveau de
+ * responsabilité et les droits.
+ */
+
+/**
+ * TROIS ÉTAPES POUR UN ÉTABLISSEMENT — ET L'ORDRE N'EST PAS ARBITRAIRE.
  *
  * ⚠⚠ LA SITUATION VIENT AVANT LES IDENTIFIANTS, ET C'EST CE QUI PERMET DE
  * CRÉER LE COMPTE JUSTE DU PREMIER COUP.
@@ -166,16 +179,10 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
     ETAPE_PROFIL,
     ETAPE_IDENTITE,
     {
-      cle: 'etablissement',
-      titre: 'Votre service',
-      explication:
-        'Internat, pôle jour, SESSAD… Facultatif, et modifiable à tout moment depuis votre espace.',
-    },
-    {
       cle: 'poste',
-      titre: 'Votre poste et vos droits',
+      titre: 'Votre niveau et vos droits',
       explication:
-        'Ce que vous faites, et ce que vous pouvez engager pour votre établissement. C’est cette déclaration qui décide de ce que vous voyez et de ce que vous pouvez faire.',
+        'Ce que vous pouvez engager pour votre établissement. C’est cette déclaration qui décide de ce que vous voyez et de ce que vous pouvez faire.',
     },
   ],
   /**

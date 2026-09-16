@@ -33,22 +33,23 @@ describe('parcours d’inscription', () => {
     });
 
     /**
-     * ⚠ NE PAS « RÉPARER » CE TEST en déplaçant l'étape. Le nom de
-     * l'établissement doit être saisi AVANT la création du compte, parce que
-     * c'est lui qui fixe le slug. Une étape « établissement » placée avant
-     * « identite » ramènerait le défaut de l'adresse publique.
+     * ⚠ NE PAS « RÉPARER » CE TEST en ajoutant une étape de lieu de travail.
+     *
+     * L'établissement, l'entité qui emploie, le service et le poste sont
+     * saisis DANS « vos identifiants », et le nom de l'établissement doit y
+     * rester : c'est lui qui fixe le slug, calculé une seule fois à la
+     * création. Une étape « établissement » séparée, avant ou après, ramène
+     * l'un des deux défauts qu'on a payés — l'adresse publique au prénom de la
+     * personne, ou un écran entier pour taper « Internat ».
      */
-    it('ne demande le lieu de travail qu’APRÈS la création du compte', () => {
-      const etapes = PARCOURS.ESTABLISHMENT.map((e) => e.cle);
-      const identite = etapes.indexOf('identite');
-      const lieu = etapes.indexOf('etablissement');
-      expect(lieu).toBeGreaterThan(identite);
+    it('ne fait pas d’étape à part du lieu de travail', () => {
+      const cles = PARCOURS.ESTABLISHMENT.map((e) => e.cle);
+      expect(cles).toEqual(['profil', 'identite', 'poste']);
     });
 
     it('n’impose aucune étape de lieu à un intervenant ni à un particulier', () => {
       for (const type of ['FREELANCE', 'PARTICULIER'] as const) {
         const cles = PARCOURS[type].map((e) => e.cle);
-        expect(cles).not.toContain('etablissement');
         expect(cles).not.toContain('poste');
       }
     });

@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight, Building2, Lock, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building2, Lock, Mail, Phone, Users } from 'lucide-react';
 import { registerSchema, type RegisterValues } from '@/lib/validation';
 import { register as registerAccount } from '@/lib/auth-client';
 import { apiRequest } from '@/lib/api';
 import { lancerConfettis } from '@/lib/confetti';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import {
   Form,
@@ -26,13 +27,14 @@ import { CarteChoix } from './CarteChoix';
 import { CHOIX_COMPTE, PARCOURS, type CleCompte, type CleEtape } from './parcours';
 import { Progression } from './Progression';
 import {
+  ChampPoste,
+  ChampStructure,
   EtapeActivites,
   EtapeDisponibilite,
-  EtapeLieuDeTravail,
   EtapePoste,
   EtapeStructure,
   LIEU_VIDE,
-  RechercheLieu,
+  RechercheEtablissement,
   type LieuDeTravail,
 } from './Etapes';
 
@@ -40,7 +42,7 @@ import {
  * L'INSCRIPTION, EN ÉTAPES.
  *
  * Ordre, selon le compte :
- *   établissement → situation, identifiants, où vous travaillez, votre poste
+ *   établissement → situation, identifiants (avec le lieu de travail), vos droits
  *   intervenant   → situation, identifiants, votre structure, ce que vous faites
  *   particulier   → situation, identifiants, ce que vous cherchez
  *
@@ -193,7 +195,7 @@ export default function RegisterPage() {
         title: 'Compte créé',
         description:
           typeChoisi === 'ESTABLISHMENT'
-            ? 'Vous êtes entré. Encore deux questions, et rien n’est obligatoire.'
+            ? 'Vous êtes entré. Une dernière question, et rien n’est obligatoire.'
             : 'Bienvenue ! Votre espace est prêt.',
         variant: 'success',
       });
@@ -212,8 +214,17 @@ export default function RegisterPage() {
        * Toutes ces étapes se repassent depuis l'espace — le compte, lui, est
        * déjà créé et complet.
        */
-      if (typeChoisi === 'ESTABLISHMENT') allerA('etablissement');
-      else if (typeChoisi === 'FREELANCE') allerA('structure');
+      /**
+       * ⚠ LE LIEU DE TRAVAIL EST ÉCRIT ICI, JUSTE APRÈS LA CRÉATION, et plus à
+       * la validation d'une étape à lui. Il est saisi avec les identifiants —
+       * établissement, entité employeuse, service, poste — mais ses écritures
+       * demandent une session : elles ne pouvaient pas partir avant. Elles
+       * partent donc maintenant, et chacune reste tolérante à l'échec.
+       */
+      if (typeChoisi === 'ESTABLISHMENT') {
+        await enregistrerLieu();
+        allerA('poste');
+      } else if (typeChoisi === 'FREELANCE') allerA('structure');
       else if (typeChoisi === 'PARTICULIER') allerA('disponibilite');
       else terminer();
     } catch (err) {
@@ -237,7 +248,6 @@ export default function RegisterPage() {
    * sait nommer : un collègue a déjà créé ce nom.
    */
   async function enregistrerLieu() {
-    setSubmitting(true);
     try {
       if (lieu.rejoindre) {
         await apiRequest('/organisation/rejoindre', {
@@ -277,8 +287,6 @@ export default function RegisterPage() {
         );
       }
 
-      lancerConfettis();
-      allerA('poste');
     } finally {
       setSubmitting(false);
     }
@@ -313,92 +321,169 @@ export default function RegisterPage() {
             noValidate
           >
             {/*
-              LE NOM DE L'ÉTABLISSEMENT EST ICI, ET IL DOIT Y RESTER.
+              OÙ VOUS TRAVAILLEZ — QUATRE CHAMPS, UN SEUL ÉCRAN.
+              ------------------------------------------------------------
+              L'établissement, l'entité qui emploie, le service et le poste
+              ne forment qu'une seule phrase : « l'ESAT Corail de l'ADSEA,
+              internat, chef de service ». On la posait sur trois écrans, et
+              le champ fusionné qui devait arranger ça n'était clair pour
+              personne — on ne savait plus à laquelle des deux questions on
+              répondait. Deux champs CÔTE À CÔTE, puis deux autres : on voit
+              la phrase entière, et chaque question reste distincte.
+
+              ⚠ LE NOM DE L'ÉTABLISSEMENT DOIT RESTER SUR CETTE ÉTAPE-CI.
               C'est lui qui fixe le nom du compte ET son slug — l'adresse
               publique — tous deux posés à la création et jamais recalculés.
-              Le demander plus loin obligerait à renommer un compte déjà créé,
-              et l'adresse garderait pour toujours le prénom de la personne.
+              Le demander plus loin obligerait à renommer un compte déjà
+              créé, et l'adresse garderait pour toujours le prénom de la
+              personne.
+
+              ⚠ AUCUN DE CES CHAMPS N'ÉCRIT QUOI QUE CE SOIT ICI : le compte
+              n'existe pas encore. Le rattachement, la structure et le
+              service partent juste après la création (`enregistrerLieu`) ;
+              le poste et le statut cadre partent avec le niveau et les
+              droits, à l'étape suivante, en un seul PATCH.
             */}
             {typeChoisi === 'ESTABLISHMENT' && (
-              <FormField
-                control={form.control}
-                name="organizationName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>Votre établissement</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="ESAT Corail, DAIS, MECS Les Tilleuls…"
-                        autoComplete="organization"
-                        leftIcon={<Building2 />}
-                        {...field}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Tapez son nom : nous vous proposons l’établissement s’il est
-                      déjà là, et l’association qui le gère.
-                    </FormDescription>
-                    <FormMessage />
+              <section className="space-y-5 rounded-xl border border-border bg-card p-4">
+                <div>
+                  <h2 className="text-sm font-semibold">Où vous travaillez</h2>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
+                    C’est une déclaration, comme sur LinkedIn : rien n’est
+                    vérifié, et vous n’attendez l’autorisation de personne.
+                  </p>
+                </div>
 
-                    {/*
-                      ⚠⚠ LA RECHERCHE PENDANT LA FRAPPE EST LE SEUL GARDE-FOU
-                      CONTRE LES DOUBLONS D'ÉTABLISSEMENT, ET ELLE DOIT RESTER
-                      COLLÉE À CE CHAMP.
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="organizationName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel required>Nom de votre établissement</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="ESAT Corail, DAIS, MECS Les Tilleuls…"
+                            autoComplete="organization"
+                            leftIcon={<Building2 />}
+                            {...field}
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Le vôtre, pas celui du groupe.
+                        </FormDescription>
+                        <FormMessage />
 
-                      Elle avait disparu en déplaçant le nom de l'établissement
-                      dans « Vos identifiants » : le composant existait toujours
-                      mais n'était plus appelé nulle part, et quelqu'un qui
-                      tapait « MECS » ne voyait plus les MECS déjà déclarées. Le
-                      résultat, c'est un douzième homonyme en base — et le
-                      doublon d'établissement est le plus coûteux des trois,
-                      parce qu'il coupe une équipe en deux sans que personne ne
-                      s'en aperçoive.
+                        {/*
+                          ⚠⚠ LA RECHERCHE PENDANT LA FRAPPE EST LE SEUL
+                          GARDE-FOU CONTRE LES DOUBLONS D'ÉTABLISSEMENT, ET
+                          ELLE DOIT RESTER COLLÉE À CE CHAMP.
 
-                      Reconnaître le sien ne crée rien tout de suite : on note
-                      l'intention, et le rattachement est demandé une fois le
-                      compte créé (voir `enregistrerLieu`). Il arrive NON
-                      VÉRIFIÉ — c'est un collègue de la maison qui confirme.
-                    */}
-                    {lieu.rejoindre ? (
-                      <div className="mt-2 flex items-start gap-2.5 rounded-lg border-2 border-primary/45 bg-primary-soft/30 p-3">
-                        <Building2 aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-medium">
-                            {lieu.rejoindre.name}
-                          </span>
-                          <span className="block text-xs text-muted-foreground" lang="fr">
-                            Vous demanderez à rejoindre cet établissement. Un
-                            collègue confirmera votre rattachement.
-                          </span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setLieu((l) => ({ ...l, rejoindre: null }))}
-                          className="shrink-0 text-xs font-medium text-primary hover:underline"
-                        >
-                          Annuler
-                        </button>
-                      </div>
-                    ) : (
-                      <RechercheLieu
-                        nom={field.value ?? ''}
-                        structureChoisie={lieu.structure}
-                        onRejoindre={(etablissement) => {
-                          setLieu((l) => ({ ...l, rejoindre: etablissement }));
-                          // Le nom saisi devient celui de l'établissement
-                          // reconnu : sans cela le compte naîtrait sous
-                          // « mecs » et l'adresse publique avec.
-                          form.setValue('organizationName', etablissement.name, {
-                            shouldValidate: true,
-                          });
-                        }}
-                        onStructure={(v) => setLieu((l) => ({ ...l, ...v }))}
-                      />
+                          Elle avait déjà disparu une fois, en déplaçant le
+                          nom de l'établissement dans « Vos identifiants » :
+                          le composant existait toujours mais n'était plus
+                          appelé nulle part, et quelqu'un qui tapait « MECS »
+                          ne voyait plus les MECS déjà déclarées. Le résultat,
+                          c'est un douzième homonyme en base — et le doublon
+                          d'établissement est le plus coûteux des trois, parce
+                          qu'il coupe une équipe en deux sans que personne ne
+                          s'en aperçoive.
+
+                          Reconnaître le sien ne crée rien tout de suite : on
+                          note l'intention, et le rattachement est demandé une
+                          fois le compte créé. Il arrive NON VÉRIFIÉ — c'est un
+                          collègue de la maison qui confirme.
+                        */}
+                        {lieu.rejoindre ? (
+                          <div className="mt-2 flex items-start gap-2.5 rounded-lg border-2 border-primary/45 bg-primary-soft/30 p-3">
+                            <Building2 aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm font-medium">
+                                {lieu.rejoindre.name}
+                              </span>
+                              <span className="block text-xs text-muted-foreground" lang="fr">
+                                Vous demanderez à rejoindre cet établissement. Un
+                                collègue confirmera votre rattachement.
+                              </span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setLieu((l) => ({ ...l, rejoindre: null }))}
+                              className="shrink-0 text-xs font-medium text-primary hover:underline"
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        ) : (
+                          <RechercheEtablissement
+                            nom={field.value ?? ''}
+                            onRejoindre={(etablissement) => {
+                              setLieu((l) => ({ ...l, rejoindre: etablissement }));
+                              // Le nom saisi devient celui de l'établissement
+                              // reconnu : sans cela le compte naîtrait sous
+                              // « mecs » et l'adresse publique avec.
+                              form.setValue('organizationName', etablissement.name, {
+                                shouldValidate: true,
+                              });
+                            }}
+                          />
+                        )}
+                      </FormItem>
                     )}
-                  </FormItem>
-                )}
-              />
+                  />
+
+                  {/*
+                    L'ENTITÉ QUI EMPLOIE — l'autre moitié de la phrase.
+                    On cherche d'abord parmi les structures déjà déclarées sur
+                    Les Extras, puis dans l'annuaire public ; et la saisie à la
+                    main reste ouverte, parce que beaucoup de petites
+                    associations n'y figurent pas.
+                  */}
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="employeur">Qui vous emploie</Label>
+                    <ChampStructure
+                      valeur={{ structureId: lieu.structureId, structure: lieu.structure }}
+                      onChange={(v) => setLieu((l) => ({ ...l, ...v }))}
+                      placeholder="ADSEA, Fondation Poidatz, 820051852…"
+                    />
+                    <p className="text-xs text-muted-foreground" lang="fr">
+                      L’entreprise, l’association, la fondation ou l’institution
+                      qui vous emploie. Facultatif.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="service">Nom de votre service, unité</Label>
+                    <Input
+                      id="service"
+                      value={lieu.service}
+                      onChange={(e) => setLieu((l) => ({ ...l, service: e.target.value }))}
+                      placeholder="Internat, Pôle jour, SESSAD…"
+                      leftIcon={<Users />}
+                      autoComplete="off"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Facultatif, et modifiable depuis votre espace.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="poste">Votre poste</Label>
+                    <ChampPoste
+                      poste={lieu.poste}
+                      setPoste={(v) => setLieu((l) => ({ ...l, poste: v }))}
+                      cadre={lieu.cadre}
+                      setCadre={(v) => setLieu((l) => ({ ...l, cadre: v }))}
+                    />
+                    <p className="text-xs text-muted-foreground" lang="fr">
+                      Tel qu’il figure sur votre fiche de poste.
+                    </p>
+                  </div>
+                </div>
+              </section>
             )}
 
             {/* L'API stocke un prénom et un nom séparés : c'est la personne qui
@@ -601,52 +686,18 @@ export default function RegisterPage() {
       )}
 
       {/* ---------------------------------------------------------------- */}
-      {/* Étape 3 — où vous travaillez                                       */}
+      {/* Étape 3 — le niveau et les droits                                  */}
       {/* ---------------------------------------------------------------- */}
-      {etape === 'etablissement' && (
-        <div className="space-y-4">
-          {/*
-            ⚠ L'EXPLICATION EST DANS LA PREMIÈRE CARTE DE L'ÉTAPE, en une
-            ligne. Elle tenait ici en trois paragraphes au-dessus de deux champs
-            facultatifs : plus de texte que de formulaire, sur un écran que
-            personne ne lit — on y cherche le champ.
-          */}
-          <EtapeLieuDeTravail lieu={lieu} setLieu={setLieu} />
-
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="ghost" onClick={terminer}>
-              Je le ferai plus tard
-            </Button>
-            <Button
-              type="button"
-              className="ml-auto"
-              size="lg"
-              loading={submitting}
-              onClick={() => void enregistrerLieu()}
-            >
-              Continuer
-              {!submitting && <ArrowRight />}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ---------------------------------------------------------------- */}
-      {/* Étape 4 — le poste                                                 */}
-      {/* ---------------------------------------------------------------- */}
+      {/*
+        ⚠ PAS DE « RETOUR » ICI, ET CE N'EST PAS UN OUBLI. L'étape précédente
+        est celle qui a CRÉÉ le compte : y revenir proposerait de le créer une
+        seconde fois. Tout ce qui s'y remplit se remodifie depuis l'espace,
+        sur « Mon poste ».
+      */}
       {etape === 'poste' && (
         <>
-          <EtapePoste onFait={terminer} />
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => allerA('etablissement')}
-            >
-              <ArrowLeft />
-              Retour
-            </Button>
+          <EtapePoste poste={lieu.poste} cadre={lieu.cadre} onFait={terminer} />
+          <div className="mt-3 flex items-center justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={terminer}>
               Je le ferai plus tard
             </Button>

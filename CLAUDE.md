@@ -3703,3 +3703,47 @@ sur chaque face : trois boutons identiques sous trois cartes qui SONT déjà des
 boutons — la même action écrite quatre fois sur le même écran. Si quelqu'un le
 remet, c'était un `<span>`, jamais un `<button>` : un bouton dans un bouton est
 du HTML invalide que chaque navigateur répare à sa façon.
+
+### 16/09 — le champ fusionné est annulé : quatre champs, un seul écran
+
+**La fusion « votre établissement » + « votre structure » en UN champ était une
+erreur, et elle a été défaite le jour même.** Une seule frappe interrogeait les
+deux annuaires : taper « les extras » proposait dessous une association sans
+rapport, et rien ne disait à laquelle des deux questions on répondait. Siham :
+*« il faut 2 champs l'un à côté de l'autre […] car c'est pas clair là »*.
+
+L'étape **« Vos identifiants »** porte donc maintenant, pour un compte
+établissement, une carte **« Où vous travaillez »** avec quatre champs sur deux
+lignes :
+
+| | |
+|---|---|
+| **Nom de votre établissement** (requis, fixe le slug) | **Qui vous emploie** — l'entreprise, l'association, la fondation ou l'institution |
+| **Nom de votre service, unité** | **Votre poste** (+ « je suis cadre ») |
+
+- `RechercheEtablissement` ne cherche QUE les établissements déjà sur Les Extras
+  — c'est le seul garde-fou contre le doublon d'établissement, et il reste collé
+  au champ du nom.
+- `ChampStructure` tient l'autre champ : structures déclarées, puis annuaire
+  public, puis saisie à la main (beaucoup de petites associations n'y figurent
+  pas).
+
+⚠ **L'ÉTAPE « votre service » N'EXISTE PLUS.** Un écran entier — titre, lecture,
+bouton Continuer — pour taper « Internat ». Le parcours établissement fait donc
+**trois étapes** : `profil → identite → poste`. Ne pas la remettre.
+
+⚠ **LE POSTE ET LE STATUT CADRE SE SAISISSENT AVEC LE LIEU, MAIS S'ÉCRIVENT
+AVEC LES DROITS.** `EtapePoste` les reçoit en props et les envoie dans l'unique
+`PATCH /organisation/moi` avec le niveau et les capacités : deux PATCH
+successifs se marcheraient dessus, et le second gagnerait avec des champs pas
+encore remplis.
+
+⚠ **LE LIEU DE TRAVAIL S'ÉCRIT JUSTE APRÈS LA CRÉATION DU COMPTE.** Ses routes
+(`/organisation/rejoindre`, `/structures/rattacher`, `/units`) demandent une
+session : elles ne peuvent pas partir pendant la saisie. `enregistrerLieu()` est
+donc appelé dans `creerLeCompte()`, et chaque écriture reste tolérante à l'échec
+— le compte existe déjà, un rattachement qui rate ne doit pas ressembler à une
+inscription ratée.
+
+⚠ **PAS DE « RETOUR » SUR L'ÉTAPE DES DROITS** : l'étape précédente est celle
+qui a créé le compte.

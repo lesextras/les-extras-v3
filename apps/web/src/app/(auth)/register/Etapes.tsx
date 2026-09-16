@@ -109,211 +109,90 @@ export interface EtablissementExistant {
  * rien de l'établissement tant qu'un responsable ne l'a pas confirmée.
  */
 /**
- * LA RECHERCHE DU LIEU DE TRAVAIL — établissement ET structure, en un champ.
+ * LA RECHERCHE DE L'ÉTABLISSEMENT — un champ, une seule question.
  *
- * ⚠⚠ LES DEUX ÉTAIENT DEUX QUESTIONS, ET C'ÉTAIT UNE QUESTION DE TROP.
+ * ⚠⚠ ON A ESSAYÉ DE FONDRE L'ÉTABLISSEMENT ET L'ENTITÉ EMPLOYEUSE DANS UN SEUL
+ * CHAMP, ET C'ÉTAIT PLUS OBSCUR, PAS PLUS SIMPLE. Une même frappe interrogeait
+ * les deux annuaires : taper « les extras » proposait dessous une association
+ * sans rapport, et rien ne disait à laquelle des deux questions on était en
+ * train de répondre. Les deux sont donc redevenus DEUX CHAMPS, CÔTE À CÔTE sur
+ * la même ligne : « l'ESAT Corail de l'association ADSEA » se lit toujours de
+ * gauche à droite, mais on répond à l'un, puis à l'autre.
  *
- * On demandait « votre établissement » d'un côté et « votre structure » de
- * l'autre, sur deux écrans différents. Or personne ne parle comme ça : on dit
- * « l'ESAT Corail de l'association ADSEA », « le DAIS de l'ADSEA ». Séparer
- * obligeait la personne à découper une phrase qu'elle a dans la tête d'un seul
- * tenant — et beaucoup laissaient la structure vide, ce qui empêche ensuite
- * leurs collègues des autres sites de les retrouver.
+ * ⚠ CE CHAMP-CI NE CHERCHE QUE LES ÉTABLISSEMENTS DÉJÀ SUR LES EXTRAS, et
+ * c'est le seul garde-fou contre le doublon décrit au-dessus. L'entité qui
+ * emploie a son propre champ — `ChampStructure` —, qui interroge les
+ * structures déclarées puis l'annuaire public.
  *
- * Une seule frappe interroge donc les DEUX annuaires en parallèle :
- *
- *   — les établissements DÉJÀ sur Les Extras → « c'est le mien », et on se
- *     rattache au lieu d'en créer un douzième homonyme ;
- *   — l'annuaire public des entreprises → c'est la STRUCTURE qui gère, on la
- *     rattache et le nom saisi reste celui de l'établissement.
- *
- * ⚠ CHOISIR UNE ENTITÉ DE L'ANNUAIRE NE RENOMME PAS L'ÉTABLISSEMENT. Le nom
- * saisi fixe le nom du compte ET son slug : le remplacer par « ADSEA »
- * donnerait la même adresse publique aux quinze établissements du groupe.
+ * ⚠ REJOINDRE UN ÉTABLISSEMENT NE RENOMME RIEN D'AUTRE : le nom saisi fixe le
+ * nom du compte ET son slug, tous deux posés à la création.
  */
-export function RechercheLieu({
+export function RechercheEtablissement({
   nom,
-  structureChoisie,
   onRejoindre,
-  onStructure,
 }: {
   nom: string;
-  structureChoisie: StructureChoisie | null;
   onRejoindre: (etablissement: EtablissementExistant) => void;
-  onStructure: (v: ChoixStructure) => void;
 }) {
   const requete = useValeurRetardee(nom, 450);
   const [etablissements, setEtablissements] = React.useState<EtablissementExistant[]>([]);
-  const [declarees, setDeclarees] = React.useState<StructureDeclaree[]>([]);
-  const [annuaire, setAnnuaire] = React.useState<EntiteLegale[]>([]);
-  const [chargement, setChargement] = React.useState(false);
 
   React.useEffect(() => {
     const texte = requete.trim();
     if (texte.length < 3) {
       setEtablissements([]);
-      setDeclarees([]);
-      setAnnuaire([]);
       return;
     }
     let annule = false;
-    setChargement(true);
-    /**
-     * ⚠ CHAQUE RECHERCHE A SON PROPRE `.catch()`. L'annuaire public de l'État
-     * est lent et parfois indisponible ; s'il tombe, la liste des
-     * établissements déjà déclarés doit continuer de s'afficher — c'est elle
-     * qui évite les doublons, et c'est le plus coûteux des trois.
-     */
-    Promise.all([
-      apiRequest<EtablissementExistant[]>(
-        `/public/etablissements?q=${encodeURIComponent(texte)}`,
-      ).catch(() => [] as EtablissementExistant[]),
-      apiRequest<{ declarees: StructureDeclaree[]; annuaire: EntiteLegale[] }>(
-        `/public/structures?q=${encodeURIComponent(texte)}`,
-      ).catch(() => ({ declarees: [], annuaire: [] })),
-    ])
-      .then(([etabs, structures]) => {
-        if (annule) return;
-        setEtablissements(etabs ?? []);
-        setDeclarees(structures.declarees ?? []);
-        setAnnuaire(structures.annuaire ?? []);
+    apiRequest<EtablissementExistant[]>(
+      `/public/etablissements?q=${encodeURIComponent(texte)}`,
+    )
+      .then((r) => {
+        if (!annule) setEtablissements(r ?? []);
       })
-      .finally(() => {
-        if (!annule) setChargement(false);
+      .catch(() => {
+        // Une recherche qui échoue ne doit rien bloquer : on crée, tout
+        // simplement — c'est le comportement d'avant la recherche.
+        if (!annule) setEtablissements([]);
       });
     return () => {
       annule = true;
     };
   }, [requete]);
 
-  const rien =
-    etablissements.length === 0 && declarees.length === 0 && annuaire.length === 0;
-
-  // La structure retenue prend la place de la liste : la question est réglée.
-  if (structureChoisie) {
-    return (
-      <div className="mt-2 flex items-start gap-2.5 rounded-lg border-2 border-primary/45 bg-primary-soft/30 p-3">
-        <Landmark aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium">
-            {structureChoisie.nom}
-          </span>
-          <span className="block text-xs text-muted-foreground" lang="fr">
-            La structure qui gère votre établissement.
-          </span>
-        </span>
-        <button
-          type="button"
-          onClick={() => onStructure({ structureId: null, structure: null })}
-          className="shrink-0 text-xs font-medium text-primary hover:underline"
-        >
-          Changer
-        </button>
-      </div>
-    );
-  }
-
-  if (chargement || rien) return null;
+  if (etablissements.length === 0) return null;
 
   return (
-    <div className="mt-2 space-y-2.5 rounded-lg border-2 border-primary/35 bg-primary-soft/30 p-3.5">
-      {etablissements.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
-            Déjà sur Les Extras
-          </p>
-          {etablissements.map((e) => (
-            <button
-              key={e.id}
-              type="button"
-              onClick={() => onRejoindre(e)}
-              className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/60"
-            >
-              <Building aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{e.name}</span>
-                <span className="block text-xs text-muted-foreground">
-                  {[e.city, e.structure?.nom].filter(Boolean).join(' · ') ||
-                    'Établissement déclaré'}
-                </span>
-              </span>
-              <span className="shrink-0 self-center text-xs font-medium text-primary">
-                C’est le mien
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {(declarees.length > 0 || annuaire.length > 0) && (
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            L’association ou le groupe qui gère
-          </p>
-          {declarees.map((st) => (
-            <button
-              key={st.id}
-              type="button"
-              onClick={() =>
-                onStructure({
-                  structureId: st.id,
-                  structure: { nom: st.nom, verifiee: st.verifiee },
-                })
-              }
-              className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/50"
-            >
-              <Users aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{st.nom}</span>
-                <span className="block text-xs text-muted-foreground">
-                  {[st.formeJuridique, st.ville].filter(Boolean).join(' · ') ||
-                    'Structure déclarée'}
-                </span>
-              </span>
-            </button>
-          ))}
-          {annuaire.map((e) => (
-            <button
-              key={e.siren}
-              type="button"
-              onClick={() =>
-                onStructure({
-                  structureId: null,
-                  structure: {
-                    nom: e.nom,
-                    siren: e.siren,
-                    siret: e.siret ?? undefined,
-                    formeJuridique: e.formeJuridique ?? undefined,
-                    adresse: e.adresse ?? undefined,
-                    ville: e.ville ?? undefined,
-                    codePostal: e.codePostal ?? undefined,
-                    verifiee: true,
-                  },
-                })
-              }
-              className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/50"
-            >
-              <ShieldCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">
-                  {e.nom}
-                  {e.sigle ? ` (${e.sigle})` : ''}
-                </span>
-                <span className="block text-xs text-muted-foreground">
-                  {[e.formeJuridique, e.ville].filter(Boolean).join(' · ') ||
-                    'Annuaire public'}
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="mt-2 space-y-1.5 rounded-lg border-2 border-primary/35 bg-primary-soft/30 p-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+        Déjà sur Les Extras
+      </p>
+      {etablissements.map((e) => (
+        <button
+          key={e.id}
+          type="button"
+          onClick={() => onRejoindre(e)}
+          className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/60"
+        >
+          <Building aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium">{e.name}</span>
+            <span className="block truncate text-xs text-muted-foreground">
+              {[e.city, e.structure?.nom].filter(Boolean).join(' · ') ||
+                'Établissement déclaré'}
+            </span>
+          </span>
+          <span className="shrink-0 self-center text-xs font-medium text-primary">
+            C’est le mien
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
 
 /* ------------------------------------------------------------------------ */
-/* Étape combinée : établissement + structure + service                      */
+/* L'entité qui emploie — le champ voisin du nom de l'établissement          */
 /* ------------------------------------------------------------------------ */
 
 interface EntiteLegale {
@@ -352,8 +231,18 @@ export interface LieuDeTravail {
   structureId: string | null;
   /** Structure venue de l'annuaire, ou saisie à la main. */
   structure: StructureChoisie | null;
-  /** Nom du service, tel qu'écrit. */
+  /** Nom du service ou de l'unité, tel qu'écrit. */
   service: string;
+  /**
+   * L'intitulé du poste et le statut cadre.
+   *
+   * ⚠ ILS SONT SAISIS AVEC LE RESTE DU LIEU DE TRAVAIL, mais ils ne sont PAS
+   * écrits au même moment : ils partent avec le niveau et les droits, dans
+   * l'unique PATCH de l'étape suivante (`EtapePoste`). Deux écritures
+   * successives sur `/organisation/moi` se marcheraient dessus.
+   */
+  poste: string;
+  cadre: boolean;
 }
 
 export const LIEU_VIDE: LieuDeTravail = {
@@ -361,6 +250,8 @@ export const LIEU_VIDE: LieuDeTravail = {
   structureId: null,
   structure: null,
   service: '',
+  poste: '',
+  cadre: false,
 };
 
 /**
@@ -582,73 +473,6 @@ export function ChampStructure({
   );
 }
 
-/**
- * OÙ VOUS TRAVAILLEZ — établissement, structure et service, en une étape.
- *
- * Les trois ne posent qu'une seule question. Séparés sur trois écrans, ils
- * faisaient trois fois le même geste : lire un titre, remplir un champ,
- * cliquer Continuer.
- *
- * ⚠ AUCUNE ÉCRITURE ICI : le compte n'existe pas encore, seules les routes
- * publiques sont appelables. La page applique le rattachement et le service
- * juste après la création du compte.
- */
-/**
- * OÙ VOUS TRAVAILLEZ — la structure et le service.
- *
- * ⚠ LE NOM DE L'ÉTABLISSEMENT N'EST PLUS ICI, ET IL NE DOIT PAS Y REVENIR.
- * Il est demandé à l'étape des identifiants, parce qu'il fixe le nom du compte
- * ET son slug — l'adresse publique — tous deux posés à la création et jamais
- * recalculés. Le redemander ici obligerait à renommer un compte déjà créé, et
- * l'adresse garderait pour toujours le prénom de la personne.
- *
- * Les deux champs qui restent sont FACULTATIFS et se complètent aussi plus
- * tard : on ne retient personne sur un écran administratif.
- */
-export function EtapeLieuDeTravail({
-  lieu,
-  setLieu,
-}: {
-  lieu: LieuDeTravail;
-  setLieu: React.Dispatch<React.SetStateAction<LieuDeTravail>>;
-}) {
-  return (
-    <div className="space-y-4">
-      {/*
-        ⚠ LA STRUCTURE N'EST PLUS DEMANDÉE ICI : elle est FUSIONNÉE avec le nom
-        de l'établissement, à l'étape des identifiants.
-
-        On posait deux questions — « votre établissement », puis « votre
-        structure », sur deux écrans. Personne ne parle comme ça : on dit
-        « l'ESAT Corail de l'association ADSEA ». Séparer obligeait à découper
-        une phrase qu'on a dans la tête d'un seul tenant, et beaucoup laissaient
-        la structure vide — ce qui empêche ensuite les collègues des autres
-        sites de se retrouver. Une seule frappe interroge maintenant les deux
-        annuaires (voir `RechercheLieu`).
-
-        ⚠ NE PAS LA REMETTRE ICI. Deux endroits pour la même question, c'est
-        exactement ce qu'on vient de retirer.
-      */}
-      <Carte titre="C’est une déclaration, comme sur LinkedIn">
-        <Aide>
-          Vous dites où vous êtes en poste. Rien n’est vérifié, et vous
-          n’attendez l’autorisation de personne.
-        </Aide>
-      </Carte>
-
-      <Carte titre="Votre service" aide="Internat, pôle jour, SESSAD… Facultatif.">
-        <Input
-          value={lieu.service}
-          onChange={(e) => setLieu((l) => ({ ...l, service: e.target.value }))}
-          placeholder="Internat, Pôle jour, SESSAD…"
-          leftIcon={<Users />}
-          autoComplete="off"
-        />
-      </Carte>
-    </div>
-  );
-}
-
 /* ------------------------------------------------------------------------ */
 /* Étape « poste et droits »                                                 */
 /* ------------------------------------------------------------------------ */
@@ -735,18 +559,23 @@ function Carte({
 }
 
 /**
- * LE POSTE ET LE STATUT CADRE, SUR LA MÊME LIGNE.
+ * LE POSTE ET LE STATUT CADRE.
  *
  * Les deux répondent à une seule question — « quel est votre poste ? » — et le
- * statut cadre n'a de sens que rapporté à l'intitulé qui le précède. Séparés
- * sur deux lignes, ils se lisaient comme deux sujets distincts, et la case
- * isolée dans son propre cadre paraissait plus importante que le champ.
+ * statut cadre n'a de sens que rapporté à l'intitulé qui le précède. Ils ne se
+ * séparent donc pas.
+ *
+ * ⚠ ILS SONT DEMANDÉS AVEC LE LIEU DE TRAVAIL, à l'étape des identifiants, et
+ * plus à l'étape suivante : « où je travaille, dans quel service, à quel
+ * poste » est une seule phrase, et on la posait sur trois écrans.
+ * L'ÉCRITURE, elle, reste à l'étape suivante, avec le niveau et les droits —
+ * un seul PATCH pour toute la déclaration.
  *
  * ⚠ C'est une CASE À COCHER déguisée en bouton, pas un `<button>` : l'état
  * coché doit rester lisible par un lecteur d'écran et par l'autoremplissage.
  * `sr-only` masque la case à l'œil sans la retirer du DOM.
  */
-function ChampPoste({
+export function ChampPoste({
   poste,
   setPoste,
   cadre,
@@ -758,22 +587,17 @@ function ChampPoste({
   setCadre: (v: boolean) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-      <div className="min-w-0 flex-1">
-        <Input
-          id="poste"
-          value={poste}
-          onChange={(e) => setPoste(e.target.value)}
-          placeholder="Chef de service éducatif, monitrice-éducatrice…"
-          autoComplete="organization-title"
-        />
-        <div className="mt-1.5">
-          <Aide>Tel qu’il figure sur votre fiche de poste.</Aide>
-        </div>
-      </div>
+    <div className="flex flex-col gap-2">
+      <Input
+        id="poste"
+        value={poste}
+        onChange={(e) => setPoste(e.target.value)}
+        placeholder="Chef de service éducatif, monitrice-éducatrice…"
+        autoComplete="organization-title"
+      />
       <label
         className={cn(
-          'flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-colors sm:h-[2.75rem]',
+          'flex w-fit cursor-pointer items-center gap-2 rounded-lg border-2 px-3 py-1.5 text-xs font-medium transition-colors',
           cadre
             ? 'border-primary bg-primary text-primary-foreground'
             : 'border-border bg-card hover:border-primary/40',
@@ -785,7 +609,11 @@ function ChampPoste({
           onChange={(e) => setCadre(e.target.checked)}
           className="sr-only"
         />
-        {cadre ? <Check aria-hidden className="size-4" /> : <span aria-hidden className="size-4 rounded border border-current opacity-50" />}
+        {cadre ? (
+          <Check aria-hidden className="size-3.5" />
+        ) : (
+          <span aria-hidden className="size-3.5 rounded border border-current opacity-50" />
+        )}
         Je suis cadre
       </label>
     </div>
@@ -876,9 +704,26 @@ function ListeDroits({
   );
 }
 
-export function EtapePoste({ onFait }: { onFait: () => void }) {
-  const [poste, setPoste] = React.useState('');
-  const [cadre, setCadre] = React.useState(false);
+/**
+ * ⚠ LE POSTE ET LE STATUT CADRE ARRIVENT D'AILLEURS : ils sont saisis à
+ * l'étape des identifiants, avec l'établissement, l'entité employeuse et le
+ * service — une seule phrase, un seul écran. Ce qui reste ici, c'est ce qui ne
+ * se déclare pas en une ligne : le NIVEAU de responsabilité et les DROITS.
+ *
+ * ⚠ ILS SONT QUAND MÊME ENVOYÉS D'ICI, et il ne faut pas les écrire plus tôt :
+ * `/organisation/moi` reçoit la déclaration entière en une fois. Deux PATCH
+ * successifs se marcheraient dessus, et le second gagnerait avec des champs
+ * que la personne n'a pas encore remplis.
+ */
+export function EtapePoste({
+  poste,
+  cadre,
+  onFait,
+}: {
+  poste: string;
+  cadre: boolean;
+  onFait: () => void;
+}) {
   const [niveau, setNiveau] = React.useState<Niveau>('SALARIE');
   const [droits, setDroits] = React.useState<string[]>([]);
   const [envoi, setEnvoi] = React.useState(false);
@@ -916,10 +761,6 @@ export function EtapePoste({ onFait }: { onFait: () => void }) {
 
   return (
     <div className="space-y-4">
-      <Carte titre="Votre poste">
-        <ChampPoste poste={poste} setPoste={setPoste} cadre={cadre} setCadre={setCadre} />
-      </Carte>
-
       <Carte titre="Votre niveau de responsabilité" aide="Il décide de ce que vous voyez.">
         <fieldset className="space-y-2">
           <legend className="sr-only">Votre niveau de responsabilité</legend>
