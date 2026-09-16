@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { CibleDiffusion, Interet, MissionVisibility } from '@prisma/client';
+import { ComplianceDocType, CibleDiffusion, Interet, MissionVisibility } from '@prisma/client';
 import { CiblageService } from './ciblage.service';
 
 /**
@@ -35,6 +35,11 @@ function prismaMock(options: {
   estSalarie?: boolean;
   /** Ce que le compte a déclaré vouloir faire. Non fourni = rien déclaré. */
   interets?: Interet[];
+  /**
+   * Les pièces déposées. Non fourni = dossier complet, pour que les tests des
+   * quatre autres règles portent bien sur ce qu'ils annoncent.
+   */
+  pieces?: { type: ComplianceDocType; issuedAt?: Date | null }[];
 }) {
   return {
     poolMember: {
@@ -49,12 +54,30 @@ function prismaMock(options: {
     $transaction: jest.fn().mockResolvedValue([[], []]),
     account: {
       findUnique: jest.fn().mockResolvedValue({
-        ownerId: options.ownerId ?? null,
+        // ⚠ `Account.ownerId` n'est jamais nul en base : le défaut du mock doit
+        // le refléter, sinon les règles qui remontent au propriétaire du compte
+        // ne s'exécutent jamais et les tests passent pour la mauvaise raison.
+        ownerId: options.ownerId ?? 'u-proprietaire',
         interets: options.interets ?? [],
       }),
     },
     membership: {
       findFirst: jest.fn().mockResolvedValue(options.estSalarie ? { id: 'mb1' } : null),
+    },
+    complianceDocument: {
+      findMany: jest.fn().mockResolvedValue(
+        (
+          options.pieces ?? [
+            { type: ComplianceDocType.IDENTITY },
+            { type: ComplianceDocType.CRIMINAL_RECORD, issuedAt: new Date() },
+          ]
+        ).map((p) => ({
+          type: p.type,
+          fileId: 'f1',
+          fileUrl: null,
+          issuedAt: p.issuedAt ?? null,
+        })),
+      ),
     },
   };
 }
@@ -182,5 +205,79 @@ describe('Accès aux réponses : le montage juridique', () => {
     await expect(
       ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'un-animateur'),
     ).rejects.toThrow(/renfort personnalisé/i);
+  });
+});
+
+/**
+ * LE DOSSIER — la cinquieme regle.
+ *
+ * ⚠ ON NE CANDIDATE PAS SANS AVOIR DEPOSE SES PIECES. Une candidature sans
+ * dossier fait perdre plusieurs jours a l'etablissement, qui reclame les
+ * papiers apres coup, pendant que le poste reste decouvert.
+ *
+ * ⚠ ET LE SALARIE DE LA MAISON EN EST EXEMPTE : il est deja employe la, son
+ * employeur detient ses pieces depuis son embauche, et ce qu'il fait ici sont
+ * des heures supplementaires. Lui redemander son casier pour prendre un
+ * creneau chez lui serait absurde — et c'est le genre de refus qui fait
+ * abandonner l'outil.
+ */
+describe('Accès aux réponses : le dossier déposé', () => {
+  it('refuse une candidature sans pièce d’identité ni casier', async () => {
+    const ciblage = new CiblageService(prismaMock({ pieces: [] }) as never);
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'sans-dossier'),
+    ).rejects.toThrow(/Mon dossier/);
+  });
+
+  it('nomme les pièces qui manquent, pas seulement le fait qu’il en manque', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ pieces: [{ type: ComplianceDocType.IDENTITY }] }) as never,
+    );
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'sans-casier'),
+    ).rejects.toThrow(/bulletin n° 3/);
+  });
+
+  /** Un bulletin n° 3 atteste au jour de son édition, et de rien après. */
+  it('refuse un casier de plus d’un an', async () => {
+    const vieux = new Date(Date.now() - 400 * 24 * 3600 * 1000);
+    const ciblage = new CiblageService(
+      prismaMock({
+        pieces: [
+          { type: ComplianceDocType.IDENTITY },
+          { type: ComplianceDocType.CRIMINAL_RECORD, issuedAt: vieux },
+        ],
+      }) as never,
+    );
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'casier-perime'),
+    ).rejects.toThrow(/bulletin n° 3/);
+  });
+
+  it('laisse passer un dossier complet', async () => {
+    const ciblage = new CiblageService(prismaMock({}) as never);
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'avec-dossier'),
+    ).resolves.toBeUndefined();
+  });
+
+  /**
+   * ⚠ NE PAS « RÉPARER » CE TEST en étendant la règle au salarié maison : ce
+   * sont des heures supplémentaires chez son propre employeur, qui détient
+   * déjà son dossier.
+   */
+  it('n’exige rien du salarié qui répond à sa propre maison', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ ownerId: 'u-salarie', estSalarie: true, pieces: [] }) as never,
+    );
+
+    // Le refus attendu est celui du travail dissimulé, pas celui du dossier.
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'son-compte-perso'),
+    ).rejects.toThrow(/rattaché à cet établissement/i);
   });
 });

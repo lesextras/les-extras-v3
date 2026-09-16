@@ -81,7 +81,7 @@ export const CHOIX_COMPTE: (ChoixCompte & { key: CleCompte })[] = [
     icon: Heart,
     teinte: 'vert',
     categorie: 'Particulier',
-    titre: 'Je suis un particulier',
+    titre: 'Je suis un particulier qui souhaite réserver des services',
     accroche: 'Pour mon enfant, mon proche, ou moi-même.',
     benefice: 'Inscrire un proche à un atelier, ou se rendre disponible près de chez soi.',
     detail:

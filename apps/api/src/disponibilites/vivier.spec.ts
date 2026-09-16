@@ -71,6 +71,21 @@ function prismaFactice(options?: {
             },
       ),
     },
+    complianceDocument: {
+      // Dossier complet par défaut : les tests de cette suite portent sur la
+      // liste, pas sur la règle du dossier (couverte dans acces-reponse.spec).
+      findMany: jest.fn(async () => [
+        { userId: 'u9', accountId: 'c9', type: 'IDENTITY', fileId: 'f1', fileUrl: null, issuedAt: null },
+        {
+          userId: 'u9',
+          accountId: 'c9',
+          type: 'CRIMINAL_RECORD',
+          fileId: 'f2',
+          fileUrl: null,
+          issuedAt: new Date(),
+        },
+      ]),
+    },
     disponibiliteRenfort: {
       upsert: jest.fn(async (args: Record<string, unknown>) => {
         etat.upsert = args;
@@ -94,6 +109,7 @@ function prismaFactice(options?: {
               type: AccountType.PARTICULIER,
               slug: 'camille-durand',
               logoUrl: null,
+              ownerId: 'u9',
             },
           },
         ];
@@ -245,6 +261,7 @@ describe('Lire le vivier', () => {
     const [ligne] = await service.vivier(COMPTE(AccountType.ESTABLISHMENT), UTILISATEUR, {});
     const serialise = JSON.stringify(ligne);
     expect(serialise).not.toMatch(/@/);
+    expect(ligne.dossier).toEqual({ deposees: 2, total: 2, complet: true });
     expect(Object.keys(ligne)).not.toContain('phone');
     expect(Object.keys(ligne)).not.toContain('email');
   });

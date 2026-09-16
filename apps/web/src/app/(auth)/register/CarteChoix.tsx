@@ -72,6 +72,16 @@ interface Habillage {
   puce: string;
   coche: string;
   verso: string;
+  /**
+   * L'ENCART DU « POURQUOI » : le contour porte la teinte, l'intérieur reste
+   * blanc.
+   *
+   * ⚠ IL ÉTAIT EN APLAT TEINTÉ, ET ÇA FAISAIT TROIS FONDS SUPERPOSÉS — le
+   * dégradé de la carte, puis l'aplat de l'encart, puis le bouton. La phrase
+   * qui doit ressortir se noyait dans un camaïeu. Un contour et du blanc la
+   * détachent au lieu de la fondre.
+   */
+  encart: string;
 }
 
 const TEINTES: Record<TeinteCarte, Habillage> = {
@@ -88,6 +98,7 @@ const TEINTES: Record<TeinteCarte, Habillage> = {
     puce: 'bg-primary',
     coche: 'bg-primary text-primary-foreground',
     verso: 'bg-gradient-to-b from-primary/[0.12] to-card',
+    encart: 'border border-primary/35 bg-card text-primary',
   },
   terracotta: {
     bordure: 'border-secondary/30',
@@ -102,6 +113,7 @@ const TEINTES: Record<TeinteCarte, Habillage> = {
     puce: 'bg-secondary',
     coche: 'bg-secondary text-secondary-foreground',
     verso: 'bg-gradient-to-b from-secondary/[0.12] to-card',
+    encart: 'border border-secondary/35 bg-card text-secondary',
   },
   vert: {
     bordure: 'border-success/30',
@@ -116,6 +128,7 @@ const TEINTES: Record<TeinteCarte, Habillage> = {
     puce: 'bg-success',
     coche: 'bg-success text-success-foreground',
     verso: 'bg-gradient-to-b from-success/[0.12] to-card',
+    encart: 'border border-success/35 bg-card text-success',
   },
 };
 
@@ -211,7 +224,7 @@ export function CarteChoix({
             // se faisait couper au milieu d'une phrase, les trois points
             // disparaissant entièrement. Toute modification du verso doit être
             // revérifiée AU SURVOL, pas seulement dans le code.
-            'carte-3d-face grid min-h-[22rem] w-full rounded-2xl border-2 transition-shadow duration-300',
+            'carte-3d-face grid min-h-[23.5rem] w-full rounded-2xl border-2 transition-shadow duration-300',
             actif ? h.bordureActive : h.bordure,
             actif ? 'shadow-card' : 'shadow-soft group-hover:shadow-card',
           )}
@@ -258,13 +271,16 @@ export function CarteChoix({
               moitié vide : un mot brisé se lit deux fois plus lentement, et
               donne l'impression d'un défaut d'affichage.
 
-              ⚠ LA HAUTEUR DU TITRE EST FIXÉE À DEUX LIGNES. « Intervenant
-              indépendant » en passe forcément deux ; sans plancher, les trois
-              accroches ne s'alignaient plus et la rangée paraissait bancale.
+              ⚠ LA HAUTEUR DU TITRE EST FIXÉE À TROIS LIGNES. Les titres n'ont
+              pas la même longueur — « Je suis un particulier qui souhaite
+              réserver des services » en prend trois — et sans plancher commun
+              les trois accroches ne commencent pas à la même hauteur : la
+              rangée paraît bancale. Le plancher suit le plus long ; raccourcir
+              ce titre permet de le redescendre.
             */}
             <span
               className={cn(
-                'flex min-h-[2.4em] items-start text-lg font-semibold leading-tight text-balance',
+                'flex min-h-[3.6em] items-start text-lg font-semibold leading-tight text-balance',
                 actif ? h.titre : 'text-foreground',
               )}
               lang="fr"
@@ -281,7 +297,7 @@ export function CarteChoix({
             <span
               className={cn(
                 'flex gap-2 rounded-lg px-3 py-2.5 text-xs font-medium leading-relaxed',
-                h.pastille,
+                h.encart,
               )}
               lang="fr"
             >

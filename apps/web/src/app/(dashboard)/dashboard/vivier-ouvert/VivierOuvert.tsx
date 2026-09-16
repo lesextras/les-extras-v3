@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { MapPin, MessageSquare, Search, UserRound } from 'lucide-react';
+import { FileCheck, MapPin, MessageSquare, Search, UserRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,13 @@ export interface PersonneDisponible {
   presentation: string | null;
   aPartirDu: string | null;
   confirmeeLe: string;
+  /**
+   * Les pièces déposées dans le compte de la personne — le compte, jamais le
+   * contenu. Savoir que les papiers sont prêts évite de découvrir trois
+   * semaines de relances après l'accord ; ouvrir les pièces à quiconque
+   * feuillette la liste ferait de cet écran un fichier de documents d'identité.
+   */
+  dossier: { deposees: number; total: number; complet: boolean };
 }
 
 const FILTRES: { cle: string; libelle: string }[] = [
@@ -131,6 +138,18 @@ export function VivierOuvert({ personnes }: { personnes: PersonneDisponible[] })
                 </span>
               ))}
             </div>
+
+            <p
+              className={cn(
+                'mt-2.5 flex items-center gap-1.5 text-xs font-medium',
+                p.dossier.complet ? 'text-success' : 'text-muted-foreground',
+              )}
+            >
+              <FileCheck aria-hidden className="size-3.5 shrink-0" />
+              {p.dossier.complet
+                ? 'Dossier déposé — identité et bulletin n° 3'
+                : `Dossier ${p.dossier.deposees}/${p.dossier.total} — ne peut pas encore candidater`}
+            </p>
 
             {p.territoire && (
               <p className="mt-2.5 flex items-center gap-1.5 text-xs text-muted-foreground">

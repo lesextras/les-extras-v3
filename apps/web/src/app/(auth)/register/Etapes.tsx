@@ -491,51 +491,44 @@ export function EtapeLieuDeTravail({
 }) {
   return (
     <div className="space-y-4">
-      {/* --- La structure --- */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="text-sm font-semibold">
-          Votre structure{' '}
-          <span className="font-normal text-muted-foreground">(facultatif)</span>
-        </h3>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
-          L’entité juridique qui possède votre établissement : association,
-          fondation, mairie, groupe. C’est elle qui permettra à vos collègues
-          d’autres sites de vous retrouver.
-        </p>
-        <div className="mt-3">
-          <ChampStructure
-            valeur={{ structureId: lieu.structureId, structure: lieu.structure }}
-            onChange={(v) => setLieu((l) => ({ ...l, ...v }))}
-          />
-        </div>
-      </div>
+      {/*
+        ⚠ TROIS CARTES, ET UNE LIGNE DANS CHACUNE.
 
-      {/* --- Le service --- */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="text-sm font-semibold">
-          Votre service{' '}
-          <span className="font-normal text-muted-foreground">(facultatif)</span>
-        </h3>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
-          Internat, pôle jour, SESSAD… C’est lui qui vous relie à votre équipe :
-          plannings, demandes de renfort, organigramme.
-        </p>
-        <div className="mt-3">
-          <Input
-            value={lieu.service}
-            onChange={(e) => setLieu((l) => ({ ...l, service: e.target.value }))}
-            placeholder="Internat, Pôle jour, SESSAD…"
-            leftIcon={<Users />}
-            autoComplete="off"
-          />
-          <div className="mt-1.5">
-            <Aide>
-              Écrivez-le comme votre équipe le dit. Si un collègue l’a déjà créé,
-              nous vous rattacherons au sien plutôt que d’en créer un second.
-            </Aide>
-          </div>
-        </div>
-      </div>
+        Cet écran portait trois paragraphes d'explication au-dessus de deux
+        champs facultatifs — plus de texte que de formulaire. Personne ne lit
+        un écran d'inscription : on y cherche le champ. Chaque aide tient donc
+        en une ligne, et ce qui ne tenait pas en une ligne n'avait pas sa place
+        ici.
+
+        ⚠ LE NOM DE L'ÉTABLISSEMENT N'EST PLUS ICI, ET IL NE DOIT PAS Y
+        REVENIR : il fixe le slug, posé à la création du compte.
+      */}
+      <Carte titre="C’est une déclaration, comme sur LinkedIn">
+        <Aide>
+          Vous dites où vous êtes en poste. Rien n’est vérifié, et vous
+          n’attendez l’autorisation de personne.
+        </Aide>
+      </Carte>
+
+      <Carte
+        titre="Votre structure"
+        aide="L’association, la fondation ou la mairie qui gère votre établissement. Facultatif."
+      >
+        <ChampStructure
+          valeur={{ structureId: lieu.structureId, structure: lieu.structure }}
+          onChange={(v) => setLieu((l) => ({ ...l, ...v }))}
+        />
+      </Carte>
+
+      <Carte titre="Votre service" aide="Internat, pôle jour, SESSAD… Facultatif.">
+        <Input
+          value={lieu.service}
+          onChange={(e) => setLieu((l) => ({ ...l, service: e.target.value }))}
+          placeholder="Internat, Pôle jour, SESSAD…"
+          leftIcon={<Users />}
+          autoComplete="off"
+        />
+      </Carte>
     </div>
   );
 }
@@ -1410,16 +1403,15 @@ export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
             setPresentation={setPresentation}
           />
           {/*
-            ⚠ ON NE PROMET AUCUNE VÉRIFICATION, et il ne faut jamais en
-            promettre : la plateforme ne contrôle ni identité ni casier. La
-            mention « intervenants vérifiés » a été retirée de la fiche atelier
-            pour cette raison exacte. C'est l'établissement qui vérifie à
-            l'embauche, et l'écran le dit aux deux bouts.
+            ⚠ LES PIÈCES SONT EXIGÉES POUR CANDIDATER, ET L'ÉCRAN LE DIT ICI.
+            Le refus est posé côté serveur (`assertReponseAutorisee`), au
+            moment de la candidature : l'annoncer seulement à ce moment-là
+            ferait découvrir la condition à quelqu'un qui vient de trouver la
+            mission qui lui convient.
           */}
-          <Encart ton="alerte" icone={TriangleAlert} titre="Ce que l’établissement vérifiera">
-            Une embauche en établissement demande des pièces — identité, diplômes,
-            extrait de casier judiciaire selon le poste. C’est l’établissement qui
-            les contrôle au moment de l’embauche : rien n’est vérifié ici.
+          <Encart ton="alerte" icone={TriangleAlert} titre="Les pièces à déposer dans votre compte">
+            Votre pièce d’identité et votre bulletin n° 3 du casier judiciaire.
+            Sans elles, vous ne pouvez pas candidater à un remplacement.
           </Encart>
         </>
       )}

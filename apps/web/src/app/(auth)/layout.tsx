@@ -77,7 +77,23 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {[
               { icon: Siren, text: 'Missions urgentes diffusées intelligemment' },
               { icon: GraduationCap, text: 'Catalogue d’ateliers clé en main' },
-              { icon: ShieldCheck, text: 'Profils et documents vérifiés' },
+              /**
+               * ⚠ ON NE PROMET PAS UNE VÉRIFICATION QU'ON NE FAIT PAS.
+               *
+               * Cette ligne disait « Profils et documents vérifiés » — la
+               * phrase même qui avait été retirée de la fiche atelier le
+               * 4/09/2026, parce qu'aucune vérification d'identité, de diplôme
+               * ou de casier n'existe dans le produit et ne peut y exister :
+               * le bulletin n°2 se délivre à l'employeur, et l'employeur c'est
+               * l'établissement, jamais Les Extras.
+               *
+               * C'est la pire catégorie de promesse fausse : une promesse de
+               * sécurité faite à quelqu'un qui va confier des enfants. Ce qui
+               * la remplace est vrai — les pièces sont déposées par la
+               * personne, réunies au même endroit, et c'est l'établissement
+               * qui les contrôle à l'embauche.
+               */
+              { icon: ShieldCheck, text: 'Dossiers réunis, prêts pour l’embauche' },
             ].map((item) => (
               <li
                 key={item.text}

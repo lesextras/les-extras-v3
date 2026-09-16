@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { BookingStatus, CibleDiffusion, Interet, MissionVisibility } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { PIECES_POUR_CANDIDATER, listerPieces, piecesManquantes } from '../common/dossier';
 
 /**
  * CIBLAGE DE LA DIFFUSION — à qui l'offre est adressée.
@@ -227,6 +228,8 @@ export class CiblageService {
    *  4. le montage : une mission de renfort est un REMPLACEMENT DE POSTE, elle
    *     se conclut en CDD. Qui a déclaré ne pas vouloir de CDD n'a rien à y
    *     faire.
+   *  5. le dossier : on ne candidate pas à un poste auprès de publics
+   *     vulnérables sans avoir déposé sa pièce d'identité et son bulletin n° 3.
    *
    * Toute nouvelle voie de réponse doit appeler CETTE méthode. Ne recopiez
    * pas les contrôles ailleurs : c'est précisément la recopie incomplète qui
@@ -329,6 +332,38 @@ export class CiblageService {
       if (salarie) {
         throw new BadRequestException(
           "Vous êtes rattaché à cet établissement : vous ne pouvez pas y répondre en tant qu'indépendant.",
+        );
+      }
+    }
+
+    /**
+     * LE DOSSIER — la cinquième règle.
+     *
+     * ⚠ ELLE NE S'APPLIQUE PAS AU SALARIÉ DE LA MAISON, et c'est important :
+     * il est déjà employé là, son employeur détient ses pièces depuis son
+     * embauche, et ce qu'il fait ici sont des heures supplémentaires. Lui
+     * redemander son casier pour prendre un créneau chez lui serait absurde.
+     *
+     * ⚠ ELLE S'APPLIQUE, ELLE, AUX COMPTES DÉJÀ EXISTANTS — contrairement à la
+     * règle du montage juste au-dessus, qui ne mord que sur une déclaration
+     * explicite. C'est assumé : une candidature sans pièces fait perdre
+     * plusieurs jours à l'établissement, qui les réclame après coup. Le refus
+     * doit donc dire exactement ce qui manque et où le déposer, sinon il se
+     * lit comme une panne.
+     */
+    if (compte?.ownerId && !salarieMaison) {
+      const pieces = await this.prisma.complianceDocument.findMany({
+        where: {
+          userId: compte.ownerId,
+          accountId,
+          type: { in: PIECES_POUR_CANDIDATER },
+        },
+        select: { type: true, fileId: true, fileUrl: true, issuedAt: true },
+      });
+      const manquantes = piecesManquantes(pieces);
+      if (manquantes.length > 0) {
+        throw new BadRequestException(
+          `Déposez ${listerPieces(manquantes)} dans « Mon dossier » avant de candidater : l'établissement vous les demandera à l'embauche.`,
         );
       }
     }

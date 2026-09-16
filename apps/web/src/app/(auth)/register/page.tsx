@@ -32,6 +32,7 @@ import {
   EtapePoste,
   EtapeStructure,
   LIEU_VIDE,
+  RechercheEtablissement,
   type LieuDeTravail,
 } from './Etapes';
 
@@ -340,6 +341,60 @@ export default function RegisterPage() {
                       apparaîtra sur vos devis et vos factures.
                     </FormDescription>
                     <FormMessage />
+
+                    {/*
+                      ⚠⚠ LA RECHERCHE PENDANT LA FRAPPE EST LE SEUL GARDE-FOU
+                      CONTRE LES DOUBLONS D'ÉTABLISSEMENT, ET ELLE DOIT RESTER
+                      COLLÉE À CE CHAMP.
+
+                      Elle avait disparu en déplaçant le nom de l'établissement
+                      dans « Vos identifiants » : le composant existait toujours
+                      mais n'était plus appelé nulle part, et quelqu'un qui
+                      tapait « MECS » ne voyait plus les MECS déjà déclarées. Le
+                      résultat, c'est un douzième homonyme en base — et le
+                      doublon d'établissement est le plus coûteux des trois,
+                      parce qu'il coupe une équipe en deux sans que personne ne
+                      s'en aperçoive.
+
+                      Reconnaître le sien ne crée rien tout de suite : on note
+                      l'intention, et le rattachement est demandé une fois le
+                      compte créé (voir `enregistrerLieu`). Il arrive NON
+                      VÉRIFIÉ — c'est un collègue de la maison qui confirme.
+                    */}
+                    {lieu.rejoindre ? (
+                      <div className="mt-2 flex items-start gap-2.5 rounded-lg border-2 border-primary/45 bg-primary-soft/30 p-3">
+                        <Building2 aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">
+                            {lieu.rejoindre.name}
+                          </span>
+                          <span className="block text-xs text-muted-foreground" lang="fr">
+                            Vous demanderez à rejoindre cet établissement. Un
+                            collègue confirmera votre rattachement.
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setLieu((l) => ({ ...l, rejoindre: null }))}
+                          className="shrink-0 text-xs font-medium text-primary hover:underline"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    ) : (
+                      <RechercheEtablissement
+                        nom={field.value ?? ''}
+                        onRejoindre={(etablissement) => {
+                          setLieu((l) => ({ ...l, rejoindre: etablissement }));
+                          // Le nom saisi devient celui de l'établissement
+                          // reconnu : sans cela le compte naîtrait sous
+                          // « mecs » et l'adresse publique avec.
+                          form.setValue('organizationName', etablissement.name, {
+                            shouldValidate: true,
+                          });
+                        }}
+                      />
+                    )}
                   </FormItem>
                 )}
               />
@@ -550,28 +605,11 @@ export default function RegisterPage() {
       {etape === 'etablissement' && (
         <div className="space-y-4">
           {/*
-            L'EXPLICATION QUI DÉSAMORCE LA MÉFIANCE.
-            Sans elle, cet écran ressemble à un formulaire administratif :
-            « pourquoi me demandent-ils ma structure ? qui va voir ça ? ». En
-            une phrase — c'est une déclaration, comme sur un réseau
-            professionnel — la question devient évidente, et la réponse
-            beaucoup plus facile à donner.
+            ⚠ L'EXPLICATION EST DANS LA PREMIÈRE CARTE DE L'ÉTAPE, en une
+            ligne. Elle tenait ici en trois paragraphes au-dessus de deux champs
+            facultatifs : plus de texte que de formulaire, sur un écran que
+            personne ne lit — on y cherche le champ.
           */}
-          <div className="rounded-xl border border-primary/25 bg-primary-soft/25 p-4">
-            <p className="text-sm font-semibold">C’est une déclaration, comme sur LinkedIn</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
-              Vous dites simplement où vous êtes en poste. Rien n’est vérifié à
-              l’avance, aucun justificatif ne vous est demandé — vous n’attendez
-              donc l’autorisation de personne pour commencer.
-            </p>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground" lang="fr">
-              Et si cet écran peut rester grand ouvert, c’est parce que déclarer
-              ne donne aucun accès : vous ne verrez les données de votre
-              établissement qu’une fois qu’un collègue vous aura invité ou
-              confirmé.
-            </p>
-          </div>
-
           <EtapeLieuDeTravail lieu={lieu} setLieu={setLieu} />
 
           <div className="flex items-center gap-2">

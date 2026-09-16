@@ -314,10 +314,13 @@ export function MaDisponibilite({ etat }: { etat: EtatDisponibilite }) {
         <div className="flex items-start gap-3 rounded-xl border border-secondary/35 bg-secondary/10 p-4">
           <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-secondary" />
           <p className="text-xs leading-relaxed" lang="fr">
-            <strong>Ce que l’établissement vérifiera.</strong> Une embauche
-            demande des pièces — identité, diplômes, extrait de casier judiciaire
-            selon le poste. C’est l’établissement qui les contrôle au moment de
-            l’embauche : rien n’est vérifié ici.
+            <strong>Les pièces à déposer dans votre compte.</strong> Votre pièce
+            d’identité et votre bulletin n° 3 du casier judiciaire (art. L. 133-6
+            du CASF). Sans elles, vous ne pouvez pas candidater à un
+            remplacement.{' '}
+            <a href="/dashboard/mon-dossier" className="font-semibold underline">
+              Ouvrir mon dossier
+            </a>
           </p>
         </div>
       )}

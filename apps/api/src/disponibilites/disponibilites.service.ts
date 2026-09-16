@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
 import { SELECT_MEMBRE, versMembreCourant, a } from '../common/perimetre';
 import { trouverDepartement, nomsDepartements } from '../common/territoires';
+import { PIECES_POUR_CANDIDATER, piecesManquantes } from '../common/dossier';
 import { DeclarerDisponibiliteDto, FiltresVivierDto } from './dto/disponibilite.dto';
 
 /**
@@ -238,9 +239,33 @@ export class DisponibilitesService {
         presentation: true,
         aPartirDu: true,
         confirmeeLe: true,
-        account: { select: { id: true, name: true, type: true, slug: true, logoUrl: true } },
+        account: {
+          select: { id: true, name: true, type: true, slug: true, logoUrl: true, ownerId: true },
+        },
       },
     });
+
+    /**
+     * LE DOSSIER DÉPOSÉ — en une requête pour toute la liste.
+     *
+     * ⚠ ON N'AFFICHE QUE LE COMPTE DES PIÈCES, JAMAIS LEUR CONTENU. Savoir que
+     * les papiers sont prêts évite à l'établissement de découvrir trois
+     * semaines de relances après l'accord ; ouvrir les pièces à quiconque
+     * feuillette la liste ferait de cet écran un fichier de documents
+     * d'identité.
+     */
+    const proprietaires = lignes.map((l) => l.account.ownerId);
+    const comptes = lignes.map((l) => l.account.id);
+    const pieces = proprietaires.length
+      ? await this.prisma.complianceDocument.findMany({
+          where: {
+            userId: { in: proprietaires },
+            accountId: { in: comptes },
+            type: { in: PIECES_POUR_CANDIDATER },
+          },
+          select: { userId: true, accountId: true, type: true, fileId: true, fileUrl: true, issuedAt: true },
+        })
+      : [];
 
     return lignes.map((l) => ({
       id: l.id,
@@ -260,6 +285,17 @@ export class DisponibilitesService {
       presentation: l.presentation,
       aPartirDu: l.aPartirDu,
       confirmeeLe: l.confirmeeLe,
+      dossier: (() => {
+        const siennes = pieces.filter(
+          (p) => p.userId === l.account.ownerId && p.accountId === l.account.id,
+        );
+        const manquantes = piecesManquantes(siennes);
+        return {
+          deposees: PIECES_POUR_CANDIDATER.length - manquantes.length,
+          total: PIECES_POUR_CANDIDATER.length,
+          complet: manquantes.length === 0,
+        };
+      })(),
     }));
   }
 

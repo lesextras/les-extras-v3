@@ -57,9 +57,11 @@ export default async function VivierOuvertPage() {
             besoin.
           </p>
           <p className="text-muted-foreground" lang="fr">
-            Rien n’est vérifié ici : identité, diplômes et extrait de casier
-            judiciaire se contrôlent à l’embauche, comme pour n’importe quel
-            recrutement.
+            <strong className="text-foreground">Le dossier.</strong> Personne ne
+            peut candidater à un remplacement sans avoir déposé sa pièce
+            d’identité et son bulletin n° 3 dans son compte. Les pièces sont donc
+            prêtes : demandez-les au moment de l’embauche, vous n’aurez pas à
+            courir après.
           </p>
         </CardContent>
       </Card>

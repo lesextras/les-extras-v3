@@ -3593,3 +3593,60 @@ Le relief se fait à l'ombre et à la bordure. Une carte qui se soulève de deux
 pixels ne vaut pas le risque de rouvrir le défaut d'août — les trois versos
 affichés en permanence et EN MIROIR, parce qu'un `<button>` qui gère son
 débordement force `transform-style: flat`.
+
+### LE DOSSIER DÉPOSÉ — condition pour candidater (16/09/2026, soir)
+
+Décision de Siham, après la question « pourquoi on ne le vérifie pas nous ? » :
+**on ne vérifie pas le contenu, on exige le dépôt.**
+
+- `PIECES_POUR_CANDIDATER` (`apps/api/src/common/dossier.ts`) : pièce
+  d'identité + bulletin n° 3. Sans elles déposées dans son compte, on ne peut
+  pas candidater à un renfort — le refus est posé dans
+  `assertReponseAutorisee`, le point de passage unique.
+- Le vivier affiche « Dossier déposé » ou « Dossier 1/2 », **jamais le
+  contenu** : savoir que les papiers sont prêts évite trois semaines de
+  relances après l'accord ; ouvrir les pièces à qui feuillette la liste ferait
+  de cet écran un fichier de documents d'identité.
+
+⚠ **POURQUOI LA LISTE EST PLUS COURTE QUE `ConformiteService.REQUIRED_TYPES` :**
+le DIPLÔME exclurait les faisant-fonction, qui sont une réalité quotidienne du
+secteur (un établissement en tension embauche un AES non diplômé en CDD, et
+c'est légal) ; l'IBAN se donne à l'employeur au moment de l'embauche. Restent
+les deux qui conditionnent l'ACCÈS au secteur, pas le poste.
+
+⚠ **LE SALARIÉ DE LA MAISON EN EST EXEMPTÉ.** Il est déjà employé là, son
+employeur détient ses pièces depuis son embauche, et ce qu'il fait ici sont des
+heures supplémentaires. Lui redemander son casier pour prendre un créneau chez
+lui ferait abandonner l'outil.
+
+⚠ **CONTRAIREMENT À LA RÈGLE DU MONTAGE, CELLE-CI MORD SUR LES COMPTES
+EXISTANTS.** C'est assumé : une candidature sans pièces fait perdre des jours à
+l'établissement. Le refus nomme donc les pièces manquantes et l'écran où les
+déposer, sinon il se lit comme une panne.
+
+**Pourquoi Les Extras ne vérifie pas** — à ne pas reproposer :
+1. le **bulletin n° 2** se délivre à l'employeur, dans les cas que la loi
+   énumère ; une plateforme qui n'embauche personne n'en fait pas partie. Ce que
+   la personne obtient elle-même est le **n° 3**, qui atteste au jour de son
+   édition et de rien après ;
+2. le **stocker** ferait de l'association le responsable d'un fichier de
+   condamnations pénales (art. 10 RGPD) sur des gens qu'elle n'emploie pas ;
+3. écrire « vérifié » **transfère à Les Extras** une obligation de contrôle qui
+   est légalement celle de l'employeur, et qui ne se délègue pas.
+
+⚠ **« Profils et documents vérifiés » a été retiré de `(auth)/layout.tsx`** —
+c'était la phrase même supprimée de la fiche atelier le 4/09. Ne pas la
+réécrire, sous aucune forme.
+
+### Deux défauts d'écran corrigés dans la foulée
+
+- **La recherche d'établissement pendant la frappe avait disparu.** En
+  déplaçant le nom de l'établissement dans « Vos identifiants », le composant
+  `RechercheEtablissement` était resté exporté mais n'était plus appelé nulle
+  part : taper « MECS » ne proposait plus les MECS déjà déclarées, et le
+  doublon d'établissement — le plus coûteux des trois, il coupe une équipe en
+  deux — revenait. Elle est **recollée au champ `organizationName`**, et elle
+  doit y rester.
+- **« Où vous travaillez » : trois cartes, une ligne dans chacune.** L'écran
+  portait trois paragraphes au-dessus de deux champs facultatifs. Personne ne
+  lit un écran d'inscription : on y cherche le champ.
