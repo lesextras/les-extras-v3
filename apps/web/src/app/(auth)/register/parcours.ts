@@ -24,10 +24,11 @@ export const CHOIX_COMPTE: ChoixCompte[] = [
     icon: Building2,
     titre: 'Je travaille en établissement',
     accroche: 'Direction, chef de service, coordinateur, salarié.',
+    // ⚠ Le verso est contraint par la hauteur de la carte : ces textes tiennent
+    // en trois lignes, pas plus. Les rallonger les fait couper au survol.
     detail:
-      'MECS, IME, ITEP, EHPAD, SESSAD, ESAT… Vous déclarez votre structure, ' +
-      'votre établissement et votre service, puis votre poste. Ce sont eux qui ' +
-      'déterminent ce que vous pouvez faire — pas une case cochée au départ.',
+      'MECS, IME, ITEP, EHPAD, SESSAD… Vous déclarez votre établissement, votre ' +
+      'service et votre poste : c’est cela qui décide de vos droits.',
     points: [
       'Direction : tout l’établissement',
       'Responsable : vos services',
@@ -40,9 +41,8 @@ export const CHOIX_COMPTE: ChoixCompte[] = [
     titre: 'Je suis intervenant indépendant',
     accroche: 'Éducateur, moniteur, thérapeute, formateur.',
     detail:
-      'Vous proposez vos ateliers et vos interventions à votre compte. Vous ' +
-      'publiez vos fiches, recevez les demandes de devis et éditez vos ' +
-      'documents depuis la plateforme.',
+      'Vous proposez vos ateliers à votre compte : fiches publiées, demandes de ' +
+      'devis reçues, documents édités ici.',
     points: ['Publication au catalogue', '0 % de commission', 'Devis et factures édités'],
   },
   {
@@ -51,9 +51,8 @@ export const CHOIX_COMPTE: ChoixCompte[] = [
     titre: 'Je suis parent ou particulier',
     accroche: 'Pour mon enfant, mon proche, ou moi-même.',
     detail:
-      'Vous cherchez un atelier, une activité ou un accompagnement. Vous ' +
-      'réservez, suivez vos inscriptions et retrouvez vos factures. Vous ne ' +
-      'publiez rien et ne recevez aucune sollicitation professionnelle.',
+      'Vous réservez pour votre enfant ou votre proche, suivez vos inscriptions ' +
+      'et retrouvez vos factures. Aucune sollicitation professionnelle.',
     points: ['Réservation d’ateliers', 'Inscription aux formations', 'Aucune publication'],
   },
 ];

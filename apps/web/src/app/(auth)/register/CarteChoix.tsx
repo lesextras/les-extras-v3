@@ -54,7 +54,13 @@ export function CarteChoix({
         onClick={onSelect}
         aria-pressed={actif}
         className={cn(
-          'carte-3d-face relative grid h-full w-full rounded-xl border-2 text-left',
+          // ⚠ LA HAUTEUR MINIMALE N'EST PAS DÉCORATIVE. Le verso est en
+          // `absolute inset-0` : il est donc contraint à la hauteur que le
+          // RECTO donne à la carte. Sans plancher, le verso — plus long —
+          // débordait et se faisait couper au milieu d'une phrase, les trois
+          // points disparaissant entièrement. Toute modification du verso doit
+          // être reverifiée au survol, pas seulement dans le code.
+          'carte-3d-face relative grid min-h-[13.5rem] w-full rounded-xl border-2 text-left',
           actif
             ? 'border-primary shadow-soft'
             : 'border-border hover:border-primary/40',
