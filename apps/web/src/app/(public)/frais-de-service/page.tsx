@@ -192,7 +192,7 @@ export default function FraisPage() {
           href="/register"
           className="inline-flex h-11 items-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
         >
-          Créer un compte gratuit
+          Créer un compte
         </Link>
         <Link
           href="/demo"

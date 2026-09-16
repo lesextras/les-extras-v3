@@ -1228,6 +1228,20 @@ model Booking {
   @@index([status])
   @@index([missionId])
   @@index([serviceId])
+  /// ⚠ L'INDEX QUI MANQUAIT — 16/09/2026.
+  ///
+  /// `findAllByAccount` filtre sur
+  /// `OR: [{accountId}, {mission:{accountId}}, {service:{accountId}}]` : c'est
+  /// la requête de `/dashboard/reservations`, l'écran le plus ouvert du
+  /// produit. Les deux derniers membres passaient par `missionId` et
+  /// `serviceId`, indexés ; le PREMIER faisait un parcours complet de la table,
+  /// à chaque ouverture, et cette table grossit à chaque réservation.
+  ///
+  /// `[accountId, status]` plutôt que `accountId` seul : l'écran demande
+  /// presque toujours un état (« à traiter », « à venir », « terminées »), et
+  /// un index composite sert les deux cas — le filtre sur le compte seul
+  /// utilise sa première colonne.
+  @@index([accountId, status])
 }
 
 /// Pointage : temps travaillé déclaré par le freelance sur une mission (Booking),

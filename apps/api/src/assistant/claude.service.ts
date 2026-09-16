@@ -1,4 +1,5 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { fetchMoteur } from './appel-borne';
 
 /**
  * Client Claude (API Anthropic) — moteur de langage de LEX.
@@ -43,26 +44,33 @@ export class ClaudeService {
         "L'assistant n'est pas encore activé sur cette plateforme (clé API manquante).",
       );
     }
-    const reponse = await fetch(`${this.base}/messages`, {
-      method: 'POST',
-      headers: {
-        'x-api-key': this.cle,
-        'anthropic-version': this.version,
-        'content-type': 'application/json',
+    // ⚠ `fetchMoteur`, PAS `fetch` : sans délai d'expiration, une connexion
+    // qui pend débite un crédit qui ne sera jamais remboursé. Voir
+    // `appel-borne.ts`, qui explique pourquoi en détail.
+    const reponse = await fetchMoteur(
+      `${this.base}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'x-api-key': this.cle,
+          'anthropic-version': this.version,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-5',
+          // Obligatoire côté Anthropic : on garde le même défaut que Mistral.
+          max_tokens: options.maxTokens ?? 2048,
+          temperature: options.temperature ?? 0.4,
+          // La consigne système ne voyage PAS comme un message.
+          system: options.system,
+          messages: [
+            ...ClaudeService.filAcceptable(options.historique),
+            { role: 'user', content: options.user },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-5',
-        // Obligatoire côté Anthropic : on garde le même défaut que Mistral.
-        max_tokens: options.maxTokens ?? 2048,
-        temperature: options.temperature ?? 0.4,
-        // La consigne système ne voyage PAS comme un message.
-        system: options.system,
-        messages: [
-          ...ClaudeService.filAcceptable(options.historique),
-          { role: 'user', content: options.user },
-        ],
-      }),
-    });
+      'Anthropic',
+    );
     if (!reponse.ok) {
       const corps = await reponse.text().catch(() => '');
       this.logger.error(`Claude ${reponse.status}: ${corps.slice(0, 300)}`);

@@ -92,7 +92,7 @@ export default function DemoPage() {
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               Vous êtes un intervenant, ou un établissement qui veut juste essayer ?{" "}
               <Link href="/register" className="font-medium text-primary hover:underline">
-                Créez un compte
+                Créer un compte
               </Link>
               , c’est gratuit et sans rendez-vous.
             </p>

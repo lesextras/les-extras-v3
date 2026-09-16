@@ -192,7 +192,7 @@ Gratuit chaque mois, sans carte bancaire ni date de fin. De quoi le confronter �
             href="/register"
             className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary-foreground px-5 text-sm font-semibold text-primary transition hover:opacity-90"
           >
-            Créer un compte gratuit
+            Créer un compte
             <ArrowRight className="size-4" />
           </Link>
           <Link

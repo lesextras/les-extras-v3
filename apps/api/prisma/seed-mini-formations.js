@@ -69,7 +69,7 @@ const COUVERTURES = '/images/mini-formations/';
  *
  * ⚠ « ATTESTATION DE SUIVI », JAMAIS « CERTIFICAT ». Un certificat evoque une
  * certification professionnelle (RNCP, RS) ; ces mini-formations n'en sont pas
- * une. Vendre 20 € un document en l'appelant « certificat » serait une pratique
+ * une. Vendre un document en l'appelant « certificat » serait une pratique
  * commerciale trompeuse — et l'association est par ailleurs certifiee Qualiopi,
  * ce qui rend l'erreur d'autant plus couteuse.
  */
@@ -81,7 +81,7 @@ Chaque module se termine aussi par cinq questions d’autocorrection, avec leurs
 
 Il n’y a ni examen, ni note. Ce qui est évalué, c’est votre propre relevé : chaque formation se termine par une période d’auto-observation avec une grille à remplir, et une lecture guidée de ce que vous y aurez noté.
 
-Attestation de suivi nominative : 20 €, facultative. Elle se demande une fois les modules terminés, et les conditions vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
+Attestation de suivi nominative, facultative, au prix indiqué sur cette fiche. Elle se demande une fois les modules terminés, et les conditions vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
 
 /**
  * ⚠ LE DEROULEMENT VIENT AVANT LA PEDAGOGIE.
@@ -120,11 +120,27 @@ La formation s’adresse aux parents comme aux professionnels : ce sont les mêm
 
 Il faut en revanche une situation réelle sous la main : chaque exercice se fait sur une personne que vous accompagnez ou que vous élevez, jamais sur un cas fictif.`;
 
+/*
+ * ⚠⚠ AUCUN MONTANT N'EST ÉCRIT DANS CES TEXTES — 16/09/2026.
+ *
+ * Le prix de l'attestation vivait en toutes lettres à cinq endroits : ici (deux
+ * fois), sur la fiche publique, sur /informations-reglementaires (deux fois) et
+ * dans le contenu chargé sur la plateforme pédagogique. Le jour où il change —
+ * et il a changé le 16/09/2026 — il faut les retrouver tous, dont un qui vit
+ * chez un tiers. Un seul oubli fait afficher deux prix différents pour le même
+ * document, ce qui est précisément la pratique commerciale trompeuse que toute
+ * cette chaîne évite (art. L121-1 c. conso).
+ *
+ * LA SOURCE DE VÉRITÉ EST `Formation.attestationPrixCents`, en base, fiche par
+ * fiche — c'est déjà elle qui décide si la vente est ouverte. La fiche publique
+ * l'affiche depuis la base ; les textes, eux, renvoient à la fiche. Ne
+ * réintroduisez pas de montant ici.
+ */
 const FAQ_COMMUNE = [
   {
     question: 'La formation est-elle vraiment gratuite ?',
     answer:
-      "Oui, du premier au dernier module, sans carte bancaire et sans date de fin. Seule l’attestation de suivi nominative est payante (20 €), et elle est facultative.",
+      "Oui, du premier au dernier module, sans carte bancaire et sans date de fin. Seule l’attestation de suivi nominative est payante, et elle est facultative : son prix est indiqué sur la fiche de la formation.",
   },
   {
     question: "L’attestation est-elle un diplôme ?",

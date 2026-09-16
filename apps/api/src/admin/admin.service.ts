@@ -1306,6 +1306,21 @@ export class AdminService {
         status: dto.status ?? FormationStatus.DRAFT,
         freeOnline: dto.freeOnline ?? false,
         enrollUrl: dto.enrollUrl ?? null,
+        // ⚠ LA VITRINE (16/09/2026). Ces sept champs existaient en base et
+        // n'étaient écrits que par un script de seed : une formation créée
+        // depuis l'administration arrivait au catalogue sans photo, sans
+        // ville et sans public filtrable, à côté de cartes d'atelier qui
+        // portent les trois. Voir l'en-tête du DTO.
+        images: dto.images ?? [],
+        city: dto.city ?? null,
+        publicTargets: dto.publicTargets ?? [],
+        durationMinutes: dto.durationMinutes ?? null,
+        methodology: dto.methodology ?? null,
+        evaluation: dto.evaluation ?? null,
+        // `as unknown as object` : le même passage que `services.service.ts` — un
+        // tableau de DTO ne satisfait pas `InputJsonValue`, qui exige une
+        // signature d'index.
+        faq: dto.faq === undefined ? Prisma.DbNull : (dto.faq as unknown as object),
         ownerAccount: { connect: { id: ownerAccountId } },
         categoryRef: dto.categoryId ? { connect: { id: dto.categoryId } } : undefined,
       },
@@ -1342,6 +1357,23 @@ export class AdminService {
     if (dto.type !== undefined) data.type = dto.type;
     if (dto.freeOnline !== undefined) data.freeOnline = dto.freeOnline;
     if (dto.enrollUrl !== undefined) data.enrollUrl = dto.enrollUrl;
+    // ⚠ La vitrine, même liste qu'à la création. `undefined` = champ non
+    // envoyé, donc non touché ; c'est ce qui permet à l'écran de n'envoyer que
+    // ce qui a changé sans effacer le reste au passage.
+    if (dto.images !== undefined) data.images = dto.images;
+    if (dto.city !== undefined) data.city = dto.city;
+    if (dto.publicTargets !== undefined) data.publicTargets = dto.publicTargets;
+    if (dto.durationMinutes !== undefined) data.durationMinutes = dto.durationMinutes;
+    if (dto.methodology !== undefined) data.methodology = dto.methodology;
+    if (dto.evaluation !== undefined) data.evaluation = dto.evaluation;
+    // ⚠ `DbNull`, pas `null` : sur une colonne Json, Prisma distingue le JSON
+    // `null` (une valeur) du NULL de la base (l'absence). Envoyer `null` tout
+    // court est refusé à la compilation, et écrirait la valeur JSON `null` —
+    // que la fiche publique afficherait comme une FAQ vide plutôt que comme
+    // une fiche sans FAQ.
+    if (dto.faq !== undefined) {
+      data.faq = dto.faq === null ? Prisma.DbNull : (dto.faq as unknown as object);
+    }
     /**
      * ⚠⚠ L'INTERRUPTEUR DE LA VENTE DE L'ATTESTATION.
      *

@@ -1,4 +1,5 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { fetchMoteur } from './appel-borne';
 
 /**
  * Client Mistral AI — hébergement européen.
@@ -38,26 +39,33 @@ export class MistralService {
         "L'assistant n'est pas encore activé sur cette plateforme (clé API manquante).",
       );
     }
-    const reponse = await fetch(`${this.base}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.cle}`,
-        'Content-Type': 'application/json',
+    // ⚠ Même délai d'expiration que le moteur principal : ce client est le
+    // REPLI, c'est-à-dire celui qu'on appelle le jour où quelque chose ne va
+    // déjà pas. Voir `appel-borne.ts`.
+    const reponse = await fetchMoteur(
+      `${this.base}/chat/completions`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.cle}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // « small » par défaut : c'est le modèle que l'offre gratuite de
+          // Mistral laisse appeler. « large » se règle par MISTRAL_MODEL quand
+          // le compte est payant.
+          model: process.env.MISTRAL_MODEL ?? 'mistral-small-latest',
+          temperature: options.temperature ?? 0.4,
+          max_tokens: options.maxTokens ?? 2048,
+          messages: [
+            { role: 'system', content: options.system },
+            ...(options.historique ?? []).slice(-8),
+            { role: 'user', content: options.user },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        // « small » par défaut : c'est le modèle que l'offre gratuite de
-        // Mistral laisse appeler. « large » se règle par MISTRAL_MODEL quand le
-        // compte est payant.
-        model: process.env.MISTRAL_MODEL ?? 'mistral-small-latest',
-        temperature: options.temperature ?? 0.4,
-        max_tokens: options.maxTokens ?? 2048,
-        messages: [
-          { role: 'system', content: options.system },
-          ...(options.historique ?? []).slice(-8),
-          { role: 'user', content: options.user },
-        ],
-      }),
-    });
+      'Mistral',
+    );
     if (!reponse.ok) {
       const corps = await reponse.text().catch(() => '');
       this.logger.error(`Mistral ${reponse.status}: ${corps.slice(0, 300)}`);

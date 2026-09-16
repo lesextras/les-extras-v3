@@ -1,0 +1,39 @@
+-- ============================================================================
+--  L'INDEX QUI MANQUAIT SUR LA TABLE LA PLUS LUE
+--  16/09/2026
+-- ============================================================================
+--
+--  Rejouable, comme toutes celles de ce dossier : les migrations s'appliquent
+--  au démarrage du conteneur API, et une migration qui échoue empêche le
+--  conteneur de démarrer — donc coupe le site.
+--
+--  POURQUOI
+--  --------
+--  `BookingsService.findAllByAccount` alimente /dashboard/reservations, l'écran
+--  le plus ouvert du produit. Son filtre est :
+--
+--      OR: [ { accountId }, { mission: { accountId } }, { service: { accountId } } ]
+--
+--  Les deux derniers membres passent par `missionId` et `serviceId`, tous deux
+--  indexés depuis l'origine. Le PREMIER ne l'était pas : PostgreSQL parcourait
+--  la table entière à chaque ouverture de l'écran. Aujourd'hui « Booking »
+--  tient en quelques dizaines de lignes et rien ne se voit ; elle grossit
+--  d'une ligne à chaque réservation, et le jour où ça se verra, ce sera sur
+--  l'écran que les gens ouvrent le plus.
+--
+--  POURQUOI UN INDEX COMPOSITE (accountId, status)
+--  -----------------------------------------------
+--  L'écran demande presque toujours un état en même temps que le compte
+--  (« à traiter », « à venir », « terminées »). Un index composite sert ce cas
+--  ET le cas du compte seul, puisque PostgreSQL sait n'utiliser que la première
+--  colonne d'un index. L'inverse ne serait pas vrai : un index sur `status`
+--  seul — celui qui existe déjà — ne sert à rien pour filtrer par compte.
+--
+--  PAS DE `CONCURRENTLY` : Prisma exécute chaque migration dans une
+--  transaction, et PostgreSQL interdit `CREATE INDEX CONCURRENTLY` dans une
+--  transaction. Sur une table de cette taille, la prise de verrou dure
+--  quelques millisecondes ; le jour où elle compterait des millions de lignes,
+--  cet index se poserait à la main, hors migration.
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS "Booking_accountId_status_idx" ON "Booking"("accountId", "status");

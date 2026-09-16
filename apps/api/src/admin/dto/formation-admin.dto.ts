@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -8,9 +9,36 @@ import {
   IsString,
   IsUrl,
   Max,
+  MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { FormationStatus, FormationType, SessionStatus } from '@prisma/client';
+import { FaqItemDto } from '../../services/dto/create-service.dto';
+
+/**
+ * LA VITRINE D'UNE FORMATION — les sept champs qui manquaient.
+ *
+ * ⚠⚠ RELEVÉ LE 16/09/2026, ET C'ÉTAIT LE PLUS COÛTEUX DES DÉFAUTS DE
+ * FORMULAIRE. Le modèle `Formation` porte depuis longtemps `images`, `city`,
+ * `methodology`, `evaluation`, `faq`, `publicTargets` et `durationMinutes` —
+ * et AUCUN d'eux n'était dans les DTO de l'administration. Le ValidationPipe
+ * global étant en `forbidNonWhitelisted`, toute requête qui les contenait
+ * partait en 400 : ces champs n'étaient donc remplissables QUE par un script
+ * de seed, c'est-à-dire par un commit.
+ *
+ * Conséquence concrète, visible au catalogue : une carte de formation
+ * s'affichait sans photo, sans ville et sans public filtrable à côté d'une
+ * carte d'atelier qui porte les trois. C'est exactement l'écart que Siham
+ * avait relevé le 3/09 — on avait corrigé la CARTE, pas le moyen de la
+ * remplir.
+ *
+ * ⚠ LES LONGUEURS SONT CELLES DE `UpdateServiceAdminDto` : les deux
+ * formulaires décrivent la même chose au lecteur, et deux plafonds différents
+ * pour le même champ produiraient une fiche acceptée d'un côté, refusée de
+ * l'autre.
+ */
 
 /**
  * Création d'un programme de formation depuis le back-office ADMIN.
@@ -31,6 +59,28 @@ export class CreateFormationAdminDto {
   @IsOptional() @IsBoolean() certifying?: boolean;
   @IsOptional() @IsString() certificationName?: string;
   @IsOptional() @IsString() edofRef?: string;
+  /** Vitrine : sans image ni ville, une formation ne se vend pas en ligne. */
+  @IsOptional() @IsArray() @IsString({ each: true }) images?: string[];
+  @IsOptional() @IsString() @MaxLength(120) city?: string;
+  /**
+   * Étiquettes de public, filtrables au catalogue. `targetAudience` est un
+   * paragraphe : il se lit, il ne se filtre pas. Les deux coexistent.
+   */
+  @IsOptional() @IsArray() @IsString({ each: true }) publicTargets?: string[];
+  /**
+   * ⚠ LA DURÉE EN MINUTES N'EST PAS UN CONFORT. `durationHours` est un entier :
+   * une mini-formation de 45 minutes y vaut 0 (durée effacée) ou 1 (durée
+   * fausse sur une fiche que des financeurs lisent). Les deux champs
+   * coexistent, la carte affiche celui qui est rempli.
+   */
+  @IsOptional() @IsInt() @Min(1) durationMinutes?: number;
+  @IsOptional() @IsString() @MaxLength(5000) methodology?: string;
+  @IsOptional() @IsString() @MaxLength(5000) evaluation?: string;
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FaqItemDto)
+  faq?: FaqItemDto[];
   /**
    * MINI-FORMATION EN LIGNE ET GRATUITE.
    *
@@ -68,6 +118,28 @@ export class UpdateFormationAdminDto {
   @IsOptional() @IsBoolean() certifying?: boolean;
   @IsOptional() @IsString() certificationName?: string;
   @IsOptional() @IsString() edofRef?: string;
+  /** Vitrine : sans image ni ville, une formation ne se vend pas en ligne. */
+  @IsOptional() @IsArray() @IsString({ each: true }) images?: string[];
+  @IsOptional() @IsString() @MaxLength(120) city?: string;
+  /**
+   * Étiquettes de public, filtrables au catalogue. `targetAudience` est un
+   * paragraphe : il se lit, il ne se filtre pas. Les deux coexistent.
+   */
+  @IsOptional() @IsArray() @IsString({ each: true }) publicTargets?: string[];
+  /**
+   * ⚠ LA DURÉE EN MINUTES N'EST PAS UN CONFORT. `durationHours` est un entier :
+   * une mini-formation de 45 minutes y vaut 0 (durée effacée) ou 1 (durée
+   * fausse sur une fiche que des financeurs lisent). Les deux champs
+   * coexistent, la carte affiche celui qui est rempli.
+   */
+  @IsOptional() @IsInt() @Min(1) durationMinutes?: number;
+  @IsOptional() @IsString() @MaxLength(5000) methodology?: string;
+  @IsOptional() @IsString() @MaxLength(5000) evaluation?: string;
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FaqItemDto)
+  faq?: FaqItemDto[];
   /**
    * MINI-FORMATION EN LIGNE ET GRATUITE.
    *

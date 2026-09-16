@@ -42,12 +42,22 @@
  * en retard, pas à l'avant-garde.
  *
  * ── MODÈLE ÉCONOMIQUE (décidé par Siham le 2/09/2026) ───────────────────────
- * Formation GRATUITE, intégralement. Attestation payante à 20 €, facultative.
+ * Formation GRATUITE, intégralement. Attestation payante, facultative.
+ *
+ * ⚠⚠ LE MONTANT N'EST PLUS ÉCRIT ICI — 16/09/2026, et c'est structurel.
+ * Ce texte part chez un TIERS : il est chargé dans les 48 leçons de la
+ * plateforme pédagogique. Un prix écrit ici ne se corrige donc pas par un
+ * déploiement, il se corrige en rechargeant 48 pages à la main. Le jour où le
+ * prix change — il a changé le 16/09 — on affiche deux montants différents
+ * pour le même document le temps de s'en apercevoir, c'est-à-dire la pratique
+ * commerciale trompeuse que tout le reste de cette chaîne évite (art. L121-1
+ * c. conso). La source de vérité est `Formation.attestationPrixCents`, en
+ * base ; ce texte renvoie à la fiche. NE PAS RÉÉCRIRE DE MONTANT ICI.
  *
  * ⚠ VOCABULAIRE À TENIR : on écrit « ATTESTATION DE SUIVI », jamais
  * « certificat ». Un certificat évoque une certification professionnelle
  * (RNCP, RS), ce que ces formations ne sont pas. Écrire « certificat » créerait
- * une pratique commerciale trompeuse pour 20 €, ce qui est exactement le genre
+ * une pratique commerciale trompeuse, ce qui est exactement le genre
  * d'erreur qui coûte cher à une association certifiée Qualiopi par ailleurs.
  *
  * ⚠ CONSÉQUENCE À TRAITER AVANT LA MISE EN VENTE : vendre à des particuliers
@@ -60,10 +70,11 @@
  */
 
 const ATTESTATION = `<hr style="height:1px;border:0;background:#e5e0d8;margin:28px 0">
-<p style="font-size:14px;color:#6b6157"><strong>Attestation de suivi — 20 €, facultative.</strong>
+<p style="font-size:14px;color:#6b6157"><strong>Attestation de suivi — facultative.</strong>
 La formation est gratuite du premier au dernier module, sans carte bancaire et sans limite de
 temps. Si vous souhaitez une attestation nominative de suivi — pour votre dossier de formation
-continue, votre employeur ou votre entretien professionnel —, elle est délivrée pour 20 €.
+continue, votre employeur ou votre entretien professionnel —, elle est délivrée à la demande,
+au prix indiqué sur la fiche de la formation, sur les-extras.fr.
 Elle atteste que vous avez suivi la formation&nbsp;; ce n'est ni un diplôme, ni une
 certification professionnelle, ni une action de formation certifiée Qualiopi.</p>`;
 

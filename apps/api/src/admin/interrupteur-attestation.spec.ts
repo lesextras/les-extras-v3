@@ -1,3 +1,11 @@
+// ⚠ `reflect-metadata` EN PREMIER, comme dans `audit-securite.spec.ts` et
+// `authorization-matrix.spec.ts`. Depuis que le DTO des formations porte la
+// FAQ (`@Type(() => FaqItemDto)`), il dépend de `class-transformer`, qui lit
+// les métadonnées de décorateur au chargement du module. Sans cette ligne,
+// l'import échoue avec « Reflect.getMetadata is not a function » — une erreur
+// qui n'a l'air d'avoir aucun rapport avec ce qu'on teste. L'application, elle,
+// l'importe dans `main.ts` ; jest ne charge pas `main.ts`.
+import 'reflect-metadata';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { UpdateFormationAdminDto } from './dto/formation-admin.dto';

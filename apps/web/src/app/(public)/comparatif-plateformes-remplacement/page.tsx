@@ -244,7 +244,7 @@ Gratuit, sans carte bancaire ni engagement. Vous verrez le fonctionnement avant 
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <Button asChild>
-            <Link href="/register?type=etablissement">Créer le compte de ma structure</Link>
+            <Link href="/register?type=etablissement&next=/dashboard/renforts">Publier un besoin</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/renforteam">Comment fonctionne RenforTeam</Link>

@@ -8,6 +8,7 @@ import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, EmptyState, ErrorState, SectionTitle } from "../../../_shared/ui";
 import { ServiceCard, BookingRow } from "../../../_shared/cards";
 import { ServiceModal } from "../../../_shared/modals/ServiceModal";
+import { peutPublier } from "@/lib/publication";
 import { CompletudeBandeau } from "../../../_shared/CompletudeFiche";
 import { completude } from "@/lib/completude-fiche";
 import { BookingActions } from "../../../_shared/BookingActions";
@@ -44,6 +45,21 @@ export default async function AteliersPage({
     "/auth/me",
   );
   const enAttente = moi?.enAttenteRattachement === true;
+
+  /*
+    ⚠ UN MEMBRE SIMPLE NE PUBLIE PAS — corrigé le 16/09/2026.
+
+    Cette page montait `ServiceModal` à trois endroits sans jamais regarder le
+    rôle, alors que l'API exige OWNER, ADMIN ou MANAGER (`AccountRolesGuard`).
+    Un membre remplissait donc un formulaire long — titre, description, public,
+    durée, objectifs, photo — pour se faire refuser à l'envoi. Le refus est
+    juste ; c'est de l'avoir proposé qui ne l'était pas.
+
+    ⚠ La condition est cumulée avec `enAttente` : ce sont deux raisons
+    différentes de ne pas pouvoir publier (l'une est un rôle, l'autre un
+    rattachement qui n'a pas encore été accepté), et chacune a son message.
+  */
+  const publicationPermise = peutPublier(session.account.role) && !enAttente;
 
   if (session.account.type !== "FREELANCE") {
     return (
@@ -107,7 +123,7 @@ export default async function AteliersPage({
       <PageHeader
         title="Mes ateliers"
         subtitle="Gérez votre catalogue d’interventions et vos demandes de réservation."
-        actions={enAttente ? null : <ServiceModal accountId={session.account.id} />}
+        actions={publicationPermise ? <ServiceModal accountId={session.account.id} /> : null}
       />
 
       {publie === "1" ? (
@@ -201,16 +217,21 @@ export default async function AteliersPage({
             description={
               enAttente
                 ? "Vous pourrez publier vos ateliers dès qu’un établissement aura accepté votre rattachement. En attendant, le catalogue et les opportunités vous sont ouverts."
-                : "Publiez votre premier atelier pour apparaître dans le catalogue et recevoir des réservations."
+                : publicationPermise
+                  ? "Publiez votre premier atelier pour apparaître dans le catalogue et recevoir des réservations."
+                  : /* ⚠ On DIT le motif. Un écran vide sans bouton se lit comme une
+                       panne ; « réservé aux responsables » se lit comme une règle,
+                       et la personne sait à qui s’adresser. */
+                    "Publier une fiche est réservé au propriétaire, aux administrateurs et aux responsables du compte. Demandez-leur de vous donner ce rôle, ou de publier la fiche."
             }
             action={
               enAttente ? (
                 <Button asChild variant="outline">
                   <Link href="/dashboard">Voir où en est mon rattachement</Link>
                 </Button>
-              ) : (
+              ) : publicationPermise ? (
                 <ServiceModal accountId={session.account.id} />
-              )
+              ) : null
             }
           />
         ) : (
@@ -254,17 +275,19 @@ export default async function AteliersPage({
                 {/* Une fiche publiée n'était plus modifiable ni suspendable :
                     la liste n'offrait aucune action, alors que l'API l'a
                     toujours permis. */}
-                <div className="mt-2 flex justify-end">
-                  <ServiceModal
-                    accountId={session.account.id}
-                    fiche={sv as never}
-                    trigger={
-                      <Button size="sm" variant="outline">
-                        Compléter la fiche
-                      </Button>
-                    }
-                  />
-                </div>
+                {publicationPermise ? (
+                  <div className="mt-2 flex justify-end">
+                    <ServiceModal
+                      accountId={session.account.id}
+                      fiche={sv as never}
+                      trigger={
+                        <Button size="sm" variant="outline">
+                          Compléter la fiche
+                        </Button>
+                      }
+                    />
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
