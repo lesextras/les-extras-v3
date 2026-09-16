@@ -81,11 +81,24 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
                 pavés plus hauts que le bouton principal du héros — un onglet
                 n'est pas l'action principale de la page, il choisit un rayon.
               */
+              /*
+                ⚠ L'ONGLET FERMÉ PORTE UN CONTOUR VISIBLE (16/09/2026, demande
+                de Siham) : `border-border` est la teinte des séparations
+                discrètes, et sur le fond charbon de l'accueil elle disparaît
+                presque — l'onglet « Formations » n'avait plus l'air d'un
+                bouton du tout, juste d'un mot posé là. Il porte donc le rose
+                de la marque à 45 %, assez pour se voir, assez peu pour ne pas
+                concurrencer l'onglet ouvert.
+
+                ⚠ `border-2` DES DEUX CÔTÉS. Avec un contour d'un pixel d'un
+                côté et de deux de l'autre, les deux boutons ne font pas la
+                même hauteur et la bascule fait sauter la ligne d'un pixel.
+              */
               className={
-                "w-full basis-0 rounded-full px-5 py-2.5 text-sm tracking-wide transition-colors sm:flex-1 " +
+                "w-full basis-0 rounded-full border-2 px-5 py-2.5 text-sm tracking-wide transition-colors sm:flex-1 " +
                 (ouvert
-                  ? "border border-primary bg-primary font-bold text-primary-foreground shadow-soft"
-                  : "border border-border bg-card font-semibold text-foreground hover:border-primary/50 hover:bg-primary-soft hover:text-primary")
+                  ? "border-primary bg-primary font-bold text-primary-foreground shadow-soft"
+                  : "border-primary/45 bg-card font-semibold text-foreground hover:border-primary hover:bg-primary-soft hover:text-primary")
               }
             >
               {r.libelle}

@@ -236,9 +236,19 @@ export function DeuxRenforts() {
           seule : le cas de gauche, le cas de droite, puis ce qui tranche.
           Ne pas les recoller en un paragraphe.
         */}
-        <div className="mt-4 space-y-2 text-lg leading-relaxed text-muted-foreground">
+        {/*
+          ⚠ `space-y-1` ET `leading-snug`, PAS l'interligne de lecture courant.
+          Ces trois lignes ne sont pas un paragraphe découpé : c'est une liste
+          de trois cas. `leading-relaxed` + `space-y-2` creusait entre elles
+          autant qu'entre deux blocs de la page, et elles se lisaient comme
+          trois idées sans rapport. Resserrées, elles forment un bloc — tout en
+          gardant assez d'air pour qu'un repli sur téléphone reste lisible.
+        */}
+        <div className="mt-4 space-y-1 text-lg leading-snug text-muted-foreground">
           <p>Un poste à couvrir&nbsp;? Un CDD que vous embauchez, comme un vacataire.</p>
-          <p>Un besoin en plus de l’équipe&nbsp;: un indépendant, en prestation.</p>
+          {/* La même question des deux côtés : deux cas parallèles se lisent
+              d'un coup d'œil, un « : » aurait rompu le parallélisme. */}
+          <p>Un besoin en plus de l’équipe&nbsp;? Un indépendant, en prestation.</p>
           <p>C’est le besoin qui choisit, pas la personne.</p>
         </div>
       </Reveal>
