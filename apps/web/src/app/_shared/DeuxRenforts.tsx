@@ -19,7 +19,12 @@
 //
 // ⚠ ON N'ÉCRIT PAS « FREELANCE » ICI. C'est le vocabulaire sanctionné par la
 // décision ci-dessus : « remplaçant en CDD » pour le renfort de poste,
-// « intervenant » pour la prestation.
+// « intervenant » ou « indépendant » pour la prestation.
+//
+// ⚠ ET « INDÉPENDANT » NE PASSE JAMAIS DU CÔTÉ CDD. Sur la prestation, c'est le
+// mot juste — la personne facture par sa structure et ne remplace personne. Sur
+// un remplacement de poste, c'est exactement ce que le Conseil d'État a écarté.
+// Le même mot, à deux centimètres d'écart, dit une chose exacte et une faute.
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -145,14 +150,14 @@ const RENFORTS = [
      */
     image: wp('/wp-content/uploads/2023/02/aide-soignant.jpg'),
     accroche:
-      'Une éducatrice en arrêt, un veilleur absent, un poste vacant. Quelqu’un manque, et il faut quelqu’un à sa place.',
+      'Une éducatrice en arrêt, un veilleur absent. Quelqu’un manque : il faut quelqu’un à sa place.',
     etapes: ['Vous publiez', 'Votre équipe, puis le réseau', 'CDD signé'],
     points: [
-      { icone: UsersRound, texte: 'Diffusé en cascade : vos salariés, votre réseau, puis Les Extras.' },
-      { icone: FileSignature, texte: 'Le contrat de travail est édité ici, et signé en ligne.' },
-      { icone: BadgeCheck, texte: 'Identité et bulletin n° 3 déjà déposés dans le dossier.' },
+      { icone: UsersRound, texte: 'Diffusé en cascade : vos salariés, vos habitués, le réseau.' },
+      { icone: FileSignature, texte: 'Contrat de travail édité ici, signé en ligne.' },
+      { icone: BadgeCheck, texte: 'Identité et bulletin n° 3 déjà au dossier.' },
     ],
-    conclusion: 'L’établissement embauche. C’est lui l’employeur, du premier au dernier jour.',
+    conclusion: 'Vous embauchez en CDD, comme un vacataire. C’est vous l’employeur.',
     action: { libelle: 'Comment marche RenforTeam', href: '/renforteam' },
     teinte: 'text-primary',
     bordure: 'border-primary/35',
@@ -168,14 +173,14 @@ const RENFORTS = [
     titre: 'Un accompagnement 1 pour 1',
     image: wp('/wp-content/uploads/2023/02/educatheure.jpeg'),
     accroche:
-      'Un jeune à accompagner sur ses sorties, un suivi individuel, une médiation. Personne ne manque : il faut quelqu’un EN PLUS, sur un besoin nommé.',
+      'Un jeune à accompagner, un suivi individuel. Personne ne manque : il faut quelqu’un EN PLUS.',
     etapes: ['Vous choisissez', 'Devis', 'Facture de sa structure'],
     points: [
       { icone: ScrollText, texte: 'Une fiche, un devis, un contrat de prestation.' },
-      { icone: ReceiptText, texte: 'L’intervenant facture par sa propre structure.' },
-      { icone: BadgeCheck, texte: 'Vous gardez la main : rien n’est engagé avant votre accord.' },
+      { icone: ReceiptText, texte: 'L’indépendant facture par sa structure.' },
+      { icone: BadgeCheck, texte: 'Rien n’est engagé avant votre accord.' },
     ],
-    conclusion: 'L’intervenant reste indépendant, parce qu’il ne remplace personne.',
+    conclusion: 'Il reste indépendant parce qu’il ne remplace personne.',
     action: {
       libelle: 'Voir les intervenants',
       href: '/marketplace?type=services&format=INDIVIDUEL',
@@ -192,16 +197,33 @@ const RENFORTS = [
 export function DeuxRenforts() {
   return (
     <section className="section">
+      {/*
+        ⚠ L'EN-TÊTE PORTE LE NOM DU PRODUIT — 16/09/2026, demande de Siham.
+
+        Le titre était la RÈGLE (« ce n'est pas la personne qui choisit le
+        montage, c'est le besoin ») : juste, mais abstraite, et elle ne disait
+        ni le nom du service ni ce qu'on y fait. Un directeur qui arrive doit
+        lire en une seconde ce qu'il peut obtenir — un remplaçant qu'il
+        embauche, ou un indépendant pour un accompagnement. La règle n'est pas
+        perdue : elle tient en fin de sous-titre, où elle explique les deux
+        cartes au lieu de les annoncer.
+
+        ⚠ « INDÉPENDANT » EST CORRECT ICI, ET SEULEMENT ICI. Le mot est banni
+        du remplacement de poste (CE 11/02/2025 n° 491128) ; c'est précisément
+        le montage de l'autre colonne, celle de la prestation sur un besoin
+        nommé. Il ne doit jamais glisser vers la carte CDD. « Freelance »,
+        lui, reste banni des deux côtés.
+      */}
       <Reveal className="max-w-3xl">
-        <span className="eyebrow">Nouveau — le renfort, en deux</span>
+        <span className="eyebrow">RenforTeam</span>
         <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-          Ce n’est pas la personne qui choisit le montage,{' '}
-          <span className="text-gradient-brand">c’est le besoin.</span>
+          Deux renforts.{' '}
+          <span className="text-gradient-brand">Deux contrats.</span>
         </h2>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          Un poste à couvrir et un accompagnement en plus de l’équipe s’appellent tous les deux
-          « renfort », et ne se contractent pas de la même façon. Vous décrivez le besoin, le
-          montage suit.
+          Un poste à couvrir&nbsp;? Un CDD que vous embauchez, comme un vacataire. Un besoin en
+          plus de l’équipe&nbsp;? Un indépendant, en prestation. C’est le besoin qui choisit, pas
+          la personne.
         </p>
       </Reveal>
 
