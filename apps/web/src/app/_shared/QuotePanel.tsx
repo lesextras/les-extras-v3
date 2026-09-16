@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { lancerConfettis } from "@/lib/confetti";
 import { apiRequest } from "@/lib/api";
 import { Field, Textarea } from "./form-fields";
 import { DecompositionPrix } from "./DecompositionPrix";
@@ -293,6 +294,10 @@ export function QuoteDecision({ quoteId }: { quoteId: string }) {
             ? "La prestation est confirmée : la réservation vient d'être créée."
             : "L'intervenant a été prévenu.",
       });
+      // ⚠ SUR L'ACCEPTATION SEULEMENT. Des confettis sur un refus diraient
+      // l'inverse de ce qui vient de se passer — même règle que pour les
+      // brouillons et les publications ratées.
+      if (action === "accept") lancerConfettis();
       router.refresh();
     } catch (err) {
       toast({

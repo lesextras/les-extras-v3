@@ -18,7 +18,7 @@ import type { ChoixCompte } from './CarteChoix';
  * puis une question à laquelle chacun sait répondre parce qu'elle porte sur son
  * métier et pas sur une catégorie de logiciel.
  */
-export const CHOIX_COMPTE: ChoixCompte[] = [
+export const CHOIX_COMPTE: (ChoixCompte & { key: CleCompte })[] = [
   {
     key: 'ESTABLISHMENT',
     icon: Building2,
@@ -57,21 +57,20 @@ export const CHOIX_COMPTE: ChoixCompte[] = [
   },
 ];
 
-export type CleCompte = (typeof CHOIX_COMPTE)[number]['key'];
+/**
+ * ⚠ Le type est ÉNUMÉRÉ, pas déduit de la liste des cartes. Déduit, il valait
+ * `string` — et une clé mal orthographiée dans `CHOIX_COMPTE` serait passée
+ * jusqu'au serveur sans que rien ne l'arrête.
+ */
+export type CleCompte = 'ESTABLISHMENT' | 'FREELANCE' | 'PARTICULIER';
 
 /** Les étapes du parcours, dans l'ordre. */
-export type CleEtape =
-  | 'profil'
-  | 'etablissement'
-  | 'identite'
-  | 'structure'
-  | 'service'
-  | 'poste';
+export type CleEtape = 'profil' | 'etablissement' | 'identite' | 'poste';
 
 export interface Etape {
   cle: CleEtape;
   titre: string;
-  /** Ce que l'étape sert à faire, en une phrase, affiché sous le titre. */
+  /** Ce que l'étape sert à faire, en une phrase, affichée sous le titre. */
   explication: string;
 }
 
@@ -86,43 +85,42 @@ const ETAPE_IDENTITE: Etape = {
   cle: 'identite',
   titre: 'Vos identifiants',
   explication:
-    'De quoi vous connecter. Votre compte est créé à la fin de cette étape — les suivantes se complètent aussi plus tard, depuis votre espace.',
+    'De quoi vous connecter. Votre compte est créé dès cette étape : tout ce qui suit se complète aussi plus tard, depuis votre espace.',
 };
 
 /**
- * LE PARCOURS ÉTABLISSEMENT EST EN SIX ÉTAPES, ET C'EST VOLONTAIRE.
+ * QUATRE ÉTAPES, PLUS SIX.
  *
- * Un formulaire unique portant structure, établissement, service, poste, statut
- * cadre et droits déclarés ferait une page de vingt champs. Personne ne la
- * remplit : on la ferme. Découpé, chaque écran pose UNE question, l'explique,
- * et se répond en dix secondes.
+ * Structure, établissement et service étaient trois écrans séparés. Ils ne
+ * posent pourtant qu'une seule question — « où travaillez-vous ? » — et la
+ * découper en trois faisait trois fois le même geste : lire un titre, remplir
+ * un champ, cliquer Continuer. Trois écrans pour trois champs, c'est un
+ * formulaire qui se ferme.
+ *
+ * Ils sont réunis. Le découpage garde son sens là où il en a : la situation,
+ * le lieu de travail, les identifiants, le poste.
+ *
+ * ⚠ CONSÉQUENCE TECHNIQUE, et elle explique la forme du code : l'étape
+ * « établissement » arrive AVANT la création du compte. Elle ne peut donc
+ * appeler que des routes PUBLIQUES (`/public/etablissements`,
+ * `/public/structures`). Le rattachement à la structure et la création du
+ * service, eux, sont des écritures : ils sont mis de côté et appliqués juste
+ * après la création du compte. Ne remontez pas d'appel authentifié dans cette
+ * étape — il échouerait en 401 sans rien dire.
  *
  * ⚠ AUCUNE ÉTAPE APRÈS « identite » N'EST BLOQUANTE. Le compte existe déjà :
- * quelqu'un qui s'arrête en route garde son accès et retrouve le parcours dans
- * son espace. Exiger l'organigramme complet avant de laisser entrer, c'est
- * perdre la moitié des gens sur un écran administratif.
+ * quelqu'un qui s'arrête en route garde son accès et retrouve le reste dans
+ * son espace, sur « Mon poste ».
  */
 export const PARCOURS: Record<CleCompte, Etape[]> = {
   ESTABLISHMENT: [
+    ETAPE_IDENTITE,
     ETAPE_PROFIL,
     {
       cle: 'etablissement',
-      titre: 'Votre établissement',
+      titre: 'Où vous travaillez',
       explication:
-        'Le lieu où vous travaillez. C’est ce nom qui apparaîtra sur vos devis et vos factures.',
-    },
-    ETAPE_IDENTITE,
-    {
-      cle: 'structure',
-      titre: 'Votre structure',
-      explication:
-        'L’entité juridique qui possède votre établissement : association, fondation, mairie, groupe. Nous la retrouvons pour vous dans l’annuaire public.',
-    },
-    {
-      cle: 'service',
-      titre: 'Votre service',
-      explication:
-        'Internat, pôle jour, SESSAD… Si un collègue l’a déjà créé, nous vous le dirons plutôt que d’en créer un second.',
+        'Votre établissement, la structure qui le gère, et votre service. Seul le nom de l’établissement est obligatoire — le reste se complète aussi plus tard.',
     },
     {
       cle: 'poste',
@@ -131,6 +129,6 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
         'Ce que vous faites, et ce que vous pouvez engager pour votre établissement. C’est cette déclaration qui décide de ce que vous voyez et de ce que vous pouvez faire.',
     },
   ],
-  FREELANCE: [ETAPE_PROFIL, ETAPE_IDENTITE],
-  PARTICULIER: [ETAPE_PROFIL, ETAPE_IDENTITE],
+  FREELANCE: [ETAPE_IDENTITE, ETAPE_PROFIL],
+  PARTICULIER: [ETAPE_IDENTITE, ETAPE_PROFIL],
 };

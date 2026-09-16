@@ -8,6 +8,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProgressionService } from '../users/progression.service';
+import { StructuresService } from '../structures/structures.service';
 import { MailService } from '../common/mail/mail.service';
 import { DEPARTEMENTS, trouverDepartement } from '../common/territoires';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
@@ -177,6 +178,7 @@ export class PublicService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly progression: ProgressionService,
+    private readonly structures: StructuresService,
   ) {}
 
   /** Enregistre une demande de contact publique et notifie l'équipe par e-mail. */
@@ -1320,6 +1322,24 @@ export class PublicService {
       rating,
       palier,
     };
+  }
+
+  /**
+   * LES STRUCTURES : celles de la plateforme d'abord, l'annuaire public ensuite.
+   *
+   * L'annuaire est interrogé en second et son échec est SILENCIEUX : il est
+   * lent, limité en débit, et parfois indisponible. Une structure saisie à la
+   * main reste parfaitement valable — beaucoup de petites associations n'y
+   * figurent pas, et les exclure reviendrait à les mettre dehors.
+   */
+  async rechercherStructures(q: string) {
+    const texte = (q ?? '').trim();
+    if (texte.length < 3) return { declarees: [], annuaire: [] };
+    const [declarees, annuaire] = await Promise.all([
+      this.structures.rechercherDeclarees(texte).catch(() => []),
+      this.structures.rechercherEntite(texte).catch(() => []),
+    ]);
+    return { declarees, annuaire };
   }
 
   /**

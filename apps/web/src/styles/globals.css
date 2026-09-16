@@ -349,47 +349,83 @@
   /*
    * LA CARTE QUI SE RETOURNE AU SURVOL.
    *
-   * Recto : l'icône et le titre. Verso : l'explication. Le retournement part
-   * au survol de la souris ET au focus clavier — sans le focus, la moitié du
-   * contenu serait invisible à qui navigue à la tabulation, et invisible tout
-   * court sur un lecteur d'écran.
+   * Recto : l'icône et le titre. Verso : l'explication. Le retournement part au
+   * survol de la souris ET au focus clavier — sans le focus, la moitié du
+   * contenu serait invisible à qui navigue à la tabulation.
    *
-   * ⚠ TROIS RÈGLES QUI TIENNENT CET EFFET, et qu'il ne faut pas défaire :
+   * ⚠⚠ LA ROTATION N'EST PAS PORTÉE PAR LE BOUTON, ET C'EST TOUT LE SUJET.
    *
-   *  1. LES DEUX FACES SONT EMPILÉES, JAMAIS L'UNE APRÈS L'AUTRE. Le recto est
-   *     en flux (il donne sa hauteur à la carte), le verso est en `absolute`
-   *     par-dessus. Mettre les deux en `absolute` ferait une carte de hauteur
-   *     nulle ; mettre les deux en flux ferait une carte deux fois trop haute.
-   *  2. `backface-visibility: hidden` sur les DEUX faces : sans lui, on lit le
-   *     verso en miroir à travers le recto pendant toute la rotation.
-   *  3. LE VERSO RESTE LISIBLE SI L'ANIMATION EST COUPÉE. Quelqu'un qui a
-   *     demandé moins d'animations (`prefers-reduced-motion`) ne doit pas
-   *     perdre le texte : la carte ne tourne plus, les deux faces se croisent
-   *     en fondu. On ne cache jamais une information derrière un mouvement.
+   * Elle l'a été, et ça a produit en production le pire rendu possible : les
+   * TROIS versos affichés en permanence, EN MIROIR, sans que personne ne
+   * survole quoi que ce soit. La cause : un `<button>` gère son débordement,
+   * et la spécification impose alors `transform-style: flat`. Le contexte 3D
+   * était donc écrasé, `backface-visibility` n'avait plus rien à masquer, et le
+   * `rotateY(180deg)` du verso se rendait comme une simple symétrie en 2D.
+   *
+   * La rotation vit maintenant sur un élément INTERNE au bouton, qui ne clippe
+   * rien. Ne la remontez pas sur le bouton « pour simplifier ».
+   *
+   * ⚠ ET LE VERSO EST OPAQUE À ZÉRO PAR DÉFAUT. C'est le filet : si la
+   * rotation ne s'applique pas — navigateur, couche CSS purgée, mode
+   * d'impression — le verso reste simplement invisible et le recto se lit
+   * normalement. Un effet qui rate doit coûter l'animation, jamais la
+   * lisibilité. Ne retirez pas cette opacité en croyant qu'elle fait doublon
+   * avec `backface-visibility` : elle couvre précisément le cas où celle-ci ne
+   * fonctionne pas.
+   *
+   * L'échange d'opacité est RETARDÉ à mi-rotation : le verso n'apparaît qu'une
+   * fois tourné vers nous, sinon on le lit en miroir pendant la première
+   * moitié du mouvement.
    */
   .carte-3d {
-    perspective: 1200px;
+    perspective: 1400px;
+  }
+  /* Le bouton ne porte AUCUNE transformation : il ne doit pas aplatir la 3D. */
+  .carte-3d-bouton {
+    overflow: visible;
+    background: none;
   }
   .carte-3d-face {
+    position: relative;
     transform-style: preserve-3d;
-    transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    /* 900 ms : le mouvement doit se lire, pas surprendre. */
+    transition: transform 900ms cubic-bezier(0.25, 0.8, 0.28, 1);
   }
   .carte-3d:hover .carte-3d-face,
   .carte-3d:focus-within .carte-3d-face,
   .carte-3d[data-retournee='true'] .carte-3d-face {
     transform: rotateY(180deg);
   }
+
   .carte-recto,
   .carte-verso {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    transition: opacity 160ms linear 0ms;
   }
   .carte-verso {
     position: absolute;
     inset: 0;
     transform: rotateY(180deg);
+    opacity: 0;
+  }
+  .carte-3d:hover .carte-verso,
+  .carte-3d:focus-within .carte-verso,
+  .carte-3d[data-retournee='true'] .carte-verso {
+    opacity: 1;
+    transition-delay: 420ms;
+  }
+  .carte-3d:hover .carte-recto,
+  .carte-3d:focus-within .carte-recto,
+  .carte-3d[data-retournee='true'] .carte-recto {
+    opacity: 0;
+    transition-delay: 420ms;
   }
 
+  /*
+   * Moins d'animations demandées : plus de rotation du tout, un simple fondu.
+   * On ne cache jamais une information derrière un mouvement.
+   */
   @media (prefers-reduced-motion: reduce) {
     .carte-3d-face,
     .carte-3d:hover .carte-3d-face,
@@ -398,25 +434,22 @@
       transform: none;
       transition: none;
     }
+    .carte-verso {
+      transform: none;
+    }
     .carte-recto,
     .carte-verso {
       backface-visibility: visible;
       -webkit-backface-visibility: visible;
-      transition: opacity 180ms linear;
-    }
-    .carte-verso {
-      transform: none;
-      opacity: 0;
+      transition: opacity 220ms linear 0ms;
     }
     .carte-3d:hover .carte-verso,
     .carte-3d:focus-within .carte-verso,
-    .carte-3d[data-retournee='true'] .carte-verso {
-      opacity: 1;
-    }
+    .carte-3d[data-retournee='true'] .carte-verso,
     .carte-3d:hover .carte-recto,
     .carte-3d:focus-within .carte-recto,
     .carte-3d[data-retournee='true'] .carte-recto {
-      opacity: 0;
+      transition-delay: 0ms;
     }
   }
   .bg-grid {

@@ -74,6 +74,27 @@ export class PublicController {
   }
 
   /**
+   * GET /public/structures?q= — LES STRUCTURES, POUR L'INSCRIPTION.
+   *
+   * Réunit deux sources : les structures DÉJÀ déclarées sur la plateforme
+   * (pour que le onzième établissement d'un groupe tombe sur la même ligne que
+   * les dix premiers) et l'annuaire public des entreprises.
+   *
+   * ⚠ ROUTE PUBLIQUE, PARCE QUE L'INSCRIPTION L'EST. La structure se choisit
+   * au même écran que l'établissement, donc avant que le compte n'existe :
+   * exiger une authentification rendrait l'écran impossible.
+   *
+   * Ce qu'elle expose ne va pas plus loin qu'un annuaire d'organisations —
+   * raison sociale, forme juridique, ville, SIREN, tous publics par
+   * construction. Aucune personne, aucun effectif, aucune adresse de contact.
+   * Ne pas y ajouter de champ sans se reposer cette question.
+   */
+  @Get('structures')
+  structures(@Query('q') q?: string) {
+    return this.publicService.rechercherStructures(q ?? '');
+  }
+
+  /**
    * GET /public/etablissements?q= — LES ÉTABLISSEMENTS DÉJÀ SUR LA PLATEFORME.
    *
    * Sert au parcours d'inscription : quelqu'un qui tape « MECS Les Tilleuls »

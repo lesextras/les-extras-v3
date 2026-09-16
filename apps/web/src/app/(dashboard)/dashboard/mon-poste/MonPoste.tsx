@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { BadgeCheck, Clock, EyeOff, ShieldQuestion, TriangleAlert } from 'lucide-react';
+import { BadgeCheck, Check, Clock, EyeOff, ShieldQuestion, TriangleAlert } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
+import { GROUPES_DROITS } from '@/lib/droits';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,13 +59,6 @@ const NIVEAUX: { cle: Niveau; titre: string; exemples: string; ceQueCaDonne: str
   },
 ];
 
-const DROITS: { cle: string; libelle: string; aide: string }[] = [
-  { cle: 'RESERVER_DIRECT', libelle: 'Réserver un intervenant directement', aide: 'Sinon, votre bouton dira « Demander un devis ».' },
-  { cle: 'DEMANDER_RENFORT_INTERNE', libelle: 'Demander du renfort en interne', aide: 'Solliciter les salariés de votre établissement.' },
-  { cle: 'OUVRIR_RENFORT_CDD', libelle: 'Ouvrir un renfort en CDD', aide: 'Publier une mission auprès du réseau.' },
-  { cle: 'VALIDER_INSCRIPTIONS', libelle: 'Valider les ateliers et les formations', aide: 'Pour les personnes de votre service.' },
-  { cle: 'SIGNER_CONVENTIONS', libelle: 'Signer les conventions', aide: 'Engager l’établissement sur un document.' },
-];
 
 const LIBELLE_ORIGINE: Record<Origine, string> = {
   INVITATION: 'votre invitation acceptée',
@@ -72,6 +66,16 @@ const LIBELLE_ORIGINE: Record<Origine, string> = {
   DIRECTION: 'la direction',
   LES_EXTRAS: 'Les Extras',
 };
+
+/** Une question, une carte — même découpage que l'étape d'inscription. */
+function Carte({ titre, children }: { titre: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-xl border border-border bg-card p-4">
+      <h3 className="text-sm font-semibold">{titre}</h3>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
 
 export function MonPoste({ fiche }: { fiche: MaFiche }) {
   const { toast } = useToast();
@@ -200,31 +204,54 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
         </div>
       )}
 
-      <div>
-        <label className="mb-1.5 block text-sm font-medium" htmlFor="poste">
-          Votre poste
-        </label>
-        <Input
-          id="poste"
-          value={poste}
-          onChange={(e) => setPoste(e.target.value)}
-          placeholder="Chef de service éducatif, monitrice-éducatrice…"
-          autoComplete="organization-title"
-        />
-      </div>
+      {/*
+        LE POSTE ET LE STATUT CADRE SUR LA MÊME LIGNE.
+        Les deux répondent à une seule question, et « cadre » n'a de sens que
+        rapporté à l'intitulé qui le précède. Sur deux lignes, ils se lisaient
+        comme deux sujets distincts. Identique à l'étape d'inscription : ces
+        deux écrans portent le même formulaire et ne doivent pas diverger.
+      */}
+      <Carte titre="Votre poste">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+          <div className="min-w-0 flex-1">
+            <Input
+              id="poste"
+              value={poste}
+              onChange={(e) => setPoste(e.target.value)}
+              placeholder="Chef de service éducatif, monitrice-éducatrice…"
+              autoComplete="organization-title"
+            />
+          </div>
+          {/* Case à cocher déguisée en bouton : `sr-only` la masque à l'œil
+              sans la retirer du DOM, donc l'état reste lisible par un lecteur
+              d'écran. Ce n'est pas un `<button>`. */}
+          <label
+            className={cn(
+              'flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-colors sm:h-[2.75rem]',
+              cadre
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-card hover:border-primary/40',
+            )}
+          >
+            <input
+              type="checkbox"
+              checked={cadre}
+              onChange={(e) => setCadre(e.target.checked)}
+              className="sr-only"
+            />
+            {cadre ? (
+              <Check aria-hidden className="size-4" />
+            ) : (
+              <span aria-hidden className="size-4 rounded border border-current opacity-50" />
+            )}
+            Je suis cadre
+          </label>
+        </div>
+      </Carte>
 
-      <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-border bg-card p-3">
-        <input
-          type="checkbox"
-          checked={cadre}
-          onChange={(e) => setCadre(e.target.checked)}
-          className="size-4 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <span className="text-sm">Je suis cadre</span>
-      </label>
-
+      <Carte titre="Votre niveau de responsabilité">
       <fieldset className="space-y-2">
-        <legend className="mb-1.5 text-sm font-medium">Votre niveau de responsabilité</legend>
+        <legend className="sr-only">Votre niveau de responsabilité</legend>
         {NIVEAUX.map((n) => {
           const actif = niveau === n.cle;
           return (
@@ -281,11 +308,11 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
           </span>
         </div>
       )}
+      </Carte>
 
+      <Carte titre="Ce que vous pouvez engager pour votre établissement">
       <fieldset className="space-y-2">
-        <legend className="mb-1 text-sm font-medium">
-          Ce que vous pouvez engager pour votre établissement
-        </legend>
+        <legend className="sr-only">Ce que vous pouvez engager</legend>
         <p className="text-xs leading-relaxed text-muted-foreground" lang="fr">
           Ces réponses sont déclaratives. Elles décident notamment si votre bouton
           dit « Réserver » ou « Demander un devis », et elles figurent sur les
@@ -293,28 +320,60 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
           votre établissement de savoir qui a engagé quoi. Il n’y a aucun paiement
           sur la plateforme : elles n’engagent jamais d’argent.
         </p>
-        <div className="space-y-1.5 pt-1">
-          {DROITS.map((d) => (
-            <label
-              key={d.cle}
-              className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border bg-card p-2.5"
-            >
-              <input
-                type="checkbox"
-                checked={droits.includes(d.cle)}
-                onChange={(e) =>
-                  setDroits((v) => (e.target.checked ? [...v, d.cle] : v.filter((x) => x !== d.cle)))
-                }
-                className="mt-0.5 size-4 shrink-0 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
-              />
-              <span className="min-w-0">
-                <span className="block text-sm leading-snug">{d.libelle}</span>
-                <span className="block text-xs text-muted-foreground">{d.aide}</span>
-              </span>
-            </label>
+        <div className="space-y-4 pt-1">
+          {GROUPES_DROITS.map((groupe) => (
+            <div key={groupe.titre}>
+              <p
+                className={cn(
+                  'mb-1 text-xs font-semibold uppercase tracking-wide',
+                  groupe.sensible ? 'text-secondary' : 'text-muted-foreground',
+                )}
+              >
+                {groupe.titre}
+              </p>
+              {groupe.intro && (
+                <p className="mb-1.5 text-xs leading-relaxed text-muted-foreground" lang="fr">
+                  {groupe.intro}
+                </p>
+              )}
+              <div className="space-y-1.5">
+                {groupe.droits.map((d) => {
+                  const coche = droits.includes(d.cle);
+                  return (
+                    <label
+                      key={d.cle}
+                      className={cn(
+                        'flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors',
+                        coche
+                          ? 'border-primary/50 bg-primary-soft/30'
+                          : groupe.sensible
+                            ? 'border-secondary/30 bg-card hover:border-secondary/60'
+                            : 'border-border bg-card hover:border-primary/40',
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={coche}
+                        onChange={(e) =>
+                          setDroits((v) =>
+                            e.target.checked ? [...v, d.cle] : v.filter((x) => x !== d.cle),
+                          )
+                        }
+                        className="mt-0.5 size-4 shrink-0 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm leading-snug">{d.libelle}</span>
+                        <span className="block text-xs text-muted-foreground">{d.aide}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </div>
       </fieldset>
+      </Carte>
 
       {/*
         LE RETRAIT DE L'ORGANIGRAMME.

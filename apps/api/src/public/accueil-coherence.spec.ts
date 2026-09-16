@@ -38,7 +38,7 @@ function serviceAvecFiches(fiches: Array<Record<string, unknown>>) {
   };
   // `highlights()` ne touche ni au courrier ni à la progression : on ne monte
   // que ce dont il se sert réellement.
-  return { service: new PublicService(prisma, {} as any, {} as any), prisma, vues };
+  return { service: new PublicService(prisma, {} as any, {} as any, {} as any), prisma, vues };
 }
 
 const FICHES = [

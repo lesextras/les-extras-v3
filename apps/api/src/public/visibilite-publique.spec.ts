@@ -100,7 +100,7 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
       account: { findMany, count: jest.fn().mockResolvedValue(0) },
       review: { groupBy: jest.fn().mockResolvedValue([]) },
     };
-    const service = new PublicService(prisma, {} as any, {} as any);
+    const service = new PublicService(prisma, {} as any, {} as any, {} as any);
 
     await service.vendors({});
 
@@ -121,7 +121,7 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
     const prisma: any = {
       account: { findFirst: jest.fn().mockResolvedValue(null) },
     };
-    const service = new PublicService(prisma, {} as any, {} as any);
+    const service = new PublicService(prisma, {} as any, {} as any, {} as any);
 
     await expect(service.vendorDetail('compte-salarie')).rejects.toBeInstanceOf(NotFoundException);
     expect(prisma.account.findFirst).toHaveBeenCalledWith(
@@ -149,7 +149,7 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
       $transaction: jest.fn().mockResolvedValue([[], []]),
     };
     const progression = { palier: jest.fn().mockResolvedValue(null) };
-    const service = new PublicService(prisma, {} as any, progression as any);
+    const service = new PublicService(prisma, {} as any, progression as any, {} as any);
 
     await service.vendorDetail('compte-independant');
 

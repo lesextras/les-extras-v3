@@ -11,9 +11,23 @@ export type LoginValues = z.infer<typeof loginSchema>;
 
 export const registerSchema = z
   .object({
-    accountType: z.enum(['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER'], {
-      required_error: 'Choisissez un type de compte.',
-    }),
+    /**
+     * ⚠ FACULTATIF DEPUIS LE 16/09/2026, et ce n'est pas un relâchement.
+     *
+     * Le parcours crée le compte à la PREMIÈRE étape — « vos identifiants » —
+     * pour que la personne soit entrée avant d'avoir à se décrire. Le type se
+     * choisit à l'étape suivante et s'enregistre par
+     * `PATCH /accounts/qualification`, qui ne l'accepte que sur un compte
+     * encore vierge.
+     *
+     * Le compte est donc créé en PARTICULIER : c'est le type le plus restreint
+     * du produit — il ne publie rien, ne reçoit aucune candidature, n'a pas
+     * d'équipe. Si quelqu'un abandonne juste après cette première étape, il
+     * reste avec le compte qui ouvre le moins de portes, jamais l'inverse.
+     */
+    accountType: z
+      .enum(['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER'])
+      .optional(),
     /**
      * L'API attend un prénom et un nom SÉPARÉS, plus le nom de la structure
      * à part. Un champ « nom » unique ne peut pas alimenter les trois, et
@@ -21,6 +35,27 @@ export const registerSchema = z
      */
     firstName: z.string().min(2, 'Indiquez votre prénom.').max(80, 'Prénom trop long.'),
     lastName: z.string().min(2, 'Indiquez votre nom.').max(80, 'Nom trop long.'),
+    /**
+     * TÉLÉPHONE — facultatif, et il doit le rester.
+     *
+     * C'est le numéro sur lequel on rappelle quand un renfort se décide dans
+     * l'heure : le demander à l'inscription évite de courir après au moment
+     * où ça presse. Mais le rendre obligatoire coûterait des inscriptions, et
+     * une partie des gens n'a pas de ligne professionnelle à donner.
+     *
+     * La règle accepte les écritures réelles — 06 12 34 56 78, 06.12.34.56.78,
+     * +33 6 12 34 56 78 — et ne valide QUE si quelque chose a été saisi : un
+     * champ vide n'est pas une erreur.
+     */
+    phone: z
+      .string()
+      .trim()
+      .max(30, 'Numéro trop long.')
+      .refine(
+        (v) => v === '' || /^(?:(?:\+|00)\d{1,3}[\s.-]?)?\(?0?\)?[\s.-]?[1-9](?:[\s.-]?\d{2}){4}$/.test(v),
+        { message: 'Numéro de téléphone invalide.' },
+      )
+      .optional(),
     /** Requis uniquement pour un établissement — voir le refine plus bas. */
     organizationName: z.string().max(160, 'Nom trop long.').optional(),
     email: z.string().min(1, 'L’e-mail est requis.').email('Adresse e-mail invalide.'),

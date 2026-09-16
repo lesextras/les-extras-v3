@@ -728,6 +728,21 @@ enum Capacite {
   VOIR_FACTURES
   SIGNER_CONVENTIONS
   INVITER_MEMBRES
+  /// Publier sur l'Édublog au nom de l'établissement.
+  PUBLIER_ARTICLE
+  /// Publier une actualité de l'établissement.
+  PUBLIER_ACTUALITE
+  /// Publier une fiche atelier au catalogue.
+  PUBLIER_ATELIER
+  /// ⚠ LE DROIT LE PLUS SENSIBLE DU PRODUIT. Le coffre-fort de conformité
+  /// contient des pièces d'identité, des casiers judiciaires et des diplômes.
+  /// Il n'avait aucun droit déclaré : il était donc ouvert à qui avait le rôle
+  /// applicatif, sans que personne ne l'ait jamais dit ni accordé.
+  VOIR_CONFORMITE
+  /// Dépenser les générations LEX de l'établissement (offre LEX Équipe, 1 000
+  /// générations partagées). C'est la SEULE chose qui coûte de l'argent sur la
+  /// plateforme : savoir qui peut la consommer n'est pas un détail.
+  UTILISER_CREDITS_LEX
 }
 
 enum StatutDemande {
