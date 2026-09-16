@@ -681,8 +681,13 @@ export class PublicService {
     const ratingSource: 'service' | 'provider' | null =
       avisPrestation.length > 0 ? 'service' : reviews.length > 0 ? 'provider' : null;
 
+    // `slug` fait partie de la projection depuis le 16/09/2026 : sans lui, le
+    // bloc « Dans la même famille » ne pouvait construire que /ateliers/<id>,
+    // et chaque clic passait par une 301 vers l'adresse en slug. Dix liens du
+    // catalogue faisaient ce détour — invisible à l'œil, payé à chaque visite.
     const RELATED_SELECT = {
       id: true,
+      slug: true,
       title: true,
       price: true,
       city: true,
