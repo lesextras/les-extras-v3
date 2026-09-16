@@ -24,7 +24,12 @@ import { CreateContactDto } from './dto/create-contact.dto';
  */
 const VITRINE = {
   status: ServiceStatus.PUBLISHED,
-  account: { profilSalarie: false },
+  // ⚠ `archivedAt: null` EST DANS LA VITRINE, PAS À CÔTÉ. Archiver un compte
+  // doit retirer ses fiches de TOUTES les listes publiques d'un coup — c'est
+  // toute la raison d'être de la colonne. Poser le filtre requête par requête
+  // en oublierait une au prochain ajout, et une fiche d'un compte archivé qui
+  // reste réservable est pire qu'un compte non archivé.
+  account: { profilSalarie: false, archivedAt: null },
 } satisfies Prisma.ServiceWhereInput;
 
 /**
@@ -1021,6 +1026,9 @@ export class PublicService {
         // indépendants — donc démarchables et « réservables » par n'importe
         // quel visiteur.
         profilSalarie: false,
+        // Un compte archivé ne figure plus dans l'annuaire — même règle que la
+        // vitrine, et pour la même raison : archiver retire de la vue, partout.
+        archivedAt: null,
         services: { some: { status: 'PUBLISHED' } },
         ...(query.city ? { OR: [{ city: query.city }, { services: { some: { city: query.city } } }] } : {}),
         ...(query.search
@@ -1088,6 +1096,7 @@ export class PublicService {
       where: {
         type: 'FREELANCE',
         profilSalarie: false,
+        archivedAt: null,
         services: { some: { status: 'PUBLISHED' } },
       },
     });
@@ -1199,7 +1208,7 @@ export class PublicService {
    */
   async vendorDetail(accountId: string) {
     const account = await this.prisma.account.findFirst({
-      where: { id: accountId, type: 'FREELANCE', profilSalarie: false },
+      where: { id: accountId, type: 'FREELANCE', profilSalarie: false, archivedAt: null },
       select: {
         id: true,
         name: true,
@@ -1356,6 +1365,11 @@ export class PublicService {
     return this.prisma.account.findMany({
       where: {
         type: 'ESTABLISHMENT',
+        // ⚠ LES COMPTES ARCHIVÉS NE SE PROPOSENT PLUS. Vingt et un comptes de
+        // test d'audit (« MECS Audit Test 2 », « [VERIF] MECS Finale », trois
+        // portant le mot « démo ») s'affichaient ici, c'est-à-dire sur l'écran
+        // même qui sert à éviter les doublons d'établissement.
+        archivedAt: null,
         OR: [
           { name: { contains: texte, mode: 'insensitive' } },
           { legalName: { contains: texte, mode: 'insensitive' } },

@@ -209,6 +209,23 @@ export class AdminController {
     return this.admin.setMembership(id, Boolean(body?.isMember));
   }
 
+  /**
+   * ARCHIVER — LA SORTIE QUI NE DÉTRUIT RIEN.
+   *
+   * ⚠⚠ À PRÉFÉRER À `DELETE` DANS PRESQUE TOUS LES CAS. La suppression fait un
+   * `account.delete` en cascade : rattachements, fiches, missions, réservations
+   * ET FACTURES. Une facture émise ne se supprime pas (art. 242 nonies A,
+   * ann. II du CGI) — et sur un compte qui en porte, le bouton rouge détruit
+   * une comptabilité sans le dire.
+   *
+   * Archiver retire le compte des recherches, de l'annuaire, de la vitrine et
+   * de la marketplace. Rien d'autre, et ça se défait d'un clic.
+   */
+  @Patch('accounts/:id/archiver')
+  archiverCompte(@Param('id') id: string, @Body() body: { archive?: boolean }) {
+    return this.admin.archiverCompte(id, body?.archive !== false);
+  }
+
   @Delete('accounts/:id')
   deleteAccount(@Param('id') id: string) {
     return this.admin.deleteAccount(id);

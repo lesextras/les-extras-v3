@@ -698,6 +698,54 @@
     animation: trait-descend 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* ─────────────────────────────── LE TRAJET ────────────────────────────────
+     Les deux cartes « renfort » de l'accueil portent chacune un petit film :
+     un rail, trois jalons, une bille qui les parcourt.
+
+     ⚠ C'EST DU SVG ANIMÉ, PAS UN GIF, ET IL NE FAUT PAS LE REMPLACER PAR UN.
+     Un GIF pèserait des centaines de kilo-octets pour trois cercles, arriverait
+     pixellisé sur un écran moderne, ne saurait pas changer de couleur entre les
+     deux thèmes, et continuerait de tourner quand le visiteur a demandé moins
+     d'animations. Ici, tout est couvert par la règle
+     `prefers-reduced-motion` en bas de ce fichier.
+
+     Le rail se remplit UNE FOIS (forwards) : c'est le chemin, il ne se
+     redessine pas. La bille, elle, boucle — c'est ce qui fait vivre la carte
+     sans attirer l'œil plus que le texte. */
+  @keyframes rail-remplit {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  .animate-rail {
+    transform-origin: 26px 26px;
+    animation: rail-remplit 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Un jalon apparaît en gonflant légèrement : il « se pose ». */
+  @keyframes jalon-pose {
+    0% { transform: scale(0); opacity: 0; }
+    65% { transform: scale(1.25); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-jalon {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: jalon-pose 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* La bille parcourt le rail, marque une pause à l'arrivée, et repart.
+     La pause compte : sans elle le mouvement paraît nerveux. */
+  @keyframes bille-avance {
+    0%, 8% { transform: translateX(0); opacity: 0; }
+    12% { opacity: 1; }
+    72%, 88% { transform: translateX(268px); opacity: 1; }
+    100% { transform: translateX(268px); opacity: 0; }
+  }
+  .animate-bille {
+    animation: bille-avance 5.2s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  }
+
 
   /* ═══════════════════════════════ LEX, LE PERSONNAGE ═══════════════════════
      Quatre mouvements, tous lents et tous décalés : le personnage flotte,
@@ -786,6 +834,7 @@
     .animate-halo,
     .animate-halo-2,
     .animate-anneau,
+    .animate-bille,
     .lex-flotte,
     .lex-ombre,
     .lex-yeux,

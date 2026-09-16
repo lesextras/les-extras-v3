@@ -364,10 +364,31 @@ model Account {
   /// Demandes portant sur un service de cet établissement.
   demandesService               DemandeService[]
 
+  /// ARCHIVÉ — le compte existe, il ne se voit plus.
+  ///
+  /// ⚠⚠ C'EST L'ALTERNATIVE À LA SUPPRESSION, ET C'EST POUR ÇA QU'ELLE EXISTE.
+  /// Il n'y avait aucun moyen de retirer un compte de la vue sans le détruire :
+  /// comptes de test des audits, doublons homonymes, second compte d'une même
+  /// association. La seule sortie était `DELETE /admin/accounts/:id`, qui
+  /// supprime en cascade les fiches, les missions, les réservations ET LES
+  /// FACTURES — or une facture émise ne se supprime pas (art. 242 nonies A,
+  /// ann. II du CGI).
+  ///
+  /// Archiver retire le compte des recherches et de la vitrine publique, et
+  /// rien d'autre : les données restent, l'opération se défait d'un clic.
+  ///
+  /// ⚠ CE N'EST PAS UNE SUSPENSION D'ACCÈS. Un compte archivé dont quelqu'un a
+  /// encore le mot de passe se connecte normalement — archiver répond à « on ne
+  /// veut plus le voir », pas à « on ne veut plus qu'il entre ». Confondre les
+  /// deux ferait mettre dehors, sans le vouloir, l'équipe d'un établissement
+  /// qu'on voulait seulement sortir d'un annuaire.
+  archivedAt DateTime?
+
   @@index([type])
   @@index([slug])
   @@index([source])
   @@index([structureId])
+  @@index([archivedAt])
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).

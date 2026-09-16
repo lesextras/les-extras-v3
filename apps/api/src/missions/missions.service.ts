@@ -251,6 +251,11 @@ export class MissionsService {
     // jamais l'élargir. La marketplace ne montre que ce qui est publié.
     const where: Prisma.ReliefMissionWhereInput = {
       status: MissionStatus.PUBLISHED,
+      // ⚠ Les missions d'un compte ARCHIVÉ ne s'affichent plus. Archiver
+      // retire de la vue, et une annonce reste une vue : proposer de
+      // candidater chez un établissement qu'on a sorti des listes ferait
+      // perdre son temps à quelqu'un, et le contrat n'aurait personne en face.
+      account: { archivedAt: null },
     };
     // La cascade de diffusion s'applique aussi a la LECTURE. Une mission au
     // palier « salaries » ou « reseau reserve » ne doit pas apparaitre sur la

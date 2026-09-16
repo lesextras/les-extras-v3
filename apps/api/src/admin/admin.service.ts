@@ -834,6 +834,25 @@ export class AdminService {
     return this.prisma.account.update({ where: { id }, data });
   }
 
+  /**
+   * Archive ou rétablit un compte. `archivedAt` porte la DATE, pas un booléen :
+   * savoir QUAND un compte a disparu des listes est la première question qu'on
+   * se pose quand quelqu'un signale qu'il ne se trouve plus.
+   */
+  async archiverCompte(id: string, archive: boolean) {
+    const compte = await this.prisma.account.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
+    if (!compte) throw new NotFoundException('Compte introuvable.');
+    const maj = await this.prisma.account.update({
+      where: { id },
+      data: { archivedAt: archive ? new Date() : null },
+      select: { id: true, name: true, archivedAt: true },
+    });
+    return maj;
+  }
+
   async deleteAccount(id: string) {
     const account = await this.prisma.account.findUnique({ where: { id } });
     if (!account) throw new NotFoundException('Compte introuvable.');

@@ -3846,3 +3846,81 @@ mène à un refus**.
   raison : rien ne se supprime sans son accord.
 - L'annuaire public ne cherche que sur la **raison sociale**, pas sur le sigle
   (« adepa » ne trouve rien, « association pour le développement de l' » oui).
+
+## ARCHIVER UN COMPTE, ET LE RENFORT EXPLIQUÉ SUR L'ACCUEIL — 16/09/2026 (nuit)
+
+### `Account.archivedAt` — la sortie qui ne détruit rien
+
+Il n'existait **aucun moyen de retirer un compte de la vue sans le détruire**.
+Vingt et un comptes de test créés pendant les audits — « MECS Audit Test 2 »
+(×3), « MECS Test Menu », « [VERIF] MECS Finale », « MECS de verification
+finale », et **trois portant le mot « démo »** (MECS Les Tilleuls, IME Le
+Verger, EHPAD Les Glycines) — s'affichaient dans la recherche d'établissement
+de l'inscription, c'est-à-dire **sur l'écran même qui sert à éviter les
+doublons**.
+
+La seule sortie était `DELETE /admin/accounts/:id` → `account.delete` en
+cascade : rattachements, fiches, missions, réservations **et factures**. Or une
+facture émise ne se supprime pas (art. 242 nonies A, ann. II du CGI).
+
+- `PATCH /admin/accounts/:id/archiver` `{ archive: boolean }` pose ou retire
+  `archivedAt`. **Une DATE, pas un booléen** : « depuis quand ce compte a-t-il
+  disparu » est la première question posée quand quelqu'un ne se trouve plus.
+- Bouton **« Archiver » / « Rétablir »** dans `/admin/etablissements`, placé
+  AVANT « Supprimer », avec une pastille « Archivé » sur la ligne.
+- L'avertissement de suppression **nomme désormais les factures** : c'est la
+  conséquence que personne n'a en tête en cliquant, et la seule qui ne se
+  rattrape pas.
+
+⚠ **ARCHIVER N'EST PAS SUSPENDRE.** La colonne retire de la VUE — recherche
+d'établissement, annuaire des intervenants, vitrine publique, marketplace — et
+**rien d'autre**. Quelqu'un qui a le mot de passe d'un compte archivé se
+connecte normalement. Confondre les deux mettrait dehors l'équipe entière d'un
+établissement qu'on voulait seulement sortir d'un annuaire.
+
+⚠ **`archivedAt: null` EST DANS LA CONSTANTE `VITRINE`**, pas ajouté requête
+par requête : la vitrine porte six requêtes, poser le filtre à la main en
+oublierait une au prochain ajout — et une fiche réservable sur un compte
+archivé est pire qu'un compte non archivé.
+
+Migration `20260916190000_archivage_comptes` — additive, rejouable, vérifiée
+sur PostgreSQL 16 réel, **zéro dérive**. `apps/api/src/admin/archivage-compte.spec.ts`
+(4 tests) verrouille notamment « ne touche à rien d'autre que la colonne ».
+
+### L'accueil explique enfin les deux renforts — `_shared/DeuxRenforts.tsx`
+
+Une section, insérée entre « Trois besoins » et « Les deux portes ».
+
+⚠ **UNE SEULE SECTION AJOUTÉE, ET ELLE NE RÉEXPLIQUE PAS L'OFFRE.** L'accueil
+était passé de 3 029 à ~2 160 mots en retirant six sections qui répétaient les
+trois produits. Celle-ci dit une chose que **rien d'autre ne dit sur le site
+public** : pourquoi un remplacement de poste ne se fait pas en indépendant.
+
+Deux cartes, chacune avec son montage écrit en tête — « Remplacement · CDD » et
+« Renfort personnalisé · prestation » —, un petit film du trajet, trois repères
+et une phrase de conclusion. Puis, sous les deux, la note de droit : **CE
+11/02/2025 n° 491128 ; LFSS 2025 art. 70**.
+
+⚠ **LES DEUX NE S'AFFICHENT JAMAIS SANS LEUR MONTAGE.** Deux cartes intitulées
+« renfort » et « renfort » reproduiraient la confusion qu'on répare.
+
+⚠ **ON N'ÉCRIT PAS « FREELANCE » DANS CETTE SECTION** : c'est le vocabulaire
+sanctionné par la décision citée.
+
+### ⚠ LE « GIF » EST UN SVG ANIMÉ, ET IL NE FAUT PAS LE REMPLACER PAR UN GIF
+
+Le petit film de chaque carte (un rail, trois jalons, une bille qui les
+parcourt) est du SVG inline animé en CSS — `animate-rail`, `animate-jalon`,
+`animate-bille` dans `globals.css`, à côté de `animate-trait`.
+
+Un GIF pèserait des centaines de kilo-octets pour trois cercles et un trait,
+arriverait pixellisé sur un écran moderne, **ne saurait pas changer de couleur
+entre le thème clair et le thème sombre**, et continuerait de tourner quand le
+visiteur a demandé moins d'animations. Le SVG fait deux kilo-octets, prend
+`currentColor`, et `.animate-bille` est dans la liste coupée par
+`prefers-reduced-motion` en bas du fichier — **toute nouvelle animation en
+boucle doit y être ajoutée aussi**.
+
+Le rail se remplit UNE FOIS (`forwards`) : c'est le chemin, il ne se redessine
+pas. La bille boucle avec une pause à l'arrivée — sans cette pause le mouvement
+paraît nerveux et attire l'œil plus que le texte.

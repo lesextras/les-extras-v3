@@ -157,7 +157,12 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
       expect.objectContaining({
         where: expect.objectContaining({
           status: 'PUBLISHED',
-          account: { profilSalarie: false },
+          // ⚠ `archivedAt: null` fait partie de la VITRINE, pas d'un filtre
+          // ajouté à côté : archiver un compte doit retirer ses fiches de
+          // toutes les listes publiques d'un coup. Si ce test échoue parce que
+          // la clause a bougé, c'est la constante qu'il faut regarder — pas ce
+          // fichier.
+          account: { profilSalarie: false, archivedAt: null },
         }),
       }),
     );

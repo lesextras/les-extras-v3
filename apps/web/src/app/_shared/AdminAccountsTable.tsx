@@ -48,6 +48,11 @@ export interface AdminAccount {
   credits?: number;
   /** Accès LEX illimité accordé à la main (exonération de crédits). */
   isMember?: boolean;
+  /**
+   * Archivé : le compte existe, il ne se voit plus. Non nul = date à laquelle
+   * il a quitté les recherches, l'annuaire, la vitrine et la marketplace.
+   */
+  archivedAt?: string | null;
   owner?: { email?: string; firstName?: string | null; lastName?: string | null } | null;
   memberships?: AdminMembership[];
   _count?: { memberships?: number; reliefMissions?: number; services?: number; bookings?: number };
@@ -121,8 +126,52 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
     });
   }
 
+  /**
+   * ARCHIVER — LA SORTIE À PROPOSER AVANT LA SUPPRESSION.
+   *
+   * ⚠ Le bouton rouge juste à côté fait un `account.delete` EN CASCADE :
+   * rattachements, fiches, missions, réservations et FACTURES. Une facture
+   * émise ne se supprime pas (art. 242 nonies A, ann. II du CGI). Archiver
+   * répond à la vraie demande — « je ne veux plus voir ce compte » — sans rien
+   * détruire, et se défait d'un clic.
+   */
+  async function basculerArchive(a: AdminAccount) {
+    const archive = !a.archivedAt;
+    setBusy(a.id);
+    try {
+      await apiRequest(`/admin/accounts/${a.id}/archiver`, {
+        method: "PATCH",
+        body: { archive },
+      });
+      toast({
+        title: archive ? `« ${a.name} » archivé` : `« ${a.name} » rétabli`,
+        description: archive
+          ? "Il ne s’affiche plus dans les recherches ni sur le site public. Rien n’est supprimé."
+          : "Il réapparaît dans les recherches et sur le site public.",
+        variant: "success",
+      });
+      router.refresh();
+    } catch (err) {
+      toast({
+        title: "Action impossible",
+        description: err instanceof Error ? err.message : undefined,
+        variant: "error",
+      });
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function remove(id: string) {
-    if (!window.confirm("Supprimer définitivement ce compte et ses rattachements ? Cette action est irréversible.")) return;
+    // ⚠ L'AVERTISSEMENT NOMME LES FACTURES, et il doit continuer à le faire :
+    // c'est la conséquence que personne n'a en tête en cliquant, et la seule
+    // qui ne se rattrape pas.
+    if (
+      !window.confirm(
+        "Supprimer DÉFINITIVEMENT ce compte ? Ses rattachements, ses fiches, ses missions, ses réservations ET SES FACTURES seront détruits avec lui. Une facture émise ne se supprime pas légalement : préférez « Archiver », qui le retire de la vue sans rien effacer.",
+      )
+    )
+      return;
     setBusy(id);
     try {
       await apiRequest(`/admin/accounts/${id}`, { method: "DELETE" });
@@ -268,6 +317,14 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                               <Users className="h-3 w-3" />
                               {(a.memberships?.length ?? a._count?.memberships ?? 0)} sous-compte(s)
                             </Badge>
+                            {/* Un compte archivé doit se voir dans la liste,
+                                sinon on le cherche sur le site sans comprendre
+                                pourquoi il n'y est plus. */}
+                            {a.archivedAt ? (
+                              <Badge variant="outline" className="border-secondary/50 text-secondary">
+                                Archivé
+                              </Badge>
+                            ) : null}
                           </div>
                           <p className="truncate text-xs text-muted-foreground">
                             {[a.city, a.owner?.email].filter(Boolean).join(" · ") || ", "}
@@ -296,6 +353,25 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                           {a.isMember ? "Retirer LEX illimité" : "Accorder LEX illimité"}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => startEdit(a)}>Éditer</Button>
+                        {/*
+                          ⚠ ARCHIVER EST PLACÉ AVANT SUPPRIMER, ET C'EST
+                          VOLONTAIRE : c'est la réponse à « je ne veux plus voir
+                          ce compte » dans presque tous les cas, et elle ne
+                          détruit rien.
+                        */}
+                        <Button
+                          size="sm"
+                          variant={a.archivedAt ? "primary" : "outline"}
+                          disabled={busy === a.id}
+                          title={
+                            a.archivedAt
+                              ? "Ce compte est retiré des recherches et du site public — cliquer pour le rétablir"
+                              : "Le retirer des recherches et du site public, sans rien supprimer"
+                          }
+                          onClick={() => basculerArchive(a)}
+                        >
+                          {a.archivedAt ? "Rétablir" : "Archiver"}
+                        </Button>
                         <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busy === a.id} onClick={() => remove(a.id)}>Supprimer</Button>
                       </div>
                     </div>

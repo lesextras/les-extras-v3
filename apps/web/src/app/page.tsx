@@ -80,6 +80,7 @@ import { ChatBot } from './_shared/ChatBot';
 import { OffreLex } from './_shared/OffreLex';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
+import { DeuxRenforts } from './_shared/DeuxRenforts';
 import { Mascotte } from './_shared/Mascotte';
 
 /**
@@ -581,7 +582,15 @@ export default async function LandingPage() {
           </Reveal>
         </section>
 
-        {/* ═══════════════════════════ 3. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
+        {/* ═══ 3. LE RENFORT, EN DEUX — et ce n'est pas du vocabulaire ═══════
+            ⚠ UNE SEULE SECTION AJOUTÉE, ET ELLE NE RÉEXPLIQUE PAS L'OFFRE.
+            L'accueil était passé de 3 029 à ~2 160 mots en retirant six
+            sections qui répétaient les trois produits ; celle-ci dit une chose
+            que rien d'autre ne dit sur le site public — pourquoi un
+            remplacement de poste ne se fait pas en indépendant. */}
+        <DeuxRenforts />
+
+        {/* ═══════════════════════════ 4. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
         <DeuxPortes />
 
         {/* ═══ 4. LE TOUT-EN-UN : ce que le logiciel fait, pour les trois ═══ */}
