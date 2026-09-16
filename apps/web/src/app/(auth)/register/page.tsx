@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight, Lock, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building2, Lock, Mail, Phone } from 'lucide-react';
 import { registerSchema, type RegisterValues } from '@/lib/validation';
 import { register as registerAccount } from '@/lib/auth-client';
 import { apiRequest } from '@/lib/api';
@@ -30,39 +30,40 @@ import { EtapeLieuDeTravail, EtapePoste, LIEU_VIDE, type LieuDeTravail } from '.
 /**
  * L'INSCRIPTION, EN ÉTAPES.
  *
- * Ordre : vos identifiants → votre situation → où vous travaillez → votre poste.
+ * Ordre : votre situation → vos identifiants → où vous travaillez → votre poste.
  *
- * ⚠⚠ LE COMPTE EST CRÉÉ DÈS LA PREMIÈRE ÉTAPE, ET TOUT LE RESTE EN DÉCOULE.
+ * ⚠⚠ LA SITUATION VIENT AVANT LES IDENTIFIANTS, ET C'EST CE QUI PERMET DE CRÉER
+ * LE COMPTE JUSTE DU PREMIER COUP.
  *
- * La personne entre d'abord, elle se décrit ensuite. Conséquence : au moment de
- * la création, on ne sait pas encore ce qu'elle est. Le compte naît donc en
- * PARTICULIER — le type le plus restreint du produit : il ne publie rien, ne
- * reçoit aucune candidature, n'a pas d'équipe. Quelqu'un qui abandonne juste
- * après reste avec le compte qui ouvre le MOINS de portes, jamais l'inverse.
+ * Nous avons d'abord fait l'inverse — compte créé au tout premier écran, puis
+ * « qualifié » ensuite. Ça obligeait à corriger le compte après coup : son
+ * type, son nom, et son SLUG. Ce dernier est calculé À LA CRÉATION à partir du
+ * nom : un compte créé avant qu'on connaisse le nom de l'établissement gardait
+ * donc pour toujours l'adresse publique du prénom de la personne —
+ * « /camille-durand » pour la MECS Les Tilleuls. Un défaut qui ne se voit pas
+ * tout de suite et ne se rattrape plus.
  *
- * Le vrai type est posé à l'étape « votre situation » par
- * `PATCH /accounts/qualification`, une route qui n'accepte de changer le type
- * que sur un compte encore VIERGE — aucune fiche, aucune facture, aucun devis.
- * En pratique : les minutes qui suivent l'inscription. Ne cherchez pas à vous
- * en servir ailleurs, elle refusera.
+ * Une carte à cliquer coûte deux secondes et n'est pas un formulaire : la
+ * mettre en tête ne fait fuir personne, et elle donne au serveur tout ce qu'il
+ * faut pour créer un compte correct, sans aucune route de rattrapage.
  *
- * ⚠ L'ÉTAPE « où vous travaillez » N'EST PLUS PUBLIQUE, puisque le compte
- * existe déjà : ses recherches peuvent donc rester sur les routes publiques
- * (`/public/etablissements`, `/public/structures`) ou passer aux routes
- * authentifiées, les deux marchent. Ses ÉCRITURES — rattachement à la
- * structure, création du service — sont appliquées à la validation de l'étape.
+ * ⚠ LE NOM DE L'ÉTABLISSEMENT EST DEMANDÉ DANS « vos identifiants », et il doit
+ * y rester : c'est lui qui fixe le nom du compte ET son slug. Le déplacer plus
+ * loin ramènerait exactement le défaut ci-dessus.
  *
- * ⚠ AUCUNE ÉTAPE APRÈS LA PREMIÈRE N'EST BLOQUANTE. Chacune porte de quoi
- * passer outre, et tout se retrouve dans l'espace, sur « Mon poste ». Exiger
- * l'organigramme complet avant de laisser entrer, c'est perdre la moitié des
- * gens sur un écran administratif.
+ * ⚠ L'ÉTAPE « où vous travaillez » EST AUTHENTIFIÉE : le compte existe déjà.
+ * Ses écritures — rattachement à la structure, création du service — sont
+ * appliquées à la validation de l'étape, et chacune est tolérante à l'échec :
+ * le compte est créé, une structure qui rate ne doit pas faire croire à un
+ * échec d'inscription.
  *
- * ⚠ LES ANCIENNES TUILES « Établissement » ET « Salarié » N'EN FONT PLUS
- * QU'UNE. Elles posaient la mauvaise question : une directrice adjointe est
- * salariée de son établissement, et un chef de service qui cherche du renfort
- * correspondait exactement à la tuile « Établissement ». C'est l'étape
- * « poste » qui distingue direction, responsable et salarié — une question à
- * laquelle chacun sait répondre parce qu'elle porte sur son métier.
+ * ⚠ AUCUNE ÉTAPE APRÈS LA CRÉATION N'EST BLOQUANTE. Chacune porte de quoi
+ * passer outre, et tout se retrouve dans l'espace, sur « Mon poste ».
+ *
+ * ⚠ LES ANCIENNES TUILES « Établissement » ET « Salarié » N'EN FONT PLUS QU'UNE.
+ * Elles posaient la mauvaise question : une directrice adjointe est salariée de
+ * son établissement. C'est l'étape « poste » qui distingue direction,
+ * responsable et salarié — une question qui porte sur le métier.
  */
 export default function RegisterPage() {
   const router = useRouter();
@@ -71,7 +72,7 @@ export default function RegisterPage() {
   const params = useSearchParams();
   const { toast } = useToast();
   const [submitting, setSubmitting] = React.useState(false);
-  const [etape, setEtape] = React.useState<CleEtape>('identite');
+  const [etape, setEtape] = React.useState<CleEtape>('profil');
   const [compteCree, setCompteCree] = React.useState(false);
   const [lieu, setLieu] = React.useState<LieuDeTravail>(LIEU_VIDE);
 
@@ -97,7 +98,6 @@ export default function RegisterPage() {
     etapes.findIndex((e) => e.cle === etape),
   );
   const etapeCourante = etapes[indexEtape];
-  const nomEtablissement = form.watch('organizationName') ?? '';
 
   // LE CTA DES PAGES D'ATTERRISSAGE PASSAIT UN `?type=` QUE PERSONNE NE LISAIT.
   //
@@ -113,10 +113,13 @@ export default function RegisterPage() {
     // porte que « établissement », et c'est l'étape « poste » qui tranche.
     if (t === 'etablissement' || t === 'establishment' || sansAccent === 'salarie') {
       form.setValue('accountType', 'ESTABLISHMENT', { shouldValidate: false });
+      setEtape('identite');
     } else if (t === 'freelance' || t === 'intervenant') {
       form.setValue('accountType', 'FREELANCE', { shouldValidate: false });
+      setEtape('identite');
     } else if (t === 'particulier' || t === 'parent') {
       form.setValue('accountType', 'PARTICULIER', { shouldValidate: false });
+      setEtape('identite');
     }
     // Une seule fois, à l'arrivée : ensuite c'est le visiteur qui décide, et
     // réappliquer le paramètre annulerait son changement d'avis.
@@ -150,7 +153,7 @@ export default function RegisterPage() {
    * étape par étape, jamais le schéma complet avant la dernière.
    */
   async function creerLeCompte() {
-    const ok = await form.trigger([
+    const champs: (keyof RegisterValues)[] = [
       'firstName',
       'lastName',
       'email',
@@ -158,13 +161,17 @@ export default function RegisterPage() {
       'password',
       'confirmPassword',
       'acceptTerms',
-    ]);
+    ];
+    // Le nom de l'établissement fait partie de CETTE étape : c'est lui qui
+    // fixe le nom du compte et son slug, tous deux posés à la création.
+    if (typeChoisi === 'ESTABLISHMENT') champs.push('organizationName');
+    const ok = await form.trigger(champs);
     if (!ok) return;
 
     setSubmitting(true);
     try {
-      // `accountType` est vide ici : `auth-client` crée donc en PARTICULIER,
-      // le type le plus restreint. Voir la note en tête de fichier.
+      // Le type ET le nom sont connus : le compte est créé complet, et son
+      // slug est juste du premier coup.
       await registerAccount(form.getValues());
       setCompteCree(true);
       // ⚠ APRÈS la réponse du serveur, jamais avant : des confettis sur une
@@ -172,7 +179,10 @@ export default function RegisterPage() {
       lancerConfettis();
       toast({
         title: 'Compte créé',
-        description: 'Vous êtes entré. Encore deux questions pour vous situer.',
+        description:
+          typeChoisi === 'ESTABLISHMENT'
+            ? 'Vous êtes entré. Encore deux questions, et rien n’est obligatoire.'
+            : 'Bienvenue ! Votre espace est prêt.',
         variant: 'success',
       });
 
@@ -183,7 +193,8 @@ export default function RegisterPage() {
         router.refresh();
         return;
       }
-      allerA('profil');
+      if (typeChoisi === 'ESTABLISHMENT') allerA('etablissement');
+      else terminer();
     } catch (err) {
       toast({
         title: 'Inscription impossible',
@@ -195,30 +206,8 @@ export default function RegisterPage() {
     }
   }
 
-  /** ÉTAPE 2 — enregistrer le type réel du compte. */
-  async function qualifier(type: CleCompte) {
-    form.setValue('accountType', type, { shouldValidate: false });
-    setSubmitting(true);
-    try {
-      await apiRequest('/accounts/qualification', { method: 'PATCH', body: { type } });
-      if (type === 'ESTABLISHMENT') {
-        allerA('etablissement');
-      } else {
-        terminer();
-      }
-    } catch (err) {
-      toast({
-        title: 'Enregistrement impossible',
-        description: err instanceof Error ? err.message : 'Réessayez dans un instant.',
-        variant: 'error',
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   /**
-   * ÉTAPE 3 — le lieu de travail.
+   * ÉTAPE 3 — le lieu de travail : structure et service.
    *
    * ⚠ CHAQUE ÉCRITURE EST TOLÉRANTE À L'ÉCHEC, et c'est délibéré : le compte
    * existe déjà. Un rattachement de structure qui rate ne doit pas faire croire
@@ -229,12 +218,6 @@ export default function RegisterPage() {
   async function enregistrerLieu() {
     setSubmitting(true);
     try {
-      // Le nom de l'établissement d'abord : c'est lui qui figure sur les devis.
-      await apiRequest('/accounts/qualification', {
-        method: 'PATCH',
-        body: { type: 'ESTABLISHMENT', organizationName: nomEtablissement.trim() },
-      }).catch(() => undefined);
-
       if (lieu.rejoindre) {
         await apiRequest('/organisation/rejoindre', {
           method: 'POST',
@@ -284,11 +267,11 @@ export default function RegisterPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">
-          {etape === 'identite' ? 'Créer un compte' : etapeCourante.titre}
+          {etape === 'profil' ? 'Créer un compte' : etapeCourante.titre}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground" lang="fr">
-          {etape === 'identite'
-            ? 'Gratuit, sans engagement. Votre compte est créé dès cette page — le reste se complète ensuite, et rien n’est obligatoire.'
+          {etape === 'profil'
+            ? 'Gratuit, sans engagement. Trois minutes, et vous pouvez vous arrêter en route.'
             : etapeCourante.explication}
         </p>
       </div>
@@ -308,6 +291,40 @@ export default function RegisterPage() {
             className="space-y-5"
             noValidate
           >
+            {/*
+              LE NOM DE L'ÉTABLISSEMENT EST ICI, ET IL DOIT Y RESTER.
+              C'est lui qui fixe le nom du compte ET son slug — l'adresse
+              publique — tous deux posés à la création et jamais recalculés.
+              Le demander plus loin obligerait à renommer un compte déjà créé,
+              et l'adresse garderait pour toujours le prénom de la personne.
+            */}
+            {typeChoisi === 'ESTABLISHMENT' && (
+              <FormField
+                control={form.control}
+                name="organizationName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Nom de l’établissement</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="MECS Les Tilleuls"
+                        autoComplete="organization"
+                        leftIcon={<Building2 />}
+                        {...field}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Le lieu où vous travaillez, pas la structure qui le gère —
+                      nous vous demanderons celle-ci ensuite. C’est ce nom qui
+                      apparaîtra sur vos devis et vos factures.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             {/* L'API stocke un prénom et un nom séparés : c'est la personne qui
                 ouvre le compte, y compris pour un établissement. */}
             <div className="grid gap-5 sm:grid-cols-2">
@@ -368,10 +385,7 @@ export default function RegisterPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Téléphone{' '}
-                    <span className="font-normal text-muted-foreground">(facultatif)</span>
-                  </FormLabel>
+                  <FormLabel required>Téléphone</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
@@ -470,10 +484,16 @@ export default function RegisterPage() {
               )}
             />
 
-            <Button type="submit" className="w-full" size="lg" loading={submitting}>
-              Créer mon compte
-              {!submitting && <ArrowRight />}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="ghost" onClick={() => allerA('profil')}>
+                <ArrowLeft />
+                Retour
+              </Button>
+              <Button type="submit" className="ml-auto" size="lg" loading={submitting}>
+                Créer mon compte
+                {!submitting && <ArrowRight />}
+              </Button>
+            </div>
           </form>
         </Form>
       )}
@@ -489,7 +509,10 @@ export default function RegisterPage() {
                 key={c.key}
                 choix={c}
                 actif={typeChoisi === c.key}
-                onSelect={() => void qualifier(c.key as CleCompte)}
+                onSelect={() => {
+                  form.setValue('accountType', c.key, { shouldValidate: false });
+                  allerA('identite');
+                }}
               />
             ))}
           </div>
@@ -529,14 +552,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <EtapeLieuDeTravail
-            nomEtablissement={nomEtablissement}
-            setNomEtablissement={(v) =>
-              form.setValue('organizationName', v, { shouldValidate: false })
-            }
-            lieu={lieu}
-            setLieu={setLieu}
-          />
+          <EtapeLieuDeTravail lieu={lieu} setLieu={setLieu} />
 
           <div className="flex items-center gap-2">
             <Button type="button" variant="ghost" onClick={terminer}>
@@ -547,7 +563,6 @@ export default function RegisterPage() {
               className="ml-auto"
               size="lg"
               loading={submitting}
-              disabled={nomEtablissement.trim().length < 2}
               onClick={() => void enregistrerLieu()}
             >
               Continuer

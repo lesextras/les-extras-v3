@@ -78,49 +78,53 @@ const ETAPE_PROFIL: Etape = {
   cle: 'profil',
   titre: 'Votre situation',
   explication:
-    'Cette réponse choisit votre espace. Vous pourrez créer un second compte plus tard si vous cumulez deux situations.',
+    'Une carte à choisir, et c’est tout. Vous pourrez créer un second compte plus tard si vous cumulez deux situations.',
 };
 
 const ETAPE_IDENTITE: Etape = {
   cle: 'identite',
   titre: 'Vos identifiants',
   explication:
-    'De quoi vous connecter. Votre compte est créé dès cette étape : tout ce qui suit se complète aussi plus tard, depuis votre espace.',
+    'De quoi vous connecter. Votre compte est créé à la fin de cette étape — tout ce qui suit se complète aussi plus tard, depuis votre espace.',
 };
 
 /**
- * QUATRE ÉTAPES, PLUS SIX.
+ * QUATRE ÉTAPES — ET L'ORDRE N'EST PAS ARBITRAIRE.
  *
- * Structure, établissement et service étaient trois écrans séparés. Ils ne
- * posent pourtant qu'une seule question — « où travaillez-vous ? » — et la
- * découper en trois faisait trois fois le même geste : lire un titre, remplir
- * un champ, cliquer Continuer. Trois écrans pour trois champs, c'est un
- * formulaire qui se ferme.
+ * ⚠⚠ LA SITUATION VIENT AVANT LES IDENTIFIANTS, ET C'EST CE QUI PERMET DE
+ * CRÉER LE COMPTE JUSTE DU PREMIER COUP.
  *
- * Ils sont réunis. Le découpage garde son sens là où il en a : la situation,
- * le lieu de travail, les identifiants, le poste.
+ * Nous avons d'abord fait l'inverse — le compte créé au tout premier écran,
+ * puis « qualifié » ensuite. Ça paraissait plus accueillant, et ça obligeait à
+ * corriger le compte après coup : son type, son nom, et son SLUG. Ce dernier
+ * est calculé À LA CRÉATION à partir du nom : un compte créé avant qu'on
+ * connaisse le nom de l'établissement gardait donc pour toujours l'adresse
+ * publique du prénom de la personne — « /camille-durand » pour la MECS Les
+ * Tilleuls. Un défaut qui ne se voit pas tout de suite et ne se rattrape plus.
  *
- * ⚠ CONSÉQUENCE TECHNIQUE, et elle explique la forme du code : l'étape
- * « établissement » arrive AVANT la création du compte. Elle ne peut donc
- * appeler que des routes PUBLIQUES (`/public/etablissements`,
- * `/public/structures`). Le rattachement à la structure et la création du
- * service, eux, sont des écritures : ils sont mis de côté et appliqués juste
- * après la création du compte. Ne remontez pas d'appel authentifié dans cette
- * étape — il échouerait en 401 sans rien dire.
+ * Une carte à cliquer coûte deux secondes et n'est pas un formulaire : la
+ * mettre en tête ne fait fuir personne, et elle donne au serveur tout ce qu'il
+ * faut pour créer un compte correct — bon type, bon nom, bon slug — sans
+ * aucune route de rattrapage.
  *
- * ⚠ AUCUNE ÉTAPE APRÈS « identite » N'EST BLOQUANTE. Le compte existe déjà :
- * quelqu'un qui s'arrête en route garde son accès et retrouve le reste dans
- * son espace, sur « Mon poste ».
+ * ⚠ LE NOM DE L'ÉTABLISSEMENT EST DONC DEMANDÉ DANS « vos identifiants », et
+ * il doit y rester. Le déplacer plus loin ramènerait exactement le défaut
+ * ci-dessus.
+ *
+ * ⚠ AUCUNE ÉTAPE APRÈS LA CRÉATION N'EST BLOQUANTE. Chacune porte de quoi
+ * passer outre, et tout se retrouve dans l'espace, sur « Mon poste ». Exiger
+ * l'organigramme complet avant de laisser entrer, c'est perdre la moitié des
+ * gens sur un écran administratif.
  */
 export const PARCOURS: Record<CleCompte, Etape[]> = {
   ESTABLISHMENT: [
-    ETAPE_IDENTITE,
     ETAPE_PROFIL,
+    ETAPE_IDENTITE,
     {
       cle: 'etablissement',
       titre: 'Où vous travaillez',
       explication:
-        'Votre établissement, la structure qui le gère, et votre service. Seul le nom de l’établissement est obligatoire — le reste se complète aussi plus tard.',
+        'La structure qui gère votre établissement, et votre service. Les deux sont facultatifs — ils se complètent aussi plus tard.',
     },
     {
       cle: 'poste',
@@ -129,6 +133,6 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
         'Ce que vous faites, et ce que vous pouvez engager pour votre établissement. C’est cette déclaration qui décide de ce que vous voyez et de ce que vous pouvez faire.',
     },
   ],
-  FREELANCE: [ETAPE_IDENTITE, ETAPE_PROFIL],
-  PARTICULIER: [ETAPE_IDENTITE, ETAPE_PROFIL],
+  FREELANCE: [ETAPE_PROFIL, ETAPE_IDENTITE],
+  PARTICULIER: [ETAPE_PROFIL, ETAPE_IDENTITE],
 };

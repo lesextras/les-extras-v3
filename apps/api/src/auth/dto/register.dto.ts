@@ -39,6 +39,28 @@ export class RegisterDto {
   @MaxLength(80)
   lastName!: string;
 
+  /**
+   * ⚠ EXIGÉ PAR LE FORMULAIRE, TOLÉRÉ PAR L'API — et c'est volontaire.
+   *
+   * Le téléphone est obligatoire à l'inscription depuis le 16/09/2026
+   * (`registerSchema`, côté web) : c'est le numéro sur lequel on rappelle quand
+   * un renfort se décide dans l'heure. L'API, elle, l'accepte absent, pour deux
+   * raisons qui n'ont rien de théoriques :
+   *
+   *  1. le web et l'API se déploient séparément. Exiger le numéro ici ferait
+   *     refuser en 400 toutes les inscriptions parties de l'ancien écran
+   *     pendant les quelques minutes qui séparent les deux redéploiements —
+   *     c'est-à-dire des comptes qui ne s'ouvrent jamais, pour un champ qui
+   *     n'engage rien ;
+   *  2. un numéro absent ne crée aucun risque : il ne donne aucun droit, ne
+   *     signe rien et n'apparaît nulle part publiquement. La règle des fiches
+   *     ateliers (« l'API fait foi, le client n'est qu'une politesse ») vaut
+   *     pour ce qui protège quelqu'un, pas pour un champ de confort.
+   *
+   * Le format, lui, n'est pas contrôlé ici non plus : la seule borne est la
+   * longueur. Deux expressions régulières de part et d'autre divergeraient au
+   * premier numéro étranger.
+   */
   @IsOptional()
   @IsString()
   @MaxLength(30)

@@ -449,67 +449,27 @@ function ChampStructure({
  * publiques sont appelables. La page applique le rattachement et le service
  * juste après la création du compte.
  */
+/**
+ * OÙ VOUS TRAVAILLEZ — la structure et le service.
+ *
+ * ⚠ LE NOM DE L'ÉTABLISSEMENT N'EST PLUS ICI, ET IL NE DOIT PAS Y REVENIR.
+ * Il est demandé à l'étape des identifiants, parce qu'il fixe le nom du compte
+ * ET son slug — l'adresse publique — tous deux posés à la création et jamais
+ * recalculés. Le redemander ici obligerait à renommer un compte déjà créé, et
+ * l'adresse garderait pour toujours le prénom de la personne.
+ *
+ * Les deux champs qui restent sont FACULTATIFS et se complètent aussi plus
+ * tard : on ne retient personne sur un écran administratif.
+ */
 export function EtapeLieuDeTravail({
-  nomEtablissement,
-  setNomEtablissement,
   lieu,
   setLieu,
 }: {
-  nomEtablissement: string;
-  setNomEtablissement: (v: string) => void;
   lieu: LieuDeTravail;
   setLieu: React.Dispatch<React.SetStateAction<LieuDeTravail>>;
 }) {
   return (
     <div className="space-y-4">
-      {/* --- L'établissement --- */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="text-sm font-semibold">
-          Nom de l’établissement <span className="text-primary">*</span>
-        </h3>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
-          Le lieu où vous travaillez, pas la structure qui le gère. C’est ce nom
-          qui apparaîtra sur vos devis et vos factures.
-        </p>
-        <div className="mt-3 space-y-2.5">
-          {lieu.rejoindre ? (
-            <div className="flex items-start gap-2.5 rounded-lg border-2 border-primary/45 bg-primary-soft/30 p-3">
-              <Building aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{lieu.rejoindre.name}</span>
-                <span className="block text-xs text-muted-foreground">
-                  Vous vous rattachez à cet établissement — pas de second créé.
-                </span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setLieu((l) => ({ ...l, rejoindre: null }))}
-                className="shrink-0 text-xs font-medium text-primary hover:underline"
-              >
-                Changer
-              </button>
-            </div>
-          ) : (
-            <>
-              <Input
-                value={nomEtablissement}
-                onChange={(e) => setNomEtablissement(e.target.value)}
-                placeholder="MECS Les Tilleuls"
-                autoComplete="organization"
-                leftIcon={<Building />}
-              />
-              <RechercheEtablissement
-                nom={nomEtablissement}
-                onRejoindre={(e) => {
-                  setNomEtablissement(e.name);
-                  setLieu((l) => ({ ...l, rejoindre: e }));
-                }}
-              />
-            </>
-          )}
-        </div>
-      </div>
-
       {/* --- La structure --- */}
       <div className="rounded-xl border border-border bg-card p-4">
         <h3 className="text-sm font-semibold">

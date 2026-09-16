@@ -12,22 +12,16 @@ export type LoginValues = z.infer<typeof loginSchema>;
 export const registerSchema = z
   .object({
     /**
-     * ⚠ FACULTATIF DEPUIS LE 16/09/2026, et ce n'est pas un relâchement.
+     * ⚠ OBLIGATOIRE, et il doit le rester.
      *
-     * Le parcours crée le compte à la PREMIÈRE étape — « vos identifiants » —
-     * pour que la personne soit entrée avant d'avoir à se décrire. Le type se
-     * choisit à l'étape suivante et s'enregistre par
-     * `PATCH /accounts/qualification`, qui ne l'accepte que sur un compte
-     * encore vierge.
-     *
-     * Le compte est donc créé en PARTICULIER : c'est le type le plus restreint
-     * du produit — il ne publie rien, ne reçoit aucune candidature, n'a pas
-     * d'équipe. Si quelqu'un abandonne juste après cette première étape, il
-     * reste avec le compte qui ouvre le moins de portes, jamais l'inverse.
+     * Le parcours demande la situation AVANT les identifiants précisément pour
+     * que le serveur puisse créer un compte juste du premier coup : bon type,
+     * bon nom, bon slug. Le rendre facultatif ramènerait la création d'un
+     * compte qu'il faut corriger après — et le slug, lui, ne se corrige pas.
      */
-    accountType: z
-      .enum(['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER'])
-      .optional(),
+    accountType: z.enum(['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER'], {
+      required_error: 'Choisissez votre situation.',
+    }),
     /**
      * L'API attend un prénom et un nom SÉPARÉS, plus le nom de la structure
      * à part. Un champ « nom » unique ne peut pas alimenter les trois, et
@@ -36,26 +30,32 @@ export const registerSchema = z
     firstName: z.string().min(2, 'Indiquez votre prénom.').max(80, 'Prénom trop long.'),
     lastName: z.string().min(2, 'Indiquez votre nom.').max(80, 'Nom trop long.'),
     /**
-     * TÉLÉPHONE — facultatif, et il doit le rester.
+     * TÉLÉPHONE — OBLIGATOIRE depuis le 16/09/2026, demande de Siham.
      *
      * C'est le numéro sur lequel on rappelle quand un renfort se décide dans
-     * l'heure : le demander à l'inscription évite de courir après au moment
-     * où ça presse. Mais le rendre obligatoire coûterait des inscriptions, et
-     * une partie des gens n'a pas de ligne professionnelle à donner.
+     * l'heure. Il a d'abord été facultatif pour ne pas coûter d'inscriptions ;
+     * l'arbitrage a été retenu dans l'autre sens, parce qu'un compte
+     * d'établissement sans numéro fait perdre le renfort au moment où il presse.
+     *
+     * ⚠ UN CHAMP VIDE ET UN NUMÉRO FAUX SONT DEUX ERREURS DISTINCTES, et elles
+     * ne disent pas la même chose à la personne : « Téléphone requis. » quand
+     * rien n'a été saisi, « Numéro de téléphone invalide. » sinon. Un seul
+     * message pour les deux laisse croire que ce qui a été tapé est rejeté
+     * alors que le champ est simplement vide — c'est le défaut déjà corrigé
+     * sur `onboardingProfileSchema`, plus bas dans ce fichier.
      *
      * La règle accepte les écritures réelles — 06 12 34 56 78, 06.12.34.56.78,
-     * +33 6 12 34 56 78 — et ne valide QUE si quelque chose a été saisi : un
-     * champ vide n'est pas une erreur.
+     * +33 6 12 34 56 78.
      */
     phone: z
       .string()
       .trim()
       .max(30, 'Numéro trop long.')
+      .refine((v) => v.length > 0, { message: 'Téléphone requis.' })
       .refine(
         (v) => v === '' || /^(?:(?:\+|00)\d{1,3}[\s.-]?)?\(?0?\)?[\s.-]?[1-9](?:[\s.-]?\d{2}){4}$/.test(v),
         { message: 'Numéro de téléphone invalide.' },
-      )
-      .optional(),
+      ),
     /** Requis uniquement pour un établissement — voir le refine plus bas. */
     organizationName: z.string().max(160, 'Nom trop long.').optional(),
     email: z.string().min(1, 'L’e-mail est requis.').email('Adresse e-mail invalide.'),

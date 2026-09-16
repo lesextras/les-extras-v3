@@ -3379,7 +3379,7 @@ plutôt qu'en faisant échouer le déploiement.
 
 | Adresse | Quoi |
 |---|---|
-| `/register` | Parcours en 6 étapes. **Les tuiles « Établissement » et « Salarié » sont fusionnées** — c'est l'étape « poste » qui distingue direction, responsable et salarié. Cartes qui se retournent au survol (recto/verso). Le compte est créé à l'étape 3, les suivantes ne sont **jamais bloquantes**. |
+| `/register` | Parcours en 4 étapes au plus — voir « L'ORDRE DES ÉTAPES » ci-dessous. **Les tuiles « Établissement » et « Salarié » sont fusionnées** — c'est l'étape « poste » qui distingue direction, responsable et salarié. Cartes qui se retournent au survol (recto/verso). Le compte est créé à l'étape 2, les suivantes ne sont **jamais bloquantes**. |
 | `/dashboard/organigramme` | Structure → établissement → services. **Arborescence et effectifs visibles par tous les rattachés, noms bornés au périmètre.** Les personnes hors périmètre sont comptées (« + 4 personnes »), pas effacées. |
 | `/dashboard/mon-poste` | Poste, cadre, niveau, droits déclarés, retrait de l'organigramme. |
 | `/dashboard/inbox` | Messagerie : filtres par type, avertissement données d'usagers en tête de fil, mention du masquage, messages système. |
@@ -3403,3 +3403,56 @@ déclaration figure sur chaque devis et chaque réservation, avec le poste. Et
 comme **il n'y a aucun paiement sur la plateforme**, ces droits n'engagent
 jamais d'argent — ils disent seulement si le bouton affiché est « Réserver » ou
 « Demander un devis ».
+
+### ⚠ L'ORDRE DES ÉTAPES DE `/register`, ET LE DÉFAUT QU'IL CORRIGE
+
+Le parcours a d'abord créé le compte au **tout premier écran**, avant de savoir
+ce qu'était la personne, puis l'a « qualifié » à l'étape suivante
+(`PATCH /accounts/qualification`). Siham a demandé si c'était la meilleure
+façon de faire. **Non, et c'est moi qui l'avais livrée.**
+
+`Account.slug` est calculé **à la création** à partir du nom du compte et n'est
+**jamais recalculé** (`auth.service.ts`, `generateUniqueSlug`). Un compte créé
+avant qu'on connaisse le nom de l'établissement gardait donc pour toujours
+l'adresse publique du prénom de la personne : `/camille-durand` pour la MECS
+Les Tilleuls. Invisible sur le moment, irrattrapable ensuite — une adresse
+publique se partage et s'indexe.
+
+**L'ordre retenu** (`apps/web/src/app/(auth)/register/parcours.ts`) :
+
+1. **`profil`** — la situation, une carte à cliquer (établissement /
+   intervenant / particulier). Pas un formulaire.
+2. **`identite`** — les identifiants **ET le nom de l'établissement**. Le
+   compte est créé ici, complet : bon type, bon nom, bon slug du premier coup.
+3. **`etablissement`** puis **`poste`** — seulement pour un établissement, et
+   jamais bloquantes.
+
+⚠ **NE PAS DÉPLACER LE NOM DE L'ÉTABLISSEMENT APRÈS LA CRÉATION.** C'est le
+scénario ci-dessus qui revient. Deux fichiers de tests le verrouillent, et ils
+expliquent pourquoi plutôt que de constater :
+`apps/api/src/auth/inscription-parcours.spec.ts` (le slug) et
+`apps/web/src/lib/__tests__/inscription-parcours.test.ts` (l'ordre, les cartes,
+les droits, le schéma). `PATCH /accounts/qualification`, son DTO et la méthode
+`qualifier()` ont été **supprimés** : ils n'existaient que pour rattraper un
+compte créé trop tôt.
+
+⚠ **UN FORMULAIRE DÉCOUPÉ EN ÉTAPES NE VALIDE JAMAIS LE SCHÉMA ENTIER.**
+`form.handleSubmit` le faisait : à l'étape des identifiants, le type de compte
+est forcément vide, la validation échouait donc toujours, **le bouton
+« Continuer » ne faisait rien** et l'échec marquait au passage tous les champs
+en rouge. On valide les champs de l'étape avec `form.trigger([...])`.
+
+**Le téléphone est OBLIGATOIRE depuis le 16/09/2026** (demande de Siham). Côté
+web seulement : `RegisterDto` l'accepte absent, et son en-tête dit pourquoi —
+le web et l'API se déploient séparément, exiger le numéro des deux côtés
+refuserait en 400 les inscriptions parties de l'ancien écran pendant les
+quelques minutes qui séparent les deux redéploiements. Un champ vide et un
+numéro faux donnent **deux messages différents** (« Téléphone requis. » /
+« Numéro de téléphone invalide. ») : confondus, ils laissent croire que ce qui
+a été tapé est rejeté alors que rien ne l'a été.
+
+⚠ **`/register?type=…` SAUTE L'ÉTAPE DES CARTES**, et c'est voulu : la personne
+vient d'une page d'atterrissage où elle a déjà choisi. Les seuls liens qui le
+portent sont ceux-là (`comparatif-plateformes-remplacement`, `mode-demploi`,
+`renforteam`). **Aucun bouton « Créer un compte » générique ne doit passer ce
+paramètre** — sinon les cartes disparaissent pour tout le monde.

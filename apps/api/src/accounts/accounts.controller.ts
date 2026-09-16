@@ -14,7 +14,6 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { AdjustCreditsDto } from './dto/credits.dto';
 import { DevenirIntervenantDto } from './dto/devenir-intervenant.dto';
-import { QualificationDto } from './dto/qualification.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../admin/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -59,18 +58,6 @@ export class AccountsController {
   @Get(':id/fiches-importables')
   fichesImportables(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.accounts.fichesImportables(user.id, id);
-  }
-
-  /**
-   * QUALIFICATION D'UN COMPTE NEUF — type et nom d'établissement.
-   *
-   * ⚠ Déclarée AVANT `@Get(':id')` et `@Patch(':id')` : Nest garde la première
-   * route qui correspond, et « qualification » serait sinon lu comme un
-   * identifiant de compte.
-   */
-  @Patch('qualification')
-  qualifier(@CurrentUser() user: RequestUser, @Body() dto: QualificationDto) {
-    return this.accounts.qualifier(user.id, dto);
   }
 
   @Post(':id/switch')

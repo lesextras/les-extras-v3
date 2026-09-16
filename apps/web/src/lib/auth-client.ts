@@ -103,18 +103,7 @@ export async function register(
   // qu'elle quitte le navigateur, et nulle part ailleurs.
   const origine = sourceComplete();
   const payload = {
-    /**
-     * ⚠ PARTICULIER PAR DÉFAUT, et c'est un choix de sécurité.
-     *
-     * Le compte est créé à la première étape, avant que la personne n'ait dit
-     * ce qu'elle est. PARTICULIER est le type le plus restreint du produit :
-     * il ne publie rien, ne reçoit aucune candidature, n'a pas d'équipe.
-     * Quelqu'un qui abandonne juste après reste donc avec le compte qui ouvre
-     * le moins de portes. Le vrai type est posé à l'étape suivante par
-     * `PATCH /accounts/qualification`, qui ne l'accepte que sur un compte
-     * encore vierge.
-     */
-    accountType: values.accountType ?? 'PARTICULIER',
+    accountType: values.accountType,
     // La tuile « Salarié » ne vivait que dans l'état de la page : le compte
     // créé était celui d'un indépendant. Le choix part maintenant au serveur,
     // qui le fige — c'est lui qui décide ensuite de ce que le compte ouvre.
