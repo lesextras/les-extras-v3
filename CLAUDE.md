@@ -3961,3 +3961,78 @@ question jusqu'aux garanties.
 comportement observable de part et d'autre, le lecteur conclut. Une comparaison
 chiffrée contre un produit nommé se défend devant un juge (art. L122-1
 c. conso) ; un fait vérifiable, non.
+
+## LE TUNNEL D'ACHAT DE L'ATTESTATION — 16/09/2026 (nuit)
+
+Construit à la demande de Siham, qui a écrit « je prends le risque et la
+responsabilité » au sujet du médiateur. **Le tunnel est complet et la vente est
+FERMÉE** : c'est elle qui l'ouvre, parcours par parcours.
+
+### L'interrupteur EST le prix
+
+`Formation.attestationPrixCents` — **nul sur toutes les fiches**. Nul = le
+bouton d'achat n'est pas monté à l'écran, et la route publique refuse. Poser un
+montant sur une fiche ouvre la vente pour elle seule. Un seul champ, une seule
+signification, aucun déploiement pour changer d'avis.
+
+⚠ **POURQUOI UN INTERRUPTEUR PLUTÔT QU'UNE MISE EN LIGNE SÈCHE.** Vendre à un
+particulier oblige à nommer dans les CGV un **médiateur de la consommation
+référencé par la CECMC** (art. L612-1 c. conso) ; aucun ne l'est. Ce n'est pas
+seulement le risque de l'association : c'est le recours que la loi donne à
+l'acheteur. Le tunnel attend donc une décision qui n'est pas technique — et
+c'est Siham qui l'actionne, pas moi.
+
+### Ce qui a été posé
+
+| Où | Quoi |
+|---|---|
+| `DemandeAttestation` | la commande — **clé e-mail, pas compte** |
+| `attestations/` | commander, confirmer, lister, délivrer, annuler |
+| `POST /attestations` | **public**, plafonné à 8/h comme les autres formulaires ouverts |
+| `GET/POST /attestations/admin/…` | la file et la délivrance, sous `AdminGuard` |
+| branche `kind === 'attestation'` | dans le webhook Stripe existant |
+| `_shared/AchatAttestation.tsx` | la modale d'achat, sur la fiche du parcours |
+| `/admin/attestations` | la file, avec la date de fin de rétractation |
+
+Migration `20260916210000_attestations` — additive, rejouable, **zéro dérive**
+sur PostgreSQL 16 réel. 735 tests API, 117 web.
+
+### ⚠ CE QU'IL NE FAUT PAS DÉFAIRE
+
+- **LA CLÉ EST UN E-MAIL, PAS UN COMPTE.** Les parcours gratuits se suivent sur
+  la plateforme pédagogique, sans compte Les Extras. Exiger une connexion pour
+  acheter le document qui atteste du parcours qu'on vient de finir ferait
+  abandonner presque tout le monde — et il n'y a rien à rattacher : une
+  attestation nomme une personne, elle n'ouvre aucun accès. Même choix que
+  `VenteCours` et les réservations d'atelier payées en ligne.
+- **LA CASE DE RENONCIATION EST DÉCOCHÉE, ET ELLE DOIT LE RESTER.** Le droit de
+  rétractation de quatorze jours ne s'éteint que sur demande **expresse**
+  d'exécution immédiate (art. L221-25 et L221-28, 1° c. conso). Une case
+  pré-cochée n'est pas une demande : la renonciation serait inopposable, et
+  pré-cocher serait exactement le procédé que la loi vise. Sans elle,
+  `livrableLe` porte la date de fin du délai et **le serveur refuse de
+  délivrer avant** — deux tests le verrouillent.
+- **L'ÉCRAN DÉSACTIVE LE BOUTON ET DIT JUSQU'À QUAND.** Le serveur refuserait de
+  toute façon, mais un bouton actif qui renvoie un refus se lit comme une panne.
+- **L'IDEMPOTENCE DU WEBHOOK** tient au verrou sur le statut plus l'unicité de
+  `stripeSessionId`. ⚠ Une relivraison ne doit surtout pas relancer l'accusé de
+  réception : un doublon dans une boîte, sur un message qui annonce un débit, se
+  lit comme un second débit. Un test le vérifie.
+- **ON NE SUPPRIME PAS UNE COMMANDE PAYÉE** : elle s'annule avec son motif et sa
+  date. Le remboursement se fait dans Stripe, à la main — aucune route de ce
+  dépôt ne rend d'argent toute seule.
+- ⚠ **« ATTESTATION DE SUIVI », JAMAIS « CERTIFICAT »**, jusque dans les noms de
+  variables. Un test lit le source du service, retire les commentaires et
+  échoue si le mot apparaît dans le code (`certification professionnelle` reste
+  autorisé : c'est la mention qui doit figurer). Un certificat désigne une
+  certification enregistrée au RNCP ou au Répertoire spécifique ; Qualiopi
+  certifie un PROCESSUS et n'autorise à délivrer aucun titre.
+
+### Ce qui reste avant d'encaisser
+
+1. **Le médiateur CECMC.** Sans lui, la clause des CGV est nulle.
+2. **Le PDF de l'attestation.** `documents/formation.pdf.ts` sait déjà produire
+   une attestation, mais depuis une `Inscription` — un acheteur sans compte n'en
+   a pas. Aujourd'hui la délivrance envoie un courriel ; le document joint est
+   le chantier suivant.
+3. **Poser le prix** sur les fiches concernées, dans l'administration.

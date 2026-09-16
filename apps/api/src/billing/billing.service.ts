@@ -15,6 +15,7 @@ import { EcoleService } from '../ecole/ecole.service';
 import { BoutiqueService } from '../boutique/boutique.service';
 import { StripeConnectService } from '../paiements/stripe-connect.service';
 import { MailService } from '../common/mail/mail.service';
+import { AttestationsService } from '../attestations/attestations.service';
 import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
 
 
@@ -148,6 +149,7 @@ export class BillingService {
     private readonly boutique: BoutiqueService,
     private readonly connect: StripeConnectService,
     private readonly mail: MailService,
+    private readonly attestations: AttestationsService,
   ) {}
 
   private get secretKey(): string {
@@ -703,6 +705,19 @@ export class BillingService {
           `LEX ${purchase.packId} payé : +${purchase.credits} crédits pour ${purchase.accountId}`,
         );
       });
+      return { received: true };
+    }
+
+    /**
+     * ACHAT D'UNE ATTESTATION DE SUIVI.
+     *
+     * ⚠ L'IDEMPOTENCE EST DANS `AttestationsService.confirmerPaiement` : verrou
+     * sur le statut, plus la contrainte d'unicité sur `stripeSessionId`. Une
+     * relivraison de Stripe retombe sur une commande déjà payée et ne fait
+     * rien — surtout, elle ne relance pas le courriel d'accusé.
+     */
+    if (kind === 'attestation') {
+      await this.attestations.confirmerPaiement(session.id);
       return { received: true };
     }
 

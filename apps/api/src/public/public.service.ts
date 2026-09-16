@@ -127,6 +127,10 @@ const FORMATION_CARD_SELECT = {
   // jamais. Voir le commentaire de `Formation.freeOnline` dans le schéma.
   freeOnline: true,
   enrollUrl: true,
+  // Le prix de l'attestation, et donc l'existence du bouton d'achat. ⚠ Nul sur
+  // toutes les fiches tant que la vente n'est pas ouverte à la main : l'écran
+  // ne monte alors pas le bouton, et la route publique refuse de toute façon.
+  attestationPrixCents: true,
   images: true,
   city: true,
   requestsCount: true,
@@ -161,6 +165,7 @@ function carteFormation(f: CarteFormationSource) {
     cpfEligible: f.cpfEligible,
     freeOnline: f.freeOnline,
     enrollUrl: f.enrollUrl,
+    attestationPrixCents: f.attestationPrixCents,
     images: f.images,
     // Une mini-formation en ligne n'a PAS de lieu. Sans cette exception, la
     // ville du compte propriétaire remonte par la cascade ci-dessous et la

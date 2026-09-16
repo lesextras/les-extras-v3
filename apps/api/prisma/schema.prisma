@@ -1979,17 +1979,17 @@ enum ShiftStatus {
 
 /// PROGRAMME de formation. Catalogue ADePA (certifiant) OU interne etablissement.
 model Formation {
-  id                String          @id @default(cuid())
-  type              FormationType   @default(CERTIFIANTE)
-  ownerAccountId    String
-  ownerAccount      Account         @relation("FormationOwner", fields: [ownerAccountId], references: [id], onDelete: Cascade)
-  title             String
-  slug              String          @unique
-  summary           String?
-  objectives        String?
-  prerequisites     String?
-  program           String?
-  targetAudience    String?
+  id                   String          @id @default(cuid())
+  type                 FormationType   @default(CERTIFIANTE)
+  ownerAccountId       String
+  ownerAccount         Account         @relation("FormationOwner", fields: [ownerAccountId], references: [id], onDelete: Cascade)
+  title                String
+  slug                 String          @unique
+  summary              String?
+  objectives           String?
+  prerequisites        String?
+  program              String?
+  targetAudience       String?
   /// PUBLICS VISES, en etiquettes courtes et filtrables.
   ///
   /// `targetAudience` est un paragraphe : il se lit sur la fiche, il ne se
@@ -1998,8 +1998,8 @@ model Formation {
   /// n'avaient pas l'equivalent, et leurs cartes paraissaient vides a cote de
   /// celles des ateliers. Meme vocabulaire d'un bout a l'autre du catalogue :
   /// une etiquette qui n'existe qu'une fois ne sert a personne.
-  publicTargets     String[]        @default([])
-  durationHours     Int?
+  publicTargets        String[]        @default([])
+  durationHours        Int?
   /// DUREE EN MINUTES, pour ce qui dure moins d'une heure.
   ///
   /// `durationHours` est un entier : une mini-formation de 45 minutes y vaut
@@ -2007,20 +2007,20 @@ model Formation {
   /// ment. Les deux champs coexistent : les formations Qualiopi comptent en
   /// heures, les mini-formations en minutes, et la carte affiche celui qui est
   /// renseigne.
-  durationMinutes   Int?
-  categoryId        String?
-  categoryRef       Category?       @relation("FormationCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
-  cpfEligible       Boolean         @default(false)
-  certifying        Boolean         @default(false)
-  certificationName String?
-  edofRef           String?
+  durationMinutes      Int?
+  categoryId           String?
+  categoryRef          Category?       @relation("FormationCategoryRef", fields: [categoryId], references: [id], onDelete: SetNull)
+  cpfEligible          Boolean         @default(false)
+  certifying           Boolean         @default(false)
+  certificationName    String?
+  edofRef              String?
   /// Vitrine : sans image ni ville, une formation ne se vend pas en ligne.
-  images            String[]        @default([])
-  city              String?
+  images               String[]        @default([])
+  city                 String?
   /// Contenu commercial repris du modèle des fiches atelier.
-  methodology       String?
-  evaluation        String?
-  faq               Json?
+  methodology          String?
+  evaluation           String?
+  faq                  Json?
   /// MINI-FORMATION EN LIGNE, GRATUITE ET SANS SESSION.
   ///
   /// Le modele de la fiche formation a ete concu pour une seule chose : vendre
@@ -2037,7 +2037,7 @@ model Formation {
   /// Ce drapeau bascule la fiche dans un second mode : prix affiche « Gratuit »,
   /// bouton unique vers `enrollUrl`, ni session ni formulaire de devis. Il ne
   /// change RIEN aux formations existantes (defaut `false`).
-  freeOnline        Boolean         @default(false)
+  freeOnline           Boolean         @default(false)
   /// Adresse ou la formation se suit reellement quand elle est en ligne.
   ///
   /// L'hebergement du parcours (video, quiz, suivi d'assiduite) est fait par la
@@ -2045,20 +2045,105 @@ model Formation {
   /// publique, qui est ce que Google indexe et ce qui se partage. Sans cette
   /// adresse, `freeOnline` n'a aucun sens : le seul bouton de la fiche n'aurait
   /// nulle part ou aller.
-  enrollUrl         String?
+  enrollUrl            String?
+  /// LE PRIX DE L'ATTESTATION DE SUIVI, en centimes — ET L'INTERRUPTEUR DE
+  /// LA VENTE.
+  ///
+  /// ⚠⚠ NULL = RIEN NE SE VEND, et c'est le défaut sur toutes les fiches.
+  /// Le bouton d'achat n'apparaît pas, la route publique refuse, et la fiche
+  /// se lit exactement comme avant. La vente s'ouvre en posant un montant,
+  /// fiche par fiche — c'est un geste d'administration, pas un déploiement.
+  ///
+  /// ⚠ POURQUOI UN INTERRUPTEUR ET PAS UNE MISE EN LIGNE SÈCHE. Vendre à un
+  /// particulier oblige à nommer dans les CGV un médiateur de la consommation
+  /// référencé par la CECMC (art. L612-1 c. conso). Tant qu'aucun ne l'est,
+  /// la clause serait nulle — donc pire que pas de clause. Le tunnel est
+  /// construit, il attend une décision qui n'est pas technique.
+  ///
+  /// ⚠ CE QUI EST VENDU EST UNE ATTESTATION DE SUIVI, JAMAIS UN CERTIFICAT.
+  /// Un certificat désigne une certification enregistrée au RNCP ou au
+  /// Répertoire spécifique ; Qualiopi certifie un PROCESSUS et n'autorise à
+  /// délivrer aucun titre. Vendre 20 € un document appelé « certificat »
+  /// serait une pratique commerciale trompeuse (art. L121-1 c. conso).
+  attestationPrixCents Int?
   /// Compteurs de la fiche (preuve sociale et pilotage du funnel).
-  views             Int             @default(0)
-  requestsCount     Int             @default(0)
-  status            FormationStatus @default(DRAFT)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  views                Int             @default(0)
+  requestsCount        Int             @default(0)
+  status               FormationStatus @default(DRAFT)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
-  sessions FormationSession[]
+  sessions     FormationSession[]
+  attestations DemandeAttestation[]
   /// La formation suivie qui porte cette fiche (Piloter mon académie).
-  cours    Cours?             @relation("CoursProgramme")
+  cours        Cours?               @relation("CoursProgramme")
 
   @@index([type, status])
   @@index([ownerAccountId])
+}
+
+/// UNE ATTESTATION DE SUIVI ACHETÉE — la commande, son paiement, sa délivrance.
+///
+/// ⚠⚠ LA CLÉ EST UN E-MAIL, PAS UN COMPTE, ET C'EST STRUCTUREL. Les parcours
+/// gratuits se suivent sur la plateforme pédagogique de l'association ; on y
+/// arrive par le bouton de la fiche publique, sans jamais créer de compte Les
+/// Extras. Exiger un compte pour acheter le document qui atteste du parcours
+/// qu'on vient de finir ferait abandonner presque tout le monde — et il n'y a
+/// rien à rattacher à un compte : l'attestation nomme une personne, elle
+/// n'ouvre aucun accès.
+///
+/// C'est le même choix que les ventes de cours (`VenteCours`) et les
+/// réservations d'atelier payées en ligne : une adresse, un nom, un paiement.
+model DemandeAttestation {
+  id          String    @id @default(cuid())
+  formationId String
+  formation   Formation @relation(fields: [formationId], references: [id], onDelete: Cascade)
+
+  /// L'identité qui S'IMPRIMERA sur le document. Recopiée à la commande et
+  /// jamais recalculée : l'attestation atteste de ce qui a été déclaré.
+  email  String
+  prenom String
+  nom    String
+
+  montantCents Int
+  statut       StatutAttestation @default(EN_ATTENTE_PAIEMENT)
+
+  /// La session de paiement. ⚠ UNIQUE : c'est la clé d'idempotence du
+  /// webhook — une relivraison de Stripe retombe sur la même ligne et ne
+  /// délivre pas deux fois.
+  stripeSessionId String?   @unique
+  payeeLe         DateTime?
+
+  /// RÉTRACTATION — 14 jours, et la seule façon de l'éteindre.
+  ///
+  /// ⚠ LE DROIT NE S'ÉTEINT QUE SUR DEMANDE EXPRESSE D'EXÉCUTION IMMÉDIATE
+  /// (art. L221-25 et L221-28, 1° c. conso). La case est donc DÉCOCHÉE par
+  /// défaut, et la cocher est un geste de l'acheteur, jamais un réglage du
+  /// vendeur. Sans elle, la délivrance attend la fin des quatorze jours —
+  /// c'est `livrableLe` qui porte la date, et l'écran d'administration refuse
+  /// de délivrer avant.
+  renonciationRetractation Boolean   @default(false)
+  livrableLe               DateTime?
+
+  delivreeLe DateTime?
+  /// Annulation ou remboursement : on garde la ligne et le motif, jamais on
+  /// ne la supprime — une commande payée fait partie de la comptabilité.
+  annuleeLe  DateTime?
+  motif      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([statut])
+  @@index([email])
+  @@index([formationId])
+}
+
+enum StatutAttestation {
+  EN_ATTENTE_PAIEMENT
+  PAYEE
+  DELIVREE
+  ANNULEE
 }
 
 /// SESSION : instance datee d'un programme.

@@ -56,6 +56,12 @@ export interface FormationCard {
   freeOnline?: boolean;
   /** Adresse où la formation se suit réellement (plateforme pédagogique). */
   enrollUrl?: string | null;
+  /**
+   * Le prix de l'attestation de suivi, en centimes — et l'interrupteur de la
+   * vente. ⚠ NUL = rien ne se vend : le bouton d'achat n'est pas monté, et la
+   * route publique refuse. Ouvrir la vente est un geste d'administration.
+   */
+  attestationPrixCents?: number | null;
 }
 
 const inputClass =

@@ -64,6 +64,7 @@ import { AdministrationModule } from './administration/administration.module';
 import { StructuresModule } from './structures/structures.module';
 import { OrganisationModule } from './organisation/organisation.module';
 import { DisponibilitesModule } from './disponibilites/disponibilites.module';
+import { AttestationsModule } from './attestations/attestations.module';
 
 @Module({
   imports: [
@@ -141,6 +142,8 @@ import { DisponibilitesModule } from './disponibilites/disponibilites.module';
   StructuresModule,
   OrganisationModule,
   DisponibilitesModule,
+  // L'attestation de suivi vendue sur un parcours gratuit (16/09/2026).
+  AttestationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

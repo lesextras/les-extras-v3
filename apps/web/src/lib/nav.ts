@@ -12,6 +12,7 @@ import {
   Clock,
   GraduationCap,
   Receipt,
+  BadgeCheck,
   FileText,
   ShieldCheck,
   FileCheck,
@@ -466,6 +467,15 @@ const adminNav: NavSection[] = [
     title: 'Facturation',
     items: [
       { label: 'Factures', href: '/admin/factures', icon: Receipt, hint: 'Facturation de la plateforme' },
+      // ⚠ L'entrée reste visible même sans commande : c'est ici qu'on découvre
+      // qu'une attestation attend d'être délivrée, et une file qu'on ne voit
+      // pas est une file qu'on ne relève pas.
+      {
+        label: 'Attestations',
+        href: '/admin/attestations',
+        icon: BadgeCheck,
+        hint: 'Commandes d’attestation de suivi, à délivrer',
+      },
       { label: 'LEX · Crédits & abonnements', href: '/admin/lex', icon: Sparkles, hint: 'Ventes de packs, consommation de crédits, abonnements actifs et essais en cours' },
       { label: 'LEX · Qualité', href: '/admin/lex-qualite', icon: Sparkles, hint: 'Sur quel moteur tourne LEX, ce qui est réellement produit, et quelle trame est la moins bien notée' },
     ],

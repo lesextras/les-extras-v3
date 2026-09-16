@@ -17,6 +17,7 @@ import { formatMoney, formatDate } from "../../../_shared/format";
 import { QrShare } from "../../../_shared/QrShare";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
 import { CaptureFiche, PartagerFiche } from "../../../_shared/CaptureFiche";
+import { AchatAttestation } from "../../../_shared/AchatAttestation";
 import type { FormationCard } from "../page";
 
 interface FaqItem { question: string; answer: string }
@@ -270,10 +271,31 @@ export default async function FormationPubliquePage({
                     </a>
                   </Button>
                 ) : null}
+                {/*
+                  ⚠ LE BOUTON D'ACHAT N'APPARAÎT QUE SI LA FICHE PORTE UN PRIX.
+                  `attestationPrixCents` est nul par défaut sur toutes les
+                  fiches : la vente est fermée à l'écran comme au serveur, et
+                  la ligne ci-dessous décrit alors l'attestation sans la
+                  proposer. Ouvrir la vente est un geste d'administration (on
+                  pose un montant sur la fiche), pas un déploiement — parce que
+                  ce qui manque n'est pas technique : vendre à un particulier
+                  oblige à nommer dans les CGV un médiateur de la consommation
+                  référencé par la CECMC (art. L612-1 c. conso).
+                */}
+                {f.attestationPrixCents ? (
+                  <AchatAttestation
+                    formation={f.slug ?? f.id}
+                    prixCents={f.attestationPrixCents}
+                  />
+                ) : null}
                 <div className="space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
                   <p className="flex items-center gap-1.5">
                     <BadgeCheck className="size-3.5" />
-                    Attestation de suivi nominative : 20 €, facultative
+                    {f.attestationPrixCents
+                      ? `Attestation de suivi nominative : ${(f.attestationPrixCents / 100)
+                          .toFixed(2)
+                          .replace('.', ',')} €, facultative`
+                      : 'Attestation de suivi nominative, facultative'}
                   </p>
                   {/* Dire ce que l'attestation N'EST PAS est aussi important que
                       son prix : une attestation de suivi n'est ni un diplôme ni

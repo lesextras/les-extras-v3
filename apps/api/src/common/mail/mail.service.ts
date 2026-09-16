@@ -2023,6 +2023,83 @@ export class MailService implements OnModuleDestroy {
    * lien pour se retirer : elle doit pouvoir changer d'avis avant le premier
    * message de la séquence, pas seulement après.
    */
+  /**
+   * L'ATTESTATION EST COMMANDÉE ET PAYÉE.
+   *
+   * ⚠ CE MESSAGE DIT LE DÉLAI DE RÉTRACTATION, ET IL LE DIT EN CLAIR. Quand
+   * l'acheteur n'a pas demandé l'exécution immédiate, il garde quatorze jours
+   * pour se rétracter (art. L221-18 c. conso) — et il doit savoir jusqu'à
+   * quand, sinon le droit existe sur le papier et pas dans les faits.
+   *
+   * ⚠ « ATTESTATION DE SUIVI », JAMAIS « CERTIFICAT », ici comme partout.
+   */
+  async sendAttestationCommandee(data: {
+    to: string;
+    prenom: string;
+    formation: string;
+    montantCents: number;
+    renonciation: boolean;
+    livrableLe: Date;
+  }): Promise<void> {
+    const montant = (data.montantCents / 100).toFixed(2).replace('.', ',');
+    const limite = data.livrableLe.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const retractation = data.renonciation
+      ? `<p style="margin:12px 0 0">Vous avez demandé la délivrance immédiate&nbsp;: en le faisant,
+         vous avez renoncé à votre droit de rétractation de quatorze jours, comme la loi le
+         permet (art. L221-28 du code de la consommation).</p>`
+      : `<p style="margin:12px 0 0">Vous disposez de <b>quatorze jours</b> pour vous rétracter, soit
+         jusqu’au <b>${limite}</b>. L’attestation vous sera envoyée après cette date&nbsp;; si vous
+         la souhaitez plus tôt, répondez simplement à ce message.</p>`;
+    await this.send(
+      data.to,
+      `Votre attestation de suivi : ${echapper(data.formation)}`,
+      this.layout(
+        `Bonjour ${echapper(data.prenom)},`,
+        `<p>Votre commande est enregistrée&nbsp;: <b>attestation de suivi</b> du parcours
+         « ${echapper(data.formation)} », ${montant}&nbsp;€.</p>
+         <p style="margin:12px 0 0">C’est un document nominatif qui atteste que vous avez suivi ce
+         parcours. <b>Ce n’est ni un diplôme, ni une certification professionnelle</b>&nbsp;: il ne
+         confère aucun titre et n’ouvre aucun droit à exercer.</p>
+         ${retractation}
+         <p style="margin:12px 0 0">Délai de délivrance&nbsp;: quinze jours ouvrés. Une erreur sur
+         votre nom&nbsp;? Répondez à ce message, la rectification est sans frais.</p>
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">
+           Siham, pour l’association ADéPA.
+         </div>`,
+      ),
+    );
+  }
+
+  /** L'attestation est délivrée. */
+  async sendAttestationDelivree(data: {
+    to: string;
+    prenom: string;
+    nom: string;
+    formation: string;
+  }): Promise<void> {
+    await this.send(
+      data.to,
+      `Votre attestation de suivi est prête`,
+      this.layout(
+        `Bonjour ${echapper(data.prenom)},`,
+        `<p>Voici votre <b>attestation de suivi</b> du parcours
+         « ${echapper(data.formation)} », établie au nom de
+         ${echapper(data.prenom)} ${echapper(data.nom)}.</p>
+         <p style="margin:12px 0 0">Elle atteste que vous avez suivi ce parcours.
+         <b>Ce n’est ni un diplôme, ni une certification professionnelle.</b></p>
+         <p style="margin:12px 0 0">Une erreur sur votre nom ou sur l’intitulé&nbsp;? Répondez à ce
+         message&nbsp;: la rectification est sans frais.</p>
+         <div style="margin-top:24px;font-size:12px;color:#9ca3af">
+           Siham, pour l’association ADéPA.
+         </div>`,
+      ),
+    );
+  }
+
   async sendFicheRecap(
     to: string,
     data: {
