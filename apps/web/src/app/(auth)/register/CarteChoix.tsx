@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowRight, Check, Sparkles, type LucideIcon } from 'lucide-react';
+import { Check, Sparkles, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -67,8 +67,6 @@ interface Habillage {
   pastille: string;
   pastilleActive: string;
   titre: string;
-  action: string;
-  actionActive: string;
   puce: string;
   coche: string;
   verso: string;
@@ -93,8 +91,6 @@ const TEINTES: Record<TeinteCarte, Habillage> = {
     pastille: 'bg-primary/10 text-primary',
     pastilleActive: 'bg-primary text-primary-foreground',
     titre: 'text-primary',
-    action: 'border-primary/40 bg-card text-primary',
-    actionActive: 'border-transparent bg-primary text-primary-foreground',
     puce: 'bg-primary',
     coche: 'bg-primary text-primary-foreground',
     verso: 'bg-gradient-to-b from-primary/[0.12] to-card',
@@ -108,8 +104,6 @@ const TEINTES: Record<TeinteCarte, Habillage> = {
     pastille: 'bg-secondary/10 text-secondary',
     pastilleActive: 'bg-secondary text-secondary-foreground',
     titre: 'text-secondary',
-    action: 'border-secondary/40 bg-card text-secondary',
-    actionActive: 'border-transparent bg-secondary text-secondary-foreground',
     puce: 'bg-secondary',
     coche: 'bg-secondary text-secondary-foreground',
     verso: 'bg-gradient-to-b from-secondary/[0.12] to-card',
@@ -123,8 +117,6 @@ const TEINTES: Record<TeinteCarte, Habillage> = {
     pastille: 'bg-success/10 text-success',
     pastilleActive: 'bg-success text-success-foreground',
     titre: 'text-success',
-    action: 'border-success/40 bg-card text-success',
-    actionActive: 'border-transparent bg-success text-success-foreground',
     puce: 'bg-success',
     coche: 'bg-success text-success-foreground',
     verso: 'bg-gradient-to-b from-success/[0.12] to-card',
@@ -168,30 +160,17 @@ export interface ChoixCompte {
 }
 
 /**
- * L'APPEL À L'ACTION, PRÉSENT SUR LES DEUX FACES.
+ * ⚠ IL N'Y A PLUS DE RECTANGLE « CRÉER UN COMPTE » SUR LES CARTES.
  *
- * ⚠ C'est un `<span>`, pas un `<button>` : toute la carte EST déjà un bouton,
- * et un bouton dans un bouton est du HTML invalide que les navigateurs
- * réparent chacun à leur façon. Ce rectangle est donc la partie visible du
- * bouton qui l'entoure, pas une seconde cible.
+ * Il y en avait un sur chaque face, et il donnait trois boutons identiques
+ * côte à côte sous trois cartes qui SONT déjà des boutons — la même action
+ * écrite quatre fois sur le même écran. La carte entière reste cliquable, le
+ * curseur le dit, et la teinte au survol le confirme.
  *
- * Il figure sur le recto ET sur le verso : le verso recouvre le recto pendant
- * le survol, donc un appel à l'action posé sur une seule face disparaîtrait
- * exactement au moment où la personne vient de finir de lire.
+ * Si quelqu'un veut le remettre : c'était un `<span>`, jamais un `<button>`.
+ * Un bouton dans un bouton est du HTML invalide que chaque navigateur répare à
+ * sa façon.
  */
-function AppelAction({ actif, habillage }: { actif: boolean; habillage: Habillage }) {
-  return (
-    <span
-      className={cn(
-        'mt-auto flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors',
-        actif ? habillage.actionActive : habillage.action,
-      )}
-    >
-      Créer un compte
-      <ArrowRight aria-hidden className="size-4" />
-    </span>
-  );
-}
 
 export function CarteChoix({
   choix,
@@ -224,7 +203,7 @@ export function CarteChoix({
             // se faisait couper au milieu d'une phrase, les trois points
             // disparaissant entièrement. Toute modification du verso doit être
             // revérifiée AU SURVOL, pas seulement dans le code.
-            'carte-3d-face grid min-h-[23.5rem] w-full rounded-2xl border-2 transition-shadow duration-300',
+            'carte-3d-face grid min-h-[20rem] w-full rounded-2xl border-2 transition-shadow duration-300',
             actif ? h.bordureActive : h.bordure,
             actif ? 'shadow-card' : 'shadow-soft group-hover:shadow-card',
           )}
@@ -304,7 +283,6 @@ export function CarteChoix({
               <Sparkles aria-hidden className="mt-px size-3.5 shrink-0" />
               <span>{choix.benefice}</span>
             </span>
-            <AppelAction actif={actif} habillage={h} />
           </span>
 
           {/* VERSO — superposé, jamais en flux (sinon la carte ferait le double). */}
@@ -336,7 +314,6 @@ export function CarteChoix({
                 ))}
               </ul>
             )}
-            <AppelAction actif={actif} habillage={h} />
           </span>
         </span>
       </button>

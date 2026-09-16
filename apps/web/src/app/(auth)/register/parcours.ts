@@ -167,9 +167,9 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
     ETAPE_IDENTITE,
     {
       cle: 'etablissement',
-      titre: 'Où vous travaillez',
+      titre: 'Votre service',
       explication:
-        'La structure qui gère votre établissement, et votre service. Les deux sont facultatifs — ils se complètent aussi plus tard.',
+        'Internat, pôle jour, SESSAD… Facultatif, et modifiable à tout moment depuis votre espace.',
     },
     {
       cle: 'poste',
