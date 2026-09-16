@@ -1,5 +1,5 @@
 import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
-import { ServiceCategory } from '@prisma/client';
+import { FormatIntervention, ServiceCategory } from '@prisma/client';
 
 /** Filtres du catalogue public des ateliers. */
 export class QueryServicesDto {
@@ -10,6 +10,19 @@ export class QueryServicesDto {
   @IsOptional()
   @IsString()
   city?: string;
+
+  /**
+   * COLLECTIF (les ateliers) ou INDIVIDUEL (les renforts personnalisés).
+   *
+   * ⚠ SANS CE FILTRE, LE RENFORT PERSONNALISÉ N'A PAS DE PORTE D'ENTRÉE. Les
+   * deux formats vivent dans le même catalogue — c'est voulu, un seul champ
+   * les sépare — mais un chef de service qui cherche un accompagnement 1 pour
+   * 1 ne va pas éplucher trois cents ateliers pour trouver les quatre fiches
+   * individuelles.
+   */
+  @IsOptional()
+  @IsEnum(FormatIntervention)
+  format?: FormatIntervention;
 
   /**
    * Recherche libre sur le titre et la description.

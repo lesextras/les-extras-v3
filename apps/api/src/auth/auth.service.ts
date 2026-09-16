@@ -10,6 +10,7 @@ import {
   AccountRole,
   AccountType,
   MembershipStatus,
+  NiveauResponsabilite,
   UserStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -42,7 +43,35 @@ export class AuthService {
       throw new ConflictException('Un compte existe déjà avec cet email.');
     }
 
-    if (dto.accountType === AccountType.ESTABLISHMENT && !dto.organizationName?.trim()) {
+    /**
+     * ⚠⚠ REJOINDRE, C'EST NE PAS CRÉER. C'est la réparation du doublon
+     * d'établissement — le plus coûteux des trois doublons du produit.
+     *
+     * Reconnaître son établissement dans la liste créait jusqu'ici un compte
+     * homonyme (même nom, slug suffixé) PUIS demandait le rattachement au
+     * vrai. La personne repartait avec une maison à elle toute seule, et
+     * l'établissement réel recevait une demande qu'il ne comprenait pas.
+     *
+     * ⚠ UN IDENTIFIANT INCONNU NE FAIT PAS ÉCHOUER L'INSCRIPTION : on retombe
+     * sur la création normale. Le champ vient d'une liste cliquée ; une
+     * inscription ne se refuse pas sur un identifiant périmé.
+     */
+    const rejoint =
+      dto.accountType === AccountType.ESTABLISHMENT && dto.rejoindreEtablissementId?.trim()
+        ? await this.prisma.account.findFirst({
+            where: {
+              id: dto.rejoindreEtablissementId.trim(),
+              type: AccountType.ESTABLISHMENT,
+            },
+            select: { id: true, name: true },
+          })
+        : null;
+
+    if (
+      dto.accountType === AccountType.ESTABLISHMENT &&
+      !rejoint &&
+      !dto.organizationName?.trim()
+    ) {
       throw new BadRequestException(
         'Le nom de la structure est requis pour un compte ESTABLISHMENT.',
       );
@@ -51,12 +80,17 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
     // Nom du compte : structure pour ESTABLISHMENT, nom du praticien sinon.
-    const accountName =
-      dto.accountType === AccountType.ESTABLISHMENT
+    // Quand on rejoint, c'est le nom de l'établissement existant qui vaut —
+    // il sert aux courriels, pas à créer quoi que ce soit.
+    const accountName = rejoint
+      ? rejoint.name
+      : dto.accountType === AccountType.ESTABLISHMENT
         ? (dto.organizationName as string).trim()
         : `${dto.firstName} ${dto.lastName}`.trim();
 
-    const slug = await this.generateUniqueSlug(accountName);
+    // ⚠ PAS DE SLUG QUAND ON REJOINT : il n'y a pas de compte à nommer, et en
+    // calculer un consommerait l'adresse publique voisine pour rien.
+    const slug = rejoint ? null : await this.generateUniqueSlug(accountName);
 
     const user = await this.prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
@@ -74,11 +108,33 @@ export class AuthService {
         },
       });
 
+      if (rejoint) {
+        /**
+         * Rattachement NON VÉRIFIÉ, exactement comme
+         * `OrganisationService.rejoindreEtablissement` : la personne apparaît
+         * dans l'organigramme avec sa réserve, et un collègue confirme.
+         * `niveauValide` vaut true parce que SALARIÉ est le niveau par défaut
+         * — il n'y a rien à valider tant qu'elle ne réclame pas mieux.
+         */
+        await tx.membership.create({
+          data: {
+            userId: createdUser.id,
+            accountId: rejoint.id,
+            role: AccountRole.MEMBER,
+            status: MembershipStatus.ACTIVE,
+            niveau: NiveauResponsabilite.SALARIE,
+            niveauValide: true,
+            verifie: false,
+          },
+        });
+        return createdUser;
+      }
+
       const account = await tx.account.create({
         data: {
           name: accountName,
           type: dto.accountType,
-          slug,
+          slug: slug as string,
           legalName:
             dto.accountType === AccountType.ESTABLISHMENT ? accountName : undefined,
           ownerId: createdUser.id,
@@ -158,6 +214,13 @@ export class AuthService {
       return createdUser;
     });
 
+    // On prévient ceux qui peuvent confirmer le rattachement — sinon la
+    // personne reste « non vérifiée » indéfiniment sans que quiconque sache
+    // qu'il faut agir. Jamais bloquant : le compte est créé.
+    if (rejoint) {
+      await this.prevenirResponsables(rejoint, user.id, `${user.firstName} ${user.lastName}`);
+    }
+
     const verifyToken = await this.signEmailVerifyToken(user.id, email);
     await this.mail.sendEmailVerification(email, verifyToken, user.firstName);
 
@@ -213,6 +276,46 @@ export class AuthService {
         ? {}
         : { emailVerificationToken: verifyToken }),
     };
+  }
+
+  /**
+   * Notifie la direction et les responsables d'un établissement qu'une
+   * personne vient de se déclarer chez eux. Jumeau de la fin de
+   * `OrganisationService.rejoindreEtablissement` — les deux chemins existent
+   * (à l'inscription, et depuis un compte déjà créé) et doivent prévenir les
+   * mêmes personnes, avec le même texte.
+   */
+  private async prevenirResponsables(
+    etablissement: { id: string; name: string },
+    nouveauUserId: string,
+    nom: string,
+  ) {
+    const responsables = await this.prisma.membership.findMany({
+      where: {
+        accountId: etablissement.id,
+        status: MembershipStatus.ACTIVE,
+        niveau: {
+          in: [NiveauResponsabilite.DIRECTION, NiveauResponsabilite.RESPONSABLE],
+        },
+        NOT: { userId: nouveauUserId },
+      },
+      select: { userId: true },
+      take: 20,
+    });
+    if (responsables.length === 0) return;
+    await this.prisma.notification
+      .createMany({
+        data: responsables.map((r) => ({
+          userId: r.userId,
+          type: 'ORGANISATION',
+          title: 'Une personne s’est déclarée de votre établissement',
+          body:
+            `${nom} indique travailler à ${etablissement.name}. ` +
+            'Confirmez son rattachement pour qu’elle rejoigne son service.',
+          link: '/dashboard/organigramme',
+        })),
+      })
+      .catch(() => undefined);
   }
 
   async login(dto: LoginDto) {

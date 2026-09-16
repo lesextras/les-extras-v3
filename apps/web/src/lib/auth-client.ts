@@ -97,7 +97,7 @@ export async function reinitialiserMotDePasse(
 
 export async function register(
   values: RegisterValues,
-  options?: { profilSalarie?: boolean },
+  options?: { profilSalarie?: boolean; rejoindreEtablissementId?: string },
 ): Promise<AuthResult> {
   // Origine de la visite, mémorisée à l'arrivée sur le site : c'est ici
   // qu'elle quitte le navigateur, et nulle part ailleurs.
@@ -116,6 +116,16 @@ export async function register(
     // Un intervenant n'a pas de structure : le compte prend alors son nom.
     organizationName:
       values.accountType === 'ESTABLISHMENT' ? values.organizationName?.trim() : undefined,
+    /**
+     * ⚠ RECONNAÎTRE SON ÉTABLISSEMENT NE CRÉE PLUS DE COMPTE. Le serveur
+     * rattache la personne au compte existant, non vérifiée, et n'en crée
+     * aucun — c'est ce qui met fin au doublon d'établissement. Sans ce champ,
+     * on repart sur douze maisons homonymes pour une seule MECS.
+     */
+    rejoindreEtablissementId:
+      values.accountType === 'ESTABLISHMENT'
+        ? options?.rejoindreEtablissementId || undefined
+        : undefined,
     email: values.email,
     password: values.password,
     source: origine.source,

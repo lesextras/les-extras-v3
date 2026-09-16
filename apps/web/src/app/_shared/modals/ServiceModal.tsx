@@ -24,10 +24,39 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { lancerConfettis } from "@/lib/confetti";
 import { Field, Textarea } from "../form-fields";
 import { FileUpload, type FichierDepose } from "../FileUpload";
 import { DEPARTEMENTS, REGIONS, resumeTerritoire } from "@/lib/territoires";
+
+/**
+ * LE FORMAT — À PLUSIEURS, OU POUR UNE SEULE PERSONNE.
+ *
+ * ⚠⚠ C'EST LA QUESTION QUI DÉCIDE DU MONTAGE JURIDIQUE, et c'est pour ça
+ * qu'elle est posée en premier, avant même la catégorie.
+ *
+ * Une fiche INDIVIDUELLE est un RENFORT PERSONNALISÉ : une personne nommée, un
+ * objectif, des séances — et une prestation facturée par la structure de
+ * l'intervenant. Ce n'est pas un remplacement de poste : un poste à couvrir se
+ * conclut en CDD avec l'établissement, passe par RenforTeam, et n'a rien à
+ * faire dans une fiche (Conseil d'État, 11 février 2025, n° 491128).
+ *
+ * Dit autrement, et c'est la règle du produit : CE N'EST PAS LA PERSONNE QUI
+ * CHOISIT LE MONTAGE, C'EST LE BESOIN.
+ */
+const FORMATS = [
+  {
+    value: "COLLECTIF",
+    titre: "Pour un groupe",
+    detail: "Un atelier, une formation : plusieurs participants à la fois.",
+  },
+  {
+    value: "INDIVIDUEL",
+    titre: "Pour une personne",
+    detail: "Un renfort personnalisé : un accompagnement 1 pour 1, facturé par votre structure.",
+  },
+];
 
 const CATEGORIES = [
   { value: "ATELIER", label: "Atelier" },
@@ -59,6 +88,8 @@ export interface FicheExistante {
   title: string;
   description?: string | null;
   category?: string | null;
+  /** COLLECTIF (un atelier) ou INDIVIDUEL (un renfort personnalisé). */
+  format?: string | null;
   categoryId?: string | null;
   duration?: string | null;
   maxParticipants?: number | null;
@@ -126,6 +157,7 @@ export function ServiceModal({
   const [category, setCategory] = useState<string>(
     fiche?.categoryId ?? fiche?.category ?? categorieInitiale,
   );
+  const [format, setFormat] = useState<string>(fiche?.format ?? "COLLECTIF");
   const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
   const [brief, setBrief] = useState("");
   const [statut, setStatut] = useState<string>(fiche?.status ?? "PUBLISHED");
@@ -241,6 +273,7 @@ export function ServiceModal({
       title: String(fd.get("title") || ""),
       description: String(fd.get("description") || ""),
       ...(usingDb ? { categoryId: category } : { category }),
+      format,
       duration: texte("duration"),
       maxParticipants: fd.get("maxParticipants") ? Number(fd.get("maxParticipants")) : undefined,
       publicTarget: texte("publicTarget"),
@@ -427,6 +460,43 @@ export function ServiceModal({
           <Field label="Description" htmlFor="description" required>
             <Textarea id="description" name="description" required rows={4} defaultValue={fiche?.description ?? ""} />
           </Field>
+          {/*
+            ⚠ LE FORMAT EN PREMIER, ET EN CARTES. Un menu déroulant l'aurait
+            fait passer pour un détail de plus ; c'est la question qui décide
+            si la fiche produit un devis de prestation ou n'a pas lieu d'être.
+          */}
+          <fieldset className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <legend className="mb-2 text-sm font-medium">Cette fiche s’adresse à…</legend>
+            {FORMATS.map((f) => {
+              const actif = format === f.value;
+              return (
+                <label
+                  key={f.value}
+                  className={cn(
+                    "flex cursor-pointer gap-3 rounded-lg border-2 p-3 transition-colors",
+                    actif
+                      ? "border-primary bg-primary-soft/40"
+                      : "border-border bg-card hover:border-primary/40",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="format"
+                    checked={actif}
+                    onChange={() => setFormat(f.value)}
+                    className="mt-0.5 size-4 shrink-0 border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold">{f.titre}</span>
+                    <span className="block text-xs leading-relaxed text-muted-foreground" lang="fr">
+                      {f.detail}
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
+          </fieldset>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Catégorie">
               <Select value={category} onValueChange={setCategory}>
@@ -450,9 +520,21 @@ export function ServiceModal({
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Participants max" htmlFor="maxParticipants">
-              <Input id="maxParticipants" name="maxParticipants" type="number" min={1} defaultValue={fiche?.maxParticipants ?? ""} placeholder="10" />
-            </Field>
+            {/*
+              ⚠ PAS DE « PARTICIPANTS MAX » SUR UN RENFORT PERSONNALISÉ : il
+              vaut un, par définition. Le champ laissé visible invitait à écrire
+              un nombre, et un nombre supérieur à un sur une fiche individuelle,
+              c'est un groupe déguisé en accompagnement.
+            */}
+            {format === "INDIVIDUEL" ? (
+              <Field label="Participants" hint="Un renfort personnalisé, c’est une personne.">
+                <Input value="1 personne" disabled readOnly />
+              </Field>
+            ) : (
+              <Field label="Participants max" htmlFor="maxParticipants">
+                <Input id="maxParticipants" name="maxParticipants" type="number" min={1} defaultValue={fiche?.maxParticipants ?? ""} placeholder="10" />
+              </Field>
+            )}
             {/*
               L'ancien libellé annonçait des « frais de gestion » ajoutés au
               tarif pour l'établissement. Ces frais n'existent pas :

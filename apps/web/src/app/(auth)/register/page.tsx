@@ -186,7 +186,12 @@ export default function RegisterPage() {
     try {
       // Le type ET le nom sont connus : le compte est créé complet, et son
       // slug est juste du premier coup.
-      await registerAccount(form.getValues());
+      await registerAccount(form.getValues(), {
+        // ⚠ C'EST ICI QUE LE DOUBLON SE JOUE. Quand la personne a reconnu son
+        // établissement, le serveur la rattache au compte existant et n'en
+        // crée aucun. Retirer ce paramètre recrée douze homonymes par MECS.
+        rejoindreEtablissementId: lieu.rejoindre?.id,
+      });
       setCompteCree(true);
       // ⚠ APRÈS la réponse du serveur, jamais avant : des confettis sur une
       // inscription refusée diraient l'inverse de ce qui vient de se passer.
@@ -249,19 +254,26 @@ export default function RegisterPage() {
    */
   async function enregistrerLieu() {
     try {
+      /**
+       * ⚠ ON NE RATTACHE PLUS ICI : C'EST FAIT À LA CRÉATION DU COMPTE.
+       * `POST /auth/register` reçoit `rejoindreEtablissementId` et crée
+       * l'adhésion non vérifiée sans créer de compte. Rappeler
+       * `/organisation/rejoindre` ensuite ne ferait rien (l'adhésion existe
+       * déjà) mais laisserait croire que ce chemin est le bon.
+       *
+       * ⚠ ET ON N'ÉCRIT RIEN D'AUTRE DANS LA MAISON DE QUELQU'UN D'AUTRE.
+       * Structure et service appartiennent à l'établissement rejoint : ils y
+       * sont déjà renseignés, et une personne qui vient d'arriver — non encore
+       * vérifiée — n'a pas à rattacher une structure ni à créer un service au
+       * nom de tout le monde.
+       */
       if (lieu.rejoindre) {
-        await apiRequest('/organisation/rejoindre', {
-          method: 'POST',
-          body: { etablissementId: lieu.rejoindre.id },
-        })
-          .then(() =>
-            toast({
-              title: `Rattaché à ${lieu.rejoindre?.name}`,
-              description: 'Un responsable doit confirmer votre rattachement.',
-              variant: 'success',
-            }),
-          )
-          .catch(() => undefined);
+        toast({
+          title: `Rattaché à ${lieu.rejoindre.name}`,
+          description: 'Un responsable doit confirmer votre rattachement.',
+          variant: 'success',
+        });
+        return;
       }
 
       if (lieu.structureId || lieu.structure) {
@@ -439,7 +451,20 @@ export default function RegisterPage() {
                     Les Extras, puis dans l'annuaire public ; et la saisie à la
                     main reste ouverte, parce que beaucoup de petites
                     associations n'y figurent pas.
+
+                    ⚠ MASQUÉE QUAND ON REJOINT UN ÉTABLISSEMENT EXISTANT : sa
+                    structure et ses services sont déjà renseignés par ceux qui
+                    y sont. Les redemander à quelqu'un qui arrive — et dont le
+                    rattachement n'est même pas encore confirmé — lui ferait
+                    écrire dans la maison des autres.
                   */}
+                  {lieu.rejoindre ? (
+                    <div className="flex flex-col justify-center rounded-lg border border-dashed border-border p-3 text-xs leading-relaxed text-muted-foreground" lang="fr">
+                      Cet établissement est déjà sur Les Extras : l’entité qui
+                      l’emploie et ses services y sont renseignés. Vous les
+                      retrouverez dans votre espace.
+                    </div>
+                  ) : (
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="employeur">Qui vous emploie</Label>
                     <ChampStructure
@@ -452,9 +477,11 @@ export default function RegisterPage() {
                       qui vous emploie. Facultatif.
                     </p>
                   </div>
+                  )}
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
+                  {lieu.rejoindre ? null : (
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="service">Nom de votre service, unité</Label>
                     <Input
@@ -469,6 +496,7 @@ export default function RegisterPage() {
                       Facultatif, et modifiable depuis votre espace.
                     </p>
                   </div>
+                  )}
 
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="poste">Votre poste</Label>

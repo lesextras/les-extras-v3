@@ -88,7 +88,7 @@ export default async function RenfortsPage() {
     <div className="space-y-6">
       <PageHeader
         title="RenforTeam"
-        subtitle="Publiez un besoin et suivez les candidatures en temps réel."
+        subtitle="Dites de quel besoin il s’agit : le montage en découle, pas l’inverse."
         actions={
           <div className="flex items-center gap-2">
             {/* L'export porte les heures et les montants de tout le compte :
@@ -101,10 +101,70 @@ export default async function RenfortsPage() {
                 </a>
               </Button>
             ) : null}
-            {peutPublier ? <RenfortModal accountId={session.account.id} /> : null}
           </div>
         }
       />
+
+      {/*
+        ⚠⚠ LES DEUX BESOINS, ET LEURS DEUX CONTRATS — C'EST LA PORTE D'ENTRÉE.
+        ------------------------------------------------------------------
+        Cet écran ne proposait qu'une chose : « publier un besoin », c'est-à-dire
+        un poste à couvrir, qui se conclut en CDD. Le renfort personnalisé —
+        un accompagnement 1 pour 1, facturé en prestation par la structure de
+        l'intervenant — n'avait AUCUNE porte d'entrée côté demande : des
+        intervenants pouvaient s'y déclarer disponibles, aucun établissement ne
+        pouvait en demander un.
+
+        La règle que ces deux cartes rendent visible est celle de Siham :
+        CE N'EST PAS LA PERSONNE QUI CHOISIT LE MONTAGE, C'EST LE BESOIN.
+
+        ⚠ LE MONTAGE EST ÉCRIT SUR CHAQUE CARTE, et il doit le rester. Les deux
+        s'appellent « renfort » dans la bouche des gens et se concluent par des
+        contrats opposés (CE 11/02/2025 n° 491128 ; LFSS 2025 art. 70). Deux
+        cartes côte à côte sans leur montage, c'est l'erreur qui ne se voit
+        jamais à l'écran et se découvre au contrôle.
+      */}
+      {peutPublier ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className="rounded-xl border-2 border-primary/35 bg-card p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+              Remplacement · CDD
+            </p>
+            <h2 className="mt-1 text-base font-semibold">Un poste à couvrir</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground" lang="fr">
+              Une absence, un arrêt, un renfort d’équipe. Vous embauchez la
+              personne en CDD, et le contrat s’édite ici.
+            </p>
+            <div className="mt-3">
+              <RenfortModal accountId={session.account.id} />
+            </div>
+          </section>
+
+          <section className="rounded-xl border-2 border-secondary/35 bg-card p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">
+              Renfort personnalisé · prestation
+            </p>
+            <h2 className="mt-1 text-base font-semibold">
+              Un accompagnement 1 pour 1
+            </h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground" lang="fr">
+              Un enfant à accompagner sur ses sorties, un suivi individuel : ce
+              n’est pas un poste. L’intervenant facture par sa structure, sur
+              devis.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="outline">
+                <Link href="/marketplace?type=services&format=INDIVIDUEL">
+                  Voir les intervenants
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant="ghost">
+                <Link href="/dashboard/vivier-ouvert">Qui est disponible</Link>
+              </Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {error ? (
         <ErrorState retryHref="/dashboard/renforts" />

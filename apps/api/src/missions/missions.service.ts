@@ -375,7 +375,21 @@ export class MissionsService {
           (await this.lectureReserveeAutorisee(mission, accountId as string)));
       if (lisible) {
         const { bookings: _bookings, ...publicView } = mission as any;
-        return publicView;
+        /**
+         * ⚠ ON PRÉVIENT AVANT LE CLIC, ON NE REFUSE PLUS APRÈS.
+         *
+         * Deux règles réparables — le montage déclaré, le dossier déposé —
+         * renvoyaient un refus au moment de candidater, sur un bouton qu'on
+         * venait de proposer. L'écran reçoit maintenant la liste avec la
+         * mission : il dit ce qui manque et où le réparer.
+         *
+         * Le refus serveur reste en place (`assertReponseAutorisee`) : c'est
+         * lui qui fait foi, ceci n'est qu'une politesse.
+         */
+        const blocages = accountId
+          ? await this.ciblage.blocagesReponse(mission as never, accountId)
+          : [];
+        return { ...publicView, blocages };
       }
     }
     // Brouillon, fermée, réservée à l'équipe ou au réseau d'un autre : on ne

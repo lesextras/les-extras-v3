@@ -226,6 +226,7 @@ describe('Mission réservée à l’équipe : elle ne se lit pas de l’extérie
     const ciblage: any = {
       intervenantsAutorises: jest.fn().mockResolvedValue(null),
       intervenantsConnus: jest.fn().mockResolvedValue(connus),
+      blocagesReponse: jest.fn().mockResolvedValue([]),
     };
     return new MissionsService(
       prisma,

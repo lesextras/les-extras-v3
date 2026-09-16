@@ -281,3 +281,109 @@ describe('Accès aux réponses : le dossier déposé', () => {
     ).rejects.toThrow(/rattaché à cet établissement/i);
   });
 });
+
+/**
+ * PRÉVENIR AVANT LE CLIC.
+ *
+ * ⚠⚠ CES TESTS VÉRIFIENT QUE L'AVERTISSEMENT ET LE REFUS DISENT LA MÊME CHOSE.
+ * Un écran qui annonce « vous pouvez candidater » suivi d'un refus au clic est
+ * pire que pas d'écran du tout — et c'est exactement ce qui arrive si
+ * quelqu'un réécrit une des deux règles d'un seul côté.
+ *
+ * ⚠ LES REFUS NON RÉPARABLES N'Y FIGURENT PAS (ciblage, paliers de cascade,
+ * salarié de la maison) : ils ne dépendent pas de la personne, tombent d'eux-
+ * mêmes avec le temps, et n'ont aucune réparation à proposer.
+ */
+describe('Blocages annoncés avant la candidature', () => {
+  it('n’annonce RIEN à un compte en règle', async () => {
+    const ciblage = new CiblageService(prismaMock({}) as never);
+
+    await expect(
+      ciblage.blocagesReponse(missionReseau(MissionVisibility.PUBLIC), 'moi'),
+    ).resolves.toEqual([]);
+  });
+
+  /**
+   * ⚠ NE PAS « RÉPARER » CE TEST en avertissant les comptes sans déclaration.
+   * Tous les comptes créés avant le 16/09/2026 ont une liste vide : les
+   * avertir reviendrait à afficher un reproche à tout le monde, sur une
+   * question qu'on ne leur a jamais posée.
+   */
+  it('n’annonce rien à un compte qui n’a rien déclaré', async () => {
+    const ciblage = new CiblageService(prismaMock({ interets: [] }) as never);
+
+    await expect(
+      ciblage.blocagesReponse(missionReseau(MissionVisibility.PUBLIC), 'moi'),
+    ).resolves.toEqual([]);
+  });
+
+  it('annonce le montage à qui n’a pas coché le CDD, avec où le corriger', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ interets: [Interet.RENFORT_PERSONNALISE] }) as never,
+    );
+
+    const blocages = await ciblage.blocagesReponse(
+      missionReseau(MissionVisibility.PUBLIC),
+      'moi',
+    );
+    expect(blocages).toHaveLength(1);
+    expect(blocages[0].code).toBe('MONTAGE');
+    expect(blocages[0].message).toMatch(/CDD/);
+    expect(blocages[0].href).toBe('/dashboard/disponibilite');
+  });
+
+  it('annonce les pièces manquantes, et l’écran où les déposer', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ pieces: [{ type: ComplianceDocType.IDENTITY }] }) as never,
+    );
+
+    const blocages = await ciblage.blocagesReponse(
+      missionReseau(MissionVisibility.PUBLIC),
+      'moi',
+    );
+    expect(blocages).toHaveLength(1);
+    expect(blocages[0].code).toBe('DOSSIER');
+    expect(blocages[0].message).toMatch(/bulletin n° 3/);
+    expect(blocages[0].href).toBe('/dashboard/mon-dossier');
+  });
+
+  /** Le salarié de la maison est exempté du dossier — ici comme au refus. */
+  it('n’annonce pas le dossier au salarié de la maison', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ estSalarie: true, pieces: [] }) as never,
+    );
+
+    await expect(
+      ciblage.blocagesReponse(missionReseau(MissionVisibility.PUBLIC), 'moi'),
+    ).resolves.toEqual([]);
+  });
+
+  it('annonce les deux quand les deux manquent', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ interets: [Interet.ATELIERS], pieces: [] }) as never,
+    );
+
+    const codes = (
+      await ciblage.blocagesReponse(missionReseau(MissionVisibility.PUBLIC), 'moi')
+    ).map((b) => b.code);
+    expect(codes).toEqual(['MONTAGE', 'DOSSIER']);
+  });
+
+  /**
+   * LE MESSAGE ANNONCÉ EST CELUI QUI SERA OPPOSÉ. S'ils divergent, la personne
+   * répare ce qu'on lui a montré et se fait refuser pour autre chose.
+   */
+  it('dit exactement ce que le refus dira', async () => {
+    const ciblage = new CiblageService(
+      prismaMock({ interets: [Interet.RENFORT_PERSONNALISE] }) as never,
+    );
+    const [blocage] = await ciblage.blocagesReponse(
+      missionReseau(MissionVisibility.PUBLIC),
+      'moi',
+    );
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'moi'),
+    ).rejects.toThrow(blocage.message);
+  });
+});

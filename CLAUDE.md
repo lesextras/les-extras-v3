@@ -3747,3 +3747,102 @@ inscription ratée.
 
 ⚠ **PAS DE « RETOUR » SUR L'ÉTAPE DES DROITS** : l'étape précédente est celle
 qui a créé le compte.
+
+## LES TROIS DÉFAUTS DE L'AUDIT SONT REFERMÉS — 16/09/2026 (soir)
+
+Bilan demandé par Siham (« t'en penses quoi de tous les changements »), puis
+« fait 1, 2, 3 ». Les trois défauts que j'avais nommés sont corrigés.
+
+### 1. Le renfort personnalisé a enfin une porte d'entrée côté DEMANDE
+
+La règle — **ce n'est pas la personne qui choisit le montage, c'est le besoin**
+— ne tenait que d'un côté : un intervenant pouvait se déclarer disponible en
+renfort personnalisé, **aucun établissement ne pouvait en demander un**. Une
+offre sans demande sur la différence principale du produit.
+
+- **`ServiceModal` envoie enfin `format`.** Le champ existait en base et dans
+  les trois DTO d'écriture depuis le 16/09 au matin, mais la modale ne
+  l'envoyait pas : **toute fiche créée à la main était COLLECTIF**, et aucune
+  fiche individuelle ne pouvait exister. Le sélecteur est en DEUX CARTES, en
+  tête du formulaire, avant la catégorie — c'est la question qui décide du
+  montage juridique, pas un détail de plus dans un menu déroulant.
+- **« Participants max » disparaît sur une fiche individuelle.** Un renfort
+  personnalisé vaut une personne par définition ; le champ laissé visible
+  invitait à écrire un nombre, et un nombre supérieur à un sur une fiche
+  individuelle, c'est un groupe déguisé en accompagnement.
+- **`format` filtre le catalogue connecté** (`QueryServicesDto`,
+  `findCatalog`). `/marketplace?type=services&format=INDIVIDUEL` est l'adresse
+  du renfort personnalisé : titre, sous-titre et section changent, les missions
+  sont masquées, et une puce permet de retirer le filtre.
+- **`/dashboard/renforts` s'ouvre sur DEUX CARTES** : « Un poste à couvrir ·
+  Remplacement · CDD » (qui porte la modale de publication) et « Un
+  accompagnement 1 pour 1 · Renfort personnalisé · prestation » (qui mène au
+  catalogue filtré et au vivier ouvert).
+
+⚠ **LE MONTAGE EST ÉCRIT SUR CHAQUE CARTE, ET IL DOIT LE RESTER.** Les deux
+s'appellent « renfort » dans la bouche des gens et se concluent par des
+contrats opposés (CE 11/02/2025 n° 491128 ; LFSS 2025 art. 70). Deux cartes
+côte à côte sans leur montage, c'est l'erreur qui ne se voit jamais à l'écran
+et se découvre au contrôle.
+
+### 2. Le doublon d'établissement est réparé à la racine
+
+`POST /auth/register` accepte `rejoindreEtablissementId`. **Quand il est
+renseigné, AUCUN compte n'est créé** : la personne devient membre NON VÉRIFIÉ
+du compte existant, et la direction est prévenue.
+
+Avant, « c'est le mien » créait quand même un compte homonyme — avec le nom
+EXACT de l'autre (le champ était écrasé par le nom reconnu), donc un slug
+suffixé — puis demandait le rattachement au vrai. Douze salariés d'une même
+MECS produisaient **douze maisons**, et ces homonymes réapparaissaient aussitôt
+dans la liste censée les éviter.
+
+- ⚠ **Un identifiant inconnu ne fait PAS échouer l'inscription** : on retombe
+  sur la création normale. Le champ vient d'une liste cliquée ; une inscription
+  ne se refuse pas sur un identifiant périmé.
+- ⚠ **Pas de slug, pas de dotation de crédits** quand on rejoint : il n'y a pas
+  de compte à nommer ni à doter.
+- ⚠ **`enregistrerLieu()` ne rattache plus et n'écrit plus rien** quand on
+  rejoint : structure et service appartiennent à l'établissement rejoint, ils y
+  sont déjà, et une personne non encore vérifiée n'a pas à écrire dans la
+  maison des autres. Les deux champs sont masqués à l'écran, remplacés par une
+  ligne qui le dit.
+- `AuthService.prevenirResponsables()` est le jumeau de la fin de
+  `OrganisationService.rejoindreEtablissement` — les deux chemins existent et
+  doivent prévenir les mêmes personnes, avec le même texte.
+
+Verrouillé par `apps/api/src/auth/rejoindre-etablissement.spec.ts` (6 tests).
+
+### 3. Les deux verrous préviennent avant de refuser
+
+`CiblageService.blocagesReponse(mission, accountId)` calcule, **sans refuser**,
+les deux règles réparables — le montage déclaré et le dossier déposé.
+`GET /missions/:id` les renvoie avec la mission ; la fiche affiche
+l'avertissement, le chemin de réparation, et **n'affiche plus un bouton qui
+mène à un refus**.
+
+- ⚠ **CE N'EST PAS UN SECOND JEU DE RÈGLES.** `assertReponseAutorisee` reste le
+  seul point de passage qui REFUSE : les deux appellent les mêmes fonctions
+  (`blocageMontage`, `blocageDossier`). Un test vérifie que le message annoncé
+  est **exactement** celui que le refus opposera — s'ils divergent, la personne
+  répare ce qu'on lui a montré et se fait refuser pour autre chose.
+- ⚠ **LES REFUS NON RÉPARABLES N'Y FIGURENT PAS** (ciblage, paliers de cascade,
+  garde-fou du salarié) : ils ne dépendent pas de la personne, tombent d'eux-
+  mêmes avec le temps, et n'ont aucune réparation à proposer. Les afficher
+  ferait de l'écran une liste de reproches.
+- ⚠ **Les invariants d'origine tiennent** : une liste d'intérêts vide n'avertit
+  rien, et le salarié de la maison est exempté du dossier — ici comme au refus.
+
+7 tests de plus dans `acces-reponse.spec.ts` (22 au total).
+
+### ⚠ RESTE, ET CE N'EST PAS DU CODE
+
+- **Des comptes « MECS Audit Test 2 / 3 » s'affichent** dans la recherche
+  d'établissement à l'inscription. `Account` ne porte **aucun drapeau** de
+  statut, démo, test ou archive : rien ne permet de les masquer sans les
+  supprimer, et une suppression est irréversible (règle n° 6). Décision de
+  Siham.
+- **Les homonymes déjà créés** par l'ancien défaut restent en base. Même
+  raison : rien ne se supprime sans son accord.
+- L'annuaire public ne cherche que sur la **raison sociale**, pas sur le sigle
+  (« adepa » ne trouve rien, « association pour le développement de l' » oui).

@@ -85,6 +85,9 @@ function ciblageMock() {
     salariesDestinataires: jest.fn().mockResolvedValue([]),
     assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
     assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
+    // Les blocages annoncés avant le clic : aucun par défaut, sinon les tests
+    // de lecture porteraient sur autre chose que ce qu'ils annoncent.
+    blocagesReponse: jest.fn().mockResolvedValue([]),
   };
 }
 
@@ -497,6 +500,7 @@ describe('MissionsService : diffusion nominative', () => {
       salariesDestinataires: jest.fn().mockResolvedValue(salaries),
       assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
     assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
+    blocagesReponse: jest.fn().mockResolvedValue([]),
     };
     const service = new MissionsService(
       prisma as any,

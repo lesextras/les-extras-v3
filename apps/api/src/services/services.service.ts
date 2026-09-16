@@ -126,6 +126,7 @@ export class ServicesService {
       AND: [visibleParCompte(lecteurAccountId)],
     };
     if (query.category) where.category = query.category;
+    if (query.format) where.format = query.format;
     if (query.city) where.city = { contains: query.city, mode: 'insensitive' };
     const recherche = query.search?.trim();
     if (recherche) {

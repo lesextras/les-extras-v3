@@ -262,12 +262,8 @@ export class CiblageService {
      * de déclaration fermerait RenforTeam à tout le monde du jour au
      * lendemain. On ne restreint que sur un choix explicitement fait.
      */
-    const interets = compte?.interets ?? [];
-    if (interets.length > 0 && !interets.includes(Interet.RENFORT_CDD)) {
-      throw new BadRequestException(
-        'Un renfort se conclut en CDD avec l’établissement. Pour y répondre, cochez « être contacté pour des remplacements en CDD » dans votre espace — ou proposez un renfort personnalisé, qui se facture par votre structure.',
-      );
-    }
+    const montage = CiblageService.blocageMontage(compte?.interets ?? []);
+    if (montage) throw new BadRequestException(montage.message);
     const salarieMaison = compte?.ownerId
       ? await this.prisma.membership.findFirst({
           where: { accountId: mission.accountId, userId: compte.ownerId },
@@ -352,22 +348,114 @@ export class CiblageService {
      * lit comme une panne.
      */
     if (compte?.ownerId && !salarieMaison) {
-      const pieces = await this.prisma.complianceDocument.findMany({
-        where: {
-          userId: compte.ownerId,
-          accountId,
-          type: { in: PIECES_POUR_CANDIDATER },
-        },
-        select: { type: true, fileId: true, fileUrl: true, issuedAt: true },
-      });
-      const manquantes = piecesManquantes(pieces);
-      if (manquantes.length > 0) {
-        throw new BadRequestException(
-          `Déposez ${listerPieces(manquantes)} dans « Mon dossier » avant de candidater : l'établissement vous les demandera à l'embauche.`,
-        );
-      }
+      const dossier = await this.blocageDossier(accountId, compte.ownerId);
+      if (dossier) throw new BadRequestException(dossier.message);
     }
   }
+
+  /**
+   * LES MÊMES RÈGLES, MAIS SANS REFUSER — POUR PRÉVENIR AVANT LE CLIC.
+   *
+   * ⚠⚠ UN VERROU QUI NE SE VOIT QU'APRÈS COUP SE LIT COMME UNE PANNE. Les deux
+   * règles réparables — le montage déclaré et le dossier déposé — refusaient
+   * une candidature au moment du clic, avec un message que personne n'avait
+   * demandé. La personne avait lu l'annonce, décidé d'y aller, et recevait un
+   * refus rouge sur une action qu'on lui proposait une seconde plus tôt.
+   *
+   * Elles sont donc calculées À LA LECTURE de la mission et renvoyées avec
+   * elle : l'écran dit ce qui manque, où le réparer, et n'affiche pas un
+   * bouton qui mène à un refus.
+   *
+   * ⚠ CE N'EST PAS UN SECOND JEU DE RÈGLES. `assertReponseAutorisee` reste le
+   * seul point de passage qui REFUSE — le serveur fait foi, l'avertissement
+   * n'est qu'une politesse. Les deux appellent les mêmes fonctions, et il faut
+   * que ça continue : deux écritures de la même règle finissent toujours par
+   * ne plus dire la même chose.
+   *
+   * ⚠ LES REFUS NON RÉPARABLES N'Y FIGURENT PAS. Le ciblage, les paliers de
+   * cascade et le garde-fou du salarié ne dépendent pas de la personne : ils
+   * tombent d'eux-mêmes avec le temps, ou n'ont aucune réparation à proposer.
+   * Les afficher transformerait l'écran en liste de reproches.
+   */
+  async blocagesReponse(
+    mission: MissionCiblee,
+    accountId: string,
+  ): Promise<BlocageReponse[]> {
+    const compte = await this.prisma.account.findUnique({
+      where: { id: accountId },
+      select: { ownerId: true, profilSalarie: true, interets: true },
+    });
+    if (!compte) return [];
+
+    const blocages: BlocageReponse[] = [];
+    const montage = CiblageService.blocageMontage(compte.interets ?? []);
+    if (montage) blocages.push(montage);
+
+    if (compte.ownerId) {
+      // Même exemption que dans le refus : le salarié de la maison fait des
+      // heures supplémentaires chez son employeur, qui détient déjà ses pièces.
+      const salarieMaison = await this.prisma.membership.findFirst({
+        where: { accountId: mission.accountId, userId: compte.ownerId },
+        select: { id: true },
+      });
+      if (!salarieMaison) {
+        const dossier = await this.blocageDossier(accountId, compte.ownerId);
+        if (dossier) blocages.push(dossier);
+      }
+    }
+    return blocages;
+  }
+
+  /**
+   * LE MONTAGE DÉCLARÉ.
+   *
+   * ⚠ UNE LISTE VIDE NE BLOQUE RIEN, ici comme dans le refus. Tous les comptes
+   * créés avant les centres d'intérêt l'ont vide.
+   */
+  private static blocageMontage(interets: Interet[]): BlocageReponse | null {
+    if (interets.length === 0 || interets.includes(Interet.RENFORT_CDD)) return null;
+    return {
+      code: 'MONTAGE',
+      titre: 'Ce renfort se conclut en CDD',
+      message: 'Un renfort se conclut en CDD avec l’établissement. Pour y répondre, cochez « être contacté pour des remplacements en CDD » dans votre espace — ou proposez un renfort personnalisé, qui se facture par votre structure.',
+      action: 'Modifier ce que je veux faire',
+      href: '/dashboard/disponibilite',
+    };
+  }
+
+  /** Les pièces exigées pour candidater — leur DÉPÔT, jamais leur contenu. */
+  private async blocageDossier(
+    accountId: string,
+    ownerId: string,
+  ): Promise<BlocageReponse | null> {
+    const pieces = await this.prisma.complianceDocument.findMany({
+      where: { userId: ownerId, accountId, type: { in: PIECES_POUR_CANDIDATER } },
+      select: { type: true, fileId: true, fileUrl: true, issuedAt: true },
+    });
+    const manquantes = piecesManquantes(pieces);
+    if (manquantes.length === 0) return null;
+    return {
+      code: 'DOSSIER',
+      titre: 'Votre dossier n’est pas complet',
+      message: `Déposez ${listerPieces(manquantes)} dans « Mon dossier » avant de candidater : l'établissement vous les demandera à l'embauche.`,
+      action: 'Déposer mes pièces',
+      href: '/dashboard/mon-dossier',
+    };
+  }
+}
+
+/**
+ * Ce qui empêche de répondre, ET CE QU'ON PEUT Y FAIRE.
+ *
+ * `href` n'est pas décoratif : un avertissement qui nomme un écran sans y
+ * mener oblige à chercher dans le menu, et c'est là qu'on abandonne.
+ */
+export interface BlocageReponse {
+  code: 'MONTAGE' | 'DOSSIER';
+  titre: string;
+  message: string;
+  action: string;
+  href: string;
 }
 
 /** Ce qu'on dit à quelqu'un qui n'était pas destinataire. Sans jargon. */

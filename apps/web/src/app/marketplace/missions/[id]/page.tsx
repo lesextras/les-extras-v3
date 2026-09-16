@@ -13,21 +13,32 @@ import {
   missionBadgeVariant,
   formatDate,
 } from "../../../_shared/format";
-import type { Mission } from "../../../_shared/types";
+import type { BlocageReponse, Mission } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Mission" };
 
 export default async function MissionDetailPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {
   const params = await paramsPromesse;
   const session = await requireSession();
-  const { data: mission } = await fetchApi<Mission & { alreadyApplied?: boolean }>(
-    session,
-    `/missions/${params.id}`,
-  );
+  const { data: mission } = await fetchApi<
+    Mission & { alreadyApplied?: boolean; blocages?: BlocageReponse[] }
+  >(session, `/missions/${params.id}`);
   if (!mission) notFound();
 
   const isFreelance = session.account.type === "FREELANCE";
-  const canAccept = isFreelance && mission.status === "PUBLISHED";
+  /**
+   * ⚠ LE SERVEUR DIT CE QUI MANQUE, L'ÉCRAN LE MONTRE AVANT LE CLIC.
+   *
+   * Les deux règles réparables — le montage déclaré et le dossier déposé —
+   * refusaient la candidature au moment du clic, avec un message rouge sur un
+   * bouton qu'on venait de proposer. Un refus qu'on n'a pas vu venir se lit
+   * comme une panne, et personne ne va chercher la réparation dans le menu.
+   *
+   * ⚠ ON N'ENLÈVE PAS LE REFUS SERVEUR pour autant : c'est lui qui fait foi.
+   * Ceci ne dispense de rien, ça prévient.
+   */
+  const blocages = mission.blocages ?? [];
+  const canAccept = isFreelance && mission.status === "PUBLISHED" && blocages.length === 0;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -90,6 +101,29 @@ export default async function MissionDetailPage({ params: paramsPromesse }: { pa
                 >
                   📎 Pièce jointe de la mission
                 </a>
+              ) : null}
+
+              {/*
+                L'avertissement passe AVANT le bouton : lu après, il ne sert
+                plus à rien — la personne a déjà cliqué.
+              */}
+              {isFreelance && blocages.length > 0 ? (
+                <div className="space-y-2">
+                  {blocages.map((b) => (
+                    <div
+                      key={b.code}
+                      className="rounded-lg border-2 border-secondary/40 bg-secondary/10 p-3"
+                    >
+                      <p className="text-sm font-semibold">{b.titre}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
+                        {b.message}
+                      </p>
+                      <Button asChild size="sm" variant="outline" className="mt-2 w-full">
+                        <Link href={b.href}>{b.action}</Link>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               ) : null}
 
               {canAccept ? (

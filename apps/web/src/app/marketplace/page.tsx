@@ -2,6 +2,7 @@
 // Endpoints réels : GET /missions/marketplace et GET /services/catalog
 // renvoient un objet paginé { items, total, take, skip[, page] }.
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireSession, fetchApi } from "../_shared/server";
 import { PageHeader, EmptyState, ErrorState } from "../_shared/ui";
 import { MarketplaceFilters } from "../_shared/MarketplaceFilters";
@@ -48,15 +49,37 @@ function asItems<T>(data: T[] | Paginated<T> | undefined): T[] {
 export default async function MarketplacePage({
   searchParams: searchParamsPromesse,
 }: {
-  searchParams: Promise<{ q?: string; type?: string; category?: string; cp?: string; rayon?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    type?: string;
+    category?: string;
+    cp?: string;
+    rayon?: string;
+    format?: string;
+  }>;
 }) {
   const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const type = searchParams.type ?? "";
   const category = searchParams.category || undefined;
 
-  const wantMissions = !type || type === "missions";
-  const wantServices = !type || type === "services";
+  /**
+   * ⚠ LE FORMAT EST LA PORTE D'ENTRÉE DU RENFORT PERSONNALISÉ.
+   *
+   * `?format=INDIVIDUEL` n'est pas un filtre de confort : c'est l'adresse vers
+   * laquelle pointe « demander un renfort personnalisé » depuis RenforTeam. Un
+   * accompagnement 1 pour 1 se facture en prestation ; un poste à couvrir se
+   * conclut en CDD et n'a rien à faire dans ce catalogue. Les deux ne
+   * s'affichent donc jamais mélangés — d'où le masquage des missions plus bas
+   * dès qu'un format est demandé.
+   */
+  const format =
+    searchParams.format === "INDIVIDUEL" || searchParams.format === "COLLECTIF"
+      ? searchParams.format
+      : undefined;
+
+  const wantMissions = (!type || type === "missions") && !format;
+  const wantServices = !type || type === "services" || Boolean(format);
 
   const missionCategory = category && MISSION_CATEGORIES.has(category) ? category : undefined;
   const serviceCategory = category && SERVICE_CATEGORIES.has(category) ? category : undefined;
@@ -70,7 +93,7 @@ export default async function MarketplacePage({
   // La recherche s'applique aux DEUX listes. Elle n'était transmise qu'aux
   // missions : on tapait « médiation », les ateliers ne bougeaient pas, alors
   // que la page annonce « missions de renfort et ateliers ».
-  const servicesQuery = qs({ search: searchParams.q, category: serviceCategory });
+  const servicesQuery = qs({ search: searchParams.q, category: serviceCategory, format });
 
   const [missionsRes, servicesRes] = await Promise.all([
     wantMissions
@@ -89,10 +112,30 @@ export default async function MarketplacePage({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Marketplace"
-        subtitle="Toutes les missions de renfort et ateliers ouverts à la candidature."
+        title={format === "INDIVIDUEL" ? "Renforts personnalisés" : "Marketplace"}
+        subtitle={
+          format === "INDIVIDUEL"
+            ? "Des accompagnements 1 pour 1, facturés en prestation par la structure de l’intervenant. Un poste à couvrir, lui, se publie sur RenforTeam et se conclut en CDD."
+            : "Toutes les missions de renfort et ateliers ouverts à la candidature."
+        }
       />
       <MarketplaceFilters />
+
+      {/*
+        Le filtre de format n'est pas dans la barre : il vient d'un lien, et il
+        doit pouvoir se retirer là où il s'affiche — sinon on est enfermé dans
+        un catalogue réduit sans savoir pourquoi.
+      */}
+      {format ? (
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            {format === "INDIVIDUEL" ? "Renfort personnalisé" : "Ateliers collectifs"}
+          </span>
+          <Link href="/marketplace" className="font-medium text-primary hover:underline">
+            Voir tout le catalogue
+          </Link>
+        </p>
+      ) : null}
 
       {anyError ? (
         <ErrorState retryHref="/marketplace" />
@@ -119,7 +162,8 @@ export default async function MarketplacePage({
           {wantServices && services.length > 0 ? (
             <section className="space-y-4">
               <h2 className="text-lg font-semibold text-foreground">
-                Ateliers <span className="text-muted-foreground">({services.length})</span>
+                {format === "INDIVIDUEL" ? "Renforts personnalisés" : "Ateliers"}{" "}
+                <span className="text-muted-foreground">({services.length})</span>
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {services.map((s) => (

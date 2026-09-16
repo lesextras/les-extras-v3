@@ -366,3 +366,19 @@ export interface Review {
   comment?: string | null;
   createdAt: string;
 }
+
+/**
+ * CE QUI EMPÊCHE DE RÉPONDRE À UNE MISSION, ET CE QU'ON PEUT Y FAIRE.
+ *
+ * Calculé par le serveur (`CiblageService.blocagesReponse`) et renvoyé avec la
+ * mission. ⚠ NE PAS LE RECALCULER CÔTÉ ÉCRAN : les mêmes règles écrites à deux
+ * endroits finissent toujours par ne plus dire la même chose, et ici l'une des
+ * deux refuse une candidature.
+ */
+export interface BlocageReponse {
+  code: "MONTAGE" | "DOSSIER";
+  titre: string;
+  message: string;
+  action: string;
+  href: string;
+}
