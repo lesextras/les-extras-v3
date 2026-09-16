@@ -1283,6 +1283,20 @@ export class AdminService {
     if (dto.type !== undefined) data.type = dto.type;
     if (dto.freeOnline !== undefined) data.freeOnline = dto.freeOnline;
     if (dto.enrollUrl !== undefined) data.enrollUrl = dto.enrollUrl;
+    /**
+     * ⚠⚠ L'INTERRUPTEUR DE LA VENTE DE L'ATTESTATION.
+     *
+     * Zéro et nul ferment la vente ; on écrit `null` dans les deux cas, pour
+     * qu'il n'existe qu'une seule façon de dire « fermé » en base. Sans ça,
+     * une fiche à 0 et une fiche à null se liraient différemment selon la
+     * requête qui les relit, alors qu'elles disent la même chose.
+     */
+    if (dto.attestationPrixCents !== undefined) {
+      data.attestationPrixCents =
+        dto.attestationPrixCents && dto.attestationPrixCents > 0
+          ? dto.attestationPrixCents
+          : null;
+    }
 
     // Cohérence type : une formation INTERNE ne peut être ni CPF ni certifiante.
     const nextType = dto.type ?? formation.type;

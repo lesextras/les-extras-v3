@@ -30,6 +30,18 @@ export interface FormationFormValues {
   cpfEligible: boolean;
   certifying: boolean;
   certificationName: string;
+  /**
+   * ⚠⚠ LE PRIX DE L'ATTESTATION DE SUIVI, EN EUROS — c'est l'interrupteur de
+   * la vente pour cette fiche, et pour elle seule.
+   *
+   * Vide ou zéro : la vente est FERMÉE. Le bouton d'achat n'apparaît pas sur
+   * la page publique et la route refuse. Un montant : elle s'ouvre.
+   *
+   * ⚠ ON SAISIT DES EUROS, LA BASE STOCKE DES CENTIMES. La conversion est dans
+   * `toFormationPayload`. Sans elle, « 20 » tapé ici ouvrirait la vente à
+   * 0,20 € — et personne ne relit un montant qu'il vient d'écrire.
+   */
+  attestationPrixEuros: string;
 }
 
 export const EMPTY_FORMATION: FormationFormValues = {
@@ -45,6 +57,7 @@ export const EMPTY_FORMATION: FormationFormValues = {
   cpfEligible: false,
   certifying: false,
   certificationName: "",
+  attestationPrixEuros: "",
 };
 
 /** Transforme les valeurs du formulaire en payload API (types nettoyés). */
@@ -64,6 +77,15 @@ export function toFormationPayload(v: FormationFormValues) {
     certifying: isInterne ? false : v.certifying,
     certificationName:
       isInterne || !v.certifying ? undefined : v.certificationName.trim() || undefined,
+    /**
+     * ⚠ EUROS → CENTIMES, et `null` quand le champ est vide ou à zéro : c'est
+     * la seule façon d'écrire « vente fermée » en base. `undefined` ne
+     * conviendrait pas — le service ne toucherait alors pas au champ, et on ne
+     * pourrait jamais REFERMER une vente qu'on a ouverte.
+     */
+    attestationPrixCents: v.attestationPrixEuros.trim()
+      ? Math.round(Number(v.attestationPrixEuros.replace(",", ".")) * 100) || null
+      : null,
   };
 }
 
@@ -190,6 +212,36 @@ export function AdminFormationForm({
           />
         </Field>
       </div>
+
+      {/*
+        ⚠⚠ C'EST ICI QUE LA VENTE DE L'ATTESTATION S'OUVRE ET SE FERME.
+
+        Un champ vide = fermé, et c'est le défaut sur toutes les fiches. Ce
+        n'est pas une précaution de développement : vendre à un particulier
+        oblige à nommer dans les CGV un médiateur de la consommation référencé
+        par la CECMC (art. L612-1 c. conso), et aucun ne l'est à ce jour. Le
+        tunnel est construit et attend une décision qui n'est pas technique.
+
+        ⚠ L'AIDE SOUS LE CHAMP N'EST PAS DÉCORATIVE : sans elle, personne ne
+        peut deviner qu'un champ de prix vide est ce qui ferme une vente.
+      */}
+      <Field
+        label="Prix de l’attestation de suivi (€)"
+        htmlFor="f-attestation"
+        hint="Laissez vide pour ne rien vendre : le bouton d’achat n’apparaît alors pas sur la fiche publique. Un montant ouvre la vente pour ce parcours uniquement. Ce qui est délivré est une attestation de suivi — ni diplôme, ni certification professionnelle."
+      >
+        <Input
+          id="f-attestation"
+          type="number"
+          min={0}
+          max={200}
+          step="0.01"
+          inputMode="decimal"
+          value={v.attestationPrixEuros}
+          onChange={(e) => set("attestationPrixEuros", e.target.value)}
+          placeholder="Vide = pas en vente"
+        />
+      </Field>
 
       <Field label="Catégorie">
         <Select

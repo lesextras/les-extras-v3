@@ -4144,3 +4144,150 @@ un test naïf passerait pour une preuve sans en être une. Il vérifie aussi le
 **nombre de pages**, seule assertion qui attrape le second défaut.
 
 **742 tests API / 63 suites, 117 tests web.**
+
+---
+
+## L'AUDIT FINAL — 16/09/2026
+
+Demande de Siham : « fait un audit final benchmark approfondi du back et du
+front en testant tous les comptes, tous les liens, toutes les routes, toutes les
+fonctionnalités et toutes les actions possibles, c'est le dernier donc fait le
+vraiment complet ». Ce qui suit est **mesuré**, pas supposé. Ce qui a été
+corrigé dans la foulée est marqué ✔.
+
+### ⚠⚠ LE DÉFAUT LE PLUS GRAVE : LE TUNNEL DE L'ATTESTATION N'AVAIT PAS D'INTERRUPTEUR
+
+✔ Corrigé. **Je l'avais livré la veille, et c'est le pire genre de défaut :
+tout fonctionnait, sauf la seule chose qui met le circuit en service.**
+
+`Formation.attestationPrixCents` ouvre la vente. Il n'était dans **aucun DTO
+d'écriture** (`CreateFormationAdminDto`, `UpdateFormationAdminDto`), et le
+ValidationPipe global est en `forbidNonWhitelisted` : toute requête le portant
+partait en 400. Autrement dit, la décision d'ouvrir la vente — la seule chose
+qui restait à faire — ne pouvait s'exécuter qu'en écrivant à la main en base.
+
+- Champ ajouté au DTO, borné : `@Min(0) @Max(20_000)`. ⚠ **L'unité est le
+  CENTIME.** L'écran d'administration saisit des EUROS et convertit
+  (`AdminFormationForm.tsx`) : « 20 » tapé en centimes ouvrirait la vente à
+  0,20 €. Le plafond de 200 € arrête la faute inverse, celle qui débite
+  réellement quelqu'un.
+- `admin.service.ts` écrit `null` pour zéro comme pour nul : une seule façon de
+  dire « fermé » en base.
+- **Une pastille « Attestation 20,00 € » dans la liste** `/admin/formations` :
+  l'état ne vivait que dans une modale, il fallait ouvrir les quinze fiches une
+  par une pour savoir lesquelles étaient en vente. Une vente ouverte débite des
+  gens, elle doit se voir sans qu'on aille la chercher.
+- `admin/interrupteur-attestation.spec.ts` (6 tests) verrouille l'ouverture, la
+  **fermeture** (`null` doit passer, sinon on ne peut plus arrêter une vente) et
+  le refus des montants aberrants.
+
+### Ce que l'audit a mesuré, et qui tient
+
+- **583 routes API** sur 63 contrôleurs. 62 publiques (10,6 %), 85 admin
+  (14,6 %), 436 authentifiées. **Aucun IDOR trouvé** : chaque service sensible
+  (comptes, factures, devis, contrats, conformité, réservations, fichiers,
+  conversations, LEX) compare l'`accountId` de la ressource à celui du compte
+  actif avant de rendre ou de modifier. **Aucune route ne prend un `accountId`
+  depuis le corps de la requête. Aucune collision de routes non documentée.**
+- **Sécurité en direct** : jeton `alg:none` refusé, jeton forgé refusé, webhook
+  Stripe sans signature → 401 (le secret est bien chargé), injection SQL sur le
+  catalogue → 0 résultat (contre 17 sans filtre), traversée de chemin sur
+  `/public/images` → 404, `take`/`skip` hors bornes → 400, aucune pile d'appel
+  dans les erreurs, ni `.env` ni `.git` exposés. **Aucune adresse e-mail, aucun
+  téléphone, aucune empreinte de mot de passe sur les cinq routes publiques.**
+- **CORS** : une origine arbitraire ne reçoit PAS d'`Access-Control-Allow-Origin`
+  en production. ⚠ **La note de ce fichier disant « l'API reflète alors toute
+  origine » est donc PÉRIMÉE** — vérifié au préflight.
+- **En-têtes** : HSTS, CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`,
+  `Permissions-Policy` présents des deux côtés. Aucun `X-Powered-By`.
+- ⚠ **LE PLAFOND DE DÉBIT NE SE MESURE PAS DEPUIS CE CONTENEUR** : l'adresse de
+  sortie change d'une requête à l'autre, chaque requête tombe donc dans un
+  seau différent. Il est bien actif — `x-ratelimit-limit: 8` sur
+  `/public/contact`, et des 429 apparaissent. **Ne pas conclure d'un test
+  d'ici qu'un plafond est inopérant.**
+- **68 hrefs de menu, zéro 404.** Aucune page de `(dashboard)` ou `(admin)`
+  n'est un orphelin absolu.
+- **40 pages publiques sur 40 ont title, description, canonique et openGraph.**
+  Un seul `<h1>` sur les 35 URL testées en direct. Redirections toutes en 308.
+
+### Ce qui a été corrigé le jour même ✔
+
+1. **`/freelances/:id` répondait 200 indexable au lieu de 308.** La page
+   appelait `permanentRedirect()`, mais la frontière Suspense de
+   `(public)/loading.tsx` fait partir la coquille avant : elle produisait
+   exactement le risque qu'elle décrivait vouloir éviter. Remontée dans
+   `next.config.mjs`, page supprimée.
+2. **`/aide/<inconnu>` et `/renfort/<inconnu>` s'indexaient** (200, `index,
+   follow`, sans `<h1>`). Les cinq autres fiches dynamiques posaient déjà
+   `noindex` ; ces deux-là étaient les oubliées.
+3. **13 meta descriptions au-dessus de 160 caractères**, dont deux à 201 et 218.
+   ⚠ `metaPublique()` calibre le TITRE (`titreSeo`, 65 caractères) et **ne borne
+   pas la description**. `lib/__tests__/meta-descriptions.test.ts` les mesure
+   toutes désormais — il en a trouvé neuf de plus que l'audit manuel, dans
+   `association/` et `academie/`.
+4. **Un salarié n'avait aucun chemin pour poser une absence.**
+   `/dashboard/temps-de-travail` est écrite pour lui (« posez vos demandes
+   d'absence ») mais son entrée de menu est réservée aux responsables ET rangée
+   derrière « Outils avancés » — le filtre de rôle s'appliquant en premier,
+   l'entrée disparaissait avant même d'être comptée. Entrée « Mes congés & mes
+   heures » ajoutée pour `MEMBER`, plus une entrée de palette.
+5. **Le catalogue public était inatteignable au doigt.** « Ateliers » et
+   « Formations » ne vivent que dans la barre du haut, qui est `hidden md:flex`.
+   Sur téléphone, un intervenant, un établissement ou un admin n'avait aucun
+   chemin vers le catalogue. C'est la règle que `header.tsx` écrit lui-même et
+   qui n'avait été appliquée qu'aux trois outils LEX.
+6. **La palette proposait au compte PARTICULIER des pages qui le refusent** :
+   le filtre ne retirait un groupe qu'en présence de l'autre type de compte.
+7. **Le pied de page n'existait sur aucun document PDF** (voir la section
+   précédente).
+
+### Ce qui reste ouvert, et qui n'est pas du code
+
+- **`DELETE /admin/accounts/:id` casse toujours les factures en cascade.**
+  `archivedAt` existe et doit être préféré ; la route destructrice reste active
+  sans blocage serveur quand le compte porte des factures.
+- Deux routes publiques de paiement (`ateliers-public`) **sans `@Throttle`
+  dédié**, contrairement à toutes les autres routes publiques d'écriture.
+- Le bouton « Outils avancés » **remplace** le menu au lieu de le compléter, et
+  produit deux sections d'une seule entrée.
+- « Mon profil » et « Paramètres » du menu avatar mènent **au même écran**.
+- Le libellé **« Publier un besoin »** mène à `/register?type=etablissement&next=…`
+  sur `/renforteam` et à `/register` brut sur les 6 pages ville et 7 pages
+  métier — c'est-à-dire une marche de plus sur les pages qui reçoivent le
+  trafic le plus qualifié.
+- `sitemap.ts` ne génère `/intervenants/[id]` que pour les intervenants ayant un
+  atelier au catalogue : ceux qui ne font que du renfort n'ont jamais d'entrée.
+
+### ⚠ LE MODÈLE ÉCONOMIQUE, MESURÉ EN DIRECT LE 16/09/2026
+
+| | |
+|---|---|
+| Ateliers publiés | **17**, pour **6 comptes intervenants** — dont **8 (47 %) sur le seul compte « Siham »** |
+| Formations publiées | **15**, pour **UN seul organisme** : ADéPA. Zéro formateur externe. |
+| dont gratuites | 12 sur 15 |
+| Missions de renfort ouvertes | **0** (vérifié à `take=50`, ce n'est pas la pagination) |
+| `attestationPrixCents` | **nul sur 15 fiches sur 15** |
+
+**La grille du code est exacte et concorde avec ce document** (LEX 19 €, Pro
+49 €, Équipe 89 €, packs 9/19/39 €, 15 générations gratuites permanentes,
+commission 0). C'est la seule zone où la doc n'a pas dérivé.
+
+**Le premier euro viendrait de LEX** : c'est le seul tunnel complet, ouvert, et
+qui ne dépend d'aucune décision restante — Stripe Checkout et webhook signé
+fonctionnent de bout en bout. L'attestation, elle, était bloquée par
+l'interrupteur manquant (corrigé ci-dessus) et reste bloquée par le médiateur
+CECMC.
+
+⚠ **LE POINT LE PLUS FRAGILE, ET IL N'EST PAS TECHNIQUE** : le modèle suppose
+un marché à deux faces, et les données montrent qu'**une seule face est
+peuplée** — l'association fournit elle-même la quasi-totalité de l'offre. Aucun
+code ne répare ça.
+
+⚠ **UN POSTE DE COÛT SANS PLAFOND MENSUEL** : `POST /assistant/chat` (le bot
+d'aide, gratuit et sans crédit, assumé) appelle le moteur avec, pour seule
+borne, **60 appels par heure et par compte** — aucun plafond mensuel. Une
+génération LEX, elle, est plafonnée à 15 par mois pour un compte gratuit. Un
+compte peut donc consommer bien plus d'appels modèle par le chat que par la
+génération payante, sans jamais toucher au grand livre de crédits.
+
+**750 tests API / 65 suites, 119 tests web.**

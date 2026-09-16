@@ -51,6 +51,8 @@ export interface AdminFormation {
   cpfEligible?: boolean;
   certifying?: boolean;
   certificationName?: string | null;
+  /** Prix de l'attestation de suivi, en centimes. Nul = vente fermée. */
+  attestationPrixCents?: number | null;
   categoryRef?: { id: string; title: string } | null;
   ownerAccount?: { id: string; name?: string | null } | null;
   _count?: { sessions?: number };
@@ -80,6 +82,11 @@ function toInitialValues(f: AdminFormation): Partial<FormationFormValues> {
     cpfEligible: Boolean(f.cpfEligible),
     certifying: Boolean(f.certifying),
     certificationName: f.certificationName ?? "",
+    // Centimes en base, euros à l'écran : la conversion inverse de celle de
+    // `toFormationPayload`. Une fiche sans prix rouvre le champ vide, donc
+    // « pas en vente », ce qui est exactement son état.
+    attestationPrixEuros:
+      f.attestationPrixCents != null ? String(f.attestationPrixCents / 100) : "",
   };
 }
 
@@ -303,7 +310,23 @@ export function AdminFormationsManager({
                         <div className="flex flex-wrap gap-1">
                           {f.cpfEligible ? <Badge variant="success">CPF</Badge> : null}
                           {f.certifying ? <Badge variant="soft">Certifiant</Badge> : null}
-                          {!f.cpfEligible && !f.certifying ? (
+                          {/* ⚠ L'ÉTAT DE LA VENTE DE L'ATTESTATION SE VOIT DANS
+                              LA LISTE. Il ne vivait que dans un champ de la
+                              modale d'édition : pour savoir quels parcours
+                              étaient en vente, il fallait les ouvrir un par un
+                              — quinze fiches, quinze clics. Une vente ouverte
+                              débite des gens : elle doit être visible sans
+                              qu'on aille la chercher. */}
+                          {f.attestationPrixCents ? (
+                            <Badge variant="success">
+                              Attestation{" "}
+                              {(f.attestationPrixCents / 100)
+                                .toFixed(2)
+                                .replace(".", ",")}
+                              &nbsp;€
+                            </Badge>
+                          ) : null}
+                          {!f.cpfEligible && !f.certifying && !f.attestationPrixCents ? (
                             <span className="text-xs text-muted-foreground">-</span>
                           ) : null}
                         </div>
