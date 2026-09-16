@@ -7,7 +7,7 @@ import { CarteAvantage } from '../CarteAvantage';
 export const metadata: Metadata = {
   title: "Ce à quoi mon association a droit",
   description:
-    "Google, Canva, Microsoft et Slack offerts, reçus fiscaux, FDVA, agrément, Service civique, bénévoles : pour chaque avantage, ce qu'il te faut, comment faire pas à pas, et le lien direct pour le demander.",
+    "Outils offerts, reçus fiscaux, FDVA, agrément, Service civique, bénévoles : pour chaque avantage, ce qu'il te faut et le lien direct pour le demander.",
   alternates: { canonical: '/avantages' },
 };
 

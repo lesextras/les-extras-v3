@@ -7,7 +7,7 @@ import { metaPublique } from '@/lib/meta';
 export const metadata: Metadata = metaPublique({
   title: 'Le prix d’un écrit rédigé avec une IA',
   description:
-    'Combien coûte réellement une génération d’écrit professionnel selon les offres du marché : le calcul, formule par formule, et ce qu’il faut regarder avant le prix.',
+    'Combien coûte vraiment une génération d’écrit professionnel : le calcul, formule par formule, et ce qu’il faut regarder avant le prix.',
   path: '/comparatif-assistants-redaction',
 });
 

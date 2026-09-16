@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: `%s · ${NOM_SITE}`,
   },
   description:
-    "Le chemin étape par étape pour faire naître ton association, la faire vivre et demander une subvention : chaque étape expliquée simplement, avec les formulaires CERFA et des documents exemples. Gratuit.",
+    "Faire naître ton association, la faire vivre, demander une subvention : chaque étape expliquée simplement, avec les CERFA et des exemples. Gratuit.",
   keywords: ['subvention association', 'dossier de subvention', 'créer une association', 'SIRET association', 'RNA', 'FDVA', 'CERFA 12156', 'appel à projets association'],
   applicationName: NOM_SITE,
   manifest: null,

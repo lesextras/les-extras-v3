@@ -7,7 +7,7 @@ import { etapesFaitesSiConnecte } from '../_session';
 export const metadata: Metadata = {
   title: 'Le chemin, étape par étape',
   description:
-    "Faire naître ton association, la faire vivre, demander une subvention : douze étapes expliquées simplement, avec les formulaires CERFA et des documents exemples.",
+    "Faire naître ton association, la faire vivre, demander une subvention : douze étapes simples, avec les CERFA et des documents exemples.",
   alternates: { canonical: '/chemin' },
 };
 

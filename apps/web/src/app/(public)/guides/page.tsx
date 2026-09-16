@@ -7,7 +7,7 @@ import { GUIDES_ECRITS } from './contenu';
 export const metadata: Metadata = metaPublique({
   title: 'Guides des écrits professionnels',
   description:
-    'Rapport de situation, projet personnalisé, ESS et GEVA-Sco, information préoccupante, bilan de fin d’accompagnement : six guides, avec les références juridiques vérifiées et de vrais exemples réécrits.',
+    'Rapport de situation, projet personnalisé, ESS et GEVA-Sco, information préoccupante : six guides des écrits professionnels, avec les références vérifiées.',
   path: '/guides',
 });
 

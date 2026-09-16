@@ -7,7 +7,7 @@ import { metaPublique } from '@/lib/meta';
 export const metadata: Metadata = metaPublique({
   title: 'Ce que coûtent les plateformes de remplacement',
   description:
-    'Combien un établissement médico-social paie réellement pour un remplacement : les frais publiés par Brigad, ce que Hublo facture et ce qu’il ne publie pas, et pourquoi Les Extras ne prélève rien.',
+    'Ce qu’un établissement paie vraiment pour un remplacement : les frais publiés par Brigad, ce que Hublo facture, et pourquoi Les Extras ne prélève rien.',
   path: '/comparatif-plateformes-remplacement',
 });
 

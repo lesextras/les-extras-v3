@@ -582,15 +582,7 @@ export default async function LandingPage() {
           </Reveal>
         </section>
 
-        {/* ═══ 3. LE RENFORT, EN DEUX — et ce n'est pas du vocabulaire ═══════
-            ⚠ UNE SEULE SECTION AJOUTÉE, ET ELLE NE RÉEXPLIQUE PAS L'OFFRE.
-            L'accueil était passé de 3 029 à ~2 160 mots en retirant six
-            sections qui répétaient les trois produits ; celle-ci dit une chose
-            que rien d'autre ne dit sur le site public — pourquoi un
-            remplacement de poste ne se fait pas en indépendant. */}
-        <DeuxRenforts />
-
-        {/* ═══════════════════════════ 4. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
+        {/* ═══════════════════════════ 3. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
         <DeuxPortes />
 
         {/* ═══ 4. LE TOUT-EN-UN : ce que le logiciel fait, pour les trois ═══ */}
@@ -639,7 +631,31 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════ 5. LE CATALOGUE, EN UN SEUL BLOC À ONGLETS ═════════ */}
+        {/* ═══ 5. LE RENFORT, EN DEUX — et ce n'est pas du vocabulaire ═══════
+            ⚠⚠ CETTE SECTION A CHANGÉ DE PLACE LE 16/09/2026 (demande de Siham :
+            « l'emplacement actuel est étrange »), ET IL NE FAUT PAS LA REMONTER.
+
+            Elle était en 3ᵉ position, juste après « Trois besoins » et AVANT
+            l'aiguillage. Trois défauts, tous les trois réels :
+              1. elle découpait en deux L'UN des trois usages, à la même largeur
+                 et avec le même poids visuel que les trois réunis — on lisait
+                 donc « trois offres », puis « deux offres », puis « deux
+                 portes » : trois blocs de cartes côte à côte d'affilée, dont le
+                 deuxième est un sous-chapitre du premier ;
+              2. elle répondait à une question de MONTAGE JURIDIQUE que le
+                 visiteur ne s'était pas encore posée — il en est encore à
+                 « est-ce que c'est pour moi, et combien » ;
+              3. elle repoussait « Par où commencer ? », c'est-à-dire le seul
+                 aiguillage de la page, d'un écran et demi.
+
+            Ici, elle arrive APRÈS que le visiteur s'est reconnu (les deux
+            portes) et après « le travail administratif que vous ne ferez plus »
+            — la nuance explique alors QUEL document le logiciel édite et
+            pourquoi. Et son second lien (« Voir les intervenants ») tombe juste
+            au-dessus du catalogue, où il mène. */}
+        <DeuxRenforts />
+
+        {/* ═══════════════ 6. LE CATALOGUE, EN UN SEUL BLOC À ONGLETS ═════════ */}
         <section id="marketplace" className="scroll-mt-24">
           <div className="section">
             <Reveal className="max-w-3xl">

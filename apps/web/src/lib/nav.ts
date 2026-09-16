@@ -392,6 +392,27 @@ const establishmentNav: NavSection[] = [
       // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
       // juridiquement exact mais rarement ce que veut l'etablissement.
       { label: 'Temps de travail & congés', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Le planning d’équipe déjà posé, les demandes d’absence, les soldes, et les règles de votre convention : nuit, dimanche, fériés, heures supplémentaires, annualisation' , avance: true },
+      /*
+        ⚠⚠ LA MÊME PAGE, POUR LE SALARIÉ — ET C'EST UNE SECONDE ENTRÉE EXPRÈS.
+
+        L'entrée ci-dessus est réservée aux responsables ET rangée derrière
+        « Outils avancés ». Or `/dashboard/temps-de-travail` est écrite pour
+        servir aussi le salarié simple : quand `canDecide` est faux, elle lui
+        dit en toutes lettres « posez vos demandes d'absence ». Le filtre de
+        rôle s'appliquant AVANT le filtre `avance`, l'entrée disparaissait pour
+        lui à la première étape — le bouton « Outils avancés » ne s'affichait
+        donc même pas, et la palette ne la portait pas non plus. Résultat
+        mesuré le 16/09/2026 : un salarié n'avait AUCUN chemin pour poser une
+        absence, alors que l'écran existe et l'attend.
+
+        ⚠ NE PAS FUSIONNER LES DEUX EN AJOUTANT 'MEMBER' À L'ENTRÉE DU DESSUS.
+        Elle porte `avance: true` : le salarié se retrouverait avec un menu
+        « Outils avancés » d'une seule ligne, et la question qu'il se pose
+        (« comment je pose mes congés ») n'est pas celle d'un responsable qui
+        règle une convention collective. Deux publics, deux libellés, un seul
+        écran — c'est le libellé qui fait le travail.
+      */
+      { label: 'Mes congés & mes heures', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['MEMBER'], hint: 'Posez vos demandes d’absence, suivez vos soldes et retrouvez le planning de l’équipe. Vos responsables décident depuis le même écran.' },
       { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],
   },

@@ -12,7 +12,21 @@ export function generateStaticParams() {
 export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ rubrique: string }>}): Promise<Metadata> {
   const params = await paramsPromesse;
   const r = trouverRubrique(params.rubrique);
-  if (!r) return { title: "Aide" };
+  /**
+   * ⚠⚠ `noindex` SUR UNE RUBRIQUE INCONNUE, ET IL FAUT LE GARDER.
+   *
+   * `notFound()` est bien appelé plus bas, mais la frontière Suspense ouverte
+   * par `(public)/loading.tsx` fait partir la coquille AVANT qu'il ne
+   * s'exécute : le statut est déjà joué, et la page répond **200**. Mesuré en
+   * direct le 16/09/2026 : `/aide/nimporte-quoi` → 200, `index, follow`.
+   * N'importe quelle adresse inventée devenait donc une page indexable, sans
+   * titre propre et sans `<h1>`, qui dilue les six vraies rubriques.
+   *
+   * Les cinq autres fiches dynamiques du site (édublog, ateliers, formations,
+   * missions, intervenants) posaient déjà ce garde-fou — celle-ci et
+   * `/renfort/[ville]` étaient les deux oubliées.
+   */
+  if (!r) return { title: "Aide", robots: { index: false, follow: true } };
   return {
     title: `${r.titre}, Centre d’aide`,
     // `resume` fait 41 à 66 caractères : c'est la bonne longueur pour un

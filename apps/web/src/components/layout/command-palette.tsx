@@ -17,6 +17,28 @@ interface Dest {
 const DESTINATIONS: Dest[] = [
   { label: "Tableau de bord", href: "/dashboard", group: "Navigation", keywords: "accueil home" },
   { label: "Édublog", href: "/edublog", group: "Navigation", keywords: "articles actualites blog publications" },
+  /*
+    ⚠⚠ LE CATALOGUE PUBLIC — AJOUTÉ LE 16/09/2026, ET IL NE FAUT PAS LE RETIRER.
+
+    « Ateliers » et « Formations » ne vivent que dans le menu déroulant
+    « Catalogue » de la barre du haut, qui est `hidden md:flex`. Le menu de
+    gauche ne les porte que pour le compte Particulier. Conséquence mesurée :
+    sur téléphone, un intervenant, un établissement ou un administrateur
+    n'avait AUCUN chemin dans l'application vers le catalogue public — alors
+    que c'est le cœur du produit.
+
+    C'est exactement la règle que `header.tsx` écrit lui-même au-dessus du menu
+    LEX : toute entrée montée dans la barre du haut doit avoir son miroir ici.
+    Elle avait été appliquée aux trois outils LEX le 03/09, et oubliée pour le
+    catalogue.
+
+    ⚠ « Formations » pointe ici sur `/formations` (le catalogue PUBLIC), à ne
+    pas confondre avec l'entrée « Formations » du groupe Établissement, qui
+    mène à `/marketplace/formations` — l'écran d'inscription des salariés. Deux
+    écrans, deux métiers, et c'est pour ça que les libellés diffèrent.
+  */
+  { label: "Catalogue des ateliers", href: "/ateliers", group: "Navigation", keywords: "catalogue ateliers mediation animation intervenant public vitrine" },
+  { label: "Catalogue des formations", href: "/formations", group: "Navigation", keywords: "catalogue formations parcours gratuits qualiopi vitrine" },
   // `premium` : fonctionnalité LEX à crédits. La palette est une porte
   // d'entrée comme une autre — la laisser ouverte pendant que le menu est
   // verrouillé serait incohérent.
@@ -38,6 +60,14 @@ const DESTINATIONS: Dest[] = [
   { label: "Devis & factures", href: "/dashboard/facturation", group: "Navigation", keywords: "devis facture chiffrage paiement reglement finance revenus depenses" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
   { label: "Contrats CDD", href: "/dashboard/contrats", group: "Établissement", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
+  /*
+    ⚠ AJOUTÉ LE 16/09/2026 : cette page était atteignable UNIQUEMENT en tapant
+    son adresse. Son entrée de menu est réservée aux responsables ET rangée
+    derrière « Outils avancés » — alors que la page est écrite pour servir
+    AUSSI le salarié simple, à qui elle dit « posez vos demandes d'absence ».
+    Un salarié n'avait donc aucun moyen de poser une absence.
+  */
+  { label: "Temps de travail & congés", href: "/dashboard/temps-de-travail", group: "Établissement", keywords: "absence conge planning solde recuperation heures nuit dimanche ferie annualisation demande" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat conversation" },
   // Retirées du menu de gauche le 12/08/2026 pour l'alléger : la palette
   // devient leur chemin d'accès, avec des mots-clés larges pour qu'on les
@@ -95,6 +125,22 @@ export function CommandPalette({
       if (d.group === "Admin" && role !== "ADMIN") return false;
       if (d.group === "Freelance" && accountType === "ESTABLISHMENT" && role !== "ADMIN") return false;
       if (d.group === "Établissement" && accountType === "FREELANCE" && role !== "ADMIN") return false;
+      /*
+        ⚠ LE COMPTE PARTICULIER N'ÉTAIT TESTÉ NULLE PART (corrigé le
+        16/09/2026). Les deux lignes ci-dessus ne retirent un groupe qu'en
+        présence de l'AUTRE type : un compte PARTICULIER voyait donc les deux,
+        c'est-à-dire « RenforTeam », « Contrats CDD », « Conformité »,
+        « Opportunités » — toutes des pages qui lui répondent « réservé aux
+        établissements » ou le renvoient en silence.
+
+        C'est la qualité même de ce compte qui était défaite : son menu est
+        court exprès (« lui servir le menu d'un établissement serait lui
+        montrer vingt portes dont dix-huit lui sont fermées », lib/nav.ts) — la
+        palette rouvrait les dix-huit.
+      */
+      if (accountType === "PARTICULIER" && (d.group === "Freelance" || d.group === "Établissement")) {
+        return false;
+      }
       return true;
     });
     const needle = q.trim().toLowerCase();

@@ -7,7 +7,7 @@ import { Accent } from '../_ui';
 export const metadata: Metadata = {
   title: 'Le chemin — Piloter',
   description:
-    "Les deux parcours en entier, étape par étape : celui d'une association loi 1901, celui d'un organisme de formation. La frise complète, gratuite, avant même d'ouvrir un espace.",
+    "Les deux parcours en entier : celui d'une association loi 1901, celui d'un organisme de formation. La frise complète, gratuite, avant d'ouvrir un espace.",
   alternates: { canonical: '/chemin' },
 };
 

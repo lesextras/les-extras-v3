@@ -2002,7 +2002,7 @@ export class MailService implements OnModuleDestroy {
         `Bonjour${data.prenom ? ` ${data.prenom}` : ''},`,
         `${message.corps}
          <div style="margin-top:24px;font-size:12px;color:#9ca3af">
-           Siham, pour l’association ADéPA.<br>
+           Sarah, pour l’association ADéPA.<br>
            ${motif}
            <a href="${lien}" style="color:#9ca3af">Ne plus recevoir ces e-mails</a>.
          </div>`,
@@ -2068,7 +2068,7 @@ export class MailService implements OnModuleDestroy {
          <p style="margin:12px 0 0">Délai de délivrance&nbsp;: quinze jours ouvrés. Une erreur sur
          votre nom&nbsp;? Répondez à ce message, la rectification est sans frais.</p>
          <div style="margin-top:24px;font-size:12px;color:#9ca3af">
-           Siham, pour l’association ADéPA.
+           Sarah, pour l’association ADéPA.
          </div>`,
       ),
     );
@@ -2114,7 +2114,7 @@ export class MailService implements OnModuleDestroy {
          <p style="margin:12px 0 0">Une erreur sur votre nom ou sur l’intitulé&nbsp;? Répondez à ce
          message&nbsp;: la rectification est sans frais.</p>
          <div style="margin-top:24px;font-size:12px;color:#9ca3af">
-           Siham, pour l’association ADéPA.
+           Sarah, pour l’association ADéPA.
          </div>`,
       ),
       piece ? [piece] : undefined,
@@ -2156,7 +2156,7 @@ export class MailService implements OnModuleDestroy {
          }
          ${suite}
          <div style="margin-top:24px;font-size:12px;color:#9ca3af">
-           Siham, pour l’association ADéPA.<br>
+           Sarah, pour l’association ADéPA.<br>
            Vous recevez ce message parce que vous avez demandé cette fiche sur Les Extras.
          </div>`,
         { label: 'Ouvrir la fiche récap', url: fiche },

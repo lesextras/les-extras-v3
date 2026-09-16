@@ -235,6 +235,24 @@ const nextConfig = {
        */
       { source: '/sos-renfort', destination: '/renforteam', permanent: true },
       { source: "/intervenants", destination: "/intervenant-independant", permanent: true },
+      /*
+       * ⚠⚠ /freelances/:id — LA REDIRECTION EST REMONTÉE ICI LE 16/09/2026,
+       * ET IL NE FAUT PAS LA REDESCENDRE DANS LA PAGE.
+       *
+       * Elle était faite par `permanentRedirect()` dans
+       * `(public)/freelances/[id]/page.tsx`, avec un commentaire disant qu'elle
+       * existait pour que Google n'indexe pas l'ancienne fiche appauvrie À LA
+       * PLACE de la vraie. Or la frontière Suspense ouverte par
+       * `(public)/loading.tsx` fait partir la coquille AVANT que la redirection
+       * ne s'exécute : mesuré en direct, la route répondait **200**, avec
+       * `index, follow`, et redirigeait seulement côté client. Autrement dit,
+       * elle produisait exactement le risque qu'elle décrivait vouloir éviter.
+       *
+       * Ici, c'est le serveur qui répond 308 avant tout rendu — aucun Suspense
+       * ne peut s'intercaler. Même remède que pour les 29 anciennes adresses
+       * WordPress plus bas.
+       */
+      { source: '/freelances/:id', destination: '/intervenants/:id', permanent: true },
       { source: '/actualites', destination: '/edublog', permanent: true },
       { source: '/actualites/:slug', destination: '/edublog/:slug', permanent: true },
       ...ARTICLES_MEME_SLUG.map((slug) => ({

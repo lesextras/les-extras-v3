@@ -70,7 +70,10 @@ export function FormulaireLanding({
           <Check className="size-5 text-success" /> C&apos;est noté.
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Vous recevez une réponse de Siham sous 24 h ouvrées, à l&apos;adresse indiquée. Pas de
+          {/* ⚠ LE PRÉNOM PUBLIC EST « SARAH » (décision de Siham, 4/09/2026) : il s'écrit
+              Sarah partout où un destinataire ou un visiteur le lit. Les commentaires du
+              code continuent de dire Siham — personne d'autre ne les lit. */}
+          Vous recevez une réponse de Sarah sous 24 h ouvrées, à l&apos;adresse indiquée. Pas de
           séquence automatique, pas de relance : une réponse.
         </p>
       </div>

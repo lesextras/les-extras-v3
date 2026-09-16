@@ -21,6 +21,7 @@
 // décision ci-dessus : « remplaçant en CDD » pour le renfort de poste,
 // « intervenant » pour la prestation.
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowRight,
   BadgeCheck,
@@ -29,10 +30,10 @@ import {
   HeartHandshake,
   ReceiptText,
   ScrollText,
-  Scale,
   UsersRound,
 } from 'lucide-react';
 import { Reveal } from './Reveal';
+import { wp } from '@/lib/media';
 
 /**
  * LE PETIT FILM DE CHAQUE CARTE — en SVG animé, pas en GIF.
@@ -134,6 +135,15 @@ const RENFORTS = [
     icone: CalendarClock,
     montage: 'Remplacement · CDD',
     titre: 'Un poste à couvrir',
+    /**
+     * ⚠ L'IMAGE MONTRE LE POSTE, PAS LE CONTRAT. Deux cartes qui expliquent un
+     * montage juridique n'ont aucune illustration possible du montage lui-même ;
+     * ce qu'on illustre, c'est la SITUATION qui l'appelle — quelqu'un au poste
+     * d'un côté, un accompagnement à deux de l'autre. Les fichiers viennent de
+     * la médiathèque de l'association (vérifiés en ligne le 16/09/2026), comme
+     * les trois cartes d'usage plus haut.
+     */
+    image: wp('/wp-content/uploads/2023/02/aide-soignant.jpg'),
     accroche:
       'Une éducatrice en arrêt, un veilleur absent, un poste vacant. Quelqu’un manque, et il faut quelqu’un à sa place.',
     etapes: ['Vous publiez', 'Votre équipe, puis le réseau', 'CDD signé'],
@@ -156,6 +166,7 @@ const RENFORTS = [
     icone: HeartHandshake,
     montage: 'Renfort personnalisé · prestation',
     titre: 'Un accompagnement 1 pour 1',
+    image: wp('/wp-content/uploads/2023/02/educatheure.jpeg'),
     accroche:
       'Un jeune à accompagner sur ses sorties, un suivi individuel, une médiation. Personne ne manque : il faut quelqu’un EN PLUS, sur un besoin nommé.',
     etapes: ['Vous choisissez', 'Devis', 'Facture de sa structure'],
@@ -198,14 +209,39 @@ export function DeuxRenforts() {
         {RENFORTS.map((r, i) => (
           <Reveal key={r.cle} delay={i * 120} className="h-full">
             <article
-              className={`reflet group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 ${r.bordure} ${r.fond} p-6 pl-7 shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-xl`}
+              className={`reflet group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 ${r.bordure} ${r.fond} shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-xl`}
             >
-              {/* Le liseré se trace de haut en bas quand la carte arrive. */}
+              {/* Le liseré se trace de haut en bas quand la carte arrive. Il
+                  part sous l'image : sinon il traverse la photo et la salit. */}
               <span
-                className={`animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full ${r.lisere}`}
+                className={`animate-trait absolute left-0 top-[46%] bottom-6 w-[3px] rounded-full ${r.lisere}`}
                 aria-hidden
               />
 
+              {/*
+                ⚠ LE FORMAT EST PLUS BAS QUE CELUI DES CARTES D'USAGE (21/9 au
+                lieu de 16/9). Ces deux cartes-ci portent beaucoup plus de texte
+                — un trajet, trois repères, une conclusion — et une image au même
+                format les aurait poussées bien au-delà d'un écran. L'image est
+                un repère, pas le sujet.
+              */}
+              <div className="relative aspect-[21/9] overflow-hidden bg-muted">
+                <Image
+                  src={r.image}
+                  alt=""
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                {/* Le fondu vers le fond de la carte : sans lui, la photo se
+                    termine par une arête franche au milieu du bloc. */}
+                <span
+                  className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-card to-transparent"
+                  aria-hidden
+                />
+              </div>
+
+              <div className="flex flex-1 flex-col p-6 pl-7">
               <div className="flex items-start gap-3">
                 <span
                   className={`relative grid size-11 shrink-0 place-items-center rounded-xl ${r.pastille}`}
@@ -244,8 +280,14 @@ export function DeuxRenforts() {
                 ))}
               </ul>
 
-              <p className="mt-5 rounded-lg border border-border bg-card/70 px-3.5 py-2.5 text-sm font-medium text-foreground">
-                {r.conclusion}
+              {/* `mt-auto` colle la conclusion et le lien en bas : les deux
+                  cartes n'ont pas la même longueur de texte, et sans ça leurs
+                  deux liens ne s'alignent pas — l'œil lit alors un déséquilibre
+                  là où il n'y en a pas. */}
+              <p className="mt-auto pt-5 text-sm font-medium text-foreground">
+                <span className="block rounded-lg border border-border bg-card/70 px-3.5 py-2.5">
+                  {r.conclusion}
+                </span>
               </p>
 
               <Link
@@ -255,31 +297,30 @@ export function DeuxRenforts() {
                 {r.action.libelle}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
               </Link>
+              </div>
             </article>
           </Reveal>
         ))}
       </div>
 
       {/*
-        ⚠ LA NOTE DE DROIT RESTE, ET ELLE RESTE EXACTE. C'est elle qui explique
-        pourquoi la plateforme refuse de laisser un indépendant facturer un
-        remplacement — et c'est la seule chose qui distingue vraiment Les Extras
-        des plateformes que cette décision a sanctionnées. La retirer ferait
-        passer la section pour une subtilité de vocabulaire.
+        ⚠⚠ LA BANDE DE DROIT A ÉTÉ RETIRÉE DE L'ACCUEIL LE 16/09/2026, À LA
+        DEMANDE DE SIHAM — ET ELLE N'A PAS ÉTÉ SUPPRIMÉE DU SITE. Elle a été
+        DÉPLACÉE sur /renforteam, c'est-à-dire sur la page où mène la première
+        carte et où un directeur lit vraiment comment se monte un remplacement.
+
+        ⚠ NE PAS LA REMETTRE ICI. Sur l'accueil, elle arrêtait la lecture avec
+        deux références d'articles au moment précis où le visiteur cherche
+        encore à savoir si le site est pour lui. La règle, elle, tient toujours
+        sans elle : chaque carte porte son montage écrit dessus
+        (« Remplacement · CDD », « Renfort personnalisé · prestation ») et sa
+        phrase de conclusion dit qui embauche et qui facture. C'est ce qui
+        interdit la confusion, pas la citation.
+
+        La citation reste lisible à trois endroits : /renforteam,
+        /comparatif-plateformes-remplacement, et dans le produit (inscription,
+        disponibilité, publication d'une fiche).
       */}
-      <Reveal delay={160}>
-        <div className="marquee-hover mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-border bg-gradient-to-r from-card via-primary-soft to-card px-6 py-5">
-          <Scale className="size-5 shrink-0 text-primary" aria-hidden />
-          <p className="min-w-[240px] flex-1 text-sm leading-relaxed text-muted-foreground" lang="fr">
-            <strong className="font-semibold text-foreground">
-              Un remplacement de poste ne se fait pas en indépendant.
-            </strong>{' '}
-            Conseil d’État, 11 février 2025, n° 491128 ; LFSS 2025, art. 70. C’est pour cela que le
-            renfort de poste passe par un CDD, et que le renfort personnalisé — qui ne remplace
-            personne — se facture en prestation.
-          </p>
-        </div>
-      </Reveal>
     </section>
   );
 }

@@ -18,6 +18,7 @@ import {
   Zap,
   Building2,
   UserRound,
+  Scale,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -132,6 +133,34 @@ Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte empor
             </Button>
           </div>
         </div>
+      </section>
+
+      {/*
+        ⚠⚠ LA NOTE DE DROIT — VENUE DE L'ACCUEIL LE 16/09/2026, ET ELLE RESTE ICI.
+
+        Elle était en bas de la section « le renfort, en deux » de la page
+        d'accueil. Siham l'a fait retirer de là : deux références d'articles
+        arrêtaient la lecture au moment où le visiteur cherche encore à savoir
+        si le site est pour lui. Elle n'a pas été supprimée pour autant — c'est
+        la seule chose qui distingue vraiment Les Extras des plateformes que
+        cette décision a sanctionnées, et sa place est ici, sur la page où un
+        directeur lit comment se monte un remplacement.
+
+        ⚠ NE PAS LA RENVOYER SUR L'ACCUEIL, et ne pas la retirer d'ici : la page
+        promet « sans requalification » trois paragraphes plus haut. Une
+        promesse de ce genre sans sa source est exactement ce qu'on reproche aux
+        autres.
+      */}
+      <section className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-border bg-gradient-to-r from-card via-primary-soft to-card px-6 py-5">
+        <Scale className="size-5 shrink-0 text-primary" aria-hidden />
+        <p className="min-w-[240px] flex-1 text-sm leading-relaxed text-muted-foreground" lang="fr">
+          <strong className="font-semibold text-foreground">
+            Un remplacement de poste ne se fait pas en indépendant.
+          </strong>{" "}
+          Conseil d’État, 11 février 2025, n° 491128 ; LFSS 2025, art. 70. C’est pour cela que le
+          renfort de poste passe par un CDD, et que le renfort personnalisé — qui ne remplace
+          personne — se facture en prestation.
+        </p>
       </section>
 
       {/* Deux côtés du métier */}

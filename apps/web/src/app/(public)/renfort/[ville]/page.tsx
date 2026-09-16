@@ -27,7 +27,15 @@ export function generateStaticParams() {
 export async function generateMetadata({ params: paramsPromesse }: { params: Promise<{ ville: string }>}): Promise<Metadata> {
   const params = await paramsPromesse;
   const v = trouverVille(params.ville);
-  if (!v) return { title: "Renfort" };
+  /**
+   * ⚠⚠ `noindex` SUR UNE VILLE INCONNUE — même raison que `/aide/[rubrique]`.
+   * La frontière Suspense de `(public)/loading.tsx` fait partir la coquille
+   * avant `notFound()` : `/renfort/nimporte-ou` répondait 200 et `index,
+   * follow` (mesuré le 16/09/2026). Sur des pages de ville, c'est le pire
+   * endroit où laisser ça : une adresse inventée par ville concurrence
+   * directement les six vraies pages locales.
+   */
+  if (!v) return { title: "Renfort", robots: { index: false, follow: true } };
   return {
     title: `Renfort éducatif ${v.nom}, RenforTeam`,
     description: `${v.nom} : un intervenant qualifié pour un remplacement en établissement médico-social. Dossier de conformité, contrat généré, zéro commission.`,

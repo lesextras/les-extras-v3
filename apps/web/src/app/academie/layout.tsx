@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: `%s · ${NOM_SITE}`,
   },
   description:
-    "Le chemin étape par étape pour déclarer ton organisme de formation, obtenir Qualiopi et ouvrir tes financements : douze étapes expliquées simplement, avec les preuves à réunir. Gratuit.",
+    "Déclarer ton organisme de formation, obtenir Qualiopi, ouvrir tes financements : douze étapes expliquées simplement, avec les preuves à réunir. Gratuit.",
   keywords: [
     'organisme de formation',
     'Qualiopi',

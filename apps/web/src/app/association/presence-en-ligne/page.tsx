@@ -7,7 +7,7 @@ import { CarteAvantage } from '../CarteAvantage';
 export const metadata: Metadata = {
   title: 'Être visible en ligne',
   description:
-    "Fiche Google, page HelloAsso, Facebook et Instagram, LinkedIn, adresses e-mail au nom de l'association, site simple, lettre d'information : dix étapes dans l'ordre, gratuites, avec la marche à suivre et les liens directs.",
+    "Fiche Google, HelloAsso, réseaux sociaux, adresses e-mail, site, lettre d'information : dix étapes dans l'ordre, avec la marche à suivre et les liens.",
   alternates: { canonical: '/presence-en-ligne' },
 };
 

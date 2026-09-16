@@ -27,8 +27,15 @@ import { NIVEAUX, CE_QUE_CE_N_EST_PAS, parcoursOuverts } from "@/lib/niveaux-for
 
 export const metadata: Metadata = metaPublique({
   title: "Par où commencer : les trois niveaux",
+  /**
+   * ⚠ AUCUN NOMBRE DE PARCOURS DANS CETTE PHRASE, ET C'EST VOLONTAIRE. Elle
+   * disait « Onze parcours gratuits » alors qu'il y en a douze en ligne depuis
+   * le 4/09/2026 : un compte écrit en dur dans une métadonnée ne se remarque
+   * jamais, et il est faux dès le parcours suivant. Le chiffre exact est
+   * calculé plus bas, depuis `NIVEAUX` (`const total`), là où il est juste.
+   */
   description:
-    "Onze parcours gratuits, rangés en trois niveaux : les socles, l’approfondissement, l’expertise. Le chemin conseillé, et ce que chaque niveau apprend à faire.",
+    "Les parcours gratuits rangés en trois niveaux : les socles, l’approfondissement, l’expertise. Le chemin conseillé, et ce que chaque niveau apprend à faire.",
   path: "/parcours-de-formation",
 });
 

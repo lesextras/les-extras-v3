@@ -17,7 +17,7 @@ import {
 export const metadata: Metadata = metaPublique({
   title: "Cadre de confiance LEX, IA, déontologie et données",
   description:
-    "Comment LEX traite les données des personnes accompagnées : pseudonymisation avant envoi au modèle, aucun entraînement sur vos écrits, notes brutes non conservées.",
+    "Comment LEX traite les données des personnes accompagnées : pseudonymisation avant envoi, aucun entraînement sur vos écrits, notes brutes non conservées.",
   path: "/confiance-lex",
 });
 

@@ -5,7 +5,9 @@
 // écrit pour les deux à la fois — donc pour personne. Ici on pose la question
 // tout de suite, et chaque porte mène à son propre parcours.
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Building2, UserRound } from "lucide-react";
+import { wp } from "@/lib/media";
 
 const PORTES = [
   {
@@ -17,6 +19,14 @@ const PORTES = [
     reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis sous 48 h"],
     href: "/renforteam",
     secondaire: { libelle: "Voir le catalogue", href: "/ateliers" },
+    /**
+     * ⚠ L'IMAGE N'APPARAÎT QU'À PARTIR DE `md`, ET C'EST DÉLIBÉRÉ. Sur
+     * téléphone, ces deux cartes sont l'aiguillage : ce qui compte est que les
+     * deux tiennent ensemble à l'écran pour qu'on puisse choisir. Une photo par
+     * carte y ajouterait deux écrans de défilement avant la question.
+     * Fichiers relevés dans la médiathèque de l'association le 16/09/2026.
+     */
+    image: wp("/wp-content/uploads/2023/04/groupe-id-2.jpg"),
     // Chaque porte porte sa couleur de bout en bout : liseré, fond, pastille,
     // repères. Deux cartes posées sur le même fond ne se distinguaient que par
     // un anneau à 25 % — invisible en lecture rapide, et c’est justement là
@@ -40,6 +50,7 @@ const PORTES = [
     // créer un compte avant d’avoir rien expliqué. Les deux portes mènent
     // désormais à une page qui explique, l’inscription est le lien secondaire.
     href: "/intervenant-independant",
+    image: wp("/wp-content/uploads/2023/02/educateur-2.jpeg"),
     // Un seul libellé pour /register sur toute la page : celui-ci en était
     // le sixième et dernier.
     secondaire: { libelle: "Créer un compte", href: "/register" },
@@ -93,51 +104,68 @@ export function DeuxPortes() {
                   aria-hidden
                 />
 
-                <div className="relative flex items-center gap-3">
-                  <span
-                    className={
-                      "grid size-12 shrink-0 place-items-center rounded-xl shadow-sm transition-transform duration-300 group-hover:scale-110 " +
-                      p.pastille
-                    }
-                  >
-                    <Icone className="size-6" aria-hidden />
-                  </span>
-                  <span
-                    className={
-                      "rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide " + p.pastille
-                    }
-                  >
-                    {p.qui}
-                  </span>
+                {/* Le texte et la photo : une colonne sur téléphone, deux à
+                    partir de md. La photo est décorative — le lien porte déjà
+                    tout son sens en toutes lettres — d'où `alt=""`. */}
+                <div className="relative md:grid md:grid-cols-[minmax(0,1fr)_190px] md:items-center md:gap-7">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={
+                          "grid size-12 shrink-0 place-items-center rounded-xl shadow-sm transition-transform duration-300 group-hover:scale-110 " +
+                          p.pastille
+                        }
+                      >
+                        <Icone className="size-6" aria-hidden />
+                      </span>
+                      <span
+                        className={
+                          "rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide " + p.pastille
+                        }
+                      >
+                        {p.qui}
+                      </span>
+                    </div>
+
+                    <p className="mt-5 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground md:text-[32px]">
+                      {p.titre}
+                    </p>
+                    <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted-foreground">
+                      {p.texte}
+                    </p>
+
+                    <ul className="mt-5 flex flex-wrap gap-2">
+                      {p.reperes.map((r) => (
+                        <li
+                          key={r}
+                          className={
+                            "rounded-full border px-3 py-1 text-xs font-medium text-foreground/80 " + p.puce
+                          }
+                        >
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <p className={"mt-6 inline-flex items-center gap-1.5 text-sm font-bold " + p.teinte}>
+                      Commencer
+                      <ArrowRight
+                        className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                        aria-hidden
+                      />
+                    </p>
+                  </div>
+
+                  <div className="relative hidden aspect-[3/4] overflow-hidden rounded-xl border border-border/60 bg-muted md:block">
+                    <Image
+                      src={p.image}
+                      alt=""
+                      fill
+                      sizes="190px"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </div>
                 </div>
-
-                <p className="relative mt-5 text-[28px] font-bold leading-[1.15] tracking-tight text-foreground md:text-[34px]">
-                  {p.titre}
-                </p>
-                <p className="relative mt-3 max-w-md text-[15px] leading-relaxed text-muted-foreground">
-                  {p.texte}
-                </p>
-
-                <ul className="relative mt-5 flex flex-wrap gap-2">
-                  {p.reperes.map((r) => (
-                    <li
-                      key={r}
-                      className={
-                        "rounded-full border px-3 py-1 text-xs font-medium text-foreground/80 " + p.puce
-                      }
-                    >
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-
-                <p className={"relative mt-6 inline-flex items-center gap-1.5 text-sm font-bold " + p.teinte}>
-                  Commencer
-                  <ArrowRight
-                    className="size-4 transition-transform duration-300 group-hover:translate-x-1"
-                    aria-hidden
-                  />
-                </p>
               </Link>
             );
           })}

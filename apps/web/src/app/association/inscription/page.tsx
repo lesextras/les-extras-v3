@@ -6,7 +6,7 @@ import { FormulaireInscription } from './FormulaireInscription';
 export const metadata: Metadata = {
   title: 'Créer mon espace',
   description:
-    "Ouvre gratuitement ton espace : que ton association existe déjà (son classeur naît pré-rempli depuis les répertoires publics) ou que tu partes de zéro (le chemin te guide, étape par étape).",
+    "Ouvre gratuitement ton espace : si ton association existe déjà, son classeur naît pré-rempli depuis les répertoires publics ; sinon, le chemin te guide.",
   alternates: { canonical: '/inscription' },
 };
 
