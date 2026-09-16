@@ -215,16 +215,32 @@ export function DeuxRenforts() {
         lui, reste banni des deux côtés.
       */}
       <Reveal className="max-w-3xl">
-        <span className="eyebrow">RenforTeam</span>
+        {/*
+          ⚠ LE NOM DU PRODUIT EST DANS LE TITRE, PAS DANS LA PASTILLE
+          (16/09/2026, demande de Siham) — exactement comme la section LEX plus
+          bas : « LEX, pour celles et ceux qui font le terrain ». Une pastille
+          grise est l'endroit qu'on saute ; le titre est la seule ligne qu'un
+          visiteur pressé lit. La pastille ne porte donc plus que la catégorie,
+          « Renfort », qui dit de quoi parle la section avant de dire son nom.
+        */}
+        <span className="eyebrow">Renfort</span>
         <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-          Deux renforts.{' '}
+          RenforTeam, deux renforts.{' '}
           <span className="text-gradient-brand">Deux contrats.</span>
         </h2>
-        <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          Un poste à couvrir&nbsp;? Un CDD que vous embauchez, comme un vacataire. Un besoin en
-          plus de l’équipe&nbsp;? Un indépendant, en prestation. C’est le besoin qui choisit, pas
-          la personne.
-        </p>
+        {/*
+          ⚠ TROIS LIGNES, ET C'EST VOULU (demande de Siham). Les trois idées
+          étaient dans un seul paragraphe : les deux montages s'y lisaient comme
+          une seule phrase, et la règle finale — celle qui explique les deux
+          cartes — se perdait en fin de bloc. Séparées, chaque ligne se lit
+          seule : le cas de gauche, le cas de droite, puis ce qui tranche.
+          Ne pas les recoller en un paragraphe.
+        */}
+        <div className="mt-4 space-y-2 text-lg leading-relaxed text-muted-foreground">
+          <p>Un poste à couvrir&nbsp;? Un CDD que vous embauchez, comme un vacataire.</p>
+          <p>Un besoin en plus de l’équipe&nbsp;: un indépendant, en prestation.</p>
+          <p>C’est le besoin qui choisit, pas la personne.</p>
+        </div>
       </Reveal>
 
       <div className="mt-10 grid gap-6 md:grid-cols-2">
