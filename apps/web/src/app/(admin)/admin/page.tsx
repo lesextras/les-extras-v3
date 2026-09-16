@@ -14,6 +14,9 @@ import {
   formatDate,
 } from "../../_shared/format";
 import type { Mission, Service } from "../../_shared/types";
+// Le hub personnel est le composant de /dashboard, réutilisé tel quel : une
+// seule implémentation, donc pas de version qui dérive de l'autre.
+import EspacePersonnel from "../../(dashboard)/dashboard/page";
 
 export const metadata: Metadata = { title: "Administration" };
 
@@ -275,6 +278,16 @@ export default async function AdminPage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* MON ESPACE A REJOINT CETTE PAGE (16/09/2026).
+          Le menu admin ouvrait sur deux portes — « Tableau de bord » et
+          « Mon espace » — et rien ne disait laquelle cliquer. L'espace
+          personnel est donc rendu à la suite, sur la même page : une seule
+          entrée dans le menu, et rien de perdu. L'ordre compte : on vient ici
+          pour administrer, le personnel vient après. */}
+      <section className="border-t border-border pt-10">
+        <EspacePersonnel />
       </section>
     </div>
   );

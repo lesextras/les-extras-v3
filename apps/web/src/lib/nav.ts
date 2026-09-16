@@ -350,8 +350,15 @@ const establishmentNav: NavSection[] = [
 const adminNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'Vue d’ensemble de la plateforme' },
-      { label: 'Mon espace', href: '/dashboard', icon: Home, hint: 'Votre tableau de bord personnel (ateliers, missions, activité)' },
+      // UN SEUL TABLEAU DE BORD (16/09/2026). Le menu admin ouvrait sur deux
+      // portes — « Tableau de bord » (/admin) et « Mon espace » (/dashboard) —
+      // et il fallait avoir compris la différence pour savoir laquelle cliquer.
+      // Les deux contenus sont maintenant sur /admin, l'un sous l'autre :
+      // l'administration de la plateforme d'abord, l'espace personnel ensuite.
+      // « Mon espace » a donc disparu du menu ; /dashboard reste servie (les
+      // sous-pages /dashboard/* y renvoient), simplement elle n'est plus une
+      // entrée de navigation.
+      { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard, hint: 'La plateforme et votre espace personnel, sur la même page' },
       // C'est ici que la demande est née (03/09/2026) : sur le compte admin,
       // trois lignes LEX en tête de menu repoussaient le travail
       // d'administration vers le bas. Elles sont dans la barre du haut.
