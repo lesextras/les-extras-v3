@@ -306,6 +306,29 @@ export default async function LandingPage() {
     (unes?.formations ?? []).filter((f) => !(f.freeOnline && estMaison(f.account?.name))).slice(0, VITRINE),
   );
 
+  /**
+   * ⚠⚠ DEUX RAYONS, PAS TROIS — 16/09/2026, demande de Siham.
+   *
+   * L'accueil en portait trois : « Ateliers », « Formations Qualiopi » et
+   * « Parcours gratuits ». Deux des trois disaient « formation » : le visiteur
+   * devait trancher entre deux mots qu'il ne distingue pas encore, sur la
+   * première page qu'il voit. Les parcours gratuits rejoignent donc l'onglet
+   * Formations.
+   *
+   * ⚠ CE QUI REND LA FUSION TENABLE AUJOURD'HUI, ET QUI NE L'ÉTAIT PAS AVANT :
+   * la carte du carrousel dit maintenant elle-même ce qu'elle est — « Gratuit ·
+   * en ligne » ou son prix, la pastille « Conçue par ADéPA », la durée, le
+   * concepteur. Quand ces cartes ne portaient qu'un titre et un prix, mélanger
+   * une mini-formation gratuite et une formation en intra à 1 600 € brouillait
+   * effectivement les deux. Si un jour la carte est appauvrie, il faudra
+   * reséparer les rayons. Le partage en deux listes existe toujours sur
+   * `/formations`, où le visiteur vient déjà avec une idée précise.
+   *
+   * ⚠ LES QUALIOPI D'ABORD, LES GRATUITS ENSUITE — c'est un choix, pas un
+   * hasard. Elles sont trois contre douze : derrière les gratuites, elles
+   * seraient invisibles, et ce sont les seules qui portent du chiffre
+   * d'affaires. Inverser est un échange de deux lignes.
+   */
   const rayons = [
     {
       cle: 'ateliers',
@@ -315,18 +338,11 @@ export default async function LandingPage() {
       lien: { libelle: 'Tout le catalogue', href: '/ateliers' },
     },
     {
-      cle: 'qualiopi',
-      libelle: 'Formations Qualiopi',
-      items: payantes,
+      cle: 'formations',
+      libelle: 'Formations',
+      items: [...payantes, ...gratuites].slice(0, VITRINE),
       basePath: '/formations',
       lien: { libelle: 'Toutes les formations', href: '/formations' },
-    },
-    {
-      cle: 'gratuits',
-      libelle: 'Parcours gratuits',
-      items: gratuites,
-      basePath: '/formations',
-      lien: { libelle: 'Tous les parcours gratuits', href: '/formations' },
     },
   ];
 

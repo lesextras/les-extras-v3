@@ -6,7 +6,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import {
   ArrowRight, Building2, ChevronLeft, ChevronRight, MapPin, Star, ShieldCheck, BadgeCheck,
-  Clock, Sparkles,
+  Clock,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import { VignetteSansPhoto } from "./VignetteSansPhoto";
 import { premierVisuel } from "@/lib/media";
 import { formatMoney } from "./format";
 import { resumeTerritoire } from "@/lib/territoires";
-import { EMOJI_PARCOURS, dureeLisible, estMaison } from "@/lib/mini-formations";
+import { EMOJI_PARCOURS, dureeLisible } from "@/lib/mini-formations";
 
 export interface OfferCard {
   id: string;
@@ -115,13 +115,31 @@ export function OfferCarousel({
           const href = `${basePath}/${o.slug ?? o.id}`;
           const emoji = o.slug ? (EMOJI_PARCOURS[o.slug] ?? null) : null;
           const duree = dureeLisible(o);
-          const maison = o.freeOnline && estMaison(o.account?.name);
           const visuel = premierVisuel(o.images);
           const resume = o.description ?? o.summary ?? null;
           // La durée écrite à la main d'un atelier (« 2H ») d'abord, sinon
           // celle calculée depuis les heures ou les minutes d'une formation.
           const dureeAffichee = o.duration ?? duree;
-          const categorie = o.categoryRef?.title ?? null;
+          /**
+           * ⚠⚠ SUR UNE FORMATION, LE TAG DIT LE RAYON, PAS LA THÉMATIQUE.
+           *
+           * Les deux onglets « Formations Qualiopi » et « Parcours gratuits »
+           * ont fusionné en un seul onglet « Formations » (16/09/2026) : la
+           * distinction, qui compte vraiment — l'une se vend au devis en intra,
+           * l'autre se suit seul et gratuitement en ligne — est donc descendue
+           * sur la carte. Sans ce tag, les deux se présenteraient à l'identique
+           * et il faudrait lire le prix tout en bas pour les départager.
+           *
+           * ⚠ Les ateliers gardent leur thématique (« Art-thérapie »,
+           * « Musicothérapie ») : eux n'ont qu'un seul rayon, et c'est la
+           * thématique qui les distingue les uns des autres.
+           */
+          const estFormation = basePath === '/formations';
+          const categorie = estFormation
+            ? o.freeOnline
+              ? 'Parcours gratuit'
+              : 'Formation Qualiopi'
+            : (o.categoryRef?.title ?? null);
           /**
            * ⚠ ON N'AFFICHE PAS `city` TEL QUEL — même règle que le catalogue.
            * Seize fiches sur dix-sept ont une RÉGION dans un champ nommé
@@ -132,9 +150,10 @@ export function OfferCarousel({
            */
           const territoire =
             resumeTerritoire(o.departements ?? []) ?? o.city ?? o.account?.city ?? null;
-          // L'organisme n'est pas répété quand la pastille « Conçue par ADéPA »
-          // le dit déjà deux lignes plus haut.
-          const organisme = maison ? null : o.account?.name;
+          // Le concepteur, toujours affiché — y compris « ADéPA » sur ses
+          // propres parcours. C'est ce que fait la carte du catalogue, et la
+          // même fiche doit se présenter de la même façon partout.
+          const organisme = o.account?.name ?? null;
           return (
             // Un peu plus large qu'avant : la carte porte désormais un résumé
             // de trois lignes et un concepteur. À 280 px, « Se déplace : Toute
@@ -191,11 +210,12 @@ export function OfferCarousel({
                 */}
                 <CardContent className="flex flex-1 flex-col gap-3 p-5">
                   <div className="flex items-center justify-between gap-2">
-                    {maison ? (
-                      <Badge className="gap-1">
-                        <Sparkles className="size-3" /> Conçue par ADéPA
-                      </Badge>
-                    ) : categorie ? (
+                    {/* ⚠ UN SEUL TAG, ET C'EST LA CATÉGORIE. Il portait aussi
+                        « Conçue par ADéPA » sur les parcours gratuits : deux
+                        pastilles pour dire deux choses au même endroit, alors
+                        que le concepteur est écrit trois lignes plus bas comme
+                        sur toutes les autres cartes. */}
+                    {categorie ? (
                       <Badge variant="soft">{categorie}</Badge>
                     ) : (
                       <span />

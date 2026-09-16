@@ -34,14 +34,29 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
 
   return (
     <div>
-      {/* CENTRÉS ET PLUS GRANDS. Ce sont les trois portes du catalogue : elles
-          se lisaient comme des filtres secondaires, calées à gauche en petit
-          corps. Au centre et en taille d'action, elles redeviennent le geste
-          qu'elles sont. */}
+      {/*
+        ⚠⚠ DEUX ONGLETS LARGES, PAS TROIS PETITS (16/09/2026, demande de Siham).
+
+        Ils étaient trois — « Ateliers », « Formations Qualiopi », « Parcours
+        gratuits » — et deux d'entre eux disaient « formation ». Le visiteur
+        devait donc trancher entre deux mots qu'il ne distingue pas encore, sur
+        la première page qu'il voit. Les parcours gratuits sont désormais
+        DANS l'onglet Formations (voir `page.tsx`), et chaque carte dit
+        elle-même ce qu'elle est : « Gratuit · en ligne » ou son prix.
+
+        ⚠ `flex-1` avec `basis-0` : les deux boutons prennent exactement la
+        moitié de la largeur chacun, quelle que soit la longueur du libellé.
+        Sans `basis-0`, « Formations » serait plus étroit qu'« Ateliers » +
+        padding, et deux portes de tailles différentes se lisent comme une
+        principale et une secondaire.
+
+        Ce bloc reste une liste d'onglets et non deux liens : le catalogue
+        s'affiche en dessous, la page ne change pas.
+      */}
       <div
         role="tablist"
         aria-label="Rayons du catalogue"
-        className="flex flex-wrap justify-center gap-3"
+        className="mx-auto flex max-w-3xl flex-wrap justify-center gap-3 sm:flex-nowrap"
       >
         {disponibles.map((r) => {
           const ouvert = r.cle === courant.cle;
@@ -55,9 +70,10 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
               aria-controls={`rayon-${r.cle}`}
               onClick={() => setActif(r.cle)}
               className={
-                ouvert
-                  ? "rounded-full border border-foreground bg-foreground px-7 py-3.5 text-base font-bold text-background shadow-soft transition-colors"
-                  : "rounded-full border border-border bg-card px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-primary-soft hover:text-primary"
+                "w-full basis-0 rounded-full px-7 py-4 text-lg tracking-wide transition-colors sm:flex-1 " +
+                (ouvert
+                  ? "border border-foreground bg-foreground font-bold text-background shadow-soft"
+                  : "border border-border bg-card font-semibold text-foreground hover:border-primary/50 hover:bg-primary-soft hover:text-primary")
               }
             >
               {r.libelle}
