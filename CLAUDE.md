@@ -4291,3 +4291,84 @@ compte peut donc consommer bien plus d'appels modèle par le chat que par la
 génération payante, sans jamais toucher au grand livre de crédits.
 
 **750 tests API / 65 suites, 119 tests web.**
+
+---
+
+## SUPPRIMER UN COMPTE L'ARCHIVE TROIS MOIS — 16/09/2026
+
+Décision de Siham. **`DELETE /admin/accounts/:id` ne détruit plus rien le jour
+où on clique.**
+
+1. Le compte est **archivé immédiatement** : il quitte les recherches,
+   l'annuaire, la vitrine et la place de marché.
+2. `Account.suppressionPrevueLe` est posé à **trois mois** (mois de calendrier,
+   pas 90 jours — `dansNMois` dans `common/suppression-compte.ts`, avec le
+   rattrapage du 31 novembre, que `setMonth` ferait glisser au 1er décembre).
+3. `ComptesScheduler` (4 h 30, Europe/Paris) exécute les échéances échues.
+   **C'est le seul endroit du dépôt où un compte est réellement détruit.**
+
+⚠ **L'HEURE DU PLANIFICATEUR N'EST PAS ARBITRAIRE** : 4 h 30 passe APRÈS la
+sauvegarde nocturne de la base (3 h UTC). Si un compte part par erreur, la copie
+de la nuit le contient encore. Ne pas la remonter avant la sauvegarde.
+
+⚠⚠ **« RÉTABLIR » ANNULE AUSSI L'ÉCHÉANCE**, et ce n'est pas un effet de bord :
+c'est la seule porte de sortie. Si `archiverCompte(id, false)` se contentait
+d'effacer `archivedAt`, le compte redeviendrait visible **puis serait détruit à
+l'échéance** — quelqu'un croirait l'avoir sauvé et le perdrait quand même, trois
+mois plus tard, sans que rien ne le prévienne.
+
+⚠⚠ **UN COMPTE QUI A ÉMIS UNE FACTURE OU SIGNÉ UN CDD NE SERA JAMAIS SUPPRIMÉ,
+et aucun délai n'y change rien.** `Invoice.account` et `ContratCDD.account` sont
+en `onDelete: Cascade` : détruire le compte détruirait les documents. Or une
+facture émise se conserve dix ans (art. L123-22 c. com.) et sa numérotation doit
+rester continue (art. 242 nonies A, ann. II du CGI) ; un contrat de travail se
+conserve cinq ans. Le planificateur écrit alors son refus **en toutes lettres**
+dans `suppressionMotifBlocage`, et l'écran l'affiche tel quel.
+
+⚠ **IL NE REPOUSSE PAS L'ÉCHÉANCE QU'IL N'A PAS PU EXÉCUTER.** Une date qui
+glisse toute seule laisse croire que quelque chose finira par se passer ; une
+date dépassée doublée d'un motif dit la vérité. Et un compte déjà bloqué n'est
+pas réexaminé chaque nuit (le filtre exige `suppressionMotifBlocage: null`).
+
+⚠ **IL N'ANONYMISE PAS.** L'effacement des données personnelles d'une PERSONNE
+est un autre geste, demandé par elle, et il existe déjà :
+`UsersService.effacerMonCompte`. Confondre les deux ferait disparaître des
+données que personne n'a demandé à voir disparaître.
+
+⚠ **NULL NE VEUT PAS DIRE « JAMAIS SUPPRIMÉ »** : il veut dire « aucune
+suppression programmée ». Un compte simplement archivé (`archivedAt` rempli,
+`suppressionPrevueLe` nul) reste indéfiniment — c'est l'état des 50 comptes de
+test et doublons archivés le 16/09.
+
+Migration `20260916230000_suppression_differee_comptes` — additive, rejouable,
+**zéro dérive** vérifiée sur PostgreSQL 16 réel. `admin/suppression-differee.spec.ts`
+(14 tests) verrouille les trois invariants ci-dessus.
+
+⚠ **L'AVERTISSEMENT DU BOUTON A ÉTÉ RÉÉCRIT, et il ne faut pas remettre
+l'ancien.** Il annonçait une destruction immédiate en cascade, factures
+comprises : exact à l'époque, faux aujourd'hui. Un avertissement plus effrayant
+que la réalité fait renoncer à un geste devenu sûr — ou, pire, cesse d'être lu.
+Il annonce maintenant **la date** de l'échéance : « trois mois » sans date oblige
+à faire le calcul soi-même au moment précis où l'on décide.
+
+### La vérification d'adresse par clic existe déjà — ne pas la reconstruire
+
+Question de Siham le 16/09. Le circuit est complet et en ligne depuis
+longtemps :
+
+- `AuthService.register()` appelle `sendEmailVerification` ; le message porte un
+  bouton **« Confirmer mon adresse »** vers `/verify-email?token=…` ;
+- `POST /auth/verify-email` pose `emailVerified: true` + `status: VERIFIED` ;
+- le jeton vaut **48 heures** (`expiresIn: '2d'`) — et le texte du courriel le
+  dit désormais, il annonçait 24 h par erreur ;
+- `POST /auth/resend-verification` renvoie le lien ; un changement d'adresse
+  repasse `emailVerified` à false et renvoie un lien ;
+- `EmailVerifieSiPublicationGuard` interdit de publier sans adresse confirmée.
+
+⚠ **LE PROBLÈME N'EST PAS LE BOUTON, C'EST L'ACHEMINEMENT.** `SMTP_PASSWORD`
+était ABSENTE en production (relevé le 3/09) : sans elle, `MailService` ne
+construit pas le transport SMTP et bascule sur le repli Brevo, que SPF
+n'autorise pas pour ce domaine — une partie des messages se fait écarter en
+silence. Un lien de confirmation qui n'arrive pas, c'est un compte qui ne
+s'ouvre jamais. **Avant de toucher au code de vérification, vérifier
+`/admin/emails` : le bandeau rouge dit tout.**
