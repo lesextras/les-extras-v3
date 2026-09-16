@@ -92,9 +92,6 @@ model User {
   tunnelDernierAt           DateTime?
   retours                   RetourExperience[]
   alertesRecherche          AlerteRecherche[]
-  questionsAsked            Question[]           @relation("QuestionAuthor")
-  answersWritten            Answer[]             @relation("AnswerAuthor")
-  answerVotes               AnswerVote[]         @relation("AnswerVoter")
   favorites                 Favorite[]
   assistantDocuments        AssistantDocument[]
   /// Générations LEX imputées à cette personne (journal de /confiance-lex).
@@ -248,8 +245,6 @@ model Account {
   articles                Article[]      @relation("AccountArticles")
   loyaltyPoints           LoyaltyPoint[]
   ideas                   Idea[]
-  questions               Question[]     @relation("AccountQuestions")
-  answers                 Answer[]       @relation("AccountAnswers")
   createdAt               DateTime       @default(now())
   updatedAt               DateTime       @updatedAt
 
@@ -2408,96 +2403,6 @@ model IdeaVote {
   createdAt DateTime @default(now())
 
   @@unique([ideaId, userId])
-}
-
-/// ─────────────────────────────────────────────────────────────────────────
-/// ENTRAIDE — questions de terrain entre professionnels, par métier.
-///
-/// ⚠ DISPOSITIF RETIRÉ DE L'OFFRE LE 15/09/2026. Plus aucune route ni page
-/// n'accède à ces trois modèles : ils sont INERTES et invisibles. Ils restent
-/// en base volontairement, et le schéma n'est pas modifié — donc aucune
-/// migration, donc aucun risque au déploiement.
-///
-/// Ce sont des situations professionnelles réelles déposées par des
-/// professionnels et les réponses de leurs pairs. Pour les effacer :
-/// export d'abord, migration ensuite, et seulement sur demande explicite.
-/// Voir la note « RETRAIT DU GAP » dans CLAUDE.md.
-///
-/// Une question n'est pas un sujet, c'est une SITUATION : ce qui se passe,
-/// et ce qui a déjà été tenté. Les prénoms sont masqués à l'enregistrement :
-/// on parle de personnes accompagnées réelles.
-/// ─────────────────────────────────────────────────────────────────────────
-
-enum QuestionStatus {
-  /// En attente de réponses.
-  OUVERTE
-  /// L'auteur a désigné une réponse comme utile.
-  RESOLUE
-  /// Fermée par l'auteur ou l'équipe (hors sujet, doublon).
-  FERMEE
-}
-
-model Question {
-  id         String         @id @default(cuid())
-  /// La situation, formulée en « comment faites-vous quand… ».
-  title      String
-  /// Le contexte détaillé : ce qui se passe, depuis quand, avec qui.
-  situation  String
-  /// Ce que le professionnel a déjà tenté — évite les réponses évidentes.
-  tente      String?
-  /// Métier de l'auteur (éducateur spécialisé, AES, psychologue…).
-  metier     String
-  /// Public accompagné (enfance protégée, handicap, grand âge…).
-  publicVise String
-  /// Publication sous pseudonyme : le nom du compte n'est pas affiché.
-  anonyme    Boolean        @default(true)
-  status     QuestionStatus @default(OUVERTE)
-  views      Int            @default(0)
-
-  accountId String
-  account   Account @relation("AccountQuestions", fields: [accountId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User    @relation("QuestionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-
-  answers   Answer[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([status, createdAt])
-  @@index([metier])
-  @@index([publicVise])
-}
-
-model Answer {
-  id         String   @id @default(cuid())
-  questionId String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  content    String
-  anonyme    Boolean  @default(true)
-  /// Désignée comme utile par l'auteur de la question.
-  retenue    Boolean  @default(false)
-
-  accountId String
-  account   Account @relation("AccountAnswers", fields: [accountId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User    @relation("AnswerAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-
-  votes     AnswerVote[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-
-  @@index([questionId])
-}
-
-model AnswerVote {
-  id        String   @id @default(cuid())
-  answerId  String
-  answer    Answer   @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation("AnswerVoter", fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([answerId, userId])
 }
 
 /// Abonnement d'un navigateur aux notifications push (Web Push).
