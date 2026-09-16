@@ -712,6 +712,79 @@ export default async function LandingPage() {
               </div>
             </Reveal>
 
+            {/* POURQUOI PAS SIMPLEMENT CHATGPT — la question que tout le monde
+                se pose et que personne ne posait à voix haute. Trois réponses,
+                et chacune décrit un mécanisme VÉRIFIABLE dans le produit, pas
+                une promesse : l'anonymisation avec son bouton de preuve, le
+                cadre écrit dans le prompt, les genres d'écrits du secteur.
+                Aucune comparaison chiffrée, aucun « meilleur que » : on montre
+                ce qui est fait, le lecteur conclut. */}
+            <Reveal className="mt-12">
+              <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                « Pourquoi pas simplement ChatGPT ? »
+              </h3>
+              <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground">
+                Parce qu’une IA généraliste ne connaît ni vos écrits, ni vos
+                obligations, ni les personnes que vous accompagnez — et qu’elle
+                n’a aucune raison de protéger ces dernières. LEX est construit
+                pour un seul métier : l’accompagnement éducatif et
+                psycho-éducatif.
+              </p>
+
+              <div className="mt-8 grid gap-6 sm:grid-cols-3">
+                <div className="rounded-xl border border-border bg-background/60 p-5">
+                  <p className="text-sm font-semibold text-foreground">
+                    Les noms ne sortent jamais d’ici
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Avant le moindre envoi, un dictionnaire de plus de 1 000
+                    prénoms et une grille de rôles remplacent les identités par
+                    des étiquettes — <em>[la mère]</em>, <em>[l’éducateur]</em>.
+                    Les acronymes du secteur (PPA, SEGPA, ULIS…) sont reconnus
+                    comme tels, pas pris pour des noms. Et un bouton
+                    «&nbsp;Voir le texte masqué&nbsp;» vous montre le texte
+                    <strong> exact </strong>qui part au moteur. La preuve, pas la
+                    promesse.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-background/60 p-5">
+                  <p className="text-sm font-semibold text-foreground">
+                    Un cadre professionnel, écrit noir sur blanc
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    LEX a pour consigne permanente de ne poser aucun diagnostic
+                    et de ne livrer aucune interprétation clinique. Il signale
+                    les points de vigilance, rappelle que rien ne se met en
+                    œuvre sans l’équipe pluridisciplinaire, et renvoie vers les
+                    soignants dès qu’une demande relève du soin. Une IA
+                    généraliste, elle, répondra — et c’est bien le problème.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-background/60 p-5">
+                  <p className="text-sm font-semibold text-foreground">
+                    Vos écrits, dans leur forme réelle
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Note d’observation, transmission, rapport de situation — ou
+                    un écrit libre que vous nommez vous-même. Chaque genre a sa
+                    structure attendue : ce qui est observé d’un côté, ce qui
+                    est interprété de l’autre. Vous ne partez pas d’une page
+                    blanche, et vous ne passez pas la soirée à reformater ce
+                    qu’une IA généraliste vous a rendu.
+                  </p>
+                </div>
+              </div>
+
+              <p className="mt-6 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                Le reste est du même ordre : LEX est fait par une association
+                du secteur, pour des professionnels du secteur, et il s’affine
+                avec ce que vous lui dites. Vous gardez la main sur chaque
+                phrase — c’est votre écrit, il porte votre signature.
+              </p>
+            </Reveal>
+
             <div id="offre-lex" className="mt-12 scroll-mt-24">
               <Reveal>
                 <OffreLex />

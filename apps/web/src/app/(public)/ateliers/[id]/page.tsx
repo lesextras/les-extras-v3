@@ -48,6 +48,8 @@ interface ReviewItem {
 }
 interface RelatedItem {
   id: string;
+  /** Absent sur les fiches d'avant la bascule : on retombe alors sur l'id. */
+  slug?: string | null;
   title: string;
   price?: string | number | null;
   city?: string | null;
@@ -590,7 +592,7 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
           <h2 className="text-lg font-semibold text-foreground">Dans la même famille</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             {service.related.map((r) => (
-              <Link key={r.id} href={`/ateliers/${r.id}`} className="group">
+              <Link key={r.id} href={`/ateliers/${r.slug ?? r.id}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                   {premierVisuel(r.images) ? (
                     <div className="relative aspect-[16/10] bg-muted">
