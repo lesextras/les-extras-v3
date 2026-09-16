@@ -61,6 +61,8 @@ import { AteliersModule } from './ateliers/ateliers.module';
 import { SupportModule } from './support/support.module';
 import { AgendaModule } from './agenda/agenda.module';
 import { AdministrationModule } from './administration/administration.module';
+import { StructuresModule } from './structures/structures.module';
+import { OrganisationModule } from './organisation/organisation.module';
 
 @Module({
   imports: [
@@ -133,6 +135,10 @@ import { AdministrationModule } from './administration/administration.module';
   SupportModule,
   AdministrationModule,
   AgendaModule,
+  // Structure → établissement → service, niveaux de responsabilité,
+  // organigramme (16/09/2026).
+  StructuresModule,
+  OrganisationModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

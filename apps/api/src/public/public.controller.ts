@@ -73,6 +73,28 @@ export class PublicController {
     return this.publicService.missionDetail(id);
   }
 
+  /**
+   * GET /public/etablissements?q= — LES ÉTABLISSEMENTS DÉJÀ SUR LA PLATEFORME.
+   *
+   * Sert au parcours d'inscription : quelqu'un qui tape « MECS Les Tilleuls »
+   * doit apprendre que son établissement existe déjà, et s'y rattacher, plutôt
+   * que d'en créer un homonyme. Sans cet écran, douze salariés d'une même
+   * maison produisent douze établissements qui ne se voient pas.
+   *
+   * ⚠ ORGANISATIONS SEULEMENT, JAMAIS DE PERSONNES. Nom, ville, structure : les
+   * mêmes informations qu'un annuaire professionnel public, et rien d'autre.
+   * Aucun effectif, aucun nom de salarié, aucune adresse de contact — ce serait
+   * un autre objet juridique, et un cadeau fait aux démarcheurs.
+   *
+   * Route publique parce que l'inscription l'est : la personne n'a pas encore
+   * de compte au moment où elle cherche son établissement. Deux caractères
+   * minimum, dix résultats au plus.
+   */
+  @Get('etablissements')
+  etablissements(@Query('q') q?: string) {
+    return this.publicService.rechercherEtablissements(q ?? '');
+  }
+
   /** GET /public/vendors — annuaire des intervenants qui publient. */
   @Get('vendors')
   vendors(@Query() query: QueryVendorsDto) {

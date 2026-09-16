@@ -3294,3 +3294,112 @@ comportement de Next, et Google les traite de la même façon.
 tous les `flex` et `grid` du site. Un chercher-remplacer sur « gap » colle tous
 les éléments de **toutes les pages** — sans faire échouer le build, donc en
 partant en production sans prévenir. Aucune classe `gap-*` n'a été touchée.
+
+---
+
+## STRUCTURE → ÉTABLISSEMENT → SERVICE, NIVEAUX, MESSAGERIE — 16/09/2026
+
+Le modèle de comptes a été construit. Tout tient en une phrase, et c'est elle
+qu'il faut retenir avant de toucher à quoi que ce soit :
+
+> **Je vois les gens que j'ai fait venir → aucune validation.
+> Je vois des gens que je n'ai pas fait venir → validation.**
+
+Un chef de service qui arrive seul n'attend donc personne : il crée ses
+services, il invite son équipe, il ne voit qu'elle. Et c'est ce qui rend
+l'ouverture sans risque — quelqu'un qui se déclarerait responsable sans l'être
+ne pourrait constituer un périmètre qu'avec des gens ayant accepté son
+invitation. Il ne prend rien, il reçoit.
+
+**Seul le niveau DIRECTION échappe à la règle**, parce qu'il donne la vue sur
+des équipes constituées par d'autres, avant lui. C'est le seul qui passe par
+Les Extras — **une validation par établissement, jamais une par salarié**.
+
+### Les trois fichiers qui portent le modèle
+
+| Fichier | Ce qu'il tient |
+|---|---|
+| `apps/api/src/common/perimetre.ts` | La règle de visibilité, les capacités, les deux règles de délégation. **Écrite une seule fois.** |
+| `apps/api/src/common/normaliser.ts` | La clé d'unicité des noms. **A un jumeau en SQL dans la migration** — les deux doivent produire le même résultat. |
+| `apps/api/src/conversations/masquage.ts` | Le retrait des coordonnées dans un fil avec un intervenant. |
+
+Couverts par `common/perimetre.spec.ts` (24 tests) et
+`conversations/masquage.spec.ts` (27 tests). **669 tests au total, tous verts.**
+
+### ⚠ CE QU'IL NE FAUT PAS DÉFAIRE
+
+- **`niveau === DIRECTION` ne se teste JAMAIS sans `niveauValide`.** Une
+  direction déclarée voit exactement ce que voit un salarié : elle-même. C'est
+  l'unique garde-fou du modèle ouvert.
+- **« Rattachement vérifié » ≠ « niveau validé ».** Le badge atteste que la
+  personne est bien dans ce service ; il ne dit rien de son titre. Un chef de
+  service qui invite un collègue ne le nomme pas directeur. L'organigramme
+  affiche les deux marques séparément — les fondre serait faire passer une
+  vérification d'appartenance pour une validation de titre.
+- **Le garde de rôle a été RETIRÉ des invitations**, et l'absence de
+  `@AccountRoles` est le comportement attendu (`authorization-matrix.spec.ts` le
+  teste ainsi). Il exigeait OWNER/ADMIN : un chef de service arrivé seul ne
+  pouvait inviter personne. Le droit d'inviter est une CAPACITÉ
+  (`Capacite.INVITER_MEMBRES`), vérifiée dans le service, qui sait aussi
+  rabattre niveau, droits et services au périmètre de l'invitant.
+- **Un fil avec un intervenant n'existe pas sans demande** (devis, réservation,
+  mission). Ouvrir un fil libre depuis le catalogue ferait partir les
+  intervenants et sortirait les réservations de la plateforme.
+- **Les non-lus se comptent sur `ConversationParticipant.luJusquA`**, jamais sur
+  `Message.readAt` — qui ne sait dire « lu » que pour tout le monde à la fois.
+- **`FileKind.MESSAGE` n'est PAS dans `FAMILLES_PUBLIQUES`**, et ne doit pas y
+  entrer : un fil du médico-social porte des informations sur des usagers.
+
+### Les trois doublons, et leurs sorties
+
+1. **Service** — unicité `(accountId, nomNormalise)`. Le second arrivant reçoit
+   un **carrefour**, pas une erreur : rejoindre (demande au créateur), préciser
+   son nom (« SESSAD Melun »), ou **signaler à Les Extras**. Sans cette
+   troisième sortie, un service créé par erreur bloquerait son nom pour toujours.
+2. **Établissement** — le plus coûteux. Recherche pendant la frappe à
+   l'inscription (`GET /public/etablissements`) : « c'est le mien » crée un
+   rattachement **non vérifié** plutôt qu'un douzième homonyme.
+3. **Structure** — unicité sur le SIREN, puis sur le nom normalisé. Une
+   structure trouvée par son nom et sans SIREN gagne celui qu'on lui apporte.
+
+### La migration
+
+`20260916120000_structure_niveaux_messagerie` — **rejouable**, testée sur
+PostgreSQL 16 réel dans trois scénarios : base vierge, base à jour, base avec
+données et doublons préexistants. **Zéro dérive** (`migrate diff
+--from-migrations` rend une migration vide). 105 tables.
+
+Deux points délicats, écrits en tête du fichier : `Message.updatedAt` ajouté
+AVEC défaut puis défaut retiré (sinon l'ALTER échoue sur une table peuplée), et
+`OrgUnit.nomNormalise` **rempli AVANT** la création de l'index unique, en
+désambiguïsant les doublons déjà en base (`sessad`, `sessad-2`, `sessad-3`)
+plutôt qu'en faisant échouer le déploiement.
+
+### Les écrans
+
+| Adresse | Quoi |
+|---|---|
+| `/register` | Parcours en 6 étapes. **Les tuiles « Établissement » et « Salarié » sont fusionnées** — c'est l'étape « poste » qui distingue direction, responsable et salarié. Cartes qui se retournent au survol (recto/verso). Le compte est créé à l'étape 3, les suivantes ne sont **jamais bloquantes**. |
+| `/dashboard/organigramme` | Structure → établissement → services. **Arborescence et effectifs visibles par tous les rattachés, noms bornés au périmètre.** Les personnes hors périmètre sont comptées (« + 4 personnes »), pas effacées. |
+| `/dashboard/mon-poste` | Poste, cadre, niveau, droits déclarés, retrait de l'organigramme. |
+| `/dashboard/inbox` | Messagerie : filtres par type, avertissement données d'usagers en tête de fil, mention du masquage, messages système. |
+| `/admin/organisation` | Les demandes de niveau Direction, pré-remplies pour une décision en un clic. |
+
+⚠ **L'organigramme et « Mon poste » n'ont AUCUN filtre de rôle**, et c'est
+délibéré : « Mon poste » est la porte par laquelle un chef de service arrivé
+seul se déclare. Lui poser un filtre fermerait exactement la porte qu'il doit
+ouvrir.
+
+### Ce qui reste déclaratif, et pourquoi
+
+Les droits que chacun se donne (« réserver directement » plutôt que « demander
+un devis ») **ne sont vérifiés par personne**. C'est une décision de Siham : le
+premier compte d'un établissement n'est pas forcément celui d'un cadre, et
+exiger une confirmation d'en haut bloquerait tout le monde en attendant une
+direction qui n'existe peut-être pas encore.
+
+Ce qui rend la chose tenable n'est pas un contrôle mais la **traçabilité** : la
+déclaration figure sur chaque devis et chaque réservation, avec le poste. Et
+comme **il n'y a aucun paiement sur la plateforme**, ces droits n'engagent
+jamais d'argent — ils disent seulement si le bouton affiché est « Réserver » ou
+« Demander un devis ».

@@ -46,36 +46,36 @@ model User {
 
   profile                   Profile?
   memberships               Membership[]
-  sentInvitations           Invitation[]         @relation("InvitationInviter")
-  ownedAccounts             Account[]            @relation("AccountOwner")
+  sentInvitations           Invitation[]              @relation("InvitationInviter")
+  ownedAccounts             Account[]                 @relation("AccountOwner")
   documents                 Document[]
-  uploadedFiles             FileAsset[]          @relation("FileUploader")
+  uploadedFiles             FileAsset[]               @relation("FileUploader")
   notifications             Notification[]
-  supportTickets            SupportTicket[]      @relation("SupportAuteur")
-  supportMessages           SupportMessage[]     @relation("SupportMessageAuteur")
-  rendezVous                RendezVous[]         @relation("RendezVousAuteur")
+  supportTickets            SupportTicket[]           @relation("SupportAuteur")
+  supportMessages           SupportMessage[]          @relation("SupportMessageAuteur")
+  rendezVous                RendezVous[]              @relation("RendezVousAuteur")
   messages                  Message[]
-  reviewsAuthored           Review[]             @relation("ReviewAuthor")
-  reviewsReceived           Review[]             @relation("ReviewTarget")
+  reviewsAuthored           Review[]                  @relation("ReviewAuthor")
+  reviewsReceived           Review[]                  @relation("ReviewTarget")
   availabilities            Availability[]
-  shiftsAssigned            Shift[]              @relation("ShiftFreelance")
-  authoredArticles          Article[]            @relation("ArticleAuthor")
-  sessionsTrained           FormationSession[]   @relation("SessionTrainer")
-  inscriptions              Inscription[]        @relation("InscriptionLearner")
-  tutoratsGiven             Tutorat[]            @relation("TutoratTutor")
+  shiftsAssigned            Shift[]                   @relation("ShiftFreelance")
+  authoredArticles          Article[]                 @relation("ArticleAuthor")
+  sessionsTrained           FormationSession[]        @relation("SessionTrainer")
+  inscriptions              Inscription[]             @relation("InscriptionLearner")
+  tutoratsGiven             Tutorat[]                 @relation("TutoratTutor")
   complianceDocuments       ComplianceDocument[]
   qualifications            Qualification[]
   experiences               Experience[]
-  auditLogs                 AuditLog[]           @relation("AuditActor")
+  auditLogs                 AuditLog[]                @relation("AuditActor")
   /// Rendez-vous hebdomadaire du lundi. Activé par défaut, désactivable en un
   /// clic : un e-mail non désiré coûte plus cher qu'un e-mail non envoyé.
-  hebdoOptIn                Boolean              @default(true)
+  hebdoOptIn                Boolean                   @default(true)
   /// COURRIEL DE NOTIFICATION (09/09/2026).
   /// Les notifications qui appellent une action ou qui rassurent sont doublees
   /// d'un courriel. Personne n'ouvre tous les jours une plateforme qu'il
   /// n'utilise pas encore : sans cela, une demande recue restait invisible
   /// jusqu'a la prochaine visite. Desactivable en un clic, comme le lundi.
-  notifMailOptIn            Boolean              @default(true)
+  notifMailOptIn            Boolean                   @default(true)
   /// E-mail d'activation du lendemain de l'inscription (ActivationScheduler).
   /// Non nul = la décision d'envoyer (ou de s'abstenir) a été prise : elle ne
   /// se reprend jamais, ce message n'existe qu'une fois dans la vie du compte.
@@ -86,7 +86,7 @@ model User {
   /// même si le planificateur passe deux fois, et il survit à un décalage
   /// (une panne d'un jour reprend là où la séquence s'était arrêtée, elle ne
   /// saute pas un message).
-  tunnelEtape               Int                  @default(0)
+  tunnelEtape               Int                       @default(0)
   /// Date du dernier message du tunnel. C'est elle qui espace la séquence :
   /// on n'écrit jamais deux fois dans le même intervalle, quoi qu'il arrive.
   tunnelDernierAt           DateTime?
@@ -99,17 +99,33 @@ model User {
   tramesMaison              TrameMaison[]
   lexPreferences            LexPreference[]
   pushSubscriptions         PushSubscription[]
-  leaveRequests             LeaveRequest[]       @relation("LeaveUser")
-  contratsCDD               ContratCDD[]         @relation("ContratSalarie")
+  leaveRequests             LeaveRequest[]            @relation("LeaveUser")
+  contratsCDD               ContratCDD[]              @relation("ContratSalarie")
   /// Ajouts au vivier effectues par cette personne.
-  ajoutsAuVivier            PoolMember[]         @relation("PoolAjoutePar")
+  ajoutsAuVivier            PoolMember[]              @relation("PoolAjoutePar")
   /// Signatures electroniques apposees par cette personne.
-  signatures                Signature[]          @relation("SignatureSignataire")
+  signatures                Signature[]               @relation("SignatureSignataire")
   /// Demandes de rattachement à un établissement envoyées par cette personne
   /// (compte « salarié » créé en solo, en attente de confirmation).
-  attachmentRequestsSent    AttachmentRequest[]  @relation("AttachmentRequester")
+  attachmentRequestsSent    AttachmentRequest[]       @relation("AttachmentRequester")
   /// Demandes de rattachement tranchées (acceptées/refusées) par cette personne.
-  attachmentRequestsDecided AttachmentRequest[]  @relation("AttachmentDecider")
+  attachmentRequestsDecided AttachmentRequest[]       @relation("AttachmentDecider")
+  /// Services d'établissement créés par cette personne.
+  servicesCrees             OrgUnit[]                 @relation("OrgUnitCreateur")
+  /// Rattachements dont cette personne a vérifié l'appartenance au service.
+  rattachementsVerifies     Membership[]              @relation("MembershipVerificateur")
+  /// Demandes de niveau tranchées par cette personne (Direction, Les Extras).
+  demandesNiveauDecidees    DemandeNiveau[]           @relation("DemandeNiveauDecideur")
+  /// Demandes portant sur un service (rejoindre, signaler) émises par elle.
+  demandesServiceEmises     DemandeService[]          @relation("DemandeServiceDemandeur")
+  /// Demandes portant sur un service tranchées par elle.
+  demandesServiceDecidees   DemandeService[]          @relation("DemandeServiceDecideur")
+  /// Fils de discussion auxquels cette personne participe.
+  participations            ConversationParticipant[]
+  /// Fils de discussion ouverts par cette personne.
+  conversationsOuvertes     Conversation[]            @relation("ConversationCreateur")
+  /// Messages signalés par cette personne.
+  messagesSignales          Message[]                 @relation("MessageSignaleur")
 
   @@index([email])
   @@index([role, status])
@@ -173,6 +189,14 @@ model Account {
   sourceCampaign          String?
   /// Page d'arrivée : sait-on vers quoi l'annonce pointait.
   sourceLanding           String?
+  /// STRUCTURE DE RATTACHEMENT — l'entité juridique qui possède cet
+  /// établissement (association, fondation, mairie, groupe). Déclarative :
+  /// le compte dit à quelle structure il appartient, comme on déclare son
+  /// employeur sur un réseau professionnel. Facultative, et elle le reste :
+  /// un intervenant indépendant n'en a pas, une petite association est sa
+  /// propre structure.
+  structureId             String?
+  structure               Structure?     @relation(fields: [structureId], references: [id], onDelete: SetNull)
   // Coordonnées structure
   legalName               String?
   siret                   String?
@@ -322,32 +346,71 @@ model Account {
   reservationsAteliers          ReservationAtelier[]
   supportTickets                SupportTicket[]
   rendezVous                    RendezVous[]
+  /// Les fils de discussion rattachés à ce compte (interne, service, demande).
+  conversations                 Conversation[]
+  /// Demandes portant sur un service de cet établissement.
+  demandesService               DemandeService[]
 
   @@index([type])
   @@index([slug])
   @@index([source])
+  @@index([structureId])
 }
 
 /// Unité / service d'un établissement (repris de Symfony : Service/unités).
 /// Ex. « Internat », « Pôle jour », « SESSAD ». Rattache membres et missions.
 model OrgUnit {
-  id          String   @id @default(cuid())
-  accountId   String
-  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  name        String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String    @id @default(cuid())
+  accountId    String
+  account      Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name         String
+  /// CLÉ D'UNICITÉ, pas un libellé : minuscules, accents retirés, ponctuation
+  /// et espaces supprimés. Dans un même établissement il ne peut pas y avoir
+  /// deux services du même nom — et sans normalisation, « SESSAD », « Sessad »
+  /// et « S.E.S.S.A.D. » passeraient tous les trois. Le nom affiché reste
+  /// `name`, avec sa casse et ses accents.
+  nomNormalise String    @default("")
+  description  String?
+  /// Qui a créé ce service. Sert à router une demande de rattachement quand
+  /// un second arrivant tombe sur un nom déjà pris.
+  creeParId    String?
+  creePar      User?     @relation("OrgUnitCreateur", fields: [creeParId], references: [id], onDelete: SetNull)
+  /// Service archivé : il ne se propose plus à la création ni à l'invitation,
+  /// mais il n'est pas supprimé — son historique reste lisible.
+  archiveLe    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  memberships Membership[]
-  missions    ReliefMission[]
-  shifts      Shift[]
-  invitations Invitation[]
+  memberships        Membership[]
+  missions           ReliefMission[]
+  shifts             Shift[]
+  invitations        Invitation[]
+  membres            MembershipService[]
+  servicesInvitation InvitationService[]
+  demandes           DemandeService[]
+  conversations      Conversation[]
 
+  @@unique([accountId, nomNormalise])
   @@index([accountId])
 }
 
 /// SOUS-COMPTE : rattachement d'un User à un Account avec un rôle interne.
+///
+/// NIVEAU DE RESPONSABILITÉ ET VISIBILITÉ (16/09/2026)
+/// ---------------------------------------------------
+/// Une règle, une seule, gouverne ce que chacun voit :
+///
+///   je vois les gens que j'ai fait venir  →  aucune validation
+///   je vois des gens que je n'ai pas fait venir  →  validation
+///
+/// Un chef de service qui arrive seul n'attend donc personne : il crée ses
+/// services, il invite son équipe, il ne voit qu'elle. Un imposteur qui se
+/// déclarerait responsable ne pourrait constituer un périmètre qu'avec des
+/// gens ayant accepté son invitation — il ne prend rien, il reçoit.
+///
+/// Seul le niveau DIRECTION échappe à cette règle, parce qu'il donne la vue
+/// sur des équipes constituées par d'autres, avant lui. C'est le seul qui
+/// passe par une validation (Les Extras, ou une Direction déjà en place).
 model Membership {
   id        String           @id @default(cuid())
   userId    String
@@ -356,39 +419,128 @@ model Membership {
   account   Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
   role      AccountRole      @default(MEMBER)
   status    MembershipStatus @default(ACTIVE)
+  /// Service principal de rattachement. Conservé pour tout l'existant (plannings,
+  /// missions, invitations) ; le rattachement multiple et l'encadrement de
+  /// plusieurs services passent par `services` (MembershipService).
   orgUnitId String?
   orgUnit   OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+
+  /// NIVEAU DÉCLARÉ. Il ne produit aucun droit à lui seul.
+  niveau       NiveauResponsabilite @default(SALARIE)
+  /// Vrai quand le niveau a été validé. Obligatoire pour que DIRECTION ouvre
+  /// quoi que ce soit ; sans validation, une Direction déclarée voit
+  /// exactement ce que voit un salarié : elle-même.
+  niveauValide Boolean              @default(false)
+  /// Intitulé de poste, libre : « Chef de service éducatif », « Coordinatrice ».
+  poste        String?
+  cadre        Boolean              @default(false)
+
+  /// VÉRIFIÉ = LE RATTACHEMENT, JAMAIS LE TITRE.
+  /// Ce drapeau dit « cette personne est bien dans ce service », parce qu'elle
+  /// y a été invitée ou validée. Il ne dit rien du poste qu'elle déclare : un
+  /// collègue qui invite quelqu'un ne le nomme pas directeur. L'organigramme
+  /// doit afficher les deux séparément, sous peine de faire passer une
+  /// vérification d'appartenance pour une validation de titre.
+  verifie             Boolean              @default(false)
+  origineVerification OrigineVerification?
+  verifieParId        String?
+  verifiePar          User?                @relation("MembershipVerificateur", fields: [verifieParId], references: [id], onDelete: SetNull)
+  verifieLe           DateTime?
+
+  /// QUI A FAIT VENIR CETTE PERSONNE. C'est la source de la visibilité : le
+  /// périmètre d'un invité est toujours inclus dans celui de son invitant, et
+  /// ne peut jamais en sortir.
+  parrainMembershipId String?
+  parrain             Membership?  @relation("MembershipParrainage", fields: [parrainMembershipId], references: [id], onDelete: SetNull)
+  invites             Membership[] @relation("MembershipParrainage")
+
+  /// Droits accordés à l'unité, en plus de ce que donne le niveau.
+  /// On ne délègue que ce que l'on détient, et seulement sur son périmètre.
+  capacites Capacite[]
+
+  /// Retrait de l'organigramme. La personne garde tout le reste du produit :
+  /// certaines ont de vraies raisons de ne pas figurer dans un annuaire, et
+  /// une seule mauvaise histoire coûte plus cher que quelques absents.
+  masqueOrganigramme Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  services       MembershipService[]
+  demandesNiveau DemandeNiveau[]
 
   @@unique([userId, accountId])
   @@index([accountId, role])
+  @@index([accountId, niveau])
+  @@index([parrainMembershipId])
+}
+
+/// RATTACHEMENT D'UN MEMBRE À UN SERVICE, avec la portée.
+///
+/// Deux choses différentes que `Membership.orgUnitId` seul ne savait pas dire :
+/// « je travaille dans ce service » et « j'encadre ce service ». Un
+/// coordinateur peut être rattaché au Pôle jour et encadrer le Pôle jour ET
+/// le SESSAD — c'est ce que la table rend possible.
+model MembershipService {
+  id           String        @id @default(cuid())
+  membershipId String
+  membership   Membership    @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  orgUnitId    String
+  orgUnit      OrgUnit       @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  portee       PorteeService @default(RATTACHEMENT)
+  createdAt    DateTime      @default(now())
+
+  @@unique([membershipId, orgUnitId, portee])
+  @@index([orgUnitId, portee])
 }
 
 /// INVITATION à rejoindre un compte (par email), avec rôle cible + token.
 model Invitation {
-  id          String           @id @default(cuid())
+  id          String               @id @default(cuid())
   email       String
   accountId   String
-  account     Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  role        AccountRole      @default(MEMBER)
+  account     Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  role        AccountRole          @default(MEMBER)
   /// SERVICE d'affectation, choisi au moment de l'invitation.
   /// Sans lui, un nouvel arrivant n'apparaissait dans le planning d'aucun chef
   /// de service tant qu'un responsable ne pensait pas à le rattacher à la main
   /// — ce que personne ne fait, parce que rien ne le rappelle.
   orgUnitId   String?
-  orgUnit     OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  token       String           @unique @default(cuid())
-  status      InvitationStatus @default(PENDING)
+  orgUnit     OrgUnit?             @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  /// Niveau proposé à la personne invitée. Un invitant ne peut jamais proposer
+  /// plus haut que le sien.
+  niveau      NiveauResponsabilite @default(SALARIE)
+  /// Droits accordés avec l'invitation, pris dans ceux de l'invitant.
+  capacites   Capacite[]
+  /// Mot d'accompagnement, affiché dans le courriel d'invitation.
+  message     String?
+  token       String               @unique @default(cuid())
+  status      InvitationStatus     @default(PENDING)
   invitedById String
-  invitedBy   User             @relation("InvitationInviter", fields: [invitedById], references: [id])
+  invitedBy   User                 @relation("InvitationInviter", fields: [invitedById], references: [id])
   expiresAt   DateTime
   acceptedAt  DateTime?
-  createdAt   DateTime         @default(now())
+  createdAt   DateTime             @default(now())
+
+  services InvitationService[]
 
   @@unique([email, accountId])
   @@index([token])
   @@index([status])
+}
+
+/// Les services portés par une invitation, avec leur portée : on peut inviter
+/// quelqu'un à travailler dans un service ET à en encadrer un autre.
+model InvitationService {
+  id           String        @id @default(cuid())
+  invitationId String
+  invitation   Invitation    @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  orgUnitId    String
+  orgUnit      OrgUnit       @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  portee       PorteeService @default(RATTACHEMENT)
+
+  @@unique([invitationId, orgUnitId, portee])
+  @@index([orgUnitId])
 }
 
 /// DEMANDE DE RATTACHEMENT : le sens inverse de Invitation. Une personne
@@ -436,6 +588,157 @@ enum AttachmentRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// ---------------------------------------------------------------------------
+// STRUCTURE → ÉTABLISSEMENT → SERVICE  (16/09/2026)
+// ---------------------------------------------------------------------------
+//
+// Trois niveaux, aucun obligatoire. Un compte DÉCLARE son appartenance, comme
+// on déclare son employeur sur un réseau professionnel : rien n'est validé en
+// amont, parce qu'une validation en amont fait chuter les inscriptions et que
+// personne ici n'a les moyens humains de valider chaque salarié qui arrive.
+//
+// Ce qui rend l'ouverture tenable, ce n'est pas le contrôle à l'entrée, c'est
+// que déclarer ne donne rien : la visibilité vient du lien d'invitation, pas
+// du niveau déclaré. Voir la note sur le modèle Membership.
+
+/// L'ENTITÉ JURIDIQUE qui possède un ou plusieurs établissements : association,
+/// fondation, mairie, groupe. Retrouvée dans l'annuaire public des entreprises
+/// quand c'est possible (recherche-entreprises.api.gouv.fr, déjà utilisé côté
+/// association), saisie à la main sinon.
+model Structure {
+  id             String   @id @default(cuid())
+  nom            String
+  /// Clé de rapprochement, pas un libellé : deux structures ne peuvent pas la
+  /// partager. Voir OrgUnit.nomNormalise pour la règle.
+  nomNormalise   String   @unique
+  /// Numéro SIREN à 9 chiffres quand la structure vient de l'annuaire public.
+  siren          String?  @unique
+  formeJuridique String?
+  adresse        String?
+  ville          String?
+  codePostal     String?
+  /// Vrai quand la fiche provient de l'annuaire public et n'a pas été saisie
+  /// à la main. Une structure saisie à la main reste parfaitement utilisable :
+  /// beaucoup de petites structures ne se trouvent pas dans l'annuaire.
+  verifiee       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  comptes Account[]
+
+  @@index([nomNormalise])
+}
+
+/// DEMANDE DE NIVEAU — le seul passage par Les Extras.
+///
+/// Un responsable n'en a pas besoin : son périmètre est celui qu'il a
+/// constitué lui-même, par invitation. Seule la DIRECTION en passe par ici,
+/// parce qu'elle seule gagne la vue sur des équipes qu'elle n'a pas
+/// constituées — celles des chefs de service arrivés avant elle.
+model DemandeNiveau {
+  id            String               @id @default(cuid())
+  membershipId  String
+  membership    Membership           @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  niveauDemande NiveauResponsabilite
+  /// Ce que la personne avance : poste, rattachement, courriel professionnel.
+  justification String?
+  statut        StatutDemande        @default(EN_ATTENTE)
+  decideParId   String?
+  decidePar     User?                @relation("DemandeNiveauDecideur", fields: [decideParId], references: [id], onDelete: SetNull)
+  decideLe      DateTime?
+  motifRefus    String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  /// Une demande à la fois : renvoyer écrase plutôt que d'empiler.
+  @@unique([membershipId])
+  @@index([statut])
+}
+
+/// DEMANDE PORTANT SUR UN SERVICE.
+///
+/// Elle naît du contrôle de doublon : un second arrivant tape « SESSAD » dans
+/// un établissement où ce nom existe déjà. Trois sorties lui sont offertes —
+/// rejoindre (REJOINDRE, tranché par celui qui a créé le service), préciser
+/// son nom (aucune demande, il crée « SESSAD Melun »), ou signaler aux Extras
+/// (SIGNALEMENT) quand le service existant est obsolète, mal nommé, ou créé
+/// par quelqu'un qui est parti. Sans cette troisième sortie, un service créé
+/// par erreur bloquerait son nom pour toujours.
+model DemandeService {
+  id          String              @id @default(cuid())
+  orgUnitId   String
+  orgUnit     OrgUnit             @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  accountId   String
+  account     Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  demandeurId String
+  demandeur   User                @relation("DemandeServiceDemandeur", fields: [demandeurId], references: [id], onDelete: Cascade)
+  motif       MotifDemandeService
+  message     String?
+  statut      StatutDemande       @default(EN_ATTENTE)
+  decideParId String?
+  decidePar   User?               @relation("DemandeServiceDecideur", fields: [decideParId], references: [id], onDelete: SetNull)
+  decideLe    DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([orgUnitId, statut])
+  @@index([accountId, statut])
+  @@index([motif, statut])
+}
+
+/// Direction (directeur, directeur adjoint, pilote des opérations) ·
+/// Responsable (chef de service, coordinateur) · Salarié.
+enum NiveauResponsabilite {
+  DIRECTION
+  RESPONSABLE
+  SALARIE
+}
+
+/// « Je travaille dans ce service » n'est pas « j'encadre ce service ».
+enum PorteeService {
+  RATTACHEMENT
+  ENCADREMENT
+}
+
+/// Par qui le rattachement a été vérifié. Affiché à l'utilisateur, parce que
+/// ces trois origines n'ont pas le même poids et qu'il doit pouvoir le lire.
+enum OrigineVerification {
+  /// La personne a accepté une invitation : c'est son invitant qui l'atteste.
+  INVITATION
+  RESPONSABLE
+  DIRECTION
+  LES_EXTRAS
+}
+
+/// Droits délégués à l'unité. On ne délègue que ce que l'on détient, et
+/// seulement sur son propre périmètre : la délégation se propage de proche en
+/// proche mais ne peut jamais en sortir.
+enum Capacite {
+  /// Réserver un intervenant directement, au lieu de seulement demander un
+  /// devis. Il n'y a AUCUN paiement direct sur la plateforme : ce droit
+  /// n'engage pas d'argent, il dit qui peut engager l'établissement.
+  RESERVER_DIRECT
+  DEMANDER_DEVIS
+  DEMANDER_RENFORT_INTERNE
+  OUVRIR_RENFORT_CDD
+  GERER_PLANNING
+  VALIDER_INSCRIPTIONS
+  VOIR_FACTURES
+  SIGNER_CONVENTIONS
+  INVITER_MEMBRES
+}
+
+enum StatutDemande {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+}
+
+enum MotifDemandeService {
+  REJOINDRE
+  SIGNALEMENT
 }
 
 // ---------------------------------------------------------------------------
@@ -684,6 +987,8 @@ model Quote {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
+  conversations Conversation[]
+
   @@index([clientAccountId])
   @@index([providerAccountId])
   @@index([status])
@@ -724,12 +1029,13 @@ model Booking {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 
-  reviews     Review[]
-  invoice     Invoice?
-  quote       Quote?
-  shift       Shift?
-  timeEntries TimeEntry[]
-  engagement  MissionEngagement?
+  reviews       Review[]
+  invoice       Invoice?
+  quote         Quote?
+  shift         Shift?
+  timeEntries   TimeEntry[]
+  engagement    MissionEngagement?
+  conversations Conversation[]
 
   @@index([status])
   @@index([missionId])
@@ -763,28 +1069,143 @@ enum TimeEntryStatus {
 // MESSAGERIE / AVIS / NOTIFS / FACTURES / DOCUMENTS
 // ---------------------------------------------------------------------------
 
+/// MESSAGERIE (16/09/2026 — version complète)
+///
+/// Un fil ne flotte jamais : il porte toujours son CONTEXTE. C'est ce qui
+/// distingue les quatre usages, et c'est surtout ce qui protège le modèle
+/// économique — un fil avec un INTERVENANT n'existe pas sans une demande
+/// (devis, réservation, atelier). Sans ce garde-fou, le catalogue devient un
+/// carnet d'adresses : le premier échange sert à donner un numéro, et la
+/// réservation se fait ailleurs. C'est comme ça que meurent les places de
+/// marché.
 model Conversation {
-  id        String         @id @default(cuid())
+  id    String           @id @default(cuid())
+  type  TypeConversation @default(MISSION)
+  /// Objet du fil, affiché en tête de liste.
+  sujet String?
+
+  // --- Les ancrages possibles. Au moins un, sauf pour un fil interne. ---
   missionId String?
   mission   ReliefMission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  messages  Message[]
+  /// L'établissement dont relève ce fil (interne, service, demande émise).
+  accountId String?
+  account   Account?       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  /// Le service concerné, pour un fil d'équipe.
+  orgUnitId String?
+  orgUnit   OrgUnit?       @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  /// La demande qui autorise un fil avec un intervenant.
+  quoteId   String?
+  quote     Quote?         @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  bookingId String?
+  booking   Booking?       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  /// Fil clos : lisible, plus alimentable. On n'efface pas un échange.
+  fermee           Boolean   @default(false)
+  /// Date du dernier message, dénormalisée pour trier la liste sans agréger.
+  dernierMessageAt DateTime?
+
+  createdById String?
+  createdBy   User?   @relation("ConversationCreateur", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages     Message[]
+  participants ConversationParticipant[]
 
   @@index([missionId])
+  @@index([accountId, type])
+  @@index([orgUnitId])
+  @@index([dernierMessageAt])
 }
 
-model Message {
+/// QUI est dans le fil, et jusqu'où il l'a lu.
+///
+/// Les non-lus se comptent ici et nulle part ailleurs : `Message.readAt` ne
+/// savait dire que « lu » ou « non lu » pour tout le monde à la fois, ce qui
+/// est faux dès qu'un fil compte trois personnes.
+model ConversationParticipant {
   id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId       String
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  body           String
-  readAt         DateTime?
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Date du dernier message lu. Null = rien lu.
+  luJusquA       DateTime?
+  /// Notifications par courriel pour ce fil.
+  notifications  Boolean      @default(true)
+  /// Quitté le fil : ne reçoit plus rien et ne voit plus la suite. L'historique
+  /// déjà lu reste lisible — on ne réécrit pas le passé.
+  quitteLe       DateTime?
   createdAt      DateTime     @default(now())
 
+  @@unique([conversationId, userId])
+  @@index([userId, quitteLe])
+}
+
+model Message {
+  id                  String       @id @default(cuid())
+  conversationId      String
+  conversation        Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId            String
+  sender              User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body                String
+  type                TypeMessage  @default(TEXTE)
+  /// Conservé pour l'existant ; les non-lus se lisent désormais sur
+  /// ConversationParticipant.luJusquA.
+  readAt              DateTime?
+  /// Vrai quand des coordonnées ont été retirées du corps avant enregistrement
+  /// (fil avec un intervenant, demande non confirmée). On le dit à l'auteur
+  /// plutôt que de laisser croire que son message est parti tel quel.
+  coordonneesMasquees Boolean      @default(false)
+  modifieLe           DateTime?
+  /// Message retiré par son auteur : le corps est vidé, la ligne reste.
+  supprimeLe          DateTime?
+  signaleLe           DateTime?
+  signaleParId        String?
+  signalePar          User?        @relation("MessageSignaleur", fields: [signaleParId], references: [id], onDelete: SetNull)
+  motifSignalement    String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  pieces MessagePiece[]
+
   @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@index([signaleLe])
+}
+
+/// Pièce jointe d'un message. Passe par FileAsset, comme tout le reste.
+model MessagePiece {
+  id          String    @id @default(cuid())
+  messageId   String
+  message     Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileAssetId String
+  fileAsset   FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([messageId, fileAssetId])
+  @@index([fileAssetId])
+}
+
+enum TypeConversation {
+  /// Historique : fil attaché à une mission de renfort.
+  MISSION
+  /// Entre membres d'un même établissement.
+  INTERNE
+  /// Fil d'équipe d'un service.
+  SERVICE
+  /// Établissement ↔ intervenant. Exige une demande.
+  INTERVENANT
+  /// Avec Les Extras.
+  SUPPORT
+}
+
+enum TypeMessage {
+  TEXTE
+  /// Écrit par la plateforme : arrivée d'un participant, fil clos, demande
+  /// acceptée. Ne s'édite pas et ne se supprime pas.
+  SYSTEME
 }
 
 /// AVIS déposé après une réservation. Chaque partie (établissement ET
@@ -1931,6 +2352,10 @@ enum FileKind {
   /// C'est la famille qui rend l'académie autonome : sans elle, les vidéos
   /// resteraient hébergées chez un prestataire extérieur.
   MEDIA
+  /// PIÈCE JOINTE D'UN MESSAGE. Jamais publique : un fil de discussion du
+  /// médico-social peut porter des informations sur une personne accompagnée.
+  /// L'accès est vérifié fil par fil, participant par participant.
+  MESSAGE
 }
 
 /// Un fichier réellement stocké (objet dans le dépôt privé), avec sa fiche
@@ -1964,6 +2389,7 @@ model FileAsset {
   avatarOf             User[]                @relation("UserAvatar")
   piecesAssociation    PieceAssociation[]    @relation("PieceAssociationFichier")
   documentsAssociation DocumentAssociation[] @relation("DocumentAssociationFichier")
+  piecesMessage        MessagePiece[]
 
   @@index([uploaderId])
   @@index([accountId])
@@ -4100,7 +4526,6 @@ enum StatutReservationAtelier {
   REMBOURSEE
 }
 
-
 /// UN RENDEZ-VOUS POSE A LA MAIN DANS L'AGENDA.
 ///
 /// L'agenda de Pilote montre surtout des dates QU'ON N'Y SAISIT PAS : une
@@ -4128,7 +4553,7 @@ model RendezVous {
   debut          DateTime
   fin            DateTime?
   /// Une journee entiere : on n'affiche alors aucune heure.
-  journeeEntiere Boolean  @default(false)
+  journeeEntiere Boolean   @default(false)
 
   categorie CategorieRendezVous @default(RENDEZ_VOUS)
 

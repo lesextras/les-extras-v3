@@ -681,8 +681,13 @@ export class PublicService {
     const ratingSource: 'service' | 'provider' | null =
       avisPrestation.length > 0 ? 'service' : reviews.length > 0 ? 'provider' : null;
 
+    // `slug` fait partie de la projection depuis le 16/09/2026 : sans lui, le
+    // bloc « Dans la même famille » ne pouvait construire que /ateliers/<id>,
+    // et chaque clic passait par une 301 vers l'adresse en slug. Dix liens du
+    // catalogue faisaient ce détour — invisible à l'œil, payé à chaque visite.
     const RELATED_SELECT = {
       id: true,
+      slug: true,
       title: true,
       price: true,
       city: true,
@@ -1315,5 +1320,35 @@ export class PublicService {
       rating,
       palier,
     };
+  }
+
+  /**
+   * LES ÉTABLISSEMENTS DÉJÀ DÉCLARÉS, pour le parcours d'inscription.
+   *
+   * ⚠ ORGANISATIONS SEULEMENT. Nom, ville, structure de rattachement : rien
+   * qui désigne une personne, aucun effectif, aucune adresse de contact.
+   * Ajouter un seul de ces champs changerait la nature de la route — d'un
+   * annuaire d'organisations à un fichier de prospection.
+   */
+  async rechercherEtablissements(q: string) {
+    const texte = (q ?? '').trim();
+    if (texte.length < 2) return [];
+    return this.prisma.account.findMany({
+      where: {
+        type: 'ESTABLISHMENT',
+        OR: [
+          { name: { contains: texte, mode: 'insensitive' } },
+          { legalName: { contains: texte, mode: 'insensitive' } },
+        ],
+      },
+      take: 10,
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        structure: { select: { id: true, nom: true } },
+      },
+    });
   }
 }

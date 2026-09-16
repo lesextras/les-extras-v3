@@ -1,5 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+  Network,
+  IdCard,
+  MessagesSquare,
   LayoutDashboard,
   TrendingUp,
   Store,
@@ -119,8 +122,13 @@ export function resolveNavRole(params: {
  * son adresse, présente dans la palette ⌘K, et atteinte par le chemin qui la
  * concerne :
  *
- *   Messagerie             le tableau de bord affiche « N messages non lus »
- *                          et y conduit ; c'est là qu'on la cherche vraiment.
+ *   Messagerie             REVENUE AU MENU LE 16/09/2026, à la demande de
+ *                          Siham : « il faut une messagerie pour que tous se
+ *                          parlent ». Ce n'est plus la même chose qu'en août —
+ *                          c'était alors un fil par mission, sans équipe, sans
+ *                          service et sans Les Extras. Le motif du retrait
+ *                          (« une porte de plus pour presque rien ») ne tient
+ *                          donc plus : le produit a changé, pas la règle.
  *   Mes données perso.     la politique cookies y renvoie, et le bandeau de
  *                          consentement mène à cette politique — le droit
  *                          d'accès et d'effacement reste donc exerçable sans
@@ -135,6 +143,11 @@ const freelanceNav: NavSection[] = [
   {
     items: [
       { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true },
+      // Côté intervenant, la messagerie est le fil d'une DEMANDE — devis,
+      // réservation, mission. Il n'existe pas de fil libre depuis le catalogue,
+      // et il ne faut pas en ouvrir : ce serait la porte au démarchage, et les
+      // intervenants partiraient.
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Les échanges rattachés à vos demandes de devis, vos réservations et vos missions' },
     ],
   },
   {
@@ -288,6 +301,20 @@ const establishmentNav: NavSection[] = [
       // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
       // Une fiche par personne, et la conformité comme propriété de cette
       // personne — pas comme un annuaire parallèle qu'il faut recouper.
+      // ORGANIGRAMME ET POSTE (16/09/2026).
+      //
+      // ⚠ NI L'UN NI L'AUTRE N'EST RÉSERVÉ À LA DIRECTION, et c'est le cœur du
+      // modèle. L'organigramme montre à TOUS les rattachés la structure, les
+      // services et les effectifs — seuls les noms sont bornés au périmètre de
+      // qui regarde. Le réserver aux responsables le laisserait vide le premier
+      // jour, et personne ne le remplirait jamais.
+      //
+      // « Mon poste » est la porte par laquelle un chef de service arrivé seul
+      // se déclare, sans attendre que sa direction ouvre un compte. Lui poser
+      // un filtre de rôle fermerait exactement la porte qu'il doit ouvrir.
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Vos échanges avec votre équipe, vos services, les intervenants et Les Extras — chacun rattaché à son contexte' },
+      { label: 'Organigramme', href: '/dashboard/organigramme', icon: Network, essentiel: true, hint: 'Votre structure, votre établissement et ses services. Les noms que vous voyez dépendent de votre périmètre.' },
+      { label: 'Mon poste', href: '/dashboard/mon-poste', icon: IdCard, hint: 'Votre poste, votre niveau de responsabilité et ce que vous pouvez engager pour votre établissement' },
       { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier, recherche et filtres par service' },
       // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
       // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
@@ -395,6 +422,11 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Articles', href: '/admin/articles', icon: FileText, hint: 'Articles et pages éditoriales' },
       { label: 'Catégories', href: '/admin/categories', icon: Tags, hint: 'Taxonomie des missions et ateliers' },
+      // LE SEUL PASSAGE MANUEL DU MODÈLE D'ORGANISATION : une demande par
+      // établissement, jamais une par salarié. Si cette file grossit, c'est le
+      // signe qu'il faut alléger la demande, pas qu'il faut y passer ses
+      // journées.
+      { label: 'Accès direction', href: '/admin/organisation', icon: Network, hint: 'Les demandes de niveau Direction : accepter ouvre la vue sur des équipes constituées par d’autres' },
       { label: 'Messagerie interne', href: '/admin/assistance', icon: LifeBuoy, hint: 'Les messages écrits depuis un compte : problèmes, questions. On y répond dans le fil.' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
