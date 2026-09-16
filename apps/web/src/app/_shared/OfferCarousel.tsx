@@ -1,7 +1,7 @@
 "use client";
 
-// Carrousel horizontal des offres, au modèle des fiches les-extras.fr :
-// visuel, catégorie en surimpression, lieu, publics, prix.
+// Même contenu que les cartes du catalogue : visuel, catégorie, durée,
+// résumé, concepteur, territoire, public, prix.
 import { useRef } from "react";
 import Link from "next/link";
 import {
@@ -94,9 +94,21 @@ export function OfferCarousel({
         <ChevronRight className="size-5" />
       </button>
 
+      {/*
+        ⚠⚠ `md:px-9` ET `md:scroll-px-9` VONT ENSEMBLE, ET IL FAUT LES DEUX.
+
+        Les deux flèches sont posées en `-left-3` / `-right-3`, par-dessus la
+        piste. Sans la marge, la flèche gauche RECOUVRE le titre de la première
+        carte — « LE PAPA Plan d'Activité Physique Adapté » se lisait « E PAPA
+        Plan… », constaté en direct le 16/09/2026. Et sans le `scroll-px`,
+        l'accrochage arrête la carte SOUS le bouton au lieu de s'arrêter à côté.
+
+        C'est exactement le couple que `RangeeDefilante` documente déjà pour la
+        même raison ; ce carrousel-ci ne l'avait pas.
+      */}
       <div
         ref={piste}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-3 md:px-9 md:scroll-px-9 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((o, rang) => {
           const publics = o.publicTargets?.length
@@ -169,7 +181,7 @@ export function OfferCarousel({
                   trois. */}
               <Card className="flex h-full flex-col overflow-hidden transition group-hover:shadow-card">
                 <div className="relative aspect-[16/11] bg-muted">
-                  <VisuelCarte src={visuel} alt={o.title} sizes="320px">
+                  <VisuelCarte src={visuel} alt={o.title} sizes="(max-width: 640px) 300px, 340px">
                     {/* Sans photo, la carte affichait un rectangle beige avec
                         « Les Extras » au milieu — le même pour toutes. */}
                     <VignetteSansPhoto
@@ -178,15 +190,20 @@ export function OfferCarousel({
                       motif={o.freeOnline ? 'parcours' : basePath === '/formations' ? 'formation' : 'atelier'}
                     />
                   </VisuelCarte>
-                  {/* Le bandeau de thématique n'a de sens que sur les vignettes
-                      qui ne l'écrivent pas déjà : la couverture d'une
-                      mini-formation la porte en haut à gauche, et le repli de
-                      marque n'a pas d'image du tout. */}
-                  {o.categoryRef?.title && !emoji && visuel ? (
-                    <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-                      {o.categoryRef.title}
-                    </span>
-                  ) : null}
+                  {/*
+                    ⚠ LE BANDEAU SUR LA PHOTO A ÉTÉ RETIRÉ LE 16/09/2026.
+
+                    Depuis que la carte porte sa pastille de catégorie juste en
+                    dessous, il écrivait la MÊME chose à deux centimètres
+                    d'écart : « ATELIERS DU RÉSEAU » en surimpression, puis
+                    « Ateliers du réseau » en pastille. Constaté en direct sur
+                    les quatre cartes visibles de l'accueil.
+
+                    Le seul repère qui reste sur la photo est la pastille emoji
+                    d'un parcours, parce qu'elle ne dit pas la catégorie : elle
+                    identifie LE parcours, et c'est le même dessin que sur sa
+                    couverture et sur sa fiche récap A4.
+                  */}
                   {/* La pastille emoji : la même que sur la couverture et sur
                       la fiche récap. Chaque carte reçoit son propre délai,
                       sinon toute la ligne monte et descend en même temps. */}
