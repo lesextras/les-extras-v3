@@ -1,64 +1,146 @@
-// Ce que LEX apporte concrètement. Écrit du point de vue du bénéfice — le
-// temps gagné, la charge mentale en moins — parce qu’un éducateur n’achète
-// pas de l’IA : il achète une soirée de moins passée à rédiger.
+// CE QUE LEX APPORTE — en deux blocs, pas en trois.
 //
-// Le bloc était un aplat crème de bout en bout : quatre cartes blanches sur
-// fond clair, un encadré vert pâle, et quatre paragraphes de détail que
-// personne ne lit debout. Chaque outil porte maintenant sa couleur, le détail
-// tient en une ligne, et les garanties passent sur une bande sombre — c’est
-// elle qui referme le bloc au lieu de le laisser se dissoudre.
+// ⚠⚠ REFONTE DU 16/09/2026 (demande de Siham : « il y a trop de parties »).
+// Le composant empilait TROIS encadrés — « Pourquoi pas simplement ChatGPT ? »
+// (3 cartes), les quatre outils, puis « Utilisable dans le médico-social »
+// (3 colonnes de garanties) — soit dix cartes pour une seule section.
+//
+// Et deux de ces trois blocs disaient LA MÊME CHOSE, à deux écrans d'écart :
+//   « Les noms »  ↔  « Les noms ne sortent jamais »
+//   « Le cadre : aucun diagnostic »  ↔  « LEX propose, vous décidez : aucun
+//      diagnostic, aucune décision »
+// C'est exactement la redite que le déplacement du bloc ChatGPT dans ce
+// composant devait supprimer — elle avait seulement changé de place.
+//
+// ⚠ LA SORTIE N'EST PAS DE COUPER DU TEXTE, C'EST DE LE MONTRER. Les garanties
+// sont des étapes d'un trajet : les notes partent, les noms sont retirés, le
+// modèle écrit, la personne relit. Un schéma dit ça d'un coup d'œil là où trois
+// colonnes de puces demandent d'être lues. Le schéma remplace donc les deux
+// blocs de texte, et la réponse à « pourquoi pas ChatGPT » tient en une ligne
+// sous le trajet : une IA généraliste n'a ni l'étape 2, ni l'étape 4.
+//
+// ⚠ AUCUN « MEILLEUR QUE », AUCUN CHIFFRE DE COMPARAISON. On décrit un
+// comportement observable de part et d'autre, le lecteur conclut. Une
+// comparaison chiffrée contre un produit nommé se défend devant un juge
+// (art. L122-1 c. conso) ; un fait vérifiable, non.
+//
+// ⚠ NE PAS REMETTRE UN BLOC « POURQUOI PAS CHATGPT » DANS `page.tsx` : c'est
+// la séparation des deux qui avait produit la redite la première fois.
+import Link from "next/link";
 import {
   PenLine,
   Lightbulb,
   FileText,
   MessageCircle,
-  ShieldCheck,
-  Lock,
-  Scale,
   Check,
   X,
-  EyeOff,
-  Stethoscope,
-  AlignLeft,
+  ArrowRight,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 /**
- * « POURQUOI PAS SIMPLEMENT CHATGPT ? » — LA QUESTION, EN TROIS LIGNES.
+ * LE TRAJET D'UN ÉCRIT — en SVG animé, pas en GIF.
  *
- * ⚠⚠ ELLE TENAIT EN SEPT PARAGRAPHES SUR L'ACCUEIL, ET ELLE DISAIT DEUX FOIS
- * LA MÊME CHOSE. Le bloc pesait ~250 mots au-dessus de ce composant — et ses
- * trois arguments étaient déjà repris, mot pour mot, par la bande GARANTIES
- * quelques centimètres plus bas : « les noms ne sortent jamais », « rien n'est
- * enregistré sans vous », « LEX propose, vous décidez ». Personne ne lit deux
- * fois le même argument ; on saute les deux.
+ * ⚠ VOLONTAIREMENT PAS UN FICHIER .GIF, et il ne faut pas le remplacer par un.
+ * Un GIF pèse des centaines de kilo-octets pour un trait et quatre cercles, il
+ * arrive pixellisé sur un écran moderne, il ne sait pas changer de couleur
+ * entre le thème clair et le thème sombre, et il continue de tourner quand le
+ * visiteur a demandé moins d'animations. Ce SVG fait le même travail en deux
+ * kilo-octets, prend `currentColor`, et s'arrête sous `prefers-reduced-motion`
+ * (les trois classes utilisées sont déjà dans la liste coupée de `globals.css`).
  *
- * Il est donc DANS ce composant, et plus au-dessus : une seule unité visuelle,
- * de la question jusqu'aux garanties. ⚠ NE PAS LE REMETTRE DANS `page.tsx` —
- * c'est la séparation qui avait produit la redite.
- *
- * ⚠ AUCUN « MEILLEUR QUE », AUCUN CHIFFRE DE COMPARAISON. On décrit un
- * comportement observable de part et d'autre, le lecteur conclut. Une
- * comparaison chiffrée contre un produit nommé se défend devant un juge
- * (art. L122-1 c. conso) ; un fait vérifiable, non.
+ * ⚠ LES JALONS SONT AUX CENTRES DES QUATRE COLONNES (12,5 % · 37,5 % · 62,5 %
+ * · 87,5 %) : c'est ce qui aligne le rail avec la grille HTML posée dessous.
+ * Changer le nombre d'étapes oblige à recalculer les deux.
  */
-const DIFFERENCES = [
+function RailQuatreEtapes() {
+  const positions = [12.5, 37.5, 62.5, 87.5];
+  return (
+    <svg
+      viewBox="0 0 400 26"
+      preserveAspectRatio="none"
+      className="h-[26px] w-full text-primary"
+      role="img"
+      aria-label="Le trajet d’un écrit, en quatre étapes : vos notes, les noms sont retirés, le modèle écrit, vous relisez."
+    >
+      {/* Le rail en clair : il dit où ça va avant que la bille n'y aille. */}
+      <line
+        x1="50"
+        y1="13"
+        x2="350"
+        y2="13"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity="0.2"
+      />
+      <line
+        x1="50"
+        y1="13"
+        x2="350"
+        y2="13"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        className="animate-rail"
+      />
+      {positions.map((p, i) => (
+        <circle
+          key={p}
+          cx={p * 4}
+          cy="13"
+          r="6"
+          fill="currentColor"
+          className="animate-jalon"
+          style={{ animationDelay: `${260 + i * 340}ms` }}
+        />
+      ))}
+      {/* La bille boucle : c'est elle qui rend le schéma vivant, et c'est la
+          seule animation en boucle du bloc. */}
+      <circle cx="50" cy="13" r="3.5" fill="currentColor" className="animate-bille" />
+    </svg>
+  );
+}
+
+/**
+ * LES QUATRE ÉTAPES — et chacune porte une garantie plutôt qu'une promesse.
+ *
+ * ⚠ CE SONT LES ANCIENNES « TROIS GARANTIES », REMISES À LEUR PLACE. Elles
+ * vivaient dans un encadré séparé, en trois colonnes de puces : des affirmations
+ * hors sol, qu'il fallait croire. Posées sur les étapes du trajet, elles
+ * deviennent vérifiables — on voit À QUEL MOMENT les noms partent, et à quel
+ * moment la personne reprend la main.
+ */
+const ETAPES = [
   {
-    icone: EyeOff,
-    sujet: "Les noms",
-    generaliste: "Voit les vrais noms",
-    lex: "Les remplace par [la mère], [l’éducateur] — et vous montre le texte exact qui part.",
+    numero: "1",
+    titre: "Vos notes",
+    texte: "Écrites comme elles viennent, avec les vrais prénoms.",
+    exemple: "Kevin a refusé de se lever, 3ᵉ fois cette semaine.",
+    tonExemple: "text-muted-foreground",
   },
   {
-    icone: Stethoscope,
-    sujet: "Le cadre",
-    generaliste: "Répond, même quand ça relève du soin",
-    lex: "Aucun diagnostic : il renvoie à l’équipe pluridisciplinaire et aux soignants.",
+    numero: "2",
+    titre: "Les noms partent",
+    texte: "Prénoms, dates et coordonnées deviennent des jetons — avant l’envoi.",
+    exemple: "[le jeune] a refusé de se lever, 3ᵉ fois cette semaine.",
+    tonExemple: "text-primary",
+    /** L'étape qui fait toute la différence : elle est mise en avant. */
+    cle: true,
   },
   {
-    icone: AlignLeft,
-    sujet: "La forme",
-    generaliste: "Rend un texte à reformater",
-    lex: "Rend le genre attendu : observé d’un côté, interprété de l’autre.",
+    numero: "3",
+    titre: "Le modèle écrit",
+    texte: "Il ne voit jamais un prénom. Aucun diagnostic : il renvoie à l’équipe.",
+    exemple: "Observé d’un côté, interprété de l’autre.",
+    tonExemple: "text-muted-foreground",
+  },
+  {
+    numero: "4",
+    titre: "Vous relisez",
+    texte: "Les vrais noms reviennent chez vous. Rien n’est gardé sans votre accord.",
+    exemple: "Kevin a refusé de se lever…",
+    tonExemple: "text-muted-foreground",
   },
 ];
 
@@ -117,90 +199,116 @@ const PRODUITS = [
   },
 ];
 
-const GARANTIES = [
-  {
-    icone: ShieldCheck,
-    titre: "Les noms ne sortent jamais",
-    points: [
-      "Prénoms, dates et coordonnées deviennent des jetons",
-      "Le remplacement se fait avant l’envoi au modèle",
-    ],
-  },
-  {
-    icone: Lock,
-    titre: "Rien n’est enregistré sans vous",
-    points: [
-      "Ni les notes brutes, ni le brouillon",
-      "Seule la version que vous validez est gardée",
-    ],
-  },
-  {
-    icone: Scale,
-    titre: "LEX propose, vous décidez",
-    points: [
-      "Aucun diagnostic, aucune décision",
-      "La responsabilité de l’écrit reste la vôtre",
-    ],
-  },
-];
-
 export function OffreLex() {
   return (
     <div className="space-y-8">
-      {/*
-        La question ouvre le bloc — c'est celle que tout le monde se pose et
-        que personne ne posait à voix haute. Trois lignes, trois mécanismes
-        vérifiables dans le produit.
-      */}
-      <section className="reflet relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/[0.12] via-card to-card p-6 md:p-7">
+      {/* ═══ 1. LE TRAJET D'UN ÉCRIT — le schéma, et les garanties dessus ═══ */}
+      <section className="reflet relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/[0.10] via-card to-card p-6 md:p-8">
         <span
           className="animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full bg-primary"
           aria-hidden
         />
         <div className="pl-2">
-          <h3 className="text-xl font-bold tracking-tight text-foreground">
-            «&nbsp;Pourquoi pas simplement ChatGPT&nbsp;?&nbsp;»
+          <h3 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
+            Ce qui part, et ce qui revient
           </h3>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground" lang="fr">
-            Parce qu’une IA généraliste ne connaît ni vos écrits, ni vos obligations, ni les
-            personnes que vous accompagnez.
+            Le même écrit, à chaque étape. C’est le seul endroit du produit où il
+            faut regarder avant de s’en servir avec de vraies situations.
           </p>
 
-          <ul className="mt-5 grid gap-3 sm:grid-cols-3">
-            {DIFFERENCES.map((d) => {
-              const Icone = d.icone;
-              return (
-                <li
-                  key={d.sujet}
-                  className="group rounded-xl border border-border bg-card/70 p-4 transition duration-300 hover:border-primary/40 hover:shadow-lg"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="relative grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground transition-transform duration-300 group-hover:scale-110">
-                      <Icone className="size-4" aria-hidden />
-                      <span className="animate-anneau absolute inset-0 rounded-lg bg-primary" aria-hidden />
-                    </span>
-                    <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
-                      {d.sujet}
-                    </span>
-                  </div>
+          {/* Le rail, aligné sur les colonnes posées juste en dessous. */}
+          <div className="mt-7 hidden md:block">
+            <RailQuatreEtapes />
+          </div>
 
-                  {/* Le comportement de l'IA généraliste, barré : on le lit
-                      comme « ce qu'on ne veut pas », sans avoir à l'écrire. */}
-                  <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground/80">
-                    <X className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                    <span className="line-through">{d.generaliste}</span>
-                  </p>
-                  <p className="mt-1.5 flex items-start gap-1.5 text-sm leading-relaxed text-foreground" lang="fr">
-                    <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                    <span>{d.lex}</span>
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
+          <ol className="mt-3 grid gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-5">
+            {ETAPES.map((e) => (
+              <li
+                key={e.numero}
+                className={
+                  "rounded-xl border p-4 transition duration-300 hover:-translate-y-0.5 hover:shadow-lg " +
+                  (e.cle
+                    ? "border-primary/45 bg-primary/[0.07] shadow-card"
+                    : "border-border bg-card/70")
+                }
+              >
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={
+                      "relative grid size-7 shrink-0 place-items-center rounded-lg text-xs font-bold " +
+                      (e.cle
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground")
+                    }
+                  >
+                    {e.numero}
+                    {/* L'anneau ne pulse que sur l'étape qui fait la
+                        différence : quatre anneaux qui pulsent ne signalent
+                        plus rien. */}
+                    {e.cle ? (
+                      <span
+                        className="animate-anneau absolute inset-0 rounded-lg bg-primary"
+                        aria-hidden
+                      />
+                    ) : null}
+                  </span>
+                  <h4 className="text-sm font-bold leading-snug text-foreground">{e.titre}</h4>
+                </div>
+                <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground" lang="fr">
+                  {e.texte}
+                </p>
+                {/*
+                  ⚠ L'EXEMPLE EST LE MÊME TEXTE À QUATRE MOMENTS, et c'est lui
+                  qui fait la démonstration : on voit « Kevin » devenir
+                  « [le jeune] », puis redevenir « Kevin » chez soi. Une phrase
+                  de garantie ne prouve rien ; cette transformation, si.
+                */}
+                <p
+                  className={
+                    "mt-3 rounded-lg border border-border/70 bg-background/60 px-2.5 py-2 font-mono text-[11px] leading-relaxed " +
+                    e.tonExemple
+                  }
+                  lang="fr"
+                >
+                  {e.exemple}
+                </p>
+              </li>
+            ))}
+          </ol>
+
+          {/*
+            ⚠ « POURQUOI PAS CHATGPT » TIENT ICI, EN UNE LIGNE. La question
+            occupait trois cartes ; le schéma au-dessus ayant déjà montré les
+            quatre étapes, il ne reste qu'à dire lesquelles manquent ailleurs.
+            On ne nomme aucun produit et on n'affirme rien de « meilleur » : on
+            décrit deux comportements, le lecteur conclut.
+          */}
+          <div className="mt-6 rounded-xl border border-border bg-card/70 p-4">
+            <p className="text-sm font-semibold text-foreground" lang="fr">
+              «&nbsp;Pourquoi pas simplement une IA généraliste&nbsp;?&nbsp;»
+            </p>
+            <ul className="mt-2.5 grid gap-2 sm:grid-cols-2">
+              <li className="flex items-start gap-2 text-[13px] leading-relaxed text-muted-foreground/80">
+                <X className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                <span>
+                  Elle n’a ni l’étape&nbsp;2 ni l’étape&nbsp;4 : elle voit les vrais noms, et
+                  garde ce qu’on lui donne.
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-[13px] leading-relaxed text-foreground">
+                <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                <span>
+                  Elle répond aussi quand la question relève du soin. LEX renvoie à l’équipe
+                  pluridisciplinaire.
+                </span>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 
+      {/* ═══ 2. LES QUATRE OUTILS ═══ */}
       <ul className="grid gap-4 md:grid-cols-2">
         {PRODUITS.map((p) => {
           const Icone = p.icone;
@@ -242,50 +350,56 @@ export function OffreLex() {
         })}
       </ul>
 
-      {/* ⚠ CE BANDEAU ÉTAIT UN APLAT FRAMBOISE, ET IL NE SE LISAIT PAS.
-          Du blanc sur du rose vif, en petit corps, sur trois colonnes serrées :
-          les trois garanties les plus importantes du produit — celles qu'une
-          direction lit avant de signer — étaient les moins lisibles de la page.
+      {/* ═══ 3. L'APPEL À L'ACTION ═══
+          ⚠ LA SECTION LEX N'EN AVAIT AUCUN (ajouté le 16/09/2026, demande de
+          Siham). On montrait le trajet d'un écrit et les quatre outils, puis la
+          page passait aux tarifs : la seule section du site qui décrive un
+          produit payant ne proposait rien à faire. Le lecteur qui venait d'être
+          convaincu devait remonter chercher un bouton ailleurs.
 
-          Elles reviennent sur fond clair, en texte de lecture, avec de l'air
-          entre les colonnes. La framboise reste, mais là où elle sert : le
-          filet du haut, les pastilles, le titre. Une couleur d'accent
-          n'accentue plus rien quand elle couvre tout. */}
-      <div className="reflet overflow-hidden rounded-2xl border border-border bg-nacre shadow-card">
-        <span className="block h-1.5 w-full bg-primary" aria-hidden />
-        <div className="px-6 pt-7 md:px-9">
-          <h3 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
-            Utilisable dans le médico-social
-          </h3>
-          <p className="mt-1 text-base text-muted-foreground">Trois garanties, pas des intentions.</p>
+          ⚠ LE LIBELLÉ EST « CRÉER UN COMPTE », EXACTEMENT COMME L'AUTRE BOUTON
+          DE LA PAGE QUI MÈNE À `/register`. Un libellé par destination : c'est
+          la règle posée le 12/08 puis re-cassée le 3/09 par un « Découvrir
+          LEX » qui promettait une découverte et livrait un formulaire
+          d'inscription. Tout libellé de ce bloc qui s'écarterait de celui-ci
+          ferait croire à une seconde destination.
+
+          ⚠ AUCUN PRIX ÉCRIT ICI. Les trois montants sont dans la section
+          « Tarifs », une seule fois, et c'est là qu'ils se comparent. Ce qui
+          est annoncé — quinze générations offertes chaque mois, sans carte
+          bancaire, sans date de fin — est la dotation gratuite permanente
+          telle que le code la pose (`credits.constants.ts`) : ce n'est pas un
+          essai, et l'écrire autrement serait un compte à rebours qui n'existe
+          pas.
+
+          ⚠ LE SECOND LIEN EST UNE SORTIE, PAS UNE SECONDE ACTION. Quelqu'un qui
+          hésite sur les données ne s'inscrira pas : il veut lire le cadre
+          avant. Le libellé est celui du pied de page, pour la même raison que
+          ci-dessus. */}
+      <div className="rounded-2xl border-2 border-primary/30 bg-primary-soft p-6 text-center md:p-8">
+        <p className="text-lg font-bold tracking-tight text-accent-foreground md:text-xl" lang="fr">
+          Quinze générations offertes chaque mois, sans carte bancaire.
+        </p>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-accent-foreground/80" lang="fr">
+          Sans date de fin&nbsp;: c’est la dotation du compte gratuit, pas un essai. Vous
+          écrivez votre première observation avec vos propres mots, et vous jugez sur le
+          résultat.
+        </p>
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Button asChild variant="primary" size="lg">
+            <Link href="/register">
+              Créer un compte
+              <ArrowRight />
+            </Link>
+          </Button>
+          <Link
+            href="/confiance-lex"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+          >
+            Cadre de confiance LEX
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
         </div>
-        {/* Trois colonnes bâties comme celles de « Trois besoins, un même
-            chemin » : l'icône et le titre centrés en tête de colonne, puis une
-            liste à puces alignée à gauche — une puce se lit, un paragraphe se
-            saute. Le corps est celui du texte courant, pas du petit texte. */}
-        <ul className="grid gap-9 px-6 py-8 md:grid-cols-3 md:gap-10 md:px-9 md:py-10">
-          {GARANTIES.map((g) => {
-            const Icone = g.icone;
-            return (
-              <li key={g.titre}>
-                <span className="mx-auto grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">
-                  <Icone className="size-6" aria-hidden />
-                </span>
-                <h4 className="mt-4 text-center text-lg font-bold leading-snug text-foreground text-balance">
-                  {g.titre}
-                </h4>
-                <ul className="mt-4 space-y-2.5">
-                  {g.points.map((pt) => (
-                    <li key={pt} className="flex items-start gap-2.5 text-base leading-relaxed text-muted-foreground">
-                      <Check className="mt-1 size-4 shrink-0 text-primary" aria-hidden />
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            );
-          })}
-        </ul>
       </div>
     </div>
   );

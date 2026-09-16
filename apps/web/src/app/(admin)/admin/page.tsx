@@ -97,10 +97,34 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Administration"
-        subtitle="Vue d'ensemble de la plateforme, modération et pilotage."
-      />
+      {/*
+        ⚠⚠ MON ESPACE EST EN HAUT, L'ADMINISTRATION EN DESSOUS (16/09/2026,
+        demande de Siham). NE PAS REMETTRE L'ORDRE INVERSE.
+
+        Les deux tableaux de bord ont fusionné le 16/09 parce que le menu
+        ouvrait sur deux portes — « Tableau de bord » et « Mon espace » — sans
+        que rien ne dise laquelle cliquer. L'espace personnel était alors rendu
+        À LA SUITE, au motif qu'« on vient ici pour administrer ». C'était un
+        raisonnement sur le rôle, pas sur l'usage : le compte d'administration
+        est aussi celui qui publie les renforts de l'association, invite son
+        équipe et suit ses réservations. Ce sont ces écrans-là qu'on ouvre
+        plusieurs fois par jour ; la modération se consulte quand on a le temps.
+
+        Et l'espace personnel porte la barre de prise en main (« 3/4 ») et les
+        deux actions principales — publier un renfort, organiser une formation.
+        Sous huit sections d'administration, personne ne les voyait.
+
+        ⚠ IL N'Y A PAS DE `PageHeader` AVANT : `EspacePersonnel` pose son propre
+        titre (« Bonjour … »). Deux en-têtes empilés feraient deux titres pour
+        une seule page.
+      */}
+      <EspacePersonnel />
+
+      <section className="space-y-8 border-t border-border pt-10">
+        <PageHeader
+          title="Administration"
+          subtitle="Vue d'ensemble de la plateforme, modération et pilotage."
+        />
 
       {funnelRes.data?.objectif ? (
         <ObjectifCampagne
@@ -279,15 +303,6 @@ export default async function AdminPage() {
           </div>
         )}
       </section>
-
-      {/* MON ESPACE A REJOINT CETTE PAGE (16/09/2026).
-          Le menu admin ouvrait sur deux portes — « Tableau de bord » et
-          « Mon espace » — et rien ne disait laquelle cliquer. L'espace
-          personnel est donc rendu à la suite, sur la même page : une seule
-          entrée dans le menu, et rien de perdu. L'ordre compte : on vient ici
-          pour administrer, le personnel vient après. */}
-      <section className="border-t border-border pt-10">
-        <EspacePersonnel />
       </section>
     </div>
   );
