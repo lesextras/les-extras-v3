@@ -701,8 +701,10 @@ export default async function LandingPage() {
               <Mascotte className="hidden w-24 shrink-0 sm:block" />
               <div>
               <span className="eyebrow">Pour celles et ceux qui font le terrain</span>
+              {/* Le nom du service est DANS le titre : la ligne grise en
+                  dessous ne suffisait pas à faire retenir « LEX ». */}
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                Le métier ne s’arrête pas à la fin de la journée
+                LEX — le métier ne s’arrête pas à la fin de la journée
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
                 LEX pour les écrits professionnels.

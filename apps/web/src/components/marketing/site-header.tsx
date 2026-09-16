@@ -14,6 +14,9 @@ const links = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
   { label: 'RenforTeam', href: '/renforteam' },
+  // LEX n'a pas de page à lui : son offre vit dans la section #lex de
+  // l'accueil. Le lien pointe donc l'ancre, depuis n'importe quelle page.
+  { label: 'LEX', href: '/#lex' },
   { label: 'Édublog', href: '/edublog' },
   // « Tarifs » et « Aide » ont quitté la barre le 5/8/2026 (demande Siham).
   // Sept entrées, c'était trop : les produits — ce qu'on est venu chercher —
