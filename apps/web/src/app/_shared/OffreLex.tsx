@@ -7,7 +7,60 @@
 // personne ne lit debout. Chaque outil porte maintenant sa couleur, le détail
 // tient en une ligne, et les garanties passent sur une bande sombre — c’est
 // elle qui referme le bloc au lieu de le laisser se dissoudre.
-import { PenLine, Lightbulb, FileText, MessageCircle, ShieldCheck, Lock, Scale, Check } from "lucide-react";
+import {
+  PenLine,
+  Lightbulb,
+  FileText,
+  MessageCircle,
+  ShieldCheck,
+  Lock,
+  Scale,
+  Check,
+  X,
+  EyeOff,
+  Stethoscope,
+  AlignLeft,
+} from "lucide-react";
+
+/**
+ * « POURQUOI PAS SIMPLEMENT CHATGPT ? » — LA QUESTION, EN TROIS LIGNES.
+ *
+ * ⚠⚠ ELLE TENAIT EN SEPT PARAGRAPHES SUR L'ACCUEIL, ET ELLE DISAIT DEUX FOIS
+ * LA MÊME CHOSE. Le bloc pesait ~250 mots au-dessus de ce composant — et ses
+ * trois arguments étaient déjà repris, mot pour mot, par la bande GARANTIES
+ * quelques centimètres plus bas : « les noms ne sortent jamais », « rien n'est
+ * enregistré sans vous », « LEX propose, vous décidez ». Personne ne lit deux
+ * fois le même argument ; on saute les deux.
+ *
+ * Il est donc DANS ce composant, et plus au-dessus : une seule unité visuelle,
+ * de la question jusqu'aux garanties. ⚠ NE PAS LE REMETTRE DANS `page.tsx` —
+ * c'est la séparation qui avait produit la redite.
+ *
+ * ⚠ AUCUN « MEILLEUR QUE », AUCUN CHIFFRE DE COMPARAISON. On décrit un
+ * comportement observable de part et d'autre, le lecteur conclut. Une
+ * comparaison chiffrée contre un produit nommé se défend devant un juge
+ * (art. L122-1 c. conso) ; un fait vérifiable, non.
+ */
+const DIFFERENCES = [
+  {
+    icone: EyeOff,
+    sujet: "Les noms",
+    generaliste: "Voit les vrais noms",
+    lex: "Les remplace par [la mère], [l’éducateur] — et vous montre le texte exact qui part.",
+  },
+  {
+    icone: Stethoscope,
+    sujet: "Le cadre",
+    generaliste: "Répond, même quand ça relève du soin",
+    lex: "Aucun diagnostic : il renvoie à l’équipe pluridisciplinaire et aux soignants.",
+  },
+  {
+    icone: AlignLeft,
+    sujet: "La forme",
+    generaliste: "Rend un texte à reformater",
+    lex: "Rend le genre attendu : observé d’un côté, interprété de l’autre.",
+  },
+];
 
 const PRODUITS = [
   {
@@ -94,6 +147,60 @@ const GARANTIES = [
 export function OffreLex() {
   return (
     <div className="space-y-8">
+      {/*
+        La question ouvre le bloc — c'est celle que tout le monde se pose et
+        que personne ne posait à voix haute. Trois lignes, trois mécanismes
+        vérifiables dans le produit.
+      */}
+      <section className="reflet relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/[0.12] via-card to-card p-6 md:p-7">
+        <span
+          className="animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full bg-primary"
+          aria-hidden
+        />
+        <div className="pl-2">
+          <h3 className="text-xl font-bold tracking-tight text-foreground">
+            «&nbsp;Pourquoi pas simplement ChatGPT&nbsp;?&nbsp;»
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground" lang="fr">
+            Parce qu’une IA généraliste ne connaît ni vos écrits, ni vos obligations, ni les
+            personnes que vous accompagnez.
+          </p>
+
+          <ul className="mt-5 grid gap-3 sm:grid-cols-3">
+            {DIFFERENCES.map((d) => {
+              const Icone = d.icone;
+              return (
+                <li
+                  key={d.sujet}
+                  className="group rounded-xl border border-border bg-card/70 p-4 transition duration-300 hover:border-primary/40 hover:shadow-lg"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="relative grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground transition-transform duration-300 group-hover:scale-110">
+                      <Icone className="size-4" aria-hidden />
+                      <span className="animate-anneau absolute inset-0 rounded-lg bg-primary" aria-hidden />
+                    </span>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
+                      {d.sujet}
+                    </span>
+                  </div>
+
+                  {/* Le comportement de l'IA généraliste, barré : on le lit
+                      comme « ce qu'on ne veut pas », sans avoir à l'écrire. */}
+                  <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground/80">
+                    <X className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                    <span className="line-through">{d.generaliste}</span>
+                  </p>
+                  <p className="mt-1.5 flex items-start gap-1.5 text-sm leading-relaxed text-foreground" lang="fr">
+                    <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                    <span>{d.lex}</span>
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+
       <ul className="grid gap-4 md:grid-cols-2">
         {PRODUITS.map((p) => {
           const Icone = p.icone;

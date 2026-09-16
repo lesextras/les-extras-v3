@@ -3924,3 +3924,40 @@ boucle doit y être ajoutée aussi**.
 Le rail se remplit UNE FOIS (`forwards`) : c'est le chemin, il ne se redessine
 pas. La bille boucle avec une pause à l'arrivée — sans cette pause le mouvement
 paraît nerveux et attire l'œil plus que le texte.
+
+### 16/09 (nuit) — 48 comptes de test archivés, et « pourquoi pas ChatGPT » resserré
+
+**48 comptes archivés** sur les 107 de la base — près de la moitié était du
+décor d'audit : « MECS Audit Test 2 » (×3), « Verif Dotation » (×4), « Sarah
+Salariaudit », « Karim Demo », et les trois « (démo) » qui s'affichaient à
+quiconque tapait le nom de son établissement à l'inscription. Aucun ne portait
+de fiche ; quelques-uns portaient des missions et des réservations de test, qui
+disparaissent des listes publiques avec eux. **Rien n'est supprimé** : la
+colonne `archivedAt` se retire d'un clic.
+
+Vérifié après coup sur l'API publique : `q=test`, `q=audit`, `q=verif` et
+`q=démo` rendent **zéro résultat**.
+
+⚠ **DEUX PAIRES D'HOMONYMES RESTENT, ET ELLES NE SE TRANCHENT PAS SANS SIHAM** :
+« les extras » ×2 (l'un porte 2 missions, l'autre rien) et « adépa » ×2 (l'un
+porte 1 mission, l'autre rien) — ce sont les deux comptes au même SIRET.
+Archiver le mauvais des deux ferait disparaître son vrai compte des listes.
+
+### Le bloc « Pourquoi pas simplement ChatGPT ? » est DANS `OffreLex`
+
+⚠ **NE PAS LE REMETTRE DANS `page.tsx`.** Il y pesait sept paragraphes
+(~250 mots) — et ses trois arguments étaient déjà repris **mot pour mot** par
+la bande GARANTIES du composant situé quelques centimètres plus bas : « les
+noms ne sortent jamais », « rien n'est enregistré sans vous », « LEX propose,
+vous décidez ». Deux fois le même argument à trois centimètres d'écart : on
+saute les deux. C'est la séparation des deux blocs qui avait produit la redite.
+
+Il tient maintenant en **trois lignes iconographiées**, en tête du même bloc :
+pour chaque sujet (les noms, le cadre, la forme), le comportement d'une IA
+généraliste **barré**, puis celui de LEX coché. Une seule unité visuelle, de la
+question jusqu'aux garanties.
+
+⚠ **AUCUN « MEILLEUR QUE », AUCUN CHIFFRE DE COMPARAISON.** On décrit un
+comportement observable de part et d'autre, le lecteur conclut. Une comparaison
+chiffrée contre un produit nommé se défend devant un juge (art. L122-1
+c. conso) ; un fait vérifiable, non.
