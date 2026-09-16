@@ -5,7 +5,8 @@
 import { useRef } from "react";
 import Link from "next/link";
 import {
-  ChevronLeft, ChevronRight, MapPin, Megaphone, Star, ShieldCheck, BadgeCheck, Clock, Sparkles,
+  ArrowRight, Building2, ChevronLeft, ChevronRight, MapPin, Star, ShieldCheck, BadgeCheck,
+  Clock, Sparkles,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +14,29 @@ import { VisuelCarte } from "./VisuelCarte";
 import { VignetteSansPhoto } from "./VignetteSansPhoto";
 import { premierVisuel } from "@/lib/media";
 import { formatMoney } from "./format";
+import { resumeTerritoire } from "@/lib/territoires";
 import { EMOJI_PARCOURS, dureeLisible, estMaison } from "@/lib/mini-formations";
 
 export interface OfferCard {
   id: string;
   slug?: string;
   title: string;
+  /**
+   * ⚠⚠ LE RÉSUMÉ ÉTAIT DANS LA CHARGE UTILE ET N'ÉTAIT PAS AFFICHÉ.
+   * `/public/highlights` renvoie `description` pour un atelier et `summary`
+   * pour une formation depuis le début ; le carrousel de l'accueil n'en
+   * montrait ni l'un ni l'autre. Une carte de l'accueil disait donc trois fois
+   * moins qu'une carte du catalogue pour la même fiche — titre, lieu, public,
+   * prix — et c'est l'accueil qui reçoit tout le trafic publicitaire.
+   * Corrigé le 16/09/2026, demande de Siham : « mets le même contenu que dans
+   * les cartes des pages ateliers et formations ».
+   */
+  description?: string | null;
+  summary?: string | null;
+  /** Durée écrite à la main sur un atelier (« 2H »). */
+  duration?: string | null;
+  /** Départements couverts, en codes INSEE. Voir `lib/territoires.ts`. */
+  departements?: string[] | null;
   images?: string[] | null;
   city?: string | null;
   publicTargets?: string[] | null;
@@ -30,7 +48,7 @@ export interface OfferCard {
   durationMinutes?: number | null;
   /** Mini-formation en ligne et gratuite : ni devis, ni session, ni prix. */
   freeOnline?: boolean;
-  account?: { id: string; name: string } | null;
+  account?: { id: string; name: string; city?: string | null } | null;
   categoryRef?: { id: string; title: string } | null;
   rating?: number | null;
   reviewsCount?: number;
@@ -99,13 +117,38 @@ export function OfferCarousel({
           const duree = dureeLisible(o);
           const maison = o.freeOnline && estMaison(o.account?.name);
           const visuel = premierVisuel(o.images);
+          const resume = o.description ?? o.summary ?? null;
+          // La durée écrite à la main d'un atelier (« 2H ») d'abord, sinon
+          // celle calculée depuis les heures ou les minutes d'une formation.
+          const dureeAffichee = o.duration ?? duree;
+          const categorie = o.categoryRef?.title ?? null;
+          /**
+           * ⚠ ON N'AFFICHE PAS `city` TEL QUEL — même règle que le catalogue.
+           * Seize fiches sur dix-sept ont une RÉGION dans un champ nommé
+           * « ville » : la carte annonçait « Île-de-France » comme s'il
+           * s'agissait d'un lieu de rendez-vous, alors que c'est l'intervenant
+           * qui se déplace. Le territoire couvert répond à la seule question
+           * que se pose un directeur : est-ce que ça vient jusqu'à moi.
+           */
+          const territoire =
+            resumeTerritoire(o.departements ?? []) ?? o.city ?? o.account?.city ?? null;
+          // L'organisme n'est pas répété quand la pastille « Conçue par ADéPA »
+          // le dit déjà deux lignes plus haut.
+          const organisme = maison ? null : o.account?.name;
           return (
+            // Un peu plus large qu'avant : la carte porte désormais un résumé
+            // de trois lignes et un concepteur. À 280 px, « Se déplace : Toute
+            // l'Île-de-France » se coupait au milieu.
             <Link
               key={o.id}
               href={href}
-              className="group w-[280px] shrink-0 snap-start sm:w-[320px]"
+              className="group w-[300px] shrink-0 snap-start sm:w-[340px]"
             >
-              <Card className="h-full overflow-hidden transition group-hover:shadow-card">
+              {/* `flex flex-col` : sans lui, le `mt-auto` du bloc du bas n'a
+                  rien contre quoi pousser et les prix de la rangée ne
+                  s'alignent plus dès qu'un résumé fait deux lignes au lieu de
+                  trois. */}
+              <Card className="flex h-full flex-col overflow-hidden transition group-hover:shadow-card">
                 <div className="relative aspect-[16/11] bg-muted">
                   <VisuelCarte src={visuel} alt={o.title} sizes="320px">
                     {/* Sans photo, la carte affichait un rectangle beige avec
@@ -138,73 +181,113 @@ export function OfferCarousel({
                     </span>
                   ) : null}
                 </div>
-                <CardContent className="space-y-2.5 p-5">
-                  {maison || duree ? (
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {maison ? (
-                        <Badge className="gap-1">
-                          <Sparkles className="size-3" /> Conçue par ADéPA
-                        </Badge>
-                      ) : null}
-                      {duree ? (
-                        <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="size-3.5" />
-                          {duree}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
-                  <div className="flex items-start gap-1.5">
-                    <h3 className={`line-clamp-2 font-semibold leading-snug text-foreground ${emoji ? "" : "uppercase"}`}>
-                      {o.title}
-                    </h3>
-                    {o.verified ? (
-                      <BadgeCheck className="mt-0.5 size-4 shrink-0 text-success" aria-label="Validé" />
-                    ) : null}
-                    {o.qualiopi || o.certifying ? (
-                      <ShieldCheck className="mt-0.5 size-4 shrink-0 text-warning" aria-label="Qualiopi" />
+                {/*
+                  ⚠⚠ CE CORPS DE CARTE EST CELUI DU CATALOGUE, VOLONTAIREMENT.
+                  Même ordre, mêmes icônes, mêmes formulations : catégorie et
+                  durée, titre, résumé sur trois lignes, concepteur, territoire,
+                  public, prix et « Voir ». Une même fiche ne doit pas se
+                  présenter de deux façons selon la page où on la rencontre —
+                  et c'est l'accueil qui était le plus pauvre des deux.
+                */}
+                <CardContent className="flex flex-1 flex-col gap-3 p-5">
+                  <div className="flex items-center justify-between gap-2">
+                    {maison ? (
+                      <Badge className="gap-1">
+                        <Sparkles className="size-3" /> Conçue par ADéPA
+                      </Badge>
+                    ) : categorie ? (
+                      <Badge variant="soft">{categorie}</Badge>
+                    ) : (
+                      <span />
+                    )}
+                    {dureeAffichee ? (
+                      <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="size-3.5" />
+                        {dureeAffichee}
+                      </span>
                     ) : null}
                   </div>
 
-                  {o.city ? (
-                    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <MapPin className="size-4 text-destructive" /> {o.city}
-                    </p>
-                  ) : o.freeOnline ? (
-                    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <MapPin className="size-4 text-destructive" /> En ligne, à votre rythme
+                  <div className="flex items-start gap-1.5">
+                    {/* Plus de `uppercase` : le catalogue écrit les titres tels
+                        qu'ils ont été saisis, et deux casses pour un même
+                        atelier se lisent comme deux offres différentes. */}
+                    <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-foreground">
+                      {o.title}
+                    </h3>
+                    {o.verified ? (
+                      <BadgeCheck className="mt-1 size-4 shrink-0 text-success" aria-label="Validé" />
+                    ) : null}
+                    {o.qualiopi || o.certifying ? (
+                      <ShieldCheck className="mt-1 size-4 shrink-0 text-warning" aria-label="Qualiopi" />
+                    ) : null}
+                  </div>
+
+                  {resume ? (
+                    <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                      {resume}
                     </p>
                   ) : null}
 
-                  {publics.length > 0 ? (
-                    <div className="flex gap-1.5 text-sm text-muted-foreground">
-                      <Megaphone className="mt-0.5 size-4 shrink-0" />
-                      <span>
-                        <span className="block text-xs font-medium">Public :</span>
-                        {publics.join(", ")}
+                  <div className="mt-auto space-y-3 pt-2">
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      {organisme ? (
+                        <p className="flex items-center gap-1.5">
+                          <Building2 className="size-3.5 shrink-0" />
+                          <span className="truncate">{organisme}</span>
+                        </p>
+                      ) : null}
+                      {o.freeOnline ? (
+                        <p className="flex items-center gap-1.5 font-medium text-foreground">
+                          <MapPin className="size-3.5 shrink-0 text-primary" />
+                          <span className="truncate">En ligne, à votre rythme</span>
+                        </p>
+                      ) : territoire ? (
+                        <p className="flex items-center gap-1.5 font-medium text-foreground">
+                          <MapPin className="size-3.5 shrink-0 text-primary" />
+                          <span className="truncate">Se déplace : {territoire}</span>
+                        </p>
+                      ) : null}
+                      {publics.length > 0 ? (
+                        <p className="line-clamp-1">
+                          <span className="font-medium">Public :</span> {publics.join(", ")}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+                      {/* « Sur devis » sur une formation gratuite ferait fuir
+                          exactement les gens qu'elle vise, c'est ce qu'affichait
+                          ce carrousel sur les dix mini-formations. */}
+                      <span className="inline-flex items-center gap-2">
+                        <span className="text-base font-semibold text-foreground">
+                          {o.freeOnline
+                            ? "Gratuit · en ligne"
+                            : prix
+                              ? formatMoney(prix)
+                              : "Sur devis"}
+                        </span>
+                        {o.rating ? (
+                          <span className="inline-flex items-center gap-0.5 text-sm text-muted-foreground">
+                            <Star className="size-3.5 fill-current text-amber-500" />
+                            {o.rating.toFixed(1)}
+                          </span>
+                        ) : null}
+                      </span>
+                      {/*
+                        ⚠ C'EST UN `span`, PAS UN BOUTON-LIEN. Toute la carte est
+                        déjà un `<Link>` : y imbriquer un second lien est du HTML
+                        invalide, que chaque navigateur répare à sa façon — et
+                        c'est le piège que `_catalog.tsx` documente déjà. Le
+                        catalogue, lui, peut se le permettre parce que sa carte
+                        n'est pas cliquable en entier (elle porte le bouton
+                        « mettre de côté »).
+                      */}
+                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-input px-3 py-1.5 text-sm font-medium text-foreground transition group-hover:border-primary group-hover:text-primary">
+                        Voir
+                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
                       </span>
                     </div>
-                  ) : o.durationHours ? (
-                    <p className="text-sm text-muted-foreground">{o.durationHours} h de formation</p>
-                  ) : null}
-
-                  <div className="flex items-center justify-between border-t border-border pt-3">
-                    {/* « Sur devis » sur une formation gratuite ferait fuir
-                        exactement les gens qu'elle vise, c'est ce qu'affichait
-                        ce carrousel sur les dix mini-formations. */}
-                    <p className="text-lg font-semibold text-primary">
-                      {o.freeOnline
-                        ? "Gratuit · en ligne"
-                        : prix
-                          ? formatMoney(prix)
-                          : "Sur devis"}
-                    </p>
-                    {o.rating ? (
-                      <span className="inline-flex items-center gap-1 text-sm font-medium text-foreground">
-                        <Star className="size-4 fill-current text-amber-400" />
-                        {o.rating.toFixed(1)}
-                      </span>
-                    ) : null}
                   </div>
                 </CardContent>
               </Card>
