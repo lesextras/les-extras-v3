@@ -15,6 +15,7 @@
   },
   "pnpm": {
     "overrides": {
+      "deepmerge-ts": "^8.0.0",
       "multer": "^2.3.0",
       "postcss": "^8.5.26",
       "qs": "^6.16.0",
