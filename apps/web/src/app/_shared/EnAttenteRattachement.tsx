@@ -231,7 +231,12 @@ export async function EnAttenteRattachement({
                   key={href}
                   asChild
                   variant="outline"
-                  className="h-auto w-full justify-start gap-3 py-3 text-left"
+                  /* ⚠ `whitespace-normal` : le bouton porte `whitespace-nowrap`
+                     dans ses classes de base (voir `button.tsx`). Sans cette
+                     annulation, la ligne d'aide ne revient pas à la ligne et se
+                     fait couper net au bord de la carte — vérifié en direct le
+                     17/09, « les noms sont masc… ». */
+                  className="h-auto w-full justify-start gap-3 whitespace-normal py-3 text-left"
                 >
                   <Link href={href}>
                     <Icone className="size-4 shrink-0 text-primary" aria-hidden />

@@ -4372,3 +4372,68 @@ n'autorise pas pour ce domaine — une partie des messages se fait écarter en
 silence. Un lien de confirmation qui n'arrive pas, c'est un compte qui ne
 s'ouvre jamais. **Avant de toucher au code de vérification, vérifier
 `/admin/emails` : le bandeau rouge dit tout.**
+
+---
+
+## CHAQUE COMPTE A UN TABLEAU DE BORD — 17/09/2026
+
+Constat de Siham, mot pour mot : « je me suis connecté sur un compte autre que
+admin et il n'a pas de tableau de bord ». Capture à l'appui : le compte
+« David UNAU · Professionnel · Direction » tombait sur **« Votre compte attend
+son établissement »**.
+
+### Ce que la vérification a donné
+
+| État du compte | Ce que sert `/dashboard` |
+|---|---|
+| ESTABLISHMENT | le hub complet (stats, renforts, réservations, équipe) |
+| FREELANCE | le hub complet (candidatures, ateliers, revenus) |
+| PARTICULIER | `<AccueilParticulier>` — bifurcation **avant** tous les appels |
+| ADMIN | le hub, plus `/admin` |
+| **en attente de rattachement** | **rien qui ressemble à un tableau de bord** |
+
+Le seul trou était le dernier, et ce n'était pas un bogue : depuis le 25/08,
+`(dashboard)/layout.tsx` **remplace** délibérément la page par
+`<EnAttenteRattachement>` tant que `enAttenteRattachement` est vrai, et
+`/dashboard` est volontairement absent de `CHEMINS_OUVERTS_SANS_RATTACHEMENT`
+(« c'est LÀ que l'écran d'attente s'affiche »). Le motif tient toujours — le
+serveur refuse déjà ces routes, une succession d'erreurs ne dit rien à la
+personne. Mais **ce qui s'affichait à la place était une page d'attente**, pas
+un tableau de bord : ni salutation, ni chiffre, ni accès rapide — alors que le
+menu de gauche (`attenteRattachementNav`) lui ouvrait déjà Opportunités, Mes
+interventions, Mes ateliers, Mes formations, Mon planning, Mon dossier et LEX.
+
+### Ce que l'écran porte maintenant
+
+Salutation (« Bonjour David »), une pastille d'état, **quatre chiffres** —
+crédits LEX, écrits produits sur 30 jours, avancement du dossier, demandes
+envoyées —, la **demande de rattachement gardée en tête et en grand**, et les
+accès rapides vers ce que le menu ouvre déjà.
+
+⚠ **LES CHIFFRES NE VIENNENT QUE DES ROUTES QUE LE SERVEUR OUVRE À CE COMPTE.**
+`common/guards/rattachement.ts` laisse passer `billing` et `conformite` — d'où
+`/billing/utilisation` et `/conformite/mes-documents`. Il **refuse**
+`dashboard/stats`, `missions`, `bookings` et `services` : une carte alimentée
+par l'une de ces quatre-là afficherait une erreur là où on voulait un chiffre,
+et ce serait pire qu'une carte absente.
+
+⚠ **AUCUN APPEL N'EST BLOQUANT** : `fetchApi` ne lève jamais, une API muette
+laisse une carte à zéro. L'inverse ferait disparaître la demande de
+rattachement — la seule action qui sort de cet état — avec le reste.
+
+⚠ **LE PRÉNOM EST PASSÉ PAR LE LAYOUT**, qui appelle déjà `/auth/me` : le jeton
+de session ne porte pas `firstName` (c'est le défaut corrigé sur le hub en
+août), et une seconde requête pour le même prénom serait du gaspillage.
+
+⚠ **`whitespace-normal` EST OBLIGATOIRE SUR LES BOUTONS À DEUX LIGNES.**
+`button.tsx` porte `whitespace-nowrap` dans ses classes de base : la ligne
+d'aide des accès rapides se faisait couper net au bord de la carte (« les noms
+sont masc… »), vu en direct après le premier déploiement.
+
+### Ce qui reste ouvert, et qui n'est pas ce trou-là
+
+`ASSOCIATION` et `ACADEMIE` retombent sur le hub FREELANCE
+(`resolveNavRole` ne connaît que ESTABLISHMENT, PARTICULIER, ADMIN et le
+reste). C'est sans conséquence aujourd'hui — ces deux types appartiennent aux
+sous-domaines « Piloter », qui ont leurs propres écrans et ne passent pas par
+`(dashboard)`. À reprendre le jour où l'un d'eux y navigue.
