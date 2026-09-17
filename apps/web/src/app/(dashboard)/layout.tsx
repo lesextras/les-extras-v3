@@ -18,9 +18,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   // L'état de vérification n'est pas dans le jeton (il change après émission) :
   // on le lit à la source. Une requête légère, une seule fois par navigation.
+  // `firstName` est lu ici et passé plus bas : le jeton de session ne le porte
+  // pas, et l'écran d'attente dit « Bonjour » comme tous les autres tableaux
+  // de bord. Une seconde requête pour le même prénom serait du gaspillage.
   const { data: moi } = await fetchApi<{
     emailVerified?: boolean;
     email?: string;
+    firstName?: string | null;
     enAttenteRattachement?: boolean;
   }>(session, "/auth/me");
   const aConfirmer = moi?.emailVerified === false;
@@ -61,7 +65,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       ) : null}
       {enAttente ? (
         <EnAttenteRattachement
-          accountId={session.account.id}
+          session={session}
+          prenom={moi?.firstName}
           demandes={(demandes ?? [])
             .filter((d) => d.establishmentAccount?.name)
             .map((d) => ({
