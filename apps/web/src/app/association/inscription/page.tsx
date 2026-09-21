@@ -89,7 +89,7 @@ export default async function InscriptionPage({ searchParams }: { searchParams: 
           <p className="mt-3 text-lg leading-relaxed">
             {choix === 'association'
               ? "Ton association, puis toi, puis c'est prêt. Deux minutes. Rien à installer, rien à payer."
-              : "Dis-nous d'abord ce que tu veux créer — une association, un organisme de formation, ou les deux. Ensuite ton nom et ton adresse e-mail, et le chemin t'explique la première étape."}
+              : "Dis-nous d'abord ce que tu veux créer, une association, un organisme de formation, ou les deux. Ensuite ton nom et ton adresse e-mail, et le chemin t'explique la première étape."}
           </p>
           <div className="mt-8">
             <FormulaireInscription avecAssociation={choix === 'association'} />

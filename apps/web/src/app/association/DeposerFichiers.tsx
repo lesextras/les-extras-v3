@@ -98,7 +98,7 @@ export function DeposerFichiers({ piece, categorie = 'Autre', titre, onFini, onA
             <li key={`${f.name}-${i}`} className="truncate text-xs text-[#3B3A66]">
               {piece && i === 0 ? '• ' : '· '}
               {f.name}
-              {piece && i === 0 ? <span className="text-[#6B6A8A]"> — dans le classeur</span> : null}
+              {piece && i === 0 ? <span className="text-[#6B6A8A]">, dans le classeur</span> : null}
             </li>
           ))}
         </ul>

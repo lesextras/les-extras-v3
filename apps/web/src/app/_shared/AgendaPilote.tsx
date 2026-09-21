@@ -525,7 +525,7 @@ export default function AgendaPilote({ teinte, appel }: Props) {
                     setSurZone(null);
                     void deplacer(jour);
                   }}
-                  aria-label={`${jourLong(jour)} — ${duJour.length} élément${duJour.length > 1 ? 's' : ''}`}
+                  aria-label={`${jourLong(jour)} · ${duJour.length} élément${duJour.length > 1 ? 's' : ''}`}
                   aria-pressed={choisi}
                   className="min-h-[104px] cursor-pointer border-b border-r p-1.5 text-left align-top transition hover:bg-black/[0.03] focus:outline-none focus:ring-2 focus:ring-inset"
                   style={{
@@ -572,7 +572,7 @@ export default function AgendaPilote({ teinte, appel }: Props) {
                           }}
                           className={`block truncate rounded-md border px-1.5 py-0.5 text-[11px] font-bold leading-4 ${e.modifiable ? 'cursor-grab active:cursor-grabbing' : ''}`}
                           style={{ background: s.fond, color: s.texte, borderColor: s.bord }}
-                          title={e.detail ? `${e.titre} — ${e.detail}` : e.titre}
+                          title={e.detail ? `${e.titre} · ${e.detail}` : e.titre}
                         >
                           {e.journeeEntiere ? '' : `${heure(e.debut)} `}
                           {e.titre}

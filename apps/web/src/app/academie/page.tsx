@@ -46,7 +46,7 @@ async function Presentation() {
           {
             titre: 'Le chemin, pas la paperasse',
             detail:
-              "Douze étapes dans l'ordre où elles se posent vraiment — y compris celle que personne ne voit venir : il faut une première convention signée AVANT de pouvoir déclarer son activité.",
+              "Douze étapes dans l'ordre où elles se posent vraiment, y compris celle que personne ne voit venir : il faut une première convention signée AVANT de pouvoir déclarer son activité.",
           },
           {
             titre: 'Qualiopi tenu à jour',

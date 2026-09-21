@@ -120,7 +120,7 @@ export async function apiEspace<T>(
 }
 
 export function formaterEuros(n: number | null | undefined) {
-  if (n === null || n === undefined) return '—';
+  if (n === null || n === undefined) return 'Non renseigné';
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }
 

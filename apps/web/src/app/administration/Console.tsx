@@ -140,7 +140,7 @@ export function Console({
                   </span>
                 </div>,
                 <span key="p" className="text-[#C9C7E8]">
-                  {c.proprietaire?.email ?? '—'}
+                  {c.proprietaire?.email ?? 'Non renseigné'}
                 </span>,
                 <span key="d" className="text-[#8F8CB8]">
                   {date(c.creeLe)}
@@ -163,12 +163,12 @@ export function Console({
               cle: p.id,
               cellules: [
                 <div key="p">
-                  <span className="font-bold text-white">{p.nom ?? '—'}</span>
+                  <span className="font-bold text-white">{p.nom ?? 'Non renseigné'}</span>
                   <br />
                   <span className="text-sm text-[#8F8CB8]">{p.email}</span>
                 </div>,
                 <span key="e" className="text-[#C9C7E8]">
-                  {p.espaces.length ? p.espaces.map((e) => e.nom).join(', ') : '—'}
+                  {p.espaces.length ? p.espaces.map((e) => e.nom).join(', ') : 'Non renseigné'}
                 </span>,
                 <span key="d" className="text-[#8F8CB8]">
                   {date(p.derniereConnexion)}
@@ -194,7 +194,7 @@ export function Console({
                         : 'border border-[#312F55] text-[#C9C7E8] hover:border-[#C42B57]'
                     }`}
                   >
-                    {p.statut === 'BANNED' ? 'Suspendu — rétablir' : 'Suspendre'}
+                    {p.statut === 'BANNED' ? 'Suspendu, rétablir' : 'Suspendre'}
                   </button>
                 </div>,
               ],
@@ -217,7 +217,7 @@ export function Console({
                       {f.titre}
                     </a>,
                     <span key="e" className="text-[#C9C7E8]">
-                      {f.espace?.nom ?? '—'}
+                      {f.espace?.nom ?? 'Non renseigné'}
                     </span>,
                     <span key="s" className="text-[#8F8CB8]">
                       {f.statut}
@@ -243,7 +243,7 @@ export function Console({
                       {c.titre}
                     </a>,
                     <span key="e" className="text-[#C9C7E8]">
-                      {c.espace?.nom ?? '—'}
+                      {c.espace?.nom ?? 'Non renseigné'}
                     </span>,
                     <span key="p" className="text-[#8F8CB8]">
                       {c.gratuit || c.prixCents === 0 ? 'Gratuit' : euros(c.prixCents)}
@@ -284,7 +284,7 @@ function Vue({ tableau: t }: { tableau: Tableau }) {
                 <li key={c.id} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#252344] pb-2 last:border-0">
                   <span className="font-bold text-white">{c.nom}</span>
                   <span className="text-sm text-[#8F8CB8]">
-                    {c.type === 'ASSOCIATION' ? 'Association' : 'Académie'} · {c.courriel ?? '—'} · {date(c.creeLe)}
+                    {c.type === 'ASSOCIATION' ? 'Association' : 'Académie'} · {c.courriel ?? 'Non renseigné'} · {date(c.creeLe)}
                   </span>
                 </li>
               ))
@@ -353,9 +353,9 @@ function Tableaux({ entetes, lignes }: { entetes: string[]; lignes: { cle: strin
 }
 
 function date(iso: string | null | undefined) {
-  if (!iso) return '—';
+  if (!iso) return 'Non renseigné';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return 'Non renseigné';
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 

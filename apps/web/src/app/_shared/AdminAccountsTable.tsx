@@ -467,7 +467,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                           disabled={busy === a.id}
                           title={
                             a.archivedAt
-                              ? "Ce compte est retiré des recherches et du site public — cliquer pour le rétablir"
+                              ? "Ce compte est retiré des recherches et du site public, cliquer pour le rétablir"
                               : "Le retirer des recherches et du site public, sans rien supprimer"
                           }
                           onClick={() => basculerArchive(a)}

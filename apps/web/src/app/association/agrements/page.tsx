@@ -6,7 +6,7 @@ import { ListeAgrements, NOMBRE_AGREMENTS, dateAgrements } from '../ListeAgremen
 export const metadata: Metadata = {
   title: 'Nos agréments',
   description:
-    "Les agréments qu'une association peut demander — jeunesse, ESUS, éducation nationale, service civique, sport, santé : ce que chacun ouvre, et où le demander.",
+    "Les agréments qu'une association peut demander, jeunesse, ESUS, éducation nationale, service civique, sport, santé : ce que chacun ouvre, et où le demander.",
   alternates: { canonical: '/agrements' },
 };
 

@@ -143,7 +143,7 @@ export function TableauApprenants({ apprenants: initiaux, origine }: { apprenant
           {visibles.map((a) => (
             <tr key={a.id} className="border-t" style={{ borderColor: VERT.bord }}>
               <td className="px-4 py-3" style={{ color: VERT.encre }}>
-                <span className="font-bold">{a.nom ?? '—'}</span>
+                <span className="font-bold">{a.nom ?? 'Non renseigné'}</span>
                 <br />
                 <span className="text-sm" style={{ color: VERT.sourdine }}>
                   {a.email}
@@ -235,12 +235,12 @@ export function TableauVentes({ ventes: initiales, cours }: { ventes: Vente[]; c
       <div className="grid gap-3 sm:grid-cols-3">
         <Tuile libelle="Encaissé" valeur={euros(total)} />
         <Tuile libelle="Ventes" valeur={String(ventes.length)} />
-        <Tuile libelle="Panier moyen" valeur={ventes.length ? euros(Math.round(total / ventes.length)) : '—'} />
+        <Tuile libelle="Panier moyen" valeur={ventes.length ? euros(Math.round(total / ventes.length)) : 'Non renseigné'} />
       </div>
 
       <Cadre
         titre="Enregistrer une vente"
-        aide="Le paiement se fait où tu veux — virement, espèces, lien de paiement, facture OPCO. On note ici ce qui est entré, pour que le suivi et les statistiques disent vrai."
+        aide="Le paiement se fait où tu veux, virement, espèces, lien de paiement, facture OPCO. On note ici ce qui est entré, pour que le suivi et les statistiques disent vrai."
       >
         <div className="grid gap-3 sm:grid-cols-5">
           <select value={form.coursId} onChange={(e) => setForm({ ...form, coursId: e.target.value })} className={CHAMP}>
@@ -278,14 +278,14 @@ export function TableauVentes({ ventes: initiales, cours }: { ventes: Vente[]; c
                 {dateCourte(v.le)}
               </td>
               <td className="px-4 py-3" style={{ color: VERT.encre }}>
-                <span className="font-bold">{v.nom ?? '—'}</span>
+                <span className="font-bold">{v.nom ?? 'Non renseigné'}</span>
                 <br />
                 <span className="text-sm" style={{ color: VERT.sourdine }}>
                   {v.email}
                 </span>
               </td>
               <td className="px-4 py-3" style={{ color: VERT.texte }}>
-                {v.cours?.titre ?? '—'}
+                {v.cours?.titre ?? 'Non renseigné'}
               </td>
               <td className="px-4 py-3 font-bold tabular-nums" style={{ color: VERT.encre }}>
                 {euros(v.montantCents)}
@@ -634,7 +634,7 @@ export function TableauClasses({ classes: initiales, cours }: { classes: Classe[
                 {c.titre}
               </td>
               <td className="px-4 py-3" style={{ color: VERT.texte }}>
-                {c.cours?.titre ?? '—'}
+                {c.cours?.titre ?? 'Non renseigné'}
               </td>
               <td className="px-4 py-3">
                 {c.lien ? (
@@ -642,7 +642,7 @@ export function TableauClasses({ classes: initiales, cours }: { classes: Classe[
                     Ouvrir
                   </a>
                 ) : (
-                  '—'
+                  'Non renseigné'
                 )}
               </td>
               <td className="px-4 py-3 text-right">

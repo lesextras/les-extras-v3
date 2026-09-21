@@ -125,7 +125,7 @@ export function CodesPromo({ initiaux, cours }: { initiaux: Promo[]; cours: Cour
             onChange={(e) => setDescription(e.target.value)}
             className={CHAMP}
             maxLength={200}
-            placeholder="Rentrée 2026 — 20 % sur le parcours complet"
+            placeholder="Rentrée 2026, 20 % sur le parcours complet"
           />
           <span className="mt-1 block text-[13px] text-[#5E7A6E]">
             Elle ne sort nulle part : elle te sert à retrouver ce code dans la liste.

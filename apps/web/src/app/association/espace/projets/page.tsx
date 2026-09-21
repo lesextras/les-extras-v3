@@ -24,7 +24,7 @@ export default async function ProjetsPage() {
     <>
       <Titre
         surtitre="Ce que fait mon association"
-        sousTitre="Un projet, c'est une sortie, un atelier, un tournoi, un accompagnement. Noté ici, il se recopie tout seul dans le rapport d'activité et dans tes demandes de subvention — et il sert à trouver qui peut le financer."
+        sousTitre="Un projet, c'est une sortie, un atelier, un tournoi, un accompagnement. Noté ici, il se recopie tout seul dans le rapport d'activité et dans tes demandes de subvention, et il sert à trouver qui peut le financer."
       >
         Mes projets
       </Titre>
@@ -51,7 +51,7 @@ export default async function ProjetsPage() {
             <Encart ton="attention">
               <p className="font-extrabold">Remplis d&apos;abord ton projet en une page.</p>
               <p className="mt-1 text-sm leading-relaxed">
-                Quatre questions : pour qui, quoi, comment, ce que ça change. C&apos;est ce texte qui sert à chercher les bons financeurs — sans lui, les pistes
+                Quatre questions : pour qui, quoi, comment, ce que ça change. C&apos;est ce texte qui sert à chercher les bons financeurs, sans lui, les pistes
                 seront vagues.
               </p>
               <Link href="/espace/association#projet" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">

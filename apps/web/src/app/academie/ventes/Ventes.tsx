@@ -215,7 +215,7 @@ export function Ventes({ initiales, cours, packs }: { initiales: Vente[]; cours:
                 ))}
                 {packs.map((p) => (
                   <option key={p.id} value={`pack:${p.id}`}>
-                    Pack — {p.titre}
+                    Pack · {p.titre}
                   </option>
                 ))}
               </select>
@@ -271,7 +271,7 @@ export function Ventes({ initiales, cours, packs }: { initiales: Vente[]; cours:
                 <span className="block break-all text-[13px] text-[#5E7A6E]">{v.email}</span>
               </span>
               <span className="min-w-[170px] flex-1 text-[15px] text-[#334A42]">
-                {v.cours?.titre ?? (v.packId ? 'Pack' : '—')}
+                {v.cours?.titre ?? (v.packId ? 'Pack' : 'Non renseigné')}
                 {v.codePromo ? <span className="block text-[13px] text-[#5E7A6E]">code {v.codePromo}</span> : null}
               </span>
               <Pastille ton={TON[v.statut]}>{NOM_STATUT_VENTE[v.statut]}</Pastille>

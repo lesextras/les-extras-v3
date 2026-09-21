@@ -288,7 +288,7 @@ export function Panier({
           {aExpedier ? (
             <>
               <p className="mt-6 text-sm font-bold text-[#334A42]">
-                Où livrer — cette commande contient un article à expédier.
+                Où livrer, cette commande contient un article à expédier.
               </p>
               <div className="mt-2 grid gap-4 sm:grid-cols-2">
                 <label className={`${etiquette} sm:col-span-2`}>

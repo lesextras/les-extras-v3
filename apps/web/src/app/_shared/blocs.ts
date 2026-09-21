@@ -182,7 +182,7 @@ export const ICONE_BLOC: Record<TypeBloc, string> = {
   audio: '♪',
   texte: '¶',
   classe: '◉',
-  separateur: '—',
+  separateur: '·',
   image: '▣',
   titre: 'H',
   fichier: '⤓',

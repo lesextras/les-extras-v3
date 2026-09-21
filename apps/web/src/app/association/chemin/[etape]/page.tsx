@@ -207,7 +207,7 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
                   <a href={r.lien} target="_blank" rel="noopener" className="font-bold text-[#4F46E5] underline underline-offset-4">
                     {r.nom} ↗
                   </a>{' '}
-                  <span className="text-[#6B6A8A]">— {r.pourQuoi}</span>
+                  <span className="text-[#6B6A8A]">· {r.pourQuoi}</span>
                 </li>
               ))}
             </ul>

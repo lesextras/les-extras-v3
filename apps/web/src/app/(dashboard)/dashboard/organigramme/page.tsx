@@ -59,7 +59,7 @@ export default async function OrganigrammePage() {
           <p className="text-muted-foreground" lang="fr">
             C’est normal, et c’est la règle : on voit les personnes de ses
             propres services et celles qu’on a fait venir. Pour voir tout
-            l’établissement, il faut le niveau Direction — il se demande depuis{' '}
+            l’établissement, il faut le niveau Direction. Il se demande depuis{' '}
             <Link href="/dashboard/mon-poste" className="font-medium text-primary hover:underline">
               votre poste
             </Link>{' '}

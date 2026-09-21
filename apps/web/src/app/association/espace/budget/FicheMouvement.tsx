@@ -158,7 +158,7 @@ export function FicheMouvement({ mouvement, onFermer }: { mouvement: Mouvement |
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-[#1D1B5C]">Comment</span>
           <select value={v.moyen} onChange={(e) => setV({ ...v, moyen: e.target.value as MoyenPaiement | '' })} className={CHAMP}>
-            <option value="">—</option>
+            <option value="">Aucun</option>
             {MOYENS.map((m) => (
               <option key={m} value={m}>
                 {LIBELLES_MOYEN[m]}

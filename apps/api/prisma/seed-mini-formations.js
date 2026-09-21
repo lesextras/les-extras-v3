@@ -89,13 +89,13 @@ const COUVERTURES = '/images/mini-formations/';
  */
 const EVALUATION = `La progression est enregistrée module par module : chaque module porte une durée minimale de consultation, et la formation est réputée suivie lorsque les quatre modules ont été parcourus.
 
-Chaque module se termine par trois critères vérifiables — « Avant de passer au module suivant » — que vous cochez vous-même. Ce ne sont pas des questions de connaissance : ce sont des productions (une grille remplie, une phrase écrite, un relevé compté).
+Chaque module se termine par trois critères vérifiables, « Avant de passer au module suivant », que vous cochez vous-même. Ce ne sont pas des questions de connaissance : ce sont des productions (une grille remplie, une phrase écrite, un relevé compté).
 
 Chaque module se termine aussi par cinq questions d’autocorrection, avec leurs réponses commentées juste en dessous : elles ne sont ni notées, ni transmises, ni enregistrées. Elles servent à vérifier qu’une notion est passée avant d’avancer, et le commentaire explique aussi ce qui rend les autres réponses fausses.
 
 Il n’y a ni examen, ni note. Ce qui est évalué, c’est votre propre relevé : chaque formation se termine par une période d’auto-observation avec une grille à remplir, et une lecture guidée de ce que vous y aurez noté.
 
-Attestation de suivi nominative et facultative. Elle se demande une fois les modules terminés, et ses conditions — son prix compris — vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
+Attestation de suivi nominative et facultative. Elle se demande une fois les modules terminés, et ses conditions, son prix compris, vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
 
 /**
  * ⚠ LE DEROULEMENT VIENT AVANT LA PEDAGOGIE.
@@ -108,23 +108,23 @@ Attestation de suivi nominative et facultative. Elle se demande une fois les mod
 const METHODOLOGIE = `Comment ça se passe, concrètement.
 
 1. Vous cliquez sur « Commencer la formation ». Vous quittez le site Les Extras : le parcours est hébergé sur notre espace de formation en ligne.
-2. L’accès s’y ouvre avec une adresse e-mail. Aucune carte bancaire n’est demandée, à aucun moment — la formation est gratuite du premier au dernier module.
+2. L’accès s’y ouvre avec une adresse e-mail. Aucune carte bancaire n’est demandée, à aucun moment, la formation est gratuite du premier au dernier module.
 3. Vous suivez les quatre modules dans l’ordre, à votre rythme. L’accès reste ouvert, sans date de fin, et vous pouvez revenir autant de fois que vous voulez.
 4. Le module 3 lance une période de relevé de sept à quinze jours selon la formation, à raison d’une minute par jour, dans votre quotidien. Le module 4 se lit une fois cette période terminée, ce relevé sous les yeux.
 5. L’attestation de suivi, si vous la souhaitez, se demande ensuite : les conditions vous sont communiquées avant tout paiement. Elle est facultative et ne change rien à l’accès.
 
 Quatre modules, toujours dans le même ordre, plus une section d’annexes.
 
-Chaque module s’ouvre sur une carte « Repères du module » — durée, prérequis, modalité, évaluation — et se ferme sur cinq questions d’autocorrection puis sur « Avant de passer au module suivant », trois critères que vous pouvez cocher vous-même.
+Chaque module s’ouvre sur une carte « Repères du module », durée, prérequis, modalité, évaluation, et se ferme sur cinq questions d’autocorrection puis sur « Avant de passer au module suivant », trois critères que vous pouvez cocher vous-même.
 
 1. La théorie, en quelques minutes. Le strict nécessaire pour comprendre ce qu’on va faire, pas un cours.
-2. Une situation qui dérape. On ne vous montre pas un modèle parfait : on vous montre une scène réelle qui échoue, on vous demande de chercher pourquoi, et l’analyse ne vient qu’ensuite. C’est vous qui produisez la réponse — c’est ce qui la rend transposable.
+2. Une situation qui dérape. On ne vous montre pas un modèle parfait : on vous montre une scène réelle qui échoue, on vous demande de chercher pourquoi, et l’analyse ne vient qu’ensuite. C’est vous qui produisez la réponse, c’est ce qui la rend transposable.
 3. Un exercice guidé, à faire sur votre propre situation, pas sur un cas d’école.
 4. Une mise en pratique avec auto-observation : un protocole court, un relevé de quelques lignes par jour, et la lecture de ce relevé au bout de la période.
 
 Chaque parcours porte trois schémas : la carte du parcours, la figure de la notion centrale, et l’arbre de décision qui dit quoi faire selon ce que votre relevé montre. Ils sont en noir et blanc, lisibles à l’impression, et chacun porte sa légende en toutes lettres.
 
-La section « Annexes — fiches techniques et exercices » réunit les grilles vierges, les mémos, les exemples corrigés et les tableaux de reformulation. Ils sont écrits en clair, recopiables à la main et imprimables depuis le navigateur : une grille qu’il faut aller chercher dans un ordinateur n’est jamais remplie sur le terrain.
+La section « Annexes, fiches techniques et exercices » réunit les grilles vierges, les mémos, les exemples corrigés et les tableaux de reformulation. Ils sont écrits en clair, recopiables à la main et imprimables depuis le navigateur : une grille qu’il faut aller chercher dans un ordinateur n’est jamais remplie sur le terrain.
 
 Le format est volontairement court et se suit en complément d’autres : plusieurs mini-formations partagent la même thématique tout en travaillant une compétence différente.`;
 
@@ -169,12 +169,12 @@ const FAQ_COMMUNE = [
   {
     question: 'Combien de temps faut-il y consacrer ?',
     answer:
-      "Environ 45 minutes de lecture, que vous pouvez fractionner comme vous voulez : l’accès est illimité et sans date de fin. Mais le parcours ne se termine pas le jour où vous l’ouvrez : le module 3 lance un relevé qui dure de sept à quinze jours selon la formation, à raison d’une minute par jour, et le module 4 se lit ce relevé sous les yeux. Comptez donc une à deux semaines entre le premier et le dernier module — c’est écrit sur chaque fiche, et rappelé dans le module 3 lui-même.",
+      "Environ 45 minutes de lecture, que vous pouvez fractionner comme vous voulez : l’accès est illimité et sans date de fin. Mais le parcours ne se termine pas le jour où vous l’ouvrez : le module 3 lance un relevé qui dure de sept à quinze jours selon la formation, à raison d’une minute par jour, et le module 4 se lit ce relevé sous les yeux. Comptez donc une à deux semaines entre le premier et le dernier module, c’est écrit sur chaque fiche, et rappelé dans le module 3 lui-même.",
   },
   {
     question: 'Puis-je suivre plusieurs mini-formations ?',
     answer:
-      "C’est le principe. Chacune travaille une compétence précise, et plusieurs peuvent porter sur la même thématique sans se répéter — elles se suivent en complément, en formation continue.",
+      "C’est le principe. Chacune travaille une compétence précise, et plusieurs peuvent porter sur la même thématique sans se répéter, elles se suivent en complément, en formation continue.",
   },
 ];
 
@@ -186,7 +186,7 @@ const FAQ_COMMUNE = [
  * fiche publique doit la porter aussi, sinon la fiche promet autre chose que
  * la formation. Ne pas retirer ce paragraphe.
  */
-const GARDE_FOU = `Ce que cette approche ne doit jamais devenir. Les principes enseignés ici viennent de l’analyse appliquée du comportement. Ils sont efficaces, et ils ont été critiqués — notamment par des personnes autistes adultes, dont certaines décrivent des prises en charge vécues comme de la mise en conformité. Quatre garde-fous traversent la formation : on n’éteint jamais un comportement sans le remplacer ; on travaille sur ce qui coûte à la personne, pas sur ce qui gêne l’entourage ; le refus est une communication ; et ces outils s’inscrivent dans un projet construit avec la personne et sa famille.`;
+const GARDE_FOU = `Ce que cette approche ne doit jamais devenir. Les principes enseignés ici viennent de l’analyse appliquée du comportement. Ils sont efficaces, et ils ont été critiqués, notamment par des personnes autistes adultes, dont certaines décrivent des prises en charge vécues comme de la mise en conformité. Quatre garde-fous traversent la formation : on n’éteint jamais un comportement sans le remplacer ; on travaille sur ce qui coûte à la personne, pas sur ce qui gêne l’entourage ; le refus est une communication ; et ces outils s’inscrivent dans un projet construit avec la personne et sa famille.`;
 
 /**
  * PUBLICS VISES ET THEMATIQUE, par fiche.
@@ -351,25 +351,25 @@ const FICHES = [
     title: 'Les quatre fonctions d’un comportement',
     summary: `Thématique : TSA, communication et comportement. Une seule compétence travaillée : identifier à quoi sert un comportement avant de chercher à le modifier.
 
-Un comportement qui se répète se répète parce qu’il marche : il obtient quelque chose. Tant qu’on ignore quoi, on traite la forme et pas la fonction — et on se trompe de cible. Quatre fonctions possibles, une grille en quatre colonnes pour trancher, et la règle qui évite l’erreur la plus coûteuse.
+Un comportement qui se répète se répète parce qu’il marche : il obtient quelque chose. Tant qu’on ignore quoi, on traite la forme et pas la fonction, et on se trompe de cible. Quatre fonctions possibles, une grille en quatre colonnes pour trancher, et la règle qui évite l’erreur la plus coûteuse.
 
 45 minutes de lecture sur quatre modules, plus un relevé de sept jours entre le module 3 et le module 4 : comptez une bonne semaine en tout.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— nommer les quatre fonctions possibles d’un comportement et les distinguer entre elles ;
-— décrire un comportement en termes observables, sans interprétation ni jugement ;
-— remplir une grille antécédent / comportement / conséquence sur une situation réelle et en déduire la fonction la plus probable ;
-— repérer les deux erreurs qui font échouer la plupart des plans d’action : traiter la forme plutôt que la fonction, et renforcer sans le vouloir le comportement qu’on cherche à réduire ;
-— tenir un relevé de quelques lignes par jour pendant une semaine et en tirer une conclusion argumentée.`,
-    program: `Module 1 — La théorie, en huit minutes. Un comportement n’est pas un symptôme, c’est une fonction. Les quatre fonctions, et pourquoi la question utile n’est pas « comment le faire arrêter ».
+• nommer les quatre fonctions possibles d’un comportement et les distinguer entre elles ;
+• décrire un comportement en termes observables, sans interprétation ni jugement ;
+• remplir une grille antécédent / comportement / conséquence sur une situation réelle et en déduire la fonction la plus probable ;
+• repérer les deux erreurs qui font échouer la plupart des plans d’action : traiter la forme plutôt que la fonction, et renforcer sans le vouloir le comportement qu’on cherche à réduire ;
+• tenir un relevé de quelques lignes par jour pendant une semaine et en tirer une conclusion argumentée.`,
+    program: `Module 1 · La théorie, en huit minutes. Un comportement n’est pas un symptôme, c’est une fonction. Les quatre fonctions, et pourquoi la question utile n’est pas « comment le faire arrêter ».
 
-Module 2 — Une situation qui dérape, et pourquoi. Une scène réelle, analysée par vous avant de lire la réponse.
+Module 2 · Une situation qui dérape, et pourquoi. Une scène réelle, analysée par vous avant de lire la réponse.
 
-Module 3 — Exercice guidé : la grille en quatre colonnes. Sur votre propre situation, pas sur un cas d’école.
+Module 3 · Exercice guidé : la grille en quatre colonnes. Sur votre propre situation, pas sur un cas d’école.
 
-Module 4 — Mise en pratique et auto-observation. Le protocole, le relevé quotidien, et la lecture du relevé au septième jour.`,
+Module 4 · Mise en pratique et auto-observation. Le protocole, le relevé quotidien, et la lecture du relevé au septième jour.`,
     targetAudience: `Parents et proches d’une personne avec un trouble du neurodéveloppement ; professionnels du médico-social et de la protection de l’enfance (éducateurs, moniteurs-éducateurs, AES, AESH, enseignants, psychologues, personnels d’IME, ITEP, SESSAD, MECS) ; équipes qui cherchent un langage commun avant d’écrire un projet d’accompagnement.`,
   },
   {
@@ -379,25 +379,25 @@ Module 4 — Mise en pratique et auto-observation. Le protocole, le relevé quot
     title: 'Apprendre à demander plutôt qu’à crier',
     summary: `Thématique : TSA, communication et comportement. Une seule compétence travaillée : construire et enseigner un comportement de remplacement.
 
-Retirer un comportement sans en donner un autre, c’est retirer un outil à quelqu’un qui n’en a pas d’autre. La suite logique de la grille des fonctions : une fois qu’on sait ce que le comportement obtient, on enseigne un moyen d’obtenir la même chose — qui doit être plus facile, plus rapide et aussi fiable que celui qu’on veut voir disparaître.
+Retirer un comportement sans en donner un autre, c’est retirer un outil à quelqu’un qui n’en a pas d’autre. La suite logique de la grille des fonctions : une fois qu’on sait ce que le comportement obtient, on enseigne un moyen d’obtenir la même chose, qui doit être plus facile, plus rapide et aussi fiable que celui qu’on veut voir disparaître.
 
 45 minutes de lecture sur quatre modules, plus quatorze jours d’application entre le module 3 et le module 4 : comptez deux bonnes semaines en tout.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— choisir un comportement de remplacement qui obtient exactement la même chose que le comportement problématique ;
-— vérifier les trois conditions sans lesquelles un remplacement échoue : plus facile, plus rapide, toujours honoré ;
-— adapter la forme de la demande au niveau de la personne (geste, image, mot, phrase) sans exiger d’emblée la forme la plus coûteuse ;
-— répondre à la demande de remplacement de façon immédiate et systématique pendant la phase d’apprentissage, puis l’espacer progressivement ;
-— reconnaître la remontée passagère du comportement au début de l’apprentissage et ne pas l’interpréter comme un échec.`,
-    program: `Module 1 — La théorie, en huit minutes. Pourquoi un comportement ne se retire pas, il se remplace. Les trois conditions du remplacement.
+• choisir un comportement de remplacement qui obtient exactement la même chose que le comportement problématique ;
+• vérifier les trois conditions sans lesquelles un remplacement échoue : plus facile, plus rapide, toujours honoré ;
+• adapter la forme de la demande au niveau de la personne (geste, image, mot, phrase) sans exiger d’emblée la forme la plus coûteuse ;
+• répondre à la demande de remplacement de façon immédiate et systématique pendant la phase d’apprentissage, puis l’espacer progressivement ;
+• reconnaître la remontée passagère du comportement au début de l’apprentissage et ne pas l’interpréter comme un échec.`,
+    program: `Module 1 · La théorie, en huit minutes. Pourquoi un comportement ne se retire pas, il se remplace. Les trois conditions du remplacement.
 
-Module 2 — Une situation qui dérape, et pourquoi. Une scène réelle où le remplacement a été enseigné, puis abandonné — et ce que cela a appris.
+Module 2 · Une situation qui dérape, et pourquoi. Une scène réelle où le remplacement a été enseigné, puis abandonné, et ce que cela a appris.
 
-Module 3 — Exercice guidé : construire le remplacement. Forme, condition de réussite, et ce que vous vous engagez à honorer.
+Module 3 · Exercice guidé : construire le remplacement. Forme, condition de réussite, et ce que vous vous engagez à honorer.
 
-Module 4 — Mise en pratique et auto-observation. Le protocole sur deux semaines, le relevé, et la lecture au quatorzième jour.`,
+Module 4 · Mise en pratique et auto-observation. Le protocole sur deux semaines, le relevé, et la lecture au quatorzième jour.`,
     targetAudience: `Parents et proches d’une personne avec un trouble du neurodéveloppement ou des difficultés de communication ; professionnels du médico-social confrontés à des comportements-défis ; équipes qui ont déjà identifié la fonction d’un comportement et cherchent la suite.`,
   },
   {
@@ -407,25 +407,25 @@ Module 4 — Mise en pratique et auto-observation. Le protocole sur deux semaine
     title: 'Décomposer une routine en étapes',
     summary: `Thématique : TSA, communication et comportement. Une seule compétence travaillée : découper une routine du quotidien en étapes enseignables et choisir par quelle extrémité commencer.
 
-« Il ne sait pas s’habiller » ne se travaille pas : la phrase ne dit ni ce qui est acquis, ni où exactement ça s’arrête. « Il bloque à l’étape 4 sur 9 » se travaille. Écrire la chaîne, mesurer ce qui est déjà là, choisir par quelle extrémité enseigner — et n’en enseigner qu’une à la fois.
+« Il ne sait pas s’habiller » ne se travaille pas : la phrase ne dit ni ce qui est acquis, ni où exactement ça s’arrête. « Il bloque à l’étape 4 sur 9 » se travaille. Écrire la chaîne, mesurer ce qui est déjà là, choisir par quelle extrémité enseigner, et n’en enseigner qu’une à la fois.
 
 45 minutes de lecture sur quatre modules, plus dix jours d’enseignement entre le module 3 et le module 4 : comptez une dizaine de jours en tout.
 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— écrire la chaîne d’une routine en étapes observables, qui passent le test du témoin ;
-— prendre une ligne de base et dire quelles étapes sont acquises seules, aidées, ou non réussies ;
-— choisir entre chaînage arrière, chaînage avant et chaîne entière à aide dégressive, et justifier ce choix ;
-— fixer un critère de passage à l’avance plutôt qu’au ressenti du jour, et tenir un relevé de dix lignes ;
-— reconnaître qu’une étape est trop grosse — l’aide ne diminue pas — et la découper en deux.`,
-    program: `Module 1 — La théorie, en huit minutes. Une routine n’est pas une compétence, c’est une suite de compétences. Écrire la chaîne, mesurer, puis choisir entre trois façons d’enseigner.
+• écrire la chaîne d’une routine en étapes observables, qui passent le test du témoin ;
+• prendre une ligne de base et dire quelles étapes sont acquises seules, aidées, ou non réussies ;
+• choisir entre chaînage arrière, chaînage avant et chaîne entière à aide dégressive, et justifier ce choix ;
+• fixer un critère de passage à l’avance plutôt qu’au ressenti du jour, et tenir un relevé de dix lignes ;
+• reconnaître qu’une étape est trop grosse, l’aide ne diminue pas, et la découper en deux.`,
+    program: `Module 1 · La théorie, en huit minutes. Une routine n’est pas une compétence, c’est une suite de compétences. Écrire la chaîne, mesurer, puis choisir entre trois façons d’enseigner.
 
-Module 2 — Une situation qui dérape, et pourquoi. Une séance d’habillage qui n’a produit ni apprentissage ni information, et ce qui manquait avant la séance.
+Module 2 · Une situation qui dérape, et pourquoi. Une séance d’habillage qui n’a produit ni apprentissage ni information, et ce qui manquait avant la séance.
 
-Module 3 — Exercice guidé : écrire la chaîne et prendre la ligne de base. Sur une routine que vous accompagnez tous les jours.
+Module 3 · Exercice guidé : écrire la chaîne et prendre la ligne de base. Sur une routine que vous accompagnez tous les jours.
 
-Module 4 — Mise en pratique et auto-observation. Dix jours, une seule étape, et trois questions au dixième jour.`,
+Module 4 · Mise en pratique et auto-observation. Dix jours, une seule étape, et trois questions au dixième jour.`,
     targetAudience: `Parents et proches d’une personne avec un trouble du neurodéveloppement ou une déficience intellectuelle ; professionnels du médico-social et de l’école (éducateurs, moniteurs-éducateurs, AES, AESH) ; équipes qui veulent écrire un objectif d’autonomie vérifiable dans un projet d’accompagnement.`,
   },
   {
@@ -440,19 +440,19 @@ Tout le monde fabrique des pictogrammes ; presque personne ne s’en sert encore
 45 minutes de lecture sur quatre modules, plus quatorze jours d’observation du support entre le module 3 et le module 4 : comptez deux bonnes semaines en tout.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— formuler la question unique à laquelle un support répond, et ne pas en mélanger trois sur le même mur ;
-— choisir le niveau de représentation que la personne reconnaît aujourd’hui, en le testant plutôt qu’en le supposant ;
-— construire un support manipulable, borné à quatre ou six cases, avec une marque de fin ;
-— écrire la ligne de responsabilité — qui met à jour, et quand — sans laquelle aucun support ne survit à un mois ;
-— préparer et roder une carte « changement » avant d’en avoir besoin ;
-— lire un relevé de quatorze jours et décider s’il faut corriger le support, le déplacer ou l’abandonner.`,
-    program: `Module 1 — La théorie, en sept minutes. Ce qu’un support visuel remplace vraiment, les trois objets qu’on confond, les cinq raisons d’un abandon, et comment rendre le temps visible.
+• formuler la question unique à laquelle un support répond, et ne pas en mélanger trois sur le même mur ;
+• choisir le niveau de représentation que la personne reconnaît aujourd’hui, en le testant plutôt qu’en le supposant ;
+• construire un support manipulable, borné à quatre ou six cases, avec une marque de fin ;
+• écrire la ligne de responsabilité, qui met à jour, et quand, sans laquelle aucun support ne survit à un mois ;
+• préparer et roder une carte « changement » avant d’en avoir besoin ;
+• lire un relevé de quatorze jours et décider s’il faut corriger le support, le déplacer ou l’abandonner.`,
+    program: `Module 1 · La théorie, en sept minutes. Ce qu’un support visuel remplace vraiment, les trois objets qu’on confond, les cinq raisons d’un abandon, et comment rendre le temps visible.
 
-Module 2 — Une situation qui dérape, et pourquoi. Un planning plastifié fabriqué en deux après-midi et abandonné en trois semaines — le support n’avait pas échoué.
+Module 2 · Une situation qui dérape, et pourquoi. Un planning plastifié fabriqué en deux après-midi et abandonné en trois semaines, le support n’avait pas échoué.
 
-Module 3 — Exercice guidé : construire un support qui tient. Question, niveau de représentation, trois contraintes, et la ligne de responsabilité.
+Module 3 · Exercice guidé : construire un support qui tient. Question, niveau de représentation, trois contraintes, et la ligne de responsabilité.
 
-Module 4 — Mise en pratique et auto-observation. Quatorze jours, trois colonnes, et une décision honnête au bout.`,
+Module 4 · Mise en pratique et auto-observation. Quatorze jours, trois colonnes, et une décision honnête au bout.`,
     targetAudience: `Parents et proches d’une personne avec un trouble du spectre de l’autisme ou une anxiété liée à l’imprévu ; professionnels du médico-social et de l’école ; équipes qui ont déjà fabriqué des supports visuels et constatent qu’ils ne servent plus.`,
   },
   {
@@ -469,18 +469,18 @@ L’aide est le seul outil éducatif qui devient nuisible quand il fonctionne tr
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— classer les aides du plus léger au plus lourd et nommer celle que vous utilisez réellement ;
-— appliquer la règle du délai : laisser un temps de silence avant d’aider, et ne jamais aider avant qu’il soit écoulé ;
-— construire un plan d’estompage écrit, avec un critère de passage fixé à l’avance plutôt qu’apprécié sur le moment ;
-— reconnaître une dépendance à l’aide installée et la défaire sans repartir de zéro ;
-— tenir un relevé qui montre la diminution de l’aide, et non la seule réussite de la tâche.`,
-    program: `Module 1 — La théorie, en sept minutes. Les niveaux d’aide, la règle du délai, et pourquoi l’estompage se décide avant de commencer.
+• classer les aides du plus léger au plus lourd et nommer celle que vous utilisez réellement ;
+• appliquer la règle du délai : laisser un temps de silence avant d’aider, et ne jamais aider avant qu’il soit écoulé ;
+• construire un plan d’estompage écrit, avec un critère de passage fixé à l’avance plutôt qu’apprécié sur le moment ;
+• reconnaître une dépendance à l’aide installée et la défaire sans repartir de zéro ;
+• tenir un relevé qui montre la diminution de l’aide, et non la seule réussite de la tâche.`,
+    program: `Module 1 · La théorie, en sept minutes. Les niveaux d’aide, la règle du délai, et pourquoi l’estompage se décide avant de commencer.
 
-Module 2 — Une situation qui dérape, et pourquoi. Une aide qui a bien marché pendant six mois, et ce qu’elle a produit.
+Module 2 · Une situation qui dérape, et pourquoi. Une aide qui a bien marché pendant six mois, et ce qu’elle a produit.
 
-Module 3 — Exercice guidé : le plan d’estompage. Niveau de départ, critères de passage, niveau d’arrivée.
+Module 3 · Exercice guidé : le plan d’estompage. Niveau de départ, critères de passage, niveau d’arrivée.
 
-Module 4 — Mise en pratique et auto-observation. Le relevé qui suit l’aide plutôt que la réussite.`,
+Module 4 · Mise en pratique et auto-observation. Le relevé qui suit l’aide plutôt que la réussite.`,
     targetAudience: `Parents et proches ; professionnels du médico-social et de l’école (AESH, AES, éducateurs, enseignants) ; toute équipe qui constate qu’une personne « n’y arrive que si quelqu’un est à côté ».`,
   },
   {
@@ -490,7 +490,7 @@ Module 4 — Mise en pratique et auto-observation. Le relevé qui suit l’aide 
     title: 'Les premières minutes d’une crise',
     summary: `Thématique : comportements-défis et situations de crise. Une seule compétence travaillée : réduire ce que l’adulte ajoute pendant une crise, et écrire à froid ce qui se passera la prochaine fois.
 
-Une crise ne s’arrête pas sur commande, et cette formation ne le promet nulle part. Ce qui se travaille se travaille vraiment : les six choses que l’adulte ajoute sans le vouloir — les mots, les demandes, le public, la proximité, les menaces, le volume —, la conduite décidée à froid, et le moment de la reprise, où se produisent presque toujours les épisodes les plus graves.
+Une crise ne s’arrête pas sur commande, et cette formation ne le promet nulle part. Ce qui se travaille se travaille vraiment : les six choses que l’adulte ajoute sans le vouloir, les mots, les demandes, le public, la proximité, les menaces, le volume, la conduite décidée à froid, et le moment de la reprise, où se produisent presque toujours les épisodes les plus graves.
 
 Aucun geste d’intervention physique n’est enseigné : ni prise, ni maintien, ni portage. Ces gestes blessent quand ils s’apprennent dans un texte ; ils relèvent du protocole écrit d’un établissement et d’une formation en présentiel avec mise en situation. La contrainte physique, l’enfermement et la privation ne sont jamais des techniques éducatives, et la formation le redit à chaque module.
 
@@ -499,20 +499,20 @@ Aucun geste d’intervention physique n’est enseigné : ni prise, ni maintien,
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— décrire une crise en termes observables — horaire, ce qui précédait, ce qui s’est produit, durée — plutôt que de la qualifier ;
-— situer les quatre temps d’une crise et dire ce qui est possible à chacun ;
-— nommer les six ajouts de l’adulte et en retirer au moins un, de façon mesurable ;
-— écrire une fiche de conduite à froid en cinq lignes, applicable par quelqu’un qui n’était pas dans la réunion ;
-— tenir un relevé de dix jours et en tirer une décision datée ;
-— rédiger, après un épisode, un écrit qui tient devant une équipe et devant un dossier ;
-— reconnaître les situations où l’on ne continue pas seul.`,
-    program: `Module 1 — Les quatre temps, les six ajouts, les trois réductions. Ce qu’on appelle « crise » et pourquoi le mot ne décrit rien ; ce qui est possible avant, pendant et après ; les limites absolues.
+• décrire une crise en termes observables, horaire, ce qui précédait, ce qui s’est produit, durée, plutôt que de la qualifier ;
+• situer les quatre temps d’une crise et dire ce qui est possible à chacun ;
+• nommer les six ajouts de l’adulte et en retirer au moins un, de façon mesurable ;
+• écrire une fiche de conduite à froid en cinq lignes, applicable par quelqu’un qui n’était pas dans la réunion ;
+• tenir un relevé de dix jours et en tirer une décision datée ;
+• rédiger, après un épisode, un écrit qui tient devant une équipe et devant un dossier ;
+• reconnaître les situations où l’on ne continue pas seul.`,
+    program: `Module 1 · Les quatre temps, les six ajouts, les trois réductions. Ce qu’on appelle « crise » et pourquoi le mot ne décrit rien ; ce qui est possible avant, pendant et après ; les limites absolues.
 
-Module 2 — Une scène qui dérape, et la deuxième crise. Quatorze minutes analysées minute par minute, et la découverte que la blessure n’arrive pas au pic mais à la reprise.
+Module 2 · Une scène qui dérape, et la deuxième crise. Quatorze minutes analysées minute par minute, et la découverte que la blessure n’arrive pas au pic mais à la reprise.
 
-Module 3 — Exercice guidé : la fiche à froid en cinq lignes. Les signes, ce que je retire, ma phrase, la limite de sécurité, la reprise.
+Module 3 · Exercice guidé : la fiche à froid en cinq lignes. Les signes, ce que je retire, ma phrase, la limite de sécurité, la reprise.
 
-Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture en quatre questions, les phrases de compte rendu, et à qui s’adresser quand cela ne suffit plus.`,
+Module 4 · Dix jours de relevé, et ce qu’on écrit après. La lecture en quatre questions, les phrases de compte rendu, et à qui s’adresser quand cela ne suffit plus.`,
     targetAudience: `Parents et proches confrontés à des crises répétées ; professionnels du médico-social et de la protection de l’enfance (MECS, IME, ITEP, SESSAD, ESAT, foyers, ASE) ; AESH, assistants familiaux, animateurs et enseignants ; équipes qui veulent une conduite commune, écrite, tenue de la même façon quel que soit l’adulte présent.`,
   },
   {
@@ -522,27 +522,27 @@ Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture en qu
     title: 'L’enfant qui dit non à tout',
     summary: `Thématique : consignes, refus et coopération. Une seule compétence travaillée : formuler une consigne qui peut être exécutée, et savoir lire un « non » avant d’y répondre.
 
-« Il dit non à tout » n’est pas une donnée : c’est une impression, et elle est presque toujours fausse dans les proportions qu’elle annonce. Cette formation travaille l’autre moitié de la scène — la consigne de l’adulte, sa forme, son nombre, son moment. C’est une compétence qui s’exerce sans rien savoir de la personne d’en face, et qui produit des résultats en quelques jours, parce qu’elle ne demande de changer que soi.
+« Il dit non à tout » n’est pas une donnée : c’est une impression, et elle est presque toujours fausse dans les proportions qu’elle annonce. Cette formation travaille l’autre moitié de la scène, la consigne de l’adulte, sa forme, son nombre, son moment. C’est une compétence qui s’exerce sans rien savoir de la personne d’en face, et qui produit des résultats en quelques jours, parce qu’elle ne demande de changer que soi.
 
-Ce n’est pas une méthode pour faire obéir. Une partie des refus sont légitimes et doivent être entendus — sur le corps, l’intimité, les objets personnels, le droit de dire qu’on n’aime pas. Le module 3 fait écrire cette liste avant de travailler la forme des consignes, et c’est l’ordre qui compte.
+Ce n’est pas une méthode pour faire obéir. Une partie des refus sont légitimes et doivent être entendus, sur le corps, l’intimité, les objets personnels, le droit de dire qu’on n’aime pas. Le module 3 fait écrire cette liste avant de travailler la forme des consignes, et c’est l’ordre qui compte.
 
 45 minutes de lecture sur quatre modules, plus un relevé de dix jours entre le module 3 et le module 4 : comptez une dizaine de jours en tout.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— compter les consignes réellement données sur une heure et en tirer une proportion de refus ;
-— distinguer les cinq choses qu’un « non » peut vouloir dire, et y répondre différemment ;
-— repérer les sept défauts qui rendent une consigne inexécutable, et les corriger ;
-— écrire ce qui est négociable, ce qui ne l’est pas, et ce qui ne vous appartient pas ;
-— réduire un moment difficile à cinq consignes écrites mot pour mot, applicables par un autre adulte ;
-— tenir un relevé de dix jours et en tirer une décision par consigne ;
-— écrire un refus dans un écrit professionnel sans prêter d’intention.`,
-    program: `Module 1 — Les cinq « non », les sept défauts, les cinq secondes. Compter avant de corriger, et cinq façons différentes de dire non.
+• compter les consignes réellement données sur une heure et en tirer une proportion de refus ;
+• distinguer les cinq choses qu’un « non » peut vouloir dire, et y répondre différemment ;
+• repérer les sept défauts qui rendent une consigne inexécutable, et les corriger ;
+• écrire ce qui est négociable, ce qui ne l’est pas, et ce qui ne vous appartient pas ;
+• réduire un moment difficile à cinq consignes écrites mot pour mot, applicables par un autre adulte ;
+• tenir un relevé de dix jours et en tirer une décision par consigne ;
+• écrire un refus dans un écrit professionnel sans prêter d’intention.`,
+    program: `Module 1 · Les cinq « non », les sept défauts, les cinq secondes. Compter avant de corriger, et cinq façons différentes de dire non.
 
-Module 2 — Une scène qui dérape, consigne par consigne. Six minutes de rangement, six défauts de consigne, une consigne abandonnée — et un seul vrai refus, à la sixième minute.
+Module 2 · Une scène qui dérape, consigne par consigne. Six minutes de rangement, six défauts de consigne, une consigne abandonnée, et un seul vrai refus, à la sixième minute.
 
-Module 3 — Exercice guidé : la feuille des cinq consignes. Ce qui est négociable d’abord, le moment ensuite, les cinq consignes mot pour mot, et ce qui se passe au bout des cinq secondes.
+Module 3 · Exercice guidé : la feuille des cinq consignes. Ce qui est négociable d’abord, le moment ensuite, les cinq consignes mot pour mot, et ce qui se passe au bout des cinq secondes.
 
-Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture ligne par ligne, et les phrases d’écrit professionnel qui ne prêtent aucune intention.`,
+Module 4 · Dix jours de relevé, et ce qu’on écrit après. La lecture ligne par ligne, et les phrases d’écrit professionnel qui ne prêtent aucune intention.`,
     targetAudience: `Parents et proches qui ont l’impression que « tout est une bataille » ; professionnels du médico-social, de l’école et de la protection de l’enfance (IME, ITEP, SESSAD, MECS, ESAT, foyers, AESH, assistants familiaux) ; équipes qui veulent des consignes communes, formulées de la même façon quel que soit l’adulte présent.`,
   },
   {
@@ -552,27 +552,27 @@ Module 4 — Dix jours de relevé, et ce qu’on écrit après. La lecture ligne
     title: 'Lire un comportement comme une réaction de survie',
     summary: `Thématique : protection de l’enfance et conduites d’adaptation. Une seule compétence travaillée : relire une conduite comme une stratégie qui a été utile ailleurs, et en tirer un réglage concret du quotidien.
 
-La lecture « c’est le traumatisme » est devenue le lieu commun du secteur, et elle produit trois dégâts bien identifiés : elle explique tout, elle excuse tout, et surtout elle remplace l’action — la réunion est excellente, tout le monde est ému, et rien ne change dans la maison le lendemain. Cette formation ne s’arrête donc jamais à la lecture : chaque module la fait aboutir à un réglage du quotidien, écrit et testé quinze jours.
+La lecture « c’est le traumatisme » est devenue le lieu commun du secteur, et elle produit trois dégâts bien identifiés : elle explique tout, elle excuse tout, et surtout elle remplace l’action, la réunion est excellente, tout le monde est ému, et rien ne change dans la maison le lendemain. Cette formation ne s’arrête donc jamais à la lecture : chaque module la fait aboutir à un réglage du quotidien, écrit et testé quinze jours.
 
-Ce n’est ni un cours sur le psychotraumatisme, ni un outil de repérage clinique, ni une aide au diagnostic. Un éducateur n’écrit pas de diagnostic, et une mini-formation gratuite n’en apprend pas. Le premier module dit ce qui ne se lit pas comme une réaction de survie — douleur, faim, sommeil, vue, audition, effet d’un traitement, trouble du neurodéveloppement non repéré — parce que c’est là que cette grille fait le plus de dégâts quand elle est appliquée à tout.
+Ce n’est ni un cours sur le psychotraumatisme, ni un outil de repérage clinique, ni une aide au diagnostic. Un éducateur n’écrit pas de diagnostic, et une mini-formation gratuite n’en apprend pas. Le premier module dit ce qui ne se lit pas comme une réaction de survie, douleur, faim, sommeil, vue, audition, effet d’un traitement, trouble du neurodéveloppement non repéré, parce que c’est là que cette grille fait le plus de dégâts quand elle est appliquée à tout.
 
 45 minutes de lecture sur quatre modules, plus un réglage testé quinze jours entre le module 3 et le module 4 : comptez deux bonnes semaines en tout.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— poser la question « à quoi cela a-t-il pu servir » plutôt que « pourquoi il me fait ça » ;
-— reconnaître sept conduites fréquentes et les contextes où elles étaient adaptées ;
-— nommer les trois pièges de cette lecture, dont le plus fréquent : elle remplace l’action ;
-— distinguer ce qui ne se lit pas comme une réaction de survie, et vérifier le corps avant l’histoire ;
-— écrire une fiche « lecture → réglage » en cinq lignes et la porter en réunion ;
-— tenir un relevé de quinze jours et reconnaître les quatre issues, dont deux sont des réussites ;
-— écrire dans un rapport une hypothèse signalée comme telle, sans poser de diagnostic.`,
-    program: `Module 1 — Changer de question, et les trois pièges. Sept conduites et les contextes où elles étaient adaptées ; ce qui ne se lit pas comme ça ; et pourquoi une lecture qui ne change rien n’a servi qu’aux adultes.
+• poser la question « à quoi cela a-t-il pu servir » plutôt que « pourquoi il me fait ça » ;
+• reconnaître sept conduites fréquentes et les contextes où elles étaient adaptées ;
+• nommer les trois pièges de cette lecture, dont le plus fréquent : elle remplace l’action ;
+• distinguer ce qui ne se lit pas comme une réaction de survie, et vérifier le corps avant l’histoire ;
+• écrire une fiche « lecture → réglage » en cinq lignes et la porter en réunion ;
+• tenir un relevé de quinze jours et reconnaître les quatre issues, dont deux sont des réussites ;
+• écrire dans un rapport une hypothèse signalée comme telle, sans poser de diagnostic.`,
+    program: `Module 1 · Changer de question, et les trois pièges. Sept conduites et les contextes où elles étaient adaptées ; ce qui ne se lit pas comme ça ; et pourquoi une lecture qui ne change rien n’a servi qu’aux adultes.
 
-Module 2 — Une réponse raisonnable qui confirme tout. Six semaines d’accueil, une règle fondée, une équipe attentive — et une rupture. Ce que chaque étape a enseigné sans le vouloir.
+Module 2 · Une réponse raisonnable qui confirme tout. Six semaines d’accueil, une règle fondée, une équipe attentive, et une rupture. Ce que chaque étape a enseigné sans le vouloir.
 
-Module 3 — Exercice guidé : de la lecture au réglage. La fiche en cinq lignes, les huit réglages du quotidien, et les cinq conditions pour qu’un réglage tienne.
+Module 3 · Exercice guidé : de la lecture au réglage. La fiche en cinq lignes, les huit réglages du quotidien, et les cinq conditions pour qu’un réglage tienne.
 
-Module 4 — Quinze jours, et ce qu’on écrit dans un rapport. Les quatre issues du relevé, dont deux sont des réussites, et les phrases d’écrit professionnel qui ne posent aucun diagnostic.`,
+Module 4 · Quinze jours, et ce qu’on écrit dans un rapport. Les quatre issues du relevé, dont deux sont des réussites, et les phrases d’écrit professionnel qui ne posent aucun diagnostic.`,
     targetAudience: `Professionnels de la protection de l’enfance (MECS, foyers, lieux de vie, pôles ASE, AEMO, placement à domicile) ; assistants familiaux et familles d’accueil ; professionnels du médico-social accompagnant des enfants confiés (IME, ITEP, SESSAD) ; enseignants et AESH qui accueillent un élève placé.`,
   },
   {
@@ -582,27 +582,27 @@ Module 4 — Quinze jours, et ce qu’on écrit dans un rapport. Les quatre issu
     title: 'Préparer une équipe de suivi de la scolarisation',
     summary: `Thématique : scolarité, MDPH et équipe de suivi (ESS). Une seule compétence travaillée : arriver à une ESS avec trois éléments écrits, et formuler ses demandes de façon à ce qu’elles deviennent des décisions écrites.
 
-Le point de départ est un fait que peu de gens connaissent : le compte rendu d’ESS que tout le monde cherche n’existe pas séparément. C’est le GEVA-Sco réexamen, rempli par l’enseignant référent pendant la réunion, qui en tient lieu — et il remonte à la MDPH. On ne travaille donc pas à être entendu : on travaille à ce qui sera écrit.
+Le point de départ est un fait que peu de gens connaissent : le compte rendu d’ESS que tout le monde cherche n’existe pas séparément. C’est le GEVA-Sco réexamen, rempli par l’enseignant référent pendant la réunion, qui en tient lieu, et il remonte à la MDPH. On ne travaille donc pas à être entendu : on travaille à ce qui sera écrit.
 
-Ce n’est pas un conseil juridique. Cette formation ne rédige pas de recours et ne dit pas ce qu’une MDPH accordera. Les références citées sont vérifiées et limitées : articles D351-10, D351-11 et D351-12 du code de l’éducation — et le D351-16-1, qui traite de l’aide humaine et qu’on voit partout cité à tort pour l’ESS.
+Ce n’est pas un conseil juridique. Cette formation ne rédige pas de recours et ne dit pas ce qu’une MDPH accordera. Les références citées sont vérifiées et limitées : articles D351-10, D351-11 et D351-12 du code de l’éducation, et le D351-16-1, qui traite de l’aide humaine et qu’on voit partout cité à tort pour l’ESS.
 
-45 minutes de lecture sur quatre modules. Le module 4 se lit après la réunion, une fois le GEVA-Sco reçu — ou quinze jours après si vous ne l’avez pas reçu, ce qui est en soi une information.`,
+45 minutes de lecture sur quatre modules. Le module 4 se lit après la réunion, une fois le GEVA-Sco reçu, ou quinze jours après si vous ne l’avez pas reçu, ce qui est en soi une information.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— dire qui réunit l’ESS, à quelle fréquence, et sous quels articles ;
-— distinguer ce que l’ESS propose de ce que la CDAPH décide ;
-— transformer une appréciation en fait daté et mesuré (situation, mesure, période, ce qui a été essayé) ;
-— écrire une feuille d’une page : ce qui a changé, deux ou trois faits, une demande recopiable ;
-— formuler les deux phrases qui font écrire, et dire les choses difficiles sans mettre personne en accusation ;
-— relire un GEVA-Sco en quatre passages et écrire un courriel de complément ;
-— vérifier à quinze jours ce qui a été fait, et préparer la réunion suivante.`,
-    program: `Module 1 — Ce qu’est une ESS, et ce qu’elle peut écrire. Les textes, les deux GEVA-Sco, ce que l’ESS ne décide pas, et les cinq raisons pour lesquelles une réunion ne produit rien.
+• dire qui réunit l’ESS, à quelle fréquence, et sous quels articles ;
+• distinguer ce que l’ESS propose de ce que la CDAPH décide ;
+• transformer une appréciation en fait daté et mesuré (situation, mesure, période, ce qui a été essayé) ;
+• écrire une feuille d’une page : ce qui a changé, deux ou trois faits, une demande recopiable ;
+• formuler les deux phrases qui font écrire, et dire les choses difficiles sans mettre personne en accusation ;
+• relire un GEVA-Sco en quatre passages et écrire un courriel de complément ;
+• vérifier à quinze jours ce qui a été fait, et préparer la réunion suivante.`,
+    program: `Module 1 · Ce qu’est une ESS, et ce qu’elle peut écrire. Les textes, les deux GEVA-Sco, ce que l’ESS ne décide pas, et les cinq raisons pour lesquelles une réunion ne produit rien.
 
-Module 2 — Une réunion cordiale qui ne produit rien. Cinquante minutes, sept personnes, aucune tension — et un document qui ne dit rien. Analyse intervention par intervention.
+Module 2 · Une réunion cordiale qui ne produit rien. Cinquante minutes, sept personnes, aucune tension, et un document qui ne dit rien. Analyse intervention par intervention.
 
-Module 3 — Exercice guidé : la feuille d’une page. Ce qui a changé, deux ou trois faits mesurés, une demande écrite pour être recopiée, et les trois phrases à ne pas oublier.
+Module 3 · Exercice guidé : la feuille d’une page. Ce qui a changé, deux ou trois faits mesurés, une demande écrite pour être recopiée, et les trois phrases à ne pas oublier.
 
-Module 4 — Relire, compléter, et vérifier à quinze jours. La grille de relecture en quatre passages, le courriel de complément, et la page de la prochaine réunion.`,
+Module 4 · Relire, compléter, et vérifier à quinze jours. La grille de relecture en quatre passages, le courriel de complément, et la page de la prochaine réunion.`,
     targetAudience: `Parents qui siègent à une ESS et en ressortent avec l’impression que rien n’a été décidé ; professionnels de SESSAD, d’IME et d’ITEP qui y représentent leur service ; AESH, dont l’information sur les créneaux et les volumes est souvent la plus décisive de la réunion ; enseignants et coordonnateurs qui préparent ces réunions.`,
   },
   {
@@ -610,9 +610,9 @@ Module 4 — Relire, compléter, et vérifier à quinze jours. La grille de rele
     image: 'aider-a-demarrer-une-tache.jpg',
     slugPlateforme: 'aider-quelquun-a-demarrer-une-tache',
     title: 'Aider quelqu’un à démarrer une tâche',
-    summary: `Thématique : apprentissages et autonomie. Une seule compétence travaillée : réduire le coût du démarrage d’une tâche — identifier ce qui coûte à l’entrée, et agir sur les six leviers correspondants.
+    summary: `Thématique : apprentissages et autonomie. Une seule compétence travaillée : réduire le coût du démarrage d’une tâche, identifier ce qui coûte à l’entrée, et agir sur les six leviers correspondants.
 
-Regardez une séance de près, chronomètre en main : ce n’est presque jamais la tâche qui bloque, c’est l’entrée dans la tâche. Une fois la première action faite, la suite s’enchaîne souvent sans difficulté. La conséquence est considérable : tout ce qui porte sur la tâche elle-même — l’expliquer mieux, motiver, encourager — n’a presque aucun effet. Ce qui en a un, c’est de réduire le coût des trente premières secondes.
+Regardez une séance de près, chronomètre en main : ce n’est presque jamais la tâche qui bloque, c’est l’entrée dans la tâche. Une fois la première action faite, la suite s’enchaîne souvent sans difficulté. La conséquence est considérable : tout ce qui porte sur la tâche elle-même, l’expliquer mieux, motiver, encourager, n’a presque aucun effet. Ce qui en a un, c’est de réduire le coût des trente premières secondes.
 
 La scène du module 2 se passe en ESAT, avec un travailleur adulte : l’inertie de démarrage est un des motifs les plus fréquents en ESAT, en foyer de vie et en accompagnement d’adultes, et elle y produit les mêmes phrases de bilan qu’ailleurs.
 
@@ -621,21 +621,21 @@ La scène du module 2 se passe en ESAT, avec un travailleur adulte : l’inertie
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— distinguer un blocage à l’entrée d’une difficulté dans l’exécution ;
-— nommer les six coûts du démarrage et repérer ceux qui jouent dans votre situation ;
-— appliquer le levier correspondant à chaque coût, en termes matériels ;
-— amorcer une tâche sans la faire à la place, et savoir prouver la différence ;
-— écrire une fiche de démarrage en cinq lignes, applicable par quelqu’un d’autre ;
-— mesurer un délai avant le premier geste plutôt que d’estimer une motivation ;
-— écrire une phrase de bilan qui décrit le dispositif et non la personne ;
-— reconnaître ce qui n’est pas un problème de démarrage, et vers quel parcours aller.`,
-    program: `Module 1 — Les six coûts du démarrage, et les six leviers. Le blocage est à l’entrée, pas dans l’exécution ; l’amorçage ; et ce qui n’est pas un problème de démarrage.
+• distinguer un blocage à l’entrée d’une difficulté dans l’exécution ;
+• nommer les six coûts du démarrage et repérer ceux qui jouent dans votre situation ;
+• appliquer le levier correspondant à chaque coût, en termes matériels ;
+• amorcer une tâche sans la faire à la place, et savoir prouver la différence ;
+• écrire une fiche de démarrage en cinq lignes, applicable par quelqu’un d’autre ;
+• mesurer un délai avant le premier geste plutôt que d’estimer une motivation ;
+• écrire une phrase de bilan qui décrit le dispositif et non la personne ;
+• reconnaître ce qui n’est pas un problème de démarrage, et vers quel parcours aller.`,
+    program: `Module 1 · Les six coûts du démarrage, et les six leviers. Le blocage est à l’entrée, pas dans l’exécution ; l’amorçage ; et ce qui n’est pas un problème de démarrage.
 
-Module 2 — Une matinée perdue, et le geste arrivé trop tard. Vingt-cinq minutes perdues chaque matin en atelier, un moniteur attentif, et une phrase de bilan qui suivra le travailleur des années.
+Module 2 · Une matinée perdue, et le geste arrivé trop tard. Vingt-cinq minutes perdues chaque matin en atelier, un moniteur attentif, et une phrase de bilan qui suivra le travailleur des années.
 
-Module 3 — Exercice guidé : la fiche de démarrage. La préparation avec un nom et une heure, la première action au mot près, la fin visible, et ce qu’on fait si rien ne démarre.
+Module 3 · Exercice guidé : la fiche de démarrage. La préparation avec un nom et une heure, la première action au mot près, la fin visible, et ce qu’on fait si rien ne démarre.
 
-Module 4 — Dix jours, et la phrase de bilan. On mesure un délai, pas une motivation — et une phrase utile contient deux chiffres et une durée.`,
+Module 4 · Dix jours, et la phrase de bilan. On mesure un délai, pas une motivation, et une phrase utile contient deux chiffres et une durée.`,
     targetAudience: `Parents devant les devoirs, l’habillage, la douche, le rangement ; moniteurs d’atelier et professionnels d’ESAT, de foyer de vie et de SAVS ; professionnels du médico-social et de l’école (IME, ITEP, SESSAD, AESH, enseignants) ; toute personne qui accompagne quelqu’un dont on dit qu’il « ne fait rien » alors qu’il travaille très bien une fois lancé.`,
   },
   {
@@ -645,7 +645,7 @@ Module 4 — Dix jours, et la phrase de bilan. On mesure un délai, pas une moti
     title: 'Renforcer ce qui va',
     summary: `Thématique : comportements-défis et opposition. Une seule compétence travaillée : faire augmenter un comportement qui existe déjà, en le remarquant au bon moment et au bon rythme.
 
-Un renforçateur se reconnaît à son effet, jamais à l’intention de l’adulte : est renforçateur ce qui rend un comportement plus fréquent, et cela se constate après coup, en comptant. C’est la phrase qui défait le plus de malentendus, à commencer par « les félicitations, ça marche avec lui » — qui est une croyance tant que personne n’a compté.
+Un renforçateur se reconnaît à son effet, jamais à l’intention de l’adulte : est renforçateur ce qui rend un comportement plus fréquent, et cela se constate après coup, en comptant. C’est la phrase qui défait le plus de malentendus, à commencer par « les félicitations, ça marche avec lui », qui est une croyance tant que personne n’a compté.
 
 Trois réglages décident du résultat, et presque jamais le contenu de la récompense : le délai d’abord, le critère ensuite, la fréquence enfin. Le parcours fait régler le critère SOUS le niveau déjà atteint, pour que le dispositif se déclenche dès le premier jour.
 
@@ -654,21 +654,21 @@ Trois réglages décident du résultat, et presque jamais le contenu de la réco
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— énoncer ce qu’est un renforçateur sans employer le mot « plaisir » ;
-— distinguer un comportement à renforcer d’un comportement à enseigner, et savoir vers quel parcours renvoyer ;
-— régler un délai, un critère et une fréquence, dans cet ordre d’importance ;
-— établir une liste de préférences avec la personne, et non à sa place ;
-— écrire une phrase de remarque qui nomme le comportement, en trois secondes et sur un ton normal ;
-— tenir un relevé à deux colonnes et y lire votre propre régularité ;
-— espacer le renforcement par paliers sans que le comportement s’effondre ;
-— reconnaître les quatre situations où un dispositif ne doit pas être posé du tout.`,
-    program: `Module 1 — Un renforçateur se reconnaît à l’effet, jamais à l’intention. La phrase qui trie, les trois réglages par ordre d’importance, et les quatre situations où l’on ne pose pas de dispositif.
+• énoncer ce qu’est un renforçateur sans employer le mot « plaisir » ;
+• distinguer un comportement à renforcer d’un comportement à enseigner, et savoir vers quel parcours renvoyer ;
+• régler un délai, un critère et une fréquence, dans cet ordre d’importance ;
+• établir une liste de préférences avec la personne, et non à sa place ;
+• écrire une phrase de remarque qui nomme le comportement, en trois secondes et sur un ton normal ;
+• tenir un relevé à deux colonnes et y lire votre propre régularité ;
+• espacer le renforcement par paliers sans que le comportement s’effondre ;
+• reconnaître les quatre situations où un dispositif ne doit pas être posé du tout.`,
+    program: `Module 1 · Un renforçateur se reconnaît à l’effet, jamais à l’intention. La phrase qui trie, les trois réglages par ordre d’importance, et les quatre situations où l’on ne pose pas de dispositif.
 
-Module 2 — Le tableau qui s’est effondré en neuf jours. Un dispositif réel disséqué : critère hors de portée, délai de plusieurs semaines, récompense choisie sans la personne, et une gommette retirée.
+Module 2 · Le tableau qui s’est effondré en neuf jours. Un dispositif réel disséqué : critère hors de portée, délai de plusieurs semaines, récompense choisie sans la personne, et une gommette retirée.
 
-Module 3 — Exercice guidé : la fiche de renforcement. La liste de préférences et ses trois modes de passation, le critère réglé par le bas, la phrase de remarque écrite mot pour mot.
+Module 3 · Exercice guidé : la fiche de renforcement. La liste de préférences et ses trois modes de passation, le critère réglé par le bas, la phrase de remarque écrite mot pour mot.
 
-Module 4 — Dix jours, puis espacer sans tout perdre. Lire les deux colonnes, décider sur une tendance et non sur trois jours, monter d’un palier, et passer au renforcement irrégulier.`,
+Module 4 · Dix jours, puis espacer sans tout perdre. Lire les deux colonnes, décider sur une tendance et non sur trois jours, monter d’un palier, et passer au renforcement irrégulier.`,
     targetAudience: `Professionnels du médico-social (IME, ITEP, SESSAD, MECS, ESAT, foyer de vie, SAVS) ; assistants familiaux ; parents et proches ; toute personne qui a déjà vu un tableau de points s’éteindre en trois semaines et qui veut comprendre lequel des trois réglages était faux.`,
   },
   {
@@ -676,30 +676,30 @@ Module 4 — Dix jours, puis espacer sans tout perdre. Lire les deux colonnes, d
     image: 'decrire-un-comportement-sans-le-juger.jpg',
     slugPlateforme: 'decrire-un-comportement-sans-le-juger',
     title: 'Décrire un comportement sans le juger',
-    summary: `Thématique : observer et écrire. Une seule compétence travaillée : écrire ce qu’on a vu, et non ce qu’on en a pensé — puis reconnaître, dans ses propres écrits, les mots qui font passer une interprétation pour un fait.
+    summary: `Thématique : observer et écrire. Une seule compétence travaillée : écrire ce qu’on a vu, et non ce qu’on en a pensé, puis reconnaître, dans ses propres écrits, les mots qui font passer une interprétation pour un fait.
 
-L’outil tient en une question : une caméra posée dans la pièce aurait-elle enregistré ce que je viens d’écrire ? Elle n’enregistre ni les intentions, ni les motivations, ni les diagnostics. Tout ce qui n’est pas filmable est une interprétation — elle a sa place, annoncée comme telle, jamais glissée au milieu des faits.
+L’outil tient en une question : une caméra posée dans la pièce aurait-elle enregistré ce que je viens d’écrire ? Elle n’enregistre ni les intentions, ni les motivations, ni les diagnostics. Tout ce qui n’est pas filmable est une interprétation, elle a sa place, annoncée comme telle, jamais glissée au milieu des faits.
 
 Ce n’est pas une exigence de style. Un écrit professionnel produit des décisions, il est recopié dans le dossier suivant, il survit à l’équipe qui l’a produit, et l’article L311-3 du CASF donne à la personne accompagnée le droit de le lire. À chaque recopie, le contexte disparaît et les adjectifs restent : c’est la raison technique pour laquelle on écrit des faits.
 
 46 minutes de lecture sur quatre modules, avec un quiz d’autocorrection par module, plus sept jours de relevé entre le module 3 et le module 4 : une observation écrite par jour, trois lignes.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— appliquer le test de la caméra à une phrase et trancher fait ou interprétation ;
-— repérer les formulations qui font passer une opinion pour une observation ;
-— reconnaître le glissement d’un épisode daté à un trait de caractère, et les verbes qui le signalent ;
-— écrire une observation en trois lignes : quand, où, ce qui a précédé, ce qui s’est passé ;
-— annoncer une hypothèse au lieu de la glisser dans les faits ;
-— faire figurer ce que l’adulte a dit ou fait juste avant ;
-— relire vos propres écrits selon quatre critères mesurables ;
-— distinguer ce qu’aucun texte n’impose de ce que le décret 2022-1728 exige réellement.`,
-    program: `Module 1 — Le test de la caméra. Ce que l’écrit produit, le droit d’accès de la personne à son dossier, les mots qui trahissent, et pourquoi aucun terme clinique ne s’écrit sous une signature éducative.
+• appliquer le test de la caméra à une phrase et trancher fait ou interprétation ;
+• repérer les formulations qui font passer une opinion pour une observation ;
+• reconnaître le glissement d’un épisode daté à un trait de caractère, et les verbes qui le signalent ;
+• écrire une observation en trois lignes : quand, où, ce qui a précédé, ce qui s’est passé ;
+• annoncer une hypothèse au lieu de la glisser dans les faits ;
+• faire figurer ce que l’adulte a dit ou fait juste avant ;
+• relire vos propres écrits selon quatre critères mesurables ;
+• distinguer ce qu’aucun texte n’impose de ce que le décret 2022-1728 exige réellement.`,
+    program: `Module 1 · Le test de la caméra. Ce que l’écrit produit, le droit d’accès de la personne à son dossier, les mots qui trahissent, et pourquoi aucun terme clinique ne s’écrit sous une signature éducative.
 
-Module 2 — Comment une phrase du soir devient une orientation. Une transmission de novembre suivie jusqu’à une décision de mars, et les trois moments où quelqu’un aurait pu remonter à la source.
+Module 2 · Comment une phrase du soir devient une orientation. Une transmission de novembre suivie jusqu’à une décision de mars, et les trois moments où quelqu’un aurait pu remonter à la source.
 
-Module 3 — Exercice guidé : la grille en trois colonnes. Ce que j’ai vu, ce que j’en ai pensé, ce que j’écris — et sept jours d’observations, dont au moins trois sur des moments ordinaires.
+Module 3 · Exercice guidé : la grille en trois colonnes. Ce que j’ai vu, ce que j’en ai pensé, ce que j’écris, et sept jours d’observations, dont au moins trois sur des moments ordinaires.
 
-Module 4 — Se relire, et transmettre à l’équipe. La relecture en quatre passes, l’équilibre exigé par le cadre national de référence, le point de vue de la personne, et une règle commune par mois.`,
+Module 4 · Se relire, et transmettre à l’équipe. La relecture en quatre passes, l’équilibre exigé par le cadre national de référence, le point de vue de la personne, et une règle commune par mois.`,
     targetAudience: `Professionnels du médico-social et de la protection de l’enfance qui produisent des écrits : transmissions, comptes rendus, rapports de situation, notes pour une ESS ou pour le juge ; assistants familiaux ; référents de parcours ; encadrement et direction qui relisent et valident les écrits de leur équipe.`,
   },
   {
@@ -707,11 +707,11 @@ Module 4 — Se relire, et transmettre à l’équipe. La relecture en quatre pa
     image: 'mesurer-un-comportement-ligne-de-base.jpg',
     slugPlateforme: 'mesurer-un-comportement-ligne-de-base-et-courbe',
     title: 'Mesurer un comportement : ligne de base et courbe',
-    summary: `Thématique : observer et écrire. Une seule compétence travaillée : lire une tendance sans se laisser avoir par trois jours — choisir une unité, tenir une ligne de base, tracer la courbe et savoir ce qu’elle dit.
+    summary: `Thématique : observer et écrire. Une seule compétence travaillée : lire une tendance sans se laisser avoir par trois jours, choisir une unité, tenir une ligne de base, tracer la courbe et savoir ce qu’elle dit.
 
 Le catalogue apprend à comprendre un comportement, à le remplacer, à l’augmenter et à l’écrire. Il ne disait nulle part comment savoir si ce qu’on a mis en place produit quelque chose. Le trou coûte dans les deux sens : on abandonne un dispositif qui marchait, et on en maintient un qui ne fait rien pendant des mois.
 
-Aucune statistique, et c’est délibéré : ni significativité, ni écart-type, ni régression. Un test mal appliqué donne une certitude fausse, ce qui est pire que l’incertitude honnête. Ce qui est enseigné tient en trois questions posées à une courbe — le niveau, la pente, la variabilité — et se lit à l’œil sur du papier quadrillé.
+Aucune statistique, et c’est délibéré : ni significativité, ni écart-type, ni régression. Un test mal appliqué donne une certitude fausse, ce qui est pire que l’incertitude honnête. Ce qui est enseigné tient en trois questions posées à une courbe, le niveau, la pente, la variabilité, et se lit à l’œil sur du papier quadrillé.
 
 Aucune ligne de base quand il y a danger : on agit immédiatement, et on écrit « pas de ligne de base, motif sécurité ». Le module 2 le dit avant d’enseigner autre chose. Et l’on mesure un comportement dans un contexte, jamais quelqu’un : aucun chiffre accolé à un nom, parce que ce genre de phrase est recopié dans le dossier suivant et survit à l’équipe qui l’a produite (art. L311-3 du CASF).
 
@@ -720,21 +720,21 @@ Aucune ligne de base quand il y a danger : on agit immédiatement, et on écrit 
 ${GARDE_FOU}`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— distinguer ce qui coûte à la personne de ce qui gêne l’entourage, et renoncer à mesurer dans le second cas ;
-— décrire un comportement en termes filmables avant de le compter ;
-— choisir une unité — fréquence, durée ou latence — sur ce qui pose réellement problème ;
-— remplacer une intensité estimée par une question fermée et comptable ;
-— tenir dix jours de ligne de base sans rien changer, et savoir s’en passer lorsque la sécurité l’impose ;
-— construire une feuille de relevé à six colonnes qu’un collègue remplit sans explication ;
-— vérifier à deux que vous comptez la même chose, et reprendre la définition sinon ;
-— lire une courbe par le niveau, la pente et la variabilité, et distinguer un signal d’une conclusion.`,
-    program: `Module 1 — Ce qu’on mesure, et ce qu’on ne mesure pas. La phrase qui décide s’il y a lieu de mesurer, les quatre unités et celle qu’il vous faut, et pourquoi l’intensité estimée n’est pas une donnée.
+• distinguer ce qui coûte à la personne de ce qui gêne l’entourage, et renoncer à mesurer dans le second cas ;
+• décrire un comportement en termes filmables avant de le compter ;
+• choisir une unité, fréquence, durée ou latence, sur ce qui pose réellement problème ;
+• remplacer une intensité estimée par une question fermée et comptable ;
+• tenir dix jours de ligne de base sans rien changer, et savoir s’en passer lorsque la sécurité l’impose ;
+• construire une feuille de relevé à six colonnes qu’un collègue remplit sans explication ;
+• vérifier à deux que vous comptez la même chose, et reprendre la définition sinon ;
+• lire une courbe par le niveau, la pente et la variabilité, et distinguer un signal d’une conclusion.`,
+    program: `Module 1 · Ce qu’on mesure, et ce qu’on ne mesure pas. La phrase qui décide s’il y a lieu de mesurer, les quatre unités et celle qu’il vous faut, et pourquoi l’intensité estimée n’est pas une donnée.
 
-Module 2 — La ligne de base, et pourquoi on ne change rien pendant. Dix jours sans rien toucher, une seule chose changée ensuite avec sa date — et la règle de sécurité qui suspend tout cela.
+Module 2 · La ligne de base, et pourquoi on ne change rien pendant. Dix jours sans rien toucher, une seule chose changée ensuite avec sa date, et la règle de sécurité qui suspend tout cela.
 
-Module 3 — Exercice guidé : la feuille, le test, les dix jours. Une feuille à six colonnes affichée là où le comportement se produit, le test d’accord entre deux personnes, et la médiane tracée à la main.
+Module 3 · Exercice guidé : la feuille, le test, les dix jours. Une feuille à six colonnes affichée là où le comportement se produit, le test d’accord entre deux personnes, et la médiane tracée à la main.
 
-Module 4 — Lire la courbe : progrès, variation, ou rien. Le niveau, la pente et la variabilité dans cet ordre, la règle des trois points, et ce qu’on écrit dans le dossier.`,
+Module 4 · Lire la courbe : progrès, variation, ou rien. Le niveau, la pente et la variabilité dans cet ordre, la règle des trois points, et ce qu’on écrit dans le dossier.`,
     targetAudience: `Professionnels du médico-social qui mettent des choses en place sans savoir si elles marchent (IME, ITEP, SESSAD, MECS, ESAT, foyer de vie) ; coordinateurs et chefs de service qui lisent des bilans où « ça va mieux » n’est adossé à rien ; psychologues, éducateurs et ergothérapeutes qui construisent un projet d’accompagnement et doivent en rendre compte ; parents qui ont changé quelque chose à la maison et veulent savoir si ça a produit un effet.`,
   },  {
     slug: 'resoudre-un-probleme-avec-la-personne',
@@ -743,30 +743,30 @@ Module 4 — Lire la courbe : progrès, variation, ou rien. Le niveau, la pente 
     title: 'Résoudre un problème avec la personne plutôt que contre elle',
     summary: `Thématique : observer et écrire. Une seule compétence travaillée : chercher la solution à deux, et tenir l’accord obtenu.
 
-Une solution imposée obtient quelque chose, et il serait malhonnête de dire le contraire : elle obtient l’arrêt, souvent tout de suite. Le problème est qu’elle ne marche que tant que vous êtes là — c’est le comportement normal d’une solution à laquelle une des deux personnes n’a pas participé.
+Une solution imposée obtient quelque chose, et il serait malhonnête de dire le contraire : elle obtient l’arrêt, souvent tout de suite. Le problème est qu’elle ne marche que tant que vous êtes là, c’est le comportement normal d’une solution à laquelle une des deux personnes n’a pas participé.
 
 Le parcours enseigne trois temps, dans un ordre qui n’est pas négociable : le point de vue de la personne jusqu’à ce qu’elle dise « oui, c’est ça » ; le vôtre en deux phrases, sans y glisser ce qu’elle devrait faire ; puis la recherche à deux. Et un accord écrit en trois lignes, avec sa date de relecture, que l’autre peut redire.
 
-On ne négocie jamais la sécurité, ni les soins prescrits, ni les besoins fondamentaux — repas, sommeil, hygiène, lien familial, et surtout le moyen de communication. Le module 1 fait trier avant d’ouvrir la bouche, et une fiche d’annexe liste ce qui ne se discute pas, à afficher en salle d’équipe. La conversation se tient à froid, jamais pendant ; et si la personne ne veut pas parler maintenant, on reporte — une résolution « à deux » imposée reste une résolution imposée.
+On ne négocie jamais la sécurité, ni les soins prescrits, ni les besoins fondamentaux, repas, sommeil, hygiène, lien familial, et surtout le moyen de communication. Le module 1 fait trier avant d’ouvrir la bouche, et une fiche d’annexe liste ce qui ne se discute pas, à afficher en salle d’équipe. La conversation se tient à froid, jamais pendant ; et si la personne ne veut pas parler maintenant, on reporte, une résolution « à deux » imposée reste une résolution imposée.
 
 46 minutes de lecture sur quatre modules, avec un quiz d’autocorrection par module, plus dix jours entre la conversation et sa relecture : comptez une dizaine de jours en tout.`,
     objectives: `À l’issue de cette mini-formation, vous serez capable de :
 
-— distinguer ce qu’une solution imposée obtient de ce qu’elle n’obtient pas ;
-— trier un problème entre sécurité, limite non négociable, recherche commune, et ce qu’on laisse ;
-— annoncer une limite non négociable au début de la conversation, et chercher autour ;
-— repérer les quatre phrases qui referment une recherche commune ;
-— tenir le temps 1 sans proposer de solution, silences de dix secondes compris ;
-— énoncer votre préoccupation en deux phrases, sans y glisser ce que l’autre devrait faire ;
-— écrire un accord en trois lignes, avec sa date de relecture, que l’autre peut redire ;
-— relire l’accord à deux et attribuer un échec à l’une des quatre causes, et à aucune autre.`,
-    program: `Module 1 — Ce qu’une solution imposée ne peut pas faire. Le tri en quatre branches, ce qui ne se négocie jamais, et les trois situations où l’on n’ouvre pas cette conversation du tout.
+• distinguer ce qu’une solution imposée obtient de ce qu’elle n’obtient pas ;
+• trier un problème entre sécurité, limite non négociable, recherche commune, et ce qu’on laisse ;
+• annoncer une limite non négociable au début de la conversation, et chercher autour ;
+• repérer les quatre phrases qui referment une recherche commune ;
+• tenir le temps 1 sans proposer de solution, silences de dix secondes compris ;
+• énoncer votre préoccupation en deux phrases, sans y glisser ce que l’autre devrait faire ;
+• écrire un accord en trois lignes, avec sa date de relecture, que l’autre peut redire ;
+• relire l’accord à deux et attribuer un échec à l’une des quatre causes, et à aucune autre.`,
+    program: `Module 1 · Ce qu’une solution imposée ne peut pas faire. Le tri en quatre branches, ce qui ne se négocie jamais, et les trois situations où l’on n’ouvre pas cette conversation du tout.
 
-Module 2 — La conversation qui s’est arrêtée à la troisième réplique. Six minutes disséquées réplique par réplique, et l’information qui aurait tout changé, apprise trois semaines trop tard.
+Module 2 · La conversation qui s’est arrêtée à la troisième réplique. Six minutes disséquées réplique par réplique, et l’information qui aurait tout changé, apprise trois semaines trop tard.
 
-Module 3 — Exercice guidé : les trois temps, écrits mot pour mot. La préparation sur une demi-page, les silences de dix secondes, et l’accord écrit devant la personne.
+Module 3 · Exercice guidé : les trois temps, écrits mot pour mot. La préparation sur une demi-page, les silences de dix secondes, et l’accord écrit devant la personne.
 
-Module 4 — Tenir l’accord, et ce qu’on fait quand il ne tient pas. La relecture à deux en cinq minutes, les quatre causes d’un accord qui dérape, et ce qu’on écrit dans le dossier.`,
+Module 4 · Tenir l’accord, et ce qu’on fait quand il ne tient pas. La relecture à deux en cinq minutes, les quatre causes d’un accord qui dérape, et ce qu’on écrit dans le dossier.`,
     targetAudience: `Professionnels du médico-social devant un problème qui revient depuis des mois malgré les règles posées (IME, ITEP, SESSAD, MECS, ESAT, foyer de vie) ; professionnels de la protection de l’enfance et assistants familiaux ; parents, pour qui la scène du module 2 existe aussi à la maison ; coordinateurs et chefs de service qui voient une équipe s’épuiser à reposer la même règle.`,
   },
 ];

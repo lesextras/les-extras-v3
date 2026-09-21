@@ -95,7 +95,7 @@ export default function IntervenantIndependantPage() {
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
 La plateforme de l’association ADéPA : MECS, IME, ITEP, SESSAD et EHPAD d’un côté,
           professionnels indépendants de l’autre. Vous publiez vos ateliers, ils réservent, vous
-          facturez votre tarif — sans commission.
+          facturez votre tarif, sans commission.
         </p>
       </div>
 

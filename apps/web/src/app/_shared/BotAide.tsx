@@ -39,7 +39,7 @@ const COMMUNES: Reponse[] = [
     cle: 'gratuit',
     question: "C'est vraiment gratuit ?",
     reponse:
-      "Oui. Pas d'essai limité, pas de compteur, pas de carte bancaire. L'outil est porté par ADéPA, association éducative de Melun, avec Toulali, centre de formation. Un don la soutient et ouvre droit à un reçu fiscal — mais rien n'est demandé pour se servir de l'outil.",
+      "Oui. Pas d'essai limité, pas de compteur, pas de carte bancaire. L'outil est porté par ADéPA, association éducative de Melun, avec Toulali, centre de formation. Un don la soutient et ouvre droit à un reçu fiscal, mais rien n'est demandé pour se servir de l'outil.",
     suite: ['espace', 'donnees'],
   },
   {
@@ -213,7 +213,7 @@ export function BotAide({ espace = 'association' }: { espace?: Espace }) {
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <p className={`rounded-2xl rounded-tl-sm px-3 py-2.5 text-[14px] leading-relaxed ${t.fondReponse} ${t.texte}`}>
               Bonjour. Je réponds aux questions les plus fréquentes et je t&apos;emmène au bon endroit. Choisis une question
-              ci-dessous — et si la tienne n&apos;y est pas, on te répond par écrit.
+              ci-dessous, et si la tienne n&apos;y est pas, on te répond par écrit.
             </p>
 
             {fil.map((m) => (

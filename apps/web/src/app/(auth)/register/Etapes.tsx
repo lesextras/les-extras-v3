@@ -466,7 +466,7 @@ export function ChampStructure({
           lang="fr"
         >
           Aucun résultat. Beaucoup de petites structures ne figurent pas dans
-          l’annuaire public — <strong className="text-foreground">utiliser « {recherche.trim()} »</strong>{' '}
+          l’annuaire public. <strong className="text-foreground">Utiliser « {recherche.trim()} »</strong>{' '}
           tel quel, ce sera tout aussi valable.
         </button>
       )}
@@ -747,7 +747,7 @@ export function EtapePoste({
           capacites: droits,
           justification:
             niveau === 'DIRECTION'
-              ? `${poste.trim() || 'Direction'}${cadre ? ' — cadre' : ''}`
+              ? `${poste.trim() || 'Direction'}${cadre ? ' (cadre)' : ''}`
               : undefined,
         },
       });
@@ -916,9 +916,9 @@ export function EtapeStructure({ onFait }: { onFait: () => void }) {
 
       <Encart>
         <strong className="text-foreground">Pas encore de structure ?</strong> C’est
-        très bien aussi. Vous pouvez tout faire ici — être contacté, échanger,
-        préparer vos fiches, vous rendre disponible pour des remplacements en CDD
-        — et vous la déclarerez le jour où vous voudrez publier.
+        très bien aussi. Vous pouvez tout faire ici, être contacté, échanger,
+        préparer vos fiches, vous rendre disponible pour des remplacements en CDD.
+        Vous la déclarerez le jour où vous voudrez publier.
       </Encart>
 
       <Button

@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const c = await charger(slug);
   if (!c) return { title: 'Cours introuvable' };
   return {
-    title: `${c.titre} — ${c.ecole.nom}`,
+    title: `${c.titre} · ${c.ecole.nom}`,
     description: c.sousTitre ?? c.description?.slice(0, 160) ?? undefined,
     alternates: { canonical: `/cours/${c.slug}` },
   };

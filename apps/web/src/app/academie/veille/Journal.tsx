@@ -249,7 +249,7 @@ export function Journal({ entrees: initiales }: { entrees: Entree[] }) {
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-bold text-[#12312A]">
-              Ce que ça change chez nous <span className="font-normal text-[#5E7A6E]">— la ligne que l&apos;auditeur lit</span>
+              Ce que ça change chez nous <span className="font-normal text-[#5E7A6E]">· la ligne que l&apos;auditeur lit</span>
             </span>
             <textarea
               value={consequence}
@@ -319,7 +319,7 @@ export function Journal({ entrees: initiales }: { entrees: Entree[] }) {
           <p className="text-[15px] text-[#334A42]">
             {entrees.length
               ? 'Aucune entrée de ce type pour le moment.'
-              : "Le journal est vide. Une entrée par trimestre et par type suffit à tenir le critère 6 — ce n'est pas une revue de presse."}
+              : "Le journal est vide. Une entrée par trimestre et par type suffit à tenir le critère 6, ce n'est pas une revue de presse."}
           </p>
         </div>
       )}

@@ -162,7 +162,7 @@ export function Programmes({ initiaux }: { initiaux: Programme[] }) {
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-bold text-[#12312A]">
-              Les objectifs <span className="font-normal text-[#5E7A6E]">— indicateur 1 : ils doivent être évaluables</span>
+              Les objectifs <span className="font-normal text-[#5E7A6E]">· indicateur 1 : ils doivent être évaluables</span>
             </span>
             <textarea value={objectives} onChange={(e) => setObjectives(e.target.value)} rows={3} placeholder="« À l'issue, le participant sait rédiger… », « … sait paramétrer… »" className={CHAMP} />
           </label>
@@ -174,7 +174,7 @@ export function Programmes({ initiaux }: { initiaux: Programme[] }) {
             </label>
             <label className="block">
               <span className="mb-1.5 block text-sm font-bold text-[#12312A]">Les prérequis</span>
-              <textarea value={prerequisites} onChange={(e) => setPrerequisites(e.target.value)} rows={2} placeholder="« Aucun » est une réponse valable — mais il faut l'écrire." className={CHAMP} />
+              <textarea value={prerequisites} onChange={(e) => setPrerequisites(e.target.value)} rows={2} placeholder="« Aucun » est une réponse valable, mais il faut l'écrire." className={CHAMP} />
             </label>
           </div>
 

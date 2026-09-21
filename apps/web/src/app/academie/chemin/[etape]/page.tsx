@@ -75,7 +75,7 @@ export default async function EtapePage({ params }: Params) {
         )
       ) : (
         <Encart ton="info">
-          Avec un espace, cette étape se coche — et plusieurs se cochent toutes seules dès que la donnée arrive.{' '}
+          Avec un espace, cette étape se coche, et plusieurs se cochent toutes seules dès que la donnée arrive.{' '}
           <Link href="/academie/inscription" className="font-bold underline underline-offset-4">
             Ouvrir mon espace
           </Link>

@@ -99,7 +99,7 @@ export function Classes({ initiales, cours }: { initiales: Classe[]; cours: Cour
             <p className="text-[16px] font-extrabold text-[#12312A]">{c.titre}</p>
             <p className="text-[14px] text-[#5E7A6E]">
               {formaterDate(c.debut)} à {heureDe(c.debut)}
-              {c.fin ? ` — ${heureDe(c.fin)}` : ''}
+              {c.fin ? ` · ${heureDe(c.fin)}` : ''}
               {c.cours?.titre ? ` · ${c.cours.titre}` : ''}
             </p>
             {c.description ? (

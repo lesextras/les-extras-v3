@@ -161,8 +161,8 @@ export function VivierOuvert({ personnes }: { personnes: PersonneDisponible[] })
             >
               <FileCheck aria-hidden className="size-3.5 shrink-0" />
               {p.dossier.complet
-                ? 'Dossier déposé — identité et bulletin n° 3'
-                : `Dossier ${p.dossier.deposees}/${p.dossier.total} — ne peut pas encore candidater`}
+                ? 'Dossier déposé, identité et bulletin n° 3'
+                : `Dossier ${p.dossier.deposees}/${p.dossier.total}, ne peut pas encore candidater`}
             </p>
 
             {p.territoire && (
@@ -201,8 +201,8 @@ export function VivierOuvert({ personnes }: { personnes: PersonneDisponible[] })
 
       {visibles.length === 0 && (
         <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground" lang="fr">
-          Aucun résultat avec ces filtres. Élargissez, ou publiez votre besoin —
-          il touchera aussi des personnes qui ne figurent pas dans cette liste.
+          Aucun résultat avec ces filtres. Élargissez, ou publiez votre besoin, qui
+          touchera aussi des personnes qui ne figurent pas dans cette liste.
         </p>
       )}
     </div>

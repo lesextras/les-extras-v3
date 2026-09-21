@@ -113,8 +113,8 @@ export function FormulaireLanding({
         {loading ? "Envoi…" : bouton}
       </Button>
       <p className="text-[11px] leading-snug text-muted-foreground">
-        Votre adresse sert à vous répondre, et à rien d&apos;autre. Association ADéPA, Melun —
-        pas de revente, pas de séquence automatique.
+        Votre adresse sert à vous répondre, et à rien d&apos;autre. Association ADéPA, Melun.
+        Pas de revente, pas de séquence automatique.
       </p>
     </form>
   );

@@ -408,7 +408,7 @@ export function Organigramme({ donnees }: { donnees: DonneesOrganigramme }) {
         <div className="rounded-xl border-2 border-dashed border-border p-6 text-center">
           <p className="text-sm font-medium">Aucun service déclaré</p>
           <p className="mt-1 text-xs text-muted-foreground" lang="fr">
-            Créez votre service — internat, pôle jour, SESSAD — puis invitez votre
+            Créez votre service (internat, pôle jour, SESSAD) puis invitez votre
             équipe. Vous n’avez besoin de l’autorisation de personne.
           </p>
         </div>

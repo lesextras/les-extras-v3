@@ -136,7 +136,7 @@ export function Rendezvous({ jeton }: { jeton: string }) {
   if (etat.etat === 'TERMINEE' || etat.statut === 'TERMINEE') {
     return (
       <Encart titre="Ce rendez-vous est terminé">
-        Le lien ne fonctionne plus — c’est voulu : il ne vaut que pour ce rendez-vous. Pour un
+        Le lien ne fonctionne plus, et c’est voulu : il ne vaut que pour ce rendez-vous. Pour un
         nouveau créneau, écrivez à votre intervenant.
       </Encart>
     );

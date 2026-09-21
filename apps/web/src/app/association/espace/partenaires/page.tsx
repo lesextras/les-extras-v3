@@ -31,7 +31,7 @@ export default async function ContactsPage() {
     <>
       <Titre
         surtitre="Autour de l'association"
-        sousTitre="Un nom, un poste, un téléphone, et sa famille : qui finance, qui décide à la mairie, qui agit avec vous. Noté une fois ici, il ressert partout — dans tes demandes, dans tes courriers, dans tes comptes rendus."
+        sousTitre="Un nom, un poste, un téléphone, et sa famille : qui finance, qui décide à la mairie, qui agit avec vous. Noté une fois ici, il ressert partout, dans tes demandes, dans tes courriers, dans tes comptes rendus."
       >
         Mes contacts
       </Titre>

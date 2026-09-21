@@ -59,7 +59,7 @@ export default function NousContacterPage() {
           <Encart ton="info">
             <p className="font-extrabold">Avant d&apos;écrire, jette un œil au chemin.</p>
             <p className="mt-1 text-sm leading-relaxed">
-              Les questions les plus fréquentes — statuts, préfecture, SIRET, banque, subventions — ont déjà leur étape expliquée pas à pas.
+              Les questions les plus fréquentes, statuts, préfecture, SIRET, banque, subventions, ont déjà leur étape expliquée pas à pas.
             </p>
             <Link href="/chemin" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
               Ouvrir le chemin →

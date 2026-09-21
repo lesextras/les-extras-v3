@@ -355,7 +355,7 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
               {lecon.quiz ? (
                 <section className="mt-7">
                   <h3 className="text-xl font-extrabold tracking-tight text-[#12312A]">
-                    Le quiz — {lecon.quiz.noteMinimale} % pour valider
+                    Le quiz · {lecon.quiz.noteMinimale} % pour valider
                   </h3>
                   <ol className="mt-4 grid gap-4">
                     {lecon.quiz.questions.map((q, n) => {
@@ -416,7 +416,7 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
                       }
                     >
                       <p className="text-lg font-extrabold">
-                        {correction.score} % — {correction.reussi ? 'c’est validé.' : 'pas encore.'}
+                        {correction.score} % · {correction.reussi ? 'c’est validé.' : 'pas encore.'}
                       </p>
                       {!correction.reussi ? (
                         <button

@@ -26,7 +26,7 @@ export default function InscriptionAcademiePage() {
         <Encart ton="info">
           <span className="font-bold">Ton organisme n&apos;est pas encore déclaré ?</span> C&apos;est justement le moment. Le
           chemin commence avant la déclaration : il te dit dans quel ordre s&apos;y prendre, y compris l&apos;étape que personne
-          ne voit venir — la première convention signée avant de pouvoir déclarer.
+          ne voit venir, la première convention signée avant de pouvoir déclarer.
         </Encart>
         <p className="text-sm text-[#5E7A6E]">
           Tu as déjà un compte ?{' '}
@@ -37,7 +37,7 @@ export default function InscriptionAcademiePage() {
           <Link href="/" className="font-bold text-[#0F5F3E] underline underline-offset-4">
             Son espace est ici
           </Link>{' '}
-          — un même compte porte les deux.
+         , un même compte porte les deux.
         </p>
       </div>
     </div>

@@ -39,7 +39,7 @@ export function FormulaireContact() {
     return [
       message.trim(),
       '',
-      '—',
+      '···',
       `Nom : ${nom.trim()}`,
       association.trim() ? `Association : ${association.trim()}` : null,
       email.trim() ? `Répondre à : ${email.trim()}` : null,
@@ -172,7 +172,7 @@ export function FormulaireContact() {
       </div>
       <p className="text-sm text-[#6B6A8A]">
         Le message part directement d&apos;ici. Tu préfères écrire depuis ta boîte et garder une copie dans tes envoyés ?
-        Le second bouton ouvre ta messagerie — et l&apos;adresse est{' '}
+        Le second bouton ouvre ta messagerie, et l&apos;adresse est{' '}
         <a href={`mailto:${ADRESSE_ADEPA}`} className="font-bold text-[#4F46E5] underline underline-offset-4">
           {ADRESSE_ADEPA}
         </a>

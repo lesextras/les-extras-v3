@@ -36,7 +36,7 @@ export default async function MonAcademiePage() {
       href: '/academie/comptabilite',
       titre: 'Ma comptabilité',
       detail:
-        "Devis, conventions, factures, subrogation OPCO, encaissements — et le bilan pédagogique et financier à déposer chaque année.",
+        "Devis, conventions, factures, subrogation OPCO, encaissements, et le bilan pédagogique et financier à déposer chaque année.",
       bouton: 'Ouvrir ma comptabilité',
       bordure: 'border-[#F3B0C2] hover:border-[#D6335C]',
       fond: 'bg-[#FDE7EC]',
@@ -131,7 +131,7 @@ export default async function MonAcademiePage() {
           <div className="mb-5">
             <Encart ton="attention">
               Ton numéro de déclaration d&apos;activité manque. Tant qu&apos;il n&apos;est pas là, aucune convention ne peut être
-              facturée en formation professionnelle — mais tu peux tout préparer sans lui.
+              facturée en formation professionnelle, mais tu peux tout préparer sans lui.
             </Encart>
           </div>
         )}

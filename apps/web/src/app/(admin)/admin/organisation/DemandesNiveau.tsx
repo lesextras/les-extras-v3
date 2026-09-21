@@ -182,7 +182,7 @@ export function DemandesNiveau({ demandes }: { demandes: DemandeNiveau[] }) {
                   <Indice bon={Boolean(domaineStructure)}>
                     {domaineStructure
                       ? `Courriel professionnel (${domaineStructure})`
-                      : 'Adresse grand public — fréquent dans les petites structures, ce n’est pas un motif de refus à soi seul'}
+                      : 'Adresse grand public, fréquente dans les petites structures. Ce n’est pas un motif de refus à soi seul'}
                   </Indice>
                   <Indice bon={d.indices.structureRenseignee}>
                     {d.indices.structureRenseignee

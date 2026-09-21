@@ -120,7 +120,7 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
         <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Les commentaires</h2>
         <p className="mb-4 text-[15px] leading-relaxed text-[#334A42]">
           Sous chaque leçon, un apprenant peut écrire une question ou une remarque. Tu peux couper
-          cette possibilité partout d&apos;un coup — ou formation par formation, dans l&apos;onglet
+          cette possibilité partout d&apos;un coup, ou formation par formation, dans l&apos;onglet
           « Paramètres » de chacune.
         </p>
 

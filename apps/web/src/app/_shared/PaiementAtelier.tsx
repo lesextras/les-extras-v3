@@ -155,7 +155,7 @@ export function PaiementAtelier({
           </p>
           {confirme.annulationTexte ? (
             <p className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">En cas d&apos;annulation — </span>
+              <span className="font-medium text-foreground">En cas d&apos;annulation : </span>
               {confirme.annulationTexte}
             </p>
           ) : null}
@@ -245,7 +245,7 @@ export function PaiementAtelier({
             </p>
             {annulationTexte ? (
               <p className="pl-[22px]">
-                <span className="font-medium text-foreground">En cas d&apos;annulation — </span>
+                <span className="font-medium text-foreground">En cas d&apos;annulation : </span>
                 {annulationTexte}
               </p>
             ) : null}

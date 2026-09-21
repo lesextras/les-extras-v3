@@ -135,7 +135,7 @@ export const FAMILLES_AGREMENTS: FamilleAgrements[] = [
         pourQui: "Associations qui proposent des missions d'intérêt général à des jeunes de 16 à 25 ans (30 ans en situation de handicap).",
         ou: 'Demande en ligne sur le site de l’Agence du Service Civique',
         lien: 'https://www.service-civique.gouv.fr/organismes/accueillir-un-volontaire',
-        lienLibelle: 'Accueillir un volontaire — service-civique.gouv.fr',
+        lienLibelle: 'Accueillir un volontaire, service-civique.gouv.fr',
       },
       {
         code: 'sport',

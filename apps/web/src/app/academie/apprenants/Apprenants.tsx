@@ -239,7 +239,7 @@ export function Apprenants({
     setEnCours(false);
     setImporte(
       faites
-        ? `${faites} personne${faites > 1 ? 's' : ''} inscrite${faites > 1 ? 's' : ''}${ratees ? ` — ${ratees} ligne${ratees > 1 ? 's' : ''} écartée${ratees > 1 ? 's' : ''} (adresse invalide ou déjà inscrite)` : '.'}`
+        ? `${faites} personne${faites > 1 ? 's' : ''} inscrite${faites > 1 ? 's' : ''}${ratees ? ` · ${ratees} ligne${ratees > 1 ? 's' : ''} écartée${ratees > 1 ? 's' : ''} (adresse invalide ou déjà inscrite)` : '.'}`
         : "Aucune ligne n'a pu être importée : vérifie que le fichier contient une adresse e-mail par ligne.",
     );
   }

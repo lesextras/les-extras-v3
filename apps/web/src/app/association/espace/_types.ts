@@ -354,7 +354,7 @@ export interface Espace {
 }
 
 export function formaterEuros(n: number | null | undefined) {
-  if (n === null || n === undefined) return '—';
+  if (n === null || n === undefined) return 'Non renseigné';
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }
 
@@ -385,9 +385,9 @@ export const CATEGORIES: Record<string, string> = {
 };
 
 export function dateCourte(iso: string | null | undefined) {
-  if (!iso) return '—';
+  if (!iso) return 'Non renseigné';
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  return Number.isNaN(d.getTime()) ? 'Non renseigné' : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export function pourInput(iso: string | null | undefined) {

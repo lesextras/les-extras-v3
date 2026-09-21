@@ -228,7 +228,7 @@ export function BlocRendu({
 
   if (t === 'image' || t === 'gif') {
     const u = adresse(bloc.url);
-    if (!u) return <Manque quoi={t === 'gif' ? 'L’adresse du gif.' : 'Une image — colle son adresse.'} />;
+    if (!u) return <Manque quoi={t === 'gif' ? 'L’adresse du gif.' : 'Une image, colle son adresse.'} />;
     // Un lien de page Giphy devient son cadre ; une adresse directe reste une image.
     if (t === 'gif' && chez(u, 'giphy.com') && !/\.(gif|webp|mp4)$/i.test(u.pathname)) {
       const m = u.pathname.match(/-([A-Za-z0-9]+)$/) || u.pathname.match(/\/(?:gifs|embed|media)\/([A-Za-z0-9]+)/);
@@ -267,7 +267,7 @@ export function BlocRendu({
           {bloc.debut ? (
             <span className="font-normal" style={{ color: '#5E7A6E' }}>
               {' '}
-              — {new Date(bloc.debut).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}
+              · {new Date(bloc.debut).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}
             </span>
           ) : null}
         </p>
@@ -381,10 +381,10 @@ export function BlocRendu({
   if (cadre) return <Cadre src={cadre.src} ratio={cadre.ratio} titre={NOM_BLOC[t]} />;
 
   const u = adresse(bloc.url);
-  if (!u) return <Manque quoi={`L’adresse — ${NOM_BLOC[t]}.`} />;
+  if (!u) return <Manque quoi={`L’adresse · ${NOM_BLOC[t]}.`} />;
   return (
     <div className="grid gap-2">
-      <LienSimple url={u.toString()} texte={bloc.nom || `Ouvrir — ${NOM_BLOC[t]}`} />
+      <LienSimple url={u.toString()} texte={bloc.nom || `Ouvrir · ${NOM_BLOC[t]}`} />
       <p className="text-xs" style={{ color: '#5E7A6E' }}>
         Cette adresse ne ressemble pas à un lien {NOM_BLOC[t]} : elle s’affiche en lien plutôt que dans la page.
       </p>

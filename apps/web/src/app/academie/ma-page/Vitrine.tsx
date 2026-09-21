@@ -105,7 +105,7 @@ export function Vitrine({ vitrine }: { vitrine: DonneesVitrine }) {
               {v.publiee ? (
                 <Pastille ton="ok">Visible par tout le monde</Pastille>
               ) : (
-                <Pastille ton="attention">Privée — personne ne peut l&apos;ouvrir</Pastille>
+                <Pastille ton="attention">Privée, personne ne peut l&apos;ouvrir</Pastille>
               )}
             </div>
           </div>

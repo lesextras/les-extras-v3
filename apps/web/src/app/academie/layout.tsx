@@ -23,7 +23,7 @@ const fraunces = Fraunces({ subsets: ['latin'], style: ['italic'], weight: ['600
 export const metadata: Metadata = {
   metadataBase: new URL(ORIGINE_SITE),
   title: {
-    absolute: `${NOM_SITE} — par Toulali`,
+    absolute: `${NOM_SITE}, par Toulali`,
     template: `%s · ${NOM_SITE}`,
   },
   description:
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     siteName: NOM_SITE,
     locale: 'fr_FR',
     type: 'website',
-    title: `${NOM_SITE} — par Toulali`,
+    title: `${NOM_SITE}, par Toulali`,
     description:
       "Déclarer son organisme, obtenir Qualiopi, ouvrir ses financements : douze étapes expliquées simplement. Gratuit.",
   },

@@ -26,7 +26,7 @@ export function BoutonEtapeFaite({ slug, faite, verifiee }: { slug: string; fait
   if (verifiee) {
     return (
       <p className="rounded-xl bg-[#E3F5EC] px-4 py-3 text-sm font-bold text-[#0F5F3E]">
-        ✓ Fait — confirmé par les répertoires publics
+        ✓ Fait, confirmé par les répertoires publics
       </p>
     );
   }

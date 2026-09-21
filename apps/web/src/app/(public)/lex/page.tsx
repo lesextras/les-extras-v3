@@ -64,7 +64,7 @@ const MOMENTS = [
     probleme:
       "« Le rapport de situation est pour demain. J’ai tout en tête, et je n’arrive pas à commencer. »",
     reponse:
-      "Vous dictez ou collez vos notes telles qu’elles viennent. LEX rend un texte structuré — ce qui est observé d’un côté, ce qui est interprété de l’autre — que vous relisez et corrigez.",
+      "Vous dictez ou collez vos notes telles qu’elles viennent. LEX rend un texte structuré, avec ce qui est observé d’un côté et ce qui est interprété de l’autre, que vous relisez et corrigez.",
     preuve: "Cinq trames : observation, synthèse, rapport, transmission, projet personnalisé.",
   },
   {
@@ -73,7 +73,7 @@ const MOMENTS = [
     probleme:
       "« Il faut faire quelque chose demain avec le groupe, et je n’ai ni idée ni temps de préparer. »",
     reponse:
-      "Vous décrivez le besoin réel — l’âge, le nombre, ce qui coince. LEX propose une séance complète : objectifs, matériel, déroulé en quatre temps, points de vigilance.",
+      "Vous décrivez le besoin réel, l’âge, le nombre, ce qui coince. LEX propose une séance complète : objectifs, matériel, déroulé en quatre temps, points de vigilance.",
     preuve: "Une séance construite en quinze secondes, à ajuster ensuite.",
   },
   {
@@ -169,7 +169,7 @@ export default function LexPage() {
         </h1>
         <p className="text-lg leading-relaxed text-foreground/75" lang="fr">
           Vous avez la situation entière en tête. Ce qui manque, ce n’est pas l’analyse&nbsp;: c’est
-          la mise en forme — la phrase d’ouverture, le plan, le passage des notes du carnet à un
+          la mise en forme, la phrase d’ouverture, le plan, le passage des notes du carnet à un
           document qu’un juge, une MDPH ou une famille va lire.
         </p>
         <p className="text-lg leading-relaxed text-foreground/75" lang="fr">
@@ -266,7 +266,7 @@ export default function LexPage() {
         </h2>
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/80" lang="fr">
           Ces limites ne sont pas techniques, elles sont volontaires. C’est ce qui permet de poser
-          l’outil sur la table en réunion d’équipe plutôt que de s’en servir en cachette — le pire
+          l’outil sur la table en réunion d’équipe plutôt que de s’en servir en cachette, le pire
           scénario pour un établissement.
         </p>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -283,8 +283,8 @@ export default function LexPage() {
           ))}
         </ul>
         <p className="mt-6 text-sm text-foreground/70">
-          Le détail — hébergement, sous-traitance, journal des générations, modèle d’analyse
-          d’impact pour votre direction — est sur{" "}
+          Le détail (hébergement, sous-traitance, journal des générations, modèle d’analyse
+          d’impact pour votre direction) est sur{" "}
           <Link href="/confiance-lex" className="font-semibold text-primary hover:underline">
             le cadre de confiance
           </Link>
@@ -350,7 +350,7 @@ export default function LexPage() {
         <p className="mt-3 max-w-3xl leading-relaxed text-foreground/75" lang="fr">
           Nos guides des écrits professionnels sont en libre accès, sans compte&nbsp;: ce qu’on
           attend d’un rapport de situation, d’une note d’incident, d’un courrier aux parents, et
-          ce que les textes disent vraiment — plusieurs règles que tout le monde cite n’existent
+          ce que les textes disent vraiment. Plusieurs règles que tout le monde cite n’existent
           pas.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">

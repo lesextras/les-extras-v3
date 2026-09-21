@@ -189,7 +189,7 @@ export function Mouvements({ mouvements }: { mouvements: Mouvement[] }) {
                       </td>
                       <td className="px-5 py-3 text-[#6B6A8A]">{LIBELLES_NATURE_MOUVEMENT[m.nature]}</td>
                       <td className="px-5 py-3 text-[#6B6A8A]">
-                        {m.tiers ?? '—'}
+                        {m.tiers ?? 'Non renseigné'}
                         {m.moyen ? <span className="text-[#9A99B5]"> · {LIBELLES_MOYEN[m.moyen]}</span> : null}
                       </td>
                       <td className={`whitespace-nowrap px-5 py-3 text-right font-extrabold tabular-nums ${m.sens === 'RECETTE' ? 'text-[#0F5F3E]' : 'text-[#8A2419]'}`}>

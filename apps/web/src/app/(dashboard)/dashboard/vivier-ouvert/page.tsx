@@ -53,7 +53,7 @@ export default async function VivierOuvertPage() {
             personne vient couvrir un poste, vous l’embauchez en contrat court.{' '}
             <strong className="text-foreground">Renfort personnalisé</strong> :
             elle intervient en plus de l’équipe, sur un besoin nommé, et facture
-            par sa structure. Ce n’est pas la personne qui choisit — c’est votre
+            par sa structure. Ce n’est pas la personne qui choisit, c’est votre
             besoin.
           </p>
           <p className="text-muted-foreground" lang="fr">

@@ -5,7 +5,7 @@ import { chargerChemin as chargerCheminAcademie, TEMPS as TEMPS_ACADEMIE } from 
 import { Accent } from '../_ui';
 
 export const metadata: Metadata = {
-  title: 'Le chemin — Piloter',
+  title: 'Le chemin, Piloter',
   description:
     "Les deux parcours en entier : celui d'une association loi 1901, celui d'un organisme de formation. La frise complète, gratuite, avant d'ouvrir un espace.",
   alternates: { canonical: '/chemin' },
@@ -261,5 +261,5 @@ function Frise({ p }: { p: Parcours }) {
 const CE_QUE_DIT_UNE_ETAPE = [
   { titre: 'Ce qu’il te faut', texte: "Les pièces et les informations à avoir sous la main avant de commencer l'étape." },
   { titre: 'Comment faire', texte: 'Les gestes, dans l’ordre, avec les formulaires officiels et des documents d’exemple.' },
-  { titre: 'Quand c’est fini', texte: 'La preuve que l’étape est passée — et ce que ça débloque pour la suite.' },
+  { titre: 'Quand c’est fini', texte: 'La preuve que l’étape est passée, et ce que ça débloque pour la suite.' },
 ];

@@ -142,7 +142,7 @@ export function Registre({ reclamations: initiales }: { reclamations: Reclamatio
           <Encart ton="info">
             Le registre est vide. Ce n&apos;est pas rassurant pour un auditeur : cela veut souvent dire qu&apos;aucun
             canal n&apos;existe. Annonce une adresse de réclamation dans tes documents, et note ici même les remarques
-            orales — une réclamation traitée vaut mieux que zéro réclamation.
+            orales, une réclamation traitée vaut mieux que zéro réclamation.
           </Encart>
         )}
       </div>
@@ -233,7 +233,7 @@ export function Registre({ reclamations: initiales }: { reclamations: Reclamatio
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`rounded-full px-2.5 py-1 text-[12px] font-extrabold ${TEINTE_STATUT[r.statut]}`}>{NOM_STATUT[r.statut]}</span>
                     <span className="text-[13px] text-[#5E7A6E]">Reçue le {formaterDate(r.recueLe)}</span>
-                    <span className="text-[13px] text-[#5E7A6E]">· {NOM_ORIGINE[r.origine]}{r.auteur ? ` — ${r.auteur}` : ''}</span>
+                    <span className="text-[13px] text-[#5E7A6E]">· {NOM_ORIGINE[r.origine]}{r.auteur ? ` · ${r.auteur}` : ''}</span>
                   </div>
                   <p className="mt-1.5 text-[17px] font-extrabold leading-snug text-[#12312A]">{r.objet}</p>
                   {r.detail ? <p className="mt-1 max-w-[75ch] text-[15px] leading-relaxed text-[#334A42]">{r.detail}</p> : null}

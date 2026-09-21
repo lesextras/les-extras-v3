@@ -113,7 +113,7 @@ export function Sessions({ initiales, programmes }: { initiales: Session[]; prog
           </Encart>
         ) : !liste.length ? (
           <Encart ton="info">
-            Aucune session pour l&apos;instant. C&apos;est la session qui porte les preuves d&apos;un audit — la
+            Aucune session pour l&apos;instant. C&apos;est la session qui porte les preuves d&apos;un audit, la
             convention, l&apos;émargement, les évaluations. Une formation qui n&apos;a jamais eu de session ne prouve
             rien.
           </Encart>
@@ -174,7 +174,7 @@ export function Sessions({ initiales, programmes }: { initiales: Session[]; prog
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-bold text-[#12312A]">Un nom pour cette session</span>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={160} placeholder="Facultatif — sinon c'est le titre de la formation." className={CHAMP} />
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={160} placeholder="Facultatif, sinon c'est le titre de la formation." className={CHAMP} />
           </label>
 
           <div className="flex flex-wrap gap-3">

@@ -122,7 +122,7 @@ const ETAPES = [
   {
     numero: "2",
     titre: "Les noms partent",
-    texte: "Prénoms, dates et coordonnées deviennent des jetons — avant l’envoi.",
+    texte: "Prénoms, dates et coordonnées deviennent des jetons, avant l’envoi.",
     exemple: "[le jeune] a refusé de se lever, 3ᵉ fois cette semaine.",
     tonExemple: "text-primary",
     /** L'étape qui fait toute la différence : elle est mise en avant. */

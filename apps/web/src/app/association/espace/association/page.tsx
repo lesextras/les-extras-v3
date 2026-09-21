@@ -95,7 +95,7 @@ export default async function MonAssociationPage() {
 
   return (
     <>
-      <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier : qui vous êtes, qui décide, où verser l'argent — et tous vos papiers au même endroit.">
+      <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier : qui vous êtes, qui décide, où verser l'argent, et tous vos papiers au même endroit.">
         {nomCourt(o.nom)}
       </Titre>
 
@@ -204,7 +204,7 @@ export default async function MonAssociationPage() {
             {vie.dateDerniereAG ? (
               <Pastille ton={vie.agEnRetard ? 'alerte' : vie.agBientot ? 'attention' : 'ok'}>
                 Dernière AG le {dateCourte(vie.dateDerniereAG)}
-                {vie.agEnRetard ? ' — il y a plus d’un an' : vie.prochaineAG ? ` — prochaine avant le ${dateCourte(vie.prochaineAG)}` : ''}
+                {vie.agEnRetard ? ', il y a plus d’un an' : vie.prochaineAG ? `, prochaine avant le ${dateCourte(vie.prochaineAG)}` : ''}
               </Pastille>
             ) : (
               <Pastille ton="attention">Date de la dernière AG inconnue</Pastille>

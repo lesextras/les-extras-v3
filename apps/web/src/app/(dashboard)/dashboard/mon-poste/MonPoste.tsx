@@ -100,7 +100,7 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
           niveau,
           capacites: droits,
           justification:
-            niveau === 'DIRECTION' ? `${poste.trim() || 'Direction'}${cadre ? ' — cadre' : ''}` : undefined,
+            niveau === 'DIRECTION' ? `${poste.trim() || 'Direction'}${cadre ? ' (cadre)' : ''}` : undefined,
         },
       });
       toast({
@@ -152,7 +152,7 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
               <>
                 Votre appartenance à {fiche.etablissement.name} est attestée
                 {fiche.origineVerification ? ` par ${LIBELLE_ORIGINE[fiche.origineVerification]}` : ''}.
-                {' '}Cela confirme que vous travaillez ici — pas votre titre, qui se
+                {' '}Cela confirme que vous travaillez ici, pas votre titre, qui se
                 déclare ci-dessous.
               </>
             ) : (
@@ -187,7 +187,7 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
           <Clock aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
           <p className="text-muted-foreground" lang="fr">
             Votre demande de niveau Direction est en cours d’examen par Les Extras.
-            En attendant, votre compte fonctionne normalement — vous n’avez
+            En attendant, votre compte fonctionne normalement, vous n’avez
             simplement pas encore la vue sur l’ensemble de l’établissement.
           </p>
         </div>
@@ -316,7 +316,7 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
         <p className="text-xs leading-relaxed text-muted-foreground" lang="fr">
           Ces réponses sont déclaratives. Elles décident notamment si votre bouton
           dit « Réserver » ou « Demander un devis », et elles figurent sur les
-          demandes que vous émettez, avec votre poste — c’est ce qui permet à
+          demandes que vous émettez, avec votre poste. C’est ce qui permet à
           votre établissement de savoir qui a engagé quoi. Il n’y a aucun paiement
           sur la plateforme : elles n’engagent jamais d’argent.
         </p>

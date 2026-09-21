@@ -265,7 +265,7 @@ const TARIFS = [
       'Publication, diffusion et relances',
       'Devis et feuille de mission édités',
       'Ateliers et formations : 0 % de commission',
-      'RenforTeam : 15 % de frais de gestion, ajoutés au tarif — l’intervenant touche 100 %',
+      'RenforTeam : 15 % de frais de gestion, ajoutés au tarif. L’intervenant touche 100 %',
     ],
     lien: { libelle: 'Publier un besoin', href: '/renforteam' },
     trait: 'bg-primary',
@@ -754,14 +754,26 @@ export default async function LandingPage() {
         {/* ═══════════════ 6. LE CATALOGUE, EN UN SEUL BLOC À ONGLETS ═════════ */}
         <section id="marketplace" className="scroll-mt-24">
           <div className="section">
-            <Reveal className="max-w-3xl">
+            {/* ⚠ EN-TÊTE CENTRÉ (demande de Siham, 21/09/2026), et c'est le
+                SEUL de l'accueil qui l'est. Ce n'est pas une inconséquence :
+                tous les autres titres ouvrent une section qui se LIT — un
+                texte, une image à côté —, et un titre centré au-dessus d'un
+                paragraphe aligné à gauche casse la colonne de lecture. Celui-ci
+                ouvre une GRILLE de cartes, symétrique et centrée sous lui : un
+                titre poussé à gauche y pendait dans le vide.
+
+                ⚠ `mx-auto` SANS `text-center` NE CENTRE RIEN d'autre que la
+                boîte. Il faut les deux, plus `justify-center` sur la rangée des
+                deux repères — c'est un conteneur flex, et l'alignement du texte
+                ne descend pas dedans. */}
+            <Reveal className="mx-auto max-w-3xl text-center">
               <span className="eyebrow">Sans compte, sans engagement</span>
               <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
                 Le catalogue, en un seul endroit
               </h2>
               {/* Deux repères au lieu d'une phrase : ce sont les deux seules
                   choses à retenir avant d'ouvrir le catalogue. */}
-              <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-base text-muted-foreground">
+              <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-base text-muted-foreground">
                 <span className="inline-flex items-center gap-2">
                   <Handshake className="size-5 text-primary" aria-hidden />
                   Vous réservez directement auprès de l’intervenant

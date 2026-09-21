@@ -116,18 +116,18 @@ export default async function FormateursPage() {
         <h2 className="text-[18px] font-extrabold text-[#12312A]">Ce que l&apos;auditeur regarde</h2>
         <ul className="mt-2 grid gap-2 text-[15px] leading-relaxed text-[#334A42]">
           <li>
-            <span className="font-bold">Indicateur 21</span> — la compétence des formateurs : un métier, des
+            <span className="font-bold">Indicateur 21</span>, la compétence des formateurs : un métier, des
             compétences, et de quoi les étayer si on demande.
           </li>
           <li>
-            <span className="font-bold">Indicateur 22</span> — leur maintien à niveau : c&apos;est ta veille métier
+            <span className="font-bold">Indicateur 22</span>, leur maintien à niveau : c&apos;est ta veille métier
             qui le montre.{' '}
             <Link href="/academie/veille" className="font-bold underline underline-offset-2">
               Ma veille
             </Link>
           </li>
           <li>
-            <span className="font-bold">Indicateur 26</span> — le référent handicap : une personne nommée.{' '}
+            <span className="font-bold">Indicateur 26</span>, le référent handicap : une personne nommée.{' '}
             <Link href="/academie/parametres" className="font-bold underline underline-offset-2">
               Paramètres
             </Link>

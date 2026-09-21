@@ -65,7 +65,7 @@ export const CHOIX_COMPTE: (ChoixCompte & {
     // ⚠ Le verso est contraint par la hauteur de la carte : ces textes tiennent
     // en trois lignes, pas plus. Les rallonger les fait couper au survol.
     detail:
-      'MECS, IME, ITEP, SESSAD, EHPAD, école — ou un parent, pour son enfant. ' +
+      'MECS, IME, ITEP, SESSAD, EHPAD, école, ou un parent pour son enfant. ' +
       'L’écran suivant vous demande simplement lequel des deux.',
     points: [
       'Renforts, ateliers, formations',
@@ -83,7 +83,7 @@ export const CHOIX_COMPTE: (ChoixCompte & {
     accroche: 'Éducateur, moniteur, thérapeute, formateur, psychomotricien…',
     benefice: 'Être trouvé par les établissements, et éditer vos devis et factures ici.',
     detail:
-      'Ateliers, formations, renforts personnalisés — à votre compte. Ou vos ' +
+      'Ateliers, formations, renforts personnalisés, à votre compte. Ou vos ' +
       'seules disponibilités, si vous venez pour des remplacements.',
     points: [
       'Publication au catalogue',
@@ -191,7 +191,7 @@ const ETAPE_IDENTITE: Etape = {
   cle: 'identite',
   titre: 'Vos identifiants',
   explication:
-    'De quoi vous connecter. Votre compte est créé à la fin de cette étape — tout ce qui suit se complète aussi plus tard, depuis votre espace.',
+    'De quoi vous connecter. Votre compte est créé à la fin de cette étape. Tout ce qui suit se complète aussi plus tard, depuis votre espace.',
 };
 
 /**
@@ -264,7 +264,7 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
       cle: 'structure',
       titre: 'Votre structure',
       explication:
-        'Ce qui facturera vos interventions. Facultatif pour entrer, nécessaire pour publier une fiche — et vous pouvez le compléter plus tard.',
+        'Ce qui facturera vos interventions. Facultatif pour entrer, nécessaire pour publier une fiche, et vous pouvez le compléter plus tard.',
     },
     {
       cle: 'activites',

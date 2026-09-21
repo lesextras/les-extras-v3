@@ -102,7 +102,7 @@ const SECTIONS: Record<string, { titre: string; surtitre: string; quoi: string; 
   "formateurs": {
     titre: "Mes formateurs",
     surtitre: "L'équipe pédagogique",
-    quoi: "Qui anime, avec quelles qualifications — le critère 5 ne demande rien d'autre, mais il le demande précisément.",
+    quoi: "Qui anime, avec quelles qualifications, le critère 5 ne demande rien d'autre, mais il le demande précisément.",
     contenu: [
       "La fiche de chaque formateur : CV, diplômes, expérience",
       "Le développement de ses compétences dans l'année",
@@ -136,7 +136,7 @@ const SECTIONS: Record<string, { titre: string; surtitre: string; quoi: string; 
   "comptabilite": {
     titre: "Ma comptabilité",
     surtitre: "L'argent",
-    quoi: "Devis, conventions, factures, subrogation OPCO, encaissements — et le bilan pédagogique et financier de l'année.",
+    quoi: "Devis, conventions, factures, subrogation OPCO, encaissements, et le bilan pédagogique et financier de l'année.",
     contenu: [
       "Le cahier de recettes et de dépenses de l'organisme",
       "Les factures et leur suivi de règlement, avec la subrogation OPCO",
@@ -163,13 +163,13 @@ const SECTIONS: Record<string, { titre: string; surtitre: string; quoi: string; 
     quoi: "La vitrine publique de ton organisme : une adresse à donner, une page à remplir toi-même, et un bouton pour passer de l'édition à la version publique.",
     contenu: [
       "Une bannière et un logo, remplaçables en un clic",
-      "Ta thématique et ta description en 300 caractères — c'est aussi l'aperçu au partage et la description pour Google",
+      "Ta thématique et ta description en 300 caractères, c'est aussi l'aperçu au partage et la description pour Google",
       "« Nos formations » : ce que tu proposes, repris du catalogue",
       "« Qui sommes-nous ? » dans un éditeur riche, avec images et vidéos",
       "Ton adresse partageable : pilote.toulali.fr/academie/ton-nom",
       "La page reste privée tant que tu n'as pas cliqué « publier »",
     ],
-    deja: "C'est le lot 4 du cahier des charges. Le modèle PagePublique reste à créer — et le texte riche devra être nettoyé côté serveur avant d'être rendu.",
+    deja: "C'est le lot 4 du cahier des charges. Le modèle PagePublique reste à créer, et le texte riche devra être nettoyé côté serveur avant d'être rendu.",
   },
   "versements": {
     titre: "Versements",
@@ -231,7 +231,7 @@ const REELLES: Record<string, { titre: string; surtitre: string; sousTitre: stri
     titre: 'Ce qui rentre',
     surtitre: 'Mes ventes',
     sousTitre:
-      "Le paiement se fait où tu veux — virement, espèces, lien de paiement, facture OPCO. On note ici ce qui est entré, et le reste se calcule.",
+      "Le paiement se fait où tu veux, virement, espèces, lien de paiement, facture OPCO. On note ici ce qui est entré, et le reste se calcule.",
   },
   'codes-promo': {
     titre: 'Les codes de réduction',
@@ -256,7 +256,7 @@ const REELLES: Record<string, { titre: string; surtitre: string; sousTitre: stri
   personnalisation: {
     titre: 'La vitrine de mon école',
     surtitre: 'Personnalisation',
-    sousTitre: "Une seule adresse à donner, qui rassemble tous tes cours — avec ton nom, ton logo, ta couleur.",
+    sousTitre: "Une seule adresse à donner, qui rassemble tous tes cours, avec ton nom, ton logo, ta couleur.",
   },
   affiliation: {
     titre: 'Ceux qui parlent de toi',

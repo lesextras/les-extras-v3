@@ -87,7 +87,7 @@ export default async function InboxPage({
     <div className="space-y-6">
       <PageHeader
         title="Messagerie"
-        subtitle="Vos échanges avec votre équipe, les intervenants et Les Extras — chacun rattaché à son contexte."
+        subtitle="Vos échanges avec votre équipe, les intervenants et Les Extras, chacun rattaché à son contexte."
       />
 
       {/* Filtres par type de fil. */}
@@ -130,7 +130,7 @@ export default async function InboxPage({
       ) : list.length === 0 ? (
         <EmptyState
           title="Aucune conversation"
-          description="Les échanges démarrent avec une demande de devis, une candidature ou une réservation — c'est ce qui les rattache à quelque chose."
+          description="Les échanges démarrent avec une demande de devis, une candidature ou une réservation. C'est ce qui les rattache à quelque chose."
         />
       ) : (
         <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-border md:grid-cols-[320px_1fr]">

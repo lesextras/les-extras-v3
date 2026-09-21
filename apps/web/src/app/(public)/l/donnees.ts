@@ -49,7 +49,7 @@ export const LANDINGS: Landing[] = [
   {
     slug: 'renfort',
     titre: 'Un remplaçant en CDD, sans commission',
-    public: 'Directions et chefs de service — IME, ITEP, MECS, SESSAD, ESAT',
+    public: 'Directions et chefs de service en IME, ITEP, MECS, SESSAD, ESAT',
     promesse: 'Un poste à couvrir demain matin. Un remplaçant en CDD, 0 % de commission.',
     sous:
       'Vous publiez le besoin. Il part d’abord à votre équipe, puis aux intervenants qui connaissent déjà la maison, puis au réseau. Le contrat est édité, signé en ligne, et vous ne payez rien à la plateforme.',
@@ -79,7 +79,7 @@ export const LANDINGS: Landing[] = [
   {
     slug: 'ateliers',
     titre: 'Des ateliers réservables pour votre établissement',
-    public: 'Directions, chefs de service, coordinateurs — protection de l’enfance, handicap, ESAT',
+    public: 'Directions, chefs de service et coordinateurs en protection de l’enfance, handicap, ESAT',
     promesse: 'Un atelier pour vos jeunes, animé par quelqu’un qui connaît votre type de structure.',
     sous:
       'Boxe éducative, théâtre, musicothérapie, photo : un catalogue d’ateliers conçus pour les IME, ITEP, MECS, SESSAD et ESAT, réservables en ligne, sans commission.',
@@ -109,10 +109,10 @@ export const LANDINGS: Landing[] = [
   {
     slug: 'lex',
     titre: 'LEX, l’assistant d’écriture des écrits professionnels',
-    public: 'Éducateurs, chefs de service, référents — et les établissements qui les emploient',
+    public: 'Éducateurs, chefs de service, référents, et les établissements qui les emploient',
     promesse: 'Le rapport de situation en trente minutes, et les noms ne sortent jamais de chez vous.',
     sous:
-      'Vous dictez les faits, LEX rédige dans la trame attendue — rapport, projet personnalisé, bilan, courrier. Les noms sont remplacés avant que quoi que ce soit ne parte, et rétablis chez vous.',
+      'Vous dictez les faits, LEX rédige dans la trame attendue, qu’il s’agisse d’un rapport, d’un projet personnalisé, d’un bilan ou d’un courrier. Les noms sont remplacés avant que quoi que ce soit ne parte, et rétablis chez vous.',
     preuves: [
       {
         titre: '15 générations gratuites par mois, sans carte bancaire',
@@ -139,7 +139,7 @@ export const LANDINGS: Landing[] = [
   {
     slug: 'parcours',
     titre: 'Douze parcours gratuits sur les comportements-défis',
-    public: 'Professionnels du médico-social, AESH, assistants familiaux — et parents',
+    public: 'Professionnels du médico-social, AESH, assistants familiaux, et parents',
     promesse: 'Douze parcours gratuits pour comprendre un comportement avant de vouloir le changer.',
     sous:
       'Quarante-cinq minutes de lecture, quatre modules, une situation qui dérape, un exercice sur votre propre cas, une fiche A4 à punaiser. Sans carte bancaire, sans date de fin.',

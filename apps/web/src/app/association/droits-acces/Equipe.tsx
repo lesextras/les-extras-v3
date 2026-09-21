@@ -207,7 +207,7 @@ export function Equipe({ membres: initiaux, invitations: initiales }: { membres:
             </label>
           </div>
           <p className="mt-3 rounded-xl bg-[#F5F4FC] px-4 py-3 text-[14px] leading-relaxed text-[#3B3A66]">
-            <span className="font-bold">{LIBELLE[role]}</span> — {PORTEE[role]}
+            <span className="font-bold">{LIBELLE[role]}</span> · {PORTEE[role]}
           </p>
           <div className="mt-4 flex gap-3">
             <button type="submit" disabled={enCours} className={BTN_PRIMAIRE}>

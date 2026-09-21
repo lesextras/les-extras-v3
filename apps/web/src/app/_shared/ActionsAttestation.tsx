@@ -97,7 +97,7 @@ export function ActionsAttestation({
   }
 
   if (statut === "ANNULEE") {
-    return <span className="text-xs text-muted-foreground">—</span>;
+    return <span className="text-xs text-muted-foreground">Aucune action</span>;
   }
   if (statut === "EN_ATTENTE_PAIEMENT") {
     return <span className="text-xs text-muted-foreground">En attente du paiement</span>;

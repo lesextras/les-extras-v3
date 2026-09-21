@@ -478,7 +478,7 @@ const establishmentNav: NavSection[] = [
       // « Mon poste » est la porte par laquelle un chef de service arrivé seul
       // se déclare, sans attendre que sa direction ouvre un compte. Lui poser
       // un filtre de rôle fermerait exactement la porte qu'il doit ouvrir.
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Vos échanges avec votre équipe, vos services, les intervenants et Les Extras — chacun rattaché à son contexte' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Vos échanges avec votre équipe, vos services, les intervenants et Les Extras, chacun rattaché à son contexte' },
       { label: 'Organigramme', href: '/dashboard/organigramme', icon: Network, essentiel: true, hint: 'Votre structure, votre établissement et ses services. Les noms que vous voyez dépendent de votre périmètre.' },
       { label: 'Mon poste', href: '/dashboard/mon-poste', icon: IdCard, hint: 'Votre poste, votre niveau de responsabilité et ce que vous pouvez engager pour votre établissement' },
       { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier, recherche et filtres par service' },

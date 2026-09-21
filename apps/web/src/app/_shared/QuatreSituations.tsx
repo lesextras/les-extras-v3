@@ -34,6 +34,25 @@
  * « profils contrôlés » : aucune vérification d'identité, de diplôme ou de
  * casier n'existe dans ce produit, et c'est l'établissement qui contrôle à
  * l'embauche. Le test `promesses-interdites` le vérifie.
+ *
+ * ⚠⚠ RESSERRÉ LE 21/09/2026 — « il y a trop de textes à lire », demande de
+ * Siham, capture à l'appui. Chaque section portait DEUX paragraphes : le
+ * premier posait la situation, le second la reposait depuis l'autre côté
+ * (l'établissement après la famille, les assistants génériques après LEX).
+ * Le second commentait le premier, et c'est exactement ce qui fait sauter les
+ * deux. Un paragraphe par section désormais, deux phrases au plus.
+ *
+ * ⚠ ET PLUS DE TIRET CADRATIN NI DE DEUX-POINTS DANS CE BLOC, toujours à sa
+ * demande. Ce n'est pas une préférence de ponctuation, c'est un effet mesuré à
+ * l'écran : un « — » ou un « : » au milieu d'une ligne annonce une SUITE, donc
+ * une phrase plus longue, et sur quatre sections empilées cela se lit comme un
+ * mur. Les incises deviennent des phrases, les listes après deux-points
+ * deviennent la phrase elle-même. Si une nouvelle section en rapporte un, elle
+ * rouvre le défaut pour tout le bloc.
+ *
+ * ⚠ AUCUN CHIFFRE N'A ÉTÉ RETIRÉ au passage, et aucun fait : 48 h, 0 %, 14
+ * parcours, 15 écrits puis 19 €. Ce qui a sauté, ce sont les redites. Un
+ * resserrage qui emporte un chiffre fait mentir la page au lieu de l'alléger.
  */
 import Link from 'next/link';
 import Image from 'next/image';
@@ -43,14 +62,32 @@ import { visioconsultationVisible } from '@/lib/offre';
 import { Reveal } from './Reveal';
 import { Button } from '@/components/ui/button';
 
+/**
+ * ⚠ LU UNE SEULE FOIS, EN TÊTE DE MODULE. `NEXT_PUBLIC_VISIOCONSULTATION` est
+ * figée à la construction : l'appeler à chaque rendu ne change rien, et deux
+ * lectures dans le même fichier finiraient par diverger si l'une est oubliée.
+ */
+const VISIO = visioconsultationVisible();
+
 type Situation = {
   service: string;
   /** La phrase du couloir. C'est le titre, et c'est le problème. */
   probleme: string;
-  /** Deux ou trois phrases qui déroulent la situation, sans vendre. */
+  /** UNE ou deux phrases qui déroulent la situation, sans vendre. */
   situation: string[];
   /** Ce que la plateforme fait, concrètement. Trois lignes, pas quatre. */
   reponse: string[];
+  /**
+   * La ligne mise en avant sous les puces — QUI intervient, et comment.
+   *
+   * ⚠ ELLE N'EXISTE QUE SUR RENFORTEAM, et c'est une demande de Siham du
+   * 21/09/2026 : « met en avant les éducateurs renforts en présentiel ou
+   * visioconférence ». Les métiers étaient noyés au milieu d'une puce, entre
+   * une durée et un devis, alors que c'est la seule chose qu'un directeur
+   * cherche vraiment sur cette section. La poser partout en ferait un gabarit,
+   * donc du bruit.
+   */
+  accent?: string;
   /** Le chiffre vrai, et ce qu'il désigne. */
   chiffre: { valeur: string; quoi: string };
   lien: { href: string; libelle: string };
@@ -61,6 +98,17 @@ type Situation = {
   teinte: string;
   trait: string;
   puce: string;
+  /**
+   * Le filet de gauche de la ligne mise en avant.
+   *
+   * ⚠⚠ ÉCRIT EN TOUTES LETTRES, JAMAIS CALCULÉ. La première version faisait
+   * `trait.replace('bg-', 'border-')` — c'est juste en JavaScript et FAUX en
+   * Tailwind : le compilateur ne lit que des classes littérales dans les
+   * sources. Une classe fabriquée à l'exécution n'est jamais générée, le filet
+   * retombe sur la bordure grise par défaut, rien ne casse et aucun test ne
+   * tombe. C'est le genre de défaut qu'on ne voit qu'en regardant la page.
+   */
+  bordure: string;
 };
 
 const SITUATIONS: Situation[] = [
@@ -68,14 +116,28 @@ const SITUATIONS: Situation[] = [
     service: 'RenforTeam',
     probleme: 'La notification est arrivée. Le rendez-vous est dans quatorze mois.',
     situation: [
-      'La MDPH a notifié, le SESSAD a une liste d’attente, et l’orthophoniste du secteur ne prend plus personne. Pendant ce temps l’enfant grandit, et c’est la seule chose qui ne peut pas attendre.',
-      'Les établissements connaissent la même impasse de l’autre côté : un accompagnement à monter, personne de disponible, et un budget qui ne permet pas d’embaucher.',
+      'La MDPH a notifié, le SESSAD a une liste d’attente, l’orthophoniste du secteur ne prend plus personne. Côté établissement c’est la même impasse, et l’enfant grandit pendant ce temps.',
     ],
     reponse: [
       'Vous décrivez le besoin en cinq minutes, le soir même',
-      'Les indépendants du réseau sont prévenus : ergothérapeute, psychomotricienne, orthophoniste, éducateur spécialisé, psychologue',
+      'Le réseau est prévenu, vous choisissez qui vient',
       'Devis écrit avant l’intervention, jamais après',
     ],
+    /*
+      ⚠ LA MOITIÉ « VISIOCONFÉRENCE » EST CONDITIONNÉE, ET ELLE DOIT LE RESTER.
+      Tant que `NEXT_PUBLIC_VISIOCONSULTATION` n'est pas posée, `/visio/:jeton`
+      redirige : l'annoncer alors promettrait un service que le site ne peut pas
+      rendre. C'est le défaut exact de l'ancienne carte « Renfort ».
+
+      ⚠ « VISIOCONFÉRENCE » EST LE MOT DE SIHAM (21/09). Le reste du site dit
+      « visioconsultation » et le menu dit « rendez-vous à distance » ; aucun ne
+      dit « téléconsultation », qui désigne un acte médical alors qu'il s'agit
+      ici de rééducation et d'éducation spécialisée. Si l'on aligne un jour les
+      trois, c'est partout en même temps, pas ici seulement.
+    */
+    accent: VISIO
+      ? 'Éducateurs spécialisés, ergothérapeutes, psychomotriciennes, orthophonistes, psychologues. Ils interviennent chez vous, en présentiel ou en visioconférence quand personne n’est disponible près de chez vous.'
+      : 'Éducateurs spécialisés, ergothérapeutes, psychomotriciennes, orthophonistes, psychologues. Ils interviennent chez vous, dans votre établissement ou au domicile.',
     chiffre: { valeur: '48 h', quoi: 'pour recevoir un devis' },
     lien: { href: '/renforteam', libelle: 'Comment ça se passe' },
     image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
@@ -83,18 +145,18 @@ const SITUATIONS: Situation[] = [
     teinte: 'text-primary',
     trait: 'bg-primary',
     puce: 'text-primary',
+    bordure: 'border-primary',
   },
   {
     service: 'Ateliers',
     probleme: 'Il faut « faire quelque chose » avec le groupe, et personne n’a le temps de le monter.',
     situation: [
-      'Un atelier qui tient debout, ça demande un intervenant, un matériel, une durée, un tarif, et quelqu’un pour tout caler. En pratique, on retombe sur ce qu’on a déjà fait l’an dernier.',
-      'Les intervenants existent — musicothérapie, théâtre, psycho-boxe, slam, socio-esthétique — mais ils sont introuvables autrement que par le bouche-à-oreille.',
+      'Musicothérapie, théâtre, psycho-boxe, slam, socio-esthétique. Les intervenants existent, mais on ne les trouve que par le bouche-à-oreille, alors on refait ce qu’on a fait l’an dernier.',
     ],
     reponse: [
       'Le catalogue affiche le public visé, la durée, le matériel et le tarif',
       'Vous réservez ou vous demandez un devis, sans créer de dossier',
-      'Le tarif affiché est le tarif payé : l’association ne prend rien dessus',
+      'Le tarif affiché est le tarif payé, l’association ne prend rien dessus',
     ],
     chiffre: { valeur: '0 %', quoi: 'de commission sur les ateliers' },
     lien: { href: '/ateliers', libelle: 'Parcourir le catalogue' },
@@ -103,13 +165,13 @@ const SITUATIONS: Situation[] = [
     teinte: 'text-secondary',
     trait: 'bg-secondary',
     puce: 'text-secondary',
+    bordure: 'border-secondary',
   },
   {
     service: 'Formations',
     probleme: 'L’équipe encaisse depuis six mois, et la dernière formation remonte à trois ans.',
     situation: [
-      'Le budget formation existe, le plan est à rendre, et ce qui manque c’est le temps de chercher un organisme, de monter le dossier OPCO et de faire revenir tout le monde le même jour.',
-      'Et il y a ce qu’aucun budget ne couvre : le professionnel qui voudrait comprendre une situation précise, un mardi soir, sans attendre le prochain plan.',
+      'Le budget existe et le plan est à rendre. Ce qui manque, c’est le temps de chercher un organisme, de monter le dossier OPCO et de faire revenir tout le monde le même jour.',
     ],
     reponse: [
       'Formations en intra, certifiées Qualiopi, finançables par votre OPCO',
@@ -123,18 +185,18 @@ const SITUATIONS: Situation[] = [
     teinte: 'text-foreground',
     trait: 'bg-foreground',
     puce: 'text-foreground',
+    bordure: 'border-foreground',
   },
   {
     service: 'LEX',
     probleme: 'Il est 21 h, le rapport est pour demain, et la page est blanche.',
     situation: [
-      'Personne n’a appris à écrire un rapport de situation. On l’apprend en le ratant, avec le modèle du collègue et la peur de mettre un mot de travers — dans un document qu’un juge lira peut-être.',
-      'Les assistants génériques écrivent vite, mais on y colle des noms d’usagers. C’est précisément ce qu’on ne peut pas faire.',
+      'Personne n’a appris à écrire un rapport de situation. On l’apprend en le ratant, avec la peur de mettre un mot de travers dans un document qu’un juge lira peut-être.',
     ],
     reponse: [
-      'Vous donnez vos notes ; les noms sont remplacés avant que le modèle les voie',
+      'Vous donnez vos notes, les noms sont remplacés avant que le modèle les voie',
       'Le texte revient structuré, avec les vrais noms rétablis chez vous',
-      'Vous relisez, vous corrigez, vous signez : la plume reste la vôtre',
+      'Vous relisez, vous corrigez, vous signez. La plume reste la vôtre',
     ],
     chiffre: { valeur: '15', quoi: 'écrits offerts chaque mois, puis 19 €' },
     lien: { href: '/lex', libelle: 'Ce que LEX fait, et ne fait pas' },
@@ -148,6 +210,7 @@ const SITUATIONS: Situation[] = [
     teinte: 'text-primary',
     trait: 'bg-primary',
     puce: 'text-primary',
+    bordure: 'border-primary',
   },
 ];
 
@@ -223,9 +286,8 @@ export function QuatreSituations() {
                 l'établissement. Écrire « contrat » ici promettait de l'intérim
                 qu'on ne fait pas — et contredisait le premier écran, qui dit
                 la bonne chose. Les deux phrases doivent rester identiques. */}
-            Les Extras n’est pas un annuaire de plus. C’est quatre services qui répondent chacun à
-            un blocage précis du médico-social — et un seul endroit où le devis, la feuille de
-            mission et la facture sont édités.
+            Les Extras n’est pas un annuaire de plus. Quatre services, et un seul endroit où le
+            devis, la feuille de mission et la facture sont édités.
           </p>
         </Reveal>
 
@@ -269,6 +331,24 @@ export function QuatreSituations() {
                     ))}
                   </ul>
 
+                  {/*
+                    LES MÉTIERS, MIS EN AVANT — voir `accent` dans le type.
+
+                    ⚠ LE CONTOUR PORTE LA TEINTE DE LA SECTION, L'INTÉRIEUR
+                    RESTE SOBRE. Un aplat teinté de plus, juste sous trois
+                    puces déjà colorées, ferait un troisième niveau de fond sur
+                    la même colonne — c'est le défaut corrigé le 3/09 sur les
+                    encarts de la fiche formation, et il se reproduit à
+                    l'identique dès qu'on empile deux surfaces voisines.
+                  */}
+                  {s.accent ? (
+                    <p
+                      className={`mt-5 rounded-xl border-l-2 bg-muted/30 py-3 pl-4 pr-3 text-sm font-medium leading-relaxed text-foreground ${s.bordure}`}
+                    >
+                      {s.accent}
+                    </p>
+                  ) : null}
+
                   <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
                     <Button asChild variant="outline">
                       <Link href={s.lien.href}>
@@ -305,15 +385,19 @@ export function QuatreSituations() {
           ))}
         </div>
 
-        {visioconsultationVisible() && (
-          <Reveal delay={120}>
-            <p className="mt-14 rounded-xl border border-border bg-muted/40 p-5 text-sm leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">Et quand personne n’est disponible près de
-              chez vous</strong>, la séance se tient en visioconsultation — même devis, même feuille
-              de mission, même facture.
-            </p>
-          </Reveal>
-        )}
+        {/*
+          ⚠ LA NOTE DE VISIO A QUITTÉ LE PIED DE SECTION LE 21/09/2026.
+
+          Elle y était en dernier, après les quatre situations, en gris et en
+          petit — c'est-à-dire à l'endroit exact où l'on ne lit plus. Siham a
+          demandé de mettre en avant les éducateurs « en présentiel ou
+          visioconférence » : la mention est donc remontée DANS la section
+          RenforTeam (champ `accent`), juste sous les puces, là où le directeur
+          se demande précisément qui va venir et comment.
+
+          ⚠ NE PAS LA REMETTRE ICI EN PLUS. Deux fois la même chose sur une
+          page qu'on vient de resserrer, c'est ce qui fait sauter les deux.
+        */}
       </div>
     </section>
   );

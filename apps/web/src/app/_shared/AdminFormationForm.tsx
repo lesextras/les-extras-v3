@@ -305,7 +305,7 @@ export function AdminFormationForm({
       <Field
         label="Prix de l’attestation de suivi (€)"
         htmlFor="f-attestation"
-        hint="Laissez vide pour ne rien vendre : le bouton d’achat n’apparaît alors pas sur la fiche publique. Un montant ouvre la vente pour ce parcours uniquement. Ce qui est délivré est une attestation de suivi — ni diplôme, ni certification professionnelle."
+        hint="Laissez vide pour ne rien vendre : le bouton d’achat n’apparaît alors pas sur la fiche publique. Un montant ouvre la vente pour ce parcours uniquement. Ce qui est délivré est une attestation de suivi, ni diplôme ni certification professionnelle."
       >
         <Input
           id="f-attestation"
@@ -329,7 +329,7 @@ export function AdminFormationForm({
           plus pauvre qu'un atelier. */}
       <details className="rounded-xl border border-border p-3">
         <summary className="cursor-pointer text-sm font-semibold text-foreground">
-          La vitrine publique — photo, ville, publics, méthode
+          La vitrine publique (photo, ville, publics, méthode)
         </summary>
         <div className="mt-4 space-y-4">
           <Field

@@ -564,10 +564,10 @@ function Reponses({
                 <td className="whitespace-nowrap px-4 py-3" style={{ color: teinte.sourdine }}>
                   {new Date(r.recueLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </td>
-                {f.demanderEmail ? <td className="px-4 py-3" style={{ color: teinte.texte }}>{r.email ?? '—'}</td> : null}
+                {f.demanderEmail ? <td className="px-4 py-3" style={{ color: teinte.texte }}>{r.email ?? 'Non renseigné'}</td> : null}
                 {questions.map((c) => (
                   <td key={c.id} className="px-4 py-3" style={{ color: teinte.texte }}>
-                    {valeurLisible(r.valeurs?.[c.id]) || '—'}
+                    {valeurLisible(r.valeurs?.[c.id]) || 'Non renseigné'}
                   </td>
                 ))}
               </tr>

@@ -53,7 +53,7 @@ function variante(statut: DemandeAttestation["statut"]) {
 }
 
 function date(iso?: string | null) {
-  if (!iso) return "—";
+  if (!iso) return "Non renseignée";
   return new Date(iso).toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "2-digit",
@@ -122,7 +122,7 @@ export default async function AdminAttestationsPage() {
                         </TableCell>
                         <TableCell className="max-w-[18rem]">
                           <span className="line-clamp-2 text-sm">
-                            {d.formation?.title ?? "—"}
+                            {d.formation?.title ?? "Non renseigné"}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -144,7 +144,7 @@ export default async function AdminAttestationsPage() {
                               maintenant
                             </span>
                           ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
+                            <span className="text-xs text-muted-foreground">Sans objet</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">

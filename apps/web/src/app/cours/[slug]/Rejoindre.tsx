@@ -201,7 +201,7 @@ export function Rejoindre({
       <p className="text-sm leading-relaxed text-[#5E7A6E]">
         {gratuit
           ? 'Pas de compte à créer. Ton adresse sert à retrouver ton avancement et à t’envoyer ton attestation.'
-          : `Le paiement se fait sur la page sécurisée de notre prestataire — ${ecole} ne voit jamais ton numéro de carte. Ton accès s’ouvre au retour.`}
+          : `Le paiement se fait sur la page sécurisée de notre prestataire · ${ecole} ne voit jamais ton numéro de carte. Ton accès s’ouvre au retour.`}
       </p>
       {/* CE QUI VA ÊTRE PRÉLEVÉ, EN TOUTES LETTRES.
           Un règlement étalé ne se devine pas : on dit le nombre de fois, le
@@ -214,7 +214,7 @@ export function Rejoindre({
             {echeances} prélèvements de {euros(echeanceCents!)}, un par mois.
           </span>{' '}
           Le premier aujourd&apos;hui, et ton accès s&apos;ouvre tout de suite. Le dernier dans{' '}
-          {echeances - 1} mois — après quoi plus rien n&apos;est prélevé.
+          {echeances - 1} mois, après quoi plus rien n&apos;est prélevé.
         </p>
       ) : null}
     </form>

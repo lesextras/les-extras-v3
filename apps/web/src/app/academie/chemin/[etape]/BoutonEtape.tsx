@@ -38,7 +38,7 @@ export function BoutonEtape({ slug, faite }: { slug: string; faite: boolean }) {
             : 'inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E9E6A] px-5 py-3 text-base font-bold text-white transition hover:bg-[#17845A] disabled:opacity-60'
         }
       >
-        {enCours ? 'Enregistrement…' : etat ? '✓ Cette étape est faite — la décocher' : "J'ai fait cette étape"}
+        {enCours ? 'Enregistrement…' : etat ? '✓ Cette étape est faite, la décocher' : "J'ai fait cette étape"}
       </button>
       {erreur ? <p className="mt-2 text-sm font-bold text-[#8A1B3D]">{erreur}</p> : null}
     </div>

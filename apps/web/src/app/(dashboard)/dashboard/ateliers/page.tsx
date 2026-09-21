@@ -200,7 +200,7 @@ export default async function AteliersPage({
           />
           <p className="max-w-prose text-sm text-muted-foreground">
             L&apos;argent est déjà sur votre compte : ces personnes ont payé sans passer par un
-            devis. Il reste à confirmer la date avec elles — ou à les rembourser si vous ne pouvez
+            devis. Il reste à confirmer la date avec elles, ou à les rembourser si vous ne pouvez
             pas assurer l&apos;atelier.
           </p>
           <ReservationsPayees initiales={listePayees} accountId={session.account.id} />

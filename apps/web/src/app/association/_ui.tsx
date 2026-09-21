@@ -96,7 +96,7 @@ export function Coque({
                 <a href="https://adepa77.fr/" target="_blank" rel="noopener noreferrer" className="font-bold text-[#C42B57] underline underline-offset-4">
                   ADéPA
                 </a>{' '}
-                — un don la soutient, et ouvre droit à un reçu fiscal.
+               , un don la soutient, et ouvre droit à un reçu fiscal.
               </p>
             </footer>
           ) : null}

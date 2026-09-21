@@ -60,7 +60,7 @@ export default async function CertificationPage() {
           <Encart ton="info">
             La certification vient <span className="font-extrabold">après</span> la déclaration d&apos;activité, jamais
             avant : elle porte sur des pratiques qu&apos;il faut avoir commencé à tenir. Tu peux préparer les preuves dès
-            maintenant — c&apos;est même la bonne façon de s&apos;y prendre.
+            maintenant, c&apos;est même la bonne façon de s&apos;y prendre.
           </Encart>
         </div>
       ) : null}
@@ -86,7 +86,7 @@ function Ligne({ libelle, valeur }: { libelle: string; valeur: string | null }) 
   return (
     <div>
       <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#5E7A6E]">{libelle}</p>
-      <p className="mt-1 text-[16px] font-extrabold leading-snug text-[#12312A]">{valeur || '—'}</p>
+      <p className="mt-1 text-[16px] font-extrabold leading-snug text-[#12312A]">{valeur || 'Non renseigné'}</p>
     </div>
   );
 }

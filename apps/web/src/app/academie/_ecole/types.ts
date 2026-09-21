@@ -400,12 +400,12 @@ export const NOM_STATUT_VENTE: Record<StatutVente, string> = {
 /* -------------------------------------------------------------------- outils */
 
 export function euros(cents: number | null | undefined) {
-  if (cents === null || cents === undefined) return '—';
+  if (cents === null || cents === undefined) return 'Non renseigné';
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 === 0 ? 0 : 2 }).format(cents / 100);
 }
 
 export function duree(minutes: number) {
-  if (!minutes) return '—';
+  if (!minutes) return 'Non renseigné';
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   if (!h) return `${m} min`;
@@ -414,16 +414,16 @@ export function duree(minutes: number) {
 }
 
 export function dateCourte(iso: string | null | undefined) {
-  if (!iso) return '—';
+  if (!iso) return 'Non renseigné';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return 'Non renseigné';
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export function dateEtHeure(iso: string | null | undefined) {
-  if (!iso) return '—';
+  if (!iso) return 'Non renseigné';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return 'Non renseigné';
   return d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 

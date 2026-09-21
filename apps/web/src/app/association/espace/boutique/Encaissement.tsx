@@ -142,7 +142,7 @@ export function Encaissement({ etat }: { etat: EtatStripe | null }) {
           <>
             {' '}
             La plateforme ne prend aucune part sur ces ventes : elle ne retient que ce que le
-            prestataire de paiement lui facture — 1,5 % plus 25 centimes, le tarif standard pour
+            prestataire de paiement lui facture, 1,5 % plus 25 centimes, le tarif standard pour
             une carte européenne. Une carte non européenne coûte un peu plus cher : cet écart-là
             reste à la charge de la plateforme.
           </>

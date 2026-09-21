@@ -195,7 +195,7 @@ export function MaDisponibilite({ etat }: { etat: EtatDisponibilite }) {
             {enVeille
               ? `Votre fiche est en veille : elle n’a pas été confirmée depuis ${etat.joursAvantVeille} jours. Un clic la réactive.`
               : visible
-                ? `Confirmée le ${formaterDate(confirmeeLe)}. Nous vous le redemanderons dans ${etat.joursAvantVeille} jours — une liste périmée fait perdre du temps à tout le monde.`
+                ? `Confirmée le ${formaterDate(confirmeeLe)}. Nous vous le redemanderons dans ${etat.joursAvantVeille} jours. Une liste périmée fait perdre du temps à tout le monde.`
                 : 'Cochez ce que vous acceptez de faire, puis rendez-vous visible.'}
           </p>
         </div>
@@ -364,7 +364,7 @@ export function MaDisponibilite({ etat }: { etat: EtatDisponibilite }) {
 }
 
 function formaterDate(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return 'Non renseignée';
   return new Date(iso).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',

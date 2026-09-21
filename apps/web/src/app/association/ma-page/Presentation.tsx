@@ -37,10 +37,10 @@ function texteBrut(e: Espace) {
   const lieu = [o.adresse, [o.codePostal, o.commune].filter(Boolean).join(' ')].filter(Boolean).join(', ');
   if (lieu) l.push(lieu);
   l.push('');
-  if (e.projet.pourQui) l.push(`Pour qui — ${e.projet.pourQui}`);
-  if (e.projet.quoi) l.push(`Ce que nous faisons — ${e.projet.quoi}`);
-  if (e.projet.comment) l.push(`Comment — ${e.projet.comment}`);
-  if (e.projet.apres) l.push(`Ce que ça change — ${e.projet.apres}`);
+  if (e.projet.pourQui) l.push(`Pour qui · ${e.projet.pourQui}`);
+  if (e.projet.quoi) l.push(`Ce que nous faisons · ${e.projet.quoi}`);
+  if (e.projet.comment) l.push(`Comment · ${e.projet.comment}`);
+  if (e.projet.apres) l.push(`Ce que ça change · ${e.projet.apres}`);
   const enCours = e.actions;
   if (enCours.length) {
     l.push('');
@@ -182,7 +182,7 @@ export function Presentation({ espace }: { espace: Espace }) {
             <ul className="mt-3 flex flex-wrap gap-2">
               {espace.repertoire.bureau.map((p) => (
                 <li key={p.id} className="rounded-full bg-[#ECEBFC] px-3.5 py-1.5 text-[14px] font-bold text-[#4338CA]">
-                  {p.nom} — {p.roles.map((r) => LIBELLES_ROLE[r]).join(', ')}
+                  {p.nom} · {p.roles.map((r) => LIBELLES_ROLE[r]).join(', ')}
                 </li>
               ))}
             </ul>

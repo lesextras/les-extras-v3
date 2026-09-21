@@ -139,7 +139,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Qu'est-ce qui est gratuit ?",
         reponse: [
           "Tout le logiciel : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité. Gratuit, pour les établissements comme pour les intervenants, sans abonnement.",
-          "Ce qui se paie : les formations Qualiopi (au devis, facturées par l'association), LEX (l'assistant IA, à crédits), et 15 % de frais de gestion sur les renforts RenforTeam — ils paient la vérification de l'intervenant et s'ajoutent à son tarif. Un atelier, lui, se paie à son intervenant, à son tarif, et la plateforme n'ajoute rien.",
+          "Ce qui se paie : les formations Qualiopi (au devis, facturées par l'association), LEX (l'assistant IA, à crédits), et 15 % de frais de gestion sur les renforts RenforTeam. Ils paient la vérification de l'intervenant et s'ajoutent à son tarif. Un atelier, lui, se paie à son intervenant, à son tarif, et la plateforme n'ajoute rien.",
         ],
       },
       {

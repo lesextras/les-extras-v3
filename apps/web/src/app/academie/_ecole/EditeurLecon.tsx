@@ -151,7 +151,7 @@ export function EditeurLecon({
    */
   const ecrireAvecIa = async () => {
     const consigne = window.prompt(
-      'Que doit dire cette leçon ? (facultatif — laisse vide pour partir du titre)',
+      'Que doit dire cette leçon ? (facultatif, laisse vide pour partir du titre)',
       '',
     );
     if (consigne === null) return;
@@ -430,8 +430,8 @@ export function EditeurLecon({
                   className="rounded-xl border-2 bg-white px-3 py-2 text-[15px] font-normal focus:outline-none"
                   style={{ borderColor: VERT.bord, color: VERT.encre }}
                 >
-                  <option value="oui">Se lit — publiée</option>
-                  <option value="non">Ne se lit pas encore — brouillon</option>
+                  <option value="oui">Se lit, publiée</option>
+                  <option value="non">Ne se lit pas encore, brouillon</option>
                 </select>
               </label>
 

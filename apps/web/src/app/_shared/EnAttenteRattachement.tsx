@@ -83,7 +83,7 @@ const RACCOURCIS = [
     href: "/dashboard/planning",
     icon: CalendarClock,
     label: "Mon planning",
-    aide: "Votre agenda — importez celui que vous avez déjà.",
+    aide: "Votre agenda, importez celui que vous avez déjà.",
   },
   {
     href: "/dashboard/reservations",
@@ -262,7 +262,7 @@ export async function EnAttenteRattachement({
               <p className="text-sm text-muted-foreground">
                 Vos notes brutes deviennent un écrit professionnel, les noms sont masqués avant tout
                 envoi, et rien de ce que vous écrivez n’est conservé. C’est la seule chose que vous
-                pouvez faire seul dès le premier jour — et c’est celle qui sert le plus.
+                pouvez faire seul dès le premier jour, et c’est celle qui sert le plus.
               </p>
             </CardContent>
           </Card>

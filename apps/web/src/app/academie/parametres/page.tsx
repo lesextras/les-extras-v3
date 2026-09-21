@@ -74,7 +74,7 @@ export default async function ParametresPage() {
               <div key={l.libelle} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#EDF4F1] py-1.5">
                 <dt className="text-[14px] text-[#5E7A6E]">{l.libelle}</dt>
                 <dd className={`text-[15px] font-bold ${l.valeur ? 'text-[#12312A]' : 'text-[#C42B57]'}`}>
-                  {l.valeur || (l.indispensable ? 'à renseigner' : '—')}
+                  {l.valeur || (l.indispensable ? 'à renseigner' : 'Non renseigné')}
                 </dd>
               </div>
             ))}
@@ -95,7 +95,7 @@ export default async function ParametresPage() {
               <h2 className="text-[18px] font-extrabold text-[#12312A]">Les deux référents</h2>
               <p className="mt-1 text-[15px] leading-relaxed text-[#334A42]">
                 Le référentiel national qualité demande de savoir qui, chez toi, accueille un apprenant en situation
-                de handicap, et qui répond de la pédagogie. Ce peut être la même personne — mais il faut un nom.
+                de handicap, et qui répond de la pédagogie. Ce peut être la même personne, mais il faut un nom.
               </p>
             </div>
             <Link href="/academie/mon-academie" className={BTN_DISCRET}>
@@ -154,7 +154,7 @@ export default async function ParametresPage() {
             {contact.map((l) => (
               <div key={l.libelle} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#EDF4F1] py-1.5">
                 <dt className="text-[14px] text-[#5E7A6E]">{l.libelle}</dt>
-                <dd className="break-all text-[15px] font-bold text-[#12312A]">{l.valeur || '—'}</dd>
+                <dd className="break-all text-[15px] font-bold text-[#12312A]">{l.valeur || 'Non renseigné'}</dd>
               </div>
             ))}
           </dl>

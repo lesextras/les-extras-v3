@@ -51,14 +51,14 @@ export function FormulaireOuverture({ autre = false }: { autre?: boolean }) {
           <span className="mb-1.5 block text-sm font-bold text-[#12312A]">SIRET</span>
           <input type="text" inputMode="numeric" maxLength={17} value={siret} onChange={(e) => setSiret(e.target.value)} className={CHAMP} />
           <span className="mt-1 block text-xs text-[#5E7A6E]">
-            {choisi?.siret ? `Facultatif — trouvé : ${choisi.siret}` : 'Facultatif.'}
+            {choisi?.siret ? `Facultatif, trouvé : ${choisi.siret}` : 'Facultatif.'}
           </span>
         </label>
         <label className="block">
           <span className="mb-1.5 block text-sm font-bold text-[#12312A]">Numéro de déclaration (NDA)</span>
           <input type="text" maxLength={20} value={nda} onChange={(e) => setNda(e.target.value)} className={CHAMP} />
           <span className="mt-1 block text-xs text-[#5E7A6E]">
-            {choisi?.declaration?.nda ? `Facultatif — trouvé : ${choisi.declaration.nda}` : 'Facultatif.'}
+            {choisi?.declaration?.nda ? `Facultatif, trouvé : ${choisi.declaration.nda}` : 'Facultatif.'}
           </span>
         </label>
       </div>

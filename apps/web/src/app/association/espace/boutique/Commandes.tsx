@@ -38,7 +38,7 @@ export function Commandes({ initiales }: { initiales: Commande[] }) {
     return (
       <Encart>
         Aucune commande pour l&apos;instant. Elles apparaîtront ici dès qu&apos;un paiement sera
-        confirmé — rien n&apos;est enregistré avant.
+        confirmé, rien n&apos;est enregistré avant.
       </Encart>
     );
   }
@@ -91,7 +91,7 @@ export function Commandes({ initiales }: { initiales: Commande[] }) {
                         <span>
                           {l.titre}
                           {l.quantite > 1 ? ` × ${l.quantite}` : ''}
-                          {l.nature === 'VIRTUEL' ? ' — remis en ligne' : ''}
+                          {l.nature === 'VIRTUEL' ? ', remis en ligne' : ''}
                         </span>
                         <span className="font-bold tabular-nums">
                           {euros(l.prixCents * l.quantite)}

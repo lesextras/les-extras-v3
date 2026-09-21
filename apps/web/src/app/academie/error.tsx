@@ -25,7 +25,7 @@ export default function Erreur({ error, reset }: { error: Error & { digest?: str
       </span>
       <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-[#12312A] sm:text-3xl">Cet écran n&apos;a pas pu s&apos;afficher.</h1>
       <p className="mx-auto mt-2 max-w-[46ch] leading-relaxed text-[#334A42]">
-        Rien n&apos;est perdu : tes données sont en sécurité. Réessaie — si ça recommence, écris-nous en disant sur quel
+        Rien n&apos;est perdu : tes données sont en sécurité. Réessaie, si ça recommence, écris-nous en disant sur quel
         bouton tu as cliqué.
       </p>
       {error.digest ? <p className="mt-2 text-[13px] text-[#5E7A6E]">Référence : {error.digest}</p> : null}

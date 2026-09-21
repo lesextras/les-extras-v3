@@ -100,7 +100,7 @@ export function Coque({
                 <a href="https://adepa77.fr/" target="_blank" rel="noopener noreferrer" className="font-bold text-[#C42B57] underline underline-offset-4">
                   ADéPA
                 </a>{' '}
-                — un don la soutient, et ouvre droit à un reçu fiscal.
+               , un don la soutient, et ouvre droit à un reçu fiscal.
               </p>
             </footer>
           ) : null}
@@ -296,6 +296,6 @@ export function formaterDate(iso: string | Date | null | undefined) {
 }
 
 export function formaterEuros(n: number | null | undefined) {
-  if (n === null || n === undefined) return '—';
+  if (n === null || n === undefined) return 'Non renseigné';
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }

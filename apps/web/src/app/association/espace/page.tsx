@@ -87,7 +87,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
             <div>
               <h2 className="text-xl font-extrabold text-[#1D1B5C]">Termine la configuration de ton espace</h2>
               <p className="mt-1 text-sm text-[#6B6A8A]">
-                {configuration.faites} sur {configuration.total} — {organisation.rna || organisation.siret ? 'association rattachée' : 'association pas encore rattachée'}
+                {configuration.faites} sur {configuration.total} · {organisation.rna || organisation.siret ? 'association rattachée' : 'association pas encore rattachée'}
               </p>
             </div>
             <div className="flex flex-col items-center gap-1">

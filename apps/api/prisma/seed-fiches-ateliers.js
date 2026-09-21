@@ -137,7 +137,7 @@ const FICHES = [
     source:
       "Les cinq paragraphes de la description, qui décrivent explicitement une " +
       "progression théorie → pré-production → production → post-production. Les " +
-      "objectifs et le déroulé sont donc tous deux dans le texte de la fiche — " +
+      "objectifs et le déroulé sont donc tous deux dans le texte de la fiche, " +
       "c'est la seule des dix qui porte les deux.",
     objectives: [
       "Écrire un scénario et réaliser son découpage technique.",
@@ -148,7 +148,7 @@ const FICHES = [
       "Monter, étalonner et sonoriser un film, et y ajouter titres et transitions.",
     ].join('\n'),
     methodology: [
-      "Théorie : les fondamentaux de la création d'un film — écriture du scénario, découpage technique, valeur de plan, composition, éclairage, prise en main de la caméra.",
+      "Théorie : les fondamentaux de la création d'un film, écriture du scénario, découpage technique, valeur de plan, composition, éclairage, prise en main de la caméra.",
       "Pré-production : scénario, storyboard, planification du tournage.",
       "Production : prise de vue, enregistrement du son, direction d'acteurs.",
       "Post-production : montage, étalonnage des couleurs, bande sonore, effets, titres et transitions.",

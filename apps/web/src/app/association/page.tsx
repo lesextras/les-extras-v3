@@ -20,14 +20,14 @@ async function adresse() {
 export async function generateMetadata(): Promise<Metadata> {
   if ((await adresse()) === '/association') {
     return {
-      title: 'Piloter mon association — par Toulali',
+      title: 'Piloter mon association, par Toulali',
       description:
         "Le chemin en 12 étapes, le classeur qui prévient, les subventions, la comptabilité et les agréments. Gratuit, pendant que l'outil se construit.",
       alternates: { canonical: '/association' },
     };
   }
   return {
-    title: 'Piloter — par Toulali',
+    title: 'Piloter, par Toulali',
     description:
       "Un outil, deux espaces : piloter mon association (papiers, subventions, comptabilité) ou piloter mon académie (Qualiopi, catalogue, apprenants). Gratuit.",
     alternates: { canonical: '/' },

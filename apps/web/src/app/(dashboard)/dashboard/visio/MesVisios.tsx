@@ -149,7 +149,7 @@ export function MesVisios({
         {planifiables.length === 0 ? (
           <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground" lang="fr">
             Aucune intervention acceptée pour le moment. Un rendez-vous à distance se pose sur une
-            prestation convenue — sinon le lien arriverait avant l’accord.
+            prestation convenue, sinon le lien arriverait avant l’accord.
           </p>
         ) : (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -164,7 +164,7 @@ export function MesVisios({
                 {planifiables.map((i) => (
                   <option key={i.id} value={i.id}>
                     {i.service?.title ?? 'Intervention'}
-                    {i.account?.name ? ` — ${i.account.name}` : ''}
+                    {i.account?.name ? ` · ${i.account.name}` : ''}
                   </option>
                 ))}
               </select>
@@ -238,7 +238,7 @@ export function MesVisios({
               <div className="min-w-[240px] flex-1">
                 <p className="text-sm font-medium text-foreground">
                   {v.intitule ?? 'Intervention'}
-                  {v.demandeur ? ` — ${v.demandeur}` : ''}
+                  {v.demandeur ? ` · ${v.demandeur}` : ''}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {quand(v.debutPrevu)} · {v.dureeMinutes} min

@@ -82,7 +82,7 @@ export default async function VerifierPage({ searchParams }: { searchParams: Pro
       {resultats && resultats.length > 0 ? (
         <section className="mt-8">
           <h2 className="mb-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#6B6A8A]">
-            {resultats.length === 1 ? 'Une association trouvée' : `${resultats.length} associations trouvées`} — choisis la tienne
+            {resultats.length === 1 ? 'Une association trouvée' : `${resultats.length} associations trouvées`}, choisis la tienne
           </h2>
           <ul className={`${CARTE} divide-y divide-[#E6E4F3] overflow-hidden`}>
             {resultats.map((a) => (

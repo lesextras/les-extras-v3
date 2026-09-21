@@ -144,7 +144,7 @@ export function AtelierCours({
    */
   async function genererStructure() {
     const consigne = window.prompt(
-      'Que doit couvrir cette formation ? (facultatif — laisse vide pour partir du titre)',
+      'Que doit couvrir cette formation ? (facultatif, laisse vide pour partir du titre)',
       '',
     );
     if (consigne === null) return;
@@ -1545,7 +1545,7 @@ function Parametres({
             <Champ libelle="Catégorie">
               <input value={c.categorie ?? ''} onChange={(e) => set({ categorie: e.target.value })} className={CHAMP} />
             </Champ>
-            <Champ libelle="Durée annoncée (min) — 0 pour additionner les leçons">
+            <Champ libelle="Durée annoncée (min), 0 pour additionner les leçons">
               <input
                 type="number"
                 min={0}
@@ -1739,7 +1739,7 @@ function Prix({
               disabled={c.gratuit}
             />
           </Champ>
-          <Champ libelle="TVA (en %) — 0 si l'organisme en est exonéré">
+          <Champ libelle="TVA (en %), 0 si l'organisme en est exonéré">
             <input
               type="number"
               min={0}
@@ -1851,7 +1851,7 @@ function Descriptions({
 
       <Bloc titre="Ce qu'on lit avant de s'inscrire">
         <div className="grid gap-3">
-          <Champ libelle="Description courte — la phrase sous le titre">
+          <Champ libelle="Description courte, la phrase sous le titre">
             <input value={c.sousTitre ?? ''} onChange={(e) => set({ sousTitre: e.target.value })} className={CHAMP} />
           </Champ>
           <Champ libelle="Description longue">
@@ -1891,14 +1891,14 @@ function Descriptions({
         </div>
       </Bloc>
 
-      <Bloc titre="La fiche programme — ce que lisent un financeur et un auditeur">
+      <Bloc titre="La fiche programme, ce que lisent un financeur et un auditeur">
         {programme ? (
           <div className="grid gap-3">
             <p className="max-w-[70ch] text-[14px] leading-relaxed" style={{ color: VERT.sourdine }}>
               Les objectifs, le public et les prérequis ci-dessus sont ceux de la fiche : ils s&apos;écrivent une fois.
-              Il reste le déroulé et la durée en heures — les deux mentions que l&apos;indicateur 1 exige en plus.
+              Il reste le déroulé et la durée en heures, les deux mentions que l&apos;indicateur 1 exige en plus.
             </p>
-            <Champ libelle="Le déroulé — les séquences, dans l'ordre, avec leur modalité">
+            <Champ libelle="Le déroulé, les séquences, dans l'ordre, avec leur modalité">
               <textarea rows={6} value={programme.program ?? ''} onChange={(e) => setP({ program: e.target.value })} className={CHAMP} />
             </Champ>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -1914,7 +1914,7 @@ function Descriptions({
               <div className="self-end text-[14px]" style={{ color: VERT.sourdine }}>
                 {programme.certifying ? (
                   <span>
-                    Certifiante{programme.certificationName ? ` — ${programme.certificationName}` : ''}.
+                    Certifiante{programme.certificationName ? ` · ${programme.certificationName}` : ''}.
                   </span>
                 ) : (
                   <span>Non certifiante. Cette mention se pose à la validation du programme.</span>
@@ -1977,7 +1977,7 @@ function versLocal(iso: string | null | undefined) {
 
 function dateLongue(iso: string) {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return 'Non renseigné';
   return d.toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
@@ -2229,7 +2229,7 @@ function FormulaireSession({
         <Champ libelle="Début">
           <input type="datetime-local" value={debut} onChange={(e) => setDebut(e.target.value)} className={CHAMP} required />
         </Champ>
-        <Champ libelle="Fin — une date de fin rend la convention défendable">
+        <Champ libelle="Fin, une date de fin rend la convention défendable">
           <input type="datetime-local" value={fin} onChange={(e) => setFin(e.target.value)} className={CHAMP} />
         </Champ>
       </div>
@@ -2244,7 +2244,7 @@ function FormulaireSession({
         </Champ>
       </div>
       <div className="mt-3">
-        <Champ libelle="Un nom pour cette session — facultatif, sinon c'est le titre de la formation">
+        <Champ libelle="Un nom pour cette session, facultatif, sinon c'est le titre de la formation">
           <input value={nom} onChange={(e) => setNom(e.target.value)} className={CHAMP} maxLength={160} />
         </Champ>
       </div>
@@ -2557,7 +2557,7 @@ function Apprenants({
         {placesMax ? (
           <p className="mt-2 text-[14px] font-bold" style={{ color: apprenants.length >= placesMax ? '#8A1B3D' : VERT.sourdine }}>
             {apprenants.length} inscrit{apprenants.length > 1 ? 's' : ''} sur {placesMax} place{placesMax > 1 ? 's' : ''}
-            {apprenants.length >= placesMax ? ' — la formation est complète.' : ''}
+            {apprenants.length >= placesMax ? ', la formation est complète.' : ''}
           </p>
         ) : null}
         <div className="mt-4 grid gap-3 sm:grid-cols-4">
@@ -2601,7 +2601,7 @@ function Apprenants({
               {apprenants.map((a) => (
                 <tr key={a.id} className="border-t" style={{ borderColor: VERT.bord }}>
                   <td className="px-4 py-3" style={{ color: VERT.encre }}>
-                    <span className="font-bold">{a.nom ?? '—'}</span>
+                    <span className="font-bold">{a.nom ?? 'Non renseigné'}</span>
                     <br />
                     <span className="text-sm" style={{ color: VERT.sourdine }}>
                       {a.email}

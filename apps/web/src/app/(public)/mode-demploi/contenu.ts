@@ -75,7 +75,7 @@ export const GUIDES: Guide[] = [
         titre: "… ou réservez un atelier au catalogue",
         texte: [
           "Le catalogue est public : objectifs, méthode, public visé, durée et prix sur chaque fiche, sans compte. Depuis une fiche, vous demandez un devis.",
-          "L'intervenant chiffre, vous acceptez en ligne, le devis porte la mention « Bon pour accord » et vaut engagement, et la réservation se crée avec son contrat et sa facture. Chaque intervenant dépose son dossier de conformité — diplôme, pièce d'identité, casier, URSSAF, assurance — et vous le consultez avant de vous engager.",
+          "L'intervenant chiffre, vous acceptez en ligne, le devis porte la mention « Bon pour accord » et vaut engagement, et la réservation se crée avec son contrat et sa facture. Chaque intervenant dépose son dossier de conformité (diplôme, pièce d'identité, casier, URSSAF, assurance) et vous le consultez avant de vous engager.",
         ],
         lien: { href: "/ateliers", label: "Parcourir les ateliers" },
       },

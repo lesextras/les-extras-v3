@@ -206,7 +206,7 @@ const DEROULE = [
     titre: "L’intervention se met en place",
     texte:
       visioconsultationVisible()
-        ? "Chez vous, dans l’établissement, à l’école — ou en visioconsultation. Le devis est écrit avant, pas après."
+        ? "Chez vous, dans l’établissement, à l’école, ou en visioconsultation. Le devis est écrit avant, pas après."
         : "Chez vous, dans l’établissement, à l’école. Le devis est écrit avant, pas après.",
   },
 ];
@@ -410,8 +410,8 @@ export default async function SosRenfortPage() {
               Un remplacement de poste ne se fait pas en indépendant.
             </strong>{" "}
             Conseil d’État, 11 février 2025, n° 491128 ; LFSS 2025, art. 70. C’est pour cela que le
-            renfort de poste passe par un CDD, et que le renfort personnalisé — qui ne remplace
-            personne — se facture en prestation.
+            renfort de poste passe par un CDD, et que le renfort personnalisé, qui ne remplace
+            personne, se facture en prestation.
           </p>
         </section>
       ) : (
@@ -504,7 +504,7 @@ export default async function SosRenfortPage() {
             </h2>
             <p className="text-muted-foreground">
               Il n’y a pas de porte d’entrée réservée. Un particulier réserve directement, pour
-              son enfant, son proche ou lui-même — sans prescription et sans dossier monté
+              son enfant, son proche ou lui-même, sans prescription et sans dossier monté
               d’avance.
             </p>
           </div>
@@ -699,7 +699,7 @@ export default async function SosRenfortPage() {
               </p>
               <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
                 C’est ce travail-là que paient les <strong className="font-semibold text-foreground">15&nbsp;%
-                de frais de gestion</strong> sur les renforts — les seuls du site. Ils s’<em>ajoutent</em>
+                de frais de gestion</strong> sur les renforts, les seuls du site. Ils s’<em>ajoutent</em>
                 au tarif de l’intervenant, qui le touche en entier, et la ligne figure sur le devis
                 avant que vous n’acceptiez quoi que ce soit. Les ateliers et les formations du
                 catalogue, eux, se réservent en direct et restent à 0&nbsp;%.
