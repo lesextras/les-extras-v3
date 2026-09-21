@@ -122,9 +122,9 @@ function ficheRecap(slug) {
   return `<div style="border:2px solid #cf6f56;border-radius:10px;padding:16px 18px;margin:0 0 22px">
 <h3 style="margin-top:0;color:#8a3a2e">La fiche récap — une page A4, à imprimer</h3>
 <p>Tout le parcours tient sur une page&nbsp;: la notion clé et son test, les quatre
-modules et ce qu'ils produisent, le schéma central, l'arbre de décision du relevé,
+modules et ce qu’ils produisent, le schéma central, l’arbre de décision du relevé,
 <strong>la grille de relevé vierge à recopier</strong>, les erreurs qui coûtent le
-plus, et l'essentiel à retenir.</p>
+plus, et l’essentiel à retenir.</p>
 <p style="margin-bottom:0"><strong>Téléchargement direct, sans inscription&nbsp;:</strong><br>
 <a href="${url}" target="_blank" rel="noopener">${url}</a></p>
 </div>`;

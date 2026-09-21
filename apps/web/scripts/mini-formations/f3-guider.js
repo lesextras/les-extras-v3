@@ -11,7 +11,7 @@ const S = require('./schemas.js');
 const Q = require('./quiz/guider-puis-s-effacer.js'); // les quatre quiz de fin de module
 
 const ECHELLE = A.tableau(
-  ['Niveau', "L'aide, du plus léger au plus lourd", 'Ce qu’elle coûte à retirer'],
+  ['Niveau', 'L’aide, du plus léger au plus lourd', 'Ce qu’elle coûte à retirer'],
   [
     ['0', '<strong>Rien.</strong> La consigne, puis le silence.', '—'],
     ['1', '<strong>Indice de position.</strong> Vous vous placez près de l’objet utile, ou vous regardez dans sa direction.', 'Très facile : on s’éloigne.'],
