@@ -24,7 +24,14 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { CarteChoix } from './CarteChoix';
-import { CHOIX_COMPTE, PARCOURS, type CleCompte, type CleEtape } from './parcours';
+import {
+  CHOIX_COMPTE,
+  PARCOURS,
+  QUI_DEMANDE,
+  coteDe,
+  type CleCompte,
+  type CleEtape,
+} from './parcours';
 import { Progression } from './Progression';
 import {
   ChampPoste,
@@ -41,7 +48,16 @@ import {
 /**
  * L'INSCRIPTION, EN ÉTAPES.
  *
- * Ordre, selon le compte :
+ * ⚠⚠ DEUX CARTES EN TÊTE DEPUIS LE 21/09/2026 : « Je cherche un intervenant »
+ * et « Je propose mes services ». C'est la forme des deux faces d'une place de
+ * marché, et la première question porte désormais sur l'INTENTION plutôt que
+ * sur une catégorie de compte. Le troisième cas — le particulier — n'a pas
+ * disparu du produit : il se déclare sur l'écran des identifiants, sous
+ * « Vous êtes ? », où « un établissement » est pré-coché. Voir `CoteMarche` et
+ * `QUI_DEMANDE` dans parcours.ts, qui expliquent pourquoi le type de compte
+ * PARTICULIER reste vivant en base.
+ *
+ * Ordre, selon le compte créé :
  *   établissement → situation, identifiants (avec le lieu de travail), vos droits
  *   intervenant   → situation, identifiants, votre structure, ce que vous faites
  *   particulier   → situation, identifiants, ce que vous cherchez
@@ -356,6 +372,70 @@ export default function RegisterPage() {
               le poste et le statut cadre partent avec le niveau et les
               droits, à l'étape suivante, en un seul PATCH.
             */}
+            {/*
+              ⚠⚠ « VOUS ÊTES ? » — CE QUI REMPLACE LA CARTE « PARTICULIER ».
+
+              Elle a disparu de la première page le 21/09/2026 : les trois
+              cartes demandaient de se ranger dans une CATÉGORIE avant de
+              savoir ce que la catégorie ouvrait. La distinction, elle, reste
+              entière — un parent n'a ni établissement, ni service, ni poste, et
+              son espace n'est pas celui d'une MECS (menu court, accueil dédié).
+              Elle se pose donc ici, en deux boutons, une fois la personne déjà
+              du bon côté du marché.
+
+              ⚠ « Un établissement » EST PRÉ-SÉLECTIONNÉ, et ce n'est pas un
+              détail : c'est le cas de très loin le plus fréquent, et qui ne lit
+              pas cette question obtient exactement ce qu'il obtenait avant. Une
+              question ajoutée à un formulaire d'inscription ne doit rien coûter
+              à ceux qu'elle ne concerne pas.
+
+              ⚠ CHANGER DE RÉPONSE CHANGE LE TYPE DE COMPTE, DONC LE PARCOURS
+              (voir PARCOURS) et le NOM du compte — donc son slug, calculé à la
+              création et jamais recalculé. C'est précisément pour ça que la
+              question est ICI et pas après : le compte n'existe pas encore.
+            */}
+            {coteDe(typeChoisi ?? 'ESTABLISHMENT') === 'DEMANDE' && (
+              <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+                <h2 className="text-sm font-semibold">Vous êtes&nbsp;?</h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {QUI_DEMANDE.map((q) => {
+                    const actif = typeChoisi === q.type;
+                    return (
+                      <button
+                        key={q.type}
+                        type="button"
+                        aria-pressed={actif}
+                        onClick={() => {
+                          form.setValue('accountType', q.type, { shouldValidate: false });
+                          // Un particulier n'a pas d'établissement : on ne
+                          // garde pas une saisie qui ne partira plus, et
+                          // surtout pas un rattachement à la maison de
+                          // quelqu'un d'autre.
+                          if (q.type === 'PARTICULIER') {
+                            form.setValue('organizationName', '');
+                            setLieu(LIEU_VIDE);
+                          }
+                        }}
+                        className={`rounded-lg border-2 p-3 text-left transition ${
+                          actif
+                            ? 'border-primary bg-primary-soft/30'
+                            : 'border-border bg-background hover:border-primary/40'
+                        }`}
+                      >
+                        <span className="block text-sm font-semibold">{q.titre}</span>
+                        <span
+                          className="mt-1 block text-xs leading-relaxed text-muted-foreground"
+                          lang="fr"
+                        >
+                          {q.aide}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             {typeChoisi === 'ESTABLISHMENT' && (
               <section className="space-y-5 rounded-xl border border-border bg-card p-4">
                 <div>
@@ -692,14 +772,21 @@ export default function RegisterPage() {
       {/* ---------------------------------------------------------------- */}
       {etape === 'profil' && (
         <div className="space-y-5">
-          <div className="grid items-stretch gap-3 sm:grid-cols-3">
+          {/*
+            ⚠⚠ DEUX CARTES, PAS TROIS (21/09/2026, demande de Siham).
+            Une place de marché a deux côtés ; la première question doit porter
+            sur l'INTENTION, pas sur une catégorie de compte. Le particulier ne
+            disparaît pas du produit — il se déclare d'un clic à l'étape
+            suivante, sous « Vous êtes ? ». Voir `CoteMarche` dans parcours.ts.
+          */}
+          <div className="grid items-stretch gap-3 sm:grid-cols-2">
             {CHOIX_COMPTE.map((c) => (
               <CarteChoix
                 key={c.key}
                 choix={c}
-                actif={typeChoisi === c.key}
+                actif={typeChoisi ? coteDe(typeChoisi) === c.key : false}
                 onSelect={() => {
-                  form.setValue('accountType', c.key, { shouldValidate: false });
+                  form.setValue('accountType', c.typeParDefaut, { shouldValidate: false });
                   allerA('identite');
                 }}
               />
@@ -707,8 +794,7 @@ export default function RegisterPage() {
           </div>
           <p className="text-center text-xs text-muted-foreground" lang="fr">
             Passez la souris sur une carte pour savoir ce qu’elle ouvre. Vous
-            pourrez créer un second compte plus tard si vous cumulez deux
-            situations.
+            pourrez créer un second compte plus tard si vous cumulez les deux.
           </p>
         </div>
       )}

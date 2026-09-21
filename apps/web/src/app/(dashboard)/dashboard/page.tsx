@@ -28,6 +28,15 @@ interface DashStats {
   unreadMessages?: number;
   fillRate?: number;
   delaiMoyenHeures?: number | null;
+  /** Ce qui attend un geste de ce compte — voir `AFaire` côté API. */
+  aFaire?: {
+    candidaturesAExaminer?: number;
+    demandesAAccepter?: number;
+    aConfirmer?: number;
+    aDemarrer?: number;
+    aTerminer?: number;
+    facturesBrouillon?: number;
+  };
 }
 
 export default async function DashboardPage() {
@@ -386,19 +395,79 @@ export default async function DashboardPage() {
           </Card>
 
           {(() => {
-            // Bloc « À faire » : uniquement des actions qui attendent l'utilisateur.
+            // BLOC « À FAIRE » : DES GESTES, PAS DES CHIFFRES.
+            //
+            // ⚠⚠ IL A ANNONCÉ « TOUT EST À JOUR » PENDANT QUE TREIZE
+            // RÉSERVATIONS SUR DIX-SEPT ATTENDAIENT QUELQU'UN (mesuré le
+            // 21/09/2026, avec six factures en brouillon par-dessus). Il ne
+            // connaissait que quatre sources, dont « N interventions à venir »
+            // — qui pointait sur le PLANNING, c'est-à-dire sur un calendrier où
+            // aucun de ces gestes ne se fait.
+            //
+            // ⚠ CHAQUE ENTRÉE NOMME LE GESTE ET MÈNE À L'ÉCRAN QUI L'EXÉCUTE.
+            // « à démarrer », « à terminer », « à émettre » se lisent comme un
+            // verbe à faire ; « à venir » se lit comme une information, et une
+            // information ne se raye pas d'une liste. C'est le dernier mètre du
+            // chemin de l'argent : sans `COMPLETED`, `preparerFactureAtelier()`
+            // n'est jamais appelée, donc aucune facture n'existe — et un
+            // brouillon qu'on ne voit pas ne s'émet jamais.
+            //
+            // ⚠ LES COMPTEURS VIENNENT DE L'API, CÔTÉ OFFREUR (voir `AFaire`
+            // dans `dashboard.controller.ts`) : le serveur réserve ces quatre
+            // transitions au sollicité. Les calculer ici depuis la liste
+            // tronquée `bookings` (take=5) donnerait un nombre faux, et les
+            // déduire de `Booking.accountId` afficherait des boutons qui
+            // mènent à un 403.
+            const f = s.aFaire ?? {};
             const todos: { label: string; href: string }[] = [];
-            if ((s.applications ?? 0) > 0) {
-              todos.push({
-                label: `${s.applications} candidature${s.applications! > 1 ? "s" : ""} à examiner`,
-                href: isEstablishment ? "/dashboard/renforts" : "/dashboard/opportunites",
-              });
-            }
-            if ((s.upcomingBookings ?? 0) > 0) {
-              todos.push({
-                label: `${s.upcomingBookings} intervention${s.upcomingBookings! > 1 ? "s" : ""} à venir`,
-                href: "/dashboard/planning",
-              });
+            const pousser = (n: number | undefined, label: (n: number) => string, href: string) => {
+              if ((n ?? 0) > 0) todos.push({ label: label(n!), href });
+            };
+            const s_ = (n: number) => (n > 1 ? "s" : "");
+
+            // L'ordre suit la machine à états : ce qui bloque le plus en amont
+            // d'abord. Une candidature non examinée immobilise quelqu'un qui
+            // attend une réponse ; une facture en brouillon n'immobilise que
+            // de l'argent déjà gagné.
+            pousser(
+              f.candidaturesAExaminer,
+              (n) => `${n} candidature${s_(n)} à examiner`,
+              "/dashboard/renforts",
+            );
+            pousser(
+              f.demandesAAccepter,
+              (n) => `${n} demande${s_(n)} d’atelier à accepter`,
+              "/dashboard/ateliers",
+            );
+            pousser(
+              f.aConfirmer,
+              (n) => `${n} réservation${s_(n)} à confirmer`,
+              "/dashboard/reservations",
+            );
+            pousser(
+              f.aDemarrer,
+              (n) => `${n} intervention${s_(n)} à démarrer`,
+              "/dashboard/reservations",
+            );
+            pousser(
+              f.aTerminer,
+              (n) => `${n} intervention${s_(n)} à terminer`,
+              "/dashboard/reservations",
+            );
+            // ⚠ LA FACTURE SUIT LE MÊME FILTRE DE RÔLE QUE SON ENTRÉE DE MENU
+            // (`Devis & factures`, OWNER/ADMIN/MANAGER côté établissement).
+            // Annoncer « 6 factures à émettre » à un MEMBER le renverrait sur
+            // un écran que son menu ne lui ouvre pas : une tâche qu'on ne peut
+            // pas faire est pire qu'une tâche qu'on ne voit pas.
+            const voitLaFacturation =
+              !isEstablishment ||
+              ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role ?? "");
+            if (voitLaFacturation) {
+              pousser(
+                f.facturesBrouillon,
+                (n) => `${n} facture${s_(n)} à émettre`,
+                "/dashboard/facturation",
+              );
             }
             if ((s.unreadMessages ?? 0) > 0) {
               todos.push({

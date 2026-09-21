@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { PARCOURS, CHOIX_COMPTE, type CleCompte } from '@/app/(auth)/register/parcours';
+import {
+  PARCOURS,
+  CHOIX_COMPTE,
+  QUI_DEMANDE,
+  coteDe,
+  type CleCompte,
+} from '@/app/(auth)/register/parcours';
 import { GROUPES_DROITS, DROITS } from '@/lib/droits';
 import { registerSchema } from '@/lib/validation';
 
@@ -100,13 +106,76 @@ describe('parcours d’inscription', () => {
   });
 
   describe('les cartes de situation', () => {
-    it('en propose trois — « Salarié » a été fusionnée avec « Établissement »', () => {
-      expect(CHOIX_COMPTE).toHaveLength(3);
-      expect(CHOIX_COMPTE.map((c) => c.key)).toEqual([
-        'ESTABLISHMENT',
-        'FREELANCE',
-        'PARTICULIER',
-      ]);
+    /**
+     * ⚠⚠ DEUX CARTES, ET C'EST UNE DEMANDE DE SIHAM (21/09/2026) : « je
+     * cherche un intervenant » et « je propose mes services », comme le font
+     * les deux places de marché du secteur.
+     *
+     * Il y a eu quatre tuiles, puis trois, et il en reste deux. Chaque fusion
+     * répond au même défaut : une carte qui demande à quelqu'un de se ranger
+     * dans une CATÉGORIE avant de savoir ce que la catégorie ouvre. Une
+     * intention — je cherche, je propose — est la seule chose que la personne
+     * sache d'elle-même en arrivant.
+     *
+     * ⚠ NE PAS « RÉPARER » CE TEST EN REMETTANT UNE CARTE PARTICULIER. Le
+     * type de compte PARTICULIER existe toujours, et il doit continuer
+     * d'exister (comptes en base, accueil et menu dédiés) : il se choisit
+     * sous « Vous êtes ? » à l'étape des identifiants, pas sur la première
+     * page. C'est `QUI_DEMANDE` qui le porte, et le test ci-dessous le
+     * vérifie.
+     */
+    it('en propose DEUX — une par côté du marché', () => {
+      expect(CHOIX_COMPTE).toHaveLength(2);
+      expect(CHOIX_COMPTE.map((c) => c.key)).toEqual(['DEMANDE', 'OFFRE']);
+    });
+
+    it('mène chacune à un type de compte réel, et à deux types différents', () => {
+      const types = CHOIX_COMPTE.map((c) => c.typeParDefaut);
+      expect(types).toEqual(['ESTABLISHMENT', 'FREELANCE']);
+      expect(new Set(types).size).toBe(2);
+    });
+
+    /**
+     * ⚠ LES DEUX CARTES DISENT UNE INTENTION, À LA PREMIÈRE PERSONNE. Un
+     * titre qui nomme une catégorie (« Établissement », « Professionnel »,
+     * « Particulier ») est exactement ce qu'on vient de retirer.
+     */
+    it('titre chaque carte à la première personne', () => {
+      for (const c of CHOIX_COMPTE) {
+        expect(c.titre.toLowerCase().startsWith('je ')).toBe(true);
+      }
+    });
+
+    /**
+     * ⚠ LE CÔTÉ D'UN TYPE DE COMPTE EST ÉCRIT UNE SEULE FOIS (`coteDe`) : deux
+     * lectures de la même règle finiraient par allumer la mauvaise carte quand
+     * quelqu'un revient en arrière.
+     */
+    it('range chaque type de compte du bon côté', () => {
+      expect(coteDe('ESTABLISHMENT')).toBe('DEMANDE');
+      expect(coteDe('PARTICULIER')).toBe('DEMANDE');
+      expect(coteDe('FREELANCE')).toBe('OFFRE');
+    });
+
+    /**
+     * ⚠⚠ LE PARTICULIER RESTE ATTEIGNABLE, ET CE TEST EST LE GARDE-FOU.
+     *
+     * Retirer sa carte de la première page ne doit pas le retirer du produit :
+     * un parent n'a ni établissement, ni service, ni poste, et son espace
+     * (menu court, `AccueilParticulier`) a été écrit exprès. S'il n'est plus
+     * ni dans `CHOIX_COMPTE` ni dans `QUI_DEMANDE`, plus personne ne peut
+     * ouvrir ce compte — et rien à l'écran ne le signalerait.
+     */
+    it('laisse au particulier une porte, sous « Vous êtes ? »', () => {
+      expect(QUI_DEMANDE.map((q) => q.type)).toContain('PARTICULIER');
+      expect(QUI_DEMANDE.map((q) => q.type)).toContain('ESTABLISHMENT');
+      // L'établissement en premier : c'est lui qui est pré-sélectionné, et le
+      // cas de très loin le plus fréquent.
+      expect(QUI_DEMANDE[0].type).toBe('ESTABLISHMENT');
+      for (const q of QUI_DEMANDE) {
+        expect(q.titre.length).toBeGreaterThan(3);
+        expect(q.aide.length).toBeGreaterThan(20);
+      }
     });
 
     it('chaque carte a un recto ET un verso renseignés', () => {
@@ -132,13 +201,13 @@ describe('parcours d’inscription', () => {
     });
 
     /**
-     * ⚠ TROIS TEINTES DISTINCTES. Trois portes vers trois produits différents
-     * ne doivent pas se ressembler trait pour trait : c'est le contour qui les
+     * ⚠ UNE TEINTE PAR CARTE. Deux portes vers deux côtés opposés du marché ne
+     * doivent pas se ressembler trait pour trait : c'est le contour qui les
      * sépare, et deux cartes de la même couleur annuleraient tout l'effet.
      */
-    it('porte trois teintes différentes', () => {
+    it('porte une teinte différente par carte', () => {
       const teintes = CHOIX_COMPTE.map((c) => c.teinte);
-      expect(new Set(teintes).size).toBe(3);
+      expect(new Set(teintes).size).toBe(CHOIX_COMPTE.length);
     });
 
     /**
@@ -152,7 +221,7 @@ describe('parcours d’inscription', () => {
         expect(c.categorie.length).toBeLessThanOrEqual(20);
         expect(c.categorie).not.toBe(c.titre);
       }
-      expect(new Set(CHOIX_COMPTE.map((c) => c.categorie)).size).toBe(3);
+      expect(new Set(CHOIX_COMPTE.map((c) => c.categorie)).size).toBe(CHOIX_COMPTE.length);
     });
 
     /**
@@ -173,15 +242,28 @@ describe('parcours d’inscription', () => {
     });
 
     /**
-     * ⚠ « PARENT » A ÉTÉ RETIRÉ DU NOM, et il ne doit pas revenir. Le compte
-     * particulier ne sert plus seulement à réserver pour un enfant : il ouvre
-     * aussi aux remplacements en CDD. Le remettre dans le titre exclurait
-     * d'un mot la moitié des gens à qui cette carte s'adresse.
+     * ⚠ AUCUNE CARTE NE RANGE PERSONNE DANS UNE CATÉGORIE. « Particulier »,
+     * « parent », « freelance », « salarié » : ce sont des mots de logiciel ou
+     * des cases administratives, et c'est ce qu'on vient de retirer de la
+     * première page.
+     *
+     * « freelance » est en plus le vocabulaire sanctionné par le Conseil
+     * d'État (CE 11/02/2025 n° 491128) — il n'a rien à faire sur l'écran par
+     * lequel entre un remplaçant.
      */
-    it('la carte particulier ne se dit plus « parent »', () => {
-      const particulier = CHOIX_COMPTE.find((c) => c.key === 'PARTICULIER');
-      expect(particulier?.titre.toLowerCase()).not.toContain('parent');
-      expect(particulier?.categorie.toLowerCase()).not.toContain('parent');
+    it('ne range personne dans une catégorie, et n’écrit jamais « freelance »', () => {
+      for (const c of CHOIX_COMPTE) {
+        const tout =
+          `${c.categorie} ${c.titre} ${c.accroche} ${c.benefice} ${c.detail}`.toLowerCase();
+        expect(tout).not.toContain('freelance');
+        // Le VERSO a le droit de dire « ou un parent, pour son enfant » : il
+        // décrit à qui la porte s'adresse. Ce qu'on interdit, c'est qu'une
+        // étiquette de catégorie serve de titre ou de pastille.
+        for (const mot of ['particulier', 'parent', 'salarié', 'freelance']) {
+          expect(c.categorie.toLowerCase()).not.toContain(mot);
+          expect(c.titre.toLowerCase()).not.toContain(mot);
+        }
+      }
     });
   });
 

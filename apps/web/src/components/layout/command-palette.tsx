@@ -73,6 +73,26 @@ const DESTINATIONS: Dest[] = [
   // devient leur chemin d'accès, avec des mots-clés larges pour qu'on les
   // trouve sans connaître leur nom exact.
   { label: "Conformité", href: "/dashboard/conformite", group: "Établissement", keywords: "pièces obligatoires cni casier judiciaire diplôme permis échéance manquant" },
+  /*
+    ⚠ AJOUTÉES LE 21/09/2026, EN MÊME TEMPS QUE L'ALLÈGEMENT DU MENU.
+
+    Ces six entrées sont passées derrière « Afficher les outils avancés » : le
+    menu établissement tombait de dix-huit lignes à onze, celui de
+    l'intervenant de seize à onze. Aucune n'est un chemin unique vers un geste
+    — c'est la condition pour y toucher — mais aucune n'était non plus dans la
+    palette, et une porte à deux clics derrière un réglage mérite au moins
+    d'être trouvable en tapant son nom.
+
+    C'est la règle déjà écrite pour les outils LEX en septembre : toute entrée
+    qui quitte le menu de gauche se vérifie dans la palette, sinon on livre une
+    fonctionnalité que personne ne retrouve.
+  */
+  { label: "Mes alertes", href: "/dashboard/alertes", group: "Établissement", keywords: "alerte recherche catalogue prévenir nouveauté atelier département notification" },
+  { label: "Mon vivier RenforTeam", href: "/dashboard/vivier", group: "Établissement", keywords: "vivier intervenants connus carnet adresses rappeler renfort" },
+  { label: "Personnes disponibles", href: "/dashboard/vivier-ouvert", group: "Établissement", keywords: "vivier ouvert disponibilités remplaçants cdd renfort personnalisé métier département" },
+  { label: "Avis", href: "/dashboard/avis", group: "Mon espace", keywords: "avis évaluation note retour commentaire intervenant" },
+  { label: "Ma progression", href: "/dashboard/progression", group: "Intervenant", keywords: "palier niveau nouveau confirmé super extra accès prioritaire" },
+  { label: "Mes publications", href: "/dashboard/actualites", group: "Mon espace", keywords: "édublog article actualité écrire publier visibilité" },
   { label: "Mes données personnelles", href: "/dashboard/donnees-personnelles", group: "Mon espace", keywords: "rgpd export suppression effacement vie privée confidentialité" },
   { label: "Boîte à idées", href: "/dashboard/idees", group: "Mon espace", keywords: "idée suggestion amélioration vote proposition" },
   { label: "LEX · Crédits & abonnement", href: "/dashboard/adhesion", group: "Établissement", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },

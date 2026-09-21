@@ -1,27 +1,29 @@
-import { Building2, UserRound, Heart } from 'lucide-react';
+import { Building2, UserRound } from 'lucide-react';
 import type { ChoixCompte } from './CarteChoix';
 
 /**
- * LE CHOIX DE COMPTE — TROIS PORTES, PLUS QUATRE.
+ * LE CHOIX DE COMPTE — DEUX PORTES, ET C'EST L'HISTOIRE D'UN DÉGROSSISSAGE.
  *
- * « Établissement » et « Salarié » étaient deux tuiles distinctes, et elles
- * posaient la mauvaise question. Techniquement elles créaient deux comptes
- * différents ; humainement, la personne qui arrive ne sait pas laquelle la
- * concerne — une directrice adjointe EST salariée de son établissement, et un
- * chef de service qui cherche du renfort remplit exactement le rôle décrit par
- * la tuile « Établissement ». Le choix était donc arbitraire, et beaucoup se
- * trompaient de porte.
+ * Il y a eu quatre tuiles, puis trois, et il en reste deux.
  *
- * Elles sont fusionnées. Ce n'est plus une tuile qui décide du rôle : c'est le
- * FORMULAIRE DE QUALIFICATION, plus loin dans le parcours, où l'on déclare son
- * poste, si l'on est cadre, et son niveau de responsabilité. Une même porte,
- * puis une question à laquelle chacun sait répondre parce qu'elle porte sur son
- * métier et pas sur une catégorie de logiciel.
+ * « Établissement » et « Salarié » ont fusionné les premières : elles posaient
+ * la mauvaise question. Techniquement elles créaient deux comptes différents ;
+ * humainement, la personne qui arrive ne sait pas laquelle la concerne — une
+ * directrice adjointe EST salariée de son établissement, et un chef de service
+ * qui cherche du renfort remplit exactement le rôle décrit par la tuile
+ * « Établissement ». Ce n'est plus une tuile qui décide du rôle mais l'étape
+ * « poste », où l'on déclare son métier et son niveau de responsabilité.
+ *
+ * « Particulier » a suivi le 21/09/2026, pour la même raison poussée d'un
+ * cran : toutes ces cartes demandaient à la personne de se ranger dans une
+ * CATÉGORIE avant de savoir ce que la catégorie ouvrait. Les deux qui restent
+ * portent une INTENTION — je cherche, je propose — et c'est la seule chose que
+ * quelqu'un sait de lui-même en arrivant.
  */
 /**
  * CE QUE PORTE CHAQUE CARTE, ET POURQUOI — quatre champs, quatre rôles.
  *
- * Les trois cartes se ressemblaient trait pour trait : même bordure grise,
+ * Les cartes se ressemblaient trait pour trait : même bordure grise,
  * même pastille rose, titre en petits caractères à la taille de l'accroche
  * grise. Rien ne ressortait, et il fallait les lire en entier pour savoir
  * laquelle était la sienne.
@@ -38,62 +40,87 @@ import type { ChoixCompte } from './CarteChoix';
  * façons volontairement différentes — un mot qu'on repère, une phrase qu'on
  * lit. Y recopier le titre supprimerait tout l'intérêt de la pastille.
  *
- * ⚠ CHAQUE CARTE A SA TEINTE, et c'est le contour qui la porte. Trois portes
- * vers trois produits différents ne doivent pas se ressembler. Les teintes
+ * ⚠ CHAQUE CARTE A SA TEINTE, et c'est le contour qui la porte. Deux portes
+ * vers deux côtés opposés du marché ne doivent pas se ressembler. Les teintes
  * viennent de la palette du site — voir `TEINTES` dans CarteChoix.tsx, qui
- * explique pourquoi on n'en invente pas une quatrième.
+ * explique pourquoi on n'en invente pas une troisième. La teinte `vert`, qui
+ * portait la carte « Particulier », n'est plus utilisée ici : elle reste
+ * définie, et c'est très bien — une teinte de moins à l'écran ne se supprime
+ * pas d'une palette.
  */
-export const CHOIX_COMPTE: (ChoixCompte & { key: CleCompte })[] = [
+export const CHOIX_COMPTE: (ChoixCompte & {
+  key: CoteMarche;
+  /** Le type de compte créé quand on clique cette carte. */
+  typeParDefaut: CleCompte;
+})[] = [
   {
-    key: 'ESTABLISHMENT',
+    key: 'DEMANDE',
+    typeParDefaut: 'ESTABLISHMENT',
     icon: Building2,
     teinte: 'framboise',
-    categorie: 'Établissement',
-    titre: 'Je travaille en établissement',
-    accroche: 'Direction, chef de service, coordinateur ou salarié.',
-    benefice: 'Trouver un remplaçant ou un atelier en quelques heures, sans commission.',
+    categorie: 'Je cherche',
+    titre: 'Je cherche un intervenant',
+    accroche: 'Établissement, service, ou pour un proche.',
+    benefice: 'Décrivez le besoin, le réseau répond, et les documents s’éditent ici.',
     // ⚠ Le verso est contraint par la hauteur de la carte : ces textes tiennent
     // en trois lignes, pas plus. Les rallonger les fait couper au survol.
     detail:
-      'MECS, IME, ITEP, EHPAD, SESSAD… Vous déclarez votre établissement, votre ' +
-      'service et votre poste : c’est cela qui décide de vos droits.',
+      'MECS, IME, ITEP, SESSAD, EHPAD, école — ou un parent, pour son enfant. ' +
+      'L’écran suivant vous demande simplement lequel des deux.',
     points: [
-      'Direction : tout l’établissement',
-      'Responsable : vos services',
-      'Salarié : vos demandes et votre planning',
+      'Renforts, ateliers, formations',
+      'Devis et facture édités ici',
+      'Rien n’est engagé sans votre accord',
     ],
   },
   {
-    key: 'FREELANCE',
+    key: 'OFFRE',
+    typeParDefaut: 'FREELANCE',
     icon: UserRound,
     teinte: 'terracotta',
-    categorie: 'Professionnel',
-    titre: 'Je suis intervenant indépendant',
-    accroche: 'Éducateur, moniteur, thérapeute, formateur, à mon compte.',
+    categorie: 'Je propose',
+    titre: 'Je propose mes services',
+    accroche: 'Éducateur, moniteur, thérapeute, formateur, psychomotricien…',
     benefice: 'Être trouvé par les établissements, et éditer vos devis et factures ici.',
     detail:
-      'Vous proposez vos ateliers, vos formations et vos renforts personnalisés ' +
-      'à votre compte, et vous facturez par votre structure.',
-    points: ['Publication au catalogue', '0 % de commission', 'Devis et factures édités'],
-  },
-  {
-    key: 'PARTICULIER',
-    icon: Heart,
-    teinte: 'vert',
-    categorie: 'Particulier',
-    titre: 'Je suis un particulier qui souhaite réserver des services',
-    accroche: 'Pour mon enfant, mon proche, ou moi-même.',
-    benefice: 'Inscrire un proche à un atelier, ou se rendre disponible près de chez soi.',
-    detail:
-      'Vous réservez pour un proche — et vous pouvez aussi proposer vos ' +
-      'disponibilités pour des remplacements en CDD dans un établissement.',
+      'Ateliers, formations, renforts personnalisés — à votre compte. Ou vos ' +
+      'seules disponibilités, si vous venez pour des remplacements.',
     points: [
-      'Réservation d’ateliers',
-      'Inscription aux formations',
-      'Remplacements en CDD, si vous le souhaitez',
+      'Publication au catalogue',
+      'Devis et factures édités',
+      'Vous choisissez ce que vous acceptez',
     ],
   },
 ];
+
+/**
+ * ⚠⚠ DEUX PORTES, PAS TROIS — 21/09/2026, demande de Siham : « supprime le
+ * compte particulier et met je cherche un intervenant et je propose mes
+ * services comme 2 comptes (inspire toi de la concurrence) ».
+ *
+ * C'est la forme qu'ont Brigad et Hublo, et elle est juste : une place de
+ * marché a DEUX côtés, et la première question qu'on pose à quelqu'un doit
+ * porter sur son INTENTION (« je cherche » / « je propose »), pas sur une
+ * catégorie de compte (« établissement », « particulier », « indépendant »)
+ * qui est du vocabulaire de logiciel. Les trois anciennes cartes demandaient
+ * à la personne de se ranger dans une case avant de savoir ce que la case
+ * ouvrait.
+ *
+ * ⚠ LE COMPTE PARTICULIER N'EST PAS SUPPRIMÉ EN BASE, ET IL NE DOIT PAS
+ * L'ÊTRE. `AccountType.PARTICULIER` porte des comptes existants, leurs
+ * réservations et leurs factures (règle n° 6 : rien ne se supprime), et il a
+ * son propre accueil (`AccueilParticulier`) et son propre menu, tous deux
+ * écrits parce que servir « taux de couverture » à un parent revient à lui
+ * dire que le site n'est pas pour lui. Ce qui disparaît, c'est la CARTE : le
+ * particulier se déclare maintenant d'un clic sur l'écran des identifiants,
+ * sous « Vous êtes ? ». Une question de moins sur la première page, et la
+ * même finesse derrière.
+ *
+ * ⚠ CE N'EST PAS UNE QUESTION DE PLUS POUR UN ÉTABLISSEMENT : « un
+ * établissement » est la réponse par défaut, déjà cochée. Qui ne la lit pas
+ * obtient exactement ce qu'il aurait obtenu avant.
+ */
+export type CoteMarche = 'DEMANDE' | 'OFFRE';
 
 /**
  * ⚠ Le type est ÉNUMÉRÉ, pas déduit de la liste des cartes. Déduit, il valait
@@ -101,6 +128,41 @@ export const CHOIX_COMPTE: (ChoixCompte & { key: CleCompte })[] = [
  * jusqu'au serveur sans que rien ne l'arrête.
  */
 export type CleCompte = 'ESTABLISHMENT' | 'FREELANCE' | 'PARTICULIER';
+
+/**
+ * De quel côté du marché se trouve un type de compte.
+ *
+ * ⚠ ÉCRIT UNE SEULE FOIS. L'écran s'en sert pour savoir quelle carte est
+ * active et s'il faut afficher la question « Vous êtes ? » ; deux lectures
+ * différentes de la même règle finiraient par allumer la mauvaise carte quand
+ * quelqu'un change d'avis.
+ */
+export function coteDe(type: CleCompte): CoteMarche {
+  return type === 'FREELANCE' ? 'OFFRE' : 'DEMANDE';
+}
+
+/**
+ * Les deux réponses à « Vous êtes ? », côté demande.
+ *
+ * ⚠ L'ORDRE COMPTE : l'établissement d'abord, parce que c'est le cas de loin
+ * le plus fréquent et que c'est lui qui est pré-sélectionné.
+ */
+export const QUI_DEMANDE: {
+  type: Extract<CleCompte, 'ESTABLISHMENT' | 'PARTICULIER'>;
+  titre: string;
+  aide: string;
+}[] = [
+  {
+    type: 'ESTABLISHMENT',
+    titre: 'Un établissement ou un service',
+    aide: 'MECS, IME, ITEP, SESSAD, EHPAD, ESAT, école. Direction, chef de service, coordinateur ou salarié.',
+  },
+  {
+    type: 'PARTICULIER',
+    titre: 'Un particulier',
+    aide: 'Pour votre enfant, un proche, ou vous-même. Aucun établissement à déclarer.',
+  },
+];
 
 /** Les étapes du parcours, dans l'ordre. */
 export type CleEtape =

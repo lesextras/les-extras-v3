@@ -90,14 +90,47 @@ export interface NavItem {
    * relation, et engagent lourdement en droit du travail. Ils restent
    * accessibles — par leur URL, et via le réglage « Afficher les outils
    * avancés » — mais ne s'imposent plus à qui n'en a pas besoin.
+   *
+   * ⚠⚠ CE DRAPEAU NE VEUT PAS DIRE « INUTILE ». Il veut dire « pas tous les
+   * jours ». Tout ce qui porte `avance` reste servi à son adresse, reste dans
+   * la palette ⌘K, et revient dans le menu d'un seul interrupteur. Ne JAMAIS
+   * le poser sur une entrée qui est le seul chemin vers un geste : une porte
+   * qu'on ne trouve pas est une porte fermée, et c'est le défaut qu'on a payé
+   * deux fois sur ce fichier (« Opportunités » pour un salarié le 25/08,
+   * « Mes congés » le 16/09).
    */
   avance?: boolean;
+  /**
+   * Le nom de la rubrique qui accueille cette entrée quand les outils avancés
+   * sont affichés. Par défaut « Gestion RH ».
+   *
+   * ⚠ IL N'EXISTE QU'UNE SEULE RUBRIQUE À L'ÉCRAN : ce champ ne la scinde pas,
+   * il la NOMME. Tant que toutes les entrées avancées portent le même nom,
+   * c'est ce nom qui s'affiche ; dès qu'elles en portent plusieurs, la rubrique
+   * prend le nom générique du réglage (« Outils avancés »), parce qu'un titre
+   * qui ne décrit que la moitié de ce qu'il couvre est pire qu'un titre
+   * générique. Voir `getNavForRole`.
+   */
+  rubrique?: string;
 }
 
 export interface NavSection {
   title?: string;
   items: NavItem[];
 }
+
+/**
+ * LES DEUX NOMS QUE PEUT PRENDRE LA RUBRIQUE DES OUTILS AVANCÉS.
+ *
+ * ⚠ IL N'Y A QU'UNE RUBRIQUE À L'ÉCRAN, JAMAIS DEUX. Ces constantes la
+ * NOMMENT, elles ne la scindent pas : `nommerRubrique` (dans `getNavForRole`)
+ * affiche le nom commun quand toutes les entrées le partagent, et retombe sur
+ * le générique dès qu'elles en portent plusieurs. Scinder produirait des
+ * rubriques d'une seule entrée — ce que la règle « deux entrées ne font pas
+ * une rubrique » interdit partout dans ce fichier.
+ */
+const RUBRIQUE_RH = 'Gestion RH';
+const RUBRIQUE_SECONDAIRE = 'Outils avancés';
 
 /**
  * Déduit le rôle de navigation UI à partir du rôle global + type de compte actif.
@@ -153,15 +186,47 @@ const freelanceNav: NavSection[] = [
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Les échanges rattachés à vos demandes de devis, vos réservations et vos missions' },
     ],
   },
+  /*
+    ⚠⚠ CETTE SECTION SUIT LE CHEMIN DE L'ARGENT (21/09/2026, demande de Siham).
+
+    Un intervenant fait quatre gestes, toujours dans le même ordre : il PUBLIE
+    une fiche, il est RÉSERVÉ, l'intervention SE FAIT, et elle SE PAIE. Le menu
+    les éparpillait dans trois rubriques — « Mes ateliers » huitième, sous
+    « Mon offre », et « Devis & factures » douzième, sous « Mon espace ». Le
+    premier et le dernier geste du même métier se trouvaient donc aux deux
+    extrémités du menu.
+
+    ⚠ LA RUBRIQUE « Mon offre » A ÉTÉ DISSOUTE, et ce n'est pas un oubli :
+    « Mes ateliers » a rejoint le chemin ci-dessous, et ce qui restait —
+    formations animées, publications — ne fait pas deux entrées de quotidien.
+    La règle de ce fichier est constante : deux entrées ne font pas une
+    rubrique.
+
+    ⚠ NE PAS REDESCENDRE « Devis & factures » DANS « Mon espace ». Ce n'est pas
+    un réglage de compte rangé à côté du dossier et des crédits : c'est la
+    quatrième marche d'un escalier, et c'est celle où l'on abandonne.
+  */
   {
     title: 'Mon activité',
     items: [
-      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Missions qui correspondent à votre profil, classées par score' },
-      // Ce qu'on m'a réservé relève de mon activité, pas de mon offre : c'est
-      // du travail engagé, avec une date et un contrat — au même rang que le
-      // planning, comme côté établissement.
+      // PUBLIER — ce que je vends. Vient de l'ancienne rubrique « Mon offre ».
+      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true },
+      // ÊTRE RÉSERVÉ — du travail engagé, avec une date et un contrat.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
+      // FAIRE.
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      // ÊTRE PAYÉ. Vient de l'ancienne rubrique « Mon espace ».
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures, au même endroit' },
+      /*
+       * ⚠ « Opportunités » RESTE DANS LE MENU DU QUOTIDIEN, et ce n'est pas un
+       * oubli de tri : c'est le SEUL chemin d'un intervenant vers les missions
+       * ouvertes à la candidature. Ce fichier a déjà payé deux fois le fait
+       * d'enterrer un chemin unique (le salarié sans accès aux missions le
+       * 25/08, le salarié sans accès à ses congés le 16/09). Qu'il n'y ait
+       * aucune mission ouverte aujourd'hui ne change rien : le jour où il y en
+       * a une, personne ne doit avoir à trouver un réglage pour la voir.
+       */
+      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Missions qui correspondent à votre profil, classées par score' },
       /*
        * ⚠ L'ENTRÉE N'APPARAÎT QUE SI LA VISIO EST OUVERTE. Elle mène à une
        * page qui répond 404 tant que `NEXT_PUBLIC_VISIOCONSULTATION` n'est pas
@@ -202,14 +267,18 @@ const freelanceNav: NavSection[] = [
   // gauche le 25/08/2026 : il vit désormais dans la barre du haut, à droite
   // du sélecteur de compte, pour tous les comptes. Un menu de gauche sert à
   // travailler ; un catalogue, à consulter.
-  // « Mon offre », c'est ce que je vends et que je pilote — mes fiches, mes
-  // sessions. Rien d'autre : les vitrines publiques sont dans Catalogue.
+  /*
+    ⚠ « Mon offre » N'EST PLUS UNE RUBRIQUE. « Mes ateliers » — la seule de ses
+    trois entrées qu'on ouvre toutes les semaines — a rejoint le chemin de
+    l'argent ci-dessus. Les deux autres restent, en secondaire : animer une
+    session de formation et écrire sur l'Édublog sont des gestes réels, mais
+    pas quotidiens, et aucun des deux n'est le seul chemin vers quoi que ce
+    soit.
+  */
   {
-    title: 'Mon offre',
     items: [
-      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true },
-      { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
+      { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
     ],
   },
   {
@@ -219,7 +288,9 @@ const freelanceNav: NavSection[] = [
       // l'intervenant, l'intervenant n'y avait aucun acces. Il ne pouvait ni
       // voir ce qui manquait, ni deposer sa carte d'identite.
       { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces obligatoires : identité, diplôme, casier judiciaire, IBAN, attestation URSSAF. Un dossier complet vous fait passer devant.' },
-      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures, au même endroit' },
+      // ⚠ « Devis & factures » N'EST PLUS ICI : il a rejoint « Mon activité »,
+      // dont il est la quatrième et dernière marche. Voir l'avertissement en
+      // tête de cette section-là.
       // LEX se recharge aussi depuis un compte intervenant : l'assistant IA
       // est ouvert aux deux types de comptes, à crédits pour tout le monde.
       // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
@@ -227,8 +298,10 @@ const freelanceNav: NavSection[] = [
       // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
       // devis et la conformité.
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
-      { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
-      { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra, et l\'accès prioritaire aux missions' },
+      { label: 'Avis', href: '/dashboard/avis', icon: Star, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
+      // La progression se REGARDE, elle ne se fait pas : c'est un état, pas un
+      // geste. Rien ne s'y décide, et elle avance toute seule.
+      { label: 'Ma progression', href: '/dashboard/progression', icon: TrendingUp, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Vos paliers : Nouveau, Confirmé, Super Extra, et l\'accès prioritaire aux missions' },
       // « Points & parrainage » n'est plus dans cette liste : il est épinglé
       // en bas du menu, juste au-dessus du bloc d'aide (voir sidebar.tsx).
       // Au fond d'une liste défilante, personne ne descendait jusqu'à lui.
@@ -254,6 +327,24 @@ const establishmentNav: NavSection[] = [
   // toutes marquées essentielles — un menu où tout est prioritaire n'a plus
   // de priorité. Trois sections à la place, dans l'ordre du quotidien :
   // trouver du monde, gérer les siens, s'outiller.
+  /*
+    ⚠⚠ CETTE SECTION SUIT LE CHEMIN DE L'ARGENT, ET L'ORDRE EST LA SEULE CHOSE
+    QUI COMPTE ICI (21/09/2026, demande de Siham).
+
+    Un établissement fait quatre gestes, toujours dans le même ordre : il
+    PUBLIE un besoin, il est RÉSERVÉ, l'intervention SE FAIT, et elle SE PAIE.
+    Le menu rangeait les trois premiers ensemble et le quatrième — « Devis &
+    factures » — vingt lignes plus bas, dans « Mon établissement », entre les
+    publications et les crédits LEX. Il fallait traverser le menu pour
+    retrouver la facture d'une réservation qu'on venait de terminer, et c'est
+    exactement le dernier mètre où l'on abandonne : mesuré le 21/09, six
+    factures sur onze dormaient en brouillon.
+
+    ⚠ NE PAS RENVOYER « Devis & factures » DANS « Mon établissement ». Ce
+    n'est pas une fonction de gestion interne rangée à côté de l'organigramme :
+    c'est la quatrième marche d'un escalier, et une marche manquante ne se
+    remplace pas par une porte ailleurs dans le couloir.
+  */
   {
     title: 'Renfort & prestations',
     items: [
@@ -284,11 +375,22 @@ const establishmentNav: NavSection[] = [
       // Une seule porte, qui ouvre sur « Tout ». Le tri se fait ensuite, là
       // où on le voit.
       { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers commandés et les inscriptions en formation, au même endroit, filtrables sur la page' },
+      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      // LA QUATRIÈME MARCHE — voir l'avertissement en tête de section. Devis et
+      // factures sont les deux temps du même geste : on chiffre, puis on
+      // facture. Ils viennent de « Mon établissement », où ils étaient à vingt
+      // lignes de la réservation qu'ils closent.
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures, au même endroit' },
       // ⚠ CÔTÉ ÉTABLISSEMENT SEULEMENT, et c'est délibéré : c'est lui qui
       // cherche dans le catalogue et repart bredouille. Un intervenant ne
       // cherche pas d'atelier, il en publie.
-      { label: 'Mes alertes', href: '/dashboard/alertes', icon: BellRing, hint: 'Dites ce que vous cherchez : on vous écrit le jour où ça arrive au catalogue, jamais plus d’un message par jour' },
-      { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      //
+      // Passée en avancée le 21/09/2026 : c'est un réglage qu'on pose une fois
+      // et qui travaille tout seul par courriel — pas une ligne qu'on ouvre
+      // chaque semaine. Elle n'est le seul chemin vers rien : l'écran vide du
+      // catalogue propose « Me prévenir quand ça arrive » au moment exact où la
+      // question se pose.
+      { label: 'Mes alertes', href: '/dashboard/alertes', icon: BellRing, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Dites ce que vous cherchez : on vous écrit le jour où ça arrive au catalogue, jamais plus d’un message par jour' },
       // Le pendant contractuel du planning : on a trouvé quelqu'un, on
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
       // calcule — essai, précarité, carence — et refuse de transmettre un
@@ -388,7 +490,7 @@ const establishmentNav: NavSection[] = [
       // disait pas de quoi il était le vivier, et se confondait avec l'équipe
       // juste au-dessus. Ce sont les gens qu'on rappelle et qu'on embauche
       // soi-même en contrat court — le pendant humain de « Contrats CDD ».
-      { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
+      { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
       /**
        * ⚠ DEUX VIVIERS, ET ILS NE DISENT PAS LA MÊME CHOSE.
        *
@@ -400,14 +502,14 @@ const establishmentNav: NavSection[] = [
        * Les fondre remplirait « mes intervenants » de gens jamais rencontrés
        * et fausserait le ciblage de vos missions.
        */
-      { label: 'Personnes disponibles', href: '/dashboard/vivier-ouvert', icon: UsersRound, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Celles et ceux qui se déclarent disponibles pour un remplacement en CDD ou un renfort personnalisé, près de chez vous' },
-      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
-      { label: 'Avis', href: '/dashboard/avis', icon: Star, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
-      // Devis et factures sont les deux temps du même geste : on chiffre,
-      // puis on facture. Deux entrées éloignées obligeaient à traverser le
-      // menu pour retrouver la facture d'un devis accepté.
-      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures, au même endroit' },
+      { label: 'Personnes disponibles', href: '/dashboard/vivier-ouvert', icon: UsersRound, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Celles et ceux qui se déclarent disponibles pour un remplacement en CDD ou un renfort personnalisé, près de chez vous' },
+      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
+      { label: 'Avis', href: '/dashboard/avis', icon: Star, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
+      // ⚠ « Devis & factures » N'EST PLUS ICI : il a rejoint « Renfort &
+      // prestations », dont il est la quatrième et dernière marche — publier,
+      // être réservé, faire, être payé. Ne pas le redescendre : voir
+      // l'avertissement en tête de cette section-là.
       // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
       // chef de service de toute vue sur la consommation de LEX — et de tout
       // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
@@ -416,7 +518,7 @@ const establishmentNav: NavSection[] = [
       // La conformité existait comme page mais n'était liée nulle part dans le
       // menu établissement : on la rend visible. Elle ferme la section — c'est
       // ce qu'on vérifie, pas ce qu'on fait tous les jours.
-      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants, identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
+      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants, identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
       // « Points & parrainage » n'est plus dans cette liste : comme côté
       // intervenant, l'entrée est épinglée en bas du menu, juste au-dessus du
       // bloc d'aide (voir sidebar.tsx). Même place pour tous les comptes.
@@ -526,7 +628,7 @@ const adminNav: NavSection[] = [
       { label: 'Accès direction', href: '/admin/organisation', icon: Network, hint: 'Les demandes de niveau Direction : accepter ouvre la vue sur des équipes constituées par d’autres' },
       { label: 'Messagerie interne', href: '/admin/assistance', icon: LifeBuoy, hint: 'Les messages écrits depuis un compte : problèmes, questions. On y répond dans le fil.' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
-      { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
+      { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
     ],
   },
   {
@@ -737,7 +839,20 @@ export function getNavForRole(
    * ⚠ NE PAS SCINDER LA RUBRIQUE par section d'origine : deux rubriques d'une
    * entrée, c'est exactement le défaut qu'on répare.
    */
-  const RUBRIQUE_AVANCES = 'Gestion RH';
+  /**
+   * ⚠ LE NOM DE LA RUBRIQUE SE DÉDUIT DE CE QU'ELLE CONTIENT (21/09/2026).
+   *
+   * Elle s'appelait « Gestion RH » en dur, et c'était juste tant qu'elle ne
+   * portait que les contrats CDD et le temps de travail. Le jour où le menu a
+   * été allégé, elle a reçu des entrées qui n'ont rien de RH — les alertes du
+   * catalogue, les publications, les avis. Un titre qui ne décrit que deux de
+   * ses neuf lignes ment sur les sept autres : on garde alors le nom du
+   * réglage, celui que la personne vient de cliquer.
+   */
+  const nommerRubrique = (items: NavItem[]) => {
+    const noms = new Set(items.map((i) => i.rubrique ?? RUBRIQUE_RH));
+    return noms.size === 1 ? [...noms][0] : RUBRIQUE_SECONDAIRE;
+  };
   const filtrerAvances = (sections: NavSection[]) => {
     const quotidien = sections
       .map((s) => ({ ...s, items: s.items.filter((i) => !i.avance) }))
@@ -761,7 +876,7 @@ export function getNavForRole(
      * quotidien, sans titre au-dessus d'elle.
      */
     if (avances.length === 1) return [...quotidien, { items: avances }];
-    return [...quotidien, { title: RUBRIQUE_AVANCES, items: avances }];
+    return [...quotidien, { title: nommerRubrique(avances), items: avances }];
   };
   const sansAvances = filtrerAvances;
 
