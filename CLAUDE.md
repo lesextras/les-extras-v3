@@ -5335,3 +5335,233 @@ même). La leçon est générale : **un test qui ne couvre qu'une partie d'un
 sujet ne protège pas cette partie, il fait croire que le sujet est couvert.**
 Quand c'est possible, poser la contrainte dans le code qui s'exécute plutôt
 que dans un test qui lit des sources.
+
+---
+
+## LE TABLEAU DE BORD, DEUX PORTES, LE MENU, ET LES TIRETS — 21/09/2026 (nuit)
+
+Deux commits, `0f00a50` et `0b1549c`, tous deux déployés et vérifiés sur les
+URL nues. Quatre demandes de Siham dans la soirée, dans cet ordre.
+
+### 1. Le bloc « À faire » du tableau de bord mentait
+
+Il affichait « Tout est à jour. Rien ne vous attend pour le moment. » pendant
+que **treize réservations sur dix-sept attendaient un geste** et que **six
+factures sur onze dormaient en brouillon** (mesuré le 21/09). Il ne connaissait
+que quatre sources, dont `upcomingBookings`, qui AGRÈGE
+`ACCEPTED|CONFIRMED|IN_PROGRESS` en un seul nombre affiché « N interventions à
+venir », et qui pointait sur le PLANNING, c'est-à-dire sur l'écran où aucun de
+ces gestes ne se fait.
+
+`AFaire` dans `apps/api/src/missions/dashboard.controller.ts` rend désormais
+six compteurs, et `dashboard/page.tsx` en fait six gestes qui mènent chacun à
+l'écran qui l'exécute.
+
+⚠ **ON COMPTE DU CÔTÉ DE L'OFFREUR.** `assertOffreur` réserve `accept`,
+`confirm`, `start` et `complete` à celui qui a été SOLLICITÉ. Compter sur
+`Booking.accountId`, le DEMANDEUR, afficherait des boutons qui mènent à un 403.
+C'est le défaut du compteur « interventions à venir » corrigé le 3/09, en
+miroir.
+
+⚠ **`REQUESTED` EST COUPÉ EN DEUX** (`candidaturesAExaminer` et
+`demandesAAccepter`) parce que les deux se réparent sur deux écrans différents :
+une candidature à un renfort sur `/dashboard/renforts`, une demande d'atelier
+sur `/dashboard/ateliers`. Un compteur unique enverrait la moitié des gens au
+mauvais endroit.
+
+⚠ **LES FACTURES COMPTÉES SONT CELLES DONT LE COMPTE EST L'ÉMETTEUR**
+(`assertEmetteur`), et l'entrée suit le même filtre de rôle que « Devis &
+factures » dans le menu : annoncer « 6 factures à émettre » à un MEMBER le
+renverrait sur un écran que son menu ne lui ouvre pas.
+
+Verrouillé par `apps/api/src/missions/dashboard-a-faire.spec.ts` (5 tests).
+
+### 2. Deux portes à l'inscription, plus trois
+
+Demande mot pour mot : « supprime le compte particulier et met je cherche un
+intervenant et je propose mes services comme 2 comptes (inspire toi de la
+concurence) ». C'est la forme de Brigad et de Hublo, et elle est juste : une
+place de marché a deux côtés, et la première question doit porter sur une
+INTENTION, pas sur une catégorie de logiciel.
+
+⚠⚠ **`AccountType.PARTICULIER` N'EST PAS SUPPRIMÉ, ET NE DOIT PAS L'ÊTRE.** Il
+porte des comptes existants, leurs réservations et leurs factures, et il a son
+propre accueil (`AccueilParticulier`) et son propre menu, tous deux écrits
+parce que servir « taux de couverture » à un parent revient à lui dire que le
+site n'est pas pour lui. Ce qui disparaît, c'est la CARTE. Le particulier se
+déclare sous « Vous êtes ? » sur l'écran des identifiants, où « un
+établissement » est PRÉ-COCHÉ : qui ne lit pas cette question obtient
+exactement ce qu'il obtenait avant.
+
+⚠ La question est à cet écran-là et pas plus loin parce que le TYPE décide du
+parcours ET du nom du compte, donc du slug, calculé à la création et jamais
+recalculé. C'est le défaut documenté du 16/09, et il revient dès qu'on déplace
+la question.
+
+`CoteMarche`, `coteDe()` et `QUI_DEMANDE` sont dans
+`(auth)/register/parcours.ts`. `inscription-parcours.test.ts` vérifie qu'il y a
+DEUX cartes, qu'elles titrent à la première personne, et surtout **que le
+particulier garde une porte** : s'il n'est plus ni dans `CHOIX_COMPTE` ni dans
+`QUI_DEMANDE`, plus personne ne peut ouvrir ce compte et rien à l'écran ne le
+signalerait.
+
+### 3. Le menu suit le chemin de l'argent, et il a fondu
+
+**Dix-huit entrées à onze côté établissement, seize à onze côté intervenant.**
+
+L'ordre est maintenant celui des quatre gestes : publier, être réservé, faire,
+être payé. « Devis & factures » vivait vingt lignes plus bas, dans « Mon
+établissement », et côté intervenant « Mes ateliers » était huitième sous « Mon
+offre » pendant que la facturation était douzième sous « Mon espace ». Le
+premier et le dernier geste du même métier se trouvaient aux deux extrémités du
+menu, et c'est le dernier mètre où l'on abandonne.
+
+⚠ **NE PAS REDESCENDRE « Devis & factures »** dans une rubrique de gestion : ce
+n'est pas une fonction interne rangée à côté de l'organigramme, c'est la
+quatrième marche d'un escalier.
+
+⚠ **LA RUBRIQUE DES OUTILS AVANCÉS SE NOMME D'APRÈS CE QU'ELLE CONTIENT.** Elle
+s'appelait « Gestion RH » en dur, ce qui était juste tant qu'elle ne portait que
+les contrats CDD et le temps de travail. Elle porte maintenant huit entrées dont
+six n'ont rien de RH : `nommerRubrique()` affiche le nom commun quand toutes le
+partagent, et « Outils avancés » sinon. Un titre qui ne décrit que deux de ses
+huit lignes ment sur les six autres.
+
+⚠⚠ **« Opportunités » N'EST PAS PASSÉE EN AVANCÉE, ET C'EST DÉLIBÉRÉ.** Je
+l'avais proposé (zéro mission ouverte), Siham avait dit oui, et c'était une
+mauvaise idée : c'est le SEUL chemin d'un intervenant et d'un salarié vers les
+missions ouvertes, et **le menu est calculé sans lire la base**, donc il ne
+saura jamais qu'une mission vient d'être publiée. Ce fichier a déjà payé deux
+fois l'enterrement d'un chemin unique (le salarié sans accès aux missions le
+25/08, sans accès à ses congés le 16/09). Même raison pour « Ma disponibilité » :
+se rendre visible est un geste qu'il faut pouvoir défaire en un clic.
+
+Les six entrées passées en avancé ont été ajoutées à `command-palette.tsx` :
+la règle de septembre vaut ici aussi, toute entrée qui quitte le menu de gauche
+se vérifie dans la palette.
+
+### 4. ⚠⚠ PLUS AUCUN TIRET CADRATIN DANS LE TEXTE DU SITE
+
+**La consigne a dû être donnée deux fois, et c'est la vraie leçon.** Siham a
+demandé de retirer les « — » d'un bloc de l'accueil. Je l'ai fait dans ce bloc
+seulement. Une heure plus tard : « ces tirets sont encore partout alors que je
+t'ai dit de ne jamais utiliser ça ». Il y en avait **458 sur les 114 pages**.
+Corriger l'endroit qu'on vous montre et laisser les 457 autres, c'est faire
+refaire le tour du site à la personne qui a demandé.
+
+**Ce n'est pas une querelle de typographie.** Le tiret cadratin ouvre une
+incise, donc allonge une phrase déjà finie. Il ponctuait presque tous les
+paragraphes du site, et c'est ce que Siham lisait comme « trop de texte ».
+
+Trois usages, trois traitements. Un remplacement unique produit du faux
+français sur deux d'entre eux :
+
+| Usage | Traitement |
+|---|---|
+| Puce de liste en début de ligne | devient `• ` |
+| Titre numéroté, « Module 1 — La théorie » | devient un point médian |
+| Incise, simple ou encadrée | devient une virgule, ou des parenthèses |
+
+Les 61 du code de Les Extras ont été repris **un par un**. Les 136 des produits
+Piloter et les 203 du seed des parcours l'ont été par règle, avec une
+**preuve** : les deux textes normalisés (toute ponctuation et tout espace
+retirés) doivent être identiques, sinon le fichier n'est pas écrit. Aucun mot,
+aucun chiffre, aucune référence juridique n'a bougé.
+
+**Le garde-fou : `lib/__tests__/tirets-interdits.test.ts`.** Il relit toutes
+les sources, commentaires retirés, et échoue si le caractère revient.
+
+⚠ **LES COMMENTAIRES SONT HORS PÉRIMÈTRE, et il le faut** : ce fichier-ci et
+les commentaires de `nav.ts` ont besoin de NOMMER le caractère pour expliquer
+pourquoi il est proscrit. Même choix que `promesses-interdites`.
+
+⚠ **LE PÉRIMÈTRE EST TOUT LE DÉPÔT**, académie et association comprises, alors
+que `promesses-interdites` les laisse dehors. Ce n'est pas une incohérence : là
+-bas la frontière est JURIDIQUE (un organisme qui délivre son propre certificat
+a le droit de l'appeler ainsi, Les Extras non) ; ici elle serait seulement
+esthétique, et une règle de style qui s'arrête à la moitié d'un dépôt ne tient
+jamais. **Une seule exception reste** : `lib/meta.ts`, où le caractère est dans
+une classe d'expression régulière qui sert justement à retirer une ponctuation
+pendante.
+
+⚠ **LA RÈGLE D'INCISE ENCADRÉE LAISSE UN ARTEFACT SUR LES TRIPLES.** « X — A —
+B — C » sort en « X, A, B —, C ». Deux occurrences sont passées, l'une dans le
+seed, l'autre en base. **Relire le résultat, pas seulement compter les
+occurrences restantes** : c'est la même leçon que le `str.replace` en boucle du
+3/09.
+
+### Ce que la base contenait vraiment, et ce qui reste
+
+Contrairement à ce que j'ai annoncé à Siham, **la base était déjà propre** sur
+les quatorze parcours : les tirets des fiches venaient du CODE des pages, pas du
+contenu. Le seed a quand même été corrigé, pour le jour où il tournera. En base
+il n'y avait que six lignes, toutes reprises par
+`PATCH /api/proxy/admin/formations/:id` : cinq titres de session et un résumé.
+
+⚠ **IL RESTE 38 TIRETS, ET C'EST UN SEUL DÉFAUT** : les quatre comptes
+intervenants créés par le seed du 27/07 portent **`— Intervenant` comme NOM DE
+FAMILLE** (`User.lastName`). La page affiche « Siham — Intervenant, Intervenant
+à Île-de-France ». Ce n'est pas un tiret de style, c'est un nom faux.
+
+⚠ **LE GARDE-FOU DE SÉCURITÉ A REFUSÉ de lire la liste des utilisateurs et d'en
+modifier les noms** (« PII Data Handling »). Le refus est légitime et ne se
+contourne pas. C'est quatre modifications à la main dans
+`/admin/utilisateurs` : vider le champ « Nom » de Siham, Younes, Christophe et
+Jean Léo. Cela rejoint ce qui attendait déjà sur ces quatre comptes, leurs
+vraies adresses.
+
+### Le bloc des quatre situations, resserré
+
+⚠ Chaque section portait DEUX paragraphes, le second reposant le premier depuis
+l'autre côté (l'établissement après la famille, les assistants génériques après
+LEX). Le second commentait le premier, et c'est ce qui fait sauter les deux. Un
+paragraphe par section désormais, deux phrases au plus.
+
+**Les métiers sont mis en avant** (demande : « met en avant les éducateurs
+renforts en présentiel ou visioconférence »). Champ `accent` du type
+`Situation`, une ligne détachée sous les puces avec un filet de couleur.
+
+⚠ **ELLE N'EXISTE QUE SUR RENFORTEAM.** La poser partout en ferait un gabarit,
+donc du bruit.
+
+⚠ **LE FILET EST ÉCRIT EN TOUTES LETTRES (`bordure`), JAMAIS CALCULÉ.** La
+première version faisait `trait.replace('bg-', 'border-')` : juste en
+JavaScript et FAUX en Tailwind, qui ne lit que des classes littérales dans les
+sources. La classe n'est jamais générée, le filet retombe sur la bordure grise,
+rien ne casse et aucun test ne tombe.
+
+⚠ **LA MOITIÉ « visioconférence » EST CONDITIONNÉE** à
+`visioconsultationVisible()`, comme partout ailleurs.
+
+⚠ **« VISIOCONFÉRENCE » EST LE MOT DE SIHAM**, et le reste du site dit
+« visioconsultation » tandis que le menu dit « rendez-vous à distance ». Aucun
+ne dit « téléconsultation », qui désigne un acte médical alors qu'il s'agit de
+rééducation et d'éducation spécialisée. **Si l'on aligne les trois un jour,
+c'est partout en même temps.** La question est posée à Siham, non tranchée.
+
+**L'en-tête du catalogue de l'accueil est centré**, et c'est le seul de la page.
+Les autres titres ouvrent une section qui se LIT, et un titre centré au-dessus
+d'un paragraphe aligné à gauche casse la colonne de lecture ; celui-ci ouvre une
+GRILLE de cartes, symétrique et centrée sous lui. ⚠ `mx-auto` sans
+`text-center` ne centre que la boîte, et `justify-center` est nécessaire en plus
+sur la rangée des deux repères, qui est un conteneur flex.
+
+### Pièges d'outillage de la soirée
+
+- ⚠ **`file_upload` ACCEPTE LES CHEMINS SOUS `/mnt/user-data/uploads/`
+  SEULEMENT.** `/mnt/user-data/outputs/` est un lien symbolique et se fait
+  refuser (« only files this session is allowed to read »), le répertoire de
+  brouillon aussi.
+- ⚠ **APLATIR LES CHEMINS AVEC `~`, PAS AVEC `__`.** `__tests__` contient déjà
+  deux blancs soulignés : un `replace(/__/g,'/')` produit `lib//tests//nav.ts`.
+  Avec `~`, l'hameçon JavaScript tient en une ligne et la carte de
+  correspondance de 11 Ko disparaît.
+- ⚠⚠ **UN `browser_batch` QUI DÉPASSE LE DÉLAI DE L'OUTIL PEUT QUAND MÊME AVOIR
+  ABOUTI.** Le dépôt des 97 fichiers a rendu une erreur de délai de mon côté et
+  le commit était bien créé côté GitHub. **Vérifier avec `git fetch` AVANT de
+  recommencer**, sinon on pousse deux fois.
+- ⚠ **`file_id` monte lentement sur un gros lot** : 74 manifestes sur 98 après
+  trente secondes. Ne soumettre que si le compte est exact, et attendre dans une
+  boucle en JavaScript plutôt qu'avec des `wait` qui font déborder le batch.
+- ⚠ Un `return` en tête de `javascript_tool` rend `undefined` : envelopper dans
+  `await (async()=>{ … })()`.
