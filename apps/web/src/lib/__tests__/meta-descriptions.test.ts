@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { descriptionSeo, metaPublique } from "../meta";
 
 /**
  * AUCUNE META DESCRIPTION NE DÉPASSE CE QUE GOOGLE AFFICHE.
@@ -25,6 +26,24 @@ import { join } from "node:path";
  * Les descriptions calculées à l'exécution (gabarits `${…}`) ne sont pas
  * mesurables ici : elles dépendent d'une fiche. Elles sont donc ignorées, et
  * c'est la limite connue de ce test.
+ *
+ * ⚠⚠ ET CETTE LIMITE A COÛTÉ CHER — MESURE DU 21/09/2026, SUR LES 114 PAGES
+ * RÉELLEMENT EN LIGNE : TREIZE DESCRIPTIONS DÉPASSAIENT, jusqu'à 222
+ * caractères. Ce test était vert pendant ce temps, et il avait raison de
+ * l'être : aucune de ces treize n'est écrite dans un `.tsx`. Elles viennent de
+ * `ateliers-pour/donnees.ts`, de `guides/contenu.ts`, de `l/donnees.ts` ou de
+ * la base. Le test ne lit que les pages ; ces fichiers-là lui échappent.
+ *
+ * Un garde-fou qui ne couvre que la moitié d'un sujet ne protège pas la
+ * moitié du sujet : il fait croire que le sujet est couvert. C'est pour ça que
+ * la borne est maintenant POSÉE À LA PORTE — `descriptionSeo()` dans
+ * `lib/meta.ts`, appliquée par `metaPublique()` à toutes les pages publiques,
+ * y compris celles dont la description vient d'une fiche écrite demain par un
+ * intervenant.
+ *
+ * Ce test-ci garde son rôle, et il est utile : il pousse l'auteur d'une page à
+ * écrire court plutôt qu'à se faire tronquer. Mais ce n'est plus lui qui
+ * garantit le résultat.
  */
 
 const RACINE = join(__dirname, "..", "..", "app");
@@ -104,5 +123,45 @@ describe("Les meta descriptions", () => {
       }
     }
     expect(trop).toEqual([]);
+  });
+});
+
+/**
+ * LA BORNE POSÉE À LA PORTE — c'est elle qui garantit le résultat.
+ *
+ * ⚠ Elle ne touche QUE la balise `description`. Les descriptions de partage
+ * (openGraph, Twitter) gardent le texte entier : LinkedIn et Facebook en
+ * affichent beaucoup plus, et les tronquer appauvrirait l'aperçu qui reçoit le
+ * clic payant. Un test le vérifie ci-dessous, sinon la prochaine « petite
+ * simplification » les bornera toutes les trois.
+ */
+describe("descriptionSeo", () => {
+  it("laisse intacte une description déjà courte", () => {
+    const courte = "Ateliers éducatifs et renfort pour le médico-social, en Île-de-France.";
+    expect(descriptionSeo(courte)).toBe(courte);
+  });
+
+  it(`borne à ${LIMITE} caractères, au dernier mot entier`, () => {
+    const longue =
+      "Comment faire entrer un atelier dans un institut médico-éducatif : ce que les équipes attendent vraiment, les contraintes du lieu, le budget, et les questions à poser avant de signer quoi que ce soit.";
+    const sortie = descriptionSeo(longue);
+    expect(sortie.length).toBeLessThanOrEqual(LIMITE);
+    // Coupée au mot, pas au milieu : le caractère avant l'ellipse n'est ni une
+    // lettre orpheline d'un mot tronqué, ni une ponctuation pendante.
+    expect(sortie.endsWith("…")).toBe(true);
+    expect(sortie).not.toMatch(/[\s,;:.–—-]…$/);
+    expect(longue.startsWith(sortie.slice(0, -1))).toBe(true);
+  });
+
+  it("normalise les espaces avant de mesurer", () => {
+    expect(descriptionSeo("  deux   espaces\nmultiples  ")).toBe("deux espaces multiples");
+  });
+
+  it("⚠ NE BORNE PAS LES DESCRIPTIONS DE PARTAGE — elles restent entières", () => {
+    const longue = "x".repeat(400);
+    const m = metaPublique({ title: "Titre", description: longue, path: "/essai" });
+    expect(String(m.description).length).toBeLessThanOrEqual(LIMITE);
+    expect(m.openGraph?.description).toBe(longue);
+    expect((m.twitter as { description?: string }).description).toBe(longue);
   });
 });

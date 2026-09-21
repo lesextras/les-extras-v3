@@ -206,6 +206,52 @@ describe('La configuration du serveur média', () => {
       secret: 'secret',
     });
   });
+
+  /*
+   * ⚠⚠ LE DÉFAUT DU 21/09/2026, ET IL A COÛTÉ UNE CLÉ.
+   *
+   * Une clé LiveKit avait été collée dans `LIVEKIT_URL`. Rien ne l'a signalé :
+   * le jeton se signait, la route publique répondait 201, et la valeur — un
+   * secret — partait à chaque participant, puisque `rejoindre` renvoie
+   * `url: config.url` tel quel. Le seul symptôme visible était une salle qui
+   * ne s'ouvrait pas, tout au fond du navigateur.
+   *
+   * Ce test ne vérifie pas qu'une adresse RÉPOND (c'est le travail du
+   * navigateur) : il vérifie qu'elle a la FORME d'une adresse. C'est ce qui
+   * empêche un secret de franchir la porte.
+   */
+  it('⚠ REFUSE UNE ADRESSE QUI N’EN EST PAS UNE — une clé collée là ne doit pas sortir', () => {
+    process.env.LIVEKIT_API_KEY = 'cle';
+    process.env.LIVEKIT_API_SECRET = 'secret';
+
+    for (const valeur of [
+      // ⚠ AUCUNE DE CES VALEURS N'EST RÉELLE. On ne met jamais un morceau de
+      // secret de production dans un test : le dépôt est lu par plus de monde
+      // que la variable d'environnement.
+      'APIabcdefghijkl', // la forme d'une clé LiveKit
+      'a'.repeat(44), // la forme d'un secret : 44 caractères, aucun schéma
+      'media.example', // un hôte sans schéma
+      'livekit.cloud/projet',
+      'ftp://media.example',
+      'javascript:alert(1)',
+    ]) {
+      process.env.LIVEKIT_URL = valeur;
+      expect(configMedia()).toBeNull();
+    }
+  });
+
+  it('accepte wss, ws et https — les trois formes légitimes', () => {
+    process.env.LIVEKIT_API_KEY = 'cle';
+    process.env.LIVEKIT_API_SECRET = 'secret';
+    for (const valeur of [
+      'wss://projet-abcdef.livekit.cloud',
+      'ws://localhost:7880',
+      'https://projet-abcdef.livekit.cloud',
+    ]) {
+      process.env.LIVEKIT_URL = valeur;
+      expect(configMedia()?.url).toBe(valeur);
+    }
+  });
 });
 
 describe('⚠ AUCUNE DONNÉE DE SANTÉ DANS CE MODULE', () => {

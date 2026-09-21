@@ -97,6 +97,47 @@ export function titreSeo(titre: string): Metadata['title'] {
   return { absolute: `${coupe.slice(0, dernierEspace > 20 ? dernierEspace : coupe.length)}…` };
 }
 
+/**
+ * DESCRIPTION CALIBRÉE POUR LA PAGE DE RÉSULTATS.
+ *
+ * ⚠⚠ AJOUTÉ LE 21/09/2026, APRÈS AVOIR MESURÉ LES 114 PAGES EN LIGNE : SEIZE
+ * DESCRIPTIONS DÉPASSAIENT 160 CARACTÈRES, dont plusieurs à plus de 210 —
+ * `ateliers-pour/*`, cinq guides, trois pages d'atterrissage, et les fiches
+ * construites depuis la base (ateliers, articles, intervenants). Google les
+ * coupait en plein milieu d'une phrase.
+ *
+ * ⚠ ET LE GARDE-FOU NE LES VOYAIT PAS. `lib/__tests__/meta-descriptions.test.ts`
+ * lit le SOURCE des pages et ne mesure donc que les descriptions écrites
+ * littéralement dans un `.tsx`. Toutes celles qui viennent d'un fichier de
+ * données (`donnees.ts`, `contenu.ts`) ou de la base lui échappaient. Un test
+ * vert sur la moitié du sujet rassure — c'est pire que pas de test.
+ *
+ * La réponse n'est donc pas de corriger seize phrases : c'est de borner À LA
+ * PORTE, une fois, pour tout le monde, y compris pour la fiche qu'un
+ * intervenant écrira demain.
+ *
+ * ⚠ SEULE LA BALISE `description` EST BORNÉE. Les descriptions de partage
+ * (openGraph, Twitter) gardent le texte entier : LinkedIn et Facebook en
+ * affichent nettement plus, et les tronquer appauvrirait l'aperçu qui reçoit
+ * le clic payant. Même partage des rôles que `titreSeo`.
+ */
+const LIMITE_DESCRIPTION = 160;
+
+export function descriptionSeo(description: string): string {
+  const plein = description.trim().replace(/\s+/g, ' ');
+  if (plein.length <= LIMITE_DESCRIPTION) return plein;
+
+  /*
+   * ⚠ ON COUPE AU DERNIER MOT ENTIER, ET ON RETIRE LA PONCTUATION PENDANTE.
+   * Sans ça on obtient « … pour les équipes, » ou « … le projet : », qui se
+   * lit comme une phrase interrompue plutôt que comme un résumé.
+   */
+  const coupe = plein.slice(0, LIMITE_DESCRIPTION - 1);
+  const dernierEspace = coupe.lastIndexOf(' ');
+  const base = dernierEspace > 80 ? coupe.slice(0, dernierEspace) : coupe;
+  return `${base.replace(/[\s,;:.–—-]+$/, '')}…`;
+}
+
 /** Le texte du titre, quel que soit le mode retenu par `titreSeo`. */
 export function texteDuTitre(t: Metadata['title']): string {
   if (typeof t === 'string') return t;
@@ -118,7 +159,9 @@ export function metaPublique(p: {
     // La balise est calibrée pour la page de résultats ; le titre de partage,
     // lui, reste entier — les réseaux sociaux affichent plus long que Google.
     title: titreSeo(p.title),
-    description: p.description,
+    // ⚠ Bornée ici, et nulle part ailleurs : c'est la porte par laquelle
+    // passent les 114 pages publiques. Voir `descriptionSeo`.
+    description: descriptionSeo(p.description),
     alternates: { canonical: p.path },
     openGraph: {
       ...SOCLE_OG,

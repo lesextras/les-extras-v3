@@ -49,18 +49,63 @@ export interface ConfigMedia {
 }
 
 /**
+ * ⚠⚠ `LIVEKIT_URL` EST RENVOYÉE TELLE QUELLE À CHAQUE PARTICIPANT, PAR UNE
+ * ROUTE PUBLIQUE (`POST /public/visio/:jeton/rejoindre` → `url`). Ce n'est pas
+ * un détail de configuration : c'est une valeur qui sort du serveur.
+ *
+ * Le 21/09/2026, une CLÉ y avait été collée à la place de l'adresse. Rien ne
+ * l'a signalé : le jeton se signait correctement, la route répondait 201, et
+ * le défaut n'apparaissait qu'au fond du navigateur — une connexion WebSocket
+ * vers une adresse qui n'existe pas. Pendant ce temps, la valeur collée
+ * partait à chaque participant.
+ *
+ * D'où ce contrôle de forme. Il ne vérifie pas que l'adresse répond (ça, c'est
+ * le rôle du navigateur) : il vérifie qu'elle a la forme d'une adresse, et
+ * refuse tout ce qui n'en a pas. Un secret mal collé ne franchit plus la
+ * porte.
+ */
+function adresseMediaValide(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.protocol === 'wss:' || u.protocol === 'ws:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
  * La configuration du serveur média, ou `null`.
  *
  * ⚠ `null` N'EST PAS UNE PANNE, C'EST L'ÉTAT NORMAL TANT QUE LE SERVICE N'EST
  * PAS OUVERT. Les trois variables sont posées le jour où la visio est mise en
  * service ; d'ici là tout le reste du produit fonctionne, et les écrans
  * disent que la visio n'est pas disponible plutôt que d'afficher une erreur.
+ *
+ * ⚠ UNE ADRESSE MAL FORMÉE REND `null`, DONC UN 503 « pas encore activée »,
+ * et non une salle qui échouera. C'est volontairement le même état que « pas
+ * configuré » : des deux côtés, la visio n'est pas utilisable, et le message
+ * que reçoit la famille est vrai dans les deux cas. La distinction est écrite
+ * dans le journal, pour la personne qui a posé la variable.
  */
 export function configMedia(): ConfigMedia | null {
   const url = (process.env.LIVEKIT_URL ?? '').trim();
   const cle = (process.env.LIVEKIT_API_KEY ?? '').trim();
   const secret = (process.env.LIVEKIT_API_SECRET ?? '').trim();
   if (!url || !cle || !secret) return null;
+  if (!adresseMediaValide(url)) {
+    /*
+     * ⚠ ON NE JOURNALISE PAS LA VALEUR. C'est peut-être un secret — c'est même
+     * le cas le plus probable quand ce contrôle échoue. On dit ce qui est
+     * attendu et combien de caractères ont été reçus, rien de plus.
+     */
+    console.error(
+      `[visio] LIVEKIT_URL n'est pas une adresse de serveur média : ` +
+        `attendu une adresse commençant par wss:// (ou ws:// en local), reçu ${url.length} caractères ` +
+        `sans schéma reconnu. La visioconsultation reste désactivée. ` +
+        `⚠ Si une clé a été collée dans ce champ, révoquez-la : elle a pu être renvoyée aux participants.`,
+    );
+    return null;
+  }
   return { url, cle, secret };
 }
 
