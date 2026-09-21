@@ -68,10 +68,13 @@ const PORTES = [
     // depuis le 21/09/2026 : RenforTeam est commissionné, parce que
     // l'association vérifie chaque intervenant avant de l'envoyer. Le catalogue
     // d'ateliers, lui, reste à 0 %. La carte dit donc lequel des deux.
+    // ⚠ PLUS DE TAUX ICI DEPUIS LE 21/09/2026 : les prix ont quitté l'accueil
+    // (décision de Siham). Ce qui reste décrit ce qu'on obtient, pas ce qu'on
+    // paie — et /frais-de-service, à un clic, porte les montants.
     texte:
-      "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue à 0 % de commission.",
+      "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue.",
     reperes: [
-      "0 % sur vos ateliers",
+      "Vous fixez votre tarif",
       "Feuille de mission et facture",
       "Dossier déposé une fois",
     ],

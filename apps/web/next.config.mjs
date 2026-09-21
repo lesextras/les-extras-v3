@@ -143,6 +143,24 @@ const PAGES_WORDPRESS = {
 const RENFORT_SALARIE_EN_LIGNE =
   (process.env.NEXT_PUBLIC_OFFRE_PUBLIQUE ?? '').trim().toLowerCase() === 'complete';
 
+/**
+ * ⚠ LA VISIOCONSULTATION N'EST PAS ENCORE EN SERVICE (21/09/2026).
+ *
+ * `NEXT_PUBLIC_VISIOCONSULTATION=1` l'allume — et seulement le jour où un vrai
+ * rendez-vous passe de bout en bout. D'ici là, `/visio/<jeton>` redirige.
+ *
+ * ⚠ POURQUOI UNE REDIRECTION ET PAS UN `notFound()` DANS LA PAGE : le
+ * `loading.tsx` du groupe `(public)` ouvre une frontière Suspense, la coquille
+ * part donc avant que le composant ne s'exécute et la route répond **200** en
+ * servant la page « Erreur 404 ». C'est le piège que ce fichier documente
+ * déjà trois fois. Mesuré ici aussi, le 21/09.
+ */
+const VISIO_EN_LIGNE = (process.env.NEXT_PUBLIC_VISIOCONSULTATION ?? '').trim() === '1';
+
+const VISIO_HORS_SERVICE = [
+  { source: '/visio/:jeton', destination: '/renforteam', permanent: false },
+];
+
 const HORS_OFFRE_PUBLIQUE = [
   // Les pages de mots-clés du remplacement : index, 7 métiers, 6 territoires.
   { source: '/renfort', destination: '/renforteam' },
@@ -249,6 +267,7 @@ const nextConfig = {
       // en tête de fichier. Placé AVANT tout le reste : `/renfort/:ville` doit
       // être évalué avant qu'une règle plus générale ne l'attrape.
       ...(RENFORT_SALARIE_EN_LIGNE ? [] : HORS_OFFRE_PUBLIQUE),
+      ...(VISIO_EN_LIGNE ? [] : VISIO_HORS_SERVICE),
       /**
        * www → apex, en 301.
        *

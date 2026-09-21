@@ -2244,6 +2244,67 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
+  /**
+   * L'INVITATION À UN RENDEZ-VOUS À DISTANCE.
+   *
+   * ⚠⚠ CE COURRIEL PORTE UN LIEN QUI OUVRE UNE SALLE OÙ SE TROUVE UNE FAMILLE.
+   * Trois règles, et aucune n'est cosmétique :
+   *
+   *  1. IL NE DIT JAMAIS POURQUOI. Ni motif, ni situation, ni nom d'enfant :
+   *     un courriel se lit sur un téléphone posé sur une table, et une
+   *     notification d'écran verrouillé affiche son objet à qui passe. L'objet
+   *     dit « rendez-vous à distance », l'intitulé de la prestation suffit.
+   *  2. IL DIT CE QUE CE N'EST PAS. C'est le moment où quelqu'un croit le plus
+   *     facilement qu'il va voir un médecin. La phrase est la même que celle
+   *     de la page du lien : rééducation et éducation spécialisée, pas de
+   *     diagnostic, pas de prescription.
+   *  3. IL DIT QUE LE LIEN EST PERSONNEL ET BORNÉ DANS LE TEMPS. Un lien qu'on
+   *     croit permanent se transfère.
+   */
+  async sendInvitationVisio(
+    to: string,
+    data: {
+      jeton: string;
+      debutPrevu: Date;
+      dureeMinutes: number;
+      intitule: string;
+      intervenant: string;
+    },
+  ): Promise<void> {
+    const e = (t: string) => t.replace(/</g, '&lt;');
+    const quand = data.debutPrevu.toLocaleString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Paris',
+    });
+    await this.send(
+      to,
+      'Votre rendez-vous à distance',
+      this.layout(
+        'Votre rendez-vous à distance',
+        `<b>${e(data.intervenant)}</b> vous propose un rendez-vous à distance pour
+         « ${e(data.intitule)} ».
+         <br><br>
+         <b>${e(quand)}</b>, ${data.dureeMinutes} minutes.
+         <br><br>
+         Le bouton ci-dessous ouvre la séance depuis votre navigateur&nbsp;: rien à
+         installer, aucun compte à créer. Il fonctionne à partir de quinze minutes
+         avant l'heure prévue.
+         <br><br>
+         <b>Ce lien vous est personnel</b> et ne vaut que pour ce rendez-vous&nbsp;:
+         ne le transférez pas.
+         <br><br>
+         <i>Il s'agit d'une séance de rééducation ou d'éducation spécialisée. Ce
+         n'est pas une consultation médicale&nbsp;: aucun diagnostic n'est posé et
+         aucune prescription n'est délivrée.</i>`,
+        { label: 'Rejoindre le rendez-vous', url: `${this.webUrl}/visio/${data.jeton}` },
+      ),
+    );
+  }
+
   async sendContactNotification(data: {
     name: string;
     email: string;

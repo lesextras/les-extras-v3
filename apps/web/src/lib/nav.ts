@@ -40,8 +40,10 @@ import {
   BellRing,
   Globe,
   LifeBuoy,
+  Video,
 } from 'lucide-react';
 import type { NavRole, AccountType, AccountRole } from './types';
+import { visioconsultationVisible } from './offre';
 
 export interface NavItem {
   label: string;
@@ -160,6 +162,27 @@ const freelanceNav: NavSection[] = [
       // planning, comme côté établissement.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      /*
+       * ⚠ L'ENTRÉE N'APPARAÎT QUE SI LA VISIO EST OUVERTE. Elle mène à une
+       * page qui répond 404 tant que `NEXT_PUBLIC_VISIOCONSULTATION` n'est pas
+       * posée (voir `@/lib/offre`) : un menu qui conduit à une page
+       * introuvable se lit comme une panne du produit entier.
+       *
+       * ⚠ Ce sont des séances de rééducation et d'éducation spécialisée, pas
+       * de la télémédecine. Le libellé dit « rendez-vous à distance », jamais
+       * « téléconsultation » — ce mot-là désigne un acte médical.
+       */
+      ...(visioconsultationVisible()
+        ? [
+            {
+              label: 'Rendez-vous à distance',
+              href: '/dashboard/visio',
+              icon: Video,
+              essentiel: true,
+              hint: 'Proposer une séance en visioconsultation sur une intervention acceptée',
+            } as NavItem,
+          ]
+        : []),
       /**
        * ⚠ SE RENDRE VISIBLE EST UN GESTE QU'IL FAUT POUVOIR DÉFAIRE EN UN CLIC.
        *

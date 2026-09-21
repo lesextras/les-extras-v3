@@ -64,6 +64,7 @@ import { AdministrationModule } from './administration/administration.module';
 import { StructuresModule } from './structures/structures.module';
 import { OrganisationModule } from './organisation/organisation.module';
 import { DisponibilitesModule } from './disponibilites/disponibilites.module';
+import { VisioModule } from './visio/visio.module';
 import { AttestationsModule } from './attestations/attestations.module';
 
 @Module({
@@ -142,6 +143,7 @@ import { AttestationsModule } from './attestations/attestations.module';
   StructuresModule,
   OrganisationModule,
   DisponibilitesModule,
+  VisioModule,
   // L'attestation de suivi vendue sur un parcours gratuit (16/09/2026).
   AttestationsModule,
   ],

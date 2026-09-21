@@ -1224,6 +1224,7 @@ model Booking {
   timeEntries   TimeEntry[]
   engagement    MissionEngagement?
   conversations Conversation[]
+  visios        Visioconsultation[]
 
   @@index([status])
   @@index([missionId])
@@ -4876,4 +4877,73 @@ enum CategorieRendezVous {
   VISITE
   ECHEANCE
   AUTRE
+}
+
+/// LA VISIOCONSULTATION — un rendez-vous à distance, et rien d'autre.
+///
+/// ⚠⚠ CE N'EST PAS DU SOIN, ET LE MODÈLE NE DOIT JAMAIS LE DEVENIR. Ce sont
+/// des séances de rééducation et d'éducation spécialisée : guidance, suivi,
+/// point avec une équipe ou une enseignante. Aucun champ de ce modèle ne
+/// porte, ne doit porter et ne portera de donnée de santé — pas de motif
+/// médical, pas de diagnostic, pas de compte rendu clinique. Ce qui se dit
+/// pendant la séance reste entre les participants : rien n'est enregistré,
+/// ni le flux, ni sa transcription.
+///
+/// LE MODÈLE TECHNIQUE EST CELUI DE DOCTOLIB, dans ses principes :
+///  - une SALLE par rendez-vous, jamais un lien permanent ;
+///  - un JETON PAR PARTICIPANT, donc deux liens différents, chacun ne servant
+///    qu'à celui à qui on l'a envoyé ;
+///  - une FENÊTRE d'ouverture bornée autour de l'heure prévue — un lien qui
+///    marche pour toujours finit par circuler ;
+///  - le média ne passe JAMAIS par l'API : elle ne signe qu'un jeton d'accès,
+///    le flux va du navigateur au serveur média (WebRTC, relais TURN sur 443
+///    pour traverser les réseaux d'établissement).
+model Visioconsultation {
+  id String @id @default(cuid())
+
+  /// La prestation à laquelle ce rendez-vous se rattache. Une visio n'existe
+  /// jamais toute seule : elle est un créneau d'une intervention déjà acceptée.
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  /// Le nom de salle côté serveur média. Aléatoire, jamais dérivé d'un nom de
+  /// personne ni d'un identifiant devinable.
+  salle String @unique
+
+  debutPrevu   DateTime
+  dureeMinutes Int      @default(45)
+
+  /// Les deux liens. Distincts, parce qu'ils n'ouvrent pas les mêmes droits :
+  /// l'intervenant ouvre la salle, le demandeur y entre.
+  jetonIntervenant String @unique
+  jetonDemandeur   String @unique
+
+  statut StatutVisio @default(PLANIFIEE)
+
+  /// Première entrée de l'intervenant dans la salle, et fin effective.
+  ouverteLe  DateTime?
+  termineeLe DateTime?
+
+  /// Motif d'annulation, écrit par qui annule. Pas de motif médical ici.
+  annulationMotif String?
+
+  /// Le nom affiché au demandeur, recopié à la planification : il n'a pas de
+  /// compte, et on ne va pas lire le profil de l'intervenant depuis une route
+  /// publique pour afficher un prénom.
+  intervenantAffiche String?
+  demandeurAffiche   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([debutPrevu])
+  @@index([statut, debutPrevu])
+}
+
+enum StatutVisio {
+  PLANIFIEE
+  EN_COURS
+  TERMINEE
+  ANNULEE
 }

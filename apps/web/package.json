@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "jose": "^5.9.6",
+    "livekit-client": "^2.22.3",
     "lucide-react": "^0.454.0",
     "next": "15.5.25",
     "pdfjs-dist": "^4.8.69",

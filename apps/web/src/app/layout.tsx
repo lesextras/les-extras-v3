@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   // sur le catalogue (⚠ plus sur RenforTeam depuis le 21/09/2026) —
   // là où l'ancienne vantait la « réservation en ligne », que tout le monde a.
   description:
-    'Ateliers et formations pour le médico-social : devis en 48 h, contrat et facture édités, 0 % de commission sur le catalogue. Et RenforTeam, vérifié.',
+    'Ateliers, formations et renforts pour le médico-social : devis en 48 h, contrat et facture édités, intervenants vérifiés. Porté par une association.',
   keywords: [
     'atelier médico-social',
     'formation médico-social',

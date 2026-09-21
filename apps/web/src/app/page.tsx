@@ -225,8 +225,17 @@ const TOUT_EN_UN = [
 // colonnes de même largeur, chacune avec SON prix en grand, c'est ce qui se
 // lit d'un coup d'œil et ce qu'on va comparer.
 //
+// ⚠⚠ CETTE LISTE N'EST PLUS AFFICHÉE DEPUIS LE 21/09/2026. Les prix ont quitté
+// l'accueil (décision de Siham, voir la section #tarifs plus bas). Elle est
+// CONSERVÉE parce qu'elle est la seule trace, dans ce fichier, de la grille
+// telle qu'elle a été publiée — et parce que la remettre en ligne un jour ne
+// doit pas obliger à la réécrire de mémoire.
+//
+// ⚠ NE PAS LA SUPPRIMER, ET NE PAS LA REBRANCHER SANS SIHAM.
+//
 // ⚠ AUCUN CHIFFRE N'EST INVENTÉ ICI : les trois montants sont ceux qui
 // figuraient déjà sur la page. Un prix affiché est un engagement.
+// eslint-disable-next-line no-unused-vars
 const TARIFS = [
   {
     kicker: 'Renforts et ateliers',
@@ -526,8 +535,13 @@ export default async function LandingPage() {
                         se lit comme « petit » sur une place de marché. On
                         publie le chiffre qui est fort, celui qu'aucun
                         concurrent ne peut écrire : les zéros. */}
-                    <p className="text-sm font-semibold text-foreground">0 % sur les ateliers</p>
-                    <p className="text-xs text-muted-foreground">et aucun frais de recrutement</p>
+                    {/* ⚠ CETTE PASTILLE A PORTÉ « 17 interventions », puis
+                        « 0 % de commission », puis « 0 % sur les ateliers ».
+                        Depuis le 21/09/2026 elle ne porte plus de chiffre du
+                        tout : les prix ont quitté l'accueil. Ce qui reste est
+                        un fait de produit, pas un argument tarifaire. */}
+                    <p className="text-sm font-semibold text-foreground">Aucun frais de recrutement</p>
+                    <p className="text-xs text-muted-foreground">et aucun engagement de durée</p>
                   </div>
                 </div>
               </Reveal>
@@ -744,7 +758,7 @@ export default async function LandingPage() {
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Euro className="size-5 text-primary" aria-hidden />
-                  Aucune commission
+                  Tarifs affichés, devis avant toute intervention
                 </span>
               </div>
             </Reveal>
@@ -853,66 +867,55 @@ export default async function LandingPage() {
             sur devis, et un abonnement. En petit corps sur une seule carte, la
             page avait l'air de n'en annoncer qu'un. En trois colonnes, chacun
             avec son montant en grand, on les compare d'un coup d'œil. */}
+        {/*
+          ⚠⚠ LES PRIX ONT QUITTÉ L'ACCUEIL LE 21/09/2026 — DÉCISION DE SIHAM,
+          APRÈS AVOIR REGARDÉ CE QUE FONT LES AUTRES.
+
+          Aucun concurrent du secteur n'expose sa grille sur sa page d'accueil,
+          et Hublo ne publie même pas la sienne. Nous affichions trois montants
+          en grand ET le taux de commission, c'est-à-dire tout ce qu'un
+          concurrent a besoin de savoir, au premier écran, sans avoir à
+          demander. Un prix se défend dans une conversation ou sur la page qui
+          l'explique ; en vitrine, il se compare hors contexte.
+
+          ⚠ LA PAGE `/frais-de-service` N'A PAS BOUGÉ, et ne doit pas bouger :
+          elle porte les trois montants, les 15 % de RenforTeam, la
+          comparaison avec Brigad et l'intérim. Cacher un prix n'est acceptable
+          QUE s'il reste à un clic et sans formulaire — sinon on redevient le
+          « créez un compte pour connaître un prix » corrigé le 3/08/2026.
+          L'ancre #tarifs est conservée : le pied de page et de vieux liens
+          pointent dessus.
+
+          ⚠ NE PAS REMETTRE DE MONTANT ICI. Ni en petit, ni « à partir de »,
+          ni dans une puce de réassurance.
+        */}
         <section id="tarifs" className="scroll-mt-24 bg-nacre">
           <div className="section">
-            <Reveal className="max-w-3xl">
-              <span className="eyebrow">Tarifs</span>
+            <Reveal className="mx-auto max-w-3xl text-center">
+              <span className="eyebrow mx-auto w-fit">Tarifs</span>
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
                 La mise en relation est gratuite. Des deux côtés.
               </h2>
-            </Reveal>
-
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {TARIFS.map((tarif, i) => (
-                <Reveal key={tarif.kicker} delay={i * 110} className="h-full">
-                  <div className="reflet group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-background p-6 shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl md:p-7">
-                    <span
-                      className={`animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full ${tarif.trait}`}
-                      aria-hidden
-                    />
-                    <div className="pl-3">
-                      <span className={`text-xs font-bold uppercase tracking-[0.14em] ${tarif.teinte}`}>
-                        {tarif.kicker}
-                      </span>
-                      <p className="mt-3 text-4xl font-bold tracking-tight text-foreground">
-                        {tarif.prix}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">{tarif.precision}</p>
-                      <ul className="mt-5 space-y-2">
-                        {tarif.points.map((p) => (
-                          <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                            <Check className={`mt-0.5 size-4 shrink-0 ${tarif.teinte}`} aria-hidden />
-                            <span>{p}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Link
-                        href={tarif.lien.href}
-                        className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-                      >
-                        {tarif.lien.libelle}
-                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-
-            <Reveal delay={340}>
-              <p className="mt-6 text-sm text-muted-foreground">
-                Montants HT. Sur un atelier ou une formation, l’association ne prélève rien :
-                vous payez l’intervenant, à son tarif. Sur un renfort RenforTeam, 15 % de frais de
-                gestion s’ajoutent à ce tarif — c’est l’association qui vérifie l’intervenant
-                avant de vous l’envoyer. Rien n’est prélevé sur lui.
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                Publier un besoin, réserver, éditer les devis, les feuilles de mission et les
+                factures : rien de tout cela ne se paie. Ce qui se paie est écrit noir sur blanc,
+                sur une page faite pour ça.
               </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <Button asChild size="lg">
+                  <Link href="/frais-de-service">
+                    Ce qui est gratuit, ce qui est payant
+                    <ArrowRight />
+                  </Link>
+                </Button>
+              </div>
             </Reveal>
           </div>
         </section>
 
         {/* ═════════════════════════ 8. L'ASSOCIATION QUI PORTE TOUT ÇA ══════
             Les Extras n'est pas une entreprise : c'est le dispositif d'une
-            association. C'est ce qui explique le 0 % sur les ateliers, et c'est
+            association. C'est ce qui explique le modèle, et c'est
             ce que la page ne disait qu'en petit, dans une ligne de pied de
             page. Une association vit de ses adhérents et de ses bénévoles :
             si on ne le demande jamais, personne ne le propose. */}
@@ -948,12 +951,12 @@ export default async function LandingPage() {
                   <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
                     Association éducative de Melun, en Seine-et-Marne. Elle agit pour l’insertion
                     des enfants, des adolescents et des familles par l’éducation, l’animation et la
-                    prévention. Les Extras est l’un de ses dispositifs, et c’est ce qui explique le
-                    0 % sur les ateliers.
+                    prévention. Les Extras est l’un de ses dispositifs, et c’est ce qui explique
+                    son modèle.
                   </p>
                   <ul className="mt-6 space-y-2.5">
                     {[
-                      'Pas d’actionnaire, pas d’abonnement',
+                      'Pas d’actionnaire, pas d’abonnement obligatoire',
                       'Ce que rapportent les formations revient aux actions de terrain',
                       'Un don ouvre droit à un reçu fiscal',
                     ].map((p) => (
