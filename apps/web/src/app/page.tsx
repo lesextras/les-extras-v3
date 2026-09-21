@@ -399,28 +399,54 @@ export default async function LandingPage() {
                 <Sparkles className="size-3.5" />
                 Le logiciel du médico-social · association ADéPA
               </span>
-              {/* LE TITRE NOMME LES TROIS USAGES ET LE LOGICIEL.
-                  « Les interventions portées par ceux qui font le terrain »
-                  disait QUI, pas QUOI : une belle phrase sur l'esprit de la
-                  maison, mais qui ne renseignait ni sur ce qu'on trouve ici,
-                  ni sur ce que le logiciel fait. Aucun des trois usages ne
-                  passe devant les autres, et le mot qui manquait — logiciel —
-                  est là. */}
+              {/* ═══ LE TITRE S'OUVRE SUR LA SITUATION (21/09/2026) ═══════════
+                  ⚠⚠ C'EST LE TROISIÈME TITRE DE CETTE PAGE, ET IL FAUT DIRE
+                  POURQUOI PLUTÔT QUE DE FAIRE COMME SI.
+
+                  1. « Les interventions portées par ceux qui font le terrain »
+                     disait QUI, pas QUOI : une signature, pas une promesse.
+                  2. « Renforts, ateliers, formations : le bon réseau dans un
+                     seul logiciel » a corrigé ça — il nommait les usages et le
+                     logiciel. C'était juste, et l'audit du 3/09 le donnait
+                     encore comme perfectible pour une raison qu'on comprend
+                     mieux maintenant : il dit ce que le produit EST.
+                  3. Depuis la refonte du 21/09, TOUTE la page raconte d'abord
+                     la situation et ne nomme l'offre qu'ensuite. Le premier
+                     écran était le dernier bloc à faire l'inverse — et c'est
+                     le seul que le visiteur voit à coup sûr. Siham : « la home
+                     page n'a pas changé », en regardant précisément ce
+                     bloc-là.
+
+                  ⚠ LE TITRE NE PORTE PLUS LES MOTS-CLÉS, ET C'EST ASSUMÉ. Ils
+                  sont dans la balise `<title>` (voir `metadata` en tête de
+                  fichier), dans le sur-titre juste au-dessus, et dans le
+                  paragraphe juste en dessous — qui nomme les quatre services
+                  dans l'ordre exact où la page les traite. Un H1 qui répète la
+                  balise ne rapporte rien ; un H1 qui fait se reconnaître, si.
+
+                  ⚠ ET IL NE PROMET AUCUN DÉLAI NI AUCUNE DISPONIBILITÉ. « Il
+                  est peut-être à vingt minutes » aurait été plus vendeur et
+                  faux : le réseau est francilien et rien ne garantit une
+                  réponse. « Ce n'est pas qu'il n'y a personne » dit la même
+                  chose sans rien promettre — c'est un constat sur le marché,
+                  pas un engagement de la plateforme. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Renforts, ateliers, formations&nbsp;:{' '}
-                <span className="text-secondary">le bon réseau dans un seul logiciel.</span>
+                Vous cherchez depuis des semaines.{' '}
+                <span className="text-secondary">Ce n’est pas qu’il n’y a personne.</span>
               </h1>
-              {/* TROIS LIGNES DEVENUES UNE. Sous un titre qui dit déjà les
-                  trois usages et le logiciel, le paragraphe ne faisait que
-                  répéter — et les trois repères chiffrés, juste dessous,
-                  disaient le reste mieux que lui. */}
+              {/* LE PARAGRAPHE PORTE CE QUE LE TITRE NE DIT PLUS : les quatre
+                  services, et le fait qu'ils partagent un seul dossier. Les
+                  quatre mots sont dans l'ORDRE des quatre sections qui suivent
+                  — c'est ce qui fait que le premier écran annonce la page au
+                  lieu de vivre à côté d'elle.
+                  ⚠ « devis, feuille de mission, facture » et pas « contrat » :
+                  le logiciel édite ces trois-là. Le contrat de travail reste
+                  rédigé par l'établissement, et l'écrire autrement promet de
+                  l'intérim qu'on ne fait pas. */}
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                {/* ⚠ « sans commission » RETIRÉ ICI LE 21/09/2026 : cette
-                    phrase décrit le renfort, et le renfort est désormais
-                    commissionné. Le repère « 0 % » juste dessous précise ce
-                    qu'il couvre. */}
-                Vous publiez votre besoin, un intervenant du réseau répond. Devis et feuille de
-                mission suivent.
+                Un renfort, un atelier, une formation, un écrit professionnel&nbsp;: quatre
+                blocages du médico-social, et un seul endroit où le devis, la feuille de mission
+                et la facture sont édités.
               </p>
 
               {/* LA BARRE DE RECHERCHE A QUITTÉ LE HÉROS.
@@ -849,7 +875,7 @@ export default async function LandingPage() {
           <div className="section">
             <Reveal className="mx-auto max-w-3xl text-center">
               <span className="eyebrow mx-auto w-fit">Tarifs</span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
                 La mise en relation est gratuite. Des deux côtés.
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
@@ -901,7 +927,7 @@ export default async function LandingPage() {
                     <HeartHandshake className="size-3.5" />
                     ADéPA porte Les Extras
                   </span>
-                  <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+                  <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
                     Derrière le réseau, il y a ADéPA.
                   </h2>
                   <p className="mt-4 text-lg leading-relaxed text-muted-foreground">

@@ -217,9 +217,15 @@ export function QuatreSituations() {
             Quatre situations qu’on connaît tous. Quatre réponses.
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+            {/* ⚠ « LA FEUILLE DE MISSION », PAS « LE CONTRAT » (21/09/2026).
+                Le logiciel édite un devis, une feuille de mission et une
+                facture ; le contrat de travail, lui, reste rédigé par
+                l'établissement. Écrire « contrat » ici promettait de l'intérim
+                qu'on ne fait pas — et contredisait le premier écran, qui dit
+                la bonne chose. Les deux phrases doivent rester identiques. */}
             Les Extras n’est pas un annuaire de plus. C’est quatre services qui répondent chacun à
-            un blocage précis du médico-social — et un seul endroit où le devis, le contrat et la
-            facture sont édités.
+            un blocage précis du médico-social — et un seul endroit où le devis, la feuille de
+            mission et la facture sont édités.
           </p>
         </Reveal>
 
