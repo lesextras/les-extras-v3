@@ -11,3 +11,9 @@ generated
 # Caches de compilation incrementale : versionnes, ils font croire a tsc que
 # le build est deja fait et le conteneur se retrouve sans dist/.
 *.tsbuildinfo
+
+# Le HTML intermediaire des fiches recap A4 (`node fiches-recap.js`), que
+# Chromium transforme ensuite en PDF et en JPG. Ce sont ces derniers qui sont
+# versionnes, dans `apps/web/public/fiches/` : le HTML se regenere en une
+# seconde et pese 2,5 Mo pour rien.
+apps/web/scripts/mini-formations/build/
