@@ -63,6 +63,7 @@ import {
   HeartHandshake,
   BookOpen,
   Users,
+  Video,
 } from 'lucide-react';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
@@ -72,7 +73,7 @@ import { fetchPublic } from './_shared/server';
 // déménagé deux fois, et les URL écrites en dur sont celles qui survivent au
 // déménagement puis cassent seules. Voir `lib/media.ts`.
 import { premierVisuel, wp } from '@/lib/media';
-import { renfortSalarieVisible } from '@/lib/offre';
+import { renfortSalarieVisible, visioconsultationVisible } from '@/lib/offre';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { CatalogueOnglets } from './_shared/CatalogueOnglets';
 import { estMaison } from '@/lib/mini-formations';
@@ -213,7 +214,43 @@ const TOUT_EN_UN = [
     texte:
       'Heures, congés, export paie. Émargement et attestations.',
   },
+  /*
+    ⚠ LES DEUX CARTES SUIVANTES DISENT CE QU'EST LE SERVICE, pas ce que le
+    logiciel fait — elles ont été demandées le 21/09/2026 parce que le bloc
+    listait quatre fonctions administratives sans jamais nommer RenforTeam ni
+    la visio. Le visiteur lisait « il diffuse, il formalise » sans savoir QUOI.
+
+    ⚠ LE TAUX EST 15 %, ET IL VIENT DE /frais-de-service (arrêté le
+    21/09/2026). Ne pas écrire « 0 % » ici : 0 % est le taux des ateliers et
+    des formations, pas celui du renfort. Deux chiffres différents sur deux
+    pages du même site est exactement ce que l'audit reprochait ailleurs.
+  */
+  {
+    icone: HeartHandshake,
+    titre: 'RenforTeam',
+    texte:
+      'Le renfort quand la liste d’attente est de quatorze mois : vous décrivez le besoin, le réseau est prévenu. 15 % de frais de gestion, et rien d’autre.',
+  },
 ];
+
+/*
+  LA CARTE VISIOCONSULTATION — AFFICHÉE SEULEMENT SI LE SERVICE EST OUVERT.
+
+  ⚠ ELLE EST SÉPARÉE DE `TOUT_EN_UN` EXPRÈS. Le service s'allume par
+  `NEXT_PUBLIC_VISIOCONSULTATION=1` (voir `lib/offre.ts`), et tant que la
+  variable n'est pas posée, `/visio/:jeton` redirige : annoncer la visio sur
+  l'accueil pendant ce temps-là afficherait une promesse que le site ne peut
+  pas tenir — le défaut exact que l'audit reproche partout ailleurs.
+
+  Grâce à cette séparation, le jour où la variable est posée la carte apparaît
+  toute seule, sans toucher à ce fichier.
+*/
+const CARTE_VISIO = {
+  icone: Video,
+  titre: 'En visio, aussi',
+  texte:
+    'Quand personne n’est disponible près de chez vous, la séance se tient en visioconsultation — même devis, même feuille de mission, même facture.',
+};
 
 // ────────────────────────────────────────────────────────────── les tarifs
 //
@@ -675,8 +712,11 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {TOUT_EN_UN.map((t, i) => {
+            {/* ⚠ TROIS COLONNES, PLUS QUATRE : avec cinq ou six cartes, une
+                grille de quatre laisse une ou deux orphelines sur la seconde
+                ligne. En trois, c'est 3+2 ou 3+3 — les deux se tiennent. */}
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {[...TOUT_EN_UN, ...(visioconsultationVisible() ? [CARTE_VISIO] : [])].map((t, i) => {
                 const Icone = t.icone;
                 return (
                   <Reveal key={t.titre} delay={i * 90} className="h-full">
