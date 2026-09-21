@@ -30,6 +30,8 @@ import {
   initials,
 } from "../../../_shared/format";
 import type { Mission } from "../../../_shared/types";
+import { renfortSalarieVisible } from "@/lib/offre";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "RenforTeam" };
 
@@ -60,6 +62,9 @@ export default async function RenfortsPage() {
   // la même chose — proposer un bouton qui renverra une erreur d'autorisation,
   // c'est faire passer une règle pour une panne.
   const peutPublier = ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
+  // Le remplacement de poste en CDD est hors offre publique depuis le
+  // 19/09/2026 (`@/lib/offre`). Voir le bloc des deux cartes, plus bas.
+  const montreCdd = renfortSalarieVisible();
 
 
   if (session.account.type !== "ESTABLISHMENT") {
@@ -124,21 +129,42 @@ export default async function RenfortsPage() {
         cartes côte à côte sans leur montage, c'est l'erreur qui ne se voit
         jamais à l'écran et se découvre au contrôle.
       */}
+      {/*
+        ⚠⚠ LA CARTE « REMPLACEMENT · CDD » SUIT L'OFFRE PUBLIQUE (21/09/2026).
+
+        Le recentrage du 19/09 a sorti le remplacement de poste en CDD de
+        l'offre, et cet écran ne l'avait pas suivi : le site public disait que
+        ce montage n'existait plus pendant que le tableau de bord proposait
+        toujours de publier un poste. Un établissement lisait deux offres
+        différentes selon qu'il était connecté ou non.
+
+        ⚠ RIEN N'EST SUPPRIMÉ. `RenfortModal`, les routes missions, la cascade
+        et le générateur de CDD restent en place ; la carte revient avec
+        NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+
+        ⚠ CE QUE CE MASQUAGE COÛTE, ET IL FAUT LE SAVOIR : hors offre complète,
+        cet écran ne porte plus AUCUN bouton de publication. La demande d'un
+        renfort personnalisé passe alors par le catalogue et le devis — c'est
+        le montage voulu (prestation, pas emploi), mais le chemin n'est plus le
+        même, et la carte restante est la seule porte.
+      */}
       {peutPublier ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          <section className="rounded-xl border-2 border-primary/35 bg-card p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
-              Remplacement · CDD
-            </p>
-            <h2 className="mt-1 text-base font-semibold">Un poste à couvrir</h2>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground" lang="fr">
-              Une absence, un arrêt, un renfort d’équipe. Vous embauchez la
-              personne en CDD, et le contrat s’édite ici.
-            </p>
-            <div className="mt-3">
-              <RenfortModal accountId={session.account.id} />
-            </div>
-          </section>
+        <div className={cn('grid gap-4', montreCdd && 'md:grid-cols-2')}>
+          {montreCdd ? (
+            <section className="rounded-xl border-2 border-primary/35 bg-card p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+                Remplacement · CDD
+              </p>
+              <h2 className="mt-1 text-base font-semibold">Un poste à couvrir</h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground" lang="fr">
+                Une absence, un arrêt, un renfort d’équipe. Vous embauchez la
+                personne en CDD, et le contrat s’édite ici.
+              </p>
+              <div className="mt-3">
+                <RenfortModal accountId={session.account.id} />
+              </div>
+            </section>
+          ) : null}
 
           <section className="rounded-xl border-2 border-secondary/35 bg-card p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">

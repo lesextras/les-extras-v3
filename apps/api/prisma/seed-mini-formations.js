@@ -72,6 +72,20 @@ const COUVERTURES = '/images/mini-formations/';
  * une. Vendre un document en l'appelant « certificat » serait une pratique
  * commerciale trompeuse — et l'association est par ailleurs certifiee Qualiopi,
  * ce qui rend l'erreur d'autant plus couteuse.
+ *
+ * ⚠⚠ ET AUCUNE PHRASE NE RENVOIE A UN PRIX « INDIQUE SUR LA FICHE » (21/09/2026).
+ *
+ * Ces deux textes disaient « au prix indique sur cette fiche » et « son prix
+ * est indique sur la fiche de la formation ». Or `attestationPrixCents` est nul
+ * sur les 17 fiches : la vente est fermee tant qu'aucun mediateur de la
+ * consommation referenc CECMC n'est designe, et la carte n'affiche donc AUCUN
+ * prix. Le lecteur cherchait un montant qui n'existe pas.
+ *
+ * La formulation retenue — « ses conditions, son prix compris, vous sont
+ * communiquees avant tout paiement » — est vraie dans les deux etats : vente
+ * fermee (on demande, on recoit les conditions) comme vente ouverte (le prix
+ * s'affiche en plus sur la carte). Elle n'aura pas a rechanger le jour ou
+ * Siham pose un montant.
  */
 const EVALUATION = `La progression est enregistrée module par module : chaque module porte une durée minimale de consultation, et la formation est réputée suivie lorsque les quatre modules ont été parcourus.
 
@@ -81,7 +95,7 @@ Chaque module se termine aussi par cinq questions d’autocorrection, avec leurs
 
 Il n’y a ni examen, ni note. Ce qui est évalué, c’est votre propre relevé : chaque formation se termine par une période d’auto-observation avec une grille à remplir, et une lecture guidée de ce que vous y aurez noté.
 
-Attestation de suivi nominative, facultative, au prix indiqué sur cette fiche. Elle se demande une fois les modules terminés, et les conditions vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
+Attestation de suivi nominative et facultative. Elle se demande une fois les modules terminés, et ses conditions — son prix compris — vous sont communiquées avant tout paiement. Elle atteste que vous avez suivi la formation ; ce n’est ni un diplôme, ni une certification professionnelle, ni une action de formation certifiée Qualiopi. La formation elle-même reste gratuite, avec ou sans attestation.`;
 
 /**
  * ⚠ LE DEROULEMENT VIENT AVANT LA PEDAGOGIE.
@@ -140,7 +154,7 @@ const FAQ_COMMUNE = [
   {
     question: 'La formation est-elle vraiment gratuite ?',
     answer:
-      "Oui, du premier au dernier module, sans carte bancaire et sans date de fin. Seule l’attestation de suivi nominative est payante, et elle est facultative : son prix est indiqué sur la fiche de la formation.",
+      "Oui, du premier au dernier module, sans carte bancaire et sans date de fin. Seule l’attestation de suivi nominative est payante, et elle est facultative : son prix et ses conditions vous sont communiqués avant tout paiement.",
   },
   {
     question: "L’attestation est-elle un diplôme ?",

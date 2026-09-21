@@ -43,7 +43,7 @@ import {
   Video,
 } from 'lucide-react';
 import type { NavRole, AccountType, AccountRole } from './types';
-import { visioconsultationVisible } from './offre';
+import { renfortSalarieVisible, visioconsultationVisible } from './offre';
 
 export interface NavItem {
   label: string;
@@ -293,7 +293,37 @@ const establishmentNav: NavSection[] = [
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne
       // calcule — essai, précarité, carence — et refuse de transmettre un
       // contrat auquel il manque une mention obligatoire.
-      { label: 'Contrats CDD', href: '/dashboard/contrats', icon: FileSignature, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires' , avance: true },
+      /*
+        ⚠⚠ CONDITIONNÉ À L'OFFRE PUBLIQUE (21/09/2026).
+
+        Le recentrage du 19/09 a sorti le remplacement de poste en CDD de
+        l'offre, et `lib/nav.ts` n'importait même pas `renfortSalarieVisible` :
+        le site public disait que ce montage n'existait plus pendant que le
+        menu de l'espace connecté proposait toujours d'éditer des CDD. Un
+        établissement lisait donc deux offres différentes selon qu'il était
+        connecté ou non.
+
+        ⚠ RIEN N'EST SUPPRIMÉ : la page, les routes et le générateur de
+        contrat restent en place, et l'entrée revient avec
+        NEXT_PUBLIC_OFFRE_PUBLIQUE=complete. Aucun contrat n'existait en base
+        au moment de poser ce garde-fou (vérifié sur les comptes ADéPA,
+        association et académie) — masquer l'entrée ne cache donc aucun
+        document déjà émis. Si des contrats apparaissent un jour alors que
+        l'offre est fermée, il faudra rouvrir l'entrée : on ne cache pas à
+        quelqu'un un document qui l'engage.
+      */
+      ...(renfortSalarieVisible()
+        ? ([
+            {
+              label: 'Contrats CDD',
+              href: '/dashboard/contrats',
+              icon: FileSignature,
+              roles: ['OWNER', 'ADMIN', 'MANAGER'],
+              hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires',
+              avance: true,
+            },
+          ] satisfies NavItem[])
+        : []),
     ],
   },
   // « LEX & pratique » et « Catalogue » ont été retirés du menu de gauche
@@ -715,6 +745,22 @@ export function getNavForRole(
     if (!options?.outilsAvances) return quotidien;
     const avances = sections.flatMap((s) => s.items.filter((i) => i.avance));
     if (avances.length === 0) return quotidien;
+    /*
+     * ⚠ UNE SEULE ENTRÉE AVANCÉE : PAS DE RUBRIQUE (21/09/2026).
+     *
+     * « Deux entrées ne font pas une rubrique » est la règle de ce fichier, et
+     * elle s'appliquait jusqu'ici à la main, section par section. Elle s'est
+     * trouvée prise en défaut le jour où « Contrats CDD » a été conditionné à
+     * l'offre publique : hors offre complète il ne reste que « Temps de
+     * travail & congés », et la rubrique « Gestion RH » se retrouvait titrée
+     * au-dessus d'une seule ligne. Deux tests l'ont attrapé avant la mise en
+     * ligne.
+     *
+     * La règle est donc appliquée ICI, une fois, plutôt que d'être re-vérifiée
+     * à chaque entrée qu'on conditionne : une entrée seule rejoint le menu du
+     * quotidien, sans titre au-dessus d'elle.
+     */
+    if (avances.length === 1) return [...quotidien, { items: avances }];
     return [...quotidien, { title: RUBRIQUE_AVANCES, items: avances }];
   };
   const sansAvances = filtrerAvances;

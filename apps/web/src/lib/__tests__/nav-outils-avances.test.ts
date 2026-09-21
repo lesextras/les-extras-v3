@@ -48,13 +48,32 @@ describe('Les outils avancés du menu établissement', () => {
     expect(entrees(avecRh).length).toBeGreaterThan(entrees(quotidien).length);
   });
 
-  it('groupe les entrées avancées dans une seule rubrique nommée', () => {
-    const nouvelles = avecRh.filter(
-      (s) => !quotidien.some((q) => q.title === s.title && q.items.length === s.items.length),
-    );
-    expect(nouvelles).toHaveLength(1);
-    expect(nouvelles[0].title).toBe('Gestion RH');
-    expect(nouvelles[0].items.length).toBeGreaterThan(1);
+  /**
+   * ⚠ CE TEST A ÉTÉ REPRIS LE 21/09/2026, ET IL FAUT DIRE POURQUOI.
+   *
+   * Il exigeait UNE rubrique nommée « Gestion RH » portant PLUS D'UNE entrée.
+   * C'était vrai tant qu'il y avait deux entrées avancées. Le jour où
+   * « Contrats CDD » a été conditionné à l'offre publique (le remplacement de
+   * poste en CDD est sorti de l'offre le 19/09), il n'en reste qu'une — et la
+   * règle « deux entrées ne font pas une rubrique » veut alors qu'elle rejoigne
+   * le menu SANS titre.
+   *
+   * Le test vérifie donc l'intention, pas la forme d'un seul état : les
+   * entrées avancées s'ajoutent en UN SEUL bloc, nommé s'il y en a plusieurs,
+   * anonyme s'il n'y en a qu'une. Les deux autres tests du fichier — le menu
+   * du quotidien intégralement conservé, et aucune rubrique titrée d'une seule
+   * entrée — tiennent la règle dans les deux cas.
+   */
+  it('ajoute les entrées avancées en un seul bloc, nommé seulement s’il en porte plusieurs', () => {
+    // Le bloc ajouté est le dernier : `filtrerAvances` le pose en queue.
+    expect(avecRh.length).toBe(quotidien.length + 1);
+    const ajoute = avecRh[avecRh.length - 1];
+    expect(ajoute.items.length).toBeGreaterThan(0);
+    if (ajoute.items.length > 1) {
+      expect(ajoute.title).toBe('Gestion RH');
+    } else {
+      expect(ajoute.title).toBeUndefined();
+    }
   });
 
   /**
