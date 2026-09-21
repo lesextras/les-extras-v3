@@ -72,6 +72,7 @@ import { fetchPublic } from './_shared/server';
 // déménagé deux fois, et les URL écrites en dur sont celles qui survivent au
 // déménagement puis cassent seules. Voir `lib/media.ts`.
 import { premierVisuel, wp } from '@/lib/media';
+import { renfortSalarieVisible } from '@/lib/offre';
 import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
 import { CatalogueOnglets } from './_shared/CatalogueOnglets';
 import { estMaison } from '@/lib/mini-formations';
@@ -123,12 +124,34 @@ export const metadata: Metadata = {
 const USAGES = [
   {
     kicker: 'Renfort',
-    titre: 'Absorber une absence',
-    texte:
-      'Éducateur, moniteur, AES, psychologue.',
-    points: ['Diffusion en cascade', 'Feuille de mission éditée', 'Heures pointées, export paie'],
+    // ⚠ LA CARTE A CHANGÉ D'OBJET LE 19/09/2026, PAS SEULEMENT DE MOTS.
+    // Le renfort de poste — « absorber une absence », la cascade, l'export
+    // paie — sort de l'offre publique (voir `@/lib/offre`). Ce qui reste, et
+    // qui est désormais annoncé ici, c'est le renfort par des indépendants
+    // spécialisés, sur un besoin nommé. L'ancienne version est conservée
+    // juste en dessous et revient en offre complète.
+    ...(renfortSalarieVisible()
+      ? {
+          titre: 'Absorber une absence',
+          texte: 'Éducateur, moniteur, AES, psychologue.',
+          points: [
+            'Diffusion en cascade',
+            'Feuille de mission éditée',
+            'Heures pointées, export paie',
+          ],
+          action: 'Comprendre le renfort',
+        }
+      : {
+          titre: 'Faire intervenir un spécialiste',
+          texte: 'Ergothérapeute, éducateur spécialisé, psychomotricienne, psychologue, orthophoniste.',
+          points: [
+            'Familles, écoles, mairies, établissements',
+            'En présentiel ou en visioconsultation',
+            'Devis écrit avant l’intervention',
+          ],
+          action: 'Découvrir RenforTeam',
+        }),
     href: '/renforteam',
-    action: 'Comprendre le renfort',
     image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
     trait: 'bg-primary',
     teinte: 'text-primary',
@@ -209,10 +232,29 @@ const TARIFS = [
     kicker: 'Renforts et ateliers',
     prix: '0 €',
     precision: 'gratuit pour toujours',
+    /*
+     * ⚠⚠ LES DEUX RÉGIMES NE SONT PLUS LE MÊME DEPUIS LE 21/09/2026.
+     *
+     * « 0 % de commission » couvrait tout. Décision de Siham : RenforTeam est
+     * commissionné, parce que l'association VÉRIFIE chaque professionnel de
+     * l'éducation spécialisée avant de l'envoyer chez quelqu'un. Ce n'est pas
+     * une mise en relation, c'est une sélection — et c'est ce qui se paie.
+     *
+     * Les ateliers et les formations, eux, restent à 0 % : on y réserve en
+     * direct, l'intervenant facture l'établissement, l'association ne s'y
+     * interpose pas. Les deux lignes disent donc deux choses différentes, et
+     * c'est volontaire.
+     *
+     * ⚠ 15 %, ARRÊTÉ LE 21/09/2026. Le taux et sa justification sont dans
+     * `lib/commission.ts` — relevé des grilles publiques compris. Ne pas le
+     * changer ici seul : il est aussi sur /frais-de-service, /renforteam et
+     * dans les CGU.
+     */
     points: [
       'Publication, diffusion et relances',
       'Devis et feuille de mission édités',
-      '0 % de commission : l’intervenant touche son tarif en entier',
+      'Ateliers et formations : 0 % de commission',
+      'RenforTeam : 15 % de frais de gestion, ajoutés au tarif — l’intervenant touche 100 %',
     ],
     lien: { libelle: 'Publier un besoin', href: '/renforteam' },
     trait: 'bg-primary',
@@ -382,8 +424,12 @@ export default async function LandingPage() {
                   répéter — et les trois repères chiffrés, juste dessous,
                   disaient le reste mieux que lui. */}
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
+                {/* ⚠ « sans commission » RETIRÉ ICI LE 21/09/2026 : cette
+                    phrase décrit le renfort, et le renfort est désormais
+                    commissionné. Le repère « 0 % » juste dessous précise ce
+                    qu'il couvre. */}
                 Vous publiez votre besoin, un intervenant du réseau répond. Devis et feuille de
-                mission suivent, sans commission.
+                mission suivent.
               </p>
 
               {/* LA BARRE DE RECHERCHE A QUITTÉ LE HÉROS.
@@ -415,7 +461,7 @@ export default async function LandingPage() {
                     mesurables et tenus. */}
                 <span className="inline-flex items-center gap-1.5">
                   <Euro className="size-4 text-primary" />
-                  <strong className="font-semibold text-foreground">0 %</strong> de commission
+                  <strong className="font-semibold text-foreground">0 %</strong> sur les ateliers
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="size-4 text-primary" />
@@ -480,7 +526,7 @@ export default async function LandingPage() {
                         se lit comme « petit » sur une place de marché. On
                         publie le chiffre qui est fort, celui qu'aucun
                         concurrent ne peut écrire : les zéros. */}
-                    <p className="text-sm font-semibold text-foreground">0 % de commission</p>
+                    <p className="text-sm font-semibold text-foreground">0 % sur les ateliers</p>
                     <p className="text-xs text-muted-foreground">et aucun frais de recrutement</p>
                   </div>
                 </div>
@@ -669,7 +715,17 @@ export default async function LandingPage() {
             — la nuance explique alors QUEL document le logiciel édite et
             pourquoi. Et son second lien (« Voir les intervenants ») tombe juste
             au-dessus du catalogue, où il mène. */}
-        <DeuxRenforts />
+        {/* ⚠ CETTE SECTION N'A PLUS D'OBJET HORS OFFRE PUBLIQUE, ET C'EST
+            LE POINT : elle existe UNIQUEMENT pour expliquer que « renfort »
+            désigne deux montages opposés — un poste couvert en CDD salarié, et
+            une intervention en plus de l'équipe facturée en prestation. Depuis
+            le 19/09/2026 il n'y en a plus qu'un seul en ligne (voir
+            `@/lib/offre`) : garder la nuance reviendrait à vendre le montage
+            qu'on vient de retirer, dans la section même qui le décrit.
+
+            Le composant n'est pas supprimé. Il revient ici, intact, avec
+            NEXT_PUBLIC_OFFRE_PUBLIQUE=complete. */}
+        {renfortSalarieVisible() && <DeuxRenforts />}
 
         {/* ═══════════════ 6. LE CATALOGUE, EN UN SEUL BLOC À ONGLETS ═════════ */}
         <section id="marketplace" className="scroll-mt-24">
@@ -845,8 +901,10 @@ export default async function LandingPage() {
 
             <Reveal delay={340}>
               <p className="mt-6 text-sm text-muted-foreground">
-                Montants HT. L’association ne prélève aucune commission sur les renforts et les
-                ateliers : vous payez l’intervenant, à son tarif.
+                Montants HT. Sur un atelier ou une formation, l’association ne prélève rien :
+                vous payez l’intervenant, à son tarif. Sur un renfort RenforTeam, 15 % de frais de
+                gestion s’ajoutent à ce tarif — c’est l’association qui vérifie l’intervenant
+                avant de vous l’envoyer. Rien n’est prélevé sur lui.
               </p>
             </Reveal>
           </div>
@@ -854,7 +912,7 @@ export default async function LandingPage() {
 
         {/* ═════════════════════════ 8. L'ASSOCIATION QUI PORTE TOUT ÇA ══════
             Les Extras n'est pas une entreprise : c'est le dispositif d'une
-            association. C'est ce qui explique les 0 % de commission, et c'est
+            association. C'est ce qui explique le 0 % sur les ateliers, et c'est
             ce que la page ne disait qu'en petit, dans une ligne de pied de
             page. Une association vit de ses adhérents et de ses bénévoles :
             si on ne le demande jamais, personne ne le propose. */}
@@ -890,8 +948,8 @@ export default async function LandingPage() {
                   <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
                     Association éducative de Melun, en Seine-et-Marne. Elle agit pour l’insertion
                     des enfants, des adolescents et des familles par l’éducation, l’animation et la
-                    prévention. Les Extras est l’un de ses dispositifs, et c’est ce qui explique les
-                    0 % de commission.
+                    prévention. Les Extras est l’un de ses dispositifs, et c’est ce qui explique le
+                    0 % sur les ateliers.
                   </p>
                   <ul className="mt-6 space-y-2.5">
                     {[

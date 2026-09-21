@@ -17,6 +17,8 @@
  * inconnue, et le refus arrive au moment où la personne valide sa fiche.
  */
 
+import { renfortSalarieVisible } from '@/lib/offre';
+
 export interface Droit {
   cle: string;
   libelle: string;
@@ -135,3 +137,24 @@ export const GROUPES_DROITS: GroupeDroits[] = [
 
 /** La liste à plat — pour les écrans qui n'affichent pas de groupes. */
 export const DROITS: Droit[] = GROUPES_DROITS.flatMap((g) => g.droits);
+
+/**
+ * LES GROUPES RÉELLEMENT AFFICHÉS.
+ *
+ * Le renfort de poste en CDD sort de l'offre publique le 19/09/2026 (voir
+ * `@/lib/offre`) : on cesse de proposer le droit de l'ouvrir. Le droit
+ * lui-même n'est pas supprimé — ni de cette liste, ni de l'énumération Prisma,
+ * ni des comptes qui l'ont déjà déclaré. Il cesse seulement d'être offert, et
+ * il revient avec NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+ *
+ * ⚠ Un groupe vidé de tous ses droits disparaîtrait en laissant son titre :
+ * on l'écarte donc entièrement. Ici « Équipe et renfort » en garde trois, il
+ * reste.
+ */
+export function groupesDroitsProposes(): GroupeDroits[] {
+  if (renfortSalarieVisible()) return GROUPES_DROITS;
+  return GROUPES_DROITS.map((g) => ({
+    ...g,
+    droits: g.droits.filter((d) => d.cle !== 'OUVRIR_RENFORT_CDD'),
+  })).filter((g) => g.droits.length > 0);
+}

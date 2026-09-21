@@ -12,6 +12,21 @@ export const metadata: Metadata = metaPublique({
 });
 
 export default function RenfortIndexPage() {
+  /*
+   * ⚠ HORS OFFRE PUBLIQUE DEPUIS LE 19/09/2026 — ET LE GARDE-FOU N'EST PAS ICI.
+   *
+   * Cette page vend le renfort de POSTE, celui qui se conclut en CDD salarié.
+   * Décision de Siham : il sort de la vitrine (voir `@/lib/offre`). Rien n'est
+   * supprimé — la page reste entière et redevient servie en repassant
+   * NEXT_PUBLIC_OFFRE_PUBLIQUE à « complete ».
+   *
+   * ⚠⚠ NE PAS REMETTRE DE `redirect()` NI DE `notFound()` DANS CE COMPOSANT.
+   * On a essayé, et c'est le piège que `next.config.mjs` documente déjà deux
+   * fois : dans une page prérendue, Next ne peut pas émettre de 3xx et retombe
+   * sur un rafraîchissement méta — mesuré ici, la route répondait **200** en
+   * servant la page « Erreur 404 ». La redirection appartient à la
+   * configuration : elle est dans `redirects()`, section « OFFRE PUBLIQUE ».
+   */
   return (
     <div className="section">
       <div className="mx-auto max-w-2xl text-center">

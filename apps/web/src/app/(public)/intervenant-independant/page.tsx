@@ -13,11 +13,12 @@ import {
 } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
 import { VILLES } from "../renfort/donnees";
+import { renfortSalarieVisible } from "@/lib/offre";
 
 export const metadata: Metadata = metaPublique({
   title: "Rejoindre le réseau d'intervenants",
   description:
-    "Éducateurs, AES, psychologues, thérapeutes indépendants : référencez-vous gratuitement auprès des établissements médico-sociaux. Zéro commission.",
+    "Éducateurs, AES, psychologues, thérapeutes indépendants : référencez-vous gratuitement auprès des établissements médico-sociaux. 0 % sur vos ateliers.",
   path: "/intervenant-independant",
 });
 
@@ -93,15 +94,19 @@ export default function IntervenantIndependantPage() {
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
 La plateforme de l’association ADéPA : MECS, IME, ITEP, SESSAD et EHPAD d’un côté,
-          professionnels indépendants de l’autre. Vous publiez, ils réservent, vous facturez
-          votre tarif, sans commission.
+          professionnels indépendants de l’autre. Vous publiez vos ateliers, ils réservent, vous
+          facturez votre tarif — sans commission.
         </p>
       </div>
 
       <div className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-2xl border border-success/30 bg-success/5 p-6 md:p-7">
+          {/* ⚠ CE BLOC PARLE DU CATALOGUE, PAS DE RENFORTEAM. Depuis le
+              21/09/2026 les deux ne suivent plus la même règle : le renfort est
+              commissionné, parce que l'association y vérifie l'intervenant. Le
+              titre le précise, sinon la page promet 100 % sur tout. */}
           <p className="text-sm font-semibold uppercase tracking-wide text-success">
-            Zéro commission
+            Zéro commission sur vos ateliers
           </p>
           <p className="mt-2 text-xl font-semibold text-foreground">
             Vous fixez votre tarif. Vous touchez 100 %.
@@ -233,10 +238,28 @@ Un établissement réserve votre offre. Vous intervenez{" "}
           </div>
           <div className="rounded-xl border border-border bg-card p-6">
             <p className="text-lg font-semibold text-foreground">RenforTeam</p>
+            {/* ⚠ CETTE CARTE DISAIT « embauche en CDD, aucun statut
+                d'indépendant nécessaire ». C'est l'offre sortie de la vitrine
+                le 19/09/2026 (voir `@/lib/offre`) — et sur CETTE page,
+                promettre « pas besoin de SIRET » à quelqu'un venu lire
+                comment exercer en libéral était le contresens le plus cher du
+                site. Le texte d'avant est conservé juste en dessous. */}
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-Vous acceptez une mission et l’établissement vous{" "}
-              <strong>embauche en CDD</strong> : salarié le temps du remplacement, vrai bulletin
-              de paie. Rien à facturer, aucun statut d’indépendant.
+              {renfortSalarieVisible() ? (
+                <>
+                  Vous acceptez une mission et l’établissement vous{" "}
+                  <strong>embauche en CDD</strong> : salarié le temps du remplacement, vrai
+                  bulletin de paie. Rien à facturer, aucun statut d’indépendant.
+                </>
+              ) : (
+                <>
+                  Vous acceptez une demande de renfort et vous intervenez{" "}
+                  <strong>en prestation</strong>, sur un besoin nommé, en présentiel ou en
+                  visioconsultation. L’association vous vérifie avant de vous envoyer, encaisse
+                  et vous reverse : ni relance, ni impayé à courir. C’est le seul dispositif du
+                  site où elle prélève une commission.
+                </>
+              )}
             </p>
             <p className="mt-3 text-sm">
               <Link href="/renforteam" className="font-medium underline underline-offset-2">

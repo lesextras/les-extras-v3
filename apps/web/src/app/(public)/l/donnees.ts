@@ -172,12 +172,12 @@ export const LANDINGS: Landing[] = [
     public: 'Intervenants, formateurs, animateurs du médico-social',
     promesse: 'Vos ateliers devant les établissements qui les cherchent. Vous gardez 100 % de votre tarif.',
     sous:
-      'Une fiche, un catalogue lu par des directions d’IME, de MECS et d’ESAT, des demandes de devis qui arrivent dans votre boîte. Contrats et factures édités par la plateforme. Aucune commission.',
+      'Une fiche, un catalogue lu par des directions d’IME, de MECS et d’ESAT, des demandes de devis qui arrivent dans votre boîte. Contrats et factures édités par la plateforme. Aucune commission sur vos ateliers.',
     preuves: [
       {
-        titre: 'Zéro commission, zéro abonnement',
+        titre: 'Zéro commission sur vos ateliers, zéro abonnement',
         texte:
-          'L’établissement paie votre tarif, vous le touchez intégralement. Le service est porté par une association, pas par une place de marché qui se sert au passage.',
+          'L’établissement paie votre tarif, vous le touchez intégralement. Seul RenforTeam est commissionné : l’association y vérifie chaque intervenant avant de l’envoyer, et c’est ce travail-là qui se paie.',
       },
       {
         titre: 'Les papiers sont faits',

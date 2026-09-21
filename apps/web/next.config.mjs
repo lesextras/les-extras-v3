@@ -113,6 +113,50 @@ const PAGES_WORDPRESS = {
   '/les-extras': '/',
 };
 
+
+/**
+ * ═══════════════ OFFRE PUBLIQUE : LE RENFORT DE POSTE SORT DE LA VITRINE ═════
+ *
+ * Décision de Siham, 19/09/2026. Le renfort de POSTE — celui qui se conclut en
+ * CDD salarié — n'est plus proposé en ligne : c'est le pilier que le Conseil
+ * d'État a fragilisé le 11/02/2025 (n° 491128) et que l'article 70 de la LFSS
+ * 2025 plafonne en ESSMS publics depuis le 01/07/2025. Reste RenforTeam assuré
+ * par des intervenants INDÉPENDANTS et spécialisés, plus les ateliers et les
+ * formations. Le détail du périmètre est dans `src/lib/offre.ts`.
+ *
+ * Neuf adresses vendaient le montage retiré. Elles NE SONT PAS SUPPRIMÉES —
+ * leur code est intact — elles sont redirigées, et elles sortent du sitemap
+ * (voir `src/app/sitemap.ts`) dans le même mouvement.
+ *
+ * ⚠ REDIRECTION, PAS 404 : ces pages portent des années d'ancienneté et des
+ * liens déjà partagés. Un 404 jette les deux.
+ *
+ * ⚠ REDIRECTION TEMPORAIRE (307), PAS PERMANENTE : la décision se reprend en
+ * repassant NEXT_PUBLIC_OFFRE_PUBLIQUE à « complete ». Une 308 resterait
+ * gravée dans les navigateurs longtemps après que les pages soient revenues.
+ *
+ * ⚠ ET C'EST BIEN ICI QUE ÇA SE JOUE, PAS DANS LES PAGES. Un `redirect()` dans
+ * un composant prérendu ne produit pas de 3xx : mesuré le 21/09/2026, les six
+ * routes répondaient 200 en servant la page « Erreur 404 ». Le fichier le
+ * documente déjà deux fois plus haut ; c'est la troisième.
+ */
+const RENFORT_SALARIE_EN_LIGNE =
+  (process.env.NEXT_PUBLIC_OFFRE_PUBLIQUE ?? '').trim().toLowerCase() === 'complete';
+
+const HORS_OFFRE_PUBLIQUE = [
+  // Les pages de mots-clés du remplacement : index, 7 métiers, 6 territoires.
+  { source: '/renfort', destination: '/renforteam' },
+  { source: '/renfort/metier/:slug', destination: '/renforteam' },
+  { source: '/renfort/:ville', destination: '/renforteam' },
+  // L'atterrissage publicitaire « un remplaçant en CDD, sans commission ».
+  { source: '/l/renfort', destination: '/renforteam' },
+  // Les trois pages de comparaison tarifaire, qui chiffrent l'intérim et le
+  // remplacement. Elles atterrissent sur la page qui dit ce qu'on facture.
+  { source: '/simulateur', destination: '/frais-de-service' },
+  { source: '/comparatif-plateformes-remplacement', destination: '/frais-de-service' },
+  { source: '/outils/cout-remplacement', destination: '/outils' },
+].map((r) => ({ ...r, permanent: false }));
+
 /** @type {import('next').NextConfig} */
 /**
  * LES FICHES ATELIER : IDENTIFIANT → ADRESSE LISIBLE, EN VRAIE 308.
@@ -201,6 +245,10 @@ const nextConfig = {
     const fiches = await redirectionsFichesAtelier();
     return [
       ...fiches,
+      // Le renfort de poste hors vitrine — voir le bloc « OFFRE PUBLIQUE »
+      // en tête de fichier. Placé AVANT tout le reste : `/renfort/:ville` doit
+      // être évalué avant qu'une règle plus générale ne l'attrape.
+      ...(RENFORT_SALARIE_EN_LIGNE ? [] : HORS_OFFRE_PUBLIQUE),
       /**
        * www → apex, en 301.
        *
@@ -228,10 +276,11 @@ const nextConfig = {
        * pour son équipe. L'ancienne adresse est indexée et partagée : elle
        * redirige en 301, qui transmet l'antériorité à la nouvelle.
        *
-       * Les pages de mots-clés — /renfort, /renfort/<ville>, /renfort/metier/<slug>
-       * — ne bougent PAS. Ce sont elles qui portent « renfort éducatif »,
-       * « remplacement éducateur spécialisé » ; la page de marque, elle, peut
-       * porter le nom de marque.
+       * ⚠ MISE À JOUR DU 19/09/2026 : les pages de mots-clés — /renfort,
+       * /renfort/<ville>, /renfort/metier/<slug> — NE SONT PLUS SERVIES hors
+       * offre complète. Elles portaient « remplacement éducateur spécialisé »,
+       * c'est-à-dire exactement l'offre retirée. Voir `HORS_OFFRE_PUBLIQUE`
+       * en tête de fichier ; elles reviennent avec la variable.
        */
       { source: '/sos-renfort', destination: '/renforteam', permanent: true },
       { source: "/intervenants", destination: "/intervenant-independant", permanent: true },

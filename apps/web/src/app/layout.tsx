@@ -33,10 +33,11 @@ export const metadata: Metadata = {
   // ⚠ 155 CARACTÈRES MAXIMUM, ET LE COMPTE SE VÉRIFIE. Le commentaire précédent
   // annonçait 155 ; la phrase en faisait 171, et Google la coupait en plein
   // milieu de « dossier de conformité par interv… ». Celle-ci en fait 145,
-  // mesurés. Elle dit aussi ce qui nous distingue vraiment — 0 % de commission —
+  // mesurés. Elle dit aussi ce qui nous distingue vraiment — 0 % de commission
+  // sur le catalogue (⚠ plus sur RenforTeam depuis le 21/09/2026) —
   // là où l'ancienne vantait la « réservation en ligne », que tout le monde a.
   description:
-    'Ateliers et formations courtes pour le médico-social : devis en 48 h, contrat et facture automatiques, 0 % de commission. Et le renfort d’équipe.',
+    'Ateliers et formations pour le médico-social : devis en 48 h, contrat et facture édités, 0 % de commission sur le catalogue. Et RenforTeam, vérifié.',
   keywords: [
     'atelier médico-social',
     'formation médico-social',

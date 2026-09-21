@@ -28,7 +28,7 @@ export async function generateMetadata({
   const titre = `${data.title}${lieu}`;
   const description =
     (data.description ?? "").replace(/\s+/g, " ").trim().slice(0, 160) ||
-    `Mission de renfort en établissement médico-social${lieu}. Candidature directe, contrat généré, zéro commission.`;
+    `Mission de renfort en établissement médico-social${lieu}. Candidature directe, contrat généré, intervenants vérifiés.`;
   // Titre et description de partage étaient déjà ceux de la page : le helper
   // les produit à l'identique et rétablit la carte de partage, que cet objet
   // `openGraph` effaçait en remplaçant celui du layout racine.

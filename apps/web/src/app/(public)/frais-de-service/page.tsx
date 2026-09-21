@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check, Coins, Info, Receipt, Sparkles, Users, X } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
+import { renfortSalarieVisible } from "@/lib/offre";
 
 export const metadata: Metadata = metaPublique({
   title: "Ce qui est gratuit, ce qui est payant",
   description:
-    "Mise en relation et contractualisation gratuites, sans commission, des deux côtés. Seuls se paient les formations Qualiopi et LEX, l’assistant IA.",
+    "Le logiciel est gratuit des deux côtés. 0 % de commission sur les ateliers et les formations ; 15 % de frais de gestion sur les renforts RenforTeam.",
   path: "/frais-de-service",
 });
 
@@ -15,7 +16,11 @@ export const metadata: Metadata = metaPublique({
 // e-mail à une direction, et un contenu qui ne se lit pas entre deux sections.
 
 const GRATUIT = [
-  "RenforTeam : publication, candidatures, jusqu’au CDD généré",
+  // ⚠ « jusqu'au CDD généré » : l'étape finale décrite ici n'existe plus en
+  // ligne depuis le 19/09/2026 (voir `@/lib/offre`).
+  renfortSalarieVisible()
+    ? "RenforTeam : publication, candidatures, jusqu’au CDD généré"
+    : "RenforTeam : demande, mise en relation, devis et feuille de mission",
   "Ateliers : catalogue, réservation, devis, contrat et facture",
   "Planning partagé, pointage et validation des heures",
   "Messagerie interne rattachée aux missions",
@@ -51,9 +56,25 @@ export default function FraisPage() {
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground text-balance md:text-4xl">
           Ce qui est gratuit, ce qui est payant
         </h1>
+        {/*
+          ⚠⚠ C'EST LA PAGE QU'UNE DIRECTION RESSORT EN CAS DE LITIGE. Elle ne
+          peut pas être approximative d'un mot.
+
+          Décision de Siham, 21/09/2026 : RenforTeam est commissionné. Il n'y a
+          donc plus UNE règle tarifaire mais DEUX, et la page doit les séparer
+          dès le chapeau plutôt que de laisser découvrir la seconde sur une
+          facture.
+
+          ⚠ 15 %, ARRÊTÉ LE 21/09/2026 (voir `lib/commission.ts` pour le taux,
+          son calcul et le relevé des grilles concurrentes). Le chiffre est
+          écrit ici, sur l'accueil, sur /renforteam et dans les CGU : les
+          quatre bougent ensemble ou pas du tout.
+        */}
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          Pas d’abonnement obligatoire, pas d’engagement, pas de frais d’entrée. Et
-          aucune commission prélevée sur les intervenants.
+          Pas d’abonnement obligatoire, pas d’engagement, pas de frais d’entrée. Sur les
+          ateliers et les formations, aucune commission n’est prélevée sur l’intervenant.
+          Sur un renfort RenforTeam, 15&nbsp;% de frais de gestion s’ajoutent à son tarif&nbsp;:
+          c’est l’association qui vérifie chaque professionnel avant de l’envoyer.
         </p>
       </div>
 
@@ -115,12 +136,23 @@ export default function FraisPage() {
               Côté intervenant
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
-              Zéro commission sur ce que vous facturez
+              Zéro commission sur vos ateliers et vos formations
             </p>
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-              Vous touchez 100 % de votre prix. C’est le parti pris du modèle associatif :
-              l’association se finance sur les formations Qualiopi qu’elle facture et sur
-              les crédits LEX, jamais sur la rémunération de celui qui fait le travail.
+              Vous touchez 100 % de votre prix. Vous réservez et facturez en direct,
+              l’association ne s’interpose pas : elle se finance sur les formations Qualiopi
+              qu’elle facture et sur les crédits LEX.
+            </p>
+            <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+              <strong className="font-semibold text-foreground">RenforTeam est différent.</strong>{" "}
+              L’association y vérifie chaque professionnel de l’éducation spécialisée avant de
+              l’envoyer chez quelqu’un, encaisse la prestation et vous reverse. Ce travail de
+              sélection se paie&nbsp;: <strong className="font-semibold text-foreground">15&nbsp;%
+              de frais de gestion</strong>, <em>ajoutés</em> au tarif de l’intervenant et payés
+              par le demandeur. Rien n’est prélevé sur vous, et la ligne figure sur le devis avant
+              que quiconque ne l’accepte. À titre de comparaison, une plateforme d’indépendants
+              comme Brigad prélève 10&nbsp;% à l’entreprise et 15&nbsp;% au professionnel, et
+              l’intérim applique un coefficient de 1,9 à 2,2 sur le salaire.
             </p>
           </div>
           <div className="grid size-28 shrink-0 place-items-center rounded-2xl bg-background ring-1 ring-inset ring-secondary/25 md:size-32">

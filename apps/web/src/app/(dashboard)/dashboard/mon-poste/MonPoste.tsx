@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { BadgeCheck, Check, Clock, EyeOff, ShieldQuestion, TriangleAlert } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
-import { GROUPES_DROITS } from '@/lib/droits';
+import { groupesDroitsProposes } from '@/lib/droits';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -321,7 +321,7 @@ export function MonPoste({ fiche }: { fiche: MaFiche }) {
           sur la plateforme : elles n’engagent jamais d’argent.
         </p>
         <div className="space-y-4 pt-1">
-          {GROUPES_DROITS.map((groupe) => (
+          {groupesDroitsProposes().map((groupe) => (
             <div key={groupe.titre}>
               <p
                 className={cn(

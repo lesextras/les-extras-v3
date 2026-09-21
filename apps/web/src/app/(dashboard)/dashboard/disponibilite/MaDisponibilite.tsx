@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Check, Eye, EyeOff, RefreshCw, TriangleAlert } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
+import { renfortSalarieVisible } from '@/lib/offre';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +62,21 @@ const ACTIVITES: { cle: Interet; titre: string; aide: string; montage?: string }
 ];
 
 const MONTAGES: Interet[] = ['RENFORT_CDD', 'RENFORT_PERSONNALISE'];
+
+/**
+ * Les activités réellement PROPOSÉES dans cet écran.
+ *
+ * Le renfort de poste (CDD salarié) est hors de l'offre publique depuis le
+ * 19/09/2026 — voir `@/lib/offre`. Mais ici on n'est pas à l'inscription : on
+ * est dans le dossier de quelqu'un qui a peut-être DÉJÀ coché la case. La lui
+ * faire disparaître effacerait une déclaration qu'elle a faite sans qu'elle
+ * puisse la reprendre. Donc : masquée pour qui ne l'a pas cochée, conservée —
+ * et décochable — pour qui l'a cochée.
+ */
+function activitesProposees(dejaCochees: Interet[]) {
+  if (renfortSalarieVisible() || dejaCochees.includes('RENFORT_CDD')) return ACTIVITES;
+  return ACTIVITES.filter((a) => a.cle !== 'RENFORT_CDD');
+}
 
 export function MaDisponibilite({ etat }: { etat: EtatDisponibilite }) {
   const { toast } = useToast();
@@ -198,7 +214,7 @@ export function MaDisponibilite({ etat }: { etat: EtatDisponibilite }) {
           demandes qui vous parviennent.
         </p>
         <div className="mt-3 space-y-2">
-          {ACTIVITES.map((a) => {
+          {activitesProposees(etat.interets).map((a) => {
             const coche = interets.includes(a.cle);
             return (
               <label

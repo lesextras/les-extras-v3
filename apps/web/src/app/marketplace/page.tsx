@@ -8,6 +8,7 @@ import { PageHeader, EmptyState, ErrorState } from "../_shared/ui";
 import { MarketplaceFilters } from "../_shared/MarketplaceFilters";
 import { MissionCard, ServiceCard } from "../_shared/cards";
 import type { Mission, Service } from "../_shared/types";
+import { renfortSalarieVisible } from "@/lib/offre";
 
 export const metadata: Metadata = { title: "Marketplace" };
 
@@ -115,7 +116,12 @@ export default async function MarketplacePage({
         title={format === "INDIVIDUEL" ? "Renforts personnalisés" : "Marketplace"}
         subtitle={
           format === "INDIVIDUEL"
-            ? "Des accompagnements 1 pour 1, facturés en prestation par la structure de l’intervenant. Un poste à couvrir, lui, se publie sur RenforTeam et se conclut en CDD."
+            ? // ⚠ La seconde phrase renvoyait vers le renfort de poste en CDD,
+              // sorti de l'offre publique le 19/09/2026 (voir `@/lib/offre`).
+              // Elle revient telle quelle avec NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+              renfortSalarieVisible()
+              ? "Des accompagnements 1 pour 1, facturés en prestation par la structure de l’intervenant. Un poste à couvrir, lui, se publie sur RenforTeam et se conclut en CDD."
+              : "Des accompagnements 1 pour 1, en présentiel ou en visioconsultation, facturés en prestation par la structure de l’intervenant."
             : "Toutes les missions de renfort et ateliers ouverts à la candidature."
         }
       />

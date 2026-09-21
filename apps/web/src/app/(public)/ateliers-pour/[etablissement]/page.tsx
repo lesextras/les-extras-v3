@@ -5,6 +5,7 @@ import { ArrowRight, Building2, ClipboardCheck, ListChecks, Scale, TriangleAlert
 import { Button } from '@/components/ui/button';
 import { metaPublique } from '@/lib/meta';
 import { ETABLISSEMENTS, SOCLE_COMMUN, trouverEtablissement } from '../donnees';
+import { renfortSalarieVisible } from '@/lib/offre';
 
 // Six types d'établissement connus à la compilation : pages entièrement
 // statiques, servies sans toucher l'API.
@@ -177,9 +178,15 @@ Tarifs, zones et disponibilités sont visibles sans compte. Vous n’en créez u
           <Button asChild>
             <Link href="/ateliers">Voir le catalogue d’ateliers</Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/comparatif-plateformes-remplacement">Ce que coûtent les autres</Link>
-          </Button>
+          {/* Le comparatif porte sur les plateformes de REMPLACEMENT : il
+              répond 404 hors offre publique depuis le 19/09/2026 (voir
+              `@/lib/offre`). Le bouton part avec lui plutôt que d'envoyer un
+              directeur d'IME sur une page morte depuis six pages sectorielles. */}
+          {renfortSalarieVisible() && (
+            <Button asChild variant="outline">
+              <Link href="/comparatif-plateformes-remplacement">Ce que coûtent les autres</Link>
+            </Button>
+          )}
         </div>
       </div>
 

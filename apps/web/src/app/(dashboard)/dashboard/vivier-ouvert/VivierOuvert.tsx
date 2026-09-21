@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { FileCheck, MapPin, MessageSquare, Search, UserRound } from 'lucide-react';
+import { renfortSalarieVisible } from '@/lib/offre';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,19 @@ const FILTRES: { cle: string; libelle: string }[] = [
   { cle: 'RENFORT_CDD', libelle: 'Remplacement · CDD' },
   { cle: 'RENFORT_PERSONNALISE', libelle: 'Renfort personnalisé' },
 ];
+
+/**
+ * Les onglets réellement affichés.
+ *
+ * Le renfort de poste sort de l'offre publique le 19/09/2026 (`@/lib/offre`) :
+ * on cesse de proposer l'onglet qui trie par ce montage. « Tout » continue de
+ * montrer les personnes qui l'ont déclaré, et leur pastille reste sur la
+ * carte — on masque une invitation, pas une donnée.
+ */
+function filtresProposes() {
+  if (renfortSalarieVisible()) return FILTRES;
+  return FILTRES.filter((f) => f.cle !== 'RENFORT_CDD');
+}
 
 export function VivierOuvert({ personnes }: { personnes: PersonneDisponible[] }) {
   const [montage, setMontage] = React.useState('TOUS');
@@ -75,7 +89,7 @@ export function VivierOuvert({ personnes }: { personnes: PersonneDisponible[] })
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        {FILTRES.map((f) => (
+        {filtresProposes().map((f) => (
           <button
             key={f.cle}
             type="button"

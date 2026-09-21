@@ -10,10 +10,23 @@ import { ArrowRight, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { metaPublique } from "@/lib/meta";
 import { LANDINGS, trouverLanding } from "../donnees";
+import { renfortSalarieVisible } from "@/lib/offre";
+
+/**
+ * `/l/renfort` promet « un remplaçant en CDD, sans commission ». C'est
+ * exactement l'offre sortie de la vitrine le 19/09/2026 (voir `@/lib/offre`),
+ * et c'est en plus une page d'atterrissage publicitaire : la laisser en ligne,
+ * c'est payer pour envoyer des gens sur une promesse qu'on ne tient plus.
+ *
+ * La donnée reste dans `LANDINGS`, intacte. Seule sa mise en ligne s'arrête.
+ */
+function landingHorsOffre(slug: string): boolean {
+  return slug === "renfort" && !renfortSalarieVisible();
+}
 import { FormulaireLanding } from "../FormulaireLanding";
 
 export function generateStaticParams() {
-  return LANDINGS.map((l) => ({ produit: l.slug }));
+  return LANDINGS.filter((l) => !landingHorsOffre(l.slug)).map((l) => ({ produit: l.slug }));
 }
 
 export async function generateMetadata({
@@ -23,14 +36,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { produit } = await params;
   const l = trouverLanding(produit);
-  if (!l) return { title: "Page introuvable", robots: { index: false } };
+  if (!l || landingHorsOffre(produit)) return { title: "Page introuvable", robots: { index: false } };
   return metaPublique({ title: l.titre, description: l.sous, path: `/l/${l.slug}` });
 }
 
 export default async function LandingPage({ params }: { params: Promise<{ produit: string }> }) {
   const { produit } = await params;
   const l = trouverLanding(produit);
-  if (!l) notFound();
+  // ⚠ PAS DE `redirect()` ICI : dans une page prérendue, Next ne peut pas
+  // émettre de 3xx (voir la note de `next.config.mjs`). La redirection de
+  // `/l/renfort` vers `/renforteam` est dans `redirects()`. Ce garde-fou-ci ne
+  // sert que si quelqu'un atteint la route malgré elle.
+  if (!l || landingHorsOffre(produit)) notFound();
 
   return (
     <div className="mx-auto max-w-5xl space-y-12 py-4">
@@ -69,9 +86,10 @@ export default async function LandingPage({ params }: { params: Promise<{ produi
         <p>
           <strong className="text-foreground">Les Extras</strong> est édité par l&apos;association ADéPA
           (Melun, Seine-et-Marne), organisme de formation certifié Qualiopi. La mise en relation est
-          gratuite pour les établissements comme pour les intervenants — 0 % de commission, sans
-          abonnement. Ce que l&apos;association vend, elle le dit&nbsp;: des formations au devis et un
-          assistant d&apos;écriture. Le reste est gratuit, et le restera.
+          gratuite pour les établissements comme pour les intervenants, sans abonnement, et le
+          catalogue d&apos;ateliers est à 0&nbsp;% de commission. Ce que l&apos;association
+          facture, elle le dit&nbsp;: des formations au devis, un assistant d&apos;écriture, et
+          une commission sur les renforts RenforTeam, où elle vérifie chaque intervenant.
         </p>
       </section>
     </div>

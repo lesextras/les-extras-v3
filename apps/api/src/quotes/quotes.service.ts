@@ -8,7 +8,7 @@ import { ServiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MESSAGE_HORS_PORTEE, reservableParCompte } from '../services/portee-salarie';
 import { bornes, page } from '../common/pagination';
-import { decomposerPrix, COMMISSION_DEFAUT } from '../billing/commission';
+import { decomposerPrix, tauxCommission } from '../billing/commission';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailService } from '../common/mail/mail.service';
 import { CreateQuoteRequestDto, SendQuoteDto } from './dto/quote.dto';
@@ -359,13 +359,23 @@ export class QuotesService {
     // Modèle prestataire : le montant facturé à l'établissement est le tarif
     // de l'intervenant AUGMENTÉ des frais de gestion. Rien n'est prélevé sur
     // l'intervenant, qui perçoit exactement le montant qu'il a chiffré.
+    //
+    // ⚠ DEUX RÉGIMES DEPUIS LE 21/09/2026, ET C'EST LE DEVIS QUI DIT LEQUEL.
+    // Un devis porte soit un `serviceId` (atelier du catalogue : gratuit),
+    // soit un `missionId` (renfort RenforTeam : commissionné, parce que
+    // l'association y vérifie l'intervenant). Voir `billing/commission.ts`.
+    //
+    // ⚠ Le test est `missionId`, pas la catégorie ni le titre : c'est la seule
+    // donnée qui ne dépend pas de ce que quelqu'un a saisi dans un champ
+    // libre. Un devis sans mission est un devis de catalogue, point.
     const compteClient = await this.prisma.account.findUnique({
       where: { id: quote.clientAccountId },
       select: { commissionRate: true },
     });
-    const taux = compteClient?.commissionRate
-      ? Number(compteClient.commissionRate)
-      : COMMISSION_DEFAUT;
+    const taux = tauxCommission({
+      estRenfort: Boolean(quote.missionId),
+      tauxCompte: compteClient?.commissionRate ? Number(compteClient.commissionRate) : null,
+    });
     const { prixClientHt } = decomposerPrix(Number(quote.amount ?? 0), taux);
 
     // « BON POUR ACCORD » — QUI ACCEPTE, ET À QUEL TITRE.

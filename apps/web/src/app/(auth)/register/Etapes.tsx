@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { lancerConfettis } from '@/lib/confetti';
-import { GROUPES_DROITS } from '@/lib/droits';
+import { groupesDroitsProposes } from '@/lib/droits';
+import { renfortSalarieVisible } from '@/lib/offre';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -641,7 +642,7 @@ function ListeDroits({
 }) {
   return (
     <div className="space-y-4">
-      {GROUPES_DROITS.map((groupe) => (
+      {groupesDroitsProposes().map((groupe) => (
         <fieldset key={groupe.titre}>
           <legend
             className={cn(
@@ -985,6 +986,19 @@ const ACTIVITES: Activite[] = [
 /** Les deux activités qui rendent visible dans le vivier. */
 const MONTAGES = ['RENFORT_CDD', 'RENFORT_PERSONNALISE'];
 
+/**
+ * Les activités réellement PROPOSÉES à l'inscription.
+ *
+ * Depuis le 19/09/2026, le renfort de poste (CDD salarié) est hors de l'offre
+ * publique — voir `@/lib/offre`. La case n'est plus montrée ; la clé, le
+ * montage, le filtre `MONTAGES` et tout ce qui vit côté serveur restent en
+ * place, intacts, pour les comptes qui l'ont déjà cochée.
+ */
+function activitesProposees(): Activite[] {
+  if (renfortSalarieVisible()) return ACTIVITES;
+  return ACTIVITES.filter((a) => a.cle !== 'RENFORT_CDD');
+}
+
 function CaseActivite({
   activite,
   coche,
@@ -1187,7 +1201,7 @@ export function EtapeActivites({ onFait }: { onFait: () => void }) {
         aide="Plusieurs réponses possibles, et tout se change plus tard depuis votre espace."
       >
         <div className="space-y-2">
-          {ACTIVITES.map((a) => (
+          {activitesProposees().map((a) => (
             <CaseActivite
               key={a.cle}
               activite={a}
@@ -1308,6 +1322,17 @@ function CarteUsage({
 }
 
 export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
+  /**
+   * ⚠ La seconde carte — le renfort de poste en CDD — n'est plus proposée
+   * depuis le 19/09/2026 (voir `@/lib/offre`). Elle s'adressait à quelqu'un
+   * SANS structure : la remplacer par le renfort d'indépendant n'aurait pas de
+   * sens, celui-ci suppose justement une structure qui facture. On cesse donc
+   * de l'offrir, et l'écran se réduit à un seul usage.
+   *
+   * Rien n'est supprimé : le bloc entier revient tel quel avec
+   * NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+   */
+  const montreCdd = renfortSalarieVisible();
   const [reserver, setReserver] = React.useState(true);
   const [remplacer, setRemplacer] = React.useState(false);
   const [actif, setActif] = React.useState(false);
@@ -1324,8 +1349,8 @@ export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
       await apiRequest('/disponibilites/moi', {
         method: 'PATCH',
         body: {
-          interets: remplacer ? ['RENFORT_CDD'] : [],
-          ...(remplacer
+          interets: montreCdd && remplacer ? ['RENFORT_CDD'] : [],
+          ...(montreCdd && remplacer
             ? {
                 actif,
                 montages: ['RENFORT_CDD'],
@@ -1361,9 +1386,13 @@ export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
       */}
       <Carte
         titre="Ce qui vous intéresse"
-        aide="Les deux sont possibles, et rien n’est définitif."
+        aide={
+          montreCdd
+            ? 'Les deux sont possibles, et rien n’est définitif.'
+            : 'Rien n’est définitif : tout se change plus tard depuis votre espace.'
+        }
       >
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className={cn('grid gap-2', montreCdd && 'sm:grid-cols-2')}>
           <CarteUsage
             icone={Sparkles}
             titre="Réserver un atelier ou une formation"
@@ -1371,18 +1400,20 @@ export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
             actif={reserver}
             onBascule={() => setReserver(!reserver)}
           />
-          <CarteUsage
-            icone={Users}
-            titre="Faire du renfort en CDD"
-            aide="L’établissement vous embauche. Aucune structure ni SIRET à fournir."
-            etiquette="CDD salarié"
-            actif={remplacer}
-            onBascule={() => setRemplacer(!remplacer)}
-          />
+          {montreCdd && (
+            <CarteUsage
+              icone={Users}
+              titre="Faire du renfort en CDD"
+              aide="L’établissement vous embauche. Aucune structure ni SIRET à fournir."
+              etiquette="CDD salarié"
+              actif={remplacer}
+              onBascule={() => setRemplacer(!remplacer)}
+            />
+          )}
         </div>
       </Carte>
 
-      {remplacer && (
+      {montreCdd && remplacer && (
         <>
           <BlocVisibilite
             actif={actif}

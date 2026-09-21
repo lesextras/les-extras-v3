@@ -9,6 +9,7 @@ import { requireSession, fetchApi } from "../../../../_shared/server";
 import { PageHeader, SectionTitle, ErrorState } from "../../../../_shared/ui";
 import { QuoteEditor, QuoteDecision, type QuoteLine } from "../../../../_shared/QuotePanel";
 import { DecompositionPrix } from "../../../../_shared/DecompositionPrix";
+import { tauxCommission } from "@/lib/commission";
 import { formatDate } from "../../../../_shared/format";
 
 export const metadata: Metadata = { title: "Devis" };
@@ -35,6 +36,13 @@ interface Quote {
   clientAccount?: { name?: string | null } | null;
   providerAccount?: { name?: string | null } | null;
   service?: { id: string; title: string } | null;
+  /**
+   * ⚠ C'EST CE CHAMP QUI DÉCIDE DU RÉGIME TARIFAIRE. Un devis porte soit un
+   * `serviceId` (atelier du catalogue, 0 %), soit un `missionId` (renfort
+   * RenforTeam, commissionné). `findOne` renvoie le devis entier, donc il est
+   * présent dans la charge utile.
+   */
+  missionId?: string | null;
   viewerIsClient: boolean;
   viewerIsProvider: boolean;
 }
@@ -196,8 +204,16 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
               ) : null}
             </CardContent>
           </Card>
+          {/* ⚠ LE TAUX DÉPEND DU DEVIS, PAS DU COMPTE QUI LE REGARDE. Un
+              devis de renfort (il porte un `missionId`) est commissionné à
+              15 % depuis le 21/09/2026 ; un devis d'atelier reste à zéro. Le
+              serveur applique exactement la même règle à l'acceptation
+              (`quotes.service.ts`), et les deux doivent rester d'accord :
+              afficher un total que la facture contredit est la façon la plus
+              rapide de perdre la confiance des deux parties. */}
           <DecompositionPrix
             tarifIntervenant={Number(q.amount ?? 0)}
+            taux={tauxCommission({ estRenfort: Boolean(q.missionId) })}
             vue={q.viewerIsClient ? "etablissement" : "intervenant"}
           />
           {q.message ? (

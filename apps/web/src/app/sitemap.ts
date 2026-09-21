@@ -5,6 +5,7 @@ import { RUBRIQUES } from "./(public)/aide/contenu";
 import { GUIDES_ECRITS } from "./(public)/guides/contenu";
 import { ETABLISSEMENTS } from "./(public)/ateliers-pour/donnees";
 import { LANDINGS } from "./(public)/l/donnees";
+import { renfortSalarieVisible } from "@/lib/offre";
 
 // Sitemap dynamique : pages statiques publiques + catalogue & missions publiés.
 // Régénéré périodiquement (revalidate) et tolérant à une API indisponible.
@@ -31,6 +32,25 @@ async function safeJson<T>(path: string): Promise<T | null> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const now = new Date();
+
+  /*
+   * ⚠ UN SITEMAP QUI DÉCLARE UNE 404 EST PIRE QUE PAS DE SITEMAP.
+   *
+   * Depuis le 19/09/2026, les pages du renfort de POSTE — celui qui se conclut
+   * en CDD salarié — répondent 404 hors offre publique (voir `@/lib/offre`).
+   * Elles doivent donc sortir d'ici EN MÊME TEMPS, sans quoi on envoie Google
+   * sur une quinzaine d'adresses mortes depuis notre propre fichier.
+   *
+   * Rien n'est retiré des listes : elles sont filtrées à la génération, et
+   * reviennent entières avec NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+   */
+  const renfortSalarie = renfortSalarieVisible();
+  const HORS_OFFRE = new Set([
+    "/outils/cout-remplacement",
+    "/comparatif-plateformes-remplacement",
+    "/simulateur",
+    "/renfort",
+  ]);
 
   // Uniquement des URL réellement publiques et servant un 200 :
   // /freelances n'existe pas (404) et /marketplace redirige vers la connexion.
@@ -88,7 +108,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/confiance-lex",
     "/simulateur",
     "/renfort",
-  ].map((p) => ({
+  ]
+    .filter((p) => renfortSalarie || !HORS_OFFRE.has(p))
+    .map((p) => ({
     url: `${base}${p}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
@@ -125,24 +147,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Les pages d'atterrissage par produit : courtes, mais ce sont des pages
     // de contenu à part entière, et une campagne qui pointe dessus doit
     // trouver Google déjà au courant.
-    ...LANDINGS.map((l) => ({
+    // `/l/renfort` vend le CDD direct : elle sort avec les autres.
+    ...LANDINGS.filter((l) => renfortSalarie || l.slug !== "renfort").map((l) => ({
       url: `${base}/l/${l.slug}`,
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
-    ...METIERS.map((m) => ({
-      url: `${base}/renfort/metier/${m.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    })),
-    ...VILLES.map((v) => ({
-      url: `${base}/renfort/${v.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    })),
+    ...(renfortSalarie
+      ? METIERS.map((m) => ({
+          url: `${base}/renfort/metier/${m.slug}`,
+          lastModified: now,
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+        }))
+      : []),
+    ...(renfortSalarie
+      ? VILLES.map((v) => ({
+          url: `${base}/renfort/${v.slug}`,
+          lastModified: now,
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+        }))
+      : []),
   ];
 
   const dynamic: MetadataRoute.Sitemap = [];

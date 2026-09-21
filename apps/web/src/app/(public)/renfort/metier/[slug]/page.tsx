@@ -4,8 +4,12 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Check, Clock, MapPin, ShieldCheck } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
 import { METIERS, VILLES, trouverMetier } from "../../donnees";
+import { renfortSalarieVisible } from "@/lib/offre";
 
 export function generateStaticParams() {
+  // Hors offre publique, la page répond 404 : ne pas prérendre 7 URLs pour
+  // rien. Voir `@/lib/offre`.
+  if (!renfortSalarieVisible()) return [];
   return METIERS.map((m) => ({ slug: m.slug }));
 }
 
@@ -42,6 +46,21 @@ export async function generateMetadata({ params: paramsPromesse }: { params: Pro
 }
 
 export default async function MetierPage({ params: paramsPromesse }: { params: Promise<{ slug: string }>}) {
+  /*
+   * ⚠ HORS OFFRE PUBLIQUE DEPUIS LE 19/09/2026 — ET LE GARDE-FOU N'EST PAS ICI.
+   *
+   * Cette page vend le renfort de POSTE, celui qui se conclut en CDD salarié.
+   * Décision de Siham : il sort de la vitrine (voir `@/lib/offre`). Rien n'est
+   * supprimé — la page reste entière et redevient servie en repassant
+   * NEXT_PUBLIC_OFFRE_PUBLIQUE à « complete ».
+   *
+   * ⚠⚠ NE PAS REMETTRE DE `redirect()` NI DE `notFound()` DANS CE COMPOSANT.
+   * On a essayé, et c'est le piège que `next.config.mjs` documente déjà deux
+   * fois : dans une page prérendue, Next ne peut pas émettre de 3xx et retombe
+   * sur un rafraîchissement méta — mesuré ici, la route répondait **200** en
+   * servant la page « Erreur 404 ». La redirection appartient à la
+   * configuration : elle est dans `redirects()`, section « OFFRE PUBLIQUE ».
+   */
   const params = await paramsPromesse;
   const metier = trouverMetier(params.slug);
   if (!metier) notFound();

@@ -78,7 +78,7 @@ const VALEURS = [
     icone: Handshake,
     titre: "Gratuité de la mise en relation",
     texte:
-      "Zéro commission sur ce que touche l’intervenant. Ce n’est pas une offre de lancement, c’est le modèle.",
+      "Zéro commission sur les ateliers et les formations du catalogue. Ce n’est pas une offre de lancement, c’est le modèle.",
   },
   {
     icone: Lightbulb,

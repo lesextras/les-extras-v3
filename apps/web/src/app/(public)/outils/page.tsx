@@ -2,13 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Calculator, PiggyBank, ArrowRight } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
+import { renfortSalarieVisible } from "@/lib/offre";
 
-export const metadata: Metadata = metaPublique({
-  title: "Outils gratuits pour le médico-social",
-  description:
-    "Calculateurs gratuits : coût d'un remplacement (intérim vs indépendant), budget annuel d'ateliers éducatifs. Sans inscription.",
-  path: "/outils",
-});
+// La description annonçait le calculateur de remplacement en premier. Il
+// répond 404 hors offre publique depuis le 19/09/2026 (voir `@/lib/offre`) :
+// une description qui promet un outil absent est un résultat de recherche qui
+// déçoit avant même le clic.
+export const metadata: Metadata = renfortSalarieVisible()
+  ? metaPublique({
+      title: "Outils gratuits pour le médico-social",
+      description:
+        "Calculateurs gratuits : coût d'un remplacement (intérim vs indépendant), budget annuel d'ateliers éducatifs. Sans inscription.",
+      path: "/outils",
+    })
+  : metaPublique({
+      title: "Outils gratuits pour le médico-social",
+      description:
+        "Calculateurs gratuits pour préparer vos arbitrages : budget annuel d'ateliers éducatifs, coût par jeune et par mois. Sans inscription.",
+      path: "/outils",
+    });
 
 const OUTILS = [
   {
@@ -37,7 +49,9 @@ export default function OutilsPage() {
         </p>
       </div>
       <div className="grid gap-6 md:grid-cols-2">
-        {OUTILS.map((o) => {
+        {OUTILS.filter(
+          (o) => renfortSalarieVisible() || o.href !== "/outils/cout-remplacement",
+        ).map((o) => {
           const Icone = o.icone;
           return (
             <Link

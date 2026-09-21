@@ -137,7 +137,7 @@ export const GUIDES: Guide[] = [
         titre: "Facturez, et gardez tout",
         texte: [
           "Contrat, déclaration d'heures, facture PDF : tout est généré depuis la mission, à votre nom et sous votre SIRET. Vous facturez l'établissement en direct.",
-          "Aucune commission n'est prélevée : vous touchez 100 % de votre tarif. Le modèle associatif se finance sur les formations Qualiopi et les crédits LEX : jamais sur votre rémunération.",
+          "Vous touchez 100 % de votre tarif dans les deux cas. Sur vos ateliers, rien n'est ajouté. Sur un renfort RenforTeam, 15 % de frais de gestion s'ajoutent à votre tarif et sont payés par le demandeur : ils rémunèrent la vérification de votre dossier par l'association, qui encaisse et vous reverse.",
         ],
       },
       {

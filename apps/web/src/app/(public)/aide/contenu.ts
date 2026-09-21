@@ -96,7 +96,8 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "combien-ca-coute",
         question: "Combien la plateforme me prélève-t-elle ?",
         reponse: [
-          "Rien. Aucune commission n'est prélevée sur ce que vous facturez : vous touchez 100 % de votre prix, et la mise en relation est gratuite pour l'établissement aussi.",
+          "Sur vos ateliers et vos formations, rien : vous facturez l'établissement en direct, vous touchez 100 % de votre prix, et la mise en relation est gratuite pour lui aussi.",
+          "Sur un renfort RenforTeam, 15 % de frais de gestion. C'est le seul cas, et ils s'ajoutent à votre tarif au lieu d'être prélevés dessus : vous touchez toujours 100 % de ce que vous avez chiffré, c'est le demandeur qui les paie. L'association y vérifie chaque intervenant avant de l'envoyer, encaisse la prestation et vous la reverse. La ligne est sur le devis avant que quiconque ne l'accepte.",
           "C'est le parti pris du modèle associatif. L'association se finance sur les formations Qualiopi qu'elle facture au devis et sur les crédits LEX (l'assistant IA), jamais sur votre rémunération.",
         ],
       },
@@ -137,8 +138,8 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "ce-qui-est-gratuit",
         question: "Qu'est-ce qui est gratuit ?",
         reponse: [
-          "Toute la mise en relation et l'aide à la contractualisation : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité, gratuit, pour les établissements comme pour les intervenants, sans commission.",
-          "Deux services seulement se paient : les formations Qualiopi (au devis, facturées par l'association) et LEX, l'assistant IA à crédits. Un renfort ou un atelier se paie à son intervenant, à son tarif : la plateforme n'ajoute rien.",
+          "Tout le logiciel : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité. Gratuit, pour les établissements comme pour les intervenants, sans abonnement.",
+          "Ce qui se paie : les formations Qualiopi (au devis, facturées par l'association), LEX (l'assistant IA, à crédits), et 15 % de frais de gestion sur les renforts RenforTeam — ils paient la vérification de l'intervenant et s'ajoutent à son tarif. Un atelier, lui, se paie à son intervenant, à son tarif, et la plateforme n'ajoute rien.",
         ],
       },
       {

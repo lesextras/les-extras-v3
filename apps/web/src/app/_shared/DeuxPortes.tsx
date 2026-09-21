@@ -8,15 +8,36 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Building2, UserRound } from "lucide-react";
 import { wp } from "@/lib/media";
+import { renfortSalarieVisible } from "@/lib/offre";
 
 const PORTES = [
   {
     icone: Building2,
-    qui: "Je suis un établissement",
-    titre: "Trouver un intervenant et gérer vos remplacements",
-    texte:
-      "MECS, IME, ITEP, EHPAD, SESSAD. Un renfort ce soir, un atelier au trimestre, une formation pour l’équipe.",
-    reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis sous 48 h"],
+    // ⚠ « JE SUIS UN ÉTABLISSEMENT » FERMAIT LA PORTE AUX PARTICULIERS
+    // (précision de Siham, 21/09/2026). C'est l'aiguillage de l'accueil : une
+    // mère qui cherche une psychomotricienne lit les deux étiquettes, ne se
+    // reconnaît ni dans « établissement » ni dans « professionnel », et s'en
+    // va. Hors offre complète, la demande est ouverte à tous — l'étiquette dit
+    // ce qu'on vient FAIRE, plus ce qu'on EST.
+    qui: renfortSalarieVisible() ? "Je suis un établissement" : "Je cherche un intervenant",
+    // ⚠ « gérer vos remplacements » et « renfort en cascade » annoncent le
+    // renfort de POSTE, sorti de l'offre publique le 19/09/2026 (voir
+    // `@/lib/offre`). C'est la première carte que voit un directeur : elle ne
+    // peut pas promettre ce que la page suivante ne propose plus. L'ancienne
+    // version est conservée et revient en offre complète.
+    ...(renfortSalarieVisible()
+      ? {
+          titre: "Trouver un intervenant et gérer vos remplacements",
+          texte:
+            "MECS, IME, ITEP, EHPAD, SESSAD. Un renfort ce soir, un atelier au trimestre, une formation pour l’équipe.",
+          reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis sous 48 h"],
+        }
+      : {
+          titre: "Faire intervenir un spécialiste et programmer vos ateliers",
+          texte:
+            "Pour votre enfant, votre proche ou vous-même. Pour votre école, votre mairie, votre établissement. Un renfort sur une situation, un atelier au trimestre.",
+          reperes: ["Renfort par des indépendants", "Ateliers clés en main", "Devis sous 48 h"],
+        }),
     href: "/renforteam",
     secondaire: { libelle: "Voir le catalogue", href: "/ateliers" },
     /**
@@ -43,9 +64,17 @@ const PORTES = [
     icone: UserRound,
     qui: "Je suis un professionnel",
     titre: "Trouver des missions et proposer vos services",
+    // ⚠ « zéro commission » COUVRAIT LES MISSIONS AUSSI, et ce n'est plus vrai
+    // depuis le 21/09/2026 : RenforTeam est commissionné, parce que
+    // l'association vérifie chaque intervenant avant de l'envoyer. Le catalogue
+    // d'ateliers, lui, reste à 0 %. La carte dit donc lequel des deux.
     texte:
-      "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue, zéro commission.",
-    reperes: ["0 % de commission", "Feuille de mission et facture", "Dossier déposé une fois"],
+      "Éducateur, moniteur, AES, psychologue. Vos missions près de chez vous, vos ateliers au catalogue à 0 % de commission.",
+    reperes: [
+      "0 % sur vos ateliers",
+      "Feuille de mission et facture",
+      "Dossier déposé une fois",
+    ],
     // La porte menait droit au formulaire d’inscription : on demandait de
     // créer un compte avant d’avoir rien expliqué. Les deux portes mènent
     // désormais à une page qui explique, l’inscription est le lien secondaire.

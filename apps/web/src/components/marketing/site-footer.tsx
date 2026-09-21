@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Script from 'next/script';
 import { Logo } from '@/components/brand/logo';
+import { renfortSalarieVisible } from '@/lib/offre';
 
 /**
  * PIED DE PAGE — RÉÉQUILIBRÉ LE 2 SEPTEMBRE 2026.
@@ -117,6 +118,36 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   },
 ];
 
+/**
+ * LES COLONNES RÉELLEMENT AFFICHÉES.
+ *
+ * ⚠ TROIS LIENS DE CE PIED DE PAGE POINTENT SUR DES PAGES QUI RÉPONDENT 404
+ * HORS OFFRE PUBLIQUE depuis le 19/09/2026 : « Renfort par métier »
+ * (/renfort), « Simulateur d'économies » (/simulateur) et « Prix des
+ * plateformes » (/comparatif-plateformes-remplacement). Un pied de page est
+ * présent sur les 93 pages du site : trois liens morts multipliés par 93,
+ * c'est le signal interne le plus visible qu'on puisse envoyer contre soi.
+ *
+ * Les entrées ne sont pas supprimées de `columns` — elles sont filtrées à
+ * l'affichage, et reviennent avec NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+ *
+ * ⚠ La règle des SEPT LIENS PAR COLONNE vaut toujours pour `columns` ; filtrer
+ * ne peut que raccourcir. En revanche une colonne vidée entièrement laisserait
+ * son titre seul : on l'écarte.
+ */
+const HORS_OFFRE = new Set([
+  '/renfort',
+  '/simulateur',
+  '/comparatif-plateformes-remplacement',
+]);
+
+function colonnesAffichees() {
+  if (renfortSalarieVisible()) return columns;
+  return columns
+    .map((col) => ({ ...col, links: col.links.filter((l) => !HORS_OFFRE.has(l.href)) }))
+    .filter((col) => col.links.length > 0);
+}
+
 /** Pied de page marketing. */
 export function SiteFooter() {
   return (
@@ -131,13 +162,22 @@ export function SiteFooter() {
                 remplacement en établissement : un aide-soignant ou un
                 éducateur qui remplace ne peut pas être indépendant, il est
                 embauché en CDD. « Intervenant » couvre les deux dispositifs
-                sans les confondre. */}
+                sans les confondre.
+
+                ⚠ DEUX CORRECTIONS DE SEPTEMBRE 2026, ET AUCUNE N'EST
+                COSMÉTIQUE. « établissements médico-sociaux » seuls ne couvre
+                plus la demande (19/09) : un particulier, une école, une mairie
+                demandent directement. Et « reliés sans commission » (21/09)
+                était devenu faux pour RenforTeam, qui est commissionné parce
+                que l'association vérifie chaque intervenant. Ce pied de page
+                est sur les 93 pages du site : une promesse tarifaire fausse y
+                est fausse 93 fois. */}
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Les établissements médico-sociaux et les intervenants qui connaissent leurs
-              publics, reliés sans commission.
+              Les particuliers, les écoles et les établissements, et les intervenants qui
+              connaissent leurs publics, réunis au même endroit.
             </p>
           </div>
-          {columns.map((col) => (
+          {colonnesAffichees().map((col) => (
             <div key={col.title}>
               <p className="text-sm font-semibold text-foreground">{col.title}</p>
               <ul className="mt-3 space-y-2">
