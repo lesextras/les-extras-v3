@@ -399,54 +399,62 @@ export default async function LandingPage() {
                 <Sparkles className="size-3.5" />
                 Le logiciel du médico-social · association ADéPA
               </span>
-              {/* ═══ LE TITRE S'OUVRE SUR LA SITUATION (21/09/2026) ═══════════
-                  ⚠⚠ C'EST LE TROISIÈME TITRE DE CETTE PAGE, ET IL FAUT DIRE
-                  POURQUOI PLUTÔT QUE DE FAIRE COMME SI.
+              {/* ═══ LE TITRE, ET LES QUATRE VERSIONS QU'IL A EUES ═══════════
+                  ⚠⚠ ON EST REVENU À LA VERSION 2. NE PAS REFAIRE LE DÉTOUR.
 
                   1. « Les interventions portées par ceux qui font le terrain »
                      disait QUI, pas QUOI : une signature, pas une promesse.
                   2. « Renforts, ateliers, formations : le bon réseau dans un
-                     seul logiciel » a corrigé ça — il nommait les usages et le
-                     logiciel. C'était juste, et l'audit du 3/09 le donnait
-                     encore comme perfectible pour une raison qu'on comprend
-                     mieux maintenant : il dit ce que le produit EST.
-                  3. Depuis la refonte du 21/09, TOUTE la page raconte d'abord
-                     la situation et ne nomme l'offre qu'ensuite. Le premier
-                     écran était le dernier bloc à faire l'inverse — et c'est
-                     le seul que le visiteur voit à coup sûr. Siham : « la home
-                     page n'a pas changé », en regardant précisément ce
-                     bloc-là.
+                     seul logiciel » — il nomme la catégorie et le produit.
+                  3. Le 21/09, je l'ai remplacé par une phrase de situation
+                     (« Vous cherchez depuis des semaines… ») pour aligner le
+                     premier écran sur le reste de la page, refaite en
+                     « problème d'abord ». Siham l'a refusé, et elle avait
+                     raison : un héros raconte ce que le produit EST, la page
+                     raconte ce qu'il RÉSOUT. C'est la division du travail
+                     normale, pas une incohérence.
+                  4. Retour au n° 2, enrichi du seul élément qui lui manquait
+                     vraiment : les établissements nommés.
 
-                  ⚠ LE TITRE NE PORTE PLUS LES MOTS-CLÉS, ET C'EST ASSUMÉ. Ils
-                  sont dans la balise `<title>` (voir `metadata` en tête de
-                  fichier), dans le sur-titre juste au-dessus, et dans le
-                  paragraphe juste en dessous — qui nomme les quatre services
-                  dans l'ordre exact où la page les traite. Un H1 qui répète la
-                  balise ne rapporte rien ; un H1 qui fait se reconnaître, si.
-
-                  ⚠ ET IL NE PROMET AUCUN DÉLAI NI AUCUNE DISPONIBILITÉ. « Il
-                  est peut-être à vingt minutes » aurait été plus vendeur et
-                  faux : le réseau est francilien et rien ne garantit une
-                  réponse. « Ce n'est pas qu'il n'y a personne » dit la même
-                  chose sans rien promettre — c'est un constat sur le marché,
-                  pas un engagement de la plateforme. */}
+                  ⚠ CE CHOIX EST ADOSSÉ AUX CONCURRENTS, RELEVÉS LE 21/09 :
+                  Hublo joue l'émotion (« Préserver ce qui vous a fait choisir
+                  votre métier ») parce qu'il est connu ; Brigad joue le slogan
+                  mais s'appuie sur « 12 000 établissements » en sous-titre ;
+                  NotaSuivi — le concurrent direct, de notre taille — est le
+                  plus concret des trois et nomme les sigles DANS son titre
+                  (« IME · ITEP · SESSAD · MECS · ESAT »). Sans notoriété ni
+                  chiffres à afficher, c'est la voie concrète qui paie. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Vous cherchez depuis des semaines.{' '}
-                <span className="text-secondary">Ce n’est pas qu’il n’y a personne.</span>
+                Renforts, ateliers, formations&nbsp;:{' '}
+                <span className="text-secondary">le bon réseau dans un seul logiciel.</span>
               </h1>
-              {/* LE PARAGRAPHE PORTE CE QUE LE TITRE NE DIT PLUS : les quatre
-                  services, et le fait qu'ils partagent un seul dossier. Les
-                  quatre mots sont dans l'ORDRE des quatre sections qui suivent
-                  — c'est ce qui fait que le premier écran annonce la page au
-                  lieu de vivre à côté d'elle.
+              {/* LE SOUS-TITRE NOMME LES PUBLICS, ce qui manquait au titre n° 2
+                  et ce que NotaSuivi fait mieux que nous depuis le début : les
+                  sigles sont exactement ce que les gens tapent, et c'est à eux
+                  qu'un directeur se reconnaît.
+
+                  ⚠ IL NE RÉPÈTE PAS LES TROIS PASTILLES qui le suivent (0 %,
+                  48 h, Qualiopi). Elles disent déjà le prix, le délai et la
+                  certification ; les réécrire ici ferait lire deux fois la
+                  même ligne.
+
+                  ⚠⚠ ET SURTOUT : PAS DE « MISE EN RELATION GRATUITE » TOUT
+                  COURT. Depuis le 21/09, RenforTeam prend 15 % de frais de
+                  gestion ; seuls les ateliers et les formations sont à 0 %.
+                  Une gratuité annoncée sans son périmètre est démentie deux
+                  écrans plus bas, sur la page qui vend le renfort — c'est la
+                  pastille « 0 % sur les ateliers » qui porte la nuance, et
+                  elle doit rester ainsi libellée.
+
                   ⚠ « devis, feuille de mission, facture » et pas « contrat » :
                   le logiciel édite ces trois-là. Le contrat de travail reste
                   rédigé par l'établissement, et l'écrire autrement promet de
-                  l'intérim qu'on ne fait pas. */}
+                  l'intérim qu'on ne fait pas. La même phrase est dans
+                  `QuatreSituations` : les deux bougent ensemble. */}
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Un renfort, un atelier, une formation, un écrit professionnel&nbsp;: quatre
-                blocages du médico-social, et un seul endroit où le devis, la feuille de mission
-                et la facture sont édités.
+                Pour les IME, ITEP, SESSAD, MECS, ESAT, les écoles et les familles. Vous décrivez
+                le besoin, le réseau répond, et le devis, la feuille de mission et la facture sont
+                édités ici.
               </p>
 
               {/* LA BARRE DE RECHERCHE A QUITTÉ LE HÉROS.
