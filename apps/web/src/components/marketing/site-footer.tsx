@@ -34,6 +34,14 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       // L'ancre `/#ateliers` n'existe pas sur l'accueil : le lien ne bougeait
       // pas la page. Le catalogue d'ateliers a sa propre route.
       { label: 'Ateliers', href: '/ateliers' },
+      // ⚠ LEX N'AVAIT AUCUN LIEN DE PIED DE PAGE VERS SA PROPRE PAGE (21/09).
+      // Les deux liens qui le nommaient — « Prix d'un écrit avec l'IA » et
+      // « Cadre de confiance LEX » — mènent à des pages de comparaison et de
+      // déontologie : aucune ne dit ce que le produit fait. La page `/lex`,
+      // créée le même jour, est la seule qui répond à ça, et elle appartient à
+      // la colonne « Produit ». Cette colonne passe à SEPT liens, le plafond
+      // fixé le 2/09 : ne rien y ajouter sans en retirer un.
+      { label: 'LEX, l’assistant d’écriture', href: '/lex' },
       { label: 'Renfort par métier', href: '/renfort' },
       { label: 'Tarifs', href: '/#tarifs' },
       { label: "Simulateur d'économies", href: '/simulateur' },

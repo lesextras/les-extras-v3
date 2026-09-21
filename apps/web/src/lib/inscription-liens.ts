@@ -53,6 +53,23 @@ export const INSCRIPTION = {
     libelle: 'Publier un besoin',
   },
 
+  /**
+   * Le chemin DEMANDEUR → décrire un besoin de renfort, SANS forcer le type de
+   * compte.
+   *
+   * ⚠ IL NE FAUT PAS LE REMPLACER PAR `publierBesoin` (21/09/2026). Hors offre
+   * complète, RenforTeam s'adresse aussi aux particuliers, aux familles, aux
+   * écoles et aux mairies — la page le dit noir sur blanc (« Qui peut
+   * demander ? Tout le monde »). `?type=etablissement` saute l'écran des
+   * cartes et crée un compte ESTABLISHMENT : une mère qui cliquait se
+   * retrouvait à devoir nommer son établissement, avec un compte du mauvais
+   * type dont le slug public ne se recalcule jamais.
+   */
+  demanderIntervenant: {
+    href: '/register?next=/dashboard/renforts',
+    libelle: 'Demander un intervenant',
+  },
+
   /** Le chemin intervenant → voir les missions ouvertes. */
   chercherMissions: {
     href: '/register?next=/dashboard/opportunites',

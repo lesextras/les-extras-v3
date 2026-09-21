@@ -55,6 +55,7 @@ import {
   HeartHandshake,
   FileText,
   Scale,
+  DoorClosed,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,10 @@ import { formatDate } from "../../_shared/format";
 import { metaPublique } from "@/lib/meta";
 import { cn } from "@/lib/utils";
 import { renfortSalarieVisible, visioconsultationVisible } from "@/lib/offre";
+// ⚠ UN LIBELLÉ PAR DESTINATION : les libellés d'inscription ne s'écrivent plus
+// dans la page, ils s'importent. La règle s'est défaite trois fois ;
+// `lib/__tests__/inscription-liens.test.ts` échoue si une page recommence.
+import { INSCRIPTION } from "@/lib/inscription-liens";
 // Venus de l'accueil le 08/09/2026 : l'accueil traite les trois usages à
 // égalité, et le détail du renfort — le formulaire unique, la cascade, les
 // écrans du produit — appartient à la page qui raconte le renfort.
@@ -144,6 +149,41 @@ const DEMANDEURS = [
     icone: MapPin,
     titre: "Les mairies et les collectivités",
     texte: "Périscolaire, centre de loisirs, service enfance : un appui sur une situation.",
+  },
+];
+
+/**
+ * LES TROIS PORTES DÉJÀ POUSSÉES — le deuxième acte de la page.
+ *
+ * ⚠ CHAQUE ENTRÉE DÉCRIT UN CHEMIN RÉEL, PAS UN CONCURRENT. On ne dit de mal
+ * ni du CAMSP, ni des libéraux, ni des établissements : ils ne sont pas en
+ * cause, ils sont saturés. Écrire ces trois blocs comme des reproches
+ * retournerait contre nous exactement les professionnels avec qui nos
+ * intervenants doivent travailler ensuite.
+ *
+ * ⚠ AUCUNE DURÉE, AUCUN POURCENTAGE. Nous ne mesurons pas les délais d'attente
+ * et nous n'en publions donc aucun. Le titre de la page porte « quatorze mois »
+ * parce que c'est une phrase rapportée dans une situation, pas une statistique
+ * — et elle n'est pas répétée ici comme si c'en était une.
+ */
+const PORTES_FERMEES = [
+  {
+    titre: "Le service public",
+    texte:
+      "CAMSP, CMPP, SESSAD, CMP : la demande est faite, le dossier est complet, la place n’existe pas encore.",
+    mur: "On vous a donné une date, et elle est loin.",
+  },
+  {
+    titre: "Le libéral, en direct",
+    texte:
+      "Vous appelez les cabinets du département les uns après les autres, ceux dont on vous a donné le nom.",
+    mur: "Répondeur, ou liste fermée.",
+  },
+  {
+    titre: "L’établissement, en interne",
+    texte:
+      "Il faudrait trois heures par semaine d’ergothérapie. Ni la ligne budgétaire, ni le poste, ni le candidat.",
+    mur: "Personne à embaucher pour trois heures.",
   },
 ];
 
@@ -262,6 +302,26 @@ export default async function SosRenfortPage() {
   const total = data?.total ?? 0;
   const enPanne = Boolean(error) && missions.length === 0;
 
+  /**
+   * ⚠⚠ LE BOUTON DE DEMANDE NE FORCE PLUS « ÉTABLISSEMENT » (21/09/2026).
+   *
+   * Il pointait sur `/register?type=etablissement` des deux côtés. Or ce
+   * paramètre ne fait pas que pré-remplir : il SAUTE l'écran des trois cartes
+   * et crée un compte ESTABLISHMENT (`register/page.tsx`). Une mère qui
+   * cliquait « Demander un intervenant », deux lignes sous « Qui peut
+   * demander ? Tout le monde », se retrouvait donc à devoir nommer son
+   * établissement — et repartait avec un compte du mauvais type, dont le slug
+   * public ne se recalcule jamais.
+   *
+   * Hors offre complète, la page s'adresse aux particuliers, aux familles, aux
+   * écoles, aux mairies ET aux établissements : le type doit rester au choix
+   * du visiteur. En offre complète, seul un établissement employeur publie un
+   * besoin, et le raccourci garde son sens.
+   */
+  const lienDemande = montreCdd
+    ? INSCRIPTION.publierBesoin.href
+    : INSCRIPTION.demanderIntervenant.href;
+
   return (
     <div className="space-y-20">
       {/* Hero */}
@@ -308,14 +368,18 @@ export default async function SosRenfortPage() {
           )}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button asChild size="lg">
-              <Link href="/register?type=etablissement&next=/dashboard/renforts">
+              <Link href={lienDemande}>
                 {montreCdd ? "Publier un besoin" : "Demander un intervenant"}{" "}
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="/register?next=/dashboard/opportunites">
-                {montreCdd ? "Je cherche des missions" : "Je suis intervenant indépendant"}
+                {/* ⚠ Même destination, même libellé — y compris hors offre
+                    complète, où la page disait « Je suis intervenant
+                    indépendant » au sommet et « Rejoindre la team » en bas.
+                    Trois verbes pour un seul écran. */}
+                {INSCRIPTION.chercherMissions.libelle}
               </Link>
             </Button>
           </div>
@@ -355,43 +419,78 @@ export default async function SosRenfortPage() {
       )}
 
       {/*
-        POURQUOI RENFORTEAM EST COMMISSIONNÉ — et pourquoi la page le dit
-        elle-même plutôt que de le laisser découvrir sur un devis.
+        ═══ LES TROIS PORTES FERMÉES — la section qui manquait (21/09/2026) ═══
 
-        ⚠ Le reste du site annonce 0 % de commission. Quelqu'un qui lit
-        l'accueil puis cette page-ci DOIT comprendre pourquoi les deux ne
-        disent pas la même chose, sinon il conclut au piège. La réponse tient
-        en une phrase : sur un atelier, on réserve en direct ; ici,
-        l'association vérifie un professionnel avant de l'envoyer chez un
-        enfant. Ce n'est pas la même prestation, ce n'est pas le même prix.
+        ⚠ AVANT CETTE SECTION, LA PAGE NE RACONTAIT RIEN. Constat de Siham :
+        « la page renforteam n'a pas un bon design qui raconte un storytelling ».
+        Elle était une pile de blocs juxtaposés — le hero, la commission, les
+        demandeurs, deux cartes, le déroulé — dont chacun se tenait seul et
+        dont aucun ne menait au suivant. Un visiteur lisait une plaquette.
 
-        ⚠ 15 %, arrêté le 21/09/2026. Le chiffre est ici, sur l'accueil, sur
-        /frais-de-service et dans les CGU : les quatre bougent ensemble.
+        Ce qui manquait n'était pas du texte, c'était le DEUXIÈME ACTE : dire
+        ce que la personne a déjà essayé avant d'arriver ici. Personne ne
+        cherche « une plateforme de renfort » ; on cherche une psychomotricienne
+        parce que trois autres chemins n'ont rien donné. Nommer ces trois
+        chemins fait reconnaître la situation, et c'est CE moment qui rend la
+        suite de la page lisible.
+
+        ⚠ ON NE PROMET AUCUN DÉLAI EN FACE. La quatrième porte n'est pas « plus
+        rapide » : elle est OUVERTE, c'est-à-dire qu'elle ne suppose pas qu'une
+        place se libère. Écrire « sous 48 h » serait une promesse que rien dans
+        le produit ne tient — il n'y a aujourd'hui aucun engagement de délai,
+        et une famille déçue là-dessus ne revient pas.
+
+        ⚠ AUCUN CHIFFRE NOUVEAU ICI. Les durées d'attente varient d'un
+        département à l'autre et nous n'en publions aucune mesure : la page
+        décrit ce que les gens racontent, sans le chiffrer.
       */}
       {!montreCdd && (
-        <section className="rounded-2xl border border-border bg-card/50 px-6 py-8 sm:px-10">
-          <div className="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-8">
-            <span className="grid size-12 place-items-center rounded-xl bg-primary/15 text-primary">
-              <ShieldCheck className="size-6" />
-            </span>
-            <div className="space-y-3">
-              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                Une équipe spécialisée, vérifiée une par une
-              </h2>
-              <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
-                RenforTeam n’est pas un annuaire ouvert. Ce sont des professionnels de
-                l’éducation spécialisée et de la rééducation, et l’association contrôle chacun
-                d’eux avant qu’il n’intervienne&nbsp;: diplôme, pièce d’identité, bulletin n° 3 du
-                casier judiciaire, assurance, et le numéro ADELI quand la profession en a un.
-              </p>
-              <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
-                C’est ce travail-là que paient les <strong className="font-semibold text-foreground">15&nbsp;%
-                de frais de gestion</strong> sur les renforts — les seuls du site. Ils s’<em>ajoutent</em>
-                au tarif de l’intervenant, qui le touche en entier, et la ligne figure sur le devis
-                avant que vous n’acceptiez quoi que ce soit. Les ateliers et les formations du
-                catalogue, eux, se réservent en direct et restent à 0&nbsp;%.
-              </p>
-            </div>
+        <section className="space-y-8">
+          <div className="max-w-2xl space-y-3">
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+              Vous avez déjà essayé trois choses
+            </h2>
+            <p className="text-muted-foreground" lang="fr">
+              Personne n’arrive ici en premier. On y arrive après.
+            </p>
+          </div>
+
+          <ol className="grid gap-5 md:grid-cols-3">
+            {PORTES_FERMEES.map((p, i) => (
+              <li
+                key={p.titre}
+                className="relative flex h-full flex-col rounded-2xl border border-border bg-card/50 p-6"
+              >
+                <span
+                  className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70"
+                  aria-hidden
+                >
+                  {i + 1}
+                </span>
+                <p className="mt-2 text-lg font-medium text-foreground">{p.titre}</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground" lang="fr">
+                  {p.texte}
+                </p>
+                <p className="mt-4 flex items-start gap-2 border-t border-border/60 pt-3 text-sm font-medium text-foreground/80">
+                  <DoorClosed className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  {p.mur}
+                </p>
+              </li>
+            ))}
+          </ol>
+
+          {/* LE PIVOT DE LA PAGE. Tout ce qui précède décrit la situation ;
+              tout ce qui suit décrit la réponse. C'est la seule phrase de la
+              page qui a le droit d'annoncer le produit. */}
+          <div className="rounded-2xl border-2 border-primary/35 bg-primary-soft/40 px-6 py-8 sm:px-10">
+            <p className="text-xl font-semibold leading-snug text-foreground sm:text-2xl" lang="fr">
+              RenforTeam est la quatrième porte.
+            </p>
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground" lang="fr">
+              Un professionnel indépendant, sur un besoin nommé, sans attendre qu’une place se
+              libère quelque part. Il ne remplace pas le CAMSP ni l’équipe qui suit déjà la
+              personne&nbsp;: il intervient à côté, sur ce qui est possible maintenant.
+            </p>
           </div>
         </section>
       )}
@@ -425,80 +524,100 @@ export default async function SosRenfortPage() {
         </section>
       )}
 
-      {/* Deux côtés du métier */}
-      <section className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-border/80">
-          <CardContent className="space-y-5 p-8">
-            <div className="flex items-center gap-3">
-              <span className="grid size-11 place-items-center rounded-xl bg-primary/15 text-primary">
-                <Building2 className="size-5" />
-              </span>
-              <div>
-                <p className="text-xl font-medium text-foreground">
-                  {montreCdd ? "Vous êtes un établissement" : "Vous avez un besoin"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {montreCdd
-                    ? "MECS, IME, ITEP, EHPAD, SESSAD…"
-                    : "Particulier, famille, école, mairie, établissement"}
-                </p>
-              </div>
-            </div>
-            <ul className="space-y-3">
-              {(montreCdd ? ETABLISSEMENT : DEMANDEUR_POINTS).map((l) => (
-                <li key={l.texte} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
-                  <l.icone className="mt-0.5 size-4 shrink-0 text-primary" />
-                  {l.texte}
-                </li>
-              ))}
-            </ul>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/register?type=etablissement&next=/dashboard/renforts">
-                {montreCdd ? "Publier un besoin" : "Décrire ma situation"}
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+      {/*
+        ⚠ LES DEUX CARTES « ÉTABLISSEMENT / INTERVENANT » NE S'AFFICHENT PLUS
+        QU'EN OFFRE COMPLÈTE (21/09/2026), ET CE N'EST PAS UNE SUPPRESSION.
 
-        <Card className="border-border/80">
-          <CardContent className="space-y-5 p-8">
-            <div className="flex items-center gap-3">
-              <span className="grid size-11 place-items-center rounded-xl bg-amber-500/15 text-amber-400">
-                <UserRound className="size-5" />
-              </span>
-              <div>
-                <p className="text-xl font-medium text-foreground">
-                  {montreCdd ? "Vous êtes intervenant" : "Vous êtes intervenant indépendant"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {montreCdd
-                    ? "Éducateur, moniteur, AES, psychologue…"
-                    : "Ergothérapeute, éducateur spécialisé, psychomotricienne, psychologue, orthophoniste…"}
-                </p>
-              </div>
-            </div>
-            <ul className="space-y-3">
-              {(montreCdd ? INTERVENANT : INTERVENANT_POINTS).map((l) => (
-                <li key={l.texte} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
-                  <l.icone className="mt-0.5 size-4 shrink-0 text-amber-400" />
-                  {l.texte}
-                </li>
-              ))}
-            </ul>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/register?next=/dashboard/opportunites">
-                {montreCdd ? "Je cherche des missions" : "Rejoindre la team"}
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
+        Hors offre complète, la carte de gauche répétait mot pour mot la
+        section « Qui peut demander ? » située juste au-dessus — mêmes publics,
+        même promesse, deux blocs d'affilée. C'est précisément le défaut que
+        Siham a nommé : « des blocs séparés les uns des autres ». La moitié
+        gauche est donc fondue dans le déroulé (les quatre repères ci-dessous)
+        et la moitié droite devient une section à elle, placée là où elle a du
+        sens : après avoir montré la demande, on s'adresse à qui y répond.
 
-      {/* Le déroulé — la cascade en offre complète, les trois paliers sinon. */}
+        En offre complète (`renfortSalarieVisible()`), les deux cartes
+        reviennent telles quelles : elles y décrivent deux rôles réellement
+        différents, l'employeur et le salarié en CDD.
+      */}
+      {montreCdd && (
+        <section className="grid gap-6 lg:grid-cols-2">
+          <Card className="border-border/80">
+            <CardContent className="space-y-5 p-8">
+              <div className="flex items-center gap-3">
+                <span className="grid size-11 place-items-center rounded-xl bg-primary/15 text-primary">
+                  <Building2 className="size-5" />
+                </span>
+                <div>
+                  <p className="text-xl font-medium text-foreground">Vous êtes un établissement</p>
+                  <p className="text-sm text-muted-foreground">MECS, IME, ITEP, EHPAD, SESSAD…</p>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                {ETABLISSEMENT.map((l) => (
+                  <li
+                    key={l.texte}
+                    className="flex gap-3 text-sm leading-relaxed text-muted-foreground"
+                  >
+                    <l.icone className="mt-0.5 size-4 shrink-0 text-primary" />
+                    {l.texte}
+                  </li>
+                ))}
+              </ul>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/register?type=etablissement&next=/dashboard/renforts">
+                  Publier un besoin
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/80">
+            <CardContent className="space-y-5 p-8">
+              <div className="flex items-center gap-3">
+                <span className="grid size-11 place-items-center rounded-xl bg-amber-500/15 text-amber-400">
+                  <UserRound className="size-5" />
+                </span>
+                <div>
+                  <p className="text-xl font-medium text-foreground">Vous êtes intervenant</p>
+                  <p className="text-sm text-muted-foreground">Éducateur, moniteur, AES, psychologue…</p>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                {INTERVENANT.map((l) => (
+                  <li
+                    key={l.texte}
+                    className="flex gap-3 text-sm leading-relaxed text-muted-foreground"
+                  >
+                    <l.icone className="mt-0.5 size-4 shrink-0 text-amber-400" />
+                    {l.texte}
+                  </li>
+                ))}
+              </ul>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/register?next=/dashboard/opportunites">Je cherche des missions</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* ═══ LE DÉROULÉ — la cascade en offre complète, les trois étapes sinon.
+
+          ⚠ LE TRAIT QUI RELIE LES TROIS NUMÉROS N'EST PAS UNE DÉCORATION : sans
+          lui, trois pastilles alignées se lisent comme trois options au choix,
+          pas comme un trajet. Il est posé à 22 px du haut, c'est-à-dire au
+          centre vertical des pastilles (`size-11` = 44 px) : changer la taille
+          des pastilles oblige à recalculer cette valeur.
+
+          ⚠ Il s'arrête à 16 % de chaque bord pour tomber SOUS la première et la
+          dernière pastille plutôt que de dépasser dans le vide, et il
+          disparaît sous `md` — en colonne, il relierait des points qui ne sont
+          plus côte à côte. */}
       <section className="space-y-8">
         <div className="max-w-2xl space-y-3">
           <h2 className="text-3xl font-semibold tracking-tight text-foreground">
-            {montreCdd ? "La diffusion en cascade" : "Comment ça se passe"}
+            {montreCdd ? "La diffusion en cascade" : "Comment ça se passe, à partir d’ici"}
           </h2>
           <p className="text-muted-foreground">
             {montreCdd
@@ -506,20 +625,89 @@ export default async function SosRenfortPage() {
               : "Trois étapes, et rien n’est engagé tant que le devis n’est pas accepté."}
           </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {(montreCdd ? CASCADE : DEROULE).map((c) => (
-            <div key={c.numero} className="space-y-3">
-              <span className="grid size-11 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
-                {c.numero}
-              </span>
-              <p className="text-lg font-medium text-foreground">{c.titre}</p>
+        <div className="relative">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-[16%] right-[16%] top-[22px] hidden h-px bg-border md:block"
+          />
+          <ol className="relative grid gap-6 md:grid-cols-3">
+            {(montreCdd ? CASCADE : DEROULE).map((c) => (
+              <li key={c.numero} className="space-y-3">
+                <span className="relative grid size-11 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground shadow-card ring-4 ring-background">
+                  {c.numero}
+                </span>
+                <p className="text-lg font-medium text-foreground">{c.titre}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
+                  {c.texte}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* LES QUATRE REPÈRES, venus de la carte de gauche supprimée ci-dessus.
+            Ils répondent aux questions qu'on se pose PENDANT le déroulé —
+            combien de temps ça prend, qui vient, où, et quand on paie — et
+            c'est là qu'ils servent, pas dans une carte séparée. */}
+        {!montreCdd && (
+          <ul className="grid gap-4 rounded-2xl border border-border bg-card/50 p-6 sm:grid-cols-2">
+            {DEMANDEUR_POINTS.map((l) => (
+              <li key={l.texte} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                <l.icone className="mt-0.5 size-4 shrink-0 text-primary" />
+                <span lang="fr">{l.texte}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/*
+        POURQUOI RENFORTEAM EST COMMISSIONNÉ — et pourquoi la page le dit
+        elle-même plutôt que de le laisser découvrir sur un devis.
+
+        ⚠ Le reste du site annonce 0 % de commission. Quelqu'un qui lit
+        l'accueil puis cette page-ci DOIT comprendre pourquoi les deux ne
+        disent pas la même chose, sinon il conclut au piège. La réponse tient
+        en une phrase : sur un atelier, on réserve en direct ; ici,
+        l'association vérifie un professionnel avant de l'envoyer chez un
+        enfant. Ce n'est pas la même prestation, ce n'est pas le même prix.
+
+        ⚠ 15 %, arrêté le 21/09/2026. Le chiffre est ici, sur l'accueil, sur
+        /frais-de-service et dans les CGU : les quatre bougent ensemble.
+
+        ⚠⚠ CE BLOC A ÉTÉ DESCENDU LE 21/09/2026, ET IL NE FAUT PAS LE REMONTER.
+        Il arrivait en troisième position, juste après le titre : le visiteur
+        lisait le prix avant d'avoir compris ce qu'on lui proposait, et un prix
+        sans objet se lit toujours comme cher. Il arrive maintenant après le
+        déroulé — on a vu ce qui se passe, on peut dire ce qu'on paie.
+      */}
+      {!montreCdd && (
+        <section className="rounded-2xl border border-border bg-card/50 px-6 py-8 sm:px-10">
+          <div className="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-8">
+            <span className="grid size-12 place-items-center rounded-xl bg-primary/15 text-primary">
+              <ShieldCheck className="size-6" />
+            </span>
+            <div className="space-y-3">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                Une équipe spécialisée, vérifiée une par une
+              </h2>
               <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
-                {c.texte}
+                RenforTeam n’est pas un annuaire ouvert. Ce sont des professionnels de
+                l’éducation spécialisée et de la rééducation, et l’association contrôle chacun
+                d’eux avant qu’il n’intervienne&nbsp;: diplôme, pièce d’identité, bulletin n° 3 du
+                casier judiciaire, assurance, et le numéro ADELI quand la profession en a un.
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
+                C’est ce travail-là que paient les <strong className="font-semibold text-foreground">15&nbsp;%
+                de frais de gestion</strong> sur les renforts — les seuls du site. Ils s’<em>ajoutent</em>
+                au tarif de l’intervenant, qui le touche en entier, et la ligne figure sur le devis
+                avant que vous n’acceptiez quoi que ce soit. Les ateliers et les formations du
+                catalogue, eux, se réservent en direct et restent à 0&nbsp;%.
               </p>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/*
         LA VISIOCONSULTATION ET LES ÉCRITS — les deux ajouts de septembre 2026.
@@ -587,6 +775,56 @@ export default async function SosRenfortPage() {
               </p>
             </CardContent>
           </Card>
+        </section>
+      )}
+
+      {/*
+        ═══ L'AUTRE CÔTÉ — et il arrive ici, pas au milieu de la page ═══
+
+        C'est la moitié droite de l'ancienne section « Deux côtés du métier ».
+        Placée au milieu, elle coupait le récit de la demande en deux pour
+        parler à quelqu'un d'autre. Placée ici, elle tombe juste avant les
+        missions ouvertes, c'est-à-dire là où un professionnel qui a lu la page
+        veut savoir ce qu'il y a pour lui — et le bloc suivant le lui montre.
+
+        ⚠ « INTERVENANT INDÉPENDANT », JAMAIS « FREELANCE ». C'est le
+        vocabulaire sanctionné par le Conseil d'État le 11/02/2025 (n° 491128),
+        et un test du dépôt refuse le mot dans la prose
+        (`lib/__tests__/promesses-interdites.test.ts`).
+      */}
+      {!montreCdd && (
+        <section className="overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-card px-6 py-10 sm:px-10">
+          <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-start">
+            <div className="space-y-4">
+              <span className="grid size-12 place-items-center rounded-xl bg-amber-500/15 text-amber-400">
+                <UserRound className="size-6" />
+              </span>
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                Vous êtes de l’autre côté&nbsp;?
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
+                Ergothérapeute, éducateur spécialisé, psychomotricienne, psychologue,
+                orthophoniste&nbsp;: ce sont ces demandes-là qui arrivent, et elles attendent
+                quelqu’un.
+              </p>
+              <Button asChild variant="outline">
+                <Link href="/register?next=/dashboard/opportunites">
+                  {INSCRIPTION.chercherMissions.libelle} <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {INTERVENANT_POINTS.map((l) => (
+                <li
+                  key={l.texte}
+                  className="flex gap-3 rounded-xl border border-border bg-background/50 p-4 text-sm leading-relaxed text-muted-foreground"
+                >
+                  <l.icone className="mt-0.5 size-4 shrink-0 text-amber-400" />
+                  <span lang="fr">{l.texte}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
       )}
 
@@ -700,7 +938,7 @@ export default async function SosRenfortPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Button asChild size="lg">
-              <Link href="/register?type=etablissement&next=/dashboard/renforts">
+              <Link href={lienDemande}>
                 {montreCdd ? "Publier un besoin" : "Demander un intervenant"}
               </Link>
             </Button>
@@ -722,7 +960,10 @@ export default async function SosRenfortPage() {
             <div className="flex flex-wrap justify-center gap-3 pt-4">
               <Button asChild size="lg" variant="outline">
                 <Link href="/register?next=/dashboard/opportunites">
-                  {montreCdd ? "Je cherche des missions" : "Rejoindre la team"}
+                  {/* ⚠ « Rejoindre la team » disait la même destination
+                      autrement : trois libellés pour `/dashboard/opportunites`
+                      sur la même page. Le libellé vient du fichier, une fois. */}
+                  {INSCRIPTION.chercherMissions.libelle}
                 </Link>
               </Button>
               <Button asChild size="lg" variant="ghost">

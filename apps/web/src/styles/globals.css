@@ -835,6 +835,10 @@
     .animate-halo-2,
     .animate-anneau,
     .animate-bille,
+    /* Le bandeau défilant de l'accueil : sans cette ligne, la règle générale
+       ci-dessus lui donne 0,001 ms et une seule itération — il se retrouve
+       figé à -50 %, c'est-à-dire décalé, au lieu de s'arrêter à sa place. */
+    .animate-marquee,
     .lex-flotte,
     .lex-ombre,
     .lex-yeux,

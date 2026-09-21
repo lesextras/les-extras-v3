@@ -105,6 +105,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // C'est la première page qu'un OPCO ou un stagiaire cherche, et elle
     // n'existait que sur toulali.fr.
     "/informations-reglementaires",
+    // ⚠ `/lex` ET `/confiance-lex` NE FONT PAS DOUBLON : la première répond à
+    // « est-ce que ça va m'aider, moi, ce soir ? » (le professionnel), la
+    // seconde à « ai-je le droit de m'en servir sur un enfant placé ? » (la
+    // direction). Elles se renvoient l'une à l'autre.
+    "/lex",
     "/confiance-lex",
     "/simulateur",
     "/renfort",

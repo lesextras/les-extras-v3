@@ -58,7 +58,6 @@ import {
   Timer,
   Euro,
   Check,
-  Boxes,
   Handshake,
   HeartHandshake,
   BookOpen,
@@ -83,6 +82,7 @@ import { OffreLex } from './_shared/OffreLex';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
 import { DeuxRenforts } from './_shared/DeuxRenforts';
+import { QuatreSituations } from './_shared/QuatreSituations';
 import { Mascotte } from './_shared/Mascotte';
 
 /**
@@ -116,75 +116,14 @@ export const metadata: Metadata = {
   },
 };
 
-// ─────────────────────────────────────────────────────── les trois usages
+// ─────────────────────────────────── ce qui remplace les trois usages
 //
-// Un renfort, un atelier, une formation : trois besoins, un même chemin. Ils
-// étaient traités à trois poids différents — le remplacement occupait quatre
-// sections pleines, les ateliers et les formations une vitrine. Trois colonnes
-// de même largeur, c'est ce qui se lit : trois usages d'un même réseau.
-const USAGES = [
-  {
-    kicker: 'Renfort',
-    // ⚠ LA CARTE A CHANGÉ D'OBJET LE 19/09/2026, PAS SEULEMENT DE MOTS.
-    // Le renfort de poste — « absorber une absence », la cascade, l'export
-    // paie — sort de l'offre publique (voir `@/lib/offre`). Ce qui reste, et
-    // qui est désormais annoncé ici, c'est le renfort par des indépendants
-    // spécialisés, sur un besoin nommé. L'ancienne version est conservée
-    // juste en dessous et revient en offre complète.
-    ...(renfortSalarieVisible()
-      ? {
-          titre: 'Absorber une absence',
-          texte: 'Éducateur, moniteur, AES, psychologue.',
-          points: [
-            'Diffusion en cascade',
-            'Feuille de mission éditée',
-            'Heures pointées, export paie',
-          ],
-          action: 'Comprendre le renfort',
-        }
-      : {
-          titre: 'Faire intervenir un spécialiste',
-          texte: 'Ergothérapeute, éducateur spécialisé, psychomotricienne, psychologue, orthophoniste.',
-          points: [
-            'Familles, écoles, mairies, établissements',
-            'En présentiel ou en visioconsultation',
-            'Devis écrit avant l’intervention',
-          ],
-          action: 'Découvrir RenforTeam',
-        }),
-    href: '/renforteam',
-    image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
-    trait: 'bg-primary',
-    teinte: 'text-primary',
-    puce: 'border-primary bg-primary-soft',
-  },
-  {
-    kicker: 'Atelier',
-    titre: 'Programmer une médiation',
-    texte:
-      'Musicothérapie, théâtre, psycho-boxe, slam, socio-esthétique.',
-    points: ['Public, durée et tarif affichés', 'Devis sous 48 h', 'Le tarif affiché est le tarif payé'],
-    href: '/ateliers',
-    action: 'Parcourir les ateliers',
-    image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
-    trait: 'bg-secondary',
-    teinte: 'text-secondary',
-    puce: 'border-secondary bg-secondary-soft',
-  },
-  {
-    kicker: 'Formation',
-    titre: 'Faire monter l’équipe',
-    texte:
-      'Analyse des pratiques, gestion de la violence, accueil du public.',
-    points: ['Qualiopi, finançable OPCO', 'Émargement et attestations', 'Des parcours gratuits en plus'],
-    href: '/formations',
-    action: 'Voir les formations',
-    image: wp('/wp-content/uploads/2025/02/lever-vous-400x400.jpeg'),
-    trait: 'bg-foreground',
-    teinte: 'text-foreground',
-    puce: 'border-foreground bg-muted',
-  },
-];
+// ⚠ `USAGES` A ÉTÉ RETIRÉ LE 21/09/2026, avec la section qui l'affichait. Les
+// trois cartes énuméraient les offres ; elles sont remplacées par
+// `QuatreSituations`, qui ouvre chaque service sur le problème qu'il résout et
+// donne enfin une section à RenforTeam et à LEX. Ne pas le rétablir sans
+// relire le commentaire de la section 2 : on retomberait sur deux inventaires
+// des mêmes offres à trois écrans d'écart.
 
 // Ce que le logiciel fait, en quatre verbes valables pour les trois usages.
 // Les six tuiles « comment marche le renfort » ne parlaient que du renfort :
@@ -609,113 +548,84 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══ 2. LES TROIS USAGES, À LARGEUR ÉGALE ═══
-            « Trois services » posait trois cartes de tailles différentes dans
-            la tête du lecteur : quatre sections pour le renfort, une vitrine
-            pour le reste. À largeur égale, on lit enfin ce que c'est — trois
-            usages d'un même réseau, et le même chemin pour les trois. */}
-        <section className="section">
-          <Reveal className="max-w-3xl">
-            <span className="eyebrow">Trois besoins, un même chemin</span>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-              Le réseau répond aux trois. Le logiciel gère les trois.
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              On publie une fois. Tout ce qui suit est édité au même endroit.
-            </p>
-          </Reveal>
+        {/* ═══ 2. LES QUATRE SITUATIONS — le fil de la page ═══════════════
 
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {USAGES.map((u, i) => (
-              <Reveal key={u.kicker} delay={i * 110} className="h-full">
-                <div className="reflet group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
-                  <span
-                    className={`animate-trait absolute left-0 top-6 bottom-6 w-[3px] rounded-full ${u.trait}`}
-                    aria-hidden
-                  />
-                  <div className="relative aspect-[16/9] overflow-hidden bg-muted">
-                    <Image
-                      src={u.image}
-                      alt=""
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col p-6 pl-7">
-                    <span
-                      className={`text-xs font-bold uppercase tracking-[0.14em] ${u.teinte}`}
-                    >
-                      {u.kicker}
-                    </span>
-                    <h3 className="mt-2.5 text-xl font-bold leading-snug text-foreground">
-                      {u.titre}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{u.texte}</p>
-                    <ul className="mt-4 space-y-2">
-                      {u.points.map((p) => (
-                        <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                          {/* Une coche plutôt qu'un point : elle dit « c'est
-                              compris », le point ne disait rien. */}
-                          <Check className={`mt-0.5 size-4 shrink-0 ${u.teinte}`} aria-hidden />
-                          <span>{p}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      href={u.href}
-                      className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-                    >
-                      {u.action}
-                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+            ⚠ CETTE SECTION A REMPLACÉ « LES TROIS USAGES » LE 21/09/2026, ET IL
+            NE FAUT PAS REMETTRE L'ANCIENNE. Trois cartes annonçaient « Le réseau
+            répond aux trois », puis la section 3 annonçait « Le travail
+            administratif que vous ne ferez plus » : deux inventaires des mêmes
+            offres, l'un en produits, l'autre en fonctions du logiciel. Le
+            visiteur lisait donc deux fois la même liste et aucune histoire.
 
-          {/* Et par-dessus les trois, le même logiciel. */}
-          <Reveal delay={120}>
-            <div className="marquee-hover mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 overflow-hidden rounded-2xl border border-border bg-gradient-to-r from-card via-primary-soft to-card px-6 py-5">
-              <p className="flex items-center gap-2 text-sm">
-                <Boxes className="size-4 shrink-0 text-primary" aria-hidden />
-                <strong className="font-semibold text-foreground">Le même logiciel pour les trois.</strong>
-              </p>
-              <div
-                className="min-w-[220px] flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]"
-                aria-hidden
-              >
-                <div className="animate-marquee flex w-max gap-2.5">
-                  {[...BANDEAU, ...BANDEAU].map((m, i) => (
-                    <span
-                      key={`${m}-${i}`}
-                      className="whitespace-nowrap rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground"
-                    >
-                      {m}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </section>
+            Trois défauts que le remplacement corrige, et qui étaient réels :
+              1. RENFORTEAM N'AVAIT PAS DE SECTION. Il était une carte parmi
+                 trois, et la seule section qui l'expliquait (`DeuxRenforts`)
+                 est masquée depuis le recentrage du 19/09.
+              2. LEX NON PLUS, et il n'avait même pas de page — `/lex` a été
+                 créée dans le même mouvement.
+              3. LA CARTE « Renfort » PROMETTAIT « en présentiel ou en
+                 visioconsultation » alors que `/visio/:jeton` redirige. La
+                 mention est désormais conditionnée à la bascule du service.
+
+            Chaque section s'ouvre sur LA SITUATION, jamais sur le produit.
+            C'est la règle d'écriture, et elle est documentée dans le composant. */}
+        <QuatreSituations />
 
         {/* ═══════════════════════════ 3. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
         <DeuxPortes />
 
-        {/* ═══ 4. LE TOUT-EN-UN : ce que le logiciel fait, pour les trois ═══ */}
+        {/* ═══ 4. LA COUTURE : ce qui relie les quatre situations ═══════════
+            ⚠ CETTE SECTION EST LA CHARNIÈRE DE LA PAGE, PAS UN SECOND
+            INVENTAIRE. Elle portait l'eyebrow « Tout-en-un » et le titre « Le
+            travail administratif que vous ne ferez plus » : un visiteur qui
+            venait de lire quatre situations tombait sur une liste de fonctions
+            sans savoir de quel produit on parlait — c'est exactement le reproche
+            « des blocs séparés les uns des autres ».
+
+            Le titre nomme donc le LIEN (quatre réponses, un logiciel), et la
+            phrase reprend les quatre mots de la section précédente dans le même
+            ordre : renfort, atelier, formation, écrit. C'est ce rappel qui fait
+            la couture — sans lui, les deux sections se lisent comme deux pages.
+
+            Ne pas remettre un titre qui annonce une fonction : le bénéfice
+            administratif est dit dans la phrase, sa place est là. */}
         <section className="bg-nacre">
           <div className="section">
             <Reveal className="max-w-3xl">
-              <span className="eyebrow">Tout-en-un</span>
+              <span className="eyebrow">Le fil commun</span>
               <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                Le travail administratif que vous ne ferez plus
+                Quatre réponses, un seul logiciel dessous
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Valable pour un renfort comme pour un atelier ou une formation : même dossier, même
-                conformité, même facture.
+                Un renfort, un atelier, une formation, un écrit : même dossier, même conformité,
+                même facture. Vous ne ressaisissez rien d’une situation à l’autre, et le travail
+                administratif qui allait avec disparaît.
               </p>
+            </Reveal>
+
+            {/* LE BANDEAU DÉFILANT — il tient la promesse de la phrase.
+                « Même dossier, même conformité » reste une affirmation tant
+                qu'on ne montre pas ce que le dossier contient. Le bandeau le
+                déroule sans ajouter un cinquième bloc de cartes.
+                ⚠ La liste est écrite DEUX FOIS : `marquee` translate de -50 %,
+                donc la seconde copie prend exactement la place de la première et
+                la boucle est invisible. Retirer la copie fait un saut. */}
+            <Reveal delay={80} className="mt-8">
+              <div
+                className="marquee-hover relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
+                aria-hidden="true"
+              >
+                <div className="animate-marquee flex w-max gap-3">
+                  {[...BANDEAU, ...BANDEAU].map((mot, i) => (
+                    <span
+                      key={`${mot}-${i}`}
+                      className="whitespace-nowrap rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground"
+                    >
+                      {mot}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </Reveal>
 
             {/* ⚠ TROIS COLONNES, PLUS QUATRE : avec cinq ou six cartes, une
