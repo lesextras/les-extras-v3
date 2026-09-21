@@ -210,3 +210,82 @@ describe('Le planificateur des échéances', () => {
     expect(where.suppressionMotifBlocage).toBeNull();
   });
 });
+
+/**
+ * LE MOTIF EST DIT AU MOMENT DU CLIC, PAS DANS TROIS MOIS (21/09/2026).
+ *
+ * ⚠⚠ CE QUE CES TROIS TESTS PROTÈGENT. Le planificateur relevait déjà le
+ * blocage, mais à l'échéance : un compte qui a émis une facture affichait donc
+ * pendant trois mois une date de suppression qui n'arriverait jamais, et le
+ * motif n'apparaissait qu'une fois le délai passé — c'est-à-dire longtemps
+ * après que la personne qui a cliqué a cessé de regarder. Elle décide ici, on
+ * lui répond ici.
+ *
+ * ⚠ ET LE COMPTE EST ARCHIVÉ DANS TOUS LES CAS. Refuser le geste au motif
+ * qu'une facture existe laisserait le compte VISIBLE, c'est-à-dire l'inverse de
+ * ce qui était demandé. Archiver est le rangement, et il suffit.
+ */
+describe('La route d’administration, au moment du clic', () => {
+  function adminMock(compteurs: { factures: number; facturesAPayer: number; contrats: number }) {
+    const update = jest.fn().mockImplementation(({ data }) => ({
+      id: 'c1',
+      name: 'MECS Les Tilleuls',
+      archivedAt: data.archivedAt,
+      suppressionPrevueLe: data.suppressionPrevueLe,
+      suppressionMotifBlocage: data.suppressionMotifBlocage,
+    }));
+    const prisma = {
+      account: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: 'c1', name: 'MECS Les Tilleuls', archivedAt: null }),
+        update,
+      },
+      invoice: {
+        count: jest
+          .fn()
+          .mockResolvedValueOnce(compteurs.factures)
+          .mockResolvedValueOnce(compteurs.facturesAPayer),
+      },
+      contratCDD: { count: jest.fn().mockResolvedValue(compteurs.contrats) },
+    };
+    return { prisma, update };
+  }
+
+  /** On n'instancie pas le service entier : seule `deleteAccount` est en jeu. */
+  async function supprimer(prisma: unknown) {
+    const { AdminService } = await import('./admin.service');
+    const service = Object.create(AdminService.prototype) as {
+      prisma: unknown;
+      deleteAccount: (id: string) => Promise<Record<string, unknown>>;
+    };
+    service.prisma = prisma;
+    return service.deleteAccount('c1');
+  }
+
+  it('n’inscrit aucun motif quand rien ne bloque', async () => {
+    const { prisma } = adminMock({ factures: 0, facturesAPayer: 0, contrats: 0 });
+    const r = await supprimer(prisma);
+    expect(r.deleted).toBe(false);
+    expect(r.programme).toBe(true);
+    expect(r.suppressionMotifBlocage).toBeNull();
+  });
+
+  it('inscrit le motif tout de suite quand le compte a émis une facture', async () => {
+    const { prisma } = adminMock({ factures: 2, facturesAPayer: 0, contrats: 0 });
+    const r = await supprimer(prisma);
+    expect(String(r.suppressionMotifBlocage)).toContain('facture');
+    expect(String(r.suppressionMotifBlocage)).toContain('dix ans');
+  });
+
+  it('archive quand même le compte bloqué — c’était la demande', async () => {
+    const { prisma, update } = adminMock({ factures: 1, facturesAPayer: 0, contrats: 0 });
+    await supprimer(prisma);
+    const data = update.mock.calls[0][0].data as {
+      archivedAt: Date | null;
+      suppressionPrevueLe: Date | null;
+    };
+    expect(data.archivedAt).toBeInstanceOf(Date);
+    expect(data.suppressionPrevueLe).toBeInstanceOf(Date);
+  });
+});

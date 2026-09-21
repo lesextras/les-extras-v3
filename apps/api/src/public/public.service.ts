@@ -11,6 +11,7 @@ import { ProgressionService } from '../users/progression.service';
 import { StructuresService } from '../structures/structures.service';
 import { MailService } from '../common/mail/mail.service';
 import { DEPARTEMENTS, trouverDepartement } from '../common/territoires';
+import { ACCENTS_SQL, PLATS_SQL, motifRecherche } from '../common/recherche-accents';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 
@@ -1367,27 +1368,82 @@ export class PublicService {
   async rechercherEtablissements(q: string) {
     const texte = (q ?? '').trim();
     if (texte.length < 2) return [];
-    return this.prisma.account.findMany({
-      where: {
-        type: 'ESTABLISHMENT',
-        // ⚠ LES COMPTES ARCHIVÉS NE SE PROPOSENT PLUS. Vingt et un comptes de
-        // test d'audit (« MECS Audit Test 2 », « [VERIF] MECS Finale », trois
-        // portant le mot « démo ») s'affichaient ici, c'est-à-dire sur l'écran
-        // même qui sert à éviter les doublons d'établissement.
-        archivedAt: null,
-        OR: [
-          { name: { contains: texte, mode: 'insensitive' } },
-          { legalName: { contains: texte, mode: 'insensitive' } },
-        ],
-      },
-      take: 10,
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        city: true,
-        structure: { select: { id: true, nom: true } },
-      },
-    });
+
+    /*
+      ⚠⚠ LA RECHERCHE IGNORE LES ACCENTS, ET CE N'EST PAS UN CONFORT.
+
+      Mesuré en production le 21/09/2026 : taper « adepa » sur cet écran rendait
+      ZÉRO résultat, alors que trois établissements ADéPA y sont déclarés. La
+      cause est le `contains` de Prisma, qui devient un ILIKE : PostgreSQL rend
+      ILIKE insensible à la CASSE, jamais aux ACCENTS. « ADéPA » ne contient
+      donc pas « adepa ».
+
+      Ce n'est pas un détail d'ergonomie : c'est l'écran dont le seul métier est
+      d'empêcher le doublon d'établissement — le plus coûteux des trois, celui
+      qui coupe une équipe en deux. Une collègue qui tape son établissement sans
+      accent (ce que fait un clavier de téléphone) ne trouve rien, conclut qu'il
+      n'existe pas, et en crée un second. Le défaut touche tout ce qui s'écrit
+      avec un accent en français : Hôpital, Créteil, Sainte-Geneviève, Résidence.
+
+      ⚠ POURQUOI PAS UNE COLONNE `nomNormalise`, comme `Structure` en a une.
+      Parce que `Structure.nom` s'écrit à UN endroit (`trouverOuCreer`), alors
+      que `Account.name` s'écrit dans au moins six services différents
+      (inscription, administration, espace association, académie,
+      administration d'établissement…). Une colonne dénormalisée qu'on oublie
+      de remplir dans un seul de ces six endroits redonne exactement le défaut
+      qu'on répare, en silence et sans test qui l'attrape.
+
+      ⚠ POURQUOI `translate` ET PAS `unaccent`. `unaccent()` demande une
+      extension PostgreSQL, que le déploiement (un `prisma db push` au
+      démarrage) ne pose pas — la requête tomberait en production et pas en
+      test. `translate` est du SQL standard, présent partout, et il est
+      IMMUTABLE : le jour où le volume l'exigera, il peut porter un index
+      d'expression sans rien changer ici.
+
+      La table de correspondance et l'échappement des jokers vivent dans
+      `common/recherche-accents.ts`, avec leurs tests.
+    */
+    const ACCENTS = ACCENTS_SQL;
+    const PLATS = PLATS_SQL;
+    const motif = motifRecherche(texte);
+
+    const lignes = await this.prisma.$queryRaw<
+      { id: string; name: string; city: string | null; structureId: string | null }[]
+    >`
+      SELECT a."id", a."name", a."city", a."structureId"
+      FROM "Account" a
+      WHERE a."type" = 'ESTABLISHMENT'
+        -- ⚠ LES COMPTES ARCHIVÉS NE SE PROPOSENT PLUS. Vingt et un comptes de
+        -- test d'audit (« MECS Audit Test 2 », « [VERIF] MECS Finale », trois
+        -- portant le mot « démo ») s'affichaient ici, c'est-à-dire sur l'écran
+        -- même qui sert à éviter les doublons d'établissement.
+        AND a."archivedAt" IS NULL
+        AND (
+          translate(lower(a."name"), ${ACCENTS}, ${PLATS}) LIKE ${motif}
+          OR translate(lower(coalesce(a."legalName", '')), ${ACCENTS}, ${PLATS}) LIKE ${motif}
+        )
+      ORDER BY a."name" ASC
+      LIMIT 10
+    `;
+
+    // La structure de rattachement est lue à part : une jointure de plus dans
+    // la requête brute obligerait à reconstruire l'objet imbriqué à la main, et
+    // c'est exactement le genre de recopie qui diverge du `select` Prisma au
+    // premier champ ajouté.
+    const structureIds = [...new Set(lignes.map((l) => l.structureId).filter(Boolean))] as string[];
+    const structures = structureIds.length
+      ? await this.prisma.structure.findMany({
+          where: { id: { in: structureIds } },
+          select: { id: true, nom: true },
+        })
+      : [];
+    const parId = new Map(structures.map((s) => [s.id, s]));
+
+    return lignes.map((l) => ({
+      id: l.id,
+      name: l.name,
+      city: l.city,
+      structure: l.structureId ? (parId.get(l.structureId) ?? null) : null,
+    }));
   }
 }

@@ -223,11 +223,26 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
       return;
     setBusy(a.id);
     try {
-      await apiRequest(`/admin/accounts/${a.id}`, { method: "DELETE" });
+      /*
+        ⚠ LE SERVEUR RÉPOND MAINTENANT AVEC LE MOTIF DE BLOCAGE, s'il y en a un
+        (21/09/2026). Avant, il ne se découvrait qu'à l'échéance : on annonçait
+        une date de suppression pendant trois mois à quelqu'un qui ne reviendrait
+        pas regarder, et le compte n'était finalement jamais supprimé. Le dire
+        ici, c'est le dire à la personne qui vient de décider.
+
+        Ce n'est PAS un échec : le compte est archivé dans les deux cas, donc
+        rangé, ce qui était la demande. Le message dit ce qui a eu lieu et ce
+        qui n'aura pas lieu, sans transformer un geste réussi en erreur.
+      */
+      const r = (await apiRequest(`/admin/accounts/${a.id}`, {
+        method: "DELETE",
+      })) as { suppressionMotifBlocage?: string | null } | undefined;
       toast({
         title: `« ${a.name} » archivé`,
-        description: `Suppression programmée le ${echeance}. Vous pouvez le rétablir jusque-là.`,
-        variant: "success",
+        description: r?.suppressionMotifBlocage
+          ? `${r.suppressionMotifBlocage} Il restera archivé, donc invisible partout.`
+          : `Suppression programmée le ${echeance}. Vous pouvez le rétablir jusque-là.`,
+        variant: r?.suppressionMotifBlocage ? "warning" : "success",
       });
       router.refresh();
     } catch (err) {

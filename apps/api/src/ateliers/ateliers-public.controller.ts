@@ -1,4 +1,5 @@
 import { Body, Controller, Headers, Param, Post } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AteliersService } from './ateliers.service';
 import { PayerAtelierDto } from './dto/ateliers.dto';
 
@@ -7,6 +8,20 @@ import { PayerAtelierDto } from './dto/ateliers.dto';
  *
  * L'origine est lue dans l'en-tête plutôt que reçue du corps : l'adresse de
  * retour après paiement ne doit pas pouvoir être choisie par celui qui appelle.
+ *
+ * ⚠ LES DEUX ROUTES SONT PLAFONNÉES, ET C'EST LE SEUL MODULE PUBLIC D'ÉCRITURE
+ * QUI NE L'ÉTAIT PAS (relevé par l'audit du 16/09/2026). Ce qui se paie ici ne
+ * demande ni compte ni session : sans plafond, `payer` ouvre autant de sessions
+ * Stripe qu'on veut depuis n'importe où — des frais chez le prestataire, des
+ * réservations fantômes dans les listes de l'intervenant, et un écran
+ * d'administration illisible. `confirmer` est plus délicate encore : elle prend
+ * un identifiant de session en paramètre d'URL, donc sans plafond elle se prête
+ * au balayage.
+ *
+ * Les valeurs sont volontairement larges (10 paiements et 30 confirmations par
+ * heure) : un plafond qui gênerait une famille qui s'y reprend à trois fois
+ * coûterait plus cher que l'abus qu'il évite. Le retour de Stripe, lui, passe
+ * par le webhook signé, pas par ces routes.
  */
 @Controller('public/ateliers')
 export class AteliersPublicController {
@@ -14,6 +29,7 @@ export class AteliersPublicController {
 
   constructor(private readonly ateliers: AteliersService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
   @Post(':serviceId/payer')
   payer(
     @Param('serviceId') serviceId: string,
@@ -23,6 +39,7 @@ export class AteliersPublicController {
     return this.ateliers.payer(serviceId, dto, this.origineSure(origine));
   }
 
+  @Throttle({ default: { limit: 30, ttl: 3_600_000 } })
   @Post(':serviceId/confirmer/:sessionId')
   confirmer(
     @Param('serviceId') serviceId: string,

@@ -13,6 +13,7 @@ import {
   Check,
   LogOut,
   Settings,
+  ShieldCheck,
   LifeBuoy,
   LayoutList,
   Newspaper,
@@ -289,18 +290,32 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
               </div>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => router.push(user.role === 'ADMIN' ? '/admin' : '/dashboard/account')}
-            >
+            {/* ⚠ DEUX ENTRÉES, DEUX ÉCRANS (21/09/2026). « Mon profil » et
+                « Paramètres » menaient tous les deux à /dashboard/account :
+                un menu de quatre lignes dont deux faisaient la même chose, et
+                la seconde se lisait comme une promesse de réglages qui
+                n'existaient pas. « Mon profil » garde le compte ; la seconde
+                entrée porte l'écran qui existe vraiment à côté — les données
+                personnelles, leur export et leur effacement.
+
+                ⚠ ET L'ADMIN N'EST PAS UNE EXCEPTION : « Mon profil » l'envoyait
+                sur /admin, c'est-à-dire sur l'administration de la plateforme,
+                qui n'est pas son profil. Un administrateur a un compte comme
+                tout le monde ; l'administration a sa propre entrée, nommée. */}
+            <DropdownMenuItem onClick={() => router.push('/dashboard/account')}>
               <UserRound />
               Mon profil
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push(user.role === 'ADMIN' ? '/admin/statistiques' : '/dashboard/account')}
-            >
+            <DropdownMenuItem onClick={() => router.push('/dashboard/donnees-personnelles')}>
               <Settings />
-              Paramètres
+              Mes données personnelles
             </DropdownMenuItem>
+            {user.role === 'ADMIN' && (
+              <DropdownMenuItem onClick={() => router.push('/admin')}>
+                <ShieldCheck />
+                Administration
+              </DropdownMenuItem>
+            )}
             {/* /dashboard/inbox est la messagerie entre membres : y envoyer
                 quelqu'un qui cherche de l'aide, c'est le faire écrire dans le
                 vide. Le support, c'est un contact avec l'équipe ADéPA. */}

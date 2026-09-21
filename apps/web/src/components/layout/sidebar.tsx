@@ -277,10 +277,14 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
       {/* La « vue essentielle » a été retirée le 12/08/2026. Deux réglages
           d'affichage qui se superposaient : l'un cachait le non-essentiel,
           l'autre montrait l'avancé : faisaient qu'on ne savait plus lequel
-          expliquait ce qu'on voyait. Il n'en reste qu'un, et c'est un
-          aiguillage : le quotidien, ou la gestion RH. */}
+          expliquait ce qu'on voyait. Il n'en reste qu'un.
+
+          ⚠ CE BOUTON AJOUTE UNE RUBRIQUE, IL NE REMPLACE PLUS LE MENU
+          (21/09/2026, voir le long commentaire de `getNavForRole`). Le libellé
+          doit donc dire « afficher / masquer », jamais « revenir au menu » :
+          on n'a pas quitté le menu. */}
       <div className="border-t border-border px-4 pt-3">
-        {nbAvances > 0 || outilsAvances ? (
+        {nbAvances > 0 ? (
           <button
             type="button"
             onClick={basculerAvances}
@@ -293,7 +297,7 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
                 temp… » : illisible, donc jamais cliqué. Court dans le bouton,
                 détaillé dans l'infobulle au survol. */}
             <span className="truncate text-left">
-              {outilsAvances ? 'Revenir au menu' : 'Outils avancés'}
+              {outilsAvances ? 'Masquer la gestion RH' : 'Afficher la gestion RH'}
             </span>
           </button>
         ) : null}

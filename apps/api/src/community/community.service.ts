@@ -383,7 +383,11 @@ export class CommunityService {
         content: i.content,
         status: i.status,
         reply: i.reply,
-        auteur: i.account?.name ?? ', ',
+        // ⚠ `?? ', '` — une virgule suivie d'une espace — était une scorie du
+        // nettoyage des tirets du 4/09/2026 : une idée déposée par un compte
+        // effacé s'affichait signée « , ». Même correction que dans les six
+        // générateurs de PDF.
+        auteur: i.account?.name ?? 'Compte supprimé',
         votes: i.votes.length,
         aVote: i.votes.some((v) => v.userId === userId),
         createdAt: i.createdAt,

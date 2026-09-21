@@ -22,7 +22,7 @@ import { BanUserDto } from './dto/ban-user.dto';
 import { ModerateMissionDto, ModerateServiceDto } from './dto/moderate.dto';
 import { UpdateCategoryDto } from './dto/category-admin.dto';
 import { AuditService } from '../common/audit/audit.service';
-import { MOIS_AVANT_SUPPRESSION, dansNMois } from '../common/suppression-compte';
+import { MOIS_AVANT_SUPPRESSION, dansNMois, motifDeBlocage } from '../common/suppression-compte';
 import { UpdateArticleDto } from './dto/article-admin.dto';
 import {
   CreateFormationAdminDto,
@@ -889,6 +889,22 @@ export class AdminService {
    * archivé. « Depuis quand ce compte a-t-il disparu » est la première question
    * qu'on pose quand on ne le retrouve plus ; la réécrire au moment de
    * programmer la suppression effacerait la réponse.
+   *
+   * ⚠⚠ LE BLOCAGE EST CALCULÉ TOUT DE SUITE, PAS DANS TROIS MOIS (21/09/2026).
+   * Le planificateur le faisait déjà, mais à l'échéance : un compte qui a émis
+   * une facture affichait donc pendant trois mois une date de suppression qui
+   * n'arriverait jamais, et le motif n'apparaissait qu'une fois le délai passé,
+   * c'est-à-dire longtemps après que la personne qui a cliqué a cessé de
+   * regarder. On le lui dit au moment où elle décide. Le comptage est le même
+   * que celui du planificateur, et il appelle la MÊME fonction
+   * (`motifDeBlocage`) : deux règles écrites séparément finiraient par ne plus
+   * dire la même chose, et c'est l'écran qui mentirait.
+   *
+   * ⚠ ON PROGRAMME QUAND MÊME L'ÉCHÉANCE, et le compte est archivé dans tous
+   * les cas. Refuser le geste laisserait le compte VISIBLE — c'est-à-dire
+   * l'inverse de ce que la personne demandait. Archiver est le seul rangement
+   * qui existe ici, et il suffit : le compte quitte les recherches, l'annuaire,
+   * la vitrine et la place de marché.
    */
   async deleteAccount(id: string) {
     const account = await this.prisma.account.findUnique({
@@ -897,20 +913,28 @@ export class AdminService {
     });
     if (!account) throw new NotFoundException('Compte introuvable.');
 
+    const [factures, facturesAPayer, contrats] = await Promise.all([
+      this.prisma.invoice.count({ where: { accountId: id } }),
+      this.prisma.invoice.count({ where: { payerAccountId: id } }),
+      this.prisma.contratCDD.count({ where: { accountId: id } }),
+    ]);
+    const blocage = motifDeBlocage({ factures, facturesAPayer, contrats });
+
     const maj = await this.prisma.account.update({
       where: { id },
       data: {
         archivedAt: account.archivedAt ?? new Date(),
         suppressionPrevueLe: dansNMois(new Date(), MOIS_AVANT_SUPPRESSION),
-        // Une nouvelle échéance repart d'une page blanche : un blocage relevé
-        // il y a trois mois ne dit rien de la situation d'aujourd'hui.
-        suppressionMotifBlocage: null,
+        // Le motif relevé à l'instant, ou une page blanche s'il n'y en a pas :
+        // un blocage inscrit il y a trois mois ne dit rien d'aujourd'hui.
+        suppressionMotifBlocage: blocage,
       },
       select: {
         id: true,
         name: true,
         archivedAt: true,
         suppressionPrevueLe: true,
+        suppressionMotifBlocage: true,
       },
     });
 
@@ -1510,7 +1534,11 @@ export class AdminService {
       }
       return {
         id: s.id,
-        formation: s.formation?.title ?? ', ',
+        // ⚠ `?? ', '` : scorie du nettoyage des tirets du 4/09/2026. Une
+        // session dont la formation a été supprimée s'affichait « , » dans la
+        // liste d'administration, ce qui se lit comme un défaut d'affichage
+        // plutôt que comme la donnée manquante qu'il faut aller réparer.
+        formation: s.formation?.title ?? 'Formation supprimée',
         type: s.formation?.type ?? null,
         certifying: s.formation?.certifying ?? false,
         startDate: s.startDate,

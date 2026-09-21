@@ -84,11 +84,36 @@ export async function generateMetadata({
   // Titre et description de partage étaient déjà ceux de la page : le helper
   // les produit à l'identique et rétablit la carte de partage, que cet objet
   // `openGraph` effaçait en remplaçant celui du layout racine.
-  return metaPublique({
+  const meta = metaPublique({
     title: titre || "Intervenant",
     description,
     path: `/intervenants/${params.id}`,
   });
+
+  /*
+    ⚠ UNE FICHE SANS AUCUNE INTERVENTION PUBLIÉE NE S'INDEXE PAS (21/09/2026).
+
+    L'audit du 16/09 relevait que le sitemap ne déclare que les intervenants
+    ayant un atelier au catalogue : ceux qui ne font que du renfort n'y figurent
+    jamais. La correction évidente — les ajouter — était la mauvaise. Leur fiche
+    ne porte alors qu'un nom, un métier et une ville : c'est une page vide au
+    sens de Google, et c'est surtout le nom d'une personne publié sans rien à
+    offrir en face. On ne met pas quelqu'un dans un index pour faire du volume.
+
+    La vraie incohérence était ailleurs : cette page RESTE servie (l'API ne
+    l'exige pas), et elle s'annonçait alors `index, follow` tout en n'étant
+    citée ni par l'annuaire (`/public/vendors` filtre sur les fiches publiées)
+    ni par le sitemap. Une page indexable que rien ne lie, portant un nom
+    propre, c'est le défaut qu'on referme ici — dans le sens honnête.
+
+    Dès que la personne publie une intervention, la fiche redevient indexable
+    ET entre au sitemap, sans rien à changer : les deux lisent la même
+    condition.
+  */
+  if (!data?.services?.length) {
+    return { ...meta, robots: { index: false, follow: true } };
+  }
+  return meta;
 }
 
 export default async function VendorPage({ params: paramsPromesse }: { params: Promise<{ id: string }>}) {

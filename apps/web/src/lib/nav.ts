@@ -685,21 +685,38 @@ export function getNavForRole(
 
   /**
    * Les outils avancés (gestion RH) sont masqués tant qu'on ne les a pas
-   * demandés — et quand on les demande, ON NE VOIT QU'EUX (12/08/2026).
+   * demandés. Quand on les demande, ils s'AJOUTENT au menu, groupés dans une
+   * rubrique à eux, tout en bas.
    *
-   * Avant, les activer ajoutait quatre entrées au milieu de vingt autres :
-   * on cherchait dans un menu devenu plus long ce qu'on venait précisément
-   * d'ouvrir. Ce sont deux métiers différents — la mise en relation d'un côté,
-   * la gestion du temps de travail de l'autre — et on ne les fait pas en même
-   * temps. Le réglage devient donc un aiguillage, pas un supplément.
+   * ⚠ CECI REMPLACE LA RÈGLE DU 12/08/2026 (« quand on les demande, on ne voit
+   * qu'eux »), et il faut dire pourquoi plutôt que de faire comme si elle
+   * n'avait jamais existé. Le motif d'alors était juste : les activer ajoutait
+   * des entrées AU MILIEU de vingt autres, et on cherchait dans un menu devenu
+   * plus long ce qu'on venait précisément d'ouvrir. Mais la réponse choisie —
+   * masquer tout le reste — coûtait plus cher que le défaut : un chef de
+   * service qui ouvrait « Contrats CDD » perdait l'accès à ses renforts, à ses
+   * réservations et à LEX tant qu'il n'avait pas retrouvé le bouton du bas.
+   * Et comme il ne reste que DEUX entrées avancées, l'aiguillage produisait un
+   * menu de deux lignes dans deux rubriques d'une seule entrée — ce que la
+   * règle « deux entrées ne font pas une rubrique », écrite plus haut dans ce
+   * fichier, interdit partout ailleurs.
+   *
+   * Le groupement en UNE rubrique nommée répond au motif d'origine (on voit
+   * d'un bloc ce qu'on vient d'ouvrir, et où) sans fermer le reste de l'outil.
+   *
+   * ⚠ NE PAS SCINDER LA RUBRIQUE par section d'origine : deux rubriques d'une
+   * entrée, c'est exactement le défaut qu'on répare.
    */
-  const filtrerAvances = (sections: NavSection[]) =>
-    sections
-      .map((s) => ({
-        ...s,
-        items: s.items.filter((i) => (options?.outilsAvances ? i.avance : !i.avance)),
-      }))
+  const RUBRIQUE_AVANCES = 'Gestion RH';
+  const filtrerAvances = (sections: NavSection[]) => {
+    const quotidien = sections
+      .map((s) => ({ ...s, items: s.items.filter((i) => !i.avance) }))
       .filter((s) => s.items.length > 0);
+    if (!options?.outilsAvances) return quotidien;
+    const avances = sections.flatMap((s) => s.items.filter((i) => i.avance));
+    if (avances.length === 0) return quotidien;
+    return [...quotidien, { title: RUBRIQUE_AVANCES, items: avances }];
+  };
   const sansAvances = filtrerAvances;
 
   // L'administration de la plateforme n'a pas de rôle « dans un compte » :
