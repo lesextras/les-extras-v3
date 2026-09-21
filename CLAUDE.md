@@ -4976,3 +4976,223 @@ affiche **48 € pour trois ans** jusqu'à 10 personnes, plus 36 € par dossier
 Décision de Siham : **ne pas en désigner pour l'instant et ouvrir quand même la
 vente**. L'interrupteur reste le prix, et c'est elle qui le pose — la règle du
 16/09 tient : « c'est Siham qui l'actionne, pas moi ».
+
+---
+
+## LA REFONTE « LE PROBLÈME D'ABORD » — 21/09/2026 (soir)
+
+Commits `8043119` puis `fa0300c`. Demande de Siham, mot pour mot : « t'es web
+designer et tu m'as fait une home page qui donne des blocs séparé les uns des
+autres, renforteam n'a pas son bloc qui l'explique et la page renforteam n'a
+pas un bon design qui raconte un storytelling + il n'y a pas de page lex + les
+textes qui expliques les services ne sont pas assez clair ». Fil narratif
+choisi par elle : **« le problème d'abord »**. Périmètre choisi par elle : les
+trois (accueil, `/renforteam`, `/lex`).
+
+### La règle d'écriture, et elle vaut pour toute nouvelle section
+
+**Chaque section s'ouvre sur LA SITUATION, jamais sur le produit.** Le nom de
+l'offre n'apparaît qu'une fois le blocage nommé. C'est écrit en tête de
+`_shared/QuatreSituations.tsx` et de `(public)/lex/page.tsx` ; une section
+ajoutée plus tard qui commencerait par « RenforTeam, c'est… » défait la page.
+
+### `_shared/QuatreSituations.tsx` — l'accueil
+
+Remplace la grille des trois usages (`USAGES`, supprimée). Quatre sections
+pleine largeur, texte et image en alternance, chacune : la phrase du couloir,
+la situation en deux ou trois phrases, la réponse en trois lignes, un chiffre,
+un lien.
+
+⚠ **L'ALTERNANCE PASSE PAR `md:order-1` / `md:order-2`, PAS PAR
+`flex-row-reverse`.** Sur téléphone, l'image doit TOUJOURS suivre son texte ;
+avec `flex-row-reverse` une section sur deux montre la photo avant d'avoir dit
+de quoi on parle.
+
+⚠ **LEX N'A PAS DE PHOTO, IL A `VisuelLex()`** — notes brutes → jetons
+`[LE JEUNE]` / `[LA MÈRE]` → noms rétablis. La photo prévue
+(`ecrire-400x400.jpeg`) est en 404 sur WordPress, et surtout : montrer la
+transformation prouve ce qu'une photo de bureau ne prouve pas.
+
+⚠ **LA MENTION DE VISIO EST CONDITIONNÉE** à `visioconsultationVisible()`.
+L'ancienne carte « Renfort » promettait « en présentiel ou en visioconsultation »
+alors que `/visio/:jeton` redirigeait.
+
+### La section « tout-en-un » devient LA COUTURE
+
+Elle s'appelait « Tout-en-un / Le travail administratif que vous ne ferez
+plus » et arrivait après une première liste des offres : le visiteur lisait
+**deux inventaires de la même chose**, l'un en produits, l'autre en fonctions.
+C'est ça, « des blocs séparés les uns des autres ».
+
+Elle s'appelle maintenant **« Le fil commun / Quatre réponses, un seul logiciel
+dessous »**, et sa phrase reprend les quatre mots de la section précédente dans
+le même ordre — renfort, atelier, formation, écrit. C'est ce rappel qui fait la
+couture. **Ne pas lui redonner un titre qui annonce une fonction.**
+
+Le `BANDEAU` défilant, orphelin depuis un retrait de section, y revient :
+« même dossier, même conformité » reste une affirmation tant qu'on ne déroule
+pas ce que le dossier contient. ⚠ La liste est écrite DEUX FOIS (le keyframe
+`marquee` translate de -50 %), et `.animate-marquee` a été ajoutée à la liste
+coupée par `prefers-reduced-motion` : sans ça, la règle générale lui donne
+0,001 ms et une seule itération, donc un bandeau **figé en position décalée**.
+
+### `/lex` — la page n'existait pas
+
+`(public)/lex/page.tsx`. Elle répond à une question à laquelle rien ne
+répondait : **« est-ce que ça va m'aider, moi, ce soir ? »**. `/confiance-lex`
+répond à celle de la DIRECTION (« ai-je le droit de m'en servir sur un enfant
+placé ? ») et les deux se renvoient l'une à l'autre. ⚠ Ce ne sont pas des
+doublons, ne pas les fusionner.
+
+Structure : la soirée (« Il est 21 h, le rapport est pour demain, et la page
+est blanche »), trois moments de la semaine, `<OffreLex />`, ce que LEX ne fera
+jamais, les prix, les guides.
+
+⚠ **ELLE NE RÉÉCRIT PAS `OffreLex`.** Le trajet d'un écrit et les quatre outils
+viennent du composant partagé avec l'accueil : deux descriptions du même
+produit divergent au premier changement.
+⚠ **ET ELLE NE LUI MET PAS DE TITRE AU-DESSUS** — `OffreLex` porte déjà « Ce
+qui part, et ce qui revient ». La première version affichait le titre deux fois
+à trois centimètres d'écart (vu en direct, corrigé par `fa0300c`).
+⚠ **LES PRIX SONT RELUS DANS LE CODE**, pas recopiés d'une autre page :
+`SUBSCRIPTION_PLANS` / `ESTABLISHMENT_PLAN` / `CREDIT_PACKS`
+(`billing.service.ts`) + `FREE_MONTHLY_CREDITS` (`credits.constants.ts`).
+
+Déclarée au `sitemap.ts` et ajoutée à la colonne **« Produit »** du pied de
+page, qui ne portait aucun lien vers une page décrivant LEX. Cette colonne est
+maintenant à SEPT liens, le plafond : ne rien y ajouter sans en retirer un.
+
+### `/renforteam` — le deuxième acte qui manquait
+
+La page empilait hero, commission, demandeurs, deux cartes, déroulé : chaque
+bloc se tenait seul, aucun ne menait au suivant. Ce qui manquait n'était pas du
+texte, c'était **ce que la personne a déjà essayé avant d'arriver ici**.
+
+- **`PORTES_FERMEES`** — le service public (CAMSP, CMPP, SESSAD, CMP), le
+  libéral en direct, l'établissement en interne. Puis le pivot, seule phrase de
+  la page qui a le droit d'annoncer le produit : **« RenforTeam est la
+  quatrième porte. »**
+  ⚠ **AUCUN DÉLAI PROMIS EN FACE** : la quatrième porte n'est pas « plus
+  rapide », elle est OUVERTE — elle ne suppose pas qu'une place se libère.
+  ⚠ **AUCUN CHIFFRE NOUVEAU** : nous ne mesurons aucun délai d'attente. Les
+  « quatorze mois » du titre sont une phrase rapportée, pas une statistique, et
+  ils ne sont pas répétés comme si c'en était une.
+  ⚠ **AUCUNE DES TROIS PORTES N'EST UN REPROCHE.** Le CAMSP et les libéraux ne
+  sont pas en cause, ils sont saturés — et ce sont les professionnels avec qui
+  nos intervenants travaillent ensuite.
+- **Les 15 % descendent APRÈS le déroulé.** Ils arrivaient en troisième
+  position : un prix lu avant l'objet se lit toujours comme cher. **Ne pas les
+  remonter.**
+- **La carte « Vous avez un besoin » est supprimée hors offre complète** : elle
+  répétait mot pour mot la section « Qui peut demander ? » juste au-dessus. Ses
+  quatre repères sont fondus dans le déroulé, là où on se pose ces questions.
+  La carte intervenant devient une section à elle, juste avant les missions
+  ouvertes. Les deux cartes reviennent telles quelles en offre complète, où
+  elles décrivent deux rôles réellement différents.
+- **Le déroulé porte un trait qui relie ses trois pastilles** (`top-[22px]`, le
+  centre vertical d'une `size-11`, de 16 % à 16 % des bords, masqué sous `md`).
+  Trois pastilles alignées se lisent comme trois options au choix, pas comme un
+  trajet.
+
+### ⚠⚠ LE BOUTON DE DEMANDE CRÉAIT UN COMPTE ÉTABLISSEMENT
+
+Trouvé pendant la refonte, et c'est le défaut le plus coûteux de la journée.
+« Demander un intervenant » pointait sur `/register?type=etablissement`. Ce
+paramètre ne pré-remplit pas : il **saute l'écran des trois cartes** et crée un
+compte `ESTABLISHMENT` (`register/page.tsx`). Une mère qui cliquait, deux
+lignes sous « Qui peut demander ? Tout le monde », devait nommer son
+établissement — et repartait avec un compte du mauvais type, **dont le slug
+public ne se recalcule jamais**.
+
+Nouvelle destination **`demanderIntervenant`** dans `lib/inscription-liens.ts`
+(`/register?next=/dashboard/renforts`, sans `type`). En offre complète, seul un
+établissement employeur publie un besoin : le raccourci y garde son sens.
+
+Au passage : la même destination `/register?next=/dashboard/opportunites`
+portait **trois libellés** sur cette seule page — « Je suis intervenant
+indépendant », « Rejoindre la team », « Je cherche des missions ».
+⚠ **LE GARDE-FOU NE LES VOYAIT PAS** : `inscription-liens.test.ts` efface les
+`{...}` avant de comparer, donc un libellé écrit dans un ternaire est ignoré.
+Tous importés depuis `INSCRIPTION` désormais. **Un libellé dans un ternaire
+échappe au test — l'écrire en dur ou l'importer, jamais le calculer.**
+
+---
+
+## TROIS RECETTES D'OUTILLAGE CORRIGÉES — 21/09/2026
+
+### ⚠ `file_upload` MARCHE DANS UN `browser_batch` — la note contraire est FAUSSE
+
+Et il le faut : **la liaison de l'extension avec un onglet ne survit qu'à
+l'intérieur d'un `browser_batch` commencé par `navigate`.** Dès qu'un
+aller-retour s'intercale, tout appel sur cet onglet répond « Couldn't determine
+which page this action targets » — y compris `javascript_tool`, `find` et
+`computer` —, et **seul un `navigate` la rétablit**. Ni un onglet neuf, ni
+`tabs_context_mcp`, ni attendre n'y changent quoi que ce soit.
+
+Conséquence : **tout le dépôt GitHub tient en UN SEUL batch**, du premier
+`navigate` au `requestSubmit()` :
+
+1. `navigate` sur `/upload/main`, `wait 5` ;
+2. `javascript_tool` : poser l'hameçon **qui renomme lui-même** — c'est ce qui
+   supprime le second appel JS que l'ancienne recette demandait, et qui ne peut
+   plus passer :
+   ```js
+   inp.addEventListener('change', e => {
+     if (window.__pass) return;
+     e.stopImmediatePropagation();
+     const dt = new DataTransfer();
+     for (const f of inp.files) dt.items.add(new File([f], MAP[f.name], {type:f.type, lastModified:f.lastModified}));
+     window.__pass = true; inp.files = dt.files;
+     inp.dispatchEvent(new Event('change', {bubbles:true}));
+   }, true);
+   ```
+3. `find` « file input » (le ref est **`ref_108`** sur cette page, stable) ;
+4. `file_upload` avec les fichiers aux noms APLATIS (`/` → `__`) ;
+5. `wait 9` ;
+6. `javascript_tool` : vérifier `input[name="file_id"]` = **nb fichiers + 1**,
+   puis remplir `#commit-summary-input` et `textarea[name="description"]` et
+   `form.requestSubmit()`. **Ne soumettre que si le compte est bon.**
+7. `wait 10`, `javascript_tool` : `location.href` doit être la racine du dépôt.
+
+⚠ Les chaînes du message de commit s'écrivent entre **accents graves** : les
+apostrophes françaises cassent une chaîne à quotes simples, et les guillemets
+doubles se battent avec le JSON de l'appel.
+
+### ⚠ LE « REDEPLOY » DE COOLIFY RÉPOND BIEN À UN `.click()` JAVASCRIPT
+
+La note du 12/08 (« Livewire attend un vrai événement ») est **périmée** sur la
+version actuelle. Ce qui marche, sans jamais ouvrir le menu :
+
+```js
+Array.from(document.querySelectorAll('[role=menuitem]'))
+  .find(e => /^redeploy$/i.test(e.textContent.trim()))
+  .click();
+```
+
+Le bouton porte `wire:click="deploy"`, et Livewire v3 écoute sur l'élément
+lui-même : l'élément est dans le DOM même menu fermé (`getBoundingClientRect()`
+rend 0×0), et le clic part quand même. **Ne plus perdre de temps à ouvrir le
+menu** : le clic sur « Actions » (par coordonnées comme par `ref`) n'affiche
+rien dans la capture, et le clic par `ref` sur l'item, lui, ne déclenche rien.
+
+Vérification : la première ligne de `/deployment` passe à « In progress ».
+
+### ⚠ LA VISIO A DEUX INTERRUPTEURS, PAS UN
+
+- côté **API** (`ztn3x6m7nsi8tiv4m55algui`) : `LIVEKIT_URL`, `LIVEKIT_API_KEY`,
+  `LIVEKIT_API_SECRET` — sans les trois, `configMedia()` rend `null` et la
+  salle répond **503** (« pas en service », jamais 500) ;
+- côté **SITE** (`rv03oxcj4zyal4c9ipybamo8`) : **`NEXT_PUBLIC_VISIOCONSULTATION=1`**,
+  posée par Siham le 21/09. Sans elle, `/visio/:jeton` **redirige (307)**,
+  l'écran ne figure dans aucun menu, et toutes les mentions de visio du site
+  restent masquées.
+
+Les deux sont désormais posées : `/visio/<jeton>` répond **200**,
+`GET /api/public/visio/<faux>` rend un 404 métier (« Ce lien de rendez-vous
+n'est pas valide »), `POST /api/visio` rend 401. ⚠ **Le dernier maillon — la
+frappe du jeton LiveKit — n'est PAS encore vérifié** : `configMedia()` n'est
+appelé qu'après validation du jeton ET de la fenêtre horaire, donc il faut un
+VRAI rendez-vous pour l'atteindre. Et pour en créer un il faut un compte
+intervenant **propriétaire d'une prestation réservée** : `POST /visio` refuse
+en 403 quand `booking.service.accountId !== accountId` (le produit refuse
+l'usurpation par construction, y compris à l'admin).
