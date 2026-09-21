@@ -1309,7 +1309,7 @@ marcherait pas.</p>`,
   A.pied();
 
 module.exports = {
-  uuid: null, // posé après la création côté Teachizy (voir build-v2.js)
+  uuid: 'aca67b64-6cc3-42c1-9c6a-5b6402329987',
   slug: 'resoudre-un-probleme-avec-la-personne',
   modules: [
     { titre: 'Module 1 — Ce qu’une solution imposée ne peut pas faire', minutes: 12, html: G.assembler(M1) },

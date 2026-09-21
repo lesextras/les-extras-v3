@@ -276,6 +276,15 @@ const PROFIL = {
     categorie: 'Analyse des pratiques',
     publics: [PUBLICS.MEDICO, PUBLICS.PARENTS, PUBLICS.CADRES],
   },
+  // Le public le plus large du catalogue, et c'est coherent : la competence
+  // porte sur une conversation, pas sur une technique de metier. Les cadres y
+  // sont parce que le parcours nomme le moment ou une equipe se met a parler
+  // de la personne au lieu de parler du dispositif.
+  'resoudre-un-probleme-avec-la-personne': {
+    minutes: 46,
+    categorie: 'Analyse des pratiques',
+    publics: [PUBLICS.MEDICO, PUBLICS.PARENTS, PUBLICS.ASE, PUBLICS.FAMILLES, PUBLICS.CADRES],
+  },
 };
 
 /**
@@ -713,6 +722,38 @@ Module 3 — Exercice guidé : la feuille, le test, les dix jours. Une feuille �
 
 Module 4 — Lire la courbe : progrès, variation, ou rien. Le niveau, la pente et la variabilité dans cet ordre, la règle des trois points, et ce qu’on écrit dans le dossier.`,
     targetAudience: `Professionnels du médico-social qui mettent des choses en place sans savoir si elles marchent (IME, ITEP, SESSAD, MECS, ESAT, foyer de vie) ; coordinateurs et chefs de service qui lisent des bilans où « ça va mieux » n’est adossé à rien ; psychologues, éducateurs et ergothérapeutes qui construisent un projet d’accompagnement et doivent en rendre compte ; parents qui ont changé quelque chose à la maison et veulent savoir si ça a produit un effet.`,
+  },  {
+    slug: 'resoudre-un-probleme-avec-la-personne',
+    image: 'resoudre-un-probleme-avec-la-personne.jpg',
+    slugPlateforme: 'resoudre-un-probleme-avec-la-personne-plutot-que-contre-elle',
+    title: 'Résoudre un problème avec la personne plutôt que contre elle',
+    summary: `Thématique : observer et écrire. Une seule compétence travaillée : chercher la solution à deux, et tenir l’accord obtenu.
+
+Une solution imposée obtient quelque chose, et il serait malhonnête de dire le contraire : elle obtient l’arrêt, souvent tout de suite. Le problème est qu’elle ne marche que tant que vous êtes là — c’est le comportement normal d’une solution à laquelle une des deux personnes n’a pas participé.
+
+Le parcours enseigne trois temps, dans un ordre qui n’est pas négociable : le point de vue de la personne jusqu’à ce qu’elle dise « oui, c’est ça » ; le vôtre en deux phrases, sans y glisser ce qu’elle devrait faire ; puis la recherche à deux. Et un accord écrit en trois lignes, avec sa date de relecture, que l’autre peut redire.
+
+On ne négocie jamais la sécurité, ni les soins prescrits, ni les besoins fondamentaux — repas, sommeil, hygiène, lien familial, et surtout le moyen de communication. Le module 1 fait trier avant d’ouvrir la bouche, et une fiche d’annexe liste ce qui ne se discute pas, à afficher en salle d’équipe. La conversation se tient à froid, jamais pendant ; et si la personne ne veut pas parler maintenant, on reporte — une résolution « à deux » imposée reste une résolution imposée.
+
+46 minutes de lecture sur quatre modules, avec un quiz d’autocorrection par module, plus dix jours entre la conversation et sa relecture : comptez une dizaine de jours en tout.`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— distinguer ce qu’une solution imposée obtient de ce qu’elle n’obtient pas ;
+— trier un problème entre sécurité, limite non négociable, recherche commune, et ce qu’on laisse ;
+— annoncer une limite non négociable au début de la conversation, et chercher autour ;
+— repérer les quatre phrases qui referment une recherche commune ;
+— tenir le temps 1 sans proposer de solution, silences de dix secondes compris ;
+— énoncer votre préoccupation en deux phrases, sans y glisser ce que l’autre devrait faire ;
+— écrire un accord en trois lignes, avec sa date de relecture, que l’autre peut redire ;
+— relire l’accord à deux et attribuer un échec à l’une des quatre causes, et à aucune autre.`,
+    program: `Module 1 — Ce qu’une solution imposée ne peut pas faire. Le tri en quatre branches, ce qui ne se négocie jamais, et les trois situations où l’on n’ouvre pas cette conversation du tout.
+
+Module 2 — La conversation qui s’est arrêtée à la troisième réplique. Six minutes disséquées réplique par réplique, et l’information qui aurait tout changé, apprise trois semaines trop tard.
+
+Module 3 — Exercice guidé : les trois temps, écrits mot pour mot. La préparation sur une demi-page, les silences de dix secondes, et l’accord écrit devant la personne.
+
+Module 4 — Tenir l’accord, et ce qu’on fait quand il ne tient pas. La relecture à deux en cinq minutes, les quatre causes d’un accord qui dérape, et ce qu’on écrit dans le dossier.`,
+    targetAudience: `Professionnels du médico-social devant un problème qui revient depuis des mois malgré les règles posées (IME, ITEP, SESSAD, MECS, ESAT, foyer de vie) ; professionnels de la protection de l’enfance et assistants familiaux ; parents, pour qui la scène du module 2 existe aussi à la maison ; coordinateurs et chefs de service qui voient une équipe s’épuiser à reposer la même règle.`,
   },
 ];
 

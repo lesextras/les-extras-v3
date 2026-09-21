@@ -1011,6 +1011,84 @@ const FICHES = [
     ],
   },
 
+  /* ═══════════════════════════════════════════════════════════════════════ 14 */
+  {
+    slug: 'resoudre-un-probleme-avec-la-personne',
+    titre: 'RÉSOUDRE UN PROBLÈME AVEC LA PERSONNE',
+    titre2: 'PLUTÔT QUE CONTRE ELLE',
+    accent: '#0f766e',
+    accentDoux: '#ccfbf1',
+    thematique: 'Observer et écrire',
+    ruban: 'Chercher la solution à deux',
+    emoji: '🤝',
+    duree: '4 modules · 46 min de lecture · 10 jours avant la relecture',
+    competence:
+      'Trier ce qui se cherche à deux, tenir les trois temps d’une conversation, écrire un accord que l’autre peut redire, et le relire dix jours plus tard.',
+    notion: {
+      titre: 'LA NOTION CLÉ',
+      points: [
+        '<b>Une solution imposée obtient l’arrêt</b>, souvent tout de suite. Elle ne marche que tant que vous êtes là — c’est le comportement normal d’une solution à laquelle une des deux personnes n’a pas participé.',
+        '<b>Trois temps, dans cet ordre&nbsp;:</b> son point de vue jusqu’au «&nbsp;oui, c’est ça&nbsp;», le vôtre en deux phrases, puis la recherche à deux. Commencer par le temps 2 transforme la conversation en annonce.',
+        '<b>Un accord se juge à une seule chose&nbsp;: qui a eu l’idée.</b> Proposé par la personne, il tient&nbsp;; accepté poliment, il déplace juste l’effort sur vous.',
+      ],
+      test: 'Est-ce que je connais déjà la solution&nbsp;? Si oui, ce n’est pas une recherche, c’est une annonce — et l’autre le sentira avant vous.',
+    },
+    parcours: [
+      { quoi: 'Ce qu’une solution imposée ne peut pas faire', produit: 'le tri de vos trois problèmes' },
+      { quoi: 'La conversation qui s’est arrêtée à la troisième réplique', produit: 'une conversation ratée, disséquée' },
+      { quoi: 'Les trois temps, écrits mot pour mot', produit: 'votre conversation préparée, puis tenue' },
+      { quoi: 'Tenir l’accord, et quand il ne tient pas', produit: 'l’accord relu, et le deuxième tour' },
+    ],
+    releve: 'Entre le module 3 et le module 4&nbsp;: vous tenez la conversation, puis <b>dix jours</b> avant la relecture. Une ligne par OCCASION, pas une par jour — compter les jours où rien ne pouvait se produire fabrique un faux échec.',
+    figure: {
+      titre: 'CE QUI FERME, ET CE QUI OUVRE',
+      type: 'paires',
+      gauche: 'Ce qui vient spontanément',
+      droite: 'Ce qui laisse la conversation ouverte',
+      lignes: [
+        { g: '«&nbsp;Pourquoi tu as fait ça&nbsp;?&nbsp;»', d: '«&nbsp;J’ai remarqué que… Qu’est-ce qui se passe, à ce moment-là&nbsp;?&nbsp;» — une information, pas une justification' },
+        { g: '«&nbsp;Tu sais bien que c’est interdit.&nbsp;»', d: 'Rien. On ne rappelle pas la règle au temps 1&nbsp;: elle la connaît' },
+        { g: '«&nbsp;Ce qu’il faudrait, c’est que tu…&nbsp;»', d: '«&nbsp;Comment on pourrait faire pour que ça marche pour toi ET pour moi&nbsp;?&nbsp;»' },
+        { g: '«&nbsp;Tu es d’accord&nbsp;?&nbsp;»', d: '«&nbsp;Redis-moi ce qu’on a décidé&nbsp;?&nbsp;» — un accord qu’on ne peut pas redire n’a pas été compris' },
+        { g: 'Le silence qu’on remplit au bout de trois secondes', d: 'Le silence qu’on laisse durer dix. Ce que vous y mettez est ce que l’autre n’aura pas dit' },
+      ],
+      legende: 'Aucune de ces phrases n’est mauvaise en soi. Elles le sont AU TEMPS 1, où elles annoncent que la solution est déjà trouvée.',
+    },
+    arbre: {
+      titre: 'QUELLE SORTE DE PROBLÈME AVEZ-VOUS DEVANT VOUS&nbsp;?',
+      question: 'Avant d’ouvrir la bouche&nbsp;: de quoi s’agit-il exactement&nbsp;?',
+      branches: [
+        { si: 'Quelqu’un est en danger, maintenant', alors: 'ON AGIT', d: 'la conversation viendra à froid, plus tard' },
+        { si: 'C’est une limite qui ne se négocie pas', alors: 'ON L’ANNONCE', d: 'au début, dans la même phrase que l’invitation — jamais à la fin' },
+        { si: 'Ça revient, et ça coûte à la personne', alors: 'C’EST ICI', d: 'le terrain de ce parcours' },
+        { si: 'Ça ne gêne que l’équipe', alors: 'ON LAISSE', d: 'lui demander de résoudre notre problème, il le sentira' },
+      ],
+    },
+    erreurs: [
+      'Ouvrir la conversation sur un problème qui ne gêne que l’équipe. C’est le seul point qui transforme l’outil en son contraire&nbsp;: une participation de façade.',
+      'Annoncer la limite à la FIN, après avoir laissé chercher. Le plus de dégâts pour le moins d’intention&nbsp;: ça apprend que l’invitation était décorative.',
+      'Passer au temps 2 avant le «&nbsp;oui, c’est ça&nbsp;». La faute la plus fréquente, et elle annule tout ce qui précède.',
+      '<b>Négocier ce qui ne se négocie pas</b>&nbsp;: sécurité, soins, repas, sommeil, lien familial, et surtout le moyen de communication.',
+      'Répéter plus fermement un accord irréaliste. Ça ne le rend pas réaliste&nbsp;: ça l’use, et ça use la personne avec.',
+    ],
+    retenir: [
+      'On trie AVANT de parler, et à froid — jamais pendant, jamais juste après.',
+      'Si la personne ne veut pas parler maintenant, on reporte. Une résolution «&nbsp;à deux&nbsp;» imposée reste imposée.',
+      'Un accord qui ne tient pas accuse l’accord, pas la personne — et la personne a accès à ce qui est écrit sur elle (art. L311-3 CASF).',
+    ],
+    grille: {
+      titre: 'L’ACCORD À RECOPIER — TROIS LIGNES, DEUX EXEMPLAIRES',
+      colonnes: ['Le problème (les deux préoccupations)', 'Ce qu’on a décidé', 'Ce qui dépend d’un tiers', 'On se revoit le'],
+      note:
+        'Écrit devant la personne, pendant la conversation — jamais après au calme, un accord écrit hors de la pièce n’est plus le sien. Ni sanction, ni promesse d’effort, ni signature&nbsp;: une signature transforme un accord en preuve.',
+    },
+    astuces: [
+      { i: '⏱️', t: 'Comptez dix secondes dans votre tête après chaque réponse. C’est ridicule, et c’est le geste qui change le plus de conversations.' },
+      { i: '✍️', t: 'Préparez vos QUESTIONS, pas votre conclusion. Si vous avez déjà la solution, annoncez-la franchement plutôt que de la faire deviner.' },
+      { i: '🔄', t: 'Un deuxième tour est normal&nbsp;: la première conversation sert souvent à découvrir le vrai problème. Un quatrième dit qu’on s’est trompé de parcours.' },
+    ],
+  },
+
 ];
 
 module.exports = { FICHES };

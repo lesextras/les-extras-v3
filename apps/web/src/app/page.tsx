@@ -220,16 +220,22 @@ const TOUT_EN_UN = [
     listait quatre fonctions administratives sans jamais nommer RenforTeam ni
     la visio. Le visiteur lisait « il diffuse, il formalise » sans savoir QUOI.
 
-    ⚠ LE TAUX EST 15 %, ET IL VIENT DE /frais-de-service (arrêté le
-    21/09/2026). Ne pas écrire « 0 % » ici : 0 % est le taux des ateliers et
-    des formations, pas celui du renfort. Deux chiffres différents sur deux
-    pages du même site est exactement ce que l'audit reprochait ailleurs.
+    ⚠ CETTE CARTE DIT LE PROBLÈME, PAS LE PRIX — décision de Siham le
+    21/09/2026 au soir. Elle a d'abord porté « 15 % de frais de gestion » :
+    un tarif, sur une carte dont le travail est de faire reconnaître une
+    SITUATION. Le prix a sa page (/frais-de-service) et le bloc « tout-en-un »
+    n'est pas une grille tarifaire.
+
+    ⚠ Si un chiffre revient ici un jour, ce doit être 15 % et jamais 0 % :
+    0 % est le taux des ateliers et des formations, pas celui du renfort. Deux
+    chiffres différents sur deux pages du même site est exactement ce que
+    l'audit reprochait ailleurs.
   */
   {
     icone: HeartHandshake,
     titre: 'RenforTeam',
     texte:
-      'Le renfort quand la liste d’attente est de quatorze mois : vous décrivez le besoin, le réseau est prévenu. 15 % de frais de gestion, et rien d’autre.',
+      'Quatorze mois d’attente pour une psychomotricienne, et l’enfant qui grandit pendant ce temps-là. Vous décrivez le besoin ce soir, le réseau est prévenu.',
   },
 ];
 

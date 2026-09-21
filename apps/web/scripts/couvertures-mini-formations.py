@@ -225,6 +225,17 @@ COUVERTURES = [
         "emoji": "📊",
         "confettis": "📈📐🗒️⏳",
     },
+    {
+        "fichier": "resoudre-un-probleme-avec-la-personne.jpg",
+        "surtitre": "Observer et écrire",
+        "titre": "Résoudre un problème avec la personne plutôt que contre elle",
+        "sous": "Une solution imposée ne marche que tant que vous êtes là",
+        "duree": "4 modules + annexes · 46 min",
+        "accent": (0x0F, 0x76, 0x6E),
+        "second": (0xF4, 0x72, 0x61),
+        "emoji": "🤝",
+        "confettis": "🗣️❓📝⏳",
+    },
 ]
 
 

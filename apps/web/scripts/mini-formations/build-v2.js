@@ -32,6 +32,7 @@ const f10 = require('./f10-demarrer.js');
 const f11 = require('./f11-renforcer.js');
 const f12 = require('./f12-decrire.js');
 const f13 = require('./f13-mesurer.js');
+const f14 = require('./f14-resoudre.js');
 
 /** ids des items Teachizy, relevés après la création des sections. */
 const IDS = {
@@ -48,6 +49,7 @@ const IDS = {
   'renforcer-ce-qui-va': { lecons: [1474350, 1474352, 1474354, 1474356], annexes: 1474358 },
   'decrire-un-comportement-sans-le-juger': { lecons: [1474360, 1474362, 1474364, 1474366], annexes: 1474368 },
   'mesurer-un-comportement-ligne-de-base': { lecons: [1499516, 1499518, 1499520, 1499522], annexes: 1499524 },
+  'resoudre-un-probleme-avec-la-personne': { lecons: [1499735, 1499737, 1499739, 1499741], annexes: 1499743 },
 };
 
 /**
@@ -103,6 +105,7 @@ const SOURCES = [
   { f: f11, annexes: f11.annexes },
   { f: f12, annexes: f12.annexes },
   { f: f13, annexes: f13.annexes },
+  { f: f14, annexes: f14.annexes },
 ];
 
 /**
