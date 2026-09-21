@@ -75,41 +75,41 @@ La formation est gratuite du premier au dernier module, sans carte bancaire et s
 temps. Si vous souhaitez une attestation nominative de suivi — pour votre dossier de formation
 continue, votre employeur ou votre entretien professionnel —, elle est délivrée à la demande,
 au prix indiqué sur la fiche de la formation, sur les-extras.fr.
-Elle atteste que vous avez suivi la formation&nbsp;; ce n'est ni un diplôme, ni une
+Elle atteste que vous avez suivi la formation&nbsp;; ce n’est ni un diplôme, ni une
 certification professionnelle, ni une action de formation certifiée Qualiopi.</p>`;
 
 const NUANCE_COMPORTEMENTALE = `<hr style="height:1px;border:0;background:#e5e0d8;margin:28px 0">
 <h3 style="color:#8a3a2e">Ce que cette approche ne doit jamais devenir</h3>
-<p>Les principes enseignés ici viennent de l'analyse appliquée du comportement. Ils sont
+<p>Les principes enseignés ici viennent de l’analyse appliquée du comportement. Ils sont
 efficaces, et ils ont été critiqués — notamment par des personnes autistes adultes, dont
 certaines décrivent des prises en charge vécues comme de la mise en conformité. Cette critique
 est fondée et elle change la façon de travailler. Quatre garde-fous, non négociables&nbsp;:</p>
 <ul>
-<li><p><strong>On n'éteint jamais un comportement sans le remplacer.</strong> Un comportement
-sert à quelque chose. Le faire disparaître sans donner un autre moyen d'obtenir la même chose,
-c'est retirer un outil à quelqu'un qui n'en a pas d'autre.</p></li>
+<li><p><strong>On n’éteint jamais un comportement sans le remplacer.</strong> Un comportement
+sert à quelque chose. Le faire disparaître sans donner un autre moyen d’obtenir la même chose,
+c’est retirer un outil à quelqu’un qui n’en a pas d’autre.</p></li>
 <li><p><strong>On ne travaille pas sur ce qui gêne, on travaille sur ce qui coûte à la
-personne.</strong> Un balancement qui apaise et ne blesse personne n'est pas un objectif de
-travail. Une difficulté à demander de l'aide, si.</p></li>
+personne.</strong> Un balancement qui apaise et ne blesse personne n’est pas un objectif de
+travail. Une difficulté à demander de l’aide, si.</p></li>
 <li><p><strong>Le refus est une communication.</strong> Une personne qui refuse dit quelque
-chose. Le passage en force enseigne que son avis ne compte pas — et c'est exactement ce qu'on
+chose. Le passage en force enseigne que son avis ne compte pas — et c’est exactement ce qu’on
 lui reprochera plus tard de ne pas savoir exprimer.</p></li>
-<li><p><strong>Ces outils ne remplacent pas un accompagnement.</strong> Ils s'inscrivent dans
+<li><p><strong>Ces outils ne remplacent pas un accompagnement.</strong> Ils s’inscrivent dans
 un projet construit avec la personne, sa famille et les professionnels qui la connaissent.</p></li>
-<li><p><strong>On ne contraint jamais un corps.</strong> Rien de ce qui est enseigné ici n'autorise
-à retenir quelqu'un, à barrer une porte, à maintenir quelqu'un assis, à le mettre à l'écart de
-force, ni à le priver d'un repas, d'une boisson, des toilettes ou d'un objet qui lui appartient —
+<li><p><strong>On ne contraint jamais un corps.</strong> Rien de ce qui est enseigné ici n’autorise
+à retenir quelqu’un, à barrer une porte, à maintenir quelqu’un assis, à le mettre à l’écart de
+force, ni à le priver d’un repas, d’une boisson, des toilettes ou d’un objet qui lui appartient —
 ni à fabriquer une frustration pour «&nbsp;faire travailler&nbsp;» une demande. Le point est
 concret&nbsp;: quand un comportement sert à échapper à une tâche, «&nbsp;ne pas céder&nbsp;» se
 joue sur <strong>la tâche</strong> — on la réduit, on la reporte, on la fait à deux — jamais sur
-la personne. Si tenir le plan suppose de toucher, de bloquer ou d'enfermer, le plan est devenu
-autre chose et il s'arrête là. La contention et l'isolement relèvent d'un protocole
-d'établissement et d'une traçabilité, pas d'une décision éducative individuelle, et certainement
-pas d'une formation de quarante-cinq minutes.</p></li>
+la personne. Si tenir le plan suppose de toucher, de bloquer ou d’enfermer, le plan est devenu
+autre chose et il s’arrête là. La contention et l’isolement relèvent d’un protocole
+d’établissement et d’une traçabilité, pas d’une décision éducative individuelle, et certainement
+pas d’une formation de quarante-cinq minutes.</p></li>
 </ul>`;
 
 const AVERTISSEMENT = `<hr style="height:1px;border:0;background:#e5e0d8;margin:28px 0">
-<p style="font-size:14px;color:#6b6157"><strong>Ce que cette formation n'est pas.</strong>
+<p style="font-size:14px;color:#6b6157"><strong>Ce que cette formation n’est pas.</strong>
 Elle ne pose aucun diagnostic et ne remplace ni un avis médical, ni un accompagnement éducatif,
 ni un suivi psychologique. Elle transmet un geste professionnel, transposable à la maison. Si
 une situation vous inquiète, parlez-en à un professionnel qui connaît la personne concernée.</p>`;

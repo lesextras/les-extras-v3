@@ -266,6 +266,16 @@ const PROFIL = {
     categorie: 'Analyse des pratiques',
     publics: [PUBLICS.MEDICO, PUBLICS.ASE, PUBLICS.FAMILLES, PUBLICS.CADRES],
   },
+  // PUBLICS.PARENTS est present ici, contrairement au parcours precedent : la
+  // cible du parcours nomme explicitement les parents qui ont change quelque
+  // chose a la maison, et le module 3 se tient aussi bien sur une table de
+  // cuisine que dans un atelier. C'est la cible de la fiche qui decide, pas la
+  // proximite des deux sujets.
+  'mesurer-un-comportement-ligne-de-base': {
+    minutes: 46,
+    categorie: 'Analyse des pratiques',
+    publics: [PUBLICS.MEDICO, PUBLICS.PARENTS, PUBLICS.CADRES],
+  },
 };
 
 /**
@@ -668,6 +678,41 @@ Module 3 — Exercice guidé : la grille en trois colonnes. Ce que j’ai vu, ce
 
 Module 4 — Se relire, et transmettre à l’équipe. La relecture en quatre passes, l’équilibre exigé par le cadre national de référence, le point de vue de la personne, et une règle commune par mois.`,
     targetAudience: `Professionnels du médico-social et de la protection de l’enfance qui produisent des écrits : transmissions, comptes rendus, rapports de situation, notes pour une ESS ou pour le juge ; assistants familiaux ; référents de parcours ; encadrement et direction qui relisent et valident les écrits de leur équipe.`,
+  },
+  {
+    slug: 'mesurer-un-comportement-ligne-de-base',
+    image: 'mesurer-un-comportement-ligne-de-base.jpg',
+    slugPlateforme: 'mesurer-un-comportement-ligne-de-base-et-courbe',
+    title: 'Mesurer un comportement : ligne de base et courbe',
+    summary: `Thématique : observer et écrire. Une seule compétence travaillée : lire une tendance sans se laisser avoir par trois jours — choisir une unité, tenir une ligne de base, tracer la courbe et savoir ce qu’elle dit.
+
+Le catalogue apprend à comprendre un comportement, à le remplacer, à l’augmenter et à l’écrire. Il ne disait nulle part comment savoir si ce qu’on a mis en place produit quelque chose. Le trou coûte dans les deux sens : on abandonne un dispositif qui marchait, et on en maintient un qui ne fait rien pendant des mois.
+
+Aucune statistique, et c’est délibéré : ni significativité, ni écart-type, ni régression. Un test mal appliqué donne une certitude fausse, ce qui est pire que l’incertitude honnête. Ce qui est enseigné tient en trois questions posées à une courbe — le niveau, la pente, la variabilité — et se lit à l’œil sur du papier quadrillé.
+
+Aucune ligne de base quand il y a danger : on agit immédiatement, et on écrit « pas de ligne de base, motif sécurité ». Le module 2 le dit avant d’enseigner autre chose. Et l’on mesure un comportement dans un contexte, jamais quelqu’un : aucun chiffre accolé à un nom, parce que ce genre de phrase est recopié dans le dossier suivant et survit à l’équipe qui l’a produite (art. L311-3 du CASF).
+
+46 minutes de lecture sur quatre modules, avec un quiz d’autocorrection par module, plus dix jours de relevé entre le module 3 et le module 4 : comptez une dizaine de jours en tout.
+
+${GARDE_FOU}`,
+    objectives: `À l’issue de cette mini-formation, vous serez capable de :
+
+— distinguer ce qui coûte à la personne de ce qui gêne l’entourage, et renoncer à mesurer dans le second cas ;
+— décrire un comportement en termes filmables avant de le compter ;
+— choisir une unité — fréquence, durée ou latence — sur ce qui pose réellement problème ;
+— remplacer une intensité estimée par une question fermée et comptable ;
+— tenir dix jours de ligne de base sans rien changer, et savoir s’en passer lorsque la sécurité l’impose ;
+— construire une feuille de relevé à six colonnes qu’un collègue remplit sans explication ;
+— vérifier à deux que vous comptez la même chose, et reprendre la définition sinon ;
+— lire une courbe par le niveau, la pente et la variabilité, et distinguer un signal d’une conclusion.`,
+    program: `Module 1 — Ce qu’on mesure, et ce qu’on ne mesure pas. La phrase qui décide s’il y a lieu de mesurer, les quatre unités et celle qu’il vous faut, et pourquoi l’intensité estimée n’est pas une donnée.
+
+Module 2 — La ligne de base, et pourquoi on ne change rien pendant. Dix jours sans rien toucher, une seule chose changée ensuite avec sa date — et la règle de sécurité qui suspend tout cela.
+
+Module 3 — Exercice guidé : la feuille, le test, les dix jours. Une feuille à six colonnes affichée là où le comportement se produit, le test d’accord entre deux personnes, et la médiane tracée à la main.
+
+Module 4 — Lire la courbe : progrès, variation, ou rien. Le niveau, la pente et la variabilité dans cet ordre, la règle des trois points, et ce qu’on écrit dans le dossier.`,
+    targetAudience: `Professionnels du médico-social qui mettent des choses en place sans savoir si elles marchent (IME, ITEP, SESSAD, MECS, ESAT, foyer de vie) ; coordinateurs et chefs de service qui lisent des bilans où « ça va mieux » n’est adossé à rien ; psychologues, éducateurs et ergothérapeutes qui construisent un projet d’accompagnement et doivent en rendre compte ; parents qui ont changé quelque chose à la maison et veulent savoir si ça a produit un effet.`,
   },
 ];
 

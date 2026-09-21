@@ -102,7 +102,7 @@ function exercice({ nom, duree, quoi, etapes, reussi }) {
 <ol style="${UL}">
 ${etapes.map((e) => `<li style="${LI}">${e}</li>`).join('\n')}
 </ol>
-<p><strong>C'est réussi quand&nbsp;:</strong> ${reussi}</p>`;
+<p><strong>C’est réussi quand&nbsp;:</strong> ${reussi}</p>`;
 }
 
 /**
@@ -134,8 +134,8 @@ ${liste.map((v) => `<li style="${LI}">${v}</li>`).join('\n')}
 function avantDePasser(liste) {
   return `${FILET}
 <h3 style="${H3}">Avant de passer au module suivant</h3>
-<p>Vous devriez pouvoir cocher ces trois lignes. Si l'une manque, reprenez la
-section correspondante&nbsp;: le module suivant s'appuie dessus.</p>
+<p>Vous devriez pouvoir cocher ces trois lignes. Si l’une manque, reprenez la
+section correspondante&nbsp;: le module suivant s’appuie dessus.</p>
 <ul style="${UL}">
 ${liste.map((c) => `<li style="${LI}">${c}</li>`).join('\n')}
 </ul>`;

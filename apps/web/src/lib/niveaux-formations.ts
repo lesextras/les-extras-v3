@@ -179,7 +179,6 @@ export const NIVEAUX: readonly Niveau[] = [
         slug: 'mesurer-un-comportement-ligne-de-base',
         titre: 'Mesurer un comportement : ligne de base et courbe',
         competence: 'Lire une tendance sans se laisser avoir par trois jours.',
-        aVenir: true,
       },
       {
         slug: 'resoudre-un-probleme-avec-la-personne',

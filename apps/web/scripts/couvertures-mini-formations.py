@@ -214,6 +214,17 @@ COUVERTURES = [
         "emoji": "📹",
         "confettis": "📝🔎🗂️✍",
     },
+    {
+        "fichier": "mesurer-un-comportement-ligne-de-base.jpg",
+        "surtitre": "Observer et écrire",
+        "titre": "Mesurer un comportement : ligne de base et courbe",
+        "sous": "Trois jours ne font pas une tendance",
+        "duree": "4 modules + annexes · 46 min",
+        "accent": (0xB4, 0x53, 0x09),
+        "second": (0x0E, 0xA5, 0xE9),
+        "emoji": "📊",
+        "confettis": "📈📐🗒️⏳",
+    },
 ]
 
 

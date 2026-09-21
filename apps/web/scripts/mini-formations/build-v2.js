@@ -31,6 +31,7 @@ const f9 = require('./f9-ess.js');
 const f10 = require('./f10-demarrer.js');
 const f11 = require('./f11-renforcer.js');
 const f12 = require('./f12-decrire.js');
+const f13 = require('./f13-mesurer.js');
 
 /** ids des items Teachizy, relevés après la création des sections. */
 const IDS = {
@@ -46,6 +47,7 @@ const IDS = {
   'aider-a-demarrer-une-tache': { lecons: [1471644, 1471646, 1471648, 1471650], annexes: 1471652 },
   'renforcer-ce-qui-va': { lecons: [1474350, 1474352, 1474354, 1474356], annexes: 1474358 },
   'decrire-un-comportement-sans-le-juger': { lecons: [1474360, 1474362, 1474364, 1474366], annexes: 1474368 },
+  'mesurer-un-comportement-ligne-de-base': { lecons: [1499516, 1499518, 1499520, 1499522], annexes: 1499524 },
 };
 
 /**
@@ -79,6 +81,12 @@ const COMPORTEMENTALES = new Set([
   // « Decrire un comportement sans le juger » ne le porte PAS : il traite de
   // l'ecrit professionnel, pas d'une technique comportementale.
   'renforcer-ce-qui-va',
+  // « Mesurer un comportement » : ligne de base, unites de mesure et lecture de
+  // courbe viennent en droite ligne de l'analyse appliquee du comportement.
+  // C'est meme le parcours ou l'encart compte le plus : il enseigne a produire
+  // un CHIFFRE sur quelqu'un, et l'encart est le seul endroit qui rappelle que
+  // ce chiffre ne se met jamais au service de l'equipe contre la personne.
+  'mesurer-un-comportement-ligne-de-base',
 ]);
 
 const SOURCES = [
@@ -94,6 +102,7 @@ const SOURCES = [
   { f: f10, annexes: f10.annexes },
   { f: f11, annexes: f11.annexes },
   { f: f12, annexes: f12.annexes },
+  { f: f13, annexes: f13.annexes },
 ];
 
 /**

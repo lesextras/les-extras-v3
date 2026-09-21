@@ -26,6 +26,7 @@ export const EMOJI_PARCOURS: Record<string, string> = {
   "aider-a-demarrer-une-tache": "🚀",
   "renforcer-ce-qui-va": "🌱",
   "decrire-un-comportement-sans-le-juger": "📹",
+  "mesurer-un-comportement-ligne-de-base": "📊",
 };
 
 /**

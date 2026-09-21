@@ -935,6 +935,82 @@ const FICHES = [
     ],
   },
 
+  /* ══════════════════════════════════════════════════════════════════════ 13 */
+  {
+    slug: 'mesurer-un-comportement-ligne-de-base',
+    titre: 'MESURER UN COMPORTEMENT',
+    titre2: 'LIGNE DE BASE ET COURBE',
+    accent: '#b45309',
+    accentDoux: '#fef3c7',
+    thematique: 'Observer et écrire',
+    ruban: 'Trois jours ne font pas une tendance',
+    emoji: '📊',
+    duree: '4 modules · 46 min de lecture · 10 jours de relevé',
+    competence:
+      'Choisir une unité, tenir dix jours de ligne de base, tracer la courbe et la lire sans se laisser avoir par trois bonnes journées.',
+    notion: {
+      titre: 'LA NOTION CLÉ',
+      points: [
+        '<b>La ligne de base</b> : dix jours où l’on ne change RIEN. C’est la partie que tout le monde saute, et sans elle la suite ne veut rien dire — on ne sait pas d’où l’on part.',
+        '<b>Une seule unité</b>, choisie sur ce qui pose problème : fréquence si ça revient trop, durée si ça dure trop, latence si ça met trop de temps à démarrer.',
+        '<b>La médiane, jamais la moyenne.</b> Une journée exceptionnelle déplace une moyenne et vous fait voir un progrès qui n’existe pas.',
+      ],
+      test: 'Une caméra aurait-elle compté la même chose que moi&nbsp;? Si deux collègues ne comptent pas pareil, la courbe mesure qui était de service.',
+    },
+    parcours: [
+      { quoi: 'Ce qu’on mesure, et ce qu’on ne mesure pas', produit: 'l’unité de mesure de VOTRE situation' },
+      { quoi: 'La ligne de base, et pourquoi on ne change rien pendant', produit: 'la décision sur la ligne de base' },
+      { quoi: 'La feuille, le test d’accord, les dix jours', produit: 'votre feuille de relevé, testée à deux' },
+      { quoi: 'Lire la courbe : progrès, variation, ou rien', produit: 'la lecture de votre courbe' },
+    ],
+    releve: 'Entre le module 3 et le module 4 : <b>dix jours de relevé, une ligne par jour, même les jours à zéro</b>. Le module 4 porte sur VOTRE courbe — il ne peut pas être fait avant.',
+    figure: {
+      titre: 'LES TROIS QUESTIONS À POSER À UNE COURBE',
+      type: 'paires',
+      gauche: 'Ce qu’on regarde',
+      droite: 'Ce que ça veut dire, et ce que ça ne veut pas dire',
+      lignes: [
+        { g: '<b>Le niveau</b><br>Où se situe le nuage de points&nbsp;?', d: 'La médiane des dix points d’après, comparée à celle des dix d’avant. Le signal le plus simple et le plus solide' },
+        { g: '<b>La pente</b><br>Ça monte, ça descend, ou c’est plat&nbsp;?', d: 'Une pente était peut-être déjà là AVANT. Si la ligne de base descendait déjà, le dispositif n’a peut-être rien fait' },
+        { g: '<b>La variabilité</b><br>Points serrés ou dispersés&nbsp;?', d: 'Une courbe qui se resserre sans descendre est un vrai progrès : les journées catastrophiques ont disparu' },
+        { g: '<b>Et l’intensité&nbsp;?</b><br>L’échelle de 1 à 5', d: 'Elle s’estime au lieu de se compter : elle varie avec la fatigue de celui qui note. On la remplace par une question fermée' },
+      ],
+      legende: 'On répond aux trois dans cet ordre. Beaucoup d’équipes ne regardent que la pente, qui est la plus trompeuse des trois.',
+    },
+    arbre: {
+      titre: 'LA RÈGLE DES TROIS POINTS',
+      question: 'Combien de points consécutifs sont sortis de la zone habituelle&nbsp;?',
+      branches: [
+        { si: 'Un ou deux', alors: 'CE N’EST RIEN', d: 'une bonne journée existe, une mauvaise aussi. On ne change rien et on continue de relever' },
+        { si: 'Trois ou plus', alors: 'C’EST UN SIGNAL', d: 'on le note, on continue cinq jours, on regarde si ça tient. Un signal n’est pas une conclusion' },
+        { si: 'Tous, d’un coup', alors: 'MÉFIANCE', d: 'un changement brutal et total vient plus souvent d’ailleurs : vacances, absence d’un collègue, maladie' },
+        { si: 'Rien en quatre semaines', alors: 'L’HYPOTHÈSE ÉTAIT FAUSSE', d: 'ce n’est pas la personne qui est en cause. Retour aux quatre fonctions' },
+      ],
+    },
+    erreurs: [
+      'Attendre dix jours de ligne de base quand quelqu’un se met en danger. <b>Il n’y a pas de ligne de base quand il y a danger</b> : on agit immédiatement, et on écrit « pas de ligne de base, motif sécurité ».',
+      'Mesurer ce qui gêne l’équipe plutôt que ce qui coûte à la personne. C’est le seul point qui transforme l’outil en son contraire.',
+      'Changer trois choses le même jour : la courbe bougera, et on ne saura jamais laquelle a agi.',
+      'Laisser une case vide au lieu d’écrire zéro. Au module 4, on ne saura plus si c’était un jour calme ou un jour non relevé.',
+    ],
+    retenir: [
+      'Dix jours sans rien changer, puis UNE chose, avec la date écrite sur la feuille.',
+      'Trois points consécutifs font un signal, jamais une conclusion.',
+      'On mesure un comportement dans un contexte, jamais quelqu’un : aucun chiffre accolé à un nom. La personne a accès à son dossier (art. L311-3 CASF).',
+    ],
+    grille: {
+      titre: 'LA FEUILLE À RECOPIER — 10 JOURS, SIX COLONNES',
+      colonnes: ['Date', 'Qui relève', 'La mesure', 'Créneau respecté ?', 'Inhabituel (3 mots)', 'Question fermée'],
+      note:
+        'Affichée là où le comportement se produit, avec un stylo accroché. La colonne « inhabituel » n’est pas facultative : c’est elle qui évite de croire à un progrès qui n’était que les vacances scolaires.',
+    },
+    astuces: [
+      { i: '✌️', t: 'Le test d’accord : deux personnes comptent le même créneau, séparément. Si les nombres diffèrent, c’est la définition qu’il faut reprendre.' },
+      { i: '📐', t: 'Un point par jour, tracé à la main sur du papier quadrillé. Le tableur que personne n’ouvre ne vaut pas la feuille punaisée.' },
+      { i: '🛑', t: 'Quand ça ne coûte plus rien à la personne, on arrête. Une mesure qui ne s’arrête jamais devient une habitude de service.' },
+    ],
+  },
+
 ];
 
 module.exports = { FICHES };
