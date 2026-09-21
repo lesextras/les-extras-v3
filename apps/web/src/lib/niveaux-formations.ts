@@ -184,16 +184,6 @@ export const NIVEAUX: readonly Niveau[] = [
         slug: 'resoudre-un-probleme-avec-la-personne',
         titre: 'Résoudre un problème avec la personne plutôt que contre elle',
         competence: 'Chercher la solution à deux, et tenir l’accord obtenu.',
-        // ⚠ ÉCRIT ET PUBLIÉ SUR LA PLATEFORME PÉDAGOGIQUE ; ce qui manque est la
-        // FICHE PUBLIQUE, créée par `prisma/seed-mini-formations.js`. Sans elle,
-        // « Ouvrir le parcours » mène à « Formation introuvable » — le « bouton
-        // qui mène à un refus » que le produit s'interdit partout ailleurs.
-        //
-        // ⚠ LE SEED DOIT TOURNER SUR UNE API DÉJÀ REDÉPLOYÉE. Le 21/09 il a été
-        // lancé sur un conteneur qui portait encore le script d'avant : la fiche
-        // du parcours précédent a été créée, celle-ci non, sans aucune erreur.
-        // L'ordre est : pousser → redéployer l'API → seed.
-        aVenir: true,
       },
     ],
   },
