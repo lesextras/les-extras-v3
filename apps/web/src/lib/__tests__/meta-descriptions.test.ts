@@ -43,12 +43,43 @@ function pagesPubliques(dossier: string, trouvees: string[] = []): string[] {
   return trouvees;
 }
 
-/** Les littéraux `description: "…"` d'un fichier, gabarits exclus. */
+/**
+ * Les littéraux de chaîne d'une propriété `description`, gabarits exclus.
+ *
+ * ⚠⚠ LES DEUX BRANCHES D'UN TERNAIRE COMPTENT, ET C'EST LA RAISON DE CE
+ * DEUXIÈME PASSAGE (21/09/2026). L'ancienne version exigeait un guillemet
+ * immédiatement après `description:` : elle ne voyait donc RIEN d'un
+ * `description: CONDITION ? "…" : "…"`. C'est exactement la forme de
+ * `legal/cookies/page.tsx`, dont la branche servie en production faisait 163
+ * caractères — Google la coupait sur « aucune mesure d'aud… » — sans que ce
+ * test, vert, n'ait rien à dire. Un garde-fou qui ne mesure qu'une des deux
+ * branches est pire que pas de garde-fou : il rassure.
+ *
+ * On lit donc la tranche qui suit `description:` jusqu'à la prochaine clé de
+ * métadonnées, et on mesure TOUTES les chaînes qu'elle contient.
+ */
+const CLES_SUIVANTES =
+  /\n\s{0,6}(alternates|openGraph|keywords|robots|title|icons|metadataBase|twitter|other|path|authors|category):/;
+
 function descriptions(source: string): string[] {
   const trouvees: string[] = [];
-  const motif = /\bdescription:\s*\n?\s*(['"])((?:\\.|(?!\1)[^\\])*)\1/g;
+  const motif = /\bdescription:\s*/g;
   let m: RegExpExecArray | null;
-  while ((m = motif.exec(source)) !== null) trouvees.push(m[2]);
+  while ((m = motif.exec(source)) !== null) {
+    const depuis = source.slice(m.index + m[0].length, m.index + m[0].length + 900);
+    const fin = depuis.match(CLES_SUIVANTES);
+    const tranche = fin ? depuis.slice(0, fin.index) : depuis;
+    // Les chaînes de la tranche. Un gabarit `${…}` dépend d'une fiche : il
+    // n'est pas mesurable ici, et les apostrophes inverses ne sont pas lues.
+    const chaines = /(['"])((?:\\.|(?!\1)[^\\\n])*)\1/g;
+    let c: RegExpExecArray | null;
+    while ((c = chaines.exec(tranche)) !== null) {
+      // Une chaîne courte dans cette tranche est presque toujours une clé ou un
+      // chemin (« /legal/cookies »), pas une description : on ne mesure que ce
+      // qui pourrait dépasser.
+      if (c[2].length > 40) trouvees.push(c[2]);
+    }
+  }
   return trouvees;
 }
 

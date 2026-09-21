@@ -281,7 +281,7 @@ export default async function RenfortsPage() {
                                     {fullName(b.applicant?.firstName, b.applicant?.lastName)}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
-                                    {b.applicant?.profile?.job ?? "Freelance"}
+                                    {b.applicant?.profile?.job ?? "Intervenant"}
                                     {b.applicant?.profile?.city ? ` · ${b.applicant.profile.city}` : ""}
                                   </p>
                                 </div>

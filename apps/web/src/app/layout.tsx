@@ -32,12 +32,26 @@ export const metadata: Metadata = {
   //
   // ⚠ 155 CARACTÈRES MAXIMUM, ET LE COMPTE SE VÉRIFIE. Le commentaire précédent
   // annonçait 155 ; la phrase en faisait 171, et Google la coupait en plein
-  // milieu de « dossier de conformité par interv… ». Celle-ci en fait 145,
-  // mesurés. Elle dit aussi ce qui nous distingue vraiment — 0 % de commission
-  // sur le catalogue (⚠ plus sur RenforTeam depuis le 21/09/2026) —
-  // là où l'ancienne vantait la « réservation en ligne », que tout le monde a.
+  // milieu de « dossier de conformité par interv… ». Celle-ci en fait 152,
+  // mesurés.
+  //
+  // ⚠⚠ ELLE DISAIT « INTERVENANTS VÉRIFIÉS », ET CE N'EST PAS UNE MALADRESSE
+  // DE PLUS (relevé en production le 21/09/2026). C'est la promesse de sécurité
+  // exactement interdite partout ailleurs : elle a été retirée de la fiche
+  // atelier le 4/09, puis de `(auth)/layout.tsx` le 16/09, avec chaque fois le
+  // même motif — AUCUNE vérification d'identité, de diplôme ou de casier
+  // n'existe dans ce produit, et c'est l'établissement qui contrôle à
+  // l'embauche. Elle survivait ici, c'est-à-dire à l'endroit le plus servi du
+  // site : le repli de TOUTES les pages qui ne posent pas la leur, dont
+  // `/verify-email` et `/invitations/accept`. Ne pas la réécrire, sous aucune
+  // forme.
+  //
+  // ⚠ ELLE ANNONÇAIT AUSSI « CONTRAT ÉDITÉ ». Depuis le recentrage du
+  // 19/09/2026, l'offre publique ne porte plus le renfort salarié : le CDD
+  // n'est plus proposé en ligne, et ce que la plateforme édite pour une
+  // intervention, ce sont un devis et une feuille de mission.
   description:
-    'Ateliers, formations et renforts pour le médico-social : devis en 48 h, contrat et facture édités, intervenants vérifiés. Porté par une association.',
+    'Ateliers, formations et accompagnements personnalisés pour le médico-social. Devis sous 48 h, sans frais de recrutement. Association certifiée Qualiopi.',
   keywords: [
     'atelier médico-social',
     'formation médico-social',

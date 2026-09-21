@@ -9,9 +9,23 @@ import { apiRequest } from "@/lib/api";
 import { sourceAcquisition } from "@/lib/source";
 import { Field, Textarea } from "./form-fields";
 
+/*
+  ⚠ « FREELANCE » A ÉTÉ RETIRÉ DE CETTE LISTE LE 21/09/2026, ET NE DOIT PAS
+  REVENIR. C'est le vocabulaire que le Conseil d'État a écarté le 11/02/2025
+  (n° 491128) : un remplacement de poste en établissement ne se fait pas sous
+  statut d'indépendant. Le mot avait été banni du site le 16/09 — des mots-clés
+  du layout racine, des pages renfort, de la carte de partage — et il survivait
+  ici, dans un menu déroulant, c'est-à-dire à l'endroit exact où quelqu'un se
+  déclare. On écrit « intervenant », et « remplaçant en CDD » quand il s'agit
+  d'un remplacement de poste.
+
+  Les libellés parlent à la première personne : c'est une case qu'on coche sur
+  soi, pas une catégorie qu'on nous applique.
+*/
 const SUBJECTS = [
   "Je suis un établissement",
-  "Je suis un intervenant (freelance)",
+  "Je suis un intervenant",
+  "Je suis un parent ou un proche",
   "Question sur une formation",
   "Autre",
 ];

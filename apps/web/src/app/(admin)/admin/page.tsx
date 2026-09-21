@@ -206,7 +206,7 @@ export default async function AdminPage() {
                   <Link href="/admin/reservations" className="group rounded-xl border border-border bg-card p-4 transition hover:shadow-card">
                     <div className="flex items-center gap-2 text-primary"><CalendarCheck className="size-4" /><span className="text-2xl font-bold">{dc.pendingTimeEntries}</span></div>
                     <p className="mt-1 text-sm font-medium text-foreground">Heure{(dc.pendingTimeEntries ?? 0) > 1 ? "s" : ""} à valider</p>
-                    <p className="text-xs text-muted-foreground">Déclarées par les freelances, en attente</p>
+                    <p className="text-xs text-muted-foreground">Déclarées par les intervenants, en attente</p>
                   </Link>
                 ) : null}
               </div>

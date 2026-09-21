@@ -115,7 +115,7 @@ export default async function AdminReservationsPage({
                             {b.account?.name ?? "-"}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {b.account?.type === "ESTABLISHMENT" ? "Établissement" : "Freelance"}
+                            {b.account?.type === "ESTABLISHMENT" ? "Établissement" : "Intervenant"}
                           </p>
                         </div>
                       </TableCell>

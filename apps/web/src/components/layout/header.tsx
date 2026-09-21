@@ -140,8 +140,13 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-foreground">{acc.name}</span>
+                  {/* ⚠ LE MÊME LIBELLÉ QUE LE DÉCLENCHEUR, quelques lignes plus
+                      haut. Il disait « Freelance » alors que le bandeau du
+                      dessus dit « Professionnel » depuis qu'on a retiré
+                      l'anglicisme : deux mots pour la même chose, sur le même
+                      écran, à trois centimètres d'écart. */}
                   <span className="block truncate text-xs text-muted-foreground">
-                    {acc.type === 'ESTABLISHMENT' ? 'Établissement' : 'Freelance'}
+                    {acc.type === 'ESTABLISHMENT' ? 'Établissement' : 'Professionnel'}
                   </span>
                 </span>
                 {acc.id === activeAccount?.id && <Check className="size-4 text-primary" />}

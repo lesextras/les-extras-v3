@@ -78,7 +78,7 @@ export function MatchingPanel({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-foreground">{c.name}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {[c.job, c.city].filter(Boolean).join(" · ") || "Freelance"}
+                  {[c.job, c.city].filter(Boolean).join(" · ") || "Intervenant"}
                 </p>
                 <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                   {c.reviewCount && c.reviewCount > 0 ? (

@@ -17,9 +17,15 @@ const MESURE_ACTIVE = (process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "").trim().lengt
 
 export const metadata: Metadata = {
   title: "Cookies et stockage local",
+  // ⚠ LES DEUX BRANCHES SE MESURENT, PAS SEULEMENT CELLE QU'ON LIT. Le test
+  // `meta-descriptions` lit la valeur RENDUE, donc une seule des deux : la
+  // branche inactive passait à 163 caractères sans que rien ne le dise, et
+  // c'est elle qui était en ligne (Google coupait « aucune mesure
+  // d'aud… »). Relevé en production le 21/09/2026. 151 et 140 caractères,
+  // mesurés.
   description: MESURE_ACTIVE
     ? "Ce que Les Extras dépose sur votre navigateur : les cookies indispensables au fonctionnement, et un cookie de mesure de campagne soumis à votre accord."
-    : "Ce que Les Extras dépose sur votre navigateur : uniquement des cookies indispensables au fonctionnement. Aucun traceur publicitaire, aucune mesure d'audience.",
+    : "Ce que Les Extras dépose sur votre navigateur : uniquement les cookies indispensables. Aucun traceur publicitaire, aucune mesure d’audience.",
   alternates: { canonical: "/legal/cookies" },
   // `SOCLE_OG` : cet objet remplace celui du layout racine au lieu de le
   // compléter (fusion en surface), il faut donc y réémettre l'image de

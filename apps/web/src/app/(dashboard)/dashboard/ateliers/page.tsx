@@ -67,7 +67,7 @@ export default async function AteliersPage({
         <PageHeader title="Mes ateliers" />
         <EmptyState
           title="Réservé aux intervenants"
-          description="La gestion des ateliers est disponible depuis un compte freelance. Vous pouvez réserver des ateliers dans le marketplace."
+          description="La gestion des ateliers se fait depuis un compte intervenant. Depuis celui-ci, vous pouvez réserver des ateliers au catalogue."
           action={
             <Button asChild>
               <Link href="/marketplace?type=services">Voir le catalogue d’ateliers</Link>

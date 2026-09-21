@@ -71,7 +71,7 @@ export function AdminInvitationsManager({ invitations }: { invitations: AdminInv
     return (
       <EmptyState
         title="Aucune invitation"
-        description="Les invitations envoyées par les établissements et freelances apparaîtront ici."
+        description="Les invitations envoyées par les établissements et les intervenants apparaîtront ici."
       />
     );
   }

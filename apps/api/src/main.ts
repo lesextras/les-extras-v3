@@ -1,3 +1,4 @@
+import type { ServerResponse } from 'node:http';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -128,6 +129,27 @@ async function bootstrap() {
 
   const port = config.get<number>('API_PORT') ?? 3001;
   app.use(helmet());
+  /*
+    ⚠ `Permissions-Policy` N'EST PAS DANS HELMET, et son absence s'est vue à
+    l'audit du 21/09/2026 : le web le portait, l'API non. Helmet pose HSTS, la
+    CSP, `X-Frame-Options`, `nosniff` et `Referrer-Policy`, mais pas celui-là.
+
+    Ce que ça change concrètement : l'API ne rend jamais de page, mais elle rend
+    des documents — factures, devis, attestations, contrats en PDF — que le
+    navigateur ouvre dans son propre visualiseur, sur l'origine de l'API. Cet
+    en-tête coupe d'avance l'accès à la caméra, au micro et à la géolocalisation
+    depuis ce contexte.
+
+    ⚠ NE PAS Y AJOUTER `camera=()` EN CROYANT DURCIR LA VISIOCONSULTATION : la
+    salle vit sur le domaine du WEB, pas sur celui de l'API. La liste ci-dessous
+    n'a donc aucun effet sur elle — et si quelqu'un déplaçait un jour la salle
+    ici, c'est cette ligne qui l'empêcherait de fonctionner, sans message
+    d'erreur explicite.
+  */
+  app.use((_req: unknown, res: ServerResponse, next: () => void) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    next();
+  });
   await app.listen(port);
   logger.log(`LES EXTRAS API en écoute sur http://localhost:${port}/api`);
 }

@@ -49,9 +49,9 @@ const DESTINATIONS: Dest[] = [
   // lignes, deux outils payants devenaient inatteignables au doigt.
   { label: "Générateur d'activités", href: "/dashboard/activites", group: "Navigation", keywords: "ia activite atelier seance support animation", premium: true },
   { label: "Appui scolaire", href: "/dashboard/appui-scolaire", group: "Navigation", keywords: "ia ecole devoirs fiche memo revision decrochage aesh", premium: true },
-  { label: "Opportunités", href: "/dashboard/opportunites", group: "Freelance", keywords: "matching missions" },
-  { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Freelance", keywords: "services educatheures" },
-  { label: "Mes formations", href: "/dashboard/formations", group: "Freelance", keywords: "formation session émargement apprenants attestation" },
+  { label: "Opportunités", href: "/dashboard/opportunites", group: "Intervenant", keywords: "matching missions" },
+  { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Intervenant", keywords: "services educatheures" },
+  { label: "Mes formations", href: "/dashboard/formations", group: "Intervenant", keywords: "formation session émargement apprenants attestation" },
   { label: "RenforTeam", href: "/dashboard/renforts", group: "Établissement", keywords: "remplacement besoin publier" },
   { label: "Formations", href: "/marketplace/formations", group: "Établissement", keywords: "catalogue certifiant qualiopi inscription salariés" },
   { label: "Mes réservations", href: "/dashboard/reservations", group: "Navigation", keywords: "reservations bookings renfort atelier formation inscriptions contrat tout" },

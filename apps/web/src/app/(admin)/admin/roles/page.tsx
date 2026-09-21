@@ -62,7 +62,7 @@ export default async function AdminRolesPage() {
       <section className="rounded-lg border border-border bg-card p-5">
         <h3 className="mb-1 font-semibold text-foreground">Rôle dans une structure</h3>
         <p className="mb-4 text-sm text-muted-foreground">
-          Chaque membre d'un établissement ou d'un compte freelance a l'un de ces rôles. Les droits
+          Chaque membre d'un établissement ou d'un compte intervenant a l'un de ces rôles. Les droits
           sont vérifiés à chaque action (guards multi-tenant).
         </p>
         <div className="overflow-x-auto">

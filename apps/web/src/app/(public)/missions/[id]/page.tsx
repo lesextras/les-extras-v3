@@ -26,9 +26,15 @@ export async function generateMetadata({
   if (!data) return metaIntrouvable(res, "Mission de renfort")!;
   const lieu = data.city ? `, ${data.city}` : "";
   const titre = `${data.title}${lieu}`;
+  // ⚠ LA PHRASE DE REPLI DISAIT « contrat généré, intervenants vérifiés ».
+  // Les deux sont faux : aucune vérification d'identité, de diplôme ou de
+  // casier n'existe dans ce produit (c'est l'établissement qui contrôle à
+  // l'embauche, et les deux écrans le disent), et depuis le recentrage du
+  // 19/09/2026 ce que la plateforme édite pour une intervention, ce sont un
+  // devis et une feuille de mission. Même correction qu'au layout racine.
   const description =
     (data.description ?? "").replace(/\s+/g, " ").trim().slice(0, 160) ||
-    `Mission de renfort en établissement médico-social${lieu}. Candidature directe, contrat généré, intervenants vérifiés.`;
+    `Mission de renfort en établissement médico-social${lieu}. Candidature directe, devis et feuille de mission édités par la plateforme.`;
   // Titre et description de partage étaient déjà ceux de la page : le helper
   // les produit à l'identique et rétablit la carte de partage, que cet objet
   // `openGraph` effaçait en remplaçant celui du layout racine.

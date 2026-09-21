@@ -15,7 +15,7 @@ export default async function AdminAccountsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Comptes & sous-comptes"
-        subtitle="Tous les comptes (établissements et freelances) avec, dépliés, les sous-comptes rattachés et leurs rôles."
+        subtitle="Tous les comptes (établissements et intervenants) avec, dépliés, les sous-comptes rattachés et leurs rôles."
       />
       {res.error ? (
         <ErrorState retryHref="/admin/etablissements" />
