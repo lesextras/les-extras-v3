@@ -4860,3 +4860,119 @@ remettre vaut mieux qu'un lien mort sur une page en ligne.
 - Les pages de vente Teachizy des dix premiers parcours n'ont **pas** été
   reprises dans `teachizy-fiches.js` : elles sont correctes en ligne, mais
   elles ne vivent qu'en ligne. Le jour où l'une doit changer, l'y porter.
+
+---
+
+## LE QUATORZIÈME PARCOURS, ET LA CARTE QUI DIT LE PROBLÈME — 21/09/2026 (soir)
+
+Commits `9bbb359`, `18a7b2d`. **Le catalogue des mini-formations est complet** :
+quatorze parcours écrits, quatorze publiés sur la plateforme pédagogique. Plus
+aucun sujet n'est annoncé « en cours d'écriture ».
+
+« Résoudre un problème avec la personne plutôt que contre elle » — uuid
+`aca67b64-6cc3-42c1-9c6a-5b6402329987`, leçons
+`1499735 / 1499737 / 1499739 / 1499741`, annexes `1499743`, slug plateforme
+`resoudre-un-probleme-avec-la-personne-plutot-que-contre-elle`, slug maison
+`resoudre-un-probleme-avec-la-personne`. 124 000 caractères, 4 modules,
+6 figures, 7 fiches d'annexes, 20 questions réparties 5/7/6/2.
+
+### ⚠ IL N'EST PAS DANS `COMPORTEMENTALES`, ET SA FICHE NE PORTE PAS `GARDE_FOU`
+
+Son contenu ne vient pas de l'analyse appliquée du comportement — c'est une
+compétence de conversation. Même raisonnement que pour « L'enfant qui dit non à
+tout » et « Préparer une ESS » : coller l'encart ABA laisserait croire que le
+contenu en vient, ce qui serait faux. **Ses sept garde-fous sont dans le corps
+du texte, et ils sont plus adaptés :**
+
+1. **On ne négocie jamais la sécurité**, les soins prescrits, les besoins
+   fondamentaux — repas, sommeil, hygiène, lien familial — ni **le moyen de
+   communication**. Fiche d'annexe n°1, à afficher en salle d'équipe.
+2. **Une limite non négociable s'annonce AU DÉBUT**, dans la même phrase que
+   l'invitation. L'annoncer à la fin apprend que l'invitation était décorative.
+3. **La conversation se tient à froid**, jamais pendant ni juste après.
+4. **Un refus de parler maintenant se respecte.** Une résolution « à deux »
+   imposée reste imposée ; elle porte juste un nom plus flatteur.
+5. **On ne demande jamais « pourquoi tu as fait ça ».** La question demande une
+   justification, pas une information, et la plupart des gens ne savent pas
+   répondre.
+6. **Sans moyen d'exprimer un point de vue, on travaille d'abord la
+   communication** — renvoi explicite à « Apprendre à demander ».
+7. **Un accord qui ne tient pas accuse l'accord, pas la personne.** Quatre
+   causes nommées, et aucune n'est « elle n'a pas voulu » — non par gentillesse,
+   mais parce que cette hypothèse ne mène à aucune action.
+
+⚠ **AUCUN NOM DE PROGRAMME.** La structure en trois temps existe dans plusieurs
+approches nord-américaines de résolution collaborative dont les noms sont des
+marques déposées. On enseigne le geste, jamais leur matériel. ⚠ **Aucune
+référence juridique au-delà de L311-3 du CASF** ; le reste est présenté comme
+une pratique de métier.
+
+### La carte RenforTeam de l'accueil dit le PROBLÈME, pas le prix
+
+Le bloc « tout-en-un » listait quatre fonctions — *il diffuse, il formalise, il
+vérifie, il compte* — **sans jamais nommer RenforTeam ni la visio**. Le visiteur
+lisait ce que le logiciel FAIT sans savoir de QUOI on parle. Deux cartes
+ajoutées, grille de 4 → 3 colonnes (avec 5 ou 6 cartes, une grille de 4 laisse
+des orphelines).
+
+La carte a d'abord porté « 15 % de frais de gestion ». **Siham l'a fait retirer
+le soir même** : un tarif, sur une carte dont le travail est de faire
+reconnaître une situation. Elle dit maintenant *« Quatorze mois d'attente pour
+une psychomotricienne, et l'enfant qui grandit pendant ce temps-là. »* ⚠ Si un
+chiffre revient ici, ce doit être **15 %** et jamais 0 % : 0 % est le taux des
+ateliers et des formations.
+
+⚠ **LA CARTE VISIOCONSULTATION EST ÉCRITE ET CONDITIONNÉE** à
+`visioconsultationVisible()` (constante `CARTE_VISIO`, séparée de `TOUT_EN_UN`
+exprès). Tant que `NEXT_PUBLIC_VISIOCONSULTATION` n'est pas posée,
+`/visio/:jeton` redirige : l'annoncer pendant ce temps-là afficherait une
+promesse intenable. **Le jour où la variable est posée, la carte apparaît seule,
+sans retoucher `page.tsx`.**
+
+### ⚠⚠ L'ÉDITEUR DE THÈMES WORDPRESS POSTE CODEMIRROR, PAS LE `<textarea>`
+
+Trouvé en permutant les trois cartes de tarifs de toulali.fr (demande de Siham :
+le nom de la formation passe en grand titre bleu, le descriptif en sur-titre
+doré). Écrire dans `#newcontent` et cliquer « Mettre à jour » ne change
+**rien** : l'éditeur envoie le contenu de l'instance CodeMirror.
+
+**Ce qui marche :**
+```js
+const cm = document.querySelector('.CodeMirror').CodeMirror;
+cm.setValue(nouveau); cm.save();          // .save() recopie dans le textarea
+document.querySelector('#submit').click();
+```
+⚠ **Ne PAS attendre dans le même appel JS** : un `await` de plusieurs secondes
+après le clic gèle le rendu (« CDP timed out », onglet mort). On clique, on rend
+la main, et on vérifie dans un appel suivant.
+⚠ Et un POST `fetch` reconstruit à la main sur `theme-editor.php` répond **403** :
+le nonce du formulaire ne s'y rejoue pas. Passer par le bouton.
+⚠ La permutation ne changeait **pas la taille du fichier** (mêmes caractères,
+autre ordre) : la preuve d'enregistrement est alors le CONTENU relu, pas la
+taille — la recette du matin ne suffisait plus.
+
+### Ce qui reste, et qui tient en une ligne de commande
+
+**Le seed n'a toujours pas tourné**, pour f13 comme pour f14 : les deux fiches
+publiques n'existent pas côté Les Extras, et les deux parcours restent marqués
+`aVenir` sur `/parcours-de-formation` pour ne pas afficher un bouton qui mène à
+« Formation introuvable ». Coolify → Terminal → conteneur
+`ztn3x6m7nsi8tiv4m55algui-…` → `node prisma/seed-mini-formations.js`
+(attendu : `2 creee(s), 12 mise(s) a jour`), puis retirer les deux `aVenir`.
+
+⚠ **Le compte de Siham ne peut pas tester la visio** : ses trois comptes sont
+ADéPA (ESTABLISHMENT), l'association (ASSOCIATION) et « les extras » (ACADEMIE)
+— aucun n'est intervenant, et `POST /visio` réserve la proposition de
+rendez-vous à l'intervenant de la prestation (403 vérifié). Il faut un compte
+intervenant, créé en navigation privée.
+
+⚠ Son `User.firstName` vaut **« school »** : le tableau de bord affiche
+« Bonjour school ». À corriger dans `/dashboard/account`.
+
+⚠ **Le médiateur de la consommation coûte 16 € par an**, mesuré le 21/09 :
+CM2C, présent dans l'annuaire officiel de la CECMC (données ouvertes du
+ministère, secteur « Formation pour adultes », treize médiateurs référencés),
+affiche **48 € pour trois ans** jusqu'à 10 personnes, plus 36 € par dossier.
+Décision de Siham : **ne pas en désigner pour l'instant et ouvrir quand même la
+vente**. L'interrupteur reste le prix, et c'est elle qui le pose — la règle du
+16/09 tient : « c'est Siham qui l'actionne, pas moi ».
