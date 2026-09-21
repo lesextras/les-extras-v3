@@ -243,18 +243,20 @@ export default function LexPage() {
 
       {/* ═══ 3. LE TRAJET D'UN ÉCRIT, ET LES OUTILS ════════════════════════
           Composant partagé avec l'accueil : une seule description du produit
-          pour tout le site. Voir l'en-tête de ce fichier. */}
-      <section className="space-y-6">
-        <div className="max-w-3xl space-y-3">
-          <h2 className="text-3xl font-bold tracking-tight">Ce qui part, et ce qui revient</h2>
-          <p className="leading-relaxed text-foreground/75" lang="fr">
-            C’est le seul endroit du produit qu’il faut regarder avant de s’en servir avec de
-            vraies situations. Le même écrit y est montré à quatre moments&nbsp;: on voit le
-            prénom partir, puis revenir chez vous.
-          </p>
-        </div>
-        <OffreLex />
-      </section>
+          pour tout le site. Voir l'en-tête de ce fichier.
+
+          ⚠ PAS DE TITRE DE SECTION ICI, ET C'EST UN CORRECTIF (vérifié en
+          direct après le premier déploiement). `OffreLex` porte DÉJÀ son
+          propre titre « Ce qui part, et ce qui revient » et sa phrase
+          d'introduction : en ajoutant les miens au-dessus, la page affichait
+          deux fois le même titre et deux fois la même phrase, à trois
+          centimètres d'écart. C'est exactement le défaut que cette refonte
+          corrige ailleurs — il ne faut pas le réintroduire ici.
+
+          Si un jour cette section a besoin d'une introduction propre à la
+          page, elle doit dire autre chose que le composant, pas la même chose
+          autrement. */}
+      <OffreLex />
 
       {/* ═══ 4. CE QUE LEX NE FERA JAMAIS ══════════════════════════════════ */}
       <section className="rounded-2xl border-2 border-primary/30 bg-primary-soft/30 p-8">
