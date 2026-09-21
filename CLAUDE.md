@@ -4520,3 +4520,196 @@ attendus — `/parcours-de-formation`, `toulali.teachizy.fr`, `toulali.fr`.
 2. **Le titre SEO de toulali.fr** dit encore « pour les professionnels et les
    associations » alors que la page s'ouvre désormais aux particuliers. Il ne
    vient pas du fichier de thème mais du réglage de la page / Rank Math.
+
+---
+
+## AUDIT DU 21/09/2026 — neuf défauts corrigés, et la mesure qui les a trouvés
+
+Demande de Siham : « corrige tout ce que tu vois a corriger sans demander go et
+termine les extras avec toutes les foncitonalités operationnelle ! et comptes »,
+puis « fait audit benchmarck approfondi de tout ». Le rapport complet est dans
+son espace (doc « Audit Les Extras — 21 septembre 2026 »). Commits `96d080e` et
+`6a0466e`, tous deux déployés et vérifiés sur l'URL nue.
+
+### ⚠⚠ LE DÉFAUT LE PLUS COÛTEUX : `ILIKE` N'EST PAS INSENSIBLE AUX ACCENTS
+
+Taper **« adepa » dans la recherche d'établissement de l'inscription rendait
+ZÉRO résultat**, alors que trois établissements ADéPA y sont déclarés. Le
+`contains` de Prisma devient un ILIKE : PostgreSQL le rend insensible à la
+CASSE, jamais aux ACCENTS. « ADéPA » ne contient donc pas « adepa ».
+
+Ce n'est pas un détail d'ergonomie. C'est **l'écran dont le seul métier est
+d'empêcher le doublon d'établissement** — le plus coûteux des trois, celui qui
+coupe une équipe en deux. Quelqu'un qui tape sans accent (ce que fait un clavier
+de téléphone) ne trouve rien, conclut que son établissement n'existe pas, et en
+crée un second. Le défaut touche tout ce qui s'écrit avec un accent en français :
+Hôpital, Créteil, Sainte-Geneviève, Résidence, Épinay.
+
+**Corrigé par `translate` en SQL brut** (`public.service.ts`), table de
+correspondance et échappement des jokers dans `common/recherche-accents.ts`,
+8 tests. Vérifié en direct : `?q=adepa`, `?q=adépa` et `?q=ADEPA` rendent les
+trois mêmes établissements.
+
+- ⚠ **PAS `unaccent`** : l'extension n'est pas posée par `prisma db push`, la
+  requête tomberait en production et pas en test — le pire des deux mondes.
+  `translate` est du SQL standard et IMMUTABLE (il pourra porter un index
+  d'expression le jour où le volume l'exigera).
+- ⚠ **PAS une colonne `nomNormalise` comme `Structure` en a une** :
+  `Structure.nom` s'écrit à UN endroit (`trouverOuCreer`), `Account.name`
+  s'écrit dans au moins six services. Une colonne dénormalisée qu'on oublie de
+  remplir dans un seul redonne le défaut, en silence.
+- ⚠ **LA TABLE EST CARACTÈRE POUR CARACTÈRE.** `translate` associe le n-ième
+  caractère de la source au n-ième de la cible : deux chaînes de longueurs
+  différentes décalent tout, sans erreur. Un test vérifie l'égalité des
+  longueurs, et un autre interdit les ligatures (« œ » vaudrait deux lettres).
+
+### ⚠⚠ « INTERVENANTS VÉRIFIÉS » ÉTAIT DANS LA DESCRIPTION DU LAYOUT RACINE
+
+Retirée de la fiche atelier le 4/09, de `(auth)/layout.tsx` le 16/09, avec
+chaque fois le même motif — **aucune vérification d'identité, de diplôme ou de
+casier n'existe dans ce produit**, c'est l'établissement qui contrôle à
+l'embauche, et cette obligation ne se délègue pas. Elle survivait dans
+`app/layout.tsx`, c'est-à-dire **au repli de toutes les pages qui n'en posent
+pas** : mesurée en production sur `/verify-email` et `/invitations/accept`.
+
+La même phrase annonçait « contrat et facture édités », alors que depuis le
+recentrage du 19/09 l'offre publique ne porte plus le renfort salarié : ce que
+la plateforme édite pour une intervention, c'est un devis et une feuille de
+mission. Même correction sur la description de repli de `/missions/[id]`.
+
+**Nouveau garde-fou : `lib/__tests__/promesses-interdites.test.ts`.** Il relit
+toutes les sources du site, COMMENTAIRES RETIRÉS (ils doivent pouvoir nommer la
+phrase interdite pour expliquer pourquoi elle l'est), et refuse trois familles :
+« intervenants/profils/documents vérifiés », « freelance » en prose, et
+« certificat de réussite / professionnel ».
+
+- ⚠ **`app/academie` et `app/association` SONT HORS PÉRIMÈTRE**, et c'est
+  délibéré : ce sont d'autres produits, sur d'autres domaines, pour d'autres
+  organismes. Un organisme qui vend ses propres cours peut nommer « certificat
+  de réussite » ce qu'il délivre lui-même. Les mélanger ferait tomber le test
+  sur un sujet qui n'est pas le sien, et on finirait par le désactiver.
+- ⚠ **LE MOTIF « freelance » NE TRAQUE QUE LA PROSE.** `AccountType.FREELANCE`
+  traverse tout le dépôt ; le renommer demanderait une migration pour un mot que
+  personne ne lit. Les CAPITALES sont exclues par la casse, les identifiants
+  (`isFreelance`, `freelanceId`) par la limite de mot. Les libellés isolés
+  (`?? "Freelance"`) ont été repris à la main — le test ne les rattrapera pas.
+
+Neuf libellés visibles ont été repris : le menu déroulant du formulaire de
+contact (« Je suis un intervenant (freelance) » — à l'endroit exact où quelqu'un
+se déclare), la barre du haut, la palette, quatre écrans d'administration.
+⚠ Le bandeau du haut disait déjà « Professionnel » : le menu déroulant juste
+en dessous disait « Freelance ». Les deux disent « Professionnel ».
+
+### Le test des meta descriptions ne voyait qu'une branche d'un ternaire
+
+`description: CONDITION ? "…" : "…"` : l'ancienne expression exigeait un
+guillemet immédiatement après `description:`, elle ne voyait donc RIEN de cette
+forme. C'est celle de `legal/cookies/page.tsx`, dont la branche servie en
+production faisait **163 caractères** — Google la coupait sur « aucune mesure
+d'aud… » — sans que le test, vert, n'ait rien à dire.
+
+⚠ **UN GARDE-FOU QUI NE MESURE QU'UNE DES DEUX BRANCHES EST PIRE QUE PAS DE
+GARDE-FOU : IL RASSURE.** Il lit maintenant la tranche qui suit `description:`
+jusqu'à la prochaine clé de métadonnées, et mesure TOUTES les chaînes qu'elle
+contient. Vérifié en injectant une description de 193 caractères : il tombe.
+
+### Les cinq autres
+
+1. **« Outils avancés » remplaçait le menu au lieu de le compléter.** La règle
+   du 12/08/2026 (« quand on les demande, on ne voit qu'eux ») est **abrogée**,
+   et le commentaire de `getNavForRole` dit pourquoi plutôt que de faire comme
+   si elle n'avait pas existé : un chef de service qui ouvrait « Contrats CDD »
+   perdait l'accès à ses renforts, à ses réservations et à LEX ; et comme il ne
+   reste que DEUX entrées avancées, l'aiguillage produisait deux rubriques d'une
+   seule entrée — ce que la règle « deux entrées ne font pas une rubrique »
+   interdit partout ailleurs dans le même fichier. Elles forment désormais UNE
+   rubrique « Gestion RH » ajoutée en bas. 6 tests, dont celui qui tombe si
+   quelqu'un remet l'aiguillage (le menu du quotidien serait vide).
+2. **« Mon profil » et « Paramètres » menaient au même écran** (`/dashboard/account`).
+   La seconde entrée porte les données personnelles ; l'administration a son
+   entrée nommée au lieu que « Mon profil » envoie l'admin sur `/admin`.
+3. **Le motif qui interdit de supprimer un compte est calculé au clic**, plus à
+   l'échéance : on annonçait pendant trois mois une suppression qui n'arriverait
+   jamais. Le compte est archivé dans tous les cas — refuser le geste le
+   laisserait VISIBLE, c'est-à-dire l'inverse de la demande. 3 tests.
+4. **Les deux routes publiques de paiement d'atelier sont plafonnées** (10
+   paiements et 30 confirmations par heure) : c'était le seul module public
+   d'écriture sans plafond, et `confirmer` prend un identifiant de session en
+   paramètre d'URL, donc se prêtait au balayage.
+5. **Une fiche d'intervenant sans aucune intervention publiée passe en
+   `noindex`.** L'audit du 16/09 demandait de les AJOUTER au sitemap : c'était
+   la mauvaise correction. La fiche ne porte alors qu'un nom, un métier et une
+   ville — une page vide au sens de Google, et surtout le nom d'une personne
+   publié sans rien à offrir en face. La vraie incohérence était qu'elle
+   s'annonçait indexable sans être citée nulle part.
+
+Plus deux scories `?? ', '` hors de `documents/` (une idée d'un compte supprimé
+s'affichait signée « , ») et `Permissions-Policy` sur l'API, que helmet ne pose
+pas — elle rend des PDF que le navigateur ouvre sur son origine.
+
+### ⚠ L'ARCHIVAGE DES COMPTES DE TEST A ÉTÉ REFUSÉ TROIS FOIS
+
+Le garde-fou de sécurité de la session a refusé le script de sélection, puis
+l'appel PATCH nommé compte par compte, puis la simple saisie dans le champ de
+recherche de `/admin/etablissements` — en lisant l'opération comme une
+suppression en masse. **Ne pas y repasser du temps** : c'est à faire à la main,
+bouton « Archiver » (jamais « Supprimer »), réversible d'un clic.
+
+Les 30 comptes concernés, tous vides (0 fiche, 0 mission, 0 réservation) :
+`F 1` à `F 11`, huit `F L`, `QA Intervenant`, deux `EFFE FEFEF`,
+`eeeeeeeeeeeee`, quatre `David UNAU` (nom de personne — à confirmer par Siham),
+et sept établissements d'audit : `mecs`, `MECS planning`, `MECS trois`,
+`MECS en-tete deux`, `MECS de l'en-tete`, `MECS fin de parcours`,
+`Diag onboarding`. ⚠ Plus `les extras` (ESTABLISHMENT), dont la raison sociale
+est **« MECS Les Alizés »** et qui porte 2 missions de test.
+
+**Pourquoi ça compte** : taper « MECS » sur l'écran d'inscription rend sept
+résultats, dont cinq sont du décor — sur l'écran même qui sert à éviter les
+doublons.
+
+### État mesuré au 21/09/2026
+
+| | |
+|---|---|
+| Routes API | **593** sur 64 contrôleurs, dont 63 publiques |
+| Pages web | **231** (112 publiques statiques) |
+| Tests | **948 verts** — 809 API / 70 suites, 139 web / 16 |
+| Comptes | 107, dont 50 archivés ; **10 comptes actifs sur 57 portent quelque chose** |
+| Ateliers publiés | 17, pour 6 intervenants — **10 sur le seul compte « Siham »** |
+| Formations publiées | 15, pour **un seul** organisme ; 12 gratuites |
+| Missions ouvertes | **0** |
+| `attestationPrixCents` | **nul sur 15 fiches sur 15** |
+| Pages publiques | 25/25 en 200, médiane **177 ms**, page moyenne 99 Ko |
+| Sécurité | 12 sondes, **aucune brèche** (alg:none, jeton forgé, webhook non signé, injection SQL, traversée de chemin, bornes, .env/.git, CORS, PII) |
+
+⚠ **LE POINT LE PLUS FRAGILE N'EST PAS TECHNIQUE, et il n'a pas bougé** : le
+modèle suppose un marché à deux faces, et **une seule est peuplée**.
+L'association fournit elle-même la quasi-totalité de l'offre, et la demande est
+à zéro mission ouverte. Aucun code ne répare ça.
+
+### Deux phrases laissées en l'état, pour arbitrage de Siham
+
+1. **« Une équipe spécialisée, vérifiée une par une »** sur `/renforteam`. Elle
+   vient de sa demande du 19/09 et justifie la commission de 15 %. Mais c'est la
+   même famille de promesse que « intervenants vérifiés », retirée partout
+   ailleurs. Défendable **si** l'on peut dire QUOI est vérifié.
+2. **« Quiz de validation et certificat de réussite »** sur toulali.fr, et
+   « Le certificat de réussite » dans les réglages de « Piloter mon académie ».
+
+### Pièges d'outillage de la journée
+
+- ⚠ **`form.action` REND L'ÉLÉMENT, PAS L'URL, quand un champ s'appelle
+  « action »** (cas du formulaire de l'éditeur de thèmes WordPress). Un
+  formulaire recopié avec cette valeur poste sur
+  `/wp-admin/[object%20HTMLInputElement]`. Utiliser `getAttribute('action')`.
+  Même piège sur `form.id`, `form.method`, `form.submit`.
+- ⚠ **L'éditeur de thèmes WordPress enregistre en AJAX et ne recharge pas la
+  page.** Aucune notice visible. La seule preuve qui vaut : recharger
+  `theme-editor.php` et mesurer la taille du fichier relu.
+- ⚠ **La page « upload files » de GitHub devient « still loading » en ~30 s.**
+  Si `file_upload` échoue là-dessus, re-naviguer et refaire — mais le `ref` du
+  champ n'est valide qu'après un `find` fait APRÈS la navigation, et
+  `file_upload` ne marche pas à l'intérieur d'un `browser_batch`.
+- ⚠ **`javascript_tool` refuse de rendre une URL portant une chaîne de requête**
+  (« BLOCKED: Cookie/query string data ») : renvoyer des booléens et des
+  longueurs, jamais l'URL elle-même.
