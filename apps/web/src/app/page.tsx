@@ -170,11 +170,25 @@ const TOUT_EN_UN = [
     chiffres différents sur deux pages du même site est exactement ce que
     l'audit reprochait ailleurs.
   */
+  /*
+    ⚠⚠ ELLE SUIT LA GRAMMAIRE DE LA GRILLE : « Il <verbe> » + UNE LIGNE COURTE.
+
+    Écrite d'abord « RenforTeam » + deux phrases de récit (« Quatorze mois
+    d'attente pour une psychomotricienne, et l'enfant qui grandit pendant ce
+    temps-là… »), elle jurait au milieu de ses cinq voisines : un nom de
+    produit parmi des verbes, et un texte deux fois plus long, donc une carte
+    visiblement plus dense. Constat de Siham le 21/09 au soir.
+
+    Le nom du service reste — c'est pour ça que la carte existe — mais il est
+    DANS le texte, là où les autres mettent leur exemple. La situation, elle,
+    est racontée en entier par la section « Quatre situations », qui s'ouvre
+    précisément sur les quatorze mois d'attente : la redire ici la répétait.
+  */
   {
     icone: HeartHandshake,
-    titre: 'RenforTeam',
+    titre: 'Il trouve',
     texte:
-      'Quatorze mois d’attente pour une psychomotricienne, et l’enfant qui grandit pendant ce temps-là. Vous décrivez le besoin ce soir, le réseau est prévenu.',
+      'Ergothérapeute, psychomotricienne, orthophoniste, éducateur spécialisé : c’est RenforTeam.',
   },
 ];
 
@@ -190,11 +204,17 @@ const TOUT_EN_UN = [
   Grâce à cette séparation, le jour où la variable est posée la carte apparaît
   toute seule, sans toucher à ce fichier.
 */
+/*
+  ⚠ MÊME GRAMMAIRE QUE LES CINQ AUTRES : « Il <verbe> » et une ligne courte.
+  « En visio, aussi » cassait l'alignement au même titre que « RenforTeam ».
+*/
 const CARTE_VISIO = {
   icone: Video,
-  titre: 'En visio, aussi',
+  titre: 'Il rapproche',
   texte:
-    'Quand personne n’est disponible près de chez vous, la séance se tient en visioconsultation — même devis, même feuille de mission, même facture.',
+    // ⚠ Une VRAIE espace insécable (U+00A0), pas « &nbsp; » : ce texte est
+    // rendu en JSX comme du texte, l'entité s'afficherait telle quelle.
+    'Personne de disponible près de chez vous ? La séance se tient en visioconsultation.',
 };
 
 // ────────────────────────────────────────────────────────────── les tarifs
