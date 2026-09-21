@@ -5196,3 +5196,142 @@ VRAI rendez-vous pour l'atteindre. Et pour en créer un il faut un compte
 intervenant **propriétaire d'une prestation réservée** : `POST /visio` refuse
 en 403 quand `booking.service.accountId !== accountId` (le produit refuse
 l'usurpation par construction, y compris à l'admin).
+
+---
+
+## LA VISIO MARCHE, ET CE QUE LE TEST A TROUVÉ — 21/09/2026 (nuit)
+
+Demande de Siham : « crée toi meme fiche et reservation accpté », puis
+« test tout le site les extras tous les boutons liens … ».
+
+### La chaîne complète, montée sur ses propres comptes
+
+Elle a trois comptes sur un seul utilisateur, et c'est ce qui rend le test
+possible sans compte tiers : **ADéPA** (ESTABLISHMENT, `cms5pvdeg0011vx1wezooak3u`),
+**ASSOCIATION…(ADEPA)** (`cmtqxdgjn0006ns068hox97k6`), **les extras**
+(ACADEMIE, `cmts6zkff001zpc07jknqy2th`).
+
+La méthode, réutilisable : **depuis une page `les-extras.fr` ouverte dans son
+navigateur, `fetch('/api/proxy/<route>', {headers:{'x-account-id': …}})`**. Le
+proxy same-origin (`app/api/proxy/[...path]/route.ts`) lit le cookie de
+session httpOnly et pose `Authorization: Bearer` + `x-account-id`. C'est
+exactement ce que fait un clic dans l'interface — on change juste de compte
+actif d'un appel à l'autre.
+
+Le chemin, dans cet ordre :
+
+1. `POST /services` (compte ADéPA) → fiche en **DRAFT** ;
+2. ⚠ `POST /services/:id/book` répond **400 « Ce service n'est pas
+   réservable »** tant que la fiche est en brouillon. Il faut donc
+   `PATCH /services/:id {status:'PUBLISHED'}`, réserver, **puis la remettre en
+   DRAFT dans la foulée** — elle reste invisible au catalogue (ISR 5 min, et
+   `format: INDIVIDUEL` ne sort que sous le filtre renfort personnalisé) ;
+3. `POST /services/:id/book` (compte ASSOCIATION) ;
+4. `PATCH /bookings/:id/accept` (compte ADéPA) ;
+5. `POST /visio` (compte ADéPA).
+
+⚠ **LA FENÊTRE INTERDIT DE TESTER « MAINTENANT ».** `planifier` refuse une
+date dont l'ouverture est passée de plus d'une minute, et la salle ouvre
+15 minutes avant le rendez-vous : le plus tôt testable est donc
+**`debutPrevu = maintenant + 15 min`**, dont la fenêtre est déjà ouverte à la
+seconde où on le crée. Poser « dans 30 minutes » oblige à attendre un quart
+d'heure pour rien.
+
+⚠ Le champ du prénom de `POST /public/visio/:jeton/rejoindre` s'appelle
+**`prenom`**, pas `prenomAffiche` — `forbidNonWhitelisted` rend sinon un 400
+« Formulaire incomplet ou obsolète » qui ressemble à une panne de jeton.
+
+**Données de test laissées en place** (à archiver quand elle le décidera) :
+fiche `cmubcuubl001xpn07ibjqr7b7` « Essai technique visioconsultation », en
+DRAFT, sur le compte ADéPA ; réservation `cmubcw6080025pn07ptyqhur9`, ACCEPTED.
+
+### ⚠⚠ UNE CLÉ AVAIT ÉTÉ COLLÉE DANS `LIVEKIT_URL`
+
+Le test a montré une salle qui se crée, un jeton qui se signe, et une
+**adresse de serveur média de 44 caractères sans schéma** — le format d'une
+clé. Deux conséquences : la salle ne s'ouvre jamais dans le navigateur, et
+surtout `POST /public/visio/:jeton/rejoindre`, **route publique**, renvoyait
+cette valeur à chaque participant (`url: config.url`).
+
+`configMedia()` contrôle désormais la FORME de l'adresse (`wss:`, `ws:` ou
+`https:`) et rend `null` sinon — donc un **503 « pas encore activée »** plutôt
+qu'une salle qui échouera. Le journal dit ce qui est attendu et **combien de
+caractères** ont été reçus, jamais la valeur. Deux tests dans `visio.spec.ts`.
+
+**La bonne valeur** : LiveKit Cloud → Project settings → **Project URL**,
+préfixée de `wss://`. Pour ce compte :
+`wss://roomson2onlesextras-y2jqcmlu.livekit.cloud`.
+
+⚠ **LES VARIABLES DE L'API NE SE VOIENT PAS DANS LE TABLEAU DE COOLIFY.** Il
+n'en affiche qu'une dizaine sur les **trente-cinq** réelles — la note du 3/09
+concluait « elles viennent d'ailleurs », c'était faux : elles sont bien au
+niveau de l'app, la table est seulement paginée. **Le seul écran qui les
+montre toutes est « Vue du développeur »**, et c'est là qu'on corrige une
+ligne. (Ne pas en faire de capture : elle affiche toutes les valeurs.)
+
+⚠ **UNE VARIABLE MODIFIÉE N'ENTRE DANS LE CONTENEUR QU'AU REDÉPLOIEMENT.** Le
+premier redéploiement après la correction a **échoué** (6 min 25, sans erreur
+dans le journal) : la valeur est donc restée l'ancienne, et j'ai conclu trop
+vite que la modification n'avait pas été faite. **Relancer d'abord, conclure
+ensuite** — la règle du 16/09 vaut toujours, et elle vaut aussi pour lire un
+symptôme.
+
+### La preuve que la chaîne est complète, sans caméra
+
+On peut valider le jeton **contre LiveKit lui-même**, depuis le conteneur :
+
+```
+GET https://<projet>.livekit.cloud/rtc/validate?access_token=<jeton>
+  → 200 « success »   (401 sans jeton)
+```
+
+C'est le dernier maillon vérifiable sans ouvrir un micro : LiveKit accepte le
+jeton que notre API signe, pour cette salle. Il ne reste que le clic qui
+demande la caméra.
+
+### L'audit du site entier — 114 pages, aucun lien mort
+
+Script : `sitemap.xml` → chaque page (code, titre, description, nombre de
+`<h1>`, `noindex`) → **toutes** les destinations internes distinctes.
+
+| | |
+|---|---|
+| Pages du sitemap | **114**, toutes en **200** |
+| Destinations internes distinctes | **149**, toutes valides |
+| Ancres mortes (`href="#"` ou vide) | **0** |
+| `<a>` sans `href` | **0** |
+| Redirections 307 | uniquement `/marketplace/...` et `/dashboard/...` → `/login?next=…`, c'est le mur de connexion attendu |
+
+⚠ **DÉPOUILLER LE HTML DE SES `<script>` AVANT DE COMPTER.** Sans ça, la
+charge utile RSC de Next (qui contient le balisage sérialisé) fait remonter
+**112 faux `<a>` sans href**. Même piège pour les `<button disabled>` : ceux
+qu'on relève sont l'état AVANT hydratation d'un formulaire, pas des boutons
+morts.
+
+### ⚠⚠ TREIZE META DESCRIPTIONS DÉPASSAIENT, ET LE TEST ÉTAIT VERT
+
+Mesurées sur le rendu, entités décodées : jusqu'à **222 caractères**
+(`/guides/note-d-incident…`), 216 sur `/ateliers-pour/ime` et sur
+`/guides/transmissions…`, 207 sur `/l/intervenants`.
+
+`meta-descriptions.test.ts` ne les voyait pas, **et il avait raison de ne rien
+dire** : aucune de ces treize n'est écrite dans un `.tsx`. Elles viennent de
+`ateliers-pour/donnees.ts`, de `guides/contenu.ts`, de `l/donnees.ts` ou de la
+base. Le test ne lit que les pages.
+
+Corriger treize phrases aurait laissé le trou ouvert pour la quatorzième.
+**La borne est donc posée À LA PORTE** : `descriptionSeo()` dans `lib/meta.ts`,
+appliquée par `metaPublique()`, coupe au dernier mot entier et retire la
+ponctuation pendante.
+
+⚠ **SEULE LA BALISE `description` EST BORNÉE.** `openGraph` et `twitter`
+gardent le texte entier — LinkedIn et Facebook en affichent bien plus, et les
+tronquer appauvrirait l'aperçu qui reçoit le clic payant. Un test tombe si
+quelqu'un les borne toutes les trois.
+
+⚠ **ET C'EST LA DEUXIÈME FOIS QU'UN GARDE-FOU DE CE FICHIER RASSURE À TORT**
+(la première : il ne lisait qu'une branche des ternaires, corrigé le matin
+même). La leçon est générale : **un test qui ne couvre qu'une partie d'un
+sujet ne protège pas cette partie, il fait croire que le sujet est couvert.**
+Quand c'est possible, poser la contrainte dans le code qui s'exécute plutôt
+que dans un test qui lit des sources.
