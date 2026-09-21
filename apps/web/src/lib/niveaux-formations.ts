@@ -179,6 +179,13 @@ export const NIVEAUX: readonly Niveau[] = [
         slug: 'mesurer-un-comportement-ligne-de-base',
         titre: 'Mesurer un comportement : ligne de base et courbe',
         competence: 'Lire une tendance sans se laisser avoir par trois jours.',
+        // ⚠ LE PARCOURS EST ÉCRIT ET PUBLIÉ SUR LA PLATEFORME PÉDAGOGIQUE ; ce
+        // qui manque est la FICHE PUBLIQUE, créée par
+        // `prisma/seed-mini-formations.js`. Sans elle, le bouton « Ouvrir le
+        // parcours » mène à « Formation introuvable » — exactement le « bouton
+        // qui mène à un refus » que le produit s'interdit partout ailleurs.
+        // À retirer dès que le seed est passé (`1 creee(s)` en sortie).
+        aVenir: true,
       },
       {
         slug: 'resoudre-un-probleme-avec-la-personne',
