@@ -4437,3 +4437,86 @@ sont masc… »), vu en direct après le premier déploiement.
 reste). C'est sans conséquence aujourd'hui — ces deux types appartiennent aux
 sous-domaines « Piloter », qui ont leurs propres écrans et ne passent pas par
 `(dashboard)`. À reprendre le jour où l'un d'eux y navigue.
+
+---
+
+## TOULALI REPRIS, A2PA DÉPLOYÉ — 21/09/2026
+
+### toulali.fr — police, hero, textes (fichier de thème, en ligne et vérifié)
+
+`page-dossier-candidature.php` (thème `business-moon-theme`, le modèle de la
+page d'accueil), 91 484 → **91 894 caractères, 1 208 lignes**. Vérifié en
+direct sur l'URL nue **après purge LiteSpeed**.
+
+- **Playfair Display → Inter**, 11 déclarations. ⚠ Le `<link>` Google Fonts de
+  la ligne 61 chargeait DÉJÀ Inter 400-800 en plus de Playfair : il n'y avait
+  rien à ajouter, et la seule occurrence restante de « Playfair » est cette
+  URL. **Ne pas la retirer sans vérifier qu'aucune règle ne s'en sert** — un
+  `font-family` sans police chargée retombe en sans-serif système sans erreur.
+- **Hero refait** : sur-titre « QUALIOPI · PARTICULIERS, ENTREPRISES,
+  ASSOCIATIONS », h1 « Le numérique, <em>enfin à votre main</em>. », ligne de
+  preuve « Particuliers, entreprises, associations · Présentiel, distanciel ou
+  mixte · Financement OPCO possible », et un chapô qui nomme Word, Excel,
+  Outlook, Canva, le DUI, les outils d'IA **et le logiciel métier du client**.
+- **⚠ « L'IMAGE DU HEADER » EST UN TÉLÉPHONE EN CSS — IL N'Y A AUCUNE BALISE
+  `<img>` DANS CE FICHIER.** Le visuel est une maquette construite en divs, et
+  les seuls `background-image` (lignes 101/102) sont des dégradés de fond. La
+  changer, c'est changer ses textes : Portée → **Progression**, +40 % →
+  **Module 3 / 6**, Engagement → **Participants**, 2.4k → **8**, Publication
+  planifiée → **Séance validée**, Calendrier éditorial prêt → **Vos fichiers,
+  vos procédures**, 🤖 Prompts IA inclus → 📄 **Attestation en préparation**.
+  Elle racontait un calendrier éditorial de réseaux sociaux ; elle raconte
+  maintenant une progression de formation. **Ne pas y substituer une image :**
+  elle ne suivrait ni le thème, ni la largeur, ni le texte.
+- **Les puces « accompagnement » passent de 1 à 4** (parcours à la carte ;
+  prise en main du logiciel interne — DUI, logiciel de gestion, outil métier,
+  « on se forme sur le vôtre, pas sur une démonstration » ; ouverture aux
+  particuliers ; un niveau par personne), construites sur le `<li>` existant.
+
+⚠⚠ **L'ÉDITEUR DE THÈMES ENREGISTRE EN AJAX ET NE RECHARGE PAS LA PAGE.**
+`wp.themePluginEditor` intercepte le `submit`, poste en arrière-plan et
+n'affiche aucune notice visible. **J'ai cru que l'enregistrement avait échoué
+et j'ai recommencé trois fois pour rien.** La seule preuve qui vaut : recharger
+`theme-editor.php` et **mesurer la taille du fichier relu** — elle valait bien
+91 894. `window.__NEW` encore défini ne prouve rien du tout.
+
+⚠⚠ **`form.action` NE REND PAS L'URL D'ENVOI QUAND UN CHAMP S'APPELLE
+« action ».** Le formulaire du thème porte `<input name="action">` : les
+collections HTML masquent la propriété, et `form.action` rend **l'élément**.
+Un formulaire recopié avec cette valeur a posté sur
+`/wp-admin/[object%20HTMLInputElement]` — 404, page rechargée, travail en
+mémoire perdu. **Utiliser `getAttribute('action')`, ou ne pas recopier le
+formulaire du tout.** (Le même piège vise `form.id`, `form.method`, `form.submit`.)
+
+⚠ **`javascript_tool` refuse de rendre une URL portant une chaîne de requête**
+(« BLOCKED: Cookie/query string data ») : inspecter un `<link>` Google Fonts se
+fait en rendant des booléens et des longueurs, jamais l'URL.
+
+⚠ **Purge LiteSpeed obligatoire ensuite**, et elle n'est PAS dans la page
+`litespeed-toolbox` : c'est le menu « Tout purger » de la barre
+d'administration. Le clic par `ref` a atterri sur « À propos » ; ce qui marche
+est de lire le `href` du lien et d'y naviguer. Confirmation attendue : « Tous
+les caches ont bien été purgés. »
+
+### a2pa.fr — le studio gratuit est EN LIGNE
+
+Commit `491b417` déployé à la main (l'auto-déploiement est coupé sur cette
+application). Coolify : projet **ADePA-CRM**, application `a2pa-studio`
+(`e1351sp07kqo6e2xun4rz4t0`), 2 min 20 s, succès. Vérifié sur l'URL nue :
+**10 « Gratuit », zéro symbole €, zéro « 290 », aucune ancre `#tarifs`, aucun
+lien `/adhesion`**, 4 mentions de « Melun Val de Seine », et les trois liens
+attendus — `/parcours-de-formation`, `toulali.teachizy.fr`, `toulali.fr`.
+
+⚠ La méthode du clic « Actions » de Coolify tient toujours : **cliquer
+« Actions » ET prendre la capture dans le MÊME `browser_batch`**, puis cliquer
+« Redeploy » aux coordonnées lues dessus. Un aller-retour referme le menu.
+
+### Deux points signalés à Siham, NON corrigés (hors demande — règle n° 3)
+
+1. **« Quiz de validation et certificat de réussite »** sur la carte CM Mobile
+   de toulali.fr. C'est le mot interdit partout ailleurs dans le réseau
+   (« attestation de suivi, jamais certificat ») et le risque est plus lourd
+   pour un organisme certifié Qualiopi. Texte antérieur, à trancher par elle.
+2. **Le titre SEO de toulali.fr** dit encore « pour les professionnels et les
+   associations » alors que la page s'ouvre désormais aux particuliers. Il ne
+   vient pas du fichier de thème mais du réglage de la page / Rank Math.
