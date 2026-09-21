@@ -4713,3 +4713,150 @@ L'association fournit elle-même la quasi-totalité de l'offre, et la demande es
 - ⚠ **`javascript_tool` refuse de rendre une URL portant une chaîne de requête**
   (« BLOCKED: Cookie/query string data ») : renvoyer des booléens et des
   longueurs, jamais l'URL elle-même.
+
+---
+
+## LE TREIZIÈME PARCOURS, ET DEUX PAGES DE VENTE VIDES — 21/09/2026
+
+Commits `9ab015d` et `03ee8ce`. « Mesurer un comportement : ligne de base et
+courbe » est écrit, publié sur Teachizy et fiché sur `/parcours-de-formation`.
+Il restait un seul geste au moment d'écrire ces lignes — voir la fin de section.
+
+uuid Teachizy `991df2ab-a898-44b7-88c7-c1436cb02bed`, leçons
+`1499516 / 1499518 / 1499520 / 1499522`, annexes `1499524`, slug plateforme
+**`mesurer-un-comportement-ligne-de-base-et-courbe`** (Teachizy le fabrique
+depuis le titre) alors que le slug MAISON est
+**`mesurer-un-comportement-ligne-de-base`**. Les deux diffèrent, et c'est ce
+qui interdit de créer la fiche publique par l'écran d'administration (voir plus
+bas).
+
+### ⚠⚠ LES VINGT BONNES RÉPONSES DU QUIZ ÉTAIENT TOUTES EN B
+
+Trouvé par le contrôle qualité passé AVANT publication, et c'est le défaut le
+plus embarrassant du lot : un apprenant qui coche B partout avait **20 sur 20
+sans lire une seule question**. Les dix parcours de la vague du 4/09 sont
+répartis correctement (3 à 9 par lettre) ; celui-ci ne l'était pas, parce qu'en
+écrivant on place naturellement la bonne réponse en deuxième position.
+
+Réparti 5/5/5/5 par **rotation** des options (l'ordre relatif est conservé),
+contenu vérifié identique avant/après — même jeu d'options, même bonne réponse.
+
+⚠ **UNE ROTATION NE VAUT QUE SI AUCUN COMMENTAIRE NE DÉSIGNE UNE OPTION PAR SA
+PLACE.** Le fichier portait « Attention à la troisième option » : réécrit pour
+nommer son CONTENU (« l'option qui invoque une recommandation ») avant de
+lancer la rotation. Un `pourquoi` qui compte les options se casse en silence.
+
+**Le contrôle à repasser sur tout nouveau quiz** (4 blocs × 5 questions, 4
+options, index valide, aucune apostrophe droite, aucune espace simple avant une
+ponctuation double, aucune balise hors `<strong>`/`<em>`, aucun « certificat »)
+doit désormais inclure **la répartition des bonnes réponses** : au moins trois
+positions distinctes par bloc. Sans ce test, le défaut ne se voit pas — chaque
+question, prise seule, est irréprochable.
+
+Relevé au passage sur les dix autres : un bloc de « Apprendre à demander » n'a
+que deux positions distinctes sur cinq. Pas du même ordre, laissé en l'état —
+le recharger coûterait un passage Teachizy pour un gain cosmétique.
+
+### ⚠⚠ f11 ET f12 ÉTAIENT EN LIGNE AVEC UNE PAGE DE VENTE ENTIÈREMENT VIDE
+
+Relevé sur les douze parcours, champ par champ, via l'API Teachizy :
+**« Renforcer ce qui va » et « Décrire un comportement sans le juger »** —
+les deux publiés le 4/09 — avaient `description`, `summary`, `target`, `goals`,
+`requirements` **à zéro caractère, et aucune couverture**. Les dix autres
+portent tout cela (1 600 à 2 600 caractères de description, 280 à 830
+d'objectifs).
+
+C'est exactement le défaut du 11/08 sur CM Mobile et le Workshop A2PA. **Il est
+revenu parce que la chaîne de publication écrite dans ce fichier décrit la
+création des items et le chargement des contenus, et ne dit nulle part d'écrire
+la page de vente.** Elle se remplissait à la main, donc elle a fini par ne plus
+se remplir du tout.
+
+**Ce n'est pas cosmétique** : « Public visé », « Objectifs » et « Prérequis »
+sont les trois champs qu'un OPCO ou France Travail regarde en premier, et leur
+absence est un manquement Qualiopi (indicateur 1). Une formation gratuite n'y
+échappe pas — elle est au catalogue d'un organisme certifié.
+
+**Remède : `apps/web/scripts/mini-formations/teachizy-fiches.js`**, qui porte
+les pages de vente des parcours en CODE, relues et versionnées comme le reste.
+Les trois sont posées et vérifiées en ligne. Le pied commun (gratuité +
+attestation à 20 € + « ni diplôme ni certification professionnelle ») et le
+paragraphe de format y sont écrits une seule fois.
+
+`min_complete_duration` valait aussi **0 sur les dix items de f11 et f12** :
+c'est la trace d'assiduité qu'un financeur demande, elle est posée à 12/10/12/12
+et 10 pour les annexes, comme partout ailleurs.
+
+### ⚠ L'UUID S'ÉCRIT DANS LE FICHIER SOURCE **AVANT** `build-v2.js`
+
+J'ai lancé `build-v2.js`, puis écrit l'uuid dans `f13-mesurer.js`. `v2.json`
+est donc parti en production avec `uuid: null`, et le chargement des cinq pages
+a répondu **404 « Entité non trouvée »**. Rien dans le message ne dit que c'est
+l'uuid qui manque.
+
+**L'ordre est : créer la formation sur Teachizy → écrire l'uuid dans le fichier
+source → `node build-v2.js` → pousser → déployer le web → charger.** Le
+déploiement web a dû être refait pour ça.
+
+### Trente-deux apostrophes droites qui s'imprimaient sur les douze parcours
+
+Le contrôle typographique, passé sur le RENDU et pas sur les sources, a trouvé :
+
+- 3 dans `gabarit-v3.js` (« C'est réussi quand », « Si l'une manque »,
+  « s'appuie dessus ») — donc dans **chaque module de chaque parcours** ;
+- 29 dans les trois encarts obligatoires de `catalogue-mini-formations.js`
+  (attestation, avertissement, nuance ABA) — donc en **fin de chaque module 4** ;
+- 3 dans `ficheRecap()` de `build-v2.js` — en **tête des annexes** ;
+- 1 dans un en-tête de tableau de `f3-guider.js`.
+
+⚠ **LE CONTRÔLE SE PASSE SUR LE CORPUS ASSEMBLÉ, PAS SUR LES FICHIERS DE
+CONTENU.** Un parcours peut être parfaitement propre et sortir fautif : les
+encarts obligatoires et la fiche récap sont ajoutés par `build-v2.js`, après.
+Le corpus des treize parcours est vérifié à **zéro apostrophe droite**.
+
+Les 65 pages (13 × 5) ont été rechargées et vérifiées **identiques au caractère
+près** à `v2.json`.
+
+⚠ Le contrôle qui LIT une page Teachizy doit tolérer les deux formes de
+`content` : `typeof d.content === 'string' ? JSON.parse(d.content) : d.content`.
+Avec un `JSON.parse` sec, la lecture échoue en silence et le contrôle annonce
+« 0/5 identiques » sur des pages parfaitement chargées — j'ai cru à une panne.
+
+### La couverture Teachizy : l'URL publique est l'URL signée sans sa requête
+
+`GET /api/v1/presigned?type=image&filename=X` ne renvoie **qu'un seul champ,
+`url`** — l'URL signée. L'adresse à poser dans `picture` est
+`url.split('?')[0]`. En envoyant autre chose, le PUT répond **200 avec
+`picture: null`** : il accepte la requête et ne pose rien. Vérifier `picture`
+dans la réponse, et faire un HEAD sur l'adresse.
+
+### ⚠ LE SEED NE PEUT PAS ÊTRE LANCÉ DEPUIS LA SESSION, ET LA FICHE EN DÉPEND
+
+Le garde-fou de sécurité refuse la frappe dans le terminal d'un conteneur
+Coolify (« Sensitive Remote Exec »). **Ce refus ne se contourne pas.**
+
+Et la fiche publique ne peut PAS être créée par `POST /admin/formations` à la
+place : `CreateFormationAdminDto` ne porte pas de `slug`, qui est fabriqué
+depuis le titre. On obtiendrait `mesurer-un-comportement-ligne-de-base-et-courbe`
+alors que la couverture, la fiche récap A4, son lien imprimé en pied de page,
+l'emoji de `lib/mini-formations.ts`, l'entrée de `fiches-recap-data.js` et celle
+de `lib/niveaux-formations.ts` pointent toutes sur
+`mesurer-un-comportement-ligne-de-base`.
+
+**Le geste est une ligne, et il revient à Siham** : Coolify → Terminal →
+conteneur `ztn3x6m7nsi8tiv4m55algui-…` → `node prisma/seed-mini-formations.js`.
+Attendu : `1 creee(s), 12 mise(s) a jour`.
+
+⚠ **Tant que le seed n'est pas passé, `/parcours-de-formation` annonce le
+parcours et renvoie sur « Formation introuvable ».** Le drapeau `aVenir` a été
+retiré de `lib/niveaux-formations.ts` dans le même commit : si le seed tarde, le
+remettre vaut mieux qu'un lien mort sur une page en ligne.
+
+### Ce qui reste du catalogue
+
+- **Un seul sujet annoncé et non écrit** : « Résoudre un problème avec la
+  personne plutôt que contre elle » (niveau 3), toujours « en cours d'écriture »
+  sur `/parcours-de-formation`.
+- Les pages de vente Teachizy des dix premiers parcours n'ont **pas** été
+  reprises dans `teachizy-fiches.js` : elles sont correctes en ligne, mais
+  elles ne vivent qu'en ligne. Le jour où l'une doit changer, l'y porter.
