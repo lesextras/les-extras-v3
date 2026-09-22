@@ -43,6 +43,18 @@ export class OuvrirFilDto {
   @IsString()
   bookingId?: string;
 
+  /**
+   * Fil ouvert depuis une fiche du catalogue : la question avant le devis.
+   *
+   * Il n’y a pas de demande derrière, et c’est voulu : on demande si l’atelier
+   * convient à des 6-8 ans avant de demander un prix. Le masquage des
+   * coordonnées s’applique à ce fil comme aux autres — c’est lui qui protège
+   * le modèle, pas l’absence de messagerie.
+   */
+  @IsOptional()
+  @IsString()
+  serviceId?: string;
+
   @IsString()
   @MinLength(1)
   @MaxLength(4000)
