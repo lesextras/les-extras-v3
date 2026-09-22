@@ -12,6 +12,7 @@ import {
   Clock,
   GraduationCap,
   Receipt,
+  CreditCard,
   BadgeCheck,
   FileText,
   ShieldCheck,
@@ -211,6 +212,11 @@ const freelanceNav: NavSection[] = [
     items: [
       // PUBLIER — ce que je vends. Vient de l'ancienne rubrique « Mon offre ».
       { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles, essentiel: true },
+      // L’écran qui rend le paiement en ligne atteignable : relier son compte
+      // d’encaissement, puis allumer l’option fiche par fiche. Sans lui, le
+      // drapeau restait faux pour tout le monde et aucun bouton « payer » ne
+      // pouvait apparaître nulle part.
+      { label: 'Mon encaissement', href: '/dashboard/encaissement', icon: CreditCard, hint: 'Se faire payer par carte, fiche par fiche' },
       // ÊTRE RÉSERVÉ — du travail engagé, avec une date et un contrat.
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       // FAIRE.
