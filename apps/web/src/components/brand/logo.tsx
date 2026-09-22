@@ -16,8 +16,11 @@ export interface LogoProps {
  */
 export function Logo({ href = '/', className, compact }: LogoProps) {
   const inner = (
-    <span className={cn('inline-flex items-center gap-3', className)}>
-      <span className="relative grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
+    // Sans nom accessible, le logo se lisait « LEXLES EXTRAS » : la pastille
+    // et le mot-symbole sont deux span colles. role=img + aria-label donnent
+    // au bloc un seul nom, et le detail visuel n'est plus annonce.
+    <span className={cn('inline-flex items-center gap-3', className)} role="img" aria-label="LES EXTRAS">
+      <span className="relative grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft" aria-hidden="true">
         <span className="text-[15px] font-bold leading-none tracking-[0.02em]">LEX</span>
         <span className="absolute -right-1 -top-1 size-3 rounded-full border-2 border-background bg-secondary" />
       </span>
