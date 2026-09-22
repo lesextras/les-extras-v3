@@ -7,11 +7,12 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AccountRole } from '@prisma/client';
+import { AccountRole, Capacite } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
 import { AccountRoles } from '../common/decorators/account-roles.decorator';
+import { OuCapacite } from '../common/decorators/capacite.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -40,6 +41,7 @@ export class InvoicesController {
   @Get()
   @UseGuards(AccountRolesGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @OuCapacite(Capacite.VOIR_FACTURES)
   findAll(@CurrentAccount() account: AccountCtx) {
     return this.invoices.findAllByAccount(account.id);
   }
@@ -51,6 +53,7 @@ export class InvoicesController {
   @Get('summary')
   @UseGuards(AccountRolesGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @OuCapacite(Capacite.VOIR_FACTURES)
   summary(@CurrentAccount() account: AccountCtx) {
     return this.invoices.summary(account.id);
   }
@@ -58,6 +61,7 @@ export class InvoicesController {
   @Get(':id')
   @UseGuards(AccountRolesGuard)
   @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @OuCapacite(Capacite.VOIR_FACTURES)
   findOne(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.invoices.findOne(id, account.id);
   }
