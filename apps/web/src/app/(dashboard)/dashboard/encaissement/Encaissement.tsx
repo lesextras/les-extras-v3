@@ -80,7 +80,7 @@ export function Encaissement({
             <div className="space-y-1">
               <p className="text-sm text-foreground">Il manque encore :</p>
               <ul className="list-disc space-y-0.5 pl-5 text-sm text-muted-foreground">
-                {etat.aFournir.map((x) => (
+                {enFrancais(etat.aFournir).map((x) => (
                   <li key={x}>{x}</li>
                 ))}
               </ul>
@@ -272,4 +272,31 @@ function LigneFiche({
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * CE QUE STRIPE RÉCLAME, DIT EN FRANÇAIS.
+ *
+ * L’API renvoie des codes de champs — `representative.dob.day`,
+ * `tos_acceptance.date` — qui ne veulent rien dire pour un éducateur. On
+ * regroupe par famille et on nomme la famille : la personne sait quoi préparer
+ * avant d’ouvrir Stripe, sans lire une nomenclature.
+ */
+function enFrancais(codes: string[]): string[] {
+  const familles: Array<[RegExp, string]> = [
+    [/^external_account/, "Un IBAN pour recevoir les versements"],
+    [/^(representative|individual|person)\.(dob|first_name|last_name)/, "L’identité du représentant : nom, date de naissance"],
+    [/^(representative|individual|person)\.(address|phone|email)/, "Les coordonnées du représentant : adresse, téléphone, courriel"],
+    [/^(representative|individual|person)\.verification/, "Une pièce d’identité"],
+    [/^business_profile/, "L’activité : secteur et site ou description"],
+    [/^business_type/, "Le statut : auto-entrepreneur, société, association"],
+    [/^company/, "Les informations de la structure : SIRET, adresse"],
+    [/^tos_acceptance/, "L’acceptation des conditions Stripe"],
+  ];
+  const vus = new Set<string>();
+  for (const code of codes) {
+    const f = familles.find(([re]) => re.test(code));
+    vus.add(f ? f[1] : code);
+  }
+  return [...vus];
 }
