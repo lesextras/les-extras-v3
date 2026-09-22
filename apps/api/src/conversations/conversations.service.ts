@@ -358,6 +358,10 @@ export class ConversationsService {
     accountId: string | undefined,
     dto: OuvrirFilDto,
   ) {
+    if (dto.serviceId) {
+      return this.ouvrirDepuisFiche(userId, accountId, dto);
+    }
+
     if (!dto.quoteId && !dto.bookingId) {
       throw new BadRequestException(
         'Un échange avec un intervenant s’ouvre depuis une demande de devis ou ' +
@@ -433,6 +437,73 @@ export class ConversationsService {
       bookingId: dto.bookingId ?? null,
       createdById: userId,
       participants: [...destinataires],
+      auteurId: userId,
+      body: dto.body,
+    });
+  }
+
+  /**
+   * LA QUESTION AVANT LE DEVIS — fil ouvert depuis une fiche.
+   *
+   * Le fil libre depuis le catalogue était refusé ici, et la raison tenait :
+   * on se fait démarcher, puis on réserve dehors. Mais la plupart des gens
+   * n’en sont pas à « je prends » — ils demandent si ça convient à des 6-8
+   * ans, si le déplacement jusqu’à Melun est possible, si la date du 12
+   * tient. Les renvoyer vers une demande de devis pour poser cette
+   * question-là, c’est les perdre avant d’avoir commencé.
+   *
+   * ⚠ CE QUI PROTÈGE LE MODÈLE, CE N’EST PAS L’ABSENCE DE MESSAGERIE, c’est
+   * le masquage des coordonnées, qui s’applique à ce fil comme aux autres :
+   * on peut se parler, on ne peut pas s’échanger un numéro.
+   */
+  private async ouvrirDepuisFiche(
+    userId: string,
+    accountId: string | undefined,
+    dto: OuvrirFilDto,
+  ) {
+    const fiche = await this.prisma.service.findUnique({
+      where: { id: dto.serviceId! },
+      select: {
+        id: true,
+        title: true,
+        accountId: true,
+        account: { select: { ownerId: true } },
+      },
+    });
+    if (!fiche) throw new NotFoundException('Fiche introuvable.');
+
+    if (accountId && accountId === fiche.accountId) {
+      throw new BadRequestException(
+        'C’est votre propre fiche : il n’y a personne à qui écrire.',
+      );
+    }
+
+    const sujet = `À propos de « ${fiche.title} »`;
+
+    // UN SEUL FIL PAR PERSONNE ET PAR FICHE. Une deuxième question rejoint la
+    // première : deux fils sur le même atelier, et l’intervenant répond à l’un
+    // en ignorant l’autre sans le savoir.
+    const existant = await this.prisma.conversation.findFirst({
+      where: {
+        type: TypeConversation.INTERVENANT,
+        accountId: fiche.accountId,
+        sujet,
+        quoteId: null,
+        bookingId: null,
+        createdById: userId,
+      },
+    });
+    if (existant) {
+      await this.rejoindre(existant.id, userId);
+      return this.envoyer(existant.id, userId, { body: dto.body });
+    }
+
+    return this.creerFil({
+      type: TypeConversation.INTERVENANT,
+      sujet,
+      accountId: fiche.accountId,
+      createdById: userId,
+      participants: [userId, fiche.account.ownerId],
       auteurId: userId,
       body: dto.body,
     });
