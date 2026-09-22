@@ -467,4 +467,64 @@ export class QuotesService {
     }
     return updated;
   }
+
+  /**
+   * DEMANDER UNE RÉVISION — négocier sans refuser.
+   *
+   * Refuser était la seule réponse possible à un prix trop haut, et elle ferme
+   * la porte : le devis passe en REFUSED et l’échange s’arrête là. Or la
+   * plupart du temps ce n’est pas un refus, c’est « pas à ce prix-là ». Le
+   * devis revient donc à l’état de demande, avec le motif et le budget visé
+   * écrits noir sur blanc, et l’intervenant rechiffre ou maintient son prix.
+   *
+   * ⚠ LE CRÉNEAU NE REPART PAS À ZÉRO. La date reste tenue depuis le premier
+   * devis — sans cette règle, on garderait un créneau indéfiniment en
+   * demandant une réduction tous les dix jours.
+   *
+   * La trace s’ajoute à la demande plutôt que de l’écraser : une direction qui
+   * signe doit pouvoir lire ce qui a été négocié avant elle.
+   */
+  async reviser(
+    userId: string,
+    id: string,
+    accountId: string,
+    motif: string,
+    montantSouhaite?: number,
+  ) {
+    const { quote, isClient } = await this.requireParticipant(userId, id, accountId);
+    if (!isClient) {
+      throw new ForbiddenException(
+        "Seul le demandeur peut demander une révision de ce devis.",
+      );
+    }
+    if (quote.status !== 'SENT') {
+      throw new BadRequestException(
+        "Seul un devis déjà chiffré peut être renégocié.",
+      );
+    }
+
+    const quand = new Date().toLocaleDateString('fr-FR');
+    const cible =
+      typeof montantSouhaite === 'number' && montantSouhaite > 0
+        ? ` Budget visé : ${montantSouhaite} €.`
+        : '';
+    const trace = `Révision demandée le ${quand} : ${motif.trim()}${cible}`;
+    const request = quote.request ? `${quote.request}\n\n${trace}` : trace;
+
+    const updated = await this.prisma.quote.update({
+      where: { id },
+      data: { status: 'REQUESTED', request },
+    });
+
+    if (quote.providerAccount.ownerId) {
+      await this.notifications.create(quote.providerAccount.ownerId, {
+        type: 'QUOTE_REQUESTED',
+        title: 'Révision demandée',
+        body: `${quote.clientAccount.name} vous demande de revoir « ${quote.title} ».`,
+        link: `/dashboard/devis/${id}`,
+      });
+    }
+
+    return updated;
+  }
 }

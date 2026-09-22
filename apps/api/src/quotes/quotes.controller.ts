@@ -3,6 +3,7 @@ import { QuotesService } from './quotes.service';
 import {
   CreateQuoteRequestDto,
   RefuseQuoteDto,
+  ReviserQuoteDto,
   SendQuoteDto,
 } from './dto/quote.dto';
 import { AccountRole } from '@prisma/client';
@@ -102,5 +103,25 @@ export class QuotesController {
     @Body() dto: RefuseQuoteDto,
   ) {
     return this.quotes.refuse(user.id, id, account.id, dto.reason);
+  }
+
+  /**
+   * Négocier plutôt que refuser : le devis repart en demande, chiffré à
+   * nouveau, et la trace de ce qui a été demandé reste lisible.
+   */
+  @Post(':id/reviser')
+  reviser(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Param('id') id: string,
+    @Body() dto: ReviserQuoteDto,
+  ) {
+    return this.quotes.reviser(
+      user.id,
+      id,
+      account.id,
+      dto.motif,
+      dto.montantSouhaite,
+    );
   }
 }
