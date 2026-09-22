@@ -67,6 +67,31 @@ export default async function RenfortsPage() {
   const montreCdd = renfortSalarieVisible();
 
 
+  /**
+   * ⚠ UN PARTICULIER N'EST PAS UN VISITEUR ÉGARÉ ICI. La page RenforTeam lui
+   * promet de pouvoir demander sans passer par un établissement, et son bouton
+   * mène à cette adresse. Le board n'est pas pour lui — candidatures, vivier,
+   * cascade de diffusion sont des écrans de pilotage — mais lui répondre
+   * « Réservé aux établissements » et le renvoyer au marketplace, c'est
+   * refermer la porte que la page venait d'ouvrir. On l'emmène à sa demande.
+   */
+  if (session.account.type === "PARTICULIER") {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Demander un intervenant" />
+        <EmptyState
+          title="C’est par ici"
+          description="Décrivez la situation en quelques lignes : nous vous répondons et nous cherchons la personne qui convient. Pas de board ni de candidatures à gérer."
+          action={
+            <Button asChild>
+              <Link href="/dashboard/demande">Décrire ma demande</Link>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
   if (session.account.type !== "ESTABLISHMENT") {
     return (
       <div className="space-y-6">
