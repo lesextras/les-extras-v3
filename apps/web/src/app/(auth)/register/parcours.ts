@@ -1,5 +1,6 @@
 import { Building2, UserRound } from 'lucide-react';
 import type { ChoixCompte } from './CarteChoix';
+import { renfortSalarieVisible } from '@/lib/offre';
 
 /**
  * LE CHOIX DE COMPTE — DEUX PORTES, ET C'EST L'HISTOIRE D'UN DÉGROSSISSAGE.
@@ -82,9 +83,10 @@ export const CHOIX_COMPTE: (ChoixCompte & {
     titre: 'Je propose mes services',
     accroche: 'Éducateur, moniteur, thérapeute, formateur, psychomotricien…',
     benefice: 'Être trouvé par les établissements, et éditer vos devis et factures ici.',
-    detail:
-      'Ateliers, formations, renforts personnalisés, à votre compte. Ou vos ' +
-      'seules disponibilités, si vous venez pour des remplacements.',
+    detail: renfortSalarieVisible()
+      ? 'Ateliers, formations, renforts personnalisés, à votre compte. Ou vos ' +
+        'seules disponibilités, si vous venez pour des remplacements.'
+      : 'Ateliers, formations et renforts personnalisés, à votre compte, sous votre SIRET.',
     points: [
       'Publication au catalogue',
       'Devis et factures édités',
@@ -155,7 +157,7 @@ export const QUI_DEMANDE: {
   {
     type: 'ESTABLISHMENT',
     titre: 'Un établissement ou un service',
-    aide: 'MECS, IME, ITEP, SESSAD, EHPAD, ESAT, école. Direction, chef de service, coordinateur ou salarié.',
+    aide: 'MECS, IME, ITEP, SESSAD, EHPAD, ESAT, école, mairie ou service jeunesse. Direction, chef de service, coordinateur ou salarié.',
   },
   {
     type: 'PARTICULIER',
@@ -280,6 +282,10 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
    * établissement — étudiant, professionnel entre deux postes, retraité du
    * secteur. C'est le chemin le plus propre juridiquement : un remplacement se
    * fait en CDD, donc en salarié, donc sans structure ni SIRET à fournir.
+    *
+    * ⚠ DEPUIS LE 19/09/2026 CE CHEMIN EST HORS OFFRE PUBLIQUE : le renfort
+    * salarié n'est plus proposé en ligne (`@/lib/offre`). Le texte de l'étape
+    * suit l'interrupteur, le compte et ses données restent intacts.
    *
    * Et c'est ce qui manque le plus au renfort : des bras, pas des demandes.
    */
@@ -289,8 +295,9 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
     {
       cle: 'disponibilite',
       titre: 'Ce que vous cherchez',
-      explication:
-        'Réserver pour un proche, proposer vos disponibilités pour des remplacements, ou les deux. Rien n’est définitif : tout se change depuis votre espace.',
+      explication: renfortSalarieVisible()
+        ? 'Réserver pour un proche, proposer vos disponibilités pour des remplacements, ou les deux. Rien n’est définitif : tout se change depuis votre espace.'
+        : 'Ce que vous cherchez pour votre enfant, votre proche ou vous-même. Rien n’est définitif : tout se change depuis votre espace.',
     },
   ],
 };
