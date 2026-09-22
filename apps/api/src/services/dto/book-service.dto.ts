@@ -1,4 +1,5 @@
-import { IsInt, IsISO8601, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsEnum, IsInt, IsISO8601, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ModePaiement } from '@prisma/client';
 
 /**
  * Réservation d'un atelier : crée un Booking REQUESTED.
@@ -29,4 +30,11 @@ export class BookServiceDto {
   @IsString()
   @MaxLength(2000)
   message?: string;
+  /**
+   * Comment le client compte régler. CARTE n’est accepté que si la fiche
+   * a le paiement en ligne — la garde est dans le service, pas ici.
+   */
+  @IsOptional()
+  @IsEnum(ModePaiement)
+  modePaiement?: ModePaiement;
 }
