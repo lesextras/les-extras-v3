@@ -66,7 +66,7 @@ export const GUIDES: Guide[] = [
       {
         titre: "Publiez un besoin de renfort…",
         texte: [
-          "Depuis RenforTeam, « Publier un besoin » : métier attendu, unité, dates, taux horaire. La diffusion descend palier par palier, vos propres salariés rattachés d'abord, puis les intervenants déjà venus chez vous, puis le réseau, et s'arrête dès que c'est pourvu.",
+          "Depuis RenforTeam, « Publier un besoin » : métier attendu, unité, dates, taux horaire. La diffusion descend palier par palier, les intervenants déjà venus chez vous d'abord, puis le réseau, et s'arrête dès que c'est pourvu.",
           "Le premier intervenant qui accepte emporte la mission ; le contrat est généré automatiquement, à double signature électronique. À moins de vingt-quatre heures du besoin, la diffusion s'ouvre plus vite.",
         ],
         lien: { href: "/renforteam", label: "Découvrir RenforTeam" },
@@ -75,7 +75,7 @@ export const GUIDES: Guide[] = [
         titre: "… ou réservez un atelier au catalogue",
         texte: [
           "Le catalogue est public : objectifs, méthode, public visé, durée et prix sur chaque fiche, sans compte. Depuis une fiche, vous demandez un devis.",
-          "L'intervenant chiffre, vous acceptez en ligne, le devis porte la mention « Bon pour accord » et vaut engagement, et la réservation se crée avec son contrat et sa facture. Chaque intervenant dépose son dossier de conformité (diplôme, pièce d'identité, casier, URSSAF, assurance) et vous le consultez avant de vous engager.",
+          "L'intervenant chiffre, vous acceptez en ligne, le devis porte la mention « Bon pour accord » et vaut engagement, et la réservation se crée avec sa feuille de mission et sa facture. Chaque intervenant dépose son dossier de conformité (diplôme, pièce d'identité, casier, URSSAF, assurance) et vous le consultez avant de vous engager.",
         ],
         lien: { href: "/ateliers", label: "Parcourir les ateliers" },
       },
