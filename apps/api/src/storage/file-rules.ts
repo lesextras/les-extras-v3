@@ -118,6 +118,11 @@ export const REGLES: Record<FileKind, RegleFamille> = {
     ],
     libelle: 'document de formation',
   },
+  QUOTE: {
+    tailleMax: 10 * Mo,
+    types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'],
+    libelle: 'devis signé',
+  },
 };
 
 /**

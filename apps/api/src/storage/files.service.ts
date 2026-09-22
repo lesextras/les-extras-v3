@@ -321,7 +321,7 @@ export class FilesService {
    *   photo affichée dans les listes).
    */
   private async peutConsulter(
-    asset: { kind: FileKind; accountId: string | null; uploaderId: string | null },
+    asset: { id: string; kind: FileKind; accountId: string | null; uploaderId: string | null },
     userId: string,
     roleGlobal: GlobalRole,
   ): Promise<boolean> {
@@ -330,6 +330,25 @@ export class FilesService {
 
     if (asset.kind === FileKind.MISSION || asset.kind === FileKind.AVATAR) {
       return true;
+    }
+
+    // Un devis signé se lit des deux côtés du devis, client comme intervenant
+    // — jamais depuis le seul compte qui l'a déposé.
+    if (asset.kind === FileKind.QUOTE) {
+      const devis = await this.prisma.quote.findFirst({
+        where: { signedFileId: asset.id },
+        select: { clientAccountId: true, providerAccountId: true },
+      });
+      if (!devis) return false;
+      const partie = await this.prisma.membership.findFirst({
+        where: {
+          userId,
+          status: MembershipStatus.ACTIVE,
+          accountId: { in: [devis.clientAccountId, devis.providerAccountId] },
+        },
+        select: { id: true },
+      });
+      return Boolean(partie);
     }
 
     if (!asset.accountId) return false;
