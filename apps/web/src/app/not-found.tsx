@@ -46,7 +46,7 @@ export default function NotFound() {
           href="/dashboard"
           className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold transition hover:border-primary/50"
         >
-          Mon espace
+          Tableau de bord
         </Link>
       </div>
 
