@@ -339,6 +339,16 @@ export class ServicesService {
     if (service.accountId === bookingAccountId) {
       throw new BadRequestException('Vous ne pouvez pas réserver votre propre service.');
     }
+
+    // LE MODE DE PAIEMENT SE VÉRIFIE ICI, PAS DANS L’ÉCRAN. Une fiche qui
+    // n’accepte pas la carte ne doit pas recevoir une réservation « par carte »
+    // — sinon l’intervenant attend un paiement qui ne peut pas venir, et le
+    // client croit avoir payé. Le virement sur facture, lui, marche toujours.
+    if (dto.modePaiement === 'CARTE' && !service.paiementEnLigne) {
+      throw new BadRequestException(
+        'Cette fiche n’accepte pas le paiement par carte : choisissez le virement sur facture.',
+      );
+    }
     // On rejoue la portée à la réservation. Une règle qui ne vit que dans la
     // liste se contourne avec une URL — et c'est l'engagement, pas l'affichage,
     // qui compte ici.
@@ -359,6 +369,7 @@ export class ServicesService {
           scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
           participants: dto.participants ?? undefined,
           requestNote: dto.message?.trim() || undefined,
+          modePaiement: dto.modePaiement ?? undefined,
           totalAmount: service.price ?? undefined,
         },
       });
