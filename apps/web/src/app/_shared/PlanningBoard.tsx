@@ -138,13 +138,19 @@ const COULEUR_ORIGINE: Record<string, string> = {
   RENFORT: "bg-amber-500/20 text-amber-200 ring-1 ring-inset ring-amber-500/30",
   ATELIER: "bg-emerald-500/20 text-emerald-200 ring-1 ring-inset ring-emerald-500/30",
   FORMATION: "bg-sky-500/20 text-sky-200 ring-1 ring-inset ring-sky-500/30",
+  // Les disponibilités hebdomadaires de l'intervenant, posées dans la grille
+  // à côté des interventions : un agenda qui montre les deux se lit d'un coup.
+  DISPONIBLE: "bg-teal-500/20 text-teal-200 ring-1 ring-inset ring-teal-500/30",
+  INDISPONIBLE: "bg-rose-500/15 text-rose-200 ring-1 ring-inset ring-rose-500/30",
 };
 
-const LEGENDE: { cle: string; libelle: string }[] = [
+const LEGENDE: { cle: string; libelle: string; intervenant?: boolean }[] = [
   { cle: "MANUEL", libelle: "Créneau ajouté" },
   { cle: "RENFORT", libelle: "RenforTeam" },
   { cle: "ATELIER", libelle: "Atelier" },
   { cle: "FORMATION", libelle: "Formation" },
+  { cle: "DISPONIBLE", libelle: "Disponible", intervenant: true },
+  { cle: "INDISPONIBLE", libelle: "Indisponible", intervenant: true },
 ];
 
 function dayLabel(iso: string) {
@@ -163,6 +169,18 @@ function cleJour(d: Date) {
   const j = `${d.getDate()}`.padStart(2, "0");
   return `${d.getFullYear()}-${m}-${j}`;
 }
+/**
+ * Les disponibilités qui tombent un jour donné : la règle hebdomadaire
+ * (`weekday`, 0 = dimanche comme `Date.getDay`) ou la date précise.
+ */
+function disposDuJour(items: Availability[], d: Date): Availability[] {
+  const k = cleJour(d);
+  const wd = d.getDay();
+  return items
+    .filter((a) => (a.date ? a.date.slice(0, 10) === k : a.weekday != null && a.weekday === wd))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+}
+
 function debutJour(d: Date) {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
@@ -502,7 +520,7 @@ export function PlanningBoard({
 
       {/* Légende des couleurs */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-        {LEGENDE.map((l) => (
+        {LEGENDE.filter((l) => !l.intervenant || !isEstablishment).map((l) => (
           <span key={l.cle} className="inline-flex items-center gap-1.5">
             <span
               className={`size-2.5 rounded-full ${COULEUR_ORIGINE[l.cle].split(" ")[0]}`}
@@ -512,6 +530,16 @@ export function PlanningBoard({
           </span>
         ))}
       </div>
+
+      {/* Les disponibilités hebdomadaires se règlent ici, au-dessus de la
+          grille où elles s'affichent — pas trois écrans plus bas. */}
+      {!isEstablishment ? (
+        <AvailabilitySection
+          accountId={accountId}
+          items={availability}
+          onChanged={reloadAvailability}
+        />
+      ) : null}
 
       {/* Calendrier */}
       {vue === "jour" ? (
@@ -581,6 +609,19 @@ export function PlanningBoard({
                       {d.getDate()}
                     </span>
                     <span className="flex flex-col gap-1">
+                      {!isEstablishment &&
+                        disposDuJour(availability, d).map((a) => (
+                          <span
+                            key={`dispo-${a.id}`}
+                            title={`${a.type === "AVAILABLE" ? "Disponible" : "Indisponible"} ${a.startTime} – ${a.endTime}`}
+                            className={`block truncate rounded px-1.5 py-0.5 text-[11px] leading-tight ${
+                              COULEUR_ORIGINE[a.type === "AVAILABLE" ? "DISPONIBLE" : "INDISPONIBLE"]
+                            }`}
+                          >
+                            <span className="font-medium">{a.startTime}</span>{" "}
+                            {a.type === "AVAILABLE" ? "Disponible" : "Indisponible"}
+                          </span>
+                        ))}
                       {visibles.map((s) => (
                         <span
                           key={s.id}
@@ -632,13 +673,6 @@ export function PlanningBoard({
         </div>
       ) : null}
 
-      {!isEstablishment ? (
-        <AvailabilitySection
-          accountId={accountId}
-          items={availability}
-          onChanged={reloadAvailability}
-        />
-      ) : null}
     </div>
   );
 }
