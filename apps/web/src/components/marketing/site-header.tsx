@@ -14,9 +14,11 @@ const links = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Formations', href: '/formations' },
   { label: 'RenforTeam', href: '/renforteam' },
-  // LEX n'a pas de page à lui : son offre vit dans la section #lex de
-  // l'accueil. Le lien pointe donc l'ancre, depuis n'importe quelle page.
-  { label: 'LEX', href: '/#lex' },
+  // LEX a sa propre page depuis le 22/09/2026, et le menu la vise enfin.
+  // Le lien pointait l'ancre #lex de l'accueil : depuis une page intérieure,
+  // cliquer « LEX » renvoyait donc à l'accueil pour trois paragraphes, et la
+  // page /lex — qui raconte l'offre en entier — n'était liée de nulle part.
+  { label: 'LEX', href: '/lex' },
   { label: 'Édublog', href: '/edublog' },
   // « Tarifs » et « Aide » ont quitté la barre le 5/8/2026 (demande Siham).
   // Sept entrées, c'était trop : les produits — ce qu'on est venu chercher —
@@ -85,7 +87,9 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
           {connecte === null ? (
             // Réserve de place pendant qu'on interroge /api/visiteur : la barre
             // ne doit pas se réorganiser sous le curseur au bout de 200 ms.
-            <div className="h-9 w-[168px]" aria-hidden />
+            // Élargie le 22/09/2026 en même temps que « Mon espace » est devenu
+            // « Tableau de bord » : le libellé est plus long de cinq lettres.
+            <div className="h-9 w-[196px]" aria-hidden />
           ) : connecte ? (
             <>
               {compte && (
@@ -101,7 +105,7 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
               <Button asChild size="sm">
                 <Link href="/dashboard">
                   <LayoutDashboard />
-                  Mon espace
+                  Tableau de bord
                 </Link>
               </Button>
             </>
@@ -153,7 +157,7 @@ export function SiteHeader({ utilisateur }: { utilisateur?: UtilisateurEnTete | 
                 <Button asChild>
                   <Link href="/dashboard" onClick={() => setOpen(false)}>
                     <LayoutDashboard />
-                    Mon espace
+                    Tableau de bord
                   </Link>
                 </Button>
               ) : (
