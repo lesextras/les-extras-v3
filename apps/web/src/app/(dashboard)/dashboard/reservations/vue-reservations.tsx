@@ -168,12 +168,16 @@ function Ligne({
 
 
 /** Les trois familles, et ce qu'on en dit en tête de page. */
-export type VueReservation = "tout" | "ateliers" | "formations";
+export type VueReservation = "tout" | "renforts" | "ateliers" | "formations";
 
 export const TITRE_VUE: Record<VueReservation, { titre: string; sous: string }> = {
   tout: {
     titre: "Mes réservations",
     sous: "Renforts, ateliers et formations, ce que vous avez réservé comme ce que vous animez, au même endroit.",
+  },
+  renforts: {
+    titre: "Mes renforts RenforTeam",
+    sous: "Les renforts pourvus : la mission, la date, l'autre partie et le contrat.",
   },
   ateliers: {
     titre: "Mes réservations ateliers",
@@ -189,6 +193,7 @@ export const TITRE_VUE: Record<VueReservation, { titre: string; sous: string }> 
 function Onglets({ vue }: { vue: VueReservation }) {
   const liens: { v: VueReservation; href: string; libelle: string }[] = [
     { v: "tout", href: "/dashboard/reservations", libelle: "Tout" },
+    { v: "renforts", href: "/dashboard/reservations/renforts", libelle: "RenforTeam" },
     { v: "ateliers", href: "/dashboard/reservations/ateliers", libelle: "Ateliers" },
     { v: "formations", href: "/dashboard/reservations/formations", libelle: "Formations" },
   ];
@@ -219,7 +224,7 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
   // On ne demande à l'API que ce que la vue affiche : la vue « formations »
   // n'a aucune raison de charger tous les bookings du compte.
   const veutBookings = vue !== "formations";
-  const veutInscriptions = vue !== "ateliers";
+  const veutInscriptions = vue !== "ateliers" && vue !== "renforts";
 
   const vide = <T,>(): { data?: T; error?: string } => ({ data: undefined });
   const [resBookings, resInscriptions] = await Promise.all([
@@ -253,8 +258,8 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
   // on affiche ce qu'on a, et la section formations reste simplement vide.
   const inscriptions = resInscriptions.data ?? [];
 
-  const renforts = vue === "tout" ? bookings.filter((b) => b.mission) : [];
-  const ateliers = vue === "formations" ? [] : bookings.filter((b) => b.service);
+  const renforts = vue === "tout" || vue === "renforts" ? bookings.filter((b) => b.mission) : [];
+  const ateliers = vue === "formations" || vue === "renforts" ? [] : bookings.filter((b) => b.service);
   const total = renforts.length + ateliers.length + inscriptions.length;
 
   return (
@@ -267,14 +272,18 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
         <EmptyState
           icon={<CalendarCheck className="size-6" />}
           title={
-            vue === "ateliers"
+            vue === "renforts"
+              ? "Aucun renfort RenforTeam pour l'instant"
+              : vue === "ateliers"
               ? "Aucun atelier réservé pour l'instant"
               : vue === "formations"
                 ? "Aucune inscription en formation pour l'instant"
                 : "Aucune réservation pour l'instant"
           }
           description={
-            vue === "ateliers"
+            vue === "renforts"
+              ? "Dès qu'un renfort est pourvu, il apparaît ici avec sa date, l'autre partie et le contrat."
+              : vue === "ateliers"
               ? "Dès qu'un atelier est réservé, par vous ou chez vous, il apparaît ici avec sa date et son statut."
               : vue === "formations"
                 ? "Dès qu'une personne est inscrite à une session, son inscription apparaît ici, avec son financement et son attestation."
@@ -285,8 +294,24 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button asChild>
-                <Link href={vue === "formations" ? "/formations" : "/ateliers"}>
-                  {vue === "formations" ? "Voir le catalogue de formations" : "Voir le catalogue d’ateliers"}
+                <Link
+                  href={
+                    vue === "formations"
+                      ? "/formations"
+                      : vue === "renforts"
+                        ? estIntervenant
+                          ? "/dashboard/opportunites"
+                          : "/dashboard/renforts"
+                        : "/ateliers"
+                  }
+                >
+                  {vue === "formations"
+                    ? "Voir le catalogue de formations"
+                    : vue === "renforts"
+                      ? estIntervenant
+                        ? "Voir les missions RenforTeam"
+                        : "Mes renforts publiés"
+                      : "Voir le catalogue d’ateliers"}
                 </Link>
               </Button>
               {/* LE SECOND BOUTON SUIT LA VUE (26/08/2026).
@@ -304,9 +329,11 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
                   )}
                 </Button>
               ) : (
+                vue === "renforts" ? null : (
                 <Button asChild variant="outline">
-                  <Link href="/dashboard/opportunites">Voir mes opportunités</Link>
+                  <Link href="/dashboard/opportunites">Voir les missions RenforTeam</Link>
                 </Button>
+                )
               )}
             </div>
           }
