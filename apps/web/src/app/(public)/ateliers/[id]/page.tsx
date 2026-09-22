@@ -501,9 +501,9 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 ) : (
                   <>
                     <PublicQuoteForm serviceId={service.id} titre={service.title} principal />
-                    <ReserverModal serviceId={service.id} />
+                    <ReserverModal serviceId={service.id} paiementEnLigne={service.paiementEnLigne} />
                     <p className="text-center text-xs text-muted-foreground">
-                      Devis chiffré sous 48 h, sans engagement. Réservation immédiate si vous avez
+                      Devis chiffré sous 48 h, sans engagement. Réservation si vous avez
                       déjà un compte.
                     </p>
                   </>
