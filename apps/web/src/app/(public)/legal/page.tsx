@@ -187,7 +187,7 @@ const sections: Section[] = [
       // facture peut donc parfaitement sortir sans. On énonce le principe —
       // virement, selon ce que l’émetteur indique — sans promettre au lecteur
       // une mention qui n’est pas garantie.
-      'Le règlement en ligne n’est proposé que pour les factures émises par l’association. Une facture émise par un intervenant se règle par virement, selon les coordonnées bancaires que celui-ci indique sur sa facture ; à défaut, il appartient au destinataire de les lui demander. La plateforme n’encaisse pas pour le compte d’un tiers.',
+      'Le règlement en ligne n’est proposé que pour les factures émises par l’association. Une facture émise par un intervenant se règle par virement, selon les coordonnées bancaires que celui-ci indique sur sa facture ; à défaut, il appartient au destinataire de les lui demander. Hors les interventions RenforTeam, pour lesquelles l’association encaisse la prestation et la reverse à l’intervenant, la plateforme n’encaisse pas pour le compte d’un tiers.',
     ],
   },
   {
