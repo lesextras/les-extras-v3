@@ -88,7 +88,7 @@ export function PublicQuoteForm({
     <Dialog open={ouvert} onOpenChange={setOuvert}>
       <DialogTrigger asChild>
         <Button variant={principal ? "primary" : "outline"} className="w-full">
-          Demander un devis sans créer de compte
+          Demander un devis
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto">
