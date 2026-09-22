@@ -96,6 +96,30 @@ export default async function DashboardPage() {
 
   const s = stats.data ?? {};
 
+  // L'INTERVENANT A UN ORDRE, ET IL EST CELUI-CI : pièces, structure, ce
+  // qu'il accepte, une fiche, l'encaissement. Chaque étape lit l'état réel
+  // (pas une case cochée) : un dossier à 2/4 reste ouvert, une structure
+  // rattachée se ferme toute seule. Quatre appels, uniquement pour lui.
+  const guide =
+    session.account.type === "FREELANCE"
+      ? await Promise.all([
+          fetchApi<{ completeness?: { total: number; valid: number; missing: number } }>(
+            session,
+            "/conformite/mes-documents",
+          ),
+          fetchApi<{ structureId?: string | null; siret?: string | null }>(
+            session,
+            `/accounts/${session.account.id}`,
+          ),
+          fetchApi<{ interets?: unknown[] }>(session, "/disponibilites/moi"),
+          fetchApi<{ pret?: boolean }>(session, "/paiements/stripe/etat"),
+        ])
+      : null;
+  const dossier = guide?.[0].data?.completeness;
+  const compte = guide?.[1].data;
+  const interets = guide?.[2].data?.interets ?? [];
+  const encaissementPret = guide?.[3].data?.pret === true;
+
   // « Salarié » n'est pas un type de compte en base : à l'inscription, la
   // tuile crée un compte individuel comme pour un indépendant. Ce qui
   // distingue les deux dans les faits, c'est la demande de rattachement — un
@@ -208,19 +232,31 @@ export default async function DashboardPage() {
               ]
             : [
               {
-                done: Boolean(moi.data?.firstName ?? session.user.firstName),
-                label: "Complétez votre profil",
+                done: dossier !== undefined && dossier.missing === 0 && dossier.valid >= dossier.total,
+                label: dossier
+                  ? `Déposez vos pièces obligatoires (${dossier.valid}/${dossier.total} vérifiées)`
+                  : "Déposez vos pièces obligatoires",
+                href: "/dashboard/mon-dossier",
+              },
+              {
+                done: Boolean(compte?.structureId || compte?.siret),
+                label: "Renseignez votre structure (SIRET)",
                 href: "/dashboard/account",
               },
               {
+                done: interets.length > 0,
+                label: "Dites ce que vous acceptez de faire",
+                href: "/dashboard/disponibilite",
+              },
+              {
                 done: hasCatalog,
-                label: "Créez votre premier atelier",
+                label: "Publiez votre première fiche",
                 href: "/dashboard/ateliers",
               },
               {
-                done: (s.applications ?? 0) > 0,
-                label: "Candidatez à une première mission",
-                href: "/dashboard/opportunites",
+                done: encaissementPret,
+                label: "Reliez votre encaissement par carte",
+                href: "/dashboard/encaissement",
               },
             ];
         const remaining = steps.filter((st) => !st.done).length;
@@ -233,7 +269,9 @@ export default async function DashboardPage() {
                 <span className="text-xs text-muted-foreground">
                   {isEstablishment
                     ? "Vos services et votre équipe d’abord : c’est ce qui met des gens dans le planning."
-                    : "Quelques étapes pour bien démarrer"}
+                    : session.account.type === "FREELANCE"
+                      ? "Dans cet ordre : c’est ce qui vous rend visible, puis réservable, puis payé."
+                      : "Quelques étapes pour bien démarrer"}
                 </span>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
