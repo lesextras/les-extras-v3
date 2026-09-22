@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
+  ComplianceStatus,
   MissionStatus,
   MissionVisibility,
   Prisma,
@@ -9,6 +10,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ProgressionService } from '../users/progression.service';
 import { StructuresService } from '../structures/structures.service';
+import { ConformiteService } from '../conformite/conformite.service';
 import { MailService } from '../common/mail/mail.service';
 import { DEPARTEMENTS, trouverDepartement } from '../common/territoires';
 import { ACCENTS_SQL, PLATS_SQL, motifRecherche } from '../common/recherche-accents';
@@ -736,7 +738,36 @@ export class PublicService {
       });
     }
 
-    return { ...service, reviews, rating, ratingSource, related };
+    // « Pièces contrôlées le … » sur la fiche : vrai seulement si CHAQUE pièce
+    // obligatoire de l'intervenant est VALID — statut posé par une structure ou
+    // par ADéPA, jamais par lui. On expose une date, aucun document.
+    const piecesControleesLe = ownerId ? await this.piecesControleesLe(ownerId) : null;
+
+    return { ...service, reviews, rating, ratingSource, related, piecesControleesLe };
+  }
+
+  /**
+   * La date du dernier contrôle, si toutes les pièces obligatoires sont
+   * valides et non expirées ; sinon null, et la fiche ne promet rien.
+   */
+  private async piecesControleesLe(userId: string): Promise<string | null> {
+    const requis = ConformiteService.REQUIRED_TYPES;
+    const valides = await this.prisma.complianceDocument.findMany({
+      where: {
+        userId,
+        status: ComplianceStatus.VALID,
+        type: { in: requis },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      select: { type: true, updatedAt: true },
+    });
+    const types = new Set(valides.map((d) => d.type));
+    if (valides.length === 0 || requis.some((t) => !types.has(t))) return null;
+    const derniere = valides.reduce(
+      (max, d) => (d.updatedAt > max ? d.updatedAt : max),
+      valides[0].updatedAt,
+    );
+    return derniere.toISOString();
   }
 
   /**
