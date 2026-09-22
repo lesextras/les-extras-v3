@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Clock, Users, MapPin, Package, Eye, BadgeCheck } from "lucide-react";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { BookServiceModal } from "../../../_shared/modals/BookServiceModal";
+import { PoserQuestionModal } from "@/app/_shared/modals/PoserQuestionModal";
 import { RequestQuoteModal } from "../../../_shared/modals/RequestQuoteModal";
 import { EncaisserAtelier } from "../../../_shared/EncaisserAtelier";
 import { PaiementAtelier } from "../../../_shared/PaiementAtelier";
@@ -390,8 +391,19 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                       </Button>
                     }
                   />
+                  {!estMaFiche ? (
+                    <PoserQuestionModal
+                      serviceId={service.id}
+                      serviceTitle={service.title}
+                      trigger={
+                        <Button variant="ghost" className="w-full">
+                          Poser une question
+                        </Button>
+                      }
+                    />
+                  ) : null}
                   <p className="text-center text-xs text-muted-foreground">
-                    Réservation immédiate, ou devis chiffré si votre besoin est spécifique.
+                    Une question d’abord si vous hésitez, un devis chiffré si votre besoin est spécifique, ou la réservation tout de suite.
                   </p>
                 </div>
               ) : estPayableEnLigne ? null : (
