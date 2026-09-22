@@ -64,6 +64,13 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
   // ouvrir ; ces modules relèvent d'un autre métier que la mise en relation.
   const [outilsAvances, setOutilsAvances] = useState(false);
   const nbAvances = compterOutilsAvances(role, roleCompte);
+  // Le bouton dit ce qu'il ouvre, avec le nom que nav.ts donne à la rubrique :
+  // « Gestion RH » pour un établissement, « Outils avancés » pour un
+  // intervenant (formations, publications, avis, progression). Un libellé en
+  // dur promettait de la RH à quelqu'un qui n'a pas d'équipe.
+  const rubriqueAvancee = getNavForRole(role, roleCompte, { outilsAvances: true, enAttenteRattachement }).slice(-1)[0];
+  const libelleAvances = rubriqueAvancee?.title === 'Gestion RH' ? 'la gestion RH' : 'les outils avancés';
+  const detailAvances = (rubriqueAvancee?.items ?? []).map((it) => it.label).join(', ');
   const toutesSections = getNavForRole(role, roleCompte, { outilsAvances, enAttenteRattachement })
     .map((s) => ({
       ...s,
@@ -289,7 +296,7 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
             type="button"
             onClick={basculerAvances}
             aria-pressed={outilsAvances}
-            title="Contrats CDD, temps de travail, congés et compteurs"
+            title={detailAvances}
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <Wrench aria-hidden="true" className="size-3.5 shrink-0" />
@@ -297,7 +304,7 @@ export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onN
                 temp… » : illisible, donc jamais cliqué. Court dans le bouton,
                 détaillé dans l'infobulle au survol. */}
             <span className="truncate text-left">
-              {outilsAvances ? 'Masquer la gestion RH' : 'Afficher la gestion RH'}
+              {outilsAvances ? `Masquer ${libelleAvances}` : `Afficher ${libelleAvances}`}
             </span>
           </button>
         ) : null}
