@@ -1190,6 +1190,18 @@ enum QuoteStatus {
   EXPIRED
 }
 
+/// Comment le client a dit vouloir régler, au moment de réserver.
+///
+/// Une fiche accepte la carte ou non ; le virement sur facture est toujours
+/// possible. Le choix est enregistré ici pour que l’intervenant et la
+/// facturation sachent quoi attendre — et pour que personne ne relance par
+/// carte quelqu’un qui a dit « sur facture ». Nul sur les réservations
+/// antérieures : elles n’ont rien dit, on ne leur invente pas de réponse.
+enum ModePaiement {
+  CARTE
+  VIREMENT
+}
+
 model Booking {
   id                    String         @id @default(cuid())
   // Le compte à l'origine de la réservation (établissement ou freelance selon flux)
@@ -1207,6 +1219,7 @@ model Booking {
   /// Precisions ecrites par le demandeur : public accueilli, objectifs,
   /// contraintes. Sans ce champ, le formulaire les jetait a la poubelle.
   requestNote           String?
+  modePaiement  ModePaiement?
   /// Date de fin effective : ouvre la fenetre d'ajustement de 72 h du pointage.
   completedAt           DateTime?
   totalAmount           Decimal?       @db.Decimal(10, 2)
