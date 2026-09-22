@@ -24,7 +24,7 @@ import { envoyerFicheReservation } from '../bookings/fiche-reservation';
  * d'alors. Le champ étant facultatif à la saisie, on pose un horizon
  * raisonnable plutôt que de laisser le document ouvert indéfiniment.
  */
-const VALIDITE_DEFAUT_JOURS = 30;
+const VALIDITE_DEFAUT_JOURS = 14;
 
 @Injectable()
 export class QuotesService {
@@ -290,9 +290,17 @@ export class QuotesService {
       }),
     ]);
 
+    // LA DATE EST TENUE DEPUIS LE PREMIER DEVIS, PAS DEPUIS LE DERNIER.
+    //
+    // Un devis renvoyé après une demande de révision repasse par ici. Sans
+    // cette garde, chaque révision rendait quatorze jours de plus, et on
+    // garderait un créneau indéfiniment en demandant une réduction tous les
+    // dix jours. L’intervenant peut toujours accorder un nouveau délai, mais
+    // il doit le faire exprès, en passant une date.
     const validUntil = dto.validUntil
       ? new Date(dto.validUntil)
-      : new Date(Date.now() + VALIDITE_DEFAUT_JOURS * 24 * 3600 * 1000);
+      : (quote.validUntil ??
+        new Date(Date.now() + VALIDITE_DEFAUT_JOURS * 24 * 3600 * 1000));
 
     const updated = await this.prisma.quote.update({
       where: { id },
