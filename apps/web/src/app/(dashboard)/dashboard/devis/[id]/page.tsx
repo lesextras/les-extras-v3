@@ -27,6 +27,9 @@ interface Quote {
   acceptedByName?: string | null;
   acceptedByRole?: string | null;
   decidedAt?: string | null;
+  /** Le devis signé déposé par le demandeur (vaut acceptation). */
+  signedFileId?: string | null;
+  signedAt?: string | null;
   status: string;
   scheduledAt?: string | null;
   validUntil?: string | null;
@@ -262,6 +265,14 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
                   Bon pour accord donné par {q.acceptedByName}
                   {q.acceptedByRole ? `, ${q.acceptedByRole}` : ""}
                   {q.decidedAt ? ` le ${formatDate(q.decidedAt)}` : ""}.
+                </p>
+              ) : null}
+              {q.signedFileId ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  <Link href={`/api/proxy/files/${q.signedFileId}`} className="underline underline-offset-4">
+                    Devis signé déposé
+                  </Link>
+                  {q.signedAt ? ` le ${formatDate(q.signedAt)}` : ""} — c’est la pièce qui engage.
                 </p>
               ) : null}
             </div>
