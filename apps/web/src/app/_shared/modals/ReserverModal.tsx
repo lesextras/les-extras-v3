@@ -4,10 +4,14 @@
 //
 // C’était un lien sec vers la fiche connectée : quelqu’un sans compte cliquait,
 // tombait sur une page de connexion, et ne comprenait ni ce qu’on lui demandait
-// ni pourquoi. Le devis, lui, se demande sans compte — autant le dire à ce
-// moment-là plutôt que de le laisser deviner.
+// ni pourquoi. Le devis, lui, se demande sans compte — autant le dire là.
 //
-// Connecté, rien ne change : on va droit à la fiche où l’on réserve.
+// ⚠ PREMIÈRE VERSION RETIRÉE LE 22/09 : elle appelait `useVisiteur()`, dont le
+// contexte n’est pas monté sur cette route. Le hook jetait au montage et React
+// abandonnait l’hydratation de TOUTE la page — plus un bouton ne répondait,
+// sans la moindre erreur en console. On interroge donc `/api/visiteur`
+// directement, et un échec se résout en lien simple plutôt qu’en page morte.
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Dialog,
@@ -19,18 +23,34 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useVisiteur } from "@/app/_shared/Visiteur";
 
 export function ReserverModal({ serviceId }: { serviceId: string }) {
-  const visiteur = useVisiteur();
   const destination = `/marketplace/services/${serviceId}`;
+  // null = on ne sait pas encore. On ne dresse pas un mur devant quelqu’un qui
+  // est peut-être déjà connecté : tant qu’on ignore, le lien direct.
+  const [connecte, setConnecte] = useState<boolean | null>(null);
 
-  // `null` = on ne sait pas encore. On ne dresse pas un mur devant quelqu’un
-  // qui est peut-être déjà connecté : tant qu’on ignore, le lien direct.
-  if (visiteur === null || visiteur.connecte) {
+  useEffect(() => {
+    let vivant = true;
+    fetch("/api/visiteur")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((v) => {
+        if (vivant) setConnecte(v?.connecte === true);
+      })
+      .catch(() => {
+        if (vivant) setConnecte(null);
+      });
+    return () => {
+      vivant = false;
+    };
+  }, []);
+
+  const libelle = "Réserver directement, j’ai un compte";
+
+  if (connecte === null || connecte) {
     return (
       <Button asChild variant="outline" className="w-full">
-        <Link href={destination}>Réserver directement, j&apos;ai un compte</Link>
+        <Link href={destination}>{libelle}</Link>
       </Button>
     );
   }
@@ -39,7 +59,7 @@ export function ReserverModal({ serviceId }: { serviceId: string }) {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full">
-          Réserver directement, j&apos;ai un compte
+          {libelle}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -51,19 +71,15 @@ export function ReserverModal({ serviceId }: { serviceId: string }) {
           </DialogDescription>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          Vous préférez ne rien créer pour l&apos;instant ? Fermez cette fenêtre et
-          demandez un devis : c&apos;est sans compte et sans engagement.
+          Vous préférez ne rien créer pour l’instant ? Fermez cette fenêtre et
+          demandez un devis : c’est sans compte et sans engagement.
         </p>
         <DialogFooter className="gap-2 sm:gap-2">
           <Button asChild variant="outline">
-            <Link href={`/login?next=${encodeURIComponent(destination)}`}>
-              Se connecter
-            </Link>
+            <Link href="/login">Se connecter</Link>
           </Button>
           <Button asChild>
-            <Link href={`/register?next=${encodeURIComponent(destination)}`}>
-              Créer un compte
-            </Link>
+            <Link href="/register">Créer un compte</Link>
           </Button>
         </DialogFooter>
       </DialogContent>
