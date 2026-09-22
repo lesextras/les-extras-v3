@@ -583,6 +583,16 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                     Voir toutes ses interventions
                   </Link>
                 </Button>
+
+                {/* LA QUESTION AVANT LE DEVIS. Le devis se demande sans compte, la
+                    question non : elle ouvre un fil, et un fil a besoin de savoir à qui
+                    il répond. On passe donc par la fiche connectée, comme « Réserver
+                    directement » juste au-dessus. */}
+                <Button asChild variant="ghost" size="sm" className="w-full">
+                  <Link href={`/marketplace/services/${service.id}`}>
+                    Poser une question
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           ) : null}
