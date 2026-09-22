@@ -5,7 +5,7 @@ import { AppShell } from "@/components/layout";
 import { resolveNavRole } from "@/lib/nav";
 import { cheminOuvertSansRattachement } from "@/lib/rattachement";
 import { requireSession, fetchApi } from "../_shared/server";
-import { RappelVerification } from "../_shared/RappelVerification";
+import { ConfirmationRequise } from "../_shared/ConfirmationRequise";
 import { EnAttenteRattachement } from "../_shared/EnAttenteRattachement";
 import { InvitationParrainage } from "../_shared/InvitationParrainage";
 
@@ -28,6 +28,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     enAttenteRattachement?: boolean;
   }>(session, "/auth/me");
   const aConfirmer = moi?.emailVerified === false;
+
+  // Adresse jamais confirmée : l'espace reste fermé. Un écran dédié, sans
+  // menu, avec le renvoi du lien et la déconnexion. Rien d'autre ne se charge.
+  if (aConfirmer) {
+    return <ConfirmationRequise email={moi?.email ?? session.user.email} />;
+  }
 
   // Salarié pas encore rattaché : le serveur refuse déjà tout sauf LEX et sa
   // demande. On le lui dit sur la page qu'il ouvre, au lieu de le laisser
@@ -58,11 +64,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           on ne lui demande pas d'en recruter d'autres. */}
       {!enAttente ? <InvitationParrainage accountId={session.account.id} /> : null}
 
-      {aConfirmer ? (
-        <div className="mb-6">
-          <RappelVerification email={moi?.email ?? session.user.email} />
-        </div>
-      ) : null}
       {enAttente ? (
         <EnAttenteRattachement
           session={session}
