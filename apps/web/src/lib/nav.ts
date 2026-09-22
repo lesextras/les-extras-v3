@@ -789,8 +789,16 @@ const particulierNav: NavSection[] = [
        * remplacement se fait en CDD, donc en salarié, donc sans structure ni
        * SIRET. C'est le chemin le plus propre juridiquement, et c'est ce qui
        * manque le plus au renfort — des bras, pas des demandes.
+        *
+        * ⚠ MASQUÉE DEPUIS LE 19/09/2026 : le renfort salarié est hors offre
+        * publique (`@/lib/offre`). L'entrée revient si la variable repasse à
+        * « complete » ; les disponibilités déjà déclarées ne sont pas touchées.
        */
-      { label: 'Ma disponibilité', href: '/dashboard/disponibilite', icon: UserPlus, hint: 'Proposer vos disponibilités pour des remplacements en CDD, et vous retirer de la liste quand vous voulez' },
+      ...(renfortSalarieVisible()
+        ? [
+            { label: 'Ma disponibilité', href: '/dashboard/disponibilite', icon: UserPlus, hint: 'Proposer vos disponibilités pour des remplacements en CDD, et vous retirer de la liste quand vous voulez' },
+          ]
+        : []),
       { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Sparkles, hint: 'Votre dotation offerte du mois et vos recharges' },
       { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations et vos préférences d’e-mail' },
       { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
