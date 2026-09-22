@@ -4,7 +4,14 @@
 // fait perdre l'essentiel des demandes : on prend les coordonnées, on qualifie après.
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
@@ -71,37 +78,36 @@ export function PublicQuoteForm({
     }
   }
 
-  if (envoye) {
-    return (
-      <Card className="border-success/40 bg-success/5">
-        <CardContent className="space-y-1 p-5 text-center">
-          <CheckCircle2 className="mx-auto size-6 text-success" />
-          <p className="font-medium text-foreground">Demande envoyée</p>
-          <p className="text-sm text-muted-foreground">
-            Nous revenons vers vous sous 48 h avec un devis chiffré.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!ouvert) {
-    return (
-      <Button
-        variant={principal ? "primary" : "outline"}
-        className="w-full"
-        onClick={() => setOuvert(true)}
-      >
-        Demander un devis sans créer de compte
-      </Button>
-    );
-  }
-
+  // LE FORMULAIRE S’OUVRE EN POP-UP, PAS DANS LA COLONNE.
+  //
+  // Déplié sur place, il poussait le prix, la carte de l’intervenant et tout
+  // le bas de page vers le bas : on cliquait pour demander un devis et la
+  // fiche se réorganisait sous les yeux. En pop-up, la fiche ne bouge pas et
+  // le formulaire a la place qu’il lui faut.
   return (
-    <Card>
-      <CardContent className="p-5">
-        <p className="mb-3 text-sm font-medium text-foreground">Devis, {titre}</p>
-        <form onSubmit={soumettre} className="relative space-y-3">
+    <Dialog open={ouvert} onOpenChange={setOuvert}>
+      <DialogTrigger asChild>
+        <Button variant={principal ? "primary" : "outline"} className="w-full">
+          Demander un devis sans créer de compte
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Demander un devis</DialogTitle>
+          <DialogDescription>
+            {titre} — chiffré sous 48 h, sans engagement, et sans créer de compte.
+          </DialogDescription>
+        </DialogHeader>
+        {envoye ? (
+          <div className="space-y-1 py-4 text-center">
+            <CheckCircle2 className="mx-auto size-6 text-success" />
+            <p className="font-medium text-foreground">Demande envoyée</p>
+            <p className="text-sm text-muted-foreground">
+              Nous revenons vers vous sous 48 h avec un devis chiffré.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={soumettre} className="relative space-y-3">
           {/* Champ-piège anti-robot : invisible pour un humain, rempli par les bots. */}
           <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
             <label htmlFor="devis-website">Ne pas remplir</label>
@@ -137,7 +143,8 @@ export function PublicQuoteForm({
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
