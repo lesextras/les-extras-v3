@@ -2,7 +2,7 @@
 
 // Panneau d'action d'un devis :
 //  - intervenant  : saisie des lignes (libellé / quantité / prix) puis envoi
-//  - établissement : acceptation (crée la réservation) ou refus motivé
+//  - établissement : dépôt du devis signé (vaut acceptation), révision ou refus
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { lancerConfettis } from "@/lib/confetti";
 import { apiRequest } from "@/lib/api";
 import { Field, Textarea } from "./form-fields";
 import { DecompositionPrix } from "./DecompositionPrix";
+import { FileUpload, type FichierDepose } from "./FileUpload";
 
 export interface QuoteLine {
   label: string;
@@ -272,32 +273,94 @@ export function QuoteEditor({
   );
 }
 
-/** Côté établissement : décision. */
+/**
+ * CÔTÉ DEMANDEUR : LE DEVIS SIGNÉ, UNE RÉVISION, OU UN REFUS.
+ *
+ * Il n'y a plus de bouton « Accepter » : l'engagement, c'est le devis papier
+ * signé — par la direction ou par la personne elle-même, charge à elle de
+ * voir avec sa maison — puis déposé ici. Le dépôt vaut acceptation, et
+ * déclenche exactement ce que faisait le clic : réservation, bon pour accord,
+ * notification à l'intervenant. Pas de signature électronique.
+ *
+ * La révision ouvre la négociation sans fermer la porte ; le refus la ferme.
+ */
 export function QuoteDecision({ quoteId }: { quoteId: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
-  const [refusing, setRefusing] = useState(false);
+  const [fichier, setFichier] = useState<FichierDepose | null>(null);
+  const [volet, setVolet] = useState<"aucun" | "revision" | "refus">("aucun");
+  const [motif, setMotif] = useState("");
+  const [montant, setMontant] = useState("");
   const [reason, setReason] = useState("");
 
-  async function act(action: "accept" | "refuse") {
-    setLoading(action);
+  async function signer() {
+    if (!fichier) {
+      toast({ title: "Déposez d’abord le devis signé", variant: "error" });
+      return;
+    }
+    setLoading("signe");
     try {
-      await apiRequest(`/quotes/${quoteId}/${action}`, {
+      await apiRequest(`/quotes/${quoteId}/signe`, {
         method: "POST",
-        body: action === "refuse" ? { reason: reason || undefined } : {},
+        body: { fileId: fichier.id },
+      });
+      lancerConfettis();
+      toast({
+        title: "Devis accepté",
+        description: "Le devis signé est enregistré : la prestation est confirmée et la réservation créée.",
+      });
+      router.refresh();
+    } catch (err) {
+      toast({
+        title: "Dépôt impossible",
+        description: err instanceof Error ? err.message : "Réessayez.",
+        variant: "error",
+      });
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function reviser() {
+    if (motif.trim().length < 3) {
+      toast({ title: "Dites ce qui ne convient pas", variant: "error" });
+      return;
+    }
+    setLoading("revision");
+    try {
+      const souhaite = Number(montant.replace(",", "."));
+      await apiRequest(`/quotes/${quoteId}/reviser`, {
+        method: "POST",
+        body: {
+          motif: motif.trim(),
+          ...(montant && Number.isFinite(souhaite) && souhaite > 0 ? { montantSouhaite: souhaite } : {}),
+        },
       });
       toast({
-        title: action === "accept" ? "Devis accepté" : "Devis refusé",
-        description:
-          action === "accept"
-            ? "La prestation est confirmée : la réservation vient d'être créée."
-            : "L'intervenant a été prévenu.",
+        title: "Révision demandée",
+        description: "L’intervenant reçoit votre demande et vous renvoie un devis.",
       });
-      // ⚠ SUR L'ACCEPTATION SEULEMENT. Des confettis sur un refus diraient
-      // l'inverse de ce qui vient de se passer — même règle que pour les
-      // brouillons et les publications ratées.
-      if (action === "accept") lancerConfettis();
+      router.refresh();
+    } catch (err) {
+      toast({
+        title: "Demande impossible",
+        description: err instanceof Error ? err.message : "Réessayez.",
+        variant: "error",
+      });
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function refuser() {
+    setLoading("refus");
+    try {
+      await apiRequest(`/quotes/${quoteId}/refuse`, {
+        method: "POST",
+        body: { reason: reason || undefined },
+      });
+      toast({ title: "Devis refusé", description: "L’intervenant en est informé." });
       router.refresh();
     } catch (err) {
       toast({
@@ -311,20 +374,71 @@ export function QuoteDecision({ quoteId }: { quoteId: string }) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        <Button onClick={() => act("accept")} disabled={loading !== null}>
-          {loading === "accept" ? "Validation…" : "Accepter le devis"}
+    <div className="space-y-4">
+      <div className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+        <p className="text-sm font-medium text-foreground">Déposer le devis signé</p>
+        <p className="text-xs text-muted-foreground">
+          Imprimez le devis, faites-le signer (votre direction, ou vous-même selon
+          votre délégation), puis déposez-le scanné ou photographié. Ce dépôt vaut
+          <strong> bon pour accord</strong> : la prestation est confirmée dès qu’il
+          est enregistré.
+        </p>
+        <FileUpload
+          famille="quote"
+          fichier={fichier}
+          onChange={setFichier}
+          label="Déposer le devis signé"
+          aide="PDF, JPEG ou PNG · 10 Mo maximum"
+        />
+        <Button onClick={signer} disabled={loading !== null || !fichier}>
+          {loading === "signe" ? "Enregistrement…" : "Valider le devis signé"}
         </Button>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
-          onClick={() => setRefusing((v) => !v)}
+          onClick={() => setVolet((v) => (v === "revision" ? "aucun" : "revision"))}
+          disabled={loading !== null}
+        >
+          Demander une révision
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => setVolet((v) => (v === "refus" ? "aucun" : "refus"))}
           disabled={loading !== null}
         >
           Refuser
         </Button>
       </div>
-      {refusing ? (
+
+      {volet === "revision" ? (
+        <div className="space-y-2 rounded-xl border border-border p-3">
+          <Field label="Ce qui ne convient pas" htmlFor="motif">
+            <Textarea
+              id="motif"
+              rows={3}
+              value={motif}
+              onChange={(e) => setMotif(e.target.value)}
+              placeholder="Le tarif dépasse notre budget, la date ne convient pas, deux séances plutôt que trois…"
+            />
+          </Field>
+          <Field label="Budget visé, TTC (facultatif)" htmlFor="montant">
+            <Input
+              id="montant"
+              inputMode="decimal"
+              value={montant}
+              onChange={(e) => setMontant(e.target.value)}
+              placeholder="ex. 450"
+            />
+          </Field>
+          <Button size="sm" onClick={reviser} disabled={loading !== null}>
+            {loading === "revision" ? "Envoi…" : "Envoyer la demande"}
+          </Button>
+        </div>
+      ) : null}
+
+      {volet === "refus" ? (
         <div className="space-y-2 rounded-xl border border-border p-3">
           <Field label="Motif (facultatif)" htmlFor="reason">
             <Textarea
@@ -335,25 +449,11 @@ export function QuoteDecision({ quoteId }: { quoteId: string }) {
               placeholder="Budget, date, autre intervenant retenu…"
             />
           </Field>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => act("refuse")}
-            disabled={loading !== null}
-          >
-            {loading === "refuse" ? "Envoi…" : "Confirmer le refus"}
+          <Button variant="destructive" size="sm" onClick={refuser} disabled={loading !== null}>
+            {loading === "refus" ? "Envoi…" : "Confirmer le refus"}
           </Button>
         </div>
       ) : null}
-      {/* CE QUE VAUT LE CLIC. Accepter un devis n'est pas « valider une
-          demande » : c'est un engagement contractuel, au meme titre que la
-          mention « bon pour accord » portee a la main sur un devis papier.
-          L'ecran doit le dire avant, pas apres. */}
-      <p className="text-xs text-muted-foreground">
-        Accepter vaut <strong>bon pour accord</strong> : votre nom et votre
-        fonction sont portés sur le devis, la réservation est créée et le
-        contrat devient disponible. Le document reste téléchargeable ensuite.
-      </p>
     </div>
   );
 }

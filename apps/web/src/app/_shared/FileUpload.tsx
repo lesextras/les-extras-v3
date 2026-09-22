@@ -15,7 +15,9 @@ export type FamilleFichier =
   | "avatar"
   | "formation"
   /** Photo d'une fiche atelier. Lisible sans authentification (catalogue public). */
-  | "service";
+  | "service"
+  /** Devis signé déposé par le demandeur : lisible par les deux parties du devis. */
+  | "quote";
 
 export interface FichierDepose {
   id: string;
@@ -32,6 +34,7 @@ const ACCEPT: Record<FamilleFichier, string> = {
   avatar: ".jpg,.jpeg,.png,.webp",
   formation: ".pdf,.jpg,.jpeg,.png,.webp,.docx,.pptx",
   service: ".jpg,.jpeg,.png,.webp",
+  quote: ".pdf,.jpg,.jpeg,.png,.webp",
 };
 
 /** Taille maximale annoncée à l'utilisateur (Mo). Le serveur fait foi. */
@@ -41,6 +44,7 @@ const MAX_MO: Record<FamilleFichier, number> = {
   avatar: 3,
   formation: 20,
   service: 5,
+  quote: 10,
 };
 
 export function poidsLisible(octets: number): string {
