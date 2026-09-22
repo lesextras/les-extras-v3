@@ -5,6 +5,7 @@ import {
   RefuseQuoteDto,
   ReviserQuoteDto,
   SendQuoteDto,
+  SignerQuoteDto,
 } from './dto/quote.dto';
 import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -109,6 +110,20 @@ export class QuotesController {
    * Négocier plutôt que refuser : le devis repart en demande, chiffré à
    * nouveau, et la trace de ce qui a été demandé reste lisible.
    */
+  /**
+   * Le devis signé, déposé : ce dépôt vaut acceptation. Le fichier a été
+   * déposé juste avant sur `POST /files/quote`.
+   */
+  @Post(':id/signe')
+  signer(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Param('id') id: string,
+    @Body() dto: SignerQuoteDto,
+  ) {
+    return this.quotes.signer(user.id, id, account.id, dto.fileId);
+  }
+
   @Post(':id/reviser')
   reviser(
     @CurrentUser() user: RequestUser,

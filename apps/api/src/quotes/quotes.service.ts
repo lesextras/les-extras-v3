@@ -353,7 +353,27 @@ export class QuotesService {
    * Étape 3 — l'établissement accepte : le devis et la réservation naissent
    * dans la MÊME transaction (pas de devis accepté sans prestation planifiée).
    */
-  async accept(userId: string, id: string, accountId: string) {
+  /**
+   * LE DÉPÔT DU DEVIS SIGNÉ VAUT ACCEPTATION.
+   *
+   * Le demandeur imprime, fait signer (sa direction, ou lui-même), scanne ou
+   * photographie, et dépose. Pas de signature électronique : le papier signé
+   * est la pièce, et c'est le dépôt qui déclenche exactement ce que faisait
+   * le bouton « Accepter » — réservation, bon pour accord, notifications.
+   * Le fichier doit avoir été déposé par la même personne, en famille QUOTE.
+   */
+  async signer(userId: string, id: string, accountId: string, fileId: string) {
+    const fichier = await this.prisma.fileAsset.findUnique({
+      where: { id: fileId },
+      select: { id: true, kind: true, uploaderId: true },
+    });
+    if (!fichier || fichier.kind !== 'QUOTE' || fichier.uploaderId !== userId) {
+      throw new BadRequestException('Déposez d’abord le devis signé, puis validez.');
+    }
+    return this.accept(userId, id, accountId, fileId);
+  }
+
+  async accept(userId: string, id: string, accountId: string, signedFileId?: string) {
     const { quote, isClient } = await this.requireParticipant(userId, id, accountId);
     if (!isClient) throw new ForbiddenException("Seul l'établissement peut accepter ce devis.");
     if (quote.status !== 'SENT') {
@@ -433,6 +453,7 @@ export class QuotesService {
           bookingId: booking.id,
           acceptedByName,
           acceptedByRole,
+          ...(signedFileId ? { signedFileId, signedAt: new Date() } : {}),
         },
       });
       return { accepted, booking };
