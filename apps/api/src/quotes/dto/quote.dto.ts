@@ -119,3 +119,22 @@ export class RefuseQuoteDto {
   @MaxLength(1000)
   reason?: string;
 }
+
+/**
+ * DEMANDE DE RÉVISION — le prix ne passe pas, mais on ne ferme pas la porte.
+ *
+ * Le motif est obligatoire : « trop cher » sans rien d’autre ne donne à
+ * l’intervenant aucun moyen de répondre autrement qu’en baissant au hasard.
+ * Le budget visé, lui, reste facultatif — tout le monde ne peut pas le dire.
+ */
+export class ReviserQuoteDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(1000)
+  motif!: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  montantSouhaite?: number;
+}
