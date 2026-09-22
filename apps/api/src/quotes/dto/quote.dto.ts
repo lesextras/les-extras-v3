@@ -138,3 +138,11 @@ export class ReviserQuoteDto {
   @Min(1)
   montantSouhaite?: number;
 }
+
+/** Le devis signé déposé par le demandeur : l'identifiant du fichier, rien d'autre. */
+export class SignerQuoteDto {
+  @IsString()
+  @MinLength(10)
+  @MaxLength(64)
+  fileId!: string;
+}
