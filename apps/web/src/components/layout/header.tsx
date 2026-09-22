@@ -41,6 +41,15 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
+// Le type de compte, dit avec les mots du produit : le nouveau modèle a trois
+// comptes — structure, intervenant, particulier — et une personne seule n'a
+// pas de « rôle » à afficher à côté de son nom.
+function libelleType(type?: string): string {
+  if (type === 'ESTABLISHMENT') return 'Établissement';
+  if (type === 'PARTICULIER') return 'Particulier';
+  return 'Intervenant';
+}
+
 export interface HeaderProps {
   user: SessionUser;
   accounts: SessionAccount[];
@@ -118,8 +127,8 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
                   elle n'était simplement pas employée ici. « Professionnel ·
                   Direction » se lit, et se dit à voix haute. */}
               <span className="truncate text-xs text-muted-foreground">
-                {activeAccount?.type === 'ESTABLISHMENT' ? 'Établissement' : 'Professionnel'}
-                {activeAccount?.role
+                {libelleType(activeAccount?.type)}
+                {activeAccount?.role && activeAccount?.type === 'ESTABLISHMENT'
                   ? ` · ${ACCOUNT_ROLE_LABEL[activeAccount.role] ?? activeAccount.role}`
                   : ''}
               </span>
@@ -146,7 +155,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
                       l'anglicisme : deux mots pour la même chose, sur le même
                       écran, à trois centimètres d'écart. */}
                   <span className="block truncate text-xs text-muted-foreground">
-                    {acc.type === 'ESTABLISHMENT' ? 'Établissement' : 'Professionnel'}
+                    {libelleType(acc.type)}
                   </span>
                 </span>
                 {acc.id === activeAccount?.id && <Check className="size-4 text-primary" />}
