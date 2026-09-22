@@ -232,7 +232,7 @@ const freelanceNav: NavSection[] = [
        * aucune mission ouverte aujourd'hui ne change rien : le jour où il y en
        * a une, personne ne doit avoir à trouver un réglage pour la voir.
        */
-      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Missions qui correspondent à votre profil, classées par score' },
+      { label: 'Missions RenforTeam', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Les renforts qui correspondent à votre profil, classés par score' },
       /*
        * ⚠ L'ENTRÉE N'APPARAÎT QUE SI LA VISIO EST OUVERTE. Elle mène à une
        * page qui répond 404 tant que `NEXT_PUBLIC_VISIOCONSULTATION` n'est pas
