@@ -767,6 +767,14 @@ const particulierNav: NavSection[] = [
   {
     title: 'Trouver et réserver',
     items: [
+      /**
+       * ⚠ LA PORTE QUI MANQUAIT. La page RenforTeam promet depuis le
+       * 19/09/2026 qu'un particulier peut demander sans passer par un
+       * établissement ; son bouton menait au board des renforts, qui lui
+       * répond « Réservé aux établissements ». L'entrée arrive en premier :
+       * c'est la raison pour laquelle une famille a créé son compte.
+       */
+      { label: 'Demander un intervenant', href: '/dashboard/demande', icon: UserPlus, essentiel: true, hint: 'Décrivez la situation, nous cherchons la personne qui convient' },
       { label: 'Ateliers', href: '/ateliers', icon: Sparkles, essentiel: true, hint: 'Le catalogue : ateliers et interventions près de chez vous' },
       { label: 'Formations', href: '/formations', icon: GraduationCap, hint: 'Les parcours ouverts à tous, la plupart gratuits' },
       { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Ce que vous avez réservé, les dates et les intervenants' },
