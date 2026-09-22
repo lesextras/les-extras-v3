@@ -187,7 +187,7 @@ export const LANDINGS: Landing[] = [
       {
         titre: 'Des missions de renfort, en plus',
         texte:
-          'Quand un établissement a un poste à couvrir, les intervenants qui le connaissent sont prévenus d’abord. Un CDD direct, sans intermédiaire.',
+          'Quand un établissement a un besoin à couvrir, les intervenants qui le connaissent sont prévenus d’abord. Une mise en relation directe, sans intermédiaire.',
       },
     ],
     offre: 'Dites-nous ce que vous animez. On vous dit sous 24 h ouvrées si le catalogue a des demandes pour ça.',
