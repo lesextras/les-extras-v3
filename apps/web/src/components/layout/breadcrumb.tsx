@@ -23,7 +23,9 @@ const LABELS: Record<string, string> = {
   missions: 'Missions',
   ateliers: 'Ateliers',
   services: 'Ateliers',
-  reservations: 'Mes réservations',
+  // Neutre : « Mes réservations » côté établissement, « Mes interventions »
+  // côté intervenant — le fil ne connaît pas le compte, il ne tranche pas.
+  reservations: 'Interventions & réservations',
   formations: 'Formations',
   qualiopi: 'Conformité Qualiopi',
   registre: 'Registre & BPF',
@@ -39,7 +41,7 @@ const LABELS: Record<string, string> = {
   renforts: 'RenforTeam',
   planning: 'Planning',
   inbox: 'Messagerie',
-  opportunites: 'Opportunités',
+  opportunites: 'Missions RenforTeam',
   finance: 'Factures & revenus',
   credits: 'LEX, Crédits',
   adhesion: 'LEX, Crédits & abonnement',
