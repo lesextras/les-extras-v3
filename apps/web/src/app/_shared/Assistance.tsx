@@ -71,11 +71,28 @@ export function quand(iso: string): string {
 }
 
 /** L'ouverture d'un fil, et la liste de ceux qui existent déjà. */
-export function Assistance({ fils, accountId }: { fils: FilAssistance[]; accountId?: string }) {
+export function Assistance({
+  fils,
+  accountId,
+  sujetInitial,
+  categorieInitiale,
+  placeholderSujet,
+  indiceMessage,
+}: {
+  fils: FilAssistance[];
+  accountId?: string;
+  /** Pré-remplissages quand le fil est ouvert depuis un écran dédié : une
+   *  demande d'intervenant n'est pas une question au support, et l'objet
+   *  comme la catégorie sont déjà connus. */
+  sujetInitial?: string;
+  categorieInitiale?: string;
+  placeholderSujet?: string;
+  indiceMessage?: string;
+}) {
   const router = useRouter();
   const { toast } = useToast();
-  const [sujet, setSujet] = useState("");
-  const [categorie, setCategorie] = useState("PROBLEME_TECHNIQUE");
+  const [sujet, setSujet] = useState(sujetInitial ?? "");
+  const [categorie, setCategorie] = useState(categorieInitiale ?? "PROBLEME_TECHNIQUE");
   const [message, setMessage] = useState("");
   const [envoi, setEnvoi] = useState(false);
 
@@ -141,7 +158,7 @@ export function Assistance({ fils, accountId }: { fils: FilAssistance[]; account
                   id="sujet"
                   value={sujet}
                   onChange={(e) => setSujet(e.target.value)}
-                  placeholder="Je n'arrive pas à publier mon atelier"
+                  placeholder={placeholderSujet ?? "Je n'arrive pas à publier mon atelier"}
                   maxLength={140}
                 />
               </Field>
@@ -149,7 +166,7 @@ export function Assistance({ fils, accountId }: { fils: FilAssistance[]; account
             <Field
               label="Votre message"
               htmlFor="message"
-              hint="Dites ce que vous avez fait et ce que vous avez vu : c'est ce qui nous fait gagner le plus de temps."
+              hint={indiceMessage ?? "Dites ce que vous avez fait et ce que vous avez vu : c'est ce qui nous fait gagner le plus de temps."}
             >
               <Textarea
                 id="message"
