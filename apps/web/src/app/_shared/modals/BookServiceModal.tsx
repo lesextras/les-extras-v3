@@ -2,7 +2,7 @@
 
 // Modale « Réserver un atelier » (ESTABLISHMENT réserve un Service FREELANCE).
 // POST /services/:id/book -> crée un Booking (status REQUESTED) sur le service.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -34,6 +34,16 @@ export function BookServiceModal({
   trigger?: React.ReactNode;
 }) {
   const router = useRouter();
+  // LE MODE DE PAIEMENT ARRIVE DE LA FICHE PUBLIQUE, où le client l’a choisi
+  // avant même de se connecter. Lu dans l’URL après le montage — pas via
+  // useSearchParams, qui exigerait une frontière Suspense et ferait échouer
+  // le build sur une page statique. Renvoyé tel quel au serveur, qui refuse
+  // la carte si la fiche ne l’accepte pas.
+  const [modePaiement, setModePaiement] = useState<"CARTE" | "VIREMENT" | undefined>();
+  useEffect(() => {
+    const brut = new URLSearchParams(window.location.search).get("paiement");
+    if (brut === "CARTE" || brut === "VIREMENT") setModePaiement(brut);
+  }, []);
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,6 +58,7 @@ export function BookServiceModal({
       await apiRequest(`/services/${serviceId}/book`, {
         method: "POST",
         body: {
+          modePaiement,
           scheduledAt: String(fd.get("scheduledAt") || "") || undefined,
           participants: fd.get("participants") ? Number(fd.get("participants")) : undefined,
           message: String(fd.get("message") || "") || undefined,

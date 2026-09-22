@@ -5,7 +5,10 @@
 // Le bouton menait droit à la fiche connectée sans jamais dire comment
 // l’intervention se règle. Or c’est la question que se pose un chef de service
 // avant de cliquer : est-ce que je sors ma carte, ou est-ce que ça passe en
-// facture pour la compta ? On répond avant, pas après.
+// facture pour la compta ? On répond avant, et LE CHOIX EST ENREGISTRÉ : il
+// part dans l’URL, la réservation le renvoie au serveur, et il reste sur la
+// réservation — personne ne relancera par carte quelqu’un qui a dit « sur
+// facture ».
 //
 // ⚠ AUCUN HOOK DE CONTEXTE ICI. La première version appelait `useVisiteur()`,
 // dont le contexte n’est pas monté sur cette route : le hook jetait au montage
@@ -16,7 +19,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -30,7 +32,8 @@ export function ReserverModal({
   serviceId: string;
   paiementEnLigne?: boolean;
 }) {
-  const destination = `/marketplace/services/${serviceId}`;
+  const vers = (mode: "CARTE" | "VIREMENT") =>
+    `/marketplace/services/${serviceId}?paiement=${mode}`;
 
   return (
     <Dialog>
@@ -41,15 +44,15 @@ export function ReserverModal({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Réserver</DialogTitle>
+          <DialogTitle>Comment souhaitez-vous régler ?</DialogTitle>
           <DialogDescription>
-            Deux façons de régler cette intervention.
+            Votre choix est enregistré sur la réservation.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           {paiementEnLigne ? (
-            <div className="rounded-lg border border-border p-3">
+            <div className="space-y-2 rounded-lg border border-border p-3">
               <p className="text-sm font-medium text-foreground">
                 Par carte, tout de suite
               </p>
@@ -57,35 +60,30 @@ export function ReserverModal({
                 La date est retenue immédiatement et l’intervenant est payé
                 directement.
               </p>
+              <Button asChild className="w-full">
+                <Link href={vers("CARTE")}>Réserver et payer par carte</Link>
+              </Button>
             </div>
           ) : null}
 
-          <div className="rounded-lg border border-border p-3">
+          <div className="space-y-2 rounded-lg border border-border p-3">
             <p className="text-sm font-medium text-foreground">
               Par virement, sur facture
             </p>
             <p className="text-sm text-muted-foreground">
               Vous recevez un devis, puis une facture après accord. Le virement
-              se fait à réception — c’est le chemin habituel d’un établissement,
-              qui ne paie pas par carte.
+              se fait à réception — le chemin habituel d’un établissement.
             </p>
+            <Button asChild variant={paiementEnLigne ? "outline" : "primary"} className="w-full">
+              <Link href={vers("VIREMENT")}>Réserver, facture par virement</Link>
+            </Button>
           </div>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Réserver engage une date et produit une facture : il faut savoir au nom
-          de qui. Si vous n’avez pas encore de compte, sa création prend une
-          minute — ou demandez un devis, qui lui ne demande rien.
+          Réserver demande un compte : sa création prend une minute. Sans compte,
+          demandez plutôt un devis, qui lui ne demande rien.
         </p>
-
-        <DialogFooter className="gap-2 sm:gap-2">
-          <Button asChild variant="outline">
-            <Link href="/register">Créer un compte</Link>
-          </Button>
-          <Button asChild>
-            <Link href={destination}>Continuer</Link>
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
