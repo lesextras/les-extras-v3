@@ -524,9 +524,12 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                     tout autant, parce que c'est tenu. */}
                 <p className="flex items-center gap-1.5">
                   <ShieldCheck className="size-3.5" /> Rien n&apos;est engagé avant votre accord
+                  {/* Un atelier ne donne pas lieu a un contrat : le parcours va du
+                      devis a la feuille de mission, puis a la facture. Le contrat reste
+                      le vocabulaire de RenforTeam (decision du 22/09/2026). */}
                 </p>
                 <p className="flex items-center gap-1.5">
-                  <BadgeCheck className="size-3.5" /> Contrat et facture générés automatiquement
+                  <BadgeCheck className="size-3.5" /> Devis, feuille de mission et facture générés
                 </p>
                 <p className="flex items-center gap-1.5">
                   <Users className="size-3.5" /> 0 % de commission sur l&apos;intervenant
