@@ -91,6 +91,8 @@ interface ServiceDetail {
   requestsCount?: number | null;
   featured?: boolean;
   verified?: boolean;
+  /** Date à laquelle CHAQUE pièce obligatoire de l'intervenant a été contrôlée, sinon null. */
+  piecesControleesLe?: string | null;
   createdAt: string;
   categoryRef?: { id: string; title: string } | null;
   account?: {
@@ -571,6 +573,22 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                     </p>
                   </div>
                 </div>
+                {/* LA PREUVE QUE PERSONNE D'AUTRE NE PEUT COPIER, et seulement quand
+                    elle est vraie : la ligne n'existe que si chaque pièce
+                    obligatoire (identité, diplôme, casier…) a été contrôlée par
+                    une structure — jamais par l'intervenant lui-même. Une date,
+                    pas les documents. */}
+                {service.piecesControleesLe ? (
+                  <p className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-300">
+                    <ShieldCheck className="size-3.5 shrink-0" aria-hidden />
+                    Pièces obligatoires contrôlées le{" "}
+                    {new Date(service.piecesControleesLe).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                ) : null}
                 {owner?.profile?.bio ? (
                   <p className="line-clamp-4 text-sm text-muted-foreground">{owner.profile.bio}</p>
                 ) : null}
