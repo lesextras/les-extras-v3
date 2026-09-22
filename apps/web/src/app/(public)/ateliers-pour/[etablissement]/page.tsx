@@ -149,7 +149,7 @@ Références relues une par une le 2 septembre 2026. Elles ne remplacent pas l�
             {[
               'Vous ouvrez les fiches qui correspondent à votre public : chaque fiche porte le tarif de l’intervenant, sa zone et ses disponibilités.',
               'Vous demandez un devis, établi sous 48 heures, sans commission : vous payez le tarif de l’intervenant, qui le touche en entier.',
-              'Le contrat est généré et signé en ligne, la facture suit. Rien à ressaisir.',
+              'La feuille de mission est générée et signée en ligne, la facture suit. Rien à ressaisir.',
               'Après l’intervention, ce que l’intervenant observe vous revient par écrit : c’est utilisable dans le projet personnalisé.',
             ].map((t, i) => (
               <li key={t.slice(0, 30)} className="flex gap-3 text-[15px] leading-relaxed text-muted-foreground">
