@@ -36,7 +36,6 @@ import { QrShare } from "../../../_shared/QrShare";
 import { PaiementAtelier } from "../../../_shared/PaiementAtelier";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
 import { LiensIntervenant } from "@/app/_shared/LiensIntervenant";
-import { ReserverModal } from "@/app/_shared/modals/ReserverModal";
 
 interface FaqItem { question: string; answer: string }
 interface PriceExtra { label: string; price: number | string }
@@ -501,7 +500,11 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 ) : (
                   <>
                     <PublicQuoteForm serviceId={service.id} titre={service.title} principal />
-                    <ReserverModal serviceId={service.id} />
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href={`/marketplace/services/${service.id}`}>
+                        Réserver directement, j&apos;ai un compte
+                      </Link>
+                    </Button>
                     <p className="text-center text-xs text-muted-foreground">
                       Devis chiffré sous 48 h, sans engagement. Réservation immédiate si vous avez
                       déjà un compte.
