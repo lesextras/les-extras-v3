@@ -53,6 +53,15 @@ export default async function InboxPage({
   const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const activeId = searchParams.c;
+  // Un intervenant n'a ni équipe ni services : ses fils sont ceux des
+  // clients qui lui écrivent, ses renforts et Les Extras. Mêmes types en
+  // base, autres mots — et deux filtres de moins qui seraient toujours vides.
+  const estIntervenant = session.account.type === "FREELANCE";
+  const filtres = estIntervenant
+    ? FILTRES.filter((f) => f.cle !== "INTERNE" && f.cle !== "SERVICE").map((f) =>
+        f.cle === "INTERVENANT" ? { ...f, label: "Clients" } : f,
+      )
+    : FILTRES;
   const typeFiltre = FILTRES.find((f) => f.cle === searchParams.type)?.cle;
   const archives = searchParams.archives === "1";
 
@@ -87,12 +96,16 @@ export default async function InboxPage({
     <div className="space-y-6">
       <PageHeader
         title="Messagerie"
-        subtitle="Vos échanges avec votre équipe, les intervenants et Les Extras, chacun rattaché à son contexte."
+        subtitle={
+          estIntervenant
+            ? "Vos échanges avec les établissements, les familles et Les Extras, chacun rattaché à son contexte."
+            : "Vos échanges avec votre équipe, les intervenants et Les Extras, chacun rattaché à son contexte."
+        }
       />
 
       {/* Filtres par type de fil. */}
       <div className="flex flex-wrap gap-1.5">
-        {FILTRES.map((f) => {
+        {filtres.map((f) => {
           const actif = typeFiltre === f.cle;
           return (
             <Link
