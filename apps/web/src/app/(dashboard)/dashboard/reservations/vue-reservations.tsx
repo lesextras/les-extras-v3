@@ -227,7 +227,16 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
     veutInscriptions ? fetchApi<Inscription[]>(session, "/formations/mes-inscriptions") : vide<Inscription[]>(),
   ]);
 
-  const { titre, sous } = TITRE_VUE[vue];
+  // Un intervenant ne « réserve » pas : on lui parle de ses interventions,
+  // comme le menu. Le titre suit le compte, l'adresse ne change pas.
+  const estIntervenant = session.account.type === "FREELANCE";
+  const { titre, sous } =
+    estIntervenant && vue === "tout"
+      ? {
+          titre: "Mes interventions",
+          sous: "Renforts, ateliers et formations : tout ce qui vous a été confié, au même endroit.",
+        }
+      : TITRE_VUE[vue];
 
   if (veutBookings && resBookings.error) {
     return (
@@ -269,7 +278,9 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
               ? "Dès qu'un atelier est réservé, par vous ou chez vous, il apparaît ici avec sa date et son statut."
               : vue === "formations"
                 ? "Dès qu'une personne est inscrite à une session, son inscription apparaît ici, avec son financement et son attestation."
-                : "Dès qu'un renfort est pourvu, qu'un atelier est réservé ou qu'un salarié est inscrit à une formation, tout apparaît ici."
+                : estIntervenant
+                  ? "Dès qu'un renfort vous est confié, qu'un de vos ateliers est réservé ou qu'une session est à animer, tout apparaît ici."
+                  : "Dès qu'un renfort est pourvu, qu'un atelier est réservé ou qu'un salarié est inscrit à une formation, tout apparaît ici."
           }
           action={
             <div className="flex flex-wrap justify-center gap-2">
