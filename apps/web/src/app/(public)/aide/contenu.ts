@@ -40,7 +40,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Comment publier un besoin de renfort ?",
         reponse: [
           "Depuis votre tableau de bord, ouvrez RenforTeam puis « Publier un besoin ». Vous renseignez le métier attendu, l'unité concernée, les dates et le taux horaire.",
-          "Le besoin n'est pas envoyé à tout le monde d'un coup : il descend palier par palier. Vos propres salariés rattachés au compte d'abord, puis les intervenants déjà venus chez vous, puis le réseau. Il s'arrête dès qu'il est pourvu.",
+          "Le besoin n'est pas envoyé à tout le monde d'un coup : il descend palier par palier. Les intervenants déjà venus chez vous d'abord, puis le réseau. Il s'arrête dès qu'il est pourvu.",
           "Le premier intervenant qui accepte emporte la mission. Le contrat est généré automatiquement, vous n'avez rien à arbitrer.",
         ],
       },
@@ -57,7 +57,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Comment réserver un atelier ?",
         reponse: [
           "Le catalogue est public : vous consultez les fiches sans compte. Chaque fiche indique les objectifs, la méthode, le public visé, la durée et le prix.",
-          "Depuis une fiche, vous demandez un devis. L'intervenant le chiffre, vous l'acceptez en ligne, et la réservation se crée avec son contrat et sa facture.",
+          "Depuis une fiche, vous demandez un devis. L'intervenant le chiffre, vous l'acceptez en ligne, et la réservation se crée avec sa feuille de mission et sa facture.",
         ],
       },
       {
