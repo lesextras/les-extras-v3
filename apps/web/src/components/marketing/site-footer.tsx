@@ -191,9 +191,12 @@ export function SiteFooter() {
               <ul className="mt-3 space-y-2">
                 {col.links.map((l) => (
                   <li key={l.label}>
+                    {/* Les liens du pied de page faisaient 17 px de haut : sous le
+                        minimum de 24 px du WCAG 2.2, et difficiles à viser au doigt.
+                        `min-h-6` les remonte à 24 px sans changer la typographie. */}
                     <Link
                       href={l.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                      className="inline-flex min-h-6 items-center text-sm text-muted-foreground transition-colors hover:text-primary"
                     >
                       {l.label}
                     </Link>
@@ -262,10 +265,10 @@ export function SiteFooter() {
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground lg:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <p>© {new Date().getFullYear()} LES EXTRAS, ADéPA</p>
-            <Link href="/notre-histoire" className="transition-colors hover:text-primary">
+            <Link href="/notre-histoire" className="inline-flex min-h-6 items-center transition-colors hover:text-primary">
               Notre histoire
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-primary">
+            <Link href="/contact" className="inline-flex min-h-6 items-center transition-colors hover:text-primary">
               Nous contacter
             </Link>
             {/* AUCUN LIEN VERS LINKEDIN N'EXISTAIT SUR LES 93 PAGES DU SITE.
@@ -277,7 +280,7 @@ son adresse a été relevée dans son administration. */}
               href="https://www.linkedin.com/company/les-extras-adepa/"
               target="_blank"
               rel="me noopener noreferrer"
-              className="transition-colors hover:text-primary"
+              className="inline-flex min-h-6 items-center transition-colors hover:text-primary"
             >
               LinkedIn
             </a>
