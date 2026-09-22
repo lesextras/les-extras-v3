@@ -10,7 +10,7 @@ import { PageHeader, EmptyState, ErrorState } from "../../../_shared/ui";
 import { ScoreMeter, ScoreBreakdown, type MatchOpportunity } from "../../../_shared/matching";
 import { MISSION_CATEGORY_LABEL, formatDate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "Opportunités" };
+export const metadata: Metadata = { title: "Missions RenforTeam" };
 
 /**
  * LE CATALOGUE, DEPUIS LES OPPORTUNITÉS.
@@ -53,7 +53,7 @@ export default async function OpportunitesPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Opportunités"
+          title="Missions RenforTeam"
           subtitle="Les missions de renfort et les ateliers ouverts à la candidature."
         />
         {/* Un salarié rattaché à un établissement arrivait ici sur un
@@ -81,8 +81,8 @@ export default async function OpportunitesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Opportunités"
-        subtitle="Les missions qui correspondent le mieux à votre profil, classées par score."
+        title="Missions RenforTeam"
+        subtitle="Les renforts RenforTeam qui correspondent le mieux à votre profil, classés par score."
       />
 
       {error ? (
@@ -90,7 +90,7 @@ export default async function OpportunitesPage() {
       ) : opportunities.length === 0 ? (
         <EmptyState
           icon={<Target />}
-          title="Aucune opportunité pour le moment"
+          title="Aucune mission RenforTeam pour le moment"
           description="Complétez votre profil et vos disponibilités pour recevoir des recommandations pertinentes."
           action={
             <Button asChild variant="outline">
