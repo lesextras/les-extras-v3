@@ -1169,6 +1169,12 @@ model Quote {
   sentAt            DateTime?
   decidedAt         DateTime?
   refusalReason     String?
+  /// LE DEVIS SIGNÉ, DÉPOSÉ PAR LE DEMANDEUR : ce dépôt vaut acceptation.
+  /// Papier signé puis scanné ou photographié ; aucune signature électronique
+  /// n'est demandée. Nul sur les devis acceptés avant cette version.
+  signedFileId      String?
+  signedFile        FileAsset?     @relation("QuoteSigned", fields: [signedFileId], references: [id], onDelete: SetNull)
+  signedAt          DateTime?
   /// Réservation créée à l'acceptation (contrat + facturation en aval).
   bookingId         String?        @unique
   booking           Booking?       @relation(fields: [bookingId], references: [id], onDelete: SetNull)
@@ -1180,6 +1186,7 @@ model Quote {
   @@index([clientAccountId])
   @@index([providerAccountId])
   @@index([status])
+  @@index([signedFileId])
 }
 
 enum QuoteStatus {
@@ -2665,6 +2672,9 @@ enum FileKind {
   /// médico-social peut porter des informations sur une personne accompagnée.
   /// L'accès est vérifié fil par fil, participant par participant.
   MESSAGE
+  /// DEVIS SIGNÉ déposé par le demandeur. Lisible par les deux parties du
+  /// devis (client et intervenant), et par personne d'autre.
+  QUOTE
 }
 
 /// Un fichier réellement stocké (objet dans le dépôt privé), avec sa fiche
@@ -2699,6 +2709,7 @@ model FileAsset {
   piecesAssociation    PieceAssociation[]    @relation("PieceAssociationFichier")
   documentsAssociation DocumentAssociation[] @relation("DocumentAssociationFichier")
   piecesMessage        MessagePiece[]
+  devisSignes          Quote[]               @relation("QuoteSigned")
 
   @@index([uploaderId])
   @@index([accountId])
