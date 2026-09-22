@@ -261,13 +261,9 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
    */
   FREELANCE: [
     ETAPE_PROFIL,
+    // La structure (SIRET) se saisit sur l'écran des identifiants, avec eux :
+    // un écran de moins, et le compte naît déjà rattaché. Voir register/page.tsx.
     ETAPE_IDENTITE,
-    {
-      cle: 'structure',
-      titre: 'Votre structure',
-      explication:
-        'Ce qui facturera vos interventions. Facultatif pour entrer, nécessaire pour publier une fiche, et vous pouvez le compléter plus tard.',
-    },
     {
       cle: 'activites',
       titre: 'Ce que vous voulez faire',

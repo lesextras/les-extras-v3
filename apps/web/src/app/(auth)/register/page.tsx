@@ -39,7 +39,6 @@ import {
   EtapeActivites,
   EtapeDisponibilite,
   EtapePoste,
-  EtapeStructure,
   LIEU_VIDE,
   RechercheEtablissement,
   type LieuDeTravail,
@@ -245,7 +244,18 @@ export default function RegisterPage() {
       if (typeChoisi === 'ESTABLISHMENT') {
         await enregistrerLieu();
         allerA('poste');
-      } else if (typeChoisi === 'FREELANCE') allerA('structure');
+      } else if (typeChoisi === 'FREELANCE') {
+        // La structure est saisie avec les identifiants (écran 2). Son
+        // rattachement demande une session : il part maintenant, tolérant à
+        // l'échec — facultative pour entrer, elle se complète depuis l'espace.
+        if (lieu.structureId || lieu.structure) {
+          await apiRequest('/structures/rattacher', {
+            method: 'POST',
+            body: lieu.structureId ? { structureId: lieu.structureId } : lieu.structure,
+          }).catch(() => undefined);
+        }
+        allerA('activites');
+      }
       else if (typeChoisi === 'PARTICULIER') allerA('disponibilite');
       else terminer();
     } catch (err) {
@@ -594,6 +604,34 @@ export default function RegisterPage() {
               </section>
             )}
 
+            {/*
+              INTERVENANT — SA STRUCTURE, SUR LE MÊME ÉCRAN QUE LES IDENTIFIANTS.
+              Facultative ici, exigée pour publier : c'est ce SIRET qui figure
+              sur les devis et les factures. Le rattachement part juste après
+              la création du compte (voir creerLeCompte), jamais avant.
+            */}
+            {typeChoisi === 'FREELANCE' && (
+              <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+                <div>
+                  <h2 className="text-sm font-semibold">L'entité qui facture vos interventions</h2>
+                  <p className="text-xs text-muted-foreground" lang="fr">
+                    Micro-entreprise, association, société. Facultatif pour entrer,
+                    nécessaire pour publier une fiche : ce numéro figurera sur vos
+                    devis et vos factures.
+                  </p>
+                </div>
+                <ChampStructure
+                  valeur={{ structureId: lieu.structureId, structure: lieu.structure }}
+                  onChange={(v) => setLieu((l) => ({ ...l, ...v }))}
+                  placeholder="Votre SIRET, ou le nom de votre entreprise…"
+                />
+                <p className="text-xs text-muted-foreground" lang="fr">
+                  Pas encore de structure ? Continuez : vous pourrez la renseigner
+                  depuis votre espace, avant de publier.
+                </p>
+              </section>
+            )}
+
             {/* L'API stocke un prénom et un nom séparés : c'est la personne qui
                 ouvre le compte, y compris pour un établissement. */}
             <div className="grid gap-5 sm:grid-cols-2">
@@ -820,31 +858,13 @@ export default function RegisterPage() {
       )}
 
       {/* ---------------------------------------------------------------- */}
-      {/* Intervenant indépendant — étape 3 : sa structure                   */}
-      {/* ---------------------------------------------------------------- */}
-      {etape === 'structure' && (
-        <>
-          <EtapeStructure onFait={() => allerA('activites')} />
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <span />
-            <Button type="button" variant="ghost" size="sm" onClick={terminer}>
-              Je le ferai plus tard
-            </Button>
-          </div>
-        </>
-      )}
-
-      {/* ---------------------------------------------------------------- */}
-      {/* Intervenant indépendant — étape 4 : ce qu'il vient faire           */}
+      {/* Intervenant indépendant — étape 3 : ce qu'il vient faire           */}
       {/* ---------------------------------------------------------------- */}
       {etape === 'activites' && (
         <>
           <EtapeActivites onFait={terminer} />
           <div className="mt-3 flex items-center justify-between gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => allerA('structure')}>
-              <ArrowLeft />
-              Retour
-            </Button>
+            <span />
             <Button type="button" variant="ghost" size="sm" onClick={terminer}>
               Je le ferai plus tard
             </Button>
