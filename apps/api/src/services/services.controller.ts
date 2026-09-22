@@ -9,13 +9,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AccountRole } from '@prisma/client';
+import { AccountRole, Capacite } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { AccountRolesGuard } from '../common/guards/account-roles.guard';
 import { EmailVerifieSiPublicationGuard } from '../common/guards/email-verifie.guard';
 import { StructureRequiseSiPublicationGuard } from '../common/guards/structure-requise.guard';
 import { AccountRoles } from '../common/decorators/account-roles.decorator';
+import { OuCapacite } from '../common/decorators/capacite.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -100,9 +101,26 @@ export class ServicesController {
     return this.services.remove(id, account.id);
   }
 
-  /** Réserver un atelier : crée un Booking REQUESTED. */
+  /**
+   * Réserver un atelier : crée un Booking REQUESTED.
+   *
+   * ENGAGER L'ÉTABLISSEMENT N'EST PAS UN ACTE D'ÉQUIPE. La route ne
+   * demandait que d'être membre du compte : un éducateur rattaché pouvait
+   * réserver — donc engager une dépense — au nom de sa structure, sans que
+   * personne le lui ait accordé. Le droit « Réserver un intervenant
+   * directement » existait pourtant déjà, déclaré dans « Mon poste » et
+   * rangé en base, et rien ne le lisait.
+   *
+   * Il est lu maintenant, en OU avec le rôle : direction, administration et
+   * chefs de service réservent comme avant, un particulier reste
+   * propriétaire de son compte donc de sa réservation, et un salarié à qui
+   * on a accordé le droit réserve aussi. Le refus, lui, renvoie vers « Mon
+   * poste » plutôt que vers un code d'erreur.
+   */
   @Post(':id/book')
-  @UseGuards(AccountGuard)
+  @UseGuards(AccountGuard, AccountRolesGuard)
+  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @OuCapacite(Capacite.RESERVER_DIRECT)
   book(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,
