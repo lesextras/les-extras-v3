@@ -38,7 +38,7 @@ export default async function VivierOuvertPage() {
       {error || !data ? (
         <ErrorState
           title="Liste indisponible"
-          description="Il faut le droit « ouvrir un renfort » pour consulter cette liste. Demandez-le à votre direction depuis « Mon poste »."
+          description="Cette liste est réservée aux comptes de structure. Si vous en avez un, reconnectez-vous et réessayez."
           retryHref="/dashboard/vivier-ouvert"
         />
       ) : (
