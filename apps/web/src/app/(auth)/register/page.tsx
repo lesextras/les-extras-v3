@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight, Building2, Lock, Mail, Phone, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building2, Lock, Mail, Phone } from 'lucide-react';
 import { registerSchema, type RegisterValues } from '@/lib/validation';
 import { register as registerAccount } from '@/lib/auth-client';
 import { apiRequest } from '@/lib/api';
@@ -38,7 +38,6 @@ import {
   ChampStructure,
   EtapeActivites,
   EtapeDisponibilite,
-  EtapePoste,
   LIEU_VIDE,
   RechercheEtablissement,
   type LieuDeTravail,
@@ -243,7 +242,15 @@ export default function RegisterPage() {
        */
       if (typeChoisi === 'ESTABLISHMENT') {
         await enregistrerLieu();
-        allerA('poste');
+        // PLUS D'ÉTAPE « NIVEAU ET DROITS » (23/09/2026) : le compte, c'est la
+        // personne. Le poste part tout de suite, sans niveau ni capacités —
+        // ce qu'elle peut engager, c'est le devis signé par sa maison qui le
+        // dit, pas une case cochée ici. Tolérant à l'échec, comme le lieu.
+        await apiRequest('/organisation/moi', {
+          method: 'PATCH',
+          body: { poste: lieu.poste.trim() || undefined, cadre: lieu.cadre },
+        }).catch(() => undefined);
+        terminer();
       } else if (typeChoisi === 'FREELANCE') {
         // La structure est saisie avec les identifiants (écran 2). Son
         // rattachement demande une session : il part maintenant, tolérant à
@@ -309,21 +316,8 @@ export default function RegisterPage() {
         }).catch(() => undefined);
       }
 
-      const service = lieu.service.trim();
-      if (service) {
-        await apiRequest('/units', { method: 'POST', body: { name: service } }).catch(
-          (e: unknown) => {
-            const message = e instanceof Error ? e.message : '';
-            toast({
-              title: 'Service déjà existant',
-              description: message.includes('existe déjà')
-                ? `${message} Demandez à le rejoindre depuis « Mon équipe ».`
-                : 'Nous n’avons pas pu créer ce service. Vous pourrez le faire depuis votre espace.',
-              variant: 'error',
-            });
-          },
-        );
-      }
+      // Plus de création de service (OrgUnit) à l'inscription : archivé le
+      // 23/09/2026 avec les sous-comptes. La structure porte l'identité.
 
     } finally {
       setSubmitting(false);
@@ -571,22 +565,9 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
-                  {lieu.rejoindre ? null : (
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="service">Nom de votre service, unité</Label>
-                    <Input
-                      id="service"
-                      value={lieu.service}
-                      onChange={(e) => setLieu((l) => ({ ...l, service: e.target.value }))}
-                      placeholder="Internat, Pôle jour, SESSAD…"
-                      leftIcon={<Users />}
-                      autoComplete="off"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Facultatif, et modifiable depuis votre espace.
-                    </p>
-                  </div>
-                  )}
+                  {/* Plus de « service, unité » à l'inscription (23/09/2026) :
+                      les sous-comptes par service sont archivés. La structure
+                      suffit ; les collègues ont chacun leur compte. */}
 
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="poste">Votre poste</Label>
@@ -835,26 +816,6 @@ export default function RegisterPage() {
             pourrez créer un second compte plus tard si vous cumulez les deux.
           </p>
         </div>
-      )}
-
-      {/* ---------------------------------------------------------------- */}
-      {/* Étape 3 — le niveau et les droits                                  */}
-      {/* ---------------------------------------------------------------- */}
-      {/*
-        ⚠ PAS DE « RETOUR » ICI, ET CE N'EST PAS UN OUBLI. L'étape précédente
-        est celle qui a CRÉÉ le compte : y revenir proposerait de le créer une
-        seconde fois. Tout ce qui s'y remplit se remodifie depuis l'espace,
-        sur « Mon poste ».
-      */}
-      {etape === 'poste' && (
-        <>
-          <EtapePoste poste={lieu.poste} cadre={lieu.cadre} onFait={terminer} />
-          <div className="mt-3 flex items-center justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={terminer}>
-              Je le ferai plus tard
-            </Button>
-          </div>
-        </>
       )}
 
       {/* ---------------------------------------------------------------- */}

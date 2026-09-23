@@ -239,16 +239,10 @@ const ETAPE_IDENTITE: Etape = {
  * gens sur un écran administratif.
  */
 export const PARCOURS: Record<CleCompte, Etape[]> = {
-  ESTABLISHMENT: [
-    ETAPE_PROFIL,
-    ETAPE_IDENTITE,
-    {
-      cle: 'poste',
-      titre: 'Votre niveau et vos droits',
-      explication:
-        'Ce que vous pouvez engager pour votre établissement. C’est cette déclaration qui décide de ce que vous voyez et de ce que vous pouvez faire.',
-    },
-  ],
+  // Deux écrans depuis le 23/09/2026 : plus d'étape « niveau et droits ». Le
+  // compte, c'est la personne ; ce qu'elle engage, c'est le devis signé par sa
+  // maison qui le dit. Le poste part avec les identifiants (register/page.tsx).
+  ESTABLISHMENT: [ETAPE_PROFIL, ETAPE_IDENTITE],
   /**
    * ⚠ LA STRUCTURE JURIDIQUE EST FACULTATIVE ICI, ET EXIGÉE POUR PUBLIER.
    *
