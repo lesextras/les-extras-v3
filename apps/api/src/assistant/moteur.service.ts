@@ -31,6 +31,12 @@ export interface OptionsMoteur {
   historique?: { role: 'user' | 'assistant'; content: string }[];
   maxTokens?: number;
   temperature?: number;
+  /**
+   * Pièces jointes (image ou PDF, en base64) à lire avec la consigne — le
+   * pré-contrôle des documents de conformité s'en sert. Gemini et Claude
+   * savent lire une image ; Mistral non, il est sauté quand il y en a.
+   */
+  pieces?: { mimeType: string; base64: string }[];
 }
 
 interface ReponseGemini {
@@ -91,7 +97,7 @@ export class MoteurService {
     // sauve l'outil, c'est le moteur qui a une offre gratuite. Gemini et
     // Mistral en ont une ; Claude n'en a pas. L'ordre suit donc le coût :
     // gratuit d'abord, payant en dernier.
-    if (this.mistral.disponible) {
+    if (this.mistral.disponible && !options.pieces?.length) {
       try {
         return await this.mistral.completer(options);
       } catch (err) {
@@ -113,7 +119,19 @@ export class MoteurService {
     }
     if (this.claude.disponible) {
       try {
-        return await this.claude.completer(options);
+        const piece = options.pieces?.[0];
+        return piece
+          ? await this.claude.lireDocument({
+              system: options.system,
+              consigne: options.user,
+              media: {
+                type: piece.mimeType === 'application/pdf' ? 'document' : 'image',
+                mimeType: piece.mimeType,
+                base64: piece.base64,
+              },
+              maxTokens: options.maxTokens,
+            })
+          : await this.claude.completer(options);
       } catch (err) {
         if (!echecGemini) throw err;
         // Les deux ont échoué : on remonte l'échec de Claude, en lui accrochant
@@ -246,7 +264,18 @@ export class MoteurService {
       parts: [{ text: m.content }],
     }));
     const corps = {
-      contents: [...fil, { role: 'user', parts: [{ text: options.user }] }],
+      contents: [
+        ...fil,
+        {
+          role: 'user',
+          parts: [
+            ...(options.pieces ?? []).map((p) => ({
+              inlineData: { mimeType: p.mimeType, data: p.base64 },
+            })),
+            { text: options.user },
+          ],
+        },
+      ],
       ...(options.system ? { systemInstruction: { parts: [{ text: options.system }] } } : {}),
       generationConfig: {
         temperature: options.temperature ?? 0.3,
