@@ -4,28 +4,48 @@ import { MailService } from '../common/mail/mail.service';
 /** Fenêtre pendant laquelle l'établissement peut encore annuler seul. */
 export const FENETRE_ANNULATION_MS = 48 * 60 * 60 * 1000;
 
+// LA FICHE DOIT PERMETTRE DE SE JOINDRE (23/09/2026) : l'intervenant gère la
+// réservation directement avec son client. On donne donc la personne derrière
+// le compte — son nom, son téléphone — et l'adresse complète, pas seulement
+// la ville. Le compte, c'est la personne : ses coordonnées sont les siennes.
 const CONTACT = {
   name: true,
   city: true,
+  address: true,
+  postalCode: true,
   phone: true,
   contactEmail: true,
-  owner: { select: { email: true } },
+  owner: { select: { email: true, firstName: true, lastName: true, phone: true } },
 } as const;
 
 type CompteContact = {
   name: string;
   city?: string | null;
+  address?: string | null;
+  postalCode?: string | null;
   phone?: string | null;
   contactEmail?: string | null;
-  owner?: { email: string | null } | null;
+  owner?: {
+    email: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+  } | null;
 } | null;
 
-const coordonnees = (a: CompteContact, defaut: string) => ({
-  nom: a?.name ?? defaut,
-  email: a?.contactEmail ?? a?.owner?.email ?? null,
-  telephone: a?.phone ?? null,
-  ville: a?.city ?? null,
-});
+const coordonnees = (a: CompteContact, defaut: string) => {
+  const personne = [a?.owner?.firstName, a?.owner?.lastName].filter(Boolean).join(' ').trim();
+  const nom = a?.name ?? defaut;
+  const adresse = [a?.address, [a?.postalCode, a?.city].filter(Boolean).join(' ')]
+    .filter((x) => x && String(x).trim())
+    .join(', ');
+  return {
+    nom: personne && personne !== nom ? `${personne} · ${nom}` : nom,
+    email: a?.contactEmail ?? a?.owner?.email ?? null,
+    telephone: a?.phone ?? a?.owner?.phone ?? null,
+    ville: adresse || a?.city || null,
+  };
+};
 
 /**
  * LA FICHE DE RÉSERVATION, ENVOYÉE AUX DEUX PARTIES.
@@ -76,10 +96,16 @@ export async function envoyerFicheReservation(
 
     const prestation = booking.service?.title ?? booking.mission?.title ?? 'Prestation';
     const montant = booking.totalAmount ?? booking.service?.price ?? null;
+    const reglement =
+      booking.modePaiement === 'CARTE'
+        ? ' · règlement par carte en ligne'
+        : booking.modePaiement === 'VIREMENT'
+          ? ' · règlement sur facture, par virement'
+          : '';
     const tarif =
       montant === null || montant === undefined
         ? null
-        : `${Number(montant).toLocaleString('fr-FR')} €${surRenfort ? ' de l’heure' : ''}`;
+        : `${Number(montant).toLocaleString('fr-FR')} €${surRenfort ? ' de l’heure' : ''}${reglement}`;
 
     const effectif = booking.participants ?? null;
     const plafond = booking.service?.maxParticipants ?? null;
