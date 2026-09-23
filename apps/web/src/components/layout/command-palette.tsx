@@ -67,7 +67,6 @@ const DESTINATIONS: Dest[] = [
     AUSSI le salarié simple, à qui elle dit « posez vos demandes d'absence ».
     Un salarié n'avait donc aucun moyen de poser une absence.
   */
-  { label: "Temps de travail & congés", href: "/dashboard/temps-de-travail", group: "Établissement", keywords: "absence conge planning solde recuperation heures nuit dimanche ferie annualisation demande" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat conversation" },
   // Retirées du menu de gauche le 12/08/2026 pour l'alléger : la palette
   // devient leur chemin d'accès, avec des mots-clés larges pour qu'on les
