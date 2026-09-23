@@ -3,7 +3,7 @@ import { ComplianceDocType, Prisma } from '@prisma/client';
 import type { Readable } from 'node:stream';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { ClaudeService } from '../assistant/claude.service';
+import { MoteurService } from '../assistant/moteur.service';
 import { ExtractionService } from '../assistant/extraction.service';
 
 /**
@@ -21,15 +21,15 @@ import { ExtractionService } from '../assistant/extraction.service';
  * un moteur indisponible, une réponse mal formée : la note le dit, et le
  * contrôle humain se fait comme avant.
  *
- * Les images et les PDF passent par la lecture visuelle de Claude (le seul
- * moteur de la maison qui lit une image) ; les .docx passent par l'extraction
- * de texte puis le même moteur. Rien n'est conservé chez le fournisseur
- * au-delà de l'appel.
+ * Les images et les PDF sont lus par le moteur de la maison (MoteurService :
+ * Gemini d'abord, Claude en secours — les deux lisent une image) ; les .docx
+ * passent par l'extraction de texte puis le même moteur. Rien n'est conservé
+ * chez le fournisseur au-delà de l'appel.
  *
- * ClaudeService et ExtractionService sont fournis ICI, par ConformiteModule,
+ * MoteurService et ExtractionService sont fournis ICI, par ConformiteModule,
  * et non importés d'AssistantModule : importer ce module-là depuis la
- * conformité créait un cycle d'imports au démarrage (23/09/2026). Les deux
- * services n'ont aucune dépendance, les instancier deux fois ne coûte rien.
+ * conformité créait un cycle d'imports au démarrage (23/09/2026). Ces
+ * services n'ont pas d'état partagé, les instancier deux fois ne coûte rien.
  *
  * Désactivable d'un mot : PRE_CONTROLE_PIECES=off.
  */
@@ -54,7 +54,7 @@ export class PreControleService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
-    private readonly claude: ClaudeService,
+    private readonly moteur: MoteurService,
     private readonly extraction: ExtractionService,
   ) {}
 
@@ -110,24 +110,21 @@ export class PreControleService {
     const consigne = PreControleService.consigne(attendu, nom);
 
     const mime = doc.file.mimeType.toLowerCase();
-    if (!this.claude.disponible) {
-      throw new Error('lecture automatique indisponible (clé Anthropic absente)');
+    if (!this.moteur.disponible) {
+      throw new Error('lecture automatique indisponible (aucun moteur configuré)');
     }
     let brut: string;
     if (mime.startsWith('image/') || mime === 'application/pdf') {
-      brut = await this.claude.lireDocument({
+      brut = await this.moteur.completer({
         system: PreControleService.SYSTEM,
-        consigne,
-        media: {
-          type: mime === 'application/pdf' ? 'document' : 'image',
-          mimeType: mime,
-          base64: buffer.toString('base64'),
-        },
+        user: consigne,
+        pieces: [{ mimeType: mime, base64: buffer.toString('base64') }],
         maxTokens: 600,
+        temperature: 0,
       });
     } else {
       const texte = await this.extraction.extraire(buffer, mime, doc.file.originalName);
-      brut = await this.claude.completer({
+      brut = await this.moteur.completer({
         system: PreControleService.SYSTEM,
         user: `${consigne}\n\nTEXTE DU DOCUMENT :\n${texte.slice(0, 12000)}`,
         maxTokens: 600,
