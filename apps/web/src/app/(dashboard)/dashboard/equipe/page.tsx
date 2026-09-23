@@ -3,16 +3,12 @@
 // Cet écran remplace l'onglet « Équipe » de la fiche compte, qui renvoyait
 // tout le monde d'un coup. Il devient une entrée de menu à part entière :
 // c'est le point d'entrée vers les personnes, et donc vers leurs pièces,
-// leurs contrats et leur service.
+// leurs contrats.
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../_shared/ui";
-import {
-  EquipeTable,
-  type PageMembres,
-  type Repartition,
-} from "../../../_shared/EquipeTable";
+import { EquipeTable, type PageMembres } from "../../../_shared/EquipeTable";
 
 export const metadata: Metadata = { title: "Équipe" };
 
@@ -34,10 +30,7 @@ export default async function EquipePage({
     if (typeof v === "string" && v) p.set(clef, v);
   }
 
-  const [liste, repartition] = await Promise.all([
-    fetchApi<PageMembres>(session, `/memberships?${p.toString()}`),
-    fetchApi<Repartition>(session, "/memberships/repartition"),
-  ]);
+  const liste = await fetchApi<PageMembres>(session, `/memberships?${p.toString()}`);
 
   return (
     <div className="space-y-6">
@@ -54,7 +47,6 @@ export default async function EquipePage({
         <>
           <EquipeTable
             initial={liste.data ?? { items: [], total: 0, page: 1, perPage: 25, pages: 1 }}
-            repartition={repartition.data ?? { total: 0, sansService: 0, services: [] }}
           />
         </>
       )}
