@@ -118,7 +118,7 @@ function Piece({
             <Badge variant={meta.variant}>{meta.labelIntervenant}</Badge>
           </div>
           <p className="text-xs text-muted-foreground">{meta.aide}</p>
-          <PreControleNote note={doc.preControle} le={doc.preControleLe} />
+          <PreControleNote note={doc.preControle} le={doc.preControleLe} pour="intervenant" />
           {TYPE_POURQUOI[doc.type] ? (
             <p className="max-w-prose text-xs text-muted-foreground/80">
               {TYPE_POURQUOI[doc.type]}

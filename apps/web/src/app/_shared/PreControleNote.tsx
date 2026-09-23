@@ -42,9 +42,12 @@ function dateFr(iso: string | null) {
 export function PreControleNote({
   note,
   le,
+  pour = "structure",
 }: {
   note: NotePreControle | null | undefined;
   le?: string | null;
+  /** Qui lit la note : la structure qui valide, ou la personne qui a déposé. */
+  pour?: "structure" | "intervenant";
 }) {
   if (!note) return null;
   const s = STYLE[note.verdict] ?? STYLE.A_VERIFIER;
@@ -76,7 +79,9 @@ export function PreControleNote({
         </ul>
       ) : null}
       <p className="mt-1 text-[11px] text-muted-foreground">
-        Simple aide à la lecture : la validation reste votre décision.
+        {pour === "intervenant"
+          ? "Simple aide à la lecture : c’est la structure qui vérifie et valide votre pièce."
+          : "Simple aide à la lecture : la validation reste votre décision."}
       </p>
     </div>
   );
