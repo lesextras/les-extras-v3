@@ -390,7 +390,7 @@ export class ServicesService {
     await this.notifications.create(service.account.ownerId, {
       type: 'SERVICE_BOOKING',
       title: 'Nouvelle réservation',
-      body: `Votre atelier « ${service.title} » a été réservé${precision}${alerte}.`,
+      body: `Votre atelier « ${service.title} » a été réservé${precision}${alerte}. Les coordonnées du client sont dans la fiche envoyée par courriel : c’est vous qui organisez la suite avec lui.`,
       link: `/dashboard/reservations`,
     });
 
