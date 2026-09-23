@@ -1,7 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Network,
-  IdCard,
   MessagesSquare,
   LayoutDashboard,
   TrendingUp,
@@ -9,7 +8,6 @@ import {
   Sparkles,
   CalendarClock,
   CalendarCheck,
-  Clock,
   GraduationCap,
   Receipt,
   CreditCard,
@@ -486,8 +484,13 @@ const establishmentNav: NavSection[] = [
       // un filtre de rôle fermerait exactement la porte qu'il doit ouvrir.
       { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Vos échanges avec votre équipe, vos services, les intervenants et Les Extras, chacun rattaché à son contexte' },
       { label: 'Organigramme', href: '/dashboard/organigramme', icon: Network, essentiel: true, hint: 'Votre structure, votre établissement et ses services. Les noms que vous voyez dépendent de votre périmètre.' },
-      { label: 'Mon poste', href: '/dashboard/mon-poste', icon: IdCard, hint: 'Votre poste, votre niveau de responsabilité et ce que vous pouvez engager pour votre établissement' },
-      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier, recherche et filtres par service' },
+      // ⚠ RETIRÉES LE 23/09/2026 — LE NOUVEAU MODÈLE : le compte, c'est la
+      // personne. Plus de niveaux (Direction / Responsable / Salarié), plus de
+      // gestion RH dans un outil de mise en relation. « Mon poste » et « Temps
+      // de travail & congés » sortent du menu ; leurs pages et leurs données
+      // restent servies à leur adresse, le temps que les comptes existants
+      // basculent. Rien n'est supprimé : tout est réversible d'une ligne.
+      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, et où en est son dossier' },
       // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
       // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
       // Les uns sont salariés, les autres viennent en renfort.
@@ -524,7 +527,9 @@ const establishmentNav: NavSection[] = [
       // La conformité existait comme page mais n'était liée nulle part dans le
       // menu établissement : on la rend visible. Elle ferme la section — c'est
       // ce qu'on vérifie, pas ce qu'on fait tous les jours.
-      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants, identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
+      // Essentielle depuis le 23/09/2026 : c'est ici qu'une structure contrôle les
+      // pièces d'un intervenant, et c'est ce contrôle que la fiche publique affiche.
+      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants, identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
       // « Points & parrainage » n'est plus dans cette liste : comme côté
       // intervenant, l'entrée est épinglée en bas du menu, juste au-dessus du
       // bloc d'aide (voir sidebar.tsx). Même place pour tous les comptes.
@@ -549,31 +554,6 @@ const establishmentNav: NavSection[] = [
       // Pour la retirer de nouveau : supprimer la ligne qui suit, rien d'autre
       // n'en dépend.
       { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, roles: ['MEMBER'], hint: 'Vous intervenez déjà auprès de publics accompagnés : proposez les mêmes interventions à d’autres structures, en votre nom et sous votre SIRET, sans quitter votre poste' },
-      // Les regles de la convention, reportees une fois. Sans elles, les
-      // chiffrages sortent sans majoration de nuit ni de dimanche — ce qui est
-      // juridiquement exact mais rarement ce que veut l'etablissement.
-      { label: 'Temps de travail & congés', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Le planning d’équipe déjà posé, les demandes d’absence, les soldes, et les règles de votre convention : nuit, dimanche, fériés, heures supplémentaires, annualisation' , avance: true },
-      /*
-        ⚠⚠ LA MÊME PAGE, POUR LE SALARIÉ — ET C'EST UNE SECONDE ENTRÉE EXPRÈS.
-
-        L'entrée ci-dessus est réservée aux responsables ET rangée derrière
-        « Outils avancés ». Or `/dashboard/temps-de-travail` est écrite pour
-        servir aussi le salarié simple : quand `canDecide` est faux, elle lui
-        dit en toutes lettres « posez vos demandes d'absence ». Le filtre de
-        rôle s'appliquant AVANT le filtre `avance`, l'entrée disparaissait pour
-        lui à la première étape — le bouton « Outils avancés » ne s'affichait
-        donc même pas, et la palette ne la portait pas non plus. Résultat
-        mesuré le 16/09/2026 : un salarié n'avait AUCUN chemin pour poser une
-        absence, alors que l'écran existe et l'attend.
-
-        ⚠ NE PAS FUSIONNER LES DEUX EN AJOUTANT 'MEMBER' À L'ENTRÉE DU DESSUS.
-        Elle porte `avance: true` : le salarié se retrouverait avec un menu
-        « Outils avancés » d'une seule ligne, et la question qu'il se pose
-        (« comment je pose mes congés ») n'est pas celle d'un responsable qui
-        règle une convention collective. Deux publics, deux libellés, un seul
-        écran — c'est le libellé qui fait le travail.
-      */
-      { label: 'Mes congés & mes heures', href: '/dashboard/temps-de-travail', icon: Clock, roles: ['MEMBER'], hint: 'Posez vos demandes d’absence, suivez vos soldes et retrouvez le planning de l’équipe. Vos responsables décident depuis le même écran.' },
       { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],
   },
