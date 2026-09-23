@@ -19,7 +19,6 @@ import {
   Home,
   Mail,
   MessageSquareHeart,
-  KeyRound,
   Tags,
   Users,
   Building2,
@@ -587,11 +586,9 @@ const adminNav: NavSection[] = [
   {
     title: 'Gestion des utilisateurs',
     items: [
-      { label: 'Comptes & sous-comptes', href: '/admin/etablissements', icon: Building2, hint: 'Chaque compte (établissement/freelance) avec ses sous-comptes rattachés et leurs rôles' },
-      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Tous les utilisateurs et leurs rattachements (salarié, responsable, freelance)' },
+      { label: 'Comptes', href: '/admin/etablissements', icon: Building2, hint: 'Chaque compte, structure ou intervenant, et son titulaire' },
+      { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Toutes les personnes inscrites, avec leur compte' },
       { label: 'Coffre-fort conformité', href: '/admin/conformite', icon: FileCheck, hint: 'Complétude des pièces obligatoires des intervenants, agrégée par établissement' },
-      { label: 'Invitations', href: '/admin/invitations', icon: Mail, hint: 'Invitations en attente, révoquer ou renvoyer' },
-      { label: 'Rôles & droits', href: '/admin/roles', icon: KeyRound, hint: 'Matrice des rôles et permissions' },
     ],
   },
   {
@@ -611,7 +608,6 @@ const adminNav: NavSection[] = [
       // établissement, jamais une par salarié. Si cette file grossit, c'est le
       // signe qu'il faut alléger la demande, pas qu'il faut y passer ses
       // journées.
-      { label: 'Accès direction', href: '/admin/organisation', icon: Network, hint: 'Les demandes de niveau Direction : accepter ouvre la vue sur des équipes constituées par d’autres' },
       { label: 'Messagerie interne', href: '/admin/assistance', icon: LifeBuoy, hint: 'Les messages écrits depuis un compte : problèmes, questions. On y répond dans le fil.' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
