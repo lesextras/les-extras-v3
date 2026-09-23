@@ -27,7 +27,6 @@ import { IndicateursCompte } from './indicateurs-compte';
 import { SupportModal } from '@/app/_shared/modals/SupportModal';
 import { BasculeTheme } from '@/app/_shared/BasculeTheme';
 import { PastilleNotifications } from './PastilleNotifications';
-import { ACCOUNT_ROLE_LABEL } from '@/app/_shared/format';
 import { cn, initials } from '@/lib/utils';
 import type { SessionUser, SessionAccount } from '@/lib/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -127,10 +126,10 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
                   elle n'était simplement pas employée ici. « Professionnel ·
                   Direction » se lit, et se dit à voix haute. */}
               <span className="truncate text-xs text-muted-foreground">
+                {/* Plus de rôle sous le nom (23/09/2026) : le compte, c'est la
+                    personne, et « Direction » ou « Responsable » ne disent plus
+                    rien à qui les lit. Le type de compte suffit. */}
                 {libelleType(activeAccount?.type)}
-                {activeAccount?.role && activeAccount?.type === 'ESTABLISHMENT'
-                  ? ` · ${ACCOUNT_ROLE_LABEL[activeAccount.role] ?? activeAccount.role}`
-                  : ''}
               </span>
             </span>
             <ChevronsUpDown className="size-4 text-muted-foreground" />
