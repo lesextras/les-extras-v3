@@ -46,6 +46,15 @@ interface Subscription {
   status: string;
   currentPeriodEnd?: string | null;
 }
+interface Achat {
+  id: string;
+  label: string;
+  credits: number;
+  amountCents: number;
+  paidAt: string | null;
+  createdAt: string;
+  factureUrl: string | null;
+}
 interface Overview {
   credits: number;
   illimite: boolean;
@@ -56,6 +65,8 @@ interface Overview {
   subscription?: Subscription | null;
   plans: Plan[];
   packs: Pack[];
+  /** Achats réglés, avec la facture Stripe quand elle est rattachée. */
+  achats?: Achat[];
   configured: boolean;
 }
 interface Mouvement {
@@ -122,6 +133,7 @@ export default async function LexCreditsPage({
 
   const { credits, illimite, essai, offreGratuite, reportMois, subscription, plans, packs, configured } =
     resOverview.data;
+  const achats = resOverview.data.achats ?? [];
   const utilisation = resUtilisation.data;
   const retour = searchParams.paiement;
   const active = subscription?.status === "active";
@@ -311,6 +323,47 @@ export default async function LexCreditsPage({
               </Card>
             ))}
           </div>
+        </section>
+      ) : null}
+
+      {/* ── Achats et factures ── */}
+      {achats.length > 0 ? (
+        <section className="space-y-3">
+          <div>
+            <SectionTitle title="Vos achats" />
+            <p className="mt-1 text-sm text-muted-foreground">
+              Chaque pack réglé donne lieu à une facture, à télécharger ici pour votre comptabilité.
+            </p>
+          </div>
+          <Card>
+            <CardContent className="divide-y divide-border p-0">
+              {achats.map((achat) => (
+                <div
+                  key={achat.id}
+                  className="flex flex-col gap-2 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {achat.label} · {achat.credits} crédits
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {euros(achat.amountCents)} · réglé le {formatDate(achat.paidAt ?? achat.createdAt)}
+                    </p>
+                  </div>
+                  {achat.factureUrl ? (
+                    <Button asChild variant="outline" size="sm">
+                      <a href={achat.factureUrl} target="_blank" rel="noreferrer">
+                        <Receipt className="size-4" aria-hidden />
+                        Facture
+                      </a>
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Facture en cours d’émission</span>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </section>
       ) : null}
 
