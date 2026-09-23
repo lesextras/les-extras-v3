@@ -105,13 +105,7 @@ function PastilleConformite({ c }: { c: MembreListe["conformite"] }) {
   );
 }
 
-export function EquipeTable({
-  initial,
-  repartition,
-}: {
-  initial: PageMembres;
-  repartition: Repartition;
-}) {
+export function EquipeTable({ initial }: { initial: PageMembres }) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -228,7 +222,7 @@ export function EquipeTable({
                             ) : (
                               <>
                                 <Building2 className="h-3 w-3" />
-                                Salarié de la structure
+                                Membre de la structure
                               </>
                             )}
                             {m.user.job ? ` · ${m.user.job}` : null}
