@@ -452,7 +452,7 @@ export default async function LexCreditsPage({
               {[
                 "Publier des renforts et y candidater, jusqu'au contrat signé",
                 "Proposer et réserver des ateliers, de la demande à la facture",
-                "Gérer votre équipe, le planning, le pointage et la conformité",
+                "Votre agenda, vos disponibilités et le suivi des pièces de conformité",
                 "La messagerie, le catalogue, les devis et le bot d'aide",
               ].map((i) => (
                 <li key={i} className="flex gap-2 text-sm text-muted-foreground">
