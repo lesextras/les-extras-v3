@@ -707,6 +707,7 @@ export class OrganisationService {
 
     const personne = (m: (typeof membresVisibles)[number]) => ({
       membershipId: m.id,
+      userId: m.user.id,
       nom: [m.user.firstName, m.user.lastName].filter(Boolean).join(' ').trim() || 'Sans nom',
       avatarUrl: m.user.avatarUrl,
       poste: m.poste,
@@ -750,6 +751,52 @@ export class OrganisationService {
       }
     }
 
+    // LES COLLÈGUES DU NOUVEAU MODÈLE (23/09/2026) : un compte = une personne.
+    // Les autres personnes de la même structure ne sont plus des rattachements
+    // de CE compte, ce sont d'autres comptes qui ont déclaré le même SIRET.
+    // On les liste ici, avec le poste qu'elles ont déclaré — une information,
+    // aucun droit.
+    const collegues = etablissement.structure
+      ? (
+          await this.prisma.account.findMany({
+            where: {
+              structureId: etablissement.structure.id,
+              id: { not: account.id },
+              archivedAt: null,
+            },
+            select: {
+              id: true,
+              memberships: {
+                where: { role: AccountRole.OWNER, status: MembershipStatus.ACTIVE, masqueOrganigramme: false },
+                take: 1,
+                select: {
+                  id: true,
+                  poste: true,
+                  cadre: true,
+                  user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+                },
+              },
+            },
+          })
+        )
+          .flatMap((a) => a.memberships)
+          .map((m) => ({
+            membershipId: m.id,
+            userId: m.user.id,
+            nom: [m.user.firstName, m.user.lastName].filter(Boolean).join(' ').trim() || 'Sans nom',
+            avatarUrl: m.user.avatarUrl,
+            poste: m.poste,
+            cadre: m.cadre,
+            niveau: NiveauResponsabilite.SALARIE,
+            niveauValide: false,
+            rattachementVerifie: false,
+            origineVerification: null,
+            encadre: [] as string[],
+            /** Compte distinct : sa fiche interne n'est pas consultable d'ici. */
+            compteSepare: true,
+          }))
+      : [];
+
     return {
       structure: etablissement.structure,
       etablissement: {
@@ -776,6 +823,7 @@ export class OrganisationService {
         };
       }),
       sansService,
+      collegues,
       /** Ce que je vois, et pourquoi — affiché en clair en tête de l'écran. */
       perimetre: {
         niveau: membre.niveau,
