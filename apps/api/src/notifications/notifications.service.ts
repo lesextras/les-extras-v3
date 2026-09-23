@@ -24,6 +24,9 @@ import { MailService } from '../common/mail/mail.service';
  *    pour la personne, ou destiné à l'administration.
  */
 const TYPES_PAR_COURRIEL = new Set([
+  // Le rappel hebdomadaire du dossier de conformité : la cloche seule ne
+  // suffit pas à quelqu'un qui n'ouvre son espace qu'une fois par mois.
+  'DOSSIER_RAPPEL',
   'MISSION_CANDIDATE',
   'MISSION_CLOSED',
   'MISSION_RECURRENTE',
