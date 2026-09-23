@@ -52,7 +52,7 @@ export class ConformiteScheduler {
     const comptes = await this.prisma.account.findMany({
       where: {
         type: AccountType.FREELANCE,
-        services: { some: { status: ServiceStatus.PUBLISHED, archivedAt: null } },
+        services: { some: { status: ServiceStatus.PUBLISHED } },
         owner: {
           emailVerified: true,
           status: { notIn: [UserStatus.BANNED, UserStatus.ANONYMIZED] },
