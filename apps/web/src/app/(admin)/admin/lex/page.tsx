@@ -147,8 +147,7 @@ export default async function AdminLexPage() {
       </section>
 
       <p className="text-xs text-muted-foreground">
-        L&apos;accès LEX illimité s&apos;accorde compte par compte depuis «&nbsp;Comptes &amp;
-        sous-comptes&nbsp;» (bouton LEX&nbsp;∞). Les recharges quotidiennes des abonnés et des
+        L&apos;accès LEX illimité s&apos;accorde compte par compte depuis «&nbsp;Comptes&nbsp;» (bouton LEX&nbsp;∞). Les recharges quotidiennes des abonnés et des
         essais tournent chaque matin à 6&nbsp;h.
       </p>
     </div>
