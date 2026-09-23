@@ -13,13 +13,16 @@
 // Les types ci-dessous restent le miroir de /organisation/organigramme, qui
 // renvoie encore les regroupements de l'ancien modèle ; on les aplatit ici.
 import * as React from 'react';
-import { Building2, Landmark, Users } from 'lucide-react';
+import Link from 'next/link';
+import { Building2, ChevronRight, Landmark, Users } from 'lucide-react';
 
 type Niveau = 'DIRECTION' | 'RESPONSABLE' | 'SALARIE';
 type Origine = 'INVITATION' | 'RESPONSABLE' | 'DIRECTION' | 'LES_EXTRAS';
 
 export interface PersonneOrg {
   membershipId: string;
+  /** L'identifiant de la personne : c'est lui qui ouvre sa fiche. */
+  userId?: string;
   nom: string;
   avatarUrl: string | null;
   poste: string | null;
@@ -29,6 +32,8 @@ export interface PersonneOrg {
   rattachementVerifie: boolean;
   origineVerification: Origine | null;
   encadre: string[];
+  /** Autre compte, même SIRET : sa fiche interne n'est pas consultable d'ici. */
+  compteSepare?: boolean;
 }
 
 export interface ServiceOrg {
@@ -53,6 +58,8 @@ export interface DonneesOrganigramme {
   direction: PersonneOrg[];
   services: ServiceOrg[];
   sansService: PersonneOrg[];
+  /** Les autres comptes qui ont déclaré la même structure (même SIRET). */
+  collegues?: PersonneOrg[];
   perimetre: {
     niveau: Niveau;
     niveauValide: boolean;
@@ -82,6 +89,7 @@ function aplatir(donnees: DonneesOrganigramme): PersonneOrg[] {
     s.membres.forEach(ajouter);
   });
   donnees.sansService.forEach(ajouter);
+  (donnees.collegues ?? []).forEach(ajouter);
   return [...vus.values()].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
 }
 
@@ -159,6 +167,15 @@ export function Organigramme({ donnees }: { donnees: DonneesOrganigramme }) {
                     {p.cadre ? ' · cadre' : ''}
                   </p>
                 </div>
+                {p.userId && !p.compteSepare ? (
+                  <Link
+                    href={`/dashboard/equipe/${p.userId}`}
+                    className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    Voir la fiche
+                    <ChevronRight className="size-3.5" aria-hidden />
+                  </Link>
+                ) : null}
               </li>
             ))}
           </ul>
