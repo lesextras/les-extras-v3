@@ -22,10 +22,7 @@ import { BasculeNotifications } from "../../../_shared/BasculeNotifications";
 import { ProfileForm } from "../../../_shared/ProfileForm";
 import { ChangerEmail } from "../../../_shared/ChangerEmail";
 import { CvManager } from "../../../_shared/CvManager";
-import { UnitsManager } from "../../../_shared/UnitsManager";
 import { FacturationSettings, type IdentiteFacturation } from "../../../_shared/FacturationSettings";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
 import type { Profile } from "../../../_shared/types";
 
@@ -41,7 +38,8 @@ export default async function AccountPage({
   const isFreelance = session.account.type === "FREELANCE";
   // Lien profond ?onglet=services|parametres|profil : on ouvre le bon onglet.
   const ongletDemande = ongletDepuisUrl(searchParams?.onglet);
-  const onglet = ongletDemande === "services" && isFreelance ? "profile" : ongletDemande;
+  // « ?onglet=services » (anciens liens) retombe sur le profil.
+  const onglet = ongletDemande === "services" ? "profile" : ongletDemande;
   const canManage = session.account.role === "OWNER" || session.account.role === "ADMIN";
   const accountId = session.account.id;
 
@@ -83,7 +81,6 @@ export default async function AccountPage({
       <OngletsCompte defaultValue={onglet} className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Profil</TabsTrigger>
-          {!isFreelance ? <TabsTrigger value="services">Services</TabsTrigger> : null}
           <TabsTrigger value="settings">Paramètres</TabsTrigger>
         </TabsList>
 
@@ -111,22 +108,9 @@ export default async function AccountPage({
           ) : null}
         </TabsContent>
 
-        <TabsContent value="services" className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Services et unités</h2>
-              <p className="max-w-xl text-sm text-muted-foreground">
-                Découpez votre établissement en services. C&apos;est ce découpage qui permet
-                à chaque chef de service de ne voir que son équipe, son planning et ses
-                dossiers : plutôt que la structure entière.
-              </p>
-            </div>
-            <Button asChild variant="outline" className="shrink-0">
-              <Link href="/dashboard/equipe">Gérer l&apos;équipe</Link>
-            </Button>
-          </div>
-          {!isFreelance ? <UnitsManager accountId={accountId} canManage={canManage} /> : null}
-        </TabsContent>
+        {/* L'onglet « Services et unités » a disparu le 23/09/2026 : les
+            sous-comptes par service sont archivés. La structure (SIRET) et
+            l'organigramme remplacent le découpage. */}
 
         <TabsContent value="settings" className="space-y-6">
           <FacturationSettings
