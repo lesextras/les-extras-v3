@@ -62,7 +62,7 @@ export default async function DashboardPage() {
 
   const isEstablishment = session.account.type === "ESTABLISHMENT";
 
-  const [moi, stats, missions, bookings, services, repartition] = await Promise.all([
+  const [moi, stats, missions, bookings, services] = await Promise.all([
     // LE PRÉNOM NE VIENT PAS DU JETON.
     //
     // Le jeton de session ne porte pas `firstName` : `session.user.firstName`
@@ -77,13 +77,6 @@ export default async function DashboardPage() {
     fetchApi<Mission[]>(session, "/missions?scope=account&take=4"),
     fetchApi<Booking[]>(session, "/bookings?scope=account&take=5"),
     fetchApi<Service[]>(session, "/services?scope=account&take=4"),
-    // La répartition par service dit deux choses d'un coup : combien de
-    // personnes sont rattachées, et si l'établissement est découpé. Ce sont
-    // exactement les deux gestes qui rendent l'outil utilisable — sans eux,
-    // le planning n'a personne dedans et le filtre par service reste vide.
-    isEstablishment
-      ? fetchApi<{ total: number; services: { id: string }[] }>(session, "/memberships/repartition")
-      : Promise.resolve({ data: undefined, error: undefined }),
   ]);
 
   // Demandes de rattachement envoyées par ce compte « salarié » : leur état
@@ -115,6 +108,10 @@ export default async function DashboardPage() {
           fetchApi<{ pret?: boolean }>(session, "/paiements/stripe/etat"),
         ])
       : null;
+  // L'établissement aussi lit son compte : la structure y est, ou n'y est pas.
+  const compteEtab = isEstablishment
+    ? (await fetchApi<{ structureId?: string | null; siret?: string | null }>(session, `/accounts/${session.account.id}`)).data
+    : undefined;
   const dossier = guide?.[0].data?.completeness;
   const compte = guide?.[1].data;
   const interets = guide?.[2].data?.interets ?? [];
@@ -177,8 +174,6 @@ export default async function DashboardPage() {
         // d'abord son découpage, puis ses gens, et seulement ensuite un
         // renfort — publier un besoin avant d'avoir une équipe, c'est se
         // priver de la diffusion en cascade qui fait tout l'intérêt.
-        const nbServices = repartition.data?.services.length ?? 0;
-        const nbMembres = repartition.data?.total ?? 0;
         const steps = isEstablishment
           ? [
               {
@@ -186,15 +181,13 @@ export default async function DashboardPage() {
                 label: "Complétez votre profil",
                 href: "/dashboard/account",
               },
+              // Plus de « services » ni d'« équipe » à constituer (23/09/2026) :
+              // les sous-comptes sont archivés et chaque collègue a son compte.
+              // La structure (SIRET) est ce qui rend le devis et la facture justes.
               {
-                done: nbServices > 0,
-                label: "Découpez votre établissement en services",
-                href: "/dashboard/account?onglet=services",
-              },
-              {
-                done: nbMembres > 1,
-                label: "Invitez votre équipe",
-                href: "/dashboard/equipe",
+                done: Boolean(compteEtab?.structureId || compteEtab?.siret),
+                label: "Rattachez votre structure (SIRET)",
+                href: "/dashboard/account",
               },
               {
                 done: hasCatalog,
