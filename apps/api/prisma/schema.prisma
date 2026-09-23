@@ -2503,6 +2503,9 @@ model ComplianceDocument {
   issuedAt  DateTime?
   expiresAt DateTime?
   notes     String?
+  /// Note de pré-contrôle automatique (lecture du fichier) et sa date. Jamais une validation.
+  preControle   Json?
+  preControleLe DateTime?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
