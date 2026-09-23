@@ -45,6 +45,15 @@ import { BillingModule } from '../billing/billing.module';
     ExtractionService,
     ExportService,
   ],
-  exports: [AssistantService, PseudonymiseurService, ExportService],
+  // ClaudeService, ExtractionService et MOTEUR_LEX sortent pour le pré-contrôle
+  // des pièces (ConformiteModule) : même moteur, même lecture, pas de doublon.
+  exports: [
+    AssistantService,
+    PseudonymiseurService,
+    ExportService,
+    ClaudeService,
+    ExtractionService,
+    MOTEUR_LEX,
+  ],
 })
 export class AssistantModule {}

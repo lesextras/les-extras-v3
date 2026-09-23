@@ -115,4 +115,74 @@ export class ClaudeService {
     while (fil.length && fil[0].role !== 'user') fil.shift();
     return fil;
   }
+
+  /**
+   * LECTURE D'UNE PIÈCE (image ou PDF) — pour le pré-contrôle des documents.
+   *
+   * Même appel que `completer`, mais le message porte le fichier lui-même,
+   * encodé en base64, avant la consigne. Claude est le seul moteur de la
+   * maison à lire une image ; il n'y a donc pas de repli sur un autre
+   * fournisseur ici : sans clé, l'appelant se rabat sur le contrôle humain.
+   */
+  async lireDocument(options: {
+    system: string;
+    consigne: string;
+    media: { type: 'image' | 'document'; mimeType: string; base64: string };
+    maxTokens?: number;
+  }): Promise<string> {
+    if (!this.cle) {
+      throw new ServiceUnavailableException(
+        "La lecture automatique n'est pas activée sur cette plateforme (clé API manquante).",
+      );
+    }
+    const reponse = await fetchMoteur(
+      `${this.base}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'x-api-key': this.cle,
+          'anthropic-version': this.version,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-5',
+          max_tokens: options.maxTokens ?? 800,
+          temperature: 0,
+          system: options.system,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: options.media.type,
+                  source: {
+                    type: 'base64',
+                    media_type: options.media.mimeType,
+                    data: options.media.base64,
+                  },
+                },
+                { type: 'text', text: options.consigne },
+              ],
+            },
+          ],
+        }),
+      },
+      'Anthropic',
+    );
+    if (!reponse.ok) {
+      const corps = await reponse.text().catch(() => '');
+      this.logger.error(`Claude (lecture) ${reponse.status}: ${corps.slice(0, 300)}`);
+      throw new ServiceUnavailableException('Le service de lecture est indisponible.', {
+        cause: new Error(`Anthropic ${reponse.status}: ${corps.slice(0, 300)}`),
+      });
+    }
+    const data = (await reponse.json()) as { content?: { type?: string; text?: string }[] };
+    const contenu = (data.content ?? [])
+      .filter((bloc) => bloc?.type === 'text')
+      .map((bloc) => bloc.text ?? '')
+      .join('')
+      .trim();
+    if (!contenu) throw new ServiceUnavailableException('Réponse vide du service de lecture.');
+    return contenu;
+  }
 }
