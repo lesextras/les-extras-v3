@@ -5,7 +5,7 @@ import { ecoleDuSlug, moiSurEcole } from '../../_espace/donnees';
 import { Connexion } from './Connexion';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Espace apprenant', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Espace apprenant' }, robots: { index: false, follow: false } };
 
 /**
  * `/ecole/<slug>/connexion` : LA PORTE DE L'ESPACE APPRENANT.

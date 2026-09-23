@@ -57,7 +57,7 @@ async function chargerSeo(slug: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const [v, s] = await Promise.all([charger(slug), chargerSeo(slug)]);
-  if (!v) return { title: 'École introuvable' };
+  if (!v) return { title: { absolute: 'École introuvable' } };
   // Le référencement réglé par l'école passe avant ce qu'on déduit de sa page.
   const titre = s?.seo.titre || v.ecole.nom;
   const description = s?.seo.description || v.ecole.sousTitre || undefined;

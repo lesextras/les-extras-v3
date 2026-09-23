@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const e = await charger(slug);
   return {
-    title: e ? `Conditions et confidentialité · ${e.nom}` : 'École introuvable',
+    title: { absolute: e ? `Conditions et confidentialité · ${e.nom}` : 'École introuvable' },
     description: e ? `Conditions d'utilisation, conditions de vente, mentions légales et politique de confidentialité de ${e.nom}.` : undefined,
     alternates: { canonical: `/ecole/${slug}/legal` },
   };

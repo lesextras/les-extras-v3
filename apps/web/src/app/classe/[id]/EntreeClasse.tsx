@@ -92,7 +92,7 @@ export function EntreeClasse({ classe, animateur, jeton }: { classe: ClassePubli
       <main className="mx-auto max-w-[760px] px-4 py-10">
         <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#5E7A6E]">Classe virtuelle{animateur ? ' · animateur' : ''}</p>
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#12312A]">{classe.titre}</h1>
-        <p className="mt-2 text-lg capitalize">{quand(classe.debut)}</p>
+        <p className="mt-2 text-lg first-letter:uppercase">{quand(classe.debut)}</p>
         {classe.formation ? <p className="mt-1 text-[15px] text-[#5E7A6E]">Formation : {classe.formation}</p> : null}
         {classe.description ? <p className="mt-4 whitespace-pre-line leading-relaxed">{classe.description}</p> : null}
 
@@ -115,7 +115,7 @@ export function EntreeClasse({ classe, animateur, jeton }: { classe: ClassePubli
             <p>Cette classe est terminée.</p>
           ) : classe.etat === 'TROP_TOT' && !animateur ? (
             <p className="leading-relaxed">
-              La salle ouvre un quart d&apos;heure avant le début, <strong className="capitalize">{quand(classe.ouvertureLe)}</strong>. Revenez sur cette page à ce moment-là.
+              La salle ouvre un quart d&apos;heure avant le début, <strong>{quand(classe.ouvertureLe)}</strong>. Revenez sur cette page à ce moment-là.
             </p>
           ) : (
             <form onSubmit={entrer} className="grid gap-4">

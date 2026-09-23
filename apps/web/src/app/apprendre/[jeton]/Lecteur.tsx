@@ -279,7 +279,7 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
                   return (
                     <li key={c.id} className="rounded-lg px-2 py-1.5">
                       <p className="text-[15px] font-bold text-[#12312A]">{c.titre}</p>
-                      <p className="text-sm capitalize text-[#5E7A6E]">
+                      <p className="text-sm text-[#5E7A6E] first-letter:uppercase">
                         {new Date(c.debut).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}
                       </p>
                       {href ? (

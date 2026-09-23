@@ -7,7 +7,7 @@ import { ecoleDuSlug, moiSurEcole } from '../../../_espace/donnees';
 import { FilCommunaute, type Publication } from '../../../_espace/FilCommunaute';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Communauté', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Communauté' }, robots: { index: false, follow: false } };
 
 export default async function PageEspaceCommunaute({ params }: { params: Promise<{ slug: string; espaceId: string }> }) {
   const { slug, espaceId } = await params;

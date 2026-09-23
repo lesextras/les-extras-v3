@@ -5,7 +5,7 @@ import { Lecteur, type CoursSuivi } from './Lecteur';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { title: 'Mon cours', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Mon cours' }, robots: { index: false, follow: false } };
 
 /**
  * SUIVRE UN COURS.

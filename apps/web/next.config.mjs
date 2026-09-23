@@ -416,7 +416,9 @@ const nextConfig = {
             //
             // On n'ouvre que les trois domaines nécessaires, et rien d'autre :
             // le reste de la politique demeure aussi fermé qu'avant.
-            "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.googleadservices.com https://news.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net; frame-src https://www.youtube-nocookie.com https://td.doubleclick.net https://news.google.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+            // `'self'` dans frame-src : l'aperçu de la carte à intégrer
+            // (/academie/integrations) encadre une page du site lui-même.
+            "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.googleadservices.com https://news.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.les-extras.fr https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net; frame-src 'self' https://www.youtube-nocookie.com https://td.doubleclick.net https://news.google.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
           },
         ],
       },

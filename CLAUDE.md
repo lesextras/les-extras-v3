@@ -5565,3 +5565,64 @@ sur la rangée des deux repères, qui est un conteneur flex.
   boucle en JavaScript plutôt qu'avec des `wait` qui font déborder le batch.
 - ⚠ Un `return` en tête de `javascript_tool` rend `undefined` : envelopper dans
   `await (async()=>{ … })()`.
+
+---
+
+## « PILOTER MON ACADÉMIE » À PARITÉ TEACHIZY — 24/09/2026
+
+Commit `e8e6ed9` (79 fichiers). Demande de Siham : l'espace apprenant, les
+devoirs, les e-mails automatiques, la durée d'accès, le calendrier, la
+communauté, les intégrations externes, les classes virtuelles intégrées, les
+paramètres (domaine, référencement, légal + DPA, API, partage), le
+glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
+**Le compte « les extras » garde son nom** : chaque compte a le sien.
+
+### Où ça vit
+
+| | |
+|---|---|
+| API | `apps/api/src/ecole/suite/` (7 services, 2 contrôleurs, garde de clé d'API) |
+| Migration | `20260924080000_academie_parite_teachizy` (15 tables, aucun `Account` touché) |
+| Espace apprenant | `/ecole/<slug>/{connexion,mot-de-passe,espace,calendrier,communaute,legal}` |
+| Relais de session apprenant | `app/api/apprenant/[...path]/route.ts` (cookie httpOnly `pilote_apprenant`) |
+| Classe à plusieurs | `/classe/<id>` (`SalleClasse.tsx`, LiveKit, fil de discussion non conservé) |
+| Cartes à intégrer | `/integration/{cours,pack}/<slug>` (iframe, `frame-ancestors *`) |
+| Académie | `/academie/{devoirs,emails,calendrier,communaute,classes-virtuelles,integrations}` et `/academie/parametres/{domaine,referencement,legal,api}` |
+| Légal de Piloter | `pilote.toulali.fr/legal` et `/legal/dpa` (`app/association/legal/`) |
+
+### ⚠ CE QU'IL NE FAUT PAS DÉFAIRE
+
+- **Une leçon DEVOIR ne se coche pas par l'apprenant** : `avancer()` refuse
+  sans rendu VALIDE, et le lecteur cache « J'ai terminé » sur ce type. C'est la
+  correction (`PATCH /ecole/devoirs/:id` VALIDE) qui fait avancer.
+- **La durée d'accès court de l'inscription** (`ReglageCours.dureeAccesJours`,
+  nul = illimité). Un accès échu répond 403 au lecteur, qui affiche « Accès
+  terminé » au lieu d'un 404.
+- **Les e-mails ne rattrapent pas le passé** : `MISE_EN_SERVICE` borne les
+  constats d'abandon, de décrochage et d'expiration, sinon la première nuit
+  écrirait à tous les inscrits historiques. Chaque envoi a une clé unique
+  (`EmailProgramme.cle`) : un doublon est impossible, pas seulement improbable.
+- **La communauté masque, elle n'efface pas** côté modération ; seule la
+  suppression explicite efface.
+- **La clé d'API n'est montrée qu'une fois** ; seule son empreinte SHA-256 est
+  gardée. Dix clés actives au plus.
+- **Le domaine personnalisé demande DEUX gestes hors code** : l'enregistrement
+  DNS chez l'école, PUIS l'ajout du domaine dans Coolify (app web) pour le
+  certificat. Le middleware sert l'école dès que l'API reconnaît l'hôte.
+- **La visio avait un défaut antérieur** : la `Permissions-Policy` globale
+  coupait caméra et micro sur `/visio`. `next.config.mjs` l'ouvre (self) sur
+  `/classe` et `/visio` seulement.
+- **Les textes légaux et le DPA sont des modèles à faire relire par un
+  juriste** : ils décrivent ce que fait le code (sous-traitants Hostinger,
+  LiveKit ; Stripe contracté par l'école), rien de plus.
+
+### Pièges d'outillage
+
+- ⚠ **`file_upload` refuse un nom de fichier trop long** (la migration aplatie,
+  81 caractères) avec le message trompeur « only files this session is allowed
+  to read ». Copier sous un nom court (`mig.sql`) et le rebaptiser dans
+  l'hameçon. Et **pas de sous-dossier** sous `/mnt/user-data/uploads/`.
+- ⚠ **Un `javascript_tool` qui attend plus de 45 s gèle l'onglet GitHub** et
+  l'envoi des manifestes s'arrête (bloqué à 6 sur 80). Onglet neuf, et attendre
+  avec des `wait` de 10 s dans le batch, jamais dans le script.
+- Le build Next a `typedRoutes` : les `href` de `Link` sont typés.

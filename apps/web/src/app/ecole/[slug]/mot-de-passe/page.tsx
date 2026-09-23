@@ -5,7 +5,7 @@ import { ecoleDuSlug } from '../../_espace/donnees';
 import { ChoisirMotDePasse } from './ChoisirMotDePasse';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Choisir mon mot de passe', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Choisir mon mot de passe' }, robots: { index: false, follow: false } };
 
 export default async function PageMotDePasse({
   params,

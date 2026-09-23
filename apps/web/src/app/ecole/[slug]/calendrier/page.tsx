@@ -6,7 +6,7 @@ import { CoqueEcole, formaterDateHeure } from '../../_espace/coque';
 import { ecoleDuSlug, moiSurEcole } from '../../_espace/donnees';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Calendrier', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Calendrier' }, robots: { index: false, follow: false } };
 
 interface Element {
   genre: 'evenement' | 'classe' | 'lecon';
@@ -48,7 +48,7 @@ export default async function PageCalendrier({ params }: { params: Promise<{ slu
     const g = GENRE[e.genre];
     return (
       <li key={`${e.genre}-${e.id}`} className="flex flex-wrap items-start gap-4 rounded-2xl border border-[#DDEBE4] bg-white p-5">
-        <div className="min-w-[170px] text-[15px] font-bold capitalize text-[#12312A]">{formaterDateHeure(e.debut)}</div>
+        <div className="min-w-[170px] text-[15px] font-bold text-[#12312A] first-letter:uppercase">{formaterDateHeure(e.debut)}</div>
         <div className="min-w-0 flex-1">
           <span className="rounded-full px-2.5 py-0.5 text-xs font-extrabold" style={{ backgroundColor: g.fond, color: g.texte }}>
             {g.libelle}

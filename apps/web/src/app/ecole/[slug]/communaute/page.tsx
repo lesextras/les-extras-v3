@@ -6,7 +6,7 @@ import { CoqueEcole } from '../../_espace/coque';
 import { ecoleDuSlug, moiSurEcole } from '../../_espace/donnees';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Communauté', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Communauté' }, robots: { index: false, follow: false } };
 
 interface Accueil {
   description: string | null;

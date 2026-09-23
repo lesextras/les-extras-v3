@@ -4,7 +4,7 @@ import { fetchPublic } from '../../_shared/server';
 import { EntreeClasse, type ClassePublique } from './EntreeClasse';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Classe virtuelle', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Classe virtuelle' }, robots: { index: false, follow: false } };
 
 /**
  * `/classe/<id>` : LA CLASSE VIRTUELLE INTÉGRÉE DE L'ÉCOLE.

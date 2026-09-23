@@ -96,7 +96,7 @@ export function Calendrier({ initiaux, visible: visibleInitial, cours }: { initi
     <li key={e.id} className={`${CARTE} flex flex-wrap items-start gap-3 p-4`}>
       <div className="min-w-[220px] flex-1">
         <p className="text-[16px] font-extrabold text-[#12312A]">{e.titre}</p>
-        <p className="text-[14px] capitalize text-[#5E7A6E]">{quand(e.debut)}</p>
+        <p className="text-[14px] text-[#5E7A6E] first-letter:uppercase">{quand(e.debut)}</p>
         {e.lieu ? <p className="text-[14px] text-[#5E7A6E]">{e.lieu}</p> : null}
         {e.coursIds.length ? (
           <p className="text-[13px] text-[#5E7A6E]">Pour : {e.coursIds.map((id) => cours.find((c) => c.id === id)?.titre ?? '').filter(Boolean).join(', ')}</p>

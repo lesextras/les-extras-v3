@@ -4,7 +4,7 @@ import { fetchPublic } from '../../../_shared/server';
 import { CarteIntegree } from '../../_carte/Carte';
 
 export const revalidate = 300;
-export const metadata: Metadata = { title: 'Pack', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: 'Pack' }, robots: { index: false, follow: false } };
 
 interface CartePack {
   titre: string;
