@@ -39,16 +39,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { apiRequest } from "@/lib/api";
 import { EmptyState } from "./ui";
-import { ACCOUNT_ROLE_LABEL, fullName, initials } from "./format";
+import { fullName, initials } from "./format";
 
 export interface MembreListe {
   id: string;
@@ -124,8 +117,10 @@ export function EquipeTable({
 
   const [donnees, setDonnees] = useState(initial);
   const [q, setQ] = useState(params.get("q") ?? "");
-  const [service, setService] = useState(params.get("orgUnitId") ?? TOUS);
-  const [role, setRole] = useState(params.get("role") ?? TOUS);
+  // Les filtres service et rôle ne sont plus proposés ; l'adresse peut encore
+  // les porter (lien partagé), on la respecte sans les afficher.
+  const service = params.get("orgUnitId") ?? TOUS;
+  const role = params.get("role") ?? TOUS;
   const [chargement, setChargement] = useState(false);
   const premierRendu = useRef(true);
 
@@ -181,36 +176,8 @@ export function EquipeTable({
             aria-label="Rechercher une personne"
           />
         </div>
-        <Select value={service} onValueChange={setService}>
-          <SelectTrigger className="sm:w-56">
-            <SelectValue placeholder="Tous les services" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TOUS}>Tous les services ({repartition.total})</SelectItem>
-            {repartition.services.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name} ({s.membres})
-              </SelectItem>
-            ))}
-            {repartition.sansService > 0 ? (
-              <SelectItem value="sans-service">
-                Sans service ({repartition.sansService})
-              </SelectItem>
-            ) : null}
-          </SelectContent>
-        </Select>
-        <Select value={role} onValueChange={setRole}>
-          <SelectTrigger className="sm:w-48">
-            <SelectValue placeholder="Tous les rôles" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TOUS}>Tous les rôles</SelectItem>
-            <SelectItem value="OWNER">Direction</SelectItem>
-            <SelectItem value="ADMIN">Administration</SelectItem>
-            <SelectItem value="MANAGER">Chef de service</SelectItem>
-            <SelectItem value="MEMBER">Équipe</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Plus de filtres « service » ni « rôle » (23/09/2026) : les sous-comptes
+            sont archivés et les niveaux démontés. La recherche par nom suffit. */}
       </div>
 
       {donnees.items.length === 0 ? (
@@ -230,8 +197,6 @@ export function EquipeTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>Personne</TableHead>
-                  <TableHead className="hidden md:table-cell">Service</TableHead>
-                  <TableHead className="hidden lg:table-cell">Rôle</TableHead>
                   <TableHead>Dossier</TableHead>
                   <TableHead className="text-right">Fiche</TableHead>
                 </TableRow>
@@ -270,18 +235,6 @@ export function EquipeTable({
                           </p>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {m.orgUnit ? (
-                        <Badge variant="soft">{m.orgUnit.name}</Badge>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Non rattaché</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <span className="text-sm text-foreground">
-                        {ACCOUNT_ROLE_LABEL[m.role] ?? m.role}
-                      </span>
                     </TableCell>
                     <TableCell>
                       <PastilleConformite c={m.conformite} />
