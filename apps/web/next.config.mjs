@@ -346,7 +346,12 @@ const nextConfig = {
       // « Congés & compteurs » a fusionné avec « Temps de travail » le
       // 12/08/2026 : c'était le même sujet à deux adresses. Les liens déjà
       // envoyés par courriel continuent de fonctionner.
-      { source: '/dashboard/conges', destination: '/dashboard/temps-de-travail', permanent: true },
+      // Le 23/09/2026, « Temps de travail & congés » (gestion RH interne) sort
+      // du produit : Les Extras met en relation, il ne gère pas la paie ni les
+      // congés des équipes. L'agenda reste l'endroit où l'on voit qui est là.
+      { source: '/dashboard/conges', destination: '/dashboard/planning', permanent: true },
+      { source: '/dashboard/temps-de-travail', destination: '/dashboard/planning', permanent: true },
+      { source: '/dashboard/mon-poste', destination: '/dashboard/account', permanent: true },
       // DEUX PAGES QUI RÉPONDAIENT 200 SUR DU VIDE.
       //
       // Elles appelaient `redirect()` depuis un composant prérendu : Next ne
