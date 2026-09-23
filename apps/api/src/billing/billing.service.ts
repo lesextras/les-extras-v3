@@ -185,6 +185,48 @@ export class BillingService {
     return json;
   }
 
+  /** Lecture Stripe (GET), même authentification que `stripe()`. */
+  private async stripeGet(path: string) {
+    const res = await fetch(`${STRIPE_API}${path}`, {
+      headers: { Authorization: `Bearer ${this.secretKey}` },
+    });
+    const json = (await res.json()) as Record<string, unknown> & {
+      error?: { message?: string };
+    };
+    if (!res.ok) {
+      this.logger.error(`Stripe ${path} → ${res.status}: ${json.error?.message}`);
+      throw new BadRequestException(json.error?.message ?? 'Erreur Stripe inconnue.');
+    }
+    return json;
+  }
+
+  /**
+   * Rattache la facture Stripe à l'achat de crédits, une fois payé.
+   *
+   * Hors transaction et jamais bloquant : les crédits sont déjà sur le
+   * compte ; si Stripe ne répond pas, la facture reste consultable depuis
+   * le tableau de bord Stripe et l'achat garde son statut PAID.
+   */
+  private async joindreFacture(stripeSessionId: string, invoiceId: string | null) {
+    if (!invoiceId) return;
+    try {
+      const facture = (await this.stripeGet(`/invoices/${invoiceId}`)) as {
+        hosted_invoice_url?: string | null;
+      };
+      await this.prisma.creditPurchase.update({
+        where: { stripeSessionId },
+        data: {
+          stripeInvoiceId: invoiceId,
+          factureUrl: facture.hosted_invoice_url ?? null,
+        },
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Facture ${invoiceId} non rattachée à ${stripeSessionId}: ${err instanceof Error ? err.message : err}`,
+      );
+    }
+  }
+
 
   /**
    * Catalogue d'abonnements. `pour` indique à qui l'offre s'adresse : le
@@ -220,6 +262,27 @@ export class BillingService {
       }),
       this.prisma.subscription.findUnique({ where: { accountId } }),
     ]);
+    // Les achats réglés, avec leur facture Stripe quand elle a pu être
+    // rattachée : la structure retrouve son justificatif sans quitter la page.
+    const achats = (
+      await this.prisma.creditPurchase.findMany({
+        where: { accountId, status: 'PAID' },
+        orderBy: { createdAt: 'desc' },
+        take: 12,
+        select: {
+          id: true,
+          packId: true,
+          credits: true,
+          amountCents: true,
+          paidAt: true,
+          createdAt: true,
+          factureUrl: true,
+        },
+      })
+    ).map((a) => ({
+      ...a,
+      label: CREDIT_PACKS.find((p) => p.id === a.packId)?.label ?? a.packId,
+    }));
     return {
       credits: account.credits,
       illimite: account.isMember,
@@ -231,6 +294,7 @@ export class BillingService {
       subscription,
       plans: this.listPlans(),
       packs: this.listPacks(),
+      achats,
       configured: Boolean(this.config.get<string>('STRIPE_SECRET_KEY')),
     };
   }
@@ -419,6 +483,11 @@ export class BillingService {
       'metadata[accountId]': accountId,
       'metadata[packId]': pack.id,
       client_reference_id: accountId,
+      // Une facture Stripe est émise au paiement : c'est elle qui vaut
+      // justificatif comptable pour la structure. Son lien est rattaché à
+      // l'achat par le webhook, puis affiché sur la page LEX.
+      'invoice_creation[enabled]': 'true',
+      'invoice_creation[invoice_data][description]': `LEX, ${pack.label} (${pack.credits} générations), Les Extras`,
     });
 
     await this.prisma.creditPurchase.create({
@@ -486,6 +555,7 @@ export class BillingService {
           payment_status?: string;
           customer?: string;
           subscription?: string;
+          invoice?: string | null;
           status?: string;
           current_period_end?: number;
           metadata?: Record<string, string>;
@@ -691,7 +761,7 @@ export class BillingService {
         });
         await tx.creditPurchase.update({
           where: { id: purchase.id },
-          data: { status: 'PAID' },
+          data: { status: 'PAID', paidAt: new Date() },
         });
         await tx.creditLedger.create({
           data: {
@@ -705,6 +775,7 @@ export class BillingService {
           `LEX ${purchase.packId} payé : +${purchase.credits} crédits pour ${purchase.accountId}`,
         );
       });
+      await this.joindreFacture(session.id, session.invoice ?? null);
       return { received: true };
     }
 
