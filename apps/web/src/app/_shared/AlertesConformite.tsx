@@ -20,18 +20,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { apiRequest } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { EmptyState, StatCard } from "./ui";
-import { ACCOUNT_ROLE_LABEL, fullName, initials } from "./format";
-import type { Repartition } from "./EquipeTable";
+import { fullName, initials } from "./format";
 
 const TOUS = "__tous__";
 
@@ -60,16 +52,11 @@ export interface PageAlertes {
   requiredTypes: string[];
 }
 
-export function AlertesConformite({
-  initial,
-  repartition,
-}: {
-  initial: PageAlertes;
-  repartition: Repartition;
-}) {
+export function AlertesConformite({ initial }: { initial: PageAlertes }) {
   const { toast } = useToast();
   const [donnees, setDonnees] = useState(initial);
-  const [service, setService] = useState(TOUS);
+  // Plus de filtre par service (23/09/2026) : la liste couvre toute la structure.
+  const service = TOUS;
   const [chargement, setChargement] = useState(false);
   const premierRendu = useRef(true);
 
@@ -135,19 +122,6 @@ export function AlertesConformite({
         <h2 className="text-sm font-medium text-muted-foreground">
           Les dossiers à traiter, du plus urgent au moins urgent
         </h2>
-        <Select value={service} onValueChange={setService}>
-          <SelectTrigger className="sm:w-64">
-            <SelectValue placeholder="Tous les services" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TOUS}>Tous les services</SelectItem>
-            {repartition.services.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name} ({s.membres})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {donnees.items.length === 0 ? (
@@ -179,9 +153,7 @@ export function AlertesConformite({
                       {fullName(l.user.firstName, l.user.lastName) || l.user.email}
                     </Link>
                     <p className="truncate text-xs text-muted-foreground">
-                      {ACCOUNT_ROLE_LABEL[l.membershipRole] ?? l.membershipRole}
-                      {l.orgUnit ? ` · ${l.orgUnit.name}` : " · non rattaché"}
-                      {l.user.job ? ` · ${l.user.job}` : ""}
+                      {l.user.job ?? l.user.email}
                     </p>
                   </div>
                 </div>
