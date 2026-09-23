@@ -23,6 +23,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { Field } from "./form-fields";
 import { FileUpload, type FichierDepose } from "./FileUpload";
+import { PreControleNote, type NotePreControle } from "./PreControleNote";
 
 import {
   TYPE_LABEL,
@@ -46,6 +47,9 @@ export interface DocLigne {
   expiresAt?: string | null;
   notes?: string | null;
   file?: { id: string; originalName: string; mimeType: string; size: number } | null;
+  /** Note de lecture automatique : ce que la structure verra avant de valider. */
+  preControle?: NotePreControle | null;
+  preControleLe?: string | null;
 }
 
 export interface MonDossierData {
@@ -114,6 +118,7 @@ function Piece({
             <Badge variant={meta.variant}>{meta.labelIntervenant}</Badge>
           </div>
           <p className="text-xs text-muted-foreground">{meta.aide}</p>
+          <PreControleNote note={doc.preControle} le={doc.preControleLe} />
           {TYPE_POURQUOI[doc.type] ? (
             <p className="max-w-prose text-xs text-muted-foreground/80">
               {TYPE_POURQUOI[doc.type]}

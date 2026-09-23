@@ -19,6 +19,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { FileUpload, type FichierDepose } from "./FileUpload";
+import { PreControleNote, type NotePreControle } from "./PreControleNote";
 
 import { TYPE_LABEL, STATUS_META, type DocType, type DocStatus } from "./conformite";
 
@@ -58,6 +59,9 @@ interface ComplianceDoc {
   required: boolean;
   expiringSoon: boolean;
   updatedAt: string | null;
+  /** Note de lecture automatique de la pièce, quand un fichier a été déposé. */
+  preControle?: NotePreControle | null;
+  preControleLe?: string | null;
 }
 interface UserDocsResponse {
   user: ComplianceUser;
@@ -154,6 +158,8 @@ function DocRow({
         </div>
         <Badge variant={STATUS_META[status].variant}>{STATUS_META[status].label}</Badge>
       </div>
+
+      <PreControleNote note={doc.preControle} le={doc.preControleLe} />
 
       {canEdit ? (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-[9rem_1fr_1fr_auto] sm:items-end">
