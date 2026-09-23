@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, EmptyState, ErrorState } from "../../../_shared/ui";
 import { AlertesConformite, type PageAlertes } from "../../../_shared/AlertesConformite";
-import type { Repartition } from "../../../_shared/EquipeTable";
 
 export const metadata: Metadata = { title: "Conformité" };
 
@@ -35,10 +34,7 @@ export default async function ConformitePage() {
     );
   }
 
-  const [alertes, repartition] = await Promise.all([
-    fetchApi<PageAlertes>(session, "/conformite/alertes?perPage=25"),
-    fetchApi<Repartition>(session, "/memberships/repartition"),
-  ]);
+  const alertes = await fetchApi<PageAlertes>(session, "/conformite/alertes?perPage=25");
 
   return (
     <div className="space-y-6">
@@ -56,7 +52,6 @@ export default async function ConformitePage() {
       ) : (
         <AlertesConformite
           initial={alertes.data}
-          repartition={repartition.data ?? { total: 0, sansService: 0, services: [] }}
         />
       )}
     </div>
