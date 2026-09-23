@@ -8,15 +8,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../_shared/ui";
-import { InviteMemberModal } from "../../../_shared/modals/InviteMemberModal";
-import { ImportEquipeCsv } from "../../../_shared/ImportEquipeCsv";
-import { MembersManager } from "../../../_shared/MembersManager";
 import {
   EquipeTable,
   type PageMembres,
   type Repartition,
 } from "../../../_shared/EquipeTable";
-import type { AttachmentRequest, Invitation } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Équipe" };
 
@@ -29,7 +25,6 @@ export default async function EquipePage({
   const session = await requireSession();
   if (session.account.type !== "ESTABLISHMENT") redirect("/dashboard");
 
-  const canManage = session.account.role === "OWNER" || session.account.role === "ADMIN";
 
   // On rejoue côté serveur exactement la requête que l'adresse décrit : une
   // recherche partagée par lien doit s'ouvrir sur le même résultat.
@@ -39,29 +34,19 @@ export default async function EquipePage({
     if (typeof v === "string" && v) p.set(clef, v);
   }
 
-  const [liste, repartition, invitations, attachmentRequests] = await Promise.all([
+  const [liste, repartition] = await Promise.all([
     fetchApi<PageMembres>(session, `/memberships?${p.toString()}`),
     fetchApi<Repartition>(session, "/memberships/repartition"),
-    fetchApi<Invitation[]>(session, "/invitations?status=PENDING"),
-    fetchApi<AttachmentRequest[]>(session, "/attachment-requests"),
   ]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Équipe"
-        subtitle="Les personnes rattachées à votre établissement : leur service, leur rôle, et l'état de leur dossier. Cliquez sur quelqu'un pour ouvrir sa fiche."
-        actions={
-          canManage ? (
-            <div className="flex items-center gap-2">
-              <ImportEquipeCsv accountId={session.account.id} />
-              <InviteMemberModal
-                accountId={session.account.id}
-                services={repartition.data?.services ?? []}
-              />
-            </div>
-          ) : undefined
-        }
+        subtitle="Les personnes de votre établissement et l’état de leur dossier. Chacune a son propre compte : pour rejoindre, un collègue crée le sien avec le même SIRET, et l’organigramme vous réunit."
+        /* PLUS D'INVITATION NI D'IMPORT D'ÉQUIPE (23/09/2026) : le compte, c'est
+           la personne. On n'invite plus quelqu'un « dans » son compte ; il crée
+           le sien. Les composants restent dans le dépôt, réversible en une ligne. */
       />
       {liste.error ? (
         <ErrorState retryHref="/dashboard/equipe" />
@@ -71,19 +56,6 @@ export default async function EquipePage({
             initial={liste.data ?? { items: [], total: 0, page: 1, perPage: 25, pages: 1 }}
             repartition={repartition.data ?? { total: 0, sansService: 0, services: [] }}
           />
-          {canManage ? (
-            <MembersManager
-              afficher="invitations"
-              accountId={session.account.id}
-              currentUserId={session.user.id}
-              canManage={canManage}
-              members={[]}
-              invitations={invitations.data ?? []}
-              attachmentRequests={(attachmentRequests.data ?? []).filter(
-                (r) => r.status === "PENDING",
-              )}
-            />
-          ) : null}
         </>
       )}
     </div>
