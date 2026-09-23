@@ -33,7 +33,8 @@ export const metadata: Metadata = { title: "Messagerie" };
 const FILTRES: { cle?: TypeConversation; label: string }[] = [
   { label: "Tout" },
   { cle: "INTERNE", label: "Mon équipe" },
-  { cle: "SERVICE", label: "Mes services" },
+  // « Mes services » retiré le 23/09/2026 : les sous-comptes par service sont
+  // archivés. Les fils existants restent lisibles sous « Tout ».
   { cle: "INTERVENANT", label: "Intervenants" },
   { cle: "MISSION", label: "Renforts" },
   { cle: "SUPPORT", label: "Les Extras" },
