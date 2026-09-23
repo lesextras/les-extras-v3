@@ -1564,6 +1564,10 @@ model CreditPurchase {
   currency        String               @default("eur")
   stripeSessionId String               @unique
   status          CreditPurchaseStatus @default(PENDING)
+  /// Facture Stripe émise au paiement (invoice_creation) et son lien hébergé.
+  stripeInvoiceId String?
+  factureUrl      String?
+  paidAt          DateTime?
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
