@@ -23,7 +23,6 @@ import { ProfileForm } from "../../../_shared/ProfileForm";
 import { ChangerEmail } from "../../../_shared/ChangerEmail";
 import { CvManager } from "../../../_shared/CvManager";
 import { FacturationSettings, type IdentiteFacturation } from "../../../_shared/FacturationSettings";
-import { ACCOUNT_ROLE_LABEL } from "../../../_shared/format";
 import type { Profile } from "../../../_shared/types";
 
 export const metadata: Metadata = { title: "Mon compte" };
@@ -71,7 +70,7 @@ export default async function AccountPage({
     <div className="space-y-6">
       <PageHeader
         title={isFreelance ? "Mon compte" : "Mon établissement"}
-        subtitle={`${session.account.name} · Votre rôle : ${ACCOUNT_ROLE_LABEL[session.account.role]}`}
+        subtitle={session.account.name}
       />
 
       {/* Le réglage vit ici parce qu'il est propre à l'appareil, pas au compte :
