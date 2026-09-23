@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireSession, fetchApi } from "../../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../../_shared/ui";
 import { FichePersonne, type ContratResume } from "../../../../_shared/FichePersonne";
-import type { MembreListe, Repartition } from "../../../../_shared/EquipeTable";
+import type { MembreListe } from "../../../../_shared/EquipeTable";
 
 export const metadata: Metadata = { title: "Fiche personne" };
 
@@ -28,12 +28,9 @@ export default async function FichePersonnePage({
 
   const canManage = session.account.role === "OWNER" || session.account.role === "ADMIN";
 
-  // On récupère la personne par la même liste que l'écran d'équipe, filtrée
-  // sur elle : une seule forme de données, donc un seul enrichissement à
-  // maintenir (service, interne/externe, complétude du dossier).
-  const [liste, repartition, contrats] = await Promise.all([
+  // La personne par la même liste que l’écran d’équipe, filtrée sur elle.
+  const [liste, contrats] = await Promise.all([
     fetchApi<MembreListe>(session, `/memberships/personne/${userId}`),
-    fetchApi<Repartition>(session, "/memberships/repartition"),
     fetchApi<{ items: ContratListe[] }>(session, `/contrats?userId=${userId}&perPage=50`),
   ]);
 
@@ -61,12 +58,11 @@ export default async function FichePersonnePage({
     <div className="space-y-6">
       <PageHeader
         title="Fiche personne"
-        subtitle="Sa place dans la structure, l'état de son dossier et les contrats que vous avez conclus avec elle."
+        subtitle="Son dossier de conformité et les contrats que vous avez conclus avec elle."
       />
       <FichePersonne
         membre={membre}
         accountId={session.account.id}
-        services={repartition.data?.services ?? []}
         contrats={siens}
         canManage={canManage}
         estMoiMeme={membre.user.id === session.user.id}
