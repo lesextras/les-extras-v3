@@ -87,7 +87,7 @@ export interface AdminAccount {
 const TYPE_OPTIONS = [
   { value: "", label: "Tous les types" },
   { value: "ESTABLISHMENT", label: "Établissements" },
-  { value: "FREELANCE", label: "Freelances" },
+  { value: "FREELANCE", label: "Intervenants" },
 ];
 
 const ACCOUNT_ROLE_LABEL: Record<string, string> = {
@@ -324,7 +324,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-sm">
         <p className="text-muted-foreground">
           <span className="font-semibold text-foreground">{filtered.length}</span> compte(s) ·{" "}
-          <span className="font-semibold text-foreground">{totalSubAccounts}</span> sous-compte(s) rattaché(s)
+          <span className="font-semibold text-foreground">{totalSubAccounts}</span> rattachement(s)
         </p>
         <div className="flex gap-2">
           <Button
@@ -370,7 +370,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                         <button
                           type="button"
                           onClick={() => toggle(a.id)}
-                          aria-label={expanded.has(a.id) ? "Replier les sous-comptes" : "Déplier les sous-comptes"}
+                          aria-label={expanded.has(a.id) ? "Replier les rattachements" : "Déplier les rattachements"}
                           className="mt-0.5 rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                         >
                           {expanded.has(a.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -379,11 +379,11 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                           <div className="flex items-center gap-2">
                             <p className="truncate text-sm font-semibold text-foreground">{a.name}</p>
                             <Badge variant={a.type === "ESTABLISHMENT" ? "default" : "outline"}>
-                              {a.type === "ESTABLISHMENT" ? "Établissement" : "Freelance"}
+                              {a.type === "ESTABLISHMENT" ? "Structure" : "Intervenant"}
                             </Badge>
                             <Badge variant="muted" className="gap-1">
                               <Users className="h-3 w-3" />
-                              {(a.memberships?.length ?? a._count?.memberships ?? 0)} sous-compte(s)
+                              {(a.memberships?.length ?? a._count?.memberships ?? 0)} rattachement(s)
                             </Badge>
                             {/* Un compte archivé doit se voir dans la liste,
                                 sinon on le cherche sur le site sans comprendre
@@ -482,7 +482,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                       <div className="ml-8 rounded-lg border border-border bg-muted/30 p-3">
                         {(a.memberships?.length ?? 0) === 0 ? (
                           <p className="py-2 text-center text-xs text-muted-foreground">
-                            Aucun sous-compte rattaché à ce compte.
+                            Aucun autre rattachement sur ce compte.
                           </p>
                         ) : (
                           <ul className="divide-y divide-border">
