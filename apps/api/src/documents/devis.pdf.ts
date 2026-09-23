@@ -73,6 +73,8 @@ export interface DonneesDevisPdf {
     acceptedByName: string | null;
     acceptedByRole: string | null;
     refusalReason: string | null;
+    /** Le devis signé déposé par le demandeur, quand l'acceptation est venue de là. */
+    signedAt?: Date | null;
   };
   prestataire: PartieFigee;
   client: PartieFigee;
@@ -179,6 +181,14 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
 
   titreSection(doc, 'Client');
   identite(doc, client);
+
+  // ── LE CACHET LES EXTRAS, POSÉ À L'ÉMISSION ──────────────────────────
+  //
+  // Le document n'est pas signé par un tiers : il est émis par la plateforme,
+  // et c'est ce cachet qui le dit — référence, date d'émission, plateforme.
+  // Il ne remplace ni la signature du prestataire ni le bon pour accord du
+  // client ; il atteste que ce devis est bien sorti de Les Extras tel quel.
+  if (q.sentAt) cachetLesExtras(doc, q.reference, q.sentAt);
 
   titreSection(doc, 'Objet');
   ligne(doc, 'Intitulé', q.title);
@@ -302,9 +312,12 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
     ligne(doc, 'Accepté le', dateFr(q.decidedAt));
     ligne(doc, 'Par', q.acceptedByName ?? 'Non renseigné');
     ligne(doc, 'En qualité de', q.acceptedByRole ?? 'Non renseigné');
+    if (q.signedAt) ligne(doc, 'Devis signé déposé le', dateFr(q.signedAt));
     encadre(
       doc,
-      `Devis accepté le ${dateFr(q.decidedAt)}${q.acceptedByName ? ` par ${q.acceptedByName}` : ''}, depuis l'espace client de ${client.legalName ?? client.name}. Cette acceptation vaut bon pour accord.`,
+      q.signedAt
+        ? `Devis accepté par dépôt de l'exemplaire signé le ${dateFr(q.signedAt)}${q.acceptedByName ? ` par ${q.acceptedByName}` : ''}, depuis l'espace client de ${client.legalName ?? client.name}. L'exemplaire signé est conservé par la plateforme et fait foi.`
+        : `Devis accepté le ${dateFr(q.decidedAt)}${q.acceptedByName ? ` par ${q.acceptedByName}` : ''}, depuis l'espace client de ${client.legalName ?? client.name}. Cette acceptation vaut bon pour accord.`,
     );
   } else if (q.status === 'REFUSED') {
     titreSection(doc, 'Décision');
@@ -321,7 +334,7 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
       doc,
       perime
         ? "Cette offre a dépassé sa durée de validité. Demandez au prestataire un devis actualisé avant de l'accepter."
-        : "Pour accepter cette proposition, portez ci-dessous la mention manuscrite « Bon pour accord », datez et signez, puis renvoyez le document au prestataire, ou acceptez-le directement depuis votre espace, ce qui a la même valeur.",
+        : "Pour accepter cette proposition, portez ci-dessous la mention manuscrite « Bon pour accord », datez et signez, puis déposez-le signé depuis votre espace Les Extras : ce dépôt vaut acceptation et confirme la prestation.",
     );
     doc.moveDown(0.4);
     garderPlace(doc, 190);
@@ -387,4 +400,39 @@ export async function devisPdf(d: DonneesDevisPdf): Promise<Buffer> {
   );
   doc.end();
   return termine;
+}
+
+/**
+ * Le cachet de la plateforme : un cadre discret, à droite, avec la référence
+ * et la date d'émission. Dessiné, pas importé — il doit rester lisible sur une
+ * photocopie et ne dépend d'aucun fichier image.
+ */
+function cachetLesExtras(
+  doc: ReturnType<typeof nouveauDocument>['doc'],
+  reference: string,
+  emisLe: Date,
+) {
+  garderPlace(doc, 56);
+  const largeur = 236;
+  const hauteur = 44;
+  const x = MARGE + LARGEUR_UTILE - largeur;
+  const y = doc.y + 4;
+  doc.save();
+  doc.strokeColor('#c9463d').lineWidth(1.2).roundedRect(x, y, largeur, hauteur, 5).stroke();
+  doc
+    .fillColor('#c9463d')
+    .font('Helvetica-Bold')
+    .fontSize(9)
+    .text('CACHET LES EXTRAS', x + 12, y + 9, { width: largeur - 24, lineBreak: false });
+  doc
+    .fillColor('#5b6470')
+    .font('Helvetica')
+    .fontSize(7.5)
+    .text(`Devis ${reference} · émis le ${dateFr(emisLe)} · les-extras.fr`, x + 12, y + 24, {
+      width: largeur - 24,
+      lineBreak: false,
+    });
+  doc.restore();
+  doc.x = MARGE;
+  doc.y = y + hauteur + 10;
 }

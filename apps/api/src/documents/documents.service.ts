@@ -152,6 +152,7 @@ export class DocumentsService {
         acceptedByName: devis.acceptedByName,
         acceptedByRole: devis.acceptedByRole,
         refusalReason: devis.refusalReason,
+        signedAt: devis.signedAt,
       },
       prestataire,
       client,
