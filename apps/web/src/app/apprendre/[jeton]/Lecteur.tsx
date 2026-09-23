@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BlocsLecon } from '../../_shared/blocs-lecon';
 import type { Bloc } from '../../_shared/blocs';
+import { DepotDevoir } from './DepotDevoir';
 
 /* ------------------------------------------------------------------ types */
 
@@ -48,6 +49,12 @@ export interface CoursSuivi {
   cours: { titre: string; sousTitre: string | null; imageUrl: string | null; certificat: boolean };
   ecole: { nom: string; couleur: string; logoUrl: string | null };
   chapitres: { id: string; titre: string | null; resume: string | null; lecons: LeconSuivie[] }[];
+  /** Fin de l'accès quand la formation en fixe une durée. */
+  expireLe?: string | null;
+  /** L'école a un espace apprenant : on y renvoie. */
+  espace?: { slug: string } | null;
+  /** Les classes virtuelles à venir de la formation. */
+  classes?: { id: string; titre: string; debut: string; fin: string | null; integree: boolean; lien: string | null }[];
 }
 
 interface Correction {
@@ -210,8 +217,18 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
               <div className="h-full rounded-full bg-white" style={{ width: `${suivi.progression}%` }} />
             </div>
             <span className="tabular-nums text-sm font-bold">{suivi.progression} %</span>
+            {suivi.espace ? (
+              <a href={`/ecole/${suivi.espace.slug}/espace`} className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-bold text-white no-underline hover:bg-white/25">
+                Mon espace apprenant
+              </a>
+            ) : null}
           </div>
         </div>
+        {suivi.expireLe ? (
+          <p className="mx-auto mt-2 w-full max-w-[1160px] text-sm text-white/85">
+            Accès ouvert jusqu&apos;au {new Date(suivi.expireLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' })}.
+          </p>
+        ) : null}
       </header>
 
       <div className="mx-auto grid w-full max-w-[1160px] gap-6 px-4 py-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:py-10">
@@ -253,6 +270,29 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
               </ul>
             </div>
           ))}
+          {suivi.classes?.length ? (
+            <div className="mt-4 border-t border-[#EDF4F1] pt-3">
+              <p className="px-2 pb-2 text-sm font-extrabold uppercase tracking-[0.1em] text-[#5E7A6E]">Classes en direct</p>
+              <ul className="grid gap-2">
+                {suivi.classes.map((c) => {
+                  const href = c.integree ? `/classe/${c.id}?jeton=${encodeURIComponent(jeton)}` : c.lien;
+                  return (
+                    <li key={c.id} className="rounded-lg px-2 py-1.5">
+                      <p className="text-[15px] font-bold text-[#12312A]">{c.titre}</p>
+                      <p className="text-sm capitalize text-[#5E7A6E]">
+                        {new Date(c.debut).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}
+                      </p>
+                      {href ? (
+                        <a href={href} target={c.integree ? undefined : '_blank'} rel="noreferrer" className="text-sm font-bold underline underline-offset-4" style={{ color: couleur }}>
+                          Rejoindre la classe
+                        </a>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
         </nav>
 
         <main className="min-w-0">
@@ -350,6 +390,24 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
                 </div>
               ) : lecon.contenu ? (
                 <div className="mt-5 max-w-[68ch] whitespace-pre-line text-lg leading-relaxed">{lecon.contenu}</div>
+              ) : null}
+
+              {lecon.type === 'DEVOIR' && (lecon.ouvreDansJours ?? 0) === 0 ? (
+                <DepotDevoir
+                  jeton={jeton}
+                  leconId={lecon.id}
+                  couleur={couleur}
+                  onValide={() => {
+                    if (lecon.faite) return;
+                    setSuivi((p) => ({
+                      ...p,
+                      chapitres: p.chapitres.map((ch) => ({
+                        ...ch,
+                        lecons: ch.lecons.map((x) => (x.id === lecon.id ? { ...x, faite: true } : x)),
+                      })),
+                    }));
+                  }}
+                />
               ) : null}
 
               {lecon.quiz ? (
@@ -450,7 +508,7 @@ export function Lecteur({ jeton, suivi: initial }: { jeton: string; suivi: Cours
                   </button>
                 ) : null}
 
-                {!lecon.quiz && (lecon.ouvreDansJours ?? 0) === 0 ? (
+                {!lecon.quiz && lecon.type !== 'DEVOIR' && (lecon.ouvreDansJours ?? 0) === 0 ? (
                   <button
                     type="button"
                     onClick={() => envoyer(!lecon.faite)}

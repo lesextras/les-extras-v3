@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { appel, messageDe } from './api';
 import { Portail } from './Portail';
+import { Partager } from './Partager';
 import { EditeurLecon } from './EditeurLecon';
 import {
   MODALITE_COURTE,
@@ -126,6 +127,33 @@ export function AtelierCours({
     if (cible < 0 || cible >= ids.length) return;
     [ids[index], ids[cible]] = [ids[cible], ids[index]];
     void agir(`/ecole/cours/${c.id}/contenu/ordre`, { methode: 'POST', corps: { ids } });
+  }
+
+  /**
+   * GLISSER UNE LEÇON DANS UN CHAPITRE, À UNE PLACE PRÉCISE.
+   *
+   * Posée sur une autre leçon, elle prend sa place ; venue d'ailleurs, elle
+   * change d'abord de chapitre. Deux appels au plus, et l'écran se range sur
+   * la réponse du serveur, pas sur une supposition.
+   */
+  async function glisserLecon(leconId: string, chapitreId: string, avant: string | null) {
+    const chapitre = c.chapitres.find((ch) => ch.id === chapitreId);
+    if (!chapitre) return;
+    setOccupe(true);
+    setErreur(null);
+    try {
+      const dedans = chapitre.lecons.some((l) => l.id === leconId);
+      if (!dedans) await appel(`/ecole/cours/${c.id}/lecons/${leconId}/deplacer`, { methode: 'POST', corps: { chapitreId } });
+      const ids = chapitre.lecons.map((l) => l.id).filter((id) => id !== leconId);
+      const place = avant ? ids.indexOf(avant) : -1;
+      ids.splice(place < 0 ? ids.length : place, 0, leconId);
+      const d = await appel<CoursComplet>(`/ecole/cours/${c.id}/chapitres/${chapitreId}/lecons/ordre`, { methode: 'POST', corps: { ids } });
+      setC(d);
+    } catch (e) {
+      setErreur(messageDe(e));
+    } finally {
+      setOccupe(false);
+    }
   }
 
   /** Le même rangement, mais dicté par la souris : la liste arrive déjà triée. */
@@ -467,8 +495,20 @@ export function AtelierCours({
           >
             Copier
           </button>
+          <div className="w-full">
+            <Partager url={lien} titre={c.titre} />
+          </div>
         </div>
       ) : null}
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <a href={`/academie/devoirs?cours=${c.id}`} className="rounded-lg px-3 py-1.5 text-sm font-bold no-underline" style={{ color: VERT.fonce, backgroundColor: VERT.clair }}>
+          Devoirs de cette formation
+        </a>
+        <a href="/academie/integrations" className="rounded-lg px-3 py-1.5 text-sm font-bold no-underline" style={{ color: VERT.fonce, backgroundColor: VERT.clair }}>
+          L&apos;intégrer sur un autre site
+        </a>
+      </div>
 
       {/* -------------------------------------------------------- les onglets */}
       <div className="mb-5 overflow-x-auto">
@@ -527,6 +567,7 @@ export function AtelierCours({
           }
           reordonner={reordonnerContenu}
           reordonnerListe={reordonnerListe}
+          glisserLecon={glisserLecon}
           reglerChapitre={reglerChapitre}
           genererStructure={genererStructure}
           ouvrirLecon={setLeconOuverte}
@@ -537,7 +578,10 @@ export function AtelierCours({
       ) : null}
 
       {onglet === 'parametres' ? (
-        <Parametres cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerParametres} />
+        <>
+          <Parametres cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerParametres} />
+          <DureeAcces coursId={c.id} />
+        </>
       ) : null}
 
       {onglet === 'prix' ? <Prix cours={c} setCours={setC} occupe={occupe} enregistrer={enregistrerPrix} /> : null}
@@ -674,6 +718,7 @@ function Contenu({
   deplacerVers,
   reordonner,
   reordonnerListe,
+  glisserLecon,
   reglerChapitre,
   genererStructure,
   ouvrirLecon,
@@ -694,6 +739,7 @@ function Contenu({
   deplacerVers: (leconId: string, chapitreId: string) => void;
   reordonner: (index: number, sens: -1 | 1) => void;
   reordonnerListe: (ids: string[]) => void;
+  glisserLecon: (leconId: string, chapitreId: string, avant: string | null) => void;
   reglerChapitre: (id: string, corps: Record<string, unknown>) => void;
   genererStructure: () => void;
   ouvrirLecon: (l: Lecon) => void;
@@ -710,8 +756,26 @@ function Contenu({
   const [glisse, setGlisse] = useState<string | null>(null);
 
   /** Déposer un élément sur un autre : celui qu'on tient prend sa place. */
+  /** La leçon qu'on tient, qu'elle soit au premier niveau ou dans un chapitre. */
+  const leconTenue = glisse?.startsWith('sous:') ? glisse.split(':')[1] : glisse?.startsWith('lecon:') ? glisse.slice(6) : null;
+
+  /** Déposer une leçon dans la liste d'un chapitre, avant une autre (ou à la fin). */
+  const deposerDansChapitre = (chapitreId: string, avant: string | null) => {
+    const id = leconTenue;
+    setGlisse(null);
+    if (!id || id === avant) return;
+    glisserLecon(id, chapitreId, avant);
+  };
+
   const deposerSur = (cible: string) => {
     if (!glisse || glisse === cible) return;
+    // Une leçon sortie d'un chapitre et posée au premier niveau : elle quitte son chapitre.
+    if (glisse.startsWith('sous:')) {
+      const id = glisse.split(':')[1];
+      setGlisse(null);
+      if (cible.startsWith('lecon:')) deplacerVers(id, '');
+      return;
+    }
     const cles = elements.map((e) => `${e.genre}:${e.id}`);
     const de = cles.indexOf(glisse);
     const vers = cles.indexOf(cible);
@@ -842,10 +906,28 @@ function Contenu({
             </div>
 
             {plies[e.id] ? null : e.lecons.length ? (
-              <ul className="mt-3 grid gap-2">
+              <ul
+                className="mt-3 grid gap-2"
+                onDragOver={(ev) => {
+                  if (leconTenue) ev.preventDefault();
+                }}
+                onDrop={(ev) => {
+                  if (!leconTenue) return;
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  deposerDansChapitre(e.id, null);
+                }}
+              >
                 {e.lecons.map((l) => (
                   <LigneLecon
                     key={l.id}
+                    glisser={{
+                      tenue: glisse === `sous:${l.id}:${e.id}`,
+                      prendre: (v) => setGlisse(v ? `sous:${l.id}:${e.id}` : null),
+                      survol: Boolean(leconTenue),
+                      deposer: () => deposerDansChapitre(e.id, l.id),
+                      fin: () => setGlisse(null),
+                    }}
                     lecon={l}
                     occupe={occupe}
                     chapitres={chapitres}
@@ -860,8 +942,20 @@ function Contenu({
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm" style={{ color: VERT.sourdine }}>
-                Ce chapitre est vide. Ajoute-lui une leçon.
+              <p
+                className="mt-3 rounded-xl border-2 border-dashed px-3 py-3 text-sm"
+                style={{ color: VERT.sourdine, borderColor: leconTenue ? VERT.fonce : 'transparent' }}
+                onDragOver={(ev) => {
+                  if (leconTenue) ev.preventDefault();
+                }}
+                onDrop={(ev) => {
+                  if (!leconTenue) return;
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  deposerDansChapitre(e.id, null);
+                }}
+              >
+                Ce chapitre est vide. Ajoute-lui une leçon, ou glisse-en une ici.
               </p>
             )}
           </section>
@@ -924,7 +1018,10 @@ function LigneLecon({
   premier,
   dernier,
   lien,
+  glisser,
 }: {
+  /** Dans un chapitre : la leçon se prend par sa poignée et se pose sur une autre. */
+  glisser?: { tenue: boolean; prendre: (v: boolean) => void; survol: boolean; deposer: () => void; fin: () => void };
   lecon: Lecon;
   occupe: boolean;
   chapitres: ({ genre: 'chapitre' } & Chapitre)[];
@@ -943,8 +1040,36 @@ function LigneLecon({
   const nbBlocs = lecon.blocs?.length ?? 0;
 
   return (
-    <li className="rounded-xl border" style={{ borderColor: VERT.bord }}>
+    <li
+      className="rounded-xl border bg-white"
+      style={{ borderColor: VERT.bord, opacity: glisser?.tenue ? 0.5 : 1 }}
+      draggable={Boolean(glisser?.tenue)}
+      onDragStart={(ev) => ev.dataTransfer.setData('text/plain', lecon.id)}
+      onDragEnd={() => glisser?.fin()}
+      onDragOver={(ev) => {
+        if (glisser?.survol) ev.preventDefault();
+      }}
+      onDrop={(ev) => {
+        if (!glisser?.survol) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        glisser.deposer();
+      }}
+    >
       <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+        {glisser ? (
+          <button
+            type="button"
+            title="Déplacer cette leçon"
+            aria-label="Déplacer cette leçon"
+            onMouseDown={() => glisser.prendre(true)}
+            onMouseUp={() => glisser.prendre(false)}
+            className="grid size-7 shrink-0 cursor-grab place-items-center rounded-lg border-2 bg-white text-xs font-extrabold active:cursor-grabbing"
+            style={{ borderColor: VERT.bord, color: VERT.texte }}
+          >
+            ⠿
+          </button>
+        ) : null}
         <span
           className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold"
           style={{ backgroundColor: VERT.clair, color: VERT.fonce }}
@@ -2728,5 +2853,87 @@ function Enregistrer({ occupe, onClick, children }: { occupe: boolean; onClick: 
         {children}
       </button>
     </div>
+  );
+}
+
+
+/**
+ * LA DURÉE D'ACCÈS.
+ *
+ * Illimitée par défaut. Fixée, elle court de l'inscription de chaque
+ * apprenant ; il est prévenu à l'avance, et prévenu aussi quand elle change.
+ */
+function DureeAcces({ coursId }: { coursId: string }) {
+  const [jours, setJours] = useState<string>('');
+  const [limite, setLimite] = useState(false);
+  const [charge, setCharge] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null);
+  const [occupe, setOccupe] = useState(false);
+
+  useEffect(() => {
+    let vivant = true;
+    appel<{ dureeAccesJours: number | null }>(`/ecole/cours/${coursId}/reglage`)
+      .then((r) => {
+        if (!vivant) return;
+        setLimite(r.dureeAccesJours !== null);
+        setJours(r.dureeAccesJours ? String(r.dureeAccesJours) : '365');
+      })
+      .catch(() => undefined)
+      .finally(() => vivant && setCharge(true));
+    return () => {
+      vivant = false;
+    };
+  }, [coursId]);
+
+  async function enregistrer() {
+    setOccupe(true);
+    setMessage(null);
+    try {
+      const valeur = limite ? Math.max(1, Math.min(3650, Number(jours) || 0)) : null;
+      await appel(`/ecole/cours/${coursId}/reglage`, { methode: 'PATCH', corps: { dureeAccesJours: valeur } });
+      setMessage({ ok: true, texte: valeur ? `Accès limité à ${valeur} jours après l’inscription. Les apprenants concernés sont prévenus.` : 'Accès illimité.' });
+    } catch (e) {
+      setMessage({ ok: false, texte: messageDe(e) });
+    } finally {
+      setOccupe(false);
+    }
+  }
+
+  if (!charge) return null;
+  return (
+    <section className="mt-5 rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
+      <h3 className="text-[17px] font-extrabold" style={{ color: VERT.encre }}>
+        Durée d&apos;accès
+      </h3>
+      <p className="mt-1 text-[15px]" style={{ color: VERT.sourdine }}>
+        Combien de temps un apprenant garde l&apos;accès, à compter de son inscription.
+      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-4">
+        <label className="flex items-center gap-2 text-[15px]">
+          <input type="radio" checked={!limite} onChange={() => setLimite(false)} /> Illimitée
+        </label>
+        <label className="flex items-center gap-2 text-[15px]">
+          <input type="radio" checked={limite} onChange={() => setLimite(true)} /> Limitée à
+          <input
+            value={jours}
+            onChange={(e) => setJours(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            onFocus={() => setLimite(true)}
+            inputMode="numeric"
+            className="w-20 rounded-lg border-2 bg-white px-2 py-1 text-sm font-bold"
+            style={{ borderColor: VERT.bord, color: VERT.texte }}
+            aria-label="Nombre de jours"
+          />
+          jours
+        </label>
+        <button type="button" onClick={enregistrer} disabled={occupe} className="rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-60" style={{ backgroundColor: VERT.fonce }}>
+          Enregistrer
+        </button>
+      </div>
+      {message ? (
+        <p className="mt-3 text-[15px] font-bold" style={{ color: message.ok ? VERT.fonce : '#8A1B3D' }}>
+          {message.texte}
+        </p>
+      ) : null}
+    </section>
   );
 }

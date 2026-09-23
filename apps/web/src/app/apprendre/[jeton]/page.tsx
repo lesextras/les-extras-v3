@@ -16,8 +16,18 @@ export const metadata: Metadata = { title: 'Mon cours', robots: { index: false, 
  */
 export default async function PageApprendre({ params }: { params: Promise<{ jeton: string }> }) {
   const { jeton } = await params;
-  const { data } = await fetchPublic<CoursSuivi>(`/public/ecole/apprendre/${encodeURIComponent(jeton)}`, { revalidate: 0 });
+  const { data, status, error } = await fetchPublic<CoursSuivi>(`/public/ecole/apprendre/${encodeURIComponent(jeton)}`, { revalidate: 0 });
   const suivi = data && (data as CoursSuivi).cours ? (data as CoursSuivi) : null;
+  // Un accès arrivé à son terme n'est pas un lien faux : on le dit.
+  if (!suivi && status === 403) {
+    return (
+      <main className="mx-auto max-w-[640px] px-4 py-16 text-[#334A42]">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[#12312A]">Accès terminé</h1>
+        <p className="mt-4 text-lg leading-relaxed">{error ?? "Votre accès à cette formation a pris fin."}</p>
+        <p className="mt-3 leading-relaxed">Pour le prolonger, écrivez à l&apos;organisme qui vous a inscrit.</p>
+      </main>
+    );
+  }
   if (!suivi) notFound();
 
   return <Lecteur jeton={jeton} suivi={suivi} />;

@@ -4177,6 +4177,7 @@ model Cours {
   ventes       VenteCours[]
   classes      ClasseVirtuelle[]
   commentaires CommentaireCours[]
+  reglage      ReglageCours?
 
   @@index([accountId, statut])
   @@index([accountId, ordre])
@@ -4278,6 +4279,7 @@ model LeconCours {
 
   progressions ProgressionLecon[]
   commentaires CommentaireCours[]
+  rendus       RenduDevoir[]
 
   @@index([chapitreId, ordre])
   @@index([coursId, ordre])
@@ -4324,6 +4326,7 @@ model InscriptionCours {
 
   progressions ProgressionLecon[]
   commentaires CommentaireCours[]
+  rendus       RenduDevoir[]
 
   @@unique([coursId, email])
   @@index([coursId, createdAt])
@@ -4518,6 +4521,9 @@ model ClasseVirtuelle {
   /// Le lien de la visio : celui qu'on envoie aux inscrits.
   lien        String?
   placesMax   Int?
+
+  /// La salle de visio intégrée, quand l'organisme en ouvre une.
+  salle SalleClasse?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4977,4 +4983,347 @@ enum StatutVisio {
   EN_COURS
   TERMINEE
   ANNULEE
+}
+
+/**
+ * ═══════════════════════════════════ L'ACADÉMIE, À PARITÉ AVEC TEACHIZY ══════
+ * Ajouté le 24/09/2026. Tout ce qui suit complète l'école en ligne d'une
+ * académie : l'espace apprenant avec un compte, le rendu des devoirs, les
+ * courriels automatiques, le calendrier, la communauté, la salle de visio
+ * intégrée, et les réglages de l'école (domaine, référencement, liens légaux,
+ * clés d'API).
+ * ⚠ LES IDENTIFIANTS DE COMPTE SONT DES CHAÎNES SANS RELATION. Le modèle
+ * Account porte déjà plus de cent relations ; on n'y ajoute rien. La
+ * suppression d'une académie efface ses lignes par le service, pas par la base.
+ */
+
+/// LE COMPTE D'UN APPRENANT, DANS UNE ACADÉMIE.
+///
+/// Une personne a un compte PAR académie, comme sur Teachizy où chaque école
+/// a son espace apprenant. Le lien personnel de chaque formation continue de
+/// marcher : le compte ne fait que les réunir derrière un mot de passe.
+model CompteApprenant {
+  id        String @id @default(cuid())
+  accountId String
+
+  email  String
+  prenom String?
+  nom    String?
+
+  /// Empreinte bcrypt. Vide tant que la personne n'a pas choisi son mot de passe.
+  motDePasse     String?
+  /// Change à chaque nouveau mot de passe : les anciennes sessions tombent.
+  versionSession Int     @default(0)
+
+  /// Lien « mot de passe oublié » / « créer mon mot de passe » : une heure.
+  jetonReinit       String?   @unique
+  jetonReinitExpire DateTime?
+
+  derniereConnexion DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, email])
+}
+
+/// LE RENDU D'UN DEVOIR.
+///
+/// Un par apprenant et par leçon-devoir : un nouveau dépôt remplace le
+/// précédent et compte une tentative de plus. La correction (statut, note,
+/// commentaire) est écrite par l'académie.
+model RenduDevoir {
+  id String @id @default(cuid())
+
+  inscriptionId String
+  inscription   InscriptionCours @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
+  leconId       String
+  lecon         LeconCours       @relation(fields: [leconId], references: [id], onDelete: Cascade)
+
+  /// Recopiés pour lister vite ce qui est à corriger, académie par académie.
+  coursId   String
+  accountId String
+
+  texte    String?
+  /// [{ cle, nom, taille, type }] : les fichiers vivent dans le dépôt objet.
+  fichiers Json?
+
+  statut      StatutRendu @default(A_CORRIGER)
+  note        Int?
+  commentaire String?
+  corrigeLe   DateTime?
+  tentative   Int         @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([inscriptionId, leconId])
+  @@index([accountId, statut])
+  @@index([coursId])
+}
+
+enum StatutRendu {
+  A_CORRIGER
+  VALIDE
+  A_REPRENDRE
+}
+
+/// UN COURRIEL AUTOMATIQUE, TEL QUE L'ACADÉMIE L'A ÉCRIT.
+///
+/// Sans ligne ici, c'est le texte par défaut qui part. Le délai se compte à
+/// partir de l'action qui déclenche l'envoi.
+model ModeleEmailEcole {
+  id        String         @id @default(cuid())
+  accountId String
+  type      TypeEmailEcole
+
+  actif        Boolean @default(true)
+  sujet        String
+  corps        String
+  delaiMinutes Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, type])
+}
+
+enum TypeEmailEcole {
+  BIENVENUE
+  FIN_FORMATION
+  DESINSCRIPTION
+  SUPPRESSION
+  ABANDON_1
+  ABANDON_2
+  INVITATION_NOUVEL
+  INVITATION_EXISTANT
+  LECON_ACCESSIBLE
+  RECAPITULATIF
+  MODIFICATION_ACCES
+  EXPIRATION_ACCES
+  DECROCHAGE_1
+  DECROCHAGE_2
+}
+
+/// UN COURRIEL À ENVOYER PLUS TARD (déclenché par une action, avec un délai).
+model EmailProgramme {
+  id        String         @id @default(cuid())
+  accountId String
+  type      TypeEmailEcole
+  email     String
+  /// Ce que le texte cite : prénom, formation, lien…
+  donnees   Json
+  /// Clé d'unicité de l'envoi (voir EnvoiEmailEcole.cle).
+  cle       String         @unique
+  du        DateTime
+  envoyeLe  DateTime?
+  echecs    Int            @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([envoyeLe, du])
+}
+
+/// LA TRACE DE CHAQUE COURRIEL AUTOMATIQUE PARTI : jamais deux fois le même.
+model EnvoiEmailEcole {
+  id        String         @id @default(cuid())
+  accountId String
+  type      TypeEmailEcole
+  cle       String         @unique
+  email     String
+  envoyeLe  DateTime       @default(now())
+
+  @@index([accountId, envoyeLe])
+}
+
+/// UN PAIEMENT OUVERT, PAS ENCORE CONFIRMÉ : de quoi relancer un achat abandonné.
+model PanierCours {
+  id              String    @id @default(cuid())
+  accountId       String
+  coursId         String
+  email           String
+  nom             String?
+  stripeSessionId String    @unique
+  payeLe          DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([accountId, createdAt])
+}
+
+/// LES RÉGLAGES D'UNE FORMATION QUI N'ONT PAS LEUR PLACE SUR LA FICHE.
+model ReglageCours {
+  id      String @id @default(cuid())
+  coursId String @unique
+  cours   Cours  @relation(fields: [coursId], references: [id], onDelete: Cascade)
+
+  /// Durée d'accès, en jours à compter de l'inscription. Vide : sans limite.
+  dureeAccesJours Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// UN ÉVÉNEMENT DU CALENDRIER : webinaire, session en direct, atelier.
+model EvenementEcole {
+  id        String @id @default(cuid())
+  accountId String
+
+  titre       String
+  description String?
+  debut       DateTime
+  fin         DateTime?
+  lieu        String?
+  lien        String?
+  /// Vide : tous les apprenants de l'académie le voient.
+  coursIds    String[]  @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, debut])
+}
+
+/// LA SALLE DE VISIO INTÉGRÉE D'UNE CLASSE VIRTUELLE (serveur média LiveKit).
+model SalleClasse {
+  id       String          @id @default(cuid())
+  classeId String          @unique
+  classe   ClasseVirtuelle @relation(fields: [classeId], references: [id], onDelete: Cascade)
+
+  /// Nom de salle aléatoire, jamais dérivé d'un nom ou d'un identifiant.
+  salle          String @unique
+  /// Le lien de l'animateur (formateur invité sans compte).
+  jetonAnimateur String @unique
+
+  ouverteLe  DateTime?
+  termineeLe DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// UNE COLLECTION : elle range plusieurs espaces de la communauté.
+model CollectionCommunaute {
+  id        String @id @default(cuid())
+  accountId String
+  titre     String
+  ordre     Int    @default(0)
+
+  espaces EspaceCommunaute[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, ordre])
+}
+
+/// UN ESPACE DE LA COMMUNAUTÉ : un fil de publications.
+model EspaceCommunaute {
+  id           String                @id @default(cuid())
+  accountId    String
+  collectionId String?
+  collection   CollectionCommunaute? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  titre              String
+  description        String?
+  icone              String?
+  /// Vide : ouvert à tous les apprenants. Sinon, à ceux de ces formations.
+  coursIds           String[] @default([])
+  /// Faux : seule l'académie publie, les apprenants commentent.
+  ecritureApprenants Boolean  @default(true)
+  ordre              Int      @default(0)
+
+  publications PublicationCommunaute[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, ordre])
+}
+
+model PublicationCommunaute {
+  id        String           @id @default(cuid())
+  espaceId  String
+  espace    EspaceCommunaute @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+  accountId String
+
+  /// L'apprenant qui écrit, ou vide quand c'est l'académie.
+  compteApprenantId String?
+  auteurNom         String
+  parAcademie       Boolean @default(false)
+
+  titre    String?
+  texte    String
+  epinglee Boolean  @default(false)
+  masquee  Boolean  @default(false)
+  /// Les comptes qui ont aimé (apprenants, ou « academie »).
+  jaime    String[] @default([])
+
+  commentaires CommentaireCommunaute[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([espaceId, createdAt])
+  @@index([accountId, createdAt])
+}
+
+model CommentaireCommunaute {
+  id            String                @id @default(cuid())
+  publicationId String
+  publication   PublicationCommunaute @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+
+  compteApprenantId String?
+  auteurNom         String
+  parAcademie       Boolean @default(false)
+  texte             String
+  masque            Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([publicationId, createdAt])
+}
+
+/// LES RÉGLAGES DE L'ÉCOLE AJOUTÉS AVEC LA PARITÉ TEACHIZY.
+model ReglagesEcole {
+  id        String @id @default(cuid())
+  accountId String @unique
+
+  /// Sous-domaine personnalisé (formations.monsite.fr), sans schéma.
+  domaine          String?   @unique
+  domaineVerifieLe DateTime?
+
+  /// Référencement de la page d'accueil de l'école.
+  seoTitre       String?
+  seoDescription String?
+  indexable      Boolean @default(true)
+
+  /// Liens légaux montrés aux apprenants. Vides : les textes par défaut.
+  cgu             String?
+  confidentialite String?
+
+  calendrierVisible Boolean @default(true)
+
+  communauteActive      Boolean @default(false)
+  communauteDescription String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// UNE CLÉ D'API DÉVELOPPEUR. Seule son empreinte est gardée.
+model CleApiEcole {
+  id        String @id @default(cuid())
+  accountId String
+  nom       String
+  /// Les premiers caractères, pour reconnaître la clé dans la liste.
+  prefixe   String
+  empreinte String @unique
+
+  derniereUtilisation DateTime?
+  revoqueeLe          DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
 }

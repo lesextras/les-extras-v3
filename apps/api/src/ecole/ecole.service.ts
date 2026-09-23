@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
   ServiceUnavailableException,
   type OnModuleInit,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { FormationType, Prisma, StatutCours, StatutInscriptionCours, StatutVente
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { StripeConnectService } from '../paiements/stripe-connect.service';
+import { EmailsEcoleService } from './suite/emails-ecole.service';
 import { corrigerQuiz, nettoyerQuiz, quizSansReponses, quizUtilisable, type Quiz } from './quiz';
 import type {
   AffilieDto,
@@ -60,6 +62,12 @@ export class EcoleService implements OnModuleInit {
     private readonly config: ConfigService,
     private readonly mail: MailService,
     private readonly connect: StripeConnectService,
+    /**
+     * Les courriels automatiques de l'école (bienvenue, invitations, accès).
+     * Optionnel : un test qui construit le service à la main n'a pas à le
+     * fournir, et l'inscription ne doit jamais dépendre d'un envoi.
+     */
+    @Optional() private readonly emailsEcole?: EmailsEcoleService,
   ) {}
 
   /**
@@ -741,6 +749,26 @@ export class EcoleService implements OnModuleInit {
     const inscription = await this.prisma.inscriptionCours.create({
       data: { coursId, email, nom: dto.nom?.trim() || null, prenom: dto.prenom?.trim() || null, jeton: this.nouveauJeton() },
     });
+
+    // L'INVITATION PART TOUTE SEULE, comme chez Teachizy : sans elle, la
+    // personne inscrite par l'organisme ne connaît pas son lien d'accès.
+    if (this.emailsEcole) {
+      const cours = await this.prisma.cours.findUnique({ where: { id: coursId }, select: { titre: true } });
+      const dejaEspace = await this.prisma.compteApprenant.findUnique({
+        where: { accountId_email: { accountId, email } },
+        select: { motDePasse: true },
+      });
+      const racine = await this.emailsEcole.racine(accountId);
+      await this.emailsEcole
+        .programmer({
+          accountId,
+          type: dejaEspace?.motDePasse ? 'INVITATION_EXISTANT' : 'INVITATION_NOUVEL',
+          email,
+          cle: `INVITATION:${inscription.id}`,
+          donnees: { prenom: inscription.prenom, formation: cours?.titre ?? '', lien: `${racine}/apprendre/${inscription.jeton}` },
+        })
+        .catch(() => undefined);
+    }
     return { id: inscription.id, email: inscription.email, lien: `/apprendre/${inscription.jeton}` };
   }
 
@@ -757,13 +785,47 @@ export class EcoleService implements OnModuleInit {
       where: { id: inscriptionId },
       data: { statut: bloquer ? StatutInscriptionCours.SUSPENDUE : StatutInscriptionCours.ACTIVE },
     });
+    // La personne est prévenue que son accès change, dans un sens comme dans l'autre.
+    if (this.emailsEcole && (i.statut === StatutInscriptionCours.SUSPENDUE) !== bloquer) {
+      const cours = await this.prisma.cours.findUnique({ where: { id: i.coursId }, select: { titre: true } });
+      const racine = await this.emailsEcole.racine(accountId);
+      await this.emailsEcole
+        .programmer({
+          accountId,
+          type: bloquer ? 'DESINSCRIPTION' : 'MODIFICATION_ACCES',
+          email: i.email,
+          cle: `${bloquer ? 'DESINSCRIPTION' : 'MODIFICATION_ACCES'}:${i.id}:${Date.now()}`,
+          donnees: {
+            prenom: i.prenom,
+            formation: cours?.titre ?? '',
+            lien: `${racine}/apprendre/${i.jeton}`,
+            date: bloquer ? '' : 'Il est de nouveau ouvert.',
+          },
+        })
+        .catch(() => undefined);
+    }
     return { bloque: bloquer };
   }
 
   async retirerApprenant(accountId: string, inscriptionId: string) {
-    const i = await this.prisma.inscriptionCours.findFirst({ where: { id: inscriptionId, cours: { accountId } } });
+    const i = await this.prisma.inscriptionCours.findFirst({
+      where: { id: inscriptionId, cours: { accountId } },
+      include: { cours: { select: { titre: true } } },
+    });
     if (!i) throw new NotFoundException("Cette inscription n'existe pas.");
     await this.prisma.inscriptionCours.delete({ where: { id: inscriptionId } });
+    // Le message part même si l'inscription n'existe plus : ses données sont recopiées.
+    if (this.emailsEcole) {
+      await this.emailsEcole
+        .programmer({
+          accountId,
+          type: 'SUPPRESSION',
+          email: i.email,
+          cle: `SUPPRESSION:${i.id}`,
+          donnees: { prenom: i.prenom, formation: i.cours.titre },
+        })
+        .catch(() => undefined);
+    }
     return { supprime: true };
   }
 
@@ -943,11 +1005,18 @@ export class EcoleService implements OnModuleInit {
   /* ================================================ LES CLASSES VIRTUELLES = */
 
   async listerClasses(accountId: string) {
-    return this.prisma.classeVirtuelle.findMany({
+    const classes = await this.prisma.classeVirtuelle.findMany({
       where: { accountId },
       orderBy: { debut: 'asc' },
-      include: { cours: { select: { id: true, titre: true } } },
+      include: { cours: { select: { id: true, titre: true } }, salle: { select: { jetonAnimateur: true } } },
     });
+    // La salle intégrée se voit dans la liste : ouverte ou non, et ses deux liens.
+    return classes.map(({ salle, ...c }) => ({
+      ...c,
+      salleActive: Boolean(salle),
+      lienAnimateur: salle ? `/classe/${c.id}?animateur=${salle.jetonAnimateur}` : null,
+      lienApprenants: salle ? `/classe/${c.id}` : null,
+    }));
   }
 
   async creerClasse(accountId: string, dto: ClasseDto) {
@@ -1367,6 +1436,10 @@ export class EcoleService implements OnModuleInit {
     });
     if (!i) throw new NotFoundException("Ce lien n'ouvre aucun cours.");
     if (i.statut === StatutInscriptionCours.SUSPENDUE) throw new ForbiddenException('Cet accès est suspendu.');
+    const expireLe = await this.finDAcces(i.coursId, i.createdAt);
+    if (expireLe && expireLe < new Date()) {
+      throw new ForbiddenException(`Votre accès à cette formation a pris fin le ${expireLe.toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' })}.`);
+    }
 
     await this.prisma.inscriptionCours.update({ where: { id: i.id }, data: { derniereVisite: new Date() } });
 
@@ -1413,11 +1486,35 @@ export class EcoleService implements OnModuleInit {
       };
     };
 
+    const [ecoleSlug, classes] = await Promise.all([
+      this.prisma.ecoleEnLigne.findUnique({ where: { accountId: i.cours.accountId }, select: { slug: true } }),
+      this.prisma.classeVirtuelle.findMany({
+        where: {
+          accountId: i.cours.accountId,
+          OR: [{ coursId: i.coursId }, { coursId: null }],
+          debut: { gte: new Date(Date.now() - 3 * 3600 * 1000) },
+        },
+        orderBy: { debut: 'asc' },
+        take: 10,
+        include: { salle: { select: { id: true } } },
+      }),
+    ]);
+
     return {
       apprenant: { prenom: i.prenom, nom: i.nom, email: i.email },
       progression: i.progression,
       termineLe: i.termineLe,
       certificat: i.cours.certificat,
+      expireLe,
+      espace: ecoleSlug ? { slug: ecoleSlug.slug } : null,
+      classes: classes.map((c) => ({
+        id: c.id,
+        titre: c.titre,
+        debut: c.debut,
+        fin: c.fin,
+        integree: Boolean(c.salle),
+        lien: c.salle ? null : c.lien,
+      })),
       cours: {
         titre: i.cours.titre,
         sousTitre: i.cours.sousTitre,
@@ -1467,6 +1564,8 @@ export class EcoleService implements OnModuleInit {
     const i = await this.prisma.inscriptionCours.findUnique({ where: { jeton }, include: { cours: true } });
     if (!i) throw new NotFoundException("Ce lien n'ouvre aucun cours.");
     if (i.statut === StatutInscriptionCours.SUSPENDUE) throw new ForbiddenException('Cet accès est suspendu.');
+    const finAcces = await this.finDAcces(i.coursId, i.createdAt);
+    if (finAcces && finAcces < new Date()) throw new ForbiddenException('Votre accès à cette formation a pris fin.');
 
     // Le chapitre est facultatif : une leçon peut être posée à la racine de la
     // formation. La chercher par son seul chapitre la rendait introuvable.
@@ -1474,6 +1573,16 @@ export class EcoleService implements OnModuleInit {
       where: { id: leconId, OR: [{ chapitre: { coursId: i.coursId } }, { coursId: i.coursId }] },
     });
     if (!lecon) throw new NotFoundException("Cette leçon n'appartient pas à ce cours.");
+
+    // UN DEVOIR SE VALIDE PAR SA CORRECTION, pas par un clic de l'apprenant :
+    // sinon « J'ai terminé » suffirait à passer un devoir jamais rendu.
+    if (lecon.type === TypeLecon.DEVOIR && dto.faite !== false) {
+      const valide = await this.prisma.renduDevoir.findFirst({
+        where: { inscriptionId: i.id, leconId, statut: 'VALIDE' },
+        select: { id: true },
+      });
+      if (!valide) throw new ForbiddenException('Ce devoir se valide quand le formateur l’a corrigé : déposez-le d’abord.');
+    }
 
     // La diffusion progressive vaut aussi ici : on ne coche pas une leçon qui
     // ne s'est pas encore ouverte.
@@ -1983,9 +2092,18 @@ export class EcoleService implements OnModuleInit {
       headers: { Authorization: `Bearer ${cle}`, 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(params).toString(),
     });
-    const json = (await res.json()) as { url?: string; error?: { message?: string } };
+    const json = (await res.json()) as { id?: string; url?: string; error?: { message?: string } };
     if (!res.ok || !json.url) {
       throw new BadRequestException(json.error?.message ?? "Le paiement n'a pas pu s'ouvrir.");
+    }
+    // LE PANIER OUVERT : de quoi relancer un achat abandonné. Rien d'autre
+    // n'est gardé tant que le paiement n'est pas confirmé.
+    if (json.id) {
+      await this.prisma.panierCours
+        .create({
+          data: { accountId: cours.accountId, coursId: cours.id, email, nom: dto.nom?.trim() || null, stripeSessionId: json.id },
+        })
+        .catch(() => undefined);
     }
     return { deja: false, url: json.url };
   }
@@ -2022,6 +2140,23 @@ export class EcoleService implements OnModuleInit {
         params.origine?.replace(/\/$/, '') ||
         this.config.get<string>('APP_WEB_URL')?.replace(/\/$/, '') ||
         '';
+
+      // LE COURRIEL DE BIENVENUE DE L'ÉCOLE, quand il est actif : c'est lui qui
+      // porte le lien d'accès, avec le texte et le délai que l'académie a
+      // choisis. Désactivé, on garde le message d'accès historique : le lien
+      // doit partir quoi qu'il arrive.
+      if (this.emailsEcole && (await this.emailsEcole.actif(params.accountId, 'BIENVENUE'))) {
+        const i = await this.prisma.inscriptionCours.findUnique({ where: { jeton: params.jeton }, select: { id: true, prenom: true } });
+        const programme = await this.emailsEcole.programmer({
+          accountId: params.accountId,
+          type: 'BIENVENUE',
+          email: params.email,
+          cle: `BIENVENUE:${i?.id ?? params.jeton}`,
+          donnees: { prenom: i?.prenom ?? null, formation: params.titre, lien: `${racine}/apprendre/${params.jeton}` },
+        });
+        if (programme) return;
+      }
+
       await this.mail.sendAccesFormation({
         to: params.email,
         ecole: {
@@ -2286,6 +2421,12 @@ export class EcoleService implements OnModuleInit {
   }
 
   /** Une adresse lisible, libre, dans la table demandée. */
+  /** La fin d'accès d'une inscription, quand la formation a une durée d'accès. */
+  private async finDAcces(coursId: string, inscritLe: Date): Promise<Date | null> {
+    const r = await this.prisma.reglageCours.findUnique({ where: { coursId }, select: { dureeAccesJours: true } });
+    return r?.dureeAccesJours ? new Date(inscritLe.getTime() + r.dureeAccesJours * 86_400_000) : null;
+  }
+
   private async slugLibre(quoi: 'cours' | 'pack' | 'ecole' | 'formation', titre: string) {
     const base = normaliser(titre).slice(0, 60).replace(/^-+|-+$/g, '') || quoi;
     for (let i = 0; i < 40; i += 1) {

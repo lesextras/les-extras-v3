@@ -18,7 +18,10 @@ import { useSyncExternalStore, type ReactNode } from 'react';
 const HOTE_ASSOCIATION = 'association.toulali.fr';
 
 const abonner = () => () => {};
-const surAssociation = () => window.location.hostname === HOTE_ASSOCIATION;
+// Les cartes à intégrer (`/integration/...`) vivent dans l'iframe d'un autre
+// site : ni bandeau de cookies, ni invitation à installer l'application.
+const surAssociation = () =>
+  window.location.hostname === HOTE_ASSOCIATION || window.location.pathname.startsWith('/integration/');
 const surServeur = () => false;
 
 export function SaufAssociation({ children }: { children: ReactNode }) {

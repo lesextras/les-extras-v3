@@ -855,6 +855,33 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * UN COURRIEL DE L'ÉCOLE, ÉCRIT PAR L'ACADÉMIE.
+   *
+   * Les courriels automatiques (bienvenue, relances, fin de formation…) et
+   * les avis du formateur. Le texte vient de l'académie : il est échappé ici,
+   * ligne par ligne, puis posé dans la charpente de l'école. Aucune balise
+   * écrite par l'académie ne passe telle quelle dans le message.
+   */
+  async sendEcoleLibre(data: {
+    to: string;
+    ecole: { nom: string; couleur?: string | null };
+    sujet: string;
+    titre: string;
+    texte: string;
+    bouton?: { label: string; url: string } | null;
+  }): Promise<void> {
+    const corps = data.texte
+      .split(/\n{2,}/)
+      .map((p) => `<p style="margin:0 0 14px">${echapper(p).replace(/\n/g, '<br />')}</p>`)
+      .join('');
+    await this.send(
+      data.to,
+      data.sujet,
+      this.layoutEcole(data.ecole, data.titre, corps, data.bouton ?? undefined),
+    );
+  }
+
+  /**
    * Envoi effectif. Ne lève jamais : un e-mail qui ne part pas ne doit pas
    * faire échouer l'inscription, la candidature ou la facture qui l'a
    * déclenché. En revanche il LAISSE UNE TRACE dans les journaux — c'est ce

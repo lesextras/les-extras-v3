@@ -80,34 +80,76 @@ export const ICONES = {
   fermer: i('M18 6L6 18M6 6l12 12'),
 };
 
+interface Groupe {
+  libelle: string;
+  icone: ReactNode;
+  entrees: Entree[];
+}
+type Element = Entree | Groupe;
+const estGroupe = (e: Element): e is Groupe => 'entrees' in e;
+
 /**
- * LE MENU. La même charpente que l'espace association : l'accueil, le chemin,
- * puis « Mon académie » qui regroupe l'administratif derrière trois cartes, et
- * ensuite le métier.
+ * LE MENU, RANGÉ COMME CELUI DE TEACHIZY.
+ *
+ * L'accueil, le chemin et « Mon académie » restent en tête ; le métier se
+ * range en quatre groupes dépliables (Formations, Apprenants, Ventes, Outils
+ * marketing). Un groupe s'ouvre tout seul quand on est sur l'une de ses pages.
+ * Douze entrées à plat se lisaient comme une liste ; quatre groupes se
+ * lisent comme un plan.
  */
-const MENU: Entree[] = [
+const MENU: Element[] = [
   { href: '/academie', libelle: 'Tableau de bord', icone: ICONES.toque, accent: true },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/academie/mon-academie', libelle: 'Mon académie', icone: ICONES.academie },
-  { href: '/academie/formations', libelle: 'Mes formations', icone: ICONES.catalogue },
-  { href: '/academie/apprenants', libelle: 'Mes apprenants', icone: ICONES.apprenants },
-  { href: '/academie/formateurs', libelle: 'Mes formateurs', icone: ICONES.formateurs },
-  { href: '/academie/agenda', libelle: 'Mon agenda', icone: ICONES.agenda },
-  { href: '/academie/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
-  { href: '/academie/ventes', libelle: 'Mes ventes', icone: ICONES.ventes },
-  { href: '/academie/packs', libelle: 'Mes packs', icone: ICONES.packs },
-  { href: '/academie/codes-promo', libelle: 'Mes codes promo', icone: ICONES.promo },
-  { href: '/academie/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },
+  {
+    libelle: 'Formations',
+    icone: ICONES.catalogue,
+    entrees: [
+      { href: '/academie/formations', libelle: 'Mes formations', icone: ICONES.catalogue },
+      { href: '/academie/devoirs', libelle: 'Devoirs à corriger', icone: ICONES.formulaire },
+      { href: '/academie/classes-virtuelles', libelle: 'Classes virtuelles', icone: ICONES.classes },
+      { href: '/academie/calendrier', libelle: 'Calendrier', icone: ICONES.sessions },
+      { href: '/academie/agenda', libelle: 'Mon agenda', icone: ICONES.agenda },
+      { href: '/academie/reglages', libelle: 'Réglages des formations', icone: ICONES.reglages },
+    ],
+  },
+  {
+    libelle: 'Apprenants',
+    icone: ICONES.apprenants,
+    entrees: [
+      { href: '/academie/apprenants', libelle: 'Mes apprenants', icone: ICONES.apprenants },
+      { href: '/academie/communaute', libelle: 'Communauté', icone: ICONES.affiliation },
+      { href: '/academie/formateurs', libelle: 'Mes formateurs', icone: ICONES.formateurs },
+    ],
+  },
+  {
+    libelle: 'Ventes',
+    icone: ICONES.ventes,
+    entrees: [
+      { href: '/academie/ventes', libelle: 'Mes ventes', icone: ICONES.ventes },
+      { href: '/academie/packs', libelle: 'Mes packs', icone: ICONES.packs },
+      { href: '/academie/codes-promo', libelle: 'Mes codes promo', icone: ICONES.promo },
+      { href: '/academie/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },
+    ],
+  },
+  {
+    libelle: 'Outils marketing',
+    icone: ICONES.courrier,
+    entrees: [
+      { href: '/academie/emails', libelle: 'E-mails automatiques', icone: ICONES.enveloppe },
+      { href: '/academie/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
+      { href: '/academie/integrations', libelle: 'Intégrations externes', icone: ICONES.page },
+    ],
+  },
 ];
 
 /**
- * MON COMPTE. Le groupe dépliable du bas : la vitrine publique, l'argent qui
- * arrive, les réglages, et qui a le droit d'entrer.
+ * MON COMPTE. Le groupe dépliable du bas : la vitrine publique, les réglages
+ * (domaine, référencement, liens légaux, API), et qui a le droit d'entrer.
  */
 const MON_COMPTE: Entree[] = [
   { href: '/academie/ma-page', libelle: 'Ma page académie', icone: ICONES.page },
   { href: '/academie/personnalisation', libelle: 'Personnalisation', icone: ICONES.vitrine },
-  { href: '/academie/reglages', libelle: 'Réglages des formations', icone: ICONES.reglages },
   { href: '/academie/parametres', libelle: 'Paramètres', icone: ICONES.reglages },
   { href: '/academie/droits-acces', libelle: "Droits d'accès", icone: ICONES.cles },
 ];
@@ -123,7 +165,6 @@ const PORTEES: Record<string, string> = {
   '/academie/sessions': '/academie/formations',
   '/academie/cours-en-ligne': '/academie/formations',
   '/academie/cours-en-presentiel': '/academie/formations',
-  '/academie/classes-virtuelles': '/academie/formations',
   '/academie/statistiques': '/academie',
   '/academie/certification': '/academie/mon-academie',
   '/academie/comptabilite': '/academie/mon-academie',
@@ -175,10 +216,19 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
   const [ouvert, setOuvert] = useState(false);
   // Le groupe « Mon compte » s'ouvre tout seul quand on est sur l'une de ses pages.
   const [compteOuvert, setCompteOuvert] = useState(() => MON_COMPTE.some((e) => chemin.startsWith(e.href)));
+  // Les groupes du métier : celui de la page courante s'ouvre tout seul.
+  const groupeCourant = () => MENU.filter(estGroupe).find((g) => g.entrees.some((e) => actif(chemin, e.href)))?.libelle;
+  const [groupesOuverts, setGroupesOuverts] = useState<string[]>(() => {
+    const g = groupeCourant();
+    return g ? [g] : [];
+  });
 
   useEffect(() => {
     setOuvert(false);
     if (MON_COMPTE.some((e) => chemin.startsWith(e.href))) setCompteOuvert(true);
+    const g = groupeCourant();
+    if (g) setGroupesOuverts((l) => (l.includes(g) ? l : [...l, g]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chemin]);
 
   // Le serveur rend la page sur l'académie `compte.active`. On aligne le cookie
@@ -213,9 +263,30 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
 
   // Sans espace, on ne montre que ce qui s'ouvre vraiment ; avec un espace,
   // « Le chemin » ouvre celui de l'espace, pas la page des deux parcours.
-  const entrees = (compte?.espaceOuvert ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map((e) =>
-    e.href === CHEMIN_COMMUN && compte?.espaceOuvert ? { ...e, href: CHEMIN_ESPACE } : e,
+  const entrees: Element[] = (compte?.espaceOuvert ? MENU : MENU.filter((e) => !estGroupe(e) && PUBLIC.includes(e.href))).map((e) =>
+    !estGroupe(e) && e.href === CHEMIN_COMMUN && compte?.espaceOuvert ? { ...e, href: CHEMIN_ESPACE } : e,
   );
+
+  const element = (e: Element) => {
+    if (!estGroupe(e)) return lien(e);
+    const deplie = groupesOuverts.includes(e.libelle);
+    const contientActif = e.entrees.some((x) => actif(chemin, x.href));
+    return (
+      <li key={e.libelle}>
+        <button
+          type="button"
+          onClick={() => setGroupesOuverts((l) => (l.includes(e.libelle) ? l.filter((x) => x !== e.libelle) : [...l, e.libelle]))}
+          aria-expanded={deplie}
+          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold transition hover:bg-white/10 hover:text-white ${contientActif && !deplie ? 'text-white' : 'text-[#D3E7DC]'}`}
+        >
+          <span className="shrink-0 text-[#8CBBA4]">{e.icone}</span>
+          <span className="flex-1 text-left">{e.libelle}</span>
+          <span className={`shrink-0 text-[#8CBBA4] transition-transform ${deplie ? 'rotate-180' : ''}`}>{ICONES.chevron}</span>
+        </button>
+        {deplie ? <ul className="mt-0.5 space-y-0.5 pl-3">{e.entrees.map(lien)}</ul> : null}
+      </li>
+    );
+  };
 
   const contenu = (
     <div className="flex h-full flex-col">
@@ -241,7 +312,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
       </div>
 
       <nav aria-label="Navigation">
-        <ul className="space-y-0.5">{entrees.map(lien)}</ul>
+        <ul className="space-y-0.5">{entrees.map(element)}</ul>
 
         {/* Mon compte : replié par défaut, déplié quand on est dessus. */}
         {compte?.espaceOuvert ? (

@@ -274,6 +274,10 @@ export interface Classe {
   placesMax: number | null;
   coursId: string | null;
   cours?: { id: string; titre: string } | null;
+  /** La salle de visio intégrée : ouverte ou non, et ses deux liens. */
+  salleActive?: boolean;
+  lienAnimateur?: string | null;
+  lienApprenants?: string | null;
 }
 
 export interface Vitrine {

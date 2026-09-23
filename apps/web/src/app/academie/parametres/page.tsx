@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { BTN_DISCRET, CARTE, Encart, Pastille, Titre, formaterDate } from '../_ui';
 import { LIBELLES_QUALIOPI, type FicheAcademie } from '../_types';
+import { OngletsParametres } from './_onglets';
 
 export const metadata: Metadata = { title: 'Paramètres', robots: { index: false, follow: false } };
 
@@ -52,6 +53,7 @@ export default async function ParametresPage() {
       >
         Paramètres
       </Titre>
+      <OngletsParametres actif="/academie/parametres" />
 
       <div className="grid gap-4">
         {/* -------------------------------------------------- l'identité */}

@@ -5,6 +5,7 @@ import { Accent, Barre, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, 
 import { LIBELLES_QUALIOPI, type EspaceAcademie } from './_types';
 import { BlocStatistiques } from './_stats';
 import type { Apprenant, CoursResume, Vente } from './_ecole/types';
+import type { Demarrage } from './_ecole/suite-types';
 
 /**
  * L'ACCUEIL DE « PILOTER MON ACADÉMIE ».
@@ -102,12 +103,16 @@ async function TableauDeBord() {
   // L'espace d'un côté, l'école de l'autre : les chiffres de vente et de suivi
   // vivent dans le module école, et ils ont leur place ici, pas sur un écran
   // séparé où personne ne va.
-  const [espace, ventesR, apprenantsR, coursR] = await Promise.all([
+  const [espace, ventesR, apprenantsR, coursR, demarrageR, devoirsR] = await Promise.all([
     apiAcademie<EspaceAcademie>(s, '/academie/espace'),
     apiAcademie<Vente[]>(s, '/ecole/ventes'),
     apiAcademie<Apprenant[]>(s, '/ecole/apprenants'),
     apiAcademie<CoursResume[]>(s, '/ecole/cours'),
+    apiAcademie<Demarrage>(s, '/ecole/demarrage'),
+    apiAcademie<{ compteurs: { aCorriger: number } }>(s, '/ecole/devoirs?statut=A_CORRIGER'),
   ]);
+  const demarrage = demarrageR.data ?? null;
+  const aCorriger = devoirsR.data?.compteurs.aCorriger ?? 0;
   const { data, error } = espace;
   if (!data) return <Encart ton="attention">{error ?? 'Ton espace ne se charge pas pour le moment.'}</Encart>;
 
@@ -145,6 +150,13 @@ async function TableauDeBord() {
       href: '/academie/veille',
     });
   }
+  if (aCorriger > 0) {
+    aFaire.push({
+      titre: `${aCorriger} devoir${aCorriger > 1 ? 's' : ''} à corriger`,
+      detail: 'Tant que le devoir n’est pas validé, la formation de l’apprenant n’avance pas.',
+      href: '/academie/devoirs',
+    });
+  }
   if (reclamations.ouvertes > 0) {
     aFaire.push({
       titre: `${reclamations.ouvertes} réclamation${reclamations.ouvertes > 1 ? 's' : ''} en attente`,
@@ -165,6 +177,39 @@ async function TableauDeBord() {
       >
         {academie.nom}
       </Titre>
+
+      {demarrage && demarrage.faites < demarrage.total ? (
+        <section className={`${CARTE} mb-8 p-5 sm:p-6`}>
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="flex-1 text-xl font-extrabold text-[#12312A]">Bien démarrer ton école en ligne</h2>
+            <span className="text-sm font-bold tabular-nums text-[#5E7A6E]">
+              {demarrage.faites} / {demarrage.total}
+            </span>
+          </div>
+          <div className="mt-3">
+            <Barre pourcentage={Math.round((demarrage.faites / demarrage.total) * 100)} />
+          </div>
+          <ol className="mt-4 grid gap-2">
+            {demarrage.etapes.map((e, n) => (
+              <li key={e.cle}>
+                <Link href={e.lien} className="flex items-start gap-3 rounded-xl px-3 py-2.5 no-underline hover:bg-[#F3F8F5]">
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${e.fait ? 'bg-[#1E9E6A] text-white' : 'border-2 border-[#CFE4D9] text-[#5E7A6E]'}`}
+                    aria-hidden="true"
+                  >
+                    {e.fait ? '✓' : n + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block font-extrabold ${e.fait ? 'text-[#5E7A6E] line-through' : 'text-[#12312A]'}`}>{e.titre}</span>
+                    {!e.fait ? <span className="block text-sm leading-relaxed text-[#5E7A6E]">{e.aide}</span> : null}
+                  </span>
+                  {!e.fait ? <span className="shrink-0 text-sm font-bold text-[#0F5F3E]">Y aller →</span> : null}
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Tuile

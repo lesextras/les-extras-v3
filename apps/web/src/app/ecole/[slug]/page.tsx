@@ -44,14 +44,30 @@ async function charger(slug: string) {
   return data && (data as Vitrine).ecole ? (data as Vitrine) : null;
 }
 
+interface Seo {
+  seo: { titre: string | null; description: string | null; indexable: boolean };
+  domaine: string | null;
+}
+
+async function chargerSeo(slug: string) {
+  const { data } = await fetchPublic<Seo>(`/public/ecole/ecoles/${encodeURIComponent(slug)}/infos`, { revalidate: 0 });
+  return data && (data as Seo).seo ? (data as Seo) : null;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const v = await charger(slug);
+  const [v, s] = await Promise.all([charger(slug), chargerSeo(slug)]);
   if (!v) return { title: 'École introuvable' };
+  // Le référencement réglé par l'école passe avant ce qu'on déduit de sa page.
+  const titre = s?.seo.titre || v.ecole.nom;
+  const description = s?.seo.description || v.ecole.sousTitre || undefined;
   return {
-    title: v.ecole.nom,
-    description: v.ecole.sousTitre ?? undefined,
-    alternates: { canonical: `/ecole/${v.ecole.slug}` },
+    title: { absolute: titre },
+    description,
+    alternates: { canonical: s?.domaine ? `https://${s.domaine}/` : `/ecole/${v.ecole.slug}` },
+    openGraph: { title: titre, description, images: v.ecole.banniereUrl ? [v.ecole.banniereUrl] : undefined },
+    robots: s && !s.seo.indexable ? { index: false, follow: false } : undefined,
+    icons: v.ecole.faviconUrl ? { icon: v.ecole.faviconUrl } : undefined,
   };
 }
 
@@ -84,10 +100,21 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
     >
       <header className="px-4 py-10 sm:py-16" style={{ backgroundColor: ecole.couleur, color: texteBoutons }}>
         <div className="mx-auto flex w-full max-w-[1040px] flex-col items-start gap-5">
-          {ecole.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={ecole.logoUrl} alt="" className="h-16 w-16 rounded-2xl bg-white/10 object-contain p-1.5" />
-          ) : null}
+          <div className="flex w-full items-start justify-between gap-4">
+            {ecole.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={ecole.logoUrl} alt="" className="h-16 w-16 rounded-2xl bg-white/10 object-contain p-1.5" />
+            ) : (
+              <span />
+            )}
+            <Link
+              href={`/ecole/${ecole.slug}/espace`}
+              className="rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold no-underline shadow-sm"
+              style={{ color: ecole.couleur }}
+            >
+              Espace apprenant
+            </Link>
+          </div>
           <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-5xl">{ecole.nom}</h1>
           {ecole.sousTitre ? <p className="max-w-[56ch] text-lg leading-relaxed opacity-90">{ecole.sousTitre}</p> : null}
         </div>
@@ -172,6 +199,11 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
               ))}
             </p>
           ) : null}
+          <p className="mt-2">
+            <Link href={`/ecole/${ecole.slug}/legal`} className="font-bold underline underline-offset-4" style={{ color: boutons }}>
+              Conditions et confidentialité
+            </Link>
+          </p>
           <p className="mt-2">
             École en ligne propulsée par{' '}
             <a href="https://pilote.toulali.fr" className="font-bold underline underline-offset-4">

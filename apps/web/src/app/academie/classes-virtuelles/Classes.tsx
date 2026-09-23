@@ -18,7 +18,7 @@ function heureDe(iso: string) {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-export function Classes({ initiales, cours }: { initiales: Classe[]; cours: CoursResume[] }) {
+export function Classes({ initiales, cours, visioDisponible = false }: { initiales: Classe[]; cours: CoursResume[]; visioDisponible?: boolean }) {
   const [classes, setClasses] = useState(initiales);
   const [ouvert, setOuvert] = useState(false);
   const [enCours, setEnCours] = useState(false);
@@ -81,6 +81,26 @@ export function Classes({ initiales, cours }: { initiales: Classe[]; cours: Cour
     }
   }
 
+  async function salle(id: string, ouvrir: boolean) {
+    setErreur(null);
+    try {
+      const r = await appel<{ salleActive: boolean; lienAnimateur?: string; lienApprenants?: string }>(`/ecole/classes/${id}/salle`, { methode: ouvrir ? 'POST' : 'DELETE' });
+      setClasses((l) =>
+        l.map((x) => (x.id === id ? { ...x, salleActive: r.salleActive, lienAnimateur: r.lienAnimateur ?? null, lienApprenants: r.lienApprenants ?? null } : x)),
+      );
+    } catch (err) {
+      setErreur(messageDe(err));
+    }
+  }
+
+  async function copier(texte: string) {
+    try {
+      await navigator.clipboard.writeText(texte);
+    } catch {
+      window.prompt('Copie ce lien :', texte);
+    }
+  }
+
   async function supprimer(id: string) {
     setErreur(null);
     try {
@@ -108,19 +128,40 @@ export function Classes({ initiales, cours }: { initiales: Classe[]; cours: Cour
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {c.placesMax ? <Pastille ton="neutre">{c.placesMax} places</Pastille> : null}
-            {c.lien ? null : <Pastille ton="attention">Lien manquant</Pastille>}
+            {c.salleActive ? <Pastille ton="ok">Salle intégrée</Pastille> : c.lien ? null : <Pastille ton="attention">Lien manquant</Pastille>}
           </div>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[#EDF4F1] pt-3">
-          {c.lien ? (
-            <a href={c.lien} target="_blank" rel="noreferrer" className={future ? BTN_PRIMAIRE : BTN_DISCRET}>
-              {future ? 'Rejoindre la classe' : 'Ouvrir le lien'}
-            </a>
+          {c.salleActive && c.lienAnimateur ? (
+            <>
+              <a href={c.lienAnimateur} target="_blank" rel="noreferrer" className={future ? BTN_PRIMAIRE : BTN_DISCRET}>
+                Entrer comme formateur
+              </a>
+              <button type="button" onClick={() => copier(`${window.location.origin}${c.lienApprenants}`)} className={BTN_DISCRET}>
+                Copier le lien des apprenants
+              </button>
+              <button type="button" onClick={() => salle(c.id, false)} className={BTN_DISCRET}>
+                Revenir au lien externe
+              </button>
+            </>
           ) : (
-            <span className="text-[14px] text-[#8A1B3D]">
-              Ajoute le lien de visio : sans lui, personne ne peut entrer.
-            </span>
+            <>
+              {c.lien ? (
+                <a href={c.lien} target="_blank" rel="noreferrer" className={future ? BTN_PRIMAIRE : BTN_DISCRET}>
+                  {future ? 'Rejoindre la classe' : 'Ouvrir le lien'}
+                </a>
+              ) : (
+                <span className="text-[14px] text-[#8A1B3D]">
+                  Ajoute un lien de visio, ou utilise la salle intégrée.
+                </span>
+              )}
+              {future && visioDisponible ? (
+                <button type="button" onClick={() => salle(c.id, true)} className={BTN_DISCRET}>
+                  Utiliser la salle intégrée
+                </button>
+              ) : null}
+            </>
           )}
           <button type="button" onClick={() => supprimer(c.id)} className={`${BTN_DISCRET} ml-auto`}>
             Supprimer
@@ -163,7 +204,9 @@ export function Classes({ initiales, cours }: { initiales: Classe[]; cours: Cour
               <input type="datetime-local" value={fin} onChange={(e) => setFin(e.target.value)} className={CHAMP} />
             </label>
             <label className="block sm:col-span-2">
-              <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Lien de la visio</span>
+              <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">
+                Lien de la visio{visioDisponible ? ' (facultatif : la salle intégrée peut le remplacer)' : ''}
+              </span>
               <input
                 value={lien}
                 onChange={(e) => setLien(e.target.value)}

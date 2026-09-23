@@ -50,14 +50,51 @@ const PAGE_CHOIX_CHEMIN = `${PREFIXE_ASSOCIATION}/choisir-le-chemin`;
  * Oublier d'inscrire ici une adresse publique ne se voit pas tout de suite :
  * elle part se faire réécrire dans l'espace association et répond 404.
  */
-const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre', '/boutique', '/medias'];
+const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre', '/boutique', '/medias', '/classe', '/integration'];
+
+/**
+ * LE DOMAINE PERSONNALISÉ D'UNE ÉCOLE (formations.monsite.fr).
+ *
+ * Tout hôte qui n'est ni Les Extras ni Piloter est peut-être le domaine d'une
+ * école : on demande à l'API à quelle école il appartient (réponse gardée cinq
+ * minutes), et l'accueil du domaine sert la vitrine de cette école. Un hôte
+ * inconnu de l'API retombe sur le comportement normal : rien ne casse.
+ */
+const HOTES_CONNUS = /(^|\.)les-extras\.(fr|com)$|^localhost$|^\d+\.\d+\.\d+\.\d+$/;
+const DOMAINES_ECOLE = new Map<string, { slug: string | null; expire: number }>();
+
+async function ecoleDuDomaine(hote: string): Promise<string | null> {
+  const connu = DOMAINES_ECOLE.get(hote);
+  if (connu && connu.expire > Date.now()) return connu.slug;
+  const base = (process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'https://api.les-extras.fr/api').replace(/\/$/, '');
+  let slug: string | null = null;
+  try {
+    const r = await fetch(`${base}/public/ecole/domaine/${encodeURIComponent(hote)}`, { signal: AbortSignal.timeout(3000) });
+    if (r.ok) slug = ((await r.json()) as { slug?: string }).slug ?? null;
+  } catch {
+    slug = null;
+  }
+  DOMAINES_ECOLE.set(hote, { slug, expire: Date.now() + 5 * 60_000 });
+  return slug;
+}
 
 /** L'administration de Piloter : une seule adresse, sur le domaine de Piloter. */
 const ADMINISTRATION = '/administration';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hote = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
+
+  // Le domaine personnalisé d'une école : son accueil est la vitrine de l'école.
+  if (hote && hote !== HOTE_PILOTE && hote !== HOTE_ANCIEN && !HOTES_CONNUS.test(hote)) {
+    const slug = /\.[a-z0-9]+$/i.test(pathname) ? null : await ecoleDuDomaine(hote);
+    if (slug) {
+      if (PUBLIQUES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return NextResponse.next();
+      const url = request.nextUrl.clone();
+      url.pathname = pathname === '/' ? `/ecole/${slug}` : `/ecole/${slug}${pathname}`;
+      return NextResponse.rewrite(url);
+    }
+  }
 
   // L'ancienne adresse : on redirige tout, en gardant le chemin et la requête.
   if (hote === HOTE_ANCIEN) {

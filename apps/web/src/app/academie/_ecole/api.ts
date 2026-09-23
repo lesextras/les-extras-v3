@@ -68,3 +68,25 @@ export async function deposerMedia(fichier: File): Promise<{ id: string; nom: st
   // tranches, et c'est /medias/<id> qui sait relayer une demande d'intervalle.
   return { ...media, url: `/medias/${media.id}` };
 }
+
+/**
+ * TÉLÉCHARGE UN FICHIER SERVI PAR L'API, AU NOM DE L'ESPACE AFFICHÉ.
+ *
+ * Un simple lien partirait sans l'en-tête d'espace : pour quelqu'un qui porte
+ * plusieurs comptes, le serveur chercherait le fichier dans le mauvais.
+ */
+export async function telecharger(chemin: string, nom: string): Promise<void> {
+  const headers: Record<string, string> = { Accept: '*/*' };
+  const espace = espaceCourant();
+  if (espace) headers['x-account-id'] = espace;
+  const res = await fetch(`/api/proxy${chemin}`, { headers, credentials: 'include' });
+  if (!res.ok) throw new Error("Le fichier ne s'est pas téléchargé.");
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nom;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}

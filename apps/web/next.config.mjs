@@ -421,6 +421,40 @@ const nextConfig = {
         ],
       },
       {
+        // LA VISIO : CAMÉRA, MICRO ET SERVEUR MÉDIA, SUR CES SEULES PAGES.
+        //
+        // L'en-tête général coupe la caméra et le micro (`camera=()`) et
+        // n'autorise aucune connexion vers le serveur média : une salle de
+        // visio ne pouvait donc pas s'ouvrir, en silence. On rouvre les deux
+        // sur les pages qui en ont besoin, et nulle part ailleurs. Pour deux
+        // règles qui posent la même clé, Next garde la dernière.
+        source: '/:salle(classe|visio)/:path*',
+        headers: [
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()' },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; media-src 'self' blob: mediastream:; connect-src 'self' https://api.les-extras.fr wss://*.livekit.cloud https://*.livekit.cloud; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+          },
+        ],
+      },
+      {
+        // LES CARTES À INTÉGRER SUR UN AUTRE SITE (Intégrations externes).
+        //
+        // Ces pages sont faites pour être posées dans une iframe, chez
+        // l'organisme : elles seules acceptent d'être encadrées par une autre
+        // origine. Elles n'affichent qu'une formation publiée et un bouton.
+        source: '/integration/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'ALLOWALL' },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors *; base-uri 'self'; form-action 'self'; object-src 'none'",
+          },
+        ],
+      },
+      {
         // SOURCE DES MINI-FORMATIONS — lisible depuis une autre origine.
         //
         // Le contenu des mini-formations gratuites est écrit ici, dans le
