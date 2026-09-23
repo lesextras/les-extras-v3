@@ -11,7 +11,6 @@ import { InterrupteurDisponibilite } from "../../../_shared/InterrupteurDisponib
 import { ExportPaie } from "../../../_shared/ExportPaie";
 import { ImportPlanning } from "../../../_shared/ImportPlanning";
 import type { Mission } from "../../../_shared/types";
-import type { Repartition } from "../../../_shared/EquipeTable";
 
 export const metadata: Metadata = { title: "Planning" };
 
@@ -60,13 +59,8 @@ export default async function PlanningPage() {
     missions = (res.data ?? []).map((m) => ({ id: m.id, title: m.title }));
   }
 
-  // Services de l'établissement : alimentent le filtre du calendrier. Sans
-  // eux, un chef de service voit le planning de toute la structure.
-  let services: { id: string; name: string }[] = [];
-  if (isEstablishment) {
-    const res = await fetchApi<Repartition>(session, "/memberships/repartition");
-    services = (res.data?.services ?? []).map((s) => ({ id: s.id, name: s.name }));
-  }
+  // Plus de filtre par service (23/09/2026) : un compte = une personne, le
+  // planning est celui de la structure telle qu'elle se déclare.
 
   // Disponibilités (freelance).
   let availability: Availability[] = [];
@@ -127,7 +121,6 @@ export default async function PlanningPage() {
           initialShifts={shifts ?? []}
           missions={missions}
           initialAvailability={availability}
-          services={services}
         />
       )}
     </div>
