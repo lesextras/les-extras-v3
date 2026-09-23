@@ -1,11 +1,10 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ComplianceDocType, Prisma } from '@prisma/client';
 import type { Readable } from 'node:stream';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { ClaudeService } from '../assistant/claude.service';
 import { ExtractionService } from '../assistant/extraction.service';
-import { MOTEUR_LEX, type MoteurLex } from '../assistant/moteur-lex';
 
 /**
  * LE PRÉ-CONTRÔLE AUTOMATIQUE DES PIÈCES.
@@ -23,9 +22,14 @@ import { MOTEUR_LEX, type MoteurLex } from '../assistant/moteur-lex';
  * contrôle humain se fait comme avant.
  *
  * Les images et les PDF passent par la lecture visuelle de Claude (le seul
- * moteur de la maison qui lit une image) ; les .docx et les PDF texte
- * passent par l'extraction de texte puis le moteur LEX habituel. Rien n'est
- * conservé chez le fournisseur au-delà de l'appel.
+ * moteur de la maison qui lit une image) ; les .docx passent par l'extraction
+ * de texte puis le même moteur. Rien n'est conservé chez le fournisseur
+ * au-delà de l'appel.
+ *
+ * ClaudeService et ExtractionService sont fournis ICI, par ConformiteModule,
+ * et non importés d'AssistantModule : importer ce module-là depuis la
+ * conformité créait un cycle d'imports au démarrage (23/09/2026). Les deux
+ * services n'ont aucune dépendance, les instancier deux fois ne coûte rien.
  *
  * Désactivable d'un mot : PRE_CONTROLE_PIECES=off.
  */
@@ -52,7 +56,6 @@ export class PreControleService {
     private readonly storage: StorageService,
     private readonly claude: ClaudeService,
     private readonly extraction: ExtractionService,
-    @Optional() @Inject(MOTEUR_LEX) private readonly moteur: MoteurLex | null,
   ) {}
 
   get actif(): boolean {
@@ -107,11 +110,11 @@ export class PreControleService {
     const consigne = PreControleService.consigne(attendu, nom);
 
     const mime = doc.file.mimeType.toLowerCase();
+    if (!this.claude.disponible) {
+      throw new Error('lecture automatique indisponible (clé Anthropic absente)');
+    }
     let brut: string;
     if (mime.startsWith('image/') || mime === 'application/pdf') {
-      if (!this.claude.disponible) {
-        throw new Error('lecture visuelle indisponible (clé Anthropic absente)');
-      }
       brut = await this.claude.lireDocument({
         system: PreControleService.SYSTEM,
         consigne,
@@ -124,8 +127,7 @@ export class PreControleService {
       });
     } else {
       const texte = await this.extraction.extraire(buffer, mime, doc.file.originalName);
-      if (!this.moteur?.disponible) throw new Error('moteur LEX indisponible');
-      brut = await this.moteur.completer({
+      brut = await this.claude.completer({
         system: PreControleService.SYSTEM,
         user: `${consigne}\n\nTEXTE DU DOCUMENT :\n${texte.slice(0, 12000)}`,
         maxTokens: 600,
