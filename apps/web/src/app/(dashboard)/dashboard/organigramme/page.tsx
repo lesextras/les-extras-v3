@@ -21,7 +21,6 @@
 //    plutôt que rien : le lecteur sait qu'il ne voit pas tout, au lieu de
 //    croire que le service est vide.
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { requireSession, fetchApi } from '../../../_shared/server';
 import { PageHeader, ErrorState } from '../../../_shared/ui';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,7 +39,7 @@ export default async function OrganigrammePage() {
     <div className="space-y-6">
       <PageHeader
         title="Organigramme"
-        subtitle="Votre structure, votre établissement et ses services. Les noms que vous voyez dépendent de votre périmètre."
+        subtitle="Votre structure et les personnes qui s’y rattachent."
       />
 
       {error || !data ? (
@@ -55,15 +54,12 @@ export default async function OrganigrammePage() {
 
       <Card>
         <CardContent className="space-y-2 p-5 text-sm">
-          <p className="font-semibold">Vous ne voyez pas tout le monde ?</p>
+          <p className="font-semibold">Qui apparaît ici ?</p>
           <p className="text-muted-foreground" lang="fr">
-            C’est normal, et c’est la règle : on voit les personnes de ses
-            propres services et celles qu’on a fait venir. Pour voir tout
-            l’établissement, il faut le niveau Direction. Il se demande depuis{' '}
-            <Link href="/dashboard/mon-poste" className="font-medium text-primary hover:underline">
-              votre poste
-            </Link>{' '}
-            et Les Extras le valide à la main.
+            Les personnes qui ont rattaché la même structure (SIRET) que vous.
+            Chacune a son propre compte : pour rejoindre l’organigramme, un
+            collègue crée le sien et indique le même SIRET à l’inscription ou
+            depuis « Mon établissement ».
           </p>
         </CardContent>
       </Card>
