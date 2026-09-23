@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ComplianceDocType, ComplianceStatus, MembershipStatus } from '@prisma/client';
+import { ComplianceDocType, ComplianceStatus, MembershipStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpsertComplianceDto } from './dto/upsert-compliance.dto';
+import { PreControleService, type NotePreControle } from './pre-controle.service';
 
 /** Fenêtre d'alerte "échéance proche" (jours). */
 const EXPIRY_WARNING_DAYS = 60;
@@ -30,7 +31,10 @@ export interface Completeness {
 
 @Injectable()
 export class ConformiteService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly preControle: PreControleService,
+  ) {}
 
   /**
    * Pièces OBLIGATOIRES pour intervenir (médico-social).
@@ -321,7 +325,7 @@ export class ConformiteService {
       status = ComplianceStatus.EXPIRED;
     }
 
-    return this.prisma.complianceDocument.upsert({
+    const doc = await this.prisma.complianceDocument.upsert({
       where: { userId_accountId_type: { userId, accountId, type: dto.type } },
       create: {
         userId,
@@ -344,8 +348,14 @@ export class ConformiteService {
         issuedAt,
         expiresAt,
         status,
+        // Un nouveau fichier efface la note du précédent : elle sera refaite.
+        ...(dto.fileId ? { preControle: Prisma.DbNull, preControleLe: null } : {}),
       },
     });
+    // Le pré-contrôle lit le fichier en arrière-plan : le dépôt répond tout de
+    // suite, la note arrive quelques secondes plus tard (voir PreControleService).
+    if (dto.fileId) void this.preControle.lancer(doc.id);
+    return doc;
   }
 
   /**
@@ -458,6 +468,8 @@ export class ConformiteService {
       expiresAt: Date | null;
       notes: string | null;
       updatedAt: Date;
+      preControle?: unknown;
+      preControleLe?: Date | null;
     },
     required: boolean,
   ) {
@@ -483,6 +495,9 @@ export class ConformiteService {
       required,
       expiringSoon: this.isExpiringSoon(doc),
       updatedAt: doc.updatedAt as Date | null,
+      /** Note de lecture automatique — une aide au contrôle, jamais une validation. */
+      preControle: (doc.preControle ?? null) as NotePreControle | null,
+      preControleLe: doc.preControleLe ?? null,
     };
   }
 
@@ -500,6 +515,8 @@ export class ConformiteService {
       required,
       expiringSoon: false,
       updatedAt: null as Date | null,
+      preControle: null as NotePreControle | null,
+      preControleLe: null as Date | null,
     };
   }
 }
