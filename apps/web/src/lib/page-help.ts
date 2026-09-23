@@ -34,16 +34,6 @@ const AIDE: Record<string, PageHelpEntry> = {
     ],
   },
 
-  "/dashboard/temps-de-travail": {
-    titre: "Le planning, les congés et les règles, au même endroit",
-    texte:
-      "Déposez le planning d'équipe que vous tenez déjà : il est lu sur votre poste, jamais téléversé, et vous voyez aussitôt les heures planifiées, les jours d'absence posés et ce qui reste sur le plafond annuel. En dessous, les demandes d'absence à trancher et les compteurs ; tout en bas, les règles de votre convention, nuit, dimanche, fériés, qui servent à chaque chiffrage.",
-    etapes: [
-      "Déposez un CSV avec au minimum les colonnes personne et date.",
-      "Posez ou tranchez les demandes : une absence approuvée entre seule au planning.",
-      "Renseignez vos majorations une fois : seul le 1er mai est majoré par la loi, le reste vient de VOTRE convention.",
-    ],
-  },
   "/dashboard/progression": {
     titre: "Trois paliers, gagnés sur le terrain",
     texte:
