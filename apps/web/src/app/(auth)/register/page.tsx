@@ -39,7 +39,6 @@ import {
   EtapeActivites,
   EtapeDisponibilite,
   LIEU_VIDE,
-  RechercheEtablissement,
   type LieuDeTravail,
 } from './Etapes';
 
@@ -491,40 +490,11 @@ export default function RegisterPage() {
                           fois le compte créé. Il arrive NON VÉRIFIÉ — c'est un
                           collègue de la maison qui confirme.
                         */}
-                        {lieu.rejoindre ? (
-                          <div className="mt-2 flex items-start gap-2.5 rounded-lg border-2 border-primary/45 bg-primary-soft/30 p-3">
-                            <Building2 aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-sm font-medium">
-                                {lieu.rejoindre.name}
-                              </span>
-                              <span className="block text-xs text-muted-foreground" lang="fr">
-                                Vous demanderez à rejoindre cet établissement. Un
-                                collègue confirmera votre rattachement.
-                              </span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setLieu((l) => ({ ...l, rejoindre: null }))}
-                              className="shrink-0 text-xs font-medium text-primary hover:underline"
-                            >
-                              Annuler
-                            </button>
-                          </div>
-                        ) : (
-                          <RechercheEtablissement
-                            nom={field.value ?? ''}
-                            onRejoindre={(etablissement) => {
-                              setLieu((l) => ({ ...l, rejoindre: etablissement }));
-                              // Le nom saisi devient celui de l'établissement
-                              // reconnu : sans cela le compte naîtrait sous
-                              // « mecs » et l'adresse publique avec.
-                              form.setValue('organizationName', etablissement.name, {
-                                shouldValidate: true,
-                              });
-                            }}
-                          />
-                        )}
+                        {/* PLUS DE « REJOINDRE UN ÉTABLISSEMENT EXISTANT » (23/09/2026).
+                            Le compte, c'est la personne : un collègue crée le
+                            sien, rattache la même structure (SIRET), et
+                            l'organigramme les réunit. Personne ne devient
+                            « membre » du compte d'un autre. */}
                       </FormItem>
                     )}
                   />
