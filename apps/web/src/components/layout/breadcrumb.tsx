@@ -53,8 +53,6 @@ const LABELS: Record<string, string> = {
   vivier: 'Mon vivier RenforTeam',
   facturation: 'Devis & factures',
   ideas: 'Boîte à idées',
-  'temps-de-travail': 'Temps de travail',
-  conges: 'Congés & compteurs',
   contrats: 'Contrats',
   progression: 'Ma progression',
   signer: 'Signature',
