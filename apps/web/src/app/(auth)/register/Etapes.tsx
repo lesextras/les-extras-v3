@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 import {
-  Building,
-  Check,
   Landmark,
   Loader2,
   Search,
@@ -15,7 +13,6 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { lancerConfettis } from '@/lib/confetti';
-import { groupesDroitsProposes } from '@/lib/droits';
 import { renfortSalarieVisible } from '@/lib/offre';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -85,115 +82,7 @@ function Encart({
 }
 
 /* ------------------------------------------------------------------------ */
-/* Étape « établissement » — et le doublon d'établissement                   */
-/* ------------------------------------------------------------------------ */
-
-export interface EtablissementExistant {
-  id: string;
-  name: string;
-  city: string | null;
-  structure: { id: string; nom: string } | null;
-}
-
-/**
- * LE DOUBLON D'ÉTABLISSEMENT — le plus coûteux des trois.
- *
- * Douze salariés d'une même MECS qui s'inscrivent chacun de leur côté créent
- * douze établissements homonymes : douze organigrammes d'une personne, douze
- * catalogues, et personne qui se voit. C'est le doublon de service, mais un
- * cran au-dessus — et il ne se répare pas facilement après coup, parce que
- * chaque compte porte déjà des devis et des documents.
- *
- * On cherche donc pendant la frappe, et on propose de REJOINDRE avant de
- * proposer de créer. La déclaration rattache de fait — la personne apparaît
- * dans l'organigramme, elle n'est plus seule — mais non vérifiée : elle ne voit
- * rien de l'établissement tant qu'un responsable ne l'a pas confirmée.
- */
-/**
- * LA RECHERCHE DE L'ÉTABLISSEMENT — un champ, une seule question.
- *
- * ⚠⚠ ON A ESSAYÉ DE FONDRE L'ÉTABLISSEMENT ET L'ENTITÉ EMPLOYEUSE DANS UN SEUL
- * CHAMP, ET C'ÉTAIT PLUS OBSCUR, PAS PLUS SIMPLE. Une même frappe interrogeait
- * les deux annuaires : taper « les extras » proposait dessous une association
- * sans rapport, et rien ne disait à laquelle des deux questions on était en
- * train de répondre. Les deux sont donc redevenus DEUX CHAMPS, CÔTE À CÔTE sur
- * la même ligne : « l'ESAT Corail de l'association ADSEA » se lit toujours de
- * gauche à droite, mais on répond à l'un, puis à l'autre.
- *
- * ⚠ CE CHAMP-CI NE CHERCHE QUE LES ÉTABLISSEMENTS DÉJÀ SUR LES EXTRAS, et
- * c'est le seul garde-fou contre le doublon décrit au-dessus. L'entité qui
- * emploie a son propre champ — `ChampStructure` —, qui interroge les
- * structures déclarées puis l'annuaire public.
- *
- * ⚠ REJOINDRE UN ÉTABLISSEMENT NE RENOMME RIEN D'AUTRE : le nom saisi fixe le
- * nom du compte ET son slug, tous deux posés à la création.
- */
-export function RechercheEtablissement({
-  nom,
-  onRejoindre,
-}: {
-  nom: string;
-  onRejoindre: (etablissement: EtablissementExistant) => void;
-}) {
-  const requete = useValeurRetardee(nom, 450);
-  const [etablissements, setEtablissements] = React.useState<EtablissementExistant[]>([]);
-
-  React.useEffect(() => {
-    const texte = requete.trim();
-    if (texte.length < 3) {
-      setEtablissements([]);
-      return;
-    }
-    let annule = false;
-    apiRequest<EtablissementExistant[]>(
-      `/public/etablissements?q=${encodeURIComponent(texte)}`,
-    )
-      .then((r) => {
-        if (!annule) setEtablissements(r ?? []);
-      })
-      .catch(() => {
-        // Une recherche qui échoue ne doit rien bloquer : on crée, tout
-        // simplement — c'est le comportement d'avant la recherche.
-        if (!annule) setEtablissements([]);
-      });
-    return () => {
-      annule = true;
-    };
-  }, [requete]);
-
-  if (etablissements.length === 0) return null;
-
-  return (
-    <div className="mt-2 space-y-1.5 rounded-lg border-2 border-primary/35 bg-primary-soft/30 p-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
-        Déjà sur Les Extras
-      </p>
-      {etablissements.map((e) => (
-        <button
-          key={e.id}
-          type="button"
-          onClick={() => onRejoindre(e)}
-          className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/60"
-        >
-          <Building aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium">{e.name}</span>
-            <span className="block truncate text-xs text-muted-foreground">
-              {[e.city, e.structure?.nom].filter(Boolean).join(' · ') ||
-                'Établissement déclaré'}
-            </span>
-          </span>
-          <span className="shrink-0 self-center text-xs font-medium text-primary">
-            C’est le mien
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------------ */
-/* L'entité qui emploie — le champ voisin du nom de l'établissement          */
+/* La structure juridique : l'organisme gestionnaire ou l'entité qui facture */
 /* ------------------------------------------------------------------------ */
 
 interface EntiteLegale {
@@ -220,39 +109,23 @@ interface StructureDeclaree {
 }
 
 /**
- * CE QUE L'ÉTAPE « OÙ VOUS TRAVAILLEZ » RAMÈNE.
+ * CE QUE L'ÉCRAN DES IDENTIFIANTS RAMÈNE EN PLUS DU COMPTE : la structure
+ * juridique (organisme gestionnaire d'un établissement, entité qui facture
+ * pour un intervenant).
  *
  * Elle ne fait AUCUNE écriture : le compte n'existe pas encore. Elle collecte,
- * et la page applique juste après la création. Voir la note du parcours.
+ * et la page applique juste après la création.
  */
 export interface LieuDeTravail {
-  /** Établissement existant reconnu comme le sien. */
-  rejoindre: EtablissementExistant | null;
   /** Structure déjà déclarée sur la plateforme. */
   structureId: string | null;
   /** Structure venue de l'annuaire, ou saisie à la main. */
   structure: StructureChoisie | null;
-  /** Nom du service ou de l'unité, tel qu'écrit. */
-  service: string;
-  /**
-   * L'intitulé du poste et le statut cadre.
-   *
-   * ⚠ ILS SONT SAISIS AVEC LE RESTE DU LIEU DE TRAVAIL, mais ils ne sont PAS
-   * écrits au même moment : ils partent avec le niveau et les droits, dans
-   * l'unique PATCH de l'étape suivante (`EtapePoste`). Deux écritures
-   * successives sur `/organisation/moi` se marcheraient dessus.
-   */
-  poste: string;
-  cadre: boolean;
 }
 
 export const LIEU_VIDE: LieuDeTravail = {
-  rejoindre: null,
   structureId: null,
   structure: null,
-  service: '',
-  poste: '',
-  cadre: false,
 };
 
 /**
@@ -284,7 +157,7 @@ export interface ChoixStructure {
  * LA STRUCTURE — retrouvée, pas saisie.
  *
  * On cherche d'abord parmi les structures DÉJÀ déclarées sur la plateforme :
- * si dix établissements d'un même groupe s'y sont rattachés, le onzième doit
+ * si dix établissements d'un même groupe l'ont déjà déclarée, le onzième doit
  * tomber sur la même ligne plutôt que d'en créer une douzième. L'annuaire
  * public vient ensuite, pour tout le reste.
  *
@@ -293,10 +166,13 @@ export interface ChoixStructure {
  * choisir dans une liste où elles ne figurent pas, c'est les mettre dehors.
  */
 export function ChampStructure({
+  id,
   valeur,
   onChange,
   placeholder = 'Fondation Poidatz, Mairie de Melun, 820051852…',
 }: {
+  /** Relie le champ de recherche à son libellé. */
+  id?: string;
   valeur: ChoixStructure;
   onChange: (v: ChoixStructure) => void;
   placeholder?: string;
@@ -371,6 +247,7 @@ export function ChampStructure({
   return (
     <div className="space-y-2">
       <Input
+        id={id}
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
         placeholder={placeholder}
@@ -475,67 +352,15 @@ export function ChampStructure({
 }
 
 /* ------------------------------------------------------------------------ */
-/* Étape « poste et droits »                                                 */
+/* Mise en page commune des étapes                                           */
 /* ------------------------------------------------------------------------ */
 
-type Niveau = 'DIRECTION' | 'RESPONSABLE' | 'SALARIE';
-
-/**
- * ⚠ DEUX LIGNES PAR NIVEAU, PAS TROIS.
- *
- * Chaque niveau portait son intitulé, ses exemples de poste ET une phrase sur
- * ce qu'il ouvre : neuf lignes pour trois boutons radio, avant même la liste
- * des droits. On choisit son niveau sur son MÉTIER — « je suis chef de
- * service » —, pas sur une description de périmètre qu'on lira de toute façon
- * après coup dans « Mon poste ».
- */
-const NIVEAUX: {
-  cle: Niveau;
-  titre: string;
-  exemples: string;
-  /** Vrai quand le niveau demande une validation de Les Extras. */
-  valide: boolean;
-}[] = [
-  {
-    cle: 'DIRECTION',
-    titre: 'Direction',
-    exemples: 'Directeur, directrice adjointe, pilote des opérations',
-    valide: true,
-  },
-  {
-    cle: 'RESPONSABLE',
-    titre: 'Responsable',
-    exemples: 'Chef de service, coordinateur',
-    valide: false,
-  },
-  {
-    cle: 'SALARIE',
-    titre: 'Salarié',
-    exemples: 'Éducateur, moniteur, AES, veilleur, psychologue…',
-    valide: false,
-  },
-];
-
-
-/**
- * VOTRE POSTE ET VOS DROITS.
- *
- * ⚠ CES DROITS SONT DÉCLARATIFS, ET L'ÉCRAN LE DIT. Personne ne les vérifie
- * en amont ; ce qu'ils font, c'est décider si votre bouton dit « Réserver » ou
- * « Demander un devis », et laisser une trace de qui a engagé quoi. Les
- * présenter comme un contrôle serait mentir sur ce qu'ils sont.
- *
- * ⚠ ET DÉCLARER NE DONNE RIEN. Une Direction déclarée voit exactement ce que
- * voit un salarié tant que Les Extras n'a pas validé — c'est écrit ici, à
- * l'endroit où la personne coche, pas dans des conditions générales.
- */
 /**
  * UNE SECTION DE L'ÉTAPE, SOUS FORME DE CARTE.
  *
- * L'écran empilait cinq blocs sans frontière : le poste, le statut cadre, les
- * trois niveaux, les cinq droits, l'avertissement. À la lecture, tout se
- * valait et rien ne se distinguait — on ne voyait pas qu'on répondait à trois
- * questions différentes. Chaque question a maintenant sa carte, avec son titre.
+ * Des blocs empilés sans frontière se valent tous à la lecture : on ne voit
+ * pas qu'on répond à plusieurs questions différentes. Chaque question a donc
+ * sa carte, avec son titre.
  */
 function Carte({
   titre,
@@ -559,380 +384,9 @@ function Carte({
   );
 }
 
-/**
- * LE POSTE ET LE STATUT CADRE.
- *
- * Les deux répondent à une seule question — « quel est votre poste ? » — et le
- * statut cadre n'a de sens que rapporté à l'intitulé qui le précède. Ils ne se
- * séparent donc pas.
- *
- * ⚠ ILS SONT DEMANDÉS AVEC LE LIEU DE TRAVAIL, à l'étape des identifiants, et
- * plus à l'étape suivante : « où je travaille, dans quel service, à quel
- * poste » est une seule phrase, et on la posait sur trois écrans.
- * L'ÉCRITURE, elle, reste à l'étape suivante, avec le niveau et les droits —
- * un seul PATCH pour toute la déclaration.
- *
- * ⚠ C'est une CASE À COCHER déguisée en bouton, pas un `<button>` : l'état
- * coché doit rester lisible par un lecteur d'écran et par l'autoremplissage.
- * `sr-only` masque la case à l'œil sans la retirer du DOM.
- */
-export function ChampPoste({
-  poste,
-  setPoste,
-  cadre,
-  setCadre,
-}: {
-  poste: string;
-  setPoste: (v: string) => void;
-  cadre: boolean;
-  setCadre: (v: boolean) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <Input
-        id="poste"
-        value={poste}
-        onChange={(e) => setPoste(e.target.value)}
-        placeholder="Chef de service éducatif, monitrice-éducatrice…"
-        autoComplete="organization-title"
-      />
-      <label
-        className={cn(
-          'flex w-fit cursor-pointer items-center gap-2 rounded-lg border-2 px-3 py-1.5 text-xs font-medium transition-colors',
-          cadre
-            ? 'border-primary bg-primary text-primary-foreground'
-            : 'border-border bg-card hover:border-primary/40',
-        )}
-      >
-        <input
-          type="checkbox"
-          checked={cadre}
-          onChange={(e) => setCadre(e.target.checked)}
-          className="sr-only"
-        />
-        {cadre ? (
-          <Check aria-hidden className="size-3.5" />
-        ) : (
-          <span aria-hidden className="size-3.5 rounded border border-current opacity-50" />
-        )}
-        Je suis cadre
-      </label>
-    </div>
-  );
-}
-
-/**
- * LES DROITS, PAR GROUPES.
- *
- * Treize cases à la suite se lisent comme une liste de courses : on coche au
- * hasard ou on ne coche rien. Groupées — engager, équipe, publier, sensible —
- * elles se répondent par blocs, et le groupe sensible se voit.
- *
- * ⚠ LE GROUPE « DONNÉES SENSIBLES » EST SIGNALÉ, PAS CACHÉ. Il porte l'accès au
- * coffre-fort de conformité — pièces d'identité, casiers judiciaires,
- * diplômes — et la dépense des générations LEX. Les masquer derrière un
- * « voir plus » ferait qu'on se les accorde sans les lire.
- */
-function ListeDroits({
-  droits,
-  setDroits,
-}: {
-  droits: string[];
-  setDroits: React.Dispatch<React.SetStateAction<string[]>>;
-}) {
-  return (
-    <div className="space-y-4">
-      {groupesDroitsProposes().map((groupe) => (
-        <fieldset key={groupe.titre}>
-          <legend
-            className={cn(
-              'mb-1 text-xs font-semibold uppercase tracking-wide',
-              groupe.sensible ? 'text-secondary' : 'text-muted-foreground',
-            )}
-          >
-            {groupe.titre}
-          </legend>
-          {/*
-            ⚠ L'INTRO N'EST GARDÉE QUE SUR LE GROUPE SENSIBLE. Ailleurs elle
-            reformulait le titre du groupe, et cet écran portait déjà treize
-            cases avec chacune sa ligne d'aide : quarante lignes pour cocher
-            trois choses.
-          */}
-          {groupe.sensible && groupe.intro && (
-            <p className="mb-1.5 text-xs leading-relaxed text-secondary" lang="fr">
-              {groupe.intro}
-            </p>
-          )}
-          <div className="grid gap-1.5 sm:grid-cols-2">
-            {groupe.droits.map((d) => {
-              const coche = droits.includes(d.cle);
-              return (
-                <label
-                  key={d.cle}
-                  className={cn(
-                    'flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors',
-                    coche
-                      ? 'border-primary/50 bg-primary-soft/30'
-                      : groupe.sensible
-                        ? 'border-secondary/30 bg-card hover:border-secondary/60'
-                        : 'border-border bg-card hover:border-primary/40',
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={coche}
-                    onChange={(e) =>
-                      setDroits((v) =>
-                        e.target.checked ? [...v, d.cle] : v.filter((x) => x !== d.cle),
-                      )
-                    }
-                    className="mt-0.5 size-4 shrink-0 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                  {/*
-                    ⚠ LE LIBELLÉ SEUL, SANS SA LIGNE D'AIDE. Les intitulés se
-                    suffisent — « Voir les factures », « Gérer le planning » —
-                    et l'aide complète reste sur « Mon poste », où l'on vient
-                    délibérément régler ses droits. Ici, on coche.
-                  */}
-                  <span className="min-w-0 text-sm leading-snug">{d.libelle}</span>
-                </label>
-              );
-            })}
-          </div>
-        </fieldset>
-      ))}
-    </div>
-  );
-}
-
-/**
- * ⚠ LE POSTE ET LE STATUT CADRE ARRIVENT D'AILLEURS : ils sont saisis à
- * l'étape des identifiants, avec l'établissement, l'entité employeuse et le
- * service — une seule phrase, un seul écran. Ce qui reste ici, c'est ce qui ne
- * se déclare pas en une ligne : le NIVEAU de responsabilité et les DROITS.
- *
- * ⚠ ILS SONT QUAND MÊME ENVOYÉS D'ICI, et il ne faut pas les écrire plus tôt :
- * `/organisation/moi` reçoit la déclaration entière en une fois. Deux PATCH
- * successifs se marcheraient dessus, et le second gagnerait avec des champs
- * que la personne n'a pas encore remplis.
- */
-export function EtapePoste({
-  poste,
-  cadre,
-  onFait,
-}: {
-  poste: string;
-  cadre: boolean;
-  onFait: () => void;
-}) {
-  const [niveau, setNiveau] = React.useState<Niveau>('SALARIE');
-  const [droits, setDroits] = React.useState<string[]>([]);
-  const [envoi, setEnvoi] = React.useState(false);
-  const [erreur, setErreur] = React.useState<string | null>(null);
-
-  const choisi = NIVEAUX.find((n) => n.cle === niveau)!;
-
-  async function valider() {
-    setEnvoi(true);
-    setErreur(null);
-    try {
-      await apiRequest('/organisation/moi', {
-        method: 'PATCH',
-        body: {
-          poste: poste.trim() || undefined,
-          cadre,
-          niveau,
-          // Toujours envoyé, même vide : décocher une case doit retirer le
-          // droit, et un tableau omis laisserait la déclaration précédente.
-          capacites: droits,
-          justification:
-            niveau === 'DIRECTION'
-              ? `${poste.trim() || 'Direction'}${cadre ? ' (cadre)' : ''}`
-              : undefined,
-        },
-      });
-      lancerConfettis();
-      onFait();
-    } catch (e) {
-      setErreur(e instanceof Error ? e.message : 'Enregistrement impossible.');
-    } finally {
-      setEnvoi(false);
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      <Carte titre="Votre niveau de responsabilité" aide="Il décide de ce que vous voyez.">
-        <fieldset className="space-y-2">
-          <legend className="sr-only">Votre niveau de responsabilité</legend>
-          {NIVEAUX.map((n) => {
-            const actif = niveau === n.cle;
-            return (
-              <label
-                key={n.cle}
-                className={cn(
-                  'flex cursor-pointer gap-3 rounded-lg border-2 p-3 transition-colors',
-                  actif
-                    ? 'border-primary bg-primary-soft/40'
-                    : 'border-border bg-card hover:border-primary/40',
-                )}
-              >
-                <input
-                  type="radio"
-                  name="niveau"
-                  checked={actif}
-                  onChange={() => setNiveau(n.cle)}
-                  className="mt-0.5 size-4 shrink-0 border-input text-primary focus-visible:ring-2 focus-visible:ring-ring"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold">{n.titre}</span>
-                  <span className="block text-xs text-muted-foreground">{n.exemples}</span>
-                </span>
-              </label>
-            );
-          })}
-        </fieldset>
-
-        {/*
-          ⚠ CET AVERTISSEMENT RESTE, ET IL RESTE COMPLET DANS SON IDÉE : c'est
-          le seul endroit où l'on dit qu'une direction déclarée ne voit rien de
-          plus tant qu'elle n'est pas validée. Le raccourcir jusqu'à supprimer
-          cette phrase ferait croire à un accès immédiat.
-        */}
-        {choisi.valide && (
-          <div className="mt-3">
-            <Encart ton="alerte" icone={TriangleAlert} titre="Validé à la main par Les Extras">
-              En attendant, votre compte fonctionne comme celui d’un salarié.
-            </Encart>
-          </div>
-        )}
-      </Carte>
-
-      <Carte
-        titre="Ce que vous pouvez engager"
-        aide="Déclaratif, et sans aucun paiement en jeu : cela décide surtout si votre bouton dit « Réserver » ou « Demander un devis »."
-      >
-        <ListeDroits droits={droits} setDroits={setDroits} />
-      </Carte>
-
-      {erreur && (
-        <Encart ton="alerte" icone={TriangleAlert}>
-          {erreur}
-        </Encart>
-      )}
-
-      <Button type="button" className="w-full" size="lg" loading={envoi} onClick={valider}>
-        Terminer mon inscription
-      </Button>
-    </div>
-  );
-}
-
 /* ------------------------------------------------------------------------ */
-/* Intervenant indépendant : sa structure, puis ce qu'il vient faire         */
+/* Intervenant indépendant : ce qu'il vient faire                            */
 /* ------------------------------------------------------------------------ */
-
-/**
- * VOTRE STRUCTURE — le SIRET, et rien d'autre.
- *
- * ⚠ FACULTATIVE ICI, EXIGÉE POUR PUBLIER, et c'est toute la règle. Quelqu'un
- * qui vient regarder le catalogue, répondre à un message ou préparer un
- * brouillon n'a besoin d'aucun numéro. Mais une fiche publiée est une offre de
- * prestation : elle produit des devis, des contrats et des factures, qui
- * portent tous le SIRET de l'émetteur. Le refus est donc posé à la
- * publication, jamais ici — on ferme la porte de la publication, on ne mure
- * pas la création de compte.
- *
- * ⚠ LA SORTIE « JE N'AI PAS ENCORE DE STRUCTURE » N'EST PAS UNE POLITESSE.
- * Beaucoup arrivent en cours d'immatriculation, en portage salarial, ou
- * salariés d'une association qui facturera pour eux. Sans cette sortie, l'écran
- * dirait à ces gens-là qu'ils n'ont rien à faire ici — alors qu'ils peuvent
- * déjà tout faire sauf publier.
- */
-export function EtapeStructure({ onFait }: { onFait: () => void }) {
-  const [choix, setChoix] = React.useState<ChoixStructure>({
-    structureId: null,
-    structure: null,
-  });
-  const [envoi, setEnvoi] = React.useState(false);
-  const [erreur, setErreur] = React.useState<string | null>(null);
-
-  async function valider() {
-    if (!choix.structureId && !choix.structure) {
-      onFait();
-      return;
-    }
-    setEnvoi(true);
-    setErreur(null);
-    try {
-      await apiRequest('/structures/rattacher', {
-        method: 'POST',
-        body: choix.structureId ? { structureId: choix.structureId } : choix.structure,
-      });
-      lancerConfettis();
-      onFait();
-    } catch (e) {
-      // Le compte existe déjà : un rattachement raté ne doit pas donner
-      // l'impression que l'inscription a échoué.
-      setErreur(
-        e instanceof Error
-          ? e.message
-          : 'Nous n’avons pas pu enregistrer votre structure. Vous pourrez le faire depuis votre espace.',
-      );
-    } finally {
-      setEnvoi(false);
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      <Carte
-        titre="L’entité qui facture vos interventions"
-        aide="Micro-entreprise, association, société. Facultatif pour entrer, nécessaire pour publier."
-      >
-        <ChampStructure
-          valeur={choix}
-          onChange={setChoix}
-          placeholder="Votre SIRET, ou le nom de votre entreprise…"
-        />
-      </Carte>
-
-      {/*
-        ⚠ L'AIDE VIENT APRÈS LE CHAMP, PAS AVANT. Placée au-dessus, elle se
-        lisait comme une consigne à traiter avant d'avoir vu ce qu'on demandait
-        — et sur un écran d'inscription, un paragraphe qui précède le premier
-        champ est un paragraphe sauté.
-      */}
-      <Encart icone={ShieldCheck} titre="Votre SIRET suffit">
-        Nous retrouvons le reste dans l’annuaire public. C’est ce numéro qui
-        figurera sur vos devis et vos factures.
-      </Encart>
-
-      {erreur && (
-        <Encart ton="alerte" icone={TriangleAlert}>
-          {erreur}
-        </Encart>
-      )}
-
-      <Encart>
-        <strong className="text-foreground">Pas encore de structure ?</strong> C’est
-        très bien aussi. Vous pouvez tout faire ici, être contacté, échanger,
-        préparer vos fiches, vous rendre disponible pour des remplacements en CDD.
-        Vous la déclarerez le jour où vous voudrez publier.
-      </Encart>
-
-      <Button
-        type="button"
-        className="w-full"
-        size="lg"
-        loading={envoi}
-        onClick={() => void valider()}
-      >
-        {choix.structureId || choix.structure ? 'Enregistrer ma structure' : 'Continuer'}
-      </Button>
-    </div>
-  );
-}
 
 /**
  * CE QUE VOUS VOULEZ FAIRE.

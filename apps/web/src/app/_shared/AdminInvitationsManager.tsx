@@ -1,7 +1,10 @@
 "use client";
 
-// Gestion des invitations (back-office ADMIN).
+// Gestion des invitations Piloter (back-office ADMIN).
 //   GET /admin/invitations · PATCH /admin/invitations/:id/revoke|resend
+// ⚠ Depuis le 24/09/2026 (« 1 compte = 1 personne »), seuls les espaces
+// Piloter (association, académie) invitent : un compte Les Extras ne se
+// partage pas.
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,13 +21,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { EmptyState } from "./ui";
+import { libelleAcces } from "./format";
 
-const ACCOUNT_ROLE_LABEL: Record<string, string> = {
-  OWNER: "Direction",
-  ADMIN: "Administrateur",
-  MANAGER: "Responsable de service",
-  MEMBER: "Salarié",
-};
 
 const STATUS: Record<string, { label: string; variant: "warning" | "success" | "muted" | "destructive" }> = {
   PENDING: { label: "En attente", variant: "warning" },
@@ -71,7 +69,7 @@ export function AdminInvitationsManager({ invitations }: { invitations: AdminInv
     return (
       <EmptyState
         title="Aucune invitation"
-        description="Les invitations envoyées par les établissements et les intervenants apparaîtront ici."
+        description="Les invitations envoyées depuis les espaces Piloter (association, académie) apparaîtront ici."
       />
     );
   }
@@ -99,7 +97,7 @@ export function AdminInvitationsManager({ invitations }: { invitations: AdminInv
                     <TableCell className="text-sm font-medium text-foreground">{i.email}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{i.account?.name ?? "-"}</TableCell>
                     <TableCell>
-                      <Badge variant="muted">{ACCOUNT_ROLE_LABEL[i.role] ?? i.role}</Badge>
+                      <Badge variant="muted">{libelleAcces(i.role, i.account?.type)}</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant={st.variant}>{st.label}</Badge>

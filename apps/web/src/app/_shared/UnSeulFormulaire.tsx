@@ -36,7 +36,7 @@ const POUR_ETABLISSEMENT = [
     pastille: "bg-secondary text-secondary-foreground",
     titre: "En cascade, dans votre ordre",
     texte:
-      "Vos salariés, puis votre vivier, puis le réseau. Vous fixez l’ordre une fois ; la diffusion s’élargit seule.",
+      "Vos habitués, puis le réseau. Vous fixez le point de départ ; la diffusion s’élargit seule.",
   },
   {
     icone: FileSignature,
@@ -59,25 +59,26 @@ const POUR_PROFESSIONNEL = [
   { icone: GraduationCap, titre: "Appui scolaire", texte: "Le soutien construit pour les jeunes que vous accompagnez." },
 ];
 
-// Les trois paliers, nommes avec les mots de l'etablissement : ses salaries,
-// son vivier de remplacants habituels, et seulement ensuite le reseau.
+// Les trois temps, nommés avec les mots de l'établissement : son vivier de
+// remplaçants habituels, puis le réseau, puis l'engagement. ⚠ Plus de palier
+// « vos salariés » (24/09/2026, « 1 compte = 1 personne »).
 const CASCADE = [
-  {
-    titre: "Vos salariés",
-    texte:
-      "En interne d’abord, vers ceux qui connaissent déjà la maison. Heures complémentaires proposées en un clic.",
-    pastille: "bg-primary text-primary-foreground",
-  },
   {
     titre: "Votre vivier de CDD",
     texte:
-      "Sans réponse, l’offre passe à vos remplaçants habituels, déjà venus chez vous. Leurs coordonnées sont là.",
-    pastille: "bg-secondary text-secondary-foreground",
+      "L’offre part d’abord à vos remplaçants habituels, déjà venus chez vous. Leurs coordonnées sont là.",
+    pastille: "bg-primary text-primary-foreground",
   },
   {
     titre: "Le réseau Les Extras",
     texte:
-      "En dernier recours, l’offre s’ouvre au réseau : filtré sur le métier, la zone et les disponibilités.",
+      "Sans réponse, l’offre s’ouvre au réseau : filtré sur le métier, la zone et les disponibilités.",
+    pastille: "bg-secondary text-secondary-foreground",
+  },
+  {
+    titre: "Le premier qui accepte",
+    texte:
+      "Il emporte la mission. Le contrat s’édite et se signe en ligne, sans double saisie.",
     pastille: "bg-amber-500 text-amber-950",
   },
 ];
@@ -133,7 +134,7 @@ export function UnSeulFormulaire() {
       <Reveal className="mt-8 overflow-hidden rounded-2xl border border-border bg-card/60">
         <div className="border-b border-border px-6 py-5 md:px-8">
           <h3 className="text-lg font-bold tracking-tight text-foreground">
-            La cascade : votre équipe d’abord, le réseau en dernier
+            La cascade : vos habitués d’abord, le réseau ensuite
           </h3>
           <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
             À chaque palier : le logiciel prévient, laisse un délai, relance, puis élargit seul.

@@ -4,10 +4,8 @@
 // qui mène à un 403 est pire que pas de bouton — il fait passer un refus
 // d'autorisation pour une panne.
 //
-// Côté API, créer une mission de renfort ou une fiche exige un rôle
-// OWNER, ADMIN ou MANAGER sur le compte actif (AccountRolesGuard). Un MEMBER
-// consulte et candidate, il ne publie pas. C'est cette règle, et elle seule,
-// qui est reproduite ici.
+// Un compte = une personne (24/09/2026) : la personne du compte publie. La
+// règle vit dans `lib/publication.ts`.
 import { RenfortModal } from "./modals/RenfortModal";
 import { ProposerFormationModal } from './ProposerFormationModal';
 import { ServiceModal } from "./modals/ServiceModal";
@@ -40,9 +38,9 @@ export function ActionsPublication({
   // à chaque fois.
   //
   // Mais j'étais allé trop loin en ne gardant qu'un seul bouton : un
-  // établissement ORGANISE des formations en interne, animées par un salarié
-  // référent, et c'est un geste courant, pas une exception. Le retirer de
-  // l'en-tête revenait à le cacher. Il revient donc, en second.
+  // établissement ORGANISE des formations, et c'est un geste courant, pas une
+  // exception. Le retirer de l'en-tête revenait à le cacher. Il revient donc,
+  // en second.
   //
   // Un bouton plein pour le geste dominant du profil, un bouton en retrait
   // pour l'autre. Les deux appartiennent bien à la personne qui les voit.

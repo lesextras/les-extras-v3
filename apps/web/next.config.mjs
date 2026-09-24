@@ -352,6 +352,14 @@ const nextConfig = {
       { source: '/dashboard/conges', destination: '/dashboard/planning', permanent: true },
       { source: '/dashboard/temps-de-travail', destination: '/dashboard/planning', permanent: true },
       { source: '/dashboard/mon-poste', destination: '/dashboard/account', permanent: true },
+      // Le 24/09/2026, « 1 compte = 1 personne » : plus d'organigramme, plus
+      // d'équipe rattachée, plus de module d'organisation ni de matrice des
+      // rôles. Les liens déjà envoyés retombent sur le tableau de bord.
+      { source: '/dashboard/organigramme', destination: '/dashboard', permanent: true },
+      { source: '/dashboard/equipe', destination: '/dashboard', permanent: true },
+      { source: '/dashboard/equipe/:path*', destination: '/dashboard', permanent: true },
+      { source: '/admin/organisation', destination: '/admin', permanent: true },
+      { source: '/admin/roles', destination: '/admin', permanent: true },
       // DEUX PAGES QUI RÉPONDAIENT 200 SUR DU VIDE.
       //
       // Elles appelaient `redirect()` depuis un composant prérendu : Next ne

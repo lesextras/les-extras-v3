@@ -52,7 +52,7 @@ export const LANDINGS: Landing[] = [
     public: 'Directions et chefs de service en IME, ITEP, MECS, SESSAD, ESAT',
     promesse: 'Un poste à couvrir demain matin. Un remplaçant en CDD, 0 % de commission.',
     sous:
-      'Vous publiez le besoin. Il part d’abord à votre équipe, puis aux intervenants qui connaissent déjà la maison, puis au réseau. Le contrat est édité, signé en ligne, et vous ne payez rien à la plateforme.',
+      'Vous publiez le besoin. Il part d’abord aux intervenants qui connaissent déjà la maison, puis au réseau. Le contrat est édité, signé en ligne, et vous ne payez rien à la plateforme.',
     preuves: [
       {
         titre: '0 % de commission, et ce n’est pas une promotion',

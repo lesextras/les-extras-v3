@@ -1,12 +1,12 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-  Network,
   MessagesSquare,
   LayoutDashboard,
   TrendingUp,
   Store,
   Sparkles,
   CalendarClock,
+  CalendarDays,
   CalendarCheck,
   GraduationCap,
   Receipt,
@@ -63,29 +63,20 @@ export interface NavItem {
    */
   essentiel?: boolean;
   /**
-   * Réservée aux sous-comptes, c'est-à-dire à toute personne rattachée au
-   * compte sans en être le titulaire. Proposer à une MECS de « devenir
-   * intervenante » n'a pas de sens : c'est à ses salariés que l'on s'adresse.
-   */
-  sousComptesSeulement?: boolean;
-  /**
    * Rôles autorisés DANS le compte actif. Absent = tout le monde.
    *
-   * Un menu qui propose ce que le serveur refusera fait passer une règle pour
-   * une panne. Et certaines entrées ne relèvent pas seulement du droit d'agir
-   * mais du droit de VOIR : les contrats portent des salaires, la conformité
-   * porte des casiers judiciaires, la facturation porte les comptes de la
-   * structure. Ce ne sont pas des informations d'équipe.
+   * ⚠ Sur Les Extras, un compte = une personne (24/09/2026) : le menu est
+   * toujours celui du titulaire (OWNER). Le champ reste lu par
+   * `getNavForRole`, qui ne garde que les entrées ouvertes au titulaire.
    */
   roles?: AccountRole[];
   /**
    * Module AVANCÉ, masqué par défaut.
    *
    * Vingt-sept entrées proposées à un établissement qui vient publier un
-   * remplacement, c'est un outil qu'on n'ose pas ouvrir. Les modules de
-   * gestion RH (contrats CDD, annualisation du temps de travail, compteurs de
-   * congés) sont aboutis mais relèvent d'un autre métier que la mise en
-   * relation, et engagent lourdement en droit du travail. Ils restent
+   * remplacement, c'est un outil qu'on n'ose pas ouvrir. Les contrats CDD
+   * sont aboutis mais relèvent d'un autre métier que la mise en relation, et
+   * engagent lourdement en droit du travail. Ils restent
    * accessibles — par leur URL, et via le réglage « Afficher les outils
    * avancés » — mais ne s'imposent plus à qui n'en a pas besoin.
    *
@@ -168,8 +159,7 @@ export function resolveNavRole(params: {
  *                          d'accès et d'effacement reste donc exerçable sans
  *                          passer par le menu (art. 12 RGPD).
  *   Boîte à idées          l'administration garde la sienne, pour arbitrer.
- *   Conformité             les pièces manquantes remontent déjà sur la fiche
- *                          de chaque personne, dans « Équipe ».
+ *   Conformité             revenue au menu le 23/09/2026.
  *
  * Remettre une entrée au menu = remettre sa ligne. Rien d'autre à défaire.
  */
@@ -181,7 +171,7 @@ const freelanceNav: NavSection[] = [
       // réservation, mission. Il n'existe pas de fil libre depuis le catalogue,
       // et il ne faut pas en ouvrir : ce serait la porte au démarchage, et les
       // intervenants partiraient.
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Les échanges rattachés à vos demandes de devis, vos réservations et vos missions' },
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Les échanges liés à vos demandes de devis, vos réservations et vos missions' },
     ],
   },
   /*
@@ -218,14 +208,15 @@ const freelanceNav: NavSection[] = [
       { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
       // FAIRE.
       { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      // Mon agenda (24/09/2026) : tout ce qui a une date, et les agendas partagés, comme Outlook.
+      { label: 'Mon agenda', href: '/dashboard/agenda', icon: CalendarDays, essentiel: true, hint: 'Rendez-vous, réservations, visios et missions, et les agendas qu’on vous partage' },
       // ÊTRE PAYÉ. Vient de l'ancienne rubrique « Mon espace ».
       { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer et vos factures, au même endroit' },
       /*
        * ⚠ « Opportunités » RESTE DANS LE MENU DU QUOTIDIEN, et ce n'est pas un
        * oubli de tri : c'est le SEUL chemin d'un intervenant vers les missions
        * ouvertes à la candidature. Ce fichier a déjà payé deux fois le fait
-       * d'enterrer un chemin unique (le salarié sans accès aux missions le
-       * 25/08, le salarié sans accès à ses congés le 16/09). Qu'il n'y ait
+       * d'enterrer un chemin unique (25/08 et 16/09/2026). Qu'il n'y ait
        * aucune mission ouverte aujourd'hui ne change rien : le jour où il y en
        * a une, personne ne doit avoir à trouver un réglage pour la voir.
        */
@@ -296,11 +287,7 @@ const freelanceNav: NavSection[] = [
       // tête de cette section-là.
       // LEX se recharge aussi depuis un compte intervenant : l'assistant IA
       // est ouvert aux deux types de comptes, à crédits pour tout le monde.
-      // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
-      // chef de service de toute vue sur la consommation de LEX — et de tout
-      // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
-      // devis et la conformité.
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       // La progression se REGARDE, elle ne se fait pas : c'est un état, pas un
       // geste. Rien ne s'y décide, et elle avance toute seule.
@@ -344,7 +331,7 @@ const establishmentNav: NavSection[] = [
     factures sur onze dormaient en brouillon.
 
     ⚠ NE PAS RENVOYER « Devis & factures » DANS « Mon établissement ». Ce
-    n'est pas une fonction de gestion interne rangée à côté de l'organigramme :
+    n'est pas une fonction de gestion interne rangée à côté de la fiche :
     c'est la quatrième marche d'un escalier, et une marche manquante ne se
     remplace pas par une porte ailleurs dans le couloir.
   */
@@ -352,14 +339,6 @@ const establishmentNav: NavSection[] = [
     title: 'Renfort & prestations',
     items: [
       { label: 'RenforTeam', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
-      // OPPORTUNITÉS — POUR LES SALARIÉS (25/08/2026).
-      //
-      // Un salarié rattaché à un établissement n'avait aucune entrée vers les
-      // missions ouvertes : ni RenforTeam (réservé à la direction pour publier),
-      // ni marketplace, qui n'était liée nulle part dans son menu. Il pouvait
-      // donc être destinataire d'une diffusion en cascade sans jamais pouvoir
-      // aller voir ce qui était ouvert.
-      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, roles: ['MEMBER'], hint: 'Les missions de renfort et les ateliers ouverts à la candidature' },
       // Le suivi de ce qu'on a commandé manquait complètement : renforts,
       // ateliers et inscriptions en formation étaient enregistrés mais
       // invisibles hors du back-office administrateur.
@@ -379,11 +358,13 @@ const establishmentNav: NavSection[] = [
       // où on le voit.
       { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers commandés et les inscriptions en formation, au même endroit, filtrables sur la page' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
+      // Mon agenda (24/09/2026) : tout ce qui a une date, et les agendas partagés, comme Outlook.
+      { label: 'Mon agenda', href: '/dashboard/agenda', icon: CalendarDays, essentiel: true, hint: 'Rendez-vous, réservations, visios et missions, et les agendas qu’on vous partage' },
       // LA QUATRIÈME MARCHE — voir l'avertissement en tête de section. Devis et
       // factures sont les deux temps du même geste : on chiffre, puis on
       // facture. Ils viennent de « Mon établissement », où ils étaient à vingt
       // lignes de la réservation qu'ils closent.
-      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Vos devis à chiffrer ou à décider, et vos factures, au même endroit' },
+      { label: 'Devis & factures', href: '/dashboard/facturation', icon: Receipt, essentiel: true, hint: 'Vos devis à chiffrer ou à décider, et vos factures, au même endroit' },
       // ⚠ CÔTÉ ÉTABLISSEMENT SEULEMENT, et c'est délibéré : c'est lui qui
       // cherche dans le catalogue et repart bredouille. Un intervenant ne
       // cherche pas d'atelier, il en publie.
@@ -423,7 +404,6 @@ const establishmentNav: NavSection[] = [
               label: 'Contrats CDD',
               href: '/dashboard/contrats',
               icon: FileSignature,
-              roles: ['OWNER', 'ADMIN', 'MANAGER'],
               hint: 'Vous embauchez, l’outil calcule : période d’essai, indemnité de fin de contrat, délai de carence et mentions obligatoires',
               avance: true,
             },
@@ -436,11 +416,6 @@ const establishmentNav: NavSection[] = [
   // du header, à côté du sélecteur de compte (voir header.tsx), pour rester
   // accessibles à tout moment sans occuper la sidebar.
   //
-  // Le 13/8/2026 (demande Siham) : l'ancienne section « Équipe & conformité »
-  // a été dissoute et repliée à la FIN de « Mon établissement ». Tout ce qui
-  // relève de la gestion interne de la structure — sa fiche, sa facturation,
-  // ses gens, leurs dossiers, son temps de travail — vit désormais sous un
-  // seul chapeau, au lieu de deux sections voisines qu'on hésitait à séparer.
   // LEX EST REMONTÉ DANS LA BARRE DU HAUT (03/09/2026, demande Siham).
   //
   // Il y était déjà avant le 25/08/2026, il en est redescendu ce jour-là au
@@ -452,53 +427,16 @@ const establishmentNav: NavSection[] = [
   //
   {
     title: 'Mon établissement',
-    // ORDRE DEMANDÉ PAR SIHAM LE 20/08/2026 — il suit le quotidien d'une
-    // directrice, pas l'ordre dans lequel les écrans ont été construits :
-    // la fiche de la maison, puis les gens (salariés, puis remplaçants), puis
-    // ce qu'on leur donne (formation), puis ce qu'on montre au dehors
-    // (publications, avis), puis l'argent, puis les pièces à jour.
-    //
-    // Deux entrées ne figurent pas dans cette liste et sont donc restées à la
-    // fin : « Proposer mes services », qui ne s'affiche qu'aux sous-comptes,
-    // et « Temps de travail & congés », marquée avancée. Aucune n'a été
-    // supprimée.
+    // ⚠ UN COMPTE = UNE PERSONNE (24/09/2026, décision de Siham). Plus
+    // d'organigramme, plus d'équipe rattachée, plus de formation interne :
+    // chaque personne a son propre compte. La section garde ce qui sert à
+    // travailler avec les intervenants, puis l'argent, puis les pièces.
     items: [
-      // « Mon établissement » (→ /dashboard/account) retiré le 21/08/2026
-      // (demande Siham) : la page reste accessible par le menu de l'avatar en
-      // haut à droite — deux chemins vers la même fiche allongeaient le menu
-      // sans rien apporter, exactement comme « Mon compte » côté intervenant.
-      // Les personnes d'abord : c'est par elles qu'on entre dans le reste.
-      // Une fiche par personne, et la conformité comme propriété de cette
-      // personne — pas comme un annuaire parallèle qu'il faut recouper.
-      // ORGANIGRAMME ET POSTE (16/09/2026).
-      //
-      // ⚠ NI L'UN NI L'AUTRE N'EST RÉSERVÉ À LA DIRECTION, et c'est le cœur du
-      // modèle. L'organigramme montre à TOUS les rattachés la structure, les
-      // services et les effectifs — seuls les noms sont bornés au périmètre de
-      // qui regarde. Le réserver aux responsables le laisserait vide le premier
-      // jour, et personne ne le remplirait jamais.
-      //
-      // « Mon poste » est la porte par laquelle un chef de service arrivé seul
-      // se déclare, sans attendre que sa direction ouvre un compte. Lui poser
-      // un filtre de rôle fermerait exactement la porte qu'il doit ouvrir.
-      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Vos échanges avec votre équipe, vos services, les intervenants et Les Extras, chacun rattaché à son contexte' },
-      { label: 'Organigramme', href: '/dashboard/organigramme', icon: Network, essentiel: true, hint: 'Votre structure, votre établissement et ses services. Les noms que vous voyez dépendent de votre périmètre.' },
-      // ⚠ RETIRÉES LE 23/09/2026 — LE NOUVEAU MODÈLE : le compte, c'est la
-      // personne. Plus de niveaux (Direction / Responsable / Salarié), plus de
-      // gestion RH dans un outil de mise en relation. « Mon poste » et « Temps
-      // de travail & congés » sortent du menu ; leurs pages et leurs données
-      // restent servies à leur adresse, le temps que les comptes existants
-      // basculent. Rien n'est supprimé : tout est réversible d'une ligne.
-      { label: 'Mon équipe', href: '/dashboard/equipe', icon: UsersRound, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Qui travaille chez vous, et où en est son dossier' },
-      // Le vivier vient juste après l'équipe, et c'est voulu : ce sont les
-      // mêmes gens dans la tête d'un chef de service — ceux sur qui il compte.
-      // Les uns sont salariés, les autres viennent en renfort.
-      //
-      // « de CDD » ajouté au libellé (20/08/2026) : « Mon vivier » seul ne
-      // disait pas de quoi il était le vivier, et se confondait avec l'équipe
-      // juste au-dessus. Ce sont les gens qu'on rappelle et qu'on embauche
-      // soi-même en contrat court — le pendant humain de « Contrats CDD ».
-      { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
+      // « Mon établissement » (→ /dashboard/account) vit dans le menu de
+      // l'avatar en haut à droite : deux chemins vers la même fiche
+      // allongeaient le menu sans rien apporter.
+      { label: 'Messagerie', href: '/dashboard/inbox', icon: MessagesSquare, essentiel: true, hint: 'Vos échanges avec les intervenants et avec Les Extras, chacun lié à sa demande' },
+      { label: 'Mon vivier RenforTeam', href: '/dashboard/vivier', icon: UserPlus, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Les intervenants qui connaissent déjà votre maison : retenez-les, notez ce qu’il faut savoir, et rappelez-les en un clic sur votre prochain RenforTeam' },
       /**
        * ⚠ DEUX VIVIERS, ET ILS NE DISENT PAS LA MÊME CHOSE.
        *
@@ -510,49 +448,21 @@ const establishmentNav: NavSection[] = [
        * Les fondre remplirait « mes intervenants » de gens jamais rencontrés
        * et fausserait le ciblage de vos missions.
        */
-      { label: 'Personnes disponibles', href: '/dashboard/vivier-ouvert', icon: UsersRound, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Celles et ceux qui se déclarent disponibles pour un remplacement en CDD ou un renfort personnalisé, près de chez vous' },
-      { label: 'Former mes équipes', href: '/dashboard/formations', icon: GraduationCap, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Organisez une formation en interne, animée par un salarié référent' },
+      { label: 'Personnes disponibles', href: '/dashboard/vivier-ouvert', icon: UsersRound, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Celles et ceux qui se déclarent disponibles pour un remplacement en CDD ou un renfort personnalisé, près de chez vous' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
-      { label: 'Avis', href: '/dashboard/avis', icon: Star, avance: true, rubrique: RUBRIQUE_SECONDAIRE, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Évaluez les intervenants après leurs missions' },
+      { label: 'Avis', href: '/dashboard/avis', icon: Star, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Évaluez les intervenants après leurs missions' },
       // ⚠ « Devis & factures » N'EST PLUS ICI : il a rejoint « Renfort &
       // prestations », dont il est la quatrième et dernière marche — publier,
       // être réservé, faire, être payé. Ne pas le redescendre : voir
       // l'avertissement en tête de cette section-là.
-      // Réservée au seul OWNER, cette page privait un directeur adjoint ou un
-      // chef de service de toute vue sur la consommation de LEX — et de tout
-      // moyen de recharger. Les rôles de pilotage y ont accès, comme pour les
-      // devis et la conformité.
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
-      // La conformité existait comme page mais n'était liée nulle part dans le
-      // menu établissement : on la rend visible. Elle ferme la section — c'est
-      // ce qu'on vérifie, pas ce qu'on fait tous les jours.
-      // Essentielle depuis le 23/09/2026 : c'est ici qu'une structure contrôle les
-      // pièces d'un intervenant, et c'est ce contrôle que la fiche publique affiche.
-      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, essentiel: true, roles: ['OWNER', 'ADMIN', 'MANAGER'], hint: 'Les pièces obligatoires de vos intervenants, identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
+      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
+      // Elle ferme la section : c'est ce qu'on vérifie, pas ce qu'on fait tous
+      // les jours. Essentielle depuis le 23/09/2026 : c'est ici qu'une
+      // structure contrôle les pièces d'un intervenant.
+      { label: 'Conformité', href: '/dashboard/conformite', icon: FileCheck, essentiel: true, hint: 'Les pièces obligatoires de vos intervenants, identité, diplôme, casier judiciaire, IBAN, attestation URSSAF : on ne montre que ce qui manque ou arrive à échéance' },
       // « Points & parrainage » n'est plus dans cette liste : comme côté
       // intervenant, l'entrée est épinglée en bas du menu, juste au-dessus du
       // bloc d'aide (voir sidebar.tsx). Même place pour tous les comptes.
-      // ── Hors de l'ordre demandé, conservées à la fin ───────────────────────
-      // « Proposer mes services » avait été retiré du menu des salariés le
-      // 25/08/2026 : un salarié consulte tout — missions, ateliers, catalogue —
-      // mais il ne propose pas d'offre et ne candidate pas. Ce qu'il vend, il
-      // le vend sous le nom de la maison qui l'emploie.
-      //
-      // CETTE RÈGLE EST MAINTENUE, et l'entrée ci-dessous ne la contredit pas
-      // (02/09/2026). La page ne fait pas publier une offre sous le compte de
-      // l'employeur : elle ouvre un compte SÉPARÉ, au nom propre du salarié,
-      // avec une adresse personnelle exigée explicitement — « les demandes
-      // liées à votre activité indépendante ne doivent pas arriver sur la
-      // messagerie de votre employeur ». C'est exactement la frontière que la
-      // règle du 25/08 protège.
-      //
-      // Réservée au rôle MEMBER : un directeur ou un chef de service n'est pas
-      // le public de cette page. Elle ferme la section, après le travail
-      // quotidien — et non au milieu.
-      //
-      // Pour la retirer de nouveau : supprimer la ligne qui suit, rien d'autre
-      // n'en dépend.
-      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, roles: ['MEMBER'], hint: 'Vous intervenez déjà auprès de publics accompagnés : proposez les mêmes interventions à d’autres structures, en votre nom et sous votre SIRET, sans quitter votre poste' },
       { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],
   },
@@ -604,10 +514,6 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Articles', href: '/admin/articles', icon: FileText, hint: 'Articles et pages éditoriales' },
       { label: 'Catégories', href: '/admin/categories', icon: Tags, hint: 'Taxonomie des missions et ateliers' },
-      // LE SEUL PASSAGE MANUEL DU MODÈLE D'ORGANISATION : une demande par
-      // établissement, jamais une par salarié. Si cette file grossit, c'est le
-      // signe qu'il faut alléger la demande, pas qu'il faut y passer ses
-      // journées.
       { label: 'Messagerie interne', href: '/admin/assistance', icon: LifeBuoy, hint: 'Les messages écrits depuis un compte : problèmes, questions. On y répond dans le fil.' },
       { label: 'Demandes de contact', href: '/admin/contacts', icon: Mail, hint: 'Messages reçus via le formulaire de contact public' },
       { label: 'Boîte à idées', href: '/dashboard/idees', icon: Lightbulb, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Idées de la communauté : arbitrer, répondre, planifier' },
@@ -617,7 +523,7 @@ const adminNav: NavSection[] = [
     title: 'Mon compte',
     items: [
       { label: 'Avis', href: '/dashboard/avis', icon: Star, hint: 'Les avis que vous avez reçus et ceux qu’il vous reste à donner' },
-      { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations, votre équipe et vos invitations' },
+      { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations et vos préférences d’e-mail' },
       { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],
   },
@@ -662,68 +568,19 @@ const adminNav: NavSection[] = [
 ];
 
 /**
- * Les sections de navigation adaptées au rôle.
+ * LE MENU D'UNE PERSONNE SANS COMPTE (24/09/2026).
  *
- * `roleCompte` est le rôle DANS le compte actif. Sans lui, tout le monde voyait
- * le même menu de vingt-six entrées : la direction s'y noyait, et un
- * moniteur-éducateur y trouvait des boutons qui lui renvoyaient une erreur
- * d'autorisation, ou pire, des informations qui ne le regardaient pas.
- * Une entrée sans `roles` reste visible par tout le monde.
+ * Un compte Les Extras appartient à une seule personne. Quelqu'un qui n'en
+ * possède aucun (ancien accès à l'espace d'une autre personne, désormais
+ * fermé) n'a qu'une chose à faire : créer le sien, depuis le tableau de bord.
+ * Lui servir le menu d'un compte qu'il n'a pas ne mènerait qu'à des écrans
+ * vides.
  */
-/**
- * Menu d'un salarié qui attend d'être rattaché à un établissement.
- *
- * Proposer vingt entrées qui répondront toutes « pas encore » serait une
- * promesse en trompe-l'œil. On ne montre que ce qui fonctionne vraiment :
- * LEX, son dossier, ses crédits, et l'écran où sa demande avance.
- */
-const attenteRattachementNav: NavSection[] = [
-  // MON ESPACE EN PREMIER (25/08/2026).
-  //
-  // Tant qu'un salarie n'est pas rattache, son sujet n'est pas le travail :
-  // c'est sa demande et son dossier. Le menu commence donc par la, et le
-  // rattachement y a sa place — il fait partie de son espace, pas du reste.
-  {
-    title: 'Mon espace',
-    items: [
-      { label: 'Mon rattachement', href: '/dashboard', icon: Building2, essentiel: true, hint: 'Où en est votre demande, et à qui l’envoyer' },
-      // « Mon compte » a quitte cette liste le 25/08/2026 : le profil est deja
-      // en haut a droite, et deux portes vers le meme ecran font douter qu'il
-      // s'agisse du meme.
-      { label: 'Mon dossier', href: '/dashboard/mon-dossier', icon: ShieldAlert, essentiel: true, hint: 'Vos pièces : identité, diplôme, casier judiciaire. Un dossier prêt le jour du rattachement, c’est autant de gagné.' },
-    ],
-  },
+const sansCompteNav: NavSection[] = [
   {
     items: [
-      // Pas de titre au-dessus : « Trouver du travail » annoncait une rubrique
-      // pour une seule entree. Les opportunites se lisent directement.
-      { label: 'Opportunités', href: '/dashboard/opportunites', icon: Target, essentiel: true, hint: 'Les missions ouvertes à la candidature, et le catalogue des ateliers et formations du réseau' },
-    ],
-  },
-  // CE QUI EXISTE DEJA AVANT LE RATTACHEMENT (25/08/2026).
-  //
-  // Un salarie tient un planning bien avant qu'un etablissement l'accepte :
-  // c'est le sien. On lui ouvre donc son agenda — import de son planning
-  // compris — et la vue de ce qu'on lui confie, plutot que de lui faire
-  // decouvrir ces ecrans le jour du rattachement.
-  {
-    title: 'Mon activité',
-    items: [
-      { label: 'Mes interventions', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les missions et ateliers qu’on vous a confiés, avec leur proposition d’engagement' },
-      // « Mon offre » a disparu le 25/08/2026 : deux entrees ne font pas une
-      // rubrique, et ce qu'on anime releve de son activite comme le reste.
-      { label: 'Mes ateliers', href: '/dashboard/ateliers', icon: Sparkles },
-      { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
-      { label: 'Mon planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true, hint: 'Votre agenda, importez-y le planning que vous avez déjà, en CSV, Excel ou PDF' },
-    ],
-  },
-  // Les deux outils LEX sont dans la barre du haut depuis le 03/09/2026. Le
-  // solde reste ici : c'est la seule des trois entrées qui parle d'argent, et
-  // un salarié en attente de rattachement a besoin de savoir ce qu'il lui
-  // reste avant d'ouvrir l'outil.
-  {
-    items: [
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation du mois et votre consommation' },
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true, hint: 'Créer votre compte établissement ou intervenant' },
+      { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldCheck, hint: 'Télécharger vos données ou demander leur suppression' },
     ],
   },
 ];
@@ -796,13 +653,19 @@ const particulierNav: NavSection[] = [
   },
 ];
 
+/**
+ * Les sections de navigation adaptées au type du compte actif.
+ *
+ * `roleCompte` est le rôle hérité en base DANS le compte actif. Sur Les
+ * Extras il ne change plus rien : tout le monde voit le menu du titulaire.
+ */
 export function getNavForRole(
   role: NavRole,
   roleCompte?: AccountRole,
-  options?: { outilsAvances?: boolean; enAttenteRattachement?: boolean },
+  options?: { outilsAvances?: boolean; sansCompte?: boolean },
 ): NavSection[] {
-  // Avant toute chose : un compte qui attend son rattachement n'a qu'un menu.
-  if (options?.enAttenteRattachement) return attenteRattachementNav;
+  // Avant toute chose : sans compte, un seul menu (hors administration).
+  if (options?.sansCompte && role !== 'ADMIN') return sansCompteNav;
 
   const base =
     role === 'ADMIN'
@@ -885,8 +748,7 @@ export function getNavForRole(
   /*
    * ⚠ PLUS DE RÔLES SUR LES EXTRAS (24/09/2026, décision de Siham). Le compte,
    * c'est la personne : tout le monde voit le menu du TITULAIRE, quel que soit
-   * le rôle hérité en base. Les entrées réservées aux anciens « salariés »
-   * (MEMBER seul) ne concernent plus personne et disparaissent.
+   * le rôle hérité en base.
    */
   return sansAvances(
     base

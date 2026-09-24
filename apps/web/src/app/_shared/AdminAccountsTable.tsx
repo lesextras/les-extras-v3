@@ -27,7 +27,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { apiRequest } from "@/lib/api";
 import { EmptyState } from "./ui";
-import { formatDate } from "./format";
+import { formatDate, libelleAcces } from "./format";
 
 /**
  * L'échéance, calculée à l'identique de `common/suppression-compte.ts` côté
@@ -89,13 +89,6 @@ const TYPE_OPTIONS = [
   { value: "ESTABLISHMENT", label: "Établissements" },
   { value: "FREELANCE", label: "Intervenants" },
 ];
-
-const ACCOUNT_ROLE_LABEL: Record<string, string> = {
-  OWNER: "Direction",
-  ADMIN: "Administrateur",
-  MANAGER: "Responsable de service",
-  MEMBER: "Salarié",
-};
 
 function memberName(m: AdminMembership) {
   const n = [m.user?.firstName, m.user?.lastName].filter(Boolean).join(" ");
@@ -324,7 +317,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-sm">
         <p className="text-muted-foreground">
           <span className="font-semibold text-foreground">{filtered.length}</span> compte(s) ·{" "}
-          <span className="font-semibold text-foreground">{totalSubAccounts}</span> rattachement(s)
+          <span className="font-semibold text-foreground">{totalSubAccounts}</span> accès
         </p>
         <div className="flex gap-2">
           <Button
@@ -370,7 +363,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                         <button
                           type="button"
                           onClick={() => toggle(a.id)}
-                          aria-label={expanded.has(a.id) ? "Replier les rattachements" : "Déplier les rattachements"}
+                          aria-label={expanded.has(a.id) ? "Replier les accès" : "Déplier les accès"}
                           className="mt-0.5 rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                         >
                           {expanded.has(a.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -383,7 +376,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                             </Badge>
                             <Badge variant="muted" className="gap-1">
                               <Users className="h-3 w-3" />
-                              {(a.memberships?.length ?? a._count?.memberships ?? 0)} rattachement(s)
+                              {(a.memberships?.length ?? a._count?.memberships ?? 0)} accès
                             </Badge>
                             {/* Un compte archivé doit se voir dans la liste,
                                 sinon on le cherche sur le site sans comprendre
@@ -482,7 +475,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                       <div className="ml-8 rounded-lg border border-border bg-muted/30 p-3">
                         {(a.memberships?.length ?? 0) === 0 ? (
                           <p className="py-2 text-center text-xs text-muted-foreground">
-                            Aucun autre rattachement sur ce compte.
+                            Aucun accès enregistré sur ce compte.
                           </p>
                         ) : (
                           <ul className="divide-y divide-border">
@@ -494,7 +487,7 @@ export function AdminAccountsTable({ accounts }: { accounts: AdminAccount[] }) {
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
                                   <Badge variant={m.role === "OWNER" ? "soft" : "muted"}>
-                                    {ACCOUNT_ROLE_LABEL[m.role] ?? m.role}
+                                    {libelleAcces(m.role, a.type)}
                                   </Badge>
                                   {m.status && m.status !== "ACTIVE" ? (
                                     <Badge variant="outline">{m.status}</Badge>

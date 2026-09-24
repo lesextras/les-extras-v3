@@ -120,11 +120,6 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
               <span className="truncate text-sm font-semibold text-foreground">
                 {activeAccount?.name ?? 'Sélectionner un compte'}
               </span>
-              {/* « Freelance · OWNER » : un anglicisme et un code technique,
-                  affichés en permanence sous le nom du compte. Le produit
-                  possédait déjà la traduction métier (ACCOUNT_ROLE_LABEL) ;
-                  elle n'était simplement pas employée ici. « Professionnel ·
-                  Direction » se lit, et se dit à voix haute. */}
               <span className="truncate text-xs text-muted-foreground">
                 {/* Plus de rôle sous le nom (23/09/2026) : le compte, c'est la
                     personne, et « Direction » ou « Responsable » ne disent plus
@@ -161,8 +156,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            {/* /dashboard/equipe n'a jamais existé : la gestion des membres
-                et des invitations vit dans /dashboard/account. */}
+            {/* Les comptes de la personne se gèrent dans /dashboard/account. */}
             <DropdownMenuItem onClick={() => router.push('/dashboard/account')}>
               <Building2 />
               Gérer les comptes
@@ -212,14 +206,12 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
           jour-là au motif que c'est un outil quotidien, il remonte ici
           aujourd'hui. Le motif de la redescente n'était pas faux, mais il
           coûtait trois entrées de sidebar répétées dans QUATRE menus
-          (freelance, établissement, admin, salarié en attente), et sur le
+          (freelance, établissement, admin, particulier), et sur le
           compte admin, ces trois entrées poussaient le travail
           d'administration sous la ligne de flottaison.
 
           Les trois outils sont ici ; « LEX · Crédits » reste dans le menu de
-          gauche, où il est filtré par rôle (OWNER/ADMIN/MANAGER) : la
-          consommation de l'équipe ne regarde pas tout le monde, et cette
-          barre n'a pas de filtre de rôle. */}
+          gauche, à côté des autres réglages du compte. */}
         <DropdownMenu align="start">
           <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">
             <PenLine className="size-4 text-muted-foreground" />

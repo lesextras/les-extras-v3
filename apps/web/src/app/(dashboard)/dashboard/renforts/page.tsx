@@ -12,7 +12,6 @@ import { PageHeader, EmptyState, ErrorState } from "../../../_shared/ui";
 import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { BookingActions } from "../../../_shared/BookingActions";
 import { MatchingPanel } from "../../../_shared/MatchingPanel";
-import { ApprouverMission } from "../../../_shared/ApprouverMission";
 import { RepublierMission } from "../../../_shared/RepublierMission";
 import { PublierMission } from "../../../_shared/PublierMission";
 import { RetenirIntervenant } from "../../../_shared/VivierActions";
@@ -45,8 +44,6 @@ function libelleDiffusion(mission: Mission): string {
   switch (mission.cibleDiffusion) {
     case "CONNUS":
       return "personnes déjà connues uniquement";
-    case "UNITE":
-      return "un service, en interne";
     case "SELECTION":
       return "destinataires choisis";
     default:
@@ -57,11 +54,8 @@ function libelleDiffusion(mission: Mission): string {
 export default async function RenfortsPage() {
   const session = await requireSession();
 
-  // Publier un renfort engage l'établissement : le serveur le réserve à la
-  // direction, à l'administration et aux chefs de service. L'écran doit dire
-  // la même chose — proposer un bouton qui renverra une erreur d'autorisation,
-  // c'est faire passer une règle pour une panne.
-  const peutPublier = true; // plus de rôles sur Les Extras (24/09/2026) : la personne du compte publie
+  // Un compte = une personne (24/09/2026) : le titulaire du compte publie.
+  const peutPublier = true;
   // Le remplacement de poste en CDD est hors offre publique depuis le
   // 19/09/2026 (`@/lib/offre`). Voir le bloc des deux cartes, plus bas.
   const montreCdd = renfortSalarieVisible();
@@ -224,8 +218,8 @@ export default async function RenfortsPage() {
           title="Aucun renfort publié"
           description={
             peutPublier
-              ? "Créez un RenforTeam : il sera diffusé en cascade (salariés → réseau réservé → public)."
-              : "Aucun besoin de remplacement n’est ouvert pour le moment. Un responsable de votre établissement peut en publier un."
+              ? "Créez un RenforTeam : il part d’abord aux intervenants que vous connaissez, puis au réseau."
+              : "Aucun besoin de remplacement n’est ouvert pour le moment."
           }
           action={peutPublier ? <RenfortModal accountId={session.account.id} /> : undefined}
         />
@@ -247,9 +241,6 @@ export default async function RenfortsPage() {
                         <Badge variant={missionBadgeVariant(mission.status)}>
                           {MISSION_STATUS_LABEL[mission.status]}
                         </Badge>
-                        {mission.attenteValidation ? (
-                          <Badge variant="outline">En attente de validation</Badge>
-                        ) : null}
                         <Badge variant="outline">
                           {MISSION_CATEGORY_LABEL[mission.category]}
                         </Badge>
@@ -277,10 +268,6 @@ export default async function RenfortsPage() {
                       ) : null}
                       {peutPublier ? (
                         <RepublierMission missionId={mission.id} accountId={session.account.id} />
-                      ) : null}
-                      {mission.attenteValidation &&
-                      (session.account.role === "OWNER" || session.account.role === "ADMIN") ? (
-                        <ApprouverMission missionId={mission.id} accountId={session.account.id} />
                       ) : null}
                       <Badge variant="secondary">
                         {bookings.length} candidature{bookings.length > 1 ? "s" : ""}

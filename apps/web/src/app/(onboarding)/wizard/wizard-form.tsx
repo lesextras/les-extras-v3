@@ -13,9 +13,6 @@ import {
   Check,
   FileUp,
   Sparkles,
-  Search,
-  Building2,
-  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { onboardingProfileSchemaPour, type OnboardingProfileValues } from '@/lib/validation';
@@ -44,30 +41,21 @@ import { apiRequest } from '@/lib/api';
  */
 const ETAPES_ETABLISSEMENT = ['Profil', 'Finalisation'] as const;
 const ETAPES_INTERVENANT = ['Profil', 'Documents', 'Finalisation'] as const;
-// Compte « salarié » : même compte FREELANCE côté droits, mais avec une étape
-// en plus pour demander son rattachement à l'établissement qui l'emploie. Tant
-// qu'aucun établissement ne l'a accepté, son compte n'ouvre que LEX.
-const ETAPES_SALARIE = ['Profil', 'Établissement', 'Documents', 'Finalisation'] as const;
+// ⚠ Plus d'étape « Établissement » pour un compte « salarié » (24/09/2026) :
+// un compte = une personne, on ne demande plus à rejoindre celui d'un autre.
 
 export default function WizardForm({
   typeDeCompte,
   accountId,
-  estSalarie = false,
 }: {
   typeDeCompte: 'ESTABLISHMENT' | 'FREELANCE';
   accountId?: string | null;
-  /** Compte créé via le profil « Salarié » à l'inscription (voir register/page.tsx). */
-  estSalarie?: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [step, setStep] = React.useState(0);
   const STEPS: readonly string[] =
-    typeDeCompte === 'ESTABLISHMENT'
-      ? ETAPES_ETABLISSEMENT
-      : estSalarie
-        ? ETAPES_SALARIE
-        : ETAPES_INTERVENANT;
+    typeDeCompte === 'ESTABLISHMENT' ? ETAPES_ETABLISSEMENT : ETAPES_INTERVENANT;
   const etape = STEPS[step];
   const [submitting, setSubmitting] = React.useState(false);
   // Pièces déjà déposées pendant l'inscription, pour l'accusé de réception.
@@ -287,11 +275,6 @@ export default function WizardForm({
               </div>
             )}
 
-            {/* Étape « salarié » : demande de rattachement à un établissement */}
-            {etape === 'Établissement' && accountId && (
-              <RattachementEtablissement accountId={accountId} />
-            )}
-
             {/* Étape 2 : documents, intervenants uniquement */}
             {etape === 'Documents' && (
               <div className="space-y-5">
@@ -371,8 +354,8 @@ export default function WizardForm({
                 Retour
               </Button>
               <div className="flex items-center gap-2">
-                {/* Les étapes qui demandent une pièce ou une démarche (dépôt
-                    de documents, rattachement) se passent : on ne bloque
+                {/* Les étapes qui demandent une pièce (dépôt de documents)
+                    se passent : on ne bloque
                     personne sur ce qu'il n'a pas sous la main.
                     L'étape « Profil » d'un intervenant, elle, ne se passe
                     plus : métier et ville sont les deux critères qui décident
@@ -407,171 +390,10 @@ export default function WizardForm({
 }
 
 /**
- * Recherche d'établissement + envoi de la demande de rattachement.
- *
- * Le compte reste un compte individuel (droits freelance) tant que
- * l'établissement n'a pas approuvé : cette étape ne fait qu'envoyer la
- * demande, elle ne change rien aux droits immédiatement. Passer cette étape
- * n'empêche rien : la demande pourra être envoyée plus tard depuis le profil.
- */
-function RattachementEtablissement({ accountId }: { accountId: string }) {
-  const { toast } = useToast();
-  const [recherche, setRecherche] = React.useState('');
-  const [resultats, setResultats] = React.useState<
-    Array<{ id: string; name: string; city: string | null }>
-  >([]);
-  const [rechercheEnCours, setRechercheEnCours] = React.useState(false);
-  const [selection, setSelection] = React.useState<{ id: string; name: string } | null>(null);
-  const [envoi, setEnvoi] = React.useState(false);
-  const [envoyee, setEnvoyee] = React.useState(false);
-
-  React.useEffect(() => {
-    const terme = recherche.trim();
-    if (terme.length < 2) {
-      setResultats([]);
-      return;
-    }
-    setRechercheEnCours(true);
-    const t = setTimeout(async () => {
-      try {
-        const data = await apiRequest<Array<{ id: string; name: string; city: string | null }>>(
-          `/accounts/etablissements/recherche?q=${encodeURIComponent(terme)}`,
-          { accountId },
-        );
-        setResultats(data);
-      } catch {
-        setResultats([]);
-      } finally {
-        setRechercheEnCours(false);
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [recherche, accountId]);
-
-  async function envoyerDemande() {
-    if (!selection) return;
-    setEnvoi(true);
-    try {
-      await apiRequest('/attachment-requests', {
-        method: 'POST',
-        accountId,
-        body: { establishmentAccountId: selection.id },
-      });
-      setEnvoyee(true);
-      toast({
-        title: 'Demande envoyée',
-        description: `${selection.name} recevra votre demande de rattachement.`,
-        variant: 'success',
-      });
-    } catch (err) {
-      toast({
-        title: 'Envoi impossible',
-        description: err instanceof Error ? err.message : 'Réessayez.',
-        variant: 'error',
-      });
-    } finally {
-      setEnvoi(false);
-    }
-  }
-
-  if (envoyee) {
-    return (
-      <div className="space-y-3 text-center">
-        <span className="mx-auto grid size-12 place-items-center rounded-xl bg-success/15 text-success">
-          <Check className="size-6" />
-        </span>
-        <div>
-          <h2 className="text-xl font-semibold">Demande envoyée</h2>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            {selection?.name} peut désormais l’approuver depuis son espace « Équipe ». En
-            attendant, LEX vous est ouvert : vous serez prévenu dès qu’une réponse arrive.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-xl font-semibold">Votre établissement</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Recherchez l’établissement qui vous emploie pour lui envoyer une demande de
-          rattachement. Tant qu’aucun établissement ne vous a accepté, LEX vous est ouvert et le
-          reste attend. Vous pouvez passer cette étape : la demande se fait aussi depuis votre
-          tableau de bord, et vous pouvez être rattaché à plusieurs établissements.
-        </p>
-      </div>
-
-      <div className="relative">
-        <Input
-          placeholder="Nom de l’établissement (MECS Les Tilleuls…)"
-          leftIcon={<Search />}
-          value={recherche}
-          onChange={(e) => {
-            setRecherche(e.target.value);
-            setSelection(null);
-            setEnvoyee(false);
-          }}
-        />
-      </div>
-
-      {rechercheEnCours && (
-        <p className="text-xs text-muted-foreground">Recherche…</p>
-      )}
-
-      {!rechercheEnCours && recherche.trim().length >= 2 && resultats.length === 0 && (
-        <p className="text-xs text-muted-foreground">Aucun établissement trouvé pour « {recherche} ».</p>
-      )}
-
-      {resultats.length > 0 && !selection && (
-        <ul className="divide-y divide-border rounded-xl border border-border">
-          {resultats.map((r) => (
-            <li key={r.id}>
-              <button
-                type="button"
-                onClick={() => setSelection({ id: r.id, name: r.name })}
-                className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-accent/60"
-              >
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
-                  <Building2 className="size-4" />
-                </span>
-                <span>
-                  <span className="block text-sm font-medium">{r.name}</span>
-                  {r.city && <span className="block text-xs text-muted-foreground">{r.city}</span>}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {selection && (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary-soft/40 p-4">
-          <span className="flex items-center gap-2 text-sm font-medium">
-            <Building2 className="size-4 text-primary" />
-            {selection.name}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setSelection(null)} disabled={envoi}>
-              Changer
-            </Button>
-            <Button type="button" size="sm" onClick={envoyerDemande} loading={envoi}>
-              Envoyer la demande
-              {!envoi && <Send />}
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
  * Dépôt d'une pièce justificative pendant l'inscription.
  *
  * Le fichier part d'abord dans le dépôt privé (famille COMPLIANCE), puis on
- * rattache son identifiant au dossier de conformité. C'est exactement la
+ * relie son identifiant au dossier de conformité. C'est exactement la
  * chaîne qu'utilise « Mon dossier » : aucune route nouvelle, aucune règle
  * dupliquée — la pièce arrive donc « en attente de vérification », comme si
  * elle avait été déposée plus tard.

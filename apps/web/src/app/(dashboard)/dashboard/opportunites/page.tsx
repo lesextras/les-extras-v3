@@ -56,10 +56,9 @@ export default async function OpportunitesPage() {
           title="Missions RenforTeam"
           subtitle="Les missions de renfort et les ateliers ouverts à la candidature."
         />
-        {/* Un salarié rattaché à un établissement arrivait ici sur un
-            cul-de-sac : « Réservé aux intervenants », et rien d'autre. Il
-            peut pourtant se positionner sur ce qui est ouvert, on le lui
-            dit, et on lui donne le chemin. */}
+        {/* Un compte qui n'est pas intervenant arrivait ici sur un
+            cul-de-sac : « Réservé aux intervenants », et rien d'autre. On lui
+            dit où voir ce qui est ouvert, et on lui donne le chemin. */}
         <EmptyState
           icon={<Target />}
           title="Les missions ouvertes sont dans la marketplace"

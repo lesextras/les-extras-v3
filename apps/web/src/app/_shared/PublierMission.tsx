@@ -8,8 +8,8 @@
  * cliquez sur Publier » — et aucun bouton « Publier » n'existait sur aucun
  * écran. Une mission en brouillon était définitivement coincée.
  *
- * La publication déclenche la cascade de diffusion : salariés d'abord, puis
- * réseau réservé, puis marketplace publique.
+ * La publication déclenche la cascade de diffusion : les intervenants connus
+ * de l'établissement d'abord (réseau réservé), puis la marketplace publique.
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -39,7 +39,7 @@ export function PublierMission({
       toast({
         title: "Renfort publié",
         description:
-          "La diffusion en cascade démarre : votre équipe d'abord, puis votre réseau, puis la marketplace.",
+          "La diffusion en cascade démarre : les intervenants que vous connaissez d’abord, puis le réseau.",
       });
       router.refresh();
     } catch (err) {

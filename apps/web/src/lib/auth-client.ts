@@ -95,37 +95,22 @@ export async function reinitialiserMotDePasse(
   return result;
 }
 
-export async function register(
-  values: RegisterValues,
-  options?: { profilSalarie?: boolean; rejoindreEtablissementId?: string },
-): Promise<AuthResult> {
+export async function register(values: RegisterValues): Promise<AuthResult> {
   // Origine de la visite, mémorisée à l'arrivée sur le site : c'est ici
   // qu'elle quitte le navigateur, et nulle part ailleurs.
   const origine = sourceComplete();
+  // ⚠ UN COMPTE = UNE PERSONNE (24/09/2026) : chaque inscription crée SON
+  // compte. `profilSalarie` et `rejoindreEtablissementId` ne partent plus.
   const payload = {
     accountType: values.accountType,
-    // La tuile « Salarié » ne vivait que dans l'état de la page : le compte
-    // créé était celui d'un indépendant. Le choix part maintenant au serveur,
-    // qui le fige — c'est lui qui décide ensuite de ce que le compte ouvre.
-    profilSalarie: options?.profilSalarie === true,
     firstName: values.firstName.trim(),
     lastName: values.lastName.trim(),
     // Facultatif : on n'envoie rien plutôt qu'une chaîne vide, sinon le
     // serveur enregistrerait un numéro qui n'en est pas un.
     phone: values.phone?.trim() || undefined,
-    // Un intervenant n'a pas de structure : le compte prend alors son nom.
+    // Un intervenant n'a pas d'établissement : le compte prend alors son nom.
     organizationName:
       values.accountType === 'ESTABLISHMENT' ? values.organizationName?.trim() : undefined,
-    /**
-     * ⚠ RECONNAÎTRE SON ÉTABLISSEMENT NE CRÉE PLUS DE COMPTE. Le serveur
-     * rattache la personne au compte existant, non vérifiée, et n'en crée
-     * aucun — c'est ce qui met fin au doublon d'établissement. Sans ce champ,
-     * on repart sur douze maisons homonymes pour une seule MECS.
-     */
-    rejoindreEtablissementId:
-      values.accountType === 'ESTABLISHMENT'
-        ? options?.rejoindreEtablissementId || undefined
-        : undefined,
     email: values.email,
     password: values.password,
     source: origine.source,

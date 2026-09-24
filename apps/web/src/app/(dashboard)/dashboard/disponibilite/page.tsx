@@ -30,7 +30,7 @@ export default async function DisponibilitePage() {
       {error || !data ? (
         <ErrorState
           title="Page indisponible"
-          description="Cette page ne concerne pas les comptes d’établissement : ce sont vos salariés qui s’y déclarent, depuis leur propre compte."
+          description="Cette page ne concerne pas les comptes d’établissement : ce sont les professionnels qui s’y déclarent, depuis leur propre compte."
           retryHref="/dashboard/disponibilite"
         />
       ) : (

@@ -121,7 +121,7 @@ describe('Les outils avancés du menu établissement', () => {
       'Planning',
       'Devis & factures', // la quatrième marche du chemin de l'argent
       'Messagerie',
-      'Mon équipe',
+      'Conformité',
     ];
     for (const label of intouchables) {
       expect(entrees(quotidien)).toContain(label);
@@ -165,19 +165,11 @@ describe('Les outils avancés du menu établissement', () => {
 });
 
 /**
- * LE MENU D'UN SALARIÉ.
- *
- * ⚠ SON ENTRÉE « Mes congés & mes heures » NE PORTE PAS `avance`, alors que
- * celle des responsables — qui mène au MÊME écran — la porte. C'est délibéré
- * (voir le commentaire de `nav.ts`) : le filtre de rôle s'applique AVANT le
- * filtre `avance`, si bien qu'il n'avait aucun chemin vers ses demandes
- * d'absence avant le 16/09/2026, pas même le bouton pour en chercher un.
- *
- * ⚠ IL AVAIT ZÉRO ENTRÉE AVANCÉE JUSQU'AU 21/09/2026 ; il en a deux depuis
- * l'allègement du menu, et le bouton s'affiche donc pour lui aussi. Ce n'est
- * pas une régression : rien de ce qu'il fait au quotidien n'est derrière.
+ * LE MENU NE DÉPEND PLUS DU RÔLE HÉRITÉ EN BASE (24/09/2026, « 1 compte = 1
+ * personne »). Ces tests tiennent les chemins qui ne doivent pas se refermer,
+ * et les entrées qui ne doivent pas revenir.
  */
-describe('Le menu d’un salarié', () => {
+describe('Le menu, quel que soit le rôle hérité', () => {
   /**
    * ⚠ MIS À JOUR LE 24/09/2026 : depuis le modèle du 23/09 (« le compte,
    * c'est la personne »), la gestion RH sort du menu. « Mon poste » et
@@ -223,5 +215,42 @@ describe('Le menu d’un salarié', () => {
         expect(liensDe(getNavForRole(type, role))).toEqual(titulaire);
       }
     }
+  });
+
+  /**
+   * ⚠ UN COMPTE = UNE PERSONNE (24/09/2026). Ni organigramme, ni équipe, ni
+   * formation interne : les pages n'existent plus, et `typedRoutes` refuserait
+   * de toute façon un lien vers elles. Ce test dit pourquoi elles ne doivent
+   * pas revenir dans le menu.
+   */
+  it('ne mène plus ni à l’organigramme ni à l’équipe, pour aucun type ni rôle', () => {
+    for (const type of ['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER', 'ADMIN'] as const) {
+      for (const role of ['OWNER', 'MEMBER'] as const) {
+        const liens = liensDe(getNavForRole(type, role, { outilsAvances: true }));
+        expect(liens).not.toContain('/dashboard/organigramme');
+        expect(liens).not.toContain('/dashboard/equipe');
+        expect(entrees(getNavForRole(type, role, { outilsAvances: true }))).not.toContain(
+          'Former mes équipes',
+        );
+      }
+    }
+  });
+});
+
+/**
+ * UNE PERSONNE SANS COMPTE (ancien accès à l'espace d'une autre personne) n'a
+ * qu'une chose à faire : créer le sien. Lui servir le menu d'un compte qu'elle
+ * n'a pas ne mènerait qu'à des écrans vides.
+ */
+describe('Le menu d’une personne sans compte', () => {
+  it('se réduit au tableau de bord et aux données personnelles', () => {
+    const liens = liensDe(getNavForRole('FREELANCE', 'MEMBER', { sansCompte: true }));
+    expect(liens).toEqual(['/dashboard', '/dashboard/donnees-personnelles']);
+  });
+
+  it('ne touche pas au menu de l’administration de la plateforme', () => {
+    expect(getNavForRole('ADMIN', undefined, { sansCompte: true })).toEqual(
+      getNavForRole('ADMIN', undefined),
+    );
   });
 });

@@ -32,34 +32,9 @@ export default async function AteliersPage({
   // de parrainage ne s'affiche qu'à ce moment-là, et une seule fois.
   const { publie } = await searchParams;
 
-  // UN SALARIÉ EN ATTENTE PEUT REGARDER, PAS ENCORE PUBLIER.
-  //
-  // Cette page lui est ouverte à dessein (voir CHEMINS_OUVERTS_SANS_RATTACHEMENT) :
-  // il consulte ce qui existe pendant que sa demande chemine. Mais le serveur
-  // n'ouvre `services` qu'en lecture tant qu'aucun établissement ne l'a
-  // accepté — le bouton « Créer un atelier » menait donc droit à un 403.
-  // C'est exactement le « bouton qui mène à un refus » que le reste du produit
-  // s'interdit. On affiche l'explication à la place du bouton.
-  const { data: moi } = await fetchApi<{ enAttenteRattachement?: boolean }>(
-    session,
-    "/auth/me",
-  );
-  const enAttente = moi?.enAttenteRattachement === true;
-
-  /*
-    ⚠ UN MEMBRE SIMPLE NE PUBLIE PAS — corrigé le 16/09/2026.
-
-    Cette page montait `ServiceModal` à trois endroits sans jamais regarder le
-    rôle, alors que l'API exige OWNER, ADMIN ou MANAGER (`AccountRolesGuard`).
-    Un membre remplissait donc un formulaire long — titre, description, public,
-    durée, objectifs, photo — pour se faire refuser à l'envoi. Le refus est
-    juste ; c'est de l'avoir proposé qui ne l'était pas.
-
-    ⚠ La condition est cumulée avec `enAttente` : ce sont deux raisons
-    différentes de ne pas pouvoir publier (l'une est un rôle, l'autre un
-    rattachement qui n'a pas encore été accepté), et chacune a son message.
-  */
-  const publicationPermise = peutPublier(session.account.role) && !enAttente;
+  // Un compte = une personne (24/09/2026) : le titulaire publie. La règle
+  // vit dans `lib/publication.ts`, une seule fois.
+  const publicationPermise = peutPublier(session.account.role);
 
   if (session.account.type !== "FREELANCE") {
     return (
@@ -214,25 +189,8 @@ export default async function AteliersPage({
         ) : !services.data || services.data.length === 0 ? (
           <EmptyState
             title="Aucun atelier"
-            description={
-              enAttente
-                ? "Vous pourrez publier vos ateliers dès qu’un établissement aura accepté votre rattachement. En attendant, le catalogue et les opportunités vous sont ouverts."
-                : publicationPermise
-                  ? "Publiez votre premier atelier pour apparaître dans le catalogue et recevoir des réservations."
-                  : /* ⚠ On DIT le motif. Un écran vide sans bouton se lit comme une
-                       panne ; « réservé aux responsables » se lit comme une règle,
-                       et la personne sait à qui s’adresser. */
-                    "Publier une fiche est réservé au propriétaire, aux administrateurs et aux responsables du compte. Demandez-leur de vous donner ce rôle, ou de publier la fiche."
-            }
-            action={
-              enAttente ? (
-                <Button asChild variant="outline">
-                  <Link href="/dashboard">Voir où en est mon rattachement</Link>
-                </Button>
-              ) : publicationPermise ? (
-                <ServiceModal accountId={session.account.id} />
-              ) : null
-            }
+            description="Publiez votre premier atelier pour apparaître dans le catalogue et recevoir des réservations."
+            action={publicationPermise ? <ServiceModal accountId={session.account.id} /> : null}
           />
         ) : (
           <>

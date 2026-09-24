@@ -350,8 +350,8 @@ export default async function SosRenfortPage() {
           <p className="text-lg leading-relaxed text-muted-foreground">
             {montreCdd ? (
               <>
-                Votre équipe, puis les habitués, puis le réseau. Le premier qui accepte emporte la
-                mission. Vous l’embauchez en CDD : moins cher que l’intérim, sans requalification.
+                Les intervenants que vous connaissez, puis le réseau. Le premier qui accepte emporte
+                la mission. Vous l’embauchez en CDD : moins cher que l’intérim, sans requalification.
               </>
             ) : (
               <>
@@ -1008,27 +1008,30 @@ export default async function SosRenfortPage() {
 /**
  * ⚠ CE QUI SUIT DÉCRIT LE RENFORT DE POSTE EN CDD SALARIÉ, hors offre publique
  * depuis le 19/09/2026 (`@/lib/offre`). Rien n'est supprimé : ces trois listes
- * sont celles d'avant, au mot près, et elles se rallument avec
- * NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+ * se rallument avec NEXT_PUBLIC_OFFRE_PUBLIQUE=complete.
+ *
+ * ⚠ La cascade ne commence plus par « votre équipe » (24/09/2026, « 1 compte
+ * = 1 personne ») : elle part des intervenants que l'établissement connaît,
+ * puis du réseau.
  */
 const CASCADE = [
   {
     numero: "1",
-    titre: "Votre équipe d’abord",
+    titre: "Les intervenants que vous connaissez d’abord",
     texte:
-      "Vos salariés d’abord. Moins cher qu’un renfort externe, et personne à présenter au public accueilli.",
+      "Ceux qui sont déjà venus chez vous ou que vous avez retenus au vivier. Ils reprennent le poste sans temps d’adaptation.",
   },
   {
     numero: "2",
-    titre: "Puis les intervenants déjà venus chez vous",
+    titre: "Puis le réseau",
     texte:
-      "Ceux qui connaissent déjà la maison. Ils reprennent le poste sans temps d’adaptation.",
+      "Sans réponse, le besoin s’ouvre au réseau, classé par correspondance avec votre demande.",
   },
   {
     numero: "3",
-    titre: "Enfin la marketplace",
+    titre: "Le premier qui accepte",
     texte:
-      "Sans réponse, le besoin s’ouvre au réseau, classé par correspondance avec votre demande.",
+      "Il emporte la mission, et vous l’embauchez en CDD : le contrat s’édite et se signe en ligne.",
   },
 ];
 

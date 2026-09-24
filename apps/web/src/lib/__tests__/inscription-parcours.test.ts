@@ -6,7 +6,8 @@ import {
   coteDe,
   type CleCompte,
 } from '@/app/(auth)/register/parcours';
-import { GROUPES_DROITS, DROITS } from '@/lib/droits';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { registerSchema } from '@/lib/validation';
 
 /**
@@ -41,15 +42,14 @@ describe('parcours d’inscription', () => {
     /**
      * ⚠ NE PAS « RÉPARER » CE TEST en ajoutant une étape de lieu de travail.
      *
-     * L'établissement, l'entité qui emploie, le service et le poste sont
-     * saisis DANS « vos identifiants », et le nom de l'établissement doit y
-     * rester : c'est lui qui fixe le slug, calculé une seule fois à la
+     * L'établissement et son organisme gestionnaire sont saisis DANS « vos
+     * identifiants », et le nom de l'établissement doit y rester : c'est lui qui fixe le slug, calculé une seule fois à la
      * création. Une étape « établissement » séparée, avant ou après, ramène
      * l'un des deux défauts qu'on a payés — l'adresse publique au prénom de la
      * personne, ou un écran entier pour taper « Internat ».
      */
-    // ⚠ MIS À JOUR LE 24/09/2026 : depuis le 23/09 il n'y a plus d'étape
-    // « niveau et droits » ; le poste part avec les identifiants. Deux écrans.
+    // ⚠ MIS À JOUR LE 24/09/2026 : plus d'étape « niveau et droits », plus de
+    // poste (un compte = une personne). Deux écrans.
     it('ne fait pas d’étape à part du lieu de travail', () => {
       const cles = PARCOURS.ESTABLISHMENT.map((e) => e.cle);
       expect(cles).toEqual(['profil', 'identite']);
@@ -167,7 +167,7 @@ describe('parcours d’inscription', () => {
      * ⚠⚠ LE PARTICULIER RESTE ATTEIGNABLE, ET CE TEST EST LE GARDE-FOU.
      *
      * Retirer sa carte de la première page ne doit pas le retirer du produit :
-     * un parent n'a ni établissement, ni service, ni poste, et son espace
+     * un parent n'a pas d'établissement, et son espace
      * (menu court, `AccueilParticulier`) a été écrit exprès. S'il n'est plus
      * ni dans `CHOIX_COMPTE` ni dans `QUI_DEMANDE`, plus personne ne peut
      * ouvrir ce compte — et rien à l'écran ne le signalerait.
@@ -273,45 +273,44 @@ describe('parcours d’inscription', () => {
     });
   });
 
-  describe('les droits déclarés', () => {
-    it('sont uniques — aucune clé en double entre les groupes', () => {
-      const cles = DROITS.map((d) => d.cle);
-      expect(new Set(cles).size).toBe(cles.length);
+  /**
+   * ⚠ UN COMPTE = UNE PERSONNE (24/09/2026, décision de Siham).
+   *
+   * Chaque inscription crée SON compte, dont la personne est titulaire. Le
+   * chemin « rejoindre un établissement existant », le service, le poste et
+   * les droits déclarés ont été retirés ; ces tests échouent s'ils reviennent
+   * dans les sources de l'inscription.
+   */
+  describe('un compte = une personne', () => {
+    const dossier = join(__dirname, '..', '..', 'app', '(auth)', 'register');
+    const sources = [
+      ...readdirSync(dossier)
+        .filter((f) => /\.(ts|tsx)$/.test(f))
+        .map((f) => readFileSync(join(dossier, f), 'utf8')),
+      readFileSync(join(__dirname, '..', 'auth-client.ts'), 'utf8'),
+    ]
+      // Les commentaires ont le droit de raconter l'histoire.
+      .map((t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, ''))
+      .join('\n');
+
+    it('ne propose plus de rejoindre un établissement existant', () => {
+      expect(sources).not.toContain('rejoindreEtablissementId');
+      expect(sources).not.toContain('RechercheEtablissement');
+      expect(sources).not.toContain('/public/etablissements');
     });
 
-    it('portent ceux demandés : publier un article, une actualité, un atelier', () => {
-      const cles = DROITS.map((d) => d.cle);
-      expect(cles).toContain('PUBLIER_ARTICLE');
-      expect(cles).toContain('PUBLIER_ACTUALITE');
-      expect(cles).toContain('PUBLIER_ATELIER');
+    it('ne déclare plus ni poste, ni niveau, ni droits', () => {
+      expect(sources).not.toContain('/organisation/');
+      expect(sources).not.toContain('profilSalarie');
+      expect(sources).not.toContain('ChampPoste');
+      expect(sources).not.toContain('EtapePoste');
     });
 
-    /**
-     * ⚠ CES TROIS-LÀ EXISTAIENT EN BASE SANS ÊTRE PROPOSÉS NULLE PART.
-     * « Inviter des collègues » est celui qui fait vivre tout le modèle : sans
-     * lui à l'écran, un chef de service ne pouvait pas se l'accorder, donc pas
-     * constituer son équipe.
-     */
-    it('proposent inviter, gérer le planning et voir les factures', () => {
-      const cles = DROITS.map((d) => d.cle);
-      expect(cles).toContain('INVITER_MEMBRES');
-      expect(cles).toContain('GERER_PLANNING');
-      expect(cles).toContain('VOIR_FACTURES');
-    });
-
-    it('isolent les deux droits sensibles dans un groupe signalé', () => {
-      const sensible = GROUPES_DROITS.find((g) => g.sensible);
-      expect(sensible).toBeDefined();
-      const cles = sensible!.droits.map((d) => d.cle);
-      expect(cles).toContain('VOIR_CONFORMITE');
-      expect(cles).toContain('UTILISER_CREDITS_LEX');
-      expect(sensible!.intro).toBeTruthy();
-    });
-
-    it('expliquent chacun ce qu’il ouvre', () => {
-      for (const d of DROITS) {
-        expect(d.libelle.length).toBeGreaterThan(5);
-        expect(d.aide.length).toBeGreaterThan(10);
+    it('n’a plus d’étape « poste » ni « structure » dans aucun parcours', () => {
+      for (const type of Object.keys(PARCOURS) as CleCompte[]) {
+        const cles: string[] = PARCOURS[type].map((e) => e.cle);
+        expect(cles).not.toContain('poste');
+        expect(cles).not.toContain('structure');
       }
     });
   });

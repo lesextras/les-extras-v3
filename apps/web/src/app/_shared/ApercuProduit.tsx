@@ -14,7 +14,6 @@ import {
   ChevronRight,
   Clock,
   Megaphone,
-  Users,
 } from "lucide-react";
 
 /** Chrome de fenêtre : trois pastilles et une barre d'adresse. */
@@ -43,7 +42,6 @@ function Fenetre({ url, children }: { url: string; children: React.ReactNode }) 
 // produit existe, c'est se tirer une balle dans le pied.
 function EcranCascade() {
   const paliers = [
-    { titre: "Votre équipe", detail: "4 salariés prévenus", etat: "Sans réponse", icone: Users, actif: false },
     { titre: "Déjà venus chez vous", detail: "6 intervenants prévenus", etat: "Sans réponse", icone: Building2, actif: false },
     { titre: "Le réseau", detail: "23 intervenants correspondants", etat: "Accepté", icone: Megaphone, actif: true },
   ];
@@ -53,7 +51,7 @@ function EcranCascade() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-foreground">Éducateur spécialisé, nuit</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Ce soir 21 h → 7 h · Unité Les Tilleuls</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Ce soir 21 h → 7 h · MECS Les Tilleuls</p>
         </div>
         <span className="shrink-0 rounded-full bg-success/15 px-2.5 py-1 text-[11px] font-semibold text-success">
           Pourvu
@@ -193,7 +191,7 @@ export function ApercuProduit() {
           { titre: "Planning partagé", texte: "Créneaux, missions récurrentes et heures au même endroit." },
           { titre: "Coffre-fort de conformité", texte: "Diplômes, casier, URSSAF, alerte avant l’échéance." },
           { titre: "Devis, contrat, facture", texte: "Générés depuis la mission. Rien à ressaisir." },
-          { titre: "Congés & compteurs", texte: "Absences, soldes, heures du mois, export paie en CSV." },
+          { titre: "Heures du mois", texte: "Déclarées par l’intervenant, validées par vous, reprises sur la facture." },
           { titre: "72 h pour ajuster", texte: "Chacun vérifie les heures ; passé le délai, tout se valide seul." },
           { titre: "Progression intervenant", texte: "Nouveau, Confirmé, Super Extra : les plus fiables passent en premier." },
         ].map((c, i) => (

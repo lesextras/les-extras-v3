@@ -37,53 +37,41 @@ const CATEGORIES = [
 ];
 
 /**
- * PAR OÙ LA DIFFUSION COMMENCE — et c'est l'établissement qui décide.
+ * PAR OÙ LA DIFFUSION COMMENCE, et c'est l'établissement qui décide.
  *
- * Ce choix existait côté API depuis le début, le centre d'aide le promettait
- * noir sur blanc (« À la publication, vous choisissez le palier de départ »)…
- * et l'écran ne l'affichait nulle part. La valeur partait toujours à
- * `SALARIES`, si bien que l'API démarrait systématiquement par l'équipe
- * interne dès qu'un vivier existait.
- *
- * Or « je ne veux pas solliciter mes salariés, je cherche quelqu'un en CDD »
- * est un cas parfaitement ordinaire : l'équipe est déjà à flux tendu, le
- * budget est un budget de remplacement, ou la direction ne veut simplement
- * pas proposer des heures supplémentaires. L'outil ne peut pas trancher ça à
- * la place de la personne. Il pose la question.
+ * ⚠ UN COMPTE = UNE PERSONNE (24/09/2026). Le palier « mes salariés d'abord »
+ * n'existe plus : il n'y a plus d'équipe interne rattachée au compte. La
+ * cascade part des intervenants que l'établissement connaît, puis du réseau.
+ * `RESERVED` est le départ par défaut, comme côté API (qui ouvre directement
+ * au public un compte sans aucun intervenant connu).
  *
  * Les libellés parlent de gens, pas de paliers : personne dans une MECS ne
  * dit « je publie en visibilité RESERVED ».
  */
 const DEPARTS = [
   {
-    value: "SALARIES",
-    titre: "Mes salariés d'abord",
-    aide: "L'offre est proposée en interne avant de sortir. Si personne ne se positionne, elle s'élargit toute seule aux intervenants que vous connaissez, puis au réseau.",
-  },
-  {
     value: "RESERVED",
-    titre: "Directement les intervenants que je connais",
-    aide: "Votre équipe n'est pas sollicitée. L'offre part aux intervenants déjà venus chez vous et à votre vivier, puis s'ouvre au réseau si elle reste sans réponse.",
+    titre: "Les intervenants que je connais d’abord",
+    aide: "L'offre part aux intervenants déjà venus chez vous et à votre vivier, puis s'ouvre au réseau si elle reste sans réponse.",
   },
   {
     value: "PUBLIC",
     titre: "Directement tout le réseau",
-    aide: "Ni vos salariés ni votre vivier ne sont sollicités en priorité : l'offre est visible immédiatement par tous les intervenants du réseau. Le plus rapide.",
+    aide: "Votre vivier n'est pas sollicité en priorité : l'offre est visible immédiatement par tous les intervenants du réseau. Le plus rapide.",
   },
 ] as const;
 
 /**
- * QUI reçoit l'offre. C'est le geste qui manquait le plus : un chef de service
- * qui a besoin de quelqu'un demain matin n'a pas envie de publier au monde
- * entier, il veut d'abord appeler les trois personnes qui connaissent la
- * maison. Tant que l'outil ne sait pas faire ça, il est court-circuité par le
- * téléphone — et il ne voit jamais passer les besoins qu'il aurait couverts.
+ * QUI reçoit l'offre. C'est le geste qui manquait le plus : qui a besoin de
+ * quelqu'un demain matin n'a pas envie de publier au monde entier, il veut
+ * d'abord prévenir les trois personnes qui connaissent la maison. Tant que
+ * l'outil ne sait pas faire ça, il est court-circuité par le téléphone.
  */
 const CIBLES = [
   {
     value: "RESEAU",
     titre: "Tout le réseau, en cascade",
-    aide: "Vos salariés d'abord, puis les intervenants que vous connaissez, puis la marketplace. La diffusion s'élargit toute seule tant que le besoin n'est pas couvert.",
+    aide: "Les intervenants que vous connaissez d'abord, puis la marketplace. La diffusion s'élargit toute seule tant que le besoin n'est pas couvert.",
   },
   {
     value: "CONNUS",
@@ -91,14 +79,9 @@ const CIBLES = [
     aide: "Les intervenants déjà venus chez vous et ceux que vous avez retenus au vivier. L'offre ne sort pas de ce cercle et n'apparaît jamais sur la marketplace.",
   },
   {
-    value: "UNITE",
-    titre: "Uniquement les salariés d'un service",
-    aide: "Le créneau n'est proposé qu'aux salariés rattachés au service que vous désignez. Rien ne sort de l'établissement.",
-  },
-  {
     value: "SELECTION",
-    titre: "Uniquement les personnes que je choisis",
-    aide: "Vous cochez nommément les salariés et les intervenants destinataires. Personne d'autre ne reçoit ni ne voit l'offre.",
+    titre: "Uniquement les intervenants que je choisis",
+    aide: "Vous cochez nommément les intervenants destinataires. Personne d'autre ne reçoit ni ne voit l'offre.",
   },
 ] as const;
 
@@ -119,11 +102,6 @@ const MODES = [
   },
 ] as const;
 
-type MembreEquipe = {
-  id: string;
-  user?: { id: string; firstName?: string | null; lastName?: string | null; email?: string } | null;
-  orgUnit?: { id: string; name: string } | null;
-};
 type IntervenantVivier = {
   accountId: string;
   prenom?: string | null;
@@ -195,15 +173,11 @@ export function RenfortModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("RENFORT");
-  const [visibility, setVisibility] = useState("SALARIES");
+  const [visibility, setVisibility] = useState("RESERVED");
   const [dbCats, setDbCats] = useState<{ id: string; title: string }[]>([]);
-  const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
   const [cible, setCible] = useState<string>("RESEAU");
   const [mode, setMode] = useState<string>("AUTOMATIQUE");
-  const [unite, setUnite] = useState<string>("");
-  const [equipe, setEquipe] = useState<MembreEquipe[]>([]);
   const [vivier, setVivier] = useState<IntervenantVivier[]>([]);
-  const [salariesCoches, setSalariesCoches] = useState<string[]>([]);
   const [intervenantsCoches, setIntervenantsCoches] = useState<string[]>([]);
   const usingDb = dbCats.length > 0;
 
@@ -211,21 +185,14 @@ export function RenfortModal({
     poser(liste.includes(id) ? liste.filter((x) => x !== id) : [...liste, id]);
   }
 
-  // La sélection nominative et le ciblage par service demandent des listes que
-  // l'écran n'a pas besoin de charger tant qu'on ne les a pas choisis.
+  // La sélection nominative demande le vivier, que l'écran n'a pas besoin de
+  // charger tant qu'on ne l'a pas choisie.
   useEffect(() => {
-    if (!open || cible !== "SELECTION") return;
-    if (equipe.length === 0) {
-      apiRequest<{ items?: MembreEquipe[] }>("/memberships?perPage=100", { accountId })
-        .then((r) => setEquipe(Array.isArray(r?.items) ? r.items : []))
-        .catch(() => {});
-    }
-    if (vivier.length === 0) {
-      apiRequest<{ items?: IntervenantVivier[] }>("/vivier", { accountId })
-        .then((r) => setVivier(Array.isArray(r?.items) ? r.items : []))
-        .catch(() => {});
-    }
-  }, [open, cible, accountId, equipe.length, vivier.length]);
+    if (!open || cible !== "SELECTION" || vivier.length > 0) return;
+    apiRequest<{ items?: IntervenantVivier[] }>("/vivier", { accountId })
+      .then((r) => setVivier(Array.isArray(r?.items) ? r.items : []))
+      .catch(() => {});
+  }, [open, cible, accountId, vivier.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -243,11 +210,6 @@ export function RenfortModal({
             rows[0];
           setCategory(defaut.id);
         }
-      })
-      .catch(() => {});
-    apiRequest<{ id: string; name: string }[]>("/units", { accountId })
-      .then((rows) => {
-        if (Array.isArray(rows)) setUnits(rows);
       })
       .catch(() => {});
   }, [open, accountId]);
@@ -272,50 +234,32 @@ export function RenfortModal({
       emergency: fd.get("emergency") === "on",
       attachmentUrl: String(fd.get("attachmentUrl") || "") || undefined,
       attachmentId: piece?.id,
-      orgUnitId: (cible === "UNITE" ? unite : String(fd.get("orgUnitId") || "")) || undefined,
       recurrence: fd.get("recurrence") === "on" ? "HEBDO" : undefined,
       modeAttribution: mode,
       cibleDiffusion: cible,
-      ...(cible === "SELECTION"
-        ? {
-            destinatairesSalaries: salariesCoches,
-            destinatairesIntervenants: intervenantsCoches,
-          }
-        : {}),
+      ...(cible === "SELECTION" ? { destinatairesIntervenants: intervenantsCoches } : {}),
     };
     try {
       const created = await apiRequest<{ id: string }>("/missions", { method: "POST", body, accountId });
       // Diffusion immédiate. Si elle échoue, on le DIT : une mission en
       // brouillon silencieux est le pire piège pour un besoin urgent.
       let publiee = false;
-      let enValidation = false;
       if (created?.id) {
         try {
-          const res = await apiRequest<{ attenteValidation?: boolean }>(
-            `/missions/${created.id}/publish`,
-            {
-              method: "POST",
-              accountId,
-              // Le palier choisi ci-dessus n'était PAS transmis : l'API
-              // retombait sur sa règle par défaut (les salariés d'abord dès
-              // qu'un vivier interne existe) et le choix de l'établissement
-              // était perdu entre les deux appels.
-              ...(cible === "RESEAU" ? { body: { visibility } } : {}),
-            },
-          );
+          await apiRequest(`/missions/${created.id}/publish`, {
+            method: "POST",
+            accountId,
+            // Le palier choisi ci-dessus doit être transmis : sans lui, l'API
+            // retombe sur sa règle par défaut et le choix de l'établissement
+            // se perd entre les deux appels.
+            ...(cible === "RESEAU" ? { body: { visibility } } : {}),
+          });
           publiee = true;
-          enValidation = Boolean(res?.attenteValidation);
         } catch {
           publiee = false;
         }
       }
-      if (enValidation) {
-        toast({
-          title: "Envoyée pour validation",
-          description:
-            "Votre compte demande l'approbation d'un responsable avant diffusion : il vient d'être prévenu.",
-        });
-      } else if (publiee) {
+      if (publiee) {
       // CONFETTIS À LA MISE EN LIGNE.
       //
       // Publier une fiche est le geste qui fait vivre la plateforme, et il ne
@@ -336,11 +280,9 @@ export function RenfortModal({
           description:
             cible !== "RESEAU"
               ? "Votre demande est partie aux seules personnes désignées. Elle n'apparaîtra pas sur la marketplace."
-              : visibility === "SALARIES"
-                ? "Vos salariés sont prévenus les premiers. Sans réponse de leur part, l'offre s'élargira toute seule."
-                : visibility === "RESERVED"
-                  ? "Votre équipe n'a pas été sollicitée : l'offre est partie aux intervenants que vous connaissez."
-                  : "L'offre est visible immédiatement par tout le réseau, ni vos salariés ni votre vivier n'ont été sollicités en priorité.",
+              : visibility === "RESERVED"
+                ? "L'offre est partie aux intervenants que vous connaissez. Sans réponse, elle s'élargira toute seule au réseau."
+                : "L'offre est visible immédiatement par tout le réseau.",
         });
       } else {
         toast({
@@ -381,9 +323,8 @@ export function RenfortModal({
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
           <span className="block font-semibold text-foreground">Ce que ce formulaire déclenche</span>
           <span className="mt-1.5 block">
-            L’offre part <strong className="font-medium text-foreground">en cascade</strong> : vos
-            salariés d’abord, puis les intervenants déjà venus chez vous, puis le réseau. Elle
-            s’élargit toute seule tant que le besoin n’est pas couvert. En mission urgente, chaque
+            L’offre part <strong className="font-medium text-foreground">en cascade</strong> : les
+            intervenants que vous connaissez d’abord, puis le réseau. Elle s’élargit toute seule tant que le besoin n’est pas couvert. En mission urgente, chaque
             profil qui correspond est prévenu{" "}
             <strong className="font-medium text-foreground">par e-mail dès la publication</strong>.
             Le premier qui accepte prend la mission et le contrat s’émet dans la foulée. Ou vous
@@ -470,28 +411,6 @@ export function RenfortModal({
               <Input id="headcount" name="headcount" type="number" min={1} defaultValue={1} />
             </Field>
           </div>
-          {units.length > 0 && cible !== "UNITE" ? (
-            <Field
-              label="Unité / service concerné"
-              htmlFor="orgUnitId"
-              hint="Rattache la mission à un service, pour le filtrage interne."
-            >
-              <select
-                id="orgUnitId"
-                name="orgUnitId"
-                defaultValue=""
-                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-              >
-                <option value="">Toute la structure</option>
-                {units.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          ) : null}
-
           {/* ── Qui reçoit l'offre ─────────────────────────────────────── */}
           <fieldset className="space-y-2 rounded-xl border border-border p-4">
             <legend className="px-1 text-sm font-semibold text-foreground">
@@ -523,33 +442,7 @@ export function RenfortModal({
               </label>
             ))}
 
-            {cible === "UNITE" ? (
-              units.length > 0 ? (
-                <Field label="Service concerné" htmlFor="uniteCible" required>
-                  <select
-                    id="uniteCible"
-                    value={unite}
-                    onChange={(e) => setUnite(e.target.value)}
-                    required
-                    className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">Choisir un service</option>
-                    {units.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              ) : (
-                <p className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-                  Aucun service n&apos;est encore créé dans votre établissement. Créez-en un depuis
-                  l&apos;écran Équipe pour pouvoir cibler un service précis.
-                </p>
-              )
-            ) : null}
-
-            {/* Le palier de départ n'a de sens que pour la cascade : les trois
+            {/* Le palier de départ n'a de sens que pour la cascade : les deux
                 autres cibles désignent déjà précisément les destinataires. */}
             {cible === "RESEAU" ? (
               <div className="space-y-2 rounded-lg border border-dashed border-border p-3">
@@ -585,20 +478,6 @@ export function RenfortModal({
             {cible === "SELECTION" ? (
               <div className="space-y-3 pt-1">
                 <ListeCases
-                  titre="Salariés de l'établissement"
-                  vide="Aucun salarié rattaché à ce compte pour l'instant."
-                  items={equipe.map((m) => ({
-                    id: m.user?.id ?? m.id,
-                    label:
-                      [m.user?.firstName, m.user?.lastName].filter(Boolean).join(" ") ||
-                      m.user?.email ||
-                      "Membre",
-                    detail: m.orgUnit?.name ?? null,
-                  }))}
-                  coches={salariesCoches}
-                  onToggle={(id) => basculer(salariesCoches, setSalariesCoches, id)}
-                />
-                <ListeCases
                   titre="Intervenants que vous connaissez"
                   vide="Votre vivier est vide : les intervenants apparaîtront ici après une première mission."
                   items={vivier.map((v) => ({
@@ -615,9 +494,9 @@ export function RenfortModal({
                   coches={intervenantsCoches}
                   onToggle={(id) => basculer(intervenantsCoches, setIntervenantsCoches, id)}
                 />
-                {salariesCoches.length + intervenantsCoches.length === 0 ? (
+                {intervenantsCoches.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    Cochez au moins une personne : sinon la mission repart en diffusion normale.
+                    Cochez au moins un intervenant : sinon la mission repart en diffusion normale.
                   </p>
                 ) : null}
               </div>

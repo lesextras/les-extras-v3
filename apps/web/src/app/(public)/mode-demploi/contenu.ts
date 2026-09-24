@@ -52,7 +52,7 @@ export const GUIDES: Guide[] = [
         titre: "Créez le compte de votre structure",
         texte: [
           "Choisissez « Établissement » à l'inscription, au nom de votre structure, MECS, IME, ITEP, SESSAD, EHPAD, CHRS, service de collectivité… Le compte est gratuit, sans engagement et sans carte bancaire.",
-          "Vous pourrez ensuite inviter vos collègues (direction, chefs de service, secrétariat) avec des droits différenciés, et créer vos unités si votre structure en a plusieurs : planning et statistiques se filtrent par unité.",
+          "Le compte est personnel : il appartient à la personne qui l'ouvre et ne se partage pas. Un collègue qui veut publier ou réserver crée le sien, et renseigne le même organisme gestionnaire.",
         ],
         lien: { href: "/register?type=etablissement", label: "Créer le compte" },
       },
@@ -66,7 +66,7 @@ export const GUIDES: Guide[] = [
       {
         titre: "Publiez un besoin de renfort…",
         texte: [
-          "Depuis RenforTeam, « Publier un besoin » : métier attendu, unité, dates, taux horaire. La diffusion descend palier par palier, les intervenants déjà venus chez vous d'abord, puis le réseau, et s'arrête dès que c'est pourvu.",
+          "Depuis RenforTeam, « Publier un besoin » : métier attendu, dates, lieu. La diffusion descend palier par palier, les intervenants déjà venus chez vous d'abord, puis le réseau, et s'arrête dès que c'est pourvu.",
           "Le premier intervenant qui accepte emporte la mission ; le contrat est généré automatiquement, à double signature électronique. À moins de vingt-quatre heures du besoin, la diffusion s'ouvre plus vite.",
         ],
         lien: { href: "/renforteam", label: "Découvrir RenforTeam" },
@@ -82,7 +82,7 @@ export const GUIDES: Guide[] = [
       {
         titre: "Suivez l'intervention, validez les heures",
         texte: [
-          "Le planning partagé, la messagerie rattachée à la mission et le pointage sont au même endroit. L'intervenant déclare ses heures, vous les validez : c'est cette validation qui fait foi pour la facture.",
+          "Le planning partagé, la messagerie liée à la mission et le pointage sont au même endroit. L'intervenant déclare ses heures, vous les validez : c'est cette validation qui fait foi pour la facture.",
           "Les pièces de conformité (diplôme, casier, URSSAF, assurance) sont dans le coffre-fort, surveillées : une alerte part avant chaque échéance, pas après.",
         ],
       },
@@ -107,7 +107,6 @@ export const GUIDES: Guide[] = [
         titre: "Créez votre compte et votre profil",
         texte: [
           "Choisissez « Intervenant » à l'inscription : éducateur spécialisé, moniteur-éducateur, EJE, AES, psychologue, psychomotricien, art-thérapeute… Renseignez métier, diplômes, expériences et zones d'intervention.",
-          "Si vous êtes salarié d'un établissement et non indépendant, la tuile « Salarié » existe aussi : votre compte se rattache alors à votre structure.",
         ],
         lien: { href: "/register?type=intervenant", label: "Créer le compte" },
       },

@@ -151,9 +151,9 @@ const RENFORTS = [
     image: wp('/wp-content/uploads/2023/02/aide-soignant.jpg'),
     accroche:
       'Une éducatrice en arrêt, un veilleur absent. Quelqu’un manque : il faut quelqu’un à sa place.',
-    etapes: ['Vous publiez', 'Votre équipe, puis le réseau', 'CDD signé'],
+    etapes: ['Vous publiez', 'Vos habitués, puis le réseau', 'CDD signé'],
     points: [
-      { icone: UsersRound, texte: 'Diffusé en cascade : vos salariés, vos habitués, le réseau.' },
+      { icone: UsersRound, texte: 'Diffusé en cascade : vos habitués, puis le réseau.' },
       { icone: FileSignature, texte: 'Contrat de travail édité ici, signé en ligne.' },
       { icone: BadgeCheck, texte: 'Identité et bulletin n° 3 déjà au dossier.' },
     ],

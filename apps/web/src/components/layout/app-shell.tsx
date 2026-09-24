@@ -16,8 +16,8 @@ export interface AppChromeProps {
   accounts: SessionAccount[];
   activeAccount?: SessionAccount | null;
   role: NavRole;
-  /** Salarié pas encore rattaché : le menu se réduit à ce qui marche. */
-  enAttenteRattachement?: boolean;
+  /** Aucun compte accessible : le menu se réduit à la création du sien. */
+  sansCompte?: boolean;
   children: React.ReactNode;
   /** Panneau latéral droit contextuel (ActionPanel) optionnel. */
   actionPanel?: React.ReactNode;
@@ -33,7 +33,7 @@ export function AppChrome({
   accounts,
   activeAccount,
   role,
-  enAttenteRattachement,
+  sansCompte,
   children,
   actionPanel,
 }: AppChromeProps) {
@@ -85,7 +85,7 @@ export function AppChrome({
     <div className="theme-clair theme-espace relative flex h-screen overflow-hidden bg-background text-foreground">
       {/* Sidebar desktop */}
       <div className="hidden md:block">
-        <Sidebar role={role} isMember={isMember} roleCompte={activeAccount?.role} enAttenteRattachement={enAttenteRattachement} utilisateur={user} />
+        <Sidebar role={role} isMember={isMember} roleCompte={activeAccount?.role} sansCompte={sansCompte} utilisateur={user} />
       </div>
 
       {/* Sidebar mobile en overlay */}
@@ -106,7 +106,7 @@ export function AppChrome({
               >
                 <X className="size-5" />
               </button>
-              <Sidebar role={role} isMember={isMember} roleCompte={activeAccount?.role} enAttenteRattachement={enAttenteRattachement} utilisateur={user} onNavigate={() => setMobileOpen(false)} />
+              <Sidebar role={role} isMember={isMember} roleCompte={activeAccount?.role} sansCompte={sansCompte} utilisateur={user} onNavigate={() => setMobileOpen(false)} />
             </div>
           </div>
         </div>

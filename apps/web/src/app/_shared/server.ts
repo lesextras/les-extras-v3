@@ -31,6 +31,18 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
+/**
+ * VRAI QUAND LA PERSONNE N'A AUCUN COMPTE (24/09/2026, « 1 compte = 1 personne »).
+ *
+ * Sur Les Extras, seul le titulaire ouvre un compte. Quelqu'un qui accédait à
+ * l'espace d'une autre personne se retrouve donc sans compte : `/auth/me`
+ * rend `memberships: []` et `lib/session.ts` fabrique un compte de façade à
+ * l'identifiant vide. Ce test est le seul à lire cette façade.
+ */
+export function sansCompte(session: Session): boolean {
+  return !session.account?.id;
+}
+
 /** Redirige si le rôle global n'est pas ADMIN. */
 export async function requireAdmin(): Promise<Session> {
   const session = await requireSession();

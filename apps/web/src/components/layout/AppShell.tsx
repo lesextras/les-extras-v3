@@ -14,8 +14,8 @@ import { AppChrome } from './app-shell';
 export type AppShellProps = {
   children: ReactNode;
   actionPanel?: ReactNode;
-  /** Salarié pas encore rattaché : menu réduit à ce qui fonctionne. */
-  enAttenteRattachement?: boolean;
+  /** Aucun compte accessible : menu réduit à la création du sien. */
+  sansCompte?: boolean;
 } & (
   | { session: Session; variant?: 'app' | 'admin'; user?: never; role?: never }
   | {
@@ -29,7 +29,7 @@ export type AppShellProps = {
 );
 
 export function AppShell(props: AppShellProps) {
-  const { children, actionPanel, enAttenteRattachement } = props;
+  const { children, actionPanel, sansCompte } = props;
 
   let user: SessionUser;
   let accounts: SessionAccount[];
@@ -61,7 +61,7 @@ export function AppShell(props: AppShellProps) {
       accounts={accounts}
       activeAccount={activeAccount}
       role={role}
-      enAttenteRattachement={enAttenteRattachement}
+      sansCompte={sansCompte}
       actionPanel={actionPanel}
     >
       {children}

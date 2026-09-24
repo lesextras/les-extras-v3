@@ -178,9 +178,8 @@ export default async function VillePage({ params: paramsPromesse }: { params: Pr
           Comment ça se passe
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Vous publiez le besoin en quelques minutes. Il part d’abord vers vos propres
-          salariés rattachés au compte, puis vers les intervenants déjà venus chez vous,
-          puis vers le réseau du secteur. Le premier qui accepte emporte la mission, et le
+          Vous publiez le besoin en quelques minutes. Il part d’abord vers les intervenants
+          que vous connaissez, déjà venus chez vous, puis vers le réseau du secteur. Le premier qui accepte emporte la mission, et le
           contrat se génère tout seul.
         </p>
         <Link

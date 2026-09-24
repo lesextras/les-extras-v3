@@ -1,4 +1,6 @@
-// Back-office ADMIN — Fiche compte : infos + membres (sous-comptes) et rôles.
+// Back-office ADMIN, fiche compte : infos + accès enregistrés.
+// ⚠ Un compte Les Extras = une personne (24/09/2026) : seul le titulaire y
+// accède. Les autres accès, hérités d'avant, se lisent « Accès fermé ».
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireAdmin, fetchApi } from "../../../../_shared/server";
@@ -8,12 +10,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = { title: "Fiche compte · Administration" };
 
-const ACCOUNT_ROLE_LABEL: Record<string, string> = {
-  OWNER: "Direction",
-  ADMIN: "Administrateur",
-  MANAGER: "Responsable de service",
-  MEMBER: "Salarié",
-};
+import { libelleAcces } from "../../../../_shared/format";
 
 interface Member {
   id: string;
@@ -66,7 +63,7 @@ export default async function AdminAccountDetailPage({ params: paramsPromesse }:
 
       <PageHeader
         title={a.name}
-        subtitle={a.type === "ESTABLISHMENT" ? "Établissement" : "Compte freelance"}
+        subtitle={a.type === "ESTABLISHMENT" ? "Établissement" : "Compte intervenant"}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -75,13 +72,13 @@ export default async function AdminAccountDetailPage({ params: paramsPromesse }:
             <h3 className="font-semibold text-foreground">Informations</h3>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <Row label="Type" value={a.type === "ESTABLISHMENT" ? "Établissement" : "Freelance"} />
+            <Row label="Type" value={a.type === "ESTABLISHMENT" ? "Établissement" : "Intervenant"} />
             <Row label="Raison sociale" value={a.legalName} />
             <Row label="SIRET" value={a.siret} />
             <Row label="Ville" value={[a.postalCode, a.city].filter(Boolean).join(" ")} />
             <Row label="Téléphone" value={a.phone} />
             <Row
-              label="Propriétaire"
+              label="Titulaire"
               value={
                 a.owner
                   ? [a.owner.firstName, a.owner.lastName].filter(Boolean).join(" ") || a.owner.email
@@ -94,14 +91,14 @@ export default async function AdminAccountDetailPage({ params: paramsPromesse }:
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">Membres & rôles</h3>
-              <Badge variant="muted">{members.length} membre(s)</Badge>
+              <h3 className="font-semibold text-foreground">Accès au compte</h3>
+              <Badge variant="muted">{members.length} accès</Badge>
             </div>
           </CardHeader>
           <CardContent>
             {members.length === 0 ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                Aucun membre rattaché pour le moment.
+                Aucun accès enregistré pour le moment.
               </p>
             ) : (
               <ul className="divide-y divide-border">
@@ -113,7 +110,7 @@ export default async function AdminAccountDetailPage({ params: paramsPromesse }:
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <Badge variant={m.role === "OWNER" ? "soft" : "muted"}>
-                        {ACCOUNT_ROLE_LABEL[m.role] ?? m.role}
+                        {libelleAcces(m.role, a.type)}
                       </Badge>
                       {m.status && m.status !== "ACTIVE" ? (
                         <Badge variant="outline">{m.status}</Badge>

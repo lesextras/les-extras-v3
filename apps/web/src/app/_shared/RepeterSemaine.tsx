@@ -36,7 +36,7 @@ export function RepeterSemaine({ accountId }: { accountId: string }) {
     const semaines = Number(new FormData(e.currentTarget).get("semaines") || 4);
     setBusy(true);
     try {
-      const res = await apiRequest<{ crees: number; sautes: string[] }>("/gta/cycles", {
+      const res = await apiRequest<{ crees: number; sautes: string[] }>("/planning/cycles", {
         method: "POST",
         accountId,
         body: { lundi: lundiCourant(), semaines },

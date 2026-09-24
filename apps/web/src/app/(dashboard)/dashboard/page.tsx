@@ -10,10 +10,6 @@ import { PageHeader, StatCard, EmptyState, SectionTitle } from "../../_shared/ui
 import { MissionCard, ServiceCard, BookingRow } from "../../_shared/cards";
 import { RenfortModal } from "../../_shared/modals/RenfortModal";
 import { ActionsPublication } from "../../_shared/ActionsPublication";
-import {
-  SuiviRattachement,
-  type DemandeRattachement,
-} from "../../_shared/SuiviRattachement";
 import { fullName } from "../../_shared/format";
 import type { Booking, Mission, Service } from "../../_shared/types";
 import { AccueilParticulier } from "./AccueilParticulier";
@@ -79,20 +75,12 @@ export default async function DashboardPage() {
     fetchApi<Service[]>(session, "/services?scope=account&take=4"),
   ]);
 
-  // Demandes de rattachement envoyées par ce compte « salarié » : leur état
-  // n'était visible nulle part après l'envoi depuis le wizard (voir
-  // SuiviRattachement). Comptes individuels uniquement — un établissement
-  // n'envoie jamais de demande, il en reçoit.
-  const rattachements = isEstablishment
-    ? { data: [] as DemandeRattachement[] }
-    : await fetchApi<DemandeRattachement[]>(session, "/attachment-requests/mine");
-
   const s = stats.data ?? {};
 
   // L'INTERVENANT A UN ORDRE, ET IL EST CELUI-CI : pièces, structure, ce
   // qu'il accepte, une fiche, l'encaissement. Chaque étape lit l'état réel
   // (pas une case cochée) : un dossier à 2/4 reste ouvert, une structure
-  // rattachée se ferme toute seule. Quatre appels, uniquement pour lui.
+  // renseignée se ferme toute seule. Quatre appels, uniquement pour lui.
   const guide =
     session.account.type === "FREELANCE"
       ? await Promise.all([
@@ -117,15 +105,6 @@ export default async function DashboardPage() {
   const interets = guide?.[2].data?.interets ?? [];
   const encaissementPret = guide?.[3].data?.pret === true;
 
-  // « Salarié » n'est pas un type de compte en base : à l'inscription, la
-  // tuile crée un compte individuel comme pour un indépendant. Ce qui
-  // distingue les deux dans les faits, c'est la demande de rattachement — un
-  // indépendant n'en fait jamais. C'est donc elle qu'on lit, plutôt que
-  // d'ajouter un champ que rien ne remplirait de façon fiable.
-  const demandesRattachement = rattachements.data ?? [];
-  const estSalarie = demandesRattachement.length > 0;
-  const rattachementApprouve = demandesRattachement.some((d) => d.status === "APPROVED");
-
   return (
     <div className="space-y-8">
       <PageHeader
@@ -140,7 +119,7 @@ export default async function DashboardPage() {
         })()}
         subtitle={
           isEstablishment
-            ? "Pilotez vos renforts, réservations d’ateliers et votre équipe."
+            ? "Pilotez vos renforts, vos réservations d’ateliers et vos intervenants."
             : "Trouvez des missions, gérez vos ateliers et vos candidatures."
         }
         actions={
@@ -157,23 +136,13 @@ export default async function DashboardPage() {
         }
       />
 
-      {!isEstablishment ? (
-        <SuiviRattachement
-          demandes={rattachements.data ?? []}
-          accountId={session.account.id}
-        />
-      ) : null}
-
       {/* Onboarding : guide de démarrage, masqué une fois toutes les étapes faites. */}
       {(() => {
         const hasCatalog = isEstablishment
           ? (missions.data?.length ?? 0) > 0
           : (services.data?.length ?? 0) > 0;
         // Les étapes disent l'ordre dans lequel l'outil devient utile, pas
-        // l'ordre dans lequel il a été construit. Pour un établissement :
-        // d'abord son découpage, puis ses gens, et seulement ensuite un
-        // renfort — publier un besoin avant d'avoir une équipe, c'est se
-        // priver de la diffusion en cascade qui fait tout l'intérêt.
+        // l'ordre dans lequel il a été construit.
         const steps = isEstablishment
           ? [
               {
@@ -181,12 +150,12 @@ export default async function DashboardPage() {
                 label: "Complétez votre profil",
                 href: "/dashboard/account",
               },
-              // Plus de « services » ni d'« équipe » à constituer (23/09/2026) :
-              // les sous-comptes sont archivés et chaque collègue a son compte.
-              // La structure (SIRET) est ce qui rend le devis et la facture justes.
+              // Un compte = une personne (24/09/2026) : rien à constituer autour.
+              // L'organisme gestionnaire (SIRET) est ce qui rend le devis et la
+              // facture justes.
               {
                 done: Boolean(compteEtab?.structureId || compteEtab?.siret),
-                label: "Rattachez votre structure (SIRET)",
+                label: "Renseignez votre organisme gestionnaire (SIRET)",
                 href: "/dashboard/account",
               },
               {
@@ -195,35 +164,7 @@ export default async function DashboardPage() {
                 href: "/dashboard/renforts",
               },
             ]
-          : estSalarie
-            ? [
-                // UN SALARIÉ N'EST PAS UN INDÉPENDANT QUI S'IGNORE.
-                //
-                // Techniquement, « Salarié » et « Professionnel » créent le
-                // même compte : les étapes de prise en main étaient donc les
-                // mêmes. On demandait à un éducateur venu simplement rejoindre
-                // sa maison de créer un atelier et de candidater à des
-                // missions — le métier d'un autre. C'est le profil qui arrive
-                // en volume derrière chaque établissement signé, et celui qui
-                // décroche le plus vite si le premier écran ne le reconnaît
-                // pas. Il n'a qu'une chose à faire : se rattacher.
-                {
-                  done: Boolean(moi.data?.firstName ?? session.user.firstName),
-                  label: "Complétez votre profil",
-                  href: "/dashboard/account",
-                },
-                {
-                  done: rattachementApprouve,
-                  label: "Rejoignez votre établissement",
-                  href: "/dashboard",
-                },
-                {
-                  done: (s.applications ?? 0) > 0,
-                  label: "Répondez à un renfort de votre équipe",
-                  href: "/dashboard/opportunites",
-                },
-              ]
-            : [
+          : [
               {
                 done: dossier !== undefined && dossier.missing === 0 && dossier.valid >= dossier.total,
                 label: dossier
@@ -261,7 +202,7 @@ export default async function DashboardPage() {
                 <p className="text-sm font-semibold text-foreground">Prise en main : {steps.length - remaining}/{steps.length}</p>
                 <span className="text-xs text-muted-foreground">
                   {isEstablishment
-                    ? "Vos services et votre équipe d’abord : c’est ce qui met des gens dans le planning."
+                    ? "Trois étapes, et votre premier renfort part."
                     : session.account.type === "FREELANCE"
                       ? "Dans cet ordre : c’est ce qui vous rend visible, puis réservable, puis payé."
                       : "Quelques étapes pour bien démarrer"}
@@ -485,21 +426,13 @@ export default async function DashboardPage() {
               (n) => `${n} intervention${s_(n)} à terminer`,
               "/dashboard/reservations",
             );
-            // ⚠ LA FACTURE SUIT LE MÊME FILTRE DE RÔLE QUE SON ENTRÉE DE MENU
-            // (`Devis & factures`, OWNER/ADMIN/MANAGER côté établissement).
-            // Annoncer « 6 factures à émettre » à un MEMBER le renverrait sur
-            // un écran que son menu ne lui ouvre pas : une tâche qu'on ne peut
-            // pas faire est pire qu'une tâche qu'on ne voit pas.
-            // Plus de rôles sur Les Extras (24/09/2026) : la personne du
-            // compte voit sa facturation, comme son entrée de menu.
-            const voitLaFacturation = true;
-            if (voitLaFacturation) {
-              pousser(
-                f.facturesBrouillon,
-                (n) => `${n} facture${s_(n)} à émettre`,
-                "/dashboard/facturation",
-              );
-            }
+            // Un compte = une personne (24/09/2026) : le titulaire voit sa
+            // facturation, comme son entrée de menu.
+            pousser(
+              f.facturesBrouillon,
+              (n) => `${n} facture${s_(n)} à émettre`,
+              "/dashboard/facturation",
+            );
             if ((s.unreadMessages ?? 0) > 0) {
               todos.push({
                 label: `${s.unreadMessages} message${s.unreadMessages! > 1 ? "s" : ""} non lu${s.unreadMessages! > 1 ? "s" : ""}`,

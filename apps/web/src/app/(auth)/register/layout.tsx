@@ -7,7 +7,7 @@ import { SOCLE_OG } from '@/lib/meta';
 export const metadata: Metadata = {
   title: 'Créer un compte, établissement ou professionnel',
   description:
-    'Créez votre compte gratuit LES EXTRAS : établissement, professionnel indépendant ou salarié du médico-social.',
+    'Créez votre compte gratuit LES EXTRAS : établissement, particulier ou professionnel du médico-social.',
   alternates: { canonical: '/register' },
   // `SOCLE_OG` : cet objet remplace celui du layout racine au lieu de le
   // compléter (fusion en surface), il faut donc y réémettre l'image de

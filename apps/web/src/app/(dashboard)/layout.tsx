@@ -3,11 +3,17 @@ import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { AppShell } from "@/components/layout";
 import { resolveNavRole } from "@/lib/nav";
-import { cheminOuvertSansRattachement } from "@/lib/rattachement";
-import { requireSession, fetchApi } from "../_shared/server";
+import { requireSession, fetchApi, sansCompte } from "../_shared/server";
 import { ConfirmationRequise } from "../_shared/ConfirmationRequise";
-import { EnAttenteRattachement } from "../_shared/EnAttenteRattachement";
 import { InvitationParrainage } from "../_shared/InvitationParrainage";
+import { SansCompte } from "../_shared/SansCompte";
+
+/**
+ * Ce qu'une personne sans compte peut encore ouvrir : ses données
+ * personnelles (art. 12 RGPD, le droit d'accès et d'effacement ne dépend pas
+ * d'un compte). Tout le reste parle au nom d'un compte qu'elle n'a pas.
+ */
+const OUVERT_SANS_COMPTE = ["/dashboard/donnees-personnelles"];
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await requireSession();
@@ -19,13 +25,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // L'état de vérification n'est pas dans le jeton (il change après émission) :
   // on le lit à la source. Une requête légère, une seule fois par navigation.
   // `firstName` est lu ici et passé plus bas : le jeton de session ne le porte
-  // pas, et l'écran d'attente dit « Bonjour » comme tous les autres tableaux
-  // de bord. Une seconde requête pour le même prénom serait du gaspillage.
+  // pas, et l'écran sans compte dit « Bonjour » comme tous les autres tableaux
+  // de bord.
   const { data: moi } = await fetchApi<{
     emailVerified?: boolean;
     email?: string;
     firstName?: string | null;
-    enAttenteRattachement?: boolean;
+    lastName?: string | null;
   }>(session, "/auth/me");
   const aConfirmer = moi?.emailVerified === false;
 
@@ -35,18 +41,20 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     return <ConfirmationRequise email={moi?.email ?? session.user.email} />;
   }
 
-  // Salarié pas encore rattaché : le serveur refuse déjà tout sauf LEX et sa
-  // demande. On le lui dit sur la page qu'il ouvre, au lieu de le laisser
-  // buter sur une erreur — il n'a rien fait de travers, il attend une réponse.
+  // UN COMPTE = UNE PERSONNE (24/09/2026). Sans compte à elle, la personne
+  // voit un seul écran : celui qui lui permet de créer le sien. L'administration
+  // de la plateforme garde ses pages (elle n'a pas de compte « tenant »).
   const chemin = (await headers()).get("x-chemin") ?? "/dashboard";
-  const enAttente =
-    moi?.enAttenteRattachement === true && !cheminOuvertSansRattachement(chemin);
+  const aucunCompte = sansCompte(session);
+  const ecranSansCompte =
+    aucunCompte &&
+    session.user.role !== "ADMIN" &&
+    !OUVERT_SANS_COMPTE.some((ouvert) => chemin === ouvert || chemin.startsWith(`${ouvert}/`));
 
-  const { data: demandes } = enAttente
-    ? await fetchApi<
-        { id: string; establishmentAccount?: { name?: string }; createdAt?: string }[]
-      >(session, "/attachment-requests/mine")
-    : { data: undefined };
+  const prenom = moi?.firstName?.trim() || session.user.firstName?.trim() || null;
+  const nomComplet = [moi?.firstName ?? session.user.firstName, moi?.lastName ?? session.user.lastName]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <AppShell
@@ -54,33 +62,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       accounts={session.accounts ?? [session.account]}
       activeAccount={session.account}
       role={role}
-      enAttenteRattachement={moi?.enAttenteRattachement === true}
+      sansCompte={aucunCompte}
     >
       {/* L'invitation à parrainer, une fois par compte. Montée ici et non sur
-          une page précise : le parrainage ne dépend d'aucun écran, et un
-          composant qui décide seul de ne rien afficher ne coûte rien à celles
-          et ceux qui l'ont déjà vue. Elle ne s'affiche pas à un salarié en
-          attente de rattachement : il n'a pas encore de compte à faire vivre,
-          on ne lui demande pas d'en recruter d'autres. */}
-      {!enAttente ? <InvitationParrainage accountId={session.account.id} /> : null}
+          une page précise : le parrainage ne dépend d'aucun écran. Sans
+          compte, il n'y a rien à faire vivre, donc rien à recommander. */}
+      {!aucunCompte ? <InvitationParrainage accountId={session.account.id} /> : null}
 
-      {enAttente ? (
-        <EnAttenteRattachement
-          session={session}
-          prenom={moi?.firstName}
-          demandes={(demandes ?? [])
-            .filter((d) => d.establishmentAccount?.name)
-            .map((d) => ({
-              id: d.id,
-              nom: d.establishmentAccount!.name!,
-              envoyeeLe: d.createdAt
-                ? new Date(d.createdAt).toLocaleDateString("fr-FR")
-                : null,
-            }))}
-        />
-      ) : (
-        children
-      )}
+      {ecranSansCompte ? <SansCompte prenom={prenom} nomComplet={nomComplet} /> : children}
     </AppShell>
   );
 }

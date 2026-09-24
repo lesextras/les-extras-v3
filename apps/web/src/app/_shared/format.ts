@@ -94,7 +94,6 @@ export const MISSION_STATUS_LABEL: Record<string, string> = {
 };
 
 export const MISSION_VISIBILITY_LABEL: Record<string, string> = {
-  SALARIES: "Salariés",
   RESERVED: "Réseau réservé",
   PUBLIC: "Public",
 };
@@ -192,31 +191,29 @@ export function serviceBadgeVariant(status: string): BadgeVariant {
 }
 
 /**
- * Les rôles, dits dans la langue du secteur.
+ * LE LIBELLÉ D'UN ACCÈS À UN COMPTE (`Membership.role`), SELON LE TYPE DU COMPTE.
  *
- * « Propriétaire », « Manager », « Membre » sont des mots de logiciel : ils
- * décrivent une place dans une base de données, pas une fonction dans un
- * établissement. Personne, dans une MECS, ne dit « je suis le manager ».
- * On nomme donc les rôles par ce que la personne fait réellement.
+ * ⚠ Sur Les Extras (établissement, intervenant, particulier), un compte = une
+ * personne depuis le 24/09/2026 : seul le titulaire y accède. Direction, chef
+ * de service et équipe n'y désignent plus rien ; un ancien rattachement se lit
+ * « Accès fermé ». Piloter (association, académie) garde ses rôles, avec les
+ * mêmes mots que ses écrans « Droits d'accès ».
  */
-export const ACCOUNT_ROLE_LABEL: Record<string, string> = {
-  OWNER: "Direction",
-  ADMIN: "Administration",
-  MANAGER: "Chef de service",
-  MEMBER: "Équipe",
+const ROLE_PILOTER: Record<string, string> = {
+  OWNER: "Propriétaire",
+  ADMIN: "Administrateur",
+  MANAGER: "Responsable",
+  MEMBER: "Membre",
 };
 
-/** Ce que chaque rôle peut faire, en une phrase — affiché à côté du choix. */
-export const ACCOUNT_ROLE_DESCRIPTION: Record<string, string> = {
-  OWNER:
-    "Tout, y compris les crédits LEX, la facturation et la suppression de la structure. Un seul par établissement.",
-  ADMIN:
-    "Tout sauf les crédits LEX et la facturation : équipe, services, plannings, contrats, conformité.",
-  MANAGER:
-    "Son service : plannings et créneaux, publication de renforts, validation des congés, contrats et pièces de son équipe.",
-  MEMBER:
-    "Son propre planning, ses disponibilités, ses demandes de congés et ses documents. Ne voit pas l’équipe.",
-};
+export function estPiloter(typeCompte?: string | null): boolean {
+  return typeCompte === "ASSOCIATION" || typeCompte === "ACADEMIE";
+}
+
+export function libelleAcces(role: string, typeCompte?: string | null): string {
+  if (estPiloter(typeCompte)) return ROLE_PILOTER[role] ?? role;
+  return role === "OWNER" ? "Titulaire" : "Accès fermé";
+}
 
 export const INVITATION_STATUS_LABEL: Record<string, string> = {
   PENDING: "En attente",

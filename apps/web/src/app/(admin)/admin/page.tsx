@@ -40,7 +40,6 @@ interface DeskData {
     pendingTimeEntries?: number;
     pendingModeration?: number;
     pendingContacts?: number;
-    pendingAttachments?: number;
   };
 }
 
@@ -92,8 +91,7 @@ export default async function AdminPage() {
     (dc.expiredDocuments ?? 0) +
     (dc.expiringDocuments ?? 0) +
     (dc.pendingTimeEntries ?? 0) +
-    (dc.pendingContacts ?? 0) +
-    (dc.pendingAttachments ?? 0);
+    (dc.pendingContacts ?? 0);
 
   return (
     <div className="space-y-8">
@@ -145,7 +143,7 @@ export default async function AdminPage() {
               <p className="text-sm text-foreground">
                 <span className="font-semibold">Rien d&apos;urgent.</span> Aucun renfort à moins de 48 h non pourvu,
                 aucun compte à valider, aucun document en échéance, aucune heure en attente,
-                aucun message ni rattachement sans réponse.
+                aucun message sans réponse.
               </p>
             </CardContent>
           </Card>
@@ -184,22 +182,13 @@ export default async function AdminPage() {
                     </p>
                   </Link>
                 ) : null}
-                {/* DEUX FILES QUI ATTENDAIENT UNE RÉPONSE HUMAINE SANS
-                    JAMAIS APPARAÎTRE ICI. Un message de contact et une demande
-                    de rattachement sont exactement ce que ce cockpit existe
-                    pour faire remonter, ils y manquaient. */}
+                {/* Un message de contact attend une réponse humaine : c'est
+                    exactement ce que ce cockpit existe pour faire remonter. */}
                 {(dc.pendingContacts ?? 0) > 0 ? (
                   <Link href="/admin/contacts" className="group rounded-xl border border-border bg-card p-4 transition hover:shadow-card">
                     <div className="flex items-center gap-2 text-primary"><Mail className="size-4" /><span className="text-2xl font-bold">{dc.pendingContacts}</span></div>
                     <p className="mt-1 text-sm font-medium text-foreground">Message{(dc.pendingContacts ?? 0) > 1 ? "s" : ""} sans réponse</p>
                     <p className="text-xs text-muted-foreground">Reçus par le formulaire de contact</p>
-                  </Link>
-                ) : null}
-                {(dc.pendingAttachments ?? 0) > 0 ? (
-                  <Link href="/admin/utilisateurs" className="group rounded-xl border border-border bg-card p-4 transition hover:shadow-card">
-                    <div className="flex items-center gap-2 text-warning"><UserCheck className="size-4" /><span className="text-2xl font-bold">{dc.pendingAttachments}</span></div>
-                    <p className="mt-1 text-sm font-medium text-foreground">Rattachement{(dc.pendingAttachments ?? 0) > 1 ? "s" : ""} en attente</p>
-                    <p className="text-xs text-muted-foreground">Un espace reste bridé tant que l&apos;établissement n&apos;a pas répondu</p>
                   </Link>
                 ) : null}
                 {(dc.pendingTimeEntries ?? 0) > 0 ? (

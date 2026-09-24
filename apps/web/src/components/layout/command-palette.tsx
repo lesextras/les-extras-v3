@@ -59,14 +59,8 @@ const DESTINATIONS: Dest[] = [
   { label: "Mes réservations formation", href: "/dashboard/reservations/formations", group: "Navigation", keywords: "reservations formations inscriptions session apprenant financement attestation" },
   { label: "Devis & factures", href: "/dashboard/facturation", group: "Navigation", keywords: "devis facture chiffrage paiement reglement finance revenus depenses" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
+  { label: "Mon agenda", href: "/dashboard/agenda", group: "Navigation", keywords: "agenda calendrier rendez-vous outlook partage partager" },
   { label: "Contrats CDD", href: "/dashboard/contrats", group: "Établissement", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
-  /*
-    ⚠ AJOUTÉ LE 16/09/2026 : cette page était atteignable UNIQUEMENT en tapant
-    son adresse. Son entrée de menu est réservée aux responsables ET rangée
-    derrière « Outils avancés » — alors que la page est écrite pour servir
-    AUSSI le salarié simple, à qui elle dit « posez vos demandes d'absence ».
-    Un salarié n'avait donc aucun moyen de poser une absence.
-  */
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat conversation" },
   // Retirées du menu de gauche le 12/08/2026 pour l'alléger : la palette
   // devient leur chemin d'accès, avec des mots-clés larges pour qu'on les
@@ -95,12 +89,11 @@ const DESTINATIONS: Dest[] = [
   { label: "Mes données personnelles", href: "/dashboard/donnees-personnelles", group: "Mon espace", keywords: "rgpd export suppression effacement vie privée confidentialité" },
   { label: "Boîte à idées", href: "/dashboard/idees", group: "Mon espace", keywords: "idée suggestion amélioration vote proposition" },
   { label: "LEX · Crédits & abonnement", href: "/dashboard/adhesion", group: "Établissement", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },
-  { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres équipe" },
+  { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres facturation siret" },
   { label: "Admin, Vue d’ensemble", href: "/admin", group: "Admin", keywords: "back-office" },
-  { label: "Admin, Utilisateurs", href: "/admin/utilisateurs", group: "Admin", keywords: "users comptes rattachements salarié responsable" },
-  { label: "Admin, Comptes & sous-comptes", href: "/admin/etablissements", group: "Admin", keywords: "organisations comptes établissements freelances membres sous-comptes rattachés" },
-  { label: "Admin, Invitations", href: "/admin/invitations", group: "Admin", keywords: "invitation membres révoquer renvoyer" },
-  { label: "Admin, Rôles & droits", href: "/admin/roles", group: "Admin", keywords: "rôles droits permissions matrice direction responsable salarié" },
+  { label: "Admin, Utilisateurs", href: "/admin/utilisateurs", group: "Admin", keywords: "users comptes titulaire" },
+  { label: "Admin, Comptes", href: "/admin/etablissements", group: "Admin", keywords: "organisations comptes établissements intervenants titulaire" },
+  { label: "Admin, Invitations Piloter", href: "/admin/invitations", group: "Admin", keywords: "invitation piloter association académie révoquer renvoyer" },
   { label: "Admin, Catégories", href: "/admin/categories", group: "Admin", keywords: "taxonomie" },
   { label: "Admin, Articles", href: "/admin/articles", group: "Admin", keywords: "contenu blog" },
   { label: "Admin, Missions", href: "/admin/missions", group: "Admin", keywords: "modération" },

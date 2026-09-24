@@ -8,12 +8,9 @@ import { renfortSalarieVisible } from '@/lib/offre';
  * Il y a eu quatre tuiles, puis trois, et il en reste deux.
  *
  * « Établissement » et « Salarié » ont fusionné les premières : elles posaient
- * la mauvaise question. Techniquement elles créaient deux comptes différents ;
- * humainement, la personne qui arrive ne sait pas laquelle la concerne — une
- * directrice adjointe EST salariée de son établissement, et un chef de service
- * qui cherche du renfort remplit exactement le rôle décrit par la tuile
- * « Établissement ». Ce n'est plus une tuile qui décide du rôle mais l'étape
- * « poste », où l'on déclare son métier et son niveau de responsabilité.
+ * la mauvaise question. Depuis le 24/09/2026, il n'y a d'ailleurs plus de
+ * compte « salarié » du tout : un compte Les Extras appartient à une seule
+ * personne, qui en est titulaire.
  *
  * « Particulier » a suivi le 21/09/2026, pour la même raison poussée d'un
  * cran : toutes ces cartes demandaient à la personne de se ranger dans une
@@ -157,7 +154,7 @@ export const QUI_DEMANDE: {
   {
     type: 'ESTABLISHMENT',
     titre: 'Un établissement ou un service',
-    aide: 'MECS, IME, ITEP, SESSAD, EHPAD, ESAT, école, mairie ou service jeunesse. Direction, chef de service, coordinateur ou salarié.',
+    aide: 'MECS, IME, ITEP, SESSAD, EHPAD, ESAT, école, mairie ou service jeunesse.',
   },
   {
     type: 'PARTICULIER',
@@ -167,13 +164,7 @@ export const QUI_DEMANDE: {
 ];
 
 /** Les étapes du parcours, dans l'ordre. */
-export type CleEtape =
-  | 'profil'
-  | 'identite'
-  | 'poste'
-  | 'structure'
-  | 'activites'
-  | 'disponibilite';
+export type CleEtape = 'profil' | 'identite' | 'activites' | 'disponibilite';
 
 export interface Etape {
   cle: CleEtape;
@@ -197,21 +188,7 @@ const ETAPE_IDENTITE: Etape = {
 };
 
 /**
- * ⚠ L'ÉTAPE « votre service » N'EXISTE PLUS, ET IL NE FAUT PAS LA REMETTRE.
- *
- * Elle ne portait qu'un champ facultatif et une phrase d'explication : un
- * écran entier — titre, lecture, bouton Continuer — pour taper « Internat ».
- * Le service est maintenant demandé avec l'établissement, l'entité employeuse
- * et le poste, sur l'étape des identifiants : « l'ESAT Corail de l'ADSEA,
- * internat, chef de service » est une seule phrase, elle se remplit d'un seul
- * tenant.
- *
- * Ce qui reste ici est ce qui ne tient pas sur une ligne : le niveau de
- * responsabilité et les droits.
- */
-
-/**
- * TROIS ÉTAPES POUR UN ÉTABLISSEMENT — ET L'ORDRE N'EST PAS ARBITRAIRE.
+ * DEUX ÉTAPES POUR UN ÉTABLISSEMENT — ET L'ORDRE N'EST PAS ARBITRAIRE.
  *
  * ⚠⚠ LA SITUATION VIENT AVANT LES IDENTIFIANTS, ET C'EST CE QUI PERMET DE
  * CRÉER LE COMPTE JUSTE DU PREMIER COUP.
@@ -234,14 +211,11 @@ const ETAPE_IDENTITE: Etape = {
  * ci-dessus.
  *
  * ⚠ AUCUNE ÉTAPE APRÈS LA CRÉATION N'EST BLOQUANTE. Chacune porte de quoi
- * passer outre, et tout se retrouve dans l'espace, sur « Mon poste ». Exiger
- * l'organigramme complet avant de laisser entrer, c'est perdre la moitié des
- * gens sur un écran administratif.
+ * passer outre, et tout se retrouve dans l'espace.
  */
 export const PARCOURS: Record<CleCompte, Etape[]> = {
-  // Deux écrans depuis le 23/09/2026 : plus d'étape « niveau et droits ». Le
-  // compte, c'est la personne ; ce qu'elle engage, c'est le devis signé par sa
-  // maison qui le dit. Le poste part avec les identifiants (register/page.tsx).
+  // Deux écrans : le compte, c'est la personne (24/09/2026). Rien à déclarer
+  // après les identifiants, qui portent aussi l'organisme gestionnaire.
   ESTABLISHMENT: [ETAPE_PROFIL, ETAPE_IDENTITE],
   /**
    * ⚠ LA STRUCTURE JURIDIQUE EST FACULTATIVE ICI, ET EXIGÉE POUR PUBLIER.
@@ -256,7 +230,7 @@ export const PARCOURS: Record<CleCompte, Etape[]> = {
   FREELANCE: [
     ETAPE_PROFIL,
     // La structure (SIRET) se saisit sur l'écran des identifiants, avec eux :
-    // un écran de moins, et le compte naît déjà rattaché. Voir register/page.tsx.
+    // un écran de moins. Voir register/page.tsx.
     ETAPE_IDENTITE,
     {
       cle: 'activites',

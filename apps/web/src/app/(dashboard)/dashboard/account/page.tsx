@@ -1,10 +1,8 @@
-// Mon établissement : profil, services et réglages.
+// Mon compte / Mon établissement : profil et réglages.
 //
-// La liste des membres a déménagé sur son propre écran (/dashboard/equipe),
-// paginé et cherchable : la garder ici obligeait à charger tout le monde à
-// chaque ouverture de la fiche compte, pour une information qu'on ne vient
-// pas y chercher. Restent ici les services — la structure de l'établissement
-// — et les réglages.
+// ⚠ Un compte = une personne (24/09/2026) : plus de membres, d'équipe ni de
+// validation des missions par un responsable. La personne qui ouvre cette
+// page est le titulaire du compte, elle règle tout.
 import type { Metadata } from "next";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OngletsCompte } from "../../../_shared/OngletsCompte";
@@ -14,7 +12,6 @@ import { OngletsCompte } from "../../../_shared/OngletsCompte";
 // (« Une erreur est survenue », 3 → 20 août 2026). Module neutre désormais.
 import { ongletDepuisUrl } from "../../../_shared/onglets-compte";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { BasculeValidationMissions } from "../../../_shared/BasculeValidationMissions";
 import { Badge } from "@/components/ui/badge";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader, SectionTitle } from "../../../_shared/ui";
@@ -39,7 +36,6 @@ export default async function AccountPage({
   const ongletDemande = ongletDepuisUrl(searchParams?.onglet);
   // « ?onglet=services » (anciens liens) retombe sur le profil.
   const onglet = ongletDemande === "services" ? "profile" : ongletDemande;
-  const canManage = session.account.role === "OWNER" || session.account.role === "ADMIN";
   const accountId = session.account.id;
 
   // /users/me renvoie l'utilisateur À PLAT, avec `profile` imbriqué — pas un
@@ -60,9 +56,8 @@ export default async function AccountPage({
   const profile = profileRes.data?.profile ?? null;
 
   // Identité de facturation : sans elle, une facture émise depuis « Devis &
-  // factures » sort sans raison sociale ni SIRET — incomplète au regard de
-  // la loi. Seuls OWNER/ADMIN peuvent la modifier (canManage), mais tout le
-  // monde doit pouvoir la CONSULTER pour comprendre ce qui figure déjà.
+  // factures » sort sans raison sociale ni SIRET, incomplète au regard de
+  // la loi. Le titulaire du compte la modifie.
   const compteRes = await fetchApi<IdentiteFacturation>(session, `/accounts/${accountId}`);
   const identiteFacturation = compteRes.data ?? {};
 
@@ -107,15 +102,13 @@ export default async function AccountPage({
           ) : null}
         </TabsContent>
 
-        {/* L'onglet « Services et unités » a disparu le 23/09/2026 : les
-            sous-comptes par service sont archivés. La structure (SIRET) et
-            l'organigramme remplacent le découpage. */}
+        {/* L'onglet « Services et unités » a disparu le 23/09/2026. */}
 
         <TabsContent value="settings" className="space-y-6">
           <FacturationSettings
             accountId={accountId}
             identite={identiteFacturation}
-            canManage={canManage}
+            canManage
           />
           <Card>
             <CardHeader>
@@ -130,15 +123,18 @@ export default async function AccountPage({
                 <p className="font-medium text-foreground">Notifications email</p>
                 <p>Vous recevez un e-mail pour chaque candidature ou réservation.</p>
               </div>
-              {!isFreelance ? (
-                <BasculeValidationMissions accountId={accountId} canManage={canManage} />
-              ) : null}
               <div className="flex items-center justify-between border-b border-border pb-4">
                 <div>
                   <p className="font-medium text-foreground">Compte actif</p>
                   <p>{session.account.name}</p>
                 </div>
-                <Badge>{session.account.type === "ESTABLISHMENT" ? "Établissement" : "Freelance"}</Badge>
+                <Badge>
+                  {session.account.type === "ESTABLISHMENT"
+                    ? "Établissement"
+                    : session.account.type === "PARTICULIER"
+                      ? "Particulier"
+                      : "Intervenant"}
+                </Badge>
               </div>
               <div>
                 <p className="font-medium text-destructive">Zone de danger</p>

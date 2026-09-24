@@ -34,7 +34,6 @@ import {
 } from './parcours';
 import { Progression } from './Progression';
 import {
-  ChampPoste,
   ChampStructure,
   EtapeActivites,
   EtapeDisponibilite,
@@ -55,9 +54,14 @@ import {
  * PARTICULIER reste vivant en base.
  *
  * Ordre, selon le compte créé :
- *   établissement → situation, identifiants (avec le lieu de travail), vos droits
- *   intervenant   → situation, identifiants, votre structure, ce que vous faites
+ *   établissement → situation, identifiants (avec l'organisme gestionnaire)
+ *   intervenant   → situation, identifiants (avec sa structure), ce que vous faites
  *   particulier   → situation, identifiants, ce que vous cherchez
+ *
+ * ⚠ UN COMPTE = UNE PERSONNE (24/09/2026, décision de Siham). Chaque
+ * inscription crée SON compte, dont la personne est titulaire. Il n'existe
+ * plus de chemin pour « rejoindre » l'établissement de quelqu'un d'autre, ni
+ * de service, de poste ou de droits à déclarer.
  *
  * ⚠⚠ LA SITUATION VIENT AVANT LES IDENTIFIANTS, ET C'EST CE QUI PERMET DE CRÉER
  * LE COMPTE JUSTE DU PREMIER COUP.
@@ -78,19 +82,12 @@ import {
  * y rester : c'est lui qui fixe le nom du compte ET son slug. Le déplacer plus
  * loin ramènerait exactement le défaut ci-dessus.
  *
- * ⚠ L'ÉTAPE « où vous travaillez » EST AUTHENTIFIÉE : le compte existe déjà.
- * Ses écritures — rattachement à la structure, création du service — sont
- * appliquées à la validation de l'étape, et chacune est tolérante à l'échec :
- * le compte est créé, une structure qui rate ne doit pas faire croire à un
- * échec d'inscription.
+ * ⚠ LA STRUCTURE JURIDIQUE S'ÉCRIT JUSTE APRÈS LA CRÉATION : sa route demande
+ * une session. L'écriture est tolérante à l'échec : le compte est créé, une
+ * structure qui rate ne doit pas faire croire à un échec d'inscription.
  *
  * ⚠ AUCUNE ÉTAPE APRÈS LA CRÉATION N'EST BLOQUANTE. Chacune porte de quoi
- * passer outre, et tout se retrouve dans l'espace, sur « Mon poste ».
- *
- * ⚠ LES ANCIENNES TUILES « Établissement » ET « Salarié » N'EN FONT PLUS QU'UNE.
- * Elles posaient la mauvaise question : une directrice adjointe est salariée de
- * son établissement. C'est l'étape « poste » qui distingue direction,
- * responsable et salarié — une question qui porte sur le métier.
+ * passer outre, et tout se retrouve dans l'espace.
  */
 export default function RegisterPage() {
   const router = useRouter();
@@ -135,10 +132,9 @@ export default function RegisterPage() {
   React.useEffect(() => {
     if (!typeDemande) return;
     const t = typeDemande.toLowerCase();
-    const sansAccent = t.normalize('NFD').replace(/[̀-ͯ]/g, '');
-    // « salarie » ne crée plus un compte d'indépendant : il mène à la même
-    // porte que « établissement », et c'est l'étape « poste » qui tranche.
-    if (t === 'etablissement' || t === 'establishment' || sansAccent === 'salarie') {
+    // Tout autre valeur (dont l'ancien « salarie ») affiche les deux cartes :
+    // un compte = une personne, et c'est à elle de dire de quel côté elle est.
+    if (t === 'etablissement' || t === 'establishment') {
       form.setValue('accountType', 'ESTABLISHMENT', { shouldValidate: false });
       setEtape('identite');
     } else if (t === 'freelance' || t === 'intervenant') {
@@ -199,12 +195,7 @@ export default function RegisterPage() {
     try {
       // Le type ET le nom sont connus : le compte est créé complet, et son
       // slug est juste du premier coup.
-      await registerAccount(form.getValues(), {
-        // ⚠ C'EST ICI QUE LE DOUBLON SE JOUE. Quand la personne a reconnu son
-        // établissement, le serveur la rattache au compte existant et n'en
-        // crée aucun. Retirer ce paramètre recrée douze homonymes par MECS.
-        rejoindreEtablissementId: lieu.rejoindre?.id,
-      });
+      await registerAccount(form.getValues());
       setCompteCree(true);
       // ⚠ APRÈS la réponse du serveur, jamais avant : des confettis sur une
       // inscription refusée diraient l'inverse de ce qui vient de se passer.
@@ -212,7 +203,7 @@ export default function RegisterPage() {
       toast({
         title: 'Compte créé',
         description:
-          typeChoisi === 'ESTABLISHMENT'
+          typeChoisi === 'FREELANCE'
             ? 'Vous êtes entré. Une dernière question, et rien n’est obligatoire.'
             : 'Bienvenue ! Votre espace est prêt.',
         variant: 'success',
@@ -227,41 +218,18 @@ export default function RegisterPage() {
       }
       /**
        * ⚠ CHAQUE TYPE DE COMPTE A SA SUITE, ET AUCUNE N'EST BLOQUANTE.
-       * Un intervenant déclare sa structure puis ce qu'il vient faire ; un
-       * particulier dit s'il vient réserver, se rendre disponible, ou les deux.
-       * Toutes ces étapes se repassent depuis l'espace — le compte, lui, est
-       * déjà créé et complet.
+       * Un intervenant dit ensuite ce qu'il vient faire ; un particulier dit
+       * s'il vient réserver, se rendre disponible, ou les deux. Toutes ces
+       * étapes se repassent depuis l'espace : le compte est déjà créé.
+       *
+       * ⚠ LA STRUCTURE JURIDIQUE EST ÉCRITE ICI, JUSTE APRÈS LA CRÉATION. Elle
+       * est saisie avec les identifiants, mais sa route demande une session :
+       * elle ne pouvait pas partir avant. Tolérante à l'échec : facultative
+       * pour entrer, elle se complète depuis l'espace.
        */
-      /**
-       * ⚠ LE LIEU DE TRAVAIL EST ÉCRIT ICI, JUSTE APRÈS LA CRÉATION, et plus à
-       * la validation d'une étape à lui. Il est saisi avec les identifiants —
-       * établissement, entité employeuse, service, poste — mais ses écritures
-       * demandent une session : elles ne pouvaient pas partir avant. Elles
-       * partent donc maintenant, et chacune reste tolérante à l'échec.
-       */
-      if (typeChoisi === 'ESTABLISHMENT') {
-        await enregistrerLieu();
-        // PLUS D'ÉTAPE « NIVEAU ET DROITS » (23/09/2026) : le compte, c'est la
-        // personne. Le poste part tout de suite, sans niveau ni capacités —
-        // ce qu'elle peut engager, c'est le devis signé par sa maison qui le
-        // dit, pas une case cochée ici. Tolérant à l'échec, comme le lieu.
-        await apiRequest('/organisation/moi', {
-          method: 'PATCH',
-          body: { poste: lieu.poste.trim() || undefined, cadre: lieu.cadre },
-        }).catch(() => undefined);
-        terminer();
-      } else if (typeChoisi === 'FREELANCE') {
-        // La structure est saisie avec les identifiants (écran 2). Son
-        // rattachement demande une session : il part maintenant, tolérant à
-        // l'échec — facultative pour entrer, elle se complète depuis l'espace.
-        if (lieu.structureId || lieu.structure) {
-          await apiRequest('/structures/rattacher', {
-            method: 'POST',
-            body: lieu.structureId ? { structureId: lieu.structureId } : lieu.structure,
-          }).catch(() => undefined);
-        }
-        allerA('activites');
-      }
+      await enregistrerStructure();
+      if (typeChoisi === 'ESTABLISHMENT') terminer();
+      else if (typeChoisi === 'FREELANCE') allerA('activites');
       else if (typeChoisi === 'PARTICULIER') allerA('disponibilite');
       else terminer();
     } catch (err) {
@@ -275,52 +243,14 @@ export default function RegisterPage() {
     }
   }
 
-  /**
-   * ÉTAPE 3 — le lieu de travail : structure et service.
-   *
-   * ⚠ CHAQUE ÉCRITURE EST TOLÉRANTE À L'ÉCHEC, et c'est délibéré : le compte
-   * existe déjà. Un rattachement de structure qui rate ne doit pas faire croire
-   * que l'inscription a échoué — la personne le refera depuis son espace. Le
-   * seul échec qu'on montre est celui du service, parce qu'il a une cause qu'on
-   * sait nommer : un collègue a déjà créé ce nom.
-   */
-  async function enregistrerLieu() {
-    try {
-      /**
-       * ⚠ ON NE RATTACHE PLUS ICI : C'EST FAIT À LA CRÉATION DU COMPTE.
-       * `POST /auth/register` reçoit `rejoindreEtablissementId` et crée
-       * l'adhésion non vérifiée sans créer de compte. Rappeler
-       * `/organisation/rejoindre` ensuite ne ferait rien (l'adhésion existe
-       * déjà) mais laisserait croire que ce chemin est le bon.
-       *
-       * ⚠ ET ON N'ÉCRIT RIEN D'AUTRE DANS LA MAISON DE QUELQU'UN D'AUTRE.
-       * Structure et service appartiennent à l'établissement rejoint : ils y
-       * sont déjà renseignés, et une personne qui vient d'arriver — non encore
-       * vérifiée — n'a pas à rattacher une structure ni à créer un service au
-       * nom de tout le monde.
-       */
-      if (lieu.rejoindre) {
-        toast({
-          title: `Rattaché à ${lieu.rejoindre.name}`,
-          description: 'Un responsable doit confirmer votre rattachement.',
-          variant: 'success',
-        });
-        return;
-      }
-
-      if (lieu.structureId || lieu.structure) {
-        await apiRequest('/structures/rattacher', {
-          method: 'POST',
-          body: lieu.structureId ? { structureId: lieu.structureId } : lieu.structure,
-        }).catch(() => undefined);
-      }
-
-      // Plus de création de service (OrgUnit) à l'inscription : archivé le
-      // 23/09/2026 avec les sous-comptes. La structure porte l'identité.
-
-    } finally {
-      setSubmitting(false);
-    }
+  /** L'organisme gestionnaire ou l'entité qui facture, s'il a été saisi. */
+  async function enregistrerStructure() {
+    if (typeChoisi === 'PARTICULIER') return;
+    if (!lieu.structureId && !lieu.structure) return;
+    await apiRequest('/structures/rattacher', {
+      method: 'POST',
+      body: lieu.structureId ? { structureId: lieu.structureId } : lieu.structure,
+    }).catch(() => undefined);
   }
 
   return (
@@ -352,28 +282,16 @@ export default function RegisterPage() {
             noValidate
           >
             {/*
-              OÙ VOUS TRAVAILLEZ — QUATRE CHAMPS, UN SEUL ÉCRAN.
-              ------------------------------------------------------------
-              L'établissement, l'entité qui emploie, le service et le poste
-              ne forment qu'une seule phrase : « l'ESAT Corail de l'ADSEA,
-              internat, chef de service ». On la posait sur trois écrans, et
-              le champ fusionné qui devait arranger ça n'était clair pour
-              personne — on ne savait plus à laquelle des deux questions on
-              répondait. Deux champs CÔTE À CÔTE, puis deux autres : on voit
-              la phrase entière, et chaque question reste distincte.
-
               ⚠ LE NOM DE L'ÉTABLISSEMENT DOIT RESTER SUR CETTE ÉTAPE-CI.
-              C'est lui qui fixe le nom du compte ET son slug — l'adresse
-              publique — tous deux posés à la création et jamais recalculés.
+              C'est lui qui fixe le nom du compte ET son slug (l'adresse
+              publique), tous deux posés à la création et jamais recalculés.
               Le demander plus loin obligerait à renommer un compte déjà
               créé, et l'adresse garderait pour toujours le prénom de la
               personne.
 
               ⚠ AUCUN DE CES CHAMPS N'ÉCRIT QUOI QUE CE SOIT ICI : le compte
-              n'existe pas encore. Le rattachement, la structure et le
-              service partent juste après la création (`enregistrerLieu`) ;
-              le poste et le statut cadre partent avec le niveau et les
-              droits, à l'étape suivante, en un seul PATCH.
+              n'existe pas encore. La structure part juste après la création
+              (`enregistrerStructure`).
             */}
             {/*
               ⚠⚠ « VOUS ÊTES ? » — CE QUI REMPLACE LA CARTE « PARTICULIER ».
@@ -381,8 +299,8 @@ export default function RegisterPage() {
               Elle a disparu de la première page le 21/09/2026 : les trois
               cartes demandaient de se ranger dans une CATÉGORIE avant de
               savoir ce que la catégorie ouvrait. La distinction, elle, reste
-              entière — un parent n'a ni établissement, ni service, ni poste, et
-              son espace n'est pas celui d'une MECS (menu court, accueil dédié).
+              entière : un parent n'a pas d'établissement, et son espace n'est
+              pas celui d'une MECS (menu court, accueil dédié).
               Elle se pose donc ici, en deux boutons, une fois la personne déjà
               du bon côté du marché.
 
@@ -411,9 +329,7 @@ export default function RegisterPage() {
                         onClick={() => {
                           form.setValue('accountType', q.type, { shouldValidate: false });
                           // Un particulier n'a pas d'établissement : on ne
-                          // garde pas une saisie qui ne partira plus, et
-                          // surtout pas un rattachement à la maison de
-                          // quelqu'un d'autre.
+                          // garde pas une saisie qui ne partira plus.
                           if (q.type === 'PARTICULIER') {
                             form.setValue('organizationName', '');
                             setLieu(LIEU_VIDE);
@@ -441,14 +357,13 @@ export default function RegisterPage() {
 
             {typeChoisi === 'ESTABLISHMENT' && (
               <section className="space-y-5 rounded-xl border border-border bg-card p-4">
-                <div>
-                  <h2 className="text-sm font-semibold">Où vous travaillez</h2>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
-                    C’est une déclaration, comme sur LinkedIn : rien n’est
-                    vérifié, et vous n’attendez l’autorisation de personne.
-                  </p>
-                </div>
+                <h2 className="text-sm font-semibold">Votre établissement</h2>
 
+                {/*
+                  DEUX CHAMPS CÔTE À CÔTE : « l'ESAT Corail » d'un côté, « de
+                  l'ADSEA » de l'autre. Fondus en un seul, on ne savait plus à
+                  laquelle des deux questions on répondait (16/09/2026).
+                */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <FormField
                     control={form.control}
@@ -469,86 +384,29 @@ export default function RegisterPage() {
                           Le vôtre, pas celui du groupe.
                         </FormDescription>
                         <FormMessage />
-
-                        {/*
-                          ⚠⚠ LA RECHERCHE PENDANT LA FRAPPE EST LE SEUL
-                          GARDE-FOU CONTRE LES DOUBLONS D'ÉTABLISSEMENT, ET
-                          ELLE DOIT RESTER COLLÉE À CE CHAMP.
-
-                          Elle avait déjà disparu une fois, en déplaçant le
-                          nom de l'établissement dans « Vos identifiants » :
-                          le composant existait toujours mais n'était plus
-                          appelé nulle part, et quelqu'un qui tapait « MECS »
-                          ne voyait plus les MECS déjà déclarées. Le résultat,
-                          c'est un douzième homonyme en base — et le doublon
-                          d'établissement est le plus coûteux des trois, parce
-                          qu'il coupe une équipe en deux sans que personne ne
-                          s'en aperçoive.
-
-                          Reconnaître le sien ne crée rien tout de suite : on
-                          note l'intention, et le rattachement est demandé une
-                          fois le compte créé. Il arrive NON VÉRIFIÉ — c'est un
-                          collègue de la maison qui confirme.
-                        */}
-                        {/* PLUS DE « REJOINDRE UN ÉTABLISSEMENT EXISTANT » (23/09/2026).
-                            Le compte, c'est la personne : un collègue crée le
-                            sien, rattache la même structure (SIRET), et
-                            l'organigramme les réunit. Personne ne devient
-                            « membre » du compte d'un autre. */}
                       </FormItem>
                     )}
                   />
 
                   {/*
-                    L'ENTITÉ QUI EMPLOIE — l'autre moitié de la phrase.
-                    On cherche d'abord parmi les structures déjà déclarées sur
-                    Les Extras, puis dans l'annuaire public ; et la saisie à la
-                    main reste ouverte, parce que beaucoup de petites
-                    associations n'y figurent pas.
-
-                    ⚠ MASQUÉE QUAND ON REJOINT UN ÉTABLISSEMENT EXISTANT : sa
-                    structure et ses services sont déjà renseignés par ceux qui
-                    y sont. Les redemander à quelqu'un qui arrive — et dont le
-                    rattachement n'est même pas encore confirmé — lui ferait
-                    écrire dans la maison des autres.
+                    L'ORGANISME GESTIONNAIRE — l'autre moitié de la phrase, et
+                    l'entité juridique dont le SIRET figurera sur les devis et
+                    les factures. On cherche d'abord parmi les structures déjà
+                    déclarées sur Les Extras, puis dans l'annuaire public ; la
+                    saisie à la main reste ouverte, parce que beaucoup de
+                    petites associations n'y figurent pas.
                   */}
-                  {lieu.rejoindre ? (
-                    <div className="flex flex-col justify-center rounded-lg border border-dashed border-border p-3 text-xs leading-relaxed text-muted-foreground" lang="fr">
-                      Cet établissement est déjà sur Les Extras : l’entité qui
-                      l’emploie et ses services y sont renseignés. Vous les
-                      retrouverez dans votre espace.
-                    </div>
-                  ) : (
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="employeur">Qui vous emploie</Label>
+                    <Label htmlFor="organisme">Organisme gestionnaire</Label>
                     <ChampStructure
+                      id="organisme"
                       valeur={{ structureId: lieu.structureId, structure: lieu.structure }}
                       onChange={(v) => setLieu((l) => ({ ...l, ...v }))}
                       placeholder="ADSEA, Fondation Poidatz, 820051852…"
                     />
                     <p className="text-xs text-muted-foreground" lang="fr">
-                      L’entreprise, l’association, la fondation ou l’institution
-                      qui vous emploie. Facultatif.
-                    </p>
-                  </div>
-                  )}
-                </div>
-
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {/* Plus de « service, unité » à l'inscription (23/09/2026) :
-                      les sous-comptes par service sont archivés. La structure
-                      suffit ; les collègues ont chacun leur compte. */}
-
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="poste">Votre poste</Label>
-                    <ChampPoste
-                      poste={lieu.poste}
-                      setPoste={(v) => setLieu((l) => ({ ...l, poste: v }))}
-                      cadre={lieu.cadre}
-                      setCadre={(v) => setLieu((l) => ({ ...l, cadre: v }))}
-                    />
-                    <p className="text-xs text-muted-foreground" lang="fr">
-                      Tel qu’il figure sur votre fiche de poste.
+                      L’association, la fondation, l’entreprise ou la collectivité
+                      qui gère l’établissement (nom ou SIRET). Facultatif.
                     </p>
                   </div>
                 </div>
@@ -558,7 +416,7 @@ export default function RegisterPage() {
             {/*
               INTERVENANT — SA STRUCTURE, SUR LE MÊME ÉCRAN QUE LES IDENTIFIANTS.
               Facultative ici, exigée pour publier : c'est ce SIRET qui figure
-              sur les devis et les factures. Le rattachement part juste après
+              sur les devis et les factures. La structure part juste après
               la création du compte (voir creerLeCompte), jamais avant.
             */}
             {typeChoisi === 'FREELANCE' && (
@@ -630,8 +488,7 @@ export default function RegisterPage() {
                     />
                   </FormControl>
                   <FormDescription>
-                    Votre adresse professionnelle si vous en avez une : elle permet
-                    à vos collègues de vous reconnaître.
+                    Elle est à vous seul : un compte Les Extras ne se partage pas.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

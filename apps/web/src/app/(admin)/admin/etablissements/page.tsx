@@ -15,7 +15,7 @@ export default async function AdminAccountsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Comptes"
-        subtitle="Tous les comptes, structures et intervenants, avec leur titulaire et leurs rattachements."
+        subtitle="Tous les comptes, structures et intervenants, avec leur titulaire. Un compte Les Extras appartient à une seule personne."
       />
       {res.error ? (
         <ErrorState retryHref="/admin/etablissements" />

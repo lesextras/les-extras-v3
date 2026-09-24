@@ -2,7 +2,7 @@
 
 // Parrainage : lien à partager + compteur de filleuls.
 //
-// Ouvert à TOUS les comptes — intervenant, salarié, établissement. Il était
+// Ouvert à TOUS les comptes — intervenant, particulier, établissement. Il était
 // réservé aux intervenants des deux côtés : un directeur qui recommandait la
 // plateforme à un confrère n'en tirait rien, et l'établissement qu'il amenait
 // non plus. Or c'est exactement le bouche-à-oreille qui fait vivre ce métier,

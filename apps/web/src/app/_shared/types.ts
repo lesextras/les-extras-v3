@@ -35,7 +35,11 @@ export type MissionStatus =
   | "CLOSED"
   | "CANCELLED";
 
-export type MissionVisibility = "SALARIES" | "RESERVED" | "PUBLIC";
+/**
+ * Palier de diffusion. ⚠ « SALARIES » n'existe plus (24/09/2026, « 1 compte =
+ * 1 personne ») : la migration de l'API l'a converti en RESERVED.
+ */
+export type MissionVisibility = "RESERVED" | "PUBLIC";
 
 export type ServiceCategory =
   | "ATELIER"
@@ -142,14 +146,11 @@ export interface Mission {
   emergency?: boolean;
   attachmentUrl?: string | null;
   status: MissionStatus;
-  /** Validation hiérarchique : publication demandée, en attente d'approbation. */
-  attenteValidation?: boolean;
   visibility: MissionVisibility;
   /** AUTOMATIQUE : le premier qui accepte. FILE_ENGAGEMENT : l'établissement valide. */
   modeAttribution?: ModeAttribution;
   /** À qui l'offre a été adressée (RESEAU = diffusion normale en cascade). */
   cibleDiffusion?: CibleDiffusion;
-  orgUnitId?: string | null;
   publishedAt?: string | null;
   createdAt: string;
   bookings?: Booking[];
@@ -158,7 +159,8 @@ export interface Mission {
 }
 
 export type ModeAttribution = "AUTOMATIQUE" | "FILE_ENGAGEMENT";
-export type CibleDiffusion = "RESEAU" | "CONNUS" | "UNITE" | "SELECTION";
+/** ⚠ « UNITE » n'existe plus (24/09/2026) : lue comme RESEAU par l'API. */
+export type CibleDiffusion = "RESEAU" | "CONNUS" | "SELECTION";
 export type EngagementStatut =
   | "EN_ATTENTE"
   | "PRESENTE"
@@ -341,20 +343,6 @@ export interface Invitation {
   status: InvitationStatus;
   expiresAt: string;
   createdAt: string;
-}
-
-/**
- * Demande de rattachement envoyée par un compte « salarié » (créé en solo,
- * droits freelance en attendant) vers un établissement. Sens inverse d'une
- * Invitation : ici, c'est la personne qui a fait la démarche.
- */
-export interface AttachmentRequest {
-  id: string;
-  message: string | null;
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  createdAt: string;
-  requesterUser?: { id: string; email: string } | null;
-  requesterAccount?: { id: string; name: string } | null;
 }
 
 export interface Review {

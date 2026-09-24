@@ -100,7 +100,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/reservations': {
     titre: 'Mes réservations',
     texte:
-      'Tout ce qui a été réservé, dans les deux sens : les renforts pourvus, les ateliers commandés et les salariés inscrits en formation. Chaque ligne indique si vous êtes du côté qui réserve ou du côté qui intervient : un même compte peut faire les deux. Le contrat s’ouvre en cliquant sur l’intitulé.',
+      'Tout ce qui a été réservé, dans les deux sens : les renforts pourvus, les ateliers commandés et les personnes inscrites en formation. Chaque ligne indique si vous êtes du côté qui réserve ou du côté qui intervient : un même compte peut faire les deux. Le contrat s’ouvre en cliquant sur l’intitulé.',
   },
   '/dashboard/reservations/ateliers': {
     titre: 'Mes réservations ateliers',
@@ -120,7 +120,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/inbox': {
     titre: 'Messagerie',
     texte:
-      'Vos échanges avec les établissements ou les intervenants, rattachés à chaque mission ou réservation. Tout reste tracé au même endroit.',
+      'Vos échanges avec les établissements ou les intervenants, liés à chaque mission ou réservation. Tout reste tracé au même endroit.',
   },
   '/dashboard/activites': {
     titre: 'Générateur d’activités',
@@ -153,7 +153,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/renforts': {
     titre: 'RenforTeam',
     texte:
-      'Publiez un besoin de remplacement urgent. La diffusion se fait en cascade : votre équipe d’abord, puis les intervenants déjà venus, puis la marketplace. Le premier profil compatible qui accepte remporte la mission.',
+      'Publiez un besoin de remplacement urgent. La diffusion se fait en cascade : les intervenants que vous connaissez d’abord, puis la marketplace. Le premier profil compatible qui accepte remporte la mission.',
     etapes: ['Décrivez le besoin et les créneaux', 'Choisissez le palier de diffusion', 'Suivez les candidatures en temps réel'],
   },
   '/dashboard/conformite': {
@@ -186,16 +186,6 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Le casier judiciaire (bulletin n°3) se renouvelle chaque année.',
     ],
   },
-  '/dashboard/equipe': {
-    titre: "Tout le monde, service par service",
-    texte:
-      "Qui travaille chez vous, dans quel service, avec quel rôle et quel dossier. C'est par cette page qu'on invite un salarié, qu'on lui donne un rôle et qu'on suit ses pièces obligatoires.",
-    etapes: [
-      'Invitez un salarié par son adresse e-mail ; il choisit son mot de passe.',
-      "Le rôle décide de ce qu'il voit : Direction, Chef de service ou Équipe.",
-      "Les pièces de conformité se suivent depuis la fiche de chaque personne.",
-    ],
-  },
   '/dashboard/vivier': {
     titre: 'Les intervenants qui connaissent déjà votre maison',
     texte:
@@ -224,7 +214,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/account': {
     titre: 'Votre compte',
     texte:
-      'Profil, photo, membres de votre structure et paramètres de sécurité. Un profil complet inspire confiance et améliore votre visibilité.',
+      'Profil, photo, identité de facturation et préférences. Un compte Les Extras est personnel : il appartient à une seule personne. Un profil complet inspire confiance et améliore votre visibilité.',
   },
   '/dashboard/donnees-personnelles': {
     titre: 'Vos données personnelles',
@@ -260,14 +250,14 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Le pilotage de LEX : ventes de packs, consommation de crédits, abonnements actifs et essais Découverte en cours, tiré des écritures réelles.',
   },
   '/admin/etablissements': {
-    titre: 'Comptes & sous-comptes',
+    titre: 'Comptes',
     texte:
-      'Chaque compte (établissement ou freelance) avec ses membres rattachés et leurs rôles. Dépliez un compte pour voir et gérer ses sous-comptes.',
+      'Chaque compte (établissement ou intervenant) avec son titulaire. Un compte Les Extras appartient à une seule personne ; dépliez-le pour voir les accès enregistrés.',
   },
   '/admin/utilisateurs': {
     titre: 'Utilisateurs',
     texte:
-      'Tous les utilisateurs de la plateforme, leurs rattachements et leur statut. Recherchez par nom ou par e-mail.',
+      'Tous les utilisateurs de la plateforme, leurs comptes et leur statut. Recherchez par nom ou par e-mail.',
   },
   '/admin/conformite': {
     titre: 'Conformité des intervenants',
@@ -275,14 +265,9 @@ const AIDE: Record<string, PageHelpEntry> = {
       'La complétude des pièces obligatoires, agrégée par établissement. Rouge = pièce manquante ou expirée : à relancer.',
   },
   '/admin/invitations': {
-    titre: 'Invitations',
+    titre: 'Invitations Piloter',
     texte:
-      'Les invitations envoyées et en attente. Vous pouvez renvoyer un e-mail d’invitation ou révoquer une invitation obsolète.',
-  },
-  '/admin/roles': {
-    titre: 'Rôles & droits',
-    texte:
-      'La matrice des rôles : qui peut faire quoi, espace par espace. Référez-vous-y avant de changer le rôle d’un membre.',
+      'Les invitations envoyées depuis les espaces association et académie, et en attente. Vous pouvez renvoyer un e-mail d’invitation ou révoquer une invitation obsolète.',
   },
   '/admin/formations': {
     titre: 'Gestion des formations',

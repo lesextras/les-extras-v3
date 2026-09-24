@@ -10,7 +10,7 @@ import { PasserOnboarding } from '../../_shared/PasserOnboarding';
 export default async function WelcomePage({
   searchParams: searchParamsPromesse,
 }: {
-  searchParams?: Promise<{ bienvenue?: string; salarie?: string }>;
+  searchParams?: Promise<{ bienvenue?: string }>;
 }) {
   const searchParams = await searchParamsPromesse;
   const session = await getSession();
@@ -29,9 +29,7 @@ export default async function WelcomePage({
 
   const isEstablishment = session.activeAccount?.type === 'ESTABLISHMENT';
   const firstName = session.user.name?.split(' ')[0];
-  // Relaie le profil « salarié » choisi à l'inscription jusqu'au wizard, pour
-  // que l'étape « Établissement » y apparaisse (voir register/page.tsx).
-  const hrefWizard = searchParams?.salarie === '1' ? '/wizard?salarie=1' : '/wizard';
+  const hrefWizard = '/wizard';
 
   return (
     <div className="animate-fade-in">

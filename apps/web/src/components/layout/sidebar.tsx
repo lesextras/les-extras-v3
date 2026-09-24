@@ -17,13 +17,10 @@ export interface SidebarProps {
   role: NavRole;
   /** Accès LEX (crédits > 0 ou illimité) ? Cadenas sur les entrées LEX sinon. */
   isMember?: boolean;
-  /**
-   * Rôle de la personne DANS le compte actif. Le titulaire (OWNER) est la
-   * structure elle-même ; les autres sont ses sous-comptes, c'est-à-dire des
-   * personnes physiques — seules concernées par certaines entrées.
-   */
+  /** Rôle hérité en base dans le compte actif (sans effet sur Les Extras). */
   roleCompte?: AccountRole;
-  enAttenteRattachement?: boolean;
+  /** Aucun compte accessible : menu réduit à la création de son compte. */
+  sansCompte?: boolean;
   /** Ferme la sidebar (usage mobile en overlay). */
   onNavigate?: () => void;
   className?: string;
@@ -50,33 +47,24 @@ function isActiveHref(pathname: string, href: string) {
   );
 }
 
-export function Sidebar({ role, isMember, roleCompte, enAttenteRattachement, onNavigate, className, utilisateur }: SidebarProps) {
+export function Sidebar({ role, isMember, roleCompte, sansCompte, onNavigate, className, utilisateur }: SidebarProps) {
   const pathname = usePathname();
   // Entrée LEX cliquée sans crédits : on retient laquelle pour que la modale
   // parle de la fonctionnalité visée, pas d'une restriction abstraite.
   const [lexBloquee, setLexBloquee] = useState<string | null>(null);
-  // Le titulaire du compte, c'est la structure elle-même. Les entrées qui
-  // s'adressent à une personne physique — « Proposer mes services » — ne le
-  // concernent pas : elles ne s'affichent que pour ses sous-comptes.
-  const estTitulaire = roleCompte === 'OWNER';
-  // Outils avancés (contrats CDD, temps de travail, congés) : masqués par
+  // Outils avancés (contrats CDD, vivier, publications, avis) : masqués par
   // défaut. Vingt-sept entrées d'emblée, c'est un outil qu'on n'ose pas
   // ouvrir ; ces modules relèvent d'un autre métier que la mise en relation.
   const [outilsAvances, setOutilsAvances] = useState(false);
-  const nbAvances = compterOutilsAvances(role, roleCompte);
+  const nbAvances = sansCompte && role !== 'ADMIN' ? 0 : compterOutilsAvances(role, roleCompte);
   // Le bouton dit ce qu'il ouvre, avec le nom que nav.ts donne à la rubrique :
   // « Gestion RH » pour un établissement, « Outils avancés » pour un
   // intervenant (formations, publications, avis, progression). Un libellé en
-  // dur promettait de la RH à quelqu'un qui n'a pas d'équipe.
-  const rubriqueAvancee = getNavForRole(role, roleCompte, { outilsAvances: true, enAttenteRattachement }).slice(-1)[0];
+  // dur promettait de la RH à qui n'en fait pas.
+  const rubriqueAvancee = getNavForRole(role, roleCompte, { outilsAvances: true, sansCompte }).slice(-1)[0];
   const libelleAvances = rubriqueAvancee?.title === 'Gestion RH' ? 'la gestion RH' : 'les outils avancés';
   const detailAvances = (rubriqueAvancee?.items ?? []).map((it) => it.label).join(', ');
-  const toutesSections = getNavForRole(role, roleCompte, { outilsAvances, enAttenteRattachement })
-    .map((s) => ({
-      ...s,
-      items: s.items.filter((it) => !(it.sousComptesSeulement && estTitulaire)),
-    }))
-    .filter((s) => s.items.length > 0);
+  const toutesSections = getNavForRole(role, roleCompte, { outilsAvances, sansCompte });
 
   useEffect(() => {
     try {

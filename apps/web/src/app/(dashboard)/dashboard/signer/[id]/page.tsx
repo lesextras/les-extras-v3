@@ -1,10 +1,9 @@
 // SIGNER — la page du signataire.
 //
-// Le salarié qui doit signer son CDD est en général un simple membre du
-// compte : il n'a pas accès à la fiche contrat, réservée aux responsables.
-// Cette page est SA porte d'entrée — c'est elle que le courriel du code met
-// en lien. Le serveur ne lui montre que les demandes adressées à sa propre
-// adresse ; un responsable, lui, peut tout ouvrir.
+// La personne qui doit signer son CDD n'a pas accès à la fiche contrat, qui
+// appartient au compte de l'établissement. Cette page est SA porte d'entrée :
+// c'est elle que le courriel du code met en lien. Le serveur ne lui montre que
+// les demandes adressées à sa propre adresse.
 import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../../../../_shared/server";
 import { PageHeader, ErrorState } from "../../../../_shared/ui";

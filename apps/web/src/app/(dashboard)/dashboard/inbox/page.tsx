@@ -32,9 +32,9 @@ export const metadata: Metadata = { title: "Messagerie" };
 /** Les filtres proposés en tête de liste. `undefined` = tout. */
 const FILTRES: { cle?: TypeConversation; label: string }[] = [
   { label: "Tout" },
-  { cle: "INTERNE", label: "Mon équipe" },
-  // « Mes services » retiré le 23/09/2026 : les sous-comptes par service sont
-  // archivés. Les fils existants restent lisibles sous « Tout ».
+  // « Mon équipe » et « Mes services » retirés (24/09/2026, « 1 compte = 1
+  // personne ») : il n'y a plus d'équipe dans un compte. Les anciens fils
+  // internes restent lisibles sous « Tout ».
   { cle: "INTERVENANT", label: "Intervenants" },
   { cle: "MISSION", label: "Renforts" },
   { cle: "SUPPORT", label: "Les Extras" },
@@ -54,14 +54,11 @@ export default async function InboxPage({
   const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const activeId = searchParams.c;
-  // Un intervenant n'a ni équipe ni services : ses fils sont ceux des
-  // clients qui lui écrivent, ses renforts et Les Extras. Mêmes types en
-  // base, autres mots — et deux filtres de moins qui seraient toujours vides.
+  // Côté intervenant, ses fils « intervenants » sont ceux des clients qui lui
+  // écrivent : mêmes types en base, autre mot.
   const estIntervenant = session.account.type === "FREELANCE";
   const filtres = estIntervenant
-    ? FILTRES.filter((f) => f.cle !== "INTERNE" && f.cle !== "SERVICE").map((f) =>
-        f.cle === "INTERVENANT" ? { ...f, label: "Clients" } : f,
-      )
+    ? FILTRES.map((f) => (f.cle === "INTERVENANT" ? { ...f, label: "Clients" } : f))
     : FILTRES;
   const typeFiltre = FILTRES.find((f) => f.cle === searchParams.type)?.cle;
   const archives = searchParams.archives === "1";
@@ -99,8 +96,8 @@ export default async function InboxPage({
         title="Messagerie"
         subtitle={
           estIntervenant
-            ? "Vos échanges avec les établissements, les familles et Les Extras, chacun rattaché à son contexte."
-            : "Vos échanges avec votre équipe, les intervenants et Les Extras, chacun rattaché à son contexte."
+            ? "Vos échanges avec les établissements, les familles et Les Extras, chacun lié à sa demande."
+            : "Vos échanges avec les intervenants et Les Extras, chacun lié à sa demande."
         }
       />
 

@@ -33,6 +33,8 @@ import {
   userStatusBadgeVariant,
   fullName,
   formatDate,
+  estPiloter,
+  libelleAcces,
 } from "./format";
 
 export interface AdminUser {
@@ -51,24 +53,25 @@ export interface AdminUser {
   ownedAccounts?: { id: string; name: string; type: string }[];
 }
 
-// Libellé métier du rôle dans un compte (Membership.role).
-const ACCOUNT_ROLE_LABEL: Record<string, string> = {
-  OWNER: "Direction",
-  ADMIN: "Administrateur",
-  MANAGER: "Responsable de service",
-  MEMBER: "Salarié",
-};
-
-/** Rattachements lisibles : freelance + structures avec rôle interne. */
-function rattachements(u: AdminUser) {
-  const items: { label: string; kind: "freelance" | "estab" | "admin" }[] = [];
+/**
+ * Les comptes de la personne, lisibles d'un coup d'œil.
+ *
+ * ⚠ Un compte Les Extras = une personne (24/09/2026) : on liste les comptes
+ * dont elle est titulaire, puis ses accès Piloter (association, académie),
+ * seuls à porter encore un rôle. Un ancien rattachement à l'établissement de
+ * quelqu'un d'autre n'ouvre plus rien : il n'est pas affiché.
+ */
+function comptesDe(u: AdminUser) {
+  const items: { label: string; kind: "intervenant" | "compte" | "admin" }[] = [];
   if (u.role === "ADMIN") items.push({ label: "Admin plateforme", kind: "admin" });
-  const ownsFreelance = (u.ownedAccounts ?? []).some((a) => a.type === "FREELANCE");
-  if (ownsFreelance) items.push({ label: "Freelance", kind: "freelance" });
+  const vus = new Set<string>();
+  for (const a of u.ownedAccounts ?? []) {
+    vus.add(a.id);
+    items.push({ label: a.name, kind: a.type === "FREELANCE" ? "intervenant" : "compte" });
+  }
   for (const m of u.memberships ?? []) {
-    if (m.account.type !== "ESTABLISHMENT") continue;
-    const role = ACCOUNT_ROLE_LABEL[m.role] ?? m.role;
-    items.push({ label: `${m.account.name} · ${role}`, kind: "estab" });
+    if (vus.has(m.account.id) || !estPiloter(m.account.type)) continue;
+    items.push({ label: `${m.account.name} · ${libelleAcces(m.role, m.account.type)}`, kind: "compte" });
   }
   return items;
 }
@@ -198,7 +201,7 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                   <TableRow>
                     <TableHead>Utilisateur</TableHead>
                     <TableHead>Rôle global</TableHead>
-                    <TableHead>Rattachements</TableHead>
+                    <TableHead>Comptes</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Inscrit le</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -223,7 +226,7 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                       </TableCell>
                       <TableCell>
                         {(() => {
-                          const items = rattachements(u);
+                          const items = comptesDe(u);
                           if (items.length === 0)
                             return <span className="text-xs text-muted-foreground">-</span>;
                           return (
@@ -234,7 +237,7 @@ export function AdminUsersManager({ users }: { users: AdminUser[] }) {
                                   variant={
                                     it.kind === "admin"
                                       ? "soft"
-                                      : it.kind === "freelance"
+                                      : it.kind === "intervenant"
                                         ? "outline"
                                         : "muted"
                                   }

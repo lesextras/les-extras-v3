@@ -139,7 +139,7 @@ export function RappelerVivier({
   intervenants,
 }: {
   accountId: string;
-  /** Les missions ouvertes de l'établissement, hors diffusion strictement interne. */
+  /** Les missions ouvertes de l’établissement. */
   missions: { id: string; title: string; startDate: string; visibility: string }[];
   intervenants: { accountId: string; nom: string; metier: string | null }[];
 }) {
@@ -151,7 +151,7 @@ export function RappelerVivier({
   const [missionId, setMissionId] = useState<string>(missions[0]?.id ?? "");
   const [coches, setCoches] = useState<string[]>([]);
 
-  const eligibles = missions.filter((m) => m.visibility !== "SALARIES");
+  const eligibles = missions;
 
   async function envoyer() {
     if (!missionId) {
@@ -201,11 +201,10 @@ export function RappelerVivier({
         {eligibles.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Aucun besoin ouvert au réseau réservé pour l'instant.
+              Aucun besoin ouvert pour l'instant.
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Publiez un RenforTeam, ou élargissez la diffusion d'un besoin encore réservé à vos
-              salariés.
+              Publiez un RenforTeam : vous pourrez ensuite y rappeler votre vivier.
             </p>
           </div>
         ) : (

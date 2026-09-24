@@ -151,7 +151,7 @@ const TOUT_EN_UN = [
     icone: Timer,
     titre: 'Il compte',
     texte:
-      'Heures, congés, export paie. Émargement et attestations.',
+      'Heures déclarées et validées, contrats. Émargement et attestations.',
   },
   /*
     ⚠ LES DEUX CARTES SUIVANTES DISENT CE QU'EST LE SERVICE, pas ce que le
@@ -307,8 +307,8 @@ const BANDEAU = [
   'Planning partagé',
   'Coffre-fort de conformité',
   'Messagerie',
-  'Congés & compteurs',
-  'Export paie CSV',
+  'Heures validées',
+  'Signature en ligne',
   'Devis, feuille de mission, facture',
 ];
 

@@ -7,8 +7,7 @@
 // cette page : on l'ouvre parce qu'on veut savoir qui bloque. On ne montre
 // donc que les dossiers en défaut, le plus urgent en tête, et une pièce
 // manquante pèse plus lourd qu'une pièce qui expire bientôt.
-import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useCallback, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -25,8 +24,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { EmptyState, StatCard } from "./ui";
 import { fullName, initials } from "./format";
 
-const TOUS = "__tous__";
-
 export interface LigneAlerte {
   user: {
     id: string;
@@ -37,7 +34,6 @@ export interface LigneAlerte {
     job: string | null;
   };
   membershipRole: string;
-  orgUnit: { id: string; name: string } | null;
   completeness: { total: number; valid: number; pct: number; expiringSoon: number; missing: number };
   urgence: number;
 }
@@ -55,21 +51,17 @@ export interface PageAlertes {
 export function AlertesConformite({ initial }: { initial: PageAlertes }) {
   const { toast } = useToast();
   const [donnees, setDonnees] = useState(initial);
-  // Plus de filtre par service (23/09/2026) : la liste couvre toute la structure.
-  const service = TOUS;
   const [chargement, setChargement] = useState(false);
-  const premierRendu = useRef(true);
 
   const charger = useCallback(
-    async (page: number, unite: string) => {
+    async (page: number) => {
       setChargement(true);
       try {
         const p = new URLSearchParams({ page: String(page), perPage: "25" });
-        if (unite !== TOUS) p.set("orgUnitId", unite);
         setDonnees((await apiRequest(`/conformite/alertes?${p.toString()}`)) as PageAlertes);
       } catch (err) {
-        // Sans ce toast, un filtre qui échoue laissait l'écran figé sur les
-        // anciennes données, sans un mot : on croyait le service vide.
+        // Sans ce toast, une page qui échoue laissait l'écran figé sur les
+        // anciennes données, sans un mot.
         toast({
           title: "Chargement impossible",
           description: err instanceof Error ? err.message : "Réessayez dans un instant.",
@@ -81,14 +73,6 @@ export function AlertesConformite({ initial }: { initial: PageAlertes }) {
     },
     [toast],
   );
-
-  useEffect(() => {
-    if (premierRendu.current) {
-      premierRendu.current = false;
-      return;
-    }
-    void charger(1, service);
-  }, [service, charger]);
 
   const conformes = Math.max(0, donnees.membresActifs - donnees.total);
 
@@ -146,12 +130,9 @@ export function AlertesConformite({ initial }: { initial: PageAlertes }) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <Link
-                      href={`/dashboard/equipe/${l.user.id}`}
-                      className="font-medium text-foreground hover:underline"
-                    >
+                    <p className="font-medium text-foreground">
                       {fullName(l.user.firstName, l.user.lastName) || l.user.email}
-                    </Link>
+                    </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {l.user.job ?? l.user.email}
                     </p>
@@ -169,9 +150,6 @@ export function AlertesConformite({ initial }: { initial: PageAlertes }) {
                       {l.completeness.expiringSoon} à renouveler
                     </Badge>
                   ) : null}
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/dashboard/equipe/${l.user.id}`}>Ouvrir le dossier</Link>
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -185,7 +163,7 @@ export function AlertesConformite({ initial }: { initial: PageAlertes }) {
             variant="outline"
             size="sm"
             disabled={donnees.page <= 1 || chargement}
-            onClick={() => void charger(donnees.page - 1, service)}
+            onClick={() => void charger(donnees.page - 1)}
           >
             <ChevronLeft className="h-4 w-4" />
             Précédent
@@ -197,7 +175,7 @@ export function AlertesConformite({ initial }: { initial: PageAlertes }) {
             variant="outline"
             size="sm"
             disabled={donnees.page >= donnees.pages || chargement}
-            onClick={() => void charger(donnees.page + 1, service)}
+            onClick={() => void charger(donnees.page + 1)}
           >
             Suivant
             <ChevronRight className="h-4 w-4" />

@@ -8,7 +8,6 @@ import { RenfortModal } from "../../../_shared/modals/RenfortModal";
 import { RepeterSemaine } from "../../../_shared/RepeterSemaine";
 import { PlanningBoard, type Shift, type Availability } from "../../../_shared/PlanningBoard";
 import { InterrupteurDisponibilite } from "../../../_shared/InterrupteurDisponibilite";
-import { ExportPaie } from "../../../_shared/ExportPaie";
 import { ImportPlanning } from "../../../_shared/ImportPlanning";
 import type { Mission } from "../../../_shared/types";
 
@@ -34,10 +33,6 @@ function startOfMonthGrid(d = new Date()): Date {
 export default async function PlanningPage() {
   const session = await requireSession();
   const isEstablishment = session.account.type === "ESTABLISHMENT";
-  // L'export de paie porte les heures et les soldes de congés de toute
-  // l'équipe : ce n'est pas une information d'équipe.
-  const peutExporter =
-    isEstablishment; // plus de rôles sur Les Extras (24/09/2026)
 
   // Premier affichage : le mois courant, exactement la grille que le
   // calendrier montrera côté client (6 semaines à partir du lundi précédant le 1er).
@@ -58,9 +53,6 @@ export default async function PlanningPage() {
     const res = await fetchApi<Mission[]>(session, "/missions?scope=account");
     missions = (res.data ?? []).map((m) => ({ id: m.id, title: m.title }));
   }
-
-  // Plus de filtre par service (23/09/2026) : un compte = une personne, le
-  // planning est celui de la structure telle qu'elle se déclare.
 
   // Disponibilités (freelance).
   let availability: Availability[] = [];
@@ -95,9 +87,6 @@ export default async function PlanningPage() {
             <ImportPlanning accountId={session.account.id} />
             {isEstablishment ? (
               <>
-                {/* La paie se prépare depuis les heures : c'est ici qu'on la
-                    cherche, pas sous l'onglet Congés où l'export était rangé. */}
-                {peutExporter ? <ExportPaie compact /> : null}
                 <RepeterSemaine accountId={session.account.id} />
                 <RenfortModal accountId={session.account.id} />
               </>

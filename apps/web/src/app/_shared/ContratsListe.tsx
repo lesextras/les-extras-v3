@@ -221,8 +221,8 @@ function NouveauContrat({
             required
             hint={
               salaries.length === 0
-                ? "Aucune personne éligible pour l’instant : invitez-la dans votre équipe ou retenez sa candidature sur une mission."
-                : "Votre pool interne, vos intervenants au planning et les candidatures que vous avez retenues."
+                ? "Aucune personne éligible pour l’instant : retenez sa candidature sur une mission, ou ajoutez-la à votre planning."
+                : "Les intervenants de votre planning et les candidatures que vous avez retenues."
             }
           >
             <Select value={userId} onValueChange={setUserId}>

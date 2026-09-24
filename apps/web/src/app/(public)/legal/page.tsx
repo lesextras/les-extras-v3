@@ -78,8 +78,7 @@ const sections: Section[] = [
         points: [
           'L’ouverture d’un compte suppose d’être majeur et, pour un compte d’établissement, d’avoir qualité pour engager la structure représentée.',
           'Chaque utilisateur est responsable de la confidentialité de ses identifiants et des actions réalisées depuis son compte. Toute utilisation suspecte doit être signalée sans délai à contact@les-extras.fr.',
-          'Un compte peut réunir plusieurs membres avec des rôles distincts : le propriétaire du compte décide de ces accès et en répond.',
-          'Un compte créé au titre d’un poste salarié ne donne pas accès au marché ouvert : ce qu’un salarié propose s’adresse aux seuls établissements qui l’emploient. Ses fiches ne sont ni publiées au catalogue public, ni réservables par des tiers.',
+          'Un compte Les Extras est personnel : il appartient à une seule personne, qui ne le partage pas.',
         ],
       },
       {
@@ -195,7 +194,7 @@ const sections: Section[] = [
     title: 'Protection des données personnelles',
     body: [
       'Responsable de traitement : association ADéPA, 7 rue André Malraux, 77000 Melun. Contact pour toute question ou demande relative aux données : assoc.adepa@gmail.com. Aucun délégué à la protection des données n’est désigné : la désignation n’est obligatoire ni par la taille ni par l’activité de l’association, et ce point de contact en tient lieu.',
-      'Pour les comptes, le catalogue et la mise en relation, l’association est responsable de traitement. Pour les données que chaque établissement gère dans son propre espace, équipe, contrats, dossiers de conformité de ses intervenants, , l’établissement est responsable de traitement et l’association agit comme sous-traitant au sens de l’article 28 du RGPD.',
+      'Pour les comptes, le catalogue et la mise en relation, l’association est responsable de traitement. Pour les données que chaque établissement gère dans son propre espace (contrats, dossiers de conformité de ses intervenants), l’établissement est responsable de traitement et l’association agit comme sous-traitant au sens de l’article 28 du RGPD.',
       {
         sous: 'Ce qui est traité, et pourquoi',
         points: [

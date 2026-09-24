@@ -76,7 +76,7 @@ export function VivierOuvert({ personnes }: { personnes: PersonneDisponible[] })
         <p className="mt-3 text-sm font-semibold">Personne ne s’est encore déclaré</p>
         <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-muted-foreground" lang="fr">
           Cette liste se remplit avec le temps. En attendant, publiez votre
-          besoin : il part à votre équipe, puis à votre réseau, puis au réseau
+          besoin : il part aux intervenants que vous connaissez, puis au réseau
           Les Extras.
         </p>
         <Button asChild className="mt-4" size="sm">

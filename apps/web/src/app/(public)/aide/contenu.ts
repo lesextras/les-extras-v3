@@ -39,7 +39,7 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "publier-un-renfort",
         question: "Comment publier un besoin de renfort ?",
         reponse: [
-          "Depuis votre tableau de bord, ouvrez RenforTeam puis « Publier un besoin ». Vous renseignez le métier attendu, l'unité concernée, les dates et le taux horaire.",
+          "Depuis votre tableau de bord, ouvrez RenforTeam puis « Publier un besoin ». Vous renseignez le métier attendu, les dates et le lieu.",
           "Le besoin n'est pas envoyé à tout le monde d'un coup : il descend palier par palier. Les intervenants déjà venus chez vous d'abord, puis le réseau. Il s'arrête dès qu'il est pourvu.",
           "Le premier intervenant qui accepte emporte la mission. Le contrat est généré automatiquement, vous n'avez rien à arbitrer.",
         ],
@@ -48,7 +48,7 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "choisir-le-palier-de-depart",
         question: "Puis-je démarrer directement au niveau du réseau ?",
         reponse: [
-          "Oui. À la publication, vous choisissez le palier de départ. Si vous savez que votre équipe ne peut pas couvrir, vous démarrez directement au palier des habitués ou du réseau.",
+          "Oui. À la publication, vous choisissez le palier de départ : les intervenants que vous connaissez d'abord, ou directement tout le réseau si le besoin ne peut pas attendre.",
           "Le palier de départ est proposé automatiquement selon le délai : à moins de vingt-quatre heures, la diffusion s'ouvre plus vite.",
         ],
       },
@@ -69,11 +69,11 @@ export const RUBRIQUES: Rubrique[] = [
         ],
       },
       {
-        slug: "plusieurs-unites",
-        question: "Nous avons plusieurs unités. Comment les gérer ?",
+        slug: "un-compte-par-personne",
+        question: "Plusieurs personnes de notre établissement veulent l'utiliser. Comment faire ?",
         reponse: [
-          "Vous créez vos unités depuis Mon compte. Chaque membre et chaque mission peuvent être rattachés à une unité.",
-          "Le planning et les statistiques se filtrent par unité, et un chef de service ne voit que la sienne s'il n'a pas les droits sur le compte entier.",
+          "Chaque personne crée son propre compte, à son nom : un compte Les Extras est personnel et ne se partage pas.",
+          "Si plusieurs d'entre vous publient pour le même établissement, renseignez chacun le même organisme gestionnaire (son SIRET) : vos devis et vos factures portent alors la même entité juridique.",
         ],
       },
     ],

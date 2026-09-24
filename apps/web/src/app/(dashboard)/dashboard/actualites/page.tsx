@@ -1,4 +1,4 @@
-// Espace de rédaction : chaque compte et sous-compte publie ses actualités.
+// Espace de rédaction : chaque compte publie ses actualités.
 import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../../../_shared/server";
 import { PageHeader } from "../../../_shared/ui";
