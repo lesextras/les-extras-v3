@@ -26,7 +26,7 @@ export default async function ApprenantsPage() {
     <>
       <Titre
         surtitre="Qui suit tes formations"
-        sousTitre="Une ligne par personne : depuis quand elle est inscrite, quand elle est passée pour la dernière fois, où elle en est dans chaque cours, et ce qu'elle a payé."
+        sousTitre="Inscription, dernière visite, progression et paiement."
       >
         Mes apprenants
       </Titre>

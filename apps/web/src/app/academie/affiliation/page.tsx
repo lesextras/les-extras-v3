@@ -25,7 +25,7 @@ export default async function AffiliationPage() {
     <>
       <Titre
         surtitre="Se faire connaître par la recommandation"
-        sousTitre="Tu donnes un code à quelqu'un ; les ventes faites avec ce code lui sont attribuées, et sa commission se calcule dessus."
+        sousTitre="Un code par ambassadeur : sa commission se calcule seule."
       >
         Mon programme d&apos;affiliation
       </Titre>

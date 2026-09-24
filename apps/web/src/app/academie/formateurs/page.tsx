@@ -40,7 +40,7 @@ export default async function FormateursPage() {
     <>
       <Titre
         surtitre="Critère 5 du référentiel national qualité"
-        sousTitre="Celles et ceux qui interviennent pour ton académie, et ce qui prouve leur compétence : leur métier et leurs compétences déclarées."
+        sousTitre="Qui intervient, et ce qui prouve sa compétence."
       >
         Mes formateurs
       </Titre>

@@ -22,7 +22,7 @@ export default async function PageDevoirs({ searchParams }: { searchParams: Prom
   ]);
   return (
     <>
-      <Titre surtitre="Formations" sousTitre="Les devoirs rendus par tes apprenants. Valider fait avancer leur formation ; « à reprendre » leur renvoie ton commentaire.">
+      <Titre surtitre="Formations" sousTitre="Valider fait avancer la formation de l'apprenant.">
         Devoirs à corriger
       </Titre>
       {liste.data ? (

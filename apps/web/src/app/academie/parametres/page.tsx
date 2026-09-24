@@ -49,7 +49,7 @@ export default async function ParametresPage() {
     <>
       <Titre
         surtitre="Mon compte"
-        sousTitre="Ce qui commande le fonctionnement de ton espace. La fiche complète se remplit dans « Mon académie »."
+        sousTitre="Le fonctionnement de ton espace."
       >
         Paramètres
       </Titre>

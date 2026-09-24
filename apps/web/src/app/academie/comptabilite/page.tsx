@@ -64,7 +64,7 @@ export default async function ComptabilitePage() {
     <>
       <Titre
         surtitre="L'argent"
-        sousTitre={`Ce qui est rentré depuis le 1er janvier ${annee}, ce qui est vendu mais pas encore payé, et le détail de chaque vente.`}
+        sousTitre={`Encaissé depuis le 1er janvier ${annee}, et ce qui reste à payer.`}
       >
         Ma comptabilité
       </Titre>

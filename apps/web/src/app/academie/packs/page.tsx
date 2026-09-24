@@ -23,7 +23,7 @@ export default async function PacksPage() {
     <>
       <Titre
         surtitre="Vendre plusieurs cours ensemble"
-        sousTitre="Un prix pour un ensemble de cours. La personne achète une fois et reçoit tout, d'un coup."
+        sousTitre="Plusieurs cours, un seul prix."
       >
         Mes packs
       </Titre>

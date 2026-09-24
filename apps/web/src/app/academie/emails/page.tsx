@@ -17,7 +17,7 @@ export default async function PageEmails() {
   const { data, error } = await apiAcademie<ModeleEmail[]>(s, '/ecole/emails');
   return (
     <>
-      <Titre surtitre="Outils marketing" sousTitre="Les courriels envoyés à tes apprenants, au bon moment, sans que tu y penses. Chacun se coupe, se réécrit et se teste.">
+      <Titre surtitre="Outils marketing" sousTitre="Envoyés au bon moment. Chacun se coupe, se réécrit et se teste.">
         E-mails automatiques
       </Titre>
       {Array.isArray(data) ? (

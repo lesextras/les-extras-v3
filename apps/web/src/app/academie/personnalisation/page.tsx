@@ -21,7 +21,7 @@ export default async function PersonnalisationPage() {
     <>
       <Titre
         surtitre="Ton image de marque"
-        sousTitre="Pour se distinguer des autres formations en ligne, il faut être reconnaissable. Un logo, une bannière, une couleur : ces trois choses suffisent."
+        sousTitre="Logo, bannière, couleur."
       >
         Personnalisation
       </Titre>

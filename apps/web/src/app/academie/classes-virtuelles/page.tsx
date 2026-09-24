@@ -23,7 +23,7 @@ export default async function PageClasses() {
   ]);
   return (
     <>
-      <Titre surtitre="Formations" sousTitre="Programme tes séances en direct. La salle intégrée s'ouvre dans le navigateur, sans installation ; rien n'y est enregistré.">
+      <Titre surtitre="Formations" sousTitre="Séances en direct, dans le navigateur, sans enregistrement.">
         Classes virtuelles
       </Titre>
       {!visio.data?.disponible ? (

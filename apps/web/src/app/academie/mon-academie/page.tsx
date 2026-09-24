@@ -62,7 +62,7 @@ export default async function MonAcademiePage() {
     <>
       <Titre
         surtitre="Mon académie"
-        sousTitre="Ce qu'un financeur et un auditeur vérifient en premier : qui tu es, ce que tu es autorisé à faire, et où sont tes preuves."
+        sousTitre="Ce qu'un financeur et un auditeur vérifient en premier."
       >
         {academie.nom}
       </Titre>

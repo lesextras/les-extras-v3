@@ -21,7 +21,7 @@ export default async function PageIntegrations() {
   const packsPublies = (Array.isArray(packs.data) ? packs.data : []).filter((p) => p.statut === 'PUBLIE');
   return (
     <>
-      <Titre surtitre="Outils marketing" sousTitre="Un lien, un bouton ou une carte à coller sur ton site : tes formations se vendent aussi là où sont déjà tes visiteurs.">
+      <Titre surtitre="Outils marketing" sousTitre="Un lien, un bouton ou une carte à coller sur ton site.">
         Intégrations externes
       </Titre>
       {publies.length || packsPublies.length ? (

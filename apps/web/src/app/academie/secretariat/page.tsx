@@ -78,7 +78,7 @@ export default async function SecretariatPage() {
     <>
       <Titre
         surtitre="Le papier, dans l'ordre"
-        sousTitre="Une session laisse sept pièces derrière elle. Elles ne se font pas le même jour : voici ce qui se prépare avant, ce qui se signe pendant, et ce qui se classe après."
+        sousTitre="Avant, pendant, après : les sept pièces d'une session."
       >
         Mon secrétariat
       </Titre>

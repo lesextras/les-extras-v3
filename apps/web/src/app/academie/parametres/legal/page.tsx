@@ -15,7 +15,7 @@ export default async function PageLegalAcademie() {
   ]);
   return (
     <>
-      <Titre surtitre="Paramètres" sousTitre="Les conditions d'utilisation et la politique de confidentialité de ton école. Les conditions de vente et les mentions légales se règlent dans « Ma page académie ».">
+      <Titre surtitre="Paramètres" sousTitre="CGU et confidentialité de ton école.">
         Liens légaux et RGPD
       </Titre>
       <OngletsParametres actif="/academie/parametres/legal" />

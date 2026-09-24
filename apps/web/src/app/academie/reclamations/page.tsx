@@ -19,7 +19,7 @@ export default async function ReclamationsPage() {
     <>
       <Titre
         surtitre="Critère 7 du référentiel national qualité"
-        sousTitre="Ce qu'on nous reproche, et ce qu'on en a fait. Un registre tenu vaut mieux qu'un registre vide : l'auditeur cherche la trace du traitement, pas l'absence de plainte."
+        sousTitre="Chaque réclamation, et ce qui en a été fait."
       >
         Mes réclamations
       </Titre>

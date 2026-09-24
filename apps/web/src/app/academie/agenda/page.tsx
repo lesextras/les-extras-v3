@@ -18,10 +18,10 @@ export default async function AgendaAcademiePage() {
   return (
     <>
       <Titre
-        surtitre="Mon agenda"
-        sousTitre="Tout ce qui a une date, au même endroit : tes sessions, tes classes virtuelles, la clôture de tes formulaires, les dates choisies par ceux qui y répondent, et les rendez-vous que tu notes. Toute l'équipe voit le même agenda."
+        surtitre="Formations"
+        sousTitre="Sessions, classes virtuelles et rendez-vous, partagés avec l'équipe."
       >
-        Ce qui vient
+        Mon agenda
       </Titre>
       <Ecran />
     </>

@@ -25,7 +25,7 @@ export default async function VentesPage() {
     <>
       <Titre
         surtitre="Ce qui a été acheté"
-        sousTitre="Qui, quoi, combien, et où en est le paiement. Tu peux aussi enregistrer ici une vente réglée par virement, par chèque ou par un financeur."
+        sousTitre="Qui a acheté quoi, et où en est le paiement."
       >
         Mes ventes
       </Titre>

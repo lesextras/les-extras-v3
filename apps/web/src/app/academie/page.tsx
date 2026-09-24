@@ -29,7 +29,7 @@ async function Presentation() {
     <>
       <Titre
         surtitre="Par Toulali, centre de formation"
-        sousTitre="Déclarer ton organisme, réunir tes preuves Qualiopi, ouvrir tes financements. Le chemin est balisé, les pièces sont listées, et l'espace tient tes preuves pour le jour de l'audit."
+        sousTitre="Ton organisme, tes preuves Qualiopi, tes financements : le chemin est balisé."
       >
         Piloter mon <Accent>académie</Accent>
       </Titre>
@@ -99,6 +99,31 @@ async function Presentation() {
 
 /* --------------------------------------------------------------- connectée */
 
+/** Les cinq gestes du quotidien, comme sur l'accueil de l'espace association. */
+const RACCOURCIS: { href: string; libelle: string; icone: string }[] = [
+  { href: '/academie/formations', libelle: 'Créer une formation', icone: 'M12 5v14M5 12h14' },
+  { href: '/academie/apprenants', libelle: 'Inscrire un apprenant', icone: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6' },
+  { href: '/academie/devoirs', libelle: 'Corriger les devoirs', icone: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },
+  { href: '/academie/certification', libelle: 'Déposer une preuve', icone: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+  { href: '@chemin', libelle: 'Continuer le chemin', icone: 'M4 20V9a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5M4 20h16M12 10v10' },
+];
+
+/** L'anneau de progression, le même que celui de l'espace association. */
+function Anneau({ pourcentage }: { pourcentage: number }) {
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  const p = Math.max(0, Math.min(100, pourcentage));
+  return (
+    <div className="relative h-[72px] w-[72px]">
+      <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90">
+        <circle cx="32" cy="32" r={r} fill="none" stroke="#E3F5EC" strokeWidth="7" />
+        <circle cx="32" cy="32" r={r} fill="none" stroke="#1E9E6A" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${(p / 100) * c} ${c}`} />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-[#12312A]">{p} %</span>
+    </div>
+  );
+}
+
 async function TableauDeBord() {
   const s = await sessionAcademie('/academie');
   // L'espace d'un côté, l'école de l'autre : les chiffres de vente et de suivi
@@ -166,126 +191,154 @@ async function TableauDeBord() {
     });
   }
 
+  const prenom = s.session.user.firstName ?? '';
+  const configuration = demarrage ?? { faites: 0, total: 0, etapes: [] };
+  const pctConfig = configuration.total ? Math.round((configuration.faites / configuration.total) * 100) : 100;
+  const prochaineConfig = configuration.etapes.find((e) => !e.fait) ?? null;
+
+  /*
+   * ⚠ ALIGNÉ SUR L'ACCUEIL DE L'ESPACE ASSOCIATION (24/09/2026, demande de
+   * Siham : « trop de texte, pas intuitif »). Même grammaire : un bonjour avec
+   * cinq raccourcis, la configuration avec son anneau, trois cartes courtes à
+   * droite. Chaque ligne tient en un titre : le détail est sur l'écran visé.
+   */
   return (
     <>
-      <Titre
-        surtitre={LIBELLES_QUALIOPI[academie.qualiopi]}
-        sousTitre={
-          etapeCourante
-            ? `Prochaine étape du chemin : ${etapeCourante.titre.toLowerCase()}.`
-            : 'Toutes les étapes du chemin sont faites. Il reste à tenir les preuves à jour.'
-        }
-      >
-        {academie.nom}
-      </Titre>
+      <section className="rounded-2xl bg-[#E3F5EC] px-6 py-8 text-center sm:py-10">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[#12312A] sm:text-4xl">
+          {prenom ? `Bonjour ${prenom},` : 'Bonjour !'}
+        </h1>
+        <p className="mt-2 text-lg text-[#334A42]">
+          Que fait-on pour <Accent>{academie.nom}</Accent> cette semaine ?
+        </p>
+        <div className="mt-5 flex flex-wrap justify-center gap-2">
+          {RACCOURCIS.map((r) => (
+            <Link
+              key={r.libelle}
+              href={r.href === '@chemin' ? (etapeCourante ? `/academie/chemin/${etapeCourante.slug}` : '/academie/chemin') : r.href}
+              className={`${BTN_SECONDAIRE} gap-2`}
+            >
+              <span className="text-[#1E9E6A]" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={r.icone} />
+                </svg>
+              </span>
+              {r.libelle}
+            </Link>
+          ))}
+        </div>
+      </section>
 
-      {demarrage && demarrage.faites < demarrage.total ? (
-        <section className={`${CARTE} mb-8 p-5 sm:p-6`}>
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="flex-1 text-xl font-extrabold text-[#12312A]">Bien démarrer ton école en ligne</h2>
-            <span className="text-sm font-bold tabular-nums text-[#5E7A6E]">
-              {demarrage.faites} / {demarrage.total}
-            </span>
+      <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <Carte>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-extrabold text-[#12312A]">Termine la configuration de ton école</h2>
+              <p className="mt-1 text-sm text-[#5E7A6E]">
+                {configuration.faites} sur {configuration.total}
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <Anneau pourcentage={pctConfig} />
+              <Pastille ton={academie.qualiopi === 'CERTIFIE' ? 'ok' : 'neutre'}>
+                {LIBELLES_QUALIOPI[academie.qualiopi]}
+              </Pastille>
+            </div>
           </div>
-          <div className="mt-3">
-            <Barre pourcentage={Math.round((demarrage.faites / demarrage.total) * 100)} />
-          </div>
-          <ol className="mt-4 grid gap-2">
-            {demarrage.etapes.map((e, n) => (
-              <li key={e.cle}>
-                <Link href={e.lien} className="flex items-start gap-3 rounded-xl px-3 py-2.5 no-underline hover:bg-[#F3F8F5]">
+          <ol className="mt-5 space-y-1">
+            {configuration.etapes.map((e, i) => {
+              const courante = prochaineConfig?.cle === e.cle;
+              return (
+                <li key={e.cle} className="flex items-center gap-3 py-1.5">
                   <span
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${e.fait ? 'bg-[#1E9E6A] text-white' : 'border-2 border-[#CFE4D9] text-[#5E7A6E]'}`}
-                    aria-hidden="true"
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-extrabold ${
+                      e.fait ? 'border-[#0F5F3E] bg-[#0F5F3E] text-white' : courante ? 'border-[#1E9E6A] text-[#1E9E6A]' : 'border-[#CFE4D9] text-[#8FA79B]'
+                    }`}
                   >
-                    {e.fait ? '✓' : n + 1}
+                    {e.fait ? '✓' : courante ? '→' : i + 1}
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className={`block font-extrabold ${e.fait ? 'text-[#5E7A6E] line-through' : 'text-[#12312A]'}`}>{e.titre}</span>
-                    {!e.fait ? <span className="block text-sm leading-relaxed text-[#5E7A6E]">{e.aide}</span> : null}
-                  </span>
-                  {!e.fait ? <span className="shrink-0 text-sm font-bold text-[#0F5F3E]">Y aller →</span> : null}
+                  {courante ? (
+                    <Link href={e.lien} className={`${BTN_PRIMAIRE} !py-2 text-sm`}>
+                      {e.titre} →
+                    </Link>
+                  ) : (
+                    <Link href={e.lien} className={`text-[15px] no-underline ${e.fait ? 'text-[#5E7A6E] line-through' : 'font-bold text-[#12312A] underline underline-offset-4'}`}>
+                      {e.titre}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </Carte>
+
+        <div className="flex flex-col gap-4">
+          <Carte>
+            <h2 className="text-xl font-extrabold text-[#12312A]">Qualiopi</h2>
+            <p className="mt-1 text-sm text-[#5E7A6E]">
+              {qualiopi.validees} indicateur{qualiopi.validees > 1 ? 's' : ''} validé{qualiopi.validees > 1 ? 's' : ''} sur {qualiopi.indicateurs}
+            </p>
+            <div className="mt-2">
+              <Barre pourcentage={qualiopi.couverture} />
+            </div>
+            {qualiopi.auditPrevuLe ? <p className="mt-2 text-sm text-[#334A42]">Audit le {formaterDate(qualiopi.auditPrevuLe)}</p> : null}
+            <Link href="/academie/certification" className="mt-3 inline-flex text-sm font-bold text-[#0F5F3E] underline underline-offset-4">
+              Mes preuves →
+            </Link>
+          </Carte>
+          <Carte>
+            <h2 className="text-xl font-extrabold text-[#12312A]">Le chemin</h2>
+            <p className="mt-1 text-sm text-[#5E7A6E]">
+              {chemin.faites} étape{chemin.faites > 1 ? 's' : ''} sur {chemin.total}
+            </p>
+            <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[#E3F5EC]">
+              <div className="h-full rounded-full bg-[#F5B400]" style={{ width: `${Math.round((chemin.faites / Math.max(1, chemin.total)) * 100)}%` }} />
+            </div>
+            {etapeCourante ? (
+              <Link href={`/academie/chemin/${etapeCourante.slug}`} className="mt-3 inline-flex text-sm font-bold text-[#0F5F3E] underline underline-offset-4">
+                {etapeCourante.titre} →
+              </Link>
+            ) : (
+              <p className="mt-3 text-sm font-bold text-[#1E9E6A]">Le chemin est fini. Bravo !</p>
+            )}
+          </Carte>
+          <BlocInstaller carte={CARTE} espace="academie" />
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <SousTitre>Ce qui presse</SousTitre>
+        {aFaire.length ? (
+          <ul className="grid gap-2 md:grid-cols-2">
+            {aFaire.map((a) => (
+              <li key={a.titre}>
+                <Link href={a.href} className={`${CARTE_VIVE} flex items-center justify-between gap-3 px-4 py-3 no-underline`}>
+                  <span className="font-bold text-[#12312A]">{a.titre}</span>
+                  <span className="shrink-0 text-[#0F5F3E]" aria-hidden="true">→</span>
                 </Link>
               </li>
             ))}
-          </ol>
-        </section>
-      ) : null}
-
-      <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Tuile
-          libelle="Couverture Qualiopi"
-          valeur={`${qualiopi.couverture} %`}
-          detail={`${qualiopi.validees} validés · ${qualiopi.deposees} déposés`}
-          ton={qualiopi.couverture >= 100 ? 'ok' : qualiopi.couverture >= 60 ? 'neutre' : 'attention'}
-          href="/academie/certification"
-        />
-        <Tuile libelle="Au catalogue" valeur={catalogue.total} detail={`${catalogue.publiees} publiée${catalogue.publiees > 1 ? 's' : ''}`} href="/academie/formations" />
-        <Tuile libelle="Sessions à venir" valeur={sessions.length} detail={prochaine ? formaterDate(prochaine.debut) ?? undefined : 'Aucune programmée'} href="/academie/formations?onglet=sessions" />
-        <Tuile libelle="Apprenants" valeur={apprenants.total} detail={`${apprenants.certifies} certifié${apprenants.certifies > 1 ? 's' : ''}`} href="/academie/apprenants" />
+          </ul>
+        ) : (
+          <Encart ton="ok">Rien ne presse cette semaine.</Encart>
+        )}
       </section>
 
-      <section className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div>
-          <SousTitre>Ce qui presse</SousTitre>
-          {aFaire.length ? (
-            <ul className="space-y-3">
-              {aFaire.map((a) => (
-                <li key={a.titre}>
-                  <Link href={a.href} className={`${CARTE_VIVE} block p-4 no-underline`}>
-                    <span className="block font-extrabold text-[#12312A]">{a.titre}</span>
-                    <span className="mt-1 block text-sm leading-relaxed text-[#334A42]">{a.detail}</span>
-                    <span className="mt-2 block text-sm font-bold text-[#0F5F3E]">Y aller →</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Encart ton="ok">Rien d&apos;urgent aujourd&apos;hui. C&apos;est le bon moment pour préparer la prochaine session.</Encart>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <Carte>
-            <p className="text-sm font-bold text-[#5E7A6E]">Le chemin</p>
-            <p className="mt-1 text-2xl font-extrabold tabular-nums text-[#12312A]">
-              {chemin.faites} / {chemin.total}
-            </p>
-            <div className="mt-3">
-              <Barre pourcentage={Math.round((chemin.faites / chemin.total) * 100)} />
-            </div>
-            <Link href="/academie/chemin" className="mt-3 inline-block text-sm font-bold text-[#0F5F3E] underline underline-offset-4">
-              Reprendre le chemin →
-            </Link>
-          </Carte>
-
-          <BlocInstaller carte={CARTE} espace="academie" />
-
-          {qualiopi.auditPrevuLe ? (
-            <Carte>
-              <p className="text-sm font-bold text-[#5E7A6E]">Audit prévu</p>
-              <p className="mt-1 font-extrabold text-[#12312A]">{formaterDate(qualiopi.auditPrevuLe)}</p>
-              {academie.certificateur ? <p className="mt-1 text-sm text-[#5E7A6E]">avec {academie.certificateur}</p> : null}
-            </Carte>
-          ) : null}
-
-          {qualiopi.certifieAu ? (
-            <Carte>
-              <p className="text-sm font-bold text-[#5E7A6E]">Certificat valable jusqu&apos;au</p>
-              <p className="mt-1 font-extrabold text-[#12312A]">{formaterDate(qualiopi.certifieAu)}</p>
-            </Carte>
-          ) : null}
-        </div>
+      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Tuile libelle="Formations" valeur={catalogue.total} detail={`${catalogue.publiees} en ligne`} href="/academie/formations" />
+        <Tuile libelle="Sessions à venir" valeur={sessions.length} detail={prochaine ? formaterDate(prochaine.debut) ?? undefined : undefined} href="/academie/formations?onglet=sessions" />
+        <Tuile libelle="Apprenants" valeur={apprenants.total} href="/academie/apprenants" />
+        <Tuile libelle="Devoirs à corriger" valeur={aCorriger} href="/academie/devoirs" ton={aCorriger > 0 ? 'attention' : 'neutre'} />
       </section>
 
       {sessions.length ? (
-        <section>
-          <SousTitre>Les prochaines sessions</SousTitre>
-          <ul className="space-y-3">
+        <section className="mt-8">
+          <SousTitre>Prochaines sessions</SousTitre>
+          <ul className="space-y-2">
             {sessions.slice(0, 5).map((sess) => (
-              <li key={sess.id} className={`${CARTE} flex flex-wrap items-center justify-between gap-3 p-4`}>
+              <li key={sess.id} className={`${CARTE} flex flex-wrap items-center justify-between gap-3 px-4 py-3`}>
                 <div className="min-w-0">
-                  <p className="font-extrabold text-[#12312A]">{sess.titre}</p>
+                  <p className="font-bold text-[#12312A]">{sess.titre}</p>
                   <p className="text-sm text-[#5E7A6E]">
                     {formaterDate(sess.debut)}
                     {sess.lieu ? ` · ${sess.lieu}` : ''}

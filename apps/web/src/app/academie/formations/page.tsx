@@ -43,7 +43,7 @@ export default async function FormationsPage({ searchParams }: PageProps) {
     <>
       <Titre
         surtitre="Tout ce qui s'enseigne"
-        sousTitre="Le contenu, la fiche programme, les dates : tout ce qu'une formation porte, au même endroit. En ligne, en salle, en visio ou les deux, c'est une option de la formation."
+        sousTitre="Contenu, programme et dates, au même endroit."
       >
         Mes formations
       </Titre>

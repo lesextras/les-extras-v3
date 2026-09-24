@@ -13,7 +13,7 @@ export default function InscriptionAcademiePage() {
     <div className="mx-auto max-w-[680px]">
       <Titre
         surtitre="Gratuit"
-        sousTitre="Deux minutes. Ton espace s'ouvre, le chemin démarre, et les étapes se cochent toutes seules à mesure que la donnée arrive."
+        sousTitre="Deux minutes, et ton espace est ouvert."
       >
         Ouvrir l&apos;espace de mon <Accent>académie</Accent>
       </Titre>

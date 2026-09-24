@@ -31,7 +31,7 @@ export default async function DroitsAccesPage() {
     <>
       <Titre
         surtitre="Ton équipe"
-        sousTitre="Chacun entre avec son propre compte : tu invites par l'adresse e-mail, la personne s'inscrit elle-même, et tu décides jusqu'où elle peut aller."
+        sousTitre="Invite ton équipe et choisis ce que chacun peut faire."
       >
         Droits d&apos;accès
       </Titre>

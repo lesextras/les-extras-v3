@@ -23,7 +23,7 @@ export default async function PageCalendrier() {
   ]);
   return (
     <>
-      <Titre surtitre="Formations" sousTitre="Tes événements, tes classes virtuelles et les leçons qui s'ouvrent : ce que tes apprenants voient arriver dans leur espace.">
+      <Titre surtitre="Formations" sousTitre="Ce que tes apprenants voient arriver.">
         Calendrier
       </Titre>
       {Array.isArray(ev.data) && reg.data ? (

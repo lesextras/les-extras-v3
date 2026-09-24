@@ -21,7 +21,7 @@ export default async function ReglagesPage() {
     <>
       <Titre
         surtitre="Ce qui vaut partout"
-        sousTitre="Le certificat de réussite, les commentaires, les codes de suivi : ces réglages s'appliquent à toutes tes formations d'un coup."
+        sousTitre="Ce qui s'applique à toutes tes formations."
       >
         Réglages des formations
       </Titre>

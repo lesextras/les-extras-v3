@@ -20,7 +20,7 @@ export default async function VeillePage() {
     <>
       <Titre
         surtitre="Critère 6 du référentiel national qualité"
-        sousTitre="Ce que tu lis, et surtout ce que ça change chez toi. Cinq veilles à tenir : légale, métier, handicap, innovation pédagogique, emploi et compétences."
+        sousTitre="Cinq veilles : légale, métier, handicap, pédagogie, emploi."
       >
         Ma veille
       </Titre>

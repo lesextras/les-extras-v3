@@ -21,7 +21,7 @@ export default async function MaPageAcademiePage() {
     <>
       <Titre
         surtitre="Mon compte"
-        sousTitre="Une adresse à donner, une page à remplir, et un bouton pour la rendre visible. Rien n'est public tant que tu ne l'as pas décidé."
+        sousTitre="L'adresse et la page publique de ton école."
       >
         Ma page
       </Titre>

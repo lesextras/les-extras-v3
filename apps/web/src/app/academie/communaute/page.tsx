@@ -18,7 +18,7 @@ export default async function PageCommunaute() {
   const [vue, cours] = await Promise.all([apiAcademie<VueCommunaute>(s, '/ecole/communaute'), apiAcademie<CoursResume[]>(s, '/ecole/cours')]);
   return (
     <>
-      <Titre surtitre="Apprenants" sousTitre="Des espaces de discussion pour tes apprenants : questions, entraide, annonces. Tu publies, épingles et modères.">
+      <Titre surtitre="Apprenants" sousTitre="Questions, entraide et annonces entre tes apprenants.">
         Communauté
       </Titre>
       {vue.data ? (

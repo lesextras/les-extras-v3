@@ -13,7 +13,7 @@ export default async function PageApi() {
   const { data, error } = await apiAcademie<Cle[]>(s, '/ecole/cles-api');
   return (
     <>
-      <Titre surtitre="Paramètres" sousTitre="Relier ton école à tes autres outils (CRM, Zapier, Make, ton site) : lire tes formations, tes apprenants et tes ventes, inscrire un apprenant.">
+      <Titre surtitre="Paramètres" sousTitre="Relier ton école à ton CRM, Zapier, Make ou ton site.">
         API développeur
       </Titre>
       <OngletsParametres actif="/academie/parametres/api" />

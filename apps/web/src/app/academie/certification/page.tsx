@@ -28,7 +28,7 @@ export default async function CertificationPage() {
     <>
       <Titre
         surtitre="Référentiel national qualité"
-        sousTitre="Sept critères, trente-deux indicateurs, une preuve pour chacun. Ce qui manque est en haut de la liste ; ce qui ne te concerne pas se met de côté."
+        sousTitre="32 indicateurs, une preuve pour chacun. Ce qui manque est en haut."
       >
         Ma certification Qualiopi
       </Titre>

@@ -22,10 +22,10 @@ export default async function FormulairesAcademiePage() {
   return (
     <>
       <Titre
-        surtitre="Mes formulaires"
-        sousTitre="Recueil du besoin, positionnement à l'entrée, satisfaction à chaud, mesure à froid, réclamation : tu écris les questions, tu publies, tu partages le lien. Les réponses arrivent ici, et servent de preuve."
+        surtitre="Outils marketing"
+        sousTitre="Besoin, positionnement, satisfaction : les réponses servent de preuve."
       >
-        Poser une question, à plusieurs
+        Mes formulaires
       </Titre>
       <Liste formulaires={data} teinte={TEINTE_ACADEMIE} base="/academie/formulaires" origine={ORIGINE_SITE} />
     </>

@@ -23,7 +23,7 @@ export default async function CodesPromoPage() {
     <>
       <Titre
         surtitre="Les remises"
-        sousTitre="Un code, un montant ou un pourcentage, et la liste des cours concernés. La personne le saisit au moment de payer."
+        sousTitre="Un code, une remise, les cours concernés."
       >
         Mes codes promo
       </Titre>

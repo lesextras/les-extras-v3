@@ -12,7 +12,7 @@ export default async function PageReferencement() {
   const { data, error } = await apiAcademie<ReglagesSuite>(s, '/ecole/reglages-suite');
   return (
     <>
-      <Titre surtitre="Paramètres" sousTitre="Ce que Google affiche pour la page de ton école. Chaque formation garde son propre titre et sa description.">
+      <Titre surtitre="Paramètres" sousTitre="Ce que Google affiche pour ton école.">
         Référencement
       </Titre>
       <OngletsParametres actif="/academie/parametres/referencement" />

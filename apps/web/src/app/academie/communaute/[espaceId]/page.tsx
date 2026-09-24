@@ -18,7 +18,7 @@ export default async function PageFil({ params }: { params: Promise<{ espaceId: 
     <>
       <Titre
         surtitre="Communauté"
-        sousTitre={data?.espace.description ?? 'Publie, épingle ce qui compte, masque ce qui n’a pas sa place. Une publication masquée reste visible ici, grisée.'}
+        sousTitre={data?.espace.description ?? 'Publie, épingle, masque.'}
         actions={
           <Link href="/academie/communaute" className={BTN_DISCRET}>
             Tous les espaces
