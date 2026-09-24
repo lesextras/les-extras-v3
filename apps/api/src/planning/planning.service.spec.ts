@@ -14,10 +14,7 @@ const jour = (i: number) => new Date(Date.UTC(2026, 6, 6) + i * 86_400_000);
 const a = (i: number, h: number) => new Date(jour(i).getTime() + h * 3_600_000).toISOString();
 
 /** Prisma réduit à ce que le service touche ici. */
-function prismaMock(
-  voisins: { startAt: Date; endAt: Date }[],
-  serviceDuMembre: string | null = null,
-) {
+function prismaMock(voisins: { startAt: Date; endAt: Date }[]) {
   const create = jest.fn(async ({ data }: { data: Record<string, unknown> }) => ({
     id: 'shift_1',
     ...data,
@@ -37,7 +34,7 @@ function prismaMock(
         create,
       },
       membership: {
-        findUnique: jest.fn(async () => ({ orgUnitId: serviceDuMembre })),
+        findUnique: jest.fn(async () => ({ orgUnitId: 'unit_foyer' })),
       },
     } as never,
   };
@@ -120,19 +117,25 @@ describe('PlanningService : plafonds de durée du travail', () => {
   });
 });
 
-describe('PlanningService : rattachement au service', () => {
-  it('hérite du service de l’intervenant quand on ne le précise pas', async () => {
-    const { prisma, create } = prismaMock([], 'unit_foyer');
+/**
+ * Plus de services internes depuis le 24/09/2026 (« 1 compte = 1 personne ») :
+ * un créneau ne reçoit plus de service, ni déduit du rattachement de
+ * l'intervenant, ni donné explicitement par un ancien écran.
+ */
+describe('PlanningService : plus de service interne sur les créneaux', () => {
+  it('n’écrit aucun service, même quand l’intervenant en avait un', async () => {
+    const { prisma, create } = prismaMock([]);
     const service = new PlanningService(prisma);
 
     await service.createShift('acc_1', dto({ startAt: a(0, 9), endAt: a(0, 16) }));
 
     const data = create.mock.calls[0][0].data as Record<string, unknown>;
-    expect(data.orgUnitId).toBe('unit_foyer');
+    expect(data.orgUnitId).toBeUndefined();
+    expect((prisma as unknown as { membership: { findUnique: jest.Mock } }).membership.findUnique).not.toHaveBeenCalled();
   });
 
-  it('respecte le service donné explicitement plutôt que celui déduit', async () => {
-    const { prisma, create } = prismaMock([], 'unit_foyer');
+  it('ignore un service envoyé par un ancien écran', async () => {
+    const { prisma, create } = prismaMock([]);
     const service = new PlanningService(prisma);
 
     await service.createShift(
@@ -141,29 +144,6 @@ describe('PlanningService : rattachement au service', () => {
     );
 
     const data = create.mock.calls[0][0].data as Record<string, unknown>;
-    expect(data.orgUnitId).toBe('unit_semi_internat');
-  });
-
-  it('laisse le créneau sans service quand personne n’est affecté', async () => {
-    const { prisma, create } = prismaMock([], 'unit_foyer');
-    const service = new PlanningService(prisma);
-
-    await service.createShift(
-      'acc_1',
-      dto({ startAt: a(0, 9), endAt: a(0, 16), freelanceId: undefined }),
-    );
-
-    const data = create.mock.calls[0][0].data as Record<string, unknown>;
-    expect(data.orgUnitId).toBeNull();
-  });
-
-  it('n’invente pas de service quand l’intervenant n’est rattaché à aucun', async () => {
-    const { prisma, create } = prismaMock([], null);
-    const service = new PlanningService(prisma);
-
-    await service.createShift('acc_1', dto({ startAt: a(0, 9), endAt: a(0, 16) }));
-
-    const data = create.mock.calls[0][0].data as Record<string, unknown>;
-    expect(data.orgUnitId).toBeNull();
+    expect(data.orgUnitId).toBeUndefined();
   });
 });

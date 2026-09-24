@@ -12,6 +12,11 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { messageRoleInsuffisant } from '../common/guards/account-roles.guard';
+import {
+  FILTRE_RATTACHEMENTS_ACCESSIBLES,
+  MESSAGE_COMPTE_D_UNE_AUTRE_PERSONNE,
+  rattachementDonneAcces,
+} from '../common/roles';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -33,11 +38,17 @@ export class AccountsService {
   ) {
     const membership = await this.prisma.membership.findUnique({
       where: { userId_accountId: { userId, accountId } },
+      include: { account: { select: { type: true } } },
     });
 
     if (!membership || membership.status !== MembershipStatus.ACTIVE) {
       // Ne pas divulguer l'existence du compte.
       throw new ForbiddenException("Accès refusé à ce compte.");
+    }
+    // « 1 compte = 1 personne » (24/09/2026) : sur Les Extras, seul le
+    // titulaire. Voir `common/roles.ts`.
+    if (!rattachementDonneAcces(membership.account.type, membership.role)) {
+      throw new ForbiddenException(MESSAGE_COMPTE_D_UNE_AUTRE_PERSONNE);
     }
 
     if (roles && roles.length > 0 && !roles.includes(membership.role)) {
@@ -47,10 +58,13 @@ export class AccountsService {
     return membership;
   }
 
-  /** Comptes accessibles par l'utilisateur (memberships actifs). */
+  /**
+   * Comptes accessibles par l'utilisateur (memberships actifs). Sur Les
+   * Extras, seuls ses comptes à lui (OWNER) ; sur Piloter, ses espaces.
+   */
   async findMine(userId: string) {
     const memberships = await this.prisma.membership.findMany({
-      where: { userId, status: MembershipStatus.ACTIVE },
+      where: { userId, status: MembershipStatus.ACTIVE, ...FILTRE_RATTACHEMENTS_ACCESSIBLES },
       orderBy: { createdAt: 'asc' },
       select: {
         id: true,
@@ -69,29 +83,6 @@ export class AccountsService {
       },
     });
     return memberships.map((m) => ({ ...m.account, membershipRole: m.role }));
-  }
-
-  /**
-   * Recherche d'établissements par nom — pour un compte « salarié » qui
-   * choisit à qui envoyer sa demande de rattachement. Authentifié (JwtAuthGuard
-   * au niveau du contrôleur) mais volontairement sans restriction de rôle :
-   * une personne doit pouvoir trouver n'importe quel établissement de la
-   * plateforme, pas seulement ceux où elle a déjà un accès. Réponse minimale
-   * (pas d'email, de coordonnées bancaires, etc.) : c'est un annuaire, pas
-   * une fiche complète.
-   */
-  async searchEstablishments(q: string) {
-    const query = q.trim();
-    if (query.length < 2) return [];
-    return this.prisma.account.findMany({
-      where: {
-        type: AccountType.ESTABLISHMENT,
-        name: { contains: query, mode: Prisma.QueryMode.insensitive },
-      },
-      select: { id: true, name: true, city: true, logoUrl: true },
-      orderBy: { name: 'asc' },
-      take: 20,
-    });
   }
 
   async findOne(userId: string, accountId: string) {
@@ -118,8 +109,7 @@ export class AccountsService {
           logoUrl: dto.logoUrl,
           ownerId: userId,
           // Dotation d'accueil : voir auth.service.ts. Un second compte créé
-          // par la même personne (bascule salarié → intervenant, par exemple)
-          // a sa propre dotation, parce que les crédits vivent sur le compte
+          // par la même personne a sa propre dotation, parce que les crédits vivent sur le compte
           // et non sur la personne.
           credits: FREE_MONTHLY_CREDITS,
         },
@@ -284,9 +274,13 @@ export class AccountsService {
       AccountRole.ADMIN,
     ]);
 
+    // `validationMissions` (validation hiérarchique des missions) est retiré
+    // depuis le 24/09/2026 : encore accepté par le DTO pour les anciens
+    // écrans, il n'est plus écrit.
+    const { validationMissions: _ignore, ...donnees } = dto;
     return this.prisma.account.update({
       where: { id: accountId },
-      data: { ...dto } as Prisma.AccountUpdateInput,
+      data: { ...donnees } as Prisma.AccountUpdateInput,
     });
   }
 

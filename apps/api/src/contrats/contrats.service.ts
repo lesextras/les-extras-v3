@@ -130,19 +130,16 @@ export class ContratsService {
 
   /**
    * Les personnes que l'établissement peut embaucher, sans qu'il ait à les
-   * retrouver à la main. Trois provenances, fusionnées et dédoublonnées :
-   * son propre pool (membres du compte), les intervenants déjà positionnés
-   * sur un de ses créneaux, et ceux dont une candidature a été retenue sur
-   * une de ses missions. C'est exactement le geste qu'on lui vend : la
+   * retrouver à la main. Deux provenances, fusionnées et dédoublonnées : les
+   * intervenants déjà positionnés sur un de ses créneaux, et ceux dont une
+   * candidature a été retenue sur une de ses missions. (Le « pool interne »,
+   * les membres du compte, est retiré depuis le 24/09/2026 : un compte, une
+   * personne.) C'est exactement le geste qu'on lui vend : la
    * personne a été trouvée par la plateforme, le contrat part d'elle.
    */
   async salariesPossibles(accountId: string) {
     const champs = { id: true, firstName: true, lastName: true, email: true } as const;
-    const [membres, surLePlanning, retenus] = await Promise.all([
-      this.prisma.membership.findMany({
-        where: { accountId, status: 'ACTIVE' },
-        select: { user: { select: champs } },
-      }),
+    const [surLePlanning, retenus] = await Promise.all([
       this.prisma.shift.findMany({
         where: { accountId, freelanceId: { not: null } },
         distinct: ['freelanceId'],
@@ -161,7 +158,6 @@ export class ContratsService {
     const ajouter = (u: { id: string; firstName: string | null; lastName: string | null; email: string } | null, origine: string) => {
       if (u && !parId.has(u.id)) parId.set(u.id, { ...u, origine });
     };
-    membres.forEach((m) => ajouter(m.user, 'Pool interne'));
     surLePlanning.forEach((s) => ajouter(s.freelance, 'Déjà sur votre planning'));
     retenus.forEach((b) => ajouter(b.account?.owner ?? null, 'Candidature retenue'));
 
@@ -180,16 +176,12 @@ export class ContratsService {
    * règle qui ne vit que dans la liste déroulante se contourne avec une URL.
    *
    * Le périmètre autorisé est EXACTEMENT celui de `salariesPossibles` :
-   * rattachement actif, présence sur le planning, ou candidature retenue sur
-   * un renfort de l'établissement. Trois lectures ciblées valent mieux que de
-   * charger toute la liste pour y chercher un identifiant.
+   * présence sur le planning, ou candidature retenue sur un renfort de
+   * l'établissement. Deux lectures ciblées valent mieux que de charger toute
+   * la liste pour y chercher un identifiant.
    */
   private async assertSalarieDeLetablissement(accountId: string, userId: string) {
-    const [membre, surLePlanning, retenu] = await Promise.all([
-      this.prisma.membership.findFirst({
-        where: { accountId, userId, status: 'ACTIVE' },
-        select: { id: true },
-      }),
+    const [surLePlanning, retenu] = await Promise.all([
       this.prisma.shift.findFirst({
         where: { accountId, freelanceId: userId },
         select: { id: true },
@@ -203,9 +195,9 @@ export class ContratsService {
         select: { id: true },
       }),
     ]);
-    if (membre || surLePlanning || retenu) return;
+    if (surLePlanning || retenu) return;
     throw new ForbiddenException(
-      "Cette personne n'est pas rattachée à votre établissement : on ne peut pas établir un contrat à son nom. Rattachez-la à votre équipe, ou retenez sa candidature sur un renfort, avant de l'embaucher.",
+      "Cette personne n'a encore travaillé avec votre établissement ni sur votre planning ni sur un renfort : on ne peut pas établir un contrat à son nom. Retenez sa candidature sur un renfort, ou positionnez-la sur votre planning, avant de l'embaucher.",
     );
   }
 
@@ -529,8 +521,28 @@ export class ContratsService {
    * ensuite, échéances de DPAE et de transmission. C'est ce calcul que
    * l'établissement ne fait pas, et c'est ce pour quoi il paie l'outil.
    */
-  async get(accountId: string, id: string) {
-    const c = await this.chargerPourCompte(id, accountId);
+  /**
+   * Lire un contrat : l'établissement qui l'a établi, OU la personne engagée.
+   *
+   * La notification « Un contrat vous a été transmis » mène la personne
+   * engagée ici, depuis SON compte : le contrat, lui, appartient au compte de
+   * l'établissement. Sans cette seconde voie, le lien de la notification
+   * aboutissait à « introuvable ». Lecture seule : modifier, transmettre,
+   * déclarer ou terminer restent réservés à l'établissement
+   * (`chargerPourCompte`).
+   */
+  async get(accountId: string, id: string, userId?: string) {
+    const c = await this.prisma.contratCDD.findFirst({
+      where: {
+        id,
+        OR: [{ accountId }, ...(userId ? [{ userId }] : [])],
+      },
+      include: {
+        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        mission: { select: { id: true, title: true } },
+      },
+    });
+    if (!c) throw new NotFoundException('Contrat introuvable.');
     return { contrat: c, synthese: synthese(this.projet(c)) };
   }
 

@@ -141,10 +141,10 @@ export class EngagementsService {
     if (mission.accountId === accountId) {
       throw new BadRequestException('Vous ne pouvez pas prendre votre propre mission.');
     }
-    // Ciblage, cascade de diffusion et garde-fou salarié/employeur : la file
+    // Ciblage, cascade de diffusion et garde-fou du compte géré : la file
     // d'engagement n'appliquait que le premier des trois. Une mission
-    // « réservée à mon équipe » y était donc prise par un inconnu, dont le
-    // profil était présenté à la direction dans la foulée.
+    // « réservée à mon réseau » y était donc prise par un inconnu, dont le
+    // profil était présenté à l'établissement dans la foulée.
     await this.ciblage.assertReponseAutorisee(mission, accountId);
 
     const existant = await this.prisma.missionEngagement.findUnique({

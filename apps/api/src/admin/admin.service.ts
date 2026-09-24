@@ -424,7 +424,7 @@ export class AdminService {
         emailVerified: true,
         createdAt: true,
         lastLoginAt: true,
-        // Rattachements : structures + rôle interne (salarié, responsable…).
+        // Comptes auxquels la personne a accès, avec son rôle.
         memberships: {
           select: {
             role: true,
@@ -1695,7 +1695,6 @@ export class AdminService {
       draftMissions,
       draftServices,
       pendingContacts,
-      pendingAttachments,
     ] = await this.prisma.$transaction([
         // Missions publiées qui démarrent dans moins de 48 h et ne sont pas pourvues.
         //
@@ -1737,15 +1736,14 @@ export class AdminService {
         this.prisma.timeEntry.count({ where: { status: 'PENDING' } }),
         this.prisma.reliefMission.count({ where: { status: 'DRAFT' } }),
         this.prisma.service.count({ where: { status: 'DRAFT' } }),
-        // ⚠ DEUX FILES D'ATTENTE QUI N'APPARAISSAIENT NULLE PART.
+        // ⚠ UNE FILE D'ATTENTE QUI N'APPARAISSAIT NULLE PART.
         //
-        // Un message envoyé depuis le formulaire de contact et une demande de
-        // rattachement en attente demandent tous deux une réponse humaine —
-        // c'est la définition même de ce cockpit. Ni l'un ni l'autre n'y était
-        // compté : mesuré le 3/09/2026, quatre messages et deux demandes
-        // dormaient sans que rien ne le dise.
+        // Un message envoyé depuis le formulaire de contact demande une
+        // réponse humaine : c'est la définition même de ce cockpit. Mesuré le
+        // 3/09/2026, quatre messages dormaient sans que rien ne le dise. (Les
+        // demandes de rattachement, comptées ici aussi, sont retirées depuis
+        // le 24/09/2026 : « 1 compte = 1 personne ».)
         this.prisma.contactRequest.count({ where: { status: 'NEW' } }),
-        this.prisma.attachmentRequest.count({ where: { status: 'PENDING' } }),
       ]);
 
     const expired = expiringDocs.filter((d) => d.expiresAt && d.expiresAt < now).length;
@@ -1763,7 +1761,6 @@ export class AdminService {
         pendingTimeEntries,
         pendingModeration: draftMissions + draftServices,
         pendingContacts,
-        pendingAttachments,
       },
     };
   }

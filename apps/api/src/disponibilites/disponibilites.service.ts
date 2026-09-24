@@ -1,8 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { AccountType, Capacite, Interet, Prisma } from '@prisma/client';
+import { AccountType, Interet, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
-import { SELECT_MEMBRE, versMembreCourant, a } from '../common/perimetre';
 import { trouverDepartement, nomsDepartements } from '../common/territoires';
 import { PIECES_POUR_CANDIDATER, piecesManquantes } from '../common/dossier';
 import { DeclarerDisponibiliteDto, FiltresVivierDto } from './dto/disponibilite.dto';
@@ -188,31 +187,17 @@ export class DisponibilitesService {
   /**
    * Le vivier ouvert.
    *
-   * ⚠ RÉSERVÉ À QUI S'OCCUPE DE RENFORT DANS SON ÉTABLISSEMENT. Une liste de
-   * personnes en recherche de vacations n'a pas à être feuilletée par tout le
-   * monde : elle s'ouvre à une Direction validée, à un responsable, ou à
-   * quiconque s'est vu accorder un droit de renfort. C'est le même
-   * raisonnement que pour « LEX · Crédits », resté hors de la barre du haut
-   * parce que celle-ci n'a aucun filtre de rôle.
+   * ⚠ RÉSERVÉ AUX ÉTABLISSEMENTS. Une liste de personnes en recherche de
+   * vacations n'a pas à être feuilletée par un intervenant ou un particulier.
+   * Depuis le 24/09/2026 (« 1 compte = 1 personne »), il n'y a plus de droit
+   * déclaré à vérifier : le compte établissement actif suffit.
    */
-  async vivier(account: RequestAccount, user: RequestUser, filtres: FiltresVivierDto) {
+  async vivier(account: RequestAccount, _user: RequestUser, filtres: FiltresVivierDto) {
     if (account.type !== AccountType.ESTABLISHMENT) {
       throw new ForbiddenException(
         'Le vivier est réservé aux établissements qui cherchent du renfort.',
       );
     }
-    const brut = await this.prisma.membership.findFirst({
-      where: { userId: user.id, accountId: account.id },
-      select: SELECT_MEMBRE,
-    });
-    if (!brut) throw new ForbiddenException("Vous n'êtes pas membre de ce compte.");
-    const membre = versMembreCourant(brut);
-    if (!a(membre, Capacite.OUVRIR_RENFORT_CDD) && !a(membre, Capacite.DEMANDER_RENFORT_INTERNE)) {
-      throw new ForbiddenException(
-        'Demandez à votre direction le droit « ouvrir un renfort » pour consulter le vivier.',
-      );
-    }
-
     const where: Prisma.DisponibiliteRenfortWhereInput = {
       actif: true,
       enVeille: false,

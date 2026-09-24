@@ -2,16 +2,16 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@ne
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
-import type { RequestAccount } from '../common/types/request-context';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { RequestAccount, RequestUser } from '../common/types/request-context';
 import { ContratsService } from './contrats.service';
 import { CreateContratDto, DpaeDto, TerminerDto, UpdateContratDto } from './dto/contrat.dto';
 
 /**
  * Un contrat de travail porte une rémunération, une qualification et parfois
- * le nom de la personne remplacée. Ce n'est pas une information d'équipe :
- * l'accès entier — lecture comprise — est réservé aux responsables.
- * Le menu retire l'entrée aux autres ; ce garde-ci fait que l'adresse tapée
- * à la main ne suffit pas non plus.
+ * le nom de la personne remplacée. Toutes les routes sont bornées au compte
+ * actif (l'établissement qui l'établit), à une exception en lecture seule :
+ * la personne engagée lit SON contrat (`GET /contrats/:id`).
  */
 @Controller('contrats')
 @UseGuards(JwtAuthGuard, AccountGuard)
@@ -24,7 +24,7 @@ export class ContratsController {
     return this.contrats.motifs();
   }
 
-  /** Personnes embauchables : pool interne, planning, candidatures retenues. */
+  /** Personnes embauchables : planning, candidatures retenues. */
   @Get('salaries')
   salaries(@CurrentAccount() a: RequestAccount) {
     return this.contrats.salariesPossibles(a.id);
@@ -44,9 +44,14 @@ export class ContratsController {
     });
   }
 
+  /** Lecture : l'établissement, ou la personne engagée (lecture seule). */
   @Get(':id')
-  get(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
-    return this.contrats.get(a.id, id);
+  get(
+    @CurrentAccount() a: RequestAccount,
+    @CurrentUser() u: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.contrats.get(a.id, id, u.id);
   }
 
   /** La proposition chiffrée liée à un renfort pourvu. */

@@ -22,17 +22,16 @@ import {
   OuvrirFilDto,
   ModifierMessageDto,
   SignalerMessageDto,
-  AjouterParticipantsDto,
   FermerFilDto,
   NotificationsFilDto,
 } from './dto/fil.dto';
 
 /**
  * ⚠ `OptionalAccountGuard` et non `AccountGuard` : la messagerie traverse les
- * comptes. Une même personne peut être salariée d'un établissement ET
- * intervenante indépendante — sa boîte de réception est la sienne, pas celle
- * d'un compte. Le compte actif ne sert qu'à l'ouverture d'un fil interne, où
- * il dit de quel établissement on parle.
+ * comptes. Une même personne peut tenir plusieurs comptes (un espace Piloter
+ * et un compte Les Extras, par exemple) : sa boîte de réception est la sienne,
+ * pas celle d'un compte. Le compte actif ne sert qu'à dire au nom de quel
+ * compte on ouvre un fil.
  */
 @Controller('conversations')
 @UseGuards(JwtAuthGuard, OptionalAccountGuard)
@@ -119,15 +118,6 @@ export class ConversationsController {
     @Body() dto: SignalerMessageDto,
   ) {
     return this.conversations.signaler(id, messageId, user.id, dto);
-  }
-
-  @Post(':id/participants')
-  ajouterParticipants(
-    @Param('id') id: string,
-    @CurrentUser() user: RequestUser,
-    @Body() dto: AjouterParticipantsDto,
-  ) {
-    return this.conversations.ajouterParticipants(id, user.id, dto);
   }
 
   @Delete(':id/participants/moi')

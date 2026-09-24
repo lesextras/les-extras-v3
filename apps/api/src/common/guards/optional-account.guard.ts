@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { MembershipStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MESSAGE_COMPTE_D_UNE_AUTRE_PERSONNE, rattachementDonneAcces } from '../roles';
 
 /**
  * Variante tolérante d'AccountGuard.
@@ -46,6 +47,10 @@ export class OptionalAccountGuard implements CanActivate {
     }
     if (membership.status !== MembershipStatus.ACTIVE) {
       throw new ForbiddenException('Votre accès à ce compte est suspendu.');
+    }
+    // Même règle qu'AccountGuard : sur Les Extras, seul le titulaire.
+    if (!rattachementDonneAcces(membership.account.type, membership.role)) {
+      throw new ForbiddenException(MESSAGE_COMPTE_D_UNE_AUTRE_PERSONNE);
     }
 
     request.account = {

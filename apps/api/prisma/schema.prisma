@@ -54,6 +54,11 @@ model User {
   supportTickets            SupportTicket[]           @relation("SupportAuteur")
   supportMessages           SupportMessage[]          @relation("SupportMessageAuteur")
   rendezVous                RendezVous[]              @relation("RendezVousAuteur")
+  /// Partages d'agenda (24/09/2026) : ceux dont je suis la personne titulaire,
+  /// ceux qui me sont accordés, ceux que j'ai créés.
+  partagesProprietaire      PartageAgenda[]           @relation("PartageProprietaire")
+  partagesRecus             PartageAgenda[]           @relation("PartageDestinataire")
+  partagesCrees             PartageAgenda[]           @relation("PartageCreateur")
   messages                  Message[]
   reviewsAuthored           Review[]                  @relation("ReviewAuthor")
   reviewsReceived           Review[]                  @relation("ReviewTarget")
@@ -359,6 +364,8 @@ model Account {
   reservationsAteliers          ReservationAtelier[]
   supportTickets                SupportTicket[]
   rendezVous                    RendezVous[]
+  /// L'agenda de ce compte, partagé avec d'autres personnes (24/09/2026).
+  partagesDonnes                PartageAgenda[]      @relation("PartageCompte")
   /// Les fils de discussion rattachés à ce compte (interne, service, demande).
   conversations                 Conversation[]
   /// Demandes portant sur un service de cet établissement.
@@ -1226,7 +1233,7 @@ model Booking {
   /// Precisions ecrites par le demandeur : public accueilli, objectifs,
   /// contraintes. Sans ce champ, le formulaire les jetait a la poubelle.
   requestNote           String?
-  modePaiement  ModePaiement?
+  modePaiement          ModePaiement?
   /// Date de fin effective : ouvre la fenetre d'ajustement de 72 h du pointage.
   completedAt           DateTime?
   totalAmount           Decimal?       @db.Decimal(10, 2)
@@ -2485,29 +2492,29 @@ enum JalonStatus {
 
 /// Piece justificative reglementaire suivie pour un intervenant dans un compte.
 model ComplianceDocument {
-  id        String            @id @default(cuid())
+  id            String            @id @default(cuid())
   /// Le professionnel concerne par la piece.
-  userId    String
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// Le compte qui suit le dossier (etablissement ou freelance).
-  accountId String
-  account   Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  type      ComplianceDocType
-  label     String?
-  status    ComplianceStatus  @default(MISSING)
+  accountId     String
+  account       Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type          ComplianceDocType
+  label         String?
+  status        ComplianceStatus  @default(MISSING)
   /// Ancien mode : adresse web saisie à la main. Conservé pour l'existant.
-  fileUrl   String?
+  fileUrl       String?
   /// Nouveau mode : fichier réellement déposé dans le dépôt privé.
-  fileId    String?
-  file      FileAsset?        @relation(fields: [fileId], references: [id], onDelete: SetNull)
-  issuedAt  DateTime?
-  expiresAt DateTime?
-  notes     String?
+  fileId        String?
+  file          FileAsset?        @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  notes         String?
   /// Note de pré-contrôle automatique (lecture du fichier) et sa date. Jamais une validation.
   preControle   Json?
   preControleLe DateTime?
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   @@unique([userId, accountId, type])
   @@index([accountId])
@@ -5326,4 +5333,88 @@ model CleApiEcole {
   createdAt DateTime @default(now())
 
   @@index([accountId])
+}
+
+/// LE PARTAGE D'AGENDA ENTRE COMPTES, COMME DANS OUTLOOK (24/09/2026).
+///
+/// Sur Les Extras, un compte = une personne : il n'y a plus d'équipe à
+/// l'intérieur d'un compte. Pour que deux personnes qui travaillent ensemble
+/// voient leurs agendas, leurs réservations et leurs offres, l'une ACCORDE à
+/// l'autre l'accès à l'agenda d'un de ses comptes, à un niveau choisi.
+///
+/// Deux sens, comme dans Outlook : j'INVITE quelqu'un à voir mon agenda, ou je
+/// DEMANDE à voir le sien. Dans les deux cas, c'est la personne sollicitée qui
+/// accepte ou refuse, et chacun peut retirer le partage à tout moment.
+///
+/// ⚠ Rien n'est jamais copié : le calendrier partagé LIT l'agenda du compte à
+/// chaque affichage et le MASQUE selon le niveau (voir partages/masquage.ts).
+model PartageAgenda {
+  id String @id @default(cuid())
+
+  /// Le compte dont l'agenda est partagé. Nul tant qu'une DEMANDE n'est pas
+  /// acceptée : c'est la personne sollicitée qui choisit alors son compte.
+  compteId String?
+  compte   Account? @relation("PartageCompte", fields: [compteId], references: [id], onDelete: Cascade)
+
+  /// La personne titulaire de cet agenda (celle qui accepte une demande).
+  proprietaireId String?
+  proprietaire   User?   @relation("PartageProprietaire", fields: [proprietaireId], references: [id], onDelete: Cascade)
+
+  /// La personne qui voit l'agenda. Nulle tant qu'une invitation envoyée à une
+  /// adresse sans compte n'a pas été acceptée : l'adresse fait alors le lien.
+  destinataireId    String?
+  destinataire      User?   @relation("PartageDestinataire", fields: [destinataireId], references: [id], onDelete: Cascade)
+  destinataireEmail String
+
+  niveau NiveauPartage @default(TITRES)
+  sens   SensPartage
+  statut StatutPartage @default(EN_ATTENTE)
+
+  /// Les réservations, visios et missions apparaissent aussi (sinon les seuls
+  /// rendez-vous notés dans l'agenda).
+  inclutReservations Boolean @default(true)
+
+  message String?
+
+  /// Réglages d'affichage de la personne qui voit l'agenda.
+  couleur String?
+  visible Boolean @default(true)
+
+  creeParId String
+  creePar   User   @relation("PartageCreateur", fields: [creeParId], references: [id], onDelete: Cascade)
+
+  reponduLe DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([destinataireId, statut])
+  @@index([destinataireEmail, statut])
+  @@index([compteId, statut])
+  @@index([proprietaireId, statut])
+}
+
+/// Les quatre niveaux d'Outlook.
+enum NiveauPartage {
+  /// Occupé ou libre, rien d'autre.
+  DISPONIBILITES
+  /// Titres, horaires et lieux.
+  TITRES
+  /// Tout : description, participants, liens, réservations détaillées.
+  DETAILS
+  /// Tout, et la personne peut ajouter, déplacer et supprimer des rendez-vous.
+  MODIFICATION
+}
+
+enum SensPartage {
+  /// La personne titulaire propose son agenda.
+  INVITATION
+  /// Une personne demande à voir l'agenda d'une autre.
+  DEMANDE
+}
+
+enum StatutPartage {
+  EN_ATTENTE
+  ACCEPTE
+  REFUSE
+  RETIRE
 }

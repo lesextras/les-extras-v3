@@ -125,66 +125,12 @@ export class PlanningService {
    * intervention depuis le planning, on change sa date là où elle engage les
    * deux parties.
    */
-  /**
-   * Déduit le service d'un créneau quand on ne l'a pas précisé : celui auquel
-   * l'intervenant est rattaché dans ce compte. On ne devine rien de plus —
-   * si la personne n'est rattachée à aucun service, le créneau reste sans
-   * service et apparaît dans le filtre « Sans service », ce qui est une
-   * information utile plutôt qu'une affectation inventée.
-   */
-  private async serviceDeLIntervenant(
-    accountId: string,
-    freelanceId?: string | null,
-  ): Promise<string | null> {
-    if (!freelanceId) return null;
-    const m = await this.prisma.membership.findUnique({
-      where: { userId_accountId: { userId: freelanceId, accountId } },
-      select: { orgUnitId: true },
-    });
-    return m?.orgUnitId ?? null;
-  }
-
-  /**
-   * Les heures qu'un membre saisit ou importe depuis SON espace.
-   *
-   * Elles sont posees sur son compte personnel — c'est son planning, il en
-   * reste maitre, et il les corrige lui-meme. Mais la maison qui l'emploie
-   * doit les voir : c'est elle qui accepte ou refuse des heures
-   * supplementaires, et elle ne peut pas arbitrer ce qu'elle ignore.
-   *
-   * La condition est double, et c'est ce qui empeche la fuite : la personne
-   * doit etre membre actif de CE compte, et le creneau doit etre pose sur son
-   * compte a elle. Ce qu'elle tient pour un autre employeur vit sur le compte
-   * de cet employeur (les creneaux issus d'une reservation y sont crees) et
-   * ne remonte donc jamais ici.
-   */
-  private async heuresDeclareesParLesMembres(accountId: string) {
-    const membres = await this.prisma.membership.findMany({
-      where: { accountId, status: 'ACTIVE' },
-      select: { userId: true },
-    });
-    const ids = membres.map((m) => m.userId);
-    if (!ids.length) return [];
-    const comptesPersonnels = await this.prisma.account.findMany({
-      where: { ownerId: { in: ids }, type: 'FREELANCE' },
-      select: { id: true },
-    });
-    if (!comptesPersonnels.length) return [];
-    return [
-      {
-        freelanceId: { in: ids },
-        accountId: { in: comptesPersonnels.map((c) => c.id) },
-      },
-    ];
-  }
-
   async getPlanning(
     accountId: string,
     accountType: string,
     userId: string,
     from?: string,
     to?: string,
-    orgUnitId?: string,
   ) {
     if ((from && Number.isNaN(Date.parse(from))) || (to && Number.isNaN(Date.parse(to)))) {
       throw new BadRequestException('Dates de période invalides.');
@@ -200,29 +146,17 @@ export class PlanningService {
     const estFreelance = accountType === 'FREELANCE';
 
     // 1. Créneaux saisis à la main (réunions, astreintes, affectations).
-    // Un etablissement voit les creneaux poses sur son compte, et aussi les
-    // heures que ses salaries declarent depuis leur propre espace : des
-    // heures supplementaires que l'employeur ne voit pas n'existent nulle
-    // part le jour ou il faut les decompter.
-    const whereShift: any = estFreelance
-      ? { freelanceId: userId }
-      : { OR: [{ accountId }, ...(await this.heuresDeclareesParLesMembres(accountId))] };
+    // Un établissement voit les créneaux posés sur son compte. Les heures que
+    // des « membres » déclaraient depuis leur propre espace, et le filtre par
+    // service, sont retirés depuis le 24/09/2026 (« 1 compte = 1 personne »).
+    const whereShift: any = estFreelance ? { freelanceId: userId } : { accountId };
     if (debut || fin) whereShift.startAt = range;
-    // Un chef de service pilote SON service. Le filtre porte sur les créneaux
-    // saisis ; les réservations et les sessions de formation ne sont pas
-    // rattachées à un service, on les masque donc quand un service est
-    // demandé plutôt que de les faire apparaître à tort partout.
-    const filtreService = !estFreelance && Boolean(orgUnitId);
-    if (filtreService) {
-      whereShift.orgUnitId = orgUnitId === 'sans-service' ? null : orgUnitId;
-    }
     const shifts = await this.prisma.shift.findMany({
       where: whereShift,
       orderBy: { startAt: 'asc' },
       include: {
         freelance: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
         mission: { select: { id: true, title: true } },
-        orgUnit: { select: { id: true, name: true } },
       },
     });
 
@@ -356,12 +290,6 @@ export class PlanningService {
       lien: null as string | null,
     }));
 
-    if (filtreService) {
-      return manuels.sort(
-        (a: any, b: any) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
-      );
-    }
-
     return [...manuels, ...entreesReservations, ...entreesFormations].sort(
       (a: any, b: any) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
     );
@@ -487,10 +415,6 @@ export class PlanningService {
     this.exigerDerogation(constats, dto.derogationMotif);
     const derogeA = constats.filter((c) => c.gravite === 'BLOQUANT');
 
-    // Le service : celui qu'on précise, sinon celui de l'intervenant.
-    const orgUnitId =
-      dto.orgUnitId ?? (await this.serviceDeLIntervenant(accountId, dto.freelanceId));
-
     const shift = await this.prisma.shift.create({
       data: {
         accountId,
@@ -498,7 +422,6 @@ export class PlanningService {
         startAt, endAt,
         freelanceId: dto.freelanceId ?? null,
         missionId: dto.missionId ?? null,
-        orgUnitId,
         bookingId: dto.bookingId ?? null,
         notes: dto.notes ?? null,
         recurrenceRule: dto.recurrenceRule ?? null,
@@ -542,14 +465,6 @@ export class PlanningService {
         title: dto.title ?? existing.title,
         startAt, endAt,
         freelanceId: dto.freelanceId ?? existing.freelanceId,
-        // Changer d'intervenant peut changer de service : on suit, sauf si le
-        // service a été fixé explicitement — auquel cas on ne le défait pas.
-        orgUnitId:
-          dto.orgUnitId !== undefined
-            ? dto.orgUnitId
-            : dto.freelanceId && dto.freelanceId !== existing.freelanceId
-              ? await this.serviceDeLIntervenant(accountId, dto.freelanceId)
-              : existing.orgUnitId,
         notes: dto.notes ?? existing.notes,
         derogationMotif: derogeA.length ? (dto.derogationMotif ?? existing.derogationMotif) : null,
         derogationCodes: derogeA.map((c) => c.code),
@@ -621,5 +536,65 @@ export class PlanningService {
     if (!a) throw new NotFoundException('Disponibilité introuvable.');
     await this.prisma.availability.delete({ where: { id } });
     return { ok: true };
+  }
+
+  /**
+   * RÉPÉTER UNE SEMAINE : déroule la semaine [lundi, lundi+7) sur N semaines
+   * suivantes (12 au plus). Chaque créneau saisi à la main est copié en
+   * décalant ses dates ; les copies en conflit (même personne, période
+   * chevauchante) ou déjà présentes sont sautées et signalées.
+   *
+   * Reprise telle quelle de l'ancien module GTA (retiré le 24/09/2026) : c'est
+   * du planning de créneaux, pas de la gestion d'équipe. Plus de contrôle de
+   * rôle : sur Les Extras, un compte est une personne.
+   */
+  async deroulerCycle(accountId: string, dto: { lundi: string; semaines: number }) {
+    const lundi = new Date(dto?.lundi);
+    const semaines = Math.min(Math.max((dto?.semaines ?? 0) | 0, 1), 12);
+    if (Number.isNaN(lundi.getTime())) throw new BadRequestException('Date de semaine invalide.');
+    const finSemaine = new Date(lundi.getTime() + 7 * 86_400_000);
+    const source = await this.prisma.shift.findMany({
+      where: { accountId, startAt: { gte: lundi, lt: finSemaine }, bookingId: null },
+    });
+    if (source.length === 0) {
+      throw new BadRequestException('Aucun créneau saisi sur la semaine choisie.');
+    }
+    let crees = 0;
+    const sautes: string[] = [];
+    for (let s = 1; s <= semaines; s++) {
+      const decalage = s * 7 * 86_400_000;
+      for (const shift of source) {
+        const startAt = new Date(shift.startAt.getTime() + decalage);
+        const endAt = new Date(shift.endAt.getTime() + decalage);
+        const existe = await this.prisma.shift.findFirst({
+          where: shift.freelanceId
+            ? {
+                freelanceId: shift.freelanceId,
+                status: { in: ['PLANNED', 'CONFIRMED'] },
+                startAt: { lt: endAt },
+                endAt: { gt: startAt },
+              }
+            : { accountId, title: shift.title, startAt },
+          select: { id: true },
+        });
+        if (existe) {
+          sautes.push(`${shift.title}, semaine +${s}`);
+          continue;
+        }
+        await this.prisma.shift.create({
+          data: {
+            accountId,
+            title: shift.title,
+            startAt,
+            endAt,
+            freelanceId: shift.freelanceId,
+            missionId: null,
+            notes: shift.notes,
+          },
+        });
+        crees += 1;
+      }
+    }
+    return { crees, sautes };
   }
 }

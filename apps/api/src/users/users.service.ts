@@ -528,7 +528,7 @@ export class UsersService {
           profilProfessionnel: 'Votre profil d\'intervenant : métier, présentation, compétences, SIRET, zone d\'intervention, tarif horaire.',
           cv: 'Vos diplômes et vos expériences professionnelles déclarés sur la plateforme.',
           disponibilites: 'Les créneaux de disponibilité (ou d\'indisponibilité) que vous avez déclarés.',
-          rattachementsAuxComptes: 'Les comptes (structures ou compte individuel) auxquels vous êtes rattaché, avec votre rôle et votre unité.',
+          rattachementsAuxComptes: 'Les comptes (structures ou compte individuel) auxquels vous êtes rattaché, avec votre rôle et, s’il en existait une avant le 24/09/2026, votre ancienne unité.',
           piecesDeConformite: 'Le suivi de vos pièces obligatoires (identité, casier judiciaire, permis, IBAN, attestations). Les fichiers eux-mêmes sont stockés dans un dépôt privé ; ils sont supprimés en même temps que ces lignes si vous demandez l’effacement.',
           fichiersDeposes: 'Les fichiers que vous avez déposés (photo, diplôme, documents divers).',
           missionsEtReservations: 'Vos missions et ateliers réservés, avec le détail de vos pointages (heures déclarées et validées) et la facture associée.',
@@ -574,6 +574,10 @@ export class UsersService {
         role: m.role,
         statut: m.status,
         rattacheDepuis: m.createdAt,
+        // L'unité n'existe plus sur Les Extras depuis le 24/09/2026, mais la
+        // donnée reste en base pour les anciens rattachements : le droit
+        // d'accès (art. 15 RGPD) porte sur ce qui est CONSERVÉ, pas sur ce qui
+        // s'affiche encore. Elle reste donc dans l'export.
         unite: m.orgUnit?.name ?? null,
         compte: {
           id: m.account.id,

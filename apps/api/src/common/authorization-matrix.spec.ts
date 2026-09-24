@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { ACCOUNT_ROLES_KEY } from './decorators/account-roles.decorator';
-import { CAPACITE_KEY } from './decorators/capacite.decorator';
 import { MissionsController } from '../missions/missions.controller';
 import { ServicesController } from '../services/services.controller';
 import { MembershipsController } from '../memberships/memberships.controller';
@@ -31,13 +30,13 @@ function rolesOf(ctrl: any, method: string): string[] | undefined {
 
 const ADMINS = ['OWNER', 'ADMIN'];
 
-function metasDe(ctrl: any): { methode: string; roles?: unknown; capacite?: unknown }[] {
+function metasDe(ctrl: any): { methode: string; roles?: unknown }[] {
   const proto = ctrl.prototype;
   return [
-    { methode: '(classe)', roles: Reflect.getMetadata(ACCOUNT_ROLES_KEY, ctrl), capacite: Reflect.getMetadata(CAPACITE_KEY, ctrl) },
+    { methode: '(classe)', roles: Reflect.getMetadata(ACCOUNT_ROLES_KEY, ctrl) },
     ...Object.getOwnPropertyNames(proto)
       .filter((m) => m !== 'constructor' && typeof proto[m] === 'function')
-      .map((m) => ({ methode: m, roles: Reflect.getMetadata(ACCOUNT_ROLES_KEY, proto[m]), capacite: Reflect.getMetadata(CAPACITE_KEY, proto[m]) })),
+      .map((m) => ({ methode: m, roles: Reflect.getMetadata(ACCOUNT_ROLES_KEY, proto[m]) })),
   ];
 }
 
@@ -51,7 +50,7 @@ describe('Matrice d\'autorisation (plus de rôles sur Les Extras)', () => {
     ['Contrats', ContratsController],
     ['Conformité', ConformiteController],
   ])('%s : aucune route ne porte de rôle ni de droit déclaré', (_nom, ctrl) => {
-    const restants = metasDe(ctrl).filter((m) => m.roles || m.capacite);
+    const restants = metasDe(ctrl).filter((m) => m.roles);
     expect(restants).toEqual([]);
   });
 
@@ -70,25 +69,13 @@ describe('Matrice d\'autorisation (plus de rôles sur Les Extras)', () => {
       expect(rolesOf(MembershipsController, 'list')).toBeUndefined();
     });
     /**
-     * ⚠ LE GARDE DE RÔLE A ÉTÉ RETIRÉ DES INVITATIONS LE 16/09/2026, ET
-     * L'ABSENCE DE MÉTADONNÉE EST ICI LE COMPORTEMENT ATTENDU.
-     *
-     * Il exigeait OWNER ou ADMIN, c'est-à-dire la direction. Un chef de service
-     * arrivé seul — le cas que ce produit doit servir en priorité — ne pouvait
-     * donc inviter personne tant que sa direction n'avait pas ouvert de compte.
-     * Il n'avait rien à faire sur la plateforme.
-     *
-     * Le droit d'inviter est devenu une CAPACITÉ (`Capacite.INVITER_MEMBRES`),
-     * vérifiée dans `InvitationsService`, où l'on sait aussi rabattre le niveau,
-     * les droits et les services à ce que l'invitant détient réellement. Un
-     * garde de rôle ne sait rien faire de tout cela : il aurait laissé passer un
-     * ADMIN invitant hors de son périmètre, et refusé un responsable invitant
-     * dans le sien. Les règles sont couvertes par `common/perimetre.spec.ts`.
-     *
-     * NE PAS « RÉPARER » CE TEST en remettant @AccountRoles sur le contrôleur :
-     * cela refermerait la porte sur les premiers utilisateurs du produit.
+     * Les invitations n'ont pas de garde de rôle sur le contrôleur : le
+     * contrôle (espace Piloter ET rôle OWNER/ADMIN) est fait dans
+     * `InvitationsService.assertPeutInviter`, parce que `AccountRolesGuard`
+     * laisse tout passer sur un compte Les Extras. Couvert par
+     * `invitations/invitations-piloter.spec.ts`.
      */
-    it('inviter / renvoyer / révoquer : plus de garde de rôle — c’est une capacité', () => {
+    it('inviter / renvoyer / révoquer : contrôle dans le service, pas de décorateur', () => {
       for (const m of ['create', 'resend', 'revoke', 'list']) {
         expect(rolesOf(InvitationsController, m)).toBeUndefined();
       }

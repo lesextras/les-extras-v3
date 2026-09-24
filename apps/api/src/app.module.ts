@@ -15,9 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { MembershipsModule } from './memberships/memberships.module';
-import { UnitsModule } from './units/units.module';
 import { InvitationsModule } from './invitations/invitations.module';
-import { AttachmentRequestsModule } from './attachment-requests/attachment-requests.module';
 
 // --- Marketplace (Backend-Marketplace : dossiers séparés) ---
 import { MissionsModule } from './missions/missions.module';
@@ -60,9 +58,9 @@ import { BoutiqueModule } from './boutique/boutique.module';
 import { AteliersModule } from './ateliers/ateliers.module';
 import { SupportModule } from './support/support.module';
 import { AgendaModule } from './agenda/agenda.module';
+import { PartagesModule } from './partages/partages.module';
 import { AdministrationModule } from './administration/administration.module';
 import { StructuresModule } from './structures/structures.module';
-import { OrganisationModule } from './organisation/organisation.module';
 import { DisponibilitesModule } from './disponibilites/disponibilites.module';
 import { VisioModule } from './visio/visio.module';
 import { AttestationsModule } from './attestations/attestations.module';
@@ -84,9 +82,7 @@ import { AttestationsModule } from './attestations/attestations.module';
     UsersModule,
     AccountsModule,
     MembershipsModule,
-    UnitsModule,
     InvitationsModule,
-    AttachmentRequestsModule,
 
     // Marketplace.
     MissionsModule,
@@ -138,10 +134,10 @@ import { AttestationsModule } from './attestations/attestations.module';
   SupportModule,
   AdministrationModule,
   AgendaModule,
-  // Structure → établissement → service, niveaux de responsabilité,
-  // organigramme (16/09/2026).
+  PartagesModule,
+  // Structure juridique (SIRET) d'un compte. Services, niveaux et organigramme
+  // ont été retirés le 24/09/2026 (« 1 compte = 1 personne »).
   StructuresModule,
-  OrganisationModule,
   DisponibilitesModule,
   VisioModule,
   // L'attestation de suivi vendue sur un parcours gratuit (16/09/2026).

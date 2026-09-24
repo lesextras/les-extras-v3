@@ -46,9 +46,9 @@ describe('Parrainage : qui peut parrainer, qui peut être parrainé', () => {
     expect(parrainRetenu('acc-etablissement')).toBe('acc-etablissement');
   });
 
-  it('un salarié peut parrainer', () => {
-    // Un compte salarié est un compte FREELANCE marqué `profilSalarie` : il est
-    // couvert par la même règle, sans exception à écrire.
+  it('un ancien compte salarié peut parrainer', () => {
+    // Les comptes FREELANCE marqués `profilSalarie` avant le 24/09/2026 sont
+    // couverts par la même règle, sans exception à écrire.
     expect(parrainRetenu('acc-salarie')).toBe('acc-salarie');
   });
 

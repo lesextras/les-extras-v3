@@ -3,6 +3,7 @@ import { CategorieRendezVous, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreerRendezVousDto, ModifierRendezVousDto } from './dto/agenda.dto';
 import { Champ } from '../formulaires/champs';
+import { evenementsLesExtras } from './sources-les-extras';
 
 /**
  * L'AGENDA DE PILOTE.
@@ -40,15 +41,16 @@ export class AgendaService {
     const debut = bornerDate(du) ?? debutDuMois(new Date());
     const fin = bornerDate(au) ?? finDuMois(debut);
 
-    const [propres, sessions, classes, formulaires, association] = await Promise.all([
+    const [propres, sessions, classes, formulaires, association, lesExtras] = await Promise.all([
       this.rendezVous(accountId, debut, fin),
       this.sessionsFormation(accountId, debut, fin),
       this.classesVirtuelles(accountId, debut, fin),
       this.formulaires(accountId, debut, fin),
       this.echeancesAssociation(accountId, debut, fin),
+      evenementsLesExtras(this.prisma, accountId, debut, fin),
     ]);
 
-    return [...propres, ...sessions, ...classes, ...formulaires, ...association].sort(
+    return [...propres, ...sessions, ...classes, ...formulaires, ...association, ...lesExtras].sort(
       (a, b) => a.debut.getTime() - b.debut.getTime(),
     );
   }
@@ -494,7 +496,15 @@ export type SourceEvenement =
   | 'REPONSE_FORMULAIRE'
   | 'DOSSIER'
   | 'PIECE'
-  | 'ACTION';
+  | 'ACTION'
+  // Les Extras (24/09/2026) : réservations, visios, missions, créneaux.
+  | 'RESERVATION'
+  | 'VISIO'
+  | 'MISSION'
+  | 'CRENEAU'
+  | 'RESERVATION_EN_LIGNE'
+  // Un agenda partagé au niveau « disponibilités » : on ne dit que « occupé ».
+  | 'OCCUPE';
 
 export interface PersonneAgenda {
   nom: string;

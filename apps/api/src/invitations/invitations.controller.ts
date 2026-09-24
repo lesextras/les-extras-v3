@@ -20,19 +20,14 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
 
 /**
- * ⚠ LE GARDE DE RÔLE A ÉTÉ RETIRÉ DES ROUTES D'INVITATION (16/09/2026), ET
- * CE N'EST PAS UN OUBLI.
+ * Invitations : réservées aux espaces Piloter (association, académie), où la
+ * direction et l'administration gèrent les droits d'accès de leur équipe.
  *
- * Il exigeait OWNER ou ADMIN, c'est-à-dire la direction. Un chef de service
- * arrivé seul — le cas que ce produit doit servir en priorité — ne pouvait donc
- * inviter personne tant que sa direction n'avait pas ouvert de compte. Il
- * n'avait rien à faire sur la plateforme.
- *
- * Le droit d'inviter est désormais une CAPACITÉ (`INVITER_MEMBRES`), vérifiée
- * dans le service, où l'on sait aussi rabattre le niveau, les droits et les
- * services à ce que l'invitant détient réellement. Un garde de rôle ne sait
- * rien faire de tout cela : il aurait laissé passer un ADMIN invitant hors de
- * son périmètre, et refusé un responsable invitant dans le sien.
+ * Le contrôle vit dans le service (`assertPeutInviter`) : type de compte ET
+ * rôle OWNER ou ADMIN. Un garde de rôle seul ne suffirait pas, puisque
+ * `AccountRolesGuard` laisse tout passer sur un compte Les Extras, où les rôles
+ * n'existent plus. Sur Les Extras, « 1 compte = 1 personne » (24/09/2026) :
+ * la réponse est un 403 qui le dit.
  */
 @Controller('invitations')
 export class InvitationsController {
@@ -40,8 +35,8 @@ export class InvitationsController {
 
   /**
    * L'invitation telle que la personne invitée la lit AVANT d'accepter : qui
-   * l'invite, dans quel service, et ce que son acceptation rendra visible.
-   * Publique (jeton en main) : l'invité n'a pas encore de compte.
+   * l'invite, et dans quel espace. Publique (jeton en main) : l'invité n'a pas
+   * encore de compte.
    */
   @Get('apercu')
   apercu(@Query('token') token: string) {
@@ -59,7 +54,7 @@ export class InvitationsController {
     return this.invitations.accept(user, dto.token);
   }
 
-  // --- Gestion, bornée au périmètre de qui demande (voir le service) ---
+  // --- Gestion : espace Piloter, direction ou administration (voir le service) ---
 
   @Get()
   @UseGuards(JwtAuthGuard, AccountGuard)
@@ -68,9 +63,9 @@ export class InvitationsController {
   }
 
   /**
-   * Import d'équipe : invitations en masse (le CSV est lu côté client,
-   * l'API reçoit une liste déjà structurée). Chaque ligne est traitée
-   * indépendamment : une adresse invalide n'annule pas les autres.
+   * Invitations en masse (le CSV est lu côté client, l'API reçoit une liste
+   * déjà structurée). Chaque ligne est traitée indépendamment : une adresse
+   * invalide n'annule pas les autres.
    */
   @Post('lot')
   @UseGuards(JwtAuthGuard, AccountGuard)

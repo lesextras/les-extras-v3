@@ -21,7 +21,13 @@ import { RequestAccount, RequestUser } from '../common/types/request-context';
 
 /**
  * Toutes les routes agissent sur le COMPTE ACTIF (header x-account-id),
- * résolu par AccountGuard. La gestion est réservée OWNER/ADMIN.
+ * résolu par AccountGuard.
+ *
+ * La GESTION (rôle, suspension, retrait) ne concerne que les espaces Piloter
+ * (association, académie), et y est réservée OWNER/ADMIN : sur Les Extras,
+ * « 1 compte = 1 personne » depuis le 24/09/2026, il n'y a plus d'équipe à
+ * gérer. Le refus est posé dans le service (`assertGestionPiloter`), parce que
+ * `AccountRolesGuard` laisse tout passer sur un compte Les Extras.
  */
 @Controller('memberships')
 @UseGuards(JwtAuthGuard, AccountGuard)
@@ -36,7 +42,6 @@ export class MembershipsController {
   list(
     @CurrentAccount() account: RequestAccount,
     @Query('q') q?: string,
-    @Query('orgUnitId') orgUnitId?: string,
     @Query('role') role?: AccountRole,
     @Query('status') status?: MembershipStatus,
     @Query('page') page?: string,
@@ -44,7 +49,6 @@ export class MembershipsController {
   ) {
     return this.memberships.list(account, {
       q,
-      orgUnitId,
       role,
       status,
       page: page ? Number(page) : undefined,
@@ -56,12 +60,6 @@ export class MembershipsController {
   @Get('personne/:userId')
   personne(@CurrentAccount() account: RequestAccount, @Param('userId') userId: string) {
     return this.memberships.parUtilisateur(account, userId);
-  }
-
-  /** Combien de personnes par service — alimente les filtres de la liste. */
-  @Get('repartition')
-  repartition(@CurrentAccount() account: RequestAccount) {
-    return this.memberships.repartition(account);
   }
 
   @Patch(':id/role')

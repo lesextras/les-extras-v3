@@ -174,7 +174,7 @@ export class ConformiteService {
    */
   async alertes(
     accountId: string,
-    filtres: { page?: number; perPage?: number; orgUnitId?: string } = {},
+    filtres: { page?: number; perPage?: number } = {},
   ) {
     await this.refreshExpired(accountId);
     const page = Math.max(1, Math.trunc(Number(filtres.page) || 1));
@@ -184,11 +184,9 @@ export class ConformiteService {
       where: {
         accountId,
         status: MembershipStatus.ACTIVE,
-        ...(filtres.orgUnitId ? { orgUnitId: filtres.orgUnitId } : {}),
       },
       select: {
         role: true,
-        orgUnit: { select: { id: true, name: true } },
         user: {
           select: {
             id: true,
@@ -226,7 +224,6 @@ export class ConformiteService {
             job: m.user.profile?.job ?? null,
           },
           membershipRole: m.role,
-          orgUnit: m.orgUnit,
           completeness: c,
           urgence: c.missing * 10 + c.expiringSoon,
         };

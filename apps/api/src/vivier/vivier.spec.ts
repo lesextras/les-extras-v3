@@ -7,11 +7,8 @@ import { VivierService } from './vivier.service';
  * Ce que ces tests protègent tient en une phrase : on ne rappelle que des gens
  * qu'on connaît, et sur une offre qu'ils peuvent voir.
  *
- * Les deux garde-fous ne sont pas décoratifs. Sans le premier, la route de
- * rappel devient un canal de démarchage vers n'importe quel compte de la
- * plateforme. Sans le second, on invite quelqu'un sur une mission encore
- * réservée aux salariés — il reçoit une notification, clique, et tombe sur une
- * page qu'il n'a pas le droit de voir.
+ * Le garde-fou n'est pas décoratif : sans lui, la route de rappel devient un
+ * canal de démarchage vers n'importe quel compte de la plateforme.
  */
 
 function service(overrides: Record<string, unknown> = {}) {
@@ -213,14 +210,15 @@ describe('vivier : le rappel sur une mission', () => {
     );
   });
 
-  it('refuse une mission encore réservée aux salariés', async () => {
-    // L'intervenant recevrait une notification, cliquerait, et tomberait sur
-    // une offre qu'il n'a pas le droit de voir.
-    const { svc } = serviceAvecVivier('SALARIES', ['acc_a']);
+  it('une mission héritée au palier SALARIES se rappelle comme une mission réservée', async () => {
+    // Le palier SALARIES n'existe plus (24/09/2026) : lu comme RESERVED, donc
+    // visible du vivier.
+    const { svc, notifications } = serviceAvecVivier('SALARIES', ['acc_a']);
 
-    await expect(svc.rappeler('acc_etab', 'm_1', ['acc_a'])).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    const r = await svc.rappeler('acc_etab', 'm_1', ['acc_a']);
+
+    expect(r.notifies).toBe(1);
+    expect(notifications.create).toHaveBeenCalledTimes(1);
   });
 
   it('refuse une mission qui n’appartient pas à l’établissement', async () => {

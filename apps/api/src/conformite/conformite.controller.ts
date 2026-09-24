@@ -35,12 +35,10 @@ export class ConformiteController {
     @CurrentAccount() account: RequestAccount,
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
-    @Query('orgUnitId') orgUnitId?: string,
   ) {
     return this.conformite.alertes(account.id, {
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
-      orgUnitId,
     });
   }
 

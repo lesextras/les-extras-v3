@@ -8,7 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
  * Les ADMIN passent toujours.
  *
  * C'est la SEULE barrière payante de la plateforme : publier ses ateliers,
- * candidater au renfort, contractualiser, gérer son équipe — tout cela
+ * candidater au renfort, contractualiser — tout cela
  * demeure gratuit, pour les intervenants comme pour les établissements.
  * La consommation effective du crédit se fait dans le gestionnaire de la
  * route (CreditsService.avecCredit), pas ici : la garde vérifie seulement
@@ -24,18 +24,8 @@ export class MemberGuard implements CanActivate {
     const accountId: string | undefined = req.account?.id;
     if (!accountId) return false;
 
-    // LE FORFAIT LEX EST PARTAGÉ — ET IL SE DÉPENSE.
-    //
-    // N'importe quel membre actif du compte pouvait le consommer : le solde
-    // d'un établissement partait sans que personne n'ait rien accordé. Le
-    // droit « Utiliser les générations LEX de l'établissement » existait
-    // pourtant, déclaré dans « Mon poste » et rangé en base, et rien ne le
-    // lisait. Il est lu ici, en OU avec le rôle : direction, administration
-    // et chefs de service continuent de générer sans rien déclarer, et
-    // l'intervenant reste propriétaire de son propre compte, donc de son
-    // propre forfait.
-    // ⚠ Plus de rôles ni de droits déclarés sur Les Extras (24/09/2026,
-    // `common/roles.ts`) : toute personne active du compte utilise son forfait.
+    // Plus de rôles ni de droits déclarés sur Les Extras (24/09/2026,
+    // `common/roles.ts`) : la personne du compte utilise son forfait.
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
       select: { credits: true, isMember: true },

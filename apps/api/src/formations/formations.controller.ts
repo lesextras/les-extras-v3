@@ -37,13 +37,6 @@ export class FormationsController {
     return this.formations.findCatalog(query);
   }
 
-  /** Membres mobilisables comme formateurs internes (parcours B). */
-  @Get('internal-trainers')
-  @UseGuards(AccountGuard)
-  internalTrainers(@CurrentAccount() account: RequestAccount) {
-    return this.formations.internalTrainers(account.id);
-  }
-
   /** Programmes gérés par le compte actif. */
   @Get()
   @UseGuards(AccountGuard)

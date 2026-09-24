@@ -81,34 +81,20 @@ export class RegisterDto {
   organizationName?: string;
 
   /**
-   * L'ÉTABLISSEMENT QU'ON REJOINT — ET C'EST LUI QUI ÉVITE LE DOUBLON.
+   * ⚠ DÉPRÉCIÉ ET IGNORÉ (24/09/2026, « 1 compte = 1 personne »).
    *
-   * ⚠⚠ QUAND CE CHAMP EST RENSEIGNÉ, AUCUN COMPTE N'EST CRÉÉ. La personne
-   * devient membre NON VÉRIFIÉ du compte existant, et c'est tout.
-   *
-   * Avant, reconnaître son établissement à l'inscription (« c'est le mien »)
-   * créait quand même un compte homonyme — avec le nom exact de l'autre, donc
-   * un slug suffixé — PUIS demandait le rattachement au vrai. Douze salariés
-   * d'une même MECS produisaient douze maisons : douze organigrammes d'une
-   * personne, douze catalogues, et une équipe coupée en douze sans que
-   * personne ne s'en aperçoive. Et ces doublons réapparaissaient aussitôt dans
-   * la liste censée les éviter.
-   *
-   * ⚠ UN IDENTIFIANT INCONNU NE FAIT PAS ÉCHOUER L'INSCRIPTION : on retombe
-   * sur la création normale. Le champ vient d'une liste cliquée, mais une
-   * inscription ne se refuse pas sur un identifiant périmé.
+   * Rejoindre un établissement existant à l'inscription n'existe plus : chaque
+   * inscription crée son propre compte. Les deux champs restent acceptés pour
+   * qu'un ancien écran web, encore en ligne pendant le redéploiement, ne
+   * reçoive pas un 400 (`forbidNonWhitelisted`). `AuthService.register` ne
+   * les lit pas.
    */
   @IsOptional()
   @IsString()
   @MaxLength(40)
   rejoindreEtablissementId?: string;
 
-  /**
-   * Profil SALARIÉ : la personne travaille pour un établissement et vient s'y
-   * rattacher. Le compte reste de type FREELANCE — c'est bien un compte
-   * personnel — mais il n'ouvre que LEX tant qu'aucun établissement ne l'a
-   * accepté. Ignoré pour un compte ESTABLISHMENT, qui ne se rattache à rien.
-   */
+  /** ⚠ DÉPRÉCIÉ ET IGNORÉ, voir ci-dessus. */
   @IsOptional()
   @IsBoolean()
   profilSalarie?: boolean;

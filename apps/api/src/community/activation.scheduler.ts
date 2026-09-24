@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AccountType, MembershipStatus, UserStatus } from '@prisma/client';
+import { AccountType, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 
@@ -56,13 +56,9 @@ export class ActivationScheduler {
         emailVerified: true,
         profile: { select: { job: true, city: true, diplomaUrl: true } },
         ownedAccounts: {
-          select: { id: true, type: true, profilSalarie: true },
+          select: { id: true, type: true },
           orderBy: { createdAt: 'asc' },
           take: 1,
-        },
-        memberships: {
-          where: { status: MembershipStatus.ACTIVE },
-          select: { account: { select: { type: true } } },
         },
       },
     });
@@ -117,15 +113,13 @@ export class ActivationScheduler {
     u: {
       emailVerified: boolean;
       profile: { job: string | null; city: string | null; diplomaUrl: string | null } | null;
-      memberships: { account: { type: AccountType } | null }[];
     },
-    compte: { id: string; type: AccountType; profilSalarie: boolean } | undefined,
+    compte: { id: string; type: AccountType } | undefined,
     aDejaPublie: Set<string>,
-  ): 'etablissement' | 'independant' | 'salarie' | null {
+  ): 'etablissement' | 'independant' | null {
     // Règle 3 : adresse non confirmée, on n'écrit pas.
     if (!u.emailVerified) return null;
-    // Invité par sa structure, sans compte à lui : son activation, c'est le
-    // rattachement — déjà fait par définition. Rien à demander.
+    // Sans compte à lui (membre invité d'un espace Piloter) : rien à demander.
     if (!compte) return null;
 
     if (compte.type === AccountType.ESTABLISHMENT) {
@@ -133,14 +127,9 @@ export class ActivationScheduler {
       return aDejaPublie.has(compte.id) ? null : 'etablissement';
     }
 
-    if (compte.profilSalarie) {
-      // Déjà rattaché à un établissement : le geste est fait, silence.
-      const rattache = u.memberships.some(
-        (m) => m.account?.type === AccountType.ESTABLISHMENT,
-      );
-      return rattache ? null : 'salarie';
-    }
-
+    // La variante « salarié » (demander son rattachement) est retirée depuis
+    // le 24/09/2026 : un compte intervenant, quel qu'il soit, reçoit celle de
+    // l'indépendant.
     // Indépendant : le geste est le dossier. Complet (métier, ville, diplôme),
     // il est déjà « devant » — silence.
     const dossierComplet = Boolean(

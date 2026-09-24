@@ -28,9 +28,7 @@ const MISSION = {
   emergency: false,
   modeAttribution: 'FILE_ENGAGEMENT',
   cibleDiffusion: 'RESEAU',
-  orgUnitId: null,
   visibility: 'PUBLIC',
-  destinatairesSalaries: [],
   destinatairesIntervenants: [],
   account: { id: 'etab', name: 'MECS Les Tilleuls', ownerId: 'etab-user' },
 };
@@ -125,7 +123,7 @@ function monter(overrides: { mission?: Record<string, unknown>; file?: any[] } =
   const ciblage = {
     assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
     // Le point de passage unique des trois voies de réponse (ciblage +
-    // cascade de diffusion + garde-fou salarié/employeur).
+    // cascade de diffusion + garde-fou du compte géré).
     assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
   };
 

@@ -37,6 +37,10 @@ function prismaMock(over: Record<string, unknown> = {}) {
     dossierFinancement: vide,
     pieceAssociation: vide,
     actionAssociation: vide,
+    booking: { findMany: jest.fn(async () => []) },
+    reliefMission: { findMany: jest.fn(async () => []) },
+    shift: { findMany: jest.fn(async () => []) },
+    reservationAtelier: { findMany: jest.fn(async () => []) },
     ...over,
   } as never;
 }

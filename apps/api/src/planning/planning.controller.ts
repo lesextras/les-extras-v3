@@ -15,15 +15,24 @@ export class PlanningController {
 
   @Get('planning')
   planningRange(@CurrentAccount() a: RequestAccount, @CurrentUser() u: RequestUser,
-    @Query('from') from?: string, @Query('to') to?: string,
-    @Query('orgUnitId') orgUnitId?: string) {
-    return this.planning.getPlanning(a.id, a.type, u.id, from, to, orgUnitId);
+    @Query('from') from?: string, @Query('to') to?: string) {
+    return this.planning.getPlanning(a.id, a.type, u.id, from, to);
+  }
+
+  /**
+   * Répéter une semaine de créneaux sur les semaines suivantes.
+   *
+   * `gta/cycles` est l'ancienne adresse (module GTA retiré le 24/09/2026) :
+   * elle reste servie pour l'écran web déjà déployé.
+   */
+  @Post(['planning/cycles', 'gta/cycles'])
+  cycles(@CurrentAccount() a: RequestAccount, @Body() dto: { lundi: string; semaines: number }) {
+    return this.planning.deroulerCycle(a.id, dto);
   }
 
   /**
    * Étape 1 : on lit le fichier et on renvoie ce qu'on a compris.
-   * Rien n'est écrit. Ouvert à tous les membres du compte : chacun apporte
-   * son propre planning, y compris un salarié qui déclare ses heures.
+   * Rien n'est écrit.
    */
   @Post('planning/import/analyse')
   analyserImport(@Body() dto: AnalyserPlanningDto) {
@@ -51,12 +60,8 @@ export class PlanningController {
   }
 
   /**
-   * Le statut d'un créneau (planifié / confirmé / annulé) est un acte
-   * d'encadrement : il vaut validation d'heures travaillées. Créer, modifier
-   * et supprimer un créneau étaient réservés à OWNER/ADMIN/MANAGER ; changer
-   * son statut ne l'était pas, alors que c'est l'opération qui compte pour la
-   * paie. N'importe quel membre du compte pouvait confirmer ou annuler le
-   * créneau d'un collègue.
+   * Le statut d'un créneau (planifié / confirmé / annulé) : il vaut
+   * validation d'heures travaillées, et reste borné au compte actif.
    */
   @Patch('shifts/:id/status')
   status(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: SetStatusDto) {

@@ -10,7 +10,6 @@ import {
   AccountRole,
   AccountType,
   MembershipStatus,
-  NiveauResponsabilite,
   UserStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -21,6 +20,7 @@ import { slugify, randomSuffix } from '../common/utils/slug.util';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { FREE_MONTHLY_CREDITS, MOTIF_DOTATION } from '../billing/credits.constants';
+import { FILTRE_RATTACHEMENTS_ACCESSIBLES } from '../common/roles';
 
 const BCRYPT_ROUNDS = 12;
 const EMAIL_VERIFY_PURPOSE = 'email-verify';
@@ -44,34 +44,16 @@ export class AuthService {
     }
 
     /**
-     * ⚠⚠ REJOINDRE, C'EST NE PAS CRÉER. C'est la réparation du doublon
-     * d'établissement — le plus coûteux des trois doublons du produit.
+     * UN COMPTE = UNE PERSONNE (24/09/2026, décision de Siham).
      *
-     * Reconnaître son établissement dans la liste créait jusqu'ici un compte
-     * homonyme (même nom, slug suffixé) PUIS demandait le rattachement au
-     * vrai. La personne repartait avec une maison à elle toute seule, et
-     * l'établissement réel recevait une demande qu'il ne comprenait pas.
-     *
-     * ⚠ UN IDENTIFIANT INCONNU NE FAIT PAS ÉCHOUER L'INSCRIPTION : on retombe
-     * sur la création normale. Le champ vient d'une liste cliquée ; une
-     * inscription ne se refuse pas sur un identifiant périmé.
+     * « Rejoindre un établissement existant » à l'inscription est retiré : il
+     * n'y a plus de sous-comptes sur Les Extras. `rejoindreEtablissementId` et
+     * `profilSalarie` restent acceptés par le DTO (un ancien écran web ne doit
+     * pas recevoir un 400 pendant les minutes qui séparent les deux
+     * déploiements), mais ils sont IGNORÉS : chaque inscription crée son propre
+     * compte, dont la personne est OWNER.
      */
-    const rejoint =
-      dto.accountType === AccountType.ESTABLISHMENT && dto.rejoindreEtablissementId?.trim()
-        ? await this.prisma.account.findFirst({
-            where: {
-              id: dto.rejoindreEtablissementId.trim(),
-              type: AccountType.ESTABLISHMENT,
-            },
-            select: { id: true, name: true },
-          })
-        : null;
-
-    if (
-      dto.accountType === AccountType.ESTABLISHMENT &&
-      !rejoint &&
-      !dto.organizationName?.trim()
-    ) {
+    if (dto.accountType === AccountType.ESTABLISHMENT && !dto.organizationName?.trim()) {
       throw new BadRequestException(
         'Le nom de la structure est requis pour un compte ESTABLISHMENT.',
       );
@@ -80,17 +62,12 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
     // Nom du compte : structure pour ESTABLISHMENT, nom du praticien sinon.
-    // Quand on rejoint, c'est le nom de l'établissement existant qui vaut —
-    // il sert aux courriels, pas à créer quoi que ce soit.
-    const accountName = rejoint
-      ? rejoint.name
-      : dto.accountType === AccountType.ESTABLISHMENT
+    const accountName =
+      dto.accountType === AccountType.ESTABLISHMENT
         ? (dto.organizationName as string).trim()
         : `${dto.firstName} ${dto.lastName}`.trim();
 
-    // ⚠ PAS DE SLUG QUAND ON REJOINT : il n'y a pas de compte à nommer, et en
-    // calculer un consommerait l'adresse publique voisine pour rien.
-    const slug = rejoint ? null : await this.generateUniqueSlug(accountName);
+    const slug = await this.generateUniqueSlug(accountName);
 
     const user = await this.prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
@@ -108,33 +85,11 @@ export class AuthService {
         },
       });
 
-      if (rejoint) {
-        /**
-         * Rattachement NON VÉRIFIÉ, exactement comme
-         * `OrganisationService.rejoindreEtablissement` : la personne apparaît
-         * dans l'organigramme avec sa réserve, et un collègue confirme.
-         * `niveauValide` vaut true parce que SALARIÉ est le niveau par défaut
-         * — il n'y a rien à valider tant qu'elle ne réclame pas mieux.
-         */
-        await tx.membership.create({
-          data: {
-            userId: createdUser.id,
-            accountId: rejoint.id,
-            role: AccountRole.MEMBER,
-            status: MembershipStatus.ACTIVE,
-            niveau: NiveauResponsabilite.SALARIE,
-            niveauValide: true,
-            verifie: false,
-          },
-        });
-        return createdUser;
-      }
-
       const account = await tx.account.create({
         data: {
           name: accountName,
           type: dto.accountType,
-          slug: slug as string,
+          slug,
           legalName:
             dto.accountType === AccountType.ESTABLISHMENT ? accountName : undefined,
           ownerId: createdUser.id,
@@ -145,11 +100,9 @@ export class AuthService {
           sourceMedium: dto.sourceMedium ?? null,
           sourceCampaign: dto.sourceCampaign ?? null,
           sourceLanding: dto.sourceLanding ?? null,
-          // Profil salarié : figé à l'inscription, jamais recalculé ensuite.
-          // Un établissement ne se rattache à personne — le drapeau n'a de
-          // sens que sur un compte personnel.
-          profilSalarie:
-            dto.accountType === AccountType.FREELANCE && dto.profilSalarie === true,
+          // `profilSalarie` n'est plus posé (24/09/2026) : le compte salarié
+          // rattaché à un établissement n'existe plus. La colonne reste en
+          // base pour les comptes déjà créés, qui restent hors vitrine.
           // PARRAINAGE OUVERT A TOUS LES COMPTES.
           //
           // Il etait reserve aux intervenants, des deux cotes : seul un nouveau
@@ -160,9 +113,7 @@ export class AuthService {
           // vivre ce metier, ou tout le monde se connait.
           //
           // On ne verifie plus que ce qui compte vraiment : que le parrain
-          // existe, et que personne ne se parraine soi-meme. Un compte salarie
-          // (FREELANCE marque `profilSalarie`) est couvert par la meme regle,
-          // sans exception a ecrire.
+          // existe, et que personne ne se parraine soi-meme.
           //
           // Un parrain introuvable est ignore SANS BRUIT et sans echec : un
           // lien mal recopie ne doit jamais empecher quelqu'un de s'inscrire.
@@ -213,13 +164,6 @@ export class AuthService {
 
       return createdUser;
     });
-
-    // On prévient ceux qui peuvent confirmer le rattachement — sinon la
-    // personne reste « non vérifiée » indéfiniment sans que quiconque sache
-    // qu'il faut agir. Jamais bloquant : le compte est créé.
-    if (rejoint) {
-      await this.prevenirResponsables(rejoint, user.id, `${user.firstName} ${user.lastName}`);
-    }
 
     const verifyToken = await this.signEmailVerifyToken(user.id, email);
     await this.mail.sendEmailVerification(email, verifyToken, user.firstName);
@@ -276,46 +220,6 @@ export class AuthService {
         ? {}
         : { emailVerificationToken: verifyToken }),
     };
-  }
-
-  /**
-   * Notifie la direction et les responsables d'un établissement qu'une
-   * personne vient de se déclarer chez eux. Jumeau de la fin de
-   * `OrganisationService.rejoindreEtablissement` — les deux chemins existent
-   * (à l'inscription, et depuis un compte déjà créé) et doivent prévenir les
-   * mêmes personnes, avec le même texte.
-   */
-  private async prevenirResponsables(
-    etablissement: { id: string; name: string },
-    nouveauUserId: string,
-    nom: string,
-  ) {
-    const responsables = await this.prisma.membership.findMany({
-      where: {
-        accountId: etablissement.id,
-        status: MembershipStatus.ACTIVE,
-        niveau: {
-          in: [NiveauResponsabilite.DIRECTION, NiveauResponsabilite.RESPONSABLE],
-        },
-        NOT: { userId: nouveauUserId },
-      },
-      select: { userId: true },
-      take: 20,
-    });
-    if (responsables.length === 0) return;
-    await this.prisma.notification
-      .createMany({
-        data: responsables.map((r) => ({
-          userId: r.userId,
-          type: 'ORGANISATION',
-          title: 'Une personne s’est déclarée de votre établissement',
-          body:
-            `${nom} indique travailler à ${etablissement.name}. ` +
-            'Confirmez son rattachement pour qu’elle rejoigne son service.',
-          link: '/dashboard/organigramme',
-        })),
-      })
-      .catch(() => undefined);
   }
 
   async login(dto: LoginDto) {
@@ -516,8 +420,10 @@ export class AuthService {
         lastLoginAt: true,
         createdAt: true,
         profile: true,
+        // « 1 compte = 1 personne » (24/09/2026) : sur Les Extras, seuls les
+        // comptes dont la personne est titulaire ; sur Piloter, ses espaces.
         memberships: {
-          where: { status: MembershipStatus.ACTIVE },
+          where: { status: MembershipStatus.ACTIVE, ...FILTRE_RATTACHEMENTS_ACCESSIBLES },
           select: {
             id: true,
             role: true,
@@ -530,7 +436,6 @@ export class AuthService {
                 type: true,
                 logoUrl: true,
                 isMember: true,
-                profilSalarie: true,
               },
             },
           },
@@ -538,21 +443,12 @@ export class AuthService {
       },
     });
 
-    // Un salarié qu'aucun établissement n'a encore accepté : l'interface a
-    // besoin de le savoir pour n'ouvrir que LEX et lui montrer où en est sa
-    // demande, plutôt que de le laisser buter sur des refus un écran après
-    // l'autre. Un seul rattachement actif suffit, et une même adresse peut en
-    // porter plusieurs.
-    const rattacheAUnEtablissement = user.memberships.some(
-      (m) => m.account.type === AccountType.ESTABLISHMENT,
-    );
-    const aUnProfilSalarie = user.memberships.some(
-      (m) => m.account.type === AccountType.FREELANCE && m.account.profilSalarie,
-    );
-
+    // `enAttenteRattachement` reste dans la réponse pour les écrans web déjà
+    // déployés, mais vaut toujours false : il n'y a plus de salarié en attente
+    // de rattachement sur Les Extras (24/09/2026, « 1 compte = 1 personne »).
     return {
       ...user,
-      enAttenteRattachement: aUnProfilSalarie && !rattacheAUnEtablissement,
+      enAttenteRattachement: false,
     };
   }
 
@@ -575,8 +471,10 @@ export class AuthService {
       where: { id: userId },
       select: {
         onboardingStep: true,
+        // Même filtre que `buildMe` : le jeton ne porte que les comptes
+        // réellement ouvrables (voir `common/roles.ts`).
         memberships: {
-          where: { status: MembershipStatus.ACTIVE },
+          where: { status: MembershipStatus.ACTIVE, ...FILTRE_RATTACHEMENTS_ACCESSIBLES },
           select: {
             role: true,
             account: { select: { id: true, name: true, type: true, isMember: true } },

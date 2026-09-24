@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
@@ -42,16 +41,6 @@ export class AccountsController {
     @Body() dto: DevenirIntervenantDto,
   ) {
     return this.accounts.devenirIntervenant(user.id, dto);
-  }
-
-  /**
-   * Recherche d'établissements par nom, pour le compte « salarié » qui
-   * choisit à qui envoyer sa demande de rattachement. Doit rester avant
-   * `@Get(':id')` : sinon "etablissements" serait lu comme un id de compte.
-   */
-  @Get('etablissements/recherche')
-  searchEtablissements(@Query('q') q?: string) {
-    return this.accounts.searchEstablishments(q ?? '');
   }
 
   /** Fiches d'un compte que l'utilisateur peut reprendre à son compte propre. */

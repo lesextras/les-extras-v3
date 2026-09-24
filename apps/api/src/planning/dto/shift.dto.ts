@@ -20,8 +20,8 @@ export class CreateShiftDto {
   bookingId?: string;
 
   /**
-   * Service (unité) concerné. Laissé vide, il est déduit du service auquel
-   * l'intervenant est rattaché — on ne demande pas deux fois la même chose.
+   * ⚠ DÉPRÉCIÉ ET IGNORÉ (24/09/2026, « 1 compte = 1 personne ») : plus de
+   * services internes. Accepté pour qu'un ancien écran ne reçoive pas un 400.
    */
   @IsOptional() @IsString()
   orgUnitId?: string | null;
@@ -49,6 +49,7 @@ export class UpdateShiftDto {
   @IsOptional() @IsISO8601() startAt?: string;
   @IsOptional() @IsISO8601() endAt?: string;
   @IsOptional() @IsString() freelanceId?: string;
+  /** ⚠ DÉPRÉCIÉ ET IGNORÉ (24/09/2026). */
   @IsOptional() @IsString() orgUnitId?: string | null;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsOptional() @IsBoolean() force?: boolean;

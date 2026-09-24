@@ -1,6 +1,4 @@
 import {
-  ArrayMaxSize,
-  IsArray,
   IsBoolean,
   IsEnum,
   IsOptional,
@@ -18,18 +16,6 @@ export class OuvrirFilDto {
   @IsString()
   @MaxLength(160)
   sujet?: string;
-
-  /** Fil d'équipe : les personnes à qui l'on écrit. */
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(50)
-  @IsString({ each: true })
-  participantIds?: string[];
-
-  /** Fil de service : tout le service est destinataire. */
-  @IsOptional()
-  @IsString()
-  orgUnitId?: string;
 
   /**
    * Fil avec un intervenant : l'une des deux est OBLIGATOIRE.
@@ -73,13 +59,6 @@ export class SignalerMessageDto {
   @IsString()
   @MaxLength(500)
   motif?: string;
-}
-
-export class AjouterParticipantsDto {
-  @IsArray()
-  @ArrayMaxSize(50)
-  @IsString({ each: true })
-  userIds!: string[];
 }
 
 export class FermerFilDto {

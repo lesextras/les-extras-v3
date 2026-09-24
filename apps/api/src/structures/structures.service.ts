@@ -14,13 +14,13 @@ import { RequestAccount } from '../common/types/request-context';
  *
  * Le rattachement est DÉCLARATIF. Un compte dit à quelle structure il
  * appartient, comme on déclare son employeur sur un réseau professionnel :
- * rien n'est validé en amont, et c'est délibéré — une validation à l'entrée
- * fait chuter les inscriptions, et personne ici n'a les moyens humains de
- * valider chaque salarié qui arrive.
+ * rien n'est validé en amont, et c'est délibéré : une validation à l'entrée
+ * fait chuter les inscriptions.
  *
- * Ce qui rend l'ouverture tenable, ce n'est pas le contrôle à l'entrée : c'est
- * que déclarer ne donne AUCUN droit. La visibilité vient du lien d'invitation
- * (voir `common/perimetre.ts`), jamais de ce qu'on a écrit dans un formulaire.
+ * Ce qui rend l'ouverture tenable, c'est que déclarer ne donne AUCUN droit :
+ * la structure sert au SIRET qui s'imprime sur les documents, et à rien
+ * d'autre. (Depuis le 24/09/2026, « 1 compte = 1 personne » : il n'y a plus
+ * ni équipe ni périmètre de visibilité derrière une structure.)
  */
 
 /** L'annuaire public des entreprises — déjà utilisé par le module association. */
@@ -343,10 +343,8 @@ export class StructuresService {
    * La fiche d'une structure : ses établissements déclarés.
    *
    * ⚠ Volontairement pauvre. On liste les ÉTABLISSEMENTS (nom, ville), jamais
-   * les personnes : l'organigramme nominatif d'un établissement se lit sur
-   * l'établissement, avec la règle de périmètre qui lui est propre. Ouvrir ici
-   * la liste des salariés de toute une fondation reviendrait à publier un
-   * annuaire du secteur.
+   * les personnes : ouvrir ici les noms de toute une fondation reviendrait à
+   * publier un annuaire du secteur.
    */
   async fiche(id: string) {
     const structure = await this.prisma.structure.findUnique({

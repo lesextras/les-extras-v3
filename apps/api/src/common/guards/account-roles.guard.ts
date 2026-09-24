@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AccountRole, Capacite } from '@prisma/client';
+import { AccountRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ACCOUNT_ROLES_KEY } from '../decorators/account-roles.decorator';
 import { rolesActifs } from '../roles';
@@ -74,25 +74,4 @@ export function messageRoleInsuffisant(required: readonly string[]): string {
   const liste =
     qui.length === 1 ? qui[0] : `${qui.slice(0, -1).join(', ')} ou ${qui[qui.length - 1]}`;
   return `Cette action est réservée à ${liste}. Demandez à un responsable de votre établissement de la faire pour vous.`;
-}
-
-/**
- * Ce qu'on dit à quelqu'un dont le rôle ne suffit pas ET qui n'a pas déclaré
- * le droit correspondant.
- *
- * Le message nomme le droit tel qu'il est écrit dans « Mon poste » — c'est
- * là, et nulle part ailleurs, que la personne peut se l'accorder. Lui
- * répondre « rôle insuffisant » l'enverrait demander à quelqu'un d'autre ce
- * qu'elle peut faire elle-même en deux clics.
- */
-const LIBELLE_DROIT: Partial<Record<Capacite, string>> = {
-  VOIR_FACTURES: 'Voir les factures',
-  VOIR_CONFORMITE: 'Consulter le coffre-fort de conformité',
-  RESERVER_DIRECT: 'Réserver un intervenant directement',
-  UTILISER_CREDITS_LEX: 'Utiliser les générations LEX de l’établissement',
-};
-
-export function messageDroitManquant(capacite: Capacite): string {
-  const droit = LIBELLE_DROIT[capacite] ?? capacite;
-  return `Cette action demande le droit « ${droit} ». Ouvrez « Mon poste » pour le déclarer, ou demandez à un responsable de votre établissement de le faire pour vous.`;
 }

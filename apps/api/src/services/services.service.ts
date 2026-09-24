@@ -15,11 +15,7 @@ import { MailService } from '../common/mail/mail.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { QueryServicesDto } from './dto/query-services.dto';
-import {
-  MESSAGE_HORS_PORTEE,
-  reservableParCompte,
-  visibleParCompte,
-} from './portee-salarie';
+import { FICHES_OUVERTES, MESSAGE_FICHE_FERMEE, ficheReservable } from './fiche-reservable';
 import { BookServiceDto } from './dto/book-service.dto';
 import { DEPARTEMENTS } from '../common/territoires';
 import { refuserPublicationTest } from '../common/donnees-test';
@@ -118,13 +114,13 @@ export class ServicesService {
   /**
    * Catalogue : services publiés + filtres catégorie/ville.
    *
-   * `lecteurAccountId` décide de la portée : les fiches d'un salarié ne sont
-   * visibles que des établissements qui l'emploient (voir `portee-salarie`).
+   * Les fiches des anciens comptes « salarié » n'y figurent pas, pour personne
+   * (voir `fiche-reservable.ts`).
    */
-  async findCatalog(query: QueryServicesDto, lecteurAccountId?: string) {
+  async findCatalog(query: QueryServicesDto) {
     const where: Prisma.ServiceWhereInput = {
       status: ServiceStatus.PUBLISHED,
-      AND: [visibleParCompte(lecteurAccountId)],
+      AND: [FICHES_OUVERTES],
     };
     if (query.category) where.category = query.category;
     if (query.format) where.format = query.format;
@@ -182,10 +178,10 @@ export class ServicesService {
     if (!estProprietaire && service.status !== 'PUBLISHED') {
       throw new NotFoundException('Service introuvable.');
     }
-    // Portée d'un salarié : sa fiche n'existe que pour les établissements qui
-    // l'emploient. « Introuvable » et non « interdit » — l'existence même de
-    // la fiche ne regarde pas les autres.
-    if (!estProprietaire && !(await reservableParCompte(this.prisma, id, accountId ?? ''))) {
+    // Fiche d'un ancien compte « salarié » : elle n'existe que pour son
+    // titulaire. « Introuvable » et non « interdit » : son existence même ne
+    // regarde pas les autres.
+    if (!estProprietaire && !(await ficheReservable(this.prisma, id))) {
       throw new NotFoundException('Service introuvable.');
     }
 
@@ -351,11 +347,11 @@ export class ServicesService {
         'Cette fiche n’accepte pas le paiement par carte : choisissez le virement sur facture.',
       );
     }
-    // On rejoue la portée à la réservation. Une règle qui ne vit que dans la
-    // liste se contourne avec une URL — et c'est l'engagement, pas l'affichage,
-    // qui compte ici.
-    if (!(await reservableParCompte(this.prisma, serviceId, bookingAccountId))) {
-      throw new ForbiddenException(MESSAGE_HORS_PORTEE);
+    // On rejoue la règle de la liste à la réservation. Une règle qui ne vit
+    // que dans la liste se contourne avec une URL, et c'est l'engagement, pas
+    // l'affichage, qui compte ici.
+    if (!(await ficheReservable(this.prisma, serviceId))) {
+      throw new ForbiddenException(MESSAGE_FICHE_FERMEE);
     }
 
     // Paiement à la prestation : aucune monnaie interne. La réservation est

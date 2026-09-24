@@ -11,7 +11,6 @@ import {
   FormationType,
   InscriptionStatus,
   InvoiceStatus,
-  MembershipStatus,
   Prisma,
   SessionStatus,
 } from '@prisma/client';
@@ -378,54 +377,24 @@ export class FormationsService {
     return { deleted: true };
   }
 
-  // --- Formateurs internes (parcours B) -----------------------------------
-
-  /** Membres du compte mobilisables comme formateurs internes (avec leurs compétences). */
-  async internalTrainers(accountId: string) {
-    const members = await this.prisma.membership.findMany({
-      where: { accountId, status: MembershipStatus.ACTIVE },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            profile: { select: { job: true, skills: true } },
-          },
-        },
-      },
-    });
-    return members.map((m) => ({
-      userId: m.user.id,
-      name: [m.user.firstName, m.user.lastName].filter(Boolean).join(' ') || m.user.email,
-      job: m.user.profile?.job ?? null,
-      skills: m.user.profile?.skills ?? [],
-    }));
-  }
-
   // --- Sessions -----------------------------------------------------------
 
   async createSession(formationId: string, accountId: string, dto: CreateSessionDto) {
     const formation = await this.assertOwned(formationId, accountId);
 
-    // Parcours interne : le formateur doit être un membre du compte hôte.
-    if (dto.trainerId && formation.type === FormationType.INTERNE) {
-      const membership = await this.prisma.membership.findUnique({
-        where: { userId_accountId: { userId: dto.trainerId, accountId } },
-      });
-      if (!membership) {
-        throw new BadRequestException(
-          'Le formateur interne doit être un membre de votre structure.',
-        );
-      }
-    }
+    // FORMATEUR INTERNE RETIRÉ (24/09/2026, « 1 compte = 1 personne ») : il
+    // devait être un membre du compte hôte, et les membres n'existent plus sur
+    // Les Extras. Sur une formation INTERNE, on n'écrit donc plus de
+    // formateur : `trainerId` ouvre la gestion de la session (émargement,
+    // apprenants), et le poser sans vérification l'ouvrirait à n'importe qui.
+    const trainerId =
+      formation.type === FormationType.INTERNE ? undefined : (dto.trainerId ?? undefined);
 
     return this.prisma.formationSession.create({
       data: {
         formationId,
         hostAccountId: accountId,
-        trainerId: dto.trainerId ?? undefined,
+        trainerId,
         title: dto.title,
         startDate: new Date(dto.startDate),
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
@@ -512,7 +481,9 @@ export class FormationsService {
       where: { id: sessionId },
       data: {
         title: dto.title,
-        trainerId: dto.trainerId,
+        // Même règle qu'à la création : plus de formateur interne désigné.
+        trainerId:
+          session.formation.type === FormationType.INTERNE ? undefined : dto.trainerId,
         location: dto.location,
         maxSeats: dto.maxSeats,
         priceHt: dto.priceHt,

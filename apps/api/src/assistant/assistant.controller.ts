@@ -219,7 +219,7 @@ export class AssistantController {
    * LE MEME FICHIER, MAIS ENVOYE (25/08/2026).
    *
    * Telecharger suppose qu'on ecrit depuis le poste ou l'on veut le fichier.
-   * Sur un poste partage d'unite, ce n'est pas le cas : le document doit
+   * Sur un poste partage, ce n'est pas le cas : le document doit
    * rejoindre une boite. L'adresse est saisie a l'ecran, apres relecture, et
    * n'est pas conservee — comme les notes, elle sert puis elle est oubliee.
    */
@@ -230,12 +230,12 @@ export class AssistantController {
     @CurrentAccount() account: RequestAccount,
     @Body() dto: EnvoyerDocumentDto,
   ) {
-    // L'adresse doit etre la sienne ou celle d'un membre actif du compte :
-    // sans cette borne, la route est un relais de courriel signe par le
-    // domaine. Voir AssistantService.destinataireAutorise.
+    // L'adresse doit etre la sienne : sans cette borne, la route est un
+    // relais de courriel signe par le domaine. Voir
+    // AssistantService.destinataireAutorise.
     if (!(await this.assistant.destinataireAutorise(account.id, user.id, dto.email))) {
       throw new BadRequestException(
-        "Vous ne pouvez envoyer un écrit qu'à votre propre adresse ou à celle d'un membre de votre compte.",
+        "Vous ne pouvez envoyer un écrit qu'à votre propre adresse. Transférez-le ensuite depuis votre messagerie.",
       );
     }
     const buffer =

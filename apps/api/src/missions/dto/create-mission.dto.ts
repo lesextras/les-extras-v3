@@ -96,6 +96,10 @@ export class CreateMissionDto {
   @MaxLength(40)
   attachmentId?: string;
 
+  /**
+   * ⚠ DÉPRÉCIÉ ET IGNORÉ (24/09/2026, « 1 compte = 1 personne ») : plus de
+   * services internes. Accepté pour qu'un ancien écran ne reçoive pas un 400.
+   */
   @IsOptional()
   @IsString()
   orgUnitId?: string;
@@ -109,12 +113,15 @@ export class CreateMissionDto {
   @IsEnum(ModeAttribution)
   modeAttribution?: ModeAttribution;
 
-  /** À qui l'offre est adressée. Voir l'enum CibleDiffusion. */
+  /**
+   * À qui l'offre est adressée : RESEAU, CONNUS ou SELECTION (intervenants).
+   * `UNITE`, encore dans l'énumération, retombe sur RESEAU.
+   */
   @IsOptional()
   @IsEnum(CibleDiffusion)
   cibleDiffusion?: CibleDiffusion;
 
-  /** Cible SELECTION : identifiants des salariés (User.id) désignés. */
+  /** ⚠ DÉPRÉCIÉ ET IGNORÉ (24/09/2026) : plus de salariés à désigner. */
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

@@ -32,17 +32,12 @@ export class ServicesController {
   constructor(private readonly services: ServicesService) {}
 
   /**
-   * Catalogue (authentifié) des ateliers publiés.
-   *
-   * `AccountGuard` est nécessaire ici, et pas seulement pour la forme : les
-   * fiches publiées par un salarié ne s'adressent qu'aux établissements
-   * auxquels il est rattaché. Sans savoir QUI regarde, on ne peut pas trancher
-   * — et on montrerait à tout le monde ce qui ne concerne qu'une maison.
+   * Catalogue (authentifié) des ateliers publiés, depuis un compte actif.
    */
   @Get('catalog')
   @UseGuards(AccountGuard)
-  catalog(@CurrentAccount() account: AccountCtx, @Query() query: QueryServicesDto) {
-    return this.services.findCatalog(query, account.id);
+  catalog(@Query() query: QueryServicesDto) {
+    return this.services.findCatalog(query);
   }
 
   @Get()
@@ -95,20 +90,9 @@ export class ServicesController {
   }
 
   /**
-   * Réserver un atelier : crée un Booking REQUESTED.
-   *
-   * ENGAGER L'ÉTABLISSEMENT N'EST PAS UN ACTE D'ÉQUIPE. La route ne
-   * demandait que d'être membre du compte : un éducateur rattaché pouvait
-   * réserver — donc engager une dépense — au nom de sa structure, sans que
-   * personne le lui ait accordé. Le droit « Réserver un intervenant
-   * directement » existait pourtant déjà, déclaré dans « Mon poste » et
-   * rangé en base, et rien ne le lisait.
-   *
-   * Il est lu maintenant, en OU avec le rôle : direction, administration et
-   * chefs de service réservent comme avant, un particulier reste
-   * propriétaire de son compte donc de sa réservation, et un salarié à qui
-   * on a accordé le droit réserve aussi. Le refus, lui, renvoie vers « Mon
-   * poste » plutôt que vers un code d'erreur.
+   * Réserver un atelier : crée un Booking REQUESTED, au nom du compte actif.
+   * Plus de droit déclaré ni de rôle à vérifier sur Les Extras depuis le
+   * 24/09/2026 : un compte, une personne.
    */
   @Post(':id/book')
   @UseGuards(AccountGuard)

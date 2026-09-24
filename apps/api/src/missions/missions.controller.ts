@@ -107,7 +107,7 @@ export class MissionsController {
     @CurrentAccount() account: AccountCtx,
     @Body() dto?: PublishMissionDto,
   ) {
-    return this.missions.publish(id, account.id, dto?.visibility, account.role);
+    return this.missions.publish(id, account.id, dto?.visibility);
   }
 
   /** Republier : duplique la mission en brouillon (une semaine plus tard par défaut). */
@@ -121,18 +121,7 @@ export class MissionsController {
     return this.missions.dupliquer(id, account.id, dto?.startDate);
   }
 
-  /** Approbation d'une mission en attente de validation hiérarchique. */
-  @Post(':id/approve')
-  @UseGuards(AccountGuard)
-  approve(
-    @Param('id') id: string,
-    @CurrentAccount() account: AccountCtx,
-    @Body() dto?: PublishMissionDto,
-  ) {
-    return this.missions.approve(id, account.id, dto?.visibility);
-  }
-
-  /** Élargir la diffusion d'un cran (SALARIES -> RESERVED -> PUBLIC). */
+  /** Élargir la diffusion d'un cran (RESERVED -> PUBLIC). */
   @Post(':id/broaden')
   @UseGuards(AccountGuard)
   broaden(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
@@ -183,8 +172,6 @@ export class MissionsController {
 
   /**
    * La file d'engagement d'une mission (ESTABLISHMENT propriétaire).
-   * Lisible par tout membre du compte, comme le pipeline de candidatures ;
-   * seule la DÉCISION est réservée aux responsables.
    */
   @Get(':id/engagements')
   @UseGuards(AccountGuard)

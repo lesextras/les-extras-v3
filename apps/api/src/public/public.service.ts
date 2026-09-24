@@ -13,7 +13,6 @@ import { StructuresService } from '../structures/structures.service';
 import { ConformiteService } from '../conformite/conformite.service';
 import { MailService } from '../common/mail/mail.service';
 import { DEPARTEMENTS, trouverDepartement } from '../common/territoires';
-import { ACCENTS_SQL, PLATS_SQL, motifRecherche } from '../common/recherche-accents';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { regrouperPublics, variantesDe } from '../common/publics';
@@ -33,6 +32,11 @@ const VITRINE = {
   // toute la raison d'être de la colonne. Poser le filtre requête par requête
   // en oublierait une au prochain ajout, et une fiche d'un compte archivé qui
   // reste réservable est pire qu'un compte non archivé.
+  //
+  // `profilSalarie: false` : les fiches des anciens comptes « salarié »
+  // restent hors vitrine (voir `services/fiche-reservable.ts`). Le compte
+  // salarié n'existe plus depuis le 24/09/2026, mais ouvrir leurs fiches
+  // publierait d'un coup ce que personne n'a choisi de publier.
   account: { profilSalarie: false, archivedAt: null },
 } satisfies Prisma.ServiceWhereInput;
 
@@ -981,10 +985,9 @@ export class PublicService {
     const skip = query.skip ?? 0;
     // Seules les missions réellement OUVERTES sortent ici.
     //
-    // Le palier de diffusion (SALARIES → RESERVED → PUBLIC) n'était pas
-    // regardé : un établissement qui cochait « je réserve d'abord à mon
-    // équipe » voyait quand même son annonce partir sur le web ouvert, et
-    // dans le sitemap. La promesse faite à l'écran n'était pas tenue.
+    // Le palier de diffusion (RESERVED → PUBLIC) n'était pas regardé : un
+    // établissement qui cochait « je réserve d'abord à mon réseau » voyait
+    // quand même son annonce partir sur le web ouvert, et dans le sitemap. La promesse faite à l'écran n'était pas tenue.
     const where = {
       status: MissionStatus.PUBLISHED,
       visibility: MissionVisibility.PUBLIC,
@@ -1062,13 +1065,9 @@ export class PublicService {
     const comptes = await this.prisma.account.findMany({
       where: {
         type: 'FREELANCE',
-        // Un salarié n'exerce pas pour son compte : ce qu'il anime, il l'anime
-        // pour la maison qui l'emploie, et celle-ci le paie en salaire. Sa
-        // fiche s'adresse aux établissements auxquels il est rattaché, jamais
-        // au marché ouvert. Le catalogue appliquait déjà la règle (const
-        // VITRINE) ; l'annuaire, lui, listait ces comptes comme des
-        // indépendants — donc démarchables et « réservables » par n'importe
-        // quel visiteur.
+        // Les anciens comptes « salarié » (d'avant le 24/09/2026) restent hors
+        // de l'annuaire public, comme leurs fiches hors du catalogue (const
+        // VITRINE) : ils n'ont jamais choisi d'être listés comme indépendants.
         profilSalarie: false,
         // Un compte archivé ne figure plus dans l'annuaire — même règle que la
         // vitrine, et pour la même raison : archiver retire de la vue, partout.
@@ -1134,8 +1133,8 @@ export class PublicService {
       notes.map((n) => [n.targetId, { moyenne: n._avg.rating, nb: n._count._all }]),
     );
 
-    // Même filtre que la liste : un total qui compterait les salariés
-    // annoncerait une pagination vers des pages vides.
+    // Même filtre que la liste : un total qui compterait les anciens comptes
+    // salarié annoncerait une pagination vers des pages vides.
     const total = await this.prisma.account.count({
       where: {
         type: 'FREELANCE',
@@ -1245,8 +1244,8 @@ export class PublicService {
    * Fiche publique d'un intervenant.
    *
    * Le filtre vitrine s'applique DEUX FOIS, et il faut les deux : au compte
-   * (la fiche d'un salarié ne se lit pas depuis l'extérieur, même par son
-   * adresse directe) et à ses interventions (VITRINE, la même constante que
+   * (la fiche d'un ancien compte salarié ne se lit pas depuis l'extérieur,
+   * même par son adresse directe) et à ses interventions (VITRINE, la même constante que
    * le catalogue). Une règle qui ne vivrait que dans la liste se contourne
    * avec une URL — c'est exactement ce qui se passait ici.
    */
@@ -1395,93 +1394,4 @@ export class PublicService {
     return { declarees, annuaire };
   }
 
-  /**
-   * LES ÉTABLISSEMENTS DÉJÀ DÉCLARÉS, pour le parcours d'inscription.
-   *
-   * ⚠ ORGANISATIONS SEULEMENT. Nom, ville, structure de rattachement : rien
-   * qui désigne une personne, aucun effectif, aucune adresse de contact.
-   * Ajouter un seul de ces champs changerait la nature de la route — d'un
-   * annuaire d'organisations à un fichier de prospection.
-   */
-  async rechercherEtablissements(q: string) {
-    const texte = (q ?? '').trim();
-    if (texte.length < 2) return [];
-
-    /*
-      ⚠⚠ LA RECHERCHE IGNORE LES ACCENTS, ET CE N'EST PAS UN CONFORT.
-
-      Mesuré en production le 21/09/2026 : taper « adepa » sur cet écran rendait
-      ZÉRO résultat, alors que trois établissements ADéPA y sont déclarés. La
-      cause est le `contains` de Prisma, qui devient un ILIKE : PostgreSQL rend
-      ILIKE insensible à la CASSE, jamais aux ACCENTS. « ADéPA » ne contient
-      donc pas « adepa ».
-
-      Ce n'est pas un détail d'ergonomie : c'est l'écran dont le seul métier est
-      d'empêcher le doublon d'établissement — le plus coûteux des trois, celui
-      qui coupe une équipe en deux. Une collègue qui tape son établissement sans
-      accent (ce que fait un clavier de téléphone) ne trouve rien, conclut qu'il
-      n'existe pas, et en crée un second. Le défaut touche tout ce qui s'écrit
-      avec un accent en français : Hôpital, Créteil, Sainte-Geneviève, Résidence.
-
-      ⚠ POURQUOI PAS UNE COLONNE `nomNormalise`, comme `Structure` en a une.
-      Parce que `Structure.nom` s'écrit à UN endroit (`trouverOuCreer`), alors
-      que `Account.name` s'écrit dans au moins six services différents
-      (inscription, administration, espace association, académie,
-      administration d'établissement…). Une colonne dénormalisée qu'on oublie
-      de remplir dans un seul de ces six endroits redonne exactement le défaut
-      qu'on répare, en silence et sans test qui l'attrape.
-
-      ⚠ POURQUOI `translate` ET PAS `unaccent`. `unaccent()` demande une
-      extension PostgreSQL, que le déploiement (un `prisma db push` au
-      démarrage) ne pose pas — la requête tomberait en production et pas en
-      test. `translate` est du SQL standard, présent partout, et il est
-      IMMUTABLE : le jour où le volume l'exigera, il peut porter un index
-      d'expression sans rien changer ici.
-
-      La table de correspondance et l'échappement des jokers vivent dans
-      `common/recherche-accents.ts`, avec leurs tests.
-    */
-    const ACCENTS = ACCENTS_SQL;
-    const PLATS = PLATS_SQL;
-    const motif = motifRecherche(texte);
-
-    const lignes = await this.prisma.$queryRaw<
-      { id: string; name: string; city: string | null; structureId: string | null }[]
-    >`
-      SELECT a."id", a."name", a."city", a."structureId"
-      FROM "Account" a
-      WHERE a."type" = 'ESTABLISHMENT'
-        -- ⚠ LES COMPTES ARCHIVÉS NE SE PROPOSENT PLUS. Vingt et un comptes de
-        -- test d'audit (« MECS Audit Test 2 », « [VERIF] MECS Finale », trois
-        -- portant le mot « démo ») s'affichaient ici, c'est-à-dire sur l'écran
-        -- même qui sert à éviter les doublons d'établissement.
-        AND a."archivedAt" IS NULL
-        AND (
-          translate(lower(a."name"), ${ACCENTS}, ${PLATS}) LIKE ${motif}
-          OR translate(lower(coalesce(a."legalName", '')), ${ACCENTS}, ${PLATS}) LIKE ${motif}
-        )
-      ORDER BY a."name" ASC
-      LIMIT 10
-    `;
-
-    // La structure de rattachement est lue à part : une jointure de plus dans
-    // la requête brute obligerait à reconstruire l'objet imbriqué à la main, et
-    // c'est exactement le genre de recopie qui diverge du `select` Prisma au
-    // premier champ ajouté.
-    const structureIds = [...new Set(lignes.map((l) => l.structureId).filter(Boolean))] as string[];
-    const structures = structureIds.length
-      ? await this.prisma.structure.findMany({
-          where: { id: { in: structureIds } },
-          select: { id: true, nom: true },
-        })
-      : [];
-    const parId = new Map(structures.map((s) => [s.id, s]));
-
-    return lignes.map((l) => ({
-      id: l.id,
-      name: l.name,
-      city: l.city,
-      structure: l.structureId ? (parId.get(l.structureId) ?? null) : null,
-    }));
-  }
 }

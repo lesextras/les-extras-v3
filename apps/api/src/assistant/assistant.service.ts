@@ -6,7 +6,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { AssistantTrame, Prisma } from '@prisma/client';
+import { AssistantTrame } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PseudonymiseurService, nettoyerJetonsResiduels } from './pseudonymiseur.service';
 import { RegistrePseudoService } from './registre-pseudo.service';
@@ -93,26 +93,18 @@ export class AssistantService {
    * secteur en se faisant passer pour la plateforme, et bruler la
    * delivrabilite de tous les courriels du domaine au passage.
    *
-   * On borne donc a ce qui a du sens : sa propre adresse, ou celle d'un
-   * membre actif du compte courant. Un ecrit professionnel se transmet a son
-   * equipe, pas a l'annuaire.
+   * On borne donc a sa propre adresse. Les membres du compte, qui etaient
+   * aussi acceptes, n'existent plus sur Les Extras depuis le 24/09/2026
+   * (« 1 compte = 1 personne ») : l'ecrit part vers sa boite, et la personne
+   * le transmet elle-meme depuis sa messagerie.
    */
-  async destinataireAutorise(accountId: string, userId: string, email: string) {
+  async destinataireAutorise(_accountId: string, userId: string, email: string) {
     const cible = email.trim().toLowerCase();
     const moi = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { email: true },
     });
-    if (moi?.email.toLowerCase() === cible) return true;
-    const membre = await this.prisma.membership.findFirst({
-      where: {
-        accountId,
-        status: 'ACTIVE',
-        user: { email: { equals: cible, mode: Prisma.QueryMode.insensitive } },
-      },
-      select: { id: true },
-    });
-    return Boolean(membre);
+    return moi?.email.toLowerCase() === cible;
   }
 
   /**

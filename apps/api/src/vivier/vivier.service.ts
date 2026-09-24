@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AccountType, BookingStatus, MissionVisibility } from '@prisma/client';
+import { AccountType, BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -331,11 +331,9 @@ export class VivierService {
     });
     if (!mission) throw new NotFoundException('Mission introuvable dans votre établissement.');
 
-    if (mission.visibility === MissionVisibility.SALARIES) {
-      throw new BadRequestException(
-        "Cette mission n'est encore ouverte qu'à vos salariés. Élargissez la diffusion à votre réseau réservé avant d'y inviter des intervenants extérieurs.",
-      );
-    }
+    // Le palier SALARIES (réservé à l'équipe interne) n'existe plus depuis le
+    // 24/09/2026 : une mission qui le porterait encore est lue comme RESERVED,
+    // donc visible du vivier. Plus rien à refuser ici.
 
     // On ne rappelle que des gens du vivier — retenus ou habitués. Le contraire
     // ferait de cette route un canal de sollicitation vers n'importe qui.

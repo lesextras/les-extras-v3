@@ -5,6 +5,7 @@ import { MissionVisibility } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MissionsService } from './missions.service';
+import { CiblageService, palierEffectif } from './ciblage.service';
 
 /**
  * Relance automatique des missions de renfort non pourvues.
@@ -18,7 +19,7 @@ import { MissionsService } from './missions.service';
  * mécaniques indépendantes :
  *   1. RELANCE       — au bout de RELANCE_APRES_HEURES sans être pourvue, on
  *                      élargit la diffusion d'un cran via `MissionsService.broaden()`
- *                      (la cascade SALARIES -> RESERVED -> PUBLIC n'est PAS
+ *                      (la cascade RESERVED -> PUBLIC n'est PAS
  *                      réimplémentée ici) puis on renvoie l'offre aux
  *                      intervenants correspondants.
  *   2. ALERTE        — quand la mission arrive à moins de ALERTE_AVANT_HEURES
@@ -26,8 +27,8 @@ import { MissionsService } from './missions.service';
  *
  * Garde-fou anti-doublon (sans modification du schéma Prisma) : chaque action
  * dépose un « repère » dans la table Notification de l'établissement, dont le
- * `type` encode le palier concerné (MISSION_RELANCE_SALARIES,
- * MISSION_RELANCE_RESERVED, MISSION_RELANCE_PUBLIC, MISSION_ALERTE_ECHEANCE)
+ * `type` encode le palier concerné (MISSION_RELANCE_RESERVED,
+ * MISSION_RELANCE_PUBLIC, MISSION_ALERTE_ECHEANCE)
  * et dont le `link` identifie la mission. Avant d'agir on vérifie l'absence de
  * ce repère : une mission n'est donc jamais relancée deux fois pour le même
  * palier de diffusion, ni alertée deux fois. Un second garde-fou temporel
@@ -52,9 +53,13 @@ const TYPE_ALERTE = 'MISSION_ALERTE_ECHEANCE';
 const EXPRESSION_CRON =
   (process.env.RELANCE_CRON ?? '').trim() || CronExpression.EVERY_30_MINUTES;
 
-/** Libellés lisibles des paliers de diffusion (messages en français). */
+/**
+ * Libellés lisibles des paliers de diffusion (messages en français).
+ * `SALARIES` n'est plus jamais un palier courant (lu comme RESERVED depuis le
+ * 24/09/2026) : son libellé n'existe que pour que la table reste complète.
+ */
 const LIBELLE_PALIER: Record<MissionVisibility, string> = {
-  [MissionVisibility.SALARIES]: 'vos salariés',
+  [MissionVisibility.SALARIES]: 'vos intervenants réservés',
   [MissionVisibility.RESERVED]: 'vos intervenants réservés',
   [MissionVisibility.PUBLIC]: 'toute la marketplace',
 };
@@ -339,9 +344,9 @@ export class MissionsScheduler {
     // élargissement, ni rediffusion. L'établissement a demandé que l'offre
     // reste entre les personnes qu'il a désignées, et cette demande survit à
     // l'absence de réponse — c'est à lui, et à lui seul, de l'ouvrir.
-    if (mission.cibleDiffusion !== 'RESEAU') return bilan;
+    if (CiblageService.estVerrouillee(mission)) return bilan;
 
-    const palierCourant = mission.visibility;
+    const palierCourant = palierEffectif(mission.visibility);
     const typeRepere = `${TYPE_RELANCE}${palierCourant}`;
     if (await this.repereExiste(proprietaireId, typeRepere, mission.id)) {
       // Déjà relancée pour ce palier : on ne relance jamais deux fois.

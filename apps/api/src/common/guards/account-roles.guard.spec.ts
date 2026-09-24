@@ -1,9 +1,8 @@
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AccountRole, Capacite } from '@prisma/client';
+import { AccountRole } from '@prisma/client';
 import { AccountRolesGuard } from './account-roles.guard';
 import { ACCOUNT_ROLES_KEY } from '../decorators/account-roles.decorator';
-import { CAPACITE_KEY } from '../decorators/capacite.decorator';
 import type { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -19,22 +18,15 @@ function mockContext(account: unknown): ExecutionContext {
   } as unknown as ExecutionContext;
 }
 
-function reflecteur(roles: AccountRole[] | undefined, capacite?: Capacite): Reflector {
+function reflecteur(roles: AccountRole[] | undefined): Reflector {
   return {
-    getAllAndOverride: jest.fn((cle: string) => (cle === ACCOUNT_ROLES_KEY ? roles : cle === CAPACITE_KEY ? capacite : undefined)),
+    getAllAndOverride: jest.fn((cle: string) => (cle === ACCOUNT_ROLES_KEY ? roles : undefined)),
   } as unknown as Reflector;
 }
 
-function prismaAvec(capacites: Capacite[] | null): PrismaService {
-  return {
-    membership: {
-      findUnique: jest.fn().mockResolvedValue(
-        capacites === null
-          ? null
-          : { id: 'm1', accountId: 'a1', userId: 'u1', niveau: 'SALARIE', niveauValide: false, capacites, services: [] },
-      ),
-    },
-  } as unknown as PrismaService;
+// Le garde ne lit plus la base : droits déclarés et niveaux ont disparu.
+function prismaAvec(_rien: null): PrismaService {
+  return {} as unknown as PrismaService;
 }
 
 describe('AccountRolesGuard', () => {

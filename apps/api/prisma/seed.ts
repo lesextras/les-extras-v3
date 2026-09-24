@@ -4,8 +4,9 @@
  * ----------------------------------------------------------------------------
  * Données réalistes médico-social :
  *   1 admin plateforme
- *   2 comptes ESTABLISHMENT (MECS + IME) avec sous-comptes (rôles variés)
- *     + invitations en attente
+ *   2 comptes ESTABLISHMENT (MECS + IME), une personne par compte
+ *     (« 1 compte = 1 personne » depuis le 24/09/2026 : ni sous-comptes ni
+ *     invitations sur Les Extras)
  *   3 comptes FREELANCE avec profils/métiers
  *   Missions SOS Renfort (statuts/visibilités variés)
  *   Ateliers / Éducat'heures (services)
@@ -24,7 +25,6 @@ import {
   AccountType,
   AccountRole,
   MembershipStatus,
-  InvitationStatus,
   MissionCategory,
   MissionStatus,
   MissionVisibility,
@@ -131,7 +131,7 @@ async function main() {
   );
 
   // ==========================================================================
-  // 2) ÉTABLISSEMENT #1 — MECS Les Hirondelles (+ sous-comptes + invitations)
+  // 2) ÉTABLISSEMENT #1 — MECS Les Hirondelles
   // ==========================================================================
   const mecsOwner = await upsertUser(
     'seed-usr-mecs-owner',
@@ -140,25 +140,6 @@ async function main() {
     'Fontaine',
     { phone: '01 64 10 20 30' },
   );
-  const mecsManager = await upsertUser(
-    'seed-usr-mecs-manager',
-    'chefservice@mecs-hirondelles.fr',
-    'Marc',
-    'Delaunay',
-  );
-  const mecsRh = await upsertUser(
-    'seed-usr-mecs-rh',
-    'rh@mecs-hirondelles.fr',
-    'Nadia',
-    'Berger',
-  );
-  const mecsCoord = await upsertUser(
-    'seed-usr-mecs-coord',
-    'coordination@mecs-hirondelles.fr',
-    'Julien',
-    'Moreau',
-  );
-
   const mecs = await prisma.account.upsert({
     where: { slug: 'mecs-les-hirondelles' },
     update: {},
@@ -179,39 +160,9 @@ async function main() {
   });
 
   await upsertMembership(mecsOwner.id, mecs.id, AccountRole.OWNER);
-  await upsertMembership(mecsRh.id, mecs.id, AccountRole.ADMIN);
-  await upsertMembership(mecsManager.id, mecs.id, AccountRole.MANAGER);
-  await upsertMembership(mecsCoord.id, mecs.id, AccountRole.MEMBER);
-
-  await prisma.invitation.upsert({
-    where: { email_accountId: { email: 'educateur.nuit@mecs-hirondelles.fr', accountId: mecs.id } },
-    update: {},
-    create: {
-      email: 'educateur.nuit@mecs-hirondelles.fr',
-      accountId: mecs.id,
-      role: AccountRole.MEMBER,
-      token: 'seed-inv-mecs-1',
-      status: InvitationStatus.PENDING,
-      invitedById: mecsOwner.id,
-      expiresAt: days(14),
-    },
-  });
-  await prisma.invitation.upsert({
-    where: { email_accountId: { email: 'psychologue@mecs-hirondelles.fr', accountId: mecs.id } },
-    update: {},
-    create: {
-      email: 'psychologue@mecs-hirondelles.fr',
-      accountId: mecs.id,
-      role: AccountRole.MANAGER,
-      token: 'seed-inv-mecs-2',
-      status: InvitationStatus.PENDING,
-      invitedById: mecsManager.id,
-      expiresAt: days(14),
-    },
-  });
 
   // ==========================================================================
-  // 3) ÉTABLISSEMENT #2 — IME Le Château (+ sous-comptes + invitation)
+  // 3) ÉTABLISSEMENT #2 — IME Le Château
   // ==========================================================================
   const imeOwner = await upsertUser(
     'seed-usr-ime-owner',
@@ -220,19 +171,6 @@ async function main() {
     'Garnier',
     { phone: '01 60 55 44 33' },
   );
-  const imeManager = await upsertUser(
-    'seed-usr-ime-manager',
-    'coordination@ime-lechateau.fr',
-    'Sophie',
-    'Lambert',
-  );
-  const imeMember = await upsertUser(
-    'seed-usr-ime-member',
-    'educ@ime-lechateau.fr',
-    'Karim',
-    'Haddad',
-  );
-
   const ime = await prisma.account.upsert({
     where: { slug: 'ime-le-chateau' },
     update: {},
@@ -253,22 +191,6 @@ async function main() {
   });
 
   await upsertMembership(imeOwner.id, ime.id, AccountRole.OWNER);
-  await upsertMembership(imeManager.id, ime.id, AccountRole.MANAGER);
-  await upsertMembership(imeMember.id, ime.id, AccountRole.MEMBER);
-
-  await prisma.invitation.upsert({
-    where: { email_accountId: { email: 'aes.remplacant@ime-lechateau.fr', accountId: ime.id } },
-    update: {},
-    create: {
-      email: 'aes.remplacant@ime-lechateau.fr',
-      accountId: ime.id,
-      role: AccountRole.MEMBER,
-      token: 'seed-inv-ime-1',
-      status: InvitationStatus.PENDING,
-      invitedById: imeOwner.id,
-      expiresAt: days(10),
-    },
-  });
 
   // ==========================================================================
   // 4) FREELANCES (3) — compte perso + profil métier
@@ -425,7 +347,7 @@ async function main() {
       hourlyRate: '21.00',
       headcount: 1,
       status: MissionStatus.PUBLISHED,
-      visibility: MissionVisibility.SALARIES, // diffusion 1er cran : salariés
+      visibility: MissionVisibility.RESERVED, // diffusion 1er cran : réseau connu
       publishedAt: new Date(),
     },
     {

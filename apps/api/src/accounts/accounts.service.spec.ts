@@ -131,6 +131,9 @@ describe('AccountsService', () => {
       prisma.membership.findUnique.mockResolvedValue({
         status: MembershipStatus.ACTIVE,
         role: 'OWNER',
+        // requireMembership lit le type du compte : sur Les Extras, seul le
+        // titulaire (OWNER) accède (24/09/2026).
+        account: { type: AccountType.ESTABLISHMENT },
       });
       prisma.account.findUniqueOrThrow.mockResolvedValue({
         type: AccountType.ESTABLISHMENT,

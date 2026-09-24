@@ -73,6 +73,7 @@ export class UpdateMissionDto {
   @Min(1)
   headcount?: number;
 
+  /** ⚠ DÉPRÉCIÉ ET IGNORÉ (24/09/2026, « 1 compte = 1 personne »). */
   @IsOptional()
   @IsString()
   orgUnitId?: string;
@@ -83,12 +84,14 @@ export class UpdateMissionDto {
 
   /**
    * Rouvrir une mission trop restreinte, ou au contraire la resserrer. Le
-   * ciblage n'est retouché que si l'un de ces trois champs est envoyé.
+   * ciblage n'est retouché que si `cibleDiffusion` ou
+   * `destinatairesIntervenants` est envoyé.
    */
   @IsOptional()
   @IsEnum(CibleDiffusion)
   cibleDiffusion?: CibleDiffusion;
 
+  /** ⚠ DÉPRÉCIÉ ET IGNORÉ (24/09/2026) : plus de salariés à désigner. */
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

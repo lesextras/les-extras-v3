@@ -8,20 +8,22 @@ import {
 } from '@nestjs/common';
 import { MembershipStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  MESSAGE_EN_ATTENTE,
-  routeOuverteSansRattachement,
-  salarieEnAttente,
-} from './rattachement';
+import { MESSAGE_COMPTE_D_UNE_AUTRE_PERSONNE, rattachementDonneAcces } from '../roles';
 
 /**
  * AccountGuard — cœur de l'isolation multi-tenant.
  *
  * 1. Lit le header `x-account-id`.
  * 2. Vérifie que req.user possède un Membership ACTIF sur ce compte.
- * 3. Pose `req.account = { id, role, type, membershipId }`.
- * 4. Referme le compte d'un salarié qu'aucun établissement n'a encore
- *    rattaché : il ne lui reste que LEX et sa demande (voir `rattachement.ts`).
+ * 3. Sur un compte Les Extras (établissement, intervenant, particulier),
+ *    n'accepte que le rattachement OWNER : « 1 compte = 1 personne »
+ *    (24/09/2026). Les anciens rattachements d'équipe restent en base mais
+ *    n'ouvrent plus rien. Les espaces Piloter gardent leurs membres.
+ * 4. Pose `req.account = { id, role, type, membershipId }`.
+ *
+ * L'état « salarié en attente de rattachement » n'existe plus (24/09/2026,
+ * « 1 compte = 1 personne ») : un compte actif ouvre tout ce que son type
+ * autorise.
  *
  * À utiliser APRÈS JwtAuthGuard : `@UseGuards(JwtAuthGuard, AccountGuard)`.
  * Un utilisateur ne peut JAMAIS activer un compte dont il n'est pas membre.
@@ -47,7 +49,7 @@ export class AccountGuard implements CanActivate {
 
     const membership = await this.prisma.membership.findUnique({
       where: { userId_accountId: { userId: user.id, accountId } },
-      include: { account: { select: { type: true, profilSalarie: true } } },
+      include: { account: { select: { type: true } } },
     });
 
     if (!membership) {
@@ -59,15 +61,8 @@ export class AccountGuard implements CanActivate {
       throw new ForbiddenException('Votre accès à ce compte est suspendu.');
     }
 
-    // Un salarié non rattaché n'a ni fiche à publier ni facture à émettre :
-    // on referme tout sauf LEX et le chemin qui le sortira de l'attente. Le
-    // contrôle passe APRÈS l'appartenance au compte — être bloqué ici veut
-    // dire « pas encore », pas « pas chez vous ».
-    if (
-      !routeOuverteSansRattachement(request.url ?? '', request.method) &&
-      (await salarieEnAttente(this.prisma, user.id, membership.account))
-    ) {
-      throw new ForbiddenException(MESSAGE_EN_ATTENTE);
+    if (!rattachementDonneAcces(membership.account.type, membership.role)) {
+      throw new ForbiddenException(MESSAGE_COMPTE_D_UNE_AUTRE_PERSONNE);
     }
 
     request.account = {
@@ -75,7 +70,6 @@ export class AccountGuard implements CanActivate {
       role: membership.role,
       type: membership.account.type,
       membershipId: membership.id,
-      profilSalarie: membership.account.profilSalarie,
     };
 
     return true;

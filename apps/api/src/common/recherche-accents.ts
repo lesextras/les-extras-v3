@@ -23,6 +23,11 @@
  * des deux mondes. `translate` est du SQL standard, présent partout, et il est
  * IMMUTABLE : le jour où le volume l'exigera, il pourra porter un index
  * d'expression sans que rien ne change ici.
+ *
+ * ⚠ 24/09/2026 : la recherche d'établissement de l'inscription, premier
+ * utilisateur de ce fichier, est retirée (« 1 compte = 1 personne », plus de
+ * « rejoindre un établissement »). L'outil, générique et testé, est gardé pour
+ * la prochaine recherche par nom.
  */
 
 /**

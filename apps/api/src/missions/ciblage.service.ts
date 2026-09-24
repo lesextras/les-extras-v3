@@ -21,14 +21,43 @@ import { PIECES_POUR_CANDIDATER, listerPieces, piecesManquantes } from '../commo
  * politesse — n'importe qui muni du lien passerait à travers.
  */
 
+/**
+ * UN COMPTE = UNE PERSONNE (24/09/2026, décision de Siham).
+ *
+ * Le palier `SALARIES` de la cascade, la cible `UNITE` et le versant
+ * « salariés » de la cible `SELECTION` sont retirés : il n'y a plus d'équipe
+ * interne à qui proposer un créneau. Les valeurs restent dans l'énumération
+ * (aucune migration destructive), et une mission ancienne qui les porterait
+ * encore est lue ainsi :
+ *   - visibilité `SALARIES` → `RESERVED` (le réseau connu, jamais le public) ;
+ *   - cible `UNITE`, ou `SELECTION` sans intervenant désigné → `RESEAU`.
+ * La migration `20260924200000_un_compte_une_personne` fait la même chose en
+ * base ; ces deux fonctions couvrent l'intervalle et les lignes oubliées.
+ */
+export function palierEffectif(visibilite: MissionVisibility): MissionVisibility {
+  return visibilite === MissionVisibility.SALARIES ? MissionVisibility.RESERVED : visibilite;
+}
+
+export function cibleEffective(mission: {
+  cibleDiffusion: CibleDiffusion;
+  destinatairesIntervenants: string[];
+}): CibleDiffusion {
+  if (mission.cibleDiffusion === CibleDiffusion.UNITE) return CibleDiffusion.RESEAU;
+  if (
+    mission.cibleDiffusion === CibleDiffusion.SELECTION &&
+    mission.destinatairesIntervenants.length === 0
+  ) {
+    return CibleDiffusion.RESEAU;
+  }
+  return mission.cibleDiffusion;
+}
+
 /** Le strict nécessaire pour décider d'un ciblage. */
 export interface MissionCiblee {
   id: string;
   accountId: string;
-  orgUnitId: string | null;
   visibility: MissionVisibility;
   cibleDiffusion: CibleDiffusion;
-  destinatairesSalaries: string[];
   destinatairesIntervenants: string[];
 }
 
@@ -36,10 +65,8 @@ export interface MissionCiblee {
 export const SELECT_CIBLAGE = {
   id: true,
   accountId: true,
-  orgUnitId: true,
   visibility: true,
   cibleDiffusion: true,
-  destinatairesSalaries: true,
   destinatairesIntervenants: true,
 } as const;
 
@@ -48,8 +75,11 @@ export class CiblageService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Une mission est-elle adressée nominativement (donc non élargissable) ? */
-  static estVerrouillee(cible: CibleDiffusion): boolean {
-    return cible !== CibleDiffusion.RESEAU;
+  static estVerrouillee(mission: {
+    cibleDiffusion: CibleDiffusion;
+    destinatairesIntervenants: string[];
+  }): boolean {
+    return cibleEffective(mission) !== CibleDiffusion.RESEAU;
   }
 
   /**
@@ -95,55 +125,15 @@ export class CiblageService {
   }
 
   /**
-   * Les SALARIÉS destinataires de l'offre (identifiants User), selon la cible.
-   *
-   * `UNITE` est la raison d'être de ce calcul : jusqu'ici, une mission portant
-   * un `orgUnitId` était quand même poussée à toute la structure. Le champ
-   * existait, l'écran le proposait, et rien n'en tenait compte — on demandait
-   * à l'internat de couvrir un créneau du SESSAD.
-   */
-  async salariesDestinataires(mission: MissionCiblee): Promise<string[]> {
-    if (mission.cibleDiffusion === CibleDiffusion.CONNUS) return [];
-
-    if (mission.cibleDiffusion === CibleDiffusion.SELECTION) {
-      if (mission.destinatairesSalaries.length === 0) return [];
-      const membres = await this.prisma.membership.findMany({
-        where: {
-          accountId: mission.accountId,
-          status: 'ACTIVE',
-          userId: { in: mission.destinatairesSalaries },
-        },
-        select: { userId: true },
-      });
-      return membres.map((m) => m.userId);
-    }
-
-    const membres = await this.prisma.membership.findMany({
-      where: {
-        accountId: mission.accountId,
-        status: 'ACTIVE',
-        ...(mission.cibleDiffusion === CibleDiffusion.UNITE && mission.orgUnitId
-          ? { orgUnitId: mission.orgUnitId }
-          : {}),
-      },
-      select: { userId: true },
-    });
-    return membres.map((m) => m.userId);
-  }
-
-  /**
    * Les COMPTES intervenants autorisés, ou `null` quand aucune restriction
    * nominative ne s'applique (cible RESEAU : c'est la cascade qui décide).
    */
   async intervenantsAutorises(mission: MissionCiblee): Promise<Set<string> | null> {
-    switch (mission.cibleDiffusion) {
+    switch (cibleEffective(mission)) {
       case CibleDiffusion.SELECTION:
         return new Set(mission.destinatairesIntervenants);
       case CibleDiffusion.CONNUS:
         return new Set(await this.intervenantsConnus(mission.accountId));
-      case CibleDiffusion.UNITE:
-        // Rien ne sort de la structure : la couverture est interne, point.
-        return new Set<string>();
       default:
         return null;
     }
@@ -158,15 +148,10 @@ export class CiblageService {
     cibleDiffusion: CibleDiffusion;
     destinatairesIntervenants: string[];
   }): MissionVisibility | null {
-    switch (mission.cibleDiffusion) {
+    switch (cibleEffective(mission)) {
       case CibleDiffusion.CONNUS:
-        return MissionVisibility.RESERVED;
-      case CibleDiffusion.UNITE:
-        return MissionVisibility.SALARIES;
       case CibleDiffusion.SELECTION:
-        return mission.destinatairesIntervenants.length > 0
-          ? MissionVisibility.RESERVED
-          : MissionVisibility.SALARIES;
+        return MissionVisibility.RESERVED;
       default:
         return null;
     }
@@ -180,32 +165,13 @@ export class CiblageService {
    * méthodes appelantes, qui ont chacune leurs règles historiques.
    */
   async assertCiblageRespecte(mission: MissionCiblee, accountId: string): Promise<void> {
-    if (mission.cibleDiffusion === CibleDiffusion.RESEAU) return;
+    const cible = cibleEffective(mission);
+    if (cible === CibleDiffusion.RESEAU) return;
 
     const autorises = await this.intervenantsAutorises(mission);
     if (autorises?.has(accountId)) return;
 
-    // Un salarié désigné répond avec son compte personnel : on remonte au
-    // propriétaire du compte pour le reconnaître.
-    const compte = await this.prisma.account.findUnique({
-      where: { id: accountId },
-      select: { ownerId: true },
-    });
-    if (compte?.ownerId) {
-      const salaries = await this.salariesDestinataires(mission);
-      if (salaries.includes(compte.ownerId)) return;
-    }
-
-    throw new BadRequestException(MESSAGE_HORS_CIBLE[mission.cibleDiffusion]);
-  }
-
-  /** Le compte qui répond est-il un compte de salarié ? */
-  async estSalarie(accountId: string): Promise<boolean> {
-    const compte = await this.prisma.account.findUnique({
-      where: { id: accountId },
-      select: { profilSalarie: true },
-    });
-    return compte?.profilSalarie === true;
+    throw new BadRequestException(MESSAGE_HORS_CIBLE[cible]);
   }
 
   /**
@@ -219,12 +185,11 @@ export class CiblageService {
    * La restriction que l'établissement croyait avoir posée ne tenait que sur
    * la voie qu'on avait pensé à protéger.
    *
-   * Trois règles, appliquées ensemble et une seule fois :
+   * Les règles, appliquées ensemble et une seule fois :
    *  1. le ciblage nominatif (à qui l'annonce a été adressée) ;
-   *  2. la cascade de diffusion (salariés, puis réseau connu, puis public) ;
-   *  3. le garde-fou juridique : un salarié ne se facture pas en indépendant
-   *     à son propre employeur — c'est du travail dissimulé, et la plateforme
-   *     ne doit pas en être l'instrument.
+   *  2. la cascade de diffusion (réseau connu, puis public) ;
+   *  3. le garde-fou juridique : on ne répond pas, en indépendant, à une
+   *     mission publiée par un compte que l'on gère soi-même ;
    *  4. le montage : une mission de renfort est un REMPLACEMENT DE POSTE, elle
    *     se conclut en CDD. Qui a déclaré ne pas vouloir de CDD n'a rien à y
    *     faire.
@@ -238,11 +203,9 @@ export class CiblageService {
   async assertReponseAutorisee(mission: MissionCiblee, accountId: string): Promise<void> {
     await this.assertCiblageRespecte(mission, accountId);
 
-    // Le compte qui répond est lu ICI, avant les paliers de diffusion, parce
-    // que le premier palier a besoin de savoir s'il s'agit d'un salarié maison.
     const compte = await this.prisma.account.findUnique({
       where: { id: accountId },
-      select: { ownerId: true, profilSalarie: true, interets: true },
+      select: { ownerId: true, interets: true },
     });
 
     /**
@@ -251,11 +214,8 @@ export class CiblageService {
      * Une `ReliefMission` est un remplacement : quelqu'un manque sur un poste,
      * et cela ne se couvre qu'en CDD salarié (CE 11/02/2025, n° 491128 ;
      * LFSS 2025, art. 70). Intervenir EN PLUS, sur un besoin nommé, est une
-     * autre chose — le « renfort personnalisé » — et cela passe par une fiche,
+     * autre chose (le « renfort personnalisé ») et cela passe par une fiche,
      * un devis et un contrat de prestation, pas par ici.
-     *
-     * Quelqu'un qui a déclaré vouloir seulement du renfort personnalisé est
-     * donc refusé sur cette voie, et le message lui dit par où passer.
      *
      * ⚠ UNE LISTE VIDE NE REFUSE RIEN, ET C'EST ESSENTIEL. Tous les comptes
      * créés avant les centres d'intérêt l'ont vide : refuser sur une absence
@@ -264,32 +224,10 @@ export class CiblageService {
      */
     const montage = CiblageService.blocageMontage(compte?.interets ?? []);
     if (montage) throw new BadRequestException(montage.message);
-    const salarieMaison = compte?.ownerId
-      ? await this.prisma.membership.findFirst({
-          where: { accountId: mission.accountId, userId: compte.ownerId },
-          select: { id: true },
-        })
-      : null;
 
-    // ⚠ CE PALIER REFUSAIT TOUT LE MONDE, Y COMPRIS CEUX POUR QUI IL EXISTE.
-    //
-    // `SALARIES` est le premier cran de la cascade : l'annonce est proposée
-    // pendant six heures à l'équipe avant de s'ouvrir. C'est aussi le choix par
-    // défaut du formulaire SOS Renfort et du serveur. Mais le refus était
-    // inconditionnel — il tombait avant la trentaine de lignes écrites plus
-    // bas pour laisser précisément les salariés rattachés répondre. Personne ne
-    // pouvait donc répondre à une mission pendant ses six premières heures :
-    // ni l'équipe, à qui elle était adressée, ni les autres, à juste titre.
-    //
-    // Le refus ne vaut désormais que pour qui n'appartient pas à la maison.
-    if (mission.visibility === MissionVisibility.SALARIES && !salarieMaison) {
-      throw new BadRequestException(
-        "Cette mission est réservée aux salariés de l'établissement pendant ses premières heures. Elle s'ouvrira plus largement si elle n'est pas pourvue.",
-      );
-    }
-    // La cascade s'élargit, elle ne se rétrécit jamais : ce qui était ouvert
-    // à l'équipe au premier palier le reste au second.
-    if (mission.visibility === MissionVisibility.RESERVED && !salarieMaison) {
+    // Palier réservé : le réseau connu de l'établissement seulement. Une
+    // mission ancienne encore au palier SALARIES est lue comme RESERVED.
+    if (palierEffectif(mission.visibility) === MissionVisibility.RESERVED) {
       const connus = await this.intervenantsConnus(mission.accountId);
       if (!connus.includes(accountId)) {
         throw new BadRequestException(
@@ -299,55 +237,32 @@ export class CiblageService {
     }
 
     if (compte?.ownerId) {
-      const salarie = salarieMaison;
-
-      // UN SALARIÉ NE RÉPOND QU'AUX BESOINS DE SA PROPRE MAISON.
+      // ON NE RÉPOND PAS À SA PROPRE MISSION PAR UN AUTRE COMPTE.
       //
-      // Ce qu'il fait là n'est pas de la prestation : ce sont des heures
-      // supplémentaires chez son employeur, que l'établissement accepte ou
-      // refuse ensuite, une par une. La relation de travail ne change pas,
-      // elle s'allonge — et c'est pour cela que le rattachement, ici, ouvre
-      // au lieu de fermer.
-      //
-      // Hors de sa maison, en revanche, il n'a rien à faire sur la place de
-      // marché avec ce compte-là : intervenir ailleurs demande un compte
-      // intervenant, qu'il reste libre d'ouvrir.
-      if (compte.profilSalarie) {
-        if (!salarie) {
-          throw new BadRequestException(
-            "Vous ne pouvez répondre qu'aux besoins de l'établissement qui vous emploie. Pour intervenir ailleurs, ouvrez un compte intervenant.",
-          );
-        }
-        return;
-      }
-
-      // L'INDÉPENDANT, LUI, NE FACTURE PAS SON PROPRE EMPLOYEUR.
-      // Le garde-fou d'origine reste entier pour lui : répondre en
-      // prestataire à la maison qui vous salarie, c'est le terrain de la
-      // requalification, et la plateforme ne doit pas en être l'instrument.
-      if (salarie) {
+      // Une même personne peut tenir un compte établissement et un compte
+      // intervenant. Prendre, en indépendant, la mission que l'on a soi-même
+      // publiée, c'est se facturer à soi-même : la plateforme ne doit pas en
+      // être l'instrument. (Le cas « même compte » est refusé en amont.)
+      const gereLeCompte = await this.prisma.membership.findFirst({
+        where: { accountId: mission.accountId, userId: compte.ownerId },
+        select: { id: true },
+      });
+      if (gereLeCompte) {
         throw new BadRequestException(
-          "Vous êtes rattaché à cet établissement : vous ne pouvez pas y répondre en tant qu'indépendant.",
+          "Vous gérez le compte qui publie cette mission : vous ne pouvez pas y répondre en tant qu'intervenant.",
         );
       }
-    }
 
-    /**
-     * LE DOSSIER — la cinquième règle.
-     *
-     * ⚠ ELLE NE S'APPLIQUE PAS AU SALARIÉ DE LA MAISON, et c'est important :
-     * il est déjà employé là, son employeur détient ses pièces depuis son
-     * embauche, et ce qu'il fait ici sont des heures supplémentaires. Lui
-     * redemander son casier pour prendre un créneau chez lui serait absurde.
-     *
-     * ⚠ ELLE S'APPLIQUE, ELLE, AUX COMPTES DÉJÀ EXISTANTS — contrairement à la
-     * règle du montage juste au-dessus, qui ne mord que sur une déclaration
-     * explicite. C'est assumé : une candidature sans pièces fait perdre
-     * plusieurs jours à l'établissement, qui les réclame après coup. Le refus
-     * doit donc dire exactement ce qui manque et où le déposer, sinon il se
-     * lit comme une panne.
-     */
-    if (compte?.ownerId && !salarieMaison) {
+      /**
+       * LE DOSSIER, la cinquième règle.
+       *
+       * ⚠ ELLE S'APPLIQUE AUX COMPTES DÉJÀ EXISTANTS, contrairement à la règle
+       * du montage juste au-dessus, qui ne mord que sur une déclaration
+       * explicite. C'est assumé : une candidature sans pièces fait perdre
+       * plusieurs jours à l'établissement, qui les réclame après coup. Le refus
+       * doit donc dire exactement ce qui manque et où le déposer, sinon il se
+       * lit comme une panne.
+       */
       const dossier = await this.blocageDossier(accountId, compte.ownerId);
       if (dossier) throw new BadRequestException(dossier.message);
     }
@@ -373,17 +288,17 @@ export class CiblageService {
    * ne plus dire la même chose.
    *
    * ⚠ LES REFUS NON RÉPARABLES N'Y FIGURENT PAS. Le ciblage, les paliers de
-   * cascade et le garde-fou du salarié ne dépendent pas de la personne : ils
+   * cascade et le garde-fou du compte géré ne dépendent pas de la personne : ils
    * tombent d'eux-mêmes avec le temps, ou n'ont aucune réparation à proposer.
    * Les afficher transformerait l'écran en liste de reproches.
    */
   async blocagesReponse(
-    mission: MissionCiblee,
+    _mission: MissionCiblee,
     accountId: string,
   ): Promise<BlocageReponse[]> {
     const compte = await this.prisma.account.findUnique({
       where: { id: accountId },
-      select: { ownerId: true, profilSalarie: true, interets: true },
+      select: { ownerId: true, interets: true },
     });
     if (!compte) return [];
 
@@ -392,16 +307,8 @@ export class CiblageService {
     if (montage) blocages.push(montage);
 
     if (compte.ownerId) {
-      // Même exemption que dans le refus : le salarié de la maison fait des
-      // heures supplémentaires chez son employeur, qui détient déjà ses pièces.
-      const salarieMaison = await this.prisma.membership.findFirst({
-        where: { accountId: mission.accountId, userId: compte.ownerId },
-        select: { id: true },
-      });
-      if (!salarieMaison) {
-        const dossier = await this.blocageDossier(accountId, compte.ownerId);
-        if (dossier) blocages.push(dossier);
-      }
+      const dossier = await this.blocageDossier(accountId, compte.ownerId);
+      if (dossier) blocages.push(dossier);
     }
     return blocages;
   }
@@ -463,8 +370,8 @@ const MESSAGE_HORS_CIBLE: Record<CibleDiffusion, string> = {
   [CibleDiffusion.RESEAU]: 'Cette mission ne vous est pas ouverte.',
   [CibleDiffusion.CONNUS]:
     "Cet établissement a réservé cette mission aux intervenants avec lesquels il a déjà travaillé.",
-  [CibleDiffusion.UNITE]:
-    "Cette mission est réservée aux salariés du service concerné dans l'établissement.",
+  // Valeur héritée, ramenée à RESEAU par `cibleEffective` : jamais affichée.
+  [CibleDiffusion.UNITE]: 'Cette mission ne vous est pas ouverte.',
   [CibleDiffusion.SELECTION]:
     "Cette mission a été adressée nominativement à quelques personnes : vous n'en faites pas partie.",
 };

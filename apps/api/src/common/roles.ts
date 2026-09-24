@@ -25,3 +25,35 @@ export const TYPES_AVEC_ROLES: ReadonlySet<string> = new Set(['ASSOCIATION', 'AC
 export function rolesActifs(typeCompte: string | null | undefined): boolean {
   return Boolean(typeCompte && TYPES_AVEC_ROLES.has(typeCompte));
 }
+
+/**
+ * SUR LES EXTRAS, SEUL LE TITULAIRE ACCÈDE À SON COMPTE (24/09/2026,
+ * décision de Siham, « 1 compte = 1 personne »).
+ *
+ * Les rattachements MANAGER / MEMBER / ADMIN créés avant cette date sur un
+ * compte établissement, intervenant ou particulier restent en base (rien
+ * n'est supprimé ni modifié, tout se rétablit en une ligne), mais ils
+ * n'ouvrent plus rien : seul le rattachement OWNER donne accès. Les espaces
+ * Piloter (ASSOCIATION, ACADEMIE) gardent leurs membres et leurs rôles.
+ */
+export function rattachementDonneAcces(
+  typeCompte: string | null | undefined,
+  role: string | null | undefined,
+): boolean {
+  return rolesActifs(typeCompte) || role === 'OWNER';
+}
+
+/**
+ * Le même filtre, écrit pour une requête Prisma sur `Membership` : OWNER, ou
+ * compte Piloter. À combiner avec le reste du `where` (statut ACTIVE…).
+ */
+export const FILTRE_RATTACHEMENTS_ACCESSIBLES = {
+  OR: [
+    { role: 'OWNER' as const },
+    { account: { type: { in: [...TYPES_AVEC_ROLES] as ('ASSOCIATION' | 'ACADEMIE')[] } } },
+  ],
+};
+
+/** Ce qu'on répond à un ancien membre qui tente d'ouvrir un compte Les Extras. */
+export const MESSAGE_COMPTE_D_UNE_AUTRE_PERSONNE =
+  'Ce compte appartient à une autre personne : sur Les Extras, un compte = une personne.';

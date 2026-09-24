@@ -19,7 +19,7 @@ import { QuotesService } from '../quotes/quotes.service';
  *     de repasser le type sur CERTIFIANTE : le contrôle ne se redéclenchait
  *     jamais, et le catalogue public n'excluait pas l'interne.
  *
- *  2. « Je réserve d'abord ce renfort à mon équipe. » La mission
+ *  2. « Je réserve d'abord ce renfort à mon réseau. » La mission
  *     n'apparaissait bien ni dans la marketplace ni dans les opportunités,
  *     mais son détail se lisait intégralement par son adresse directe —
  *     description, taux horaire, nom de l'établissement.
@@ -85,15 +85,15 @@ describe('Formation : on ne devient pas certifiant après coup', () => {
 });
 
 /**
- * LA RÈGLE DU SALARIÉ, SUR LES TROIS SURFACES QUI L'IGNORAIENT.
+ * LES ANCIENS COMPTES « PROFIL SALARIÉ », SUR TOUTES LES SURFACES PUBLIQUES.
  *
- * Un compte « profil salarié » n'exerce pas pour son compte : ce qu'il anime,
- * il l'anime pour la maison qui l'emploie, et celle-ci le paie en salaire, pas
- * sur facture. Sa fiche s'adresse donc aux établissements auxquels il est
- * rattaché — jamais au marché ouvert. Le catalogue appliquait la règle ;
- * l'annuaire, la fiche intervenant et la demande de devis, non.
+ * Le compte salarié rattaché à un établissement n'existe plus depuis le
+ * 24/09/2026 (« 1 compte = 1 personne »). Ceux qui avaient été créés gardent
+ * leurs fiches HORS vitrine : les ouvrir publierait d'un coup ce que personne
+ * n'a choisi de publier. Annuaire, fiche intervenant, catalogue et demande de
+ * devis appliquent la même règle.
  */
-describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquement', () => {
+describe('Ancien profil salarié : ni listé, ni consultable, ni sollicitable publiquement', () => {
   it('l’annuaire des intervenants exclut les comptes salariés', async () => {
     const findMany = jest.fn().mockResolvedValue([]);
     const prisma: any = {
@@ -191,7 +191,12 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
     expect(prisma.quote.create).not.toHaveBeenCalled();
   });
 
-  it('la demande de devis refuse la fiche d’un salarié à un établissement qui ne l’emploie pas', async () => {
+  /**
+   * La portée « visible des établissements employeurs » est retirée
+   * (24/09/2026, « 1 compte = 1 personne ») : la fiche d'un ancien compte
+   * salarié n'est réservable par PERSONNE, employeur compris.
+   */
+  it('la demande de devis refuse la fiche d’un ancien compte salarié, à tout établissement', async () => {
     const prisma: any = {
       membership: { findUnique: jest.fn().mockResolvedValue({ status: 'ACTIVE' }) },
       account: { findUniqueOrThrow: jest.fn().mockResolvedValue({ type: 'ESTABLISHMENT', name: 'MECS' }) },
@@ -202,8 +207,8 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
           accountId: 'compte-salarie',
           status: 'PUBLISHED',
         }),
-        // `reservableParCompte` ne trouve rien : le demandeur n'est pas l'un
-        // des établissements qui emploient ce salarié.
+        // `ficheReservable` ne trouve rien : la fiche appartient à un compte
+        // `profilSalarie`, hors vitrine.
         findFirst: jest.fn().mockResolvedValue(null),
       },
       quote: { create: jest.fn() },
@@ -212,12 +217,17 @@ describe('Profil salarié : ni listé, ni consultable, ni sollicitable publiquem
 
     await expect(
       service.request('user', 'compte-mecs', { serviceId: 'svc' } as any),
-    ).rejects.toThrow(/salarié/i);
+    ).rejects.toThrow(/pas ouverte à la réservation/i);
     expect(prisma.quote.create).not.toHaveBeenCalled();
+    // Le filtre ne dépend plus du demandeur : aucune portée « employeur ».
+    expect(prisma.service.findFirst).toHaveBeenCalledWith({
+      where: { id: 'svc', account: { profilSalarie: false } },
+      select: { id: true },
+    });
   });
 });
 
-describe('Mission réservée à l’équipe : elle ne se lit pas de l’extérieur', () => {
+describe('Mission au palier SALARIES hérité : lue comme RESERVED, pas de l’extérieur', () => {
   /**
    * `connus` = les comptes intervenants du réseau de l'établissement, tels
    * que les calcule CiblageService. La lecture d'une mission RESERVED s'aligne
@@ -292,8 +302,6 @@ describe('Mission réservée à l’équipe : elle ne se lit pas de l’extérie
     status: 'PUBLISHED',
     visibility: MissionVisibility.RESERVED,
     cibleDiffusion: 'RESEAU',
-    orgUnitId: null,
-    destinatairesSalaries: [],
     destinatairesIntervenants: [],
     bookings: [],
   };

@@ -6,7 +6,7 @@ import { CiblageService } from './ciblage.service';
  * LES TROIS VOIES DE RÉPONSE OBÉISSENT À LA MÊME RÈGLE.
  *
  * Constat d'audit, en production : une mission publiée « réservée à mon
- * équipe » était refusée à un inconnu sur /candidate, et acceptée sur
+ * réseau » était refusée à un inconnu sur /candidate, et acceptée sur
  * /accept comme sur /sengager — contrat émis, établissement notifié
  * « mission pourvue ». Les contrôles n'avaient été écrits que dans la
  * première voie et jamais recopiés dans les deux autres.
@@ -20,10 +20,8 @@ function missionReseau(visibility: MissionVisibility) {
   return {
     id: 'm1',
     accountId: 'etab',
-    orgUnitId: null,
     visibility,
     cibleDiffusion: CibleDiffusion.RESEAU,
-    destinatairesSalaries: [],
     destinatairesIntervenants: [],
   };
 }
@@ -32,7 +30,8 @@ function missionReseau(visibility: MissionVisibility) {
 function prismaMock(options: {
   connus?: string[];
   ownerId?: string | null;
-  estSalarie?: boolean;
+  /** Le propriétaire du compte qui répond gère-t-il aussi le compte qui publie ? */
+  gereLeCompte?: boolean;
   /** Ce que le compte a déclaré vouloir faire. Non fourni = rien déclaré. */
   interets?: Interet[];
   /**
@@ -62,7 +61,7 @@ function prismaMock(options: {
       }),
     },
     membership: {
-      findFirst: jest.fn().mockResolvedValue(options.estSalarie ? { id: 'mb1' } : null),
+      findFirst: jest.fn().mockResolvedValue(options.gereLeCompte ? { id: 'mb1' } : null),
     },
     complianceDocument: {
       findMany: jest.fn().mockResolvedValue(
@@ -83,12 +82,35 @@ function prismaMock(options: {
 }
 
 describe('Accès aux réponses : cascade de diffusion', () => {
-  it('refuse un inconnu sur une mission réservée aux salariés', async () => {
-    const ciblage = new CiblageService(prismaMock({}) as never);
+  /**
+   * Palier SALARIES hérité (d'avant le 24/09/2026) : lu comme RESERVED. Un
+   * inconnu reste refusé, un intervenant du réseau passe.
+   */
+  it('palier SALARIES hérité : refuse un inconnu, comme RESERVED', async () => {
+    const ciblage = new CiblageService(prismaMock({ connus: ['deja-venu'] }) as never);
 
     await expect(
       ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.SALARIES), 'inconnu'),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toThrow(/réservée au réseau/);
+  });
+
+  it('palier SALARIES hérité : laisse passer un intervenant du réseau', async () => {
+    const ciblage = new CiblageService(prismaMock({ connus: ['deja-venu'] }) as never);
+
+    await expect(
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.SALARIES), 'deja-venu'),
+    ).resolves.toBeUndefined();
+  });
+
+  it('cible UNITE héritée : ne restreint plus rien sur une mission publique', async () => {
+    const ciblage = new CiblageService(prismaMock({}) as never);
+
+    await expect(
+      ciblage.assertReponseAutorisee(
+        { ...missionReseau(MissionVisibility.PUBLIC), cibleDiffusion: CibleDiffusion.UNITE },
+        'inconnu',
+      ),
+    ).resolves.toBeUndefined();
   });
 
   it('refuse un inconnu sur une mission réservée au réseau de l’établissement', async () => {
@@ -116,20 +138,20 @@ describe('Accès aux réponses : cascade de diffusion', () => {
   });
 });
 
-describe('Accès aux réponses : garde-fou travail dissimulé', () => {
-  it('refuse un salarié qui répondrait en indépendant à son propre employeur', async () => {
+describe('Accès aux réponses : on ne répond pas à la mission d’un compte que l’on gère', () => {
+  it('refuse la personne qui gère aussi le compte établissement qui publie', async () => {
     const ciblage = new CiblageService(
-      prismaMock({ ownerId: 'u-salarie', estSalarie: true }) as never,
+      prismaMock({ ownerId: 'u-directrice', gereLeCompte: true }) as never,
     );
 
     await expect(
       ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'son-compte-perso'),
-    ).rejects.toThrow(/rattaché à cet établissement/i);
+    ).rejects.toThrow(/gérez le compte qui publie/i);
   });
 
   it('laisse ce même intervenant répondre à un autre établissement', async () => {
     const ciblage = new CiblageService(
-      prismaMock({ ownerId: 'u-salarie', estSalarie: false }) as never,
+      prismaMock({ ownerId: 'u-directrice', gereLeCompte: false }) as never,
     );
 
     await expect(
@@ -215,11 +237,8 @@ describe('Accès aux réponses : le montage juridique', () => {
  * dossier fait perdre plusieurs jours a l'etablissement, qui reclame les
  * papiers apres coup, pendant que le poste reste decouvert.
  *
- * ⚠ ET LE SALARIE DE LA MAISON EN EST EXEMPTE : il est deja employe la, son
- * employeur detient ses pieces depuis son embauche, et ce qu'il fait ici sont
- * des heures supplementaires. Lui redemander son casier pour prendre un
- * creneau chez lui serait absurde — et c'est le genre de refus qui fait
- * abandonner l'outil.
+ * L'exemption du salarie de la maison a ete retiree le 24/09/2026 (« 1 compte
+ * = 1 personne ») : plus aucun salarie n'est rattache a un etablissement.
  */
 describe('Accès aux réponses : le dossier déposé', () => {
   it('refuse une candidature sans pièce d’identité ni casier', async () => {
@@ -266,19 +285,15 @@ describe('Accès aux réponses : le dossier déposé', () => {
   });
 
   /**
-   * ⚠ NE PAS « RÉPARER » CE TEST en étendant la règle au salarié maison : ce
-   * sont des heures supplémentaires chez son propre employeur, qui détient
-   * déjà son dossier.
+   * L'exemption du « salarié de la maison » est retirée (24/09/2026) : il n'y
+   * a plus de salariés rattachés. Toute réponse exige le dossier.
    */
-  it('n’exige rien du salarié qui répond à sa propre maison', async () => {
-    const ciblage = new CiblageService(
-      prismaMock({ ownerId: 'u-salarie', estSalarie: true, pieces: [] }) as never,
-    );
+  it('exige le dossier de tout le monde, sans exemption', async () => {
+    const ciblage = new CiblageService(prismaMock({ pieces: [] }) as never);
 
-    // Le refus attendu est celui du travail dissimulé, pas celui du dossier.
     await expect(
-      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'son-compte-perso'),
-    ).rejects.toThrow(/rattaché à cet établissement/i);
+      ciblage.assertReponseAutorisee(missionReseau(MissionVisibility.PUBLIC), 'moi'),
+    ).rejects.toThrow(/Mon dossier/);
   });
 });
 
@@ -291,7 +306,7 @@ describe('Accès aux réponses : le dossier déposé', () => {
  * quelqu'un réécrit une des deux règles d'un seul côté.
  *
  * ⚠ LES REFUS NON RÉPARABLES N'Y FIGURENT PAS (ciblage, paliers de cascade,
- * salarié de la maison) : ils ne dépendent pas de la personne, tombent d'eux-
+ * compte géré) : ils ne dépendent pas de la personne, tombent d'eux-
  * mêmes avec le temps, et n'ont aucune réparation à proposer.
  */
 describe('Blocages annoncés avant la candidature', () => {
@@ -347,15 +362,14 @@ describe('Blocages annoncés avant la candidature', () => {
     expect(blocages[0].href).toBe('/dashboard/mon-dossier');
   });
 
-  /** Le salarié de la maison est exempté du dossier — ici comme au refus. */
-  it('n’annonce pas le dossier au salarié de la maison', async () => {
+  /** Plus d'exemption « salarié de la maison » (24/09/2026), ici comme au refus. */
+  it('annonce le dossier même si la personne est rattachée au compte qui publie', async () => {
     const ciblage = new CiblageService(
-      prismaMock({ estSalarie: true, pieces: [] }) as never,
+      prismaMock({ gereLeCompte: true, pieces: [] }) as never,
     );
 
-    await expect(
-      ciblage.blocagesReponse(missionReseau(MissionVisibility.PUBLIC), 'moi'),
-    ).resolves.toEqual([]);
+    const blocages = await ciblage.blocagesReponse(missionReseau(MissionVisibility.PUBLIC), 'moi');
+    expect(blocages.map((b) => b.code)).toEqual(['DOSSIER']);
   });
 
   it('annonce les deux quand les deux manquent', async () => {

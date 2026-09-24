@@ -20,7 +20,7 @@
  * rien. Tous les comptes créés avant cette liste l'ont vide ; refuser sur une
  * absence de déclaration fermerait RenforTeam à tout le monde d'un coup.
  */
-import { AccountType, Capacite, Interet, NiveauResponsabilite } from '@prisma/client';
+import { AccountType, Interet } from '@prisma/client';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { DisponibilitesService, LIBELLE_MONTAGE } from './disponibilites.service';
 import type { PrismaService } from '../prisma/prisma.service';
@@ -30,10 +30,7 @@ const COMPTE = (type: AccountType = AccountType.FREELANCE) =>
   ({ id: 'c1', type, role: 'OWNER' }) as unknown as RequestAccount;
 const UTILISATEUR = { id: 'u1' } as unknown as RequestUser;
 
-function prismaFactice(options?: {
-  interets?: Interet[];
-  membre?: { niveau: NiveauResponsabilite; niveauValide: boolean; capacites: Capacite[] } | null;
-}) {
+function prismaFactice(options?: { interets?: Interet[] }) {
   const etat = {
     interets: options?.interets ?? [],
     upsert: null as Record<string, unknown> | null,
@@ -49,27 +46,6 @@ function prismaFactice(options?: {
         if (data.interets?.set) etat.interets = data.interets.set;
         return {};
       }),
-    },
-    membership: {
-      findFirst: jest.fn(async () =>
-        options?.membre === undefined
-          ? {
-              id: 'm1',
-              accountId: 'c1',
-              userId: 'u1',
-              niveau: NiveauResponsabilite.SALARIE,
-              niveauValide: true,
-              capacites: [Capacite.OUVRIR_RENFORT_CDD],
-              services: [],
-            }
-          : options.membre && {
-              id: 'm1',
-              accountId: 'c1',
-              userId: 'u1',
-              services: [],
-              ...options.membre,
-            },
-      ),
     },
     complianceDocument: {
       // Dossier complet par défaut : les tests de cette suite portent sur la
@@ -213,35 +189,15 @@ describe('Lire le vivier', () => {
   });
 
   /**
-   * ⚠ UNE LISTE DE PERSONNES EN RECHERCHE DE VACATIONS N'A PAS À ÊTRE
-   * FEUILLETÉE PAR TOUT LE MONDE. Le compte d'un établissement, c'est
-   * n'importe lequel de ses salariés rattachés.
+   * Plus de droit déclaré depuis le 24/09/2026 (« 1 compte = 1 personne ») :
+   * le compte établissement actif suffit, sans lecture du rattachement.
    */
-  it('reste fermé à un salarié sans droit de renfort', async () => {
-    const { prisma } = prismaFactice({
-      membre: {
-        niveau: NiveauResponsabilite.SALARIE,
-        niveauValide: true,
-        capacites: [],
-      },
-    });
-    const service = new DisponibilitesService(prisma);
-    await expect(
-      service.vivier(COMPTE(AccountType.ESTABLISHMENT), UTILISATEUR, {}),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-  });
-
-  it('s’ouvre à qui porte le droit d’ouvrir un renfort', async () => {
-    const { prisma } = prismaFactice({
-      membre: {
-        niveau: NiveauResponsabilite.SALARIE,
-        niveauValide: true,
-        capacites: [Capacite.OUVRIR_RENFORT_CDD],
-      },
-    });
+  it('s’ouvre à tout compte établissement, sans droit déclaré', async () => {
+    const { prisma } = prismaFactice();
     const service = new DisponibilitesService(prisma);
     const lignes = await service.vivier(COMPTE(AccountType.ESTABLISHMENT), UTILISATEUR, {});
     expect(lignes).toHaveLength(1);
+    expect((prisma as unknown as Record<string, unknown>).membership).toBeUndefined();
   });
 
   /**
@@ -250,13 +206,7 @@ describe('Lire le vivier', () => {
    * s'aspire en une après-midi, et c'est tout le modèle qui sort avec elle.
    */
   it('ne renvoie ni téléphone ni adresse e-mail', async () => {
-    const { prisma } = prismaFactice({
-      membre: {
-        niveau: NiveauResponsabilite.DIRECTION,
-        niveauValide: true,
-        capacites: [],
-      },
-    });
+    const { prisma } = prismaFactice();
     const service = new DisponibilitesService(prisma);
     const [ligne] = await service.vivier(COMPTE(AccountType.ESTABLISHMENT), UTILISATEUR, {});
     const serialise = JSON.stringify(ligne);

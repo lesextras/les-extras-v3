@@ -59,9 +59,9 @@ function createPrismaMock() {
       findFirst: jest.fn(),
       create: jest.fn(),
     },
-    // candidate() vérifie que le salarié ne facture pas son propre employeur
-    // (risque de requalification). Sans ce délégué, le service plantait sur un
-    // TypeError et le test ne testait plus la règle métier attendue.
+    // candidate() vérifie qu'on ne répond pas à la mission d'un compte que
+    // l'on gère. Sans ce délégué, le service plantait sur un TypeError et le
+    // test ne testait plus la règle métier attendue.
     account: {
       findUnique: jest.fn().mockResolvedValue({ ownerId: 'freelance-user' }),
     },
@@ -82,7 +82,6 @@ function ciblageMock() {
   return {
     intervenantsConnus: jest.fn().mockResolvedValue([]),
     intervenantsAutorises: jest.fn().mockResolvedValue(null),
-    salariesDestinataires: jest.fn().mockResolvedValue([]),
     assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
     assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
     // Les blocages annoncés avant le clic : aucun par défaut, sinon les tests
@@ -262,8 +261,6 @@ describe('MissionsService : diffusion ciblée par vagues', () => {
     diffusionVague: 0,
     modeAttribution: 'AUTOMATIQUE',
     cibleDiffusion: 'RESEAU',
-    orgUnitId: null,
-    destinatairesSalaries: [],
     destinatairesIntervenants: [],
   };
 
@@ -463,7 +460,7 @@ describe('MissionsService : diffusion ciblée par vagues', () => {
  * ceux-là et à personne d'autre, en une seule fois, sans élargissement.
  */
 describe('MissionsService : diffusion nominative', () => {
-  function monter(mission: Record<string, unknown>, autorises: Set<string> | null, salaries: string[] = []) {
+  function monter(mission: Record<string, unknown>, autorises: Set<string> | null) {
     const complete = {
       id: 'm1',
       accountId: 'etab',
@@ -477,8 +474,6 @@ describe('MissionsService : diffusion nominative', () => {
       diffusionVague: 0,
       modeAttribution: 'AUTOMATIQUE',
       cibleDiffusion: 'CONNUS',
-      orgUnitId: null,
-      destinatairesSalaries: [],
       destinatairesIntervenants: [],
       ...mission,
     };
@@ -497,7 +492,6 @@ describe('MissionsService : diffusion nominative', () => {
     const ciblage = {
       intervenantsConnus: jest.fn().mockResolvedValue([...(autorises ?? [])]),
       intervenantsAutorises: jest.fn().mockResolvedValue(autorises),
-      salariesDestinataires: jest.fn().mockResolvedValue(salaries),
       assertCiblageRespecte: jest.fn().mockResolvedValue(undefined),
     assertReponseAutorisee: jest.fn().mockResolvedValue(undefined),
     blocagesReponse: jest.fn().mockResolvedValue([]),
@@ -524,16 +518,22 @@ describe('MissionsService : diffusion nominative', () => {
     expect(destinataires).toEqual(['connu@ex.fr']);
   });
 
-  it('cible « unité » : personne à l’extérieur, uniquement les salariés du service', async () => {
+  /**
+   * Plus d'équipe interne depuis le 24/09/2026 (« 1 compte = 1 personne ») :
+   * une mission ancienne restée au palier SALARIES est traitée comme RESERVED,
+   * et plus aucune notification « créneau à couvrir en interne » ne part.
+   */
+  it('palier SALARIES hérité : diffusé comme RESERVED, sans notification interne', async () => {
     const { service, mail, notifications } = monter(
-      { cibleDiffusion: 'UNITE', visibility: 'SALARIES', orgUnitId: 'u1' },
-      new Set<string>(),
-      ['user-a', 'user-b'],
+      { cibleDiffusion: 'RESEAU', visibility: 'SALARIES' },
+      null,
     );
+    (service as any).ciblage.intervenantsConnus.mockResolvedValue(['connu']);
     const n = await (service as any).broadcastToMatched('m1', 'etab');
-    expect(mail.sendMissionMatch).not.toHaveBeenCalled();
-    expect(notifications.create).toHaveBeenCalledTimes(2);
-    expect(n).toBe(2);
+    const destinataires = mail.sendMissionMatch.mock.calls.map((c: any[]) => c[0]);
+    expect(destinataires).toEqual(['connu@ex.fr']);
+    expect(notifications.create).not.toHaveBeenCalled();
+    expect(n).toBe(1);
   });
 
   it('ne prépare jamais de seconde vague : la restriction est définitive', async () => {

@@ -8,7 +8,13 @@ import { AccountRole, MembershipStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../common/audit/audit.service';
 import { RequestAccount } from '../common/types/request-context';
+import { rolesActifs } from '../common/roles';
 import { ConformiteService } from '../conformite/conformite.service';
+
+/** Message du refus de gestion sur un compte Les Extras. */
+export const MESSAGE_GESTION_PILOTER =
+  "La gestion des accès ne concerne que les espaces Piloter (association, académie). " +
+  'Sur Les Extras, un compte correspond à une seule personne.';
 
 @Injectable()
 export class MembershipsService {
@@ -28,9 +34,6 @@ export class MembershipsService {
    *
    *  - on pagine et on cherche côté serveur (nom, prénom, courriel), donc la
    *    taille de la structure n'influe plus sur le temps d'affichage ;
-   *  - on filtre par SERVICE, parce qu'un chef de service pilote son service
-   *    et pas l'établissement entier. L'unité était déjà en base et déjà
-   *    transportée ; elle n'était simplement jamais utilisée ;
    *  - on dit qui est interne et qui est externe. Une même personne peut être
    *    salariée ici et intervenante indépendante ailleurs : ne pas le montrer,
    *    c'est laisser un responsable croire qu'il a affaire à son salarié quand
@@ -44,7 +47,6 @@ export class MembershipsService {
     account: RequestAccount,
     filtres: {
       q?: string;
-      orgUnitId?: string;
       role?: AccountRole;
       status?: MembershipStatus;
       page?: number;
@@ -60,11 +62,6 @@ export class MembershipsService {
     if (filtres.membershipId) where.id = filtres.membershipId;
     if (filtres.role) where.role = filtres.role;
     if (filtres.status) where.status = filtres.status;
-    // « sans-service » est une valeur utile : c'est la liste des gens qu'on a
-    // invités et jamais rattachés, et donc ceux qui n'apparaissent dans le
-    // planning d'aucun responsable.
-    if (filtres.orgUnitId === 'sans-service') where.orgUnitId = null;
-    else if (filtres.orgUnitId) where.orgUnitId = filtres.orgUnitId;
 
     const q = filtres.q?.trim();
     if (q) {
@@ -90,8 +87,6 @@ export class MembershipsService {
           role: true,
           status: true,
           createdAt: true,
-          orgUnitId: true,
-          orgUnit: { select: { id: true, name: true } },
           user: {
             select: {
               id: true,
@@ -161,32 +156,14 @@ export class MembershipsService {
   }
 
   /**
-   * Répartition par service, pour les filtres et l'en-tête de la liste.
-   * Deux requêtes agrégées plutôt qu'un comptage en mémoire : le nombre de
-   * services est petit, le nombre de personnes ne l'est pas.
+   * Gestion des accès : espaces Piloter seulement (24/09/2026). Le rôle
+   * OWNER/ADMIN est déjà exigé par `AccountRolesGuard`, qui le lit sur ces
+   * types de compte.
    */
-  async repartition(account: RequestAccount) {
-    const [services, parService, sansService, total] = await Promise.all([
-      this.prisma.orgUnit.findMany({
-        where: { accountId: account.id },
-        select: { id: true, name: true },
-        orderBy: { name: 'asc' },
-      }),
-      this.prisma.membership.groupBy({
-        by: ['orgUnitId'],
-        where: { accountId: account.id },
-        _count: { _all: true },
-      }),
-      this.prisma.membership.count({ where: { accountId: account.id, orgUnitId: null } }),
-      this.prisma.membership.count({ where: { accountId: account.id } }),
-    ]);
-
-    const compte = new Map(parService.map((g) => [g.orgUnitId, g._count._all]));
-    return {
-      total,
-      sansService,
-      services: services.map((s) => ({ ...s, membres: compte.get(s.id) ?? 0 })),
-    };
+  private assertGestionPiloter(account: RequestAccount) {
+    if (!rolesActifs(account.type)) {
+      throw new ForbiddenException(MESSAGE_GESTION_PILOTER);
+    }
   }
 
   /**
@@ -211,6 +188,7 @@ export class MembershipsService {
     role: AccountRole,
     actorId?: string,
   ) {
+    this.assertGestionPiloter(account);
     const membership = await this.loadInAccount(account, membershipId);
 
     if (membership.userId === membership.account.ownerId) {
@@ -251,6 +229,7 @@ export class MembershipsService {
     membershipId: string,
     status: MembershipStatus,
   ) {
+    this.assertGestionPiloter(account);
     const membership = await this.loadInAccount(account, membershipId);
 
     if (membership.userId === membership.account.ownerId) {
@@ -271,6 +250,7 @@ export class MembershipsService {
   }
 
   async remove(account: RequestAccount, membershipId: string) {
+    this.assertGestionPiloter(account);
     const membership = await this.loadInAccount(account, membershipId);
 
     if (membership.userId === membership.account.ownerId) {

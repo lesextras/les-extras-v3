@@ -21,7 +21,10 @@ import { MailService } from '../common/mail/mail.service';
  *  - ACCOUNT_BANNED : une décision de modération s'annonce autrement qu'en
  *    reprenant le texte d'une cloche ;
  *  - CODE_ENVOYE, PREMIERS_POINTS, *_A_RELIRE, *_APPROVAL : rien à décider
- *    pour la personne, ou destiné à l'administration.
+ *    pour la personne, ou destiné à l'administration ;
+ *  - MISSION_INTERNE, ATTACHMENT_REQUESTED, CONGE_*, ORGANISATION : plus
+ *    émises depuis le 24/09/2026 (« 1 compte = 1 personne », plus d'équipe
+ *    interne). Les anciennes lignes restent lisibles dans la cloche.
  */
 const TYPES_PAR_COURRIEL = new Set([
   // Le rappel hebdomadaire du dossier de conformité : la cloche seule ne
@@ -30,7 +33,6 @@ const TYPES_PAR_COURRIEL = new Set([
   'MISSION_CANDIDATE',
   'MISSION_CLOSED',
   'MISSION_RECURRENTE',
-  'MISSION_INTERNE',
   'QUOTE_REQUESTED',
   'QUOTE_SENT',
   'QUOTE_REFUSED',
@@ -38,12 +40,9 @@ const TYPES_PAR_COURRIEL = new Set([
   'CONTRAT_TRANSMIS',
   'CONTRAT_SIGNE',
   'SIGNEE',
-  'ATTACHMENT_REQUESTED',
   'ENGAGEMENT_A_VALIDER',
   'ENGAGEMENT_ENREGISTRE',
   'ENGAGEMENT_ECARTE',
-  'CONGE_DEMANDE',
-  'CONGE_DECISION',
   'FORMATION_PUBLIEE',
   'VIVIER_AJOUT',
   'ATELIER',

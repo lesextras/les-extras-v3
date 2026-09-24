@@ -26,7 +26,7 @@ import { MailService } from '../common/mail/mail.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
 import { QueryMissionsDto } from './dto/query-missions.dto';
-import { CiblageService } from './ciblage.service';
+import { CiblageService, palierEffectif } from './ciblage.service';
 import { EngagementsService } from './engagements.service';
 import { AuditService } from '../common/audit/audit.service';
 import type { CandidatMissionInterne } from '../matching/matching.service';
@@ -90,12 +90,15 @@ export function vaguesPour(mode: ModeAttribution): ReadonlyArray<{
  */
 export const DELAI_ALERTE_NON_POURVUE_MIN = 720;
 
-/** Ordre de la diffusion en cascade : SALARIES -> RESERVED -> PUBLIC. */
-const CASCADE: MissionVisibility[] = [
-  MissionVisibility.SALARIES,
-  MissionVisibility.RESERVED,
-  MissionVisibility.PUBLIC,
-];
+/**
+ * Ordre de la diffusion en cascade : RESERVED -> PUBLIC.
+ *
+ * Le palier SALARIES (l'équipe interne d'abord) est retiré depuis le
+ * 24/09/2026, « 1 compte = 1 personne » : il n'y a plus d'équipe interne. Une
+ * mission ancienne qui le porterait encore est lue comme RESERVED
+ * (`palierEffectif`).
+ */
+const CASCADE: MissionVisibility[] = [MissionVisibility.RESERVED, MissionVisibility.PUBLIC];
 
 @Injectable()
 export class MissionsService {
@@ -154,7 +157,6 @@ export class MissionsService {
         ...(await geocoderCodePostal(dto.postalCode)),
         attachmentUrl: dto.attachmentUrl,
         attachmentId: dto.attachmentId ?? null,
-        orgUnitId: dto.orgUnitId,
         modeAttribution: dto.modeAttribution ?? ModeAttribution.AUTOMATIQUE,
         ...this.normaliserCiblage(dto),
       },
@@ -163,27 +165,27 @@ export class MissionsService {
 
   /**
    * Nettoie le ciblage demandé pour qu'il soit cohérent tout seul, sans que
-   * l'écran ait à y veiller. Une cible « unité » sans unité désignée, ou une
-   * cible « sélection » sans personne cochée, ne restreindrait rien du tout :
-   * on retombe alors sur la diffusion normale plutôt que de publier une
-   * mission que personne ne recevrait.
+   * l'écran ait à y veiller. Une cible « sélection » sans intervenant coché ne
+   * restreindrait rien du tout : on retombe alors sur la diffusion normale
+   * plutôt que de publier une mission que personne ne recevrait.
+   *
+   * La cible « unité » et les salariés désignés n'existent plus (24/09/2026,
+   * « 1 compte = 1 personne ») : `UNITE` retombe sur la diffusion normale, et
+   * `destinatairesSalaries`, encore accepté par le DTO pour les anciens
+   * écrans, n'est jamais lu.
    */
   private normaliserCiblage(dto: {
     cibleDiffusion?: CibleDiffusion;
-    orgUnitId?: string | null;
-    destinatairesSalaries?: string[];
     destinatairesIntervenants?: string[];
   }) {
-    const salaries = [...new Set(dto.destinatairesSalaries ?? [])];
     const intervenants = [...new Set(dto.destinatairesIntervenants ?? [])];
     let cible = dto.cibleDiffusion ?? CibleDiffusion.RESEAU;
-    if (cible === CibleDiffusion.UNITE && !dto.orgUnitId) cible = CibleDiffusion.RESEAU;
-    if (cible === CibleDiffusion.SELECTION && salaries.length + intervenants.length === 0) {
+    if (cible === CibleDiffusion.UNITE) cible = CibleDiffusion.RESEAU;
+    if (cible === CibleDiffusion.SELECTION && intervenants.length === 0) {
       cible = CibleDiffusion.RESEAU;
     }
     return {
       cibleDiffusion: cible,
-      destinatairesSalaries: cible === CibleDiffusion.SELECTION ? salaries : [],
       destinatairesIntervenants: cible === CibleDiffusion.SELECTION ? intervenants : [],
     };
   }
@@ -259,7 +261,7 @@ export class MissionsService {
       account: { archivedAt: null },
     };
     // La cascade de diffusion s'applique aussi a la LECTURE. Une mission au
-    // palier « salaries » ou « reseau reserve » ne doit pas apparaitre sur la
+    // palier « reseau reserve » ne doit pas apparaitre sur la
     // marketplace publique : la promesse de confidentialite faite a
     // l'etablissement ne vaut que si on la tient ici. Une requete ne peut pas
     // elargir ce perimetre, seulement le restreindre.
@@ -361,22 +363,18 @@ export class MissionsService {
     // Non-propriétaire : uniquement les missions publiées ET réellement
     // ouvertes, SANS le pipeline de candidatures.
     //
-    // Une mission encore réservée à l'équipe interne (palier SALARIES) se
-    // lisait intégralement par son adresse directe — description, taux
-    // horaire, nom de l'établissement — alors que l'écran promet le contraire
-    // à celui qui la publie. Seule la candidature était bloquée ; la lecture,
-    // non. On traite désormais ce cas comme un brouillon : introuvable.
-    //
-    // Le palier RESERVED souffrait du même trou, une marche plus bas : la
+    // Le palier RESERVED se lisait intégralement par son adresse directe : la
     // mission « réservée au réseau de l'établissement » se lisait par son
     // identifiant depuis n'importe quel compte. Le ciblage n'était appliqué
     // qu'à la RÉPONSE (`assertReponseAutorisee`) ; on l'applique désormais
     // aussi à la LECTURE, avec exactement la même définition du réseau, pour
     // qu'une seule règle décide de qui voit quoi.
     if (mission.status === MissionStatus.PUBLISHED) {
+      // Une mission ancienne encore au palier SALARIES est lue comme RESERVED.
+      const palier = palierEffectif(mission.visibility);
       const lisible =
-        mission.visibility === MissionVisibility.PUBLIC ||
-        (mission.visibility === MissionVisibility.RESERVED &&
+        palier === MissionVisibility.PUBLIC ||
+        (palier === MissionVisibility.RESERVED &&
           Boolean(accountId) &&
           (await this.lectureReserveeAutorisee(mission, accountId as string)));
       if (lisible) {
@@ -398,8 +396,8 @@ export class MissionsService {
         return { ...publicView, blocages };
       }
     }
-    // Brouillon, fermée, réservée à l'équipe ou au réseau d'un autre : on ne
-    // révèle pas son existence.
+    // Brouillon, fermée, réservée au réseau d'un autre : on ne révèle pas son
+    // existence.
     throw new NotFoundException('Mission introuvable.');
   }
 
@@ -415,10 +413,8 @@ export class MissionsService {
     mission: {
       id: string;
       accountId: string;
-      orgUnitId: string | null;
       visibility: MissionVisibility;
       cibleDiffusion: CibleDiffusion;
-      destinatairesSalaries: string[];
       destinatairesIntervenants: string[];
     },
     accountId: string,
@@ -446,13 +442,14 @@ export class MissionsService {
     // Le ciblage n'est retouché que s'il est explicitement demandé : sinon une
     // simple correction de titre remettrait la mission en diffusion ouverte.
     const ciblageDemande =
-      dto.cibleDiffusion !== undefined ||
-      dto.destinatairesSalaries !== undefined ||
-      dto.destinatairesIntervenants !== undefined;
+      dto.cibleDiffusion !== undefined || dto.destinatairesIntervenants !== undefined;
+    // `orgUnitId` et `destinatairesSalaries` restent acceptés par le DTO pour
+    // les anciens écrans, mais ne sont plus écrits (24/09/2026).
     const {
       cibleDiffusion: _c,
       destinatairesSalaries: _s,
       destinatairesIntervenants: _i,
+      orgUnitId: _u,
       ...reste
     } = dto;
     return this.prisma.reliefMission.update({
@@ -462,8 +459,6 @@ export class MissionsService {
         ...(ciblageDemande
           ? this.normaliserCiblage({
               cibleDiffusion: dto.cibleDiffusion ?? mission.cibleDiffusion,
-              orgUnitId: dto.orgUnitId ?? mission.orgUnitId,
-              destinatairesSalaries: dto.destinatairesSalaries ?? mission.destinatairesSalaries,
               destinatairesIntervenants:
                 dto.destinatairesIntervenants ?? mission.destinatairesIntervenants,
             })
@@ -574,55 +569,35 @@ export class MissionsService {
 
   /**
    * Publie une mission : DRAFT -> PUBLISHED et démarre la cascade au palier
-   * le plus restreint utile (SALARIES si vivier interne, sinon PUBLIC).
-   * L'établissement peut forcer un palier ; /broaden élargit ensuite, et le
-   * planificateur élargit tout seul si la mission reste non pourvue.
+   * le plus restreint utile (RESERVED si l'établissement a un réseau connu,
+   * sinon PUBLIC). L'établissement peut forcer un palier ; /broaden élargit
+   * ensuite, et le planificateur élargit tout seul si la mission reste non
+   * pourvue.
+   *
+   * La validation hiérarchique (un chef de service demande, la direction
+   * approuve) est retirée depuis le 24/09/2026 : un compte, une personne.
    */
-  async publish(
-    id: string,
-    accountId: string,
-    visibiliteDemandee?: MissionVisibility,
-    roleUtilisateur?: string,
-  ) {
+  async publish(id: string, accountId: string, visibiliteDemandee?: MissionVisibility) {
     const mission = await this.assertOwned(id, accountId);
     if (mission.status !== MissionStatus.DRAFT) {
       throw new BadRequestException('Seule une mission en brouillon peut être publiée.');
     }
     refuserPublicationTest(mission.title);
-    // Validation hierarchique (option du compte) : un MANAGER demande, un
-    // OWNER/ADMIN approuve avant toute diffusion.
-    if (roleUtilisateur === 'MANAGER') {
-      const compte = await this.prisma.account.findUnique({
-        where: { id: accountId },
-        select: { validationMissions: true },
-      });
-      if (compte?.validationMissions) {
-        const enAttente = await this.prisma.reliefMission.update({
-          where: { id },
-          data: { attenteValidation: true },
-        });
-        await this.notifierApprobateurs(accountId, enAttente.id, enAttente.title);
-        return enAttente;
-      }
-    }
-    if (mission.attenteValidation) {
-      // Un OWNER/ADMIN qui publie vaut approbation.
-      await this.prisma.reliefMission.update({ where: { id }, data: { attenteValidation: false } });
-    }
     // Un ciblage nominatif IMPOSE le palier : une mission adressée au seul
     // SESSAD, ou aux trois intervenants qu'on connaît, ne doit jamais se
     // retrouver sur la marketplace publique. La restriction demandée est une
     // promesse faite à l'établissement — elle prime sur tout le reste, y
     // compris sur une visibilité explicitement demandée par l'écran.
     const impose = CiblageService.palierImpose(mission);
-    // Palier de départ : « mon équipe d'abord » si le compte a effectivement
-    // un vivier interne (salariés ou intervenants déjà venus), sinon on
-    // publierait dans le vide → diffusion publique immédiate.
-    const demande = visibiliteDemandee ?? null;
+    // Palier de départ : « mon réseau d'abord » si le compte a effectivement
+    // des intervenants connus (vivier retenu ou déjà venus), sinon on
+    // publierait dans le vide → diffusion publique immédiate. Un palier
+    // SALARIES demandé par un ancien écran est lu comme RESERVED.
+    const demande = visibiliteDemandee ? palierEffectif(visibiliteDemandee) : null;
     const palierDepart =
       impose ??
       demande ??
-      ((await this.aUnViverInterne(accountId)) ? MissionVisibility.SALARIES : MissionVisibility.PUBLIC);
+      ((await this.aUnReseauConnu(accountId)) ? MissionVisibility.RESERVED : MissionVisibility.PUBLIC);
 
     const published = await this.prisma.reliefMission.update({
       where: { id },
@@ -665,34 +640,6 @@ export class MissionsService {
     return published;
   }
 
-  /** Previent les OWNER/ADMIN du compte qu'une mission attend leur approbation. */
-  private async notifierApprobateurs(accountId: string, missionId: string, titre: string) {
-    const approbateurs = await this.prisma.membership.findMany({
-      where: { accountId, role: { in: ['OWNER', 'ADMIN'] }, status: 'ACTIVE' },
-      select: { userId: true },
-    });
-    await Promise.allSettled(
-      approbateurs.map((m) =>
-        this.notifications.create(m.userId, {
-          type: 'MISSION_APPROVAL',
-          title: 'Mission à approuver',
-          body: `« ${titre} » attend votre validation avant diffusion.`,
-          link: '/dashboard/renforts',
-        }),
-      ),
-    );
-  }
-
-  /** Approbation par un OWNER/ADMIN : la mission part en diffusion normale. */
-  async approve(id: string, accountId: string, visibiliteDemandee?: MissionVisibility) {
-    const mission = await this.assertOwned(id, accountId);
-    if (!mission.attenteValidation) {
-      throw new BadRequestException("Cette mission n'attend pas d'approbation.");
-    }
-    await this.prisma.reliefMission.update({ where: { id }, data: { attenteValidation: false } });
-    return this.publish(id, accountId, visibiliteDemandee);
-  }
-
   /**
    * Republier : duplique une mission en brouillon, datee une semaine plus
    * tard (ou a la date demandee). L'etablissement ajuste puis publie —
@@ -721,7 +668,6 @@ export class MissionsService {
         hourlyRate: source.hourlyRate,
         headcount: source.headcount,
         emergency: source.emergency,
-        orgUnitId: source.orgUnitId,
         status: 'DRAFT',
       },
     });
@@ -746,56 +692,10 @@ export class MissionsService {
     return this.ciblage.intervenantsConnus(accountId);
   }
 
-  /** Le compte a-t-il de quoi alimenter un palier interne (équipe ou habitués) ? */
-  private async aUnViverInterne(accountId: string): Promise<boolean> {
-    const membres = await this.prisma.membership.count({
-      where: { accountId, status: 'ACTIVE' },
-    });
-    if (membres > 1) return true;
+  /** Le compte a-t-il un réseau connu pour alimenter le palier RESERVED ? */
+  private async aUnReseauConnu(accountId: string): Promise<boolean> {
     const connus = await this.intervenantsConnus(accountId);
     return connus.length > 0;
-  }
-
-  /**
-   * Palier SALARIES : on ne sort pas de la structure. L'offre est poussée aux
-   * salariés DESTINATAIRES — toute l'équipe en diffusion normale, les seuls
-   * membres de l'unité désignée quand l'établissement a ciblé un service, les
-   * seules personnes cochées quand il a fait une sélection nominative.
-   *
-   * Jusqu'ici, ce calcul ignorait l'unité : le champ existait sur la mission,
-   * l'écran le proposait, et l'internat recevait les créneaux du SESSAD.
-   */
-  private async notifierEquipeInterne(mission: {
-    id: string;
-    title: string;
-    accountId: string;
-    startDate: Date;
-    orgUnitId: string | null;
-    visibility: MissionVisibility;
-    cibleDiffusion: CibleDiffusion;
-    destinatairesSalaries: string[];
-    destinatairesIntervenants: string[];
-  }): Promise<number> {
-    const destinataires = await this.ciblage.salariesDestinataires(mission);
-    const cible = mission.cibleDiffusion !== CibleDiffusion.RESEAU;
-    // Les salariés doivent atterrir là où l'on accepte : la fiche mission de la
-    // marketplace porte le bouton. Le board /dashboard/renforts, lui, sert à
-    // celui qui publie, pas à celui qui se propose.
-    const lien = `/marketplace/missions/${mission.id}`;
-    const quand = mission.startDate.toLocaleDateString('fr-FR');
-    await Promise.allSettled(
-      destinataires.map((userId) =>
-        this.notifications.create(userId, {
-          type: 'MISSION_INTERNE',
-          title: cible ? 'Un créneau vous est proposé' : 'Créneau à couvrir en interne',
-          body: cible
-            ? `« ${mission.title} » du ${quand} vous est proposé directement par votre établissement.`
-            : `« ${mission.title} » du ${quand} est proposé à l'équipe avant d'être ouvert aux intervenants extérieurs.`,
-          link: lien,
-        }),
-      ),
-    );
-    return destinataires.length;
   }
 
   /**
@@ -886,10 +786,8 @@ export class MissionsService {
     if (!mission) return 0;
 
     // ── Cascade : le palier décide QUI est sollicité ───────────────────────
-    if (mission.visibility === MissionVisibility.SALARIES) {
-      // Rien ne sort de la structure à ce stade.
-      return this.notifierEquipeInterne(mission);
-    }
+    // (une mission ancienne au palier SALARIES est traitée comme RESERVED)
+    const palier = palierEffectif(mission.visibility);
 
     // Variante INTERNE du classement : elle seule porte l'adresse e-mail, et
     // elle ne sort jamais par une route HTTP (voir MatchingService).
@@ -906,23 +804,20 @@ export class MissionsService {
       const destinataires = joignables.filter(
         (c) => nominatif.has(c.accountId) && !exclus.has(c.accountId),
       );
-      // La cible « unité » et une sélection de seuls salariés n'ont personne à
-      // l'extérieur : la diffusion est purement interne.
-      const internes = await this.notifierEquipeInterne(mission);
       const notifies = await this.envoyerOffre(mission, destinataires, 1);
       await this.prisma.reliefMission.update({
         where: { id: missionId },
         data: { diffusionVague: 1, derniereVagueAt: new Date() },
       });
       this.logger.log(
-        `Mission ${missionId}, diffusion ciblée (${mission.cibleDiffusion}) : ${notifies} intervenant(s) notifié(s) sur ${destinataires.length} visé(s) + ${internes} salarié(s).`,
+        `Mission ${missionId}, diffusion ciblée (${mission.cibleDiffusion}) : ${notifies} intervenant(s) notifié(s) sur ${destinataires.length} visé(s).`,
       );
-      return notifies + internes;
+      return notifies;
     }
 
     // Palier RESERVED : uniquement les intervenants déjà venus dans la structure.
     let autorises: Set<string> | null = null;
-    if (mission.visibility === MissionVisibility.RESERVED) {
+    if (palier === MissionVisibility.RESERVED) {
       autorises = new Set(await this.intervenantsConnus(accountId));
       // Programme de progression : les « Super Extra » (10 missions terminees,
       // note >= 4,5, annulations <= 5 %) sont sollicites des ce palier, avant
@@ -1012,20 +907,6 @@ export class MissionsService {
     await this.ciblage.assertReponseAutorisee(mission, freelanceAccountId);
     if (mission.modeAttribution === ModeAttribution.FILE_ENGAGEMENT) {
       return this.engagements.sengager(missionId, freelanceAccountId, accountType);
-    }
-
-    // UN SALARIÉ NE SE SERT PAS TOUT SEUL.
-    //
-    // Prendre la mission directement la passe à POURVUE sans que personne
-    // n'ait rien validé. Pour un salarié, ces heures sont des heures
-    // supplémentaires : elles se demandent, et l'employeur les accorde ou
-    // les refuse. On le renvoie donc vers la candidature, qui est
-    // exactement ce chemin-là. La file d'engagement, elle, présente déjà le
-    // profil à la direction : elle reste ouverte, au-dessus.
-    if (await this.ciblage.estSalarie(freelanceAccountId)) {
-      throw new BadRequestException(
-        "Vous êtes salarié de cet établissement : vous ne prenez pas la mission directement. Candidatez : ce sont des heures supplémentaires, votre établissement doit les accepter.",
-      );
     }
 
     // Verrou : passe PUBLISHED -> FILLED uniquement si personne ne l'a déjà prise.
@@ -1130,7 +1011,6 @@ export class MissionsService {
     const enCours = await this.prisma.reliefMission.findMany({
       where: {
         status: MissionStatus.PUBLISHED,
-        visibility: { not: MissionVisibility.SALARIES },
         derniereVagueAt: { not: null },
       },
       select: {
@@ -1145,6 +1025,7 @@ export class MissionsService {
         alerteNonPourvueAt: true,
         modeAttribution: true,
         cibleDiffusion: true,
+        destinatairesIntervenants: true,
         account: { select: { name: true, owner: { select: { email: true } } } },
       },
       take: 200,
@@ -1166,7 +1047,7 @@ export class MissionsService {
       // Une mission adressée nominativement n'a QU'UNE vague, par définition :
       // élargir reviendrait à trahir la restriction demandée. Elle passe donc
       // directement à l'engagement « mission garantie » si personne ne répond.
-      const verrouillee = CiblageService.estVerrouillee(m.cibleDiffusion);
+      const verrouillee = CiblageService.estVerrouillee(m);
 
       try {
         // ── Vague suivante, s'il en reste une ────────────────────────────
@@ -1230,18 +1111,18 @@ export class MissionsService {
     }
   }
 
-  /** Élargit la diffusion d'un cran : SALARIES -> RESERVED -> PUBLIC. */
+  /** Élargit la diffusion d'un cran : RESERVED -> PUBLIC. */
   async broaden(id: string, accountId: string) {
     const mission = await this.assertOwned(id, accountId);
     if (mission.status !== MissionStatus.PUBLISHED) {
       throw new BadRequestException('La mission doit être publiée pour élargir sa diffusion.');
     }
-    if (CiblageService.estVerrouillee(mission.cibleDiffusion)) {
+    if (CiblageService.estVerrouillee(mission)) {
       throw new BadRequestException(
         "Cette mission a été adressée à des destinataires précis : sa diffusion ne s'élargit pas. Modifiez la mission pour l'ouvrir au réseau.",
       );
     }
-    const idx = CASCADE.indexOf(mission.visibility);
+    const idx = CASCADE.indexOf(palierEffectif(mission.visibility));
     if (idx >= CASCADE.length - 1) {
       throw new BadRequestException('Diffusion déjà au niveau maximal (PUBLIC).');
     }
@@ -1271,7 +1152,7 @@ export class MissionsService {
       throw new BadRequestException('Vous ne pouvez pas candidater à votre propre mission.');
     }
     // Qui a le droit de répondre : ciblage, cascade de diffusion et garde-fou
-    // salarié/employeur. Vérifié AVANT de renvoyer vers l'autre mode : sinon
+    // du compte géré. Vérifié AVANT de renvoyer vers l'autre mode : sinon
     // on confirmerait à un inconnu l'existence d'une mission qu'il n'a pas le
     // droit de voir (`GET /missions/:id` lui répond « introuvable »).
     await this.ciblage.assertReponseAutorisee(mission, freelanceAccountId);
@@ -1315,13 +1196,13 @@ export class MissionsService {
   // ───────────────────────────────────────────────────────────────────────────
 
   /**
-   * Palier de diffusion suivant dans la cascade SALARIES -> RESERVED -> PUBLIC,
+   * Palier de diffusion suivant dans la cascade RESERVED -> PUBLIC,
    * ou `null` si la mission est déjà diffusée au niveau maximal.
    * Méthode statique : permet au scheduler de savoir s'il est utile d'appeler
    * `broaden()` sans avoir à dupliquer l'ordre de la cascade.
    */
   static visibiliteSuivante(visibilite: MissionVisibility): MissionVisibility | null {
-    const idx = CASCADE.indexOf(visibilite);
+    const idx = CASCADE.indexOf(palierEffectif(visibilite));
     if (idx < 0 || idx >= CASCADE.length - 1) return null;
     return CASCADE[idx + 1];
   }
@@ -1353,6 +1234,7 @@ export class MissionsService {
         startTime: true,
         visibility: true,
         cibleDiffusion: true,
+        destinatairesIntervenants: true,
         modeAttribution: true,
         emergency: true,
         publishedAt: true,

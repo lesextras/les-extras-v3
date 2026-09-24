@@ -20,15 +20,8 @@ import {
   OuvrirFilDto,
   ModifierMessageDto,
   SignalerMessageDto,
-  AjouterParticipantsDto,
 } from './dto/fil.dto';
 import { masquerCoordonnees, EXPLICATION_MASQUAGE } from './masquage';
-import {
-  SELECT_MEMBRE,
-  versMembreCourant,
-  filtreMembresVisibles,
-  peutPiloterService,
-} from '../common/perimetre';
 
 /**
  * MESSAGERIE — version complète (16/09/2026).
@@ -82,8 +75,8 @@ export class ConversationsService {
    * La boîte de réception : les fils où je suis participant.
    *
    * ⚠ La condition est `participants.some({ userId })`, pas « j'y ai écrit ».
-   * Quelqu'un qu'on vient d'ajouter à un fil d'équipe doit le voir AVANT d'y
-   * avoir écrit, sinon il n'apprend jamais qu'on lui parle.
+   * Quelqu'un qu'on vient d'ajouter à un fil doit le voir AVANT d'y avoir
+   * écrit, sinon il n'apprend jamais qu'on lui parle.
    */
   async findAll(userId: string, filtres: { type?: TypeConversation; archives?: boolean } = {}) {
     const conversations = await this.prisma.conversation.findMany({
@@ -96,7 +89,6 @@ export class ConversationsService {
       take: 100,
       include: {
         mission: { select: { id: true, title: true } },
-        orgUnit: { select: { id: true, name: true } },
         account: { select: { id: true, name: true } },
         quote: { select: { id: true, status: true } },
         booking: { select: { id: true, status: true } },
@@ -120,7 +112,7 @@ export class ConversationsService {
       const { messages: _m, participants, ...reste } = c;
       return {
         ...reste,
-        titre: this.titreFil(c.type, c.sujet, c.mission?.title, c.orgUnit?.name, c.account?.name),
+        titre: this.titreFil(c.type, c.sujet, c.mission?.title, c.account?.name),
         participants: participants
           .filter((p) => p.userId !== userId)
           .map((p) => p.user),
@@ -203,17 +195,18 @@ export class ConversationsService {
     type: TypeConversation,
     sujet: string | null,
     mission?: string,
-    service?: string,
     etablissement?: string,
   ): string {
     if (sujet) return sujet;
     switch (type) {
       case TypeConversation.MISSION:
         return mission ? `Renfort — ${mission}` : 'Renfort';
+      // Fils d'équipe créés avant le 24/09/2026 : toujours lisibles, plus
+      // aucun ne s'ouvre (« 1 compte = 1 personne »).
       case TypeConversation.SERVICE:
-        return service ? `Service ${service}` : 'Service';
+        return 'Service';
       case TypeConversation.INTERNE:
-        return etablissement ? `Équipe — ${etablissement}` : 'Équipe';
+        return etablissement ? `Équipe · ${etablissement}` : 'Équipe';
       case TypeConversation.INTERVENANT:
         return 'Échange avec un intervenant';
       case TypeConversation.SUPPORT:
@@ -259,7 +252,6 @@ export class ConversationsService {
         where: { id: conversationId },
         include: {
           mission: { select: { id: true, title: true } },
-          orgUnit: { select: { id: true, name: true } },
           account: { select: { id: true, name: true } },
           quote: { select: { id: true, status: true } },
           booking: { select: { id: true, status: true } },
@@ -299,7 +291,6 @@ export class ConversationsService {
           conversation.type,
           conversation.sujet,
           conversation.mission?.title,
-          conversation.orgUnit?.name,
           conversation.account?.name,
         ),
         participants: conversation.participants.map((p) => p.user),
@@ -333,9 +324,13 @@ export class ConversationsService {
     switch (dto.type) {
       case TypeConversation.INTERVENANT:
         return this.ouvrirAvecIntervenant(userId, accountId, dto);
+      // Plus de fil d'équipe ni de service (24/09/2026) : sur Les Extras, un
+      // compte correspond à une seule personne.
       case TypeConversation.INTERNE:
       case TypeConversation.SERVICE:
-        return this.ouvrirInterne(userId, accountId, dto);
+        throw new BadRequestException(
+          'Les fils d’équipe n’existent plus : sur Les Extras, un compte correspond à une seule personne.',
+        );
       case TypeConversation.SUPPORT:
         return this.ouvrirSupport(userId, accountId, dto);
       default:
@@ -510,86 +505,6 @@ export class ConversationsService {
   }
 
   /**
-   * FIL INTERNE OU DE SERVICE — dans les limites de mon périmètre.
-   *
-   * On n'écrit qu'à des gens qu'on voit : la même règle que partout ailleurs.
-   * Sans elle, la messagerie serait le trou par lequel un salarié atteindrait
-   * toute une association.
-   */
-  private async ouvrirInterne(
-    userId: string,
-    accountId: string | undefined,
-    dto: OuvrirFilDto,
-  ) {
-    if (!accountId) {
-      throw new BadRequestException('Choisissez l’établissement concerné.');
-    }
-    const brut = await this.prisma.membership.findFirst({
-      where: { userId, accountId, status: MembershipStatus.ACTIVE },
-      select: SELECT_MEMBRE,
-    });
-    if (!brut) throw new ForbiddenException("Vous n'êtes pas membre de ce compte.");
-    const membre = versMembreCourant(brut);
-
-    if (dto.orgUnitId) {
-      const duCompte = await this.prisma.orgUnit.count({
-        where: { id: dto.orgUnitId, accountId },
-      });
-      if (duCompte === 0) throw new NotFoundException('Service introuvable.');
-    }
-
-    // Les destinataires demandés doivent tous être dans mon périmètre.
-    const demandes = dto.participantIds ?? [];
-    const visibles = await this.prisma.membership.findMany({
-      where: {
-        ...filtreMembresVisibles(membre),
-        status: MembershipStatus.ACTIVE,
-        userId: { in: demandes },
-      },
-      select: { userId: true },
-    });
-    const autorises = new Set(visibles.map((m) => m.userId));
-    const refuses = demandes.filter((id) => !autorises.has(id));
-    if (refuses.length > 0) {
-      throw new ForbiddenException(
-        'Vous ne pouvez écrire qu’aux personnes de votre périmètre.',
-      );
-    }
-
-    // Un fil de SERVICE s'adresse à tout le service : on n'énumère pas.
-    let participants = [userId, ...autorises];
-    if (dto.type === TypeConversation.SERVICE && dto.orgUnitId) {
-      if (!peutPiloterService(membre, dto.orgUnitId) && !membre.servicesRattaches.includes(dto.orgUnitId)) {
-        throw new ForbiddenException("Vous n'êtes pas rattaché à ce service.");
-      }
-      const duService = await this.prisma.membership.findMany({
-        where: {
-          accountId,
-          status: MembershipStatus.ACTIVE,
-          services: { some: { orgUnitId: dto.orgUnitId } },
-        },
-        select: { userId: true },
-      });
-      participants = [userId, ...duService.map((m) => m.userId)];
-    }
-
-    if (participants.length < 2) {
-      throw new BadRequestException('Choisissez au moins une personne à qui écrire.');
-    }
-
-    return this.creerFil({
-      type: dto.type,
-      sujet: dto.sujet ?? null,
-      accountId,
-      orgUnitId: dto.orgUnitId ?? null,
-      createdById: userId,
-      participants: [...new Set(participants)],
-      auteurId: userId,
-      body: dto.body,
-    });
-  }
-
-  /**
    * FIL AVEC LES EXTRAS.
    *
    * ⚠ Il s'appuie sur le module `support` existant — même boîte, même écran
@@ -616,7 +531,6 @@ export class ConversationsService {
     type: TypeConversation;
     sujet: string | null;
     accountId?: string | null;
-    orgUnitId?: string | null;
     quoteId?: string | null;
     bookingId?: string | null;
     missionId?: string | null;
@@ -630,7 +544,6 @@ export class ConversationsService {
         type: entree.type,
         sujet: entree.sujet,
         accountId: entree.accountId ?? null,
-        orgUnitId: entree.orgUnitId ?? null,
         quoteId: entree.quoteId ?? null,
         bookingId: entree.bookingId ?? null,
         missionId: entree.missionId ?? null,
@@ -914,68 +827,6 @@ export class ConversationsService {
   // -------------------------------------------------------------------------
   // GESTION DU FIL
   // -------------------------------------------------------------------------
-
-  /** Ajoute des participants, dans la limite du périmètre de qui les ajoute. */
-  async ajouterParticipants(conversationId: string, userId: string, dto: AjouterParticipantsDto) {
-    const participation = await this.assertParticipant(conversationId, userId);
-    const fil = participation.conversation;
-
-    if (fil.type === TypeConversation.INTERVENANT) {
-      throw new BadRequestException(
-        'Un échange avec un intervenant reste entre les parties de la demande.',
-      );
-    }
-    if (!fil.accountId) {
-      throw new BadRequestException('Ce fil n’est rattaché à aucun établissement.');
-    }
-
-    const brut = await this.prisma.membership.findFirst({
-      where: { userId, accountId: fil.accountId, status: MembershipStatus.ACTIVE },
-      select: SELECT_MEMBRE,
-    });
-    if (!brut) throw new ForbiddenException("Vous n'êtes pas membre de ce compte.");
-    const membre = versMembreCourant(brut);
-
-    const visibles = await this.prisma.membership.findMany({
-      where: {
-        ...filtreMembresVisibles(membre),
-        status: MembershipStatus.ACTIVE,
-        userId: { in: dto.userIds },
-      },
-      select: { userId: true, user: { select: { firstName: true, lastName: true } } },
-    });
-    if (visibles.length !== new Set(dto.userIds).size) {
-      throw new ForbiddenException(
-        'Vous ne pouvez ajouter que des personnes de votre périmètre.',
-      );
-    }
-
-    await this.prisma.$transaction(async (tx) => {
-      for (const v of visibles) {
-        await tx.conversationParticipant.upsert({
-          where: { conversationId_userId: { conversationId, userId: v.userId } },
-          create: { conversationId, userId: v.userId },
-          update: { quitteLe: null },
-        });
-      }
-      // Message système : dans un fil professionnel, l'arrivée de quelqu'un ne
-      // se devine pas. Tout le monde doit savoir qui lit.
-      const noms = visibles
-        .map((v) => [v.user.firstName, v.user.lastName].filter(Boolean).join(' ').trim())
-        .filter(Boolean)
-        .join(', ');
-      await tx.message.create({
-        data: {
-          conversationId,
-          senderId: userId,
-          type: TypeMessage.SYSTEME,
-          body: `${noms || 'Une personne'} a rejoint la conversation.`,
-        },
-      });
-    });
-
-    return this.findOne(conversationId, userId);
-  }
 
   /**
    * Quitter un fil.

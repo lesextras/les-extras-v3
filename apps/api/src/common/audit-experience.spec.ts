@@ -60,45 +60,47 @@ describe('Devis : le compte actif décide, pas la simple appartenance', () => {
   });
 });
 
-describe('SOS Renfort : le premier palier existait pour l’équipe et la refusait', () => {
+describe('SOS Renfort : le palier SALARIES hérité est lu comme RESERVED', () => {
   /**
-   * `SALARIES` est le choix PAR DÉFAUT du formulaire et du serveur : pendant
-   * six heures, l'annonce est proposée à l'équipe avant de s'ouvrir. Le refus
-   * était pourtant inconditionnel, et tombait avant les lignes écrites plus bas
-   * pour laisser précisément les salariés rattachés répondre. Personne ne
-   * pouvait donc répondre à une mission pendant ses six premières heures.
+   * `SALARIES` était le premier palier de la cascade (l'équipe interne
+   * d'abord). Il n'existe plus depuis le 24/09/2026 (« 1 compte = 1
+   * personne ») : une mission qui le porte encore est lue comme RESERVED. Le
+   * réseau connu de l'établissement répond, les autres attendent
+   * l'élargissement, et plus personne n'est laissé passer au titre d'un
+   * rattachement.
    */
   const mission = {
     id: 'm1',
     accountId: 'mecs',
     visibility: MissionVisibility.SALARIES,
     cibleDiffusion: CibleDiffusion.RESEAU,
+    destinatairesIntervenants: [],
   } as never;
 
-  function service(estMembre: boolean, profilSalarie: boolean) {
+  function service(connus: string[]) {
     const prisma = {
       account: {
-        findUnique: jest.fn().mockResolvedValue({ ownerId: 'personne', profilSalarie }),
+        findUnique: jest.fn().mockResolvedValue({ ownerId: 'personne', interets: [] }),
       },
-      membership: {
-        findFirst: jest.fn().mockResolvedValue(estMembre ? { id: 'mb' } : null),
-      },
+      membership: { findFirst: jest.fn().mockResolvedValue(null) },
     };
     const s = new CiblageService(prisma as never);
-    // Le ciblage nominatif n'est pas le sujet de ce test : il est neutralisé.
+    // Le ciblage nominatif et le dossier ne sont pas le sujet de ce test.
     jest.spyOn(s, 'assertCiblageRespecte').mockResolvedValue(undefined as never);
+    jest.spyOn(s, 'intervenantsConnus').mockResolvedValue(connus);
+    jest.spyOn(s as unknown as { blocageDossier: () => Promise<null> }, 'blocageDossier').mockResolvedValue(null);
     return s;
   }
 
-  it('laisse répondre le salarié rattaché à la maison', async () => {
+  it('laisse répondre un intervenant du réseau connu', async () => {
     await expect(
-      service(true, true).assertReponseAutorisee(mission, 'compte-salarie'),
+      service(['compte-habitue']).assertReponseAutorisee(mission, 'compte-habitue'),
     ).resolves.toBeUndefined();
   });
 
-  it('refuse toujours celui qui n’est pas de la maison', async () => {
+  it('refuse celui qui n’est pas du réseau, avec le message du palier réservé', async () => {
     await expect(
-      service(false, false).assertReponseAutorisee(mission, 'compte-etranger'),
-    ).rejects.toThrow(/réservée aux salariés/i);
+      service(['compte-habitue']).assertReponseAutorisee(mission, 'compte-etranger'),
+    ).rejects.toThrow(/réservée au réseau/i);
   });
 });

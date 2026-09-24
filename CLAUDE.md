@@ -5685,3 +5685,50 @@ glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
   mène au formulaire `#demande` de la page (demande de contact, reçue dans
   /admin/contacts), plus à /register. En offre complète, « Publier un
   besoin » garde son lien d'inscription.
+
+### 24/09/2026 (soir) — lots 2 et 3 : refonte pédagogique Toulali sur Teachizy
+
+- « Accompagnement au numérique » (d1322695…) et « Community Manager IA » (e133c9b1…) :
+  ajouts seulement (matrice objectifs/activités/évaluations/preuves, compléments 2026,
+  cas pratiques corrigés, transfert, aide et version, grille commune 0-3 sur chaque
+  devoir : validé à 17/24, jamais avec un 0 en sécurité). Aucune leçon supprimée.
+- Nouveaux items Accompagnement : 1506510 Socle (environnement numérique), 1506511
+  son devoir, 1506512 Transfert au poste. « Bilan de compétences numériques » →
+  « diagnostic des compétences numériques » partout (page de vente comprise).
+- CM IA : module 5 « mesurer, analyser et décider » ; « certificat » → « certificat
+  interne de réussite » + mention ni RNCP ni RS ; portfolio 14 pièces, soutenance 20 min.
+- Sources et outil d'application (idempotent, ancres par titre h3/h4) :
+  scratchpad/refonte/ (acc*.js, cm.js, appliquer.js). Sauvegarde du contenu AVANT
+  refonte : localStorage de app.teachizy.fr, clés bk_<uuid> (navigateur de Siham).
+- Méthode de transfert sans rien publier : input file créé dans la page Teachizy +
+  file_upload depuis /mnt/user-data/uploads, lu en localStorage, puis eval.
+- Restent (lot 1, chiffres de Siham) : durées par module (min_complete_duration à 0
+  sur Accompagnement), délai de correction des devoirs, devis type, seuils des quiz
+  Teachizy (min_success_rate laissé à 0), transcriptions des vidéos CM.
+
+### 24/09/2026 (nuit) — 1 compte = 1 personne, et « Mon agenda » façon Outlook
+
+- **1 compte = 1 personne sur Les Extras** (décision de Siham) : seul le titulaire
+  (OWNER) ouvre un compte ESTABLISHMENT / FREELANCE / PARTICULIER. Sous-comptes,
+  invitations d'équipe, organigramme, rattachements, niveaux et droits déclarés
+  retirés (API + web, commit local `c08ba5f`). ⚠ Piloter (ASSOCIATION/ACADEMIE)
+  GARDE ses rôles et invitations. Migration `20260924200000_un_compte_une_personne`
+  non destructive (les lignes Membership restent en base).
+- **Mon agenda** (`/dashboard/agenda`, `app/_shared/agenda/`) : vues jour, semaine
+  de travail, semaine, mois, liste ; clic sur un créneau = nouveau rendez-vous ;
+  glisser pour déplacer, bord bas pour la durée ; fiche détaillée au clic ;
+  mini-calendrier ; couleur et affichage par agenda ; recherche. Il réunit les
+  rendez-vous ET les réservations, visios, missions, créneaux et ateliers payés
+  (`agenda/sources-les-extras.ts`).
+- **Partages d'agenda** (`apps/api/src/partages/`, modèle `PartageAgenda`,
+  migration `20260924210000_partages_agenda`) : inviter quelqu'un OU lui demander
+  son agenda, quatre niveaux — DISPONIBILITES (« Occupé »), TITRES, DETAILS,
+  MODIFICATION (rendez-vous seulement). ⚠ `masquer()` est la SEULE porte :
+  aucun événement partagé n'en sort sans y passer, et `href` est toujours retiré.
+  Le niveau est toujours choisi par celui qui partage ; une demande propose, elle
+  n'impose pas. « Ses services » montre les fiches publiées du titulaire.
+- Poussé le 24/09/2026 avec l'accord explicite de Siham (« supprime je valide ») :
+  les 50 fichiers retirés l'ont été un par un par l'interface GitHub (page
+  `/delete/main/<chemin>`, bouton « Commit changes... » puis celui du dialogue,
+  4 fichiers par `browser_batch` au plus, sinon l'outil dépasse son délai), puis
+  le reste en un seul dépôt de fichiers.

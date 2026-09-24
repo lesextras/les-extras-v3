@@ -1046,8 +1046,8 @@ export class MailService implements OnModuleDestroy {
     const premiersPas = etab
       ? [
           'Parcourez le catalogue d’ateliers et de formations, et demandez un devis en deux clics.',
-          'Publiez un RenforTeam quand une absence tombe : il part d’abord à votre équipe interne.',
-          'Invitez vos salariés : la gestion interne (planning, pointage, conformité) est gratuite.',
+          'Publiez un RenforTeam quand une absence tombe : il part d’abord aux intervenants qui connaissent déjà votre établissement, puis au réseau.',
+          'Retenez vos intervenants habituels dans votre vivier : ils reçoivent vos besoins en priorité.',
         ]
       : [
           'Publiez votre premier atelier : c’est gratuit, et vous gardez 100 % de votre tarif.',
@@ -1090,15 +1090,70 @@ export class MailService implements OnModuleDestroy {
     );
   }
 
+  /**
+   * Invitation dans un espace Piloter (association, académie) : seuls ces
+   * espaces invitent encore des personnes depuis le 24/09/2026 (« 1 compte =
+   * 1 personne » sur Les Extras). Le texte reste neutre : il ne parle ni
+   * d'équipe interne ni de salariés.
+   */
+  /**
+   * PARTAGE D'AGENDA (24/09/2026), comme dans Outlook : une invitation à voir
+   * un agenda, une demande d'accès, et la réponse. Le message ne contient AUCUN
+   * rendez-vous : il dit qui partage, à quel niveau, et où répondre.
+   */
+  async sendPartageAgenda(
+    to: string,
+    data: {
+      type: 'INVITATION' | 'DEMANDE' | 'ACCEPTE' | 'REFUSE';
+      qui: string;
+      compte?: string | null;
+      niveau?: string | null;
+      message?: string | null;
+      inscrit: boolean;
+    },
+  ): Promise<void> {
+    const url = data.inscrit ? `${this.webUrl}/dashboard/agenda?onglet=partages` : `${this.webUrl}/register`;
+    const qui = echapper(data.qui);
+    const compte = data.compte ? ` (<b>${echapper(data.compte)}</b>)` : '';
+    const mot = data.message ? `<br><br>Son message : « ${echapper(data.message)} »` : '';
+    const textes = {
+      INVITATION: {
+        sujet: `${data.qui} partage son agenda avec vous`,
+        titre: 'Un agenda partagé avec vous',
+        corps: `<b>${qui}</b>${compte} vous invite à voir son agenda sur Les Extras : ${echapper(data.niveau ?? '')}.${mot}<br><br>${data.inscrit ? 'Acceptez ou refusez depuis votre agenda.' : 'Créez votre compte avec cette adresse pour accepter : l’invitation vous attendra.'}`,
+        cta: data.inscrit ? 'Voir l’invitation' : 'Créer mon compte',
+      },
+      DEMANDE: {
+        sujet: `${data.qui} demande à voir votre agenda`,
+        titre: 'Une demande d’accès à votre agenda',
+        corps: `<b>${qui}</b>${compte} demande à voir votre agenda sur Les Extras : ${echapper(data.niveau ?? '')}.${mot}<br><br>C’est vous qui décidez : vous pouvez accepter, choisir un autre niveau ou refuser.`,
+        cta: 'Répondre à la demande',
+      },
+      ACCEPTE: {
+        sujet: `${data.qui} a accepté le partage d’agenda`,
+        titre: 'Partage d’agenda accepté',
+        corps: `<b>${qui}</b> a accepté. L’agenda partagé apparaît maintenant dans votre agenda, à côté du vôtre.`,
+        cta: 'Ouvrir mon agenda',
+      },
+      REFUSE: {
+        sujet: `${data.qui} a répondu à votre demande de partage`,
+        titre: 'Demande de partage refusée',
+        corps: `<b>${qui}</b> n’a pas donné suite à la demande de partage d’agenda.`,
+        cta: 'Ouvrir mon agenda',
+      },
+    }[data.type];
+    await this.send(to, textes.sujet, this.layout(textes.titre, textes.corps, { label: textes.cta, url }));
+  }
+
   async sendInvitation(to: string, token: string, accountName: string): Promise<void> {
     const url = `${this.webUrl}/invitations/accept?token=${encodeURIComponent(token)}`;
     await this.send(
       to,
-      `Vous êtes invité·e à rejoindre ${accountName} sur LES EXTRAS`,
+      `Invitation à rejoindre l'espace ${accountName}`,
       this.layout(
         'Une invitation vous attend',
-        `Vous avez été invité·e à rejoindre l'équipe <b>${accountName}</b> sur LES EXTRAS. Cliquez ci-dessous pour accepter et créer votre accès.`,
-        { label: "Rejoindre l'équipe", url },
+        `Vous avez été invité·e à rejoindre l'espace <b>${accountName}</b>. Cliquez ci-dessous pour accepter l'invitation et créer votre accès.`,
+        { label: "Accepter l'invitation", url },
       ),
     );
   }
@@ -1300,14 +1355,15 @@ export class MailService implements OnModuleDestroy {
    * rien n'activait ceux qui viennent de s'inscrire. Ce message arrive à J+1,
    * quand l'inscription est encore fraîche mais que l'élan du premier jour est
    * retombé, et il ne demande qu'UNE chose — celle qui débloque tout le reste
-   * pour ce type de compte. Trois variantes, un geste chacune. S'il est déjà
+   * pour ce type de compte. Deux variantes, un geste chacune (la variante
+   * « salarié » est retirée depuis le 24/09/2026). S'il est déjà
    * fait, le planificateur n'envoie rien du tout (voir ActivationScheduler).
    */
   async sendActivationJ1(
     to: string,
     data: {
       prenom?: string | null;
-      variante: 'etablissement' | 'independant' | 'salarie';
+      variante: 'etablissement' | 'independant';
     },
   ): Promise<void> {
     const variantes = {
@@ -1316,8 +1372,8 @@ export class MailService implements OnModuleDestroy {
         corps:
           `Votre espace est prêt. La prochaine étape, la seule qui compte, est de
            <b>publier votre premier besoin</b> : un poste, des dates, un mot de contexte.
-           La diffusion fait le reste, par cercles : vos salariés d'abord, puis vos
-           habitués, puis le réseau. Vous ne payez aucune commission, le tarif de
+           La diffusion fait le reste, par cercles : vos habitués d'abord, puis le
+           réseau. Vous ne payez aucune commission, le tarif de
            l'intervenant est son tarif.`,
         cta: { label: 'Publier mon premier besoin', chemin: '/dashboard/renforts' },
       },
@@ -1329,15 +1385,6 @@ export class MailService implements OnModuleDestroy {
            établissements voient d'abord les dossiers complets, un dossier vide est
            invisible, un dossier complet est sollicité. Dix minutes, une seule fois.`,
         cta: { label: 'Compléter mon dossier', chemin: '/dashboard/mon-dossier' },
-      },
-      salarie: {
-        sujet: 'Une demande de rattachement, et tout s’ouvre',
-        corps:
-          `Votre compte est ouvert, et LEX, l'assistant d'écrits professionnels, est
-           <b>déjà utilisable</b>, avec votre dotation offerte. Pour le reste, une seule
-           étape : <b>demander votre rattachement</b> à votre établissement. Une fois
-           accepté, ses renforts vous arrivent avant tout le monde.`,
-        cta: { label: 'Ouvrir mon espace', chemin: '/dashboard' },
       },
     } as const;
     const v = variantes[data.variante];
@@ -1830,78 +1877,6 @@ export class MailService implements OnModuleDestroy {
         <br><br>Vous pouvez l'accepter ou le refuser depuis votre espace. L'accepter
         crée la réservation et bloque la date.`,
         { label: 'Voir le devis', url: `${this.webUrl}/dashboard/facturation?vue=devis` },
-      ),
-    );
-  }
-
-  /**
-   * RATTACHEMENT — les trois moments, dans un seul point d'entrée.
-   *
-   * ⚠ Le module n'envoyait RIEN, dans aucun des deux sens, alors que quatre
-   * écrans affirmaient le contraire (« Vous serez prévenu ici et par e-mail »).
-   * Une personne pouvait attendre indéfiniment une réponse que personne ne
-   * savait qu'elle attendait.
-   */
-  async sendRattachement(
-    to: string,
-    data: {
-      moment: 'demande' | 'acceptee' | 'refusee';
-      salarie?: string | null;
-      etablissement?: string | null;
-      motif?: string | null;
-    },
-  ): Promise<void> {
-    const e = (t: string) => t.replace(/</g, '&lt;');
-    const qui = e(data.salarie ?? 'Une personne');
-    const ou = e(data.etablissement ?? 'votre établissement');
-
-    if (data.moment === 'demande') {
-      await this.send(
-        to,
-        `Demande de rattachement, ${data.salarie ?? 'un salarié'}`,
-        this.layout(
-          'Quelqu’un demande à rejoindre votre équipe',
-          `<b>${qui}</b> demande à être rattaché·e à <b>${ou}</b> sur Les Extras.
-          <br><br>Tant que vous n'avez pas répondu, cette personne <b>ne peut ni
-          publier, ni répondre à un renfort</b> : son espace est en attente. Un
-          clic suffit, dans les deux sens.`,
-          { label: 'Voir la demande', url: `${this.webUrl}/dashboard/equipe` },
-        ),
-      );
-      return;
-    }
-
-    if (data.moment === 'acceptee') {
-      await this.send(
-        to,
-        `C’est accepté : vous êtes rattaché·e à ${data.etablissement ?? 'votre établissement'}`,
-        this.layout(
-          'Votre rattachement est accepté',
-          `<b>${ou}</b> vient d'accepter votre rattachement. Votre espace est
-          ouvert : vous pouvez publier vos ateliers et répondre aux renforts de la
-          maison.
-          <br><br><b>Une seule chose à savoir :</b> déconnectez-vous puis
-          reconnectez-vous une fois. Le sélecteur de compte ne montrera votre
-          établissement qu'après : c'est votre jeton de connexion qui porte la
-          liste, et il date d'avant l'acceptation.`,
-          { label: 'Ouvrir mon espace', url: `${this.webUrl}/dashboard` },
-        ),
-      );
-      return;
-    }
-
-    await this.send(
-      to,
-      'Votre demande de rattachement n’a pas été retenue',
-      this.layout(
-        'Réponse à votre demande',
-        `<b>${ou}</b> n'a pas retenu votre demande de rattachement.
-        ${data.motif ? `<br><br><i>${e(data.motif).slice(0, 500)}</i>` : ''}
-        <br><br>Si c'est une erreur d'aiguillage : mauvais établissement, mauvais
-        profil au moment de l'inscription, écrivez-nous : cela se corrige.
-        <br><br>Vous pouvez aussi demander un rattachement à un autre
-        établissement depuis votre espace.`,
-        { label: 'Nous écrire', url: `${this.webUrl}/contact` },
       ),
     );
   }
