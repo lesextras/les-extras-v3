@@ -106,9 +106,11 @@ export const SUBSCRIPTION_PLANS = [
  * d'un profil de son vivier). Garder « RenforTeam illimité » derrière un
  * paywall contredisait cette promesse mot pour mot.
  *
- * Ce que l'abonnement achète RÉELLEMENT, et lui seul : LEX partagé par
- * toute l'équipe du compte (1 000 générations mensuelles mutualisées, là où
- * chaque professionnel devrait sinon prendre son propre abonnement), et la
+ * Ce que l'abonnement achète RÉELLEMENT, et lui seul : LEX pour toute
+ * l'équipe (1 000 générations mensuelles que le titulaire RÉPARTIT entre les
+ * personnes de son choix via les enveloppes LEX, `enveloppes.service.ts`,
+ * depuis « 1 compte = 1 personne » du 24/09/2026 : chacun garde son compte,
+ * le titulaire voit les chiffres et jamais les écrits), et la
  * PUBLICATION DE TRAMES À PORTÉE ÉTABLISSEMENT — la trame maison d'un chef
  * de service devient le gabarit de tout le monde (`TrameMaison.portee =
  * ETABLISSEMENT`, réservée OWNER/ADMIN/MANAGER). C'est le seul avantage que
@@ -123,7 +125,7 @@ export const ESTABLISHMENT_PLAN = {
   amountCents: 8900,
   monthlyCredits: 1000,
   perks:
-    'LEX pour toute l’équipe : 1 000 générations par mois partagées entre les professionnels du compte, et les trames maison publiables à l’échelle de l’établissement. La mise en relation, les missions et la contractualisation restent gratuites, avec ou sans cet abonnement.',
+    'LEX pour toute l’équipe : 1 000 générations par mois que vous répartissez entre les personnes de votre choix, chacune avec son compte et un plafond mensuel (écran « Partager LEX »), et vos trames maison ouvertes à toute l’équipe. Vous voyez combien chacun utilise, jamais ce qu’il écrit. La mise en relation, les missions et la contractualisation restent gratuites, avec ou sans cet abonnement.',
 } as const;
 
 /**

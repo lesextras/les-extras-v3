@@ -73,8 +73,8 @@ const OFFRES: Offre[] = [
   {
     nom: 'LEX Équipe (établissement)',
     prix: '89 € / mois',
-    inclus: 'Toute l’équipe du compte, trames publiables à l’échelle de l’établissement',
-    generations: '1 000 par mois, partagées',
+    inclus: 'Les personnes de votre choix, chacune avec son compte et un plafond mensuel, trames maison partagées',
+    generations: '1 000 par mois, réparties',
     unitaire: '0,089 €',
     nous: true,
   },

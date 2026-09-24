@@ -147,8 +147,9 @@ const FORMULES = [
     precision: "par mois, pour tout l’établissement",
     pour: "Pour une équipe qui écrit avec les mêmes trames.",
     points: [
-      "1 000 générations par mois, partagées",
-      "Vos trames maison publiables à l’échelle de l’établissement",
+      "1 000 générations par mois, réparties entre les personnes de votre choix",
+      "Chacun garde son compte, avec un plafond par mois : vous voyez les chiffres, jamais les écrits",
+      "Vos trames maison ouvertes à toute l’équipe",
       "La mise en relation reste gratuite, avec ou sans abonnement",
     ],
     vedette: false,
