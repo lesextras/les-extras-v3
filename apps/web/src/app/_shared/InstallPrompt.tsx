@@ -1,6 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  abonnerInstallation,
+  dejaInstallee,
+  evenementInstallation,
+  fenetreDejaVue,
+  lancerInstallation,
+  marquerFenetreVue,
+  surIphone,
+} from './installation';
 
 /**
  * « AJOUTER À L'ÉCRAN D'ACCUEIL ».
@@ -15,22 +24,12 @@ import { useEffect, useRef, useState } from 'react';
  * association n'a aucun sens — c'est l'hôte qui décide du nom, pas le
  * déploiement.
  *
- * ELLE S'OUVRE À CHAQUE VISITE, ET SE RANGE À GAUCHE. Deux corrections du
- * 9/09/2026 :
- *
- *  1. Elle ne s'ouvrait qu'une fois dans la vie du navigateur. Une seule
- *     occasion de voir la proposition, souvent au mauvais moment — et si on
- *     répondait « Plus tard » ce jour-là, on ne la revoyait plus jamais. Elle
- *     revient donc à chaque ouverture du site, douze secondes après l'arrivée.
- *     Fermer reste sans effet sur la visite suivante : c'est le sens de
- *     « Plus tard ».
- *
- *  2. La pastille réduite était en bas à DROITE, exactement là où vivent déjà
- *     le retour en haut de page et l'assistant : elle les cachait. Elle passe
- *     à gauche, où rien ne se trouve.
- *
- * La réduction ne vaut donc que pour la visite en cours : le site ne rouvre
- * pas la bannière après un « Plus tard », mais il la reproposera demain.
+ * ELLE NE S'OUVRE QU'UNE FOIS, PUIS PLUS JAMAIS (24/09/2026). Le 9/09 on
+ * l'avait fait revenir à chaque visite, avec une pastille à gauche quand on
+ * répondait « Plus tard » : Siham la fermait dix fois par jour. La première
+ * visite la montre, douze secondes après l'arrivée ; ensuite l'installation
+ * reste à portée de main dans le bloc de l'accueil (`BlocInstaller`), et
+ * nulle part ailleurs. Plus de pastille flottante.
  *
  * ⚠ ET SUR LES AUTRES NAVIGATEURS QUI SE TAISENT. On n'ouvrait la bannière
  * QUE si le navigateur avait prévenu. Il se tait dans bien des cas ordinaires
@@ -48,23 +47,6 @@ import { useEffect, useRef, useState } from 'react';
  * avec le chemin à suivre à la place du bouton, puisque c'est la personne qui
  * appuie.
  */
-
-interface EvenementInstallation extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-
-/**
- * iPhone ou iPad. Depuis iPadOS 13, un iPad se présente comme un Macintosh :
- * on le reconnaît à son écran tactile. Et il faut que ce soit Safari, car un
- * Chrome ou un Firefox sur iOS n'ajoute rien à l'écran d'accueil.
- */
-function surIphone() {
-  const ua = navigator.userAgent;
-  const pomme = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
-  return pomme && safari;
-}
 
 /**
  * OÙ L'ON PROPOSE D'INSTALLER, ET OÙ L'ON SE TAIT.
@@ -88,8 +70,7 @@ function marque(hote: string) {
     return {
       nom: 'Piloter',
       titre: "Installer l'application Piloter",
-      texte:
-        "Ajoutez Piloter à votre écran d'accueil : votre chemin, vos pièces et vos dossiers s'ouvrent en un geste, même sans connexion.",
+      texte: "Ton espace en un geste, depuis l'écran d'accueil.",
     };
   }
   return {
@@ -101,126 +82,49 @@ function marque(hote: string) {
 }
 
 export function InstallPrompt() {
-  const [evenement, setEvenement] = useState<EvenementInstallation | null>(null);
-  const [etat, setEtat] = useState<'cache' | 'ouvert' | 'reduit'>('cache');
+  const [ouvert, setOuvert] = useState(false);
   const [nom, setNom] = useState(() => marque(''));
-  /** Comment on installe ici : le navigateur le fait, ou la personne le fait. */
-  const [voie, setVoie] = useState<'navigateur' | 'iphone' | 'manuel'>('navigateur');
-  /** Le navigateur a-t-il parlé ? Une référence, car le minuteur ne verrait pas l'état. */
-  const recu = useRef(false);
-  /** L'application est-elle déjà installée sur cette machine ? */
-  const dejaLa = useRef(false);
+  const [peutInstaller, setPeutInstaller] = useState(false);
+  const [iphone, setIphone] = useState(false);
 
   useEffect(() => {
-    setNom(marque(window.location.hostname));
+    const hote = window.location.hostname;
+    setNom(marque(hote));
+    // Retrait provisoire côté Les Extras. Piloter garde sa proposition.
+    if (!surPilote(hote)) return;
+    if (dejaInstallee() || fenetreDejaVue()) return;
+    setIphone(surIphone());
 
-    // Retrait provisoire côté Les Extras. Piloter garde sa bannière.
-    if (!surPilote(window.location.hostname)) return;
-
-    // Déjà installé : rien à proposer.
-    if (window.matchMedia?.('(display-mode: standalone)').matches) return;
-
-    // Déjà installée sur cette machine, mais ouverte dans un onglet. Le
-    // navigateur ne proposera plus rien, et il a raison : l'icône existe déjà.
-    // Lui répéter d'installer n'a aucun sens, on se tait.
-    let annule = false;
-    const liees = (
-      navigator as Navigator & {
-        getInstalledRelatedApps?: () => Promise<unknown[]>;
-      }
-    ).getInstalledRelatedApps;
-    if (liees) {
-      void liees
-        .call(navigator)
-        .then((apps) => {
-          if (!annule && Array.isArray(apps) && apps.length > 0) dejaLa.current = true;
-        })
-        .catch(() => undefined);
-    }
-
-    const surProposition = (e: Event) => {
-      e.preventDefault();
-      recu.current = true;
-      // ⚠ IL PEUT PARLER APRÈS COUP, ET C'EST FRÉQUENT. Chrome attend parfois
-      // plus de douze secondes avant d'annoncer qu'il sait installer. On avait
-      // alors déjà basculé sur les gestes à faire à la main, et le bouton
-      // n'apparaissait plus de la visite — alors qu'un seul clic suffisait.
-      setVoie('navigateur');
-      setEvenement(e as EvenementInstallation);
-      // Douze secondes : le temps d'arriver, de regarder, de comprendre où on
-      // est. Une bannière qui saute à la figure au premier pixel ne s'installe
-      // pas, elle se ferme.
-      window.setTimeout(() => setEtat('ouvert'), 12_000);
-    };
-
-    const surInstallation = () => {
-      setEtat('cache');
-      setEvenement(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', surProposition);
-    window.addEventListener('appinstalled', surInstallation);
-
-    // Douze secondes plus tard, si le navigateur n'a rien dit, c'est qu'il ne
-    // dira rien : on ouvre nous-mêmes, avec les gestes à faire.
+    const suivre = () => setPeutInstaller(Boolean(evenementInstallation()));
+    suivre();
+    const desabonner = abonnerInstallation(() => {
+      suivre();
+      if (dejaInstallee()) setOuvert(false);
+    });
+    // Douze secondes : le temps d'arriver et de comprendre où l'on est.
     const attente = window.setTimeout(() => {
-      if (recu.current || dejaLa.current) return;
-      setVoie(surIphone() ? 'iphone' : 'manuel');
-      setEtat('ouvert');
+      if (dejaInstallee()) return;
+      marquerFenetreVue();
+      setOuvert(true);
     }, 12_000);
-
     return () => {
-      window.removeEventListener('beforeinstallprompt', surProposition);
-      window.removeEventListener('appinstalled', surInstallation);
-      annule = true;
-      if (attente) window.clearTimeout(attente);
+      desabonner();
+      window.clearTimeout(attente);
     };
   }, []);
 
-  const aLaMain = voie !== 'navigateur';
-  if (etat === 'cache' || (!evenement && !aLaMain)) return null;
-
-  /** « Plus tard » : rangée pour cette visite, reproposée à la suivante. */
-  function reduire() {
-    setEtat('reduit');
-  }
+  if (!ouvert) return null;
 
   async function installer() {
-    if (!evenement) return;
-    setEtat('cache');
-    try {
-      await evenement.prompt();
-      await evenement.userChoice;
-    } catch {
-      /* le navigateur a repris la main : on ne force rien */
-    }
-    setEvenement(null);
-  }
-
-  // RÉDUITE : une pastille discrète EN BAS À GAUCHE. À droite, elle recouvrait
-  // le retour en haut de page et l'assistant — trois ronds au même endroit,
-  // dont deux invisibles.
-  if (etat === 'reduit') {
-    return (
-      <button
-        type="button"
-        onClick={() => setEtat('ouvert')}
-        aria-label={nom.titre}
-        title={nom.titre}
-        className="fixed bottom-5 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#4F46E5] shadow-[0_10px_30px_rgba(0,0,0,0.2)] ring-1 ring-black/10 transition hover:bg-[#ECEBFC]"
-      >
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 3v12M8 11l4 4 4-4M4 21h16" />
-        </svg>
-      </button>
-    );
+    setOuvert(false);
+    await lancerInstallation();
   }
 
   return (
     <div
       role="dialog"
       aria-label={nom.titre}
-      className="fixed inset-x-3 bottom-[88px] z-50 mx-auto max-w-[520px] rounded-2xl border border-black/10 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)] sm:bottom-3 sm:p-5"
+      className="fixed inset-x-3 bottom-[88px] z-50 mx-auto max-w-[460px] rounded-2xl border border-black/10 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)] sm:bottom-3 sm:p-5"
     >
       <div className="flex items-start gap-3">
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#4F46E5] text-white" aria-hidden="true">
@@ -230,32 +134,21 @@ export function InstallPrompt() {
         </span>
         <div className="min-w-0">
           <p className="text-base font-extrabold tracking-tight text-[#111]">{nom.titre}</p>
-          <p className="mt-1 text-[15px] leading-relaxed text-[#444]">{nom.texte}</p>
-          {voie === 'iphone' ? (
-            <ol className="mt-3 space-y-1.5 text-[15px] leading-relaxed text-[#444]">
-              <li>1. Appuyez sur le bouton Partager, en bas de Safari</li>
-              <li>2. Choisissez « Sur l&apos;écran d&apos;accueil »</li>
-              <li>3. Appuyez sur « Ajouter »</li>
-            </ol>
-          ) : null}
-          {voie === 'manuel' ? (
-            <ol className="mt-3 space-y-1.5 text-[15px] leading-relaxed text-[#444]">
-              <li>1. Ouvrez le menu du navigateur, à droite de la barre d&apos;adresse</li>
-              <li>2. Choisissez « Installer » ou « Ajouter à l&apos;écran d&apos;accueil »</li>
-            </ol>
-          ) : null}
+          <p className="mt-1 text-[15px] leading-relaxed text-[#444]">
+            {peutInstaller ? nom.texte : iphone ? 'Safari › Partager › « Sur l’écran d’accueil ».' : 'Menu du navigateur › « Installer ».'}
+          </p>
+          <p className="mt-1 text-xs text-[#777]">Toujours disponible ensuite depuis ton accueil.</p>
         </div>
       </div>
-
       <div className="mt-4 flex flex-wrap justify-end gap-2">
         <button
           type="button"
-          onClick={reduire}
+          onClick={() => setOuvert(false)}
           className="rounded-xl border-2 border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#333] transition hover:border-black/25"
         >
-          Plus tard
+          Fermer
         </button>
-        {aLaMain ? null : (
+        {peutInstaller ? (
           <button
             type="button"
             onClick={installer}
@@ -263,7 +156,7 @@ export function InstallPrompt() {
           >
             Installer
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../_session';
 import { nomCourt } from '../_nom';
 import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Carte, Encart, Pastille, SousTitre } from '../_ui';
+import { BlocInstaller } from '../../_shared/BlocInstaller';
 import { LIBELLES_ETAT, LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type Espace } from './_types';
 
 /** L'anneau de progression, comme un compteur de configuration. */
@@ -158,6 +159,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
               <p className="mt-3 text-sm font-bold text-[#1E9E6A]">Le chemin est fini. Bravo !</p>
             )}
           </Carte>
+          <BlocInstaller carte={CARTE} espace="association" />
         </div>
       </section>
 

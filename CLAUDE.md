@@ -5626,3 +5626,15 @@ glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
   l'envoi des manifestes s'arrête (bloqué à 6 sur 80). Onglet neuf, et attendre
   avec des `wait` de 10 s dans le batch, jamais dans le script.
 - Le build Next a `typedRoutes` : les `href` de `Link` sont typés.
+
+### 24/09/2026 — le relais choisit le compte de la page, et l'installation ne s'ouvre qu'une fois
+
+- ⚠⚠ **`/api/proxy` sur `pilote.*` parle au nom du compte de la PAGE** (lue
+  dans le `Referer`) : sous `/academie` l'académie, ailleurs l'association,
+  exactement comme `academieConnectee()` / `associationConnectee()`. Avant, un
+  composant qui n'envoyait pas `x-account-id` (l'atelier des formulaires)
+  créait sur le compte actif de Les Extras, puis la page répondait « ce
+  formulaire n'existe pas ». Ne pas remettre l'en-tête du navigateur devant.
+- La fenêtre « Installer l'application Piloter » ne s'ouvre qu'**une fois**
+  (`localStorage.pilote_installation_proposee`), plus de pastille flottante ;
+  ensuite l'installation vit dans `BlocInstaller`, sur les deux accueils.

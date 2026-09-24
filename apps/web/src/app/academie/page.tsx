@@ -4,6 +4,7 @@ import { chargerChemin, tempsDe, TEINTES } from './_chemin';
 import { Accent, Barre, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, Encart, Pastille, SousTitre, Titre, Tuile, formaterDate } from './_ui';
 import { LIBELLES_QUALIOPI, type EspaceAcademie } from './_types';
 import { BlocStatistiques } from './_stats';
+import { BlocInstaller } from '../_shared/BlocInstaller';
 import type { Apprenant, CoursResume, Vente } from './_ecole/types';
 import type { Demarrage } from './_ecole/suite-types';
 
@@ -257,6 +258,8 @@ async function TableauDeBord() {
               Reprendre le chemin →
             </Link>
           </Carte>
+
+          <BlocInstaller carte={CARTE} espace="academie" />
 
           {qualiopi.auditPrevuLe ? (
             <Carte>
