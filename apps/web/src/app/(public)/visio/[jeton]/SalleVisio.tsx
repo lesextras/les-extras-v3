@@ -10,18 +10,20 @@ import {
   type RemoteTrackPublication,
   type RemoteParticipant,
 } from 'livekit-client';
-import { Mic, MicOff, PhoneOff, Video, VideoOff, TriangleAlert, Loader2 } from 'lucide-react';
+import { Mic, MicOff, PhoneOff, Video, VideoOff, TriangleAlert, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useFlouArrierePlan } from '@/app/_shared/flou-arriere-plan';
 
 /**
  * LA SALLE.
  *
  * ⚠⚠ RIEN N'EST ENREGISTRÉ, ET CE FICHIER EST L'UN DES DEUX ENDROITS OÙ CETTE
  * PROMESSE SE TIENT. L'autre est le jeton signé côté serveur
- * (`roomRecord: false`). Ici : aucun `MediaRecorder`, aucun `canvas` qui
- * capterait les images, aucun envoi de piste ailleurs que vers le serveur
- * média. Le jour où quelqu'un ajoute un bouton « enregistrer la séance », ce
+ * (`roomRecord: false`). Ici : aucun `MediaRecorder`, aucun envoi de piste
+ * ailleurs que vers le serveur média. Le seul traitement d'image est le flou
+ * d'arrière-plan (`_shared/flou-arriere-plan.ts`), fait sur l'appareil, image
+ * par image, sans rien garder. Le jour où quelqu'un ajoute un bouton « enregistrer la séance », ce
  * n'est plus le même produit — c'est une décision d'association, pas une
  * fonctionnalité.
  *
@@ -47,6 +49,7 @@ export function SalleVisio({
   const [micro, setMicro] = React.useState(true);
   const [camera, setCamera] = React.useState(true);
   const [enFace, setEnFace] = React.useState<string | null>(null);
+  const flou = useFlouArrierePlan(room);
 
   const monFlux = React.useRef<HTMLVideoElement | null>(null);
   const fluxDistant = React.useRef<HTMLVideoElement | null>(null);
@@ -220,6 +223,17 @@ export function SalleVisio({
           {camera ? <Video className="size-4" /> : <VideoOff className="size-4" />}
           {camera ? 'Caméra activée' : 'Caméra coupée'}
         </Button>
+        {flou.supporte && camera ? (
+          <Button
+            variant={flou.actif ? 'secondary' : 'outline'}
+            onClick={() => void flou.basculer()}
+            aria-pressed={flou.actif}
+            loading={flou.enCours}
+          >
+            <Sparkles className="size-4" />
+            {flou.actif ? 'Arrière-plan flouté' : 'Flouter l’arrière-plan'}
+          </Button>
+        ) : null}
         <Button variant="destructive" onClick={quitter}>
           <PhoneOff className="size-4" />
           Quitter
@@ -227,7 +241,8 @@ export function SalleVisio({
       </div>
 
       <p className="text-center text-xs text-muted-foreground" lang="fr">
-        Cette séance n’est pas enregistrée. Ni l’image, ni le son, ni leur transcription.
+        Cette séance n’est pas enregistrée. Ni l’image, ni le son, ni leur transcription. Le flou de
+        l’arrière-plan est fait sur votre appareil : l’image non floutée ne le quitte pas.
       </p>
     </div>
   );

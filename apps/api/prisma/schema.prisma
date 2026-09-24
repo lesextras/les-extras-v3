@@ -59,6 +59,7 @@ model User {
   partagesProprietaire      PartageAgenda[]           @relation("PartageProprietaire")
   partagesRecus             PartageAgenda[]           @relation("PartageDestinataire")
   partagesCrees             PartageAgenda[]           @relation("PartageCreateur")
+  enveloppesLexRecues       EnveloppeLex[]            @relation("EnveloppeBeneficiaire")
   messages                  Message[]
   reviewsAuthored           Review[]                  @relation("ReviewAuthor")
   reviewsReceived           Review[]                  @relation("ReviewTarget")
@@ -366,6 +367,7 @@ model Account {
   rendezVous                    RendezVous[]
   /// L'agenda de ce compte, partagé avec d'autres personnes (24/09/2026).
   partagesDonnes                PartageAgenda[]      @relation("PartageCompte")
+  enveloppesLex                 EnveloppeLex[]       @relation("EnveloppePayeur")
   /// Les fils de discussion rattachés à ce compte (interne, service, demande).
   conversations                 Conversation[]
   /// Demandes portant sur un service de cet établissement.
@@ -1613,11 +1615,15 @@ model CreditLedger {
   label        String?
   bookingId    String?
   invoiceId    String?
+  /// Enveloppe LEX qui a payé cette génération (ou son remboursement). Nul
+  /// pour tout ce qui ne passe pas par une enveloppe partagée.
+  enveloppeId  String?
   createdAt    DateTime @default(now())
 
   @@index([accountId])
   @@index([accountId, createdAt])
   @@index([userId])
+  @@index([enveloppeId, createdAt])
 }
 
 /// OBSOLÈTE — le dépôt de fichiers passe désormais par FileAsset et
@@ -5417,4 +5423,39 @@ enum StatutPartage {
   ACCEPTE
   REFUSE
   RETIRE
+}
+
+/// ENVELOPPE LEX (24/09/2026) — un compte paie les générations LEX d'une
+/// autre personne, dans la limite d'un plafond mensuel. On partage des
+/// CRÉDITS, jamais un compte : chaque bénéficiaire garde son propre compte et
+/// ses écrits, que le payeur ne voit pas. Voir `billing/enveloppes.service.ts`.
+model EnveloppeLex {
+  id              String           @id @default(cuid())
+  payeurAccountId String
+  payeur          Account          @relation("EnveloppePayeur", fields: [payeurAccountId], references: [id], onDelete: Cascade)
+  beneficiaireId  String?
+  beneficiaire    User?            @relation("EnveloppeBeneficiaire", fields: [beneficiaireId], references: [id], onDelete: SetNull)
+  /// Adresse invitée, en minuscules. L'invitation ne s'accepte qu'avec elle.
+  email           String
+  plafondMensuel  Int
+  statut          StatutEnveloppe  @default(INVITEE)
+  /// Les trames maison publiées par le payeur sont ouvertes au bénéficiaire.
+  partageTrames   Boolean          @default(true)
+  /// Empreinte SHA-256 du jeton d'invitation (jamais le jeton lui-même).
+  jetonHash       String?          @unique
+  jetonExpireLe   DateTime?
+  creeParId       String
+  accepteLe       DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([payeurAccountId, email])
+  @@index([beneficiaireId, statut])
+}
+
+enum StatutEnveloppe {
+  INVITEE
+  ACTIVE
+  SUSPENDUE
+  RETIREE
 }

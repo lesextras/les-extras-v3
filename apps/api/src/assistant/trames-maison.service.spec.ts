@@ -35,6 +35,7 @@ function monter(reponseMoteur = ANALYSE) {
       update: jest.fn((args: any) => Promise.resolve({ id: args.where.id, ...args.data })),
       delete: jest.fn().mockResolvedValue({ id: 't1' }),
     },
+    enveloppeLex: { findMany: jest.fn().mockResolvedValue([]) },
   };
   const moteur = { disponible: true, completer: jest.fn().mockResolvedValue(reponseMoteur) };
   const files = {
@@ -151,11 +152,20 @@ describe('TramesMaisonService : visibilité et droits', () => {
     const { service, prisma } = monter();
     await service.lister('cpt', 'u1');
     const where = prisma.trameMaison.findMany.mock.calls[0][0].where;
-    expect(where.accountId).toBe('cpt');
     expect(where.OR).toEqual([
-      { authorId: 'u1' },
-      { portee: PorteeTrame.ETABLISSEMENT },
+      { accountId: 'cpt', authorId: 'u1' },
+      { accountId: 'cpt', portee: PorteeTrame.ETABLISSEMENT },
     ]);
+  });
+
+  it("ouvre les trames PUBLIÉES d'un compte qui offre une enveloppe, jamais ses trames personnelles", async () => {
+    const { service, prisma } = monter();
+    prisma.enveloppeLex.findMany.mockResolvedValue([{ payeurAccountId: 'mecs' }]);
+    await service.lister('cpt', 'u1');
+    expect(prisma.enveloppeLex.findMany.mock.calls[0][0].where).toMatchObject({ statut: 'ACTIVE', partageTrames: true });
+    const or = prisma.trameMaison.findMany.mock.calls[0][0].where.OR;
+    expect(or).toContainEqual({ accountId: 'mecs', portee: PorteeTrame.ETABLISSEMENT });
+    expect(or.filter((c: any) => c.accountId === 'mecs')).toHaveLength(1);
   });
 
   it("refuse d'appliquer la trame personnelle d'un collègue", async () => {

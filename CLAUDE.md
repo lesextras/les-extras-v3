@@ -5732,3 +5732,26 @@ glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
   `/delete/main/<chemin>`, bouton « Commit changes... » puis celui du dialogue,
   4 fichiers par `browser_batch` au plus, sinon l'outil dépasse son délai), puis
   le reste en un seul dépôt de fichiers.
+
+### 24/09/2026 (nuit, suite) — enveloppes LEX, flou d'arrière-plan, « Proposer mes services »
+
+- **Enveloppes LEX** (`billing/enveloppes.service.ts`, `enveloppe-disponible.ts`,
+  modèle `EnveloppeLex`, `CreditLedger.enveloppeId`, migration
+  `20260924230000_enveloppes_lex`) : le titulaire d'un compte paie les
+  générations LEX d'autres personnes, plafond mensuel par personne. Écran
+  `/dashboard/lex-equipe`, acceptation `/lex/rejoindre?jeton=…`.
+  ⚠ ON PARTAGE DES CRÉDITS, JAMAIS UN COMPTE : le payeur voit des nombres,
+  jamais les écrits. ⚠ Pas de lien ouvert à tous : une invitation = une
+  adresse, jeton 7 jours (empreinte seule en base), acceptation avec cette
+  adresse CONFIRMÉE. ⚠ L'enveloppe paie AVANT le solde de la personne ; plafond
+  atteint ou payeur à sec → retour sur son solde ; un échec rembourse le PAYEUR.
+  `enveloppeDisponible()` est la seule règle, partagée par `MemberGuard` et
+  `avecCredit`. Trames maison PUBLIÉES du payeur ouvertes si `partageTrames`.
+- **Flou d'arrière-plan** en visio et en classe (`_shared/flou-arriere-plan.ts`,
+  `@livekit/track-processors` 0.8.1) : fait sur l'appareil, activé par défaut
+  quand le navigateur le permet, choix retenu. Moteur MediaPipe copié au build
+  (`scripts/copier-mediapipe.mjs`, prebuild) et modèle versionné
+  (`public/mediapipe/selfie_segmenter.tflite`) : aucune requête vers un tiers.
+  CSP de `/visio` et `/classe` : `'wasm-unsafe-eval'` + `worker-src blob:`.
+- **Proposer mes services** (`/dashboard/devenir-intervenant`) relié : menu
+  établissement (outils avancés), palette, et lien sur `/intervenant-independant`.

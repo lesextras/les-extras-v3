@@ -183,12 +183,9 @@ export class TramesMaisonService {
    * personnelles d'un collègue — un modèle d'écrit dit beaucoup du
    * professionnel qui l'a produit.
    */
-  lister(accountId: string, userId: string) {
+  async lister(accountId: string, userId: string) {
     return this.prisma.trameMaison.findMany({
-      where: {
-        accountId,
-        OR: [{ authorId: userId }, { portee: PorteeTrame.ETABLISSEMENT }],
-      },
+      where: { OR: await this.visibles(accountId, userId) },
       orderBy: [{ portee: 'asc' }, { usages: 'desc' }, { createdAt: 'desc' }],
       select: SELECT_PUBLIC,
     });
@@ -250,14 +247,29 @@ export class TramesMaisonService {
   async pourGeneration(id: string | undefined, accountId: string, userId: string) {
     if (!id) return null;
     const trame = await this.prisma.trameMaison.findFirst({
-      where: {
-        id,
-        accountId,
-        OR: [{ authorId: userId }, { portee: PorteeTrame.ETABLISSEMENT }],
-      },
+      where: { id, OR: await this.visibles(accountId, userId) },
     });
     if (!trame) throw new NotFoundException('Trame introuvable.');
     return trame;
+  }
+
+  /**
+   * Les trames qu'une personne peut utiliser : les siennes et celles publiées
+   * sur son compte, PLUS celles publiées par un compte qui lui offre une
+   * enveloppe LEX avec les trames partagées (24/09/2026). C'est ce qui permet
+   * à toute une équipe d'écrire avec le gabarit de la maison sans partager de
+   * compte. Les trames PERSONNELLES du payeur ne sortent jamais.
+   */
+  private async visibles(accountId: string, userId: string) {
+    const enveloppes = await this.prisma.enveloppeLex.findMany({
+      where: { beneficiaireId: userId, statut: 'ACTIVE', partageTrames: true },
+      select: { payeurAccountId: true },
+    });
+    return [
+      { accountId, authorId: userId },
+      { accountId, portee: PorteeTrame.ETABLISSEMENT },
+      ...enveloppes.map((e) => ({ accountId: e.payeurAccountId, portee: PorteeTrame.ETABLISSEMENT })),
+    ];
   }
 
   /** Compteur d'usage — jamais bloquant. */

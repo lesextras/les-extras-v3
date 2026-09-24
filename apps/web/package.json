@@ -10,10 +10,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prebuild": "node scripts/copier-pdf-worker.mjs"
+    "prebuild": "node scripts/copier-pdf-worker.mjs && node scripts/copier-mediapipe.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@livekit/track-processors": "0.8.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "jose": "^5.9.6",

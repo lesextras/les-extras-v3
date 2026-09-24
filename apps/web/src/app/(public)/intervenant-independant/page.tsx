@@ -287,6 +287,15 @@ Un établissement réserve votre offre. Vous intervenez{" "}
             Le détail de ce qui est gratuit et de ce qui est payant
           </Link>
         </p>
+        {/* Une personne qui a déjà un compte d'établissement ne crée pas un
+            second compte depuis zéro : son espace lui propose d'ouvrir son
+            compte intervenant et d'y reprendre ses fiches (24/09/2026). */}
+        <p className="text-sm text-muted-foreground">
+          Vous avez déjà un compte établissement ?{" "}
+          <Link href="/dashboard/devenir-intervenant" className="font-medium text-foreground underline underline-offset-2">
+            Proposez vos services en votre nom depuis votre espace
+          </Link>
+        </p>
       </div>
     </div>
   );

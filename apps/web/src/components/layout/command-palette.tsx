@@ -59,6 +59,8 @@ const DESTINATIONS: Dest[] = [
   { label: "Mes réservations formation", href: "/dashboard/reservations/formations", group: "Navigation", keywords: "reservations formations inscriptions session apprenant financement attestation" },
   { label: "Devis & factures", href: "/dashboard/facturation", group: "Navigation", keywords: "devis facture chiffrage paiement reglement finance revenus depenses" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
+  { label: "Partager LEX avec mon équipe", href: "/dashboard/lex-equipe", group: "Navigation", keywords: "lex credits enveloppe equipe partager inviter plafond" },
+  { label: "Proposer mes services en mon nom", href: "/dashboard/devenir-intervenant", group: "Navigation", keywords: "intervenant independant proposer services compte intervenant ateliers" },
   { label: "Mon agenda", href: "/dashboard/agenda", group: "Navigation", keywords: "agenda calendrier rendez-vous outlook partage partager" },
   { label: "Contrats CDD", href: "/dashboard/contrats", group: "Établissement", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat conversation" },

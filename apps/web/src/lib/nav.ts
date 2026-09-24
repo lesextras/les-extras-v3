@@ -7,6 +7,7 @@ import {
   Sparkles,
   CalendarClock,
   CalendarDays,
+  PenLine,
   CalendarCheck,
   GraduationCap,
   Receipt,
@@ -374,6 +375,10 @@ const establishmentNav: NavSection[] = [
       // chaque semaine. Elle n'est le seul chemin vers rien : l'écran vide du
       // catalogue propose « Me prévenir quand ça arrive » au moment exact où la
       // question se pose.
+      // Proposer ses services en son nom (compte intervenant, fiches reprises) : relie l'établissement aux intervenants indépendants.
+      { label: 'Proposer mes services', href: '/dashboard/devenir-intervenant', icon: UserPlus, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Ouvrir votre compte intervenant indépendant et y reprendre vos fiches' },
+      // Enveloppes LEX (24/09/2026) : payer les générations LEX de son équipe, plafond par personne.
+      { label: 'Partager LEX', href: '/dashboard/lex-equipe', icon: PenLine, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Prendre en charge les générations LEX de votre équipe, avec un plafond par personne' },
       { label: 'Mes alertes', href: '/dashboard/alertes', icon: BellRing, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Dites ce que vous cherchez : on vous écrit le jour où ça arrive au catalogue, jamais plus d’un message par jour' },
       // Le pendant contractuel du planning : on a trouvé quelqu'un, on
       // l'embauche soi-même en CDD. L'outil calcule ce que personne ne

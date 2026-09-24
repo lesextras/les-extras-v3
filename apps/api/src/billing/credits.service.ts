@@ -7,6 +7,7 @@ import {
   ROLLOVER_MONTHS,
   MOTIF_DOTATION,
 } from './credits.constants';
+import { consommeCeMois, enveloppeDisponible } from './enveloppe-disponible';
 
 /**
  * Crédits LEX — la monnaie de l'assistant IA, et d'elle seule.
@@ -158,7 +159,7 @@ export class CreditsService {
   }
 
   /** Crédite le compte (achat de pack, geste commercial, remboursement). */
-  async crediter(accountId: string, montant: number, reason: string) {
+  async crediter(accountId: string, montant: number, reason: string, enveloppeId?: string) {
     return this.prisma.$transaction(async (tx) => {
       const account = await tx.account.update({
         where: { id: accountId },
@@ -171,9 +172,55 @@ export class CreditsService {
           delta: montant,
           balanceAfter: account.credits,
           reason,
+          enveloppeId: enveloppeId ?? null,
         },
       });
       return account.credits;
+    });
+  }
+
+  /**
+   * Débite UNE génération sur l'enveloppe d'un autre compte (le payeur).
+   *
+   * Tout se passe dans la même transaction : relecture du plafond du mois,
+   * décrément conditionnel du solde du payeur, écriture au grand livre DU
+   * PAYEUR avec l'auteur et l'enveloppe. Rend `null` si l'enveloppe ne peut
+   * plus payer (plafond atteint ou solde vide entre-temps) : l'appelant se
+   * rabat alors sur le solde de la personne.
+   */
+  private async consommerEnveloppe(
+    enveloppe: { id: string; payeurAccountId: string },
+    reason: string,
+    auteur: Auteur,
+  ): Promise<boolean> {
+    return this.prisma.$transaction(async (tx) => {
+      const e = await tx.enveloppeLex.findUnique({
+        where: { id: enveloppe.id },
+        select: { statut: true, plafondMensuel: true },
+      });
+      if (!e || e.statut !== 'ACTIVE') return false;
+      if ((await consommeCeMois(tx, enveloppe.id)) >= e.plafondMensuel) return false;
+      const debite = await tx.account.updateMany({
+        where: { id: enveloppe.payeurAccountId, credits: { gte: 1 } },
+        data: { credits: { decrement: 1 } },
+      });
+      if (debite.count === 0) return false;
+      const payeur = await tx.account.findUniqueOrThrow({
+        where: { id: enveloppe.payeurAccountId },
+        select: { credits: true },
+      });
+      await tx.creditLedger.create({
+        data: {
+          accountId: enveloppe.payeurAccountId,
+          delta: -1,
+          balanceAfter: payeur.credits,
+          reason,
+          userId: auteur.userId,
+          label: auteur.label ?? null,
+          enveloppeId: enveloppe.id,
+        },
+      });
+      return true;
     });
   }
 
@@ -193,6 +240,24 @@ export class CreditsService {
       select: { isMember: true },
     });
     if (compte?.isMember) return fn();
+
+    // L'ENVELOPPE D'ABORD (24/09/2026). Quand un établissement paie les
+    // générations de cette personne, c'est lui qui paie : ses quinze
+    // générations gratuites restent à elle. Si l'enveloppe ne peut plus
+    // payer (plafond du mois, solde du payeur), on se rabat sur son solde.
+    if (auteur?.userId) {
+      const enveloppe = await enveloppeDisponible(this.prisma, auteur.userId, accountId);
+      if (enveloppe && (await this.consommerEnveloppe(enveloppe, reason, auteur))) {
+        try {
+          return await fn();
+        } catch (err) {
+          await this.crediter(enveloppe.payeurAccountId, 1, `REMBOURSEMENT_${reason}`, enveloppe.id).catch((e) =>
+            this.logger.error(`Remboursement d'enveloppe impossible (${enveloppe.id}): ${e}`),
+          );
+          throw err;
+        }
+      }
+    }
 
     await this.consommer(accountId, 1, reason, auteur);
     try {

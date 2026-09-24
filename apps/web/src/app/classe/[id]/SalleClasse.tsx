@@ -9,6 +9,7 @@ import {
   type RemoteTrack,
   type TrackPublication,
 } from 'livekit-client';
+import { useFlouArrierePlan } from '@/app/_shared/flou-arriere-plan';
 
 /**
  * LA SALLE D'UNE CLASSE VIRTUELLE, À PLUSIEURS.
@@ -51,6 +52,7 @@ export function SalleClasse({ acces, couleur, onQuitter }: { acces: AccesSalle; 
   const [erreur, setErreur] = useState<string | null>(null);
   const [micro, setMicro] = useState(true);
   const [camera, setCamera] = useState(true);
+  const flou = useFlouArrierePlan(room);
   const [ecran, setEcran] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [saisie, setSaisie] = useState('');
@@ -195,6 +197,11 @@ export function SalleClasse({ acces, couleur, onQuitter }: { acces: AccesSalle; 
         <div className="flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-[#0B1F1A] p-3">
           <Bouton actif={micro} onClick={basculerMicro}>{micro ? 'Couper le micro' : 'Activer le micro'}</Bouton>
           <Bouton actif={camera} onClick={basculerCamera}>{camera ? 'Couper la caméra' : 'Activer la caméra'}</Bouton>
+          {flou.supporte && camera ? (
+            <Bouton actif onClick={() => void flou.basculer()}>
+              {flou.enCours ? '…' : flou.actif ? 'Arrière-plan flouté' : 'Flouter l’arrière-plan'}
+            </Bouton>
+          ) : null}
           {acces.animateur ? <Bouton actif={!ecran} onClick={basculerEcran}>{ecran ? "Arrêter le partage" : "Partager l'écran"}</Bouton> : null}
           <Bouton actif onClick={() => setFilOuvert((o) => !o)}>
             Discussion{messages.length ? ` (${messages.length})` : ''}

@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { enveloppeDisponible } from '../../billing/enveloppe-disponible';
 
 /**
  * Réserve une route aux comptes qui peuvent payer une génération LEX :
@@ -32,6 +33,10 @@ export class MemberGuard implements CanActivate {
     });
     if (!account) return false;
     if (account.isMember) return true;
+    // Une enveloppe LEX payée par un autre compte suffit (24/09/2026).
+    if (account.credits <= 0 && req.user?.id && (await enveloppeDisponible(this.prisma, req.user.id, accountId))) {
+      return true;
+    }
     if (account.credits <= 0) {
       throw new ForbiddenException(
         'Votre solde de crédits LEX est épuisé. Rechargez des crédits ou prenez un abonnement à recharge quotidienne : le reste de la plateforme demeure gratuit.',

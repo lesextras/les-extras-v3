@@ -34,6 +34,7 @@ function monter(lignes: unknown[] = []) {
 
   const prisma = {
     creditLedger: { findMany, create: creerEcriture, findFirst: jest.fn() },
+    enveloppeLex: { findMany: jest.fn().mockResolvedValue([]) },
     account: {
       findUnique: jest.fn().mockResolvedValue({ isMember: false, credits: 10 }),
       findUniqueOrThrow: jest.fn().mockResolvedValue({ credits: 9 }),

@@ -444,7 +444,10 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; media-src 'self' blob: mediastream:; connect-src 'self' https://api.les-extras.fr wss://*.livekit.cloud https://*.livekit.cloud; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+              // 'wasm-unsafe-eval' et worker-src blob: (24/09/2026) : le flou
+              // d'arrière-plan compile le moteur MediaPipe (WebAssembly, servi
+              // depuis notre domaine) et cadence les images dans un petit worker.
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; media-src 'self' blob: mediastream:; connect-src 'self' https://api.les-extras.fr wss://*.livekit.cloud https://*.livekit.cloud; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
           },
         ],
       },

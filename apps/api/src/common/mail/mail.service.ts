@@ -1145,6 +1145,20 @@ export class MailService implements OnModuleDestroy {
     await this.send(to, textes.sujet, this.layout(textes.titre, textes.corps, { label: textes.cta, url }));
   }
 
+  /**
+   * Invitation à une enveloppe LEX (24/09/2026) : un compte paie les
+   * générations de la personne invitée. Le lien porte le jeton ; il ne
+   * s'accepte qu'avec cette adresse, connectée et confirmée.
+   */
+  async sendEnveloppeLex(to: string, data: { qui: string; compte: string; plafond: number; lien: string }): Promise<void> {
+    const corps = `<b>${echapper(data.qui)}</b> (<b>${echapper(data.compte)}</b>) prend en charge vos générations LEX, l’assistant d’écriture de Les Extras : jusqu’à <b>${data.plafond}</b> par mois.<br><br>Vous gardez votre propre compte et vos écrits restent privés : ${echapper(data.compte)} voit seulement combien de générations vous utilisez, jamais leur contenu.<br><br>Le lien est valable 7 jours et ne fonctionne qu’avec cette adresse.`;
+    await this.send(
+      to,
+      `${data.qui} vous offre des générations LEX`,
+      this.layout('Des générations LEX prises en charge pour vous', corps, { label: 'Accepter l’invitation', url: data.lien }),
+    );
+  }
+
   async sendInvitation(to: string, token: string, accountName: string): Promise<void> {
     const url = `${this.webUrl}/invitations/accept?token=${encodeURIComponent(token)}`;
     await this.send(

@@ -109,6 +109,15 @@ const MOTIF: Record<string, string> = {
   STRIPE_PURCHASE: "Achat de crédits",
 };
 
+interface EnveloppeRecue {
+  id: string;
+  compte: string;
+  statut: "ACTIVE" | "SUSPENDUE";
+  plafondMensuel: number;
+  consommeCeMois: number;
+  restantCeMois: number;
+}
+
 export default async function LexCreditsPage({
   searchParams: searchParamsPromesse,
 }: {
@@ -117,10 +126,13 @@ export default async function LexCreditsPage({
   const searchParams = await searchParamsPromesse;
   const session = await requireSession();
   const accountId = session.account.id;
-  const [resOverview, resUtilisation] = await Promise.all([
+  const [resOverview, resUtilisation, resEnveloppes] = await Promise.all([
     fetchApi<Overview>(session, "/billing/overview"),
     fetchApi<Utilisation>(session, "/billing/utilisation"),
+    // Les générations que d'autres comptes prennent en charge (enveloppes LEX).
+    fetchApi<EnveloppeRecue[]>(session, "/lex/enveloppes/miennes"),
   ]);
+  const enveloppes = resEnveloppes.data ?? [];
 
   if (resOverview.error || !resOverview.data) {
     return (
@@ -229,6 +241,32 @@ export default async function LexCreditsPage({
               </div>
             </div>
           ) : null}
+
+          {enveloppes.length > 0 ? (
+            <ul className="space-y-2 border-t border-border pt-4">
+              {enveloppes.map((e) => (
+                <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-primary-soft/60 px-3 py-2 text-sm">
+                  <span>
+                    <span className="font-semibold">{e.compte}</span> prend en charge vos générations
+                    {e.statut === "SUSPENDUE" ? " (suspendu pour le moment)" : ""}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {e.consommeCeMois} / {e.plafondMensuel} ce mois, {e.restantCeMois} restante{e.restantCeMois > 1 ? "s" : ""}
+                  </span>
+                </li>
+              ))}
+              <li className="text-xs text-muted-foreground">
+                Ces générations passent avant votre solde. Le compte qui paie voit combien vous en utilisez, jamais ce que vous écrivez.
+              </li>
+            </ul>
+          ) : null}
+
+          <p className="text-sm">
+            <a href="/dashboard/lex-equipe" className="font-semibold text-primary hover:underline">
+              Partager mes crédits LEX avec mon équipe
+            </a>
+            <span className="text-muted-foreground"> : un plafond par personne, chacune garde son compte.</span>
+          </p>
 
           {subscription && active && subscription.currentPeriodEnd ? (
             <p className="text-sm text-muted-foreground">
