@@ -27,6 +27,8 @@ import { compterOutilsAvances, getNavForRole } from '../nav';
 
 const entrees = (sections: ReturnType<typeof getNavForRole>) =>
   sections.flatMap((s) => s.items.map((i) => i.label));
+const liensDe = (sections: ReturnType<typeof getNavForRole>) =>
+  sections.flatMap((s) => s.items.map((i) => String(i.href)));
 
 describe('Les outils avancés du menu établissement', () => {
   const quotidien = getNavForRole('ESTABLISHMENT', 'OWNER');
@@ -176,58 +178,36 @@ describe('Les outils avancés du menu établissement', () => {
  * pas une régression : rien de ce qu'il fait au quotidien n'est derrière.
  */
 describe('Le menu d’un salarié', () => {
-  it('porte ses congés dans le menu du quotidien, sans réglage à trouver', () => {
-    const menu = getNavForRole('ESTABLISHMENT', 'MEMBER');
-    expect(entrees(menu)).toContain('Mes congés & mes heures');
+  /**
+   * ⚠ MIS À JOUR LE 24/09/2026 : depuis le modèle du 23/09 (« le compte,
+   * c'est la personne »), la gestion RH sort du menu. « Mon poste » et
+   * « Temps de travail & congés » ne s'affichent plus ; leurs pages restent
+   * servies à leur adresse. Ce test vérifie que la décision tient, pour qu'une
+   * entrée ne revienne pas à moitié (dans le menu d'un rôle et pas des autres).
+   */
+  it('n’affiche plus la gestion RH, pour aucun rôle (modèle du 23/09/2026)', () => {
+    for (const role of ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER'] as const) {
+      const liens = liensDe(getNavForRole('ESTABLISHMENT', role));
+      expect(liens).not.toContain('/dashboard/mon-poste');
+      expect(liens).not.toContain('/dashboard/temps-de-travail');
+    }
   });
 
   /**
-   * ⚠⚠ « Opportunités » EST LE SEUL CHEMIN D'UN SALARIÉ VERS LES MISSIONS
-   * OUVERTES, et c'est le défaut corrigé le 25/08/2026 : il pouvait être
-   * destinataire d'une diffusion en cascade sans jamais pouvoir aller voir ce
-   * qui était ouvert.
+   * ⚠⚠ LE CHEMIN VERS LES MISSIONS OUVERTES EST LE SEUL, et c'est le défaut
+   * corrigé le 25/08/2026 : un salarié pouvait recevoir une diffusion en
+   * cascade sans jamais pouvoir aller voir ce qui était ouvert.
+   *
+   * ⚠ On teste l'ADRESSE, pas le libellé : côté intervenant l'entrée
+   * s'appelle « Missions RenforTeam » depuis le recentrage, et le test d'avant
+   * tombait sur un changement de mot alors que le chemin était intact.
    *
    * ⚠ QU'IL N'Y AIT AUCUNE MISSION OUVERTE AUJOURD'HUI N'EST PAS UNE RAISON DE
-   * LE RANGER — c'était l'idée au moment d'alléger le menu, le 21/09, et elle
-   * est fausse : le menu est calculé sans aucune donnée, il ne sait pas
-   * combien de missions existent, et le jour où il y en a une, personne ne
-   * doit avoir à trouver un réglage pour la voir.
+   * LE RANGER : le menu est calculé sans aucune donnée, et le jour où il y en
+   * a une, personne ne doit avoir à trouver un réglage pour la voir.
    */
-  it('⚠ garde « Opportunités » dans le menu du quotidien, salarié comme intervenant', () => {
-    expect(entrees(getNavForRole('ESTABLISHMENT', 'MEMBER'))).toContain('Opportunités');
-    expect(entrees(getNavForRole('FREELANCE', 'OWNER'))).toContain('Opportunités');
-  });
-});
-
-/**
- * LE CHEMIN DE L'ARGENT, CÔTÉ INTERVENANT — publier, être réservé, faire, être
- * payé. Les quatre gestes étaient répartis dans trois rubriques : « Mes
- * ateliers » huitième sous « Mon offre », « Devis & factures » douzième sous
- * « Mon espace ». Le premier et le dernier geste du même métier se trouvaient
- * aux deux extrémités du menu.
- */
-describe('Le menu d’un intervenant', () => {
-  const menu = entrees(getNavForRole('FREELANCE', 'OWNER'));
-
-  it('met ses ateliers en tête de son activité, et sa facturation au bout', () => {
-    expect(menu.indexOf('Mes ateliers')).toBeLessThan(menu.indexOf('Mes interventions'));
-    expect(menu.indexOf('Mes interventions')).toBeLessThan(menu.indexOf('Mon planning'));
-    expect(menu.indexOf('Mon planning')).toBeLessThan(menu.indexOf('Devis & factures'));
-  });
-
-  /**
-   * ⚠ « Ma disponibilité » RESTE VISIBLE. Se rendre visible est un geste qu'il
-   * faut pouvoir défaire en un clic : enterré derrière un réglage, on ne le
-   * retrouve pas le jour où l'on a retrouvé un poste, et la liste consultée
-   * par les établissements devient fausse.
-   */
-  it('⚠ laisse « Ma disponibilité » à portée, pour pouvoir s’en retirer', () => {
-    expect(menu).toContain('Ma disponibilité');
-  });
-
-  it('ne laisse aucune rubrique titrée d’une seule entrée', () => {
-    for (const s of getNavForRole('FREELANCE', 'OWNER', { outilsAvances: true })) {
-      if (s.title) expect(s.items.length).toBeGreaterThan(1);
-    }
+  it('⚠ garde le chemin vers les missions ouvertes, salarié comme intervenant', () => {
+    expect(liensDe(getNavForRole('ESTABLISHMENT', 'MEMBER'))).toContain('/dashboard/opportunites');
+    expect(liensDe(getNavForRole('FREELANCE', 'OWNER'))).toContain('/dashboard/opportunites');
   });
 });

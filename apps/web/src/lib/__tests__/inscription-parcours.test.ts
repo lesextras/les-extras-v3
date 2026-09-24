@@ -48,9 +48,11 @@ describe('parcours d’inscription', () => {
      * l'un des deux défauts qu'on a payés — l'adresse publique au prénom de la
      * personne, ou un écran entier pour taper « Internat ».
      */
+    // ⚠ MIS À JOUR LE 24/09/2026 : depuis le 23/09 il n'y a plus d'étape
+    // « niveau et droits » ; le poste part avec les identifiants. Deux écrans.
     it('ne fait pas d’étape à part du lieu de travail', () => {
       const cles = PARCOURS.ESTABLISHMENT.map((e) => e.cle);
-      expect(cles).toEqual(['profil', 'identite', 'poste']);
+      expect(cles).toEqual(['profil', 'identite']);
     });
 
     it('n’impose aucune étape de lieu à un intervenant ni à un particulier', () => {
@@ -69,10 +71,14 @@ describe('parcours d’inscription', () => {
      * seulement se rendre disponible pour un remplacement en CDD, c'est-à-dire
      * à fermer la porte à ceux pour qui elle a été ouverte.
      */
-    it('demande sa structure à l’intervenant, APRÈS la création du compte', () => {
+    // ⚠ MIS À JOUR LE 24/09/2026 : la structure (SIRET) se saisit désormais
+    // SUR l'écran des identifiants, facultative. Ce qui compte et reste
+    // vérifié : aucune étape « structure » ne s'intercale AVANT les
+    // identifiants, et elle n'est jamais une étape bloquante à part.
+    it('ne demande jamais la structure avant les identifiants de l’intervenant', () => {
       const cles = PARCOURS.FREELANCE.map((e) => e.cle);
-      expect(cles).toContain('structure');
-      expect(cles.indexOf('structure')).toBeGreaterThan(cles.indexOf('identite'));
+      expect(cles.slice(0, 2)).toEqual(['profil', 'identite']);
+      expect(cles).not.toContain('structure');
     });
 
     it('demande à l’intervenant ce qu’il vient faire', () => {
