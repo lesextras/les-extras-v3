@@ -7,12 +7,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AccountRole, Capacite } from '@prisma/client';
+import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
-import { OuCapacite } from '../common/decorators/capacite.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -39,9 +36,6 @@ export class InvoicesController {
    * serveur sur ce que le site affiche déjà.
    */
   @Get()
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
-  @OuCapacite(Capacite.VOIR_FACTURES)
   findAll(@CurrentAccount() account: AccountCtx) {
     return this.invoices.findAllByAccount(account.id);
   }
@@ -51,45 +45,31 @@ export class InvoicesController {
    * identifiant de facture et la route ne serait jamais atteinte.
    */
   @Get('summary')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
-  @OuCapacite(Capacite.VOIR_FACTURES)
   summary(@CurrentAccount() account: AccountCtx) {
     return this.invoices.summary(account.id);
   }
 
   @Get(':id')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
-  @OuCapacite(Capacite.VOIR_FACTURES)
   findOne(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.invoices.findOne(id, account.id);
   }
 
   @Post()
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   create(@CurrentAccount() account: AccountCtx, @Body() dto: CreateInvoiceDto) {
     return this.invoices.create(account.id, dto);
   }
 
   @Patch(':id/issue')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   issue(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.invoices.issue(id, account.id);
   }
 
   @Patch(':id/pay')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   pay(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.invoices.markPaid(id, account.id);
   }
 
   @Patch(':id/cancel')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
   cancel(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.invoices.cancel(id, account.id);
   }

@@ -17,6 +17,7 @@ import { StripeConnectService } from '../paiements/stripe-connect.service';
 import { MailService } from '../common/mail/mail.service';
 import { AttestationsService } from '../attestations/attestations.service';
 import { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
+import { rolesActifs } from '../common/roles';
 
 
 /**
@@ -312,7 +313,8 @@ export class BillingService {
     if (!membership || membership.status !== 'ACTIVE') {
       throw new ForbiddenException('Accès refusé à ce compte.');
     }
-    if (manageRole && !['OWNER', 'ADMIN'].includes(membership.role)) {
+    // Plus de rôles sur Les Extras (24/09/2026) ; Piloter garde ses droits d'accès.
+    if (manageRole && rolesActifs(membership.account.type) && !['OWNER', 'ADMIN'].includes(membership.role)) {
       throw new ForbiddenException(
         'Seul un propriétaire ou administrateur du compte peut gérer la facturation.',
       );

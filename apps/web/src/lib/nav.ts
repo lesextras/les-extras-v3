@@ -882,11 +882,17 @@ export function getNavForRole(
   // on ne lui retire rien d'autre.
   if (role === 'ADMIN' || !roleCompte) return sansAvances(base);
 
+  /*
+   * ⚠ PLUS DE RÔLES SUR LES EXTRAS (24/09/2026, décision de Siham). Le compte,
+   * c'est la personne : tout le monde voit le menu du TITULAIRE, quel que soit
+   * le rôle hérité en base. Les entrées réservées aux anciens « salariés »
+   * (MEMBER seul) ne concernent plus personne et disparaissent.
+   */
   return sansAvances(
     base
       .map((section) => ({
         ...section,
-        items: section.items.filter((item) => !item.roles || item.roles.includes(roleCompte)),
+        items: section.items.filter((item) => !item.roles || item.roles.includes('OWNER')),
       }))
       .filter((section) => section.items.length > 0),
   );

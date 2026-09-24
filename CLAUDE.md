@@ -5670,3 +5670,18 @@ glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
   visible par champ.
 - Formation « Accompagnement au numérique » créée (copie de toulali.fr, prix
   publié 3 500 € le parcours, sur devis), catégorie « Numérique et bureautique ».
+
+### 24/09/2026 (soir) — les rôles supprimés sur Les Extras, demande RenforTeam sans compte
+
+- **Plus aucun rôle sur Les Extras** (décision de Siham) : direction,
+  administration, chef de service, salarié et droits déclarés (« Réserver
+  directement », « Utiliser les générations LEX ») sont retirés des routes
+  (71 décorateurs), des services (LEX, trames, pièces, signature,
+  facturation) et du menu (le même pour tout le monde, celui du titulaire).
+  `common/roles.ts` : la garde ne lit le rôle QUE pour ASSOCIATION et
+  ACADEMIE — ⚠ Piloter garde ses « Droits d'accès ». La colonne
+  `Membership.role` reste en base (aucune migration destructive).
+- **RenforTeam « sans compte »** : le bouton « Demander un intervenant »
+  mène au formulaire `#demande` de la page (demande de contact, reçue dans
+  /admin/contacts), plus à /register. En offre complète, « Publier un
+  besoin » garde son lien d'inscription.

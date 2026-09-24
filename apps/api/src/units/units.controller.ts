@@ -9,7 +9,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AccountRole } from '@prisma/client';
 import { UnitsService } from './units.service';
 import {
   CreateUnitDto,
@@ -21,8 +20,6 @@ import {
 } from './dto/unit.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -84,8 +81,6 @@ export class UnitsController {
   }
 
   @Post()
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   create(
     @CurrentAccount() account: RequestAccount,
     @CurrentUser() user: RequestUser,
@@ -95,22 +90,16 @@ export class UnitsController {
   }
 
   @Post('assign')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   assign(@CurrentAccount() account: RequestAccount, @Body() dto: AssignMemberDto) {
     return this.units.assignMember(account, dto);
   }
 
   @Post('retirer')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   retirer(@CurrentAccount() account: RequestAccount, @Body() dto: RetirerServiceDto) {
     return this.units.retirerService(account, dto.membershipId, dto.orgUnitId, dto.portee);
   }
 
   @Patch(':id')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   update(
     @CurrentAccount() account: RequestAccount,
     @Param('id') id: string,
@@ -120,8 +109,6 @@ export class UnitsController {
   }
 
   @Post(':id/desarchiver')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   desarchiver(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
     return this.units.desarchiver(account, id);
   }
@@ -131,8 +118,6 @@ export class UnitsController {
    * erreur il y a trente secondes n'a pas à devenir une ligne d'archive).
    */
   @Delete(':id')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   remove(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
     return this.units.archiver(account, id);
   }

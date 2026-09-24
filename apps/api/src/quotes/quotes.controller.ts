@@ -7,11 +7,8 @@ import {
   SendQuoteDto,
   SignerQuoteDto,
 } from './dto/quote.dto';
-import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -36,8 +33,7 @@ import { RequestAccount, RequestUser } from '../common/types/request-context';
  * déjà cette limite : les devis avaient simplement été oubliés. On aligne.
  */
 @Controller('quotes')
-@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-@AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class QuotesController {
   constructor(private readonly quotes: QuotesService) {}
 

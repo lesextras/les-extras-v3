@@ -9,8 +9,6 @@ import {
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -28,8 +26,7 @@ import { DocumentsService } from './documents.service';
  * structure.
  */
 @Controller('documents')
-@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-@AccountRoles('OWNER', 'ADMIN', 'MANAGER')
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class DocumentsController {
   /*
    * LE TYPE DE CONTENU EST POSÉ JUSTE AVANT L'ENVOI, PAS PAR DÉCORATEUR.
@@ -117,7 +114,6 @@ export class DocumentsController {
    * par `FormationsService`, qui connaît les trois cas légitimes.
    */
   @Get('attestation/:inscriptionId.pdf')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   async attestation(
     @CurrentAccount() account: RequestAccount,
     @CurrentUser() user: RequestUser,
@@ -138,7 +134,6 @@ export class DocumentsController {
 
   /** CERTIFICAT DE RÉALISATION — la pièce que réclame le financeur. */
   @Get('certificat/:inscriptionId.pdf')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   async certificat(
     @CurrentAccount() account: RequestAccount,
     @CurrentUser() user: RequestUser,
@@ -159,7 +154,6 @@ export class DocumentsController {
 
   /** FEUILLE D'ÉMARGEMENT — la preuve de réalisation la plus contrôlée. */
   @Get('emargement/:sessionId.pdf')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   async emargement(
     @CurrentAccount() account: RequestAccount,
     @CurrentUser() user: RequestUser,

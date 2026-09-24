@@ -79,17 +79,17 @@ describe('TramesMaisonService, import', () => {
     expect(data.portee).toBe(PorteeTrame.PERSONNELLE);
   });
 
-  it("refuse qu'un membre publie une trame pour toute l'équipe", async () => {
-    const { service, moteur } = monter();
-    await expect(
-      service.importer('cpt', 'u1', AccountRole.MEMBER, {
-        nom: 'Modèle imposé',
-        portee: PorteeTrame.ETABLISSEMENT,
-        texte: 'A'.repeat(200),
-      }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    // Court-circuité avant tout appel payant.
-    expect(moteur.completer).not.toHaveBeenCalled();
+  // ⚠ 24/09/2026 : plus de rôles sur Les Extras (`common/roles.ts`) : la
+  // personne du compte publie pour son établissement, quel que soit le rôle
+  // hérité en base.
+  it("laisse la personne du compte publier une trame pour l'établissement", async () => {
+    const { service, prisma } = monter();
+    await service.importer('cpt', 'u1', AccountRole.MEMBER, {
+      nom: 'Modèle imposé',
+      portee: PorteeTrame.ETABLISSEMENT,
+      texte: 'A'.repeat(200),
+    });
+    expect(prisma.trameMaison.create.mock.calls[0][0].data.portee).toBe(PorteeTrame.ETABLISSEMENT);
   });
 
   it("l'autorise à un chef de service", async () => {

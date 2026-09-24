@@ -1,10 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { Capacite } from '@prisma/client';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
-import { OuCapacite } from '../common/decorators/capacite.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -24,8 +20,7 @@ import { UpsertComplianceDto } from './dto/upsert-compliance.dto';
 // dont c'est le métier — une assistante administrative, par exemple — n'a
 // plus besoin qu'on la nomme chef de service pour tenir les dossiers.
 @Controller('conformite')
-@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-@AccountRoles('OWNER', 'ADMIN', 'MANAGER')
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class ConformiteController {
   constructor(private readonly conformite: ConformiteService) {}
 
@@ -36,7 +31,6 @@ export class ConformiteController {
    * identifiant d'utilisateur et la route ne serait jamais atteinte.
    */
   @Get('alertes')
-  @OuCapacite(Capacite.VOIR_CONFORMITE)
   alertes(
     @CurrentAccount() account: RequestAccount,
     @Query('page') page?: string,
@@ -68,13 +62,11 @@ export class ConformiteController {
    * identifiant d'utilisateur.
    */
   @Get('mes-documents')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   mesDocuments(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser) {
     return this.conformite.listForUser(account.id, user.id);
   }
 
   @Patch('mes-documents')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   deposerMonDocument(
     @CurrentAccount() account: RequestAccount,
     @CurrentUser() user: RequestUser,
@@ -84,15 +76,12 @@ export class ConformiteController {
   }
 
   @Get(':userId')
-  @OuCapacite(Capacite.VOIR_CONFORMITE)
   listForUser(@CurrentAccount() account: RequestAccount, @Param('userId') userId: string) {
     return this.conformite.listForUser(account.id, userId);
   }
 
   /** Dépose / met à jour une pièce (réservé aux responsables du compte). */
   @Patch(':userId/documents')
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   upsertDocument(
     @CurrentAccount() account: RequestAccount,
     @Param('userId') userId: string,

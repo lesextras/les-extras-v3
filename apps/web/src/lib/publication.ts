@@ -19,7 +19,11 @@ import type { AccountRole } from './types';
  * seul fait foi. Cette fonction ne sert qu'à ne pas proposer un geste qu'on
  * sait déjà refusé. Si les deux divergent, c'est celle-ci qu'on corrige.
  */
-export const ROLES_QUI_PUBLIENT: AccountRole[] = ['OWNER', 'ADMIN', 'MANAGER'];
+/**
+ * ⚠ 24/09/2026 : plus de rôles sur Les Extras. Tous les rôles hérités en base
+ * publient ; la liste reste pour qu'on retrouve où vivait la règle.
+ */
+export const ROLES_QUI_PUBLIENT: AccountRole[] = ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER'];
 
 export function peutPublier(role: AccountRole | undefined | null): boolean {
   return Boolean(role && ROLES_QUI_PUBLIENT.includes(role));

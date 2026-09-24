@@ -69,6 +69,7 @@ import { renfortSalarieVisible, visioconsultationVisible } from "@/lib/offre";
 // dans la page, ils s'importent. La règle s'est défaite trois fois ;
 // `lib/__tests__/inscription-liens.test.ts` échoue si une page recommence.
 import { INSCRIPTION } from "@/lib/inscription-liens";
+import { FormulaireLanding } from "../l/FormulaireLanding";
 // Venus de l'accueil le 08/09/2026 : l'accueil traite les trois usages à
 // égalité, et le détail du renfort — le formulaire unique, la cascade, les
 // écrans du produit — appartient à la page qui raconte le renfort.
@@ -318,9 +319,15 @@ export default async function SosRenfortPage() {
    * du visiteur. En offre complète, seul un établissement employeur publie un
    * besoin, et le raccourci garde son sens.
    */
-  const lienDemande = montreCdd
-    ? INSCRIPTION.publierBesoin.href
-    : INSCRIPTION.demanderIntervenant.href;
+  /*
+   * ⚠ « SANS COMPTE » ÉTAIT PROMIS, ET LE BOUTON MENAIT À L'INSCRIPTION
+   * (24/09/2026). Le déroulé annonce « quelques minutes, et sans compte pour
+   * commencer » ; le bouton, lui, ouvrait /register. La demande se fait
+   * désormais sur place, dans le formulaire #demande en bas de page : une
+   * demande de contact classique, qui arrive dans /admin/contacts. Le compte
+   * se crée ensuite, quand il y a un devis à accepter.
+   */
+  const lienDemande = montreCdd ? INSCRIPTION.publierBesoin.href : "#demande";
 
   return (
     <div className="space-y-20">
@@ -920,6 +927,23 @@ export default async function SosRenfortPage() {
           <UnSeulFormulaire />
           <ApercuProduit />
         </>
+      )}
+
+      {!montreCdd && (
+        <section id="demande" className="scroll-mt-24 mx-auto max-w-2xl space-y-4">
+          <div className="space-y-2 text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">Décrire le besoin, sans compte</h2>
+            <p className="text-muted-foreground">
+              Une réponse sous 24 h ouvrées. Le compte ne se crée qu’au moment d’accepter un devis.
+            </p>
+          </div>
+          <FormulaireLanding
+            sujet="RenforTeam · demande sans compte"
+            bouton="Envoyer ma demande"
+            structure
+            offre="La situation, le métier recherché, où et quand. N’indiquez ni le nom d’une personne accompagnée, ni une information de santé."
+          />
+        </section>
       )}
 
       {/* CTA final */}

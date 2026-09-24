@@ -22,8 +22,6 @@ import {
 import { TypeDocumentSigne } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import type { RequestAccount } from '../common/types/request-context';
 import { SignatureService } from './signature.service';
@@ -76,8 +74,7 @@ class RefuserDto {
  * des données de confort : ce sont deux pièces du faisceau de preuves.
  */
 @Controller('signatures')
-@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-@AccountRoles('OWNER', 'ADMIN', 'MANAGER')
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class SignatureController {
   constructor(private readonly signature: SignatureService) {}
 
@@ -118,7 +115,6 @@ export class SignatureController {
    * demandes adressées à sa propre adresse.
    */
   @Get(':id')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   lire(
     @CurrentAccount() a: RequestAccount,
     @Req() req: Request,
@@ -130,7 +126,6 @@ export class SignatureController {
 
   /** Le dossier de preuve complet — signataire et responsables seulement. */
   @Get(':id/dossier')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   dossier(
     @CurrentAccount() a: RequestAccount,
     @Req() req: Request,
@@ -141,7 +136,6 @@ export class SignatureController {
 
   /** Renvoie un code : le premier a pu se perdre ou expirer. */
   @Post(':id/code')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   renvoyerCode(
     @CurrentAccount() a: RequestAccount,
     @Req() req: Request,
@@ -152,7 +146,6 @@ export class SignatureController {
 
   /** Le geste lui-même. Réservé au signataire désigné. */
   @Post(':id/signer')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   signer(
     @CurrentAccount() a: RequestAccount,
     @Param('id') id: string,
@@ -163,7 +156,6 @@ export class SignatureController {
   }
 
   @Post(':id/refuser')
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
   refuser(
     @CurrentAccount() a: RequestAccount,
     @Param('id') id: string,

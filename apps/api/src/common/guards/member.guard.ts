@@ -1,8 +1,5 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
-import { AccountRole, Capacite } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { SELECT_MEMBRE, a as detient, versMembreCourant } from '../perimetre';
-import { messageDroitManquant } from './account-roles.guard';
 
 /**
  * Réserve une route aux comptes qui peuvent payer une génération LEX :
@@ -37,26 +34,8 @@ export class MemberGuard implements CanActivate {
     // et chefs de service continuent de générer sans rien déclarer, et
     // l'intervenant reste propriétaire de son propre compte, donc de son
     // propre forfait.
-    const ROLES_LEX: AccountRole[] = [
-      AccountRole.OWNER,
-      AccountRole.ADMIN,
-      AccountRole.MANAGER,
-    ];
-    const membershipId: string | undefined = req.account?.membershipId;
-    if (!ROLES_LEX.includes(req.account?.role) && membershipId) {
-      const membre = await this.prisma.membership.findUnique({
-        where: { id: membershipId },
-        select: SELECT_MEMBRE,
-      });
-      if (
-        !membre ||
-        !detient(versMembreCourant(membre), Capacite.UTILISER_CREDITS_LEX)
-      ) {
-        throw new ForbiddenException(
-          messageDroitManquant(Capacite.UTILISER_CREDITS_LEX),
-        );
-      }
-    }
+    // ⚠ Plus de rôles ni de droits déclarés sur Les Extras (24/09/2026,
+    // `common/roles.ts`) : toute personne active du compte utilise son forfait.
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
       select: { credits: true, isMember: true },

@@ -58,12 +58,13 @@ Règles absolues :
 - Tu n'inventes aucune section absente du modèle.
 - Aucun nom propre dans ta réponse, même pseudonymisé : si un jeton apparaît dans un extrait, remplace-le par « … ».`;
 
-/** Ce qu'un membre non responsable ne peut pas faire. */
-const ROLES_PUBLICATION: AccountRole[] = [
-  AccountRole.OWNER,
-  AccountRole.ADMIN,
-  AccountRole.MANAGER,
-];
+/**
+ * ⚠ PLUS DE RÔLES SUR LES EXTRAS (24/09/2026, voir `common/roles.ts`) : toute
+ * personne du compte peut publier une trame pour l'établissement. La liste
+ * couvre donc tous les rôles ; elle reste nommée pour qu'on retrouve où la
+ * règle vivait.
+ */
+const ROLES_PUBLICATION: AccountRole[] = Object.values(AccountRole);
 
 const SELECT_PUBLIC = {
   id: true,

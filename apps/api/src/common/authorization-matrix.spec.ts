@@ -8,53 +8,56 @@ import { InvitationsController } from '../invitations/invitations.controller';
 import { InvoicesController } from '../invoices/invoices.controller';
 import { ContratsController } from '../contrats/contrats.controller';
 import { ConformiteController } from '../conformite/conformite.controller';
+import { BookingsController } from '../bookings/bookings.controller';
+import { QuotesController } from '../quotes/quotes.controller';
+import { rolesActifs } from './roles';
 
 /**
- * Matrice d'autorisation « par profil » — vérifie que chaque endpoint sensible
- * porte bien les rôles de compte (AccountRole) attendus via @AccountRoles.
- * C'est le contrat RBAC entre Direction (OWNER), Administrateur (ADMIN),
- * Responsable (MANAGER) et Salarié (MEMBER).
+ * MATRICE D'AUTORISATION, APRÈS LA SUPPRESSION DES RÔLES (24/09/2026).
+ *
+ * Sur Les Extras, le compte, c'est la personne : direction, administration,
+ * chef de service, salarié et les droits déclarés (« Réserver directement »,
+ * « Utiliser les générations LEX ») n'existent plus. Ce fichier vérifie que
+ * AUCUNE route Les Extras ne porte encore de rôle ni de droit : un décorateur
+ * oublié refuserait une action à la seule personne du compte.
+ *
+ * Les routes de membres et d'invitations servent les espaces Piloter, qui
+ * gardent leurs droits d'accès : elles gardent leurs rôles, et la garde ne les
+ * lit que pour une association ou une académie (`common/roles.ts`).
  */
 function rolesOf(ctrl: any, method: string): string[] | undefined {
   return Reflect.getMetadata(ACCOUNT_ROLES_KEY, ctrl.prototype[method]);
 }
 
-const MANAGER = ['OWNER', 'ADMIN', 'MANAGER'];
 const ADMINS = ['OWNER', 'ADMIN'];
 
-describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
-  describe('Missions (RenforTeam)', () => {
-    it('créer / éditer / publier / élargir : Direction, Administrateur, Responsable', () => {
-      for (const m of ['create', 'update', 'publish', 'broaden']) {
-        expect(rolesOf(MissionsController, m)).toEqual(MANAGER);
-      }
-    });
-    it('supprimer : Direction + Administrateur uniquement', () => {
-      expect(rolesOf(MissionsController, 'remove')).toEqual(ADMINS);
-    });
-    it('candidater / consulter : aucun rôle requis (tout membre actif)', () => {
-      expect(rolesOf(MissionsController, 'candidate')).toBeUndefined();
-      expect(rolesOf(MissionsController, 'findOne')).toBeUndefined();
-    });
+function metasDe(ctrl: any): { methode: string; roles?: unknown; capacite?: unknown }[] {
+  const proto = ctrl.prototype;
+  return [
+    { methode: '(classe)', roles: Reflect.getMetadata(ACCOUNT_ROLES_KEY, ctrl), capacite: Reflect.getMetadata(CAPACITE_KEY, ctrl) },
+    ...Object.getOwnPropertyNames(proto)
+      .filter((m) => m !== 'constructor' && typeof proto[m] === 'function')
+      .map((m) => ({ methode: m, roles: Reflect.getMetadata(ACCOUNT_ROLES_KEY, proto[m]), capacite: Reflect.getMetadata(CAPACITE_KEY, proto[m]) })),
+  ];
+}
+
+describe('Matrice d\'autorisation (plus de rôles sur Les Extras)', () => {
+  it.each([
+    ['Missions', MissionsController],
+    ['Ateliers / services', ServicesController],
+    ['Réservations', BookingsController],
+    ['Devis', QuotesController],
+    ['Facturation', InvoicesController],
+    ['Contrats', ContratsController],
+    ['Conformité', ConformiteController],
+  ])('%s : aucune route ne porte de rôle ni de droit déclaré', (_nom, ctrl) => {
+    const restants = metasDe(ctrl).filter((m) => m.roles || m.capacite);
+    expect(restants).toEqual([]);
   });
 
-  describe('Ateliers / services', () => {
-    it('créer / éditer : Direction, Administrateur, Responsable', () => {
-      expect(rolesOf(ServicesController, 'create')).toEqual(MANAGER);
-      expect(rolesOf(ServicesController, 'update')).toEqual(MANAGER);
-    });
-    it('supprimer : Direction + Administrateur', () => {
-      expect(rolesOf(ServicesController, 'remove')).toEqual(ADMINS);
-    });
-    // ⚠ MIS À JOUR LE 24/09/2026 : réserver engage une dépense de
-    // l'établissement. Direction, administration et chefs de service
-    // réservent ; un salarié seulement si on lui a accordé le droit
-    // « Réserver directement » (OU, jamais ET : voir AccountRolesGuard).
-    it('réserver : Direction, Administrateur, Responsable, OU le droit « Réserver directement »', () => {
-      expect(rolesOf(ServicesController, 'book')).toEqual(MANAGER);
-      const handler = (ServicesController.prototype as unknown as Record<string, unknown>).book;
-      expect(Reflect.getMetadata(CAPACITE_KEY, handler as object)).toBe('RESERVER_DIRECT');
-    });
+  it('la garde ne lit le rôle que pour Piloter', () => {
+    for (const t of ['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER']) expect(rolesActifs(t)).toBe(false);
+    for (const t of ['ASSOCIATION', 'ACADEMIE']) expect(rolesActifs(t)).toBe(true);
   });
 
   describe('Membres & invitations (gouvernance du compte)', () => {
@@ -95,44 +98,4 @@ describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
     });
   });
 
-  describe('Facturation', () => {
-    it('créer / émettre / marquer payée : Direction, Administrateur, Responsable', () => {
-      for (const m of ['create', 'issue', 'pay']) {
-        expect(rolesOf(InvoicesController, m)).toEqual(MANAGER);
-      }
-    });
-    it('annuler : Direction + Administrateur', () => {
-      expect(rolesOf(InvoicesController, 'cancel')).toEqual(ADMINS);
-    });
-    /**
-     * La LECTURE était ouverte à tout membre actif, et ce test l'entérinait.
-     * Un éducateur rattaché à la MECS pouvait donc lister l'intégralité de la
-     * facturation de sa structure — alors même que le menu lui cachait déjà
-     * l'entrée « Devis & factures » (voir nav.ts). L'interface promettait une
-     * restriction que le serveur n'appliquait pas ; on aligne le serveur.
-     */
-    it('consulter : Direction, Administrateur, Responsable, jamais un simple membre', () => {
-      for (const m of ['findAll', 'summary', 'findOne']) {
-        expect(rolesOf(InvoicesController, m)).toEqual(MANAGER);
-      }
-    });
-  });
-
-  describe('Conformité', () => {
-    it('éditer une pièce : Direction, Administration, Chef de service', () => {
-      expect(rolesOf(ConformiteController, 'upsertDocument')).toEqual(MANAGER);
-    });
-
-    /**
-     * La lecture était ouverte à tout membre actif, et ce test le vérifiait.
-     * C'était l'erreur : ces pièces comprennent le casier judiciaire et les
-     * diplômes de chacun. Un moniteur-éducateur n'a pas à consulter le dossier
-     * de ses collègues. La restriction porte désormais sur le contrôleur
-     * entier, ce qui la rend visible ici au niveau de la classe.
-     */
-    it('consulter : réservé aux responsables, comme l’écriture', () => {
-      expect(Reflect.getMetadata(ACCOUNT_ROLES_KEY, ConformiteController)).toEqual(MANAGER);
-      expect(Reflect.getMetadata(ACCOUNT_ROLES_KEY, ContratsController)).toEqual(MANAGER);
-    });
-  });
 });

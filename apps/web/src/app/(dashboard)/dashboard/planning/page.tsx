@@ -37,7 +37,7 @@ export default async function PlanningPage() {
   // L'export de paie porte les heures et les soldes de congés de toute
   // l'équipe : ce n'est pas une information d'équipe.
   const peutExporter =
-    isEstablishment && ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
+    isEstablishment; // plus de rôles sur Les Extras (24/09/2026)
 
   // Premier affichage : le mois courant, exactement la grille que le
   // calendrier montrera côté client (6 semaines à partir du lundi précédant le 1er).

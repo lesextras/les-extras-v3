@@ -490,9 +490,9 @@ export default async function DashboardPage() {
             // Annoncer « 6 factures à émettre » à un MEMBER le renverrait sur
             // un écran que son menu ne lui ouvre pas : une tâche qu'on ne peut
             // pas faire est pire qu'une tâche qu'on ne voit pas.
-            const voitLaFacturation =
-              !isEstablishment ||
-              ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role ?? "");
+            // Plus de rôles sur Les Extras (24/09/2026) : la personne du
+            // compte voit sa facturation, comme son entrée de menu.
+            const voitLaFacturation = true;
             if (voitLaFacturation) {
               pousser(
                 f.facturesBrouillon,

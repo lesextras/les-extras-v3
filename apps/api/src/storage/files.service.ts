@@ -13,6 +13,7 @@ import { AuditService } from '../common/audit/audit.service';
 import { StorageService } from './storage.service';
 import { REGLES, TAILLE_MAX_MEDIA, typeReel, nomSur } from './file-rules';
 import { AdresseRefusee, telechargerAdressePublique, type Telechargement } from '../common/reseau-sur';
+import { rolesActifs } from '../common/roles';
 
 /** Fichier reçu par multer (mémoire). Type minimal, pour éviter @types/multer. */
 export interface FichierRecu {
@@ -34,7 +35,11 @@ export interface FichierResume {
   url: string;
 }
 
-/** Rôles d'un compte autorisés à consulter les pièces de conformité. */
+/**
+ * Rôles autorisés à supprimer une pièce déposée par quelqu'un d'autre, SUR UN
+ * ESPACE PILOTER seulement : sur Les Extras les rôles n'existent plus
+ * (24/09/2026, `common/roles.ts`), toute personne du compte y a la main.
+ */
 const ROLES_CONFORMITE: AccountRole[] = [
   AccountRole.OWNER,
   AccountRole.ADMIN,
@@ -352,10 +357,9 @@ export class FilesService {
     });
     if (!membership) return false;
 
-    if (asset.kind === FileKind.COMPLIANCE) {
-      return ROLES_CONFORMITE.includes(membership.role);
-    }
-    return true; // FORMATION : tout membre actif du compte.
+    // Pièces de conformité : Les Extras, où les rôles n'existent plus
+    // (24/09/2026) — tout membre actif du compte les consulte, comme le reste.
+    return true;
   }
 
   // ───────────────────────────────────────────────── Suppression ──
@@ -376,15 +380,11 @@ export class FilesService {
     let responsable = false;
     if (!proprietaire && !admin && asset.accountId) {
       const m = await this.prisma.membership.findFirst({
-        where: {
-          userId,
-          accountId: asset.accountId,
-          status: MembershipStatus.ACTIVE,
-          role: { in: ROLES_CONFORMITE },
-        },
-        select: { id: true },
+        where: { userId, accountId: asset.accountId, status: MembershipStatus.ACTIVE },
+        select: { role: true, account: { select: { type: true } } },
       });
-      responsable = !!m;
+      // Sur Piloter le rôle compte encore ; sur Les Extras, être du compte suffit.
+      responsable = !!m && (!rolesActifs(m.account.type) || ROLES_CONFORMITE.includes(m.role));
     }
     if (!proprietaire && !admin && !responsable) {
       throw new ForbiddenException(

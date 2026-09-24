@@ -61,7 +61,7 @@ export default async function RenfortsPage() {
   // direction, à l'administration et aux chefs de service. L'écran doit dire
   // la même chose — proposer un bouton qui renverra une erreur d'autorisation,
   // c'est faire passer une règle pour une panne.
-  const peutPublier = ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
+  const peutPublier = true; // plus de rôles sur Les Extras (24/09/2026) : la personne du compte publie
   // Le remplacement de poste en CDD est hors offre publique depuis le
   // 19/09/2026 (`@/lib/offre`). Voir le bloc des deux cartes, plus bas.
   const montreCdd = renfortSalarieVisible();

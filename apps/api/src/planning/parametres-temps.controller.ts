@@ -1,8 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import type { RequestAccount } from '../common/types/request-context';
 import { ParametresTempsService } from './parametres-temps.service';
@@ -17,8 +15,7 @@ import { MajorerDto, MajParametresTempsDto, VolumeAnnuelDto } from './dto/parame
  * engage la paie de tout le monde — elle reste aux responsables.
  */
 @Controller('parametres-temps')
-@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-@AccountRoles('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class ParametresTempsController {
   constructor(private readonly parametres: ParametresTempsService) {}
 
@@ -28,7 +25,6 @@ export class ParametresTempsController {
   }
 
   @Put()
-  @AccountRoles('OWNER', 'ADMIN')
   enregistrer(@CurrentAccount() a: RequestAccount, @Body() dto: MajParametresTempsDto) {
     return this.parametres.enregistrer(a.id, dto);
   }

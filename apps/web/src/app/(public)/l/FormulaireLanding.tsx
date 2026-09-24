@@ -89,25 +89,29 @@ export function FormulaireLanding({
           <input type="text" name="website" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <Input name="name" required placeholder="Votre nom" maxLength={120} aria-label="Nom" autoComplete="name" />
-        <Input
-          name="email"
-          type="email"
-          required
-          placeholder="Adresse e-mail"
-          maxLength={160}
-          aria-label="Adresse e-mail"
-          autoComplete="email"
-        />
+      {/* Un libellé visible par champ (24/09/2026) : le texte indicatif seul
+          disparaît dès qu'on tape et s'annonce mal au lecteur d'écran. */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Champ id="fl-name" libelle="Nom" requis>
+          <Input id="fl-name" name="name" required maxLength={120} autoComplete="name" />
+        </Champ>
+        <Champ id="fl-email" libelle="Adresse e-mail" requis>
+          <Input id="fl-email" name="email" type="email" inputMode="email" required maxLength={160} autoComplete="email" />
+        </Champ>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         {structure ? (
-          <Input name="structure" placeholder="Établissement (facultatif)" maxLength={160} aria-label="Établissement" autoComplete="organization" />
+          <Champ id="fl-structure" libelle="Établissement ou structure">
+            <Input id="fl-structure" name="structure" maxLength={160} autoComplete="organization" />
+          </Champ>
         ) : null}
-        <Input name="phone" type="tel" placeholder="Téléphone (facultatif)" maxLength={40} aria-label="Téléphone" autoComplete="tel" />
+        <Champ id="fl-phone" libelle="Téléphone">
+          <Input id="fl-phone" name="phone" type="tel" inputMode="tel" maxLength={40} autoComplete="tel" />
+        </Champ>
       </div>
-      <Input name="besoin" placeholder="En une ligne : ce dont vous avez besoin (facultatif)" maxLength={300} aria-label="Votre besoin" />
+      <Champ id="fl-besoin" libelle="Votre besoin, en une ligne">
+        <Input id="fl-besoin" name="besoin" maxLength={300} />
+      </Champ>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button type="submit" size="lg" className="w-full" disabled={loading}>
         {loading ? "Envoi…" : bouton}
@@ -117,5 +121,17 @@ export function FormulaireLanding({
         Pas de revente, pas de séquence automatique.
       </p>
     </form>
+  );
+}
+
+function Champ({ id, libelle, requis, children }: { id: string; libelle: string; requis?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <label htmlFor={id} className="text-sm font-medium text-foreground">
+        {libelle}
+        {requis ? <span className="text-destructive"> *</span> : <span className="text-muted-foreground"> (facultatif)</span>}
+      </label>
+      {children}
+    </div>
   );
 }

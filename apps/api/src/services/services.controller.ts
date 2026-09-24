@@ -9,14 +9,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AccountRole, Capacite } from '@prisma/client';
+import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
 import { EmailVerifieSiPublicationGuard } from '../common/guards/email-verifie.guard';
 import { StructureRequiseSiPublicationGuard } from '../common/guards/structure-requise.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
-import { OuCapacite } from '../common/decorators/capacite.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -61,8 +58,7 @@ export class ServicesController {
   }
 
   @Post()
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard)
   create(@CurrentAccount() account: AccountCtx, @Body() dto: CreateServiceDto) {
     return this.services.create(account.id, dto);
   }
@@ -81,11 +77,9 @@ export class ServicesController {
   @Patch(':id')
   @UseGuards(
     AccountGuard,
-    AccountRolesGuard,
     EmailVerifieSiPublicationGuard,
     StructureRequiseSiPublicationGuard,
   )
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
   update(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,
@@ -95,8 +89,7 @@ export class ServicesController {
   }
 
   @Delete(':id')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  @UseGuards(AccountGuard)
   remove(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.services.remove(id, account.id);
   }
@@ -118,9 +111,7 @@ export class ServicesController {
    * poste » plutôt que vers un code d'erreur.
    */
   @Post(':id/book')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
-  @OuCapacite(Capacite.RESERVER_DIRECT)
+  @UseGuards(AccountGuard)
   book(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,

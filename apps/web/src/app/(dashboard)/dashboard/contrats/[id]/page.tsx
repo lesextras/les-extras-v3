@@ -68,7 +68,7 @@ export default async function ContratPage({ params }: { params: Promise<{ id: st
             signatures={signatures.data?.items ?? []}
             prestataireActif={signatures.data?.prestataireActif ?? null}
             signatairesProposes={signataires(fiche.data.contrat)}
-            peutDemander={["OWNER", "ADMIN", "MANAGER"].includes(session.account.role)}
+            peutDemander /* plus de rôles sur Les Extras (24/09/2026) */
           />
         </>
       )}

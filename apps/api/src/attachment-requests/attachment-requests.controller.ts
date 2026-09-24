@@ -4,8 +4,6 @@ import { AttachmentRequestsService } from './attachment-requests.service';
 import { CreateAttachmentRequestDto } from './dto/create-attachment-request.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -41,22 +39,19 @@ export class AttachmentRequestsController {
   // --- Côté établissement (OWNER/ADMIN sur le compte actif) ---
 
   @Get()
-  @UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  @UseGuards(JwtAuthGuard, AccountGuard)
   list(@CurrentAccount() account: RequestAccount) {
     return this.attachmentRequests.listForEstablishment(account);
   }
 
   @Post(':id/approve')
-  @UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  @UseGuards(JwtAuthGuard, AccountGuard)
   approve(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.attachmentRequests.approve(account, user, id);
   }
 
   @Post(':id/reject')
-  @UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  @UseGuards(JwtAuthGuard, AccountGuard)
   reject(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.attachmentRequests.reject(account, user, id);
   }

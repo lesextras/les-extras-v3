@@ -144,7 +144,7 @@ export default async function LexCreditsPage({
   // Les formules d'établissement ne sont montrées qu'aux établissements, et
   // réciproquement : afficher les deux transformait un tarif en énigme.
   const formules = plans.filter((p) => p.pour === session.account.type);
-  const pilote = ["OWNER", "ADMIN", "MANAGER"].includes(session.account.role);
+  const pilote = true; // plus de rôles sur Les Extras (24/09/2026)
   const pct = Math.max(0, Math.min(100, Math.round((credits / repere) * 100)));
 
   return (

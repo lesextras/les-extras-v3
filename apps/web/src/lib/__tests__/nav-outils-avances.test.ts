@@ -206,8 +206,22 @@ describe('Le menu d’un salarié', () => {
    * LE RANGER : le menu est calculé sans aucune donnée, et le jour où il y en
    * a une, personne ne doit avoir à trouver un réglage pour la voir.
    */
-  it('⚠ garde le chemin vers les missions ouvertes, salarié comme intervenant', () => {
-    expect(liensDe(getNavForRole('ESTABLISHMENT', 'MEMBER'))).toContain('/dashboard/opportunites');
+  it('⚠ garde le chemin vers les missions ouvertes pour l’intervenant', () => {
     expect(liensDe(getNavForRole('FREELANCE', 'OWNER'))).toContain('/dashboard/opportunites');
+    expect(liensDe(getNavForRole('FREELANCE', 'MEMBER'))).toContain('/dashboard/opportunites');
+  });
+
+  /**
+   * ⚠ PLUS DE RÔLES SUR LES EXTRAS (24/09/2026). Le compte, c'est la
+   * personne : le menu ne dépend plus du rôle hérité en base. Un ancien
+   * « salarié » voit exactement le menu du titulaire.
+   */
+  it('le menu est le même quel que soit le rôle hérité en base', () => {
+    for (const type of ['ESTABLISHMENT', 'FREELANCE', 'PARTICULIER'] as const) {
+      const titulaire = liensDe(getNavForRole(type, 'OWNER'));
+      for (const role of ['ADMIN', 'MANAGER', 'MEMBER'] as const) {
+        expect(liensDe(getNavForRole(type, role))).toEqual(titulaire);
+      }
+    }
   });
 });

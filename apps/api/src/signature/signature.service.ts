@@ -301,8 +301,8 @@ export class SignatureService {
     const s = await this.prisma.signature.findUnique({ where: { id: signatureId } });
     if (!s) throw new NotFoundException('Demande de signature introuvable.');
 
-    const responsable =
-      s.accountId === ctx.accountId && ['OWNER', 'ADMIN', 'MANAGER'].includes(ctx.role);
+    // Plus de rôles sur Les Extras (24/09/2026) : être du compte émetteur suffit.
+    const responsable = s.accountId === ctx.accountId;
     const destinataire =
       s.signataireEmail === (ctx.userEmail ?? '').toLowerCase().trim();
 

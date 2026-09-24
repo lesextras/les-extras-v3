@@ -13,8 +13,6 @@ import {
 import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { BookingsService } from './bookings.service';
@@ -38,8 +36,6 @@ export class BookingsController {
   }
 
   /** Export CSV des heures validées du compte (pointage) — paie/facturation. */
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Get('export/heures.csv')
   @Header('Content-Type', 'text/csv; charset=utf-8')
   @Header('Content-Disposition', 'attachment; filename="les-extras_heures-validees.csv"')
@@ -69,8 +65,6 @@ export class BookingsController {
   //
   // Sur un compte intervenant, la personne est OWNER de son propre compte :
   // son parcours ne change pas.
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Patch(':id/sign')
   sign(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.bookings.signContract(id, account.id);
@@ -97,8 +91,6 @@ export class BookingsController {
   }
 
   // Annuler detruit un engagement pris : meme exigence que le signer.
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Patch(':id/cancel')
   cancel(
     @Param('id') id: string,
@@ -127,8 +119,6 @@ export class BookingsController {
 
   /** L'établissement valide / refuse un créneau. */
   // Valider des heures declenche la facturation : c'est un acte de gestion.
-  @UseGuards(AccountRolesGuard)
-  @AccountRoles('OWNER', 'ADMIN', 'MANAGER')
   @Patch('time-entries/:entryId')
   reviewTimeEntry(
     @Param('entryId') entryId: string,

@@ -12,9 +12,7 @@ import {
 import { AccountRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
 import { EmailVerifieGuard } from '../common/guards/email-verifie.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { MissionsService } from './missions.service';
 import { EngagementsService } from './engagements.service';
@@ -58,15 +56,13 @@ export class MissionsController {
   }
 
   @Post()
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard)
   create(@CurrentAccount() account: AccountCtx, @Body() dto: CreateMissionDto) {
     return this.missions.create(account.id, account.type, dto);
   }
 
   @Patch(':id')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard)
   update(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,
@@ -76,8 +72,7 @@ export class MissionsController {
   }
 
   @Delete(':id')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  @UseGuards(AccountGuard)
   remove(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.missions.remove(id, account.id);
   }
@@ -88,8 +83,7 @@ export class MissionsController {
    * refus de suppression annonçait sans qu'elle existe.
    */
   @Post(':id/cloturer')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard)
   cloturer(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,
@@ -107,8 +101,7 @@ export class MissionsController {
    * restent ouverts à un compte non confirmé (voir le commentaire du garde).
    */
   @Post(':id/publish')
-  @UseGuards(AccountGuard, AccountRolesGuard, EmailVerifieGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard, EmailVerifieGuard)
   publish(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,
@@ -119,8 +112,7 @@ export class MissionsController {
 
   /** Republier : duplique la mission en brouillon (une semaine plus tard par défaut). */
   @Post(':id/dupliquer')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard)
   dupliquer(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,
@@ -131,8 +123,7 @@ export class MissionsController {
 
   /** Approbation d'une mission en attente de validation hiérarchique. */
   @Post(':id/approve')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  @UseGuards(AccountGuard)
   approve(
     @Param('id') id: string,
     @CurrentAccount() account: AccountCtx,
@@ -143,8 +134,7 @@ export class MissionsController {
 
   /** Élargir la diffusion d'un cran (SALARIES -> RESERVED -> PUBLIC). */
   @Post(':id/broaden')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard)
   broaden(@Param('id') id: string, @CurrentAccount() account: AccountCtx) {
     return this.missions.broaden(id, account.id);
   }
@@ -207,8 +197,7 @@ export class MissionsController {
    * et émet le contrat ; le refus présente aussitôt le suivant de la file.
    */
   @Post(':id/engagements/:engagementId/decision')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER)
+  @UseGuards(AccountGuard)
   deciderEngagement(
     @Param('id') id: string,
     @Param('engagementId') engagementId: string,

@@ -9,11 +9,9 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AccountRole, GlobalRole } from '@prisma/client';
+import { GlobalRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -27,8 +25,6 @@ import { UpdateInscriptionDto } from './dto/update-inscription.dto';
 import { SignEmargementDto } from './dto/sign-emargement.dto';
 import { EvaluationChaudDto, EvaluationFroidDto } from './dto/evaluation.dto';
 import { QueryFormationsDto } from './dto/query-formations.dto';
-
-const MANAGER_ROLES = [AccountRole.OWNER, AccountRole.ADMIN, AccountRole.MANAGER];
 
 @Controller('formations')
 @UseGuards(JwtAuthGuard)
@@ -63,8 +59,7 @@ export class FormationsController {
   }
 
   @Post()
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(...MANAGER_ROLES)
+  @UseGuards(AccountGuard)
   create(
     @CurrentAccount() account: RequestAccount,
     @CurrentUser() user: RequestUser,
@@ -244,8 +239,7 @@ export class FormationsController {
   }
 
   @Patch(':id')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(...MANAGER_ROLES)
+  @UseGuards(AccountGuard)
   update(
     @Param('id') id: string,
     @CurrentAccount() account: RequestAccount,
@@ -256,15 +250,13 @@ export class FormationsController {
   }
 
   @Delete(':id')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(AccountRole.OWNER, AccountRole.ADMIN)
+  @UseGuards(AccountGuard)
   remove(@Param('id') id: string, @CurrentAccount() account: RequestAccount) {
     return this.formations.remove(id, account.id);
   }
 
   @Post(':id/sessions')
-  @UseGuards(AccountGuard, AccountRolesGuard)
-  @AccountRoles(...MANAGER_ROLES)
+  @UseGuards(AccountGuard)
   createSession(
     @Param('id') id: string,
     @CurrentAccount() account: RequestAccount,

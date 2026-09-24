@@ -1,8 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { RequestAccount, RequestUser } from '../common/types/request-context';
@@ -17,8 +15,7 @@ import { RappelerDto, RetenirDto } from './dto/vivier.dto';
  * de service et des coordonnées. Un membre de l'équipe n'a pas à y accéder.
  */
 @Controller('vivier')
-@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-@AccountRoles('OWNER', 'ADMIN', 'MANAGER')
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class VivierController {
   constructor(private readonly vivier: VivierService) {}
 

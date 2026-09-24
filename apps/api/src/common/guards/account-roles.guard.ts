@@ -8,8 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { AccountRole, Capacite } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ACCOUNT_ROLES_KEY } from '../decorators/account-roles.decorator';
-import { CAPACITE_KEY } from '../decorators/capacite.decorator';
-import { SELECT_MEMBRE, a as detient, versMembreCourant } from '../perimetre';
+import { rolesActifs } from '../roles';
 
 /**
  * AccountRolesGuard — RBAC basé sur le rôle DANS le compte actif (req.account.role),
@@ -41,31 +40,14 @@ export class AccountRolesGuard implements CanActivate {
       throw new ForbiddenException('Compte actif requis (header x-account-id).');
     }
 
-    if (required.includes(account.role)) {
+    // Sur Les Extras, plus de rôles (voir `common/roles.ts`) : un compte,
+    // c'est une personne, et elle y fait tout. Piloter garde ses droits d'accès.
+    if (!rolesActifs(account.type)) {
       return true;
     }
 
-    // LE DROIT DÉCLARÉ PREND LE RELAIS DU RÔLE.
-    //
-    // Une route peut porter `@OuCapacite(...)` : le rôle ne décide alors plus
-    // seul, la capacité accordée au rattachement ouvre le même accès. C'est un
-    // OU, pas un ET — personne qui passait hier ne se voit fermer la porte
-    // aujourd'hui, on n'ajoute qu'un second chemin. Sans ce décorateur, la
-    // garde se comporte exactement comme avant.
-    const capacite = this.reflector.getAllAndOverride<Capacite | undefined>(CAPACITE_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (capacite && account.membershipId) {
-      const membre = await this.prisma.membership.findUnique({
-        where: { id: account.membershipId },
-        select: SELECT_MEMBRE,
-      });
-      if (membre && detient(versMembreCourant(membre), capacite)) {
-        return true;
-      }
-      throw new ForbiddenException(messageDroitManquant(capacite));
+    if (required.includes(account.role)) {
+      return true;
     }
 
     throw new ForbiddenException(messageRoleInsuffisant(required));

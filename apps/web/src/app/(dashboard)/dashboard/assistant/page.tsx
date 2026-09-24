@@ -36,7 +36,7 @@ export default async function AssistantPage() {
         subtitle="Vos notes brutes deviennent des écrits professionnels : notes, rapports, transmissions, courriers aux parents et aux partenaires. Déposez un de vos écrits : LEX apprend votre trame et rédige dedans, puis vous téléchargez en Word ou en PDF."
       />
       <AssistantStudio
-        peutPublier={["OWNER", "ADMIN", "MANAGER"].includes(session.account.role)}
+        peutPublier /* plus de rôles sur Les Extras (24/09/2026) */
       />
     </div>
   );

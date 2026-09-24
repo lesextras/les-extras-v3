@@ -1,8 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AccountGuard } from '../common/guards/account.guard';
-import { AccountRolesGuard } from '../common/guards/account-roles.guard';
-import { AccountRoles } from '../common/decorators/account-roles.decorator';
 import { CurrentAccount } from '../common/decorators/current-account.decorator';
 import type { RequestAccount } from '../common/types/request-context';
 import { ContratsService } from './contrats.service';
@@ -16,8 +14,7 @@ import { CreateContratDto, DpaeDto, TerminerDto, UpdateContratDto } from './dto/
  * à la main ne suffit pas non plus.
  */
 @Controller('contrats')
-@UseGuards(JwtAuthGuard, AccountGuard, AccountRolesGuard)
-@AccountRoles('OWNER', 'ADMIN', 'MANAGER')
+@UseGuards(JwtAuthGuard, AccountGuard)
 export class ContratsController {
   constructor(private readonly contrats: ContratsService) {}
 
