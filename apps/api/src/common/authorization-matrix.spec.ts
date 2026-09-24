@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { ACCOUNT_ROLES_KEY } from './decorators/account-roles.decorator';
+import { CAPACITE_KEY } from './decorators/capacite.decorator';
 import { MissionsController } from '../missions/missions.controller';
 import { ServicesController } from '../services/services.controller';
 import { MembershipsController } from '../memberships/memberships.controller';
@@ -45,8 +46,14 @@ describe('Matrice d\'autorisation par profil (RBAC compte)', () => {
     it('supprimer : Direction + Administrateur', () => {
       expect(rolesOf(ServicesController, 'remove')).toEqual(ADMINS);
     });
-    it('réserver : aucun rôle requis (tout membre actif)', () => {
-      expect(rolesOf(ServicesController, 'book')).toBeUndefined();
+    // ⚠ MIS À JOUR LE 24/09/2026 : réserver engage une dépense de
+    // l'établissement. Direction, administration et chefs de service
+    // réservent ; un salarié seulement si on lui a accordé le droit
+    // « Réserver directement » (OU, jamais ET : voir AccountRolesGuard).
+    it('réserver : Direction, Administrateur, Responsable, OU le droit « Réserver directement »', () => {
+      expect(rolesOf(ServicesController, 'book')).toEqual(MANAGER);
+      const handler = (ServicesController.prototype as unknown as Record<string, unknown>).book;
+      expect(Reflect.getMetadata(CAPACITE_KEY, handler as object)).toBe('RESERVER_DIRECT');
     });
   });
 
