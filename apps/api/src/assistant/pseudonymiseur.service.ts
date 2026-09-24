@@ -290,6 +290,41 @@ const CAPITALES_METIER = new Set([
   'TSA', 'MDA', 'JAF', 'TGI', 'OPP', 'AED', 'IP', 'CRIP', 'PMI', 'CESF',
 ]);
 
+/**
+ * LA LETTRE D'UNE PERSONNE : A…Z, puis AA, AB… (numération bijective en base 26).
+ *
+ * ⚠ Défaut corrigé le 24/09/2026 : on faisait `compteur % 26`. La 27e personne
+ * reprenait [PERSONNE-A], la table écrasait la première valeur, et la
+ * restauration rendait le MÊME nom à deux personnes différentes — dans un écrit
+ * qui peut partir chez un juge. Un jeton doit rester unique, sans plafond.
+ */
+export function lettrePersonne(n: number): string {
+  let i = n + 1;
+  let lettres = '';
+  while (i > 0) {
+    const r = (i - 1) % 26;
+    lettres = String.fromCharCode(65 + r) + lettres;
+    i = Math.floor((i - 1) / 26);
+  }
+  return lettres;
+}
+
+/**
+ * Un mot écrit comme un nom propre : « Kevin », et les prénoms ou patronymes
+ * COMPOSÉS, « Jean-Pierre », « Martin-Durand ».
+ *
+ * ⚠ Avant le 24/09/2026, le motif s'arrêtait à la majuscule qui suit le trait
+ * d'union : « Jean-Pierre » sortait en « [PERSONNE-A]Pierre », soit un prénom
+ * en clair. L'alternative composée est placée EN PREMIER pour être essayée
+ * avant la forme simple.
+ */
+const MOT_PROPRE = "[A-ZÀ-Ü](?:[a-zà-ÿ']+(?:-[A-ZÀ-Ü][a-zà-ÿ']+)+|[a-zà-ÿ'-]{2,})";
+
+/** Un des segments du mot (« Jean-Pierre » → jean, pierre) est-il un prénom connu ? */
+function contientPrenom(mot: string): boolean {
+  return mot.split('-').some((seg) => seg && PRENOMS_COURANTS.has(normaliserMot(seg)));
+}
+
 @Injectable()
 export class PseudonymiseurService {
   /** Applique la pseudonymisation et renvoie le texte masqué + la table. */
@@ -306,7 +341,7 @@ export class PseudonymiseurService {
       let jeton: string;
       if (genre === 'PERSONNE') {
         // A, B, C… — stable au fil du texte pour garder la cohérence du récit.
-        jeton = `[PERSONNE-${String.fromCharCode(65 + (compteurPersonne++ % 26))}]`;
+        jeton = `[PERSONNE-${lettrePersonne(compteurPersonne++)}]`;
       } else if (genre === 'DATE') {
         jeton = `[DATE-${++compteurDate}]`;
       } else {
@@ -346,7 +381,10 @@ export class PseudonymiseurService {
     //    un mot ordinaire. Volontairement prudent : mieux vaut masquer un mot de
     //    trop que laisser passer un prénom.
     resultat = resultat.replace(
-      /([^.!?\n]\s)([A-ZÀ-Ü][a-zà-ÿ'-]{2,})(\s+[A-ZÀ-Ü][a-zà-ÿ'-]{2,})?/gm,
+      // Ce qui précède : un espace en milieu de phrase, OU une ouverture
+      // collée au nom — « (Kevin) », « [Kevin] », « /Kevin », « dit:Yanis ».
+      // ⚠ Ces formes-là laissaient passer le nom en clair avant le 24/09/2026.
+      new RegExp(`([^.!?\\n]\\s|[(\\[«"“/]\\s?|[,;:](?=[A-ZÀ-Ü]))(${MOT_PROPRE})(\\s+${MOT_PROPRE})?`, 'gm'),
       (m, avant: string, mot1: string, mot2?: string) => {
         if (estMotOrdinaire(mot1)) {
           // Le premier mot est ordinaire, mais le second peut être l'identité
@@ -373,10 +411,28 @@ export class PseudonymiseurService {
     const normaliser = (m: string) =>
       m.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     resultat = resultat.replace(
-      /(^|[.!?]\s+|\n\s*)([A-ZÀ-Ü][a-zà-ÿ'-]{2,})/gm,
+      new RegExp(`(^|[.!?]\\s+|\\n\\s*)(${MOT_PROPRE})`, 'gm'),
       (m, avant: string, mot: string) => {
-        if (!PRENOMS_COURANTS.has(normaliser(mot))) return m;
+        if (!PRENOMS_COURANTS.has(normaliser(mot)) && !contientPrenom(mot)) return m;
         return `${avant}${jetonPour(mot, 'PERSONNE')}`;
+      },
+    );
+
+    // 4 bis bis. FILET DU DICTIONNAIRE, OÙ QUE SOIT LE MOT (24/09/2026).
+    //    Les règles précédentes dépendent de la position : après un espace,
+    //    en tête de phrase. Un prénom connu passait donc s'il était collé à
+    //    une ponctuation inattendue, s'il ne faisait que deux lettres
+    //    (« Jo »), ou s'il était écrit tout en capitales sans voisin
+    //    (« il a frappé KEVIN »). Tout mot écrit comme un nom propre, ou en
+    //    capitales, dont un segment est un prénom du dictionnaire est masqué.
+    //    Les sigles métier (MECS, IME…) sont épargnés.
+    resultat = resultat.replace(
+      /(?<![\p{L}\d'’\[-])([A-ZÀ-Ü][a-zà-ÿ']+(?:-[A-ZÀ-Ü][a-zà-ÿ']+)*|[A-ZÀ-Ü]{2,}(?:-[A-ZÀ-Ü]{2,})*)(?![\p{L}\d\]])/gu,
+      (m, mot: string) => {
+        const capitales = mot === mot.toUpperCase();
+        if (capitales && (mot.length < 3 || CAPITALES_METIER.has(mot))) return m;
+        if (!contientPrenom(mot)) return m;
+        return jetonPour(mot, 'PERSONNE');
       },
     );
 

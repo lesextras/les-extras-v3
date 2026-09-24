@@ -30,7 +30,7 @@ const AVANTAGES = [
   {
     titre: "Publier est gratuit",
     detail:
-      "Mettre en ligne vos ateliers, candidater aux missions de renfort, animer une formation : rien n'est facturé, sans commission. Seul LEX (l'assistant IA) se paie, à crédits.",
+      "Mettre en ligne vos ateliers et candidater aux missions de renfort : rien n'est facturé. Une formation passe par le Qualiopi de l'association, avec une commission sur devis. LEX (l'assistant IA) se paie à crédits.",
   },
 ];
 

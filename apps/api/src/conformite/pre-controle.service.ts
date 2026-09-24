@@ -37,6 +37,12 @@ import { ExtractionService } from '../assistant/extraction.service';
 export class PreControleService {
   private readonly logger = new Logger(PreControleService.name);
 
+  /** Pièces jamais transmises à un moteur externe : casier (art. 10 RGPD) et données bancaires. */
+  static readonly JAMAIS_LUES: ReadonlySet<ComplianceDocType> = new Set<ComplianceDocType>([
+    'CRIMINAL_RECORD',
+    'IBAN',
+  ]);
+
   /** Au-delà, on ne lit pas : ce n'est pas une pièce, c'est un scan de mauvaise qualité. */
   private static readonly TAILLE_MAX = 12 * 1024 * 1024;
 
@@ -100,6 +106,25 @@ export class PreControleService {
       },
     });
     if (!doc?.file) return;
+    // ⚠ JAMAIS DE LECTURE AUTOMATIQUE POUR CES PIÈCES (24/09/2026). Le casier
+    // judiciaire relève de l'article 10 du RGPD, le RIB est une donnée
+    // bancaire : les envoyer à un moteur d'IA externe n'apporte presque rien
+    // (un humain les contrôle de toute façon) et expose le plus sensible.
+    if (PreControleService.JAMAIS_LUES.has(doc.type)) {
+      await this.enregistrer(doc.id, {
+        lisible: false,
+        verdict: 'A_VERIFIER',
+        typeDetecte: null,
+        correspondAuType: null,
+        nomDetecte: null,
+        correspondAuNom: null,
+        dateEmission: null,
+        dateExpiration: null,
+        alertes: ['Pièce contrôlée par une personne uniquement, jamais lue par un moteur automatique.'],
+        resume: 'Contrôle humain uniquement pour ce type de pièce.',
+      });
+      return;
+    }
     if (doc.file.size > PreControleService.TAILLE_MAX) {
       throw new Error('fichier trop volumineux pour la lecture automatique');
     }

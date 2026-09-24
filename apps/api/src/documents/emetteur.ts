@@ -1,4 +1,5 @@
 import { logoAdepa, LOGO_ADEPA_RATIO } from './logo-adepa';
+import { telechargerAdressePublique } from '../common/reseau-sur';
 
 /**
  * À QUI APPARTIENT LE LOGO IMPRIMÉ EN TÊTE D'UN DOCUMENT.
@@ -118,12 +119,13 @@ async function chargerLogoDistant(url: string): Promise<LogoEmetteur | null> {
 
   let valeur: LogoEmetteur | null = null;
   try {
-    const controleur = new AbortController();
-    const minuteur = setTimeout(() => controleur.abort(), DELAI_TELECHARGEMENT_MS);
-    const reponse = await fetch(url, { signal: controleur.signal, redirect: 'follow' });
-    clearTimeout(minuteur);
-    if (reponse.ok) {
-      const octets = Buffer.from(await reponse.arrayBuffer());
+    // L'adresse du logo est saisie par le compte : on ne la lit que si elle
+    // est publique (voir `common/reseau-sur.ts`, SSRF corrigé le 24/09/2026).
+    const { octets } = await telechargerAdressePublique(url, {
+      maxOctets: TAILLE_MAX_OCTETS,
+      delaiMs: DELAI_TELECHARGEMENT_MS,
+    });
+    {
       if (octets.length > 0 && octets.length <= TAILLE_MAX_OCTETS) {
         const dims = dimensionsPng(octets) ?? dimensionsJpeg(octets);
         if (dims && dims.largeur > 0 && dims.hauteur > 0) {

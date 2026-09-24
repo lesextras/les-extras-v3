@@ -16,6 +16,7 @@ import { DEPARTEMENTS, trouverDepartement } from '../common/territoires';
 import { ACCENTS_SQL, PLATS_SQL, motifRecherche } from '../common/recherche-accents';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
+import { regrouperPublics, variantesDe } from '../common/publics';
 
 /**
  * Vitrine : une fiche publiée qui n'appartient PAS à un salarié.
@@ -252,7 +253,14 @@ export class PublicService {
       ];
     }
 
-    if (query.public) where.publicTargets = { has: query.public };
+    if (query.public) {
+      // « Enfant » doit aussi trouver les fiches marquées « Enfants » (voir `common/publics.ts`).
+      const connus = await this.prisma.service.findMany({
+        where: { status: 'PUBLISHED' },
+        select: { publicTargets: true },
+      });
+      where.publicTargets = { hasSome: variantesDe(query.public, connus.flatMap((c) => c.publicTargets)) };
+    }
     if (query.priceMax != null) where.price = { lte: query.priceMax };
 
     // ⚠ LE FILTRE DE LIEU NE PASSE PLUS PAR `city`.
@@ -317,9 +325,8 @@ export class PublicService {
       where: this.typeWhere(query.type),
       select: { publicTargets: true, city: true, departements: true },
     });
-    const publics = Array.from(
-      new Set(facettes.flatMap((f) => f.publicTargets)),
-    ).sort((a, b) => a.localeCompare(b, 'fr'));
+    // Un public par clé : « Enfant » et « Enfants » ne font plus deux filtres.
+    const publics = regrouperPublics(facettes.flatMap((f) => f.publicTargets)).map((g) => g.libelle);
     const cities = Array.from(
       new Set(facettes.map((f) => f.city).filter((c): c is string => Boolean(c))),
     ).sort((a, b) => a.localeCompare(b, 'fr'));

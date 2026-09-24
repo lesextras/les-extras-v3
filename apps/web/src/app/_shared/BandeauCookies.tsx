@@ -153,7 +153,7 @@ export function BandeauCookies() {
             </button>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
             <Button asChild variant="outline" size="sm">
               <Link href="/legal/cookies">La politique complète</Link>
             </Button>

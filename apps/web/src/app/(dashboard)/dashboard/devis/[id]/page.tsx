@@ -272,7 +272,7 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
                   <Link href={`/api/proxy/files/${q.signedFileId}`} className="underline underline-offset-4">
                     Devis signé déposé
                   </Link>
-                  {q.signedAt ? ` le ${formatDate(q.signedAt)}` : ""} — c’est la pièce qui engage.
+                  {q.signedAt ? ` le ${formatDate(q.signedAt)}` : ""} : c’est la pièce qui engage.
                 </p>
               ) : null}
             </div>

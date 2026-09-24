@@ -41,7 +41,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Prisma generate
         run: pnpm --filter @lesextras/api prisma:generate
@@ -61,8 +61,11 @@ jobs:
   security-audit:
     name: Dependency audit
     runs-on: ubuntu-latest
-    # Non bloquant : signale les vulnérabilités connues sans casser le build.
-    continue-on-error: true
+    # BLOQUANT depuis le 24/09/2026 : une vulnérabilité haute ou critique dans
+    # une dépendance de production fait échouer la CI (0 au 24/09, 2 modérées).
+    # Si une correction est impossible tout de suite, ajouter le CVE dans
+    # package.json → "pnpm": { "auditConfig": { "ignoreCves": [...] } } AVEC,
+    # dans docs/exceptions-audit.md, la date, la raison et l'échéance de revue.
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,6 +79,6 @@ jobs:
           node-version: 20
           cache: pnpm
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: pnpm audit (prod deps)
         run: pnpm audit --prod --audit-level high

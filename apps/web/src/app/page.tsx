@@ -166,7 +166,7 @@ const TOUT_EN_UN = [
     n'est pas une grille tarifaire.
 
     ⚠ Si un chiffre revient ici un jour, ce doit être 15 % et jamais 0 % :
-    0 % est le taux des ateliers et des formations, pas celui du renfort. Deux
+    0 % est le taux des ateliers (les formations sont sur devis), pas celui du renfort. Deux
     chiffres différents sur deux pages du même site est exactement ce que
     l'audit reprochait ailleurs.
   */
@@ -251,10 +251,12 @@ const TARIFS = [
      * l'éducation spécialisée avant de l'envoyer chez quelqu'un. Ce n'est pas
      * une mise en relation, c'est une sélection — et c'est ce qui se paie.
      *
-     * Les ateliers et les formations, eux, restent à 0 % : on y réserve en
-     * direct, l'intervenant facture l'établissement, l'association ne s'y
-     * interpose pas. Les deux lignes disent donc deux choses différentes, et
-     * c'est volontaire.
+     * Les ateliers, eux, restent à 0 % : on y réserve en direct, l'intervenant
+     * facture l'établissement, l'association ne s'y interpose pas.
+     *
+     * ⚠ LES FORMATIONS NE SONT PAS À 0 % (Siham, 24/09/2026) : elles sont
+     * délivrées sous le Qualiopi de l'association, qui les facture ; sa
+     * commission est fixée SUR DEVIS. Trois régimes, trois lignes.
      *
      * ⚠ 15 %, ARRÊTÉ LE 21/09/2026. Le taux et sa justification sont dans
      * `lib/commission.ts` — relevé des grilles publiques compris. Ne pas le
@@ -264,7 +266,8 @@ const TARIFS = [
     points: [
       'Publication, diffusion et relances',
       'Devis et feuille de mission édités',
-      'Ateliers et formations : 0 % de commission',
+      'Ateliers : 0 % de commission',
+      'Formations : commission sur devis, sous le Qualiopi de l’association',
       'RenforTeam : 15 % de frais de gestion, ajoutés au tarif. L’intervenant touche 100 %',
     ],
     lien: { libelle: 'Publier un besoin', href: '/renforteam' },
@@ -460,7 +463,7 @@ export default async function LandingPage() {
 
                   ⚠⚠ ET SURTOUT : PAS DE « MISE EN RELATION GRATUITE » TOUT
                   COURT. Depuis le 21/09, RenforTeam prend 15 % de frais de
-                  gestion ; seuls les ateliers et les formations sont à 0 %.
+                  gestion ; seuls les ateliers sont à 0 %, les formations sont sur devis.
                   Une gratuité annoncée sans son périmètre est démentie deux
                   écrans plus bas, sur la page qui vend le renfort — c'est la
                   pastille « 0 % sur les ateliers » qui porte la nuance, et
@@ -924,7 +927,7 @@ export default async function LandingPage() {
                 sur une page faite pour ça.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="h-auto max-w-full whitespace-normal py-3 text-center">
                   <Link href="/frais-de-service">
                     Ce qui est gratuit, ce qui est payant
                     <ArrowRight />

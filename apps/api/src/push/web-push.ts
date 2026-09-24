@@ -137,6 +137,32 @@ export interface ResultatEnvoi {
 }
 
 /** Envoie une notification à un appareil. Ne lève jamais : renvoie le verdict. */
+/**
+ * LES SEULS SERVICES À QUI LE SERVEUR ENVOIE UNE NOTIFICATION (24/09/2026).
+ *
+ * L'adresse d'abonnement vient du navigateur, donc de n'importe qui : sans
+ * cette liste, s'abonner avec `http://minio:9000/…` faisait POSTER le serveur
+ * sur son propre réseau interne à chaque notification (SSRF). Les navigateurs
+ * n'utilisent que ces services-là.
+ */
+const SERVICES_PUSH = [
+  '.googleapis.com',
+  '.push.services.mozilla.com',
+  '.push.apple.com',
+  '.notify.windows.com',
+];
+
+export function endpointPushAutorise(endpoint: string): boolean {
+  try {
+    const u = new URL(endpoint);
+    if (u.protocol !== 'https:' || u.username || u.password || (u.port && u.port !== '443')) return false;
+    const hote = `.${u.hostname.toLowerCase()}`;
+    return SERVICES_PUSH.some((s) => hote.endsWith(s));
+  } catch {
+    return false;
+  }
+}
+
 export async function envoyerPush(
   abo: Abonnement,
   message: string,
@@ -144,6 +170,7 @@ export async function envoyerPush(
   contact: string,
   ttl = 12 * 3600,
 ): Promise<ResultatEnvoi> {
+  if (!endpointPushAutorise(abo.endpoint)) return { ok: false, statut: 0, perime: true };
   try {
     const { corps } = chiffrer(abo, message);
     const reponse = await fetch(abo.endpoint, {

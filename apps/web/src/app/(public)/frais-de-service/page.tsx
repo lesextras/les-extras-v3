@@ -7,7 +7,7 @@ import { renfortSalarieVisible } from "@/lib/offre";
 export const metadata: Metadata = metaPublique({
   title: "Ce qui est gratuit, ce qui est payant",
   description:
-    "Le logiciel est gratuit des deux côtés. 0 % de commission sur les ateliers et les formations ; 15 % de frais de gestion sur les renforts RenforTeam.",
+    "Logiciel gratuit des deux côtés. Ateliers : 0 % de commission. Formations Qualiopi : sur devis. RenforTeam : 15 % de frais de gestion.",
   path: "/frais-de-service",
 });
 
@@ -72,7 +72,8 @@ export default function FraisPage() {
         */}
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
           Pas d’abonnement obligatoire, pas d’engagement, pas de frais d’entrée. Sur les
-          ateliers et les formations, aucune commission n’est prélevée sur l’intervenant.
+          ateliers, aucune commission n’est prélevée sur l’intervenant. Une formation est
+          délivrée sous le Qualiopi de l’association&nbsp;: sa part est fixée sur devis.
           Sur un renfort RenforTeam, 15&nbsp;% de frais de gestion s’ajoutent à son tarif&nbsp;:
           c’est l’association qui vérifie chaque professionnel avant de l’envoyer.
         </p>
@@ -136,12 +137,17 @@ export default function FraisPage() {
               Côté intervenant
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
-              Zéro commission sur vos ateliers et vos formations
+              Zéro commission sur vos ateliers
             </p>
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
               Vous touchez 100 % de votre prix. Vous réservez et facturez en direct,
-              l’association ne s’interpose pas : elle se finance sur les formations Qualiopi
-              qu’elle facture et sur les crédits LEX.
+              l’association ne s’interpose pas.
+            </p>
+            <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+              <strong className="font-semibold text-foreground">Une formation est différente.</strong>{" "}
+              Elle est délivrée sous la certification Qualiopi de l’association, qui la facture
+              et vous fait intervenir&nbsp;: sa commission est fixée sur devis, avant tout
+              engagement.
             </p>
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
               <strong className="font-semibold text-foreground">RenforTeam est différent.</strong>{" "}

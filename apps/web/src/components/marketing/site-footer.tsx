@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Script from 'next/script';
 import { Logo } from '@/components/brand/logo';
 import { renfortSalarieVisible } from '@/lib/offre';
 
@@ -285,12 +284,19 @@ son adresse a été relevée dans son administration. */}
               LinkedIn
             </a>
           </div>
-          <Script
-            async
-            src="https://news.google.com/swg/js/v1/publisher.js"
-            strategy="afterInteractive"
-          />
-          <div {...{ 'google-add-preferred-source-btn': '' }} />
+          {/* ⚠ 24/09/2026 : UN LIEN, PLUS LE SCRIPT DE GOOGLE. Le bouton
+              officiel chargeait news.google.com (script + iframe) sur toutes
+              les pages, avant tout accord, alors que la politique cookies
+              annonce « aucun partage avec un tiers ». Le lien mène au même
+              réglage Google, sans rien charger chez nous. */}
+          <a
+            href="https://www.google.com/preferences/source?q=les-extras.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-6 items-center transition-colors hover:text-primary"
+          >
+            Ajouter Les Extras à mes sources Google
+          </a>
         </div>
       </div>
     </footer>

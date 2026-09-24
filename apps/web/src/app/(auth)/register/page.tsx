@@ -782,8 +782,9 @@ export default function RegisterPage() {
             ))}
           </div>
           <p className="text-center text-xs text-muted-foreground" lang="fr">
-            Passez la souris sur une carte pour savoir ce qu’elle ouvre. Vous
-            pourrez créer un second compte plus tard si vous cumulez les deux.
+            {/* ⚠ Plus d'« Passez la souris » (24/09/2026) : sur téléphone il n'y
+                a pas de survol. Le recto dit déjà le bénéfice de chaque carte. */}
+            Vous pourrez créer un second compte plus tard si vous cumulez les deux.
           </p>
         </div>
       )}

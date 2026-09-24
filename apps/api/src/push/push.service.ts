@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ClesVapid, envoyerPush, genererClesVapid } from './web-push';
+import { ClesVapid, endpointPushAutorise, envoyerPush, genererClesVapid } from './web-push';
 
 /** Au-delà de ce nombre d'échecs d'affilée, l'abonnement est considéré mort. */
 const ECHECS_AVANT_SUPPRESSION = 5;
@@ -69,6 +69,9 @@ export class PushService implements OnModuleInit {
     userId: string,
     donnees: { endpoint: string; p256dh: string; auth: string; appareil?: string },
   ) {
+    if (!endpointPushAutorise(donnees.endpoint)) {
+      throw new BadRequestException("Ce service de notification n'est pas reconnu.");
+    }
     await this.prisma.pushSubscription.upsert({
       where: { endpoint: donnees.endpoint },
       create: {

@@ -17,6 +17,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckCircle2 } from "lucide-react";
 
+const CHAMPS: {
+  name: string;
+  label: string;
+  requis?: boolean;
+  type?: string;
+  inputMode?: "text" | "email" | "tel" | "numeric";
+  autoComplete?: string;
+  exemple?: string;
+}[] = [
+  { name: "name", label: "Nom et prénom", requis: true, autoComplete: "name" },
+  { name: "email", label: "E-mail", requis: true, type: "email", inputMode: "email", autoComplete: "email" },
+  { name: "phone", label: "Téléphone", type: "tel", inputMode: "tel", autoComplete: "tel" },
+  { name: "organization", label: "Structure", autoComplete: "organization", exemple: "MECS, IME…" },
+  { name: "role", label: "Votre fonction", autoComplete: "organization-title" },
+  { name: "city", label: "Ville", autoComplete: "address-level2" },
+  { name: "desiredDate", label: "Période souhaitée", exemple: "Novembre, un mardi" },
+  { name: "participants", label: "Nombre de participants", inputMode: "numeric" },
+];
+
 export function PublicQuoteForm({
   serviceId,
   formationSlug,
@@ -95,7 +114,7 @@ export function PublicQuoteForm({
         <DialogHeader>
           <DialogTitle>Demander un devis</DialogTitle>
           <DialogDescription>
-            {titre} — chiffré sous 48 h, sans engagement, et sans créer de compte.
+            {titre} : chiffré sous 48 h, sans engagement, et sans créer de compte.
           </DialogDescription>
         </DialogHeader>
         {envoye ? (
@@ -114,22 +133,46 @@ export function PublicQuoteForm({
             <input id="devis-website" type="text" name="website" tabIndex={-1} autoComplete="off" />
           </div>
 
+          {/* ⚠ UN LIBELLÉ VISIBLE PAR CHAMP (24/09/2026). Les champs n'avaient
+              qu'un texte indicatif, qui disparaît dès qu'on tape et que les
+              lecteurs d'écran annoncent mal. Chaque champ a son <label>, le
+              bon type de clavier et l'autocomplétion. */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input name="name" required placeholder="Vos nom et prénom *" />
-            <Input name="email" type="email" required placeholder="Votre e-mail *" />
-            <Input name="phone" placeholder="Téléphone" />
-            <Input name="organization" placeholder="Structure (MECS, IME…)" />
-            <Input name="role" placeholder="Votre fonction" />
-            <Input name="city" placeholder="Ville" />
-            <Input name="desiredDate" placeholder="Période souhaitée" />
-            <Input name="participants" placeholder="Nombre de participants" />
+            {CHAMPS.map((c) => (
+              <div key={c.name} className="space-y-1">
+                <label htmlFor={`devis-${c.name}`} className="text-sm font-medium text-foreground">
+                  {c.label}
+                  {c.requis ? <span className="text-destructive"> *</span> : null}
+                </label>
+                <Input
+                  id={`devis-${c.name}`}
+                  name={c.name}
+                  type={c.type ?? "text"}
+                  inputMode={c.inputMode}
+                  autoComplete={c.autoComplete}
+                  required={c.requis}
+                  placeholder={c.exemple}
+                />
+              </div>
+            ))}
           </div>
-          <Textarea
-            name="message"
-            required
-            rows={4}
-            placeholder="Votre besoin, le public concerné, vos contraintes… *"
-          />
+          <div className="space-y-1">
+            <label htmlFor="devis-message" className="text-sm font-medium text-foreground">
+              Votre besoin<span className="text-destructive"> *</span>
+            </label>
+            <Textarea
+              id="devis-message"
+              name="message"
+              required
+              rows={4}
+              aria-describedby="devis-message-aide"
+              placeholder="Le public concerné, vos contraintes, ce que vous attendez de l’atelier."
+            />
+            <p id="devis-message-aide" className="text-xs text-muted-foreground">
+              N’indiquez ni le nom d’une personne accompagnée, ni une information de santé : un
+              besoin se décrit sans elles.
+            </p>
+          </div>
           <p className="text-xs text-muted-foreground">
             Vos coordonnées servent uniquement à traiter cette demande. Aucun compte
             n’est créé, aucune donnée n’est transmise à un tiers.

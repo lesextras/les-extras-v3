@@ -31,6 +31,7 @@ import { EngagementsService } from './engagements.service';
 import { AuditService } from '../common/audit/audit.service';
 import type { CandidatMissionInterne } from '../matching/matching.service';
 import { envoyerFicheReservation } from '../bookings/fiche-reservation';
+import { refuserPublicationTest } from '../common/donnees-test';
 
 /**
  * DIFFUSION CIBLÉE — les trois vagues de sollicitation.
@@ -587,6 +588,7 @@ export class MissionsService {
     if (mission.status !== MissionStatus.DRAFT) {
       throw new BadRequestException('Seule une mission en brouillon peut être publiée.');
     }
+    refuserPublicationTest(mission.title);
     // Validation hierarchique (option du compte) : un MANAGER demande, un
     // OWNER/ADMIN approuve avant toute diffusion.
     if (roleUtilisateur === 'MANAGER') {

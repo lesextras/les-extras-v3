@@ -31,6 +31,7 @@ import {
   UpdateSessionAdminDto,
 } from './dto/formation-admin.dto';
 import { DEPARTEMENTS } from '../common/territoires';
+import { refuserPublicationTest, sansTitreTest } from '../common/donnees-test';
 
 /**
  * Hypothèse d'économie moyenne réalisée sur une mission de renfort pourvue
@@ -751,6 +752,7 @@ export class AdminService {
   async moderateService(id: string, dto: ModerateServiceDto, actorId?: string) {
     const service = await this.prisma.service.findUnique({ where: { id } });
     if (!service) throw new NotFoundException('Service introuvable.');
+    if (dto.status === 'PUBLISHED') refuserPublicationTest(service.title);
     const updated = await this.prisma.service.update({
       where: { id },
       data: { status: dto.status },
@@ -946,9 +948,14 @@ export class AdminService {
   // --- Catégories (taxonomie éditable) -----------------------------------
 
   private slugify(input: string) {
+    // ⚠ Les accents sont RETIRÉS après la décomposition NFD (24/09/2026).
+    // Sans la seconde ligne, « numérique » devenait « nume-rique » : le
+    // e et son accent décomposé étaient coupés par un tiret. Les adresses
+    // déjà publiées ne changent pas (le slug n'est calculé qu'à la création).
     return input
       .toLowerCase()
       .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
       .slice(0, 80);
@@ -1652,11 +1659,14 @@ export class AdminService {
   async stats() {
     const [users, accounts, missions, services, bookings, invoices, categories, articles, formations] =
       await this.prisma.$transaction([
+        // ⚠ 24/09/2026 : les comptes archivés (décor d'audit) et les données
+        // marquées « test » ne comptent plus. Un indicateur qui compte la
+        // recette ment à la personne qui décide.
         this.prisma.user.count(),
-        this.prisma.account.count(),
-        this.prisma.reliefMission.count(),
-        this.prisma.service.count(),
-        this.prisma.booking.count(),
+        this.prisma.account.count({ where: { archivedAt: null } }),
+        this.prisma.reliefMission.count({ where: { account: { archivedAt: null }, ...sansTitreTest() } }),
+        this.prisma.service.count({ where: { account: { archivedAt: null }, ...sansTitreTest() } }),
+        this.prisma.booking.count({ where: { account: { archivedAt: null } } }),
         this.prisma.invoice.count(),
         this.prisma.category.count(),
         this.prisma.article.count(),

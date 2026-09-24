@@ -1,3 +1,4 @@
+import * as reseau from '../common/reseau-sur';
 import {
   estLAssociation,
   logoDeLEmetteur,
@@ -68,11 +69,12 @@ describe('logoPourEmetteur', () => {
   });
 
   it('sert le dépôt du compte quand il se télécharge et se lit', async () => {
-    const fetchOriginal = global.fetch;
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      arrayBuffer: async () => PNG_1x1.buffer.slice(PNG_1x1.byteOffset, PNG_1x1.byteOffset + PNG_1x1.byteLength),
-    }) as never;
+    // Depuis le 24/09/2026 le logo passe par `reseau-sur` (anti-SSRF), plus par fetch.
+    const espion = jest.spyOn(reseau, 'telechargerAdressePublique').mockResolvedValue({
+      octets: Buffer.from(PNG_1x1),
+      type: 'image/png',
+      url: new URL('https://exemple.fr/logo-des-tests.png'),
+    });
     try {
       const logo = await logoPourEmetteur({
         legalName: 'MECS Les Tilleuls',
@@ -81,7 +83,7 @@ describe('logoPourEmetteur', () => {
       expect(logo).not.toBeNull();
       expect(logo!.ratio).toBe(1);
     } finally {
-      global.fetch = fetchOriginal;
+      espion.mockRestore();
     }
   });
 });

@@ -22,6 +22,27 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
     finRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, open]);
 
+  // ⚠ SUR TÉLÉPHONE, LE BOUTON SE RANGE PENDANT LE DÉFILEMENT (24/09/2026).
+  // À 320 px il recouvrait un bouton de carte (« Voir », « Mettre de côté »)
+  // ou « Accepter » du bandeau. Il disparaît pendant qu'on fait défiler et
+  // revient une demi-seconde après l'arrêt : il reste utilisable, sans
+  // jamais rester posé sur une action pendant qu'on la cherche.
+  const [range, setRange] = React.useState(false);
+  React.useEffect(() => {
+    let minuteur: number | undefined;
+    const surDefilement = () => {
+      if (window.innerWidth >= 768) return;
+      setRange(true);
+      window.clearTimeout(minuteur);
+      minuteur = window.setTimeout(() => setRange(false), 600);
+    };
+    window.addEventListener("scroll", surDefilement, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", surDefilement);
+      window.clearTimeout(minuteur);
+    };
+  }, []);
+
   async function envoyer(e?: React.FormEvent) {
     e?.preventDefault();
     const texte = saisie.trim();
@@ -54,7 +75,10 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Fermer l'assistant Lex" : "Ouvrir l'assistant Lex"}
-        className="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-card transition-transform hover:scale-105"
+        className={cn(
+          "fixed bottom-3 right-3 z-50 grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-card transition-all duration-200 hover:scale-105 sm:bottom-5 sm:right-5 sm:size-14",
+          range && !open && "pointer-events-none translate-y-4 opacity-0",
+        )}
       >
         {open ? <X className="size-6" /> : <MessageCircle className="size-6" />}
       </button>

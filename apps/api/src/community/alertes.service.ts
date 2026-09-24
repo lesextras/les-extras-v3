@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, ServiceStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DEPARTEMENTS, nomsDepartements } from '../common/territoires';
+import { variantesSimples } from '../common/publics';
 
 /**
  * LES ALERTES DE RECHERCHE.
@@ -50,7 +51,8 @@ export class AlertesService {
     const where: Prisma.ServiceWhereInput = { status: ServiceStatus.PUBLISHED };
     if (a.departements.length) where.departements = { hasSome: a.departements };
     if (a.categorie) where.categoryRef = { is: { title: a.categorie } };
-    if (a.publicVise) where.publicTargets = { has: a.publicVise };
+    // « Enfant » trouve aussi « Enfants » (voir `common/publics.ts`).
+    if (a.publicVise) where.publicTargets = { hasSome: variantesSimples(a.publicVise) };
     if (a.budgetMax != null) where.price = { lte: a.budgetMax };
     if (a.recherche) {
       where.OR = [

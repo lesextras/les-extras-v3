@@ -5638,3 +5638,35 @@ glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
 - La fenêtre « Installer l'application Piloter » ne s'ouvre qu'**une fois**
   (`localStorage.pilote_installation_proposee`), plus de pastille flottante ;
   ensuite l'installation vit dans `BlocInstaller`, sur les deux accueils.
+
+### 24/09/2026 (suite) — sécurité, commission des formations, lot 1 de l'audit externe
+
+- **Commission des formations : SUR DEVIS, pas 0 %** (Siham) — elles passent
+  par le Qualiopi de l'association. Ateliers 0 %, RenforTeam 15 %. Corrigé sur
+  l'accueil, /frais-de-service, l'aide, « devenir intervenant » et les CGU.
+- **Pseudonymiseur** : lettres A…Z puis AA, AB… (`lettrePersonne`) — au-delà de
+  26 personnes le jeton rebouclait et la restauration rendait le mauvais nom.
+  Prénoms composés, entre parenthèses, collés à « : », de deux lettres ou en
+  capitales : masqués (`pseudonymiseur-fuites.spec.ts`).
+- **SSRF** : tout téléchargement d'une adresse fournie par un compte passe par
+  `common/reseau-sur.ts` (IP privées refusées AU MOMENT DE LA CONNEXION, ports
+  80/443, 3 redirections revérifiées, plafond pendant le flux, délai). Push :
+  seuls les services des navigateurs (`endpointPushAutorise`). Ne jamais
+  réintroduire `fetch(urlUtilisateur)`.
+- **Builds** : `pnpm install --frozen-lockfile` (Dockerfiles et CI) ; audit
+  bloquant sur les vulnérabilités hautes (`docs/exceptions-audit.md`).
+  ⚠ Toute modification d'un package.json part AVEC pnpm-lock.yaml.
+- **Données de test** : un titre « ne pas publier / ne pas traiter / test QA /
+  essai technique / [test] » ne peut pas être publié (services, missions,
+  modération) et sort des compteurs admin, comme les comptes archivés
+  (`common/donnees-test.ts`).
+- **Publics des ateliers** : « Enfant / Enfants » regroupés à la lecture
+  (`common/publics.ts`), le filtre interroge toutes les variantes.
+- Pré-contrôle IA des pièces : **jamais** pour le casier (art. 10 RGPD) ni le
+  RIB. CGU mises à jour (le prestataire peut garder une trace limitée).
+- Google « source préférée » : un simple lien, plus de script news.google.com.
+- 320 px : bouton de l'accueil et bandeau cookies ne débordent plus ; le bouton
+  Lex se range pendant le défilement sur téléphone. Devis public : un libellé
+  visible par champ.
+- Formation « Accompagnement au numérique » créée (copie de toulali.fr, prix
+  publié 3 500 € le parcours, sur devis), catégorie « Numérique et bureautique ».

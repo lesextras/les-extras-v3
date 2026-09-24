@@ -19,10 +19,13 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY packages/shared/package.json packages/shared/package.json
-# --no-frozen-lockfile : tolère un lockfile absent/à jour (projet from-scratch).
-# En prod stabilisée : remplacer par --frozen-lockfile.
+# --frozen-lockfile (24/09/2026) : le build installe EXACTEMENT ce que dit
+# pnpm-lock.yaml, ou il échoue. Avant, une dépendance pouvait changer de
+# version entre deux déploiements sans que personne ne l'ait décidé.
+# Après toute modification d'un package.json : `pnpm install` en local et
+# pousser pnpm-lock.yaml DANS LE MÊME COMMIT, sinon ce build s'arrête ici.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --no-frozen-lockfile
+    pnpm install --frozen-lockfile
 
 # ---- Build : prisma generate + nest build ----------------------------------
 FROM deps AS build

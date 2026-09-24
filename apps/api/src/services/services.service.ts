@@ -22,6 +22,7 @@ import {
 } from './portee-salarie';
 import { BookServiceDto } from './dto/book-service.dto';
 import { DEPARTEMENTS } from '../common/territoires';
+import { refuserPublicationTest } from '../common/donnees-test';
 
 /**
  * Ne garde que les codes du référentiel, sans doublon et dans un ordre stable.
@@ -261,6 +262,7 @@ export class ServicesService {
 
   async update(id: string, accountId: string, dto: UpdateServiceDto) {
     const avant = await this.assertOwned(id, accountId);
+    if (dto.status === 'PUBLISHED') refuserPublicationTest(dto.title ?? avant.title);
     const { faq, priceExtras, departements, ...rest } = dto;
     // Première mise en ligne de cette fiche : elle enrichit le catalogue
     // commun, elle est créditée en points. Les republications suivantes ne

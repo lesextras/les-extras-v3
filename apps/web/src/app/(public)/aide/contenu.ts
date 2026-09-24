@@ -96,8 +96,9 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "combien-ca-coute",
         question: "Combien la plateforme me prélève-t-elle ?",
         reponse: [
-          "Sur vos ateliers et vos formations, rien : vous facturez l'établissement en direct, vous touchez 100 % de votre prix, et la mise en relation est gratuite pour lui aussi.",
-          "Sur un renfort RenforTeam, 15 % de frais de gestion. C'est le seul cas, et ils s'ajoutent à votre tarif au lieu d'être prélevés dessus : vous touchez toujours 100 % de ce que vous avez chiffré, c'est le demandeur qui les paie. L'association y vérifie chaque intervenant avant de l'envoyer, encaisse la prestation et vous la reverse. La ligne est sur le devis avant que quiconque ne l'accepte.",
+          "Sur vos ateliers, rien : vous facturez l'établissement en direct, vous touchez 100 % de votre prix, et la mise en relation est gratuite pour lui aussi.",
+          "Une formation, elle, est délivrée sous le Qualiopi de l'association, qui la facture et vous fait intervenir : sa commission est fixée sur devis, avant tout engagement.",
+          "Sur un renfort RenforTeam, 15 % de frais de gestion. Ils s'ajoutent à votre tarif au lieu d'être prélevés dessus : vous touchez toujours 100 % de ce que vous avez chiffré, c'est le demandeur qui les paie. L'association y vérifie chaque intervenant avant de l'envoyer, encaisse la prestation et vous la reverse. La ligne est sur le devis avant que quiconque ne l'accepte.",
           "C'est le parti pris du modèle associatif. L'association se finance sur les formations Qualiopi qu'elle facture au devis et sur les crédits LEX (l'assistant IA), jamais sur votre rémunération.",
         ],
       },

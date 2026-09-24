@@ -11,7 +11,8 @@ import { AccountRole, FileKind, GlobalRole, MembershipStatus } from '@prisma/cli
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../common/audit/audit.service';
 import { StorageService } from './storage.service';
-import { REGLES, typeReel, nomSur } from './file-rules';
+import { REGLES, TAILLE_MAX_MEDIA, typeReel, nomSur } from './file-rules';
+import { AdresseRefusee, telechargerAdressePublique, type Telechargement } from '../common/reseau-sur';
 
 /** Fichier reçu par multer (mémoire). Type minimal, pour éviter @types/multer. */
 export interface FichierRecu {
@@ -210,31 +211,19 @@ export class FilesService {
     userId: string;
     accountId: string;
   }): Promise<FichierResume> {
-    let cible: URL;
+    // ⚠ Jamais `fetch` directement ici : voir `common/reseau-sur.ts` (SSRF,
+    // corrigé le 24/09/2026). Le plafond est celui d'un média déposé à la main.
+    let charge: Telechargement;
     try {
-      cible = new URL(params.url);
-    } catch {
-      throw new BadRequestException("Cette adresse n'est pas valide.");
-    }
-    if (cible.protocol !== 'https:' && cible.protocol !== 'http:') {
-      throw new BadRequestException('Seules les adresses http et https sont acceptées.');
-    }
-
-    let reponse: Response;
-    try {
-      reponse = await fetch(cible.toString(), { redirect: 'follow' });
+      charge = await telechargerAdressePublique(params.url, { maxOctets: TAILLE_MAX_MEDIA, delaiMs: 120_000 });
     } catch (e) {
+      if (e instanceof AdresseRefusee) throw new BadRequestException(e.message);
       throw new BadRequestException(
         `Le fichier n'a pas pu être récupéré : ${(e as Error).message.slice(0, 120)}`,
       );
     }
-    if (!reponse.ok) {
-      throw new BadRequestException(
-        `Le fichier n'a pas pu être récupéré (réponse ${reponse.status}).`,
-      );
-    }
-
-    const octets = Buffer.from(await reponse.arrayBuffer());
+    const cible = charge.url;
+    const octets = charge.octets;
     const nom =
       params.nom?.trim() ||
       decodeURIComponent(cible.pathname.split('/').pop() || '') ||
@@ -243,7 +232,7 @@ export class FilesService {
     return this.deposer({
       fichier: {
         originalname: nom,
-        mimetype: reponse.headers.get('content-type')?.split(';')[0]?.trim() || '',
+        mimetype: charge.type.split(';')[0]?.trim() || '',
         size: octets.length,
         buffer: octets,
       },

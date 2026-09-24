@@ -175,7 +175,7 @@ describe('AlertesService — les nouveautés', () => {
     const where = etat.servicesWhere as Record<string, unknown>;
     expect(where.departements).toEqual({ hasSome: ['77'] });
     expect(where.categoryRef).toEqual({ is: { title: 'Bien-être' } });
-    expect(where.publicTargets).toEqual({ has: 'Adolescents' });
+    expect(where.publicTargets).toEqual({ hasSome: ['Adolescents', 'Adolescent'] });
     expect(where.price).toEqual({ lte: 400 });
     expect(where.OR).toHaveLength(2);
   });

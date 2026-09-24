@@ -108,4 +108,6 @@ export const PRENOMS_COURANTS: ReadonlySet<string> = new Set([
   'willy', 'xavier', 'yacouba', 'yael', 'yahia', 'yamina', 'yasmin', 'yasmina', 'yazid', 'yohann', 'yolande', 'yona',
   'youna', 'youri', 'ysaline', 'yvette', 'yvon', 'zacharie', 'zainab', 'zaineb', 'zena', 'zineb', 'zinedine', 'zita',
   'zora', 'zoubida', 'zoulikha', 'zyad',
+  // Ajouts du 24/09/2026 : prénoms de deux lettres et oublis relevés en test.
+  'jo', 'ed', 'al', 'mia', 'naelle',
 ]);

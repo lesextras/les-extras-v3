@@ -70,7 +70,7 @@ export function Encaissement({
           {!relie ? (
             <p className="text-sm text-muted-foreground">
               Tant qu’aucun compte n’est relié, personne ne peut vous régler par
-              carte. Votre dossier d’identité — pièce, IBAN — se remplit
+              carte. Votre dossier d’identité (pièce, IBAN) se remplit
               entièrement chez Stripe : ni cette page ni Les Extras ne voient ces
               informations, et aucun mot de passe ne se tape ici.
             </p>
