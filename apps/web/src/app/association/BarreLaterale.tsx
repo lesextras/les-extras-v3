@@ -348,7 +348,10 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         </Link>
       ) : null}
 
-      <div className="relative flex flex-1 items-center justify-end gap-2">
+      {/* ⚠ Pas de flex-1 ici : à 390 px, les boutons de droite débordaient sur le
+          logo « Piloter » (vu en direct le 28/09). La droite garde sa largeur, la
+          gauche se rétrécit. */}
+      <div className="relative flex shrink-0 items-center justify-end gap-2">
         {/* Pouvoir écrire à quelqu'un, depuis n'importe quel écran. */}
         <Link
           href="/nous-contacter"
@@ -356,13 +359,15 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         >
           {ICONES.enveloppe} Nous contacter
         </Link>
-        <Link
-          href="/nous-contacter"
-          aria-label="Nous contacter"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E6E4F3] text-[#1D1B5C] no-underline hover:bg-[#ECEBFC] sm:hidden"
-        >
-          {ICONES.enveloppe}
-        </Link>
+        {compte ? (
+          <Link
+            href="/nous-contacter"
+            aria-label="Nous contacter"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E6E4F3] text-[#1D1B5C] no-underline hover:bg-[#ECEBFC] sm:hidden"
+          >
+            {ICONES.enveloppe}
+          </Link>
+        ) : null}
         {compte ? (
           <>
             <button

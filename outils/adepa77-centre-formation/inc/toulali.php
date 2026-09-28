@@ -68,9 +68,9 @@ function adepa_cf_toulali_regles() {
 }
 
 /** Parcourt une valeur Elementor décodée (objets conservés) et remplace dans les chaînes. */
-function adepa_cf_toulali_parcourir(&$valeur, $regles, &$compte) {
+function adepa_cf_toulali_parcourir(&$valeur, $regles, &$compte, $motif = 'toulali') {
 	if (is_string($valeur)) {
-		if (stripos($valeur, 'toulali') === false) {
+		if ($motif !== '' && stripos($valeur, $motif) === false) {
 			return;
 		}
 		foreach ($regles as $cle => $r) {
@@ -88,17 +88,61 @@ function adepa_cf_toulali_parcourir(&$valeur, $regles, &$compte) {
 	}
 	if (is_array($valeur)) {
 		foreach ($valeur as $k => &$v) {
-			adepa_cf_toulali_parcourir($v, $regles, $compte);
+			adepa_cf_toulali_parcourir($v, $regles, $compte, $motif);
 		}
 		unset($v);
 		return;
 	}
 	if (is_object($valeur)) {
 		foreach (get_object_vars($valeur) as $k => $v) {
-			adepa_cf_toulali_parcourir($v, $regles, $compte);
+			adepa_cf_toulali_parcourir($v, $regles, $compte, $motif);
 			$valeur->$k = $v;
 		}
 	}
+}
+
+/** 1.4.5 : les promesses de l'accueil que le produit ne tient pas (audit du 28/09). */
+function adepa_cf_regles_145() {
+	return array(
+		'verifie1' => array('#Profil vérifié, mission cadrée, bilan écrit\.#u', 'Mission cadrée, devis écrit, bilan écrit.'),
+		'verifie2' => array('#nous vous présentons des profils vérifiés sous 7 jours#u', 'nous vous présentons des profils sous 7 jours'),
+		'verifie3' => array('#des profils d\'intervenants vérifiés, avec#u', 'des profils d\'intervenants, avec'),
+		'verifie4' => array('#>Profils vérifiés<#u', '>Profils présentés<'),
+		'quatre'   => array('#renfort éducatif, studio de création, formation en ligne, académie Qualiopi#u', 'renfort éducatif, studio de création, logiciel des créateurs d’activité, académie Qualiopi'),
+	);
+}
+function adepa_cf_migration_145() {
+	global $wpdb;
+	$ids = $wpdb->get_col("SELECT DISTINCT pm.post_id FROM {$wpdb->postmeta} pm JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+		WHERE pm.meta_key = '_elementor_data' AND p.post_type <> 'revision' AND (pm.meta_value LIKE '%rifi%' OR pm.meta_value LIKE '%formation en ligne, acad%')");
+	// ⚠ Elementor stocke le JSON avec les accents échappés (\u00e9) : un LIKE sur
+	// « vérifié » ne trouve jamais rien. On filtre sur un fragment sans accent.
+	$bilan = array();
+	foreach ($ids as $id) {
+		$brut = get_post_meta($id, '_elementor_data', true);
+		$data = is_string($brut) ? json_decode($brut) : null;
+		if ($data === null) {
+			continue;
+		}
+		$compte = array();
+		adepa_cf_toulali_parcourir($data, adepa_cf_regles_145(), $compte, '');
+		if (!$compte) {
+			continue;
+		}
+		$json = wp_json_encode($data);
+		if (!$json) {
+			continue;
+		}
+		add_post_meta($id, '_adepa_cf_elementor_avant_145', wp_slash($brut), true);
+		update_post_meta($id, '_elementor_data', wp_slash($json));
+		delete_post_meta($id, '_elementor_element_cache');
+		delete_post_meta($id, '_elementor_css');
+		$bilan[$id] = $compte;
+	}
+	if (class_exists('\Elementor\Plugin') && isset(\Elementor\Plugin::$instance->files_manager)) {
+		\Elementor\Plugin::$instance->files_manager->clear_cache();
+	}
+	update_option('adepa_cf_migration_145', array('date' => current_time('mysql'), 'bilan' => $bilan), false);
 }
 
 /** Migration 1.4.1 : applique les règles à tous les contenus Elementor qui citent Toulali. */

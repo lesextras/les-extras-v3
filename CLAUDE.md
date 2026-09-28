@@ -6042,3 +6042,31 @@ Rapport : doc « Audit des sites ADéPA — 28 septembre 2026 » dans l'espace d
 - ⚠ Refusés au garde-fou, à ne pas retenter : vider le nom « — Intervenant » des
   4 comptes intervenants (/admin/utilisateurs, à la main), changer l'URL de
   l'école Teachizy.
+
+### 28/09/2026 (nuit) — audit approfondi des cinq sites, OuiLink, formation images IA
+
+Rapport : doc « Audit approfondi des cinq sites ADéPA — 28 septembre 2026 ».
+
+- **Pilote, en-tête mobile** : à 390 px, « Connexion » et l'icône de contact
+  recouvraient le logo. La colonne de droite n'est plus `flex-1` (`shrink-0`),
+  et l'icône de contact mobile n'apparaît que connecté (`BarreLaterale.tsx`,
+  association et académie).
+- **adepa77 1.4.6** (`adepa_cf_migration_145`) : « Profil vérifié », « profils
+  vérifiés », « Profils vérifiés » retirés de l'accueil (même règle que Les
+  Extras : aucune vérification n'existe), « formation en ligne » → « logiciel
+  des créateurs d'activité ». ⚠ `_elementor_data` stocke les accents échappés
+  (`é`) : un `LIKE '%vérifié%'` ne trouve jamais rien, filtrer sur un
+  fragment sans accent. Copie d'avant : `_adepa_cf_elementor_avant_145`.
+- **Teachizy « Créer des images avec l'IA »** : 6 leçons ajoutées
+  (`outils/teachizy/images-ia/complements.js`, ids 1511138–1511143) après
+  comparaison avec les TITRES du chapitre 2 d'une formation Skool dont Siham
+  est membre (contenu non lu) : panorama des modèles, photoréalisme, lumière,
+  planche de neuf plans, image de référence, bibliothèque de prompts. 16
+  leçons, brouillon, prix à fixer.
+- **OuiLink** (ouilink.fr, relevé 28/09) : SaaS restaurateurs, lecture IA des
+  factures → marges, stocks, compta ; 59/89/119 €/mois, 12 mois d'engagement,
+  diagnostic gratuit + démo. Proposition pour Pilote : une brique « Mes
+  factures » (dépôt, extraction, affectation budget, export comptable) vendue
+  en formule mensuelle. Aucun prix écrit : décision de Siham.
+- a2pa.fr présente encore Toulali comme centre de formation (dépôt
+  `adepa_app`, non clonable ici).
