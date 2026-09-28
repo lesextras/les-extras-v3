@@ -367,7 +367,8 @@ export class FormationsService {
       type: 'FORMATION_PUBLIEE',
       title: 'Votre programme est en ligne',
       body: `« ${formation.title} » a été validé par ADéPA et figure désormais au catalogue.`,
-      link: `/formations/${formation.slug}`,
+      // Le catalogue public vit sur adepa77.fr depuis le 28/09/2026 (même slug).
+      link: `https://adepa77.fr/formations/${formation.slug}/`,
     });
   }
 

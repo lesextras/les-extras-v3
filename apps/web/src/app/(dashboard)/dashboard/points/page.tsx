@@ -64,7 +64,7 @@ const ACTIONS: { reason: string; label: string; detail: string; icon: typeof Awa
   },
   {
     reason: "PUBLICATION",
-    label: "Atelier ou formation mis en ligne",
+    label: "Atelier mis en ligne",
     detail: "Une nouvelle fiche publiée et validée dans le catalogue.",
     icon: Sparkles,
   },

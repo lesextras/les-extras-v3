@@ -45,7 +45,7 @@ const POURQUOI = [
     icone: Eye,
     titre: "Gagner en visibilité",
     texte:
-      "Vos ateliers et vos formations au catalogue, lu par les établissements du secteur.",
+      "Vos ateliers au catalogue, lu par les établissements du secteur.",
   },
   {
     icone: Network,
@@ -78,7 +78,7 @@ const VALEURS = [
     icone: Handshake,
     titre: "Gratuité de la mise en relation",
     texte:
-      "Zéro commission sur les ateliers et les formations du catalogue. Ce n’est pas une offre de lancement, c’est le modèle.",
+      "Zéro commission sur les ateliers du catalogue. Ce n’est pas une offre de lancement, c’est le modèle.",
   },
   {
     icone: Lightbulb,
@@ -119,7 +119,7 @@ export default function PartenairesAssociatifsPage() {
         </h2>
         <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
           ADéPA est une association loi 1901, certifiée Qualiopi, qui tient
-          Les Extras : le catalogue d’ateliers, de formations et de renfort du
+          Les Extras : le catalogue d’ateliers et de renfort du
           médico-social.
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

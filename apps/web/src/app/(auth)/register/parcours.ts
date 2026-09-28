@@ -66,7 +66,7 @@ export const CHOIX_COMPTE: (ChoixCompte & {
       'MECS, IME, ITEP, SESSAD, EHPAD, école, ou un parent pour son enfant. ' +
       'L’écran suivant vous demande simplement lequel des deux.',
     points: [
-      'Renforts, ateliers, formations',
+      'Renforts et ateliers',
       'Devis et facture édités ici',
       'Rien n’est engagé sans votre accord',
     ],
@@ -81,9 +81,9 @@ export const CHOIX_COMPTE: (ChoixCompte & {
     accroche: 'Éducateur, moniteur, thérapeute, formateur, psychomotricien…',
     benefice: 'Être trouvé par les structures, et éditer vos devis et factures ici.',
     detail: renfortSalarieVisible()
-      ? 'Ateliers, formations, renforts personnalisés, à votre compte. Ou vos ' +
+      ? 'Ateliers et renforts personnalisés, à votre compte. Ou vos ' +
         'seules disponibilités, si vous venez pour des remplacements.'
-      : 'Ateliers, formations et renforts personnalisés, à votre compte, sous votre SIRET.',
+      : 'Ateliers et renforts personnalisés, à votre compte, sous votre SIRET.',
     points: [
       'Publication au catalogue',
       'Devis et factures édités',

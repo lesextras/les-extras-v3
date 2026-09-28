@@ -20,9 +20,9 @@ const DESTINATIONS: Dest[] = [
   /*
     ⚠⚠ LE CATALOGUE PUBLIC — AJOUTÉ LE 16/09/2026, ET IL NE FAUT PAS LE RETIRER.
 
-    « Ateliers » et « Formations » ne vivent que dans le menu déroulant
-    « Catalogue » de la barre du haut, qui est `hidden md:flex`. Le menu de
-    gauche ne les porte que pour le compte Particulier. Conséquence mesurée :
+    « Ateliers » ne vit que dans le menu déroulant « Catalogue » de la barre
+    du haut, qui est `hidden md:flex`. Le menu de gauche ne le porte que pour
+    le compte Particulier. Conséquence mesurée :
     sur téléphone, un intervenant, un établissement ou un administrateur
     n'avait AUCUN chemin dans l'application vers le catalogue public — alors
     que c'est le cœur du produit.
@@ -32,13 +32,13 @@ const DESTINATIONS: Dest[] = [
     Elle avait été appliquée aux trois outils LEX le 03/09, et oubliée pour le
     catalogue.
 
-    ⚠ « Formations » pointe ici sur `/formations` (le catalogue PUBLIC), à ne
-    pas confondre avec l'entrée « Formations » du groupe Établissement, qui
-    mène à `/marketplace/formations` — l'écran d'inscription des salariés. Deux
-    écrans, deux métiers, et c'est pour ça que les libellés diffèrent.
+    ⚠ PLUS D'ENTRÉE « FORMATIONS » (28/09/2026, décision de Siham) : les
+    formations quittent Les Extras pour le centre de formation ADéPA, sur
+    adepa77.fr. Le catalogue, « Mes formations », l'inscription des salariés
+    et « Mes réservations formation » sont retirés ; seules les entrées
+    d'administration restent (les données et les factures restent en base).
   */
   { label: "Catalogue des ateliers", href: "/ateliers", group: "Navigation", keywords: "catalogue ateliers mediation animation intervenant public vitrine" },
-  { label: "Catalogue des formations", href: "/formations", group: "Navigation", keywords: "catalogue formations parcours gratuits qualiopi vitrine" },
   // `premium` : fonctionnalité LEX à crédits. La palette est une porte
   // d'entrée comme une autre — la laisser ouverte pendant que le menu est
   // verrouillé serait incohérent.
@@ -51,12 +51,9 @@ const DESTINATIONS: Dest[] = [
   { label: "Appui scolaire", href: "/dashboard/appui-scolaire", group: "Navigation", keywords: "ia ecole devoirs fiche memo revision decrochage aesh", premium: true },
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Intervenant", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Intervenant", keywords: "services educatheures" },
-  { label: "Mes formations", href: "/dashboard/formations", group: "Intervenant", keywords: "formation session émargement apprenants attestation" },
   { label: "RenforTeam", href: "/dashboard/renforts", group: "Structure", keywords: "remplacement besoin publier" },
-  { label: "Formations", href: "/marketplace/formations", group: "Structure", keywords: "catalogue certifiant qualiopi inscription salariés" },
-  { label: "Mes réservations", href: "/dashboard/reservations", group: "Navigation", keywords: "reservations bookings renfort atelier formation inscriptions contrat tout" },
+  { label: "Mes réservations", href: "/dashboard/reservations", group: "Navigation", keywords: "reservations bookings renfort atelier contrat tout" },
   { label: "Mes réservations ateliers", href: "/dashboard/reservations/ateliers", group: "Navigation", keywords: "reservations ateliers commandes interventions date statut" },
-  { label: "Mes réservations formation", href: "/dashboard/reservations/formations", group: "Navigation", keywords: "reservations formations inscriptions session apprenant financement attestation" },
   { label: "Devis & factures", href: "/dashboard/facturation", group: "Navigation", keywords: "devis facture chiffrage paiement reglement finance revenus depenses" },
   { label: "Planning", href: "/dashboard/planning", group: "Navigation", keywords: "calendrier créneaux" },
   { label: "Partager LEX avec mon équipe", href: "/dashboard/lex-equipe", group: "Navigation", keywords: "lex credits enveloppe equipe partager inviter plafond" },

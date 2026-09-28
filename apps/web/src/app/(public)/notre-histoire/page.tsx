@@ -30,7 +30,9 @@ const dispositifs = [
     texte:
       "Centre de formation Qualiopi : parcours métier, analyse des pratiques, prévention. Finançable OPCO.",
     icone: <GraduationCap className="size-5" />,
-    href: "/formations",
+    // ⚠ Depuis le 28/09/2026 le centre de formation a son propre site :
+    // adepa77.fr (les formations ont quitté Les Extras).
+    href: "https://adepa77.fr/formations/",
   },
   {
     titre: "Studio A2PA",

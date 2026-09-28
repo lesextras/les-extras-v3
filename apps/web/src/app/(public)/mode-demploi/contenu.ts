@@ -90,7 +90,7 @@ export const GUIDES: Guide[] = [
         titre: "Réglez la facture",
         texte: [
           "La facture PDF se télécharge depuis votre espace, avec les mentions légales et le détail des heures : votre comptabilité n'a rien à reconstituer.",
-          "Une facture d'intervenant se règle par virement, directement auprès de lui, au tarif qu'il a fixé : la plateforme n'ajoute ni commission ni frais. Seules les formations Qualiopi et les crédits LEX, facturés par l'association, se règlent en ligne par carte.",
+          "Une facture d'intervenant se règle par virement, directement auprès de lui, au tarif qu'il a fixé : la plateforme n'ajoute ni commission ni frais. Seuls les crédits LEX, facturés par l'association, se règlent en ligne par carte.",
         ],
       },
     ],
@@ -139,18 +139,12 @@ export const GUIDES: Guide[] = [
           "Vous touchez 100 % de votre tarif dans les deux cas. Sur vos ateliers, rien n'est ajouté. Sur un renfort RenforTeam, 15 % de frais de gestion s'ajoutent à votre tarif et sont payés par le demandeur : ils rémunèrent la vérification de votre dossier par l'association, qui encaisse et vous reverse.",
         ],
       },
-      {
-        titre: "Animez des formations sous Qualiopi, si vous le souhaitez",
-        texte: [
-          "Vous pouvez animer des formations sans être organisme de formation : vous apportez le contenu, l'association porte la certification Qualiopi, le cadre réglementaire et le bilan pédagogique.",
-          "C'est le seul cas où elle s'interpose, la certification l'impose : elle vend la formation à l'établissement, et vous la lui facturez ensuite au montant convenu, depuis votre compte et sous votre SIRET.",
-        ],
-        lien: { href: "/formations", label: "Voir les formations" },
-      },
     ],
   },
 ];
 
+// ⚠ L'étape « Animez des formations sous Qualiopi » est retirée le 28/09/2026 :
+// les formations ont quitté Les Extras pour adepa77.fr (décision de Siham).
 export function trouverGuide(slug: string): Guide | undefined {
   return GUIDES.find((g) => g.slug === slug);
 }

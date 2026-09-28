@@ -7,7 +7,7 @@ import { SOCLE_OG } from '@/lib/meta';
 export const metadata: Metadata = {
   title: 'Se connecter à votre espace',
   description:
-    'Connectez-vous à votre espace LES EXTRAS : renforts, ateliers, formations et gestion de votre activité.',
+    'Connectez-vous à votre espace LES EXTRAS : renforts, ateliers et gestion de votre activité.',
   // /login figure dans le sitemap mais ne déclarait aucune canonique : Google
   // était libre d'indexer /login?next=… comme autant de pages distinctes.
   alternates: { canonical: '/login' },

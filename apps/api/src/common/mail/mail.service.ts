@@ -1077,7 +1077,7 @@ export class MailService implements OnModuleDestroy {
 
     const premiersPas = etab
       ? [
-          'Parcourez le catalogue d’ateliers et de formations, et demandez un devis en deux clics.',
+          'Parcourez le catalogue d’ateliers, et demandez un devis en deux clics.',
           'Publiez un RenforTeam quand une absence tombe : il part d’abord aux intervenants qui connaissent déjà votre structure, puis au réseau.',
           'Retenez vos intervenants habituels dans votre vivier : ils reçoivent vos besoins en priorité.',
         ]
@@ -2024,6 +2024,9 @@ export class MailService implements OnModuleDestroy {
    *
    * Chaque message donne donc quelque chose d'utilisable SANS RIEN ACHETER,
    * et renvoie au parcours gratuit correspondant.
+   *
+   * ⚠ Depuis le 28/09/2026 les parcours vivent sur adepa77.fr : `lien` est une
+   * adresse ABSOLUE vers ce site (voir `lienTunnel`), pas un chemin interne.
    */
   async sendTunnelAccueil(
     to: string,
@@ -2054,7 +2057,7 @@ export class MailService implements OnModuleDestroy {
            ${motif}
            <a href="${lien}" style="color:#9ca3af">Ne plus recevoir ces e-mails</a>.
          </div>`,
-        { label: message.bouton, url: `${this.webUrl}${message.chemin}` },
+        { label: message.bouton, url: lienTunnel(message.lien, this.webUrl) },
       ),
     );
   }
@@ -2181,7 +2184,9 @@ export class MailService implements OnModuleDestroy {
     },
   ): Promise<void> {
     const fiche = `${this.webUrl}/fiches/${data.slug}.pdf`;
-    const page = `${this.webUrl}/formations/${data.slug}`;
+    // La fiche publique du parcours vit sur adepa77.fr depuis le 28/09/2026
+    // (même slug) ; la fiche récap PDF, elle, reste servie par Les Extras.
+    const page = `${ADEPA_FORMATIONS}${data.slug}/`;
     const suite = data.consentTunnel
       ? `<p style="margin:16px 0 0">Vous avez demandé à recevoir les parcours suivants : un message
          tous les trois jours, six en tout, chacun avec un outil utilisable le jour même.
@@ -2533,17 +2538,38 @@ export function versionTexte(html: string): string {
  * Le sixième message ne vend rien non plus : il donne les fiches A4 et le
  * catalogue entier, et c'est le seul qui parle de LEX.
  *
+ * ⚠⚠ LES LIENS SONT ABSOLUS, VERS ADEPA77.FR (28/09/2026, décision de Siham).
+ * Les formations ont quitté Les Extras : adepa77.fr est LE site du centre de
+ * formation ADéPA, et chaque fiche y porte le MÊME slug. Les anciennes
+ * adresses de Les Extras redirigent bien, mais un message automatique ne
+ * doit pas dépendre d'une redirection : il pointe directement la bonne page.
+ * `tunnel-accueil.spec.ts` n'accepte qu'un chemin interne ou une adresse de
+ * `https://adepa77.fr/formations/`, rien d'autre.
+ *
  * Cadence : TROIS jours, pas deux comme le modèle. Le modèle s'adresse à des
  * amateurs de photographie le soir ; ici on écrit à des éducateurs pendant
  * leur journée de travail, et un message tous les deux jours se paie en
  * désabonnements. La constante est dans le planificateur : elle se change en
  * une ligne si l'ouverture le justifie.
  */
+/** Le catalogue du centre de formation ADéPA. Les fiches sont à `<slug>/`. */
+export const ADEPA_FORMATIONS = 'https://adepa77.fr/formations/';
+
+/**
+ * L'adresse d'un bouton du tunnel : un chemin interne passe par `webUrl`
+ * (le domaine du site peut encore changer), une adresse absolue part telle
+ * quelle. Le test n'accepte comme adresse absolue que celles d'adepa77.fr.
+ */
+export function lienTunnel(lien: string, webUrl: string): string {
+  return lien.startsWith('/') ? `${webUrl}${lien}` : lien;
+}
+
 export const TUNNEL_ACCUEIL: {
   sujet: string;
   corps: string;
   bouton: string;
-  chemin: string;
+  /** Chemin interne (« /… ») ou adresse de `https://adepa77.fr/formations/`. */
+  lien: string;
 }[] = [
   {
     sujet: 'Un comportement qui se répète, se répète parce qu’il marche',
@@ -2555,7 +2581,7 @@ export const TUNNEL_ACCUEIL: {
       gratuit : 45 minutes de lecture, et un relevé d’une minute par jour pendant
       une semaine.`,
     bouton: 'Ouvrir le parcours',
-    chemin: '/formations/les-quatre-fonctions-d-un-comportement',
+    lien: `${ADEPA_FORMATIONS}les-quatre-fonctions-d-un-comportement/`,
   },
   {
     sujet: 'Ce que l’adulte ajoute pendant une crise',
@@ -2566,7 +2592,7 @@ export const TUNNEL_ACCUEIL: {
       d’intervention physique n’est enseigné dans ce parcours, ces gestes
       s’apprennent en présentiel, avec mise en situation, jamais dans un texte.`,
     bouton: 'Lire le parcours',
-    chemin: '/formations/les-premieres-minutes-d-une-crise',
+    lien: `${ADEPA_FORMATIONS}les-premieres-minutes-d-une-crise/`,
   },
   {
     sujet: '« Il dit non à tout » n’est pas une donnée',
@@ -2578,7 +2604,7 @@ export const TUNNEL_ACCUEIL: {
       de changer que soi. Le parcours fait d’abord écrire ce qui n’a PAS à être
       exigé : ce n’est pas une méthode pour faire obéir.`,
     bouton: 'Voir le parcours',
-    chemin: '/formations/l-enfant-qui-dit-non-a-tout',
+    lien: `${ADEPA_FORMATIONS}l-enfant-qui-dit-non-a-tout/`,
   },
   {
     sujet: 'Retirer un comportement sans en donner un autre',
@@ -2589,7 +2615,7 @@ export const TUNNEL_ACCUEIL: {
       qu’on veut voir disparaître : sinon personne ne l’adopte, et c’est
       exactement là que la plupart des plans échouent.`,
     bouton: 'Ouvrir le parcours',
-    chemin: '/formations/apprendre-a-demander-plutot-qu-a-crier',
+    lien: `${ADEPA_FORMATIONS}apprendre-a-demander-plutot-qu-a-crier/`,
   },
   {
     sujet: 'Ce n’est presque jamais la tâche qui bloque',
@@ -2600,7 +2626,7 @@ export const TUNNEL_ACCUEIL: {
       encourager n’a presque aucun effet. Ce qui en a un, c’est de réduire le coût
       des trente premières secondes : et il y a six leviers pour ça.`,
     bouton: 'Lire le parcours',
-    chemin: '/formations/aider-a-demarrer-une-tache',
+    lien: `${ADEPA_FORMATIONS}aider-a-demarrer-une-tache/`,
   },
   {
     sujet: 'Les dix fiches A4, à imprimer et à afficher',
@@ -2613,7 +2639,7 @@ export const TUNNEL_ACCUEIL: {
       <b>15 générations LEX offertes chaque mois</b> pour vos écrits
       professionnels : elles sont là, elles n’attendent que vous.`,
     bouton: 'Voir tous les parcours',
-    chemin: '/formations',
+    lien: ADEPA_FORMATIONS,
   },
 ];
 

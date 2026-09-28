@@ -88,8 +88,8 @@ export default async function LandingPage({ params }: { params: Promise<{ produi
           (Melun, Seine-et-Marne), organisme de formation certifié Qualiopi. La mise en relation est
           gratuite pour les établissements comme pour les intervenants, sans abonnement, et le
           catalogue d&apos;ateliers est à 0&nbsp;% de commission. Ce que l&apos;association
-          facture, elle le dit&nbsp;: des formations au devis, un assistant d&apos;écriture, et
-          une commission sur les renforts RenforTeam, où elle vérifie chaque intervenant.
+          facture, elle le dit&nbsp;: un assistant d&apos;écriture, et une commission sur les
+          renforts RenforTeam, où elle vérifie chaque intervenant.
         </p>
       </section>
     </div>

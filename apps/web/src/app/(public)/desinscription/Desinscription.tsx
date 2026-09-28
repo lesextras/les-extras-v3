@@ -32,8 +32,13 @@ export function Desinscription({ jeton }: { jeton: string }) {
       <div className="space-y-3 text-sm text-foreground">
         <p className="font-medium">C&apos;est fait. Vous ne recevrez plus la séquence des parcours.</p>
         <p className="text-muted-foreground">
-          Les douze parcours restent ouverts, gratuitement, sur{" "}
-          <Link href="/formations" className="underline">la page des formations</Link>.
+          {/* Les parcours vivent sur adepa77.fr, le site du centre de
+              formation ADéPA, depuis le 28/09/2026. */}
+          Les parcours restent ouverts, gratuitement, sur{" "}
+          <a href="https://adepa77.fr/formations/" className="underline" rel="noopener">
+            le site du centre de formation ADéPA
+          </a>
+          .
         </p>
       </div>
     );

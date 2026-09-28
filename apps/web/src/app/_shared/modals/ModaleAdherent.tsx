@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 const BENEFICES = [
   "L'assistant d'écriture : notes brutes vers écrit professionnel",
   "Le générateur d'activités éducatives",
-  "Le pré-remplissage de vos fiches ateliers et formations",
+  "Le pré-remplissage de vos fiches ateliers",
 ];
 
 export function ModaleAdherent({

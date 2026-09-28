@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 const PISTES = [
   { href: "/ateliers", label: "Le catalogue d'ateliers" },
-  { href: "/formations", label: "Les formations Qualiopi" },
+  { href: "/renforteam", label: "Le renfort RenforTeam" },
   { href: "/edublog", label: "L'Édublog" },
 ];
 

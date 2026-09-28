@@ -90,7 +90,7 @@ export default function IntervenantIndependantPage() {
           Intervenant indépendant
         </span>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground text-balance md:text-4xl">
-          Vendez vos ateliers et vos formations aux établissements, sans intermédiaire
+          Vendez vos ateliers aux établissements, sans intermédiaire
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
 La plateforme de l’association ADéPA : MECS, IME, ITEP, SESSAD et EHPAD d’un côté,
@@ -112,8 +112,8 @@ La plateforme de l’association ADéPA : MECS, IME, ITEP, SESSAD et EHPAD d’u
             Vous fixez votre tarif. Vous touchez 100 %.
           </p>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-L’association se finance sur les formations Qualiopi et les crédits LEX, jamais sur la
-            rémunération de celui qui fait le travail.
+L’association se finance sur les crédits LEX, jamais sur la rémunération de celui qui
+            fait le travail.
           </p>
           <ul className="mt-5 space-y-2">
             {ZERO.map((item) => (
@@ -226,7 +226,7 @@ La seule distinction qui change votre statut sur une intervention. Vous pouvez f
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-xl border-2 border-primary/30 bg-primary-soft/20 p-6">
-            <p className="text-lg font-semibold text-foreground">Vos ateliers et vos formations</p>
+            <p className="text-lg font-semibold text-foreground">Vos ateliers</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
 Un établissement réserve votre offre. Vous intervenez{" "}
               <strong>en tant qu’indépendant</strong>, sous votre SIRET, et vous facturez en

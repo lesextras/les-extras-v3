@@ -1,10 +1,11 @@
 // LEX — CRÉDITS & ABONNEMENT, l'écran « Utilisation » façon Claude.
 //
-// Le modèle économique de la plateforme tient en trois lignes : la mise en
+// Le modèle économique de la plateforme tient en deux lignes : la mise en
 // relation et l'aide à la contractualisation (renforts, ateliers) sont
-// GRATUITES pour tout le monde ; les formations Qualiopi se facturent au
-// devis par l'association ; LEX, l'assistant IA, est le produit payant —
-// un crédit par génération. On recharge par packs, ou par un abonnement
+// GRATUITES pour tout le monde ; LEX, l'assistant IA, est le produit payant —
+// un crédit par génération. (Les formations Qualiopi, facturées au devis, ont
+// quitté Les Extras le 28/09/2026 pour adepa77.fr : le bloc qui les annonçait
+// en bas de cet écran est retiré.) On recharge par packs, ou par un abonnement
 // une dotation MENSUELLE reportable, gratuite et permanente pour tout compte,
 // que l'on peut relever par un pack ou un abonnement.
 //
@@ -14,7 +15,6 @@
 // plus — sur la page où l'on paie. Tout ce qui est lu ici vient désormais du
 // contrat réel de /billing/overview.
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Check, Sparkles, Receipt, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -469,7 +469,7 @@ export default async function LexCreditsPage({
               {[
                 "LEX · Assistant d'écriture : notes brutes transformées en écrit professionnel",
                 "LEX · Générateur d'activités éducatives et thérapeutiques",
-                "LEX · Aide au remplissage des fiches ateliers et formations",
+                "LEX · Aide au remplissage des fiches ateliers",
               ].map((i) => (
                 <li key={i} className="flex gap-2 text-sm text-muted-foreground">
                   <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
@@ -502,27 +502,6 @@ export default async function LexCreditsPage({
           </CardContent>
         </Card>
       </section>
-
-      {/* ── Et les formations ? ── */}
-      <Card>
-        <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-3">
-            <Receipt className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-            <div>
-              <h2 className="font-semibold">Les formations Qualiopi se facturent au devis</h2>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                C&apos;est l&apos;autre service payant de la plateforme, mais pas ici : les
-                formations sont facturées par l&apos;association ADéPA, certifiée Qualiopi, qui fait
-                appel aux formateurs du réseau Les Extras. Demandez un devis depuis le catalogue,
-                réglez la facture après la session.
-              </p>
-            </div>
-          </div>
-          <Button asChild variant="outline" className="shrink-0">
-            <Link href="/formations">Voir le catalogue</Link>
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

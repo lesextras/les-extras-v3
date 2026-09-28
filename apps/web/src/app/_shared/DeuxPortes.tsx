@@ -29,7 +29,7 @@ const PORTES = [
       ? {
           titre: "Trouver un intervenant et gérer vos remplacements",
           texte:
-            "MECS, IME, ITEP, EHPAD, SESSAD. Un renfort ce soir, un atelier au trimestre, une formation pour l’équipe.",
+            "MECS, IME, ITEP, EHPAD, SESSAD. Un renfort ce soir, un atelier au trimestre.",
           reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis sous 48 h"],
         }
       : {

@@ -108,7 +108,11 @@ def construire():
     # devient une phrase qui dit à qui l'offre s'adresse, sans employer ni
     # « indépendants » ni « vérifiés ».
     f_corps = police(NORMAL, 25 * E)
-    d.text((MARGE * E, 366 * E), "Ateliers éducatifs, formations Qualiopi et renfort d’équipe", font=f_corps, fill=CORPS)
+    #
+    # ⚠ « formations Qualiopi » RETIRÉ LE 28/09/2026 (décision de Siham) : les
+    # formations ont quitté Les Extras pour adepa77.fr. LEX, l'assistant
+    # d'écriture, prend sa place dans l'énumération.
+    d.text((MARGE * E, 366 * E), "Ateliers éducatifs, renfort d’équipe et assistant d’écriture", font=f_corps, fill=CORPS)
     d.text((MARGE * E, 404 * E), "pour les établissements du médico-social.", font=f_corps, fill=CORPS)
 
     # ── Pastilles ─────────────────────────────────────────────────────────
@@ -117,7 +121,10 @@ def construire():
     # sont mesurées puis posées de façon à finir avant la marge droite —
     # l'original débordait.
     f_pill = police(NORMAL, 21 * E)
-    labels = ["Dossier de conformité", "Qualiopi · finançable OPCO", "Devis sous 48 h"]
+    # ⚠ « Qualiopi · finançable OPCO » devient « 0 % sur les ateliers » le
+    # 28/09/2026 : la pastille parlait des formations, qui ont quitté Les
+    # Extras. « 0 % sur les ateliers » est le libellé exact de l'accueil.
+    labels = ["Dossier de conformité", "0 % sur les ateliers", "Devis sous 48 h"]
     pad_x, ecart, haut = 20, 18, 52
     y = 500
 

@@ -3,6 +3,11 @@
 //   ⚠ Plus de « formation interne animée par un salarié référent » depuis le
 //   24/09/2026 : un compte = une personne, il n'y a plus d'équipe à désigner.
 // FREELANCE : programmes dont il est propriétaire / sessions qu'il anime.
+//
+// ⚠ PLUS DANS LE MENU NI DANS LA PALETTE DEPUIS LE 28/09/2026 : les formations
+// ont quitté Les Extras pour adepa77.fr (décision de Siham). L'écran reste
+// joignable par son adresse pour les sessions et inscriptions déjà en base ;
+// ses liens « catalogue » mènent directement à adepa77.fr.
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireSession, fetchApi } from "../../../_shared/server";
@@ -97,7 +102,7 @@ export default async function DashboardFormationsPage() {
                   seuls les établissements pouvaient créer une formation. */}
               <ProposerFormationModal accountId={session.account.id} />
               <Button asChild variant="outline">
-                <Link href="/marketplace/formations">Voir le catalogue</Link>
+                <Link href="https://adepa77.fr/formations/">Voir le catalogue</Link>
               </Button>
             </div>
           ) : undefined
@@ -117,7 +122,7 @@ export default async function DashboardFormationsPage() {
               devis.
             </p>
             <Button asChild className="w-full sm:w-auto sm:self-start">
-              <Link href="/marketplace/formations">Parcourir le catalogue</Link>
+              <Link href="https://adepa77.fr/formations/">Parcourir le catalogue</Link>
             </Button>
           </CardContent>
         </Card>
@@ -201,7 +206,7 @@ export default async function DashboardFormationsPage() {
             action={
               isEstablishment ? (
                 <Button asChild>
-                  <Link href="/marketplace/formations">Parcourir le catalogue</Link>
+                  <Link href="https://adepa77.fr/formations/">Parcourir le catalogue</Link>
                 </Button>
               ) : (
                 <ProposerFormationModal accountId={session.account.id} />
@@ -231,7 +236,7 @@ export default async function DashboardFormationsPage() {
                       {f.categoryRef?.title ? ` · ${f.categoryRef.title}` : ""}
                     </p>
                     <Button asChild variant="link" size="sm" className="justify-start px-0">
-                      <Link href={`/marketplace/formations/${f.id}`}>Ouvrir la fiche →</Link>
+                      <Link href="https://adepa77.fr/formations/">Ouvrir la fiche →</Link>
                     </Button>
                   </CardContent>
                 </Card>

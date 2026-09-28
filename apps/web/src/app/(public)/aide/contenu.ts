@@ -12,6 +12,12 @@
 // l'établissement le consulte avant de s'engager. Promettre une vérification
 // de sécurité à une direction qui va confier des enfants ou des personnes
 // âgées serait la pire catégorie de faux.
+//
+// ⚠ PLUS DE RUBRIQUE « FORMATIONS » (28/09/2026, décision de Siham) : les
+// formations ont quitté Les Extras pour adepa77.fr, le site du centre de
+// formation ADéPA. La rubrique, la question « animer une formation » et les
+// mentions de la commission sur devis sont retirées ; `/aide/formations`
+// redirige vers adepa77.fr (`next.config.mjs`).
 
 export interface Article {
   slug: string;
@@ -97,9 +103,8 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Combien la plateforme me prélève-t-elle ?",
         reponse: [
           "Sur vos ateliers, rien : vous facturez l'établissement en direct, vous touchez 100 % de votre prix, et la mise en relation est gratuite pour lui aussi.",
-          "Une formation, elle, est délivrée sous le Qualiopi de l'association, qui la facture et vous fait intervenir : sa commission est fixée sur devis, avant tout engagement.",
           "Sur un renfort RenforTeam, 15 % de frais de gestion. Ils s'ajoutent à votre tarif au lieu d'être prélevés dessus : vous touchez toujours 100 % de ce que vous avez chiffré, c'est le demandeur qui les paie. L'association y vérifie chaque intervenant avant de l'envoyer, encaisse la prestation et vous la reverse. La ligne est sur le devis avant que quiconque ne l'accepte.",
-          "C'est le parti pris du modèle associatif. L'association se finance sur les formations Qualiopi qu'elle facture au devis et sur les crédits LEX (l'assistant IA), jamais sur votre rémunération.",
+          "C'est le parti pris du modèle associatif. L'association se finance sur les crédits LEX (l'assistant IA), jamais sur votre rémunération.",
         ],
       },
       {
@@ -118,15 +123,6 @@ export const RUBRIQUES: Rubrique[] = [
           "Les documents sont établis à votre nom et sous votre SIRET : vous facturez l'établissement en direct, l'association ne s'interpose pas et ne prend rien au passage.",
         ],
       },
-      {
-        slug: "animer-une-formation",
-        question: "Puis-je animer une formation sans être organisme de formation ?",
-        reponse: [
-          "Oui. Vous intervenez sous la certification Qualiopi portée par l'association : vous apportez le contenu, elle porte le cadre réglementaire.",
-          "Vous n'avez ni Qualiopi à obtenir, ni bilan pédagogique et financier à produire.",
-          "C'est le seul cas où l'association s'interpose, et c'est la certification qui l'impose : elle vend la formation à l'établissement et vous la lui facturez ensuite, au montant convenu, depuis votre compte et sous votre SIRET.",
-        ],
-      },
     ],
   },
   {
@@ -140,7 +136,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Qu'est-ce qui est gratuit ?",
         reponse: [
           "Tout le logiciel : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité. Gratuit, pour les établissements comme pour les intervenants, sans abonnement.",
-          "Ce qui se paie : les formations Qualiopi (au devis, facturées par l'association), LEX (l'assistant IA, à crédits), et 15 % de frais de gestion sur les renforts RenforTeam. Ils paient la vérification de l'intervenant et s'ajoutent à son tarif. Un atelier, lui, se paie à son intervenant, à son tarif, et la plateforme n'ajoute rien.",
+          "Ce qui se paie : LEX (l'assistant IA, à crédits), et 15 % de frais de gestion sur les renforts RenforTeam. Ils paient la vérification de l'intervenant et s'ajoutent à son tarif. Un atelier, lui, se paie à son intervenant, à son tarif, et la plateforme n'ajoute rien.",
         ],
       },
       {
@@ -162,7 +158,7 @@ export const RUBRIQUES: Rubrique[] = [
         // Un établissement qui cherchait le bouton « payer » ne le trouvait pas.
         question: "Comment régler une facture ?",
         reponse: [
-          "Chaque facture est téléchargeable en PDF depuis votre espace. Une facture émise par un intervenant se règle par virement, directement auprès de lui, dans le délai indiqué sur le document. Seules les factures émises par l'association, formations et crédits LEX, se règlent en ligne par carte.",
+          "Chaque facture est téléchargeable en PDF depuis votre espace. Une facture émise par un intervenant se règle par virement, directement auprès de lui, dans le délai indiqué sur le document. Seules les factures émises par l'association, crédits LEX, se règlent en ligne par carte.",
           "Les mentions légales et le détail des heures y figurent, pour que votre comptabilité n'ait rien à reconstituer.",
         ],
       },
@@ -220,37 +216,6 @@ export const RUBRIQUES: Rubrique[] = [
         reponse: [
           "Depuis Mon compte, rubrique Données personnelles, vous exportez l'ensemble de vos données dans un fichier, ou vous demandez leur suppression.",
           "La suppression efface aussi les fichiers déposés, pas seulement les lignes en base.",
-        ],
-      },
-    ],
-  },
-  {
-    slug: "formations",
-    titre: "Formations",
-    resume: "Qualiopi, financement OPCO, attestations.",
-    icone: "graduation",
-    articles: [
-      {
-        slug: "financement-opco",
-        question: "Vos formations sont-elles finançables ?",
-        reponse: [
-          "Oui. Les parcours sont certifiés Qualiopi au titre des actions de formation et des bilans de compétences, donc mobilisables auprès des OPCO et des financeurs publics.",
-          // « figure sur chaque convention » : le logiciel ne produit aucune
-          // convention de formation. Les seuls documents générés sont
-          // l'attestation d'assiduité, le certificat de réalisation et la
-          // feuille d'émargement (apps/api/src/documents/documents.controller.ts).
-          // Un stagiaire envoyé chercher le numéro sur une convention
-          // inexistante ne le trouvait nulle part ; il est rattaché ici aux
-          // pièces qui le portent réellement.
-          "Le numéro de déclaration d'activité figure dans les mentions légales du site, ainsi que sur l'attestation d'assiduité et le certificat de réalisation délivrés à l'issue de la formation. Cet enregistrement ne vaut pas agrément de l'État.",
-        ],
-      },
-      {
-        slug: "emargement-attestations",
-        question: "Comment se passent l'émargement et les attestations ?",
-        reponse: [
-          "L'émargement se fait en ligne, séance par séance. Les attestations de fin de formation et les certificats sont générés automatiquement à partir des présences.",
-          "Le registre et les éléments du bilan pédagogique se remplissent au fil des séances, au lieu d'être reconstitués après coup.",
         ],
       },
     ],

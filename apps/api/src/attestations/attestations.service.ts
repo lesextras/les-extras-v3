@@ -196,7 +196,11 @@ export class AttestationsService {
       select: { id: true },
     });
 
-    const retour = `${this.urlWeb}/formations/${formation.slug ?? formation.id}`;
+    // La fiche du parcours vit sur adepa77.fr depuis le 28/09/2026 (même
+    // slug) : le retour de paiement y ramène directement.
+    const retour = formation.slug
+      ? `https://adepa77.fr/formations/${formation.slug}/`
+      : 'https://adepa77.fr/formations/';
     const session = await this.stripe('/checkout/sessions', {
       mode: 'payment',
       'payment_method_types[0]': 'card',

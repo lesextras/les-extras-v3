@@ -1,4 +1,4 @@
-// « Mes réservations » — la vue complète : renforts, ateliers et formations.
+// « Mes réservations » — la vue complète : renforts et ateliers.
 //
 // L'adresse nue reste NON filtrée : les notifications et les courriels
 // pointent vers `/dashboard/reservations#<id>` sans savoir de quelle famille

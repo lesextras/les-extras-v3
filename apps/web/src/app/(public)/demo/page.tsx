@@ -7,7 +7,7 @@ import { metaPublique } from "@/lib/meta";
 export const metadata: Metadata = metaPublique({
   title: "Demander une démonstration",
   description:
-    "Vingt minutes en visio pour voir la plateforme sur votre propre besoin : renfort, ateliers, formations, conformité. Sans engagement.",
+    "Vingt minutes en visio pour voir la plateforme sur votre propre besoin : renfort, ateliers, conformité. Sans engagement.",
   path: "/demo",
 });
 
@@ -37,7 +37,6 @@ const POUR_QUI = [
   "Groupes et sièges qui gèrent plusieurs établissements",
   "Directions qui veulent chiffrer avant d’engager",
   "Structures avec des besoins de renfort récurrents",
-  "Équipes qui cherchent un plan de formation Qualiopi",
 ];
 
 export default function DemoPage() {
@@ -110,7 +109,6 @@ export default function DemoPage() {
               sujets={[
                 "Démonstration, établissement",
                 "Démonstration, groupe ou siège",
-                "Démonstration, plan de formation",
                 "Démonstration, autre",
               ]}
             />

@@ -1,4 +1,4 @@
-import { TUNNEL_ACCUEIL } from './mail.service';
+import { TUNNEL_ACCUEIL, lienTunnel } from './mail.service';
 
 /**
  * LE TUNNEL PART À DES CENTAINES DE BOÎTES, ET IL PART SEUL.
@@ -27,19 +27,52 @@ describe("Tunnel d'accueil", () => {
     }
   });
 
-  it('ne pointe que vers des chemins internes du catalogue', () => {
-    // Un chemin absolu (http…) contournerait `webUrl` : le message partirait
-    // vers l'ancien domaine le jour où l'adresse du site change encore.
+  /**
+   * ⚠ DEPUIS LE 28/09/2026 LES PARCOURS VIVENT SUR ADEPA77.FR (décision de
+   * Siham) : le centre de formation ADéPA a son propre site, et chaque fiche y
+   * porte le même slug que sur Les Extras. Une adresse absolue est donc
+   * acceptée, mais UNE SEULE famille : `https://adepa77.fr/formations/…/`.
+   * Tout autre domaine reste refusé, et un chemin interne passe toujours par
+   * `webUrl` (le domaine du site peut encore changer).
+   */
+  const ADEPA = /^https:\/\/adepa77\.fr\/formations\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?$/;
+
+  it('ne pointe que vers un chemin interne ou vers le catalogue d’adepa77.fr', () => {
     for (const m of TUNNEL_ACCUEIL) {
-      expect(m.chemin.startsWith('/formations')).toBe(true);
-      expect(m.chemin).not.toMatch(/^https?:/);
-      expect(m.chemin).not.toMatch(/\s/);
+      expect(m.lien).not.toMatch(/\s/);
+      if (/^[a-z]+:/i.test(m.lien) || m.lien.startsWith('//')) {
+        expect(m.lien).toMatch(ADEPA);
+      } else {
+        expect(m.lien.startsWith('/')).toBe(true);
+      }
     }
   });
 
+  it('refuse toute autre adresse externe', () => {
+    // Le motif lui-même : s'il laissait passer ces adresses, le test
+    // précédent ne prouverait rien.
+    for (const faux of [
+      'https://les-extras.fr/formations/x/',
+      'http://adepa77.fr/formations/',
+      'https://adepa77.fr.exemple.com/formations/',
+      'https://adepa77.fr/autre-page/',
+      'https://exemple.com/https://adepa77.fr/formations/',
+    ]) {
+      expect(faux).not.toMatch(ADEPA);
+    }
+    expect('https://adepa77.fr/formations/les-premieres-minutes-d-une-crise/').toMatch(ADEPA);
+  });
+
+  it('préfixe un chemin interne par le domaine du site, et laisse une adresse absolue telle quelle', () => {
+    expect(lienTunnel('/ateliers', 'https://les-extras.fr')).toBe('https://les-extras.fr/ateliers');
+    expect(lienTunnel('https://adepa77.fr/formations/', 'https://les-extras.fr')).toBe(
+      'https://adepa77.fr/formations/',
+    );
+  });
+
   it('ne renvoie jamais deux fois au même parcours', () => {
-    const chemins = TUNNEL_ACCUEIL.map((m) => m.chemin);
-    expect(new Set(chemins).size).toBe(chemins.length);
+    const liens = TUNNEL_ACCUEIL.map((m) => m.lien);
+    expect(new Set(liens).size).toBe(liens.length);
   });
 
   it("n'annonce ni remise, ni compte à rebours, ni échéance", () => {

@@ -108,14 +108,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </ul>
         </div>
 
+        {/* ⚠ Cette carte disait « Formations certifiées Qualiopi » jusqu'au
+            28/09/2026 : les formations ont quitté Les Extras pour adepa77.fr
+            (décision de Siham). Elle dit maintenant qui porte le service. */}
         <div className="relative flex items-center gap-3 rounded-2xl bg-primary-foreground/10 p-4 ring-1 ring-inset ring-primary-foreground/10 backdrop-blur-sm">
           <span className="grid size-10 place-items-center rounded-xl bg-primary-foreground/15 text-warning">
             <Star className="size-5 fill-current" />
           </span>
           <div>
-            <p className="text-sm font-semibold">Formations certifiées Qualiopi</p>
+            <p className="text-sm font-semibold">Porté par l’association ADéPA</p>
             <p className="text-xs text-primary-foreground/70">
-              Certification portée par l’association ADéPA, finançables OPCO
+              Association loi 1901, à Melun (Seine-et-Marne)
             </p>
           </div>
         </div>

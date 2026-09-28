@@ -258,7 +258,7 @@ export default async function FacturationPage({
           ) : listeDevis.length === 0 ? (
             <EmptyState
               title="Aucun devis pour l'instant"
-              description="Depuis une fiche atelier ou formation, demandez un devis en un clic."
+              description="Depuis une fiche atelier, demandez un devis en un clic."
               action={
                 <Button asChild>
                   <Link href="/ateliers">Parcourir les ateliers</Link>

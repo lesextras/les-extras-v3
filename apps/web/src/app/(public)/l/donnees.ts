@@ -137,36 +137,6 @@ export const LANDINGS: Landing[] = [
     sujet: 'Landing · LEX',
   },
   {
-    slug: 'parcours',
-    titre: 'Douze parcours gratuits sur les comportements-défis',
-    public: 'Professionnels du médico-social, AESH, assistants familiaux, et parents',
-    promesse: 'Douze parcours gratuits pour comprendre un comportement avant de vouloir le changer.',
-    sous:
-      'Quarante-cinq minutes de lecture, quatre modules, une situation qui dérape, un exercice sur votre propre cas, une fiche A4 à punaiser. Sans carte bancaire, sans date de fin.',
-    preuves: [
-      {
-        titre: 'Une compétence par parcours, pas un cours',
-        texte:
-          '« Les premières minutes d’une crise », « Décrire un comportement sans le juger », « L’enfant qui dit non à tout » : chaque parcours apprend à faire une chose, et on la vérifie sur votre terrain.',
-      },
-      {
-        titre: 'Ce que ça ne fait jamais',
-        texte:
-          'Aucun geste d’intervention physique enseigné, aucun diagnostic, aucune méthode pour faire obéir. On travaille sur ce qui coûte à la personne, pas sur ce qui gêne l’entourage.',
-      },
-      {
-        titre: 'La fiche récap A4, en libre accès',
-        texte:
-          'Tout le parcours sur une page : la notion clé, la grille de relevé à recopier, les erreurs qui coûtent. Elle s’imprime et se punaise en salle d’équipe.',
-      },
-    ],
-    offre: 'Laissez votre adresse : vous recevez la fiche récap du premier parcours, et le lien pour commencer.',
-    bouton: 'Recevoir la première fiche',
-    structure: false,
-    enSavoirPlus: { href: '/parcours-de-formation', label: 'Par où commencer' },
-    sujet: 'Landing · Parcours gratuits',
-  },
-  {
     slug: 'intervenants',
     titre: 'Publiez vos ateliers, gardez 100 % de votre tarif',
     public: 'Intervenants, formateurs, animateurs du médico-social',

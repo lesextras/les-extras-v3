@@ -100,17 +100,12 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/reservations': {
     titre: 'Mes réservations',
     texte:
-      'Tout ce qui a été réservé, dans les deux sens : les renforts pourvus, les ateliers commandés et les personnes inscrites en formation. Chaque ligne indique si vous êtes du côté qui réserve ou du côté qui intervient : un même compte peut faire les deux. Le contrat s’ouvre en cliquant sur l’intitulé.',
+      'Tout ce qui a été réservé, dans les deux sens : les renforts pourvus et les ateliers commandés. Chaque ligne indique si vous êtes du côté qui réserve ou du côté qui intervient : un même compte peut faire les deux. Le contrat s’ouvre en cliquant sur l’intitulé.',
   },
   '/dashboard/reservations/ateliers': {
     titre: 'Mes réservations ateliers',
     texte:
       'Les ateliers seuls : ceux que vous avez commandés et ceux que vous animez. La ligne dit de quel côté vous êtes, combien de participants sont attendus et ce que vous aviez précisé à la réservation. Le contrat s’ouvre en cliquant sur l’intitulé. Les onglets en haut ramènent au reste.',
-  },
-  '/dashboard/reservations/formations': {
-    titre: 'Mes réservations formation',
-    texte:
-      'Les inscriptions en formation, nominatives : qui est inscrit, à quelle session, et où en est le dossier. C’est ici qu’on retrouve l’attestation une fois la session terminée : la pièce que demande un financeur.',
   },
   '/dashboard/planning': {
     titre: 'Votre planning',

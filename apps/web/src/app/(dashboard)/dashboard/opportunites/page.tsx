@@ -15,6 +15,9 @@ export const metadata: Metadata = { title: "Missions RenforTeam" };
 /**
  * LE CATALOGUE, DEPUIS LES OPPORTUNITÉS.
  *
+ * ⚠ Plus de bouton « Voir les formations » (28/09/2026) : les formations ont
+ * quitté Les Extras pour adepa77.fr, le site du centre de formation ADéPA.
+ *
  * C'est le même réflexe que chercher une mission : voir ce que le réseau
  * propose. Le catalogue ayant quitté le menu de gauche pour la barre du
  * haut, on le repose ici, là où l'on vient déjà chercher du travail — et
@@ -26,19 +29,15 @@ function BlocCatalogue() {
       <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Voir les ateliers et les formations
+            Voir les ateliers
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Le catalogue complet : les interventions proposées par le réseau,
-            et les formations certifiantes de l’association.
+            Le catalogue complet des interventions proposées par le réseau.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild size="sm">
             <Link href="/ateliers">Voir les ateliers</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link href="/formations">Voir les formations</Link>
           </Button>
         </div>
       </CardContent>

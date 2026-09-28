@@ -25,15 +25,19 @@ export const metadata: Metadata = {
       'https://les-extras.fr',
   ),
   title: {
-    default: 'LES EXTRAS, Ateliers et formations pour le médico-social',
+    default: 'LES EXTRAS, Ateliers et renfort pour le médico-social',
     template: '%s · LES EXTRAS',
   },
   // Description de l'accueil (et repli des pages qui n'en posent pas).
   //
   // ⚠ 155 CARACTÈRES MAXIMUM, ET LE COMPTE SE VÉRIFIE. Le commentaire précédent
   // annonçait 155 ; la phrase en faisait 171, et Google la coupait en plein
-  // milieu de « dossier de conformité par interv… ». Celle-ci en fait 152,
+  // milieu de « dossier de conformité par interv… ». Celle-ci en fait 132,
   // mesurés.
+  //
+  // ⚠ « formations » et « Association certifiée Qualiopi » en sont sortis le
+  // 28/09/2026 : les formations ont quitté Les Extras pour adepa77.fr, le site
+  // du centre de formation ADéPA (décision de Siham).
   //
   // ⚠⚠ ELLE DISAIT « INTERVENANTS VÉRIFIÉS », ET CE N'EST PAS UNE MALADRESSE
   // DE PLUS (relevé en production le 21/09/2026). C'est la promesse de sécurité
@@ -51,13 +55,11 @@ export const metadata: Metadata = {
   // n'est plus proposé en ligne, et ce que la plateforme édite pour une
   // intervention, ce sont un devis et une feuille de mission.
   description:
-    'Ateliers, formations et accompagnements personnalisés pour le médico-social. Devis sous 48 h, sans frais de recrutement. Association certifiée Qualiopi.',
+    'Ateliers et accompagnements personnalisés pour le médico-social, et LEX pour vos écrits. Devis sous 48 h, sans frais de recrutement.',
   keywords: [
     'atelier médico-social',
-    'formation médico-social',
     'analyse des pratiques professionnelles',
     'intervention MECS IME ITEP',
-    'formation Qualiopi médico-social',
     'renfort médico-social',
     'remplacement éducateur',
     'EHPAD',
@@ -80,9 +82,9 @@ export const metadata: Metadata = {
     // adresse canonique de partage — vingt-deux pages le faisaient, dont les
     // six pages ville et les deux calculateurs, c'est-à-dire précisément
     // celles qu'on partage. L'accueil pose le sien dans `app/page.tsx`.
-    title: 'LES EXTRAS, Ateliers et formations pour le médico-social',
+    title: 'LES EXTRAS, Ateliers et renfort pour le médico-social',
     description:
-      'Ateliers et formations courtes réservables en ligne, devis en 48 h, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
+      'Ateliers réservables en ligne, devis en 48 h, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
     siteName: 'LES EXTRAS',
     // Carte de partage 1200×630. Sans elle, LinkedIn et Facebook affichent un
     // rectangle gris à la place du lien — le pire format possible pour une
@@ -92,7 +94,7 @@ export const metadata: Metadata = {
         url: '/images/partage-les-extras.jpg',
         width: 1200,
         height: 630,
-        alt: 'LES EXTRAS, ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
+        alt: 'LES EXTRAS, ateliers éducatifs, renfort d’équipe et assistant d’écriture pour le médico-social',
       },
     ],
   },
@@ -100,9 +102,9 @@ export const metadata: Metadata = {
     // « summary » affiche une vignette minuscule ; le grand format double la
     // surface cliquable dans un fil.
     card: 'summary_large_image',
-    title: 'LES EXTRAS, Ateliers et formations pour le médico-social',
+    title: 'LES EXTRAS, Ateliers et renfort pour le médico-social',
     description:
-      'Ateliers et formations courtes réservables en ligne, devis en 48 h, dossier de conformité par intervenant.',
+      'Ateliers réservables en ligne, devis en 48 h, dossier de conformité par intervenant.',
     images: ['/images/partage-les-extras.jpg'],
   },
   robots: { index: true, follow: true },

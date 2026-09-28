@@ -170,17 +170,9 @@ Trois façons de financer le même service, d’après ce que chaque acteur publ
         <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
 Une plateforme gratuite sans modèle économique visible inquiète, à juste titre. Il
           n’y a pas de piège : Les Extras est édité par une association loi 1901, pas par une société financée pour croître.
-          Deux choses, et deux seulement, sont payantes : et aucune n’est le renfort.
+          Une seule chose est payante, et ce n’est pas le renfort.
         </p>
         <ul className="mt-6 space-y-4">
-          <li className="flex gap-3">
-            <Check className="mt-0.5 size-5 shrink-0 text-success" aria-hidden />
-            <span className="text-[15px] leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">Les formations Qualiopi</strong>, facturées
-              au devis par l’association, qui est certifiée et fait appel aux formateurs de
-              son réseau.
-            </span>
-          </li>
           <li className="flex gap-3">
             <Check className="mt-0.5 size-5 shrink-0 text-success" aria-hidden />
             <span className="text-[15px] leading-relaxed text-muted-foreground">

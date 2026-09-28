@@ -31,7 +31,7 @@ const CARTES = [
   {
     cle: "contact" as const,
     titre: "Nous écrire",
-    texte: "Une question sur un atelier, une formation, un renfort ou un partenariat ? L'équipe ADéPA vous répond.",
+    texte: "Une question sur un atelier, un renfort ou un partenariat ? L'équipe ADéPA vous répond.",
     action: "Envoyer un message",
     image: wp("/wp-content/uploads/2026/04/school.jpeg"),
     icone: MessageSquare,

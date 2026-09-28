@@ -2,6 +2,13 @@
 
 // Même contenu que les cartes du catalogue : visuel, catégorie, durée,
 // résumé, concepteur, territoire, public, prix.
+//
+// ⚠ ATELIERS SEULEMENT DEPUIS LE 28/09/2026. Le carrousel portait aussi un
+// rayon « Formations » (tag « Parcours gratuit » / « Formation Qualiopi »,
+// pastille emoji du parcours, « Gratuit · en ligne »). Les formations ont
+// quitté Les Extras pour adepa77.fr, le site du centre de formation ADéPA :
+// ces branches sont retirées, et l'accueil présente les parcours gratuits
+// dans un bloc à part (`CentreFormationAdepa`), qui renvoie vers adepa77.fr.
 import { useRef } from "react";
 import Link from "next/link";
 import {
@@ -15,7 +22,7 @@ import { VignetteSansPhoto } from "./VignetteSansPhoto";
 import { premierVisuel } from "@/lib/media";
 import { formatMoney } from "./format";
 import { resumeTerritoire } from "@/lib/territoires";
-import { EMOJI_PARCOURS, dureeLisible } from "@/lib/mini-formations";
+import { dureeLisible } from "@/lib/mini-formations";
 
 export interface OfferCard {
   id: string;
@@ -23,16 +30,14 @@ export interface OfferCard {
   title: string;
   /**
    * ⚠⚠ LE RÉSUMÉ ÉTAIT DANS LA CHARGE UTILE ET N'ÉTAIT PAS AFFICHÉ.
-   * `/public/highlights` renvoie `description` pour un atelier et `summary`
-   * pour une formation depuis le début ; le carrousel de l'accueil n'en
-   * montrait ni l'un ni l'autre. Une carte de l'accueil disait donc trois fois
-   * moins qu'une carte du catalogue pour la même fiche — titre, lieu, public,
-   * prix — et c'est l'accueil qui reçoit tout le trafic publicitaire.
-   * Corrigé le 16/09/2026, demande de Siham : « mets le même contenu que dans
-   * les cartes des pages ateliers et formations ».
+   * `/public/highlights` renvoie `description` pour un atelier depuis le
+   * début ; le carrousel de l'accueil ne le montrait pas. Une carte de
+   * l'accueil disait donc trois fois moins qu'une carte du catalogue pour la
+   * même fiche — titre, lieu, public, prix — et c'est l'accueil qui reçoit
+   * tout le trafic publicitaire. Corrigé le 16/09/2026, demande de Siham :
+   * « mets le même contenu que dans les cartes des pages ateliers ».
    */
   description?: string | null;
-  summary?: string | null;
   /** Durée écrite à la main sur un atelier (« 2H »). */
   duration?: string | null;
   /** Départements couverts, en codes INSEE. Voir `lib/territoires.ts`. */
@@ -44,17 +49,14 @@ export interface OfferCard {
   price?: string | number | null;
   priceFrom?: string | number | null;
   durationHours?: number | null;
-  /** Durée en minutes, pour ce qui dure moins d'une heure (mini-formations). */
+  /** Durée en minutes, pour ce qui dure moins d'une heure. */
   durationMinutes?: number | null;
-  /** Mini-formation en ligne et gratuite : ni devis, ni session, ni prix. */
-  freeOnline?: boolean;
   account?: { id: string; name: string; city?: string | null } | null;
   categoryRef?: { id: string; title: string } | null;
   rating?: number | null;
   reviewsCount?: number;
   verified?: boolean;
   qualiopi?: boolean;
-  certifying?: boolean;
 }
 
 export function OfferCarousel({
@@ -62,7 +64,7 @@ export function OfferCarousel({
   basePath,
 }: {
   items: OfferCard[];
-  /** "/ateliers" ou "/formations". */
+  /** "/ateliers". */
   basePath: string;
 }) {
   const piste = useRef<HTMLDivElement>(null);
@@ -118,40 +120,22 @@ export function OfferCarousel({
               : [];
           const prix = o.price ?? o.priceFrom ?? null;
           // ⚠ L'ADRESSE LISIBLE D'ABORD, PARTOUT. Le drapeau `useSlug` n'était
-          // posé que sur les formations : les cartes d'ateliers de l'accueil
+          // posé que sur une partie des cartes : les cartes d'ateliers de l'accueil
           // pointaient donc /ateliers/cms3it0g70015lt1wyr4sbhqr alors que
           // /ateliers/atelier-psycho-boxe existe et fonctionne. Une redirection
           // de plus à chaque clic, et le bénéfice du lien dispersé entre deux
           // adresses pour une seule fiche. Le catalogue, lui, faisait déjà
           // `slug ?? id` — les deux endroits disent maintenant la même chose.
           const href = `${basePath}/${o.slug ?? o.id}`;
-          const emoji = o.slug ? (EMOJI_PARCOURS[o.slug] ?? null) : null;
           const duree = dureeLisible(o);
           const visuel = premierVisuel(o.images);
-          const resume = o.description ?? o.summary ?? null;
+          const resume = o.description ?? null;
           // La durée écrite à la main d'un atelier (« 2H ») d'abord, sinon
-          // celle calculée depuis les heures ou les minutes d'une formation.
+          // celle calculée depuis les heures ou les minutes.
           const dureeAffichee = o.duration ?? duree;
-          /**
-           * ⚠⚠ SUR UNE FORMATION, LE TAG DIT LE RAYON, PAS LA THÉMATIQUE.
-           *
-           * Les deux onglets « Formations Qualiopi » et « Parcours gratuits »
-           * ont fusionné en un seul onglet « Formations » (16/09/2026) : la
-           * distinction, qui compte vraiment — l'une se vend au devis en intra,
-           * l'autre se suit seul et gratuitement en ligne — est donc descendue
-           * sur la carte. Sans ce tag, les deux se présenteraient à l'identique
-           * et il faudrait lire le prix tout en bas pour les départager.
-           *
-           * ⚠ Les ateliers gardent leur thématique (« Art-thérapie »,
-           * « Musicothérapie ») : eux n'ont qu'un seul rayon, et c'est la
-           * thématique qui les distingue les uns des autres.
-           */
-          const estFormation = basePath === '/formations';
-          const categorie = estFormation
-            ? o.freeOnline
-              ? 'Parcours gratuit'
-              : 'Formation Qualiopi'
-            : (o.categoryRef?.title ?? null);
+          // Le tag dit la thématique (« Art-thérapie », « Musicothérapie ») :
+          // c'est elle qui distingue les ateliers les uns des autres.
+          const categorie = o.categoryRef?.title ?? null;
           /**
            * ⚠ ON N'AFFICHE PAS `city` TEL QUEL — même règle que le catalogue.
            * Seize fiches sur dix-sept ont une RÉGION dans un champ nommé
@@ -163,7 +147,7 @@ export function OfferCarousel({
           const territoire =
             resumeTerritoire(o.departements ?? []) ?? o.city ?? o.account?.city ?? null;
           // Le concepteur, toujours affiché — y compris « ADéPA » sur ses
-          // propres parcours. C'est ce que fait la carte du catalogue, et la
+          // propres ateliers. C'est ce que fait la carte du catalogue, et la
           // même fiche doit se présenter de la même façon partout.
           const organisme = o.account?.name ?? null;
           return (
@@ -187,7 +171,7 @@ export function OfferCarousel({
                     <VignetteSansPhoto
                       graine={o.slug ?? o.id ?? o.title}
                       libelle={o.categoryRef?.title ?? null}
-                      motif={o.freeOnline ? 'parcours' : basePath === '/formations' ? 'formation' : 'atelier'}
+                      motif="atelier"
                     />
                   </VisuelCarte>
                   {/*
@@ -198,24 +182,7 @@ export function OfferCarousel({
                     d'écart : « ATELIERS DU RÉSEAU » en surimpression, puis
                     « Ateliers du réseau » en pastille. Constaté en direct sur
                     les quatre cartes visibles de l'accueil.
-
-                    Le seul repère qui reste sur la photo est la pastille emoji
-                    d'un parcours, parce qu'elle ne dit pas la catégorie : elle
-                    identifie LE parcours, et c'est le même dessin que sur sa
-                    couverture et sur sa fiche récap A4.
                   */}
-                  {/* La pastille emoji : la même que sur la couverture et sur
-                      la fiche récap. Chaque carte reçoit son propre délai,
-                      sinon toute la ligne monte et descend en même temps. */}
-                  {emoji ? (
-                    <span
-                      aria-hidden
-                      className="animate-emoji pointer-events-none absolute right-3 top-3 grid size-10 place-items-center rounded-full bg-card/90 text-lg shadow-sm backdrop-blur-sm"
-                      style={{ animationDelay: `${(rang % 5) * 0.35}s` }}
-                    >
-                      {emoji}
-                    </span>
-                  ) : null}
                 </div>
                 {/*
                   ⚠⚠ CE CORPS DE CARTE EST CELUI DU CATALOGUE, VOLONTAIREMENT.
@@ -227,11 +194,9 @@ export function OfferCarousel({
                 */}
                 <CardContent className="flex flex-1 flex-col gap-3 p-5">
                   <div className="flex items-center justify-between gap-2">
-                    {/* ⚠ UN SEUL TAG, ET C'EST LA CATÉGORIE. Il portait aussi
-                        « Conçue par ADéPA » sur les parcours gratuits : deux
-                        pastilles pour dire deux choses au même endroit, alors
-                        que le concepteur est écrit trois lignes plus bas comme
-                        sur toutes les autres cartes. */}
+                    {/* ⚠ UN SEUL TAG, ET C'EST LA CATÉGORIE : le concepteur est
+                        écrit trois lignes plus bas, comme sur toutes les autres
+                        cartes. */}
                     {categorie ? (
                       <Badge variant="soft">{categorie}</Badge>
                     ) : (
@@ -255,7 +220,7 @@ export function OfferCarousel({
                     {o.verified ? (
                       <BadgeCheck className="mt-1 size-4 shrink-0 text-success" aria-label="Validé" />
                     ) : null}
-                    {o.qualiopi || o.certifying ? (
+                    {o.qualiopi ? (
                       <ShieldCheck className="mt-1 size-4 shrink-0 text-warning" aria-label="Qualiopi" />
                     ) : null}
                   </div>
@@ -274,12 +239,7 @@ export function OfferCarousel({
                           <span className="truncate">{organisme}</span>
                         </p>
                       ) : null}
-                      {o.freeOnline ? (
-                        <p className="flex items-center gap-1.5 font-medium text-foreground">
-                          <MapPin className="size-3.5 shrink-0 text-primary" />
-                          <span className="truncate">En ligne, à votre rythme</span>
-                        </p>
-                      ) : territoire ? (
+                      {territoire ? (
                         <p className="flex items-center gap-1.5 font-medium text-foreground">
                           <MapPin className="size-3.5 shrink-0 text-primary" />
                           <span className="truncate">Se déplace : {territoire}</span>
@@ -293,16 +253,9 @@ export function OfferCarousel({
                     </div>
 
                     <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
-                      {/* « Sur devis » sur une formation gratuite ferait fuir
-                          exactement les gens qu'elle vise, c'est ce qu'affichait
-                          ce carrousel sur les dix mini-formations. */}
                       <span className="inline-flex items-center gap-2">
                         <span className="text-base font-semibold text-foreground">
-                          {o.freeOnline
-                            ? "Gratuit · en ligne"
-                            : prix
-                              ? formatMoney(prix)
-                              : "Sur devis"}
+                          {prix ? formatMoney(prix) : "Sur devis"}
                         </span>
                         {o.rating ? (
                           <span className="inline-flex items-center gap-0.5 text-sm text-muted-foreground">

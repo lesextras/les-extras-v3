@@ -57,11 +57,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
     "",
     "/ateliers",
-    "/formations",
-    // Le chemin à travers le catalogue gratuit : trois niveaux, l'ordre
-    // conseillé, et ce que chaque niveau apprend à faire. Sans entrée au
-    // sitemap, la page n'existe que pour qui connaît son adresse.
-    "/parcours-de-formation",
+    // ⚠ `/formations`, `/formations/<slug>`, `/parcours-de-formation` et
+    // `/informations-reglementaires` ne sont PLUS déclarés (28/09/2026) : les
+    // formations ont quitté Les Extras pour adepa77.fr, et ces adresses
+    // redirigent en 308 vers ce site (`next.config.mjs`). Un sitemap qui
+    // déclare une redirection envoie Google sur une 308 depuis notre propre
+    // sitemap.
     "/edublog",
     "/notre-histoire",
     "/partenaires-associatifs",
@@ -100,11 +101,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Le carrefour des guides des écrits professionnels. Les guides eux-mêmes
     // sont ajoutés plus bas, comme les rubriques d'aide.
     "/guides",
-    // Page réglementaire de l'organisme de formation : identité, prérequis,
-    // délais d'accès, évaluation, accessibilité, indicateurs, réclamation.
-    // C'est la première page qu'un OPCO ou un stagiaire cherche, et elle
-    // n'existait que sur toulali.fr.
-    "/informations-reglementaires",
     // ⚠ `/lex` ET `/confiance-lex` NE FONT PAS DOUBLON : la première répond à
     // « est-ce que ça va m'aider, moi, ce soir ? » (le professionnel), la
     // seconde à « ai-je le droit de m'en servir sur un enfant placé ? » (la
@@ -201,19 +197,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (it.account?.id) vendorIds.add(it.account.id);
     }
     if (items.length < PAGE) break;
-  }
-
-  // Formations publiées : fiches vitrine indexables.
-  const formations = await safeJson<{ items: { slug: string }[] }>(
-    "/public/formations?take=60",
-  );
-  for (const f of formations?.items ?? []) {
-    dynamic.push({
-      url: `${base}/formations/${f.slug}`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    });
   }
 
   // Actualités publiées : contenu frais, c'est ce qui fait revenir Google.

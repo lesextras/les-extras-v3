@@ -75,7 +75,7 @@ export default async function PlanningPage() {
         title="Planning"
         subtitle={
           isEstablishment
-            ? "Vos renforts pourvus, ateliers réservés et sessions de formation, plus les créneaux que vous ajoutez vous-même. Cliquez sur un jour pour en voir le détail."
+            ? "Vos renforts pourvus et ateliers réservés, plus les créneaux que vous ajoutez vous-même. Cliquez sur un jour pour en voir le détail."
             : "Vos interventions confirmées, missions et ateliers, et vos disponibilités hebdomadaires."
         }
         actions={

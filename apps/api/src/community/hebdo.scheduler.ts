@@ -57,18 +57,17 @@ export class HebdoScheduler {
     });
 
     // Contenus communs, lus une seule fois pour tout le monde.
-    const [missions, formations, ateliers] = await Promise.all([
+    //
+    // ⚠ PLUS DE « NOUVELLE FORMATION » DANS LE MESSAGE DU LUNDI (28/09/2026,
+    // décision de Siham) : les formations ont quitté Les Extras pour
+    // adepa77.fr, le site du centre de formation ADéPA. Le lundi ne parle plus
+    // que des missions et des ateliers.
+    const [missions, ateliers] = await Promise.all([
       this.prisma.reliefMission.findMany({
         where: { status: MissionStatus.PUBLISHED, startDate: { gte: new Date() } },
         orderBy: { createdAt: 'desc' },
         take: 40,
         select: { id: true, title: true, city: true, job: true },
-      }),
-      this.prisma.formation.findMany({
-        where: { createdAt: { gte: semaine } },
-        orderBy: { createdAt: 'desc' },
-        take: 3,
-        select: { slug: true, title: true },
       }),
       /**
        * LES ATELIERS QUI ARRIVENT (06/09/2026).
@@ -78,7 +77,7 @@ export class HebdoScheduler {
        * Un intervenant qui passe une heure à écrire sa fiche mérite mieux, et
        * une direction qui cherche une intervention ne va pas visiter le
        * catalogue toutes les semaines. Elles rejoignent donc les nouveautés du
-       * lundi, comme les formations.
+       * lundi.
        *
        * `verified: true` n'est pas une précaution de plus : c'est la garantie
        * qu'on n'annonce jamais une fiche que l'équipe n'a pas relue.
@@ -102,10 +101,6 @@ export class HebdoScheduler {
           ? `Nouvel atelier à ${a.city} : ${a.title}`
           : `Nouvel atelier : ${a.title}`,
         lien: `${web}/ateliers/${a.slug ?? a.id}`,
-      })),
-      ...formations.map((f) => ({
-        titre: `Nouvelle formation : ${f.title}`,
-        lien: `${web}/formations/${f.slug}`,
       })),
     ];
 

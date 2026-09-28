@@ -39,10 +39,13 @@ export interface Alerte {
   resume: string;
 }
 
+// ⚠ PLUS DE CHOIX « Formations seulement » (28/09/2026) : les formations ont
+// quitté Les Extras pour adepa77.fr, et le planificateur ne cherche de toute
+// façon que dans les ateliers (`alertes.service.ts`, `prisma.service`). Une
+// alerte « formation » déjà posée s'affiche sous le libellé générique.
 const TYPES: { valeur: string; libelle: string }[] = [
-  { valeur: "all", libelle: "Ateliers et formations" },
+  { valeur: "all", libelle: "Tout le catalogue" },
   { valeur: "atelier", libelle: "Ateliers seulement" },
-  { valeur: "formation", libelle: "Formations seulement" },
 ];
 
 /** Les critères pré-remplis depuis une recherche du catalogue restée vide. */
@@ -177,7 +180,7 @@ export function GestionAlertes({
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {TYPES.find((t) => t.valeur === a.type)?.libelle ??
-                      "Ateliers et formations"}
+                      "Tout le catalogue"}
                     {" · "}
                     {a.signalees > 0
                       ? `${a.signalees} proposition${a.signalees > 1 ? "s" : ""} signalée${a.signalees > 1 ? "s" : ""}`

@@ -1,5 +1,12 @@
 /**
- * LES QUATRE SITUATIONS — le fil de l'accueil.
+ * LES SITUATIONS — le fil de l'accueil.
+ *
+ * ⚠⚠ TROIS SITUATIONS, PLUS QUATRE (28/09/2026, décision de Siham). La
+ * situation « Formations » est retirée : les formations ont quitté Les Extras
+ * pour adepa77.fr, le site du centre de formation ADéPA. L'accueil les présente
+ * désormais dans UN bloc à part, `CentreFormationAdepa`, qui renvoie vers
+ * adepa77.fr. Le composant garde son nom (`QuatreSituations`) pour ne pas
+ * déplacer le fichier ; c'est le contenu qui fait foi.
  *
  * ⚠ POURQUOI CE BLOC REMPLACE « LES TROIS USAGES » (demande de Siham,
  * 21/09/2026). L'accueil enchaînait « Le réseau répond aux trois » puis « Le
@@ -17,10 +24,9 @@
  * chose.
  *
  * ⚠ LES CHIFFRES SONT VRAIS, ET ILS VIENNENT D'AILLEURS DANS LE SITE :
- *  - 0 % sur les ateliers et les formations, 15 % sur le renfort
+ *  - 0 % sur les ateliers, 15 % sur le renfort
  *    (/frais-de-service, arrêté le 21/09/2026) ;
  *  - 48 h pour un devis (promesse tenue partout ailleurs) ;
- *  - 14 parcours gratuits (mesuré, `/parcours-de-formation`) ;
  *  - 15 générations LEX offertes par mois, puis 19 € (billing.service.ts).
  * Aucun n'est arrondi ni inventé. Si l'un bouge, il bouge aux deux endroits.
  *
@@ -45,14 +51,15 @@
  * ⚠ ET PLUS DE TIRET CADRATIN NI DE DEUX-POINTS DANS CE BLOC, toujours à sa
  * demande. Ce n'est pas une préférence de ponctuation, c'est un effet mesuré à
  * l'écran : un « — » ou un « : » au milieu d'une ligne annonce une SUITE, donc
- * une phrase plus longue, et sur quatre sections empilées cela se lit comme un
+ * une phrase plus longue, et sur des sections empilées cela se lit comme un
  * mur. Les incises deviennent des phrases, les listes après deux-points
  * deviennent la phrase elle-même. Si une nouvelle section en rapporte un, elle
  * rouvre le défaut pour tout le bloc.
  *
- * ⚠ AUCUN CHIFFRE N'A ÉTÉ RETIRÉ au passage, et aucun fait : 48 h, 0 %, 14
- * parcours, 15 écrits puis 19 €. Ce qui a sauté, ce sont les redites. Un
- * resserrage qui emporte un chiffre fait mentir la page au lieu de l'alléger.
+ * ⚠ AUCUN CHIFFRE N'A ÉTÉ RETIRÉ au passage, et aucun fait : 48 h, 0 %, 15
+ * écrits puis 19 €. Ce qui a sauté, ce sont les redites. Un resserrage qui
+ * emporte un chiffre fait mentir la page au lieu de l'alléger. (Les « 14
+ * parcours » sont partis le 28/09 avec la situation « Formations ».)
  */
 import Link from 'next/link';
 import Image from 'next/image';
@@ -168,26 +175,6 @@ const SITUATIONS: Situation[] = [
     bordure: 'border-secondary',
   },
   {
-    service: 'Formations',
-    probleme: 'L’équipe encaisse depuis six mois, et la dernière formation remonte à trois ans.',
-    situation: [
-      'Le budget existe et le plan est à rendre. Ce qui manque, c’est le temps de chercher un organisme, de monter le dossier OPCO et de faire revenir tout le monde le même jour.',
-    ],
-    reponse: [
-      'Formations en intra, certifiées Qualiopi, finançables par votre OPCO',
-      'Émargement, attestations et convention édités par la plateforme',
-      'Et quatorze parcours en ligne, gratuits, à suivre quand on veut',
-    ],
-    chiffre: { valeur: '14', quoi: 'parcours gratuits, sans carte bancaire' },
-    lien: { href: '/formations', libelle: 'Voir le catalogue' },
-    image: wp('/wp-content/uploads/2025/02/lever-vous-400x400.jpeg'),
-    alt: 'Une salle de formation professionnelle',
-    teinte: 'text-foreground',
-    trait: 'bg-foreground',
-    puce: 'text-foreground',
-    bordure: 'border-foreground',
-  },
-  {
     service: 'LEX',
     probleme: 'Il est 21 h, le rapport est pour demain, et la page est blanche.',
     situation: [
@@ -277,7 +264,7 @@ export function QuatreSituations() {
         <Reveal className="max-w-3xl">
           <span className="eyebrow">Ce qu’on résout</span>
           <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-            Quatre situations qu’on connaît tous. Quatre réponses.
+            Trois situations qu’on connaît tous. Trois réponses.
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             {/* ⚠ « LA FEUILLE DE MISSION », PAS « LE CONTRAT » (21/09/2026).
@@ -286,7 +273,7 @@ export function QuatreSituations() {
                 l'établissement. Écrire « contrat » ici promettait de l'intérim
                 qu'on ne fait pas — et contredisait le premier écran, qui dit
                 la bonne chose. Les deux phrases doivent rester identiques. */}
-            Les Extras n’est pas un annuaire de plus. Quatre services, et un seul endroit où le
+            Les Extras n’est pas un annuaire de plus. Trois services, et un seul endroit où le
             devis, la feuille de mission et la facture sont édités.
           </p>
         </Reveal>

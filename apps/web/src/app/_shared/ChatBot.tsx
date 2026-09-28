@@ -127,7 +127,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
             {messages.length === 0 ? (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Bonjour ! Posez-moi une question{mode === "public" ? " sur les ateliers, formations, tarifs ou le fonctionnement de la plateforme." : " : je vous guide pas à pas dans votre espace."}
+                  Bonjour ! Posez-moi une question{mode === "public" ? " sur les ateliers, les tarifs ou le fonctionnement de la plateforme." : " : je vous guide pas à pas dans votre espace."}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {(mode === "public"

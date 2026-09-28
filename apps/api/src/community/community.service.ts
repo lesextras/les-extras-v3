@@ -240,7 +240,7 @@ export class CommunityService {
       await this.notifications.create(compte.ownerId, {
         type: 'PREMIERS_POINTS',
         title: `🎉 Vos ${montant} premiers points !`,
-        body: `${label}. ${POINTS_PAR_EURO} points = 1 € de réduction sur les formations et les crédits LEX.`,
+        body: `${label}. ${POINTS_PAR_EURO} points = 1 € de réduction sur les crédits LEX.`,
         link: '/dashboard/points',
       });
     } catch {

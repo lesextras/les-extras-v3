@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { BasculeTheme } from '@/app/_shared/BasculeTheme';
 import { useVisiteur } from '@/app/_shared/Visiteur';
 
-// Ordre = ordre de la strategie : l'atelier et la formation sont les produits
-// d'appel, le renfort vient ensuite.
+// Ordre = ordre de la strategie : l'atelier est le produit d'appel, le
+// renfort vient ensuite. « Formations » a quitté la barre le 28/09/2026
+// (décision de Siham) : les formations vivent sur adepa77.fr, le site du
+// centre de formation ADéPA.
 const links = [
   { label: 'Ateliers', href: '/ateliers' },
-  { label: 'Formations', href: '/formations' },
   { label: 'RenforTeam', href: '/renforteam' },
   // LEX a sa propre page depuis le 22/09/2026, et le menu la vise enfin.
   // Le lien pointait l'ancre #lex de l'accueil : depuis une page intérieure,

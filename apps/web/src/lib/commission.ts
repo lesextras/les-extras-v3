@@ -11,7 +11,7 @@
  *
  * ⚠⚠ IL N'Y A PLUS UNE RÈGLE TARIFAIRE, IL Y EN A DEUX DEPUIS LE 21/09/2026.
  *
- *  1. LE CATALOGUE — ateliers et formations. GRATUIT, des deux côtés.
+ *  1. LE CATALOGUE — ateliers. GRATUIT, des deux côtés.
  *     L'établissement réserve, l'intervenant facture en direct, l'association
  *     ne s'interpose pas et ne prélève rien. Inchangé depuis l'origine.
  *
@@ -58,7 +58,7 @@
  * y compris à zéro, pour un partenaire historique ou une convention.
  */
 
-/** Le catalogue : ateliers et formations. Rien n'est prélevé. */
+/** Le catalogue : ateliers. Rien n’est prélevé. */
 export const COMMISSION_DEFAUT = 0;
 
 /** RenforTeam : frais de gestion de l'association, ajoutés au tarif. */

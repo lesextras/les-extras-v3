@@ -120,7 +120,9 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       // réclamation). Elle remplace le lien plutôt que de s'y ajouter : la
       // règle des SEPT LIENS PAR COLONNE tient, et l'ancre reste atteignable
       // depuis la page elle-même.
-      { label: 'Informations réglementaires', href: '/informations-reglementaires' },
+      // ⚠ Depuis le 28/09/2026 cette page vit sur adepa77.fr, le site du
+      // centre de formation ADéPA : `/informations-reglementaires` y redirige.
+      { label: 'Informations réglementaires', href: 'https://adepa77.fr/informations-reglementaires/' },
     ],
   },
 ];

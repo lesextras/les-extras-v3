@@ -21,10 +21,19 @@ export const metadata: Metadata = metaPublique({
  * intenable, et une information trompeuse au sens du code de la consommation.
  *
  * Les conditions de vente ne couvrent donc que ce que l'association vend
- * réellement : les crédits et abonnements LEX, et les formations Qualiopi
- * facturées au devis. Aucun prix n'est écrit ici — ils vivent sur la page
+ * réellement sur Les Extras : les crédits et abonnements LEX. Aucun prix n'est
+ * écrit ici — ils vivent sur la page
  * « Frais de service » et dans l'espace de chaque compte, un seul endroit à
  * tenir à jour.
+ *
+ * ⚠ LES FORMATIONS ONT QUITTÉ LES EXTRAS LE 28/09/2026 (décision de Siham).
+ * Leur régime (commission sur devis, convention, rétractation propre au
+ * financement) et la rubrique de l'attestation de suivi des mini-formations
+ * sont retirés des CGU et des CGV : ils vivent sur adepa77.fr
+ * (`/cgv-formation/`, `/informations-reglementaires/`). RESTENT ici, et c'est
+ * voulu : l'identité de l'organisme de formation dans les mentions légales
+ * (NDA, Qualiopi), et les lignes du registre RGPD sur les données de formation
+ * déjà détenues (finalité, durée de conservation).
  *
  * La partie données personnelles reflète le registre de traitement
  * (docs/conformite/REGISTRE-RGPD.md) : mêmes sous-traitants, mêmes durées.
@@ -59,16 +68,16 @@ const sections: Section[] = [
       {
         sous: 'Objet du service',
         points: [
-          'LES EXTRAS est une plateforme de mise en relation. Elle permet à une structure de publier un besoin de renfort ou de rechercher une intervention (atelier, formation), et à un professionnel de se faire connaître, de répondre à ces besoins et d’en assurer le suivi : planning, pointage des heures, pièces de conformité, messagerie, documents.',
+          'LES EXTRAS est une plateforme de mise en relation. Elle permet à une structure de publier un besoin de renfort ou de rechercher une intervention (atelier), et à un professionnel de se faire connaître, de répondre à ces besoins et d’en assurer le suivi : planning, pointage des heures, pièces de conformité, messagerie, documents.',
           'La plateforme fournit également des outils d’aide à la contractualisation (modèles de contrat, devis, factures) et un assistant d’écriture professionnelle, LEX.',
           'La création d’un compte, la publication d’un besoin, la candidature et la contractualisation sont gratuites, pour les structures comme pour les intervenants.',
-          'Aucune commission n’est prélevée sur les ateliers du catalogue, qui se réservent et se facturent en direct entre la structure et l’intervenant. Les formations sont délivrées sous la certification Qualiopi de l’association, qui les facture : sa commission est fixée sur devis, avant tout engagement. Les interventions RenforTeam font exception : l’association y vérifie l’intervenant, encaisse la prestation et lui en reverse le produit. Des frais de gestion de 15 % s’ajoutent alors au tarif de l’intervenant et sont dus par le demandeur ; ils figurent sur une ligne distincte du devis, avant son acceptation. Aucun montant n’est prélevé sur la rémunération de l’intervenant. Un taux différent peut être convenu par écrit avec un compte.',
+          'Aucune commission n’est prélevée sur les ateliers du catalogue, qui se réservent et se facturent en direct entre la structure et l’intervenant. Les interventions RenforTeam font exception : l’association y vérifie l’intervenant, encaisse la prestation et lui en reverse le produit. Des frais de gestion de 15 % s’ajoutent alors au tarif de l’intervenant et sont dus par le demandeur ; ils figurent sur une ligne distincte du devis, avant son acceptation. Aucun montant n’est prélevé sur la rémunération de l’intervenant. Un taux différent peut être convenu par écrit avec un compte.',
         ],
       },
       {
         sous: 'Ce que la plateforme n’est pas',
         points: [
-          'Elle n’est ni l’employeur, ni le donneur d’ordre, ni le mandataire des personnes qu’elle met en relation. Le contrat à durée déterminée, le contrat de prestation ou la convention de formation sont conclus directement entre la structure et le professionnel, seuls signataires et seuls responsables de leur exécution.',
+          'Elle n’est ni l’employeur, ni le donneur d’ordre, ni le mandataire des personnes qu’elle met en relation. Le contrat à durée déterminée ou le contrat de prestation sont conclus directement entre la structure et le professionnel, seuls signataires et seuls responsables de leur exécution.',
           'Elle ne perçoit pas les paiements des missions. Les sommes dues au titre d’une intervention sont réglées directement par la structure au professionnel : elles ne transitent à aucun moment par un compte de l’association.',
           'Elle n’est pas une agence d’intérim et n’exerce aucune activité de placement payant. Elle ne garantit ni la conclusion d’un contrat, ni le remplacement d’un intervenant défaillant.',
         ],
@@ -124,24 +133,6 @@ const sections: Section[] = [
         sous: 'Ce qui est vendu',
         points: [
           'Les crédits et abonnements LEX, l’assistant d’écriture : une allocation mensuelle est offerte à chaque compte, sans carte bancaire et sans date de fin ; au-delà, un pack de crédits ou un abonnement mensuel peut être souscrit.',
-          'Les formations sous certification Qualiopi, commandées à l’association et facturées par elle sur devis, avec convention de formation et financement possible par un OPCO.',
-          'L’attestation de suivi d’une mini-formation en ligne, délivrée à la demande. La mini-formation elle-même est gratuite, du premier au dernier module, sans carte bancaire et sans date de fin : seule l’attestation est payante, et elle est facultative, ne pas la demander ne retire aucun accès.',
-        ],
-      },
-      {
-        // ⚠ CE QUE CETTE RUBRIQUE DIT, ET POURQUOI ELLE LE DIT AINSI.
-        // « Attestation de suivi », jamais « certificat » : un certificat
-        // évoque une certification professionnelle enregistrée (RNCP, RS), et
-        // vendre 20 € un document en l'appelant certificat serait une pratique
-        // commerciale trompeuse — pour une association par ailleurs certifiée
-        // Qualiopi, c'est le genre d'écart qui se paie cher.
-        sous: 'L’attestation de suivi des mini-formations',
-        points: [
-          'Les mini-formations en ligne sont gratuites. L’attestation de suivi est un document distinct, facultatif, délivré à la demande de la personne qui a suivi le parcours, au prix affiché sur la fiche de la formation.',
-          'Ce document atteste que la personne a suivi le parcours. Ce n’est PAS une certification professionnelle : il n’est enregistré ni au répertoire national des certifications professionnelles (RNCP), ni au répertoire spécifique (RS), et il ne confère aucun titre, aucun niveau et aucun droit à exercer.',
-          'La demande se fait après le parcours, par écrit. Les conditions et le prix sont communiqués avant tout paiement ; aucun paiement n’est prélevé automatiquement, et aucun accès au contenu n’en dépend.',
-          'L’attestation est établie et transmise sous quinze jours ouvrés à compter du paiement. Une erreur matérielle (nom, date, intitulé) est rectifiée sans frais sur simple demande.',
-          'Droit de rétractation : le consommateur dispose de quatorze jours à compter de la commande. S’il demande expressément que l’attestation soit établie avant la fin de ce délai, il en est informé et le droit s’éteint une fois le document transmis (articles L. 221-25 et L. 221-28, 1° du code de la consommation). À défaut de cette demande expresse, le délai court normalement.',
         ],
       },
       {
@@ -149,7 +140,7 @@ const sections: Section[] = [
         points: [
           'Les prix en vigueur sont ceux affichés sur la page « Frais de service » et, pour les crédits et abonnements, dans l’espace de votre compte au moment de la commande. Aucun prix ne figure sur la présente page, afin qu’il n’existe qu’une seule source à jour.',
           'Les prix sont exprimés en euros. L’association n’est pas assujettie à la TVA sur ces prestations, sauf mention contraire portée sur la facture.',
-          'Le paiement des crédits et abonnements s’effectue en ligne par carte bancaire, auprès d’un prestataire de paiement agréé : les données de carte sont saisies chez lui et ne transitent jamais par la plateforme. Les formations sont réglées sur facture, aux conditions du devis accepté.',
+          'Le paiement des crédits et abonnements s’effectue en ligne par carte bancaire, auprès d’un prestataire de paiement agréé : les données de carte sont saisies chez lui et ne transitent jamais par la plateforme.',
           'La commande est ferme à la validation du paiement : les crédits sont portés au compte immédiatement, l’abonnement est actif dès l’encaissement.',
         ],
       },
@@ -168,7 +159,6 @@ const sections: Section[] = [
           'Le consommateur dispose d’un délai de quatorze jours à compter de la conclusion du contrat pour se rétracter, sans motif ni pénalité (article L. 221-18 du code de la consommation). Ce droit bénéficie également, dans les conditions de l’article L. 221-3, au professionnel employant cinq salariés au plus lorsque l’objet du contrat n’entre pas dans le champ de son activité principale.',
           'Pour l’exercer, il suffit d’écrire à contact@les-extras.fr en indiquant le compte et la commande concernés. Le remboursement intervient dans les quatorze jours suivant la réception de la demande, par le même moyen de paiement.',
           'Pour un service exécuté immédiatement à la demande expresse du client, c’est le cas des crédits LEX, utilisables aussitôt, , le droit de rétractation ne peut plus être exercé une fois le service pleinement exécuté, et les crédits déjà consommés sont déduits du remboursement (articles L. 221-25 et L. 221-28 du code de la consommation).',
-          'Les formations font l’objet d’une convention distincte : le délai de rétractation applicable y est rappelé, ainsi que les conditions d’annulation propres au financement retenu.',
         ],
       },
     ],
@@ -180,7 +170,7 @@ const sections: Section[] = [
       'Il n’existe pas de politique de remboursement des prestations sur cette plateforme, pour une raison simple : les prestations ne lui sont pas payées.',
       'Une mission de renfort donne lieu à un contrat conclu entre la structure et l’intervenant, le plus souvent un contrat à durée déterminée. La rémunération est versée par la structure, selon les règles de la paie ou de la facturation, sans intervention de l’association. Un atelier ou une intervention se règle de la même façon : directement, sur la facture émise par l’intervenant.',
       'Les conditions d’annulation d’une intervention relèvent donc de l’accord entre les deux parties et des règles applicables au contrat conclu. La plateforme conserve la trace des échanges, des créneaux et des heures validées : ces éléments restent consultables par chacune des parties et peuvent servir de preuve en cas de désaccord.',
-      'Les remboursements que l’association peut effectuer ne concernent que ce qu’elle a elle-même encaissé, crédits et abonnements LEX, formations qu’elle a facturées, dans les conditions de la rubrique précédente.',
+      'Les remboursements que l’association peut effectuer ne concernent que ce qu’elle a elle-même encaissé, crédits et abonnements LEX, dans les conditions de la rubrique précédente.',
       // La phrase annonçait « l’IBAN qui y figure » : renseigner ses
       // coordonnées bancaires reste facultatif pour l’émetteur, et une
       // facture peut donc parfaitement sortir sans. On énonce le principe —

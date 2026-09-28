@@ -280,7 +280,8 @@ export class PlanningService {
       mission: null,
       origine: 'FORMATION',
       modifiable: false,
-      lien: se.formation?.slug ? `/formations/${se.formation.slug}` : null,
+      // La fiche vit sur adepa77.fr depuis le 28/09/2026 (même slug).
+      lien: se.formation?.slug ? `https://adepa77.fr/formations/${se.formation.slug}/` : null,
     }));
 
     const manuels = shifts.map((s) => ({

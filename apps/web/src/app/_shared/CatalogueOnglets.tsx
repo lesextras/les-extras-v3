@@ -11,6 +11,13 @@
 // Le premier onglet disponible est ouvert au chargement : la page n'est jamais
 // vide au repos. Un rayon sans fiche n'a pas d'onglet du tout, plutôt qu'un
 // onglet qui s'ouvre sur du vide.
+//
+// ⚠ UN SEUL RAYON DEPUIS LE 28/09/2026 : les ateliers. Le rayon « Formations »
+// a quitté l'accueil avec le service (les formations vivent sur adepa77.fr, le
+// site du centre de formation ADéPA). Avec un seul rayon disponible, le bloc
+// s'affiche SANS barre d'onglets : un onglet unique ne choisit rien, et un
+// bouton qui ne fait rien se lit comme une panne. Les onglets reviennent seuls
+// le jour où un second rayon est passé par `page.tsx`.
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -32,6 +39,30 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
   if (disponibles.length === 0) return null;
   const courant = disponibles.find((r) => r.cle === actif) ?? disponibles[0];
 
+  // Le carrousel et le lien vers le reste du rayon, communs aux deux rendus.
+  const contenu = (
+    <>
+      {/* Plus de phrase de rayon ici : le titre de la section dit déjà à quoi
+          sert le catalogue, et chaque carte porte son public, sa durée et son
+          tarif. Une ligne de plus entre l'onglet et les fiches ne faisait que
+          retarder la lecture. */}
+      <OfferCarousel items={courant.items} basePath={courant.basePath} />
+      {/* À DROITE, ET EN COULEUR. En bas à gauche et en contour, il se
+          confondait avec le fond charbon : le seul lien qui mène au reste du
+          catalogue était le moins visible de la section. */}
+      <p className="mt-8 flex justify-end">
+        <Button asChild variant="primary" size="lg">
+          <Link href={courant.lien.href}>
+            {courant.lien.libelle} <ArrowRight />
+          </Link>
+        </Button>
+      </p>
+    </>
+  );
+
+  // Un seul rayon : pas de barre d'onglets (voir l'en-tête du fichier).
+  if (disponibles.length === 1) return <div>{contenu}</div>;
+
   return (
     <div>
       {/*
@@ -40,13 +71,13 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
         Ils étaient trois — « Ateliers », « Formations Qualiopi », « Parcours
         gratuits » — et deux d'entre eux disaient « formation ». Le visiteur
         devait donc trancher entre deux mots qu'il ne distingue pas encore, sur
-        la première page qu'il voit. Les parcours gratuits sont désormais
-        DANS l'onglet Formations (voir `page.tsx`), et chaque carte dit
-        elle-même ce qu'elle est : « Gratuit · en ligne » ou son prix.
+        la première page qu'il voit. Les parcours gratuits avaient donc
+        rejoint l'onglet Formations. (Depuis le 28/09/2026 cet onglet n'existe
+        plus du tout : voir l'en-tête du fichier.)
 
         ⚠ `flex-1` avec `basis-0` : les deux boutons prennent exactement la
         moitié de la largeur chacun, quelle que soit la longueur du libellé.
-        Sans `basis-0`, « Formations » serait plus étroit qu'« Ateliers » +
+        Sans `basis-0`, un libellé court serait plus étroit qu'un long +
         padding, et deux portes de tailles différentes se lisent comme une
         principale et une secondaire.
 
@@ -113,21 +144,7 @@ export function CatalogueOnglets({ rayons }: { rayons: RayonCatalogue[] }) {
         aria-labelledby={`onglet-${courant.cle}`}
         className="mt-8"
       >
-        {/* Plus de phrase de rayon ici : le titre de la section dit déjà à quoi
-            sert le catalogue, et chaque carte porte son public, sa durée et son
-            tarif. Une ligne de plus entre l'onglet et les fiches ne faisait que
-            retarder la lecture. */}
-        <OfferCarousel items={courant.items} basePath={courant.basePath} />
-        {/* À DROITE, ET EN COULEUR. En bas à gauche et en contour, il se
-            confondait avec le fond charbon : le seul lien qui mène au reste du
-            catalogue était le moins visible de la section. */}
-        <p className="mt-8 flex justify-end">
-          <Button asChild variant="primary" size="lg">
-            <Link href={courant.lien.href}>
-              {courant.lien.libelle} <ArrowRight />
-            </Link>
-          </Button>
-        </p>
+        {contenu}
       </div>
     </div>
   );

@@ -186,8 +186,8 @@ const freelanceNav: NavSection[] = [
     extrémités du menu.
 
     ⚠ LA RUBRIQUE « Mon offre » A ÉTÉ DISSOUTE, et ce n'est pas un oubli :
-    « Mes ateliers » a rejoint le chemin ci-dessous, et ce qui restait —
-    formations animées, publications — ne fait pas deux entrées de quotidien.
+    « Mes ateliers » a rejoint le chemin ci-dessous, et ce qui restait (les
+    publications) n'est pas une entrée de quotidien.
     La règle de ce fichier est constante : deux entrées ne font pas une
     rubrique.
 
@@ -258,21 +258,22 @@ const freelanceNav: NavSection[] = [
       // lignes de cette section dans les QUATRE menus du fichier.
     ],
   },
-  // Le Catalogue (Édublog, Ateliers, Formations) a quitté le menu de
+  // Le Catalogue (Édublog, Ateliers) a quitté le menu de
   // gauche le 25/08/2026 : il vit désormais dans la barre du haut, à droite
   // du sélecteur de compte, pour tous les comptes. Un menu de gauche sert à
   // travailler ; un catalogue, à consulter.
   /*
     ⚠ « Mon offre » N'EST PLUS UNE RUBRIQUE. « Mes ateliers » — la seule de ses
     trois entrées qu'on ouvre toutes les semaines — a rejoint le chemin de
-    l'argent ci-dessus. Les deux autres restent, en secondaire : animer une
-    session de formation et écrire sur l'Édublog sont des gestes réels, mais
-    pas quotidiens, et aucun des deux n'est le seul chemin vers quoi que ce
-    soit.
+    l'argent ci-dessus. « Mes publications » reste, en secondaire : écrire sur
+    l'Édublog est un geste réel, mais pas quotidien.
+
+    ⚠ « Mes formations » A QUITTÉ LE MENU (28/09/2026, décision de Siham) :
+    les formations ne sont plus un service de Les Extras, elles vivent sur
+    adepa77.fr, le site du centre de formation ADéPA.
   */
   {
     items: [
-      { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
       { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des structures' },
     ],
   },
@@ -340,24 +341,23 @@ const establishmentNav: NavSection[] = [
     title: 'Renfort & prestations',
     items: [
       { label: 'RenforTeam', href: '/dashboard/renforts', icon: Megaphone, essentiel: true, hint: 'Publiez un besoin de remplacement et suivez les candidatures' },
-      // Le suivi de ce qu'on a commandé manquait complètement : renforts,
-      // ateliers et inscriptions en formation étaient enregistrés mais
-      // invisibles hors du back-office administrateur.
+      // Le suivi de ce qu'on a commandé manquait complètement : renforts et
+      // ateliers étaient enregistrés mais invisibles hors du back-office
+      // administrateur.
       //
       // Libellé raccourci : « Renforts et interventions » était tronqué en
       // « Renforts et interv… » dans la barre latérale. Une entrée qu'on ne
       // peut pas lire est une entrée sur laquelle on ne clique pas.
       // DEUX ENTRÉES REDEVENUES UNE (26/08/2026).
       //
-      // On les avait séparées pour donner sa porte à chaque nature : un
-      // atelier commandé et une inscription en formation ne se décident ni
-      // ne se paient pareil. Mais la page filtre déjà elle-même — Tout /
-      // Ateliers / Formations — et deux entrées qui mènent à deux onglets du
-      // même écran, c'est le menu qui refait le travail de la page.
+      // On les avait séparées pour donner sa porte à chaque nature. Mais la
+      // page filtre déjà elle-même (Tout / RenforTeam / Ateliers), et deux
+      // entrées qui mènent à deux onglets du même écran, c'est le menu qui
+      // refait le travail de la page.
       //
       // Une seule porte, qui ouvre sur « Tout ». Le tri se fait ensuite, là
       // où on le voit.
-      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les ateliers commandés et les inscriptions en formation, au même endroit, filtrables sur la page' },
+      { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Les renforts et les ateliers commandés, au même endroit, filtrables sur la page' },
       { label: 'Planning', href: '/dashboard/planning', icon: CalendarClock, essentiel: true },
       // Mon agenda (24/09/2026) : tout ce qui a une date, et les agendas partagés, comme Outlook.
       { label: 'Mon agenda', href: '/dashboard/agenda', icon: CalendarDays, essentiel: true, hint: 'Rendez-vous, réservations, visios et missions, et les agendas qu’on vous partage' },
@@ -620,7 +620,6 @@ const particulierNav: NavSection[] = [
        */
       { label: 'Demander un intervenant', href: '/dashboard/demande', icon: UserPlus, essentiel: true, hint: 'Décrivez la situation, nous cherchons la personne qui convient' },
       { label: 'Ateliers', href: '/ateliers', icon: Sparkles, essentiel: true, hint: 'Le catalogue : ateliers et interventions près de chez vous' },
-      { label: 'Formations', href: '/formations', icon: GraduationCap, hint: 'Les parcours ouverts à tous, la plupart gratuits' },
       { label: 'Mes réservations', href: '/dashboard/reservations', icon: CalendarCheck, essentiel: true, hint: 'Ce que vous avez réservé, les dates et les intervenants' },
     ],
   },

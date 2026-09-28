@@ -21,12 +21,14 @@ import { Field, Textarea } from "./form-fields";
 
   Les libellés parlent à la première personne : c'est une case qu'on coche sur
   soi, pas une catégorie qu'on nous applique.
+
+  « Question sur une formation » est retiré le 28/09/2026 : les formations ont
+  quitté Les Extras pour adepa77.fr, qui a son propre formulaire.
 */
 const SUBJECTS = [
   "Je suis une structure",
   "Je suis un intervenant",
   "Je suis un parent ou un proche",
-  "Question sur une formation",
   "Autre",
 ];
 

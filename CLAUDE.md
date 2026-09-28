@@ -5796,3 +5796,26 @@ et remplir le formulaire de paiement crée un compte ».
 - Le formulaire l'annonce AVANT le bouton, avec le lien vers les CGU. Le nom
   est requis côté formulaire, facultatif côté API (déploiements séparés).
   `auth/compte-acheteur.spec.ts` (6 tests).
+
+### 28/09/2026 — les formations quittent Les Extras pour adepa77.fr
+
+Décision de Siham : adepa77.fr est LE site de l'organisme de formation ADéPA.
+
+- **adepa77.fr** : extension WordPress « ADéPA, centre de formation »
+  (source versionnée ici : `outils/adepa77-centre-formation/`, zip installé par
+  Extensions → Ajouter → Téléverser). Type de contenu `adepa_formation`
+  (`/formations/`, `/formations/<slug>/`, MÊMES slugs que Les Extras),
+  thématiques, demandes de devis enregistrées (Centre de formation → Demandes
+  de devis) + e-mail, 4 pages réglementaires en shortcodes
+  (`/informations-reglementaires/`, `/cgv-formation/`, `/reclamation/`,
+  `/accessibilite-handicap/`). Import unique depuis `data/formations.json`
+  (relevé des 18 fiches) : ne plus relancer, on édite dans WordPress.
+  Pas de nonce sur le formulaire de devis : les pages sont en cache LiteSpeed.
+  Lien « Nos formations » posé dans l'en-tête Elementor (modèle 5093) et le
+  pied de page (menu 22). ⚠ L'accueil (page 4883, widget 778f086) a SON PROPRE
+  en-tête : le lien y reste à ajouter (refusé par le garde-fou).
+- **Les Extras** : pages formations, parcours, informations réglementaires et
+  catalogue connecté supprimés ; 308 vers adepa77.fr (`next.config.mjs`) ; un
+  SEUL bloc, `_shared/CentreFormationAdepa.tsx`, sur l'accueil. Les données,
+  l'admin formations/Qualiopi et `/dashboard/formations` (hors menu) restent :
+  des factures en dépendent. Le tunnel d'e-mails pointe sur adepa77.fr.

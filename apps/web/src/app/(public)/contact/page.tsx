@@ -9,7 +9,7 @@ import { metaPublique } from "@/lib/meta";
 export const metadata: Metadata = metaPublique({
   title: "Contact, écrire à l’équipe ADéPA",
   description:
-    "Contactez l'équipe ADéPA, Les Extras, la marketplace du renfort médico-social. Établissements, intervenants, formations : écrivez-nous.",
+    "Contactez l'équipe ADéPA, Les Extras, la marketplace du renfort médico-social. Établissements, intervenants, familles : écrivez-nous.",
   path: "/contact",
 });
 
@@ -19,7 +19,7 @@ export default function ContactPage() {
       <div className="mx-auto max-w-2xl">
       <h1 className="text-3xl font-semibold tracking-tight text-foreground">Nous contacter</h1>
       <p className="mt-2 text-muted-foreground">
-        Une question sur le renfort, une mission, une formation ou un partenariat&nbsp;? Écrivez-nous, l&apos;équipe
+        Une question sur le renfort, une mission, un atelier ou un partenariat&nbsp;? Écrivez-nous, l&apos;équipe
         ADéPA vous répond rapidement.
       </p>
 

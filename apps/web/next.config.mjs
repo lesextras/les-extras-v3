@@ -121,8 +121,9 @@ const PAGES_WORDPRESS = {
  * CDD salarié — n'est plus proposé en ligne : c'est le pilier que le Conseil
  * d'État a fragilisé le 11/02/2025 (n° 491128) et que l'article 70 de la LFSS
  * 2025 plafonne en ESSMS publics depuis le 01/07/2025. Reste RenforTeam assuré
- * par des intervenants INDÉPENDANTS et spécialisés, plus les ateliers et les
- * formations. Le détail du périmètre est dans `src/lib/offre.ts`.
+ * par des intervenants INDÉPENDANTS et spécialisés, plus les ateliers (les
+ * formations ont rejoint adepa77.fr le 28/09/2026). Le détail du périmètre est
+ * dans `src/lib/offre.ts`.
  *
  * Neuf adresses vendaient le montage retiré. Elles NE SONT PAS SUPPRIMÉES —
  * leur code est intact — elles sont redirigées, et elles sortent du sitemap
@@ -389,6 +390,39 @@ const nextConfig = {
       { source: '/entraide', destination: '/', permanent: true },
       { source: '/listing/:slug', destination: '/ateliers', permanent: true },
       { source: '/listing-category/:slug', destination: '/ateliers', permanent: true },
+      /**
+       * LES FORMATIONS QUITTENT LES EXTRAS (28/09/2026, décision de Siham).
+       *
+       * adepa77.fr est désormais LE site du centre de formation ADéPA : le
+       * catalogue, chaque fiche AU MÊME SLUG que sur Les Extras, et les pages
+       * réglementaires. Les pages d'ici sont supprimées ; leurs adresses,
+       * indexées et partagées, partent en 308 DIRECTEMENT vers la bonne page
+       * d'adepa77.fr (jamais par un relais : une chaîne de redirections perd
+       * du signal à chaque saut et ralentit le visiteur).
+       *
+       * ⚠ `/formations-source/` N'EST PAS CONCERNÉ, et ne doit pas l'être : ce
+       * dossier sert les contenus chargés par Teachizy (en-tête CORS plus bas).
+       * `/formations/:slug` ne l'attrape pas, c'est un autre premier segment.
+       *
+       * ⚠ LA BARRE FINALE DES DESTINATIONS EST VOULUE : WordPress sert ses
+       * pages avec, et une adresse sans elle y coûterait une redirection de
+       * plus.
+       */
+      { source: '/formations', destination: 'https://adepa77.fr/formations/', permanent: true },
+      { source: '/formations/:slug', destination: 'https://adepa77.fr/formations/:slug/', permanent: true },
+      { source: '/parcours-de-formation', destination: 'https://adepa77.fr/formations/', permanent: true },
+      { source: '/informations-reglementaires', destination: 'https://adepa77.fr/informations-reglementaires/', permanent: true },
+      // L'écran d'inscription des salariés (compte connecté) : l'identifiant
+      // d'une fiche n'est pas son slug, on renvoie donc au catalogue.
+      { source: '/marketplace/formations', destination: 'https://adepa77.fr/formations/', permanent: true },
+      { source: '/marketplace/formations/:id', destination: 'https://adepa77.fr/formations/', permanent: true },
+      // La page d'atterrissage des parcours gratuits (`l/donnees.ts`).
+      { source: '/l/parcours', destination: 'https://adepa77.fr/formations/', permanent: true },
+      // La rubrique « Formations » du centre d'aide (`aide/contenu.ts`).
+      { source: '/aide/formations', destination: 'https://adepa77.fr/formations/', permanent: true },
+      // L'onglet « Formations » de « Mes réservations » : la page reste
+      // entière sur son adresse nue (renforts et ateliers).
+      { source: '/dashboard/reservations/formations', destination: '/dashboard/reservations', permanent: true },
     ];
   },
   async headers() {

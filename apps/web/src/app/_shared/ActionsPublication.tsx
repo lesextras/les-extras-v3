@@ -7,7 +7,6 @@
 // Un compte = une personne (24/09/2026) : la personne du compte publie. La
 // règle vit dans `lib/publication.ts`.
 import { RenfortModal } from "./modals/RenfortModal";
-import { ProposerFormationModal } from './ProposerFormationModal';
 import { ServiceModal } from "./modals/ServiceModal";
 import { Button } from "@/components/ui/button";
 import type { AccountRole, AccountType } from "@/lib/types";
@@ -37,13 +36,11 @@ export function ActionsPublication({
   // un éducateur indépendant de recruter un remplaçant — le métier d'en face,
   // à chaque fois.
   //
-  // Mais j'étais allé trop loin en ne gardant qu'un seul bouton : un
-  // établissement ORGANISE des formations, et c'est un geste courant, pas une
-  // exception. Le retirer de l'en-tête revenait à le cacher. Il revient donc,
-  // en second.
-  //
-  // Un bouton plein pour le geste dominant du profil, un bouton en retrait
-  // pour l'autre. Les deux appartiennent bien à la personne qui les voit.
+  // ⚠ PLUS DE BOUTON « FORMATION » (28/09/2026, décision de Siham) : ni
+  // « Organiser une formation » côté structure, ni « Proposer une formation »
+  // côté intervenant. Les formations ont quitté Les Extras pour adepa77.fr, le
+  // site du centre de formation ADéPA. Reste un bouton par profil : le geste
+  // dominant du métier de la personne qui le voit.
   if (etablissement) {
     return (
       <div className="flex flex-wrap items-center gap-2">
@@ -51,36 +48,17 @@ export function ActionsPublication({
           accountId={accountId}
           trigger={<Button variant="primary">Publier un renfort</Button>}
         />
-        <ServiceModal
-          accountId={accountId}
-          categorieInitiale="FORMATION"
-          trigger={<Button variant="outline">Organiser une formation</Button>}
-        />
       </div>
     );
   }
 
-  // Côté intervenant : son atelier d'abord, et la formation qu'il peut
-  // proposer à la validation d'ADéPA juste après.
+  // Côté intervenant : son atelier.
   return (
     <div className="flex flex-wrap items-center gap-2">
       <ServiceModal
         accountId={accountId}
         categorieInitiale="ATELIER"
         trigger={<Button variant="primary">Créer un atelier</Button>}
-      />
-      {/* DEUX BOUTONS PORTAIENT LE MÊME LIBELLÉ ET NE FAISAIENT PAS LA MÊME CHOSE.
-          Celui-ci ouvrait `ServiceModal` : il créait une FICHE de service,
-          publiée immédiatement, sans aucun contrôle Qualiopi. Celui de
-          `/dashboard/formations` ouvre `ProposerFormationModal` : il crée un
-          PROGRAMME, en brouillon, relu par ADéPA avant diffusion sous sa
-          certification. Deux tables, deux circuits, un intervenant qui
-          voulait soumettre un programme certifiant depuis son tableau de bord
-          publiait en réalité une fiche atelier sans relecture.
-          C'est le vrai parcours qui est branché ici. */}
-      <ProposerFormationModal
-        accountId={accountId}
-        trigger={<Button variant="outline">Proposer une formation</Button>}
       />
     </div>
   );

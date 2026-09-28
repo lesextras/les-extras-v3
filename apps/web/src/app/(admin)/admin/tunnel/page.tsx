@@ -182,12 +182,17 @@ export default async function TunnelPage() {
                   {data.formations.map((f) => (
                     <tr key={f.id} className="border-b border-border/60 last:border-0">
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/formations/${f.slug}`}
+                        {/* La fiche vit sur adepa77.fr depuis le 28/09/2026, au
+                            même slug : lien direct, sans passer par la
+                            redirection de `/formations/<slug>`. */}
+                        <a
+                          href={`https://adepa77.fr/formations/${f.slug}/`}
+                          target="_blank"
+                          rel="noopener"
                           className="font-medium text-foreground underline-offset-4 hover:underline"
                         >
                           {f.titre}
-                        </Link>
+                        </a>
                       </td>
                       <td className="px-4 py-3 text-right [font-variant-numeric:tabular-nums]">
                         {f.vues}

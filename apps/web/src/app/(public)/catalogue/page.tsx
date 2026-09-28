@@ -3,7 +3,7 @@
 // réserver quoi que ce soit : cette page transforme cette habitude en contact
 // qualifié plutôt qu'en visite perdue.
 import type { Metadata } from "next";
-import { FileText, Mail, ShieldCheck, Clock } from "lucide-react";
+import { FileText, Mail, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "../../_shared/ui";
 import { CatalogueRequestForm } from "../../_shared/CatalogueRequestForm";
@@ -12,13 +12,15 @@ import { metaPublique } from "@/lib/meta";
 export const metadata: Metadata = metaPublique({
   title: "Demander le catalogue 2026",
   description:
-    "Le catalogue 2026 des ateliers et formations : contenus, durées, publics, tarifs. Un document à partager en réunion.",
+    "Le catalogue 2026 des ateliers : contenus, durées, publics, tarifs. Un document à partager en réunion.",
   path: "/catalogue",
 });
 
+// ⚠ La carte « Qualiopi » (financement OPCO) et les « formations » sont
+// retirées le 28/09/2026 : les formations ont quitté Les Extras pour
+// adepa77.fr, le site du centre de formation ADéPA (décision de Siham).
 const arguments_ = [
-  { icone: <FileText className="size-5" />, titre: "Toutes les fiches", texte: "Ateliers et formations, objectifs, durées, publics visés et tarifs." },
-  { icone: <ShieldCheck className="size-5" />, titre: "Qualiopi", texte: "Le détail de ce qui est finançable par votre OPCO, et comment monter le dossier." },
+  { icone: <FileText className="size-5" />, titre: "Toutes les fiches", texte: "Les ateliers, leurs objectifs, durées, publics visés et tarifs." },
   { icone: <Clock className="size-5" />, titre: "Sous 48 h", texte: "Envoi par e-mail, avec un contact direct si vous voulez creuser un sujet." },
 ];
 
@@ -27,7 +29,7 @@ export default function CataloguePage() {
     <div className="space-y-10">
       <PageHeader
         title="Demander le catalogue 2026"
-        subtitle="Nos ateliers, nos formations Qualiopi, les publics visés et les tarifs. En un document."
+        subtitle="Nos ateliers, les publics visés et les tarifs. En un document."
       />
 
       <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr]">

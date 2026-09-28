@@ -426,7 +426,7 @@ export class BillingService {
       // l'émetteur, et beaucoup de factures sortent sans. On dit donc où
       // regarder sans promettre ce qui s'y trouve.
       throw new NotImplementedException(
-        "Les factures d'intervenants ne se règlent pas en ligne : la structure paie l'intervenant par virement, selon les coordonnées bancaires indiquées par l'émetteur sur sa facture. Si elles n'y figurent pas, demande-les-lui. Seules les factures de l'association, formations et crédits LEX, se règlent par carte.",
+        "Les factures d'intervenants ne se règlent pas en ligne : la structure paie l'intervenant par virement, selon les coordonnées bancaires indiquées par l'émetteur sur sa facture. Si elles n'y figurent pas, demande-les-lui. Seules les factures de l'association, crédits LEX, se règlent par carte.",
       );
     }
     if (invoice.status === 'PAID') {

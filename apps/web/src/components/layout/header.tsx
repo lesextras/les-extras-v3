@@ -18,7 +18,6 @@ import {
   LayoutList,
   Newspaper,
   Sparkles,
-  GraduationCap,
   Lightbulb,
   PenLine,
 } from 'lucide-react';
@@ -191,10 +190,9 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
               <Sparkles />
               Ateliers
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/formations')}>
-              <GraduationCap />
-              Formations
-            </DropdownMenuItem>
+            {/* « Formations » retiré le 28/09/2026 (décision de Siham) : les
+                formations quittent Les Extras pour adepa77.fr, le site du
+                centre de formation ADéPA. */}
           </DropdownMenuContent>
         </DropdownMenu>
 

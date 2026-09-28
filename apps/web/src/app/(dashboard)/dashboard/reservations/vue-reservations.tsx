@@ -1,11 +1,17 @@
-// LES TROIS VUES DE « MES RÉSERVATIONS » — le corps commun.
+// LES VUES DE « MES RÉSERVATIONS » — le corps commun.
 //
 // Ce fichier n'est PAS une route (il ne s'appelle ni page.tsx ni layout.tsx) :
 // il porte le rendu partagé par les trois adresses.
 //
 //   /dashboard/reservations              tout, dans l'ordre du quotidien
+//   /dashboard/reservations/renforts     les renforts RenforTeam pourvus
 //   /dashboard/reservations/ateliers     les ateliers commandés ou animés
-//   /dashboard/reservations/formations   les inscriptions en formation
+//
+// ⚠ PLUS DE VUE « FORMATIONS » (28/09/2026, décision de Siham) : les
+// formations quittent Les Extras pour le centre de formation ADéPA, sur
+// adepa77.fr. `/dashboard/reservations/formations` redirige vers l'adresse nue
+// (`next.config.mjs`). Les inscriptions restent en base, rien n'est effacé ;
+// elles ne sont simplement plus affichées ici.
 //
 // POURQUOI TROIS ADRESSES ET NON UN `?vue=` : l'état actif du menu de gauche
 // se calcule sur le seul `pathname` (`sidebar.tsx`). Avec un paramètre de
@@ -29,8 +35,6 @@ import {
   formatMoney,
   BOOKING_STATUS_LABEL,
   bookingBadgeVariant,
-  INSCRIPTION_STATUS_LABEL,
-  inscriptionBadgeVariant,
 } from "../../../_shared/format";
 
 interface Booking {
@@ -53,23 +57,6 @@ interface Booking {
   account?: { id: string; name: string; type: string } | null;
 }
 
-interface Inscription {
-  id: string;
-  status: string;
-  financing: string;
-  learnerName?: string | null;
-  learner?: { firstName?: string | null; lastName?: string | null } | null;
-  attestationUrl?: string | null;
-  createdAt: string;
-  session?: {
-    id: string;
-    startDate: string;
-    endDate?: string | null;
-    location?: string | null;
-    formation?: { id: string; title: string; slug: string; certifying: boolean; city?: string | null } | null;
-  } | null;
-}
-
 // Libellés et couleurs : ceux de `format.ts`, comme partout — un statut se
 // lit avec les mêmes mots et la même couleur sur toutes les pages.
 const euros = (v: string | number | null | undefined) =>
@@ -81,7 +68,6 @@ function Ligne({
   titre,
   href,
   statut,
-  famille = "booking",
   quand,
   contrepartie,
   montant,
@@ -100,8 +86,6 @@ function Ligne({
   titre: string;
   href?: string;
   statut: string;
-  /** Inscription de formation (statuts PENDING/PRESENT…) ou réservation. */
-  famille?: "booking" | "inscription";
   quand?: string | null;
   contrepartie?: string | null;
   montant?: string | null;
@@ -151,14 +135,7 @@ function Ligne({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {montant && <span className="text-sm font-semibold">{montant}</span>}
-          <Badge
-            variant={
-              famille === "inscription" ? inscriptionBadgeVariant(statut) : bookingBadgeVariant(statut)
-            }
-          >
-            {(famille === "inscription" ? INSCRIPTION_STATUS_LABEL : BOOKING_STATUS_LABEL)[statut] ??
-              statut}
-          </Badge>
+          <Badge variant={bookingBadgeVariant(statut)}>{BOOKING_STATUS_LABEL[statut] ?? statut}</Badge>
         </div>
         {actions ? <div className="w-full border-t border-border pt-3">{actions}</div> : null}
       </CardContent>
@@ -167,13 +144,13 @@ function Ligne({
 }
 
 
-/** Les trois familles, et ce qu'on en dit en tête de page. */
-export type VueReservation = "tout" | "renforts" | "ateliers" | "formations";
+/** Les vues, et ce qu'on en dit en tête de page. */
+export type VueReservation = "tout" | "renforts" | "ateliers";
 
 export const TITRE_VUE: Record<VueReservation, { titre: string; sous: string }> = {
   tout: {
     titre: "Mes réservations",
-    sous: "Renforts, ateliers et formations, ce que vous avez réservé comme ce que vous animez, au même endroit.",
+    sous: "Renforts et ateliers, ce que vous avez réservé comme ce que vous animez, au même endroit.",
   },
   renforts: {
     titre: "Mes renforts RenforTeam",
@@ -183,19 +160,14 @@ export const TITRE_VUE: Record<VueReservation, { titre: string; sous: string }> 
     titre: "Mes réservations ateliers",
     sous: "Les ateliers que vous avez commandés et ceux que vous animez, avec leur date et leur statut.",
   },
-  formations: {
-    titre: "Mes réservations formation",
-    sous: "Les inscriptions en formation, nominatives : qui est inscrit, à quelle session, et où en est le dossier.",
-  },
 };
 
-/** Les onglets d'une vue à l'autre. Trois liens, pas de JavaScript. */
+/** Les onglets d'une vue à l'autre. Des liens, pas de JavaScript. */
 function Onglets({ vue }: { vue: VueReservation }) {
   const liens: { v: VueReservation; href: string; libelle: string }[] = [
     { v: "tout", href: "/dashboard/reservations", libelle: "Tout" },
     { v: "renforts", href: "/dashboard/reservations/renforts", libelle: "RenforTeam" },
     { v: "ateliers", href: "/dashboard/reservations/ateliers", libelle: "Ateliers" },
-    { v: "formations", href: "/dashboard/reservations/formations", libelle: "Formations" },
   ];
   return (
     <nav aria-label="Filtrer les réservations" className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
@@ -221,16 +193,7 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
   const session = await requireSession();
   const accountId = session.account.id;
 
-  // On ne demande à l'API que ce que la vue affiche : la vue « formations »
-  // n'a aucune raison de charger tous les bookings du compte.
-  const veutBookings = vue !== "formations";
-  const veutInscriptions = vue !== "ateliers" && vue !== "renforts";
-
-  const vide = <T,>(): { data?: T; error?: string } => ({ data: undefined });
-  const [resBookings, resInscriptions] = await Promise.all([
-    veutBookings ? fetchApi<Booking[]>(session, "/bookings") : vide<Booking[]>(),
-    veutInscriptions ? fetchApi<Inscription[]>(session, "/formations/mes-inscriptions") : vide<Inscription[]>(),
-  ]);
+  const resBookings = await fetchApi<Booking[]>(session, "/bookings");
 
   // Un intervenant ne « réserve » pas : on lui parle de ses interventions,
   // comme le menu. Le titre suit le compte, l'adresse ne change pas.
@@ -239,11 +202,11 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
     estIntervenant && vue === "tout"
       ? {
           titre: "Mes interventions",
-          sous: "Renforts, ateliers et formations : tout ce qui vous a été confié, au même endroit.",
+          sous: "Renforts et ateliers : tout ce qui vous a été confié, au même endroit.",
         }
       : TITRE_VUE[vue];
 
-  if (veutBookings && resBookings.error) {
+  if (resBookings.error) {
     return (
       <div className="space-y-6">
         <PageHeader title={titre} subtitle={sous} />
@@ -254,13 +217,10 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
   }
 
   const bookings = resBookings.data ?? [];
-  // Une inscription en échec ne doit pas faire disparaître les réservations :
-  // on affiche ce qu'on a, et la section formations reste simplement vide.
-  const inscriptions = resInscriptions.data ?? [];
 
   const renforts = vue === "tout" || vue === "renforts" ? bookings.filter((b) => b.mission) : [];
-  const ateliers = vue === "formations" || vue === "renforts" ? [] : bookings.filter((b) => b.service);
-  const total = renforts.length + ateliers.length + inscriptions.length;
+  const ateliers = vue === "renforts" ? [] : bookings.filter((b) => b.service);
+  const total = renforts.length + ateliers.length;
 
   return (
     <div className="space-y-8">
@@ -276,57 +236,39 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
               ? "Aucun renfort RenforTeam pour l'instant"
               : vue === "ateliers"
               ? "Aucun atelier réservé pour l'instant"
-              : vue === "formations"
-                ? "Aucune inscription en formation pour l'instant"
-                : "Aucune réservation pour l'instant"
+              : "Aucune réservation pour l'instant"
           }
           description={
             vue === "renforts"
               ? "Dès qu'un renfort est pourvu, il apparaît ici avec sa date, l'autre partie et le contrat."
               : vue === "ateliers"
               ? "Dès qu'un atelier est réservé, par vous ou chez vous, il apparaît ici avec sa date et son statut."
-              : vue === "formations"
-                ? "Dès qu'une personne est inscrite à une session, son inscription apparaît ici, avec son financement et son attestation."
-                : estIntervenant
-                  ? "Dès qu'un renfort vous est confié, qu'un de vos ateliers est réservé ou qu'une session est à animer, tout apparaît ici."
-                  : "Dès qu'un renfort est pourvu, qu'un atelier est réservé ou qu'une personne est inscrite à une formation, tout apparaît ici."
+              : estIntervenant
+                ? "Dès qu'un renfort vous est confié ou qu'un de vos ateliers est réservé, tout apparaît ici."
+                : "Dès qu'un renfort est pourvu ou qu'un atelier est réservé, tout apparaît ici."
           }
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button asChild>
                 <Link
                   href={
-                    vue === "formations"
-                      ? "/formations"
-                      : vue === "renforts"
-                        ? estIntervenant
-                          ? "/dashboard/opportunites"
-                          : "/dashboard/renforts"
-                        : "/ateliers"
+                    vue === "renforts"
+                      ? estIntervenant
+                        ? "/dashboard/opportunites"
+                        : "/dashboard/renforts"
+                      : "/ateliers"
                   }
                 >
-                  {vue === "formations"
-                    ? "Voir le catalogue de formations"
-                    : vue === "renforts"
-                      ? estIntervenant
-                        ? "Voir les missions RenforTeam"
-                        : "Mes renforts publiés"
-                      : "Voir le catalogue d’ateliers"}
+                  {vue === "renforts"
+                    ? estIntervenant
+                      ? "Voir les missions RenforTeam"
+                      : "Mes renforts publiés"
+                    : "Voir le catalogue d’ateliers"}
                 </Link>
               </Button>
-              {/* LE SECOND BOUTON SUIT LA VUE (26/08/2026).
-
-                  Sur « Mes réservations formation », il proposait « Publier un
-                  renfort » : la page parle de sessions de formation, le bouton
-                  renvoyait vers un tout autre objet. Une copie restée d’un
-                  écran à l’autre. */}
               {session.account.type === "ESTABLISHMENT" ? (
                 <Button asChild variant="outline">
-                  {vue === "formations" ? (
-                    <Link href="/dashboard/formations">Organiser une formation</Link>
-                  ) : (
-                    <Link href="/dashboard/renforts">Publier un renfort</Link>
-                  )}
+                  <Link href="/dashboard/renforts">Publier un renfort</Link>
                 </Button>
               ) : (
                 vue === "renforts" ? null : (
@@ -405,33 +347,6 @@ export async function VueReservations({ vue }: { vue: VueReservation }) {
               }
             />
           ))}
-        </section>
-      )}
-
-      {inscriptions.length > 0 && (
-        <section className="space-y-3">
-          <SectionTitle
-            title={`Formations : ${inscriptions.length} inscription${inscriptions.length > 1 ? "s" : ""}`}
-          />
-          {inscriptions.map((i) => {
-            const apprenant =
-              i.learnerName ??
-              [i.learner?.firstName, i.learner?.lastName].filter(Boolean).join(" ") ??
-              null;
-            return (
-              <Ligne
-                key={i.id}
-                ancre={i.id}
-                titre={i.session?.formation?.title ?? "Formation"}
-                href={i.session?.formation?.slug ? `/formations/${i.session.formation.slug}` : undefined}
-                statut={i.status}
-                famille="inscription"
-                quand={i.session?.startDate}
-                contrepartie={apprenant ? `pour ${apprenant}` : null}
-                role="client"
-              />
-            );
-          })}
         </section>
       )}
     </div>

@@ -42,11 +42,9 @@ const ACTIVITES: { cle: Interet; titre: string; aide: string; montage?: string }
     titre: 'Proposer des ateliers',
     aide: 'Votre fiche au catalogue, les demandes de devis vous arrivent ici.',
   },
-  {
-    cle: 'FORMATIONS',
-    titre: 'Proposer des formations',
-    aide: 'En intra, dans les établissements, ou au catalogue de l’association.',
-  },
+  // « Proposer des formations » (FORMATIONS) est retiré le 28/09/2026 : les
+  // formations ont quitté Les Extras pour adepa77.fr. La valeur reste dans le
+  // type, pour les comptes qui l'ont déjà déclarée.
   {
     cle: 'RENFORT_CDD',
     titre: 'Faire des remplacements',

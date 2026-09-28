@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check, Coins, Info, Receipt, Sparkles, Users, X } from "lucide-react";
+import { ArrowRight, Check, Coins, Receipt, Sparkles, X } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
 import { renfortSalarieVisible } from "@/lib/offre";
 
 export const metadata: Metadata = metaPublique({
   title: "Ce qui est gratuit, ce qui est payant",
   description:
-    "Logiciel gratuit des deux côtés. Ateliers : 0 % de commission. Formations Qualiopi : sur devis. RenforTeam : 15 % de frais de gestion.",
+    "Logiciel gratuit des deux côtés. Ateliers : 0 % de commission. RenforTeam : 15 % de frais de gestion. LEX, l’assistant IA, à crédits.",
   path: "/frais-de-service",
 });
 
@@ -28,14 +28,12 @@ const GRATUIT = [
   "Publier ses services et candidater, côté intervenant",
 ];
 
+// ⚠ LE RÉGIME « FORMATION QUALIOPI, SUR DEVIS » EST RETIRÉ DE CETTE PAGE LE
+// 28/09/2026 (décision de Siham) : les formations ont quitté Les Extras pour
+// adepa77.fr, le site du centre de formation ADéPA, qui porte ses propres
+// conditions. Il reste ici les deux régimes de Les Extras : les ateliers à
+// 0 %, RenforTeam à 15 %, et LEX à crédits.
 const PAYANT = [
-  {
-    icone: Users,
-    titre: "Vous commandez une formation Qualiopi",
-    prix: "Sur devis, facturée par l’association",
-    detail:
-      "C’est le seul service facturé par l’association ADéPA, sous sa certification Qualiopi et finançable OPCO. Elle fait appel aux formateurs du réseau Les Extras ; vous recevez un devis avant, une facture après.",
-  },
   {
     icone: Sparkles,
     titre: "Vous utilisez LEX, l’assistant IA",
@@ -72,9 +70,7 @@ export default function FraisPage() {
         */}
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
           Pas d’abonnement obligatoire, pas d’engagement, pas de frais d’entrée. Sur les
-          ateliers, aucune commission n’est prélevée sur l’intervenant. Une formation est
-          délivrée sous le Qualiopi de l’association&nbsp;: sa part est fixée sur devis.
-          Sur un renfort RenforTeam, 15&nbsp;% de frais de gestion s’ajoutent à son tarif&nbsp;:
+          ateliers, aucune commission n’est prélevée sur l’intervenant. Sur un renfort RenforTeam, 15&nbsp;% de frais de gestion s’ajoutent à son tarif&nbsp;:
           c’est l’association qui vérifie chaque professionnel avant de l’envoyer.
         </p>
       </div>
@@ -103,14 +99,14 @@ export default function FraisPage() {
 
         <div className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Vous payez dans deux cas seulement
+            Le seul service payant du logiciel
           </p>
           {PAYANT.map((p, i) => {
             const Icone = p.icone;
             return (
               <section
                 key={p.titre}
-                className={`animate-fade-in-up ${["stagger-1", "stagger-2"][i]} rounded-xl border border-border bg-card p-5 md:p-6`}
+                className={`animate-fade-in-up ${["stagger-1", "stagger-2"][i] ?? ""} rounded-xl border border-border bg-card p-5 md:p-6`}
               >
                 <div className="flex items-start gap-3.5">
                   <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -142,12 +138,6 @@ export default function FraisPage() {
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
               Vous touchez 100 % de votre prix. Vous réservez et facturez en direct,
               l’association ne s’interpose pas.
-            </p>
-            <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-              <strong className="font-semibold text-foreground">Une formation est différente.</strong>{" "}
-              Elle est délivrée sous la certification Qualiopi de l’association, qui la facture
-              et vous fait intervenir&nbsp;: sa commission est fixée sur devis, avant tout
-              engagement.
             </p>
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
               <strong className="font-semibold text-foreground">RenforTeam est différent.</strong>{" "}
@@ -210,19 +200,11 @@ export default function FraisPage() {
           se règle par virement, directement à l’intervenant qui l’a émise.
         </p>
         {/*
-          « Le numéro de déclaration d’activité figure sur la convention » : le
-          logiciel ne produit aucune convention de formation. Les seules pièces
-          générées sont l’attestation d’assiduité, le certificat de réalisation et la
-          feuille d’émargement (apps/api/src/documents/documents.controller.ts).
-          Le numéro est rattaché ici à ce qui existe réellement.
+          Le paragraphe sur le financement OPCO des formations et le numéro de
+          déclaration d'activité est retiré le 28/09/2026 : les formations ont
+          quitté Les Extras pour adepa77.fr, qui porte ses propres informations
+          réglementaires. Le numéro reste dans les mentions légales (/legal).
         */}
-        <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted-foreground">
-          <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-          Les formations portées par la certification Qualiopi de l’association sont
-          finançables par votre OPCO. Le numéro de déclaration d’activité de l’association
-          figure dans les mentions légales du site, ainsi que sur les attestations
-          d’assiduité et les certificats de réalisation délivrés.
-        </p>
       </section>
 
       <div className="mt-12 flex flex-wrap justify-center gap-3">

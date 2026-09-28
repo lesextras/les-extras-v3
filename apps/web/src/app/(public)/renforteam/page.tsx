@@ -24,7 +24,7 @@
 //     équipe SPÉCIALISÉE — des professionnels de l'éducation spécialisée et de
 //     la rééducation — que l'association VÉRIFIE un par un avant de les
 //     envoyer chez quelqu'un. La commission paie cette vérification. Le reste
-//     du site (ateliers, formations) reste à 0 %, et les deux régimes doivent
+//     du site (les ateliers) reste à 0 %, et les deux régimes doivent
 //     rester distincts partout où ils sont écrits.
 //     ⚠ 15 % de frais de gestion, AJOUTÉS au tarif et payés par le demandeur —
 //     rien n'est prélevé sur l'intervenant. Taux, calcul et relevé des grilles
@@ -708,8 +708,8 @@ export default async function SosRenfortPage() {
                 C’est ce travail-là que paient les <strong className="font-semibold text-foreground">15&nbsp;%
                 de frais de gestion</strong> sur les renforts, les seuls du site. Ils s’<em>ajoutent</em>
                 au tarif de l’intervenant, qui le touche en entier, et la ligne figure sur le devis
-                avant que vous n’acceptiez quoi que ce soit. Les ateliers et les formations du
-                catalogue, eux, se réservent en direct et restent à 0&nbsp;%.
+                avant que vous n’acceptiez quoi que ce soit. Les ateliers du catalogue, eux, se
+                réservent en direct et restent à 0&nbsp;%.
               </p>
             </div>
           </div>

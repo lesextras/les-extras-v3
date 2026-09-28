@@ -418,11 +418,9 @@ const ACTIVITES: Activite[] = [
     titre: 'Proposer des ateliers',
     aide: 'Votre fiche au catalogue, les demandes de devis vous arrivent ici.',
   },
-  {
-    cle: 'FORMATIONS',
-    titre: 'Proposer des formations',
-    aide: 'En intra, dans les établissements, ou au catalogue de l’association.',
-  },
+  // « Proposer des formations » (FORMATIONS) est retiré le 28/09/2026 : les
+  // formations ont quitté Les Extras pour adepa77.fr. La valeur reste dans
+  // l'énumération de l'API pour les comptes qui l'ont déjà déclarée.
   {
     cle: 'RENFORT_CDD',
     titre: 'Faire des remplacements',
@@ -849,7 +847,7 @@ export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
         <div className={cn('grid gap-2', montreCdd && 'sm:grid-cols-2')}>
           <CarteUsage
             icone={Sparkles}
-            titre="Réserver un atelier ou une formation"
+            titre="Réserver un atelier"
             aide="Pour votre enfant, votre proche, ou vous-même."
             actif={reserver}
             onBascule={() => setReserver(!reserver)}

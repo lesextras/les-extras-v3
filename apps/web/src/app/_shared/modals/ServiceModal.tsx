@@ -49,7 +49,7 @@ const FORMATS = [
   {
     value: "COLLECTIF",
     titre: "Pour un groupe",
-    detail: "Un atelier, une formation : plusieurs participants à la fois.",
+    detail: "Un atelier : plusieurs participants à la fois.",
   },
   {
     value: "INDIVIDUEL",

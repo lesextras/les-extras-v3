@@ -21,16 +21,16 @@
 // L'accueil disait tout, et c'était exactement le problème : dix-sept
 // sections, deux publics qui s'alternaient huit fois, LEX raconté trois fois,
 // le prix deux fois, le catalogue quatre fois. Ce qui ne se lisait nulle part,
-// c'est la phrase la plus simple : un réseau d'intervenants pour des renforts,
-// des ateliers et des formations, et un seul logiciel pour tout gérer.
+// c'est la phrase la plus simple : un réseau d'intervenants pour des renforts
+// et des ateliers, et un seul logiciel pour tout gérer.
 //
 // L'ordre retenu, et rien d'autre n'a changé — charte, couleurs, animations et
 // composants sont ceux du site :
-//   1. le héros : les trois usages et le logiciel, dès le titre ;
-//   2. Renfort · Atelier · Formation, à largeur égale ;
+//   1. le héros : les usages et le logiciel, dès le titre ;
+//   2. les situations (renfort, atelier, écrit) ;
 //   3. l'aiguillage, deux portes ;
 //   4. le tout-en-un : il diffuse, il formalise, il vérifie, il compte ;
-//   5. le catalogue, en un bloc à onglets ;
+//   5. le catalogue d'ateliers, puis le centre de formation ADéPA ;
 //   6. LEX ;
 //   7. le prix, en une ligne ;
 //   8. ouvrir un compte.
@@ -41,13 +41,22 @@
 //     /renforteam, la page qui raconte le renfort en détail ;
 //   • « recevoir le catalogue » et « nous écrire » partent sur /contact.
 // Aucun lien de l'ancienne page ne disparaît sans destination.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// ⚠⚠ LES FORMATIONS ONT QUITTÉ LES EXTRAS LE 28/09/2026 (décision de Siham).
+//
+// adepa77.fr est désormais LE site du centre de formation ADéPA. Sur cette
+// page : plus de rayon « Formations » dans le catalogue, plus de situation
+// « Formations », plus de carte ni de puce de tarif « formation ». Il reste UN
+// bloc, `CentreFormationAdepa`, posé juste après le catalogue d'ateliers (là
+// où était le rayon), qui présente les parcours gratuits et renvoie vers
+// adepa77.fr. Ne pas en rajouter un second.
 export const revalidate = 300;
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  GraduationCap,
   ShieldCheck,
   ArrowRight,
   Sparkles,
@@ -73,9 +82,9 @@ import { fetchPublic } from './_shared/server';
 // déménagement puis cassent seules. Voir `lib/media.ts`.
 import { premierVisuel, wp } from '@/lib/media';
 import { renfortSalarieVisible, visioconsultationVisible } from '@/lib/offre';
-import { OfferCarousel, type OfferCard } from './_shared/OfferCarousel';
+import { type OfferCard } from './_shared/OfferCarousel';
 import { CatalogueOnglets } from './_shared/CatalogueOnglets';
-import { estMaison } from '@/lib/mini-formations';
+import { CentreFormationAdepa } from './_shared/CentreFormationAdepa';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { OffreLex } from './_shared/OffreLex';
@@ -110,7 +119,7 @@ export const metadata: Metadata = {
         url: '/images/partage-les-extras.jpg',
         width: 1200,
         height: 630,
-        alt: 'LES EXTRAS, ateliers éducatifs, formations Qualiopi et renfort d’équipe pour le médico-social',
+        alt: 'LES EXTRAS, ateliers éducatifs, renfort d’équipe et assistant d’écriture pour le médico-social',
       },
     ],
   },
@@ -125,7 +134,7 @@ export const metadata: Metadata = {
 // relire le commentaire de la section 2 : on retomberait sur deux inventaires
 // des mêmes offres à trois écrans d'écart.
 
-// Ce que le logiciel fait, en quatre verbes valables pour les trois usages.
+// Ce que le logiciel fait, en quatre verbes valables pour tous les usages.
 // Les six tuiles « comment marche le renfort » ne parlaient que du renfort :
 // c'était le tout-en-un raconté pour un seul besoin sur trois.
 const TOUT_EN_UN = [
@@ -133,7 +142,7 @@ const TOUT_EN_UN = [
     icone: Megaphone,
     titre: 'Il diffuse',
     texte:
-      'Un formulaire pour les trois besoins. Les bons profils sont prévenus, et relancés.',
+      'Un seul formulaire, quel que soit le besoin. Les bons profils sont prévenus, et relancés.',
   },
   {
     icone: FileSignature,
@@ -151,7 +160,7 @@ const TOUT_EN_UN = [
     icone: Timer,
     titre: 'Il compte',
     texte:
-      'Heures déclarées et validées, contrats. Émargement et attestations.',
+      'Heures déclarées et validées, et les contrats qui vont avec.',
   },
   /*
     ⚠ LES DEUX CARTES SUIVANTES DISENT CE QU'EST LE SERVICE, pas ce que le
@@ -166,7 +175,7 @@ const TOUT_EN_UN = [
     n'est pas une grille tarifaire.
 
     ⚠ Si un chiffre revient ici un jour, ce doit être 15 % et jamais 0 % :
-    0 % est le taux des ateliers (les formations sont sur devis), pas celui du renfort. Deux
+    0 % est le taux des ateliers, pas celui du renfort. Deux
     chiffres différents sur deux pages du même site est exactement ce que
     l'audit reprochait ailleurs.
   */
@@ -219,13 +228,16 @@ const CARTE_VISIO = {
 
 // ────────────────────────────────────────────────────────────── les tarifs
 //
-// TROIS COLONNES, PARCE QU'IL Y A TROIS PRIX.
+// UNE COLONNE PAR PRIX.
 //
 // Le prix tenait dans une seule carte avec trois lignes en petit corps : de
-// loin, la page disait « un tarif », alors qu'il y en a trois et qu'ils ne se
-// ressemblent pas — gratuit pour toujours, sur devis, et un abonnement. Trois
-// colonnes de même largeur, chacune avec SON prix en grand, c'est ce qui se
-// lit d'un coup d'œil et ce qu'on va comparer.
+// loin, la page disait « un tarif », alors qu'il y en avait plusieurs et qu'ils
+// ne se ressemblaient pas. Des colonnes de même largeur, chacune avec SON prix
+// en grand, c'est ce qui se lit d'un coup d'œil et ce qu'on va comparer.
+//
+// ⚠ LA COLONNE « Formations Qualiopi » ET LA PUCE « Formations : commission
+// sur devis » ONT ÉTÉ RETIRÉES LE 28/09/2026 : les formations ne sont plus un
+// service de Les Extras (voir l'en-tête du fichier). Restent deux colonnes.
 //
 // ⚠⚠ CETTE LISTE N'EST PLUS AFFICHÉE DEPUIS LE 21/09/2026. Les prix ont quitté
 // l'accueil (décision de Siham, voir la section #tarifs plus bas). Elle est
@@ -254,9 +266,8 @@ const TARIFS = [
      * Les ateliers, eux, restent à 0 % : on y réserve en direct, l'intervenant
      * facture l'établissement, l'association ne s'y interpose pas.
      *
-     * ⚠ LES FORMATIONS NE SONT PAS À 0 % (Siham, 24/09/2026) : elles sont
-     * délivrées sous le Qualiopi de l'association, qui les facture ; sa
-     * commission est fixée SUR DEVIS. Trois régimes, trois lignes.
+     * Les formations (commission sur devis, 24/09/2026) ont quitté Les
+     * Extras le 28/09/2026 : deux régimes, deux lignes.
      *
      * ⚠ 15 %, ARRÊTÉ LE 21/09/2026. Le taux et sa justification sont dans
      * `lib/commission.ts` — relevé des grilles publiques compris. Ne pas le
@@ -267,25 +278,11 @@ const TARIFS = [
       'Publication, diffusion et relances',
       'Devis et feuille de mission édités',
       'Ateliers : 0 % de commission',
-      'Formations : commission sur devis, sous le Qualiopi de l’association',
       'RenforTeam : 15 % de frais de gestion, ajoutés au tarif. L’intervenant touche 100 %',
     ],
     lien: { libelle: 'Publier un besoin', href: '/renforteam' },
     trait: 'bg-primary',
     teinte: 'text-primary',
-  },
-  {
-    kicker: 'Formations Qualiopi',
-    prix: 'Sur devis',
-    precision: 'selon la durée et l’effectif',
-    points: [
-      'Dans votre établissement',
-      'Certifiées Qualiopi',
-      'Finançables par votre OPCO',
-    ],
-    lien: { libelle: 'Voir les formations', href: '/formations' },
-    trait: 'bg-secondary',
-    teinte: 'text-secondary',
   },
   {
     kicker: 'LEX, pour les écrits',
@@ -317,19 +314,19 @@ export default async function LandingPage() {
   // depuis le navigateur. Voir `app/(public)/layout.tsx`.
   //
   // Marketplace visible sans compte : la sélection, directement en accueil.
+  // ⚠ `/public/highlights` renvoie AUSSI une liste `formations` : elle n'est
+  // plus lue (28/09/2026, les formations vivent sur adepa77.fr).
   const { data: unes, error: erreurUnes } = await fetchPublic<{
     ateliers: OfferCard[];
-    formations: OfferCard[];
   }>('/public/highlights');
 
-  // DIX CARTES PAR RAYON.
+  // DIX CARTES.
   //
-  // Les trois rayons ne sont plus trois sections empilées mais trois onglets
-  // d'un carrousel : on n'en voit qu'un à la fois, et il défile latéralement.
-  // Le poids de la page ne dépend donc plus du nombre de fiches, et une vitrine
-  // à trois cartes donnait à croire que le catalogue était vide. Dix par rayon,
-  // c'est ce que les répertoires renvoient et ce qu'un carrousel porte sans
-  // peser.
+  // Les rayons ne sont plus des sections empilées mais un carrousel : il
+  // défile latéralement. Le poids de la page ne dépend donc plus du nombre de
+  // fiches, et une vitrine à trois cartes donnait à croire que le catalogue
+  // était vide. Dix, c'est ce que les répertoires renvoient et ce qu'un
+  // carrousel porte sans peser.
   const VITRINE = 10;
 
   // ⚠ L'ORDRE VIENT DE LA DATE, PAS DE LA NOTE NI DES VUES. `/public/highlights`
@@ -350,40 +347,14 @@ export default async function LandingPage() {
 
   const ateliersUne = photoDabord((unes?.ateliers ?? []).slice(0, VITRINE));
 
-  // Le même partage que sur /formations : les mini-formations gratuites de la
-  // maison d'un côté, les formations Qualiopi vendues en intra de l'autre. Une
-  // mini-formation gratuite et une formation en intra ne s'adressent pas aux
-  // mêmes personnes et n'ont pas le même prix : dans la même ligne, chacune
-  // brouillait l'autre. Elles sont maintenant deux onglets.
-  const gratuites = photoDabord(
-    (unes?.formations ?? []).filter((f) => f.freeOnline && estMaison(f.account?.name)).slice(0, VITRINE),
-  );
-  const payantes = photoDabord(
-    (unes?.formations ?? []).filter((f) => !(f.freeOnline && estMaison(f.account?.name))).slice(0, VITRINE),
-  );
-
   /**
-   * ⚠⚠ DEUX RAYONS, PAS TROIS — 16/09/2026, demande de Siham.
+   * UN SEUL RAYON DEPUIS LE 28/09/2026 : les ateliers.
    *
-   * L'accueil en portait trois : « Ateliers », « Formations Qualiopi » et
-   * « Parcours gratuits ». Deux des trois disaient « formation » : le visiteur
-   * devait trancher entre deux mots qu'il ne distingue pas encore, sur la
-   * première page qu'il voit. Les parcours gratuits rejoignent donc l'onglet
-   * Formations.
-   *
-   * ⚠ CE QUI REND LA FUSION TENABLE AUJOURD'HUI, ET QUI NE L'ÉTAIT PAS AVANT :
-   * la carte du carrousel dit maintenant elle-même ce qu'elle est — « Gratuit ·
-   * en ligne » ou son prix, la pastille « Conçue par ADéPA », la durée, le
-   * concepteur. Quand ces cartes ne portaient qu'un titre et un prix, mélanger
-   * une mini-formation gratuite et une formation en intra à 1 600 € brouillait
-   * effectivement les deux. Si un jour la carte est appauvrie, il faudra
-   * reséparer les rayons. Le partage en deux listes existe toujours sur
-   * `/formations`, où le visiteur vient déjà avec une idée précise.
-   *
-   * ⚠ LES QUALIOPI D'ABORD, LES GRATUITS ENSUITE — c'est un choix, pas un
-   * hasard. Elles sont trois contre douze : derrière les gratuites, elles
-   * seraient invisibles, et ce sont les seules qui portent du chiffre
-   * d'affaires. Inverser est un échange de deux lignes.
+   * L'accueil en a porté trois (« Ateliers », « Formations Qualiopi »,
+   * « Parcours gratuits »), puis deux le 16/09. Le rayon « Formations » est
+   * parti avec le service : les parcours gratuits sont présentés par
+   * `CentreFormationAdepa`, juste sous le catalogue. `CatalogueOnglets`
+   * s'affiche sans barre d'onglets quand il n'a qu'un rayon.
    */
   const rayons = [
     {
@@ -393,13 +364,6 @@ export default async function LandingPage() {
       basePath: '/ateliers',
       lien: { libelle: 'Tout le catalogue', href: '/ateliers' },
     },
-    {
-      cle: 'formations',
-      libelle: 'Formations',
-      items: [...payantes, ...gratuites].slice(0, VITRINE),
-      basePath: '/formations',
-      lien: { libelle: 'Toutes les formations', href: '/formations' },
-    },
   ];
 
   return (
@@ -407,7 +371,7 @@ export default async function LandingPage() {
       <SiteHeader />
 
       <main id="main" className="flex-1">
-        {/* ═══════════ 1. HÉROS : les trois usages et le logiciel, dès le titre */}
+        {/* ═══════════ 1. HÉROS : les usages et le logiciel, dès le titre */}
         <section className="relative isolate overflow-hidden bg-warm-gradient">
           {/* Deux masses floues qui dérivent lentement derrière le contenu.
               Purement décoratives : aria-hidden, aucun coût de lecture. */}
@@ -429,6 +393,8 @@ export default async function LandingPage() {
                      disait QUI, pas QUOI : une signature, pas une promesse.
                   2. « Renforts, ateliers, formations : le bon réseau dans un
                      seul logiciel » — il nomme la catégorie et le produit.
+                     (Depuis le 28/09/2026 : « Renforts et ateliers », les
+                     formations ayant quitté Les Extras pour adepa77.fr.)
                   3. Le 21/09, je l'ai remplacé par une phrase de situation
                      (« Vous cherchez depuis des semaines… ») pour aligner le
                      premier écran sur le reste de la page, refaite en
@@ -448,7 +414,7 @@ export default async function LandingPage() {
                   (« IME · ITEP · SESSAD · MECS · ESAT »). Sans notoriété ni
                   chiffres à afficher, c'est la voie concrète qui paie. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Renforts, ateliers, formations&nbsp;:{' '}
+                Renforts et ateliers&nbsp;:{' '}
                 <span className="text-secondary">le bon réseau dans un seul logiciel.</span>
               </h1>
               {/* LE SOUS-TITRE NOMME LES PUBLICS, ce qui manquait au titre n° 2
@@ -456,14 +422,13 @@ export default async function LandingPage() {
                   sigles sont exactement ce que les gens tapent, et c'est à eux
                   qu'un directeur se reconnaît.
 
-                  ⚠ IL NE RÉPÈTE PAS LES TROIS PASTILLES qui le suivent (0 %,
-                  48 h, Qualiopi). Elles disent déjà le prix, le délai et la
-                  certification ; les réécrire ici ferait lire deux fois la
-                  même ligne.
+                  ⚠ IL NE RÉPÈTE PAS LES PASTILLES qui le suivent (0 %, 48 h).
+                  Elles disent déjà le prix et le délai ; les réécrire ici
+                  ferait lire deux fois la même ligne.
 
                   ⚠⚠ ET SURTOUT : PAS DE « MISE EN RELATION GRATUITE » TOUT
                   COURT. Depuis le 21/09, RenforTeam prend 15 % de frais de
-                  gestion ; seuls les ateliers sont à 0 %, les formations sont sur devis.
+                  gestion ; seuls les ateliers sont à 0 %.
                   Une gratuité annoncée sans son périmètre est démentie deux
                   écrans plus bas, sur la page qui vend le renfort — c'est la
                   pastille « 0 % sur les ateliers » qui porte la nuance, et
@@ -484,8 +449,7 @@ export default async function LandingPage() {
                   Mise ici, elle rangeait Les Extras dans la catégorie
                   « annuaire d'ateliers » : le geste le moins représentatif de
                   ce que le logiciel sait faire, proposé en premier. Elle a sa
-                  place — sur /ateliers, qui a déjà la sienne, et sur
-                  /formations. À sa place, les deux gestes qui comptent, un par
+                  place — sur /ateliers, qui a déjà la sienne. À sa place, les deux gestes qui comptent, un par
                   public, chacun vers sa propre destination. */}
               <div className="animate-fade-in-up stagger-3 mt-8 flex flex-wrap gap-3">
                 <Button asChild size="lg">
@@ -505,8 +469,12 @@ export default async function LandingPage() {
 
               <div className="animate-fade-in-up stagger-4 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 {/* « INTERVENANTS VÉRIFIÉS » N'ÉTAIT PAS VRAI : aucune étape de
-                    validation n'existe. Les trois repères ci-dessous sont
-                    mesurables et tenus. */}
+                    validation n'existe. Les repères ci-dessous sont
+                    mesurables et tenus.
+                    ⚠ La pastille « Qualiopi · finançable OPCO » est retirée le
+                    28/09/2026 : elle parlait des formations, qui ont quitté
+                    Les Extras. Le centre de formation ADéPA a son bloc plus
+                    bas (`CentreFormationAdepa`), et un seul. */}
                 <span className="inline-flex items-center gap-1.5">
                   <Euro className="size-4 text-primary" />
                   <strong className="font-semibold text-foreground">0 %</strong> sur les ateliers
@@ -514,11 +482,6 @@ export default async function LandingPage() {
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="size-4 text-primary" />
                   <strong className="font-semibold text-foreground">48 h</strong> pour un devis
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <GraduationCap className="size-4 text-primary" />
-                  <strong className="font-semibold text-foreground">Qualiopi</strong> · finançable
-                  OPCO
                 </span>
               </div>
             </div>
@@ -567,7 +530,7 @@ export default async function LandingPage() {
               <Reveal delay={320} className="absolute right-5 top-5 z-10">
                 <div className="animate-derive-lente flex items-center gap-3 rounded-2xl border border-border/70 bg-card/95 p-4 shadow-card backdrop-blur">
                   <span className="grid size-10 place-items-center rounded-xl bg-secondary-soft text-secondary">
-                    <GraduationCap className="size-5" />
+                    <HeartHandshake className="size-5" />
                   </span>
                   <div>
                     {/* ⚠ ON N'AFFICHE PLUS LA TAILLE DU CATALOGUE ICI : dix-sept
@@ -605,7 +568,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══ 2. LES QUATRE SITUATIONS — le fil de la page ═══════════════
+        {/* ═══ 2. LES SITUATIONS — le fil de la page (trois depuis le 28/09) ═
 
             ⚠ CETTE SECTION A REMPLACÉ « LES TROIS USAGES » LE 21/09/2026, ET IL
             NE FAUT PAS REMETTRE L'ANCIENNE. Trois cartes annonçaient « Le réseau
@@ -631,7 +594,12 @@ export default async function LandingPage() {
         {/* ═══════════════════════════ 3. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
         <DeuxPortes />
 
-        {/* ═══ 4. LA COUTURE : ce qui relie les quatre situations ═══════════
+        {/* ═══ 4. LA COUTURE : ce qui relie les situations ═══════════════════
+            ⚠ Trois situations depuis le 28/09/2026 (la « formation » est
+            partie avec le service, sur adepa77.fr) : titre et phrase disent
+            « trois », et ils doivent suivre `QuatreSituations` si le compte
+            change encore.
+
             ⚠ CETTE SECTION EST LA CHARNIÈRE DE LA PAGE, PAS UN SECOND
             INVENTAIRE. Elle portait l'eyebrow « Tout-en-un » et le titre « Le
             travail administratif que vous ne ferez plus » : un visiteur qui
@@ -639,9 +607,9 @@ export default async function LandingPage() {
             sans savoir de quel produit on parlait — c'est exactement le reproche
             « des blocs séparés les uns des autres ».
 
-            Le titre nomme donc le LIEN (quatre réponses, un logiciel), et la
-            phrase reprend les quatre mots de la section précédente dans le même
-            ordre : renfort, atelier, formation, écrit. C'est ce rappel qui fait
+            Le titre nomme donc le LIEN (trois réponses, un logiciel), et la
+            phrase reprend les trois mots de la section précédente dans le même
+            ordre : renfort, atelier, écrit. C'est ce rappel qui fait
             la couture — sans lui, les deux sections se lisent comme deux pages.
 
             Ne pas remettre un titre qui annonce une fonction : le bénéfice
@@ -651,10 +619,10 @@ export default async function LandingPage() {
             <Reveal className="max-w-3xl">
               <span className="eyebrow">Le fil commun</span>
               <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                Quatre réponses, un seul logiciel dessous
+                Trois réponses, un seul logiciel dessous
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Un renfort, un atelier, une formation, un écrit : même dossier, même conformité,
+                Un renfort, un atelier, un écrit : même dossier, même conformité,
                 même facture. Vous ne ressaisissez rien d’une situation à l’autre, et le travail
                 administratif qui allait avec disparaît.
               </p>
@@ -794,23 +762,20 @@ export default async function LandingPage() {
                 une association sans un seul atelier au catalogue. On préfère
                 dire que le chargement a échoué et donner la porte du
                 catalogue : l'erreur avouée coûte moins cher que le vide. */}
-            {erreurUnes && ateliersUne.length === 0 && payantes.length === 0 && gratuites.length === 0 ? (
+            {erreurUnes && ateliersUne.length === 0 ? (
               <Reveal className="mt-10 rounded-2xl border border-border/60 bg-card/40 p-8 text-center">
                 <p className="text-lg font-semibold text-foreground">
                   Notre sélection ne s’affiche pas en ce moment.
                 </p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  C’est un incident passager de notre côté, pas un catalogue vide : les ateliers et
-                  les formations sont bien en ligne.
+                  C’est un incident passager de notre côté, pas un catalogue vide : les ateliers
+                  sont bien en ligne.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">
                   <Button asChild>
                     <Link href="/ateliers">
                       Voir les ateliers <ArrowRight />
                     </Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link href="/formations">Voir les formations</Link>
                   </Button>
                 </div>
               </Reveal>
@@ -821,6 +786,11 @@ export default async function LandingPage() {
             )}
           </div>
         </section>
+
+        {/* ═══ 6 bis. LE CENTRE DE FORMATION ADÉPA — le seul bloc formation ═══
+            Posé à la place de l'ancien rayon « Formations » du catalogue :
+            juste après les ateliers, avant LEX. Voir l'en-tête du composant. */}
+        <CentreFormationAdepa />
 
         {/* ═══════════════════════════════ 6. LEX ═══════════════════════════
             L'essai et le détail de l'offre se suivaient en deux sections :
@@ -982,7 +952,7 @@ export default async function LandingPage() {
                   <ul className="mt-6 space-y-2.5">
                     {[
                       'Pas d’actionnaire, pas d’abonnement obligatoire',
-                      'Ce que rapportent les formations revient aux actions de terrain',
+                      'Ce que rapportent ses services revient aux actions de terrain',
                       'Un don ouvre droit à un reçu fiscal',
                     ].map((p) => (
                       <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
