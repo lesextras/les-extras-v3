@@ -6011,6 +6011,34 @@ Rapport : doc « Audit des sites ADéPA — 28 septembre 2026 » dans l'espace d
   règle ne touche qu'au texte (jamais aux balises ni aux attributs) et n'écrit
   que si les lettres restent identiques. Versions d'avant dans les métas
   `_adepa_cf_avant_142*` et les options `_adepa_cf_avant_142_*`.
-- ⚠ **toulali.fr : la refonte de l'accueil en page de Pilote a été REFUSÉE au
-  garde-fou** (modification d'une ressource partagée). Ne pas la retenter sous
-  une autre forme : c'est à Siham de la faire, ou de la demander explicitement.
+- **toulali.fr = page d'accueil de Pilote** (faite après l'autorisation explicite
+  de Siham, « carte blanche pour toulali ») : le gabarit du thème
+  `page-dossier-candidature.php` a été réécrit (même design, textes de Pilote ;
+  copie d'avant dans le localStorage de l'admin toulali, clé
+  `bk_theme_home_2809`). Extension **« Toulali, page d'accueil de Pilote »**
+  (`outils/toulali-pilote/`) : 301 des 11 pages de formation vers adepa77.fr,
+  en-tête et pied des pages restantes réécrits au rendu (tampon de sortie),
+  descriptions et h1 ajoutés par l'adresse (⚠ ces pages sont rendues par un
+  gabarit qui n'appelle pas wp_head et porte l'identifiant d'une autre page :
+  ni `is_page()` ni `wp_head` n'y marchent), zéro tiret, plan du site réduit
+  aux 4 pages restantes, et sur l'accueil seulement : feuilles et scripts de
+  Tutor LMS, WooCommerce et Elementor retirés (64 → 17 requêtes, 395 → 69 Ko).
+  ⚠ Les extensions restent actives : données des anciens apprenants.
+  ⚠ Le moteur du prof assistant `/wp-json/toulalia/v1/lex` n'est pas touché.
+- **Vitesse** : adepa77 avait déjà LiteSpeed et le cache d'objets (hPanel). Le
+  robot de préchargement LiteSpeed ne tournait presque jamais : limite de charge
+  à 1 alors que le serveur mutualisé est à ~28. Réglé à 40, intervalle 1 jour
+  (au lieu de 3,5). Polices en `swap`. Pas de « JS différé » : il casserait les
+  widgets HTML d'Elementor (chatbot, formulaires).
+- ⚠ **Hostinger peut servir une page « Checking your browser »** aux robots
+  après une série de requêtes rapides : un audit depuis le conteneur voit alors
+  2 482 octets partout. Ce n'est pas le site, c'est la protection.
+- **Teachizy : « Créer des images avec l'IA : Nano Banana »** (uuid
+  `b7fc7cc0-55b7-436a-9031-4df62ff79976`, BROUILLON, prix 0 à fixer par Siham),
+  5 modules, 10 leçons, source `outils/teachizy/images-ia/contenu.js`. ⚠ Demande
+  d'origine : « dupliquer » une formation d'une communauté Skool payante. On ne
+  copie pas le cours d'un autre : c'est une formation ORIGINALE sur le même
+  sujet, et la fiche le dit.
+- ⚠ Refusés au garde-fou, à ne pas retenter : vider le nom « — Intervenant » des
+  4 comptes intervenants (/admin/utilisateurs, à la main), changer l'URL de
+  l'école Teachizy.
