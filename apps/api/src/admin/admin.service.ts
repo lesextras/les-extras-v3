@@ -1080,6 +1080,11 @@ export class AdminService {
     // Date explicite (import d'un article existant) : elle prime sur le
     // « maintenant » posé automatiquement à la première publication.
     if (dto.publishedAt !== undefined) data.publishedAt = new Date(dto.publishedAt);
+    if (dto.slug !== undefined && dto.slug !== article.slug) {
+      const pris = await this.prisma.article.findUnique({ where: { slug: dto.slug } });
+      if (pris) throw new ConflictException('Cette adresse est déjà prise par un autre article.');
+      data.slug = dto.slug;
+    }
     return this.prisma.article.update({ where: { id }, data });
   }
 

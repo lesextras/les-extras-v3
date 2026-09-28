@@ -5861,3 +5861,25 @@ Décision de Siham : adepa77.fr est LE site de l'organisme de formation ADéPA.
 - Mobile : barre fixe « prix + devis » sur les fiches atelier (`data-barre-mobile`,
   le pied de page s'allonge d'autant) ; bandeau cookies en deux lignes sous
   `md`, « Détails » déplie le reste, mécanique de consentement inchangée.
+
+### 28/09/2026 (fin) — le haut de adepa77.fr/formations/, et deux pièges
+
+- Extension adepa77 **1.2.1** : le catalogue s'ouvre sur un bandeau « école en
+  ligne » (demande de Siham, sur le modèle d'une capture Studi) : titre, trois
+  pastilles, trois coches, et une carte « Quelle est votre situation ? » à
+  quatre tuiles (bilan, #qualiopi, #gratuit, #devis). `adepa_cf_hero_catalogue()`.
+  ⚠ On a repris la FORME, jamais les promesses : ni « N°1 », ni avis, ni
+  partenaire, ni « éligible CPF », ni « diplôme reconnu ». Le nombre de
+  parcours gratuits est COMPTÉ en base. Photo de fond réglable (Centre de
+  formation → Réglages) ; vide = dégradé.
+- ⚠ **LiteSpeed combine les CSS sous un nom qui NE CHANGE PAS quand le contenu
+  change**, et le CDN garde l'ancien fichier : une règle ajoutée à `cf.css`
+  n'arrivait pas au navigateur, même après « Tout purger - Cache CSS/JS ».
+  Les styles du bandeau vivent donc dans `assets/afc-hero.css` (poignée à
+  part). Vérifier dans un VRAI navigateur (`sheet.cssRules`), pas avec curl.
+- L'extension ne stylait plus seulement ses pages : elle prenait toute page
+  contenant « [adepa_ », donc aussi le don et l'adhésion (extrait WPCode 4804).
+  Restreint à ses cinq shortcodes (1.1.1).
+- `PATCH /admin/articles/:id` accepte désormais `slug` (unicité vérifiée) :
+  l'article « freelance » a pu changer d'adresse ; sa 308 est dans
+  next.config.mjs et ne s'active qu'au démarrage du web qui suit le changement.

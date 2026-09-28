@@ -35,6 +35,7 @@ add_action('admin_post_adepa_cf_reglages', function () {
 	update_option('adepa_cf_reglages', array(
 		'email'     => sanitize_email(wp_unslash($_POST['email'] ?? '')),
 		'telephone' => sanitize_text_field(wp_unslash($_POST['telephone'] ?? '')),
+		'hero_image' => esc_url_raw(wp_unslash($_POST['hero_image'] ?? '')),
 	));
 	wp_safe_redirect(admin_url('edit.php?post_type=' . ADEPA_CF_TYPE . '&page=adepa-cf-reglages&enregistre=1'));
 	exit;
@@ -75,7 +76,8 @@ function adepa_cf_ecran_reglages() {
 	wp_nonce_field('adepa_cf_reglages');
 	echo '<input type="hidden" name="action" value="adepa_cf_reglages">';
 	echo '<table class="form-table"><tr><th><label for="af-email">E-mail qui reçoit les demandes de devis</label></th><td><input class="regular-text" id="af-email" type="email" name="email" value="' . esc_attr($o['email']) . '"></td></tr>';
-	echo '<tr><th><label for="af-tel">Téléphone affiché</label></th><td><input class="regular-text" id="af-tel" type="text" name="telephone" value="' . esc_attr($o['telephone']) . '"></td></tr></table>';
+	echo '<tr><th><label for="af-tel">Téléphone affiché</label></th><td><input class="regular-text" id="af-tel" type="text" name="telephone" value="' . esc_attr($o['telephone']) . '"></td></tr>';
+	echo '<tr><th><label for="af-hero">Photo de fond du haut de /formations/</label></th><td><input class="regular-text" id="af-hero" type="url" name="hero_image" value="' . esc_attr(adepa_cf_reglage('hero_image', '')) . '"><p class="description">Adresse d’une image de la médiathèque (une vraie photo de formation, en paysage, 1 920 px de large). Vide : dégradé aux couleurs du site.</p></td></tr></table>';
 	submit_button('Enregistrer');
 	echo '</form>';
 

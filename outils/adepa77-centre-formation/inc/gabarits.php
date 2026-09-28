@@ -54,9 +54,13 @@ add_filter('body_class', function ($c) {
 add_action('wp_enqueue_scripts', function () {
 	wp_register_style('adepa-cf-polices', 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap', array(), null);
 	wp_register_style('adepa-cf', ADEPA_CF_URL . 'assets/cf.css', array('adepa-cf-polices'), ADEPA_CF_VERSION);
+	wp_register_style('adepa-cf-hero', ADEPA_CF_URL . 'assets/afc-hero.css', array('adepa-cf'), ADEPA_CF_VERSION);
 	wp_register_script('adepa-cf', ADEPA_CF_URL . 'assets/cf.js', array(), ADEPA_CF_VERSION, true);
 	if (adepa_cf_page_concernee()) {
 		wp_enqueue_style('adepa-cf');
+		if (is_post_type_archive(ADEPA_CF_TYPE)) {
+			wp_enqueue_style('adepa-cf-hero');
+		}
 		wp_enqueue_script('adepa-cf');
 	}
 });
@@ -167,17 +171,16 @@ function adepa_cf_rendu_catalogue() {
 	$themes = get_terms(array('taxonomy' => ADEPA_CF_THEME, 'hide_empty' => true));
 	ob_start();
 	?>
-	<main class="afc" id="afc-catalogue">
+	<main class="afc<?php echo $terme ? '' : ' afc--catalogue'; ?>" id="afc-catalogue">
+		<?php if ($terme) : ?>
 		<section class="afc-hero">
 			<p class="afc-surtitre">Centre de formation ADéPA · certifié Qualiopi</p>
-			<h1 class="afc-h1"><?php echo $terme ? esc_html($terme->name) : 'Nos formations'; ?></h1>
+			<h1 class="afc-h1"><?php echo esc_html($terme->name); ?></h1>
 			<p class="afc-chapo">Des formations pensées pour le médico-social&nbsp;: en établissement, finançables par votre OPCO, et des parcours gratuits en ligne pour les professionnels comme pour les familles.</p>
-			<ul class="afc-reperes">
-				<li><strong>Qualiopi <?php echo esc_html($o['certificat']); ?></strong> actions de formation et bilans de compétences</li>
-				<li><strong>Finançable</strong> OPCO, France Travail, employeur</li>
-				<li><strong>Sur devis</strong> réponse sous 72&nbsp;h ouvrées</li>
-			</ul>
 		</section>
+		<?php else : ?>
+			<?php echo adepa_cf_hero_catalogue(); // phpcs:ignore ?>
+		<?php endif; ?>
 
 		<?php if (!$terme && $themes && !is_wp_error($themes)) : ?>
 		<nav class="afc-filtres" aria-label="Filtrer les formations">
@@ -198,7 +201,7 @@ function adepa_cf_rendu_catalogue() {
 			</div>
 			<p><a class="afc-lien" href="<?php echo esc_url(adepa_cf_url_catalogue()); ?>">← Toutes les formations</a></p>
 		<?php else : ?>
-			<section class="afc-section" data-bloc="qualiopi">
+			<section class="afc-section" id="qualiopi" data-bloc="qualiopi">
 				<div class="afc-entete">
 					<p class="afc-surtitre">En établissement · sur devis</p>
 					<h2 class="afc-h2">Formations Qualiopi pour vos équipes</h2>
@@ -207,7 +210,7 @@ function adepa_cf_rendu_catalogue() {
 				<?php echo adepa_cf_grille('qualiopi'); // phpcs:ignore ?>
 			</section>
 
-			<section class="afc-section afc-section--encadre" data-bloc="gratuit">
+			<section class="afc-section afc-section--encadre" id="gratuit" data-bloc="gratuit">
 				<div class="afc-entete">
 					<p class="afc-surtitre">En ligne · gratuit</p>
 					<h2 class="afc-h2">Parcours gratuits, une compétence à la fois</h2>
@@ -229,6 +232,89 @@ function adepa_cf_rendu_catalogue() {
 
 		<?php echo adepa_cf_bandeau_reglementaire(); // phpcs:ignore ?>
 	</main>
+	<?php
+	return ob_get_clean();
+}
+
+/**
+ * LE HAUT DU CATALOGUE /formations/ (28/09/2026, demande de Siham : « comme
+ * cette image », un bandeau d'école en ligne avec une carte de choix à droite).
+ *
+ * ⚠ ON REPREND LA FORME, PAS LES PROMESSES. Aucun « N°1 », aucun nombre
+ * d'avis, aucun partenaire, aucun « diplôme reconnu par l'État », aucun
+ * « éligible CPF » (le bilan n'est pas encore référencé sur Mon Compte
+ * Formation). Tout ce qui est écrit ici est vérifiable : le certificat, son
+ * numéro, et le nombre de parcours gratuits, COMPTÉ dans la base.
+ *
+ * L'image de fond se règle dans Centre de formation → Réglages ; sans image,
+ * un dégradé aux couleurs du site.
+ */
+function adepa_cf_hero_catalogue() {
+	$o      = adepa_cf_organisme();
+	$nb     = count(array_filter(adepa_cf_formations(), function ($f) {
+		return adepa_cf_est_gratuite($f->ID);
+	}));
+	$image  = adepa_cf_reglage('hero_image', '');
+	$style  = $image ? ' style="--afc-hero-img:url(\'' . esc_url($image) . '\')"' : '';
+	$bilan  = adepa_cf_url_page('bilan-de-competences-seine-et-marne');
+	$choix  = array(
+		array('Salarié ou en recherche d’emploi', $bilan, 'mallette', 'Bilan de compétences'),
+		array('Structure ou employeur', '#qualiopi', 'batiment', 'Formations pour vos équipes'),
+		array('Parent ou proche', '#gratuit', 'coeur', 'Parcours gratuits'),
+		array('Autre', '#devis', 'points', 'Nous écrire'),
+	);
+	$icones = array(
+		'mallette' => '<path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/><rect x="3.5" y="7" width="17" height="12.5" rx="2"/><path d="M9 7v12.5M15 7v12.5"/>',
+		'batiment' => '<rect x="4.5" y="3.5" width="10" height="17" rx="1"/><path d="M14.5 9.5h5v11h-5M7.5 7h1M11 7h1M7.5 10.5h1M11 10.5h1M7.5 14h1M11 14h1M9 20.5v-3h1.5v3"/>',
+		'coeur'    => '<path d="M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.6-7.5 10-7.5 10z"/>',
+		'points'   => '<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>',
+	);
+	ob_start();
+	?>
+	<div class="afc-annonce">
+		<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#FF5757" d="M3.5 9.5h17v3.5h-17zM5 13h14v8H5z"/><path fill="#D4AF37" d="M11 9.5h2V21h-2z"/><path fill="none" stroke="#D4AF37" stroke-width="1.6" d="M12 9.5C10.5 6.5 7 5.5 7 8s3 1.5 5 1.5zm0 0c1.5-3 5-4 5-1.5s-3 1.5-5 1.5z"/></svg>
+		<a href="#gratuit"><?php echo esc_html(sprintf('Offert : %d parcours gratuits en ligne, avec leur fiche récap à télécharger', $nb)); ?></a>
+	</div>
+	<section class="afc-hero2<?php echo $image ? ' afc-hero2--photo' : ''; ?>"<?php echo $style; // phpcs:ignore ?>>
+		<div class="afc-hero2__int">
+			<div class="afc-hero2__haut">
+				<p class="afc-surtitre afc-hero2__sur">Centre de formation ADéPA · Melun, Seine-et-Marne</p>
+				<a class="afc-label" href="<?php echo esc_url($o['pdf']); ?>" target="_blank" rel="noopener">
+					<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M12 3l7 3v5.5c0 4.3-3 7.7-7 9.5-4-1.8-7-5.2-7-9.5V6z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8.8 12.2l2.2 2.2 4.3-4.6"/></svg>
+					<span><strong>Certifié Qualiopi</strong><small>n° <?php echo esc_html($o['certificat']); ?></small></span>
+				</a>
+			</div>
+			<div class="afc-hero2__grille">
+				<div class="afc-hero2__texte">
+					<h1 class="afc-hero2__titre">Faites grandir votre pratique en vous formant <em>à l’éducatif et au médico‑social</em></h1>
+					<ul class="afc-pilules">
+						<li>Certifié Qualiopi</li>
+						<li>Finançable OPCO</li>
+						<li>Présentiel ou distanciel</li>
+					</ul>
+					<ul class="afc-coches">
+						<li>Dates à convenir avec vous, dans vos locaux ou à distance</li>
+						<li><?php echo esc_html(sprintf('%d parcours gratuits en ligne, sans carte bancaire', $nb)); ?></li>
+						<li>Devis sous 72&nbsp;h ouvrées, avant tout engagement</li>
+					</ul>
+					<p class="afc-hero2__pied">Certification Qualiopi délivrée par <?php echo esc_html($o['certificateur']); ?>, au titre des actions de formation et des bilans de compétences. <a href="<?php echo esc_url($o['pdf']); ?>" target="_blank" rel="noopener">Voir le certificat</a></p>
+				</div>
+				<div class="afc-choix">
+					<p class="afc-choix__pastille"><span aria-hidden="true"></span>Devis gratuit et sans engagement</p>
+					<h2 class="afc-choix__titre">Quelle est votre situation&nbsp;?</h2>
+					<ul class="afc-choix__grille">
+						<?php foreach ($choix as $c) : ?>
+						<li><a class="afc-choix__tuile" href="<?php echo esc_url($c[1]); ?>">
+							<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true" fill="<?php echo $c[2] === 'points' ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><?php echo $icones[$c[2]]; // phpcs:ignore ?></svg>
+							<strong><?php echo esc_html($c[0]); ?></strong>
+							<small><?php echo esc_html($c[3]); ?></small>
+						</a></li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</section>
 	<?php
 	return ob_get_clean();
 }

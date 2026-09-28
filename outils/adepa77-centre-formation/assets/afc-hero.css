@@ -1,0 +1,286 @@
+/* Haut du catalogue /formations/ (28/09/2026).
+   ⚠ FICHIER À PART, ET C'EST VOULU : LiteSpeed combine les feuilles de style
+   sous un nom qui ne change pas quand leur CONTENU change, et le CDN garde
+   l'ancienne version. Une règle nouvelle ajoutée à cf.css ne s'affichait
+   pas. Toute nouveauté visuelle importante passe par un fichier au nom neuf. */
+/* ---------------------------------------------------------------------
+   Haut du catalogue /formations/ (28/09/2026) : bandeau pleine largeur,
+   texte à gauche, carte « Quelle est votre situation ? » à droite.
+   La forme d'une école en ligne, sans ses promesses : voir
+   adepa_cf_hero_catalogue().
+   --------------------------------------------------------------------- */
+.afc--catalogue {
+	padding-top: 0;
+}
+.afc-hero2 {
+	position: relative;
+	width: 100vw;
+	margin: 0 0 48px calc(50% - 50vw);
+	padding: 44px 20px 64px;
+	color: #fff;
+	background:
+		radial-gradient(900px 480px at 85% 30%, rgba(212, 175, 55, .16), transparent 60%),
+		radial-gradient(700px 520px at 10% 90%, rgba(255, 87, 87, .10), transparent 60%),
+		linear-gradient(120deg, #0B1120 0%, #121A2D 55%, #17213A 100%);
+	overflow: hidden;
+}
+.afc-hero2--photo {
+	background:
+		linear-gradient(90deg, rgba(11, 17, 32, .92) 0%, rgba(11, 17, 32, .72) 45%, rgba(11, 17, 32, .35) 100%),
+		var(--afc-hero-img) center / cover no-repeat;
+}
+.afc-hero2__int {
+	max-width: 1180px;
+	margin: 0 auto;
+}
+.afc-annonce {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 100vw;
+	margin: 0 0 0 calc(50% - 50vw);
+	padding: 14px 16px;
+	background: #fff;
+	color: #0B1120;
+	font-size: .98rem;
+	font-weight: 700;
+	line-height: 1.3;
+	text-align: center;
+}
+.afc .afc-annonce a {
+	color: #0B1120;
+	text-decoration: none;
+}
+.afc .afc-annonce a:hover {
+	text-decoration: underline;
+}
+.afc-hero2__sur {
+	margin: 0;
+}
+.afc-hero2__haut {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 36px;
+}
+.afc-marque {
+	margin: 0;
+	font-size: 2.6rem;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -.02em;
+	color: #fff;
+}
+.afc-marque span {
+	display: block;
+	margin-top: 8px;
+	font-size: .82rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	color: #fff;
+}
+.afc .afc-label {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: #D4AF37;
+	text-decoration: none;
+}
+.afc-label span {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	line-height: 1.2;
+}
+.afc-label strong {
+	color: #fff;
+	font-size: .95rem;
+}
+.afc-label small {
+	color: #C3BFA8;
+	font-size: .78rem;
+}
+.afc-label__d {
+	transform: scaleX(-1);
+}
+.afc-hero2__grille {
+	display: grid;
+	grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+	gap: 48px;
+	align-items: center;
+}
+.afc-hero2__titre {
+	margin: 0 0 26px;
+	font-family: "DM Sans", system-ui, sans-serif;
+	font-size: clamp(2rem, 3.6vw, 3rem);
+	font-weight: 700;
+	line-height: 1.12;
+	letter-spacing: -.02em;
+	color: #fff;
+}
+.afc-hero2__titre em {
+	display: block;
+	font-style: normal;
+	color: #F5C84B;
+}
+.afc-pilules {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	list-style: none;
+	margin: 0 0 26px;
+	padding: 0;
+}
+.afc-pilules li {
+	padding: 6px 18px;
+	border: 1.5px solid rgba(255, 255, 255, .9);
+	border-radius: 999px;
+	font-size: 1rem;
+	font-weight: 600;
+	color: #fff;
+}
+.afc-coches {
+	list-style: none;
+	margin: 0 0 30px;
+	padding: 0;
+}
+.afc-coches li {
+	position: relative;
+	margin: 0 0 12px;
+	padding-left: 36px;
+	font-size: 1.08rem;
+	color: #fff;
+}
+.afc-coches li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: .15em;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: #2BB3A3 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat;
+}
+.afc-hero2__pied {
+	margin: 0;
+	max-width: 560px;
+	font-size: .95rem;
+	color: #C3BFA8;
+}
+.afc .afc-hero2__pied a {
+	color: #fff;
+	font-weight: 600;
+}
+.afc-choix {
+	padding: 30px 28px 32px;
+	border-radius: 16px;
+	background: #F7F7F8;
+	color: #1A1F2E;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+	text-align: center;
+}
+.afc-choix__pastille {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 14px;
+	padding: 4px 10px;
+	border: 1px solid #B9E3C6;
+	border-radius: 6px;
+	background: #EAF7EE;
+	color: #1E7B3E;
+	font-size: .95rem;
+}
+.afc-choix__pastille span {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: #1E9E4A;
+}
+.afc-choix__titre {
+	margin: 0 0 24px;
+	font-family: "DM Sans", system-ui, sans-serif;
+	font-size: 1.45rem;
+	font-weight: 700;
+	line-height: 1.25;
+	color: #1A1F2E;
+}
+.afc-choix__grille {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.afc .afc-choix__tuile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	height: 100%;
+	min-height: 150px;
+	padding: 20px 12px;
+	border: 1px solid #E4E6EC;
+	border-radius: 14px;
+	background: #fff;
+	color: #B8871B;
+	text-decoration: none;
+	transition: border-color .15s, box-shadow .15s;
+}
+.afc .afc-choix__tuile:hover,
+.afc .afc-choix__tuile:focus-visible {
+	border-color: #D4AF37;
+	box-shadow: 0 8px 24px rgba(26, 31, 46, .10);
+}
+.afc-choix__tuile strong {
+	color: #1A1F2E;
+	font-size: 1.08rem;
+	font-weight: 500;
+	line-height: 1.25;
+}
+.afc-choix__tuile small {
+	color: #5B6275;
+	font-size: .85rem;
+}
+@media (max-width: 960px) {
+	.afc-hero2__grille {
+		grid-template-columns: 1fr;
+		gap: 32px;
+	}
+}
+@media (max-width: 640px) {
+	.afc-hero2 {
+		padding: 28px 16px 40px;
+	}
+	.afc-hero2__haut {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-bottom: 24px;
+	}
+	.afc-marque {
+		font-size: 2rem;
+	}
+	.afc-choix {
+		padding: 22px 16px;
+	}
+	.afc-choix__grille {
+		gap: 10px;
+	}
+	.afc .afc-choix__tuile {
+		min-height: 124px;
+	}
+	.afc-annonce {
+		font-size: .88rem;
+	}
+}
+body.afc-page {
+	overflow-x: clip;
+}
+.afc-section,
+.afc-devis-bloc {
+	scroll-margin-top: 110px;
+}
