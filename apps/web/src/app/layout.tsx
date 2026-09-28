@@ -83,8 +83,10 @@ export const metadata: Metadata = {
     // six pages ville et les deux calculateurs, c'est-à-dire précisément
     // celles qu'on partage. L'accueil pose le sien dans `app/page.tsx`.
     title: 'LES EXTRAS, Ateliers et renfort pour le médico-social',
+    // « Ateliers réservables en ligne » était faux (audit du 28/09/2026) :
+    // le paiement en ligne n'est actif sur aucune fiche.
     description:
-      'Ateliers réservables en ligne, devis en 48 h, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
+      'Ateliers sur devis en 48 h et sans compte, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
     siteName: 'LES EXTRAS',
     // Carte de partage 1200×630. Sans elle, LinkedIn et Facebook affichent un
     // rectangle gris à la place du lien — le pire format possible pour une
@@ -104,7 +106,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'LES EXTRAS, Ateliers et renfort pour le médico-social',
     description:
-      'Ateliers réservables en ligne, devis en 48 h, dossier de conformité par intervenant.',
+      'Ateliers sur devis en 48 h et sans compte, dossier de conformité par intervenant.',
     images: ['/images/partage-les-extras.jpg'],
   },
   robots: { index: true, follow: true },

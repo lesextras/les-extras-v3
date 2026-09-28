@@ -5883,3 +5883,47 @@ Décision de Siham : adepa77.fr est LE site de l'organisme de formation ADéPA.
 - `PATCH /admin/articles/:id` accepte désormais `slug` (unicité vérifiée) :
   l'article « freelance » a pu changer d'adresse ; sa 308 est dans
   next.config.mjs et ne s'active qu'au démarrage du web qui suit le changement.
+
+### 28/09/2026 — « Poser une question » et « Réserver » : devis sans compte tant que le paiement en ligne est inactif
+
+Point 3 de l'audit du 28/09. Mesuré : paiement en ligne actif sur 0 fiche sur 17.
+
+- **Unique point de vérité : `apps/web/src/lib/paiement-en-ligne.ts`,
+  `paiementEnLigneActif(fiche)`** = `paiementEnLigne === true` ET tarif > 0 ET
+  catégorie `ATELIER` (les trois conditions que `AteliersService.payer` exige ;
+  le type de compte et l'état du compte d'encaissement restent vérifiés au clic
+  par le serveur, qui renvoie alors au devis). Ne jamais la recopier dans une
+  page : `lib/__tests__/paiement-en-ligne.test.ts` le vérifie.
+- **Fiche publique `/ateliers/[id]`** : règle fausse → devis sans compte seul
+  (`ReserverModal` n'y est plus monté ; le composant reste dans le dépôt, sans
+  usage). Règle vraie → « Réserver et payer en ligne » (`PaiementAtelier`, sans
+  compte, compte ouvert au paiement) + devis, comme avant.
+- **« Poser une question »** = `PublicQuoteForm objet="question"` : même route
+  `POST /public/quote-request`, message pré-rempli « Ma question : », aucun
+  lien vers /marketplace. Aucune route d'API ajoutée.
+- `/intervenants/[id]` : les cartes mènent à `/ateliers/<id>` (308 vers le
+  slug), plus à `/marketplace/services/<id>` (mur de connexion).
+- Phrases réécrites : accueil (« Vous demandez un devis sans compte »),
+  `QuatreSituations` (« Vous demandez un devis sans créer de compte »),
+  `/l/ateliers` (titre et chapô : « sur devis »), description de partage du
+  layout racine (« Ateliers sur devis en 48 h et sans compte »).
+- ⚠ L'espace connecté (/dashboard, /marketplace) n'est pas touché : un
+  utilisateur connecté garde « Réserver » et le fil de messagerie.
+
+### 28/09/2026 (soir) — prise de rendez-vous sur adepa77.fr (extension 1.3.0)
+
+- Page `/prendre-rendez-vous/` (page 5246, shortcode `[adepa_rdv]`, `?motif=bilan`
+  pré-sélectionne). Créneaux de 20 min, chargés en admin-ajax (jamais dans le
+  HTML : LiteSpeed met les pages en cache), réponses `no-store`.
+- Double réservation : verrou par journée en `INSERT IGNORE` dans wp_options
+  (`add_option` n'est pas atomique), puis revérification complète. Testé : 6
+  réservations simultanées du même créneau, une seule acceptée.
+- E-mail à l'association + confirmation avec `.ics` et lien d'annulation par
+  jeton (empreinte seule en base ; annulation par POST après confirmation).
+- ⚠ Horaires PROVISOIRES (lun-ven 09:30-12:30 / 14:00-17:00, 24 h de délai,
+  21 jours, 6 par jour) : à valider par Siham dans Centre de formation → Réglages.
+- Boutons repointés : accueil (2), grille tarifaire bilans, calculateur de coût
+  (il pointait sur calendly.com/a2pa), page bilan 77 (+ un bouton ajouté avant
+  le formulaire Brevo, conservé).
+- Styles et script dans `afc-rdv.css` / `afc-rdv.js` (noms neufs : voir le
+  piège LiteSpeed ci-dessus ; le site retire aussi le `?ver=`).

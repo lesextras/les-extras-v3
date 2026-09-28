@@ -1,7 +1,8 @@
 // Fiche PUBLIQUE d'un atelier / d'une formation courte (sans connexion).
 // Même niveau de contenu que la fiche connectée : c'est la page que Google
 // indexe et que l'acheteur lit avant de créer un compte. La seule différence
-// est l'action finale — réserver exige une session.
+// est l'action finale : devis sans compte, et paiement en ligne sans compte
+// quand l'intervenant l'a ouvert (`lib/paiement-en-ligne.ts`).
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -36,7 +37,7 @@ import { QrShare } from "../../../_shared/QrShare";
 import { PaiementAtelier } from "../../../_shared/PaiementAtelier";
 import { PublicQuoteForm } from "../../../_shared/PublicQuoteForm";
 import { LiensIntervenant } from "@/app/_shared/LiensIntervenant";
-import { ReserverModal } from "@/app/_shared/modals/ReserverModal";
+import { paiementEnLigneActif } from "@/lib/paiement-en-ligne";
 
 interface FaqItem { question: string; answer: string }
 interface PriceExtra { label: string; price: number | string }
@@ -227,6 +228,9 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
   // partir de deux champs déjà saisis : rien de plus n'est demandé à
   // l'intervenant.
   const prixNombre = Number(service.price);
+  // LA RÈGLE DU PAIEMENT EN LIGNE, lue et non recopiée (audit du 28/09/2026,
+  // point 3). Voir `lib/paiement-en-ligne.ts`.
+  const payableEnLigne = paiementEnLigneActif(service);
   const parPersonne =
     Number(service.maxParticipants) > 0 && prixNombre > 0
       ? prixNombre / Number(service.maxParticipants)
@@ -475,8 +479,9 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                   LinkedIn, qui découvre Les Extras et lit sur l'accueil « sans
                   compte, sans engagement », se heurtait donc à un mur de
                   connexion : le devis sans compte n'étant qu'un lien discret
-                  en dessous. Les deux chemins existent toujours ; c'est leur
-                  ordre qui change. */}
+                  en dessous. Le devis est donc passé devant ; depuis le
+                  28/09/2026, « Réserver » ne s'affiche même plus sans paiement
+                  en ligne (voir plus bas). */}
               <div className="space-y-2">
                 {/* QUAND L'INTERVENANT A OUVERT LE RÈGLEMENT IMMÉDIAT, c'est lui
                     le premier geste : quelqu'un qui peut payer tout de suite ne
@@ -484,7 +489,12 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                     parce qu'un établissement paie sur facture et ne paiera
                     jamais par carte — les deux chemins servent deux acheteurs
                     différents, aucun ne remplace l'autre. */}
-                {service.paiementEnLigne && prixNombre > 0 ? (
+                {/* ⚠ PLUS DE « RÉSERVER » TANT QUE LE PAIEMENT EN LIGNE N'EST PAS
+                    ACTIF SUR CETTE FICHE (audit du 28/09/2026, point 3). Le
+                    bouton ouvrait un choix de paiement à une seule option, puis
+                    la connexion : sur une fiche publique, c'était un mur. Le
+                    devis sans compte est alors le seul geste proposé. */}
+                {payableEnLigne ? (
                   <>
                     <PaiementAtelier
                       serviceId={service.id}
@@ -503,10 +513,8 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                 ) : (
                   <>
                     <PublicQuoteForm serviceId={service.id} titre={service.title} principal />
-                    <ReserverModal serviceId={service.id} paiementEnLigne={service.paiementEnLigne} />
                     <p className="text-center text-xs text-muted-foreground">
-                      Devis chiffré sous 48 h, sans engagement. Réservation si vous avez
-                      déjà un compte.
+                      Devis chiffré sous 48 h, sans engagement et sans créer de compte.
                     </p>
                   </>
                 )}
@@ -599,15 +607,12 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
                   </Link>
                 </Button>
 
-                {/* LA QUESTION AVANT LE DEVIS. Le devis se demande sans compte, la
-                    question non : elle ouvre un fil, et un fil a besoin de savoir à qui
-                    il répond. On passe donc par la fiche connectée, comme « Réserver
-                    directement » juste au-dessus. */}
-                <Button asChild variant="ghost" size="sm" className="w-full">
-                  <Link href={`/marketplace/services/${service.id}`}>
-                    Poser une question
-                  </Link>
-                </Button>
+                {/* LA QUESTION AVANT LE DEVIS, SANS COMPTE (audit du 28/09/2026).
+                    Elle menait à la fiche connectée, donc à la connexion. Elle
+                    part désormais par le même formulaire que le devis, message
+                    pré-rempli « Ma question : ». Un visiteur connecté garde le
+                    fil de messagerie sur /marketplace/services, inchangé. */}
+                <PublicQuoteForm serviceId={service.id} titre={service.title} objet="question" />
               </CardContent>
             </Card>
           ) : null}

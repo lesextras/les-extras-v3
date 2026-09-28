@@ -170,7 +170,9 @@ const SITUATIONS: Situation[] = [
     ],
     reponse: [
       'Le catalogue affiche le public visé, la durée, le matériel et le tarif',
-      'Vous réservez ou vous demandez un devis, sans créer de dossier',
+      // Audit du 28/09/2026 : « Vous réservez » menait à la connexion tant que
+      // le paiement en ligne n'est actif sur aucune fiche.
+      'Vous demandez un devis sans créer de compte',
       'Le tarif affiché est le tarif payé, l’association ne prend rien dessus',
     ],
     chiffre: { valeur: '0 %', quoi: 'de commission sur les ateliers' },

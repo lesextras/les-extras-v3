@@ -1,6 +1,6 @@
 <?php
 /**
- * Les types de contenu : la formation, sa thématique, et la demande de devis.
+ * Les types de contenu : la formation, sa thématique, la demande de devis et le rendez-vous.
  */
 if (!defined('ABSPATH')) {
 	exit;
@@ -69,6 +69,28 @@ function adepa_cf_enregistrer_types() {
 				'name'          => 'Demandes de devis',
 				'singular_name' => 'Demande de devis',
 				'edit_item'     => 'Demande de devis',
+			),
+			'public'        => false,
+			'show_ui'       => true,
+			'show_in_menu'  => 'edit.php?post_type=' . ADEPA_CF_TYPE,
+			'supports'      => array('title'),
+			'capability_type' => 'post',
+			'capabilities'  => array('create_posts' => 'do_not_allow'),
+			'map_meta_cap'  => true,
+		)
+	);
+
+	// Les rendez-vous pris en ligne (inc/rdv.php) : jamais publics, jamais supprimés automatiquement.
+	register_post_type(
+		ADEPA_CF_RDV,
+		array(
+			'labels'        => array(
+				'name'          => 'Rendez-vous',
+				'singular_name' => 'Rendez-vous',
+				'edit_item'     => 'Rendez-vous',
+				'all_items'     => 'Rendez-vous',
+				'search_items'  => 'Rechercher un rendez-vous',
+				'not_found'     => 'Aucun rendez-vous pour le moment.',
 			),
 			'public'        => false,
 			'show_ui'       => true,

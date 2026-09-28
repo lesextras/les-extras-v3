@@ -202,8 +202,12 @@ export default async function VendorPage({ params: paramsPromesse }: { params: P
           </p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* ⚠ LA FICHE PUBLIQUE, PAS LA FICHE CONNECTÉE (audit du 28/09/2026) :
+                /marketplace/services renvoyait un visiteur sur la connexion. La
+                fiche publique accepte l'identifiant, et la 308 de
+                `next.config.mjs` mène à l'adresse lisible. */}
             {vendor.services.map((s) => (
-              <Link key={s.id} href={`/marketplace/services/${s.id}`} className="group">
+              <Link key={s.id} href={`/ateliers/${s.id}`} className="group">
                 <Card className="h-full overflow-hidden transition group-hover:shadow-card">
                   {s.images?.[0] ? (
                     <div className="relative aspect-[16/10] bg-muted">

@@ -87,11 +87,14 @@ export const LANDINGS: Landing[] = [
   },
   {
     slug: 'ateliers',
-    titre: 'Des ateliers réservables pour votre établissement',
+    // Audit du 28/09/2026 : « réservables en ligne » était faux tant que le
+    // paiement en ligne n'est actif sur aucune fiche. Le devis sans compte,
+    // lui, existe sur chacune.
+    titre: 'Des ateliers sur devis pour votre établissement',
     public: 'Directions, chefs de service et coordinateurs en protection de l’enfance, handicap, ESAT',
     promesse: 'Un atelier pour vos jeunes, animé par quelqu’un qui connaît votre type de structure.',
     sous:
-      'Boxe éducative, théâtre, musicothérapie, photo : un catalogue d’ateliers conçus pour les IME, ITEP, MECS, SESSAD et ESAT, réservables en ligne, sans commission.',
+      'Boxe éducative, théâtre, musicothérapie, photo : un catalogue d’ateliers conçus pour les IME, ITEP, MECS, SESSAD et ESAT, sur devis sans compte, sans commission.',
     preuves: [
       {
         titre: 'Des fiches qui disent ce qu’un chef de service veut savoir',

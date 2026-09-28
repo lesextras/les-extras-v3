@@ -27,6 +27,10 @@ function adepa_cf_migrer() {
 	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.1.0', '<')) {
 		adepa_cf_migration_110();
 	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.3.0', '<')) {
+		// 1.3.0 : la page /prendre-rendez-vous/, créée seulement si elle manque.
+		adepa_cf_rdv_creer_page();
+	}
 
 	update_option('adepa_cf_version', ADEPA_CF_VERSION, true);
 	delete_transient('adepa_cf_migration_en_cours');

@@ -37,12 +37,49 @@ const CHAMPS: {
   { name: "participants", label: "Nombre de participants", inputMode: "numeric" },
 ];
 
+/**
+ * « POSER UNE QUESTION » PASSE PAR CE FORMULAIRE (audit du 28/09/2026).
+ *
+ * Le bouton de la fiche publique menait à /marketplace, donc à la connexion :
+ * un visiteur qui voulait seulement demander si l'atelier convenait à ses
+ * jeunes se heurtait au mur de connexion. La question part désormais par la
+ * même demande sans compte que le devis (même route, même traitement), avec
+ * un message qui commence par « Ma question : » pour que l'équipe la
+ * reconnaisse. Aucune route d'API de plus.
+ *
+ * Les textes des deux usages sont ici, côte à côte : le déclencheur, le titre
+ * et la confirmation ne se calculent pas dans le rendu.
+ */
+const TEXTES = {
+  devis: {
+    declencheur: "Demander un devis",
+    titre: "Demander un devis",
+    promesse: "chiffré sous 48 h, sans engagement, et sans créer de compte.",
+    libelleMessage: "Votre besoin",
+    messageInitial: "",
+    exempleMessage: "Le public concerné, vos contraintes, ce que vous attendez de l’atelier.",
+    envoye: "Demande envoyée",
+    suite: "Nous revenons vers vous sous 48 h avec un devis chiffré.",
+  },
+  question: {
+    declencheur: "Poser une question",
+    titre: "Poser une question",
+    promesse: "sans engagement, et sans créer de compte.",
+    libelleMessage: "Votre question",
+    messageInitial: "Ma question : ",
+    exempleMessage: "Ce que vous voulez savoir sur l’atelier avant de demander un devis.",
+    envoye: "Question envoyée",
+    suite: "Nous vous répondons à l’adresse indiquée.",
+  },
+} as const;
+
 export function PublicQuoteForm({
   serviceId,
   formationSlug,
   titre,
   principal = false,
   classeBouton,
+  objet = "devis",
 }: {
   serviceId?: string;
   formationSlug?: string;
@@ -61,7 +98,13 @@ export function PublicQuoteForm({
    * moment précis où le visiteur allait agir.
    */
   principal?: boolean;
+  /**
+   * Ce que le visiteur vient faire. « question » garde le bouton discret de la
+   * carte de l'intervenant et pré-remplit le message ; l'envoi est le même.
+   */
+  objet?: keyof typeof TEXTES;
 }) {
+  const t = TEXTES[objet];
   const { toast } = useToast();
   const [ouvert, setOuvert] = useState(false);
   const [envoi, setEnvoi] = useState(false);
@@ -70,6 +113,12 @@ export function PublicQuoteForm({
   async function soumettre(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
+    // Le message pré-rempli fait déjà dix caractères, le minimum de l'API :
+    // sans ce contrôle, une question vide partirait comme une question posée.
+    if (t.messageInitial && String(f.get("message") ?? "").trim() === t.messageInitial.trim()) {
+      toast({ title: "Question vide", description: "Écrivez votre question après « Ma question : »." });
+      return;
+    }
     setEnvoi(true);
     try {
       const res = await fetch("/api/proxy/public/quote-request", {
@@ -113,24 +162,28 @@ export function PublicQuoteForm({
   return (
     <Dialog open={ouvert} onOpenChange={setOuvert}>
       <DialogTrigger asChild>
-        <Button variant={principal ? "primary" : "outline"} className={cn("w-full", classeBouton)}>
-          Demander un devis
-        </Button>
+        {objet === "question" ? (
+          <Button variant="ghost" size="sm" className={cn("w-full", classeBouton)}>
+            {t.declencheur}
+          </Button>
+        ) : (
+          <Button variant={principal ? "primary" : "outline"} className={cn("w-full", classeBouton)}>
+            {t.declencheur}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Demander un devis</DialogTitle>
+          <DialogTitle>{t.titre}</DialogTitle>
           <DialogDescription>
-            {titre} : chiffré sous 48 h, sans engagement, et sans créer de compte.
+            {titre} : {t.promesse}
           </DialogDescription>
         </DialogHeader>
         {envoye ? (
           <div className="space-y-1 py-4 text-center">
             <CheckCircle2 className="mx-auto size-6 text-success" />
-            <p className="font-medium text-foreground">Demande envoyée</p>
-            <p className="text-sm text-muted-foreground">
-              Nous revenons vers vous sous 48 h avec un devis chiffré.
-            </p>
+            <p className="font-medium text-foreground">{t.envoye}</p>
+            <p className="text-sm text-muted-foreground">{t.suite}</p>
           </div>
         ) : (
           <form onSubmit={soumettre} className="relative space-y-3">
@@ -165,15 +218,16 @@ export function PublicQuoteForm({
           </div>
           <div className="space-y-1">
             <label htmlFor="devis-message" className="text-sm font-medium text-foreground">
-              Votre besoin<span className="text-destructive"> *</span>
+              {t.libelleMessage}<span className="text-destructive"> *</span>
             </label>
             <Textarea
               id="devis-message"
               name="message"
               required
               rows={4}
+              defaultValue={t.messageInitial || undefined}
               aria-describedby="devis-message-aide"
-              placeholder="Le public concerné, vos contraintes, ce que vous attendez de l’atelier."
+              placeholder={t.exempleMessage}
             />
             <p id="devis-message-aide" className="text-xs text-muted-foreground">
               N’indiquez ni le nom d’une personne accompagnée, ni une information de santé : un

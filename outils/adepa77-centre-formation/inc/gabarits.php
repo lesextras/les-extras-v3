@@ -34,7 +34,7 @@ function adepa_cf_page_concernee() {
 		if (!$p) {
 			return false;
 		}
-		foreach (array('adepa_formations', 'adepa_informations_reglementaires', 'adepa_cgv_formation', 'adepa_reclamation', 'adepa_accessibilite') as $code) {
+		foreach (array('adepa_formations', 'adepa_informations_reglementaires', 'adepa_cgv_formation', 'adepa_reclamation', 'adepa_accessibilite', 'adepa_rdv') as $code) {
 			if (has_shortcode((string) $p->post_content, $code)) {
 				return true;
 			}
@@ -56,14 +56,43 @@ add_action('wp_enqueue_scripts', function () {
 	wp_register_style('adepa-cf', ADEPA_CF_URL . 'assets/cf.css', array('adepa-cf-polices'), ADEPA_CF_VERSION);
 	wp_register_style('adepa-cf-hero', ADEPA_CF_URL . 'assets/afc-hero.css', array('adepa-cf'), ADEPA_CF_VERSION);
 	wp_register_script('adepa-cf', ADEPA_CF_URL . 'assets/cf.js', array(), ADEPA_CF_VERSION, true);
+	// Prise de rendez-vous (1.3.0) : feuille et script À PART, au nom neuf
+	// (LiteSpeed garde l'ancien contenu d'une feuille combinée), chargés
+	// seulement sur la page qui porte [adepa_rdv].
+	wp_register_style('adepa-cf-rdv', ADEPA_CF_URL . 'assets/afc-rdv.css', array('adepa-cf'), ADEPA_CF_VERSION);
+	wp_register_script('adepa-cf-rdv', ADEPA_CF_URL . 'assets/afc-rdv.js', array(), ADEPA_CF_VERSION, true);
 	if (adepa_cf_page_concernee()) {
 		wp_enqueue_style('adepa-cf');
 		if (is_post_type_archive(ADEPA_CF_TYPE)) {
 			wp_enqueue_style('adepa-cf-hero');
 		}
 		wp_enqueue_script('adepa-cf');
+		$p = is_singular() ? get_post() : null;
+		if ($p && has_shortcode((string) $p->post_content, 'adepa_rdv')) {
+			wp_enqueue_style('adepa-cf-rdv');
+			wp_enqueue_script('adepa-cf-rdv');
+		}
 	}
 });
+
+/*
+ * Les fichiers du rendez-vous échappent aux optimisations de LiteSpeed
+ * (combinaison, report, chargement différé) : le script doit charger les
+ * créneaux dès l'ouverture de la page, et la feuille garder son adresse
+ * versionnée (?ver=) pour qu'une nouvelle version arrive vraiment.
+ */
+add_filter('script_loader_tag', function ($tag, $handle) {
+	if ($handle === 'adepa-cf-rdv' && strpos($tag, 'data-no-optimize') === false) {
+		$tag = str_replace('<script ', '<script data-no-optimize="1" data-no-defer="1" ', $tag);
+	}
+	return $tag;
+}, 10, 2);
+add_filter('style_loader_tag', function ($tag, $handle) {
+	if ($handle === 'adepa-cf-rdv' && strpos($tag, 'data-no-optimize') === false) {
+		$tag = str_replace('<link ', '<link data-no-optimize="1" ', $tag);
+	}
+	return $tag;
+}, 10, 2);
 
 /* Titres de page, avec ou sans Rank Math. */
 function adepa_cf_titre_catalogue() {

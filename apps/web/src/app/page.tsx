@@ -571,7 +571,11 @@ export default async function LandingPage() {
               <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-base text-muted-foreground">
                 <span className="inline-flex items-center gap-2">
                   <Handshake className="size-5 text-primary" aria-hidden />
-                  Vous réservez directement auprès de l’intervenant
+                  {/* ⚠ « Vous réservez directement » était faux (audit du
+                      28/09/2026) : le paiement en ligne n'est actif sur aucune
+                      fiche, et « Réserver » menait à la connexion. Le devis
+                      sans compte, lui, existe sur chaque fiche. */}
+                  Vous demandez un devis sans compte
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Euro className="size-5 text-primary" aria-hidden />
