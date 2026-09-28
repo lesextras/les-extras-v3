@@ -5927,3 +5927,36 @@ Point 3 de l'audit du 28/09. Mesuré : paiement en ligne actif sur 0 fiche sur 1
   le formulaire Brevo, conservé).
 - Styles et script dans `afc-rdv.css` / `afc-rdv.js` (noms neufs : voir le
   piège LiteSpeed ci-dessus ; le site retire aussi le `?ver=`).
+
+## TEACHIZY : « ACCOMPAGNEMENT AU NUMÉRIQUE » EN 3 JOURNÉES, ET PLUS DE TOULALI — 28/09/2026
+
+- Formation `d1322695-99e5-45ff-a42b-009ca3e97bbb`. Sommaire : journée 1 (section
+  1505855, 20 éléments), journée 2 (1509841), journée 3 (1509845), puis les
+  modules pratiques à la carte, puis les annexes. Le module 7 et le bilan final
+  ont été DÉPLACÉS dans la journée 1 (demande de Siham) ; leurs sections vides
+  (1505877, 1505880) ont été supprimées.
+- Source versionnée : `outils/teachizy/accompagnement-numerique/contenu2.js`
+  (+ `h.js`, `verifier.js`). Chaque journée : programme (déroulé 9 h-17 h,
+  objectifs SMART, matrice, encart formateur), leçons, cas pratique corrigé +
+  quiz de 6 questions (réponses en bas), devoir noté avec la grille commune.
+- ⚠ L'accès à la journée 3 n'est PAS verrouillé par Teachizy :
+  `enforce_progression_order` imposerait l'ordre à toute la formation et
+  casserait les modules à la carte. La règle est écrite dans les contenus ; c'est
+  la validation du devoir J2 par le formateur qui ouvre la J3.
+- ⚠ Déplacer un élément : `PUT training_items/{id} {parent_id}` marche ;
+  l'ORDRE, lui, ne passe que par l'émission du v-model du `draggable` (une par
+  liste). ⚠ `var top` en tête d'un javascript_tool vise `window.top` : nommer
+  autrement.
+- **Toulali n'est plus un organisme de formation** (décision de Siham, 28/09) :
+  ADéPA est l'unique centre de formation ; toulali.fr devient la page
+  d'accueil de Pilote (pilote.toulali.fr), le CRM des créateurs d'activité
+  (création d'association, création d'académie de formation).
+  Sur Teachizy, 102 éléments et 8 fiches de formation ont été repris par
+  `outils/teachizy/remplacer-toulali.js` : Toulali → ADéPA, TOULALIA (le prof
+  assistant) → ADéPA IA, communauté → « communauté ADéPA »,
+  toulali.fr/acces-handicap → adepa77.fr/accessibilite-handicap/,
+  contact@toulali.fr → assoc.adepa@gmail.com. ⚠ Restent volontairement :
+  l'adresse de l'école `toulali.teachizy.fr` (la changer casse les enrollUrl)
+  et le lien `toulali.fr/lex/` (le prof assistant y est hébergé : à déplacer
+  avant de transformer toulali.fr). Copie de sauvegarde avant remplacement :
+  IndexedDB `bkToulali` du navigateur de Siham, sur app.teachizy.fr.
