@@ -108,6 +108,19 @@ const INTERDITS: { nom: string; motif: RegExp; pourquoi: string }[] = [
       "vocabulaire écarté par le Conseil d'État le 11/02/2025 (n° 491128) — on écrit « intervenant », ou « remplaçant en CDD »",
   },
   {
+    /*
+      LES TROIS COMPTES (28/09/2026, décision de Siham) : structure,
+      intervenant indépendant, particulier. Le type de compte ne s'appelle plus
+      « établissement ». Le MOT reste permis quand il désigne un lieu (une MECS,
+      « les établissements médico-sociaux », « jours d'ouverture de
+      l'établissement ») : seules les formules qui nomment le COMPTE sont
+      interdites ici.
+    */
+    nom: "compte établissement",
+    motif: /\bcomptes?\s+(?:d[’']\s?)?[ée]tablissements?\b|\bMon [ée]tablissement\b|Je suis un [ée]tablissement|\bespace [ée]tablissement\b/i,
+    pourquoi: "le compte s'appelle « structure » : on écrit « compte structure », « Ma structure »",
+  },
+  {
     nom: "certificat",
     motif: /\bcertificats?\s+(de\s+r[ée]ussite|professionnels?)\b/i,
     pourquoi:

@@ -90,7 +90,7 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
         subtitle={`${q.reference} · ${
           q.viewerIsClient
             ? `Intervenant : ${q.providerAccount?.name ?? "-"}`
-            : `Établissement : ${q.clientAccount?.name ?? "-"}`
+            : `Structure : ${q.clientAccount?.name ?? "-"}`
         }`}
       />
 

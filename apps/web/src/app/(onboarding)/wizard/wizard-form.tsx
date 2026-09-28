@@ -257,7 +257,7 @@ export default function WizardForm({
                   name="bio"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel hint="Ce que les établissements verront sur votre profil public. Optionnel.">
+                      <FormLabel hint="Ce que les structures verront sur votre profil public. Optionnel.">
                         Présentation
                       </FormLabel>
                       <FormControl>
@@ -281,7 +281,7 @@ export default function WizardForm({
                 <div>
                   <h2 className="text-xl font-semibold">Vos justificatifs</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Déposez-les une fois : les établissements avec qui vous travaillerez les
+                    Déposez-les une fois : les structures avec qui vous travaillerez les
                     exigent, et la plateforme suit leurs échéances pour vous.
                   </p>
                 </div>
@@ -297,7 +297,7 @@ export default function WizardForm({
                       accountId={accountId}
                       type="DIPLOMA"
                       titre="Diplôme d’État"
-                      aide="DEES, DEME, DEAES, DEEJE… C’est la pièce que les établissements regardent en premier."
+                      aide="DEES, DEME, DEAES, DEEJE… C’est la pièce que les structures regardent en premier."
                       depose={piecesDeposees.includes('DIPLOMA')}
                       onDepose={() => setPiecesDeposees((p) => [...p, 'DIPLOMA'])}
                     />
@@ -325,7 +325,7 @@ export default function WizardForm({
                 )}
                 <div className="rounded-xl bg-accent/60 p-4 text-sm text-accent-foreground">
                   <Sparkles className="mb-1 size-4" />
-                  Vos documents resteront privés : seuls les établissements avec lesquels vous
+                  Vos documents resteront privés : seules les structures avec lesquelles vous
                   travaillez y auront accès, et vous pourrez les retirer à tout moment.
                 </div>
               </div>

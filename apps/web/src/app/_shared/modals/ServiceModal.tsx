@@ -431,7 +431,7 @@ export function ServiceModal({
         <DialogHeader>
           <DialogTitle>{intitule}</DialogTitle>
           <DialogDescription>
-            Décrivez votre intervention pour la rendre réservable par les établissements.
+            Décrivez votre intervention pour la rendre réservable par les structures.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -537,17 +537,17 @@ export function ServiceModal({
             )}
             {/*
               L'ancien libellé annonçait des « frais de gestion » ajoutés au
-              tarif pour l'établissement. Ces frais n'existent pas :
+              tarif pour la structure. Ces frais n'existent pas :
               COMMISSION_DEFAUT vaut 0 (src/lib/commission.ts, miroir de
               apps/api/src/billing/commission.ts), et le devis reprend le tarif
               brut. La phrase incitait donc l'intervenant à baisser son prix
               pour compenser un prélèvement imaginaire, et laissait croire à
-              l'établissement qu'il paierait davantage que le montant affiché.
+              la structure qu'il paierait davantage que le montant affiché.
             */}
             <Field
               label="Prix (€)"
               htmlFor="price"
-              hint="L'établissement paie exactement ce montant : rien n'est prélevé dessus."
+              hint="La structure paie exactement ce montant : rien n'est prélevé dessus."
             >
               <Input id="price" name="price" type="number" step="0.5" defaultValue={fiche?.price != null ? String(fiche.price) : ""} placeholder="250" />
             </Field>
@@ -571,7 +571,7 @@ export function ServiceModal({
 
           <Field
             label="Départements où vous intervenez"
-            hint="C'est le filtre du catalogue. Un établissement cherche d'abord qui se déplace jusqu'à lui : sans au moins un département coché, votre fiche n'apparaît dans aucune recherche par territoire."
+            hint="C'est le filtre du catalogue. Une structure cherche d'abord qui se déplace jusqu'à elle : sans au moins un département coché, votre fiche n'apparaît dans aucune recherche par territoire."
           >
             {/* CENT UN DÉPARTEMENTS NE SE COCHENT PAS UN PAR UN.
                 La première version affichait une pastille par département : très

@@ -357,7 +357,7 @@ export default function RegisterPage() {
 
             {typeChoisi === 'ESTABLISHMENT' && (
               <section className="space-y-5 rounded-xl border border-border bg-card p-4">
-                <h2 className="text-sm font-semibold">Votre établissement</h2>
+                <h2 className="text-sm font-semibold">Votre structure</h2>
 
                 {/*
                   DEUX CHAMPS CÔTE À CÔTE : « l'ESAT Corail » d'un côté, « de
@@ -370,7 +370,7 @@ export default function RegisterPage() {
                     name="organizationName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel required>Nom de votre établissement</FormLabel>
+                        <FormLabel required>Nom de votre structure</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="ESAT Corail, DAIS, MECS Les Tilleuls…"
@@ -406,7 +406,7 @@ export default function RegisterPage() {
                     />
                     <p className="text-xs text-muted-foreground" lang="fr">
                       L’association, la fondation, l’entreprise ou la collectivité
-                      qui gère l’établissement (nom ou SIRET). Facultatif.
+                      qui gère votre structure (nom ou SIRET). Facultatif.
                     </p>
                   </div>
                 </div>

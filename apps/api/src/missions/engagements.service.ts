@@ -155,7 +155,7 @@ export class EngagementsService {
     }
     if (existant && existant.statut === EngagementStatut.REFUSE) {
       throw new BadRequestException(
-        "L'établissement n'a pas retenu votre profil pour cette mission.",
+        "La structure n'a pas retenu votre profil pour cette mission.",
       );
     }
 
@@ -200,7 +200,7 @@ export class EngagementsService {
           type: 'ENGAGEMENT_ENREGISTRE',
           title: estPresente ? 'Votre profil est présenté' : 'Vous êtes dans la file',
           body: estPresente
-            ? `Votre engagement sur « ${mission.title} » est transmis à l'établissement pour validation.`
+            ? `Votre engagement sur « ${mission.title} » est transmis à la structure pour validation.`
             : `Vous êtes positionné·e sur « ${mission.title} ». Un profil est en cours de validation avant le vôtre.`,
           link: `/marketplace/missions/${missionId}`,
         })
@@ -369,7 +369,7 @@ export class EngagementsService {
         .create(engagement.account.owner.id, {
           type: 'MISSION_ACCEPTED',
           title: 'Mission confirmée',
-          body: `L'établissement a validé votre profil pour « ${mission.title} ». Signez le contrat d'engagement.`,
+          body: `La structure a validé votre profil pour « ${mission.title} ». Signez le contrat d'engagement.`,
           link: contractUrl,
         })
         .catch(() => undefined);
@@ -555,7 +555,7 @@ export class EngagementsService {
         title: caduc ? 'Mission attribuée à un autre' : 'Profil non retenu',
         body: caduc
           ? `« ${mission.title} » a été attribuée à un intervenant engagé avant vous. Vous êtes libre sur ce créneau.`
-          : `L'établissement n'a pas retenu votre profil pour « ${mission.title} »${motif ? `, ${motif}` : ''}.`,
+          : `La structure n'a pas retenu votre profil pour « ${mission.title} »${motif ? `, ${motif}` : ''}.`,
         link: '/marketplace',
       })
       .catch(() => undefined);

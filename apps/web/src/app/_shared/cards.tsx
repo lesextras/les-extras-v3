@@ -46,7 +46,7 @@ export function MissionCard({ mission, href }: { mission: Mission; href?: string
       </CardContent>
       <CardFooter className="justify-between">
         <span className="text-xs text-muted-foreground">
-          {mission.account?.name ?? "Établissement"}
+          {mission.account?.name ?? "Structure"}
         </span>
         <Button asChild size="sm" variant="outline">
           <Link href={link}>Voir</Link>

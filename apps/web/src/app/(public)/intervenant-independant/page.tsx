@@ -291,7 +291,7 @@ Un établissement réserve votre offre. Vous intervenez{" "}
             second compte depuis zéro : son espace lui propose d'ouvrir son
             compte intervenant et d'y reprendre ses fiches (24/09/2026). */}
         <p className="text-sm text-muted-foreground">
-          Vous avez déjà un compte établissement ?{" "}
+          Vous avez déjà un compte structure ?{" "}
           <Link href="/dashboard/devenir-intervenant" className="font-medium text-foreground underline underline-offset-2">
             Proposez vos services en votre nom depuis votre espace
           </Link>

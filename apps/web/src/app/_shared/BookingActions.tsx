@@ -105,7 +105,7 @@ export function BookingActions({
           // solliciter — l'exact inverse de ce qui se passait.
           reason: atelier
             ? "L’intervenant n’est pas disponible pour cette demande."
-            : "Candidature non retenue par l’établissement.",
+            : "Candidature non retenue par la structure.",
         })
       }
     >
@@ -147,7 +147,7 @@ export function BookingActions({
             agir(
               "confirm",
               atelier
-                ? "Date confirmée : l’établissement est prévenu"
+                ? "Date confirmée : la structure est prévenue"
                 : "Renfort confirmé, le créneau est posé sur le planning",
             )
           }
@@ -163,7 +163,7 @@ export function BookingActions({
     return (
       <div className="flex flex-wrap gap-2">
         {/* Le pont vers le CDD, au moment exact où l'on en a besoin : la
-            personne est confirmée, l'établissement l'embauche. La page du
+            personne est confirmée, la structure l'embauche. La page du
             document reprend tout ce qui est connu.
             Sur un atelier, il n'y a pas de CDD : l'intervenant facture. */}
         {atelier ? null : (

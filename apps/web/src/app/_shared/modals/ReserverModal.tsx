@@ -72,7 +72,7 @@ export function ReserverModal({
             </p>
             <p className="text-sm text-muted-foreground">
               Vous recevez un devis, puis une facture après accord. Le virement
-              se fait à réception : c’est le chemin habituel d’un établissement.
+              se fait à réception : c’est le chemin habituel d’une structure.
             </p>
             <Button asChild variant={paiementEnLigne ? "outline" : "primary"} className="w-full">
               <Link href={vers("VIREMENT")}>Réserver, facture par virement</Link>

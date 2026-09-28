@@ -41,7 +41,7 @@ export default async function WelcomePage({
         Bienvenue{firstName ? `, ${firstName}` : ''} !
       </h1>
       <p className="mt-3 max-w-lg text-muted-foreground">
-        Votre compte {isEstablishment ? 'établissement' : 'professionnel'} est créé. Encore
+        Votre compte {isEstablishment ? 'structure' : 'intervenant indépendant'} est créé. Encore
         quelques informations et vous serez prêt à{' '}
         {isEstablishment ? 'publier vos premiers renforts' : 'répondre à vos premières missions'}.
       </p>

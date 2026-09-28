@@ -73,5 +73,5 @@ export function messageRoleInsuffisant(required: readonly string[]): string {
   const qui = required.map((r) => LIBELLE[r] ?? r);
   const liste =
     qui.length === 1 ? qui[0] : `${qui.slice(0, -1).join(', ')} ou ${qui[qui.length - 1]}`;
-  return `Cette action est réservée à ${liste}. Demandez à un responsable de votre établissement de la faire pour vous.`;
+  return `Cette action est réservée à ${liste}. Demandez à un responsable de votre structure de la faire pour vous.`;
 }

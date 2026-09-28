@@ -1046,7 +1046,7 @@ export class MailService implements OnModuleDestroy {
     const premiersPas = etab
       ? [
           'Parcourez le catalogue d’ateliers et de formations, et demandez un devis en deux clics.',
-          'Publiez un RenforTeam quand une absence tombe : il part d’abord aux intervenants qui connaissent déjà votre établissement, puis au réseau.',
+          'Publiez un RenforTeam quand une absence tombe : il part d’abord aux intervenants qui connaissent déjà votre structure, puis au réseau.',
           'Retenez vos intervenants habituels dans votre vivier : ils reçoivent vos besoins en priorité.',
         ]
       : [
@@ -1396,7 +1396,7 @@ export class MailService implements OnModuleDestroy {
         corps:
           `Votre compte est ouvert. Ce qui décide maintenant de la suite, c'est votre
            <b>dossier</b> : métier, ville, diplôme. À la publication d'un renfort, les
-           établissements voient d'abord les dossiers complets, un dossier vide est
+           structures voient d'abord les dossiers complets, un dossier vide est
            invisible, un dossier complet est sollicité. Dix minutes, une seule fois.`,
         cta: { label: 'Compléter mon dossier', chemin: '/dashboard/mon-dossier' },
       },
@@ -1459,7 +1459,7 @@ export class MailService implements OnModuleDestroy {
       `${data.emergency ? '🚨 ' : ''}${data.vague === 1 ? 'Vous êtes retenu·e pour une mission' : 'Une mission de renfort pour vous'} : ${data.title}`,
       this.layout(
         data.vague === 1 ? 'Une mission pour vous, en priorité' : 'Une mission qui vous correspond',
-        `${tag}Un établissement recherche un renfort <b>« ${data.title} »</b>${data.job ? ` (${data.job})` : ''}${
+        `${tag}Une structure recherche un renfort <b>« ${data.title} »</b>${data.job ? ` (${data.job})` : ''}${
           data.city ? ` à <b>${data.city}</b>` : ''
         }${when ? ` le <b>${when}</b>` : ''}${data.rate ? `, rémunéré ${data.rate} €/h` : ''}.${selection}
         <br><br><b>Premier arrivé, premier servi</b> : la mission est attribuée au premier intervenant qui l'accepte.`,
@@ -1525,13 +1525,13 @@ export class MailService implements OnModuleDestroy {
     const when = this.frDate(data.date);
     const url = `${this.webUrl}/marketplace/missions/${data.missionId}`;
     const situation = data.presente
-      ? `Votre profil vient d'être <b>transmis à l'établissement</b>, qui doit maintenant le valider. Vous recevrez sa réponse ici même : et le contrat d'engagement dès qu'elle sera positive.`
-      : `Vous êtes <b>${data.rang}<sup>e</sup> dans la file</b>. Une personne s'est engagée avant vous : son profil est en cours de validation. Si l'établissement ne la retient pas, c'est le vôtre qui sera présenté.`;
+      ? `Votre profil vient d'être <b>transmis à la structure</b>, qui doit maintenant le valider. Vous recevrez sa réponse ici même : et le contrat d'engagement dès qu'elle sera positive.`
+      : `Vous êtes <b>${data.rang}<sup>e</sup> dans la file</b>. Une personne s'est engagée avant vous : son profil est en cours de validation. Si la structure ne la retient pas, c'est le vôtre qui sera présenté.`;
     await this.send(
       to,
       `Engagement enregistré : ${data.title}`,
       this.layout(
-        data.presente ? 'Votre profil part à l’établissement' : 'Vous êtes dans la file',
+        data.presente ? 'Votre profil part à la structure' : 'Vous êtes dans la file',
         `Vous vous êtes engagé·e sur la mission <b>« ${data.title} »</b>${when ? ` du <b>${when}</b>` : ''}.
         <br><br>${situation}
         <br><br>Tant que la réponse n'est pas arrivée, <b>rien ne vous engage juridiquement</b> : vous pouvez vous retirer à tout moment depuis la fiche de la mission.`,
@@ -1590,14 +1590,14 @@ export class MailService implements OnModuleDestroy {
       to,
       `Mission non retenue : ${data.title}`,
       this.layout(
-        data.caduc ? 'La mission a été attribuée' : 'L’établissement a retenu un autre profil',
+        data.caduc ? 'La mission a été attribuée' : 'La structure a retenu un autre profil',
         data.caduc
           ? `La mission <b>« ${data.title} »</b>${when ? ` du ${when}` : ''} a été attribuée à un autre intervenant engagé avant vous.
              <br><br>Votre engagement est donc levé : vous êtes libre sur ce créneau. Merci d'avoir répondu, c'est exactement
              ce qui fait tenir le réseau.`
-          : `L'établissement n'a pas retenu votre profil pour <b>« ${data.title} »</b>${when ? ` du ${when}` : ''}.
+          : `La structure n'a pas retenu votre profil pour <b>« ${data.title} »</b>${when ? ` du ${when}` : ''}.
              ${data.motif ? `<br><br><b>Motif indiqué :</b> ${data.motif}` : ''}
-             <br><br>Ce n'est pas un jugement sur votre travail : les établissements arbitrent souvent sur une contrainte
+             <br><br>Ce n'est pas un jugement sur votre travail : les structures arbitrent souvent sur une contrainte
              précise (une qualification attendue, une connaissance du groupe). Votre engagement est levé, vous êtes libre
              sur ce créneau.`,
         { label: 'Voir les missions ouvertes', url },
@@ -1765,7 +1765,7 @@ export class MailService implements OnModuleDestroy {
     const e = (s: string) => s.replace(/</g, '&lt;');
     const qui = [data.prenom, data.nom].filter(Boolean).join(' ') || data.email;
     const genre =
-      data.typeCompte === 'ESTABLISHMENT' ? 'Établissement' : 'Professionnel';
+      data.typeCompte === 'ESTABLISHMENT' ? 'Structure' : data.typeCompte === 'PARTICULIER' ? 'Particulier' : 'Intervenant indépendant';
     await this.send(
       to,
       `Nouvelle inscription, ${qui} (${genre})`,
@@ -1829,8 +1829,8 @@ export class MailService implements OnModuleDestroy {
       to,
       `Réservation reçue, ${data.atelier}`,
       this.layout(
-        'Un établissement vous a réservé',
-        `<b>${e(data.etablissement ?? 'Un établissement')}</b> vient de réserver
+        'Une structure vous a réservé',
+        `<b>${e(data.etablissement ?? 'Une structure')}</b> vient de réserver
         votre atelier <b>${e(data.atelier)}</b>.
         <br><br><b>Quand :</b> ${e(quand)}
         ${data.participants ? `<br><b>Participants :</b> ${data.participants}` : ''}
@@ -1847,7 +1847,7 @@ export class MailService implements OnModuleDestroy {
             : ''
         }
         <br><br>Acceptez ou déclinez depuis votre espace. Tant que vous n'avez pas
-        répondu, l'établissement attend.`,
+        répondu, la structure attend.`,
         { label: 'Voir la réservation', url: `${this.webUrl}/dashboard/ateliers` },
       ),
     );
@@ -1864,7 +1864,7 @@ export class MailService implements OnModuleDestroy {
       `Demande de devis, ${data.atelier ?? 'votre intervention'}`,
       this.layout(
         'Une demande de devis vous attend',
-        `<b>${e(data.etablissement ?? 'Un établissement')}</b> vous demande un devis
+        `<b>${e(data.etablissement ?? 'Une structure')}</b> vous demande un devis
         ${data.atelier ? `pour <b>${e(data.atelier)}</b>` : ''}.
         ${data.message ? `<br><br><i>${e(data.message).slice(0, 800)}</i>` : ''}
         <br><br>Le site annonce une réponse sous 48 heures : c'est la promesse qui
@@ -1906,7 +1906,7 @@ export class MailService implements OnModuleDestroy {
       'Votre contrat vous a été transmis',
       this.layout(
         'Votre contrat vous attend',
-        `<b>${e(data.etablissement ?? 'L’établissement')}</b> vient de vous transmettre
+        `<b>${e(data.etablissement ?? 'La structure')}</b> vient de vous transmettre
         ${data.intitule ? `<b>${e(data.intitule)}</b>` : 'votre contrat'}.
         <br><br>Relisez-le dans votre espace. Il n'engage personne tant qu'il n'est
         pas signé : et la signature se fait en ligne, avec un code envoyé au moment
@@ -2248,7 +2248,7 @@ export class MailService implements OnModuleDestroy {
       'Êtes-vous toujours disponible ?',
       this.layout(
         `Bonjour${data.prenom ? ` ${e(data.prenom)}` : ''},`,
-        `Vous figurez parmi les personnes disponibles que les établissements
+        `Vous figurez parmi les personnes disponibles que les structures
          peuvent contacter. Pour que la liste reste utile, nous vérifions de
          temps en temps qu'elle est à jour.
          <br><br>

@@ -72,7 +72,7 @@ export function AdminServicesTable({
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Rechercher un atelier, un établissement, une ville…"
+          placeholder="Rechercher un atelier, une structure, une ville…"
           className="flex-1"
         />
         <Select value={status || "__all"} onValueChange={(v) => setStatus(v === "__all" ? "" : v)}>
@@ -124,7 +124,7 @@ export function AdminServicesTable({
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">{s.title}</p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {s.account?.name ?? "Établissement"}
+                            {s.account?.name ?? "Structure"}
                             {s.city ? ` · ${s.city}` : ""}
                           </p>
                         </div>

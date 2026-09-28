@@ -80,7 +80,7 @@ export function SignerClient({
                   timeStyle: "short",
                 })
               : ""}
-            . Le dossier de preuve est conservé par l'établissement.
+            . Le dossier de preuve est conservé par la structure.
           </p>
         </CardContent>
       </Card>
@@ -100,7 +100,7 @@ export function SignerClient({
           </Badge>
           <p className="mt-2 text-sm text-muted-foreground">
             Cette demande n'est plus active. Si vous devez signer ce document, demandez à
-            l'établissement de relancer une demande.
+            la structure de relancer une demande.
           </p>
         </CardContent>
       </Card>

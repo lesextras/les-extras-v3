@@ -197,7 +197,7 @@ export class ContratsService {
     ]);
     if (surLePlanning || retenu) return;
     throw new ForbiddenException(
-      "Cette personne n'a encore travaillé avec votre établissement ni sur votre planning ni sur un renfort : on ne peut pas établir un contrat à son nom. Retenez sa candidature sur un renfort, ou positionnez-la sur votre planning, avant de l'embaucher.",
+      "Cette personne n'a encore travaillé avec votre structure ni sur votre planning ni sur un renfort : on ne peut pas établir un contrat à son nom. Retenez sa candidature sur un renfort, ou positionnez-la sur votre planning, avant de l'embaucher.",
     );
   }
 
@@ -401,7 +401,7 @@ export class ContratsService {
         dimanchePct: p.dimanchePct,
         feriePct: p.feriePct,
         source: p.renseigne
-          ? 'Taux renseignés par votre établissement d’après sa convention.'
+          ? 'Taux renseignés par votre structure d’après sa convention.'
           : "Aucun taux n'est renseigné. Ce n'est pas un oubli du logiciel : hors 1er mai, la loi n'impose aucune majoration de nuit, de dimanche ni de jour férié dans le médico-social. Renseignez ceux de votre convention dans les réglages du temps de travail.",
       },
     };
@@ -422,7 +422,7 @@ export class ContratsService {
   async depuisRenfort(accountId: string, accountType: string, bookingId: string) {
     if (accountType !== 'ESTABLISHMENT') {
       throw new ForbiddenException(
-        "Seul un établissement peut embaucher : c'est lui l'employeur du contrat.",
+        "Seule une structure peut embaucher : c'est elle l'employeur du contrat.",
       );
     }
     const p = await this.proposition(accountId, bookingId);
@@ -463,7 +463,7 @@ export class ContratsService {
   async create(accountId: string, accountType: string, dto: CreateContratDto) {
     if (accountType !== 'ESTABLISHMENT') {
       throw new ForbiddenException(
-        "Seul un établissement peut embaucher : c'est lui l'employeur du contrat.",
+        "Seule une structure peut embaucher : c'est elle l'employeur du contrat.",
       );
     }
     await this.assertSalarieDeLetablissement(accountId, dto.userId);
@@ -606,7 +606,7 @@ export class ContratsService {
       .create(c.userId, {
         type: 'CONTRAT_TRANSMIS',
         title: 'Un contrat vous a été transmis',
-        body: `${employeur?.name ?? 'Un établissement'} vous transmet un contrat, ${intitule}.`,
+        body: `${employeur?.name ?? 'Une structure'} vous transmet un contrat, ${intitule}.`,
         link: `/dashboard/contrats/${id}`,
       })
       .catch(() => undefined);

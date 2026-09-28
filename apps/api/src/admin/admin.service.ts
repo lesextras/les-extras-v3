@@ -1269,7 +1269,7 @@ export class AdminService {
     });
     if (anyEstablishment) return anyEstablishment.id;
     throw new BadRequestException(
-      "Aucun compte établissement (OF) disponible pour rattacher la formation. Créez d'abord un compte ADéPA.",
+      "Aucun compte structure (OF) disponible pour rattacher la formation. Créez d'abord un compte ADéPA.",
     );
   }
 
@@ -2091,7 +2091,7 @@ export class AdminService {
       ...derniersComptes.map((a) => ({
         type: 'compte' as const,
         libelle: a.name,
-        detail: a.type === 'ESTABLISHMENT' ? 'établissement' : 'intervenant',
+        detail: a.type === 'ESTABLISHMENT' ? 'structure' : 'intervenant',
         date: a.createdAt.toISOString(),
       })),
       ...dernieresResas.map((b) => ({

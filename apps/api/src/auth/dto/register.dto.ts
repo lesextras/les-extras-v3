@@ -1,7 +1,7 @@
 import {
   IsBoolean,
   IsEmail,
-  IsEnum,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -67,11 +67,18 @@ export class RegisterDto {
   phone?: string;
 
   /**
-   * Type de compte créé à l'inscription :
-   *  - FREELANCE : compte personnel du praticien.
-   *  - ESTABLISHMENT : organisation (MECS, IME...), nécessite un nom de structure.
+   * LES TROIS COMPTES DE LES EXTRAS (28/09/2026) — et eux seuls :
+   *  - ESTABLISHMENT : compte STRUCTURE (MECS, IME, école, mairie, service…),
+   *    nécessite un nom de structure ;
+   *  - FREELANCE : intervenant indépendant ;
+   *  - PARTICULIER : un parent, un aidant, une personne pour elle-même.
+   * ⚠ ASSOCIATION et ACADEMIE sont les comptes de Piloter : ils se créent
+   * depuis pilote.toulali.fr, jamais par cette route. Les accepter ici laissait
+   * créer un compte Piloter depuis Les Extras en appelant l'API à la main.
    */
-  @IsEnum(AccountType)
+  @IsIn([AccountType.ESTABLISHMENT, AccountType.FREELANCE, AccountType.PARTICULIER], {
+    message: 'Choisissez un compte structure, intervenant indépendant ou particulier.',
+  })
   accountType!: AccountType;
 
   /** Nom de la structure — requis pour un compte ESTABLISHMENT. */

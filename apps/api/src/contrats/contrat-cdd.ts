@@ -380,6 +380,6 @@ export function synthese(p: ProjetContrat) {
     motifLibelle: def?.libelle ?? null,
     motifArticle: def?.article ?? null,
     avertissement:
-      "Projet de contrat généré à partir des règles du code du travail. L'établissement reste l'employeur et demeure seul responsable du contrat qu'il signe : faites relire ce document, en particulier au regard de votre convention collective, qui peut être plus favorable au salarié que les planchers légaux appliqués ici.",
+      "Projet de contrat généré à partir des règles du code du travail. La structure reste l'employeur et demeure seule responsable du contrat qu'elle signe : faites relire ce document, en particulier au regard de votre convention collective, qui peut être plus favorable au salarié que les planchers légaux appliqués ici.",
   };
 }

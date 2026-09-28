@@ -66,7 +66,7 @@ export function AdminMissionsTable({
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Rechercher un titre, un établissement, une ville…"
+          placeholder="Rechercher un titre, une structure, une ville…"
           className="flex-1"
         />
         <Select value={status || "__all"} onValueChange={(v) => setStatus(v === "__all" ? "" : v)}>
@@ -111,7 +111,7 @@ export function AdminMissionsTable({
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">{m.title}</p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {m.account?.name ?? "Établissement"}
+                            {m.account?.name ?? "Structure"}
                             {m.city ? ` · ${m.city}` : ""}
                           </p>
                         </div>

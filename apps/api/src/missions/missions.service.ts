@@ -130,7 +130,7 @@ export class MissionsService {
     // n'engagent personne et les deux côtés du métier se confondent.
     if (accountType !== 'ESTABLISHMENT') {
       throw new ForbiddenException(
-        'Seul un compte établissement publie un besoin de renfort. Depuis un compte intervenant, répondez aux missions ouvertes.',
+        'Seul un compte structure publie un besoin de renfort. Depuis un compte intervenant, répondez aux missions ouvertes.',
       );
     }
     if (dto.endDate && new Date(dto.endDate) <= new Date(dto.startDate)) {
@@ -532,7 +532,7 @@ export class MissionsService {
         where: { missionId: id, status: BookingStatus.REQUESTED },
         data: {
           status: BookingStatus.CANCELLED,
-          cancelReason: motif?.trim() || 'Le renfort a été clôturé par l’établissement.',
+          cancelReason: motif?.trim() || 'Le renfort a été clôturé par la structure.',
         },
       }),
     ]);
@@ -545,7 +545,7 @@ export class MissionsService {
         .create(b.account.ownerId, {
           type: 'MISSION_CLOSED',
           title: 'Renfort clôturé',
-          body: `« ${mission.title} » a été clôturé par l’établissement${
+          body: `« ${mission.title} » a été clôturé par la structure${
             motif?.trim() ? ` : ${motif.trim()}` : ''
           }. Votre candidature n’a pas de suite.`,
           link: '/dashboard/opportunites',
@@ -1158,7 +1158,7 @@ export class MissionsService {
     await this.ciblage.assertReponseAutorisee(mission, freelanceAccountId);
     if (mission.modeAttribution === ModeAttribution.FILE_ENGAGEMENT) {
       throw new BadRequestException(
-        'Sur cette mission, on ne candidate pas : cliquez sur « Je prends la mission ». Votre profil sera présenté à l’établissement pour validation.',
+        'Sur cette mission, on ne candidate pas : cliquez sur « Je prends la mission ». Votre profil sera présenté à la structure pour validation.',
       );
     }
 

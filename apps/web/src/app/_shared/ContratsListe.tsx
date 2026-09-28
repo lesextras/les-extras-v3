@@ -211,7 +211,7 @@ function NouveauContrat({
         <DialogHeader>
           <DialogTitle>Embaucher en CDD</DialogTitle>
           <DialogDescription>
-            Vous êtes l’employeur : le contrat est conclu entre votre établissement et la
+            Vous êtes l’employeur : le contrat est conclu entre votre structure et la
             personne. L’outil calcule les échéances et vérifie les mentions obligatoires.
           </DialogDescription>
         </DialogHeader>

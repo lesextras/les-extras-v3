@@ -116,7 +116,7 @@ const SITUATIONS: Situation[] = [
     service: 'RenforTeam',
     probleme: 'La notification est arrivée. Le rendez-vous est dans quatorze mois.',
     situation: [
-      'La MDPH a notifié, le SESSAD a une liste d’attente, l’orthophoniste du secteur ne prend plus personne. Côté établissement c’est la même impasse, et l’enfant grandit pendant ce temps.',
+      'La MDPH a notifié, le SESSAD a une liste d’attente, l’orthophoniste du secteur ne prend plus personne. Côté structure c’est la même impasse, et l’enfant grandit pendant ce temps.',
     ],
     reponse: [
       'Vous décrivez le besoin en cinq minutes, le soir même',

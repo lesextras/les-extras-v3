@@ -152,7 +152,7 @@ export default async function VivierPage() {
       <div className="space-y-6">
         <PageHeader title="Mon vivier" />
         <EmptyState
-          title="Réservé aux établissements"
+          title="Réservé aux structures"
           description="Le vivier réunit les intervenants qu'une structure fait revenir. Depuis un compte intervenant, ce sont vos opportunités qu'il faut regarder."
           action={
             <Button asChild>
@@ -259,7 +259,7 @@ export default async function VivierPage() {
           <p className="max-w-prose text-xs text-muted-foreground">
             Retenir quelqu'un n'est pas un signet : un intervenant retenu reçoit vos besoins de
             renfort au palier « réseau réservé », c'est-à-dire avant que l'offre ne s'ouvre à
-            toute la marketplace. Les notes de service restent internes à votre établissement.
+            toute la marketplace. Les notes de service restent internes à votre structure.
           </p>
         </>
       )}

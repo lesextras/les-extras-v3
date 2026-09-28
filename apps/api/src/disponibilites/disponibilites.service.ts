@@ -85,7 +85,7 @@ export class DisponibilitesService {
   async declarer(account: RequestAccount, dto: DeclarerDisponibiliteDto) {
     if (account.type === AccountType.ESTABLISHMENT) {
       throw new BadRequestException(
-        "Un compte d'établissement ne se déclare pas disponible : ce sont ses salariés qui le font depuis leur propre compte.",
+        "Un compte structure ne se déclare pas disponible : ce sont ses salariés qui le font depuis leur propre compte.",
       );
     }
 
@@ -195,7 +195,7 @@ export class DisponibilitesService {
   async vivier(account: RequestAccount, _user: RequestUser, filtres: FiltresVivierDto) {
     if (account.type !== AccountType.ESTABLISHMENT) {
       throw new ForbiddenException(
-        'Le vivier est réservé aux établissements qui cherchent du renfort.',
+        'Le vivier est réservé aux structures qui cherchent du renfort.',
       );
     }
     const where: Prisma.DisponibiliteRenfortWhereInput = {

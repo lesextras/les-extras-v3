@@ -61,7 +61,7 @@ const NOMS: Record<string, string> = {
   program: 'Le programme',
   prerequisites: 'Les prérequis',
   targetAudience: 'Le public visé',
-  organizationName: 'Le nom de l’établissement',
+  organizationName: 'Le nom de la structure',
   role: 'Le rôle',
   status: 'Le statut',
   category: 'La catégorie',

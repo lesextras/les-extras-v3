@@ -316,7 +316,7 @@ export class InvoicesService {
       // justifier devant un contrôle.
       if (booking.mission) {
         throw new BadRequestException(
-          "Un renfort ne se facture pas : il donne lieu à un contrat à durée déterminée conclu par l'établissement, pas à une facture d'honoraires.",
+          "Un renfort ne se facture pas : il donne lieu à un contrat à durée déterminée conclu par la structure, pas à une facture d'honoraires.",
         );
       }
 

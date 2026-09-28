@@ -258,7 +258,7 @@ export default async function AdminPage() {
                     </div>
                     <p className="truncate text-sm font-medium text-foreground">{m.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {m.account?.name ?? "Établissement"} · {formatDate(m.startDate)}
+                      {m.account?.name ?? "Structure"} · {formatDate(m.startDate)}
                     </p>
                   </div>
                   {/* Lien profond vers LA mission cliquée : renvoyer à la liste
@@ -279,7 +279,7 @@ export default async function AdminPage() {
                     </div>
                     <p className="truncate text-sm font-medium text-foreground">{sv.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {sv.account?.name ?? "Établissement"}
+                      {sv.account?.name ?? "Structure"}
                       {sv.city ? ` · ${sv.city}` : ""}
                     </p>
                   </div>

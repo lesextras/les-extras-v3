@@ -109,7 +109,7 @@ export function QuoteEditor({
           validUntil: validUntil ? new Date(validUntil).toISOString() : undefined,
         },
       });
-      toast({ title: "Devis envoyé", description: "L'établissement est prévenu." });
+      toast({ title: "Devis envoyé", description: "La structure est prévenue." });
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Envoi impossible.");

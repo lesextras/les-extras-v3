@@ -138,7 +138,7 @@ export default async function AteliersPage({
                       pas laquelle il vient de franchir ni ce qui reste. */}
                   <p className="text-xs font-medium text-primary">{ETAPE[b.status] ?? ""}</p>
                   <p className="text-xs text-muted-foreground">
-                    Demandé par {b.account?.name ?? "un établissement"}
+                    Demandé par {b.account?.name ?? "une structure"}
                     {b.scheduledAt
                       ? ` · pour le ${new Date(b.scheduledAt).toLocaleDateString("fr-FR")}`
                       : " · date à convenir"}

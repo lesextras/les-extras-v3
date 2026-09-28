@@ -195,7 +195,7 @@ export default async function DashboardFormationsPage() {
             title="Aucune formation"
             description={
               isEstablishment
-                ? "Parcourez le catalogue ADéPA pour inscrire des professionnels de votre établissement."
+                ? "Parcourez le catalogue ADéPA pour inscrire des professionnels de votre structure."
                 : "Vous n’animez encore aucune session. Proposez votre propre programme : ADéPA le relit, puis le publie au catalogue sous sa certification Qualiopi."
             }
             action={

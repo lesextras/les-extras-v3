@@ -56,7 +56,7 @@ export class DocumentsService {
         city: true,
       },
     });
-    if (!employeur) throw new NotFoundException('Établissement introuvable.');
+    if (!employeur) throw new NotFoundException('Structure introuvable.');
 
     const pdf = await contratCddPdf({
       contrat: contrat as never,

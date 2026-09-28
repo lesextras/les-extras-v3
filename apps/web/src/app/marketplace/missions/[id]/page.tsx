@@ -59,7 +59,7 @@ export default async function MissionDetailPage({ params: paramsPromesse }: { pa
               {mission.title}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Publiée par {mission.account?.name ?? "un établissement"}
+              Publiée par {mission.account?.name ?? "une structure"}
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export default async function MissionDetailPage({ params: paramsPromesse }: { pa
                   />
                   <p className="text-center text-xs text-muted-foreground">
                     {mission.modeAttribution === "FILE_ENGAGEMENT"
-                      ? "Votre profil est présenté à l’établissement, qui accepte ou refuse. Le contrat n’est émis qu’après son accord : d’ici là, rien ne vous engage."
+                      ? "Votre profil est présenté à la structure, qui accepte ou refuse. Le contrat n’est émis qu’après son accord : d’ici là, rien ne vous engage."
                       : "Premier arrivé, premier servi : la mission vous est attribuée dès validation."}
                   </p>
                 </div>

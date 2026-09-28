@@ -35,7 +35,7 @@ const ACTIONS: { reason: string; label: string; detail: string; icon: typeof Awa
   {
     reason: "MISSION",
     label: "Mission de renfort réalisée",
-    detail: "Une intervention menée à son terme et validée par l'établissement.",
+    detail: "Une intervention menée à son terme et validée par la structure.",
     icon: Megaphone,
   },
   {

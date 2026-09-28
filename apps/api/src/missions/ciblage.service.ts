@@ -231,7 +231,7 @@ export class CiblageService {
       const connus = await this.intervenantsConnus(mission.accountId);
       if (!connus.includes(accountId)) {
         throw new BadRequestException(
-          "Cette mission est réservée au réseau de l'établissement pour l'instant. Elle s'ouvrira plus largement si elle n'est pas pourvue.",
+          "Cette mission est réservée au réseau de la structure pour l'instant. Elle s'ouvrira plus largement si elle n'est pas pourvue.",
         );
       }
     }
@@ -324,7 +324,7 @@ export class CiblageService {
     return {
       code: 'MONTAGE',
       titre: 'Ce renfort se conclut en CDD',
-      message: 'Un renfort se conclut en CDD avec l’établissement. Pour y répondre, cochez « être contacté pour des remplacements en CDD » dans votre espace — ou proposez un renfort personnalisé, qui se facture par votre structure.',
+      message: 'Un renfort se conclut en CDD avec la structure. Pour y répondre, cochez « être contacté pour des remplacements en CDD » dans votre espace — ou proposez un renfort personnalisé, qui se facture par votre structure.',
       action: 'Modifier ce que je veux faire',
       href: '/dashboard/disponibilite',
     };
@@ -344,7 +344,7 @@ export class CiblageService {
     return {
       code: 'DOSSIER',
       titre: 'Votre dossier n’est pas complet',
-      message: `Déposez ${listerPieces(manquantes)} dans « Mon dossier » avant de candidater : l'établissement vous les demandera à l'embauche.`,
+      message: `Déposez ${listerPieces(manquantes)} dans « Mon dossier » avant de candidater : la structure vous les demandera à l'embauche.`,
       action: 'Déposer mes pièces',
       href: '/dashboard/mon-dossier',
     };
@@ -369,7 +369,7 @@ export interface BlocageReponse {
 const MESSAGE_HORS_CIBLE: Record<CibleDiffusion, string> = {
   [CibleDiffusion.RESEAU]: 'Cette mission ne vous est pas ouverte.',
   [CibleDiffusion.CONNUS]:
-    "Cet établissement a réservé cette mission aux intervenants avec lesquels il a déjà travaillé.",
+    "Cette structure a réservé cette mission aux intervenants avec lesquels elle a déjà travaillé.",
   // Valeur héritée, ramenée à RESEAU par `cibleEffective` : jamais affichée.
   [CibleDiffusion.UNITE]: 'Cette mission ne vous est pas ouverte.',
   [CibleDiffusion.SELECTION]:

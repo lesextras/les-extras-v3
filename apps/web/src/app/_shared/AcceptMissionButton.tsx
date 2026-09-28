@@ -57,8 +57,8 @@ export function AcceptMissionButton({
           title: res?.presente === false ? "Vous êtes dans la file" : "Engagement enregistré",
           description:
             res?.presente === false
-              ? `Une personne s'est engagée avant vous. Si l'établissement ne la retient pas, votre profil sera présenté.`
-              : "Votre profil part à l'établissement pour validation. Vous recevrez sa réponse et le contrat dès l'acceptation.",
+              ? `Une personne s'est engagée avant vous. Si la structure ne la retient pas, votre profil sera présenté.`
+              : "Votre profil part à la structure pour validation. Vous recevrez sa réponse et le contrat dès l'acceptation.",
         });
         router.refresh();
         return;
@@ -90,7 +90,7 @@ export function AcceptMissionButton({
           rows={3}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Un mot à l'établissement : ce que vous connaissez du public, vos disponibilités…"
+          placeholder="Un mot à la structure : ce que vous connaissez du public, vos disponibilités…"
         />
       ) : null}
       <Button className="w-full" disabled={loading} onClick={onAccept}>
@@ -102,7 +102,7 @@ export function AcceptMissionButton({
           onClick={() => setMotDeployé(true)}
           className="w-full text-center text-xs text-muted-foreground underline-offset-2 hover:underline"
         >
-          Ajouter un mot à l&apos;établissement (facultatif)
+          Ajouter un mot à la structure (facultatif)
         </button>
       ) : null}
     </div>

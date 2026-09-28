@@ -103,7 +103,7 @@ export function ContractDocument({
       await apiRequest(`/bookings/${contract.id}/sign`, { method: "PATCH", accountId: signingAccountId });
       toast({
         title: "Proposition acceptée",
-        description: "Votre accord est enregistré. Le contrat de travail reste à établir par l'établissement.",
+        description: "Votre accord est enregistré. Le contrat de travail reste à établir par la structure.",
       });
       router.refresh();
     } catch (err) {
@@ -140,14 +140,14 @@ export function ContractDocument({
       <p className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-3 text-[12px] leading-relaxed text-neutral-800">
         <strong>Ce document n’est pas un contrat de travail.</strong> Il présente la personne
         trouvée pour votre besoin et chiffre ce que représenterait son engagement. Si vous
-        l’acceptez, votre établissement conclut directement un CDD avec elle : vous en êtes
+        l’acceptez, votre structure conclut directement un CDD avec elle : vous en êtes
         l’employeur, et la plateforme n’intervient ni dans la rémunération ni dans le lien de
         subordination.
       </p>
 
       <div className="mb-6 grid grid-cols-2 gap-4">
         <section className="rounded-lg border border-neutral-200 p-3">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Établissement</h2>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Structure</h2>
           <p className="font-medium">{est?.legalName || est?.name || ", "}</p>
           {est?.siret ? <p>SIRET : {est.siret}</p> : null}
           <p>{[est?.address, est?.city].filter(Boolean).join(", ") || ", "}</p>
@@ -182,14 +182,14 @@ export function ContractDocument({
           Le montant indiqué est une rémunération brute estimée : les cotisations patronales s’y
           ajoutent et dépendent de votre convention collective, de votre effectif et des
           exonérations dont vous bénéficiez. Une fois cette proposition acceptée par les deux
-          parties, votre établissement établit le contrat à durée déterminée, les éléments
+          parties, votre structure établit le contrat à durée déterminée, les éléments
           ci-dessus y sont repris automatiquement, et l’outil vérifie qu’aucune mention
           obligatoire ne manque avant de vous laisser le transmettre au salarié.
         </p>
       </section>
 
       <div className="grid grid-cols-2 gap-6">
-        <SignBlock title="Accord de l'établissement" signedAt={contract.signedEstablishmentAt} name={est?.name} />
+        <SignBlock title="Accord de la structure" signedAt={contract.signedEstablishmentAt} name={est?.name} />
         <SignBlock title="Accord de la personne" signedAt={contract.signedFreelanceAt} name={fullName(fl, contract.account?.name)} />
       </div>
 

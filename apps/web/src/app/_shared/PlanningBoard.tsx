@@ -895,7 +895,7 @@ function NewShiftModal({
             </div>
             <p className="text-sm text-muted-foreground">
               Ces plafonds se calculent sur <strong>tous les employeurs</strong> de
-              l&apos;intervenant, pas seulement sur votre établissement. Vous pouvez passer
+              l&apos;intervenant, pas seulement sur votre structure. Vous pouvez passer
               outre, mais le motif sera enregistré avec votre nom et la date, et restera
               consultable en cas de contrôle.
             </p>

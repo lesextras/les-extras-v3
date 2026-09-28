@@ -38,7 +38,7 @@ export default async function AdminConformitePage() {
     <div className="space-y-6">
       <PageHeader
         title="Coffre-fort de conformité"
-        subtitle="Suivi réglementaire des pièces obligatoires des intervenants, agrégé par établissement."
+        subtitle="Suivi réglementaire des pièces obligatoires des intervenants, agrégé par structure."
       />
 
       {error || !data ? (
@@ -46,7 +46,7 @@ export default async function AdminConformitePage() {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <StatCard label="Établissements suivis" value={data.totalAccounts} accent="neutral" />
+            <StatCard label="Structures suivies" value={data.totalAccounts} accent="neutral" />
             <StatCard
               label="Pièces à renouveler"
               value={data.accounts.reduce((acc, a) => acc + a.expiringSoon, 0)}
@@ -61,7 +61,7 @@ export default async function AdminConformitePage() {
 
           {data.accounts.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
-              Aucun établissement à afficher pour le moment.
+              Aucune structure à afficher pour le moment.
             </div>
           ) : (
             <div className="space-y-3">

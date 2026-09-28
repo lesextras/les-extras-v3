@@ -19,7 +19,7 @@ const PORTES = [
     // reconnaît ni dans « établissement » ni dans « professionnel », et s'en
     // va. Hors offre complète, la demande est ouverte à tous — l'étiquette dit
     // ce qu'on vient FAIRE, plus ce qu'on EST.
-    qui: renfortSalarieVisible() ? "Je suis un établissement" : "Je cherche un intervenant",
+    qui: renfortSalarieVisible() ? "Je suis une structure" : "Je cherche un intervenant",
     // ⚠ « gérer vos remplacements » et « renfort en cascade » annoncent le
     // renfort de POSTE, sorti de l'offre publique le 19/09/2026 (voir
     // `@/lib/offre`). C'est la première carte que voit un directeur : elle ne

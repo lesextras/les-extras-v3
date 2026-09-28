@@ -44,9 +44,9 @@ import {
 // comptes — structure, intervenant, particulier — et une personne seule n'a
 // pas de « rôle » à afficher à côté de son nom.
 function libelleType(type?: string): string {
-  if (type === 'ESTABLISHMENT') return 'Établissement';
+  if (type === 'ESTABLISHMENT') return 'Structure';
   if (type === 'PARTICULIER') return 'Particulier';
-  return 'Intervenant';
+  return 'Intervenant indépendant';
 }
 
 export interface HeaderProps {

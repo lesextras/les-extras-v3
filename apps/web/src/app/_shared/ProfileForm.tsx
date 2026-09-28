@@ -174,7 +174,7 @@ export function ProfileForm({
               <Field
                 label="Taux horaire (€)"
                 htmlFor="hourlyRate"
-                hint="Le tarif affiché aux établissements sur votre profil."
+                hint="Le tarif affiché aux structures sur votre profil."
               >
                 <Input
                   id="hourlyRate"

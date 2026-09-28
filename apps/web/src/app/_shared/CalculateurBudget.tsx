@@ -42,7 +42,7 @@ export function CalculateurBudget() {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr]">
       <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-soft">
         <p className="inline-flex items-center gap-2 text-sm font-semibold">
-          <PiggyBank className="size-4 text-primary" /> Votre établissement
+          <PiggyBank className="size-4 text-primary" /> Votre structure
         </p>
         <Champ label="Jeunes / résidents accueillis" valeur={jeunes} setValeur={setJeunes} />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

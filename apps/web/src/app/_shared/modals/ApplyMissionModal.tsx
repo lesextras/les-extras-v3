@@ -49,7 +49,7 @@ export function ApplyMissionModal({
       });
       toast({
         title: "Candidature envoyée",
-        description: "L'établissement va étudier votre profil. Suivez la conversation dans l'inbox.",
+        description: "La structure va étudier votre profil. Suivez la conversation dans l'inbox.",
       });
       setOpen(false);
       router.refresh();

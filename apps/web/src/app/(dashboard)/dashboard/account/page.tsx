@@ -64,7 +64,7 @@ export default async function AccountPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        title={isFreelance ? "Mon compte" : "Mon établissement"}
+        title={isFreelance ? "Mon compte" : "Ma structure"}
         subtitle={session.account.name}
       />
 
@@ -95,7 +95,7 @@ export default async function AccountPage({
             <div className="mt-6 space-y-2">
               <SectionTitle title="Mon CV" />
               <p className="text-sm text-muted-foreground">
-                Diplômes et expériences visibles par les établissements qui consultent votre profil.
+                Diplômes et expériences visibles par les structures qui consultent votre profil.
               </p>
               <CvManager accountId={accountId} />
             </div>
@@ -130,7 +130,7 @@ export default async function AccountPage({
                 </div>
                 <Badge>
                   {session.account.type === "ESTABLISHMENT"
-                    ? "Établissement"
+                    ? "Structure"
                     : session.account.type === "PARTICULIER"
                       ? "Particulier"
                       : "Intervenant"}

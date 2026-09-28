@@ -26,7 +26,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   "/dashboard/contrats": {
     titre: "Vous embauchez, l'outil calcule",
     texte:
-      "Votre établissement reste l'employeur : le CDD est conclu entre lui et la personne, sans intermédiaire ni mise à disposition. Ce que l'outil apporte, c'est le calcul que personne ne refait à chaque contrat : période d'essai maximale, indemnité de fin de contrat, délai de carence avant de repourvoir le poste, date limite de transmission et fenêtre de la DPAE.",
+      "Votre structure reste l'employeur : le CDD est conclu entre elle et la personne, sans intermédiaire ni mise à disposition. Ce que l'outil apporte, c'est le calcul que personne ne refait à chaque contrat : période d'essai maximale, indemnité de fin de contrat, délai de carence avant de repourvoir le poste, date limite de transmission et fenêtre de la DPAE.",
     etapes: [
       "Créez le brouillon : la personne, le motif de recours, les dates.",
       "Complétez les mentions obligatoires : la transmission est refusée tant qu'il en manque une, parce qu'un CDD incomplet vaut CDI.",
@@ -89,7 +89,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/opportunites': {
     titre: 'Vos opportunités',
     texte:
-      'Les missions publiées par les établissements qui correspondent à votre profil, classées par pertinence. Postulez directement depuis la fiche.',
+      'Les missions publiées par les structures qui correspondent à votre profil, classées par pertinence. Postulez directement depuis la fiche.',
     etapes: ['Ouvrez une mission pour voir le détail', 'Postulez en un clic', 'Suivez vos candidatures ici même'],
   },
   '/dashboard/facturation': {
@@ -115,12 +115,12 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/planning': {
     titre: 'Votre planning',
     texte:
-      'Toutes vos interventions confirmées, jour par jour. Les heures effectuées se déclarent ici puis sont validées par l’établissement : c’est ce qui déclenche la facturation.',
+      'Toutes vos interventions confirmées, jour par jour. Les heures effectuées se déclarent ici puis sont validées par la structure : c’est ce qui déclenche la facturation.',
   },
   '/dashboard/inbox': {
     titre: 'Messagerie',
     texte:
-      'Vos échanges avec les établissements ou les intervenants, liés à chaque mission ou réservation. Tout reste tracé au même endroit.',
+      'Vos échanges avec les structures ou les intervenants, liés à chaque mission ou réservation. Tout reste tracé au même endroit.',
   },
   '/dashboard/activites': {
     titre: 'Générateur d’activités',
@@ -142,7 +142,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/dashboard/formations': {
     titre: 'Formations',
     texte:
-      'Les sessions de formation : inscriptions, émargements, attestations. Côté établissement, inscrivez vos salariés ; côté formateur, gérez vos sessions.',
+      'Les sessions de formation : inscriptions, émargements, attestations. Côté structure, inscrivez vos salariés ; côté formateur, gérez vos sessions.',
   },
   '/dashboard/devis': {
     titre: 'Devis',
@@ -252,7 +252,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/admin/etablissements': {
     titre: 'Comptes',
     texte:
-      'Chaque compte (établissement ou intervenant) avec son titulaire. Un compte Les Extras appartient à une seule personne ; dépliez-le pour voir les accès enregistrés.',
+      'Chaque compte (structure ou intervenant) avec son titulaire. Un compte Les Extras appartient à une seule personne ; dépliez-le pour voir les accès enregistrés.',
   },
   '/admin/utilisateurs': {
     titre: 'Utilisateurs',
@@ -262,7 +262,7 @@ const AIDE: Record<string, PageHelpEntry> = {
   '/admin/conformite': {
     titre: 'Conformité des intervenants',
     texte:
-      'La complétude des pièces obligatoires, agrégée par établissement. Rouge = pièce manquante ou expirée : à relancer.',
+      'La complétude des pièces obligatoires, agrégée par structure. Rouge = pièce manquante ou expirée : à relancer.',
   },
   '/admin/invitations': {
     titre: 'Invitations Piloter',

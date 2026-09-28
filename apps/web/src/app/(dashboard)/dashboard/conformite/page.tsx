@@ -20,8 +20,8 @@ export default async function ConformitePage() {
       <div className="space-y-6">
         <PageHeader title="Conformité" />
         <EmptyState
-          title="Réservé aux établissements"
-          description="Le suivi des pièces obligatoires des intervenants est accessible depuis un compte établissement."
+          title="Réservé aux structures"
+          description="Le suivi des pièces obligatoires des intervenants est accessible depuis un compte structure."
           action={
             <Button asChild>
               <Link href="/dashboard">Retour au tableau de bord</Link>

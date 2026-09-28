@@ -129,7 +129,7 @@ export function RemunerationFormateur({
         <h3 className="font-semibold text-foreground">Rémunération du formateur</h3>
         <p className="text-xs text-muted-foreground">
           {peutFixer
-            ? "Ce que vous achetez au formateur, distinct du prix vendu à l’établissement. C’est ce montant qu’il vous facturera."
+            ? "Ce que vous achetez au formateur, distinct du prix vendu à la structure. C’est ce montant qu’il vous facturera."
             : "Le montant convenu avec l’organisme pour cette session. Vous facturez sous votre propre SIRET."}
         </p>
       </CardHeader>

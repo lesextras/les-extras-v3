@@ -98,7 +98,7 @@ export function BlocParrainage({ accountId }: { accountId: string }) {
     <Card className="border-primary/25 bg-primary-soft/20">
       <CardContent className="p-6">
         <h2 className="text-base font-semibold text-foreground">
-          Parrainez un établissement ou une institution
+          Parrainez une structure ou une institution
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Une MECS, un IME, un ITEP, un SESSAD, un EHPAD, un CCAS : quand la
@@ -136,7 +136,7 @@ export function BlocParrainage({ accountId }: { accountId: string }) {
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           C'est le même lien : c'est ce que votre filleul choisit à
-          l'inscription, établissement ou intervenant, qui décide du montant.
+          l'inscription, structure ou intervenant, qui décide du montant.
         </p>
       </CardContent>
     </Card>

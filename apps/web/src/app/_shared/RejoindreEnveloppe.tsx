@@ -79,7 +79,7 @@ export function RejoindreEnveloppe({ jeton }: { jeton?: string }) {
             <p className="text-sm text-muted-foreground">
               {apercu.qui} vous offre jusqu’à <strong className="text-foreground">{apercu.plafondMensuel} générations par mois</strong> avec LEX,
               l’assistant d’écriture de Les Extras
-              {apercu.partageTrames ? ", avec les trames maison de l’établissement" : ""}.
+              {apercu.partageTrames ? ", avec les trames maison de la structure" : ""}.
             </p>
             <div className="flex items-start gap-2 rounded-lg bg-muted/50 p-3 text-left text-sm">
               <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />

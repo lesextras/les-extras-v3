@@ -24,13 +24,13 @@ export default async function DisponibilitePage() {
     <div className="space-y-6">
       <PageHeader
         title="Ma disponibilité"
-        subtitle="Ce que vous acceptez de faire, où vous pouvez vous déplacer, et si les établissements peuvent vous voir."
+        subtitle="Ce que vous acceptez de faire, où vous pouvez vous déplacer, et si les structures peuvent vous voir."
       />
 
       {error || !data ? (
         <ErrorState
           title="Page indisponible"
-          description="Cette page ne concerne pas les comptes d’établissement : ce sont les professionnels qui s’y déclarent, depuis leur propre compte."
+          description="Cette page ne concerne pas les comptes structure : ce sont les professionnels qui s’y déclarent, depuis leur propre compte."
           retryHref="/dashboard/disponibilite"
         />
       ) : (
@@ -39,7 +39,7 @@ export default async function DisponibilitePage() {
 
       <Card>
         <CardContent className="space-y-2 p-5 text-sm">
-          <p className="font-semibold">Ce que les établissements voient</p>
+          <p className="font-semibold">Ce que les structures voient</p>
           <p className="text-muted-foreground" lang="fr">
             Votre nom, votre métier, les départements où vous pouvez vous
             déplacer et vos deux lignes de présentation.{' '}

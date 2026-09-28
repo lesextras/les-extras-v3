@@ -99,8 +99,8 @@ export class ConformiteScheduler {
         title: `Votre dossier : ${nbValides}/${requis.length} pièces vérifiées`,
         body:
           manquantes === 1
-            ? 'Il manque une pièce obligatoire. Un établissement ne confie pas d’intervention sans dossier complet : déposez-la, la structure la vérifie, et votre fiche l’affichera.'
-            : `Il manque ${manquantes} pièces obligatoires. Un établissement ne confie pas d’intervention sans dossier complet : déposez-les, la structure les vérifie, et votre fiche l’affichera.`,
+            ? 'Il manque une pièce obligatoire. Une structure ne confie pas d’intervention sans dossier complet : déposez-la, la structure la vérifie, et votre fiche l’affichera.'
+            : `Il manque ${manquantes} pièces obligatoires. Une structure ne confie pas d’intervention sans dossier complet : déposez-les, la structure les vérifie, et votre fiche l’affichera.`,
         link: '/dashboard/mon-dossier',
       });
       envoyes += 1;

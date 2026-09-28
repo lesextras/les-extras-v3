@@ -167,7 +167,7 @@ export async function contratCddPdf(d: DonneesContratPdf): Promise<Buffer> {
   garderPlace(doc, 200);
   encadre(
     doc,
-    "L'établissement signataire est l'employeur : il conclut ce contrat en son nom propre et en assume seul la responsabilité. Ce document a été généré à partir des règles du code du travail ; faites-le relire au regard de votre convention collective, qui peut prévoir des dispositions plus favorables au salarié que les planchers légaux appliqués ici.",
+    "La structure signataire est l'employeur : elle conclut ce contrat en son nom propre et en assume seule la responsabilité. Ce document a été généré à partir des règles du code du travail ; faites-le relire au regard de votre convention collective, qui peut prévoir des dispositions plus favorables au salarié que les planchers légaux appliqués ici.",
   );
 
   signatures(doc, `Pour l'employeur, ${employeur.legalName ?? employeur.name}`, `Le salarié, ${salarie}`);

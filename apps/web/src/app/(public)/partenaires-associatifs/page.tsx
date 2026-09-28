@@ -236,7 +236,7 @@ export default function PartenairesAssociatifsPage() {
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
           <Button asChild variant="outline" size="sm">
             <Link href="/renforteam">
-              Je suis un établissement <ArrowRight className="size-4" />
+              Je suis une structure <ArrowRight className="size-4" />
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">

@@ -5755,3 +5755,18 @@ glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
   CSP de `/visio` et `/classe` : `'wasm-unsafe-eval'` + `worker-src blob:`.
 - **Proposer mes services** (`/dashboard/devenir-intervenant`) relié : menu
   établissement (outils avancés), palette, et lien sur `/intervenant-independant`.
+
+### 28/09/2026 — trois comptes : structure, intervenant indépendant, particulier
+
+- Le type `ESTABLISHMENT` s'appelle **« structure »** partout où l'on parle du
+  COMPTE (inscription, menus, en-tête, admin, e-mails, notifications, erreurs,
+  CGU, aide, bot). « Mon établissement » → « Ma structure ». Le mot
+  « établissement » reste quand il désigne un LIEU (une MECS, les
+  établissements médico-sociaux, jours d'ouverture), dans les guides et les
+  textes juridiques. Garde-fou : motif « compte établissement » dans
+  `lib/__tests__/promesses-interdites.test.ts`.
+- `POST /auth/register` n'accepte plus que ESTABLISHMENT, FREELANCE,
+  PARTICULIER (`auth/trois-comptes.spec.ts`) : ASSOCIATION et ACADEMIE sont les
+  comptes de Piloter et ne s'ouvrent que depuis pilote.toulali.fr.
+- L'énumération Prisma n'est PAS renommée (aucune migration) : c'est un
+  identifiant, pas un texte lu.

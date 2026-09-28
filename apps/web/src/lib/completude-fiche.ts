@@ -112,7 +112,7 @@ export function analyserFiche(f: FichePourCompletude): PointDeCompletude[] {
     p(
       "material",
       "Matériel et lieu",
-      "Ce que l'établissement doit prévoir, et ce que vous apportez. Évite l'atelier annulé le matin même.",
+      "Ce que la structure doit prévoir, et ce que vous apportez. Évite l'atelier annulé le matin même.",
       f.material,
     ),
     p(

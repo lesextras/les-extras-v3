@@ -110,7 +110,7 @@ export function DevenirIntervenant({
           <Field
             label="Sous quel nom exercez-vous ?"
             htmlFor="nom-intervenant"
-            hint="C'est ce nom que verront les établissements sur vos fiches. Votre nom propre convient très bien."
+            hint="C'est ce nom que verront les structures sur vos fiches. Votre nom propre convient très bien."
           >
             <Input
               id="nom-intervenant"
@@ -124,7 +124,7 @@ export function DevenirIntervenant({
             Vos coordonnées d&apos;intervenant doivent être <strong>personnelles</strong>. Une
             activité indépendante ne se pilote pas depuis la messagerie et la ligne de son
             employeur : c&apos;est ce qui vous protège en cas de départ de la structure, et ce qui
-            évite toute confusion pour les établissements qui vous contactent.
+            évite toute confusion pour les structures qui vous contactent.
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

@@ -165,7 +165,7 @@ export function InvitationParrainage({ accountId }: { accountId: string }) {
   }
 
   const etapes = [
-    <>Envoyez votre lien à un confrère : établissement ou intervenant, il vaut pour les deux.</>,
+    <>Envoyez votre lien à un confrère : structure ou intervenant, il vaut pour les deux.</>,
     <>Il crée son compte avec ce lien. Gratuit, comme le vôtre.</>,
     <>
       À sa première prestation terminée&nbsp;:{' '}

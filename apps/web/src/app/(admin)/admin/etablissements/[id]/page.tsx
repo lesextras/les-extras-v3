@@ -63,7 +63,7 @@ export default async function AdminAccountDetailPage({ params: paramsPromesse }:
 
       <PageHeader
         title={a.name}
-        subtitle={a.type === "ESTABLISHMENT" ? "Établissement" : "Compte intervenant"}
+        subtitle={a.type === "ESTABLISHMENT" ? "Structure" : "Compte intervenant indépendant"}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -72,7 +72,7 @@ export default async function AdminAccountDetailPage({ params: paramsPromesse }:
             <h3 className="font-semibold text-foreground">Informations</h3>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <Row label="Type" value={a.type === "ESTABLISHMENT" ? "Établissement" : "Intervenant"} />
+            <Row label="Type" value={a.type === "ESTABLISHMENT" ? "Structure" : "Intervenant"} />
             <Row label="Raison sociale" value={a.legalName} />
             <Row label="SIRET" value={a.siret} />
             <Row label="Ville" value={[a.postalCode, a.city].filter(Boolean).join(" ")} />

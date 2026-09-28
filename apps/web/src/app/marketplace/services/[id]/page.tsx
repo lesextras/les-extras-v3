@@ -309,7 +309,7 @@ export default async function ServiceDetailPage({ params: paramsPromesse }: { pa
                           ))}
                         </span>
                         <span className="text-sm font-medium text-foreground">
-                          {fullName(a.author?.firstName, a.author?.lastName) || "Établissement"}
+                          {fullName(a.author?.firstName, a.author?.lastName) || "Structure"}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {formatDate(a.createdAt)}

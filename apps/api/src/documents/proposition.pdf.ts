@@ -87,7 +87,7 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
     "Ce document n'est pas un contrat de travail. Il présente la personne trouvée pour votre besoin de renfort et chiffre ce que représenterait son engagement. Si vous l'acceptez, votre établissement conclut directement un contrat à durée déterminée avec elle : vous en êtes l'employeur, et la plateforme n'intervient ni dans la rémunération ni dans le lien de subordination.",
   );
 
-  titreSection(doc, 'Établissement demandeur');
+  titreSection(doc, 'Structure demandeuse');
   ligne(doc, 'Structure', e?.legalName ?? e?.name ?? 'Non renseigné');
   ligne(
     doc,
@@ -147,7 +147,7 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
       ],
       [
         'Taux horaire brut annoncé',
-        ch.tauxHoraire !== null ? 'proposé par votre établissement' : 'à convenir',
+        ch.tauxHoraire !== null ? 'proposé par votre structure' : 'à convenir',
         ch.tauxHoraire !== null ? euros(ch.tauxHoraire) : ', ',
       ],
       [
@@ -163,7 +163,7 @@ export async function propositionPdf(d: DonneesPropositionPdf): Promise<Buffer> 
   titreSection(doc, 'Ce qui se passe ensuite');
   paragraphe(
     doc,
-    "1. Vous acceptez cette proposition. 2. Votre établissement établit le contrat à durée déterminée : depuis l'écran Contrats CDD, les éléments ci-dessus sont repris automatiquement et il ne reste qu'à compléter les mentions qui relèvent de vous, convention collective, caisse de retraite complémentaire, organisme de prévoyance. 3. L'outil vérifie que rien ne manque au regard de l'article L. 1242-12 avant de vous laisser transmettre le contrat au salarié, calcule la période d'essai, l'indemnité de fin de contrat et le délai de carence, et contrôle que les plafonds de durée du travail sont respectés : tous employeurs confondus.",
+    "1. Vous acceptez cette proposition. 2. Votre structure établit le contrat à durée déterminée : depuis l'écran Contrats CDD, les éléments ci-dessus sont repris automatiquement et il ne reste qu'à compléter les mentions qui relèvent de vous, convention collective, caisse de retraite complémentaire, organisme de prévoyance. 3. L'outil vérifie que rien ne manque au regard de l'article L. 1242-12 avant de vous laisser transmettre le contrat au salarié, calcule la période d'essai, l'indemnité de fin de contrat et le délai de carence, et contrôle que les plafonds de durée du travail sont respectés : tous employeurs confondus.",
   );
 
   // ⚠ Pas de `flushPages()` ici : il viderait le tampon de pages et `pied()`

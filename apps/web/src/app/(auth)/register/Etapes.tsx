@@ -426,7 +426,7 @@ const ACTIVITES: Activite[] = [
   {
     cle: 'RENFORT_CDD',
     titre: 'Faire des remplacements',
-    aide: 'Un poste à couvrir, une absence : l’établissement vous embauche.',
+    aide: 'Un poste à couvrir, une absence : la structure vous embauche.',
     montage: 'CDD salarié',
   },
   {
@@ -524,8 +524,8 @@ function BlocVisibilite({
 }) {
   return (
     <Carte
-      titre="Être visible des établissements"
-      aide="Votre profil apparaît dans la liste que consultent les établissements qui cherchent quelqu’un. Ils vous écrivent ici ; vos coordonnées ne sont jamais affichées."
+      titre="Être visible des structures"
+      aide="Votre profil apparaît dans la liste que consultent les structures qui cherchent quelqu’un. Elles vous écrivent ici ; vos coordonnées ne sont jamais affichées."
     >
       <label
         className={cn(
@@ -588,7 +588,7 @@ function BlocVisibilite({
             />
             <Aide>
               Ce n’est pas un CV. N’y mettez ni téléphone ni adresse : les
-              établissements vous écrivent par la messagerie.
+              structures vous écrivent par la messagerie.
             </Aide>
           </div>
         </div>
@@ -858,7 +858,7 @@ export function EtapeDisponibilite({ onFait }: { onFait: () => void }) {
             <CarteUsage
               icone={Users}
               titre="Faire du renfort en CDD"
-              aide="L’établissement vous embauche. Aucune structure ni SIRET à fournir."
+              aide="La structure vous embauche. Aucune entreprise ni SIRET à fournir."
               etiquette="CDD salarié"
               actif={remplacer}
               onBascule={() => setRemplacer(!remplacer)}

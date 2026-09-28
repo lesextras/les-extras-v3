@@ -14,7 +14,7 @@ const AVANTAGES = [
   {
     titre: "Vous gardez 100 % de votre tarif",
     detail:
-      "L'établissement paie exactement votre tarif : rien n'est prélevé sur vous, rien ne lui est ajouté.",
+      "La structure paie exactement votre tarif : rien n'est prélevé sur vous, rien ne lui est ajouté.",
   },
   {
     // Le texte annonçait « vous facturez l'association, l'association facture
@@ -25,7 +25,7 @@ const AVANTAGES = [
     // et le numérote, sous le SIRET de l'intervenant.
     titre: "Aucune démarche administrative de plus",
     detail:
-      "Devis, contrat et facture sont préparés depuis votre compte, à votre nom et sous votre SIRET. Vous facturez l'établissement en direct.",
+      "Devis, contrat et facture sont préparés depuis votre compte, à votre nom et sous votre SIRET. Vous facturez la structure en direct.",
   },
   {
     titre: "Publier est gratuit",

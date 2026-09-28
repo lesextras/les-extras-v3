@@ -96,7 +96,7 @@ export default async function InboxPage({
         title="Messagerie"
         subtitle={
           estIntervenant
-            ? "Vos échanges avec les établissements, les familles et Les Extras, chacun lié à sa demande."
+            ? "Vos échanges avec les structures, les familles et Les Extras, chacun lié à sa demande."
             : "Vos échanges avec les intervenants et Les Extras, chacun lié à sa demande."
         }
       />

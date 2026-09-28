@@ -277,7 +277,7 @@ export class VivierService {
       .create(intervenant.ownerId, {
         type: 'VIVIER_AJOUT',
         title: 'Vous êtes dans un vivier',
-        body: `${etablissement?.name ?? 'Un établissement'} vous a ajouté à ses intervenants habituels : ses besoins de renfort vous parviendront en priorité.`,
+        body: `${etablissement?.name ?? 'Une structure'} vous a ajouté à ses intervenants habituels : ses besoins de renfort vous parviendront en priorité.`,
         link: '/dashboard/opportunites',
       })
       .catch(() => undefined);
@@ -329,7 +329,7 @@ export class VivierService {
         account: { select: { name: true } },
       },
     });
-    if (!mission) throw new NotFoundException('Mission introuvable dans votre établissement.');
+    if (!mission) throw new NotFoundException('Mission introuvable dans votre structure.');
 
     // Le palier SALARIES (réservé à l'équipe interne) n'existe plus depuis le
     // 24/09/2026 : une mission qui le porterait encore est lue comme RESERVED,
@@ -365,7 +365,7 @@ export class VivierService {
       comptes.map((c) =>
         this.notifications.create(c.ownerId, {
           type: 'VIVIER_RAPPEL',
-          title: `${mission.account?.name ?? 'Un établissement'} vous sollicite`,
+          title: `${mission.account?.name ?? 'Une structure'} vous sollicite`,
           body: `« ${mission.title} » ${quand}${heure}${lieu}. Vous êtes sollicité directement parce que vous connaissez déjà la structure.`,
           link: `/marketplace/missions/${mission.id}`,
         }),
@@ -394,7 +394,7 @@ export class VivierService {
   /** Garde-fou : le vivier n'a de sens que pour un établissement. */
   assertEtablissement(type: AccountType) {
     if (type !== AccountType.ESTABLISHMENT) {
-      throw new ForbiddenException('Le vivier est propre aux établissements.');
+      throw new ForbiddenException('Le vivier est propre aux structures.');
     }
   }
 }

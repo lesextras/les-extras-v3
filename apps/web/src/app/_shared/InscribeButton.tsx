@@ -27,7 +27,7 @@ import { apiRequest } from "@/lib/api";
 import { Field } from "./form-fields";
 
 const FINANCING = [
-  { value: "ESTABLISHMENT", label: "Établissement (plan de développement des compétences)" },
+  { value: "ESTABLISHMENT", label: "Structure (plan de développement des compétences)" },
   { value: "CPF", label: "CPF (Compte personnel de formation)" },
   { value: "OPCO", label: "OPCO" },
   { value: "PERSONAL", label: "Financement personnel" },

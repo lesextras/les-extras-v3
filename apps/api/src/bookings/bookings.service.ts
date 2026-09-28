@@ -445,7 +445,7 @@ export class BookingsService {
     throw new ForbiddenException(
       booking.service
         ? "Seul l'intervenant qui propose cet atelier peut faire avancer la réservation. En tant que demandeur, vous pouvez l'annuler."
-        : "Seul l'établissement qui a publié cette mission peut faire avancer la réservation. En tant que candidat, vous pouvez retirer votre candidature.",
+        : "Seule la structure qui a publié cette mission peut faire avancer la réservation. En tant que candidat, vous pouvez retirer votre candidature.",
     );
   }
 
@@ -956,7 +956,7 @@ export class BookingsService {
     // réservation.
     const { etablissementId } = BookingsService.partiesDe(booking);
     if (accountId !== etablissementId) {
-      throw new ForbiddenException("Seul l'établissement peut valider le temps de travail.");
+      throw new ForbiddenException("Seule la structure peut valider le temps de travail.");
     }
     if (!this.ajustementOuvert(booking)) {
       throw new BadRequestException(

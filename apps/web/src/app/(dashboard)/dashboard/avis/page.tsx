@@ -82,7 +82,7 @@ export default async function AvisPage() {
                           <p className="font-semibold text-foreground">{item.label}</p>
                           <Badge variant="outline">
                             {item.counterpart.accountType === "ESTABLISHMENT"
-                              ? "Établissement"
+                              ? "Structure"
                               : "Intervenant"}
                           </Badge>
                         </div>

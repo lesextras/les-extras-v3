@@ -909,7 +909,7 @@ export class ConversationsService {
     if (membre === 0 && candidature === 0 && engagement === 0) {
       throw new ForbiddenException(
         'Vous ne pouvez écrire au sujet de cette mission qu’après y avoir répondu. ' +
-          'Candidatez ou prenez la mission : la messagerie s’ouvrira alors avec l’établissement.',
+          'Candidatez ou prenez la mission : la messagerie s’ouvrira alors avec la structure.',
       );
     }
 

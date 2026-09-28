@@ -31,16 +31,16 @@ const CHOIX: Record<
   { bouton: string; icone: typeof Building2; champ: string; aide: string }
 > = {
   ESTABLISHMENT: {
-    bouton: "Créer mon compte établissement",
+    bouton: "Créer mon compte structure",
     icone: Building2,
-    champ: "Nom de votre établissement",
+    champ: "Nom de votre structure",
     aide: "Il fixe l’adresse publique du compte : écrivez-le comme vous le dites (MECS Les Tilleuls).",
   },
   FREELANCE: {
     bouton: "Créer mon compte intervenant",
     icone: UserRound,
     champ: "Sous quel nom exercez-vous ?",
-    aide: "C’est ce nom que verront les établissements. Votre nom propre convient très bien.",
+    aide: "C’est ce nom que verront les structures. Votre nom propre convient très bien.",
   },
 };
 

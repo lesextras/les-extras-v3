@@ -52,8 +52,8 @@ const DESTINATIONS: Dest[] = [
   { label: "Opportunités", href: "/dashboard/opportunites", group: "Intervenant", keywords: "matching missions" },
   { label: "Mes ateliers", href: "/dashboard/ateliers", group: "Intervenant", keywords: "services educatheures" },
   { label: "Mes formations", href: "/dashboard/formations", group: "Intervenant", keywords: "formation session émargement apprenants attestation" },
-  { label: "RenforTeam", href: "/dashboard/renforts", group: "Établissement", keywords: "remplacement besoin publier" },
-  { label: "Formations", href: "/marketplace/formations", group: "Établissement", keywords: "catalogue certifiant qualiopi inscription salariés" },
+  { label: "RenforTeam", href: "/dashboard/renforts", group: "Structure", keywords: "remplacement besoin publier" },
+  { label: "Formations", href: "/marketplace/formations", group: "Structure", keywords: "catalogue certifiant qualiopi inscription salariés" },
   { label: "Mes réservations", href: "/dashboard/reservations", group: "Navigation", keywords: "reservations bookings renfort atelier formation inscriptions contrat tout" },
   { label: "Mes réservations ateliers", href: "/dashboard/reservations/ateliers", group: "Navigation", keywords: "reservations ateliers commandes interventions date statut" },
   { label: "Mes réservations formation", href: "/dashboard/reservations/formations", group: "Navigation", keywords: "reservations formations inscriptions session apprenant financement attestation" },
@@ -62,12 +62,12 @@ const DESTINATIONS: Dest[] = [
   { label: "Partager LEX avec mon équipe", href: "/dashboard/lex-equipe", group: "Navigation", keywords: "lex credits enveloppe equipe partager inviter plafond" },
   { label: "Proposer mes services en mon nom", href: "/dashboard/devenir-intervenant", group: "Navigation", keywords: "intervenant independant proposer services compte intervenant ateliers" },
   { label: "Mon agenda", href: "/dashboard/agenda", group: "Navigation", keywords: "agenda calendrier rendez-vous outlook partage partager" },
-  { label: "Contrats CDD", href: "/dashboard/contrats", group: "Établissement", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
+  { label: "Contrats CDD", href: "/dashboard/contrats", group: "Structure", keywords: "cdd contrat embauche precarite carence dpae periode essai" },
   { label: "Messagerie", href: "/dashboard/inbox", group: "Navigation", keywords: "messages chat conversation" },
   // Retirées du menu de gauche le 12/08/2026 pour l'alléger : la palette
   // devient leur chemin d'accès, avec des mots-clés larges pour qu'on les
   // trouve sans connaître leur nom exact.
-  { label: "Conformité", href: "/dashboard/conformite", group: "Établissement", keywords: "pièces obligatoires cni casier judiciaire diplôme permis échéance manquant" },
+  { label: "Conformité", href: "/dashboard/conformite", group: "Structure", keywords: "pièces obligatoires cni casier judiciaire diplôme permis échéance manquant" },
   /*
     ⚠ AJOUTÉES LE 21/09/2026, EN MÊME TEMPS QUE L'ALLÈGEMENT DU MENU.
 
@@ -82,19 +82,19 @@ const DESTINATIONS: Dest[] = [
     qui quitte le menu de gauche se vérifie dans la palette, sinon on livre une
     fonctionnalité que personne ne retrouve.
   */
-  { label: "Mes alertes", href: "/dashboard/alertes", group: "Établissement", keywords: "alerte recherche catalogue prévenir nouveauté atelier département notification" },
-  { label: "Mon vivier RenforTeam", href: "/dashboard/vivier", group: "Établissement", keywords: "vivier intervenants connus carnet adresses rappeler renfort" },
-  { label: "Personnes disponibles", href: "/dashboard/vivier-ouvert", group: "Établissement", keywords: "vivier ouvert disponibilités remplaçants cdd renfort personnalisé métier département" },
+  { label: "Mes alertes", href: "/dashboard/alertes", group: "Structure", keywords: "alerte recherche catalogue prévenir nouveauté atelier département notification" },
+  { label: "Mon vivier RenforTeam", href: "/dashboard/vivier", group: "Structure", keywords: "vivier intervenants connus carnet adresses rappeler renfort" },
+  { label: "Personnes disponibles", href: "/dashboard/vivier-ouvert", group: "Structure", keywords: "vivier ouvert disponibilités remplaçants cdd renfort personnalisé métier département" },
   { label: "Avis", href: "/dashboard/avis", group: "Mon espace", keywords: "avis évaluation note retour commentaire intervenant" },
   { label: "Ma progression", href: "/dashboard/progression", group: "Intervenant", keywords: "palier niveau nouveau confirmé super extra accès prioritaire" },
   { label: "Mes publications", href: "/dashboard/actualites", group: "Mon espace", keywords: "édublog article actualité écrire publier visibilité" },
   { label: "Mes données personnelles", href: "/dashboard/donnees-personnelles", group: "Mon espace", keywords: "rgpd export suppression effacement vie privée confidentialité" },
   { label: "Boîte à idées", href: "/dashboard/idees", group: "Mon espace", keywords: "idée suggestion amélioration vote proposition" },
-  { label: "LEX · Crédits & abonnement", href: "/dashboard/adhesion", group: "Établissement", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },
+  { label: "LEX · Crédits & abonnement", href: "/dashboard/adhesion", group: "Structure", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },
   { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres facturation siret" },
   { label: "Admin, Vue d’ensemble", href: "/admin", group: "Admin", keywords: "back-office" },
   { label: "Admin, Utilisateurs", href: "/admin/utilisateurs", group: "Admin", keywords: "users comptes titulaire" },
-  { label: "Admin, Comptes", href: "/admin/etablissements", group: "Admin", keywords: "organisations comptes établissements intervenants titulaire" },
+  { label: "Admin, Comptes", href: "/admin/etablissements", group: "Admin", keywords: "organisations structures établissements comptes intervenants particuliers titulaire" },
   { label: "Admin, Invitations Piloter", href: "/admin/invitations", group: "Admin", keywords: "invitation piloter association académie révoquer renvoyer" },
   { label: "Admin, Catégories", href: "/admin/categories", group: "Admin", keywords: "taxonomie" },
   { label: "Admin, Articles", href: "/admin/articles", group: "Admin", keywords: "contenu blog" },
@@ -138,7 +138,7 @@ export function CommandPalette({
       if (d.premium && !isMember) return false;
       if (d.group === "Admin" && role !== "ADMIN") return false;
       if (d.group === "Freelance" && accountType === "ESTABLISHMENT" && role !== "ADMIN") return false;
-      if (d.group === "Établissement" && accountType === "FREELANCE" && role !== "ADMIN") return false;
+      if (d.group === "Structure" && accountType === "FREELANCE" && role !== "ADMIN") return false;
       /*
         ⚠ LE COMPTE PARTICULIER N'ÉTAIT TESTÉ NULLE PART (corrigé le
         16/09/2026). Les deux lignes ci-dessus ne retirent un groupe qu'en
@@ -152,7 +152,7 @@ export function CommandPalette({
         montrer vingt portes dont dix-huit lui sont fermées », lib/nav.ts) — la
         palette rouvrait les dix-huit.
       */
-      if (accountType === "PARTICULIER" && (d.group === "Freelance" || d.group === "Établissement")) {
+      if (accountType === "PARTICULIER" && (d.group === "Freelance" || d.group === "Structure")) {
         return false;
       }
       return true;

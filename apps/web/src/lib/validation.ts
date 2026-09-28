@@ -77,7 +77,7 @@ export const registerSchema = z
     (data) =>
       data.accountType !== 'ESTABLISHMENT' || (data.organizationName?.trim().length ?? 0) >= 2,
     {
-      message: 'Indiquez le nom de votre établissement.',
+      message: 'Indiquez le nom de votre structure.',
       path: ['organizationName'],
     },
   );

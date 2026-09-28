@@ -91,8 +91,8 @@ export default async function RenfortsPage() {
       <div className="space-y-6">
         <PageHeader title="RenforTeam" />
         <EmptyState
-          title="Réservé aux établissements"
-          description="Le board de publication des renforts est accessible depuis un compte établissement."
+          title="Réservé aux structures"
+          description="Le board de publication des renforts est accessible depuis un compte structure."
           action={
             <Button asChild>
               <Link href="/marketplace">Voir les missions ouvertes</Link>

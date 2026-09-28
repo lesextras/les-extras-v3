@@ -47,7 +47,7 @@ export function DecompositionPrix({
         )}
         <div className="flex items-baseline justify-between gap-4 border-t border-border pt-2">
           <dt className={vue === "etablissement" ? "font-medium text-foreground" : "text-muted-foreground"}>
-            {vue === "etablissement" ? "Vous payez" : "Facturé à l'établissement"}
+            {vue === "etablissement" ? "Vous payez" : "Facturé à la structure"}
           </dt>
           <dd
             className={
@@ -61,17 +61,17 @@ export function DecompositionPrix({
         </div>
       </dl>
       {/* Le texte décrit le circuit réellement exécuté par l'API : la facture
-          d'atelier est émise par l'intervenant et adressée à l'établissement
+          d'atelier est émise par l'intervenant et adressée à la structure
           (bookings.service.ts, émetteur = compte de la fiche atelier). Il a
           longtemps annoncé l'inverse, facturer l'association, ce qui menait
           l'intervenant à adresser sa facture au mauvais destinataire. */}
       <p className="mt-3 text-xs text-muted-foreground">
         {d.commission > 0
           ? vue === "intervenant"
-            ? `Rien n'est prélevé sur votre tarif : les ${pct} % de frais de gestion sont ajoutés au prix client. Vous facturez l'établissement à votre tarif, sans démarche de plus.`
+            ? `Rien n'est prélevé sur votre tarif : les ${pct} % de frais de gestion sont ajoutés au prix client. Vous facturez la structure à votre tarif, sans démarche de plus.`
             : `Les frais de gestion couvrent le contrat, l'assurance et la vérification des pièces obligatoires. À titre de comparaison, une agence d'intérim applique un coefficient de 1,9 à 2,2 sur le salaire brut.`
           : vue === "intervenant"
-            ? `Rien n'est prélevé : l'établissement paie exactement votre tarif et vous le percevez intégralement. La contractualisation se fait entre vous et lui, et c'est vous qui lui adressez la facture depuis votre compte.`
+            ? `Rien n'est prélevé : la structure paie exactement votre tarif et vous le percevez intégralement. La contractualisation se fait entre vous et elle, et c'est vous qui lui adressez la facture depuis votre compte.`
             : `La mise en relation et l'aide à la contractualisation sont gratuites : vous payez le tarif de l'intervenant, rien de plus. La facture vous parvient de sa part, pas de l'association.`}
       </p>
     </div>

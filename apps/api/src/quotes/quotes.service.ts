@@ -167,7 +167,7 @@ export class QuotesService {
       select: { type: true, name: true },
     });
     if (client.type !== 'ESTABLISHMENT') {
-      throw new BadRequestException('Seul un établissement peut demander un devis.');
+      throw new BadRequestException('Seule une structure peut demander un devis.');
     }
 
     let providerAccountId = dto.providerAccountId ?? null;
@@ -374,7 +374,7 @@ export class QuotesService {
 
   async accept(userId: string, id: string, accountId: string, signedFileId?: string) {
     const { quote, isClient } = await this.requireParticipant(userId, id, accountId);
-    if (!isClient) throw new ForbiddenException("Seul l'établissement peut accepter ce devis.");
+    if (!isClient) throw new ForbiddenException("Seule la structure peut accepter ce devis.");
     if (quote.status !== 'SENT') {
       throw new BadRequestException('Seul un devis envoyé peut être accepté.');
     }
@@ -477,7 +477,7 @@ export class QuotesService {
   /** Étape 3 bis — refus motivé (l'intervenant est prévenu). */
   async refuse(userId: string, id: string, accountId: string, reason?: string) {
     const { quote, isClient } = await this.requireParticipant(userId, id, accountId);
-    if (!isClient) throw new ForbiddenException("Seul l'établissement peut refuser ce devis.");
+    if (!isClient) throw new ForbiddenException("Seule la structure peut refuser ce devis.");
     if (quote.status !== 'SENT') {
       throw new BadRequestException('Seul un devis envoyé peut être refusé.');
     }

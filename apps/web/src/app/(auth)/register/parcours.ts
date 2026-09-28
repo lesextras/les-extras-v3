@@ -58,7 +58,7 @@ export const CHOIX_COMPTE: (ChoixCompte & {
     teinte: 'framboise',
     categorie: 'Je cherche',
     titre: 'Je cherche un intervenant',
-    accroche: 'Établissement, service, ou pour un proche.',
+    accroche: 'Structure, service, ou pour un proche.',
     benefice: 'Décrivez le besoin, le réseau répond, et les documents s’éditent ici.',
     // ⚠ Le verso est contraint par la hauteur de la carte : ces textes tiennent
     // en trois lignes, pas plus. Les rallonger les fait couper au survol.
@@ -79,7 +79,7 @@ export const CHOIX_COMPTE: (ChoixCompte & {
     categorie: 'Je propose',
     titre: 'Je propose mes services',
     accroche: 'Éducateur, moniteur, thérapeute, formateur, psychomotricien…',
-    benefice: 'Être trouvé par les établissements, et éditer vos devis et factures ici.',
+    benefice: 'Être trouvé par les structures, et éditer vos devis et factures ici.',
     detail: renfortSalarieVisible()
       ? 'Ateliers, formations, renforts personnalisés, à votre compte. Ou vos ' +
         'seules disponibilités, si vous venez pour des remplacements.'
@@ -153,13 +153,13 @@ export const QUI_DEMANDE: {
 }[] = [
   {
     type: 'ESTABLISHMENT',
-    titre: 'Un établissement ou un service',
+    titre: 'Une structure ou un service',
     aide: 'MECS, IME, ITEP, SESSAD, EHPAD, ESAT, école, mairie ou service jeunesse.',
   },
   {
     type: 'PARTICULIER',
     titre: 'Un particulier',
-    aide: 'Pour votre enfant, un proche, ou vous-même. Aucun établissement à déclarer.',
+    aide: 'Pour votre enfant, un proche, ou vous-même. Aucune structure à déclarer.',
   },
 ];
 

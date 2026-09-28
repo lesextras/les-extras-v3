@@ -95,7 +95,7 @@ export function RetenirIntervenant({
           <DialogTitle>{retenu ? `${nom}, note de service` : `Retenir ${nom}`}</DialogTitle>
           <DialogDescription>
             {retenu
-              ? "Cette note reste interne à votre établissement."
+              ? "Cette note reste interne à votre structure."
               : "Vos besoins de renfort lui parviendront en priorité, avant l'ouverture à toute la marketplace."}
           </DialogDescription>
         </DialogHeader>
@@ -103,7 +103,7 @@ export function RetenirIntervenant({
           <Field
             label="Ce qu'il faut savoir"
             htmlFor="note"
-            hint="Visible de votre établissement seulement. Ex : « connaît le groupe des ados », « accepte les nuits », « à prévenir la veille »."
+            hint="Visible de votre structure seulement. Ex : « connaît le groupe des ados », « accepte les nuits », « à prévenir la veille »."
           >
             <Textarea id="note" name="note" rows={3} defaultValue={noteInterne ?? ""} />
           </Field>

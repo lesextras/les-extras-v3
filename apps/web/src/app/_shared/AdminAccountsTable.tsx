@@ -86,8 +86,9 @@ export interface AdminAccount {
 
 const TYPE_OPTIONS = [
   { value: "", label: "Tous les types" },
-  { value: "ESTABLISHMENT", label: "Établissements" },
-  { value: "FREELANCE", label: "Intervenants" },
+  { value: "ESTABLISHMENT", label: "Structures" },
+  { value: "FREELANCE", label: "Intervenants indépendants" },
+  { value: "PARTICULIER", label: "Particuliers" },
 ];
 
 function memberName(m: AdminMembership) {

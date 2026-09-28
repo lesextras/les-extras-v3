@@ -47,7 +47,7 @@ export function InterrupteurDisponibilite({
       toast({
         title: cible ? "Vous êtes de nouveau disponible" : "Vous êtes en pause",
         description: cible
-          ? "Vous réapparaissez dans les suggestions envoyées aux établissements."
+          ? "Vous réapparaissez dans les suggestions envoyées aux structures."
           : "Vous ne serez plus suggéré tant que vous n'aurez pas rebasculé. Votre profil et vos fiches restent en ligne.",
       });
       router.refresh();
@@ -73,7 +73,7 @@ export function InterrupteurDisponibilite({
         </div>
         <p className="mt-0.5 max-w-prose text-xs text-muted-foreground">
           {etat
-            ? "Vous apparaissez dans les suggestions envoyées aux établissements qui cherchent un renfort."
+            ? "Vous apparaissez dans les suggestions envoyées aux structures qui cherchent un renfort."
             : "Vous n'apparaissez plus dans les suggestions. Votre profil, vos fiches et vos interventions en cours ne bougent pas : rebasculez quand vous voulez."}
         </p>
       </div>

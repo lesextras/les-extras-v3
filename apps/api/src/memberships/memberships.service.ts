@@ -149,7 +149,7 @@ export class MembershipsService {
       select: { id: true },
     });
     if (!existe) {
-      throw new NotFoundException('Cette personne ne fait pas partie de votre établissement.');
+      throw new NotFoundException('Cette personne ne fait pas partie de votre structure.');
     }
     const page = await this.list(account, { perPage: 1, page: 1, membershipId: existe.id });
     return page.items[0];

@@ -45,7 +45,7 @@ export default async function ContratPage({ params }: { params: Promise<{ id: st
     <div className="space-y-6">
       <PageHeader
         title="Contrat à durée déterminée"
-        subtitle="Votre établissement est l’employeur. Complétez les mentions obligatoires : la synthèse se met à jour à chaque enregistrement."
+        subtitle="Votre structure est l’employeur. Complétez les mentions obligatoires : la synthèse se met à jour à chaque enregistrement."
       />
       {fiche.error || !fiche.data ? (
         <ErrorState retryHref={`/dashboard/contrats/${id}`} />

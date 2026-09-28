@@ -50,7 +50,7 @@ const ACTIVITES: { cle: Interet; titre: string; aide: string; montage?: string }
   {
     cle: 'RENFORT_CDD',
     titre: 'Faire des remplacements',
-    aide: 'Un poste à couvrir, une absence : l’établissement vous embauche.',
+    aide: 'Un poste à couvrir, une absence : la structure vous embauche.',
     montage: 'CDD salarié',
   },
   {
@@ -188,7 +188,7 @@ export function MaDisponibilite({ etat }: { etat: EtatDisponibilite }) {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">
             {visible
-              ? 'Les établissements peuvent vous voir'
+              ? 'Les structures peuvent vous voir'
               : 'Vous n’apparaissez dans aucune liste'}
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground" lang="fr">
@@ -251,9 +251,9 @@ export function MaDisponibilite({ etat }: { etat: EtatDisponibilite }) {
 
       {proposeUnMontage && (
         <section className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold">Être visible des établissements</h2>
+          <h2 className="text-sm font-semibold">Être visible des structures</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground" lang="fr">
-            Votre profil apparaît dans la liste que consultent les établissements
+            Votre profil apparaît dans la liste que consultent les structures
             qui cherchent quelqu’un. Ils vous écrivent ici ; vos coordonnées ne
             sont jamais affichées.
           </p>

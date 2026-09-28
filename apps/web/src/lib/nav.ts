@@ -252,7 +252,7 @@ const freelanceNav: NavSection[] = [
        * ne la retrouve pas le jour où l'on a retrouvé un poste, et la liste
        * devient fausse.
        */
-      { label: 'Ma disponibilité', href: '/dashboard/disponibilite', icon: UserPlus, hint: 'Ce que vous acceptez de faire, où vous pouvez vous déplacer, et si les établissements peuvent vous voir' },
+      { label: 'Ma disponibilité', href: '/dashboard/disponibilite', icon: UserPlus, hint: 'Ce que vous acceptez de faire, où vous pouvez vous déplacer, et si les structures peuvent vous voir' },
       // Les trois outils LEX sont remontés dans la barre du haut le
       // 03/09/2026 (voir header.tsx). Ils occupaient les trois dernières
       // lignes de cette section dans les QUATRE menus du fichier.
@@ -273,7 +273,7 @@ const freelanceNav: NavSection[] = [
   {
     items: [
       { label: 'Mes formations', href: '/dashboard/formations', icon: GraduationCap, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Sessions que vous animez : émargement, apprenants, attestations' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des structures' },
     ],
   },
   {
@@ -431,7 +431,7 @@ const establishmentNav: NavSection[] = [
   // vivent donc dans un menu déroulant à droite du Catalogue (header.tsx).
   //
   {
-    title: 'Mon établissement',
+    title: 'Ma structure',
     // ⚠ UN COMPTE = UNE PERSONNE (24/09/2026, décision de Siham). Plus
     // d'organigramme, plus d'équipe rattachée, plus de formation interne :
     // chaque personne a son propre compte. La section garde ce qui sert à
@@ -454,7 +454,7 @@ const establishmentNav: NavSection[] = [
        * et fausserait le ciblage de vos missions.
        */
       { label: 'Personnes disponibles', href: '/dashboard/vivier-ouvert', icon: UsersRound, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Celles et ceux qui se déclarent disponibles pour un remplacement en CDD ou un renfort personnalisé, près de chez vous' },
-      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des établissements' },
+      { label: 'Mes publications', href: '/dashboard/actualites', icon: Newspaper, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Écrivez pour l’Édublog, vos articles vous font connaître des structures' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Évaluez les intervenants après leurs missions' },
       // ⚠ « Devis & factures » N'EST PLUS ICI : il a rejoint « Renfort &
       // prestations », dont il est la quatrième et dernière marche — publier,
@@ -503,7 +503,7 @@ const adminNav: NavSection[] = [
     items: [
       { label: 'Comptes', href: '/admin/etablissements', icon: Building2, hint: 'Chaque compte, structure ou intervenant, et son titulaire' },
       { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, hint: 'Toutes les personnes inscrites, avec leur compte' },
-      { label: 'Coffre-fort conformité', href: '/admin/conformite', icon: FileCheck, hint: 'Complétude des pièces obligatoires des intervenants, agrégée par établissement' },
+      { label: 'Coffre-fort conformité', href: '/admin/conformite', icon: FileCheck, hint: 'Complétude des pièces obligatoires des intervenants, agrégée par structure' },
     ],
   },
   {
@@ -584,7 +584,7 @@ const adminNav: NavSection[] = [
 const sansCompteNav: NavSection[] = [
   {
     items: [
-      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true, hint: 'Créer votre compte établissement ou intervenant' },
+      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, essentiel: true, hint: 'Créer votre compte structure, intervenant indépendant ou particulier' },
       { label: 'Mes données personnelles', href: '/dashboard/donnees-personnelles', icon: ShieldCheck, hint: 'Télécharger vos données ou demander leur suppression' },
     ],
   },

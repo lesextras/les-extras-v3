@@ -59,24 +59,24 @@ const sections: Section[] = [
       {
         sous: 'Objet du service',
         points: [
-          'LES EXTRAS est une plateforme de mise en relation. Elle permet à un établissement de publier un besoin de renfort ou de rechercher une intervention (atelier, formation), et à un professionnel de se faire connaître, de répondre à ces besoins et d’en assurer le suivi : planning, pointage des heures, pièces de conformité, messagerie, documents.',
+          'LES EXTRAS est une plateforme de mise en relation. Elle permet à une structure de publier un besoin de renfort ou de rechercher une intervention (atelier, formation), et à un professionnel de se faire connaître, de répondre à ces besoins et d’en assurer le suivi : planning, pointage des heures, pièces de conformité, messagerie, documents.',
           'La plateforme fournit également des outils d’aide à la contractualisation (modèles de contrat, devis, factures) et un assistant d’écriture professionnelle, LEX.',
-          'La création d’un compte, la publication d’un besoin, la candidature et la contractualisation sont gratuites, pour les établissements comme pour les intervenants.',
-          'Aucune commission n’est prélevée sur les ateliers du catalogue, qui se réservent et se facturent en direct entre l’établissement et l’intervenant. Les formations sont délivrées sous la certification Qualiopi de l’association, qui les facture : sa commission est fixée sur devis, avant tout engagement. Les interventions RenforTeam font exception : l’association y vérifie l’intervenant, encaisse la prestation et lui en reverse le produit. Des frais de gestion de 15 % s’ajoutent alors au tarif de l’intervenant et sont dus par le demandeur ; ils figurent sur une ligne distincte du devis, avant son acceptation. Aucun montant n’est prélevé sur la rémunération de l’intervenant. Un taux différent peut être convenu par écrit avec un compte.',
+          'La création d’un compte, la publication d’un besoin, la candidature et la contractualisation sont gratuites, pour les structures comme pour les intervenants.',
+          'Aucune commission n’est prélevée sur les ateliers du catalogue, qui se réservent et se facturent en direct entre la structure et l’intervenant. Les formations sont délivrées sous la certification Qualiopi de l’association, qui les facture : sa commission est fixée sur devis, avant tout engagement. Les interventions RenforTeam font exception : l’association y vérifie l’intervenant, encaisse la prestation et lui en reverse le produit. Des frais de gestion de 15 % s’ajoutent alors au tarif de l’intervenant et sont dus par le demandeur ; ils figurent sur une ligne distincte du devis, avant son acceptation. Aucun montant n’est prélevé sur la rémunération de l’intervenant. Un taux différent peut être convenu par écrit avec un compte.',
         ],
       },
       {
         sous: 'Ce que la plateforme n’est pas',
         points: [
-          'Elle n’est ni l’employeur, ni le donneur d’ordre, ni le mandataire des personnes qu’elle met en relation. Le contrat à durée déterminée, le contrat de prestation ou la convention de formation sont conclus directement entre l’établissement et le professionnel, seuls signataires et seuls responsables de leur exécution.',
-          'Elle ne perçoit pas les paiements des missions. Les sommes dues au titre d’une intervention sont réglées directement par l’établissement au professionnel : elles ne transitent à aucun moment par un compte de l’association.',
+          'Elle n’est ni l’employeur, ni le donneur d’ordre, ni le mandataire des personnes qu’elle met en relation. Le contrat à durée déterminée, le contrat de prestation ou la convention de formation sont conclus directement entre la structure et le professionnel, seuls signataires et seuls responsables de leur exécution.',
+          'Elle ne perçoit pas les paiements des missions. Les sommes dues au titre d’une intervention sont réglées directement par la structure au professionnel : elles ne transitent à aucun moment par un compte de l’association.',
           'Elle n’est pas une agence d’intérim et n’exerce aucune activité de placement payant. Elle ne garantit ni la conclusion d’un contrat, ni le remplacement d’un intervenant défaillant.',
         ],
       },
       {
         sous: 'Comptes et accès',
         points: [
-          'L’ouverture d’un compte suppose d’être majeur et, pour un compte d’établissement, d’avoir qualité pour engager la structure représentée.',
+          'L’ouverture d’un compte suppose d’être majeur et, pour un compte structure, d’avoir qualité pour engager la structure représentée.',
           'Chaque utilisateur est responsable de la confidentialité de ses identifiants et des actions réalisées depuis son compte. Toute utilisation suspecte doit être signalée sans délai à contact@les-extras.fr.',
           'Un compte Les Extras est personnel : il appartient à une seule personne, qui ne le partage pas.',
         ],
@@ -85,7 +85,7 @@ const sections: Section[] = [
         sous: 'Engagements des utilisateurs',
         points: [
           'Fournir des informations exactes et les tenir à jour, en particulier l’identité, le métier, les diplômes et les pièces de conformité.',
-          'Respecter la réglementation applicable à son activité : conditions d’exercice, obligations déclaratives, assurance et, pour les établissements, obligations d’employeur ainsi que les vérifications préalables prévues par l’article L. 133-6 du code de l’action sociale et des familles.',
+          'Respecter la réglementation applicable à son activité : conditions d’exercice, obligations déclaratives, assurance et, pour les structures, obligations d’employeur ainsi que les vérifications préalables prévues par l’article L. 133-6 du code de l’action sociale et des familles.',
           'Ne déposer aucune donnée relative aux personnes accompagnées en dehors des espaces prévus à cet effet, et jamais dans les descriptifs publics ou la messagerie.',
           'S’abstenir de tout contenu illicite, diffamatoire ou discriminatoire, de tout démarchage de masse et de toute extraction automatisée des profils du site.',
         ],
@@ -178,7 +178,7 @@ const sections: Section[] = [
     title: 'Paiements, annulations et remboursements',
     body: [
       'Il n’existe pas de politique de remboursement des prestations sur cette plateforme, pour une raison simple : les prestations ne lui sont pas payées.',
-      'Une mission de renfort donne lieu à un contrat conclu entre l’établissement et l’intervenant, le plus souvent un contrat à durée déterminée. La rémunération est versée par l’établissement, selon les règles de la paie ou de la facturation, sans intervention de l’association. Un atelier ou une intervention se règle de la même façon : directement, sur la facture émise par l’intervenant.',
+      'Une mission de renfort donne lieu à un contrat conclu entre la structure et l’intervenant, le plus souvent un contrat à durée déterminée. La rémunération est versée par la structure, selon les règles de la paie ou de la facturation, sans intervention de l’association. Un atelier ou une intervention se règle de la même façon : directement, sur la facture émise par l’intervenant.',
       'Les conditions d’annulation d’une intervention relèvent donc de l’accord entre les deux parties et des règles applicables au contrat conclu. La plateforme conserve la trace des échanges, des créneaux et des heures validées : ces éléments restent consultables par chacune des parties et peuvent servir de preuve en cas de désaccord.',
       'Les remboursements que l’association peut effectuer ne concernent que ce qu’elle a elle-même encaissé, crédits et abonnements LEX, formations qu’elle a facturées, dans les conditions de la rubrique précédente.',
       // La phrase annonçait « l’IBAN qui y figure » : renseigner ses
@@ -194,7 +194,7 @@ const sections: Section[] = [
     title: 'Protection des données personnelles',
     body: [
       'Responsable de traitement : association ADéPA, 7 rue André Malraux, 77000 Melun. Contact pour toute question ou demande relative aux données : assoc.adepa@gmail.com. Aucun délégué à la protection des données n’est désigné : la désignation n’est obligatoire ni par la taille ni par l’activité de l’association, et ce point de contact en tient lieu.',
-      'Pour les comptes, le catalogue et la mise en relation, l’association est responsable de traitement. Pour les données que chaque établissement gère dans son propre espace (contrats, dossiers de conformité de ses intervenants), l’établissement est responsable de traitement et l’association agit comme sous-traitant au sens de l’article 28 du RGPD.',
+      'Pour les comptes, le catalogue et la mise en relation, l’association est responsable de traitement. Pour les données que chaque structure gère dans son propre espace (contrats, dossiers de conformité de ses intervenants), la structure est responsable de traitement et l’association agit comme sous-traitant au sens de l’article 28 du RGPD.',
       {
         sous: 'Ce qui est traité, et pourquoi',
         points: [
@@ -254,7 +254,7 @@ const sections: Section[] = [
       'Toute réclamation peut être adressée à contact@les-extras.fr. Nous nous engageons à en accuser réception et à y répondre dans un délai raisonnable.',
       'Conformément à l’article L. 612-1 du code de la consommation, tout consommateur a le droit de recourir gratuitement à un médiateur de la consommation. Le médiateur compétent pour LES EXTRAS est en cours de désignation : ses nom et coordonnées seront publiés ici dès qu’il sera référencé, et aucun nom ne figurera sur cette page avant de l’être. Dans l’intervalle, écrivez-nous : aucune réclamation ne restera sans réponse au motif que cette désignation est en cours, et le recours au médiateur reste ouvert dès sa désignation, y compris pour un différend né avant elle.',
       'Le recours à la médiation suppose d’avoir tenté au préalable de résoudre le différend directement avec nous, par une réclamation écrite.',
-      'Les litiges entre un établissement et un intervenant relèvent de leur relation contractuelle et, le cas échéant, de la juridiction compétente pour celle-ci : la plateforme n’y est pas partie.',
+      'Les litiges entre une structure et un intervenant relèvent de leur relation contractuelle et, le cas échéant, de la juridiction compétente pour celle-ci : la plateforme n’y est pas partie.',
     ],
   },
 ];

@@ -224,7 +224,7 @@ export function MonDossier({ initial, accountId }: { initial: MonDossierData; ac
             administrative de plus. Un dossier complet fait la différence au
             moment où un établissement choisit entre deux candidatures. */}
         <p className="mt-3 max-w-prose text-xs text-muted-foreground">
-          Un dossier complet vous fait passer devant : un établissement qui doit couvrir un
+          Un dossier complet vous fait passer devant : une structure qui doit couvrir un
           créneau demain ne prendra pas le risque d'attendre une attestation. Vous déposez, la
           structure vérifie : vous ne pouvez pas valider vos propres pièces, et c'est ce qui
           donne du poids à celles qui sont vérifiées.

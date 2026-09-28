@@ -23,7 +23,7 @@ import { Field, Textarea } from "./form-fields";
   soi, pas une catégorie qu'on nous applique.
 */
 const SUBJECTS = [
-  "Je suis un établissement",
+  "Je suis une structure",
   "Je suis un intervenant",
   "Je suis un parent ou un proche",
   "Question sur une formation",

@@ -16,7 +16,7 @@ import { RemunerationFormateur } from "../../../../_shared/RemunerationFormateur
 export const metadata: Metadata = { title: "Session" };
 
 const FINANCING_LABEL: Record<string, string> = {
-  ESTABLISHMENT: "Établissement",
+  ESTABLISHMENT: "Structure",
   CPF: "CPF",
   OPCO: "OPCO",
   PERSONAL: "Personnel",

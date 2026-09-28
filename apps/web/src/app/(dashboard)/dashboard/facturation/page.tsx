@@ -270,7 +270,7 @@ export default async function FacturationPage({
               {aChiffrer.length > 0 && (
                 <ListeDevis
                   title="À chiffrer"
-                  hint="Ces établissements attendent votre proposition."
+                  hint="Ces structures attendent votre proposition."
                   quotes={aChiffrer}
                   accountId={accountId}
                 />
@@ -324,7 +324,7 @@ export default async function FacturationPage({
           ) : listeFactures.length === 0 ? (
             <EmptyState
               title="Aucune facture"
-              description="Un brouillon de facture est préparé pour chaque atelier terminé : de l'intervenant vers l'établissement, sans commission. Les renforts, eux, relèvent du contrat de travail : ils ne passent pas par une facture."
+              description="Un brouillon de facture est préparé pour chaque atelier terminé : de l'intervenant vers la structure, sans commission. Les renforts, eux, relèvent du contrat de travail : ils ne passent pas par une facture."
             />
           ) : (
             <Card>
@@ -430,7 +430,7 @@ function ListeDevis({
           const estClient = q.clientAccountId === accountId;
           const contrepartie = estClient
             ? q.providerAccount?.name ?? "Intervenant"
-            : q.clientAccount?.name ?? "Établissement";
+            : q.clientAccount?.name ?? "Structure";
           return (
             <Card key={q.id}>
               <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">

@@ -45,7 +45,7 @@ const LABELS: Record<string, string> = {
   credits: 'LEX, Crédits',
   adhesion: 'LEX, Crédits & abonnement',
   devis: 'Devis',
-  account: 'Mon établissement',
+  account: 'Ma structure',
   // Segments qui manquaient : le fil les fabriquait depuis l'URL.
   'mon-dossier': 'Mon dossier',
   vivier: 'Mon vivier RenforTeam',

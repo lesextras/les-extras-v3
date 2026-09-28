@@ -235,7 +235,7 @@ export function chiffrerVacation(
     });
     if (p.nuitPct === 0) {
       avertissements.push(
-        "Aucune majoration de nuit n'est renseignée pour votre établissement. Ce n'est pas une erreur de calcul : la loi n'en impose aucune, elle relève de votre convention collective ou de votre accord d'entreprise. Renseignez-la dans les paramètres si votre texte en prévoit une.",
+        "Aucune majoration de nuit n'est renseignée pour votre structure. Ce n'est pas une erreur de calcul : la loi n'en impose aucune, elle relève de votre convention collective ou de votre accord d'entreprise. Renseignez-la dans les paramètres si votre texte en prévoit une.",
       );
     }
   }
@@ -252,7 +252,7 @@ export function chiffrerVacation(
     });
     if (p.dimanchePct === 0) {
       avertissements.push(
-        "Aucune majoration du dimanche n'est renseignée. Là encore la loi n'en prévoit pas : votre établissement bénéficie d'une dérogation permanente de droit au repos dominical, qui n'emporte aucune majoration. Seule votre convention peut en créer une.",
+        "Aucune majoration du dimanche n'est renseignée. Là encore la loi n'en prévoit pas : votre structure bénéficie d'une dérogation permanente de droit au repos dominical, qui n'emporte aucune majoration. Seule votre convention peut en créer une.",
       );
     }
   }
