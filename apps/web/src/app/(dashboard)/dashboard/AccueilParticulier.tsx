@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader, SectionTitle, EmptyState } from "../../_shared/ui";
 import { BookingRow } from "../../_shared/cards";
+import { AteliersPayes, type AchatAtelier } from "../../_shared/AteliersPayes";
 import type { Booking } from "../../_shared/types";
 
 const PORTES = [
@@ -49,9 +50,12 @@ const PORTES = [
 export function AccueilParticulier({
   prenom,
   reservations,
+  achats = [],
 }: {
   prenom?: string | null;
   reservations: Booking[];
+  /** Les ateliers payés en ligne, souvent ce qui a ouvert ce compte. */
+  achats?: AchatAtelier[];
 }) {
   return (
     <div className="space-y-8">
@@ -75,6 +79,8 @@ export function AccueilParticulier({
           </Link>
         ))}
       </div>
+
+      <AteliersPayes achats={achats} />
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">

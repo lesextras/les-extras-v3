@@ -14,6 +14,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { StripeConnectService } from '../paiements/stripe-connect.service';
+import { AuthService } from '../auth/auth.service';
 import {
   PayerAtelierDto,
   ReglagePaiementDto,
@@ -88,6 +89,7 @@ export class AteliersService {
     private readonly prisma: PrismaService,
     private readonly connect: StripeConnectService,
     private readonly mail: MailService,
+    private readonly auth: AuthService,
   ) {}
 
   /* ═══════════════════════════════════════════ côté intervenant ══════ */
@@ -179,6 +181,36 @@ export class AteliersService {
     }
 
     return this.conditions(accountId, serviceId);
+  }
+
+  /**
+   * CE QUE CE COMPTE A PAYÉ EN LIGNE, côté acheteur (28/09/2026). Jamais la
+   * note interne de l'intervenant, jamais l'identifiant de paiement.
+   */
+  async listerAchats(accountId: string) {
+    const r = await this.prisma.reservationAtelier.findMany({
+      where: { acheteurAccountId: accountId },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        statut: true,
+        montantCents: true,
+        montantRembourseCents: true,
+        dateSouhaitee: true,
+        creneau: true,
+        participants: true,
+        annulationTexte: true,
+        payeeAt: true,
+        createdAt: true,
+        service: { select: { id: true, title: true, slug: true, account: { select: { name: true } } } },
+      },
+    });
+    return r.map(({ service, ...x }) => ({
+      ...x,
+      atelier: service ? { id: service.id, titre: service.title, slug: service.slug } : null,
+      intervenant: service?.account?.name ?? null,
+    }));
   }
 
   /** Les réservations payées, toutes fiches confondues. */
@@ -425,8 +457,24 @@ export class AteliersService {
       },
     });
 
-    await this.prevenir(reservation, service, origine);
-    return this.resumer(reservation, service.title);
+    // LE FORMULAIRE DE PAIEMENT OUVRE LE COMPTE (28/09/2026). Après la
+    // réservation, jamais avant : si l'ouverture échoue, l'achat reste
+    // enregistré et le reçu part quand même.
+    const compteAcheteur = await this.auth.ouvrirCompteAcheteur({
+      email,
+      nom: reservation.nom,
+      telephone: reservation.telephone,
+      organisation: reservation.organisation,
+      atelier: service.title,
+    });
+    const finale = compteAcheteur
+      ? await this.prisma.reservationAtelier
+          .update({ where: { id: reservation.id }, data: { acheteurAccountId: compteAcheteur.accountId } })
+          .catch(() => reservation)
+      : reservation;
+
+    await this.prevenir(finale, service, origine);
+    return this.resumer(finale, service.title);
   }
 
   /** La fiche publique de la réservation : le strict nécessaire, jamais plus. */
@@ -439,6 +487,7 @@ export class AteliersService {
       creneau: string | null;
       participants: number | null;
       annulationTexte: string | null;
+      acheteurAccountId?: string | null;
     },
     titre: string,
   ) {
@@ -452,6 +501,9 @@ export class AteliersService {
       creneau: r.creneau,
       participants: r.participants,
       annulationTexte: r.annulationTexte,
+      // Un compte Les Extras porte la réservation. On ne dit pas s'il vient
+      // d'être ouvert ou s'il existait : la route est publique.
+      compte: Boolean(r.acheteurAccountId),
     };
   }
 

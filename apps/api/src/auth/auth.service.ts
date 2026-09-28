@@ -13,7 +13,7 @@ import {
   UserStatus,
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { slugify, randomSuffix } from '../common/utils/slug.util';
@@ -220,6 +220,146 @@ export class AuthService {
         ? {}
         : { emailVerificationToken: verifyToken }),
     };
+  }
+
+  /**
+   * LE COMPTE OUVERT PAR UN PAIEMENT (28/09/2026, demande de Siham).
+   *
+   * On paie un atelier SANS s'inscrire, et remplir le formulaire de paiement
+   * ouvre le compte. Appelé une seule fois par réservation, au retour du
+   * paiement confirmé (jamais avant : tant que l'argent n'est pas arrivé,
+   * personne n'a rien acheté, et on n'ouvre pas de compte pour une carte
+   * refusée).
+   *
+   *  - L'ADRESSE A DÉJÀ UN COMPTE : on rattache la réservation au compte dont
+   *    la personne est titulaire. Rien n'est créé, aucun message de plus.
+   *  - SINON : un compte PARTICULIER (ou STRUCTURE si une structure a été
+   *    saisie), avec la dotation d'accueil comme toute inscription, et un
+   *    lien pour CHOISIR son mot de passe.
+   *
+   * ⚠ AUCUN MOT DE PASSE N'EST CHOISI À LA PLACE DE LA PERSONNE. Le compte
+   * naît avec l'empreinte d'un secret aléatoire jamais montré à personne :
+   * seul le lien reçu à cette adresse permet d'y entrer. Cliquer ce lien vaut
+   * confirmation de l'adresse (voir `reinitialiserMotDePasse`).
+   *
+   * ⚠ LA RÉPONSE NE DIT PAS SI LE COMPTE EXISTAIT. L'appelant est une route
+   * publique : distinguer les deux cas en ferait un annuaire des adresses.
+   *
+   * Ne lève jamais : un compte qui ne s'ouvre pas ne doit pas faire croire à
+   * un paiement raté. L'appelant reçoit `null` et la réservation reste valable.
+   */
+  async ouvrirCompteAcheteur(data: {
+    email: string;
+    nom?: string | null;
+    telephone?: string | null;
+    organisation?: string | null;
+    atelier: string;
+  }): Promise<{ accountId: string } | null> {
+    const email = data.email.trim().toLowerCase();
+    try {
+      const existant = await this.prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          status: true,
+          memberships: {
+            where: {
+              role: AccountRole.OWNER,
+              status: MembershipStatus.ACTIVE,
+              account: {
+                archivedAt: null,
+                type: {
+                  in: [AccountType.PARTICULIER, AccountType.ESTABLISHMENT, AccountType.FREELANCE],
+                },
+              },
+            },
+            orderBy: { createdAt: 'asc' },
+            take: 1,
+            select: { accountId: true },
+          },
+        },
+      });
+      if (existant) {
+        if (existant.status === UserStatus.BANNED) return null;
+        const accountId = existant.memberships[0]?.accountId;
+        return accountId ? { accountId } : null;
+      }
+
+      const { prenom, nom } = decouperNom(data.nom, email);
+      const organisation = data.organisation?.trim() || null;
+      const type = organisation ? AccountType.ESTABLISHMENT : AccountType.PARTICULIER;
+      const accountName = organisation ?? `${prenom} ${nom}`.trim();
+      const slug = await this.generateUniqueSlug(accountName);
+      const passwordHash = await bcrypt.hash(randomBytes(32).toString('base64url'), BCRYPT_ROUNDS);
+
+      const { user, accountId } = await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email,
+            password: passwordHash,
+            firstName: prenom,
+            lastName: nom,
+            phone: data.telephone?.trim() || undefined,
+            status: UserStatus.PENDING,
+            emailVerified: false,
+            onboardingStep: 0,
+            profile: { create: {} },
+          },
+        });
+        const account = await tx.account.create({
+          data: {
+            name: accountName,
+            type,
+            slug,
+            legalName: type === AccountType.ESTABLISHMENT ? accountName : undefined,
+            ownerId: user.id,
+            source: 'paiement-atelier',
+            credits: FREE_MONTHLY_CREDITS,
+          },
+        });
+        await tx.creditLedger.create({
+          data: {
+            accountId: account.id,
+            delta: FREE_MONTHLY_CREDITS,
+            balanceAfter: FREE_MONTHLY_CREDITS,
+            reason: MOTIF_DOTATION,
+          },
+        });
+        await tx.membership.create({
+          data: {
+            userId: user.id,
+            accountId: account.id,
+            role: AccountRole.OWNER,
+            status: MembershipStatus.ACTIVE,
+          },
+        });
+        return { user, accountId: account.id };
+      });
+
+      const token = await this.jwt.signAsync(
+        { sub: user.id, purpose: PASSWORD_RESET_PURPOSE, mdp: this.empreinteMotDePasse(user.password) },
+        { expiresIn: '7d' as unknown as number },
+      );
+      await this.mail
+        .sendCompteOuvertParPaiement(email, { token, prenom: user.firstName, atelier: data.atelier })
+        .catch(() => undefined);
+      await this.mail
+        .sendAlerteInscription({
+          prenom: user.firstName,
+          nom: user.lastName,
+          email,
+          telephone: user.phone,
+          typeCompte: type,
+          nomCompte: accountName,
+          origine: 'paiement d’un atelier',
+        })
+        .catch(() => undefined);
+      return { accountId };
+    } catch {
+      // Adresse créée entre-temps par un autre chemin (course sur l'unicité),
+      // ou base indisponible : la réservation est déjà écrite, on n'insiste pas.
+      return null;
+    }
   }
 
   async login(dto: LoginDto) {
@@ -642,4 +782,18 @@ export class AuthService {
     const accessToken = await this.signAccessToken(user.id, complet.email, complet.role);
     return { ok: true, accessToken, user: await this.buildMe(user.id) };
   }
+}
+
+/**
+ * « Camille Durand » → Camille / Durand. Sans nom saisi, la partie locale de
+ * l'adresse sert de prénom : un compte doit porter un nom, et la personne le
+ * corrige dans son profil.
+ */
+export function decouperNom(saisi: string | null | undefined, email: string) {
+  const mots = (saisi ?? '').trim().split(/\s+/).filter(Boolean);
+  if (mots.length === 0) {
+    const local = email.split('@')[0].replace(/[._-]+/g, ' ').trim() || 'Client';
+    return { prenom: local.charAt(0).toUpperCase() + local.slice(1), nom: '' };
+  }
+  return { prenom: mots[0].slice(0, 80), nom: mots.slice(1).join(' ').slice(0, 80) };
 }

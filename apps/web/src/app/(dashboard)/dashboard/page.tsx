@@ -13,6 +13,7 @@ import { ActionsPublication } from "../../_shared/ActionsPublication";
 import { fullName } from "../../_shared/format";
 import type { Booking, Mission, Service } from "../../_shared/types";
 import { AccueilParticulier } from "./AccueilParticulier";
+import { AteliersPayes, type AchatAtelier } from "../../_shared/AteliersPayes";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
 
@@ -44,21 +45,23 @@ export default async function DashboardPage() {
   // remplissage » revient à lui dire que le site n'est pas pour lui. On
   // bifurque avant tous les appels, dont la plupart ne le concernent pas.
   if (session.account.type === "PARTICULIER") {
-    const [moiParticulier, reservationsParticulier] = await Promise.all([
+    const [moiParticulier, reservationsParticulier, achatsParticulier] = await Promise.all([
       fetchApi<{ firstName?: string | null }>(session, "/auth/me"),
       fetchApi<Booking[]>(session, "/bookings?scope=account&take=5"),
+      fetchApi<AchatAtelier[]>(session, "/ateliers/achats"),
     ]);
     return (
       <AccueilParticulier
         prenom={moiParticulier.data?.firstName ?? session.user.firstName}
         reservations={reservationsParticulier.data ?? []}
+        achats={achatsParticulier.data ?? []}
       />
     );
   }
 
   const isEstablishment = session.account.type === "ESTABLISHMENT";
 
-  const [moi, stats, missions, bookings, services] = await Promise.all([
+  const [moi, stats, missions, bookings, services, achats] = await Promise.all([
     // LE PRÉNOM NE VIENT PAS DU JETON.
     //
     // Le jeton de session ne porte pas `firstName` : `session.user.firstName`
@@ -73,6 +76,10 @@ export default async function DashboardPage() {
     fetchApi<Mission[]>(session, "/missions?scope=account&take=4"),
     fetchApi<Booking[]>(session, "/bookings?scope=account&take=5"),
     fetchApi<Service[]>(session, "/services?scope=account&take=4"),
+    // Ce que ce compte a payé en ligne sur une fiche atelier (souvent une
+    // structure qui a réglé sans s'inscrire, et dont le compte s'est ouvert au
+    // paiement). Rien ne s'affiche s'il n'y en a pas.
+    fetchApi<AchatAtelier[]>(session, "/ateliers/achats"),
   ]);
 
   const s = stats.data ?? {};
@@ -468,6 +475,8 @@ export default async function DashboardPage() {
           })()}
         </div>
       </div>
+
+      <AteliersPayes achats={achats.data ?? []} />
     </div>
   );
 }

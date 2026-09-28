@@ -2,6 +2,12 @@
 
 // RÉGLER UN ATELIER EN LIGNE, sans compte.
 //
+// ⚠ 28/09/2026 : on paie toujours SANS S'INSCRIRE, mais le formulaire ouvre le
+// compte. Au retour du paiement confirmé, le serveur crée un compte à cette
+// adresse (ou rattache la réservation au compte qui existe déjà) et envoie un
+// lien pour choisir son mot de passe. C'est dit AVANT le bouton : on n'ouvre
+// pas un compte à quelqu'un sans le lui annoncer.
+//
 // Ce chemin S'AJOUTE au devis et à la réservation par compte : il ne remplace
 // rien. Il existe pour les acheteurs qui ne demanderont jamais de devis — une
 // petite structure, une association, une famille — et qui repartent si on leur
@@ -28,6 +34,8 @@ interface Confirmation {
   creneau?: string | null;
   participants?: number | null;
   annulationTexte?: string | null;
+  /** Un compte Les Extras porte la réservation (ouvert au paiement, ou existant). */
+  compte?: boolean;
 }
 
 const euros = (c: number) => (c / 100).toFixed(2).replace(".", ",") + " €";
@@ -153,6 +161,13 @@ export function PaiementAtelier({
             {confirme.montantCents ? `${euros(confirme.montantCents)} réglés. ` : null}
             Un reçu part sur {confirme.email}. {intervenant} vous recontacte pour caler la date.
           </p>
+          {confirme.compte ? (
+            <p className="rounded-lg bg-primary/5 p-3 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Votre réservation est dans votre compte Les Extras. </span>
+              Si c&apos;est votre premier passage, un lien pour choisir votre mot de passe vous
+              attend sur {confirme.email}.
+            </p>
+          ) : null}
           {confirme.annulationTexte ? (
             <p className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
               <span className="font-medium text-foreground">En cas d&apos;annulation : </span>
@@ -178,13 +193,13 @@ export function PaiementAtelier({
             <CreditCard className="size-4" /> Réserver et payer en ligne
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            {euros(Math.round(prix * 100))} réglés directement à {intervenant}. Sans compte à créer.
+            {euros(Math.round(prix * 100))} réglés directement à {intervenant}. Sans inscription : votre compte s&apos;ouvre avec le paiement.
           </p>
         </>
       ) : (
         <form onSubmit={payer} className="space-y-3 rounded-xl border border-border p-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input name="nom" placeholder="Votre nom" autoComplete="name" />
+            <Input name="nom" required placeholder="Prénom et nom" autoComplete="name" />
             <Input name="email" type="email" required placeholder="Votre e-mail" autoComplete="email" />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -249,6 +264,16 @@ export function PaiementAtelier({
                 {annulationTexte}
               </p>
             ) : null}
+            <p className="pl-[22px]">
+              <span className="font-medium text-foreground">Votre compte s&apos;ouvre avec le paiement. </span>
+              Il porte votre réservation et vos reçus ; vous recevez un lien pour choisir votre mot
+              de passe. Si cette adresse a déjà un compte, la réservation s&apos;y ajoute. Avec une
+              structure indiquée, c&apos;est un compte structure. En payant, vous acceptez les{" "}
+              <a href="/legal" className="underline underline-offset-2">
+                conditions d&apos;utilisation
+              </a>
+              .
+            </p>
           </div>
 
           <Button type="submit" className="w-full" disabled={envoi}>

@@ -362,7 +362,9 @@ model Account {
   produitsBoutique              ProduitBoutique[]
   commandesBoutique             CommandeBoutique[]
   /// Les ateliers payes en ligne sur les fiches de cet intervenant.
-  reservationsAteliers          ReservationAtelier[]
+  reservationsAteliers          ReservationAtelier[] @relation("ReservationVendeur")
+  /// Les ateliers que CE compte a payes en ligne (compte ouvert au paiement).
+  ateliersAchetes               ReservationAtelier[] @relation("ReservationAcheteur")
   supportTickets                SupportTicket[]
   rendezVous                    RendezVous[]
   /// L'agenda de ce compte, partagé avec d'autres personnes (24/09/2026).
@@ -4815,7 +4817,15 @@ model ReservationAtelier {
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   /// Le compte de l'intervenant : celui qui encaisse et qui rendra le service.
   accountId String
-  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account   Account @relation("ReservationVendeur", fields: [accountId], references: [id], onDelete: Cascade)
+
+  /// LE COMPTE DE L'ACHETEUR (28/09/2026). Ouvert par le formulaire de
+  /// paiement lui-meme : on paie sans s'inscrire, et le compte existe au
+  /// retour, pour retrouver sa reservation. Nul sur les reservations d'avant.
+  /// SetNull : supprimer le compte acheteur ne fait pas disparaitre une vente
+  /// que l'intervenant a encaissee.
+  acheteurAccountId String?
+  acheteurAccount   Account? @relation("ReservationAcheteur", fields: [acheteurAccountId], references: [id], onDelete: SetNull)
 
   /// L'ACHETEUR. Il n'a pas de compte, et on ne lui en impose pas : exiger une
   /// inscription avant de payer, c'est perdre la vente.
@@ -4862,6 +4872,7 @@ model ReservationAtelier {
   @@index([accountId, statut])
   @@index([serviceId])
   @@index([email])
+  @@index([acheteurAccountId])
 }
 
 enum StatutReservationAtelier {

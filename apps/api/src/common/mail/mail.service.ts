@@ -1016,6 +1016,38 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
+   * LE COMPTE OUVERT PAR UN PAIEMENT (28/09/2026).
+   *
+   * La personne a réglé un atelier sans s'inscrire : son compte existe déjà,
+   * il lui manque un mot de passe. Le lien est un lien de réinitialisation
+   * ordinaire (même page, même règle : il ne sert qu'une fois), valable sept
+   * jours au lieu d'une heure, parce que personne ne s'attend à le recevoir.
+   * ⚠ Aucun mot de passe ne part par e-mail : on n'en choisit jamais un à la
+   * place de quelqu'un.
+   */
+  async sendCompteOuvertParPaiement(
+    to: string,
+    data: { token: string; prenom?: string | null; atelier: string },
+  ): Promise<void> {
+    const url = `${this.webUrl}/reinitialiser-mot-de-passe?token=${encodeURIComponent(data.token)}&premier=1`;
+    await this.send(
+      to,
+      'Votre compte Les Extras est prêt',
+      this.layout(
+        `Votre compte est prêt${data.prenom ? `, ${data.prenom}` : ''}`,
+        `Votre paiement pour « ${echapper(data.atelier)} » a ouvert un compte Les Extras à
+         cette adresse. Vous y retrouvez votre réservation et vos reçus, et vous pouvez réserver
+         la prochaine fois sans rien ressaisir.
+         <br><br>Il ne vous reste qu'à choisir votre mot de passe.
+         <br><br><strong>Ce lien est valable sept jours et ne fonctionne qu'une fois.</strong>
+         Passé ce délai, utilisez « Mot de passe oublié » sur la page de connexion.
+         <br><br>Si vous n'avez rien réglé sur Les Extras, ignorez ce message.`,
+        { label: 'Choisir mon mot de passe', url },
+      ),
+    );
+  }
+
+  /**
    * Bienvenue — envoyé UNE FOIS, à la confirmation de l'adresse.
    *
    * Ce n'est pas un accusé de réception : c'est le moment où l'on dit à

@@ -21,6 +21,12 @@ import {
 export class AteliersController {
   constructor(private readonly ateliers: AteliersService) {}
 
+  /** Les ateliers que ce compte a payés en ligne (côté acheteur). */
+  @Get('achats')
+  achats(@CurrentAccount() a: RequestAccount) {
+    return this.ateliers.listerAchats(a.id);
+  }
+
   @Get('reservations')
   reservations(@CurrentAccount() a: RequestAccount) {
     return this.ateliers.listerReservations(a.id);

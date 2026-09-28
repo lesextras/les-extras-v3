@@ -23,7 +23,7 @@ export async function evenementsLesExtras(
   du: Date,
   au: Date,
 ): Promise<EvenementAgenda[]> {
-  const [reservations, missions, creneaux, enLigne] = await Promise.all([
+  const [reservations, missions, creneaux, enLigne, achats] = await Promise.all([
     prisma.booking.findMany({
       where: {
         status: { not: 'CANCELLED' },
@@ -73,6 +73,12 @@ export async function evenementsLesExtras(
       where: { accountId, statut: { in: ['PAYEE', 'CONFIRMEE', 'REALISEE'] }, dateSouhaitee: { gte: du, lte: au } },
       take: 200,
       select: { id: true, dateSouhaitee: true, creneau: true, participants: true, nom: true, organisation: true, email: true, telephone: true, message: true, service: { select: { title: true, durationMinutes: true, city: true } } },
+    }),
+    // Les ateliers que CE compte a payés en ligne (compte ouvert au paiement).
+    prisma.reservationAtelier.findMany({
+      where: { acheteurAccountId: accountId, statut: { in: ['PAYEE', 'CONFIRMEE', 'REALISEE'] }, dateSouhaitee: { gte: du, lte: au } },
+      take: 200,
+      select: { id: true, dateSouhaitee: true, creneau: true, statut: true, service: { select: { title: true, durationMinutes: true, city: true, account: { select: { name: true } } } } },
     }),
   ]);
 
@@ -179,6 +185,34 @@ export async function evenementsLesExtras(
       participants: qui ? [qui] : [],
       modifiable: false,
       href: '/dashboard/planning',
+      par: null,
+    });
+  }
+
+  for (const r of achats) {
+    if (!r.dateSouhaitee) continue;
+    const debut = r.dateSouhaitee;
+    sortie.push({
+      id: `achat:${r.id}`,
+      source: 'RESERVATION_EN_LIGNE',
+      rendezVousId: null,
+      titre: r.service?.title ?? 'Atelier réservé',
+      detail: [
+        r.statut === 'PAYEE' ? 'Date souhaitée, en attente de confirmation' : 'Date confirmée',
+        r.service?.account?.name ? `Avec ${r.service.account.name}` : null,
+        r.creneau ? `Créneau : ${r.creneau}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+      lieu: r.service?.city ?? null,
+      lien: null,
+      debut,
+      fin: r.service?.durationMinutes ? new Date(debut.getTime() + r.service.durationMinutes * 60_000) : null,
+      journeeEntiere: false,
+      categorie: null,
+      participants: [],
+      modifiable: false,
+      href: '/dashboard',
       par: null,
     });
   }

@@ -103,7 +103,12 @@ function Formulaire() {
         <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
           <KeyRound className="size-6" />
         </span>
-        <h1 className="mt-6 text-2xl font-bold tracking-tight">Nouveau mot de passe</h1>
+        {/* `premier=1` : le lien vient du compte ouvert par un paiement
+            d'atelier. La personne n'a jamais eu de mot de passe, lui parler
+            de « nouveau » mot de passe laisserait croire à une erreur. */}
+        <h1 className="mt-6 text-2xl font-bold tracking-tight">
+          {params.get('premier') === '1' ? 'Choisissez votre mot de passe' : 'Nouveau mot de passe'}
+        </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
           Choisissez-en un que vous retiendrez. Vous serez connecté·e aussitôt.
         </p>

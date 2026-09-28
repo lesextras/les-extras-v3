@@ -70,7 +70,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </h2>
           <p className="mt-4 text-primary-foreground/80">
             RenforTeam, ateliers, planning, messagerie et factures. Un espace clair pour les
-            établissements et les professionnels indépendants.
+            structures, les intervenants indépendants et les particuliers.
           </p>
 
           <ul className="mt-10 space-y-4">

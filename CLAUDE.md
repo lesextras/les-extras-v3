@@ -5770,3 +5770,29 @@ glisser-déposer du sommaire, le menu en groupes et la liste de démarrage.
   comptes de Piloter et ne s'ouvrent que depuis pilote.toulali.fr.
 - L'énumération Prisma n'est PAS renommée (aucune migration) : c'est un
   identifiant, pas un texte lu.
+
+### 28/09/2026 — payer un atelier sans compte : le paiement OUVRE le compte
+
+Demande de Siham : « laisser la possibilité du paiement directement sans compte,
+et remplir le formulaire de paiement crée un compte ».
+
+- On paie toujours SANS S'INSCRIRE (`PaiementAtelier.tsx`, routes publiques
+  `public/ateliers/:id/payer|confirmer`). Au retour du paiement CONFIRMÉ
+  (`AteliersService.confirmer`, jamais avant), `AuthService.ouvrirCompteAcheteur`
+  crée le compte : PARTICULIER, ou STRUCTURE si une structure a été saisie,
+  titulaire, dotation d'accueil, `source = paiement-atelier`. Une adresse qui a
+  déjà un compte : la réservation s'y rattache, rien n'est créé.
+- `ReservationAtelier.acheteurAccountId` (migration
+  `20260928120000_compte_acheteur_atelier`, additive, SetNull). L'acheteur voit
+  ses achats sur son tableau de bord (`_shared/AteliersPayes.tsx`,
+  `GET /ateliers/achats`) et dans son agenda.
+- ⚠ AUCUN MOT DE PASSE CHOISI POUR LA PERSONNE : secret aléatoire jamais montré,
+  et un lien de réinitialisation valable 7 jours
+  (`sendCompteOuvertParPaiement`, `/reinitialiser-mot-de-passe?…&premier=1`).
+  Cliquer le lien confirme l'adresse.
+- ⚠ La route publique ne dit jamais si le compte existait (`compte: boolean`
+  seulement) : sinon elle devient un annuaire d'adresses.
+- ⚠ Ne lève jamais : un compte qui ne s'ouvre pas ne fait pas échouer l'achat.
+- Le formulaire l'annonce AVANT le bouton, avec le lien vers les CGU. Le nom
+  est requis côté formulaire, facultatif côté API (déploiements séparés).
+  `auth/compte-acheteur.spec.ts` (6 tests).
