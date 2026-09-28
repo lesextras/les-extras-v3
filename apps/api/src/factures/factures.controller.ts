@@ -130,24 +130,11 @@ export class FacturesController {
     return this.factures.saisir(account.id, dto);
   }
 
-  @Patch(':id')
-  modifier(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: ModifierFactureDto) {
-    this.pilote(account);
-    return this.factures.modifier(account.id, id, dto, user.id);
-  }
-
-  /** Validation à deux : une personne valide ; au-dessus du seuil, il en faut une seconde. */
-  @Post(':id/valider')
-  async valider(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
-    await this.actif(account);
-    return this.frais.valider(account.id, user.id, id);
-  }
-
-  @Delete(':id')
-  supprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
-    this.pilote(account);
-    return this.factures.supprimer(account.id, user.id, user.role, id);
-  }
+  // ⚠ Les routes génériques d'une facture (`PATCH :id`, `DELETE :id`) sont
+  // déclarées EN FIN de classe : Nest enregistre les routes dans l'ordre de
+  // déclaration, et `PATCH :id` posé ici avalait `PATCH reglages` (vérifié en
+  // production le 28/09/2026 : le réglage du seuil répondait « formulaire
+  // obsolète », parce que le corps était validé contre ModifierFactureDto).
 
   // ─── Enveloppes (subventions, projets, sessions) ─────────────────────────
 
@@ -311,5 +298,26 @@ export class FacturesController {
     this.pilote(account);
     const a = annee ? Number.parseInt(annee, 10) : undefined;
     return this.factures.exportCsv(account.id, Number.isFinite(a) ? a : undefined);
+  }
+
+  // ─── Une facture : routes génériques, EN DERNIER (voir la note plus haut) ─
+
+  @Patch(':id')
+  modifier(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: ModifierFactureDto) {
+    this.pilote(account);
+    return this.factures.modifier(account.id, id, dto, user.id);
+  }
+
+  /** Validation à deux : une personne valide ; au-dessus du seuil, il en faut une seconde. */
+  @Post(':id/valider')
+  async valider(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    await this.actif(account);
+    return this.frais.valider(account.id, user.id, id);
+  }
+
+  @Delete(':id')
+  supprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    this.pilote(account);
+    return this.factures.supprimer(account.id, user.id, user.role, id);
   }
 }

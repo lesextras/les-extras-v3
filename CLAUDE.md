@@ -6200,3 +6200,48 @@ tout visuel avec camembert »). Migration `20260929000000_factures_enveloppes_re
 - ⚠ Reste à faire : l'adresse e-mail de dépôt (ingestion) demande une boîte
   entrante (MX ou webhook Brevo) : non fait. La lecture Factur-X native non
   plus. Les deux sont notés dans le doc d'audit.
+
+### 28/09/2026 (fin de nuit) — Mes factures, la suite : testé EN PRODUCTION sur l'espace association
+
+Chaîne jouée depuis la session les-extras.fr de Siham (`fetch('/api/proxy/…')`
+avec `x-account-id` = l'espace ASSOCIATION, offert par
+`PILOTE_FACTURES_ESPACES_OFFERTS`), fichiers de test `facture-test.png` et
+`releve-test.csv` :
+
+- **Facture** (image) : fournisseur, numéro, dates, HT/TVA/TTC, SIRET, IBAN
+  lus juste ; alerte SIRET (l'annuaire dit un autre nom) ; enveloppe
+  « Subvention CAF 77 » engagée 237,36 sur 2 500 → restant 2 262,64.
+- **Relevé CSV** (5 lignes) : 201, 5 opérations, 1 rapprochée → la facture
+  passe **PAYEE** ; CAF → Subvention, MAIF → Assurance, SNCF → Déplacements,
+  HelloAsso → Dons, sans moteur (mots-clés).
+- **Bilan** : charges 60/61/62 = 237,36 / 142,30 / 27,20 (pas de double compte
+  entre la facture et sa ligne de relevé), produits 2 500 + 85.
+  `bilan.xlsx` : 200, `PK`, 7,9 Ko ; compte-rendu d'enveloppe : 200, 3,3 Ko.
+- **Notes de frais** : dépôt (multipart, `abandon=true`) → VALIDEE →
+  ABANDONNEE avec `recuNumero` AF-2026-0001. **Validation à deux** : 1/1 puis
+  « il faut une seconde personne ». **Journal** : 7 lignes, dans l'ordre.
+
+⚠ **DEUX DÉFAUTS TROUVÉS PAR CE TEST, corrigés le soir même :**
+1. **Un CSV ne peut pas aller au coffre** (`FileKind.COMPLIANCE` refuse le
+   type) : le dépôt répondait 400. Le CSV n'est plus stocké, seules ses lignes
+   comptent (`fileId` nul) ; le PDF de relevé, lui, va au coffre.
+2. **`@Patch(':id')` avalait `@Patch('reglages')`** : Nest enregistre les
+   routes dans l'ordre de déclaration, et régler le seuil de double validation
+   répondait « Formulaire incomplet ou obsolète » (le corps était validé contre
+   ModifierFactureDto). Les routes génériques d'une facture sont en FIN de
+   classe ; `factures.routes.spec.ts` lit le source et refuse l'inversion.
+
+⚠ Un `fetch` POST multipart depuis la page : `find` rend tantôt `ref_161`,
+tantôt `ref_317` pour un input injecté ; refaire le batch avec le ref
+effectivement rendu.
+
+**Données de test laissées sur l'espace association** (à supprimer par Siham
+depuis l'onglet Factures / Enveloppes / Relevés / Notes de frais, jamais par
+moi) : enveloppe « Subvention CAF 77, EVS 2026 (test) », facture PAPETERIE DE
+L'ALMONT 237,36, relevé de 5 lignes, note de frais « Bénévole test » 12,50
+(abandonnée, AF-2026-0001). La page `pilote.toulali.fr/espace/factures` n'a pas
+été regardée dans un navigateur (pas de session Pilote ici) : les camemberts
+sont à vérifier à l'œil.
+
+Reste non construit (dit à Siham) : adresse e-mail de dépôt, Factur-X natif,
+devis ↔ facture, trésorerie prévisionnelle, coût par session (académie).
