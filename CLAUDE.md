@@ -6152,3 +6152,51 @@ l'IA, marges et budget, export comptable), débloqué UNIQUEMENT après paiement
   la formation Skool de référence, contenu entièrement original ; aucun chiffre
   de vues ni de revenu. ⚠ `POST training_items` ignore `order` : l’intro a été
   remontée en tête par l’émission du v-model du `draggable`.
+
+### 28/09/2026 (nuit) — Mes factures, la suite : enveloppes, RIB, relevés, bilan Excel, notes de frais
+
+Demande de Siham (« je suis d'accord avec tout donc fait tout », relevé de
+compte mensuel, bilan financier de l'exercice en Excel rempli tout seul, « rend
+tout visuel avec camembert »). Migration `20260929000000_factures_enveloppes_releves`
+(additive, rejouable).
+
+- **Enveloppes** (`EnveloppeFactures`, `enveloppes.service.ts`) : subvention,
+  projet, fonds propres, session (académie). Accordé, engagé, payé, RESTANT,
+  alertes (< 20 % restants, justification à 30 jours), import des dossiers
+  ACCORDE/SOLDE du module Financeurs et des cours. Compte rendu financier par
+  enveloppe en Excel, rubriques du Cerfa 15059 (`rubriqueCerfa`).
+- **Fiche fournisseur** (`FournisseurPilote`, `fournisseurs.service.ts`) : le
+  moteur lit aussi SIRET et IBAN ; ⚠ l'IBAN n'est JAMAIS stocké en clair
+  (empreinte SHA-256 + 4 derniers). Alerte « RIB changé » (l'ancien reste la
+  référence jusqu'à « adopter » à la main), SIRET vérifié dans
+  recherche-entreprises.api.gouv.fr (actif / fermé / introuvable, nom qui ne
+  correspond pas), HT + TVA ≠ TTC. Comparatif fournisseurs par poste sur 12 mois.
+- **Relevés de compte** (`releves.service.ts`) : CSV de banque lu sans
+  connaître la banque (`lireCsvReleve`, colonnes devinées) ou PDF via le
+  moteur ; empreinte par ligne (un relevé déposé deux fois ne double rien) ;
+  rapprochement automatique aux factures (`scoreRapprochement` : montant exact,
+  date dans la fenêtre, mot du fournisseur) → facture PAYEE ; sorties sans
+  facture classées par mots-clés puis par le moteur ; recettes par nature
+  (subvention, cotisations, dons, ventes…). **Budget réalisé** = factures +
+  sorties sans facture + notes de frais, sans double compte. ⚠ Aucune
+  connexion bancaire, jamais.
+- **Bilan de l'exercice** (`bilan.service.ts`, `GET /factures/bilan.xlsx?annee=`) :
+  classeur à huit feuilles (bilan avec formules, charges par poste, subventions,
+  trésorerie, factures, relevés, fournisseurs, notes de frais). Écriture XLSX
+  MAISON (`xlsx.ts` : zip deflate + XML, cellules texte/nombre/formule/date,
+  en-tête gras) pour ne pas ajouter de dépendance. Produits : du relevé s'il y
+  en a, sinon ventes (académie) ou mouvements saisis (association), et la
+  feuille le dit.
+- **Notes de frais, validation à deux, journal, réglages** (`frais.service.ts`) :
+  abandon de frais numéroté `AF-<année>-0001` (l'association vérifie son droit
+  au reçu fiscal), seuil de double validation par espace (deux personnes
+  DIFFÉRENTES), journal append-only (`JournalFactures`).
+- **Web** (`_shared/pilote/MesFactures.tsx`, `graphiques.tsx`) : sept onglets,
+  camemberts, barres et jauges en SVG maison (aucune bibliothèque), sélecteur
+  d'exercice, bouton « Télécharger le bilan (Excel) ».
+- **`PILOTE_FACTURES_ESPACES_OFFERTS`** : identifiants de comptes (virgules) à
+  qui l'outil est offert (les espaces de l'association elle-même, pour le faire
+  tourner en vrai). Tout autre espace passe par Stripe.
+- ⚠ Reste à faire : l'adresse e-mail de dépôt (ingestion) demande une boîte
+  entrante (MX ou webhook Brevo) : non fait. La lecture Factur-X native non
+  plus. Les deux sont notés dans le doc d'audit.

@@ -5,6 +5,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FilesService, type FichierRecu } from '../storage/files.service';
 import { ExtractionService } from '../assistant/extraction.service';
 import { MoteurService } from '../assistant/moteur.service';
+import { FournisseursService } from './fournisseurs.service';
+import { FraisService } from './frais.service';
 
 /**
  * MES FACTURES : l'outil premium de Pilote (association et académie).
@@ -36,6 +38,8 @@ export interface LectureFacture {
   poste: string | null;
   lignes: { libelle: string; quantite: number | null; prixUnitaire: number | null; total: number | null }[];
   remarque: string | null;
+  siret: string | null;
+  iban: string | null;
 }
 
 /** Les postes proposés : ceux d'un budget associatif ou d'un petit organisme. */
@@ -59,6 +63,7 @@ Réponds UNIQUEMENT par un objet JSON, sans texte autour, avec exactement ces cl
  "montantHT": number|null, "tva": number|null, "montantTTC": number|null, "devise": "EUR",
  "poste": l'un de [${POSTES.map((p) => `"${p}"`).join(', ')}] ou null,
  "lignes": [{"libelle": string, "quantite": number|null, "prixUnitaire": number|null, "total": number|null}],
+ "siret": string|null (14 chiffres du fournisseur, tel qu'imprimé), "iban": string|null (l'IBAN de paiement imprimé sur la facture, sans espaces),
  "remarque": string|null}
 Règles : montants en nombres décimaux avec un point, jamais de texte dans un nombre ; si un montant est illisible, null et une remarque ;
 ne jamais inventer un fournisseur ni un montant ; "remarque" signale ce qui est douteux (montant barré, page manquante, doublon probable), sinon null.`;
@@ -73,6 +78,8 @@ export class FacturesService {
     private readonly extraction: ExtractionService,
     private readonly moteur: MoteurService,
     private readonly config: ConfigService,
+    private readonly fournisseurs: FournisseursService,
+    private readonly frais: FraisService,
   ) {}
 
   // ─── L'offre ──────────────────────────────────────────────────────────────
@@ -92,15 +99,27 @@ export class FacturesService {
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
   }
 
+  /**
+   * Les espaces à qui l'outil est OFFERT (ceux de l'association elle-même, pour
+   * le faire tourner en vrai) : identifiants de comptes séparés par des
+   * virgules dans `PILOTE_FACTURES_ESPACES_OFFERTS`. Tout le reste passe par
+   * Stripe.
+   */
+  private offert(accountId: string) {
+    const brut = this.config.get<string>('PILOTE_FACTURES_ESPACES_OFFERTS') ?? '';
+    return brut.split(',').map((x) => x.trim()).filter(Boolean).includes(accountId);
+  }
+
   /** L'état de l'abonnement, tel que l'écran l'affiche. */
   async abonnement(accountId: string) {
     const a = await this.prisma.abonnementFactures.findUnique({ where: { accountId } });
     const mois = this.moisCourant();
     const lues = a && a.moisCompteur === mois ? a.luesCeMois : 0;
     const quota = a?.quotaMensuel ?? this.quotaParDefaut();
+    const offert = this.offert(accountId);
     return {
-      actif: a?.statut === 'active',
-      statut: a?.statut ?? 'aucun',
+      actif: offert || a?.statut === 'active',
+      statut: offert ? 'offert' : (a?.statut ?? 'aucun'),
       quotaMensuel: quota,
       luesCeMois: lues,
       restantes: Math.max(0, quota - lues),
@@ -110,8 +129,12 @@ export class FacturesService {
   }
 
   private async exigerActif(accountId: string) {
-    const a = await this.prisma.abonnementFactures.findUnique({ where: { accountId } });
-    if (!a || a.statut !== 'active') {
+    let a = await this.prisma.abonnementFactures.findUnique({ where: { accountId } });
+    if (!a && this.offert(accountId)) {
+      // L'espace offert reçoit un compteur comme les autres : le quota mensuel vaut pour lui aussi.
+      a = await this.prisma.abonnementFactures.create({ data: { accountId, statut: 'offert', quotaMensuel: this.quotaParDefaut() } });
+    }
+    if (!a || (a.statut !== 'active' && !(a.statut === 'offert' && this.offert(accountId)))) {
       throw new ForbiddenException("« Mes factures » est un outil premium : il s'ouvre avec l'abonnement.");
     }
     return a;
@@ -135,7 +158,7 @@ export class FacturesService {
 
   // ─── Lecture d'une facture ────────────────────────────────────────────────
 
-  async deposer(accountId: string, userId: string, fichier: FichierRecu, poste?: string) {
+  async deposer(accountId: string, userId: string, fichier: FichierRecu, poste?: string, enveloppeId?: string | null) {
     await this.consommer(accountId);
 
     const estImage = fichier.mimetype.startsWith('image/');
@@ -153,11 +176,25 @@ export class FacturesService {
 
     // L'alerte : la dernière facture du même fournisseur, si elle augmente.
     const { alerte, variationPct } = await this.comparer(accountId, lecture.fournisseur, ttc, lecture.remarque);
+    // La fiche fournisseur : SIRET, RIB, annuaire des entreprises.
+    const fiche = await this.fournisseurs.rattacher(accountId, lecture.fournisseur, { siret: lecture.siret, iban: lecture.iban });
+    const alertes = [alerte, ...fiche.verification.alertes].filter((a): a is string => !!a);
+    // Cohérence arithmétique : HT + TVA = TTC, sinon on le dit.
+    if (lecture.montantHT !== null && lecture.tva !== null && lecture.montantTTC !== null && Math.abs(lecture.montantHT + lecture.tva - lecture.montantTTC) > 0.05) {
+      alertes.push('HT + TVA ne font pas le TTC : relisez les montants.');
+    }
+    const enveloppe = enveloppeId ? await this.prisma.enveloppeFactures.findFirst({ where: { id: enveloppeId, accountId }, select: { id: true } }) : null;
 
     const facture = await this.prisma.factureFournisseur.create({
       data: {
         accountId,
         fileId: depose.id,
+        fournisseurId: fiche.ficheId,
+        siret: fiche.siret,
+        ibanEmpreinte: fiche.ibanEmpreinte,
+        ibanFin: fiche.ibanFin,
+        verification: fiche.verification as unknown as Prisma.InputJsonValue,
+        enveloppeId: enveloppe?.id ?? null,
         fournisseur: lecture.fournisseur.slice(0, 120),
         numero: lecture.numero?.slice(0, 60) ?? null,
         dateFacture: lecture.dateFacture ? new Date(lecture.dateFacture) : null,
@@ -168,11 +205,12 @@ export class FacturesService {
         devise: lecture.devise || 'EUR',
         poste: (poste && (POSTES as readonly string[]).includes(poste) ? poste : lecture.poste) ?? null,
         lignes: lecture.lignes as unknown as Prisma.InputJsonValue,
-        alerte,
+        alerte: alertes.length ? alertes.join(' ') : null,
         variationPct,
         origine: 'moteur',
       },
     });
+    await this.frais.journaliser(accountId, userId, 'facture.deposee', facture.id, { fournisseur: facture.fournisseur, montantTTC: ttc, alertes: alertes.length });
     return this.presenter(facture);
   }
 
@@ -228,6 +266,8 @@ export class FacturesService {
       poste: null,
       lignes: [],
       remarque: 'Réponse du moteur illisible.',
+      siret: null,
+      iban: null,
     };
     if (debut < 0 || fin < debut) return vide;
     try {
@@ -253,6 +293,8 @@ export class FacturesService {
             }))
           : [],
         remarque: typeof j.remarque === 'string' && j.remarque.trim() ? j.remarque.trim().slice(0, 300) : null,
+        siret: typeof j.siret === 'string' ? j.siret : null,
+        iban: typeof j.iban === 'string' ? j.iban : null,
       };
     } catch {
       return vide;
@@ -287,8 +329,10 @@ export class FacturesService {
         where: { accountId },
         orderBy: [{ dateFacture: 'desc' }, { createdAt: 'desc' }],
         take: 500,
+        include: { enveloppe: { select: { id: true, nom: true } }, validations: { select: { userId: true } } },
       }),
     ]);
+    const reglages = await this.frais.reglages(accountId);
     const annee = new Date().getFullYear();
     const cetteAnnee = factures.filter((f) => (f.dateFacture ?? f.createdAt).getFullYear() === annee);
     const somme = (l: typeof factures) => l.reduce((t, f) => t + Number(f.montantTTC), 0);
@@ -317,14 +361,20 @@ export class FacturesService {
           .sort((a, b) => b.total - a.total)
           .slice(0, 10),
         parMois,
+        seuilDoubleValidation: reglages.seuilDoubleValidation,
       },
-      factures: factures.map((f) => this.presenter(f)),
+      factures: factures.map((f) => ({
+        ...this.presenter(f),
+        enveloppe: f.enveloppe ? { id: f.enveloppe.id, nom: f.enveloppe.nom } : null,
+        validations: f.validations.length,
+        validationsRequises: reglages.seuilDoubleValidation !== null && Number(f.montantTTC) >= reglages.seuilDoubleValidation ? 2 : 1,
+      })),
     };
   }
 
   async saisir(
     accountId: string,
-    dto: { fournisseur: string; montantTTC: number; dateFacture?: string; poste?: string; numero?: string; notes?: string },
+    dto: { fournisseur: string; montantTTC: number; dateFacture?: string; poste?: string; numero?: string; notes?: string; enveloppeId?: string | null },
   ) {
     await this.exigerActif(accountId);
     const { alerte, variationPct } = await this.comparer(accountId, dto.fournisseur, dto.montantTTC, null);
@@ -337,6 +387,7 @@ export class FacturesService {
         poste: dto.poste && (POSTES as readonly string[]).includes(dto.poste) ? dto.poste : null,
         numero: dto.numero?.slice(0, 60) ?? null,
         notes: dto.notes?.slice(0, 1000) ?? null,
+        enveloppeId: dto.enveloppeId || null,
         alerte,
         variationPct,
         origine: 'main',
@@ -360,7 +411,10 @@ export class FacturesService {
       poste?: string | null;
       statut?: StatutFactureFournisseur;
       notes?: string | null;
+      enveloppeId?: string | null;
+      accepterRib?: boolean;
     },
+    userId?: string,
   ) {
     await this.exigerActif(accountId);
     const existante = await this.prisma.factureFournisseur.findFirst({ where: { id, accountId } });
@@ -376,9 +430,15 @@ export class FacturesService {
     if (dto.poste !== undefined) data.poste = dto.poste && (POSTES as readonly string[]).includes(dto.poste) ? dto.poste : null;
     if (dto.statut !== undefined) data.statut = dto.statut;
     if (dto.notes !== undefined) data.notes = dto.notes?.slice(0, 1000) ?? null;
+    if (dto.enveloppeId !== undefined) {
+      const env = dto.enveloppeId ? await this.prisma.enveloppeFactures.findFirst({ where: { id: dto.enveloppeId, accountId }, select: { id: true } }) : null;
+      data.enveloppe = env ? { connect: { id: env.id } } : { disconnect: true };
+    }
+    if (dto.accepterRib) await this.fournisseurs.accepterRib(accountId, id);
     // Une relecture humaine efface l'alerte du moteur : c'est elle qui fait foi.
     if (dto.statut && dto.statut !== 'A_VERIFIER' && existante.statut === 'A_VERIFIER') data.alerte = null;
     const f = await this.prisma.factureFournisseur.update({ where: { id }, data });
+    await this.frais.journaliser(accountId, userId ?? null, 'facture.modifiee', id, { champs: Object.keys(dto) });
     return this.presenter(f);
   }
 
@@ -388,6 +448,7 @@ export class FacturesService {
     if (!f) throw new NotFoundException('Facture introuvable.');
     await this.prisma.factureFournisseur.delete({ where: { id } });
     if (f.fileId) await this.files.supprimer(f.fileId, userId, role as never).catch(() => undefined);
+    await this.frais.journaliser(accountId, userId, 'facture.supprimee', id, { fournisseur: f.fournisseur, montantTTC: Number(f.montantTTC) });
     return { ok: true };
   }
 
@@ -440,6 +501,10 @@ export class FacturesService {
     origine: string;
     notes: string | null;
     createdAt: Date;
+    siret?: string | null;
+    ibanFin?: string | null;
+    verification?: Prisma.JsonValue | null;
+    enveloppeId?: string | null;
   }) {
     return {
       id: f.id,
@@ -460,6 +525,10 @@ export class FacturesService {
       origine: f.origine,
       notes: f.notes,
       deposeLe: f.createdAt,
+      siret: f.siret ?? null,
+      ibanFin: f.ibanFin ?? null,
+      verification: (f.verification as Record<string, unknown> | null) ?? null,
+      enveloppeId: f.enveloppeId ?? null,
     };
   }
 }

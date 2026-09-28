@@ -21,7 +21,8 @@ function service(abonnement: Record<string, unknown> | null, precedente: Record<
     },
   };
   const config = { get: (k: string) => (k === 'PILOTE_FACTURES_PRIX_CENTS' ? undefined : undefined) };
-  const s = new FacturesService(prisma as never, {} as never, {} as never, {} as never, config as never);
+  const frais = { journaliser: jest.fn(async () => undefined), reglages: jest.fn(async () => ({ seuilDoubleValidation: null })) };
+  const s = new FacturesService(prisma as never, {} as never, {} as never, {} as never, config as never, {} as never, frais as never);
   return { s, prisma };
 }
 

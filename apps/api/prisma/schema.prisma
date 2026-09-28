@@ -372,6 +372,13 @@ model Account {
   enveloppesLex                 EnveloppeLex[]       @relation("EnveloppePayeur")
   abonnementFactures            AbonnementFactures?
   facturesFournisseurs          FactureFournisseur[]
+  enveloppesFactures            EnveloppeFactures[]
+  fournisseursPilote            FournisseurPilote[]
+  relevesBancaires              ReleveBancaire[]
+  operationsBancaires           OperationBancaire[]
+  notesDeFrais                  NoteDeFrais[]
+  journalFactures               JournalFactures[]
+  reglagesFactures              ReglagesFactures?
   /// Les fils de discussion rattachés à ce compte (interne, service, demande).
   conversations                 Conversation[]
   /// Demandes portant sur un service de cet établissement.
@@ -5536,6 +5543,199 @@ model FactureFournisseur {
   createdAt    DateTime                 @default(now())
   updatedAt    DateTime                 @updatedAt
 
+  /// Rattachements (28/09 soir) : enveloppe (subvention, projet, session), fiche fournisseur.
+  enveloppeId   String?
+  enveloppe     EnveloppeFactures?  @relation(fields: [enveloppeId], references: [id], onDelete: SetNull)
+  fournisseurId String?
+  fiche         FournisseurPilote?  @relation(fields: [fournisseurId], references: [id], onDelete: SetNull)
+  /// Ce que la facture porte : SIRET lu, IBAN lu (empreinte + 4 derniers), et la vérification.
+  siret         String?
+  ibanEmpreinte String?
+  ibanFin       String?
+  /// Résultat de la vérification : { siretOk, etat, nomAnnuaire, ibanChange, verifieLe }.
+  verification  Json?
+  /// Validation à deux au-dessus d'un seuil : qui a validé.
+  validations   ValidationFacture[]
+  operations    OperationBancaire[]
+
   @@index([accountId, dateFacture])
   @@index([accountId, fournisseur])
+  @@index([accountId, enveloppeId])
+}
+
+/// UNE ENVELOPPE : ce que consomme une facture. Une subvention (avec ou sans
+/// dossier de financement de Pilote), un projet ou une action, les fonds
+/// propres, ou une session de formation (académie). C'est ce qui donne le
+/// « restant » et le compte rendu financier.
+enum TypeEnveloppe {
+  SUBVENTION
+  PROJET
+  FONDS_PROPRES
+  SESSION
+  AUTRE
+}
+
+model EnveloppeFactures {
+  id                String               @id @default(cuid())
+  accountId         String
+  account           Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  nom               String
+  type              TypeEnveloppe        @default(SUBVENTION)
+  financeur         String?
+  montantAccorde    Decimal?             @db.Decimal(12, 2)
+  dateDebut         DateTime?
+  dateFin           DateTime?
+  /// Date limite du compte rendu financier au financeur.
+  dateJustification DateTime?
+  /// Liens facultatifs vers ce que Pilote connaît déjà.
+  dossierId         String?
+  actionId          String?
+  coursId           String?
+  notes             String?
+  factures          FactureFournisseur[]
+  operations        OperationBancaire[]
+  notesDeFrais      NoteDeFrais[]
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([accountId, type])
+}
+
+/// LA FICHE D'UN FOURNISSEUR, construite au fil des factures : c'est elle qui
+/// permet l'alerte « le RIB a changé » et la vérification dans l'annuaire des
+/// entreprises. L'IBAN n'est JAMAIS stocké en clair : empreinte + 4 derniers.
+model FournisseurPilote {
+  id            String               @id @default(cuid())
+  accountId     String
+  account       Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  nom           String
+  nomNormalise  String
+  siret         String?
+  ibanEmpreinte String?
+  ibanFin       String?
+  /// { etat: 'A'|'C'|null, nomAnnuaire, adresse, verifieLe }
+  annuaire      Json?
+  factures      FactureFournisseur[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@unique([accountId, nomNormalise])
+}
+
+/// UN RELEVÉ DE COMPTE DÉPOSÉ (CSV ou PDF), lu, puis rapproché des factures.
+model ReleveBancaire {
+  id           String              @id @default(cuid())
+  accountId    String
+  account      Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  fileId       String?
+  libelle      String
+  periodeDebut DateTime?
+  periodeFin   DateTime?
+  soldeDebut   Decimal?            @db.Decimal(12, 2)
+  soldeFin     Decimal?            @db.Decimal(12, 2)
+  nbOperations Int                 @default(0)
+  operations   OperationBancaire[]
+  createdAt    DateTime            @default(now())
+
+  @@index([accountId, createdAt])
+}
+
+/// UNE LIGNE DE RELEVÉ. Montant signé : négatif = sortie. Rapprochée d'une
+/// facture quand montant et date concordent, sinon classée par poste.
+model OperationBancaire {
+  id            String              @id @default(cuid())
+  accountId     String
+  account       Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  releveId      String
+  releve        ReleveBancaire      @relation(fields: [releveId], references: [id], onDelete: Cascade)
+  date          DateTime
+  libelle       String
+  montant       Decimal             @db.Decimal(12, 2)
+  poste         String?
+  /// DEPENSE | RECETTE
+  sens          String
+  factureId     String?
+  facture       FactureFournisseur? @relation(fields: [factureId], references: [id], onDelete: SetNull)
+  enveloppeId   String?
+  enveloppe     EnveloppeFactures?  @relation(fields: [enveloppeId], references: [id], onDelete: SetNull)
+  /// AUTO | MANUEL | null
+  rapprochement String?
+  /// Empreinte (date + libellé + montant) : un relevé déposé deux fois ne double pas les lignes.
+  empreinte     String
+  createdAt     DateTime            @default(now())
+
+  @@unique([accountId, empreinte])
+  @@index([accountId, date])
+}
+
+/// VALIDATION À DEUX : au-dessus du seuil de l'espace, une facture demande
+/// deux personnes différentes avant d'être « validée ».
+model ValidationFacture {
+  id        String             @id @default(cuid())
+  factureId String
+  facture   FactureFournisseur @relation(fields: [factureId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime           @default(now())
+
+  @@unique([factureId, userId])
+}
+
+/// NOTE DE FRAIS d'un bénévole ou d'un salarié, lue par le même moteur qu'une
+/// facture. `abandon` : la personne renonce au remboursement (don en nature,
+/// reçu fiscal possible pour une association d'intérêt général).
+enum StatutNoteDeFrais {
+  A_VALIDER
+  VALIDEE
+  REMBOURSEE
+  ABANDONNEE
+  REFUSEE
+}
+
+model NoteDeFrais {
+  id           String             @id @default(cuid())
+  accountId    String
+  account      Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId       String?
+  beneficiaire String
+  date         DateTime
+  objet        String
+  montant      Decimal            @db.Decimal(12, 2)
+  poste        String?
+  fileId       String?
+  statut       StatutNoteDeFrais  @default(A_VALIDER)
+  abandon      Boolean            @default(false)
+  recuNumero   String?
+  enveloppeId  String?
+  enveloppe    EnveloppeFactures? @relation(fields: [enveloppeId], references: [id], onDelete: SetNull)
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([accountId, date])
+}
+
+/// JOURNAL D'AUDIT de « Mes factures » : qui a fait quoi, jamais modifié.
+model JournalFactures {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId    String?
+  action    String
+  cible     String?
+  detail    Json?
+  createdAt DateTime @default(now())
+
+  @@index([accountId, createdAt])
+}
+
+/// RÉGLAGES de l'outil par espace : seuil de validation à deux, adresse de dépôt.
+model ReglagesFactures {
+  id                    String   @id @default(cuid())
+  accountId             String   @unique
+  account               Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  /// Au-dessus de ce montant TTC, deux validations sont nécessaires. Nul = jamais.
+  seuilDoubleValidation Decimal? @db.Decimal(12, 2)
+  /// Jeton de l'adresse de dépôt par e-mail (factures-<jeton>@…), nul tant qu'il n'y a pas d'ingestion.
+  jetonDepot            String?  @unique
+  updatedAt             DateTime @updatedAt
 }

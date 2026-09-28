@@ -10,10 +10,12 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
@@ -26,7 +28,23 @@ import type { FichierRecu } from '../storage/files.service';
 import { TAILLE_MAX_GLOBALE } from '../storage/file-rules';
 import { BillingService } from '../billing/billing.service';
 import { FacturesService } from './factures.service';
-import { AbonnerDto, DeposerFactureDto, ModifierFactureDto, SaisirFactureDto } from './dto/factures.dto';
+import { EnveloppesService } from './enveloppes.service';
+import { FournisseursService } from './fournisseurs.service';
+import { RelevesService } from './releves.service';
+import { FraisService } from './frais.service';
+import { BilanService } from './bilan.service';
+import {
+  AbonnerDto,
+  DeposerFactureDto,
+  EnveloppeDto,
+  ModifierEnveloppeDto,
+  ModifierFactureDto,
+  ModifierOperationDto,
+  NoteDeFraisDto,
+  ReglagesDto,
+  SaisirFactureDto,
+  StatutNoteDto,
+} from './dto/factures.dto';
 
 /**
  * MES FACTURES : réservé aux deux espaces de Pilote (ASSOCIATION, ACADEMIE).
@@ -41,7 +59,24 @@ export class FacturesController {
     private readonly factures: FacturesService,
     private readonly billing: BillingService,
     private readonly config: ConfigService,
+    private readonly enveloppes: EnveloppesService,
+    private readonly fournisseurs: FournisseursService,
+    private readonly releves: RelevesService,
+    private readonly frais: FraisService,
+    private readonly bilan: BilanService,
   ) {}
+
+  /** Tout ce qui suit l'abonnement : le service refuse sans abonnement actif, on le vérifie ici une fois. */
+  private async actif(account: RequestAccount) {
+    this.pilote(account);
+    const a = await this.factures.abonnement(account.id);
+    if (!a.actif) throw new ForbiddenException("« Mes factures » est un outil premium : il s'ouvre avec l'abonnement.");
+  }
+
+  private annee(q?: string) {
+    const a = q ? Number.parseInt(q, 10) : NaN;
+    return Number.isFinite(a) && a > 2000 && a < 2100 ? a : new Date().getFullYear();
+  }
 
   private pilote(account: RequestAccount) {
     if (account.type !== 'ASSOCIATION' && account.type !== 'ACADEMIE') {
@@ -86,7 +121,7 @@ export class FacturesController {
   ) {
     this.pilote(account);
     if (!fichier) throw new BadRequestException('Aucun fichier reçu.');
-    return this.factures.deposer(account.id, user.id, fichier, dto.poste || undefined);
+    return this.factures.deposer(account.id, user.id, fichier, dto.poste || undefined, dto.enveloppeId || null);
   }
 
   @Post('saisie')
@@ -96,15 +131,177 @@ export class FacturesController {
   }
 
   @Patch(':id')
-  modifier(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: ModifierFactureDto) {
+  modifier(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: ModifierFactureDto) {
     this.pilote(account);
-    return this.factures.modifier(account.id, id, dto);
+    return this.factures.modifier(account.id, id, dto, user.id);
+  }
+
+  /** Validation à deux : une personne valide ; au-dessus du seuil, il en faut une seconde. */
+  @Post(':id/valider')
+  async valider(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    await this.actif(account);
+    return this.frais.valider(account.id, user.id, id);
   }
 
   @Delete(':id')
   supprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
     this.pilote(account);
     return this.factures.supprimer(account.id, user.id, user.role, id);
+  }
+
+  // ─── Enveloppes (subventions, projets, sessions) ─────────────────────────
+
+  @Get('enveloppes')
+  async enveloppesListe(@CurrentAccount() account: RequestAccount) {
+    await this.actif(account);
+    return this.enveloppes.liste(account.id);
+  }
+
+  @Post('enveloppes')
+  async enveloppeCreer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Body() dto: EnveloppeDto) {
+    await this.actif(account);
+    const e = await this.enveloppes.creer(account.id, dto);
+    await this.frais.journaliser(account.id, user.id, 'enveloppe.creee', e.id, { nom: e.nom });
+    return e;
+  }
+
+  @Post('enveloppes/importer')
+  async enveloppesImporter(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser) {
+    await this.actif(account);
+    const r = await this.enveloppes.importer(account.id);
+    await this.frais.journaliser(account.id, user.id, 'enveloppes.importees', undefined, r);
+    return r;
+  }
+
+  @Patch('enveloppes/:id')
+  async enveloppeModifier(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: ModifierEnveloppeDto) {
+    await this.actif(account);
+    return this.enveloppes.modifier(account.id, id, dto);
+  }
+
+  @Delete('enveloppes/:id')
+  async enveloppeSupprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    await this.actif(account);
+    await this.frais.journaliser(account.id, user.id, 'enveloppe.supprimee', id);
+    return this.enveloppes.supprimer(account.id, id);
+  }
+
+  @Get('enveloppes/:id/compte-rendu.xlsx')
+  async compteRendu(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Res() res: Response) {
+    await this.actif(account);
+    const { nom, fichier } = await this.enveloppes.compteRendu(account.id, id);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${nom}"`);
+    res.send(fichier);
+  }
+
+  // ─── Fournisseurs ─────────────────────────────────────────────────────────
+
+  @Get('fournisseurs')
+  async fournisseursListe(@CurrentAccount() account: RequestAccount) {
+    await this.actif(account);
+    return { fiches: await this.fournisseurs.liste(account.id), comparatif: await this.fournisseurs.comparatif(account.id) };
+  }
+
+  // ─── Relevés de compte ────────────────────────────────────────────────────
+
+  @Get('releves')
+  async relevesListe(@CurrentAccount() account: RequestAccount, @Query('annee') annee?: string) {
+    await this.actif(account);
+    return this.releves.liste(account.id, this.annee(annee));
+  }
+
+  @Post('releves')
+  @Throttle({ default: { limit: 30, ttl: 3_600_000 } })
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: TAILLE_MAX_GLOBALE, files: 1 } }))
+  async releveDeposer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @UploadedFile() fichier: FichierRecu | undefined) {
+    await this.actif(account);
+    if (!fichier) throw new BadRequestException('Aucun fichier reçu.');
+    const r = await this.releves.deposer(account.id, user.id, fichier);
+    await this.frais.journaliser(account.id, user.id, 'releve.depose', r.releveId, { operations: r.operations, rapprochees: r.rapprochees });
+    return r;
+  }
+
+  @Patch('releves/operations/:id')
+  async operationModifier(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: ModifierOperationDto) {
+    await this.actif(account);
+    return this.releves.modifierOperation(account.id, id, dto);
+  }
+
+  @Delete('releves/:id')
+  async releveSupprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    await this.actif(account);
+    await this.frais.journaliser(account.id, user.id, 'releve.supprime', id);
+    return this.releves.supprimerReleve(account.id, user.id, user.role, id);
+  }
+
+  @Get('budget')
+  async budget(@CurrentAccount() account: RequestAccount, @Query('annee') annee?: string) {
+    await this.actif(account);
+    return this.releves.budgetRealise(account.id, this.annee(annee));
+  }
+
+  // ─── Notes de frais ───────────────────────────────────────────────────────
+
+  @Get('frais')
+  async fraisListe(@CurrentAccount() account: RequestAccount, @Query('annee') annee?: string) {
+    await this.actif(account);
+    return this.frais.liste(account.id, this.annee(annee));
+  }
+
+  @Post('frais')
+  @Throttle({ default: { limit: 120, ttl: 3_600_000 } })
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: TAILLE_MAX_GLOBALE, files: 1 } }))
+  async fraisCreer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @UploadedFile() fichier: FichierRecu | undefined, @Body() dto: NoteDeFraisDto) {
+    await this.actif(account);
+    return this.frais.creer(account.id, user.id, dto, fichier);
+  }
+
+  @Patch('frais/:id/statut')
+  async fraisStatut(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: StatutNoteDto) {
+    await this.actif(account);
+    return this.frais.changerStatut(account.id, user.id, id, dto.statut);
+  }
+
+  @Delete('frais/:id')
+  async fraisSupprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    await this.actif(account);
+    return this.frais.supprimer(account.id, user.id, user.role, id);
+  }
+
+  // ─── Journal, réglages, bilan ─────────────────────────────────────────────
+
+  @Get('journal')
+  async journal(@CurrentAccount() account: RequestAccount) {
+    await this.actif(account);
+    return this.frais.journal(account.id);
+  }
+
+  @Get('reglages')
+  async reglages(@CurrentAccount() account: RequestAccount) {
+    await this.actif(account);
+    return this.frais.reglages(account.id);
+  }
+
+  @Patch('reglages')
+  async regler(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Body() dto: ReglagesDto) {
+    await this.actif(account);
+    return this.frais.regler(account.id, user.id, dto);
+  }
+
+  @Get('bilan')
+  async bilanResume(@CurrentAccount() account: RequestAccount, @Query('annee') annee?: string) {
+    await this.actif(account);
+    return this.bilan.resume(account.id, this.annee(annee));
+  }
+
+  @Get('bilan.xlsx')
+  async bilanXlsx(@CurrentAccount() account: RequestAccount, @Query('annee') annee: string | undefined, @Res() res: Response) {
+    await this.actif(account);
+    const { nom, fichier } = await this.bilan.classeur(account.id, this.annee(annee));
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${nom}"`);
+    res.send(fichier);
   }
 
   @Get('export.csv')
