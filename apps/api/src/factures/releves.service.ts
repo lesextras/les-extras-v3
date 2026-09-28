@@ -69,12 +69,14 @@ export class RelevesService {
     }
     if (!lignes.length) throw new BadRequestException("Aucune opération lisible dans ce relevé : vérifiez l'export (une ligne par opération, avec date, libellé et montant).");
 
-    const depose = await this.files.deposer({ fichier, famille: FileKind.COMPLIANCE, userId, accountId });
+    // Le PDF de la banque va au coffre (pièce probante) ; un export CSV n'est
+    // qu'une table, ses lignes sont les opérations elles-mêmes : on ne le garde pas.
+    const depose = estPdf ? await this.files.deposer({ fichier, famille: FileKind.COMPLIANCE, userId, accountId }) : null;
     const dates = lignes.map((l) => l.date).sort();
     const releve = await this.prisma.releveBancaire.create({
       data: {
         accountId,
-        fileId: depose.id,
+        fileId: depose?.id ?? null,
         libelle: fichier.originalname.slice(0, 120),
         periodeDebut: new Date(entete.periodeDebut ?? dates[0]),
         periodeFin: new Date(entete.periodeFin ?? dates[dates.length - 1]),
