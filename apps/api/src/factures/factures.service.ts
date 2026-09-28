@@ -130,11 +130,13 @@ export class FacturesService {
 
   private async exigerActif(accountId: string) {
     let a = await this.prisma.abonnementFactures.findUnique({ where: { accountId } });
-    if (!a && this.offert(accountId)) {
+    if (this.offert(accountId)) {
       // L'espace offert reçoit un compteur comme les autres : le quota mensuel vaut pour lui aussi.
-      a = await this.prisma.abonnementFactures.create({ data: { accountId, statut: 'offert', quotaMensuel: this.quotaParDefaut() } });
+      // Une ligne « pending » laissée par un essai de paiement ne le ferme pas.
+      a ??= await this.prisma.abonnementFactures.create({ data: { accountId, statut: 'offert', quotaMensuel: this.quotaParDefaut() } });
+      return a;
     }
-    if (!a || (a.statut !== 'active' && !(a.statut === 'offert' && this.offert(accountId)))) {
+    if (!a || a.statut !== 'active') {
       throw new ForbiddenException("« Mes factures » est un outil premium : il s'ouvre avec l'abonnement.");
     }
     return a;
