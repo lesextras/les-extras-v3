@@ -361,8 +361,52 @@ export class MailService implements OnModuleDestroy {
       action: teinte,
       entete: `<div style="font-family:${POLICE};color:#ffffff;font-size:17px;font-weight:700;letter-spacing:.6px">${nom.toUpperCase()}</div>`,
       mentions: `Ce lien est personnel : il ouvre votre formation, ne le transmettez pas.<br />
-            Message envoyé par ${nom} via Les Extras.`,
+            Message envoyé par ${nom} via Pilote.`,
     });
+  }
+
+  /**
+   * LE GABARIT DE PILOTE (association, académie).
+   *
+   * Pilote est un produit à part : rien de Les Extras ne doit apparaître dans
+   * un message qu'il envoie, ni logo, ni signature, ni adresse de contact.
+   * Décision de Siham (28/09/2026) : « ce sont 2 produits distincts, ça doit
+   * être entièrement indépendant ». Le nom, l'adresse du site et l'adresse de
+   * réponse viennent de `PILOTE_NOM`, `PILOTE_WEB_URL` et `PILOTE_MAIL_CONTACT`.
+   */
+  private layoutPilote(title: string, bodyHtml: string, cta?: { label: string; url: string }): string {
+    const nom = echapper(this.config.get<string>('PILOTE_NOM') || 'Pilote');
+    const url = this.piloteUrl;
+    const contact = this.config.get<string>('PILOTE_MAIL_CONTACT') || 'contact@toulali.fr';
+    return this.coque({
+      titre: title,
+      corps: bodyHtml,
+      cta,
+      teinte: '#1D1B5C',
+      action: '#4F46E5',
+      entete: `<div style="font-family:${POLICE};color:#ffffff;font-size:17px;font-weight:700;letter-spacing:.6px">${nom.toUpperCase()}</div>
+            <div style="font-family:${POLICE};font-size:12px;color:#c7c4f2;padding-top:2px">Le logiciel des créateurs d’activité</div>`,
+      mentions: `${nom} · <a href="mailto:${contact}" style="color:#6b7280;text-decoration:underline">${contact}</a>
+            &nbsp;·&nbsp;
+            <a href="${url}" style="color:#6b7280;text-decoration:underline">${url.replace(/^https?:\/\//, '')}</a>`,
+    });
+  }
+
+  private get piloteUrl() {
+    return (this.config.get<string>('PILOTE_WEB_URL') || 'https://pilote.toulali.fr').replace(/\/$/, '');
+  }
+
+  /**
+   * L'ACCUSÉ DE RÉCEPTION D'UNE FACTURE ARRIVÉE PAR E-MAIL (Mes factures).
+   * Une ligne par pièce : lue (fournisseur, montant), ou pas, et pourquoi.
+   */
+  async sendAccuseDepotFacture(to: string, data: { espace: string; chemin: string; lignes: { nom: string; ok: boolean; detail: string }[] }): Promise<void> {
+    const url = `${this.piloteUrl}${data.chemin}`;
+    const lues = data.lignes.filter((l) => l.ok).length;
+    const corps = `Votre message pour « ${echapper(data.espace)} » a été reçu. ${lues} pièce${lues > 1 ? 's' : ''} sur ${data.lignes.length} ${lues > 1 ? 'ont été lues' : 'a été lue'} et ${lues > 1 ? 'attendent' : 'attend'} votre relecture dans Mes factures.
+      <ul style="padding-left:18px;margin:12px 0">${data.lignes.map((l) => `<li style="margin:4px 0">${l.ok ? '✔' : '✘'} <strong>${echapper(l.nom)}</strong> : ${echapper(l.detail)}</li>`).join('')}</ul>
+      Une facture lue n'est jamais validée toute seule : ouvrez-la, relisez les montants, puis validez.`;
+    await this.send(to, `Mes factures : ${lues}/${data.lignes.length} pièce${data.lignes.length > 1 ? 's' : ''} reçue${data.lignes.length > 1 ? 's' : ''}`, this.layoutPilote('Facture reçue par e-mail', corps, { label: 'Ouvrir Mes factures', url }));
   }
 
   /**

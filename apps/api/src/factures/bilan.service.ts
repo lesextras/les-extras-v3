@@ -4,6 +4,8 @@ import { rubriqueCerfa } from './enveloppes.service';
 import { RelevesService } from './releves.service';
 import { EnveloppesService } from './enveloppes.service';
 import { FournisseursService } from './fournisseurs.service';
+import { TresorerieService } from './tresorerie.service';
+import { SessionsService } from './sessions.service';
 import { classeur, type Cellule, type Feuille } from './xlsx';
 
 /**
@@ -27,6 +29,8 @@ export class BilanService {
     private readonly releves: RelevesService,
     private readonly enveloppes: EnveloppesService,
     private readonly fournisseurs: FournisseursService,
+    private readonly tresorerieService: TresorerieService,
+    private readonly sessions: SessionsService,
   ) {}
 
   async resume(accountId: string, annee: number) {
@@ -78,13 +82,15 @@ export class BilanService {
   }
 
   async classeur(accountId: string, annee: number): Promise<{ nom: string; fichier: Buffer }> {
-    const [r, envs, comparatif, factures, ops, frais] = await Promise.all([
+    const [r, envs, comparatif, factures, ops, frais, prevision, sessions] = await Promise.all([
       this.resume(accountId, annee),
       this.enveloppes.liste(accountId),
       this.fournisseurs.comparatif(accountId),
       this.prisma.factureFournisseur.findMany({ where: { accountId, OR: [{ dateFacture: { gte: new Date(`${annee}-01-01`), lt: new Date(`${annee + 1}-01-01`) } }, { dateFacture: null, createdAt: { gte: new Date(`${annee}-01-01`), lt: new Date(`${annee + 1}-01-01`) } }] }, orderBy: [{ dateFacture: 'asc' }], include: { enveloppe: { select: { nom: true } } } }),
       this.releves.liste(accountId, annee),
       this.prisma.noteDeFrais.findMany({ where: { accountId, date: { gte: new Date(`${annee}-01-01`), lt: new Date(`${annee + 1}-01-01`) } }, orderBy: { date: 'asc' } }),
+      this.tresorerieService.prevision(accountId),
+      this.sessions.coutParSession(accountId, annee),
     ]);
     const MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
@@ -174,6 +180,36 @@ export class BilanService {
       ],
     };
 
-    return { nom: `bilan-financier-${annee}.xlsx`, fichier: classeur([synthese, chargesPoste, subventions, tresorerie, facturesF, relevesF, fournisseursF, fraisF]) };
+    const previsionF: Feuille = {
+      nom: 'Trésorerie 90 jours',
+      colonnes: [14, 14, 16, 16, 18, 4, 12, 44, 14, 14],
+      gras: [0, 2, 17],
+      lignes: [
+        ['Trésorerie prévisionnelle', '', '', '', '', '', '', '', '', ''],
+        ['Solde de départ', prevision.depart ? prevision.depart.solde : 'non renseigné', prevision.depart ? { d: new Date(prevision.depart.au) } : '', `Solde à ce jour : ${prevision.soldeAujourdhui.toFixed(2)}`, '', '', '', prevision.alertes.join(' '), '', ''],
+        ['Semaine du', 'au', 'Entrées', 'Sorties', 'Solde en fin de semaine', '', 'Date', 'Mouvement attendu', 'Montant', 'Certain'],
+        ...Array.from({ length: Math.max(prevision.semaines.length, prevision.mouvements.length) }, (_, i): Cellule[] => {
+          const sm = prevision.semaines[i];
+          const mv = prevision.mouvements[i];
+          return [sm ? { d: new Date(sm.debut) } : '', sm ? { d: new Date(sm.fin) } : '', sm ? sm.entrees : '', sm ? sm.sorties : '', sm ? sm.solde : '', '', mv ? { d: new Date(mv.date) } : '', mv ? mv.libelle : '', mv ? mv.montant : '', mv ? (mv.certain ? 'oui' : 'estimé') : ''];
+        }),
+        ['', '', '', '', '', '', '', '', '', ''],
+        ['Ce sont des engagements déjà pris (factures à payer, notes validées, devis acceptés, charges qui reviennent chaque mois, subventions accordées avec date de versement), pas une prédiction.', '', '', '', '', '', '', '', '', ''],
+      ],
+    };
+
+    const feuilles = [synthese, chargesPoste, subventions, tresorerie, previsionF, facturesF, relevesF, fournisseursF, fraisF];
+    if (sessions.sessions.length) {
+      feuilles.splice(3, 0, {
+        nom: 'Coût par session',
+        colonnes: [36, 16, 16, 16, 12, 10, 16, 16, 30],
+        lignes: [
+          ['Session', 'Produits', 'Charges', 'Marge', 'Marge %', 'Inscrits', 'Coût par inscrit', 'Produit par inscrit', 'Origine des produits'],
+          ...sessions.sessions.map((x): Cellule[] => [x.nom, x.produits, x.charges, x.marge, x.margePct ?? '', x.inscrits, x.coutParInscrit ?? '', x.produitParInscrit ?? '', x.sourceProduits]),
+          ['Total', sessions.totaux.produits, sessions.totaux.charges, sessions.totaux.marge, '', sessions.totaux.inscrits, '', '', ''],
+        ],
+      });
+    }
+    return { nom: `bilan-financier-${annee}.xlsx`, fichier: classeur(feuilles) };
   }
 }

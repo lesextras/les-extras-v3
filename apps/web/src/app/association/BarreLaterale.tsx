@@ -93,8 +93,8 @@ export const ICONES = {
  * UNE SEULE LISTE. « Tableau de bord » est l'accueil : la marque et la
  * porte d'entrée, en rouge rosé. « Ce lundi » est la même page une fois
  * connectée ; « Mon association » porte le classeur, les documents, la fiche
- * publique, les agréments et le secrétariat ; « Ce à quoi j'ai droit » porte les
- * outils utiles.
+ * publique, les agréments et le secrétariat. « Ce à quoi j'ai droit » n'a plus
+ * d'entrée : il vit au bout du chemin (`/chemin#droits`), fusion du 28/09/2026.
  */
 const MENU: Entree[] = [
   { href: '/', libelle: 'Tableau de bord', icone: ICONES.boussole, accent: true },
@@ -107,7 +107,6 @@ const MENU: Entree[] = [
   { href: '/espace/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
   { href: '/espace/boutique', libelle: 'Ma boutique', icone: ICONES.boutique },
   { href: '/espace/factures', libelle: 'Mes factures', icone: ICONES.factures, pastille: 'Premium' },
-  { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
   { href: '/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },
@@ -142,7 +141,8 @@ const PORTEES: Record<string, string> = {
   '/ajouter-une-association': '/espace/association',
   '/verifier': '/espace/association',
   '/agrements': '/espace/association',
-  '/outils': '/avantages',
+  '/outils': '/chemin',
+  '/avantages': '/chemin',
 };
 
 /**

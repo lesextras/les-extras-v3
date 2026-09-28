@@ -7,6 +7,11 @@ import { ExtractionService } from '../assistant/extraction.service';
 import { MoteurService } from '../assistant/moteur.service';
 import { FournisseursService } from './fournisseurs.service';
 import { FraisService } from './frais.service';
+import { DevisService } from './devis.service';
+import { lirePdfFacturX } from './facturx';
+import { CONSIGNE_FACTURE, lireAvecMoteur, type LectureFacture, POSTES } from './lecture';
+
+export { POSTES, type LectureFacture };
 
 /**
  * MES FACTURES : l'outil premium de Pilote (association et académie).
@@ -26,48 +31,6 @@ import { FraisService } from './frais.service';
  * présente l'outil et le bouton d'abonnement dit que le tarif arrive.
  */
 
-export interface LectureFacture {
-  fournisseur: string;
-  numero: string | null;
-  dateFacture: string | null;
-  dateEcheance: string | null;
-  montantHT: number | null;
-  tva: number | null;
-  montantTTC: number | null;
-  devise: string;
-  poste: string | null;
-  lignes: { libelle: string; quantite: number | null; prixUnitaire: number | null; total: number | null }[];
-  remarque: string | null;
-  siret: string | null;
-  iban: string | null;
-}
-
-/** Les postes proposés : ceux d'un budget associatif ou d'un petit organisme. */
-export const POSTES = [
-  'Loyer et charges',
-  'Assurance',
-  'Matériel et fournitures',
-  'Prestations et sous-traitance',
-  'Formation et formateurs',
-  'Logiciels et abonnements',
-  'Communication',
-  'Déplacements',
-  'Alimentation et réception',
-  'Frais bancaires',
-  'Autre',
-] as const;
-
-const CONSIGNE = `Tu lis une facture ou un reçu fournisseur pour une association ou un organisme de formation français.
-Réponds UNIQUEMENT par un objet JSON, sans texte autour, avec exactement ces clés :
-{"fournisseur": string, "numero": string|null, "dateFacture": "AAAA-MM-JJ"|null, "dateEcheance": "AAAA-MM-JJ"|null,
- "montantHT": number|null, "tva": number|null, "montantTTC": number|null, "devise": "EUR",
- "poste": l'un de [${POSTES.map((p) => `"${p}"`).join(', ')}] ou null,
- "lignes": [{"libelle": string, "quantite": number|null, "prixUnitaire": number|null, "total": number|null}],
- "siret": string|null (14 chiffres du fournisseur, tel qu'imprimé), "iban": string|null (l'IBAN de paiement imprimé sur la facture, sans espaces),
- "remarque": string|null}
-Règles : montants en nombres décimaux avec un point, jamais de texte dans un nombre ; si un montant est illisible, null et une remarque ;
-ne jamais inventer un fournisseur ni un montant ; "remarque" signale ce qui est douteux (montant barré, page manquante, doublon probable), sinon null.`;
-
 @Injectable()
 export class FacturesService {
   private readonly logger = new Logger(FacturesService.name);
@@ -80,6 +43,7 @@ export class FacturesService {
     private readonly config: ConfigService,
     private readonly fournisseurs: FournisseursService,
     private readonly frais: FraisService,
+    private readonly devis: DevisService,
   ) {}
 
   // ─── L'offre ──────────────────────────────────────────────────────────────
@@ -160,19 +124,27 @@ export class FacturesService {
 
   // ─── Lecture d'une facture ────────────────────────────────────────────────
 
-  async deposer(accountId: string, userId: string, fichier: FichierRecu, poste?: string, enveloppeId?: string | null) {
-    await this.consommer(accountId);
-
+  async deposer(accountId: string, userId: string, fichier: FichierRecu, poste?: string, enveloppeId?: string | null, origineDepot: 'ecran' | 'email' = 'ecran') {
     const estImage = fichier.mimetype.startsWith('image/');
     const estPdf = fichier.mimetype === 'application/pdf';
     if (!estImage && !estPdf) {
       throw new BadRequestException('Déposez une photo (JPEG, PNG, WebP) ou un PDF de la facture.');
     }
 
+    // FACTUR-X D'ABORD : un PDF qui embarque son XML se lit sans moteur, au
+    // centime, et ne consomme pas le quota. Sinon, le moteur.
+    let lecture: LectureFacture | null = estPdf ? lirePdfFacturX(fichier.buffer) : null;
+    const origine = lecture ? 'factur-x' : 'moteur';
+    if (!lecture) {
+      await this.consommer(accountId);
+    } else {
+      await this.exigerActif(accountId);
+    }
+
     // Le fichier va au coffre : il est conservé, jamais public.
     const depose = await this.files.deposer({ fichier, famille: FileKind.COMPLIANCE, userId, accountId });
 
-    const lecture = await this.lire(fichier);
+    lecture ??= await this.lire(fichier);
     const ttc = lecture.montantTTC ?? lecture.montantHT ?? 0;
     if (!lecture.fournisseur) lecture.fournisseur = 'Fournisseur non lu';
 
@@ -209,98 +181,22 @@ export class FacturesService {
         lignes: lecture.lignes as unknown as Prisma.InputJsonValue,
         alerte: alertes.length ? alertes.join(' ') : null,
         variationPct,
-        origine: 'moteur',
+        origine,
       },
     });
-    await this.frais.journaliser(accountId, userId, 'facture.deposee', facture.id, { fournisseur: facture.fournisseur, montantTTC: ttc, alertes: alertes.length });
-    return this.presenter(facture);
+    await this.frais.journaliser(accountId, userId, origineDepot === 'email' ? 'facture.recue-par-email' : 'facture.deposee', facture.id, { fournisseur: facture.fournisseur, montantTTC: ttc, alertes: alertes.length, lecture: origine });
+    // Le devis qui l'attendait, s'il y en a un : rapproché, et l'écart signalé.
+    const rapprochement = await this.devis.rapprocherFacture(accountId, userId, facture);
+    if (rapprochement?.alerte) {
+      const maj = await this.prisma.factureFournisseur.update({ where: { id: facture.id }, data: { alerte: [facture.alerte, rapprochement.alerte].filter(Boolean).join(' ') } });
+      return { ...this.presenter(maj), devis: rapprochement.devis };
+    }
+    return { ...this.presenter(facture), devis: rapprochement?.devis ?? null };
   }
 
   /** Le moteur lit la pièce ; une image passe en pièce jointe, un PDF en texte. */
-  private async lire(fichier: FichierRecu): Promise<LectureFacture> {
-    const options = { system: CONSIGNE, user: '', maxTokens: 1500, temperature: 0 } as {
-      system: string;
-      user: string;
-      maxTokens: number;
-      temperature: number;
-      pieces?: { mimeType: string; base64: string }[];
-    };
-    if (fichier.mimetype.startsWith('image/')) {
-      options.user = 'Voici la photo de la facture. Lis-la et réponds en JSON.';
-      options.pieces = [{ mimeType: fichier.mimetype, base64: fichier.buffer.toString('base64') }];
-    } else {
-      let texte = '';
-      try {
-        texte = await this.extraction.extraire(fichier.buffer, fichier.mimetype, fichier.originalname);
-      } catch {
-        texte = '';
-      }
-      if (texte.length >= 120) {
-        options.user = `Voici le texte de la facture :\n\n${texte.slice(0, 12_000)}`;
-      } else {
-        // PDF scanné : on donne le PDF lui-même à un moteur qui sait lire une image.
-        options.user = 'Voici la facture en PDF. Lis-la et réponds en JSON.';
-        options.pieces = [{ mimeType: 'application/pdf', base64: fichier.buffer.toString('base64') }];
-      }
-    }
-    let brut = '';
-    try {
-      brut = await this.moteur.completer(options);
-    } catch (err) {
-      this.logger.warn(`Lecture de facture impossible : ${err instanceof Error ? err.message : String(err)}`);
-      throw new BadRequestException("Le moteur n'a pas pu lire cette facture. Réessayez, ou saisissez-la à la main.");
-    }
-    return this.parser(brut);
-  }
-
-  private parser(brut: string): LectureFacture {
-    const debut = brut.indexOf('{');
-    const fin = brut.lastIndexOf('}');
-    const vide: LectureFacture = {
-      fournisseur: '',
-      numero: null,
-      dateFacture: null,
-      dateEcheance: null,
-      montantHT: null,
-      tva: null,
-      montantTTC: null,
-      devise: 'EUR',
-      poste: null,
-      lignes: [],
-      remarque: 'Réponse du moteur illisible.',
-      siret: null,
-      iban: null,
-    };
-    if (debut < 0 || fin < debut) return vide;
-    try {
-      const j = JSON.parse(brut.slice(debut, fin + 1)) as Partial<LectureFacture>;
-      const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.round(v * 100) / 100 : null);
-      const date = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
-      return {
-        fournisseur: typeof j.fournisseur === 'string' ? j.fournisseur.trim() : '',
-        numero: typeof j.numero === 'string' ? j.numero.trim() : null,
-        dateFacture: date(j.dateFacture),
-        dateEcheance: date(j.dateEcheance),
-        montantHT: num(j.montantHT),
-        tva: num(j.tva),
-        montantTTC: num(j.montantTTC),
-        devise: typeof j.devise === 'string' && j.devise.length === 3 ? j.devise.toUpperCase() : 'EUR',
-        poste: typeof j.poste === 'string' && (POSTES as readonly string[]).includes(j.poste) ? j.poste : null,
-        lignes: Array.isArray(j.lignes)
-          ? j.lignes.slice(0, 60).map((l) => ({
-              libelle: typeof l?.libelle === 'string' ? l.libelle.slice(0, 160) : '',
-              quantite: num(l?.quantite),
-              prixUnitaire: num(l?.prixUnitaire),
-              total: num(l?.total),
-            }))
-          : [],
-        remarque: typeof j.remarque === 'string' && j.remarque.trim() ? j.remarque.trim().slice(0, 300) : null,
-        siret: typeof j.siret === 'string' ? j.siret : null,
-        iban: typeof j.iban === 'string' ? j.iban : null,
-      };
-    } catch {
-      return vide;
-    }
+  private lire(fichier: FichierRecu): Promise<LectureFacture> {
+    return lireAvecMoteur(this.moteur, this.extraction, fichier, CONSIGNE_FACTURE, this.logger);
   }
 
   /** Compare au dernier montant du même fournisseur : + 20 % ou plus, on prévient. */
@@ -331,7 +227,7 @@ export class FacturesService {
         where: { accountId },
         orderBy: [{ dateFacture: 'desc' }, { createdAt: 'desc' }],
         take: 500,
-        include: { enveloppe: { select: { id: true, nom: true } }, validations: { select: { userId: true } } },
+        include: { enveloppe: { select: { id: true, nom: true } }, validations: { select: { userId: true } }, devis: { select: { id: true, reference: true, montantTTC: true, ecartPct: true } } },
       }),
     ]);
     const reglages = await this.frais.reglages(accountId);
@@ -368,6 +264,7 @@ export class FacturesService {
       factures: factures.map((f) => ({
         ...this.presenter(f),
         enveloppe: f.enveloppe ? { id: f.enveloppe.id, nom: f.enveloppe.nom } : null,
+        devis: f.devis ? { id: f.devis.id, reference: f.devis.reference, montantTTC: Number(f.devis.montantTTC), ecartPct: f.devis.ecartPct } : null,
         validations: f.validations.length,
         validationsRequises: reglages.seuilDoubleValidation !== null && Number(f.montantTTC) >= reglages.seuilDoubleValidation ? 2 : 1,
       })),
@@ -396,7 +293,8 @@ export class FacturesService {
         statut: 'VALIDEE',
       },
     });
-    return this.presenter(f);
+    const rapprochement = await this.devis.rapprocherFacture(accountId, null, f);
+    return { ...this.presenter(f), devis: rapprochement?.devis ?? null };
   }
 
   async modifier(

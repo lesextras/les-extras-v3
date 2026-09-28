@@ -70,7 +70,7 @@ export default async function ProjetsPage() {
           le fabriquer en un clic
         </Link>
         . Les dispositifs déjà repérés à la main sont sur{' '}
-        <Link href="/avantages" className="font-bold text-[#4F46E5] underline underline-offset-4">
+        <Link href="/chemin#droits" className="font-bold text-[#4F46E5] underline underline-offset-4">
           ce à quoi j&apos;ai droit
         </Link>
         , et les demandes en cours dans{' '}

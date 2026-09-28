@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { FacturesService } from './factures.service';
+import { parserLecture } from './lecture';
 
 /**
  * MES FACTURES : ce qui protège l'outil premium.
@@ -22,7 +23,8 @@ function service(abonnement: Record<string, unknown> | null, precedente: Record<
   };
   const config = { get: (k: string) => (k === 'PILOTE_FACTURES_PRIX_CENTS' ? undefined : undefined) };
   const frais = { journaliser: jest.fn(async () => undefined), reglages: jest.fn(async () => ({ seuilDoubleValidation: null })) };
-  const s = new FacturesService(prisma as never, {} as never, {} as never, {} as never, config as never, {} as never, frais as never);
+  const devis = { rapprocherFacture: jest.fn(async () => null) };
+  const s = new FacturesService(prisma as never, {} as never, {} as never, {} as never, config as never, {} as never, frais as never, devis as never);
   return { s, prisma };
 }
 
@@ -56,12 +58,10 @@ describe('Mes factures', () => {
   });
 
   it('lit la réponse du moteur entourée de texte, et ne chiffre jamais l’illisible', () => {
-    const { s } = service(null);
-    const p = (s as unknown as { parser: (b: string) => { montantTTC: number | null; fournisseur: string; poste: string | null } }).parser;
-    const r = p.call(s, 'Voici : {"fournisseur":"Orange","montantTTC":"abc","poste":"Logiciels et abonnements","lignes":[]} merci');
+    const r = parserLecture('Voici : {"fournisseur":"Orange","montantTTC":"abc","poste":"Logiciels et abonnements","lignes":[]} merci');
     expect(r.fournisseur).toBe('Orange');
     expect(r.montantTTC).toBeNull();
     expect(r.poste).toBe('Logiciels et abonnements');
-    expect(p.call(s, 'rien').fournisseur).toBe('');
+    expect(parserLecture('rien').fournisseur).toBe('');
   });
 });

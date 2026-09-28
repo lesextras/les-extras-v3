@@ -1,15 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Barres, Camembert, Jauge, PALETTE, euros } from './graphiques';
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Barres, Camembert, Courbe, Jauge, PALETTE, euros } from './graphiques';
 
 /**
  * MES FACTURES : l'outil premium des deux espaces de Pilote.
  *
  * Un seul composant pour l'association et l'académie ; seules les couleurs et
- * l'adresse de retour changent (`theme`). Sept onglets :
- *   Tableau de bord · Factures · Enveloppes · Relevés · Fournisseurs ·
- *   Notes de frais · Journal
+ * l'adresse de retour changent (`theme`). Neuf onglets :
+ *   Tableau de bord · Factures · Devis · Enveloppes · Relevés · Trésorerie ·
+ *   Fournisseurs · Notes de frais · Journal
  * et deux exports : le CSV comptable, et le bilan financier de l'exercice en
  * classeur Excel, rempli automatiquement.
  *
@@ -72,8 +72,63 @@ interface Facture {
   verification: Verification | null;
   enveloppeId: string | null;
   enveloppe: { id: string; nom: string } | null;
+  devis: { id: string; reference: string | null; montantTTC: number; ecartPct: number | null } | null;
   validations: number;
   validationsRequises: number;
+}
+
+interface Devis {
+  id: string;
+  fileId: string | null;
+  fournisseur: string;
+  reference: string | null;
+  dateDevis: string | null;
+  dateValidite: string | null;
+  montantHT: number | null;
+  tva: number | null;
+  montantTTC: number;
+  poste: string | null;
+  lignes: { libelle: string; quantite: number | null; prixUnitaire: number | null; total: number | null }[];
+  statut: 'EN_ATTENTE' | 'FACTURE' | 'ANNULE';
+  factureId: string | null;
+  facture: { id: string; numero: string | null; montantTTC: number; dateFacture: string | null; statut: string } | null;
+  ecartPct: number | null;
+  alerte: string | null;
+  notes: string | null;
+  deposeLe: string;
+  perime: boolean;
+}
+
+interface DevisCharge {
+  resume: { enAttente: number; engageSansFacture: number; perimes: number; ecarts: number };
+  devis: Devis[];
+}
+
+interface Tresorerie {
+  horizonJours: number;
+  depart: { solde: number; au: string; source: 'saisi' | 'releve' } | null;
+  soldeAujourdhui: number;
+  soldeFin: number;
+  pointBas: { date: string; montant: number };
+  totalEntrees: number;
+  totalSorties: number;
+  semaines: { debut: string; fin: string; entrees: number; sorties: number; solde: number }[];
+  mouvements: { date: string; libelle: string; montant: number; type: 'facture' | 'note' | 'devis' | 'recurrent' | 'subvention'; certain: boolean; id?: string }[];
+  recurrents: { libelle: string; montant: number; jourDuMois: number; occurrences: number }[];
+  aPercevoirSansDate: { id: string; nom: string; montant: number }[];
+  alertes: string[];
+}
+
+interface Sessions {
+  annee: number;
+  sessions: { id: string; nom: string; coursId: string | null; produits: number; sourceProduits: string; charges: number; chargesParPoste: { poste: string; total: number }[]; marge: number; margePct: number | null; inscrits: number; coutParInscrit: number | null; produitParInscrit: number | null }[];
+  totaux: { produits: number; charges: number; marge: number; inscrits: number };
+}
+
+interface Depot {
+  enService: boolean;
+  adresse: string | null;
+  jeton: string | null;
 }
 
 interface Resume {
@@ -110,6 +165,7 @@ interface Enveloppe {
   dateDebut: string | null;
   dateFin: string | null;
   dateJustification: string | null;
+  dateVersementPrevu: string | null;
   notes: string | null;
   alertes: string[];
 }
@@ -152,7 +208,9 @@ const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août'
 const STATUTS: Record<Facture['statut'], string> = { A_VERIFIER: 'À vérifier', VALIDEE: 'Validée', PAYEE: 'Payée' };
 const TYPES_ENV: Record<Enveloppe['type'], string> = { SUBVENTION: 'Subvention', PROJET: 'Projet ou action', FONDS_PROPRES: 'Fonds propres', SESSION: 'Session de formation', AUTRE: 'Autre' };
 const STATUTS_NOTE: Record<Frais['notes'][number]['statut'], string> = { A_VALIDER: 'À valider', VALIDEE: 'Validée, à rembourser', REMBOURSEE: 'Remboursée', ABANDONNEE: 'Abandon de frais', REFUSEE: 'Refusée' };
-const ONGLETS = ['Tableau de bord', 'Factures', 'Enveloppes', 'Relevés', 'Fournisseurs', 'Notes de frais', 'Journal'] as const;
+const ONGLETS = ['Tableau de bord', 'Factures', 'Devis', 'Enveloppes', 'Relevés', 'Trésorerie', 'Fournisseurs', 'Notes de frais', 'Journal'] as const;
+const STATUTS_DEVIS: Record<Devis['statut'], string> = { EN_ATTENTE: 'Accepté, pas encore facturé', FACTURE: 'Facturé', ANNULE: 'Annulé' };
+const TYPES_MOUVEMENT: Record<Tresorerie['mouvements'][number]['type'], string> = { facture: 'Facture à payer', note: 'Note de frais', devis: 'Devis accepté', recurrent: 'Charge ou recette récurrente', subvention: 'Subvention à percevoir' };
 type Onglet = (typeof ONGLETS)[number];
 
 function dateCourte(d: string | null | undefined) {
@@ -197,6 +255,10 @@ export function MesFactures({ theme }: { theme: ThemeFactures }) {
   const [frais, setFrais] = useState<Frais | null>(null);
   const [bilan, setBilan] = useState<Bilan | null>(null);
   const [journal, setJournal] = useState<Journal | null>(null);
+  const [devis, setDevis] = useState<DevisCharge | null>(null);
+  const [tresorerie, setTresorerie] = useState<Tresorerie | null>(null);
+  const [sessions, setSessions] = useState<Sessions | null>(null);
+  const [depot, setDepot] = useState<Depot | null>(null);
   const [annee, setAnnee] = useState(new Date().getFullYear());
 
   const signaler = (e: unknown) => setErreur(e instanceof Error ? e.message : 'Erreur');
@@ -207,23 +269,31 @@ export function MesFactures({ theme }: { theme: ThemeFactures }) {
       setCharge(c);
       setErreur(null);
       if (c.abonnement.actif) {
-        const [env, rel, four, fr, bi] = await Promise.all([
+        const [env, rel, four, fr, bi, dv, tr, dp, se] = await Promise.all([
           appel<Enveloppe[]>('/factures/enveloppes'),
           appel<Releves>(`/factures/releves?annee=${annee}`),
           appel<Fournisseurs>('/factures/fournisseurs'),
           appel<Frais>(`/factures/frais?annee=${annee}`),
           appel<Bilan>(`/factures/bilan?annee=${annee}`),
+          appel<DevisCharge>('/factures/devis'),
+          appel<Tresorerie>('/factures/tresorerie'),
+          appel<Depot>('/factures/depot'),
+          theme.espace === 'academie' ? appel<Sessions>(`/factures/sessions?annee=${annee}`) : Promise.resolve(null),
         ]);
         setEnveloppes(env);
         setReleves(rel);
         setFournisseurs(four);
         setFrais(fr);
         setBilan(bi);
+        setDevis(dv);
+        setTresorerie(tr);
+        setDepot(dp);
+        setSessions(se);
       }
     } catch (e) {
       signaler(e);
     }
-  }, [annee]);
+  }, [annee, theme.espace]);
 
   useEffect(() => {
     void recharger();
@@ -357,10 +427,12 @@ export function MesFactures({ theme }: { theme: ThemeFactures }) {
         </div>
       </div>
 
-      {onglet === 'Tableau de bord' ? <TableauDeBord theme={theme} r={r} bilan={bilan} enveloppes={enveloppes} releves={releves} frais={frais} annee={annee} /> : null}
-      {onglet === 'Factures' ? <FacturesVue theme={theme} r={r} ab={ab} factures={factures} postes={postes} enveloppes={enveloppes ?? []} occupe={occupe} agir={agir} /> : null}
+      {onglet === 'Tableau de bord' ? <TableauDeBord theme={theme} r={r} bilan={bilan} enveloppes={enveloppes} releves={releves} frais={frais} annee={annee} tresorerie={tresorerie} sessions={sessions} devis={devis} /> : null}
+      {onglet === 'Factures' ? <FacturesVue theme={theme} r={r} ab={ab} factures={factures} postes={postes} enveloppes={enveloppes ?? []} occupe={occupe} agir={agir} depot={depot} /> : null}
+      {onglet === 'Devis' ? <DevisVue theme={theme} data={devis} postes={postes} factures={factures} occupe={occupe} agir={agir} /> : null}
       {onglet === 'Enveloppes' ? <EnveloppesVue theme={theme} enveloppes={enveloppes ?? []} occupe={occupe} agir={agir} /> : null}
       {onglet === 'Relevés' ? <RelevesVue theme={theme} releves={releves} postes={postes} enveloppes={enveloppes ?? []} factures={factures} occupe={occupe} agir={agir} /> : null}
+      {onglet === 'Trésorerie' ? <TresorerieVue theme={theme} t={tresorerie} occupe={occupe} agir={agir} /> : null}
       {onglet === 'Fournisseurs' ? <FournisseursVue theme={theme} data={fournisseurs} /> : null}
       {onglet === 'Notes de frais' ? <NotesDeFrais theme={theme} frais={frais} postes={postes} enveloppes={enveloppes ?? []} occupe={occupe} agir={agir} /> : null}
       {onglet === 'Journal' ? <JournalVue theme={theme} journal={journal} seuil={r.seuilDoubleValidation} occupe={occupe} agir={agir} /> : null}
@@ -370,7 +442,7 @@ export function MesFactures({ theme }: { theme: ThemeFactures }) {
 
 /* ═══════════════════════ Tableau de bord ═══════════════════════ */
 
-function TableauDeBord({ theme, r, bilan, enveloppes, releves, frais, annee }: { theme: ThemeFactures; r: Resume; bilan: Bilan | null; enveloppes: Enveloppe[] | null; releves: Releves | null; frais: Frais | null; annee: number }) {
+function TableauDeBord({ theme, r, bilan, enveloppes, releves, frais, annee, tresorerie, sessions, devis }: { theme: ThemeFactures; r: Resume; bilan: Bilan | null; enveloppes: Enveloppe[] | null; releves: Releves | null; frais: Frais | null; annee: number; tresorerie: Tresorerie | null; sessions: Sessions | null; devis: DevisCharge | null }) {
   const alertesEnv = (enveloppes ?? []).filter((e) => e.alertes.length);
   const zero = Array.from({ length: 12 }, () => 0);
   return (
@@ -435,19 +507,104 @@ function TableauDeBord({ theme, r, bilan, enveloppes, releves, frais, annee }: {
         </div>
       </div>
 
-      <div className={`${theme.carte} p-5`}>
-        <h3 className="mb-3 text-[15px] font-bold" style={{ color: theme.encre }}>
-          Factures par mois
-        </h3>
-        <Barres encre={theme.encre} etiquettes={MOIS} series={[{ nom: 'Factures', valeurs: r.parMois, couleur: theme.primaire }]} />
+      <div className="grid gap-5 md:grid-cols-2">
+        <div className={`${theme.carte} p-5`}>
+          <h3 className="mb-1 text-[15px] font-bold" style={{ color: theme.encre }}>
+            Trésorerie à 90 jours
+          </h3>
+          {tresorerie ? (
+            <>
+              <p className="mb-2 text-[13px] opacity-70" style={{ color: theme.encre }}>
+                Aujourd’hui {euros(tresorerie.soldeAujourdhui)} · dans 13 semaines {euros(tresorerie.soldeFin)} · point bas {euros(tresorerie.pointBas.montant)} le {dateCourte(tresorerie.pointBas.date)}
+              </p>
+              <Courbe encre={theme.encre} couleur={theme.primaire} points={tresorerie.semaines.map((s) => ({ etiquette: dateCourte(s.debut).slice(0, 6), valeur: s.solde }))} />
+              {tresorerie.alertes.length ? <p className="mt-2 rounded-lg bg-[#FFF4D6] px-3 py-2 text-[13px] text-[#7A4B00]">{tresorerie.alertes[0]}</p> : null}
+            </>
+          ) : null}
+        </div>
+        <div className={`${theme.carte} p-5`}>
+          <h3 className="mb-3 text-[15px] font-bold" style={{ color: theme.encre }}>
+            Factures par mois
+          </h3>
+          <Barres encre={theme.encre} etiquettes={MOIS} series={[{ nom: 'Factures', valeurs: r.parMois, couleur: theme.primaire }]} />
+          {devis && devis.resume.enAttente ? (
+            <p className="mt-2 text-[13px] opacity-70" style={{ color: theme.encre }}>
+              {devis.resume.enAttente} devis accepté{devis.resume.enAttente > 1 ? 's' : ''} pas encore facturé{devis.resume.enAttente > 1 ? 's' : ''} : {euros(devis.resume.engageSansFacture)} engagés.
+            </p>
+          ) : null}
+        </div>
       </div>
+
+      {theme.espace === 'academie' ? <SessionsVue theme={theme} sessions={sessions} /> : null}
+    </div>
+  );
+}
+
+/* ═══════════════════════ Coût par session (académie) ═══════════════════════ */
+
+function SessionsVue({ theme, sessions }: { theme: ThemeFactures; sessions: Sessions | null }) {
+  if (!sessions) return null;
+  return (
+    <div className={`${theme.carte} p-5`}>
+      <h3 className="text-[15px] font-bold" style={{ color: theme.encre }}>
+        Coût par session
+      </h3>
+      <p className="mb-3 text-[13px] opacity-70" style={{ color: theme.encre }}>
+        Chaque enveloppe « Session de formation » reliée à un cours : ce qu’elle a encaissé, ce qu’elle a coûté, et le coût par inscrit. C’est le chiffre du bilan pédagogique et financier, par action.
+      </p>
+      {!sessions.sessions.length ? (
+        <p className="text-[13px] opacity-70" style={{ color: theme.encre }}>
+          Aucune session : dans l’onglet Enveloppes, « Importer depuis Pilote » crée une enveloppe par cours, puis rattachez-lui ses factures.
+        </p>
+      ) : (
+        <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          <Camembert encre={theme.encre} titre="Charges" parts={sessions.sessions.map((s) => ({ nom: s.nom, valeur: s.charges }))} />
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] text-[13px]" style={{ color: theme.encre }}>
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-wide opacity-70">
+                  <th className="p-2">Session</th>
+                  <th className="p-2 text-right">Produits</th>
+                  <th className="p-2 text-right">Charges</th>
+                  <th className="p-2 text-right">Marge</th>
+                  <th className="p-2 text-right">Inscrits</th>
+                  <th className="p-2 text-right">Coût / inscrit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sessions.sessions.map((s) => (
+                  <tr key={s.id} className="border-t" style={{ borderColor: theme.bordure }}>
+                    <td className="p-2 font-bold">{s.nom}</td>
+                    <td className="p-2 text-right tabular-nums">{euros(s.produits)}</td>
+                    <td className="p-2 text-right tabular-nums">{euros(s.charges)}</td>
+                    <td className="p-2 text-right font-bold tabular-nums" style={{ color: s.marge < 0 ? '#B91C1C' : '#0F5F3E' }}>
+                      {euros(s.marge)}
+                      {s.margePct !== null ? <span className="ml-1 text-[11px] opacity-70">{s.margePct} %</span> : null}
+                    </td>
+                    <td className="p-2 text-right tabular-nums">{s.inscrits}</td>
+                    <td className="p-2 text-right tabular-nums">{s.coutParInscrit !== null ? euros(s.coutParInscrit) : '·'}</td>
+                  </tr>
+                ))}
+                <tr className="border-t font-bold" style={{ borderColor: theme.bordure }}>
+                  <td className="p-2">Total</td>
+                  <td className="p-2 text-right tabular-nums">{euros(sessions.totaux.produits)}</td>
+                  <td className="p-2 text-right tabular-nums">{euros(sessions.totaux.charges)}</td>
+                  <td className="p-2 text-right tabular-nums">{euros(sessions.totaux.marge)}</td>
+                  <td className="p-2 text-right tabular-nums">{sessions.totaux.inscrits}</td>
+                  <td className="p-2" />
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 /* ═══════════════════════ Factures ═══════════════════════ */
 
-function FacturesVue({ theme, r, ab, factures, postes, enveloppes, occupe, agir }: { theme: ThemeFactures; r: Resume; ab: Abonnement; factures: Facture[]; postes: readonly string[]; enveloppes: Enveloppe[]; occupe: boolean; agir: Agir }) {
+function FacturesVue({ theme, r, ab, factures, postes, enveloppes, occupe, agir, depot }: { theme: ThemeFactures; r: Resume; ab: Abonnement; factures: Facture[]; postes: readonly string[]; enveloppes: Enveloppe[]; occupe: boolean; agir: Agir; depot: Depot | null }) {
   const fichier = useRef<HTMLInputElement>(null);
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [saisie, setSaisie] = useState(false);
@@ -525,6 +682,8 @@ function FacturesVue({ theme, r, ab, factures, postes, enveloppes, occupe, agir 
         ) : null}
         {saisie ? <Saisie theme={theme} postes={postes} enveloppes={enveloppes} occupe={occupe} onOk={() => setSaisie(false)} agir={agir} /> : null}
       </div>
+
+      <DepotEmail theme={theme} depot={depot} occupe={occupe} agir={agir} />
 
       <div className="grid gap-3 sm:grid-cols-4">
         <Chiffre theme={theme} titre={`Factures ${r.annee}`} valeur={euros(r.total)} detail={`${r.nombre} facture${r.nombre > 1 ? 's' : ''}`} />
@@ -624,7 +783,14 @@ function Ligne({ f, theme, ouverte, onOuvrir, postes, enveloppes, occupe, agir }
           ) : null}
         </td>
         <td className="p-3">{f.poste ?? <span className="opacity-50">Sans poste</span>}</td>
-        <td className="p-3">{f.enveloppe?.nom ?? <span className="opacity-50">Aucune</span>}</td>
+        <td className="p-3">
+          {f.enveloppe?.nom ?? <span className="opacity-50">Aucune</span>}
+          {f.devis ? (
+            <span className="ml-2 rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: f.devis.ecartPct !== null && Math.abs(f.devis.ecartPct) > 2 ? '#FFF4D6' : '#E3F5EC', color: f.devis.ecartPct !== null && Math.abs(f.devis.ecartPct) > 2 ? '#7A4B00' : '#0F5F3E' }} title={`Devis ${f.devis.reference ?? ''} : ${euros(f.devis.montantTTC, 2)}`}>
+              devis {f.devis.ecartPct !== null && f.devis.ecartPct !== 0 ? `${f.devis.ecartPct > 0 ? '+' : ''}${f.devis.ecartPct} %` : 'conforme'}
+            </span>
+          ) : null}
+        </td>
         <td className="p-3 text-right font-bold tabular-nums">{euros(f.montantTTC, 2)}</td>
         <td className="p-3">
           <span className={`rounded-full px-2 py-0.5 text-[12px] font-bold ${f.statut === 'PAYEE' ? 'bg-[#E3F5EC] text-[#0F5F3E]' : f.statut === 'VALIDEE' ? 'bg-[#ECEBFC] text-[#1D1B5C]' : 'bg-[#FFF4D6] text-[#7A4B00]'}`}>
@@ -761,7 +927,7 @@ function Ligne({ f, theme, ouverte, onOuvrir, postes, enveloppes, occupe, agir }
 
 /* ═══════════════════════ Enveloppes ═══════════════════════ */
 
-const ENV_VIDE = { nom: '', type: 'SUBVENTION', financeur: '', montantAccorde: '', dateJustification: '' };
+const ENV_VIDE = { nom: '', type: 'SUBVENTION', financeur: '', montantAccorde: '', dateJustification: '', dateVersementPrevu: '' };
 
 function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactures; enveloppes: Enveloppe[]; occupe: boolean; agir: Agir }) {
   const [v, setV] = useState(ENV_VIDE);
@@ -779,11 +945,11 @@ function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactur
           </button>
         </div>
         <form
-          className="mt-3 grid gap-2 sm:grid-cols-7"
+          className="mt-3 grid gap-2 sm:grid-cols-8"
           onSubmit={(e) => {
             e.preventDefault();
             void agir(async () => {
-              await appel('/factures/enveloppes', { method: 'POST', body: { nom: v.nom, type: v.type, financeur: v.financeur || null, montantAccorde: v.montantAccorde ? Number(v.montantAccorde) : null, dateJustification: v.dateJustification || null } });
+              await appel('/factures/enveloppes', { method: 'POST', body: { nom: v.nom, type: v.type, financeur: v.financeur || null, montantAccorde: v.montantAccorde ? Number(v.montantAccorde) : null, dateJustification: v.dateJustification || null, dateVersementPrevu: v.dateVersementPrevu || null } });
               setV(ENV_VIDE);
             }, 'Enveloppe créée.');
           }}
@@ -799,12 +965,13 @@ function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactur
           <input placeholder="Financeur" className={champ} style={{ borderColor: theme.bordure }} value={v.financeur} onChange={(e) => setV({ ...v, financeur: e.target.value })} />
           <input type="number" step="0.01" min="0" placeholder="Montant accordé" className={champ} style={{ borderColor: theme.bordure }} value={v.montantAccorde} onChange={(e) => setV({ ...v, montantAccorde: e.target.value })} />
           <input type="date" title="Date limite de justification" className={champ} style={{ borderColor: theme.bordure }} value={v.dateJustification} onChange={(e) => setV({ ...v, dateJustification: e.target.value })} />
+          <input type="date" title="Date de versement prévue" className={champ} style={{ borderColor: theme.bordure }} value={v.dateVersementPrevu} onChange={(e) => setV({ ...v, dateVersementPrevu: e.target.value })} />
           <button type="submit" disabled={occupe} className={theme.btnPrimaire} style={{ padding: '8px 14px', fontSize: 13 }}>
             Créer
           </button>
         </form>
         <p className="mt-2 text-[12px] opacity-70" style={{ color: theme.encre }}>
-          La date est celle à laquelle le compte rendu financier doit être rendu au financeur. Vous serez prévenu 30 jours avant.
+          Première date : celle à laquelle le compte rendu financier doit être rendu au financeur (prévenu 30 jours avant). Seconde date : quand le financeur doit verser, pour la trésorerie prévisionnelle.
         </p>
       </div>
 
@@ -884,7 +1051,7 @@ function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactur
 }
 
 function EditionEnveloppe({ theme, e, occupe, agir, onOk }: { theme: ThemeFactures; e: Enveloppe; occupe: boolean; agir: Agir; onOk: () => void }) {
-  const [v, setV] = useState({ nom: e.nom, financeur: e.financeur ?? '', montantAccorde: e.montantAccorde === null ? '' : String(e.montantAccorde), dateJustification: (e.dateJustification ?? '').slice(0, 10), notes: e.notes ?? '' });
+  const [v, setV] = useState({ nom: e.nom, financeur: e.financeur ?? '', montantAccorde: e.montantAccorde === null ? '' : String(e.montantAccorde), dateJustification: (e.dateJustification ?? '').slice(0, 10), dateVersementPrevu: (e.dateVersementPrevu ?? '').slice(0, 10), notes: e.notes ?? '' });
   const champ = 'rounded-lg border px-2 py-1.5 text-[14px] w-full';
   return (
     <form
@@ -893,7 +1060,7 @@ function EditionEnveloppe({ theme, e, occupe, agir, onOk }: { theme: ThemeFactur
       onSubmit={(ev) => {
         ev.preventDefault();
         void agir(async () => {
-          await appel(`/factures/enveloppes/${e.id}`, { method: 'PATCH', body: { nom: v.nom, financeur: v.financeur || null, montantAccorde: v.montantAccorde ? Number(v.montantAccorde) : null, dateJustification: v.dateJustification || null, notes: v.notes || null } });
+          await appel(`/factures/enveloppes/${e.id}`, { method: 'PATCH', body: { nom: v.nom, financeur: v.financeur || null, montantAccorde: v.montantAccorde ? Number(v.montantAccorde) : null, dateJustification: v.dateJustification || null, dateVersementPrevu: v.dateVersementPrevu || null, notes: v.notes || null } });
           onOk();
         }, 'Enveloppe mise à jour.');
       }}
@@ -901,7 +1068,14 @@ function EditionEnveloppe({ theme, e, occupe, agir, onOk }: { theme: ThemeFactur
       <input className={champ} style={{ borderColor: theme.bordure }} value={v.nom} onChange={(x) => setV({ ...v, nom: x.target.value })} />
       <input className={champ} style={{ borderColor: theme.bordure }} placeholder="Financeur" value={v.financeur} onChange={(x) => setV({ ...v, financeur: x.target.value })} />
       <input className={champ} style={{ borderColor: theme.bordure }} type="number" step="0.01" placeholder="Montant accordé" value={v.montantAccorde} onChange={(x) => setV({ ...v, montantAccorde: x.target.value })} />
-      <input className={champ} style={{ borderColor: theme.bordure }} type="date" value={v.dateJustification} onChange={(x) => setV({ ...v, dateJustification: x.target.value })} />
+      <label className="grid gap-1 text-[12px] font-bold">
+        Justification à rendre le
+        <input className={champ} style={{ borderColor: theme.bordure }} type="date" value={v.dateJustification} onChange={(x) => setV({ ...v, dateJustification: x.target.value })} />
+      </label>
+      <label className="grid gap-1 text-[12px] font-bold">
+        Versement prévu le
+        <input className={champ} style={{ borderColor: theme.bordure }} type="date" value={v.dateVersementPrevu} onChange={(x) => setV({ ...v, dateVersementPrevu: x.target.value })} />
+      </label>
       <textarea className={`${champ} sm:col-span-2`} style={{ borderColor: theme.bordure }} placeholder="Notes" value={v.notes} onChange={(x) => setV({ ...v, notes: x.target.value })} />
       <button type="submit" disabled={occupe} className={theme.btnPrimaire} style={{ padding: '8px 14px', fontSize: 13 }}>
         Enregistrer
@@ -1402,6 +1576,433 @@ function JournalVue({ theme, journal, seuil, occupe, agir }: { theme: ThemeFactu
           ))}
           {journal && !journal.length ? <li className="opacity-70">Rien encore.</li> : null}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════ Dépôt par e-mail ═══════════════════════ */
+
+function DepotEmail({ theme, depot, occupe, agir }: { theme: ThemeFactures; depot: Depot | null; occupe: boolean; agir: Agir }) {
+  const [copie, setCopie] = useState(false);
+  if (!depot) return null;
+  const copier = async () => {
+    if (!depot.adresse) return;
+    try {
+      await navigator.clipboard.writeText(depot.adresse);
+      setCopie(true);
+      setTimeout(() => setCopie(false), 2000);
+    } catch {
+      setCopie(false);
+    }
+  };
+  return (
+    <div className={`${theme.carte} p-5`}>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-[15px] font-bold" style={{ color: theme.encre }}>
+            Recevoir les factures par e-mail
+          </h3>
+          {!depot.enService ? (
+            <p className="mt-1 text-[13px] opacity-70" style={{ color: theme.encre }}>
+              La boîte de dépôt n’est pas encore en service. Dès qu’elle l’est, vous obtiendrez ici une adresse à donner à vos fournisseurs.
+            </p>
+          ) : depot.adresse ? (
+            <p className="mt-1 text-[13px]" style={{ color: theme.encre }}>
+              Donnez cette adresse à vos fournisseurs, ou transférez-y les factures reçues : chaque pièce jointe (PDF, photo) arrive ici « à vérifier », et l’expéditeur reçoit un accusé.
+              <br />
+              <code className="mt-1 inline-block rounded-lg px-2 py-1 text-[14px] font-bold" style={{ background: theme.fond, color: theme.primaireFonce }}>
+                {depot.adresse}
+              </code>
+            </p>
+          ) : (
+            <p className="mt-1 text-[13px] opacity-70" style={{ color: theme.encre }}>
+              Activez le dépôt pour obtenir une adresse propre à cet espace. Elle contient un code : elle ne se devine pas, et vous pouvez la renouveler.
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {depot.enService && depot.adresse ? (
+            <>
+              <button type="button" className={theme.btnSecondaire} onClick={() => void copier()}>
+                {copie ? 'Copiée' : 'Copier l’adresse'}
+              </button>
+              <button type="button" disabled={occupe} className={theme.btnSecondaire} onClick={() => { if (window.confirm('Renouveler l’adresse ? L’ancienne cessera de fonctionner.')) void agir(() => appel('/factures/depot/activer?renouveler=1', { method: 'POST' }), 'Nouvelle adresse créée.'); }}>
+                Renouveler
+              </button>
+              <button type="button" disabled={occupe} className="text-[13px] font-bold text-[#8A1B3D] underline" onClick={() => void agir(() => appel('/factures/depot/desactiver', { method: 'POST' }), 'Dépôt par e-mail désactivé.')}>
+                Désactiver
+              </button>
+            </>
+          ) : depot.enService ? (
+            <button type="button" disabled={occupe} className={theme.btnPrimaire} onClick={() => void agir(() => appel('/factures/depot/activer', { method: 'POST' }), 'Adresse de dépôt créée.')}>
+              Activer le dépôt par e-mail
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════ Devis ═══════════════════════ */
+
+const DEVIS_VIDE = { fournisseur: '', montantTTC: '', reference: '', dateDevis: '', dateValidite: '', poste: '' };
+
+function DevisVue({ theme, data, postes, factures, occupe, agir }: { theme: ThemeFactures; data: DevisCharge | null; postes: readonly string[]; factures: Facture[]; occupe: boolean; agir: Agir }) {
+  const fichier = useRef<HTMLInputElement>(null);
+  const [saisie, setSaisie] = useState(false);
+  const [v, setV] = useState(DEVIS_VIDE);
+  const [ouvert, setOuvert] = useState<string | null>(null);
+  const champ = 'rounded-lg border px-2 py-1.5 text-[14px]';
+  if (!data) return <p className="text-sm opacity-70">Chargement…</p>;
+  const modifier = (id: string, corps: Record<string, unknown>, msg?: string) => agir(() => appel(`/factures/devis/${id}`, { method: 'PATCH', body: corps }), msg);
+  return (
+    <div className="grid gap-5">
+      <div className={`${theme.carte} p-5`}>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="grid gap-1 text-[14px] font-bold" style={{ color: theme.encre }}>
+            Déposer un devis accepté (photo ou PDF)
+            <input
+              ref={fichier}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              disabled={occupe}
+              className="text-[14px]"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                void agir(async () => {
+                  const form = new FormData();
+                  form.append('file', f);
+                  const d = await appel<Devis>('/factures/devis', { method: 'POST', form });
+                  setOuvert(d.id);
+                  if (fichier.current) fichier.current.value = '';
+                }, 'Devis lu. Quand la facture arrivera, elle lui sera rapprochée et l’écart signalé.');
+              }}
+            />
+          </label>
+          <p className="max-w-[48ch] text-[13px] opacity-70" style={{ color: theme.encre }}>
+            Un devis déposé, c’est une dépense engagée que la trésorerie prévisionnelle connaît déjà, et une facture qu’on ne paie pas plus cher que prévu.
+          </p>
+          <button type="button" className={`${theme.btnSecondaire} ml-auto`} onClick={() => setSaisie(!saisie)}>
+            Saisir à la main
+          </button>
+        </div>
+        {occupe ? (
+          <p className="mt-3 text-[14px]" style={{ color: theme.primaire }}>
+            Lecture en cours…
+          </p>
+        ) : null}
+        {saisie ? (
+          <form
+            className="mt-4 grid gap-2 border-t pt-4 sm:grid-cols-7"
+            style={{ borderColor: theme.bordure }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              void agir(async () => {
+                await appel('/factures/devis/saisie', { method: 'POST', body: { fournisseur: v.fournisseur, montantTTC: Number(v.montantTTC), reference: v.reference || undefined, dateDevis: v.dateDevis || undefined, dateValidite: v.dateValidite || undefined, poste: v.poste || undefined } });
+                setV(DEVIS_VIDE);
+                setSaisie(false);
+              }, 'Devis enregistré.');
+            }}
+          >
+            <input required placeholder="Fournisseur" className={champ} style={{ borderColor: theme.bordure }} value={v.fournisseur} onChange={(e) => setV({ ...v, fournisseur: e.target.value })} />
+            <input required type="number" step="0.01" min="0" placeholder="TTC" className={champ} style={{ borderColor: theme.bordure }} value={v.montantTTC} onChange={(e) => setV({ ...v, montantTTC: e.target.value })} />
+            <input placeholder="Référence" className={champ} style={{ borderColor: theme.bordure }} value={v.reference} onChange={(e) => setV({ ...v, reference: e.target.value })} />
+            <input type="date" title="Date du devis" className={champ} style={{ borderColor: theme.bordure }} value={v.dateDevis} onChange={(e) => setV({ ...v, dateDevis: e.target.value })} />
+            <input type="date" title="Valable jusqu’au" className={champ} style={{ borderColor: theme.bordure }} value={v.dateValidite} onChange={(e) => setV({ ...v, dateValidite: e.target.value })} />
+            <select className={champ} style={{ borderColor: theme.bordure }} value={v.poste} onChange={(e) => setV({ ...v, poste: e.target.value })}>
+              <option value="">Poste</option>
+              {postes.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+            <button type="submit" disabled={occupe} className={theme.btnPrimaire} style={{ padding: '8px 14px', fontSize: 13 }}>
+              Enregistrer
+            </button>
+          </form>
+        ) : null}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-4">
+        <Chiffre theme={theme} titre="En attente" valeur={String(data.resume.enAttente)} detail="acceptés, pas encore facturés" />
+        <Chiffre theme={theme} titre="Engagé" valeur={euros(data.resume.engageSansFacture)} detail="montant des devis en attente" />
+        <Chiffre theme={theme} titre="Périmés" valeur={String(data.resume.perimes)} detail="validité dépassée sans facture" ton={data.resume.perimes ? '#B91C1C' : undefined} />
+        <Chiffre theme={theme} titre="Écarts" valeur={String(data.resume.ecarts)} detail="factures qui s’écartent du devis" ton={data.resume.ecarts ? '#7A4B00' : undefined} />
+      </div>
+
+      <div className={`${theme.carte} overflow-x-auto`}>
+        <table className="w-full min-w-[720px] text-[14px]" style={{ color: theme.encre }}>
+          <thead>
+            <tr className="text-left text-[12px] uppercase tracking-wide opacity-70">
+              <th className="p-3">Date</th>
+              <th className="p-3">Fournisseur</th>
+              <th className="p-3">Référence</th>
+              <th className="p-3 text-right">TTC</th>
+              <th className="p-3">Statut</th>
+              <th className="p-3">Facture</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!data.devis.length ? (
+              <tr>
+                <td colSpan={6} className="p-5 text-center opacity-70">
+                  Aucun devis : déposez le premier devis accepté.
+                </td>
+              </tr>
+            ) : null}
+            {data.devis.map((d) => (
+              <Fragment key={d.id}>
+                <tr className="cursor-pointer border-t hover:bg-black/[0.02]" style={{ borderColor: theme.bordure }} onClick={() => setOuvert(ouvert === d.id ? null : d.id)}>
+                  <td className="whitespace-nowrap p-3">{dateCourte(d.dateDevis) || dateCourte(d.deposeLe)}</td>
+                  <td className="p-3 font-bold">
+                    {d.fournisseur}
+                    {d.perime ? <span className="ml-2 rounded-full bg-[#FDE7EC] px-2 py-0.5 text-[12px] font-bold text-[#8A1B3D]">périmé</span> : null}
+                  </td>
+                  <td className="p-3">{d.reference ?? <span className="opacity-50">·</span>}</td>
+                  <td className="p-3 text-right font-bold tabular-nums">{euros(d.montantTTC, 2)}</td>
+                  <td className="p-3">
+                    <span className={`rounded-full px-2 py-0.5 text-[12px] font-bold ${d.statut === 'FACTURE' ? 'bg-[#E3F5EC] text-[#0F5F3E]' : d.statut === 'ANNULE' ? 'bg-black/5 opacity-70' : 'bg-[#ECEBFC] text-[#1D1B5C]'}`}>{STATUTS_DEVIS[d.statut]}</span>
+                  </td>
+                  <td className="p-3">
+                    {d.facture ? (
+                      <span>
+                        {euros(d.facture.montantTTC, 2)}
+                        {d.ecartPct !== null && d.ecartPct !== 0 ? (
+                          <span className="ml-1 rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: Math.abs(d.ecartPct) > 2 ? '#FFF4D6' : '#E3F5EC', color: Math.abs(d.ecartPct) > 2 ? '#7A4B00' : '#0F5F3E' }}>
+                            {d.ecartPct > 0 ? '+' : ''}
+                            {d.ecartPct} %
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : (
+                      <span className="opacity-50">en attente</span>
+                    )}
+                  </td>
+                </tr>
+                {ouvert === d.id ? (
+                  <tr className="border-t" style={{ borderColor: theme.bordure, background: theme.fond }}>
+                    <td colSpan={6} className="p-4">
+                      {d.alerte ? <p className="mb-3 rounded-lg bg-[#FDE7EC] px-3 py-2 text-[13px] text-[#8A1B3D]">{d.alerte}</p> : null}
+                      <p className="text-[13px] opacity-80">
+                        {d.dateValidite ? `Valable jusqu’au ${dateCourte(d.dateValidite)}. ` : ''}
+                        {d.montantHT !== null ? `HT ${euros(d.montantHT, 2)}` : ''}
+                        {d.tva !== null ? ` · TVA ${euros(d.tva, 2)}` : ''}
+                        {d.poste ? ` · ${d.poste}` : ''}
+                      </p>
+                      {d.lignes.length ? (
+                        <table className="mt-2 w-full text-[13px]">
+                          <tbody>
+                            {d.lignes.map((l, i) => (
+                              <tr key={i} className="border-t" style={{ borderColor: theme.bordure }}>
+                                <td className="py-1 pr-2">{l.libelle}</td>
+                                <td className="py-1 pr-2 text-right opacity-70">{l.quantite ?? ''}</td>
+                                <td className="py-1 text-right font-bold">{l.total !== null ? euros(l.total, 2) : ''}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : null}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {d.statut === 'EN_ATTENTE' ? (
+                          <label className="flex items-center gap-2 text-[13px]">
+                            Rapprocher d’une facture
+                            <select
+                              className="rounded-lg border px-2 py-1 text-[13px]"
+                              style={{ borderColor: theme.bordure }}
+                              defaultValue=""
+                              onChange={(e) => {
+                                if (e.target.value) void modifier(d.id, { factureId: e.target.value }, 'Devis rapproché de la facture.');
+                              }}
+                            >
+                              <option value="">Choisir…</option>
+                              {factures
+                                .filter((f) => !f.devis)
+                                .map((f) => (
+                                  <option key={f.id} value={f.id}>
+                                    {f.fournisseur} · {euros(f.montantTTC, 2)} · {dateCourte(f.dateFacture) || dateCourte(f.deposeLe)}
+                                  </option>
+                                ))}
+                            </select>
+                          </label>
+                        ) : null}
+                        {d.statut === 'FACTURE' ? (
+                          <button type="button" disabled={occupe} className={theme.btnSecondaire} onClick={() => void modifier(d.id, { factureId: null }, 'Rapprochement retiré.')}>
+                            Détacher de la facture
+                          </button>
+                        ) : null}
+                        {d.statut === 'EN_ATTENTE' ? (
+                          <button type="button" disabled={occupe} className={theme.btnSecondaire} onClick={() => void modifier(d.id, { statut: 'ANNULE' }, 'Devis annulé.')}>
+                            Annuler ce devis
+                          </button>
+                        ) : d.statut === 'ANNULE' ? (
+                          <button type="button" disabled={occupe} className={theme.btnSecondaire} onClick={() => void modifier(d.id, { statut: 'EN_ATTENTE' })}>
+                            Remettre en attente
+                          </button>
+                        ) : null}
+                        {d.fileId ? (
+                          <a href={`/api/proxy/files/${d.fileId}`} target="_blank" rel="noopener" className={theme.btnSecondaire}>
+                            Voir le fichier
+                          </a>
+                        ) : null}
+                        <button
+                          type="button"
+                          disabled={occupe}
+                          className="ml-auto text-[13px] font-bold text-[#8A1B3D] underline"
+                          onClick={() => {
+                            if (window.confirm('Supprimer ce devis ?')) void agir(() => appel(`/factures/devis/${d.id}`, { method: 'DELETE' }));
+                          }}
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════ Trésorerie prévisionnelle ═══════════════════════ */
+
+function TresorerieVue({ theme, t, occupe, agir }: { theme: ThemeFactures; t: Tresorerie | null; occupe: boolean; agir: Agir }) {
+  const [solde, setSolde] = useState('');
+  const [au, setAu] = useState(new Date().toISOString().slice(0, 10));
+  if (!t) return <p className="text-sm opacity-70">Chargement…</p>;
+  return (
+    <div className="grid gap-5">
+      {t.alertes.map((a) => (
+        <Bandeau key={a} ton={/sous zéro/.test(a) ? 'alerte' : 'info'}>
+          {a}
+        </Bandeau>
+      ))}
+      <div className="grid gap-3 sm:grid-cols-4">
+        <Chiffre theme={theme} titre="Aujourd’hui" valeur={euros(t.soldeAujourdhui)} detail={t.depart ? `solde ${t.depart.source === 'saisi' ? 'saisi' : 'du relevé'} au ${dateCourte(t.depart.au)}, plus les lignes de relevé depuis` : 'aucun solde de départ'} />
+        <Chiffre theme={theme} titre="Point bas" valeur={euros(t.pointBas.montant)} detail={`semaine du ${dateCourte(t.pointBas.date)}`} ton={t.pointBas.montant < 0 ? '#B91C1C' : undefined} />
+        <Chiffre theme={theme} titre="Dans 13 semaines" valeur={euros(t.soldeFin)} detail={`${euros(t.totalEntrees)} d’entrées, ${euros(t.totalSorties)} de sorties connues`} ton={t.soldeFin < 0 ? '#B91C1C' : undefined} />
+        <div className={`${theme.carte} p-4`}>
+          <p className="text-[12px] font-bold uppercase tracking-wide opacity-70" style={{ color: theme.encre }}>
+            Solde en banque
+          </p>
+          <form
+            className="mt-2 grid gap-1"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void agir(() => appel('/factures/reglages', { method: 'PATCH', body: { soldeBancaire: solde === '' ? null : Number(solde), soldeBancaireAu: au || null } }), 'Solde enregistré.');
+            }}
+          >
+            <input type="number" step="0.01" placeholder="Solde du compte" className="rounded-lg border px-2 py-1 text-[13px]" style={{ borderColor: theme.bordure }} value={solde} onChange={(e) => setSolde(e.target.value)} />
+            <input type="date" className="rounded-lg border px-2 py-1 text-[13px]" style={{ borderColor: theme.bordure }} value={au} onChange={(e) => setAu(e.target.value)} />
+            <button type="submit" disabled={occupe} className={theme.btnSecondaire} style={{ padding: '6px 10px', fontSize: 12 }}>
+              Enregistrer
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div className={`${theme.carte} p-5`}>
+        <h3 className="text-[15px] font-bold" style={{ color: theme.encre }}>
+          Le solde, semaine par semaine
+        </h3>
+        <p className="mb-3 text-[13px] opacity-70" style={{ color: theme.encre }}>
+          Ce sont les engagements déjà pris, pas une prédiction : factures à payer à leur échéance, notes de frais validées, devis acceptés, charges qui reviennent chaque mois dans vos relevés, subventions accordées avec une date de versement.
+        </p>
+        <Courbe encre={theme.encre} couleur={theme.primaire} points={t.semaines.map((s) => ({ etiquette: dateCourte(s.debut).slice(0, 6), valeur: s.solde }))} hauteur={200} />
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[520px] text-[13px]" style={{ color: theme.encre }}>
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wide opacity-70">
+                <th className="p-2">Semaine</th>
+                <th className="p-2 text-right">Entrées</th>
+                <th className="p-2 text-right">Sorties</th>
+                <th className="p-2 text-right">Solde</th>
+              </tr>
+            </thead>
+            <tbody>
+              {t.semaines.map((s) => (
+                <tr key={s.debut} className="border-t" style={{ borderColor: theme.bordure }}>
+                  <td className="p-2">
+                    {dateCourte(s.debut)} → {dateCourte(s.fin)}
+                  </td>
+                  <td className="p-2 text-right tabular-nums text-[#0F5F3E]">{s.entrees ? euros(s.entrees) : '·'}</td>
+                  <td className="p-2 text-right tabular-nums text-[#B91C1C]">{s.sorties ? euros(s.sorties) : '·'}</td>
+                  <td className="p-2 text-right font-bold tabular-nums" style={{ color: s.solde < 0 ? '#B91C1C' : theme.primaireFonce }}>
+                    {euros(s.solde)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid gap-5 md:grid-cols-2">
+        <div className={`${theme.carte} p-5`}>
+          <h3 className="mb-3 text-[15px] font-bold" style={{ color: theme.encre }}>
+            Les mouvements attendus
+          </h3>
+          <ul className="grid gap-1 text-[13px]" style={{ color: theme.encre }}>
+            {t.mouvements.map((m, i) => (
+              <li key={i} className="flex items-center gap-2 border-t py-1" style={{ borderColor: theme.bordure }}>
+                <span className="w-[72px] shrink-0 tabular-nums opacity-70">{dateCourte(m.date)}</span>
+                <span className="min-w-0 flex-1 truncate" title={TYPES_MOUVEMENT[m.type]}>
+                  {m.libelle}
+                  {!m.certain ? <span className="ml-1 text-[11px] opacity-60">estimé</span> : null}
+                </span>
+                <b className="tabular-nums" style={{ color: m.montant < 0 ? '#B91C1C' : '#0F5F3E' }}>
+                  {m.montant > 0 ? '+' : ''}
+                  {euros(m.montant)}
+                </b>
+              </li>
+            ))}
+            {!t.mouvements.length ? <li className="opacity-70">Aucun mouvement connu sur 90 jours.</li> : null}
+          </ul>
+        </div>
+        <div className="grid gap-5">
+          <div className={`${theme.carte} p-5`}>
+            <h3 className="mb-3 text-[15px] font-bold" style={{ color: theme.encre }}>
+              Ce qui revient chaque mois (repéré dans vos relevés)
+            </h3>
+            <ul className="grid gap-1 text-[13px]" style={{ color: theme.encre }}>
+              {t.recurrents.map((r) => (
+                <li key={r.libelle} className="flex items-center gap-2 border-t py-1" style={{ borderColor: theme.bordure }}>
+                  <span className="min-w-0 flex-1 truncate">{r.libelle}</span>
+                  <span className="opacity-70">le {r.jourDuMois}</span>
+                  <b className="tabular-nums" style={{ color: r.montant < 0 ? '#B91C1C' : '#0F5F3E' }}>
+                    {euros(r.montant)}
+                  </b>
+                </li>
+              ))}
+              {!t.recurrents.length ? <li className="opacity-70">Rien de récurrent repéré : il faut au moins trois mois de relevés.</li> : null}
+            </ul>
+          </div>
+          {t.aPercevoirSansDate.length ? (
+            <div className={`${theme.carte} p-5`}>
+              <h3 className="mb-1 text-[15px] font-bold" style={{ color: theme.encre }}>
+                À percevoir, sans date
+              </h3>
+              <p className="mb-2 text-[12px] opacity-70" style={{ color: theme.encre }}>
+                Hors courbe tant que la date de versement n’est pas posée sur l’enveloppe.
+              </p>
+              <ul className="grid gap-1 text-[13px]" style={{ color: theme.encre }}>
+                {t.aPercevoirSansDate.map((s) => (
+                  <li key={s.id} className="flex items-center gap-2 border-t py-1" style={{ borderColor: theme.bordure }}>
+                    <span className="min-w-0 flex-1 truncate">{s.nom}</span>
+                    <b className="tabular-nums text-[#0F5F3E]">{euros(s.montant)}</b>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

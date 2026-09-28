@@ -5,7 +5,7 @@ import { FilesService, type FichierRecu } from '../storage/files.service';
 import { ExtractionService } from '../assistant/extraction.service';
 import { MoteurService } from '../assistant/moteur.service';
 import { devinerPoste, empreinteOperation, lireCsvReleve, natureRecette, scoreRapprochement, sensOperation, type LigneReleve } from './outils';
-import { POSTES } from './factures.service';
+import { POSTES } from './lecture';
 
 /**
  * LE RELEVÉ DE COMPTE MENSUEL.

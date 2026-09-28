@@ -17,7 +17,7 @@ describe('FacturesController : ordre des routes', () => {
 
   it("déclare les routes génériques d'une facture après toutes les routes nommées", () => {
     const generiques = ["@Patch(':id')", "@Delete(':id')", "@Post(':id/valider')"].map(position);
-    const nommees = ["@Patch('reglages')", "@Get('reglages')", "@Get('journal')", "@Get('bilan')", "@Post('releves')", "@Post('frais')", "@Post('saisie')"].map(position);
+    const nommees = ["@Patch('reglages')", "@Get('reglages')", "@Get('journal')", "@Get('bilan')", "@Post('releves')", "@Post('frais')", "@Post('saisie')", "@Post('devis')", "@Get('tresorerie')", "@Get('sessions')", "@Get('depot')"].map(position);
     expect(Math.min(...generiques)).toBeGreaterThan(Math.max(...nommees));
   });
 });

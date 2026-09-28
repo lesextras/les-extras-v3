@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Encart, Titre } from '../_ui';
+import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Encart, SousTitre, Titre, formaterDate } from '../_ui';
 import { chargerChemin, TEINTES_PARTIE } from '../_chemin';
 import { etapesFaitesSiConnecte } from '../_session';
+import { AVANTAGES, FAMILLES_AVANTAGES, VERIFIE_LE } from '../_avantages';
+import { CarteAvantage } from '../CarteAvantage';
 
 export const metadata: Metadata = {
   title: 'Le chemin, étape par étape',
   description:
-    "Faire naître ton association, la faire vivre, demander une subvention : douze étapes simples, avec les CERFA et des documents exemples.",
+    "Douze étapes pour créer et faire vivre ton association, avec les CERFA, puis tout ce à quoi elle a droit : logiciels offerts, FDVA, Service civique.",
   alternates: { canonical: '/chemin' },
 };
 
@@ -22,10 +24,19 @@ export default async function CheminPage() {
     <>
       <Titre
         surtitre="Le chemin"
-        sousTitre="À chaque étape : tu déposes tes papiers, tu les fabriques sur place, et tu coches."
+        sousTitre="À chaque étape : tu déposes tes papiers, tu les fabriques sur place, et tu coches. Et une fois l'association née, tout ce à quoi elle a droit est au bout de cette page."
       >
         Douze étapes, <Accent>une subvention</Accent> au bout.
       </Titre>
+
+      <nav className="mb-6 flex flex-wrap gap-2" aria-label="Sur cette page">
+        <a href="#partie-1" className="rounded-full border border-[#D9D6EE] bg-white px-3 py-1.5 text-sm font-bold text-[#1D1B5C] no-underline transition hover:border-[#4F46E5] hover:text-[#4F46E5]">
+          Les douze étapes
+        </a>
+        <a href="#droits" className="rounded-full border border-[#D9D6EE] bg-white px-3 py-1.5 text-sm font-bold text-[#1D1B5C] no-underline transition hover:border-[#4F46E5] hover:text-[#4F46E5]">
+          Ce à quoi j&apos;ai droit <span className="text-[#6B6A8A]">{AVANTAGES.length}</span>
+        </a>
+      </nav>
 
       {!chemin ? (
         <Encart ton="attention">Le chemin ne se charge pas pour le moment. Recharge la page dans un instant.</Encart>
@@ -123,6 +134,55 @@ export default async function CheminPage() {
           );
         })}
       </div>
+      {/* ------------------------------------------------ ce à quoi j'ai droit */}
+      <section id="droits" className="mt-16 scroll-mt-24">
+        <div className="rounded-2xl border border-[#C7C4F2] bg-[#ECEBFC] p-5 sm:p-6">
+          <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#4338CA]">Après le chemin</p>
+          <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-[#1D1B5C]">Ce à quoi ton association a droit</h2>
+          <p className="mt-2 max-w-[70ch] leading-relaxed text-[#1D1B5C]">
+            Des logiciels offerts, des reçus pour tes donateurs, une aide de l&apos;État, un jeune en Service civique, des bénévoles qui te trouvent. Pour chaque chose : ce que tu gagnes, pour qui c&apos;est, ce qu&apos;il te faut, comment faire, et le lien pour le demander.
+            {AVANTAGES.length} avantages, aucun lien sponsorisé.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-[#1D1B5C]">
+            <span className="font-extrabold">Trois papiers ouvrent presque toutes ces portes</span> : le récépissé de la préfecture, les statuts, le RIB de l&apos;association. Ils sont dans ton classeur dès l&apos;étape 3.
+          </p>
+          <nav className="mt-4 flex flex-wrap gap-2" aria-label="Aller à une famille">
+            {FAMILLES_AVANTAGES.map((f) => (
+              <a key={f.code} href={`#${f.code.toLowerCase()}`} className="rounded-full border border-[#C7C4F2] bg-white px-3 py-1.5 text-sm font-bold text-[#1D1B5C] no-underline transition hover:border-[#4F46E5] hover:text-[#4F46E5]">
+                {f.titre} <span className="text-[#6B6A8A]">{f.avantages.length}</span>
+              </a>
+            ))}
+          </nav>
+        </div>
+
+        {FAMILLES_AVANTAGES.map((f) => (
+          <section key={f.code} id={f.code.toLowerCase()} className="mt-10 scroll-mt-24">
+            <SousTitre>{f.titre}</SousTitre>
+            <p className="-mt-2 mb-5 max-w-[70ch] leading-relaxed text-[#6B6A8A]">{f.enUnMot}</p>
+            <div className="space-y-4">
+              {f.avantages.map((a) => (
+                <CarteAvantage key={a.code} avantage={a} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        <section className="mt-10 grid gap-4 md:grid-cols-2">
+          <Encart ton="info">
+            <p className="text-lg font-extrabold">Et pour être trouvé sur internet ?</p>
+            <p className="mt-1 leading-relaxed">Fiche Google, page HelloAsso, réseaux, adresses e-mail au nom de l&apos;association, site simple : dix étapes dans l&apos;ordre.</p>
+            <Link href="/presence-en-ligne" className={`${BTN_SECONDAIRE} mt-4 !bg-white`}>
+              Être visible en ligne →
+            </Link>
+          </Encart>
+          <Encart ton="neutre">
+            <p className="text-lg font-extrabold text-[#1D1B5C]">Vérifié le {formaterDate(VERIFIE_LE)}</p>
+            <p className="mt-1 leading-relaxed">
+              Les conditions et les liens ont été relus sur les sites des organismes à cette date. Les offres changent : c&apos;est toujours le site de l&apos;organisme qui fait foi. On n&apos;écrit aucun prix qui ne vienne pas de lui.
+            </p>
+          </Encart>
+        </section>
+      </section>
     </>
   );
 }

@@ -76,7 +76,7 @@ export function Recherche({ disponible, projetId, projetIntitule }: { disponible
         <p className="mt-1 text-sm leading-relaxed text-[#6B6A8A]">
           En attendant, la liste des dispositifs connus et des outils utiles reste consultable.
         </p>
-        <Link href="/avantages" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+        <Link href="/chemin#droits" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
           Ce à quoi j&apos;ai droit →
         </Link>
       </div>

@@ -6,7 +6,15 @@ import { CleApi, type Cle } from './CleApi';
 
 export const metadata: Metadata = { title: 'API développeur', robots: { index: false, follow: false } };
 
-const BASE_API = `${(process.env.NEXT_PUBLIC_API_URL ?? 'https://api.les-extras.fr/api').replace(/\/$/, '')}/v1/academie`;
+/**
+ * L'adresse publique de l'API de Pilote, celle que l'organisme écrit dans son
+ * CRM ou dans Zapier. Elle est PROPRE À PILOTE (`NEXT_PUBLIC_PILOTE_API_URL`,
+ * ex. https://api.pilote.toulali.fr/api) : un produit à part ne fait pas
+ * écrire l'hôte d'un autre produit dans les intégrations de ses clients. Tant
+ * que ce domaine n'est pas posé sur l'app API dans Coolify, on retombe sur
+ * l'adresse commune.
+ */
+const BASE_API = `${(process.env.NEXT_PUBLIC_PILOTE_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'https://api.les-extras.fr/api').replace(/\/$/, '')}/v1/academie`;
 
 export default async function PageApi() {
   const s = await sessionAcademie('/academie/parametres/api');

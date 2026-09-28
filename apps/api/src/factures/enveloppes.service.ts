@@ -45,6 +45,7 @@ export interface EnveloppeDto {
   dateDebut?: string | null;
   dateFin?: string | null;
   dateJustification?: string | null;
+  dateVersementPrevu?: string | null;
   notes?: string | null;
   dossierId?: string | null;
   actionId?: string | null;
@@ -89,6 +90,7 @@ export class EnveloppesService {
         dateDebut: e.dateDebut,
         dateFin: e.dateFin,
         dateJustification: e.dateJustification,
+        dateVersementPrevu: e.dateVersementPrevu,
         dossierId: e.dossierId,
         actionId: e.actionId,
         coursId: e.coursId,
@@ -127,6 +129,7 @@ export class EnveloppesService {
     if (dto.dateDebut !== undefined) d.dateDebut = date(dto.dateDebut);
     if (dto.dateFin !== undefined) d.dateFin = date(dto.dateFin);
     if (dto.dateJustification !== undefined) d.dateJustification = date(dto.dateJustification);
+    if (dto.dateVersementPrevu !== undefined) d.dateVersementPrevu = date(dto.dateVersementPrevu);
     if (dto.notes !== undefined) d.notes = dto.notes?.slice(0, 2000) || null;
     if (dto.dossierId !== undefined) d.dossierId = dto.dossierId || null;
     if (dto.actionId !== undefined) d.actionId = dto.actionId || null;

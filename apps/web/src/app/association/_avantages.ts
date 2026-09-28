@@ -470,7 +470,7 @@ export const ETAPES_PRESENCE: EtapePresence[] = [
     ],
     lien: '/chemin/le-projet-en-une-page',
     lienLibelle: 'Écrire le projet en une page',
-    liensUtiles: [{ libelle: 'Canva pour les associations', url: '/avantages#canva' }],
+    liensUtiles: [{ libelle: 'Canva pour les associations', url: '/chemin#canva' }],
   },
   {
     numero: 2,
@@ -511,7 +511,7 @@ export const ETAPES_PRESENCE: EtapePresence[] = [
       'Écris la page de l’association avec le kit de départ : logo, trois phrases, photo.',
       'Crée une première campagne d’adhésion : le lien devient ton bouton « Nous rejoindre » partout.',
     ],
-    lien: '/avantages#helloasso',
+    lien: '/chemin#helloasso',
     lienLibelle: 'Voir la fiche HelloAsso',
   },
   {
@@ -573,9 +573,9 @@ export const ETAPES_PRESENCE: EtapePresence[] = [
       'Dans Google Workspace (ou Microsoft 365), ajoute le domaine et crée contact@, presidence@, tresorerie@.',
       'Change l’adresse partout : préfecture (via Le Compte Asso), banque, HelloAsso, Google, réseaux.',
     ],
-    lien: '/avantages#google-pour-les-associations',
+    lien: '/chemin#google-pour-les-associations',
     lienLibelle: 'Voir Google pour les associations',
-    liensUtiles: [{ libelle: 'Ou Microsoft 365 pour les associations', url: '/avantages#microsoft-365' }],
+    liensUtiles: [{ libelle: 'Ou Microsoft 365 pour les associations', url: '/chemin#microsoft-365' }],
   },
   {
     numero: 7,
@@ -643,7 +643,7 @@ export const ETAPES_PRESENCE: EtapePresence[] = [
     pourQui: "Associations d'intérêt général.",
     ilTeFaut: ['Le kit de départ', 'Une mission claire : quoi, quand, où'],
     commentFaire: ['Inscris l’association comme responsable d’organisation.', 'Publie une première mission concrète.', 'Réponds dans la journée aux candidatures.'],
-    lien: '/avantages#jeveuxaider',
+    lien: '/chemin#jeveuxaider',
     lienLibelle: 'Voir la fiche JeVeuxAider',
   },
 ];

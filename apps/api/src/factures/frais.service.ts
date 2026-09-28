@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { FileKind, Prisma, StatutNoteDeFrais } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService, type FichierRecu } from '../storage/files.service';
-import { POSTES } from './factures.service';
+import { POSTES } from './lecture';
 
 /**
  * NOTES DE FRAIS, VALIDATION À DEUX, JOURNAL, RÉGLAGES.
@@ -43,13 +43,23 @@ export class FraisService {
 
   async reglages(accountId: string) {
     const r = await this.prisma.reglagesFactures.findUnique({ where: { accountId } });
-    return { seuilDoubleValidation: r?.seuilDoubleValidation === null || r?.seuilDoubleValidation === undefined ? null : Number(r.seuilDoubleValidation) };
+    return {
+      seuilDoubleValidation: r?.seuilDoubleValidation === null || r?.seuilDoubleValidation === undefined ? null : Number(r.seuilDoubleValidation),
+      soldeBancaire: r?.soldeBancaire === null || r?.soldeBancaire === undefined ? null : Number(r.soldeBancaire),
+      soldeBancaireAu: r?.soldeBancaireAu ?? null,
+      jetonDepot: r?.jetonDepot ?? null,
+    };
   }
 
-  async regler(accountId: string, userId: string, dto: { seuilDoubleValidation?: number | null }) {
+  async regler(accountId: string, userId: string, dto: { seuilDoubleValidation?: number | null; soldeBancaire?: number | null; soldeBancaireAu?: string | null }) {
     const data: Prisma.ReglagesFacturesUncheckedUpdateInput = {};
     if (dto.seuilDoubleValidation !== undefined) data.seuilDoubleValidation = dto.seuilDoubleValidation === null ? null : dto.seuilDoubleValidation;
-    await this.prisma.reglagesFactures.upsert({ where: { accountId }, create: { accountId, seuilDoubleValidation: dto.seuilDoubleValidation ?? null }, update: data });
+    if (dto.soldeBancaire !== undefined) {
+      data.soldeBancaire = dto.soldeBancaire === null ? null : dto.soldeBancaire;
+      // Un solde sans date vaut à aujourd'hui ; un solde effacé efface sa date.
+      data.soldeBancaireAu = dto.soldeBancaire === null ? null : dto.soldeBancaireAu ? new Date(dto.soldeBancaireAu) : new Date();
+    } else if (dto.soldeBancaireAu !== undefined) data.soldeBancaireAu = dto.soldeBancaireAu ? new Date(dto.soldeBancaireAu) : null;
+    await this.prisma.reglagesFactures.upsert({ where: { accountId }, create: { ...(data as Omit<Prisma.ReglagesFacturesUncheckedCreateInput, 'accountId'>), accountId }, update: data });
     await this.journaliser(accountId, userId, 'reglages.modifies', undefined, dto as Prisma.InputJsonValue);
     return this.reglages(accountId);
   }

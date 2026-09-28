@@ -6245,3 +6245,59 @@ sont à vérifier à l'œil.
 
 Reste non construit (dit à Siham) : adresse e-mail de dépôt, Factur-X natif,
 devis ↔ facture, trésorerie prévisionnelle, coût par session (académie).
+
+### 29/09/2026 — Mes factures : dépôt par e-mail, Factur-X, devis, trésorerie à 90 jours, coût par session ; chemin + droits fusionnés ; Pilote à dissocier
+
+Demande de Siham : « fait tout ça et hostinger est ouvert donc crée mail dans
+toulali, carte blanche », « fusionne ce à quoi j'ai droit et le chemin », « il
+faut vraiment que Pilote soit dissocié de Les Extras ».
+
+- **Factur-X natif** (`factures/facturx.ts`, 4 tests) : un PDF qui embarque
+  `factur-x.xml` (CII) est lu SANS moteur et SANS consommer le quota : XML
+  extrait des flux `EmbeddedFile` (zlib), balises lues sans préfixe d'espace de
+  noms, `origine = 'factur-x'`. `lecture.ts` porte désormais `LectureFacture`,
+  `POSTES`, les consignes et `parserLecture`, communs aux factures et aux devis.
+- **Devis fournisseurs** (`DevisFournisseur`, `devis.service.ts`, onglet
+  Devis) : déposé comme une facture, rapproché automatiquement quand la
+  facture arrive (même fournisseur par mots du nom normalisé, montant dans
+  les 25 %) ; à ± 2 % c'est conforme, au-delà l'écart s'écrit en alerte sur la
+  facture (« Facture supérieure au devis de 12 % (+ 48,00 €) »). Périmé
+  signalé, rapprochement à la main possible, `factureId` unique.
+- **Trésorerie à 90 jours** (`tresorerie.service.ts`, 7 tests, onglet
+  Trésorerie, carte du tableau de bord, feuille Excel « Trésorerie 90 jours ») :
+  solde de départ (saisi dans les réglages, ou `soldeFin` du dernier relevé)
+  + lignes de relevé postérieures = solde du jour ; puis factures non payées à
+  l'échéance, notes validées, devis acceptés, charges et recettes RÉCURRENTES
+  repérées dans six mois de relevés (même clé de libellé, ≥ 3 mois, ± 20 %),
+  subventions accordées non perçues à `EnveloppeFactures.dateVersementPrevu`.
+  ⚠ Une subvention sans date reste HORS courbe, listée à part : sinon la
+  courbe ment. Treize semaines, point bas, alerte « sous zéro ».
+- **Coût par session** (`sessions.service.ts`, `GET /factures/sessions`,
+  bloc du tableau de bord académie, feuille Excel) : par enveloppe SESSION
+  reliée à un cours, produits = ventes ENCAISSÉES, charges = factures + notes
+  + relevé rattachés, marge, coût par inscrit.
+- **Dépôt par e-mail** (`ingestion.service.ts`, `imapflow` + `mailparser`) :
+  boîte lue toutes les 5 min (`FACTURES_IMAP_HOST/USER/PASSWORD`, `FACTURES_DEPOT_DOMAINE`),
+  adresse par espace `factures+<jeton>@toulali.fr` (jeton dans
+  `ReglagesFactures.jetonDepot`, activable/renouvelable depuis l'onglet
+  Factures), sinon l'expéditeur s'il est membre d'un seul espace ; pièces
+  PDF/JPEG/PNG/WebP déposées « à vérifier » (une facture venue d'une adresse
+  non membre porte l'alerte « reçue de … »), accusé de réception par
+  `sendAccuseDepotFacture` (gabarit `layoutPilote`), messages traités
+  déplacés dans « Traites », inconnus dans « Inconnus ». ⚠ La boîte est à
+  créer par Siham dans hPanel (mot de passe = règle n° 1), et le mot de passe
+  collé dans `FACTURES_IMAP_PASSWORD` (Coolify, app API).
+- ⚠ **Routes** : `PATCH :id` / `DELETE :id` / `POST :id/valider` restent EN
+  FIN de contrôleur (`factures.routes.spec.ts` compte désormais devis,
+  tresorerie, sessions, depot parmi les routes nommées).
+- **Pilote association : « Ce à quoi j'ai droit » vit au bout du chemin**
+  (`/chemin#droits`, ancres des familles et des avantages conservées,
+  `/avantages` redirige, entrée de menu retirée, `/outils` porté par le
+  chemin).
+- **Pilote ≠ Les Extras** : deux fuites corrigées (« via Les Extras » dans les
+  e-mails d'école → « via Pilote » ; page API de l'académie →
+  `NEXT_PUBLIC_PILOTE_API_URL`), gabarit d'e-mail `layoutPilote`, et le plan
+  complet de séparation dans `docs/separation-pilote.md` (domaine d'API,
+  expéditeur, deux déploiements, deux bases, dépôt, Stripe) avec ce qui
+  revient à Siham. Les étapes 1 à 3 sont sans risque ; 4 à 6 demandent sa
+  décision écrite.

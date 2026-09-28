@@ -120,3 +120,57 @@ export function Jauge({ pourcentage, couleur, encre, libelle }: { pourcentage: n
     </div>
   );
 }
+
+/**
+ * UNE COURBE : le solde semaine après semaine. La zone sous zéro est teintée
+ * en rouge, le point le plus bas est marqué, et chaque point dit sa valeur au
+ * survol. En SVG, comme le reste.
+ */
+export function Courbe({ points, encre, couleur, hauteur = 160 }: { points: { etiquette: string; valeur: number }[]; encre: string; couleur: string; hauteur?: number }) {
+  const [actif, setActif] = useState<number | null>(null);
+  if (!points.length) return null;
+  const largeur = 640;
+  const marge = { g: 8, d: 8, h: 14, b: 22 };
+  const vals = points.map((p) => p.valeur);
+  const max = Math.max(0, ...vals);
+  const min = Math.min(0, ...vals);
+  const etendue = max - min || 1;
+  const x = (i: number) => marge.g + (i * (largeur - marge.g - marge.d)) / Math.max(1, points.length - 1);
+  const y = (v: number) => marge.h + ((max - v) / etendue) * (hauteur - marge.h - marge.b);
+  const chemin = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${x(i).toFixed(1)} ${y(p.valeur).toFixed(1)}`).join(' ');
+  const y0 = y(0);
+  const aire = `${chemin} L ${x(points.length - 1).toFixed(1)} ${y0.toFixed(1)} L ${x(0).toFixed(1)} ${y0.toFixed(1)} Z`;
+  const iMin = vals.indexOf(Math.min(...vals));
+  return (
+    <svg viewBox={`0 0 ${largeur} ${hauteur}`} className="w-full" role="img" aria-label="Solde prévisionnel" onMouseLeave={() => setActif(null)}>
+      <defs>
+        <clipPath id="sous-zero">
+          <rect x={0} y={y0} width={largeur} height={Math.max(0, hauteur - y0)} />
+        </clipPath>
+        <clipPath id="sur-zero">
+          <rect x={0} y={0} width={largeur} height={Math.max(0, y0)} />
+        </clipPath>
+      </defs>
+      <path d={aire} fill={couleur} opacity={0.12} clipPath="url(#sur-zero)" />
+      <path d={aire} fill="#EF4444" opacity={0.18} clipPath="url(#sous-zero)" />
+      <line x1={marge.g} x2={largeur - marge.d} y1={y0} y2={y0} stroke={encre} strokeOpacity={0.35} strokeDasharray="4 4" />
+      <path d={chemin} fill="none" stroke={couleur} strokeWidth={2.5} strokeLinejoin="round" />
+      {points.map((p, i) => (
+        <g key={i} onMouseEnter={() => setActif(i)}>
+          <rect x={x(i) - 12} y={0} width={24} height={hauteur} fill="transparent" />
+          <circle cx={x(i)} cy={y(p.valeur)} r={actif === i || i === iMin ? 5 : 3} fill={p.valeur < 0 ? '#EF4444' : couleur} stroke="#fff" strokeWidth={1.5} />
+          {i % 2 === 0 ? (
+            <text x={x(i)} y={hauteur - 6} textAnchor="middle" fontSize={10} fill={encre} opacity={0.7}>
+              {p.etiquette}
+            </text>
+          ) : null}
+        </g>
+      ))}
+      {actif !== null ? (
+        <text x={Math.min(largeur - 70, Math.max(70, x(actif)))} y={Math.max(11, y(points[actif].valeur) - 10)} textAnchor="middle" fontSize={12} fontWeight={800} fill={points[actif].valeur < 0 ? '#B91C1C' : encre}>
+          {points[actif].etiquette} · {euros(points[actif].valeur)}
+        </text>
+      ) : null}
+    </svg>
+  );
+}

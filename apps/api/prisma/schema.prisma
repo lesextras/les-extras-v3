@@ -379,6 +379,7 @@ model Account {
   notesDeFrais                  NoteDeFrais[]
   journalFactures               JournalFactures[]
   reglagesFactures              ReglagesFactures?
+  devisFournisseurs             DevisFournisseur[]
   /// Les fils de discussion rattachés à ce compte (interne, service, demande).
   conversations                 Conversation[]
   /// Demandes portant sur un service de cet établissement.
@@ -5557,6 +5558,8 @@ model FactureFournisseur {
   /// Validation à deux au-dessus d'un seuil : qui a validé.
   validations   ValidationFacture[]
   operations    OperationBancaire[]
+  /// Le devis qu'elle solde, s'il a été déposé avant elle.
+  devis         DevisFournisseur?
 
   @@index([accountId, dateFacture])
   @@index([accountId, fournisseur])
@@ -5576,27 +5579,29 @@ enum TypeEnveloppe {
 }
 
 model EnveloppeFactures {
-  id                String               @id @default(cuid())
-  accountId         String
-  account           Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  nom               String
-  type              TypeEnveloppe        @default(SUBVENTION)
-  financeur         String?
-  montantAccorde    Decimal?             @db.Decimal(12, 2)
-  dateDebut         DateTime?
-  dateFin           DateTime?
+  id                 String               @id @default(cuid())
+  accountId          String
+  account            Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  nom                String
+  type               TypeEnveloppe        @default(SUBVENTION)
+  financeur          String?
+  montantAccorde     Decimal?             @db.Decimal(12, 2)
+  dateDebut          DateTime?
+  dateFin            DateTime?
   /// Date limite du compte rendu financier au financeur.
-  dateJustification DateTime?
+  dateJustification  DateTime?
+  /// Quand le financeur doit verser (trésorerie prévisionnelle). Nul = date inconnue.
+  dateVersementPrevu DateTime?
   /// Liens facultatifs vers ce que Pilote connaît déjà.
-  dossierId         String?
-  actionId          String?
-  coursId           String?
-  notes             String?
-  factures          FactureFournisseur[]
-  operations        OperationBancaire[]
-  notesDeFrais      NoteDeFrais[]
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
+  dossierId          String?
+  actionId           String?
+  coursId            String?
+  notes              String?
+  factures           FactureFournisseur[]
+  operations         OperationBancaire[]
+  notesDeFrais       NoteDeFrais[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@index([accountId, type])
 }
@@ -5730,12 +5735,48 @@ model JournalFactures {
 
 /// RÉGLAGES de l'outil par espace : seuil de validation à deux, adresse de dépôt.
 model ReglagesFactures {
-  id                    String   @id @default(cuid())
-  accountId             String   @unique
-  account               Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(cuid())
+  accountId             String    @unique
+  account               Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
   /// Au-dessus de ce montant TTC, deux validations sont nécessaires. Nul = jamais.
-  seuilDoubleValidation Decimal? @db.Decimal(12, 2)
-  /// Jeton de l'adresse de dépôt par e-mail (factures-<jeton>@…), nul tant qu'il n'y a pas d'ingestion.
-  jetonDepot            String?  @unique
-  updatedAt             DateTime @updatedAt
+  seuilDoubleValidation Decimal?  @db.Decimal(12, 2)
+  /// Jeton de l'adresse de dépôt par e-mail (factures+<jeton>@…), nul tant que l'espace ne l'a pas demandée.
+  jetonDepot            String?   @unique
+  /// Le solde du compte en banque, saisi à la main (point de départ de la trésorerie prévisionnelle), et sa date.
+  soldeBancaire         Decimal?  @db.Decimal(12, 2)
+  soldeBancaireAu       DateTime?
+  updatedAt             DateTime  @updatedAt
+}
+
+/// UN DEVIS FOURNISSEUR, déposé AVANT la facture : quand la facture arrive, on
+/// la rapproche du devis (même fournisseur, montant proche) et on signale
+/// l'écart. Un devis sans facture après sa date de validité est signalé aussi.
+model DevisFournisseur {
+  id           String              @id @default(cuid())
+  accountId    String
+  account      Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  fileId       String?
+  fournisseur  String
+  reference    String?
+  dateDevis    DateTime?
+  dateValidite DateTime?
+  montantHT    Decimal?            @db.Decimal(12, 2)
+  tva          Decimal?            @db.Decimal(12, 2)
+  montantTTC   Decimal             @db.Decimal(12, 2)
+  poste        String?
+  lignes       Json?
+  /// EN_ATTENTE (pas encore facturé) · FACTURE (soldé par une facture) · ANNULE
+  statut       String              @default("EN_ATTENTE")
+  /// La facture qui le solde, et l'écart constaté (facture − devis, en % du devis).
+  factureId    String?             @unique
+  facture      FactureFournisseur? @relation(fields: [factureId], references: [id], onDelete: SetNull)
+  ecartPct     Int?
+  alerte       String?
+  origine      String              @default("moteur")
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([accountId, statut])
+  @@index([accountId, fournisseur])
 }

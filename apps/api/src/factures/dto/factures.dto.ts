@@ -45,6 +45,7 @@ export class EnveloppeDto {
   @IsOptional() @IsString() @MaxLength(10) dateDebut?: string | null;
   @IsOptional() @IsString() @MaxLength(10) dateFin?: string | null;
   @IsOptional() @IsString() @MaxLength(10) dateJustification?: string | null;
+  @IsOptional() @IsString() @MaxLength(10) dateVersementPrevu?: string | null;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string | null;
   @IsOptional() @IsString() @MaxLength(40) dossierId?: string | null;
   @IsOptional() @IsString() @MaxLength(40) actionId?: string | null;
@@ -59,6 +60,7 @@ export class ModifierEnveloppeDto {
   @IsOptional() @IsString() @MaxLength(10) dateDebut?: string | null;
   @IsOptional() @IsString() @MaxLength(10) dateFin?: string | null;
   @IsOptional() @IsString() @MaxLength(10) dateJustification?: string | null;
+  @IsOptional() @IsString() @MaxLength(10) dateVersementPrevu?: string | null;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string | null;
 }
 
@@ -85,4 +87,33 @@ export class StatutNoteDto {
 
 export class ReglagesDto {
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) seuilDoubleValidation?: number | null;
+  /** Le solde du compte en banque à une date : point de départ de la trésorerie prévisionnelle. */
+  @IsOptional() @Type(() => Number) @IsNumber() soldeBancaire?: number | null;
+  @IsOptional() @IsString() @MaxLength(10) soldeBancaireAu?: string | null;
+}
+
+export class DeposerDevisDto {
+  @IsOptional() @IsString() @MaxLength(80) poste?: string;
+}
+
+export class SaisirDevisDto {
+  @IsString() @MaxLength(120) fournisseur!: string;
+  @Type(() => Number) @IsNumber() @Min(0) montantTTC!: number;
+  @IsOptional() @IsString() @MaxLength(60) reference?: string;
+  @IsOptional() @IsString() @MaxLength(10) dateDevis?: string;
+  @IsOptional() @IsString() @MaxLength(10) dateValidite?: string;
+  @IsOptional() @IsString() @MaxLength(80) poste?: string;
+  @IsOptional() @IsString() @MaxLength(1000) notes?: string;
+}
+
+export class ModifierDevisDto {
+  @IsOptional() @IsString() @MaxLength(120) fournisseur?: string;
+  @IsOptional() @IsString() @MaxLength(60) reference?: string | null;
+  @IsOptional() @IsString() @MaxLength(10) dateDevis?: string | null;
+  @IsOptional() @IsString() @MaxLength(10) dateValidite?: string | null;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) montantTTC?: number;
+  @IsOptional() @IsString() @MaxLength(80) poste?: string | null;
+  @IsOptional() @IsIn(['EN_ATTENTE', 'ANNULE']) statut?: 'EN_ATTENTE' | 'ANNULE';
+  @IsOptional() @IsString() @MaxLength(1000) notes?: string | null;
+  @IsOptional() @IsString() @MaxLength(40) factureId?: string | null;
 }

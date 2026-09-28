@@ -33,9 +33,16 @@ import { FournisseursService } from './fournisseurs.service';
 import { RelevesService } from './releves.service';
 import { FraisService } from './frais.service';
 import { BilanService } from './bilan.service';
+import { DevisService } from './devis.service';
+import { TresorerieService } from './tresorerie.service';
+import { SessionsService } from './sessions.service';
+import { IngestionService } from './ingestion.service';
 import {
   AbonnerDto,
+  DeposerDevisDto,
   DeposerFactureDto,
+  ModifierDevisDto,
+  SaisirDevisDto,
   EnveloppeDto,
   ModifierEnveloppeDto,
   ModifierFactureDto,
@@ -64,6 +71,10 @@ export class FacturesController {
     private readonly releves: RelevesService,
     private readonly frais: FraisService,
     private readonly bilan: BilanService,
+    private readonly devis: DevisService,
+    private readonly tresorerie: TresorerieService,
+    private readonly sessions: SessionsService,
+    private readonly ingestion: IngestionService,
   ) {}
 
   /** Tout ce qui suit l'abonnement : le service refuse sans abonnement actif, on le vérifie ici une fois. */
@@ -254,6 +265,75 @@ export class FacturesController {
   async fraisSupprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
     await this.actif(account);
     return this.frais.supprimer(account.id, user.id, user.role, id);
+  }
+
+  // ─── Devis fournisseurs ───────────────────────────────────────────────────
+
+  @Get('devis')
+  async devisListe(@CurrentAccount() account: RequestAccount) {
+    await this.actif(account);
+    return this.devis.liste(account.id);
+  }
+
+  @Post('devis')
+  @Throttle({ default: { limit: 120, ttl: 3_600_000 } })
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: TAILLE_MAX_GLOBALE, files: 1 } }))
+  async devisDeposer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @UploadedFile() fichier: FichierRecu | undefined, @Body() dto: DeposerDevisDto) {
+    await this.actif(account);
+    if (!fichier) throw new BadRequestException('Aucun fichier reçu.');
+    return this.devis.deposer(account.id, user.id, fichier, dto.poste || undefined);
+  }
+
+  @Post('devis/saisie')
+  async devisSaisir(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Body() dto: SaisirDevisDto) {
+    await this.actif(account);
+    return this.devis.saisir(account.id, user.id, dto);
+  }
+
+  @Patch('devis/:id')
+  async devisModifier(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: ModifierDevisDto) {
+    await this.actif(account);
+    return this.devis.modifier(account.id, user.id, id, dto);
+  }
+
+  @Delete('devis/:id')
+  async devisSupprimer(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    await this.actif(account);
+    return this.devis.supprimer(account.id, user.id, user.role, id);
+  }
+
+  // ─── Trésorerie prévisionnelle, coût par session ──────────────────────────
+
+  @Get('tresorerie')
+  async tresoreriePrevision(@CurrentAccount() account: RequestAccount) {
+    await this.actif(account);
+    return this.tresorerie.prevision(account.id);
+  }
+
+  @Get('sessions')
+  async coutParSession(@CurrentAccount() account: RequestAccount, @Query('annee') annee?: string) {
+    await this.actif(account);
+    return this.sessions.coutParSession(account.id, this.annee(annee));
+  }
+
+  // ─── Dépôt par e-mail ─────────────────────────────────────────────────────
+
+  @Get('depot')
+  async depot(@CurrentAccount() account: RequestAccount) {
+    await this.actif(account);
+    return this.ingestion.depot(account.id);
+  }
+
+  @Post('depot/activer')
+  async depotActiver(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Query('renouveler') renouveler?: string) {
+    await this.actif(account);
+    return this.ingestion.activer(account.id, user.id, renouveler === '1');
+  }
+
+  @Post('depot/desactiver')
+  async depotDesactiver(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser) {
+    await this.actif(account);
+    return this.ingestion.desactiver(account.id, user.id);
   }
 
   // ─── Journal, réglages, bilan ─────────────────────────────────────────────

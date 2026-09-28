@@ -65,7 +65,7 @@ export default function PresenceEnLignePage() {
           <p className="mt-1 leading-relaxed">
             Google, Canva, Microsoft, HelloAsso, Brevo : la fiche complète de chacun, avec ce qu&apos;il faut envoyer et le lien pour demander, est dans « Ce à quoi j&apos;ai droit ».
           </p>
-          <Link href="/avantages" className={`${BTN_SECONDAIRE} mt-4 !bg-white`}>
+          <Link href="/chemin#droits" className={`${BTN_SECONDAIRE} mt-4 !bg-white`}>
             Ce à quoi j&apos;ai droit →
           </Link>
         </Encart>
