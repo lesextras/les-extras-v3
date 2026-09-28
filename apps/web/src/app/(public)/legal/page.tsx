@@ -158,7 +158,7 @@ const sections: Section[] = [
         points: [
           'Le consommateur dispose d’un délai de quatorze jours à compter de la conclusion du contrat pour se rétracter, sans motif ni pénalité (article L. 221-18 du code de la consommation). Ce droit bénéficie également, dans les conditions de l’article L. 221-3, au professionnel employant cinq salariés au plus lorsque l’objet du contrat n’entre pas dans le champ de son activité principale.',
           'Pour l’exercer, il suffit d’écrire à contact@les-extras.fr en indiquant le compte et la commande concernés. Le remboursement intervient dans les quatorze jours suivant la réception de la demande, par le même moyen de paiement.',
-          'Pour un service exécuté immédiatement à la demande expresse du client, c’est le cas des crédits LEX, utilisables aussitôt, , le droit de rétractation ne peut plus être exercé une fois le service pleinement exécuté, et les crédits déjà consommés sont déduits du remboursement (articles L. 221-25 et L. 221-28 du code de la consommation).',
+          'Pour un service exécuté immédiatement à la demande expresse du client, c’est le cas des crédits LEX, utilisables aussitôt, le droit de rétractation ne peut plus être exercé une fois le service pleinement exécuté, et les crédits déjà consommés sont déduits du remboursement (articles L. 221-25 et L. 221-28 du code de la consommation).',
         ],
       },
     ],

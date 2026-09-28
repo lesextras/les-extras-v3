@@ -2529,7 +2529,7 @@ export function versionTexte(html: string): string {
  *
  * ⚠ RÈGLE DE CE TABLEAU : chaque message donne UNE chose utilisable tout de
  * suite, et renvoie à un parcours GRATUIT qui existe déjà en ligne. Rien n'y
- * est promis qui ne soit publié : les dix mini-formations, leurs fiches A4 et
+ * est promis qui ne soit publié : les quatorze mini-formations, leurs fiches A4 et
  * la dotation LEX sont tous vérifiables le jour où le message part.
  *
  * L'ordre n'est pas décoratif. Il suit ce qu'un professionnel rencontre dans
@@ -2629,12 +2629,12 @@ export const TUNNEL_ACCUEIL: {
     lien: `${ADEPA_FORMATIONS}aider-a-demarrer-une-tache/`,
   },
   {
-    sujet: 'Les dix fiches A4, à imprimer et à afficher',
+    sujet: 'Les quatorze fiches A4, à imprimer et à afficher',
     corps: `Chaque parcours a sa <b>fiche récap A4</b> : la notion clé, les quatre
       modules, le schéma central, l’arbre de décision et la grille de relevé
       vierge. Elles sont en libre accès, sans compte, et faites pour être
       imprimées et posées en salle d’équipe.
-      <br><br>Le catalogue complet est ouvert : dix parcours gratuits, du premier
+      <br><br>Le catalogue complet est ouvert : quatorze parcours gratuits, du premier
       au dernier module, sans carte bancaire. Et votre espace comprend
       <b>15 générations LEX offertes chaque mois</b> pour vos écrits
       professionnels : elles sont là, elles n’attendent que vous.`,
