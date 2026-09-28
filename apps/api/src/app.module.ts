@@ -51,6 +51,7 @@ import { AssociationModule } from './association/association.module';
 
 // --- Piloter mon académie (pilote.toulali.fr/academie) ---
 import { AcademieModule } from './academie/academie.module';
+import { FacturesModule } from './factures/factures.module';
 import { FormulairesModule } from './formulaires/formulaires.module';
 import { EcoleModule } from './ecole/ecole.module';
 import { PaiementsModule } from './paiements/paiements.module';
@@ -124,6 +125,7 @@ import { AttestationsModule } from './attestations/attestations.module';
 
     // Piloter mon académie : fiche de l'organisme, chemin, veille, réclamations.
     AcademieModule,
+    FacturesModule,
     FormulairesModule,
   EcoleModule,
   // Le compte d'encaissement de l'organisme : l'école et la boutique s'en

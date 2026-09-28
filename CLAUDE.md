@@ -6070,3 +6070,37 @@ Rapport : doc « Audit approfondi des cinq sites ADéPA — 28 septembre 2026 »
   en formule mensuelle. Aucun prix écrit : décision de Siham.
 - a2pa.fr présente encore Toulali comme centre de formation (dépôt
   `adepa_app`, non clonable ici).
+
+### 28/09/2026 (nuit) — « Mes factures », l'outil premium des deux espaces de Pilote
+
+Demande de Siham : le fonctionnement d'OuiLink (dépôt de la facture, lecture par
+l'IA, marges et budget, export comptable), débloqué UNIQUEMENT après paiement.
+
+- API `apps/api/src/factures/` (`FacturesModule`, importe `BillingModule`) :
+  `GET /factures` (sans abonnement actif : `{abonnement, factures: [], resume: null}`),
+  `POST /factures/abonnement {espace}` → Stripe Checkout en mode abonnement
+  (`BillingService.createFacturesCheckout`, métadonnée `kind: 'factures'`),
+  `POST /factures` (multipart `file` + `poste`), `POST /factures/saisie`,
+  `PATCH/DELETE /factures/:id`, `GET /factures/export.csv?annee=`. Réservé aux
+  comptes ASSOCIATION et ACADEMIE (`JwtAuthGuard` + `AccountGuard`).
+- Modèles `AbonnementFactures` (un par compte, statut `pending|active|…`, quota
+  mensuel, compteur du mois) et `FactureFournisseur` (montants, poste, lignes,
+  statut À vérifier / Validée / Payée, alerte). Migration
+  `20260928230000_mes_factures`, idempotente.
+- ⚠ **LE PREMIUM NE S'OUVRE QUE PAR LE WEBHOOK STRIPE** (`kind === 'factures'`
+  → `statut: active`) ; `customer.subscription.deleted` le referme. Aucune
+  route ne l'active à la main.
+- ⚠ **AUCUN PRIX DANS LE CODE** : `PILOTE_FACTURES_PRIX_CENTS` (app API,
+  Coolify) fixe le tarif mensuel ; tant qu'elle est absente, le bouton dit
+  « Tarif à venir » et `POST /factures/abonnement` refuse. `PILOTE_FACTURES_QUOTA`
+  (défaut 100 lectures/mois), `PILOTE_WEB_URL` (défaut https://pilote.toulali.fr)
+  pour les retours de paiement.
+- Lecture : `MoteurService` (image ou PDF scanné en pièce jointe, texte extrait
+  sinon), consigne JSON stricte, puis `comparer()` : hausse ≥ 20 % chez un même
+  fournisseur ou doublon (même numéro) → `alerte`. Le fichier va dans le coffre
+  (`FileKind.COMPLIANCE`), le moteur ne garde rien. Une lecture ratée ne
+  consomme pas le quota.
+- Web : `_shared/pilote/MesFactures.tsx` (un composant, un `theme` par espace),
+  pages `/espace/factures` et `/academie/factures`, entrées de menu « Mes
+  factures · Premium » dans les deux `BarreLaterale`. 5 tests
+  (`factures.service.spec.ts`).

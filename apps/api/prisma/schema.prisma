@@ -370,6 +370,8 @@ model Account {
   /// L'agenda de ce compte, partagé avec d'autres personnes (24/09/2026).
   partagesDonnes                PartageAgenda[]      @relation("PartageCompte")
   enveloppesLex                 EnveloppeLex[]       @relation("EnveloppePayeur")
+  abonnementFactures            AbonnementFactures?
+  facturesFournisseurs          FactureFournisseur[]
   /// Les fils de discussion rattachés à ce compte (interne, service, demande).
   conversations                 Conversation[]
   /// Demandes portant sur un service de cet établissement.
@@ -5441,24 +5443,24 @@ enum StatutPartage {
 /// CRÉDITS, jamais un compte : chaque bénéficiaire garde son propre compte et
 /// ses écrits, que le payeur ne voit pas. Voir `billing/enveloppes.service.ts`.
 model EnveloppeLex {
-  id              String           @id @default(cuid())
+  id              String          @id @default(cuid())
   payeurAccountId String
-  payeur          Account          @relation("EnveloppePayeur", fields: [payeurAccountId], references: [id], onDelete: Cascade)
+  payeur          Account         @relation("EnveloppePayeur", fields: [payeurAccountId], references: [id], onDelete: Cascade)
   beneficiaireId  String?
-  beneficiaire    User?            @relation("EnveloppeBeneficiaire", fields: [beneficiaireId], references: [id], onDelete: SetNull)
+  beneficiaire    User?           @relation("EnveloppeBeneficiaire", fields: [beneficiaireId], references: [id], onDelete: SetNull)
   /// Adresse invitée, en minuscules. L'invitation ne s'accepte qu'avec elle.
   email           String
   plafondMensuel  Int
-  statut          StatutEnveloppe  @default(INVITEE)
+  statut          StatutEnveloppe @default(INVITEE)
   /// Les trames maison publiées par le payeur sont ouvertes au bénéficiaire.
-  partageTrames   Boolean          @default(true)
+  partageTrames   Boolean         @default(true)
   /// Empreinte SHA-256 du jeton d'invitation (jamais le jeton lui-même).
-  jetonHash       String?          @unique
+  jetonHash       String?         @unique
   jetonExpireLe   DateTime?
   creeParId       String
   accepteLe       DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   @@unique([payeurAccountId, email])
   @@index([beneficiaireId, statut])
@@ -5469,4 +5471,71 @@ enum StatutEnveloppe {
   ACTIVE
   SUSPENDUE
   RETIREE
+}
+
+// ---------------------------------------------------------------------------
+// MES FACTURES (Pilote, association et académie) : l'outil premium
+// ---------------------------------------------------------------------------
+
+enum StatutFactureFournisseur {
+  /// Lue par le moteur, à relire par une personne.
+  A_VERIFIER
+  /// Relue et validée.
+  VALIDEE
+  /// Réglée.
+  PAYEE
+}
+
+/// L'ABONNEMENT « MES FACTURES ». Un par compte, activé par le webhook Stripe,
+/// jamais par un écran. Le quota se compte par mois calendaire.
+model AbonnementFactures {
+  id                   String    @id @default(cuid())
+  accountId            String    @unique
+  account              Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  /// pending | active | past_due | canceled
+  statut               String    @default("pending")
+  stripeCustomerId     String?
+  stripeSubscriptionId String?   @unique
+  quotaMensuel         Int       @default(100)
+  /// « 2026-09 » : le mois du compteur ; un autre mois remet le compteur à zéro.
+  moisCompteur         String    @default("")
+  luesCeMois           Int       @default(0)
+  finPeriode           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+/// UNE FACTURE FOURNISSEUR LUE PAR LE MOTEUR. Le fichier reste dans le coffre
+/// (FileKind.COMPLIANCE) ; ici, ce qu'on en a tiré et ce qu'on en fait.
+model FactureFournisseur {
+  id           String                   @id @default(cuid())
+  accountId    String
+  account      Account                  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  fileId       String?
+  fournisseur  String
+  numero       String?
+  dateFacture  DateTime?
+  dateEcheance DateTime?
+  montantHT    Decimal?                 @db.Decimal(12, 2)
+  tva          Decimal?                 @db.Decimal(12, 2)
+  montantTTC   Decimal                  @db.Decimal(12, 2)
+  devise       String                   @default("EUR")
+  /// Le poste du budget (loyer, assurance, matériel, prestation…).
+  poste        String?
+  /// Les lignes lues : [{libelle, quantite, prixUnitaire, total}].
+  lignes       Json?
+  statut       StatutFactureFournisseur @default(A_VERIFIER)
+  /// Ce que le moteur a remarqué : hausse par rapport à la dernière facture du
+  /// même fournisseur, doublon probable, montant illisible.
+  alerte       String?
+  /// Le pourcentage de hausse par rapport à la facture précédente du fournisseur.
+  variationPct Int?
+  /// Comment on a lu : moteur, ou saisie à la main.
+  origine      String                   @default("moteur")
+  notes        String?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@index([accountId, dateFacture])
+  @@index([accountId, fournisseur])
 }

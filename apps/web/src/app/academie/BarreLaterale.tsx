@@ -64,6 +64,7 @@ export const ICONES = {
   vitrine: i('M3 9l1.5-5h15L21 9M3 9h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 21v-6h6v6'),
   affiliation: i('M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4'),
   comptabilite: i('M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'),
+  factures: i('M6 2h9l5 5v15H6zM14 2v6h6M9 13h6M9 17h6'),
   secretariat: i('M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7zM15 3v4h4M9 13h6M9 17h6'),
   courrier: i('M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-10 6L2 7'),
   aide: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'),
@@ -127,6 +128,7 @@ const MENU: Element[] = [
     icone: ICONES.ventes,
     entrees: [
       { href: '/academie/ventes', libelle: 'Mes ventes', icone: ICONES.ventes },
+      { href: '/academie/factures', libelle: 'Mes factures', icone: ICONES.factures, pastille: 'Premium' },
       { href: '/academie/packs', libelle: 'Mes packs', icone: ICONES.packs },
       { href: '/academie/codes-promo', libelle: 'Mes codes promo', icone: ICONES.promo },
       { href: '/academie/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },

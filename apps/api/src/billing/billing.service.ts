@@ -364,6 +364,46 @@ export class BillingService {
   }
 
   /**
+   * L'ABONNEMENT « MES FACTURES » DE PILOTE (association et académie).
+   *
+   * Même mécanique que l'abonnement LEX : session Stripe en mode subscription,
+   * ligne `pending` en base, activation par le webhook (kind `factures`).
+   * ⚠ Le prix vient de `PILOTE_FACTURES_PRIX_CENTS` : aucun montant n'est
+   * écrit dans le code. Tant qu'il n'est pas posé, on refuse proprement.
+   */
+  async createFacturesCheckout(userId: string, accountId: string, retour: { succes: string; annule: string }) {
+    await this.requireMember(userId, accountId);
+    const brut = this.config.get<string>('PILOTE_FACTURES_PRIX_CENTS');
+    const prix = brut ? Number.parseInt(brut, 10) : NaN;
+    if (!Number.isFinite(prix) || prix <= 0) {
+      throw new BadRequestException("Le tarif de « Mes factures » n'est pas encore fixé : l'abonnement ouvrira dès qu'il le sera.");
+    }
+    const quota = Number.parseInt(this.config.get<string>('PILOTE_FACTURES_QUOTA') ?? '100', 10) || 100;
+    const existant = await this.prisma.abonnementFactures.findUnique({ where: { accountId } });
+    if (existant?.statut === 'active') throw new BadRequestException('« Mes factures » est déjà actif sur ce compte.');
+
+    const session = await this.stripe('/checkout/sessions', {
+      mode: 'subscription',
+      'line_items[0][quantity]': '1',
+      'line_items[0][price_data][currency]': 'eur',
+      'line_items[0][price_data][unit_amount]': String(prix),
+      'line_items[0][price_data][recurring][interval]': 'month',
+      'line_items[0][price_data][product_data][name]': `Pilote, Mes factures (${quota} lectures par mois)`,
+      success_url: retour.succes,
+      cancel_url: retour.annule,
+      'metadata[kind]': 'factures',
+      'metadata[accountId]': accountId,
+      client_reference_id: accountId,
+    });
+    await this.prisma.abonnementFactures.upsert({
+      where: { accountId },
+      create: { accountId, statut: 'pending', quotaMensuel: quota },
+      update: { statut: existant?.statut === 'canceled' ? 'pending' : (existant?.statut ?? 'pending'), quotaMensuel: quota },
+    });
+    return { url: String(session.url) };
+  }
+
+  /**
    * Le compte de la plateforme (association ADéPA), seul émetteur dont les
    * factures peuvent être encaissées en ligne — voir `createInvoiceCheckout`.
    *
@@ -583,6 +623,14 @@ export class BillingService {
             : undefined,
         },
       });
+      // Le même événement porte les abonnements « Mes factures » de Pilote.
+      await this.prisma.abonnementFactures.updateMany({
+        where: { stripeSubscriptionId: sub.id },
+        data: {
+          statut: status,
+          finPeriode: sub.current_period_end ? new Date(sub.current_period_end * 1000) : undefined,
+        },
+      });
       return { received: true };
     }
 
@@ -727,6 +775,23 @@ export class BillingService {
             .catch((e) => this.logger.error(`Dotation initiale impossible pour ${accountId}: ${e}`));
         }
         this.logger.log(`Abonnement activé pour ${accountId}`);
+      }
+      return { received: true };
+    }
+
+    // « Mes factures » (Pilote) : activer l'abonnement et garder les identifiants.
+    if (kind === 'factures') {
+      const accountId = session.metadata?.accountId;
+      if (accountId) {
+        await this.prisma.abonnementFactures.updateMany({
+          where: { accountId },
+          data: {
+            statut: 'active',
+            stripeCustomerId: session.customer ?? undefined,
+            stripeSubscriptionId: session.subscription ?? undefined,
+          },
+        });
+        this.logger.log(`Mes factures activé pour ${accountId}`);
       }
       return { received: true };
     }

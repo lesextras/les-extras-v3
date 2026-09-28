@@ -85,6 +85,7 @@ export const ICONES = {
   cles: i('M21 2l-2 2m-7.6 7.6a5 5 0 1 1-7.1 7.1 5 5 0 0 1 7.1-7.1zM15.5 7.5L19 4l2 2-3.5 3.5z'),
   /// L'auvent d'une boutique : le tracé le plus lisible à 18 pixels.
   boutique: i('M4 9h16l-1 11H5zM8 9V6a4 4 0 0 1 8 0v3'),
+  factures: i('M6 2h9l5 5v15H6zM14 2v6h6M9 13h6M9 17h6'),
   administration: i('M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6zM12 9v4M12 16h.01'),
 };
 
@@ -105,6 +106,7 @@ const MENU: Entree[] = [
   { href: '/espace/agenda', libelle: 'Mon agenda', icone: ICONES.agenda },
   { href: '/espace/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
   { href: '/espace/boutique', libelle: 'Ma boutique', icone: ICONES.boutique },
+  { href: '/espace/factures', libelle: 'Mes factures', icone: ICONES.factures, pastille: 'Premium' },
   { href: '/avantages', libelle: "Ce à quoi j'ai droit", icone: ICONES.cadeau },
   { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },

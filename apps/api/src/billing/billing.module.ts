@@ -20,6 +20,7 @@ import { AttestationsModule } from '../attestations/attestations.module';
   controllers: [BillingController, EnveloppesController],
   providers: [BillingService, CreditsService, EnveloppesService],
   // Exporté pour l'assistant : chaque génération LEX consomme un crédit.
-  exports: [CreditsService],
+  // BillingService pour « Mes factures » (Pilote) : la session d'abonnement.
+  exports: [CreditsService, BillingService],
 })
 export class BillingModule {}
