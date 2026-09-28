@@ -223,22 +223,6 @@ const ARTICLE_SANS_FREELANCE = {
   nouveau: 'recrutement-educateur-independant-bien-cadrer-un-renfort-d-equipe',
 };
 
-async function articleRenommeEnLigne() {
-  const base = (
-    process.env.API_BASE_URL ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    'https://api.les-extras.fr/api'
-  ).replace(/\/$/, '');
-  try {
-    const reponse = await fetch(`${base}/articles/feed/${ARTICLE_SANS_FREELANCE.nouveau}`, {
-      signal: AbortSignal.timeout(8000),
-    });
-    return reponse.ok;
-  } catch {
-    // Aucune redirection plutôt qu'une redirection vers une page vide.
-    return false;
-  }
-}
 
 /** @type {import('next').NextConfig} */
 /**
@@ -326,7 +310,11 @@ const nextConfig = {
   // liens déjà partagés.
   async redirects() {
     const fiches = await redirectionsFichesAtelier();
-    const articleRenomme = await articleRenommeEnLigne();
+    // Le slug a changé en base le 28/09/2026 (PATCH /admin/articles/:id) : la
+    // redirection est désormais inconditionnelle. La vérification au build
+    // répondait « non » en production (appel de l'API impossible pendant la
+    // construction de l'image), ce qui laissait l'ancienne adresse en 200.
+    const articleRenomme = true;
     // Les redirections d'anciens slugs visent directement l'adresse finale :
     // une chaîne de deux redirections perd du signal à chaque saut.
     const slugEdublog = (slug) =>
