@@ -13,7 +13,7 @@ export const revalidate = 3600;
 const BASE = 'https://pilote.toulali.fr';
 const FIXES = [
   '/', '/association', '/chemin', '/centre-d-aide', '/nous-contacter', '/inscription', '/legal', '/legal/dpa',
-  '/academie', '/academie/chemin', '/academie/certification', '/academie/centre-d-aide', '/academie/nous-contacter', '/academie/inscription',
+  '/academie', '/academie/chemin', '/academie/centre-d-aide', '/academie/nous-contacter', '/academie/inscription',
 ];
 
 export async function GET() {

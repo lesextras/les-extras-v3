@@ -6,6 +6,7 @@ import { FormulaireInscription } from './FormulaireInscription';
 export const metadata: Metadata = {
   title: 'Ouvrir mon espace',
   description: "Ouvrir l'espace de son organisme de formation : le chemin, les preuves Qualiopi, le catalogue et les apprenants. Gratuit.",
+  alternates: { canonical: '/academie/inscription' },
 };
 
 export default function InscriptionAcademiePage() {

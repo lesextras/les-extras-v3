@@ -3,7 +3,8 @@ import { apiEspace, sessionAssociation } from '../_session';
 import { Encart, Titre } from '../_ui';
 import { Equipe, type Invitation, type Membre } from './Equipe';
 
-export const metadata: Metadata = { title: "Droits d'accès" };
+// Écran de l'espace (session requise) : hors des moteurs.
+export const metadata: Metadata = { title: "Droits d'accès", robots: { index: false, follow: false } };
 
 interface PageMembres {
   items?: Membre[];

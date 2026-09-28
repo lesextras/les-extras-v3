@@ -53,6 +53,10 @@ function adepa_cf_migrer() {
 		// 1.4.1 : Toulali n'est plus un organisme de formation (inc/toulali.php).
 		adepa_cf_migration_141();
 	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.4.2', '<')) {
+		// 1.4.2 : audit du 28/09 (descriptions, h1, siège, tirets) : inc/audit-0928.php.
+		adepa_cf_migration_142();
+	}
 
 	update_option('adepa_cf_version', ADEPA_CF_VERSION, true);
 	delete_transient('adepa_cf_migration_en_cours');

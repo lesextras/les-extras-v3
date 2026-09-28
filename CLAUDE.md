@@ -5988,3 +5988,29 @@ Point 3 de l'audit du 28/09. Mesuré : paiement en ligne actif sur 0 fiche sur 1
 - ⚠ **L'accueil passe aussi par le CDN Hostinger** (`x-hcdn-cache-status`) :
   la purge LiteSpeed ne suffit pas. hPanel → adepa77.fr → Performance → CDN →
   « Vider le cache » (clic en JavaScript sur le bouton, la page est lourde).
+
+### 28/09/2026 (soir) — audit des quatre sites, notes et corrections
+
+Rapport : doc « Audit des sites ADéPA — 28 septembre 2026 » dans l'espace de Siham.
+
+- **Pilote** (commits du 28/09 soir) : robots.txt et sitemap.xml PROPRES au domaine
+  (middleware → `public/pilote/robots.txt` et `app/plan-pilote/route.ts`) ; ils
+  annonçaient ceux de Les Extras. ⚠ Un `title.template` posé dans un layout ne
+  s'applique PAS à la page du même segment : l'accueil de Pilote prenait le
+  gabarit racine « · LES EXTRAS ». D'où `title: { absolute: … }`. Titres des
+  étapes bornés par `app/_pilote-seo.ts`, descriptions par `descriptionSeo`,
+  canoniques de l'académie, écrans de l'espace en `noindex`.
+- **adepa77 1.4.2 → 1.4.4** (`inc/audit-0928.php`) : descriptions Rank Math des
+  pages et catégories qui n'en avaient pas (seulement si vides), titres ≤ 65 et
+  descriptions ≤ 160 (⚠ les filtres de `gabarits.php` sont en priorité 99 : les
+  bornes sont posées DANS `gabarits.php`), h1 masqué (screen-reader-text) sur les
+  5 pages qui n'en avaient pas, plus d'en-tête X-Powered-By, siège de l'accueil
+  à Melun, « freelances » retiré d'un article, et **zéro tiret cadratin** :
+  incise encadrée → parenthèses, tiret simple → deux-points (virgule si la phrase
+  en a déjà un), tiret devant une majuscule → point, titres → point médian. La
+  règle ne touche qu'au texte (jamais aux balises ni aux attributs) et n'écrit
+  que si les lettres restent identiques. Versions d'avant dans les métas
+  `_adepa_cf_avant_142*` et les options `_adepa_cf_avant_142_*`.
+- ⚠ **toulali.fr : la refonte de l'accueil en page de Pilote a été REFUSÉE au
+  garde-fou** (modification d'une ressource partagée). Ne pas la retenter sous
+  une autre forme : c'est à Siham de la faire, ou de la demander explicitement.

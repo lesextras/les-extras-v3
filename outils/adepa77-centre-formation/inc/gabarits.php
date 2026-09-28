@@ -97,7 +97,8 @@ add_filter('style_loader_tag', function ($tag, $handle) {
 /* Titres de page, avec ou sans Rank Math. */
 function adepa_cf_titre_catalogue() {
 	if (is_tax(ADEPA_CF_THEME)) {
-		return single_term_title('', false) . ' · Formations ADéPA';
+		$t = single_term_title('', false) . ' · Formations ADéPA';
+		return mb_strlen($t) <= 65 ? $t : single_term_title('', false);
 	}
 	return 'Nos formations · Centre de formation ADéPA (Qualiopi)';
 }
@@ -115,7 +116,7 @@ add_filter('rank_math/frontend/description', function ($d) {
 		return adepa_cf_description_catalogue();
 	}
 	if (is_singular(ADEPA_CF_TYPE)) {
-		return wp_trim_words(wp_strip_all_tags(get_the_excerpt()), 26, '…');
+		return adepa_cf_borner(wp_strip_all_tags(get_the_excerpt()), 160);
 	}
 	return $d;
 }, 99);
@@ -123,7 +124,7 @@ add_action('wp_head', function () {
 	if (defined('RANK_MATH_VERSION') || !adepa_cf_page_concernee()) {
 		return;
 	}
-	$d = is_singular(ADEPA_CF_TYPE) ? wp_trim_words(wp_strip_all_tags(get_the_excerpt()), 26, '…') : adepa_cf_description_catalogue();
+	$d = is_singular(ADEPA_CF_TYPE) ? adepa_cf_borner(wp_strip_all_tags(get_the_excerpt()), 160) : adepa_cf_description_catalogue();
 	echo '<meta name="description" content="' . esc_attr($d) . '">' . "\n";
 }, 2);
 
