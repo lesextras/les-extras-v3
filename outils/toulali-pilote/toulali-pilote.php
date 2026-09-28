@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Toulali, page d'accueil de Pilote
  * Description: toulali.fr n'est plus un organisme de formation (décision du 28/09/2026) : les pages de formation renvoient vers le centre de formation d'ADéPA (adepa77.fr), l'en-tête et le pied de page des pages restantes présentent Pilote.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Association ADéPA
  * Requires PHP: 7.4
  *
@@ -117,6 +117,10 @@ function toulali_pilote_filtrer($html) {
 	$d = toulali_pilote_descriptions();
 	if (isset($d[$chemin]) && stripos($html, 'name="description"') === false) {
 		$html = preg_replace('#<head([^>]*)>#i', '<head$1>' . "\n" . '<meta name="description" content="' . esc_attr($d[$chemin]) . '">', $html, 1);
+	}
+	// Bandeau cookies compact sur téléphone (146 px → 86 px), même règle qu'adepa77.
+	if (stripos($html, 'toulali-pilote-cookies') === false) {
+		$html = preg_replace('#</head>#i', '<style id="toulali-pilote-cookies">@media (max-width:640px){#cookie-notice .cookie-notice-container{display:flex;align-items:center;gap:10px;padding:10px 40px 10px 12px;text-align:left}#cookie-notice #cn-notice-text{font-size:12px;line-height:1.35;margin:0;flex:1;display:block}#cookie-notice #cn-notice-buttons{display:flex;flex-direction:column;gap:6px;margin:0;flex:none}#cookie-notice .cn-button{margin:0;padding:6px 12px;font-size:12px;line-height:1.2;white-space:nowrap}#cookie-notice .cn-close-icon{top:8px;right:6px;margin:0}}</style>' . "\n" . '</head>', $html, 1);
 	}
 	// Un titre h1 pour les lecteurs d'écran quand la page n'en a aucun.
 	if (stripos($html, '<h1') === false && preg_match('#<title>(.*?)</title>#s', $html, $t)) {

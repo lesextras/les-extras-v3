@@ -6130,3 +6130,13 @@ l'IA, marges et budget, export comptable), débloqué UNIQUEMENT après paiement
   Community Manager Mobile (59 €, prix relevé sur Teachizy). Toulali n'y est
   plus présenté comme centre de formation : ADéPA l'est. Le lien pied de page
   « Toulali — formations » → adepa77.fr/formations/.
+- **Bandeau cookies compact sur téléphone** (adepa77 1.4.9, toulali-pilote
+  1.1.2) : à 390 px, le bandeau de Cookie Compliance faisait 146 px et
+  recouvrait le bouton « Prendre rendez-vous » du premier écran. Texte et
+  boutons côte à côte : 86 px, mesuré en direct sur les deux sites. La
+  mécanique de consentement n'est pas touchée. ⚠ toulali.fr passe AUSSI par
+  le CDN Hostinger : purge LiteSpeed + hPanel → toulali.fr → Performance → CDN.
+- **Mes factures : prix fixé par Siham, 20 € par mois** →
+  `PILOTE_FACTURES_PRIX_CENTS=2000` posée sur l'app API (Coolify), API
+  redéployée. ⚠ Coolify crée la variable en Production ET en Preview (deux
+  lignes du même nom, c'est normal).

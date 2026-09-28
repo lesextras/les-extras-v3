@@ -68,6 +68,19 @@ add_action('wp_body_open', function () {
 	}
 });
 
+/* ---------- Bandeau cookies compact sur téléphone (1.4.9) ---------- */
+/**
+ * À 390 px, le bandeau de Cookie Compliance faisait 146 px et recouvrait le
+ * bouton « Prendre rendez-vous » du premier écran. Texte et boutons côte à
+ * côte : 86 px. La mécanique de consentement n'est pas touchée.
+ */
+function adepa_cf_css_cookies() {
+	return '@media (max-width:640px){#cookie-notice .cookie-notice-container{display:flex;align-items:center;gap:10px;padding:10px 40px 10px 12px;text-align:left}#cookie-notice #cn-notice-text{font-size:12px;line-height:1.35;margin:0;flex:1;display:block}#cookie-notice #cn-notice-buttons{display:flex;flex-direction:column;gap:6px;margin:0;flex:none}#cookie-notice .cn-button{margin:0;padding:6px 12px;font-size:12px;line-height:1.2;white-space:nowrap}#cookie-notice .cn-close-icon{top:8px;right:6px;margin:0}}';
+}
+add_action('wp_head', function () {
+	echo '<style id="adepa-cf-cookies">' . adepa_cf_css_cookies() . '</style>' . "\n";
+}, 99);
+
 /* ---------- Tirets cadratins ---------- */
 
 /** Le texte réduit à ses lettres et chiffres : la preuve qu'aucun mot n'a bougé. */
