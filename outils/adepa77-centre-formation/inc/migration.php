@@ -31,6 +31,28 @@ function adepa_cf_migrer() {
 		// 1.3.0 : la page /prendre-rendez-vous/, créée seulement si elle manque.
 		adepa_cf_rdv_creer_page();
 	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.4.0', '<')) {
+		// 1.4.0 : la page /prof-assistant/ (ADéPA IA), créée seulement si elle manque.
+		if (!get_page_by_path('prof-assistant')) {
+			$id = wp_insert_post(array(
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_title'   => 'ADéPA IA, ton prof assistant',
+				'post_name'    => 'prof-assistant',
+				'post_content' => '[adepa_prof_assistant]',
+			));
+			if ($id && !is_wp_error($id)) {
+				update_post_meta($id, 'site-post-title', 'disabled');
+				update_post_meta($id, 'ast-site-content-layout', 'full-width-container');
+				update_post_meta($id, 'site-content-style', 'unboxed');
+				update_post_meta($id, 'site-sidebar-layout', 'no-sidebar');
+			}
+		}
+	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.4.1', '<')) {
+		// 1.4.1 : Toulali n'est plus un organisme de formation (inc/toulali.php).
+		adepa_cf_migration_141();
+	}
 
 	update_option('adepa_cf_version', ADEPA_CF_VERSION, true);
 	delete_transient('adepa_cf_migration_en_cours');

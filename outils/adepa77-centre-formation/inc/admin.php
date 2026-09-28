@@ -36,6 +36,8 @@ add_action('admin_post_adepa_cf_reglages', function () {
 		'email'     => sanitize_email(wp_unslash($_POST['email'] ?? '')),
 		'telephone' => sanitize_text_field(wp_unslash($_POST['telephone'] ?? '')),
 		'hero_image' => esc_url_raw(wp_unslash($_POST['hero_image'] ?? '')),
+		'teachizy_base' => esc_url_raw(wp_unslash($_POST['teachizy_base'] ?? '')),
+		'prof_assistant_backend' => esc_url_raw(wp_unslash($_POST['prof_assistant_backend'] ?? '')),
 	));
 
 	// La prise de rendez-vous (1.3.0).
@@ -99,7 +101,9 @@ function adepa_cf_ecran_reglages() {
 	echo '<input type="hidden" name="action" value="adepa_cf_reglages">';
 	echo '<table class="form-table"><tr><th><label for="af-email">E-mail qui reçoit les demandes de devis et les rendez-vous</label></th><td><input class="regular-text" id="af-email" type="email" name="email" value="' . esc_attr($o['email']) . '"></td></tr>';
 	echo '<tr><th><label for="af-tel">Téléphone affiché</label></th><td><input class="regular-text" id="af-tel" type="text" name="telephone" value="' . esc_attr($o['telephone']) . '"></td></tr>';
-	echo '<tr><th><label for="af-hero">Photo de fond du haut de /formations/</label></th><td><input class="regular-text" id="af-hero" type="url" name="hero_image" value="' . esc_attr(adepa_cf_reglage('hero_image', '')) . '"><p class="description">Adresse d’une image de la médiathèque (une vraie photo de formation, en paysage, 1 920 px de large). Vide : dégradé aux couleurs du site.</p></td></tr></table>';
+	echo '<tr><th><label for="af-hero">Photo de fond du haut de /formations/</label></th><td><input class="regular-text" id="af-hero" type="url" name="hero_image" value="' . esc_attr(adepa_cf_reglage('hero_image', '')) . '"><p class="description">Adresse d’une image de la médiathèque (une vraie photo de formation, en paysage, 1 920 px de large). Vide : dégradé aux couleurs du site.</p></td></tr>';
+	echo '<tr><th><label for="af-tz">Adresse de l’école Teachizy</label></th><td><input class="regular-text" id="af-tz" type="url" name="teachizy_base" value="' . esc_attr(adepa_cf_reglage('teachizy_base', 'https://toulali.teachizy.fr')) . '"><p class="description">Tous les liens « Commencer la formation » suivent cette adresse. À changer le jour où l’URL de l’espace change dans Teachizy (Paramètres → URL de votre espace).</p></td></tr>';
+	echo '<tr><th><label for="af-pa">Moteur du prof assistant (ADéPA IA)</label></th><td><input class="regular-text" id="af-pa" type="url" name="prof_assistant_backend" value="' . esc_attr(adepa_cf_prof_backend()) . '"><p class="description">Adresse du moteur auquel la page /prof-assistant/ relaie les questions. Aujourd’hui encore sur toulali.fr.</p></td></tr></table>';
 	adepa_cf_ecran_reglages_rdv();
 	submit_button('Enregistrer');
 	echo '</form>';

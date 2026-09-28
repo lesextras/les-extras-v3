@@ -1,0 +1,141 @@
+<div class="tlex-wrap" data-endpoint="%%ENDPOINT%%">
+<style>
+.tlex-wrap{--tg:#D4AF37;--tl:rgba(255,255,255,.10);--tt:#E8ECF5;font-family:inherit;max-width:880px;margin:0 auto}
+.tlex-card{background:linear-gradient(165deg,#0E1B33,#0A1428);border:1px solid var(--tl);border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.tlex-head{display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid var(--tl)}
+.tlex-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#D4AF37,#8C6D2C);display:flex;align-items:center;justify-content:center;font-weight:800;color:#0A1428;font-size:15px;letter-spacing:.5px;flex:0 0 auto}
+.tlex-head h3{margin:0;font-size:17px;color:#fff;line-height:1.25}
+.tlex-head p{margin:2px 0 0;font-size:13px;color:#93A2BF}
+.tlex-dot{margin-left:auto;font-size:12px;color:#93A2BF;display:flex;align-items:center;gap:6px}
+.tlex-dot i{width:8px;height:8px;border-radius:50%;background:#35D0A5;display:inline-block}
+.tlex-gate{padding:32px 24px;text-align:center}
+.tlex-gate h4{margin:0 0 8px;color:#fff;font-size:20px}
+.tlex-gate p{margin:0 auto 18px;color:#B9C5DC;font-size:15px;max-width:540px;line-height:1.55}
+.tlex-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.tlex-wrap input,.tlex-wrap textarea{font-family:inherit;font-size:15px;color:var(--tt);background:rgba(255,255,255,.05);border:1px solid var(--tl);border-radius:12px;padding:12px 14px;outline:none}
+.tlex-wrap input:focus,.tlex-wrap textarea:focus{border-color:var(--tg)}
+.tlex-wrap input::placeholder,.tlex-wrap textarea::placeholder{color:#7C8CAB}
+.tlex-btn{font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;border:0;border-radius:12px;padding:12px 22px;background:linear-gradient(135deg,#D4AF37,#B4923F);color:#0A1428;transition:transform .15s,filter .15s}
+.tlex-btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.tlex-btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+.tlex-link{color:var(--tg);text-decoration:underline}
+.tlex-feed{padding:20px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.tlex-msg{max-width:88%;padding:13px 16px;border-radius:16px;font-size:15px;line-height:1.62;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}
+.tlex-me{align-self:flex-end;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.32);color:#F3E4B8;border-bottom-right-radius:5px}
+.tlex-lex{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--tl);color:var(--tt);border-bottom-left-radius:5px}
+.tlex-err{align-self:center;background:rgba(255,122,122,.12);border:1px solid rgba(255,122,122,.35);color:#FFC9C9;font-size:14px;text-align:center}
+.tlex-pre{background:rgba(0,0,0,.38);border:1px solid var(--tl);border-radius:10px;padding:12px 14px;margin:10px 0;overflow-x:auto;font-size:13.5px;line-height:1.5;white-space:pre}
+.tlex-pre code{background:none;padding:0;color:#CFE3FF;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.tlex-ic{background:rgba(212,175,55,.14);color:#F0D98A;border-radius:5px;padding:1px 6px;font-size:13.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.tlex-msg strong{color:#fff;font-weight:700}
+.tlex-src{display:block;margin-top:10px;padding-top:9px;border-top:1px dashed var(--tl);font-size:12.5px;color:#93A2BF}
+.tlex-bar{display:flex;gap:10px;padding:14px 18px;border-top:1px solid var(--tl);background:rgba(0,0,0,.18)}
+.tlex-bar textarea{flex:1;resize:none;min-height:46px;max-height:150px;line-height:1.45}
+.tlex-sug{display:flex;flex-wrap:wrap;gap:8px;padding:0 22px 18px}
+.tlex-sug button{font-family:inherit;cursor:pointer;font-size:13px;color:#C6D2E8;background:rgba(255,255,255,.05);border:1px solid var(--tl);border-radius:999px;padding:7px 13px}
+.tlex-sug button:hover{border-color:var(--tg);color:#fff}
+.tlex-typing span{display:inline-block;width:6px;height:6px;margin-right:4px;border-radius:50%;background:#93A2BF;animation:tlexB 1.1s infinite}
+.tlex-typing span:nth-child(2){animation-delay:.18s}
+.tlex-typing span:nth-child(3){animation-delay:.36s}
+@keyframes tlexB{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+.tlex-foot{padding:0 22px 16px;font-size:12.5px;color:#7C8CAB;text-align:center}
+@media(max-width:600px){.tlex-msg{max-width:95%}.tlex-feed{padding:16px}}
+</style>
+<div class="tlex-card">
+  <div class="tlex-head">
+    <div class="tlex-av">A</div>
+    <div>
+      <h3>ADéPA IA, ton prof assistant</h3>
+      <p>Il connaît le contenu des six parcours</p>
+    </div>
+    <div class="tlex-dot"><i></i> en ligne</div>
+  </div>
+  <div class="tlex-gate">
+    <h4>Entre ton code d'accès</h4>
+    <p>ADéPA IA, ton prof assistant, est inclus dans la <strong>formule accompagnée</strong>. Ton code t'a été envoyé par e-mail après ton inscription.</p>
+    <div class="tlex-row">
+      <input type="text" class="tlex-code" placeholder="Ton code d'accès" autocomplete="off" spellcheck="false" style="min-width:240px;text-transform:uppercase">
+      <button class="tlex-btn tlex-go" type="button">Ouvrir ADéPA IA</button>
+    </div>
+    <p style="margin-top:16px;font-size:14px">Pas encore de code ? <a class="tlex-link" href="%%FORMULE%%">Découvrir la formule accompagnée</a></p>
+  </div>
+  <div class="tlex-feed" style="display:none;height:540px"></div>
+  <div class="tlex-sug" style="display:none"></div>
+  <div class="tlex-bar" style="display:none">
+    <textarea class="tlex-q" rows="1" placeholder="Pose ta question sur une leçon…"></textarea>
+    <button class="tlex-btn tlex-send" type="button">Envoyer</button>
+  </div>
+  <div class="tlex-foot" style="display:none">ADéPA IA répond à partir du contenu des leçons. En cas de doute, vérifie avec ton formateur.</div>
+</div>
+</div>
+<script>
+(function(){
+  var all=document.querySelectorAll('.tlex-wrap');
+  var root=all[all.length-1];
+  if(!root||root.dataset.tlexInit)return;root.dataset.tlexInit='1';
+  var url=root.dataset.endpoint,
+      gate=root.querySelector('.tlex-gate'),feed=root.querySelector('.tlex-feed'),
+      bar=root.querySelector('.tlex-bar'),sug=root.querySelector('.tlex-sug'),
+      foot=root.querySelector('.tlex-foot'),
+      inCode=root.querySelector('.tlex-code'),btnGo=root.querySelector('.tlex-go'),
+      inQ=root.querySelector('.tlex-q'),btnSend=root.querySelector('.tlex-send'),
+      code='',hist=[],busy=false;
+  var SUGS=['Différence entre let et const ?','Comment on stocke un mot de passe correctement ?','Par où commencer mon premier projet Android ?','Comment structurer une réponse en entretien technique ?','Qu’est-ce qu’un bon prompt ?'];
+  function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  function md(s){
+    var h=esc(s);
+    h=h.replace(/```[a-z]*\n([\s\S]*?)```/g,function(m,c){return '<pre class="tlex-pre"><code>'+c.replace(/\n$/,'')+'</code></pre>';});
+    h=h.replace(/`([^`\n]+)`/g,'<code class="tlex-ic">$1</code>');
+    h=h.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+    h=h.replace(/(^|\n)\s*[-*]\s+/g,'$1• ');
+    h=h.replace(/(^|\n)---+(\n|$)/g,'$1$2');
+    return h;
+  }
+  function add(cls,html){var d=document.createElement('div');d.className='tlex-msg '+cls;d.innerHTML=html;feed.appendChild(d);feed.scrollTop=feed.scrollHeight;return d;}
+  function open(){
+    gate.style.display='none';feed.style.display='flex';bar.style.display='flex';
+    sug.style.display='flex';foot.style.display='block';
+    if(!feed.childNodes.length){
+      add('tlex-lex','Salut, je suis ADéPA IA, ton prof assistant. Je connais le contenu des six parcours.\n\nPose-moi une question sur une leçon, un exercice qui bloque, ou un point que tu veux revoir. Je ne fais pas les exercices à ta place : je t’explique jusqu’à ce que ce soit clair.');
+      sug.innerHTML='';
+      SUGS.forEach(function(s){var b=document.createElement('button');b.type='button';b.textContent=s;b.onclick=function(){inQ.value=s;send();};sug.appendChild(b);});
+    }
+    inQ.focus();
+  }
+  btnGo.addEventListener('click',function(){
+    var v=(inCode.value||'').trim().toUpperCase();
+    if(v.length<3){inCode.focus();return;}
+    code=v;open();
+  });
+  inCode.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();btnGo.click();}});
+  inQ.addEventListener('input',function(){inQ.style.height='auto';inQ.style.height=Math.min(150,inQ.scrollHeight)+'px';});
+  inQ.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+  btnSend.addEventListener('click',send);
+  function send(){
+    if(busy)return;
+    var q=(inQ.value||'').trim();
+    if(q.length<3)return;
+    busy=true;btnSend.disabled=true;sug.style.display='none';
+    add('tlex-me',esc(q));
+    inQ.value='';inQ.style.height='auto';
+    var t=add('tlex-lex','<span class="tlex-typing"><span></span><span></span><span></span></span>');
+    fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,question:q,historique:hist.slice(-6)})})
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
+    .then(function(o){
+      if(o.s!==200||!o.j||!o.j.reponse){
+        t.remove();
+        add('tlex-err',esc((o.j&&o.j.error)||'ADéPA IA n’a pas pu répondre.'));
+        if(o.s===403){gate.style.display='block';feed.style.display='none';bar.style.display='none';foot.style.display='none';sug.style.display='none';}
+        return;
+      }
+      var html=md(o.j.reponse);
+      if(o.j.sources&&o.j.sources.length){html+='<span class="tlex-src">Sources : '+esc(o.j.sources.join(' · '))+'</span>';}
+      t.className='tlex-msg tlex-lex';t.innerHTML=html;
+      hist.push({role:'user',contenu:q});hist.push({role:'assistant',contenu:o.j.reponse});
+      feed.scrollTop=feed.scrollHeight;
+    })
+    .catch(function(){t.remove();add('tlex-err','Connexion interrompue. Réessaie.');})
+    .then(function(){busy=false;btnSend.disabled=false;inQ.focus();});
+  }
+})();
+</script>

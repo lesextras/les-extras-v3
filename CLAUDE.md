@@ -5960,3 +5960,31 @@ Point 3 de l'audit du 28/09. Mesuré : paiement en ligne actif sur 0 fiche sur 1
   et le lien `toulali.fr/lex/` (le prof assistant y est hébergé : à déplacer
   avant de transformer toulali.fr). Copie de sauvegarde avant remplacement :
   IndexedDB `bkToulali` du navigateur de Siham, sur app.teachizy.fr.
+
+### 28/09/2026 (fin) — adepa77 1.4.0 / 1.4.1 : prof assistant, Toulali retiré de l'offre de formation
+
+- **/prof-assistant/** (1.4.0, `inc/prof-assistant.php` + `.html`) : ADéPA IA, le
+  prof assistant de la formule accompagnée. La page relaie côté serveur
+  (`POST /wp-json/adepa/v1/prof-assistant`, 60 questions/h/IP) vers le moteur
+  qui reste sur toulali.fr (`/wp-json/toulalia/v1/lex`, réglage
+  `prof_assistant_backend`) : ⚠ aucune clé n'a été copiée, le moteur garde les
+  siennes. Le jour où toulali.fr devient la page de Pilote, ce moteur doit
+  rester joignable ou être déplacé, puis le réglage mis à jour. La leçon
+  Teachizy 1434853 pointe désormais sur adepa77.fr/prof-assistant/.
+- **Réglage « Adresse de l'école Teachizy »** (`teachizy_base`) : tous les
+  liens « Commencer la formation » et /community-manager/ le suivent. ⚠ Le
+  changement d'URL de l'école (toulali → adepa) a été REFUSÉ au garde-fou :
+  Siham le fait dans Teachizy (Paramètres → URL de votre espace), puis on met
+  ce réglage à jour, puis `PLATEFORME` du seed Les Extras + relance, puis les
+  4 liens de `association/se-former`.
+- **1.4.1 (`inc/toulali.php`)** : `/community-manager/` = redirection 302 vers
+  la formation CM IA sur Teachizy (jamais d'URL Teachizy en dur dans
+  Elementor). Migration unique sur `_elementor_data` (décodé en OBJETS pour que
+  `{}` ne devienne pas `[]`, réencodé par `wp_json_encode`, `wp_slash`) : menu
+  « Community manager », bouton de /centre-de-formation/ (« Voir la
+  formation »), carte Toulali de l'accueil (devenue Pilote, logiciel des
+  créateurs d'activité), trois réponses du chatbot. Copie d'avant en méta
+  `_adepa_cf_elementor_avant_141`, bilan dans l'option `adepa_cf_migration_141`.
+- ⚠ **L'accueil passe aussi par le CDN Hostinger** (`x-hcdn-cache-status`) :
+  la purge LiteSpeed ne suffit pas. hPanel → adepa77.fr → Performance → CDN →
+  « Vider le cache » (clic en JavaScript sur le bouton, la page est lourde).

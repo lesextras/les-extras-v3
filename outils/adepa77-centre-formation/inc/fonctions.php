@@ -6,6 +6,20 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
+/**
+ * L'ADRESSE DE L'ÉCOLE TEACHIZY, écrite une seule fois (28/09/2026).
+ * L'école s'appelle encore toulali.teachizy.fr ; le jour où son adresse
+ * change dans Teachizy (Paramètres → URL de votre espace), on change ce
+ * réglage et tous les liens « Commencer la formation » suivent.
+ */
+function adepa_cf_teachizy($chemin = '') {
+	$base = rtrim(adepa_cf_reglage('teachizy_base', 'https://toulali.teachizy.fr'), '/');
+	return $base . '/' . ltrim($chemin, '/');
+}
+function adepa_cf_lien_teachizy($url) {
+	return preg_replace('#^https?://[a-z0-9-]+\.teachizy\.fr#i', rtrim(adepa_cf_teachizy(), '/'), (string) $url);
+}
+
 /** Les coordonnées de l'organisme, écrites une seule fois pour toutes les pages. */
 function adepa_cf_organisme() {
 	return array(

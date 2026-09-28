@@ -34,7 +34,7 @@ function adepa_cf_page_concernee() {
 		if (!$p) {
 			return false;
 		}
-		foreach (array('adepa_formations', 'adepa_informations_reglementaires', 'adepa_cgv_formation', 'adepa_reclamation', 'adepa_accessibilite', 'adepa_rdv') as $code) {
+		foreach (array('adepa_formations', 'adepa_prof_assistant', 'adepa_informations_reglementaires', 'adepa_cgv_formation', 'adepa_reclamation', 'adepa_accessibilite', 'adepa_rdv') as $code) {
 			if (has_shortcode((string) $p->post_content, $code)) {
 				return true;
 			}
@@ -387,7 +387,7 @@ function adepa_cf_rendu_fiche($id) {
 	$themes  = wp_get_post_terms($id, ADEPA_CF_THEME);
 	$theme   = $themes && !is_wp_error($themes) ? $themes[0] : null;
 	$faq     = (array) adepa_cf_meta($id, 'faq', array());
-	$enroll  = adepa_cf_meta($id, 'enrollUrl');
+	$enroll  = adepa_cf_lien_teachizy(adepa_cf_meta($id, 'enrollUrl'));
 	$duree   = adepa_cf_duree($id);
 	$attPrix = (int) adepa_cf_meta($id, 'attestationPrix', 0);
 	$pdf     = (int) adepa_cf_meta($id, 'fiche_pdf', 0);
