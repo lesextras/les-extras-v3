@@ -35,6 +35,24 @@
 //   7. le prix, en une ligne ;
 //   8. ouvrir un compte.
 //
+// ─────────────────────────────────────────────────────────────────────────────
+// ⚠⚠ AUDIT DU 28/09/2026 : SIX SECTIONS AU PLUS, UN SEUL BLOC LEX.
+//
+// Mesuré avant : dix sections (héros compris, pied de page non compté),
+// treize écrans sur ordinateur, vingt et un sur téléphone, LEX présenté deux
+// fois. Stratégie décidée par Siham : Les Extras est une PLACE DE MARCHÉ ;
+// RenforTeam, « la team d'éducateurs en renfort », en est le cœur, les
+// ateliers le deuxième rayon, LEX un outil, les formations vivent sur
+// adepa77.fr. On a retiré, sans rien réécrire, le tout-en-un, la section LEX,
+// les tarifs et le bloc ADéPA. L'ordre est désormais :
+//   1. le héros ;
+//   2. les situations (RenforTeam, ateliers, LEX : le seul bloc LEX) ;
+//   3. l'aiguillage, deux portes ;
+//   4. le catalogue d'ateliers ;
+//   5. le centre de formation ADéPA (le seul bloc formation) ;
+//   6. ouvrir un compte.
+// (`DeuxRenforts` ne s'affiche qu'en offre complète, qui n'est pas en ligne.)
+//
 // RIEN N'EST SUPPRIMÉ, tout est déplacé :
 //   • la barre de recherche descend sur /ateliers, qui a déjà la sienne ;
 //   • « un seul formulaire » et « l'aperçu du produit » partent sur
@@ -57,37 +75,28 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  ShieldCheck,
   ArrowRight,
   Sparkles,
   FileCheck,
   Clock,
-  Megaphone,
-  FileSignature,
-  Timer,
   Euro,
-  Check,
   Handshake,
   HeartHandshake,
-  BookOpen,
-  Users,
-  Video,
 } from 'lucide-react';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
 import { fetchPublic } from './_shared/server';
-// Les visuels de la médiathèque WordPress passent par `wp()` : ils ont déjà
-// déménagé deux fois, et les URL écrites en dur sont celles qui survivent au
-// déménagement puis cassent seules. Voir `lib/media.ts`.
-import { premierVisuel, wp } from '@/lib/media';
-import { renfortSalarieVisible, visioconsultationVisible } from '@/lib/offre';
+// Les visuels de la médiathèque WordPress passent par `lib/media.ts` : ils
+// ont déjà déménagé deux fois, et les URL écrites en dur sont celles qui
+// survivent au déménagement puis cassent seules.
+import { premierVisuel } from '@/lib/media';
+import { renfortSalarieVisible } from '@/lib/offre';
 import { type OfferCard } from './_shared/OfferCarousel';
 import { CatalogueOnglets } from './_shared/CatalogueOnglets';
 import { CentreFormationAdepa } from './_shared/CentreFormationAdepa';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
-import { OffreLex } from './_shared/OffreLex';
 import { RetourHaut } from './_shared/RetourHaut';
 import { DeuxPortes } from './_shared/DeuxPortes';
 import { DeuxRenforts } from './_shared/DeuxRenforts';
@@ -134,97 +143,11 @@ export const metadata: Metadata = {
 // relire le commentaire de la section 2 : on retomberait sur deux inventaires
 // des mêmes offres à trois écrans d'écart.
 
-// Ce que le logiciel fait, en quatre verbes valables pour tous les usages.
-// Les six tuiles « comment marche le renfort » ne parlaient que du renfort :
-// c'était le tout-en-un raconté pour un seul besoin sur trois.
-const TOUT_EN_UN = [
-  {
-    icone: Megaphone,
-    titre: 'Il diffuse',
-    texte:
-      'Un seul formulaire, quel que soit le besoin. Les bons profils sont prévenus, et relancés.',
-  },
-  {
-    icone: FileSignature,
-    titre: 'Il formalise',
-    texte:
-      'Devis sous 48 h, feuille de mission, facture. Le contrat reste le vôtre.',
-  },
-  {
-    icone: ShieldCheck,
-    titre: 'Il vérifie',
-    texte:
-      'Diplômes, casier, URSSAF, assurance : réunis une fois, alerte avant l’échéance.',
-  },
-  {
-    icone: Timer,
-    titre: 'Il compte',
-    texte:
-      'Heures déclarées et validées, et les contrats qui vont avec.',
-  },
-  /*
-    ⚠ LES DEUX CARTES SUIVANTES DISENT CE QU'EST LE SERVICE, pas ce que le
-    logiciel fait — elles ont été demandées le 21/09/2026 parce que le bloc
-    listait quatre fonctions administratives sans jamais nommer RenforTeam ni
-    la visio. Le visiteur lisait « il diffuse, il formalise » sans savoir QUOI.
-
-    ⚠ CETTE CARTE DIT LE PROBLÈME, PAS LE PRIX — décision de Siham le
-    21/09/2026 au soir. Elle a d'abord porté « 15 % de frais de gestion » :
-    un tarif, sur une carte dont le travail est de faire reconnaître une
-    SITUATION. Le prix a sa page (/frais-de-service) et le bloc « tout-en-un »
-    n'est pas une grille tarifaire.
-
-    ⚠ Si un chiffre revient ici un jour, ce doit être 15 % et jamais 0 % :
-    0 % est le taux des ateliers, pas celui du renfort. Deux
-    chiffres différents sur deux pages du même site est exactement ce que
-    l'audit reprochait ailleurs.
-  */
-  /*
-    ⚠⚠ ELLE SUIT LA GRAMMAIRE DE LA GRILLE : « Il <verbe> » + UNE LIGNE COURTE.
-
-    Écrite d'abord « RenforTeam » + deux phrases de récit (« Quatorze mois
-    d'attente pour une psychomotricienne, et l'enfant qui grandit pendant ce
-    temps-là… »), elle jurait au milieu de ses cinq voisines : un nom de
-    produit parmi des verbes, et un texte deux fois plus long, donc une carte
-    visiblement plus dense. Constat de Siham le 21/09 au soir.
-
-    Le nom du service reste — c'est pour ça que la carte existe — mais il est
-    DANS le texte, là où les autres mettent leur exemple. La situation, elle,
-    est racontée en entier par la section « Quatre situations », qui s'ouvre
-    précisément sur les quatorze mois d'attente : la redire ici la répétait.
-  */
-  {
-    icone: HeartHandshake,
-    titre: 'Il trouve',
-    texte:
-      'Ergothérapeute, psychomotricienne, orthophoniste, éducateur spécialisé : c’est RenforTeam.',
-  },
-];
-
-/*
-  LA CARTE VISIOCONSULTATION — AFFICHÉE SEULEMENT SI LE SERVICE EST OUVERT.
-
-  ⚠ ELLE EST SÉPARÉE DE `TOUT_EN_UN` EXPRÈS. Le service s'allume par
-  `NEXT_PUBLIC_VISIOCONSULTATION=1` (voir `lib/offre.ts`), et tant que la
-  variable n'est pas posée, `/visio/:jeton` redirige : annoncer la visio sur
-  l'accueil pendant ce temps-là afficherait une promesse que le site ne peut
-  pas tenir — le défaut exact que l'audit reproche partout ailleurs.
-
-  Grâce à cette séparation, le jour où la variable est posée la carte apparaît
-  toute seule, sans toucher à ce fichier.
-*/
-/*
-  ⚠ MÊME GRAMMAIRE QUE LES CINQ AUTRES : « Il <verbe> » et une ligne courte.
-  « En visio, aussi » cassait l'alignement au même titre que « RenforTeam ».
-*/
-const CARTE_VISIO = {
-  icone: Video,
-  titre: 'Il rapproche',
-  texte:
-    // ⚠ Une VRAIE espace insécable (U+00A0), pas « &nbsp; » : ce texte est
-    // rendu en JSX comme du texte, l'entité s'afficherait telle quelle.
-    'Personne de disponible près de chez vous ? La séance se tient en visioconsultation.',
-};
+// ⚠ `TOUT_EN_UN`, `CARTE_VISIO` ET `BANDEAU` ONT ÉTÉ RETIRÉS LE 28/09/2026,
+// avec la section « Le fil commun » qui les affichait (voir le commentaire
+// posé à sa place, plus bas). La carte « Il trouve » y promettait
+// ergothérapeute, psychomotricienne et orthophoniste : RenforTeam est
+// désormais la team d'éducateurs en renfort, sans métier paramédical.
 
 // ────────────────────────────────────────────────────────────── les tarifs
 //
@@ -240,7 +163,8 @@ const CARTE_VISIO = {
 // service de Les Extras (voir l'en-tête du fichier). Restent deux colonnes.
 //
 // ⚠⚠ CETTE LISTE N'EST PLUS AFFICHÉE DEPUIS LE 21/09/2026. Les prix ont quitté
-// l'accueil (décision de Siham, voir la section #tarifs plus bas). Elle est
+// l'accueil (décision de Siham), et la section #tarifs qui renvoyait vers
+// /frais-de-service a elle-même été retirée le 28/09/2026. Elle est
 // CONSERVÉE parce qu'elle est la seule trace, dans ce fichier, de la grille
 // telle qu'elle a été publiée — et parce que la remettre en ligne un jour ne
 // doit pas obliger à la réécrire de mémoire.
@@ -297,16 +221,6 @@ const TARIFS = [
     trait: 'bg-amber-500',
     teinte: 'text-amber-500',
   },
-];
-
-// Le bandeau défilant : ce que le même logiciel porte, d'un besoin à l'autre.
-const BANDEAU = [
-  'Planning partagé',
-  'Coffre-fort de conformité',
-  'Messagerie',
-  'Heures validées',
-  'Signature en ligne',
-  'Devis, feuille de mission, facture',
 ];
 
 export default async function LandingPage() {
@@ -594,101 +508,11 @@ export default async function LandingPage() {
         {/* ═══════════════════════════ 3. L'AIGUILLAGE, DEUX PORTES ═══════════ */}
         <DeuxPortes />
 
-        {/* ═══ 4. LA COUTURE : ce qui relie les situations ═══════════════════
-            ⚠ Trois situations depuis le 28/09/2026 (la « formation » est
-            partie avec le service, sur adepa77.fr) : titre et phrase disent
-            « trois », et ils doivent suivre `QuatreSituations` si le compte
-            change encore.
+        {/* ═══ LE RENFORT, EN DEUX (offre complète seulement) ═══════════════
+            ⚠ 28/09/2026 : en offre complète, ce serait la SEPTIÈME section de
+            l'accueil. Le jour où la variable repasse à « complete », en
+            retirer une autre pour tenir la règle des six sections.
 
-            ⚠ CETTE SECTION EST LA CHARNIÈRE DE LA PAGE, PAS UN SECOND
-            INVENTAIRE. Elle portait l'eyebrow « Tout-en-un » et le titre « Le
-            travail administratif que vous ne ferez plus » : un visiteur qui
-            venait de lire quatre situations tombait sur une liste de fonctions
-            sans savoir de quel produit on parlait — c'est exactement le reproche
-            « des blocs séparés les uns des autres ».
-
-            Le titre nomme donc le LIEN (trois réponses, un logiciel), et la
-            phrase reprend les trois mots de la section précédente dans le même
-            ordre : renfort, atelier, écrit. C'est ce rappel qui fait
-            la couture — sans lui, les deux sections se lisent comme deux pages.
-
-            Ne pas remettre un titre qui annonce une fonction : le bénéfice
-            administratif est dit dans la phrase, sa place est là. */}
-        <section className="bg-nacre">
-          <div className="section">
-            <Reveal className="max-w-3xl">
-              <span className="eyebrow">Le fil commun</span>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                Trois réponses, un seul logiciel dessous
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Un renfort, un atelier, un écrit : même dossier, même conformité,
-                même facture. Vous ne ressaisissez rien d’une situation à l’autre, et le travail
-                administratif qui allait avec disparaît.
-              </p>
-            </Reveal>
-
-            {/* LE BANDEAU DÉFILANT — il tient la promesse de la phrase.
-                « Même dossier, même conformité » reste une affirmation tant
-                qu'on ne montre pas ce que le dossier contient. Le bandeau le
-                déroule sans ajouter un cinquième bloc de cartes.
-                ⚠ La liste est écrite DEUX FOIS : `marquee` translate de -50 %,
-                donc la seconde copie prend exactement la place de la première et
-                la boucle est invisible. Retirer la copie fait un saut. */}
-            <Reveal delay={80} className="mt-8">
-              <div
-                className="marquee-hover relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
-                aria-hidden="true"
-              >
-                <div className="animate-marquee flex w-max gap-3">
-                  {[...BANDEAU, ...BANDEAU].map((mot, i) => (
-                    <span
-                      key={`${mot}-${i}`}
-                      className="whitespace-nowrap rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground"
-                    >
-                      {mot}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </Reveal>
-
-            {/* ⚠ TROIS COLONNES, PLUS QUATRE : avec cinq ou six cartes, une
-                grille de quatre laisse une ou deux orphelines sur la seconde
-                ligne. En trois, c'est 3+2 ou 3+3 — les deux se tiennent. */}
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {[...TOUT_EN_UN, ...(visioconsultationVisible() ? [CARTE_VISIO] : [])].map((t, i) => {
-                const Icone = t.icone;
-                return (
-                  <Reveal key={t.titre} delay={i * 90} className="h-full">
-                    <div className="flex h-full flex-col rounded-2xl border border-border bg-background p-6 shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
-                        <Icone className="size-5" />
-                      </span>
-                      <h3 className="mt-4 text-lg font-bold text-foreground">{t.titre}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.texte}</p>
-                    </div>
-                  </Reveal>
-                );
-              })}
-            </div>
-
-            <Reveal delay={120}>
-              <p className="mt-8 text-sm text-muted-foreground">
-                Le détail du renfort, écran par écran, est sur{' '}
-                <Link
-                  href="/renforteam"
-                  className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
-                >
-                  la page RenforTeam
-                </Link>
-                .
-              </p>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ═══ 5. LE RENFORT, EN DEUX — et ce n'est pas du vocabulaire ═══════
             ⚠⚠ CETTE SECTION A CHANGÉ DE PLACE LE 16/09/2026 (demande de Siham :
             « l'emplacement actuel est étrange »), ET IL NE FAUT PAS LA REMONTER.
 
@@ -722,7 +546,7 @@ export default async function LandingPage() {
             NEXT_PUBLIC_OFFRE_PUBLIQUE=complete. */}
         {renfortSalarieVisible() && <DeuxRenforts />}
 
-        {/* ═══════════════ 6. LE CATALOGUE, EN UN SEUL BLOC À ONGLETS ═════════ */}
+        {/* ═══════════════ 4. LE CATALOGUE, EN UN SEUL BLOC À ONGLETS ═════════ */}
         <section id="marketplace" className="scroll-mt-24">
           <div className="section">
             {/* ⚠ EN-TÊTE CENTRÉ (demande de Siham, 21/09/2026), et c'est le
@@ -787,234 +611,32 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══ 6 bis. LE CENTRE DE FORMATION ADÉPA — le seul bloc formation ═══
+        {/* ═══ 5. LE CENTRE DE FORMATION ADÉPA — le seul bloc formation ═══════
             Posé à la place de l'ancien rayon « Formations » du catalogue :
             juste après les ateliers, avant LEX. Voir l'en-tête du composant. */}
         <CentreFormationAdepa />
 
-        {/* ═══════════════════════════════ 6. LEX ═══════════════════════════
-            L'essai et le détail de l'offre se suivaient en deux sections :
-            deux titres, deux respirations, deux fois la même promesse. Tout
-            tient ici, sur la bande claire qui sert déjà de repère au milieu
-            du fond charbon. */}
-        <section
-          id="lex"
-          className="scroll-mt-24 border-y border-border bg-gradient-to-b from-primary/[0.07] via-background to-background"
-        >
-          <div className="section">
-            <Reveal className="flex max-w-3xl items-start gap-5">
-              {/* Le personnage tient le stylo : c'est la section des écrits. */}
-              <Mascotte className="hidden w-24 shrink-0 sm:block" />
-              <div>
-              {/*
-                ⚠ TITRE ET SOUS-TITRE, 16/09/2026 (demande de Siham).
-
-                « Pour celles et ceux qui font le terrain » était en pastille
-                grise au-dessus du titre — c'est-à-dire à l'endroit qu'on saute.
-                C'est pourtant la seule ligne de la section qui dise À QUI elle
-                s'adresse, et c'est ce qui fait s'arrêter un éducateur. Elle
-                devient donc le titre, avec le nom du service devant : « LEX »
-                seul ne dit rien à quelqu'un qui le lit pour la première fois.
-
-                La phrase qui était le titre — « le métier ne s'arrête pas à la
-                fin de la journée » — passe en sous-titre : elle dit le problème,
-                pas le public, et un problème se lit après avoir su qu'on est
-                concerné.
-
-                ⚠ PLUS D'EYEBROW ICI. Reposer une pastille au-dessus rendrait
-                trois lignes de titre pour une section, et on serait revenu au
-                point de départ.
-              */}
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                LEX, pour celles et ceux qui{' '}
-                <span className="text-gradient-brand">font le terrain</span>
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Le métier ne s’arrête pas à la fin de la journée.
-              </p>
-              </div>
-            </Reveal>
-
-            {/*
-              ⚠ LE BLOC « POURQUOI PAS CHATGPT » A ÉTÉ DÉPLACÉ DANS `OffreLex`,
-              ET IL NE DOIT PAS REVENIR ICI.
-
-              Il pesait sept paragraphes — et ses trois arguments étaient déjà
-              repris mot pour mot par la bande « garanties » du composant
-              juste en dessous : les noms, l'enregistrement, la décision.
-              Deux fois le même argument, à quelques centimètres : on saute
-              les deux. Il tient maintenant en trois lignes, en tête du même
-              bloc, une seule unité visuelle de la question aux garanties.
-            */}
-            <div id="offre-lex" className="mt-12 scroll-mt-24">
-              <Reveal>
-                <OffreLex />
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════ 7. LE PRIX, EN TROIS COLONNES ═════════
-            « Gratuit des deux côtés » est l'argument le plus fort du site : il
-            méritait une section à lui, pas deux moitiés éloignées de six
-            écrans. Elle a d'abord tenu dans une carte unique — mais il y a bien
-            TROIS prix, et ils ne se ressemblent pas : gratuit pour toujours,
-            sur devis, et un abonnement. En petit corps sur une seule carte, la
-            page avait l'air de n'en annoncer qu'un. En trois colonnes, chacun
-            avec son montant en grand, on les compare d'un coup d'œil. */}
         {/*
-          ⚠⚠ LES PRIX ONT QUITTÉ L'ACCUEIL LE 21/09/2026 — DÉCISION DE SIHAM,
-          APRÈS AVOIR REGARDÉ CE QUE FONT LES AUTRES.
-
-          Aucun concurrent du secteur n'expose sa grille sur sa page d'accueil,
-          et Hublo ne publie même pas la sienne. Nous affichions trois montants
-          en grand ET le taux de commission, c'est-à-dire tout ce qu'un
-          concurrent a besoin de savoir, au premier écran, sans avoir à
-          demander. Un prix se défend dans une conversation ou sur la page qui
-          l'explique ; en vitrine, il se compare hors contexte.
-
-          ⚠ LA PAGE `/frais-de-service` N'A PAS BOUGÉ, et ne doit pas bouger :
-          elle porte les trois montants, les 15 % de RenforTeam, la
-          comparaison avec Brigad et l'intérim. Cacher un prix n'est acceptable
-          QUE s'il reste à un clic et sans formulaire — sinon on redevient le
-          « créez un compte pour connaître un prix » corrigé le 3/08/2026.
-          L'ancre #tarifs est conservée : le pied de page et de vieux liens
-          pointent dessus.
-
-          ⚠ NE PAS REMETTRE DE MONTANT ICI. Ni en petit, ni « à partir de »,
-          ni dans une puce de réassurance.
+          ⚠⚠ QUATRE SECTIONS RETIRÉES LE 28/09/2026 (audit, décision de Siham :
+          « Accueil ramené à six sections, un seul bloc LEX »). L'accueil
+          faisait treize écrans sur ordinateur et vingt et un sur téléphone, et
+          présentait LEX deux fois. On a RETIRÉ, sans rien réécrire :
+            • « Le fil commun / Trois réponses, un seul logiciel dessous » et
+              ses cartes « Il diffuse, il formalise… » : un second inventaire
+              des mêmes offres, et un positionnement « logiciel » quand Les
+              Extras est une PLACE DE MARCHÉ. Sa carte « Il trouve » promettait
+              en outre des métiers paramédicaux que RenforTeam ne porte plus ;
+            • la section LEX (`OffreLex`) : LEX est un outil, et il a déjà sa
+              situation dans `QuatreSituations`, qui mène à /lex. `OffreLex`
+              vit sur /lex, sa page ;
+            • « Tarifs » : un titre et un bouton vers /frais-de-service, page
+              qui reste à un clic depuis le pied de page (« Frais de service ») ;
+            • « Derrière le réseau, il y a ADéPA » : l'éditeur est nommé dans le
+              pied de page, et son histoire sur /notre-histoire.
+          ⚠ NE PAS LES REMETTRE sans retirer autant de sections ailleurs : six
+          au plus, héros compris, pied de page non compté.
         */}
-        <section id="tarifs" className="scroll-mt-24 bg-nacre">
-          <div className="section">
-            <Reveal className="mx-auto max-w-3xl text-center">
-              <span className="eyebrow mx-auto w-fit">Tarifs</span>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                La mise en relation est gratuite. Des deux côtés.
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                Publier un besoin, réserver, éditer les devis, les feuilles de mission et les
-                factures : rien de tout cela ne se paie. Ce qui se paie est écrit noir sur blanc,
-                sur une page faite pour ça.
-              </p>
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Button asChild size="lg" className="h-auto max-w-full whitespace-normal py-3 text-center">
-                  <Link href="/frais-de-service">
-                    Ce qui est gratuit, ce qui est payant
-                    <ArrowRight />
-                  </Link>
-                </Button>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ═════════════════════════ 8. L'ASSOCIATION QUI PORTE TOUT ÇA ══════
-            Les Extras n'est pas une entreprise : c'est le dispositif d'une
-            association. C'est ce qui explique le modèle, et c'est
-            ce que la page ne disait qu'en petit, dans une ligne de pied de
-            page. Une association vit de ses adhérents et de ses bénévoles :
-            si on ne le demande jamais, personne ne le propose. */}
-        <section id="adepa" className="scroll-mt-24 section">
-          <Reveal>
-            <div className="reflet relative overflow-hidden rounded-3xl border border-border bg-nacre p-7 shadow-card md:p-12">
-              <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-                <div>
-                  {/* LE LOGO, ET PAS SEULEMENT LE NOM. Le bloc parlait d'une
-                      association que le visiteur ne reconnaissait nulle part :
-                      son nom était écrit trois fois, sa marque zéro.
-                      Le dessin est posé ici en SVG plutôt qu'en fichier image,
-                      pour une raison de lisibilité : sa partie sombre est en
-                      `currentColor`, donc elle suit la couleur du texte et se
-                      lit sur le fond clair comme sur le fond sombre. Un PNG,
-                      lui, aurait disparu dans l'un des deux. */}
-                  <span
-                    className="mb-5 grid size-14 place-items-center rounded-2xl border border-border bg-background shadow-soft"
-                    aria-hidden
-                  >
-                    <svg viewBox="0 0 160 152" className="size-8 text-foreground" role="presentation" focusable="false">
-                      <path fill="currentColor" d="M79.5 0 133 98h-30.5L79.5 55.5 30 152H0Z" />
-                      <path fill="#EF4E4A" d="M117 124.5h29.5L160 152h-31Z" />
-                    </svg>
-                  </span>
-                  <span className="eyebrow flex w-fit">
-                    <HeartHandshake className="size-3.5" />
-                    ADéPA porte Les Extras
-                  </span>
-                  <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
-                    Derrière le réseau, il y a ADéPA.
-                  </h2>
-                  <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-                    Association éducative de Melun, en Seine-et-Marne. Elle agit pour l’insertion
-                    des enfants, des adolescents et des familles par l’éducation, l’animation et la
-                    prévention. Les Extras est l’un de ses dispositifs, et c’est ce qui explique
-                    son modèle.
-                  </p>
-                  <ul className="mt-6 space-y-2.5">
-                    {[
-                      'Pas d’actionnaire, pas d’abonnement obligatoire',
-                      'Ce que rapportent ses services revient aux actions de terrain',
-                      'Un don ouvre droit à un reçu fiscal',
-                    ].map((p) => (
-                      <li key={p} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                        <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                        <span>{p}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Trois portes, du plus léger au plus engageant : on regarde,
-                    on adhère, on rejoint. */}
-                <div className="grid gap-3">
-                  {[
-                    {
-                      icone: BookOpen,
-                      titre: 'Découvrir ADéPA',
-                      texte: 'Son histoire, ses actions, ce qu’elle défend.',
-                      href: 'https://adepa77.fr/notre-histoire/',
-                    },
-                    {
-                      icone: HeartHandshake,
-                      titre: 'Devenir adhérent',
-                      texte: 'Faire partie de l’aventure et soutenir ce qui se construit ici.',
-                      href: 'https://adepa77.fr/devenir-adherent/',
-                    },
-                    {
-                      icone: Users,
-                      titre: 'Rejoindre l’équipe',
-                      texte: 'Bénévole, intervenant ou formateur, il y a de la place.',
-                      href: 'https://adepa77.fr/rejoignez-nous/',
-                    },
-                  ].map((porte) => {
-                    const Icone = porte.icone;
-                    return (
-                      <a
-                        key={porte.titre}
-                        href={porte.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-start gap-4 rounded-2xl border border-border bg-background p-5 no-underline transition duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
-                      >
-                        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
-                          <Icone className="size-5" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block font-bold text-foreground">{porte.titre}</span>
-                          <span className="mt-0.5 block text-sm text-muted-foreground">
-                            {porte.texte}
-                          </span>
-                        </span>
-                        <ArrowRight className="mt-1 size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </section>
-
-        {/* ═══════════════════════════════ 9. OUVRIR UN COMPTE ════════════════ */}
+        {/* ═══════════════════════════════ 6. OUVRIR UN COMPTE ════════════════ */}
         <section className="section">
           <Reveal>
             <div className="relative overflow-hidden rounded-3xl bloc-nuit bg-[hsl(222,21%,15%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">

@@ -77,8 +77,26 @@ export default async function LandingPage({ params }: { params: Promise<{ produi
             </Button>
           </div>
         </div>
-        <div className="lg:sticky lg:top-24">
-          <FormulaireLanding sujet={l.sujet} bouton={l.bouton} structure={l.structure} offre={l.offre} />
+        <div className="space-y-4 lg:sticky lg:top-24">
+          {/* ⚠ QUAND LE PRODUIT S'ESSAIE EN CRÉANT UN COMPTE, C'EST LE PREMIER
+              GESTE (audit du 28/09/2026). /l/lex finissait sur un formulaire de
+              contact : on y laissait une adresse pour recevoir un exemple, sans
+              aucun moyen d'ouvrir son compte et d'écrire. Le bouton passe
+              devant, le formulaire reste en second pour qui préfère écrire. */}
+          {l.inscription ? (
+            <Button asChild size="lg" className="h-auto w-full whitespace-normal py-3 text-center">
+              <Link href={l.inscription.href}>
+                {l.inscription.libelle} <ArrowRight className="ml-1 size-4 shrink-0" />
+              </Link>
+            </Button>
+          ) : null}
+          <FormulaireLanding
+            sujet={l.sujet}
+            bouton={l.bouton}
+            structure={l.structure}
+            offre={l.offre}
+            secondaire={Boolean(l.inscription)}
+          />
         </div>
       </section>
 

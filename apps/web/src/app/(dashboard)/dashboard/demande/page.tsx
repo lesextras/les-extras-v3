@@ -26,10 +26,13 @@ export const metadata: Metadata = { title: 'Demander un intervenant' };
  * Trois questions, pas un formulaire : une famille qui décrit une situation
  * ne remplit pas des cases, elle raconte.
  */
+// ⚠ RENFORTEAM EST LA TEAM D'ÉDUCATEURS EN RENFORT (28/09/2026) : l'indice
+// proposait ergothérapie, psychomotricité et orthophonie, retirées de la
+// promesse. Chaque demande devient une prestation avec ses objectifs.
 const INDICE =
-  'Pour qui, et son âge. Ce que vous cherchez : ergothérapie, éducateur, ' +
-  'psychomotricité, orthophonie, psychologue, ou un accompagnement à définir ' +
-  'ensemble. Où et quand : chez vous, à l’école, en établissement, et à quel ' +
+  'Pour qui, et son âge. Ce que vous cherchez : un éducateur spécialisé, un ' +
+  'moniteur-éducateur, un AES, ou un accompagnement à définir ensemble, et ses ' +
+  'objectifs. Où et quand : chez vous, à l’école, en établissement, et à quel ' +
   'rythme.';
 
 export default async function DemandePage() {

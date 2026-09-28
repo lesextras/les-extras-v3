@@ -70,6 +70,26 @@ export const INSCRIPTION = {
     libelle: 'Demander un intervenant',
   },
 
+  /**
+   * Le chemin LEX → créer un compte, puis arriver DANS l'assistant d'écriture.
+   *
+   * Audit du 28/09/2026 : « Créer un compte » depuis /lex menait à /register,
+   * et la personne qui venait d'écrire son premier rapport dans sa tête se
+   * retrouvait sur le tableau de bord, à chercher LEX dans le menu. `next`
+   * la ramène là où elle allait (`register/page.tsx` le lit après la création
+   * du compte).
+   *
+   * ⚠ SANS `?type=` : un éducateur salarié, une structure ou un particulier
+   * écrivent tous avec LEX. Le paramètre sauterait l'écran des cartes et
+   * imposerait un type de compte, dont le slug ne se recalcule jamais.
+   *
+   * Porté par /lex et /l/lex (et `OffreLex`, qui vit sur /lex).
+   */
+  ecrireAvecLex: {
+    href: '/register?next=/dashboard/assistant',
+    libelle: 'Créer un compte pour écrire avec LEX',
+  },
+
   /** Le chemin intervenant → voir les missions ouvertes. */
   chercherMissions: {
     href: '/register?next=/dashboard/opportunites',

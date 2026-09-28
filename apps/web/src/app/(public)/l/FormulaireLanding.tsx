@@ -17,11 +17,18 @@ export function FormulaireLanding({
   bouton,
   structure,
   offre,
+  secondaire = false,
 }: {
   sujet: string;
   bouton: string;
   structure: boolean;
   offre: string;
+  /**
+   * Le formulaire passe au second plan (bouton bordé) quand la page propose
+   * d'abord de créer un compte : deux boutons pleins l'un sous l'autre ne
+   * disent plus lequel est le premier geste.
+   */
+  secondaire?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -113,7 +120,13 @@ export function FormulaireLanding({
         <Input id="fl-besoin" name="besoin" maxLength={300} />
       </Champ>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <Button type="submit" size="lg" className="w-full" disabled={loading}>
+      <Button
+        type="submit"
+        size="lg"
+        variant={secondaire ? "outline" : "primary"}
+        className="w-full"
+        disabled={loading}
+      >
         {loading ? "Envoi…" : bouton}
       </Button>
       <p className="text-[11px] leading-snug text-muted-foreground">

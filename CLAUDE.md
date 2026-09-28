@@ -5819,3 +5819,45 @@ Décision de Siham : adepa77.fr est LE site de l'organisme de formation ADéPA.
   SEUL bloc, `_shared/CentreFormationAdepa.tsx`, sur l'accueil. Les données,
   l'admin formations/Qualiopi et `/dashboard/formations` (hors menu) restent :
   des factures en dépendent. Le tunnel d'e-mails pointe sur adepa77.fr.
+
+### 28/09/2026 — audit appliqué : accueil à six sections, WordPress rapatrié, LEX désambiguïsé
+
+- **Accueil : dix sections → six** (héros, situations, deux portes, catalogue,
+  centre de formation, ouvrir un compte). Retirés sans réécriture : « Le fil
+  commun », la section LEX (`OffreLex` ne vit plus que sur /lex), « Tarifs »,
+  le bloc ADéPA. Un seul bloc LEX : sa situation dans `QuatreSituations`.
+  ⚠ Six au plus, héros compris ; `DeuxRenforts` (offre complète) en ferait sept.
+- **RenforTeam = la team d'éducateurs en renfort** (éducateurs spécialisés,
+  moniteurs-éducateurs, AES ; Seine-et-Marne puis Île-de-France ; chaque
+  mission est une prestation avec ses objectifs). Plus aucun métier
+  paramédical dans la promesse (/renforteam, accueil, /dashboard/demande, bot).
+  Aucune page `/renfort/metier/<slug>` n'était paramédicale : rien à rediriger.
+- **Ateliers : « devis et feuille de mission », jamais « contrat »** sur les
+  pages publiques. « Contrat » reste pour le CDD et les textes juridiques.
+- **Quatre formations sorties du catalogue des ateliers** : liste par slug dans
+  `apps/api/src/public/fiches-retirees.ts`, appliquée par `VITRINE` (sous
+  `AND`, avec `slug: null` gardé : un `NOT IN` seul effacerait les fiches sans
+  slug) ; 308 vers adepa77.fr dans `next.config.mjs`
+  (`FORMATIONS_SORTIES_DES_ATELIERS`). `/public/highlights` renvoie
+  `formations: []`, clé conservée.
+- **WordPress rapatrié** : `scripts/rapatrier-wordpress.py` copie les images
+  utilisées dans `public/wp/` et engendre `lib/wp-rapatrie.ts`. `visuel()` et
+  `wp()` servent `/wp/<chemin>` pour ce qui est listé, rien d'autre ; les liens
+  d'articles vers `app.les-extras.fr` sont réécrits au rendu par
+  `lib/liens-wordpress.ts` (via `RichText`). Aucune écriture en base.
+- **LEX ne désigne plus que le produit payant** : pastille du logo, favicon,
+  icônes et carte de partage disent « Les Extras » ; le bot d'aide s'appelle
+  « Assistant d'aide » (web + consigne du bot côté API, routes inchangées) ;
+  la page d'achat s'affiche « Crédits LEX » (URL `/dashboard/adhesion`
+  inchangée : `success_url` Stripe et e-mails).
+- **Inscription depuis LEX** : `INSCRIPTION.ecrireAvecLex`
+  (`/register?next=/dashboard/assistant`, sans `type`), bouton principal de
+  /l/lex. `/register` n'accepte `next` que s'il commence par `/` (pas `//`), et
+  écrit la structure saisie AVANT de partir vers `next`.
+- **Article « freelance » de l'Édublog** : texte corrigé préparé hors dépôt ;
+  le slug n'est modifiable par AUCUN DTO, il se change en base. La 308
+  `/edublog/<ancien>` → `/edublog/<nouveau>` ne s'active qu'au build qui suit,
+  si le nouveau slug répond (`articleRenommeEnLigne`).
+- Mobile : barre fixe « prix + devis » sur les fiches atelier (`data-barre-mobile`,
+  le pied de page s'allonge d'autant) ; bandeau cookies en deux lignes sous
+  `md`, « Détails » déplie le reste, mécanique de consentement inchangée.

@@ -57,7 +57,7 @@ const POURQUOI = [
     icone: Blocks,
     titre: "Mutualiser des moyens",
     texte:
-      "Contrats, devis et factures édités par la plateforme. LEX, l’assistant d’écriture, offert 15 fois par mois.",
+      "Devis, feuilles de mission et factures édités par la plateforme. LEX, l’assistant d’écriture, offert 15 fois par mois.",
   },
   {
     icone: HeartHandshake,

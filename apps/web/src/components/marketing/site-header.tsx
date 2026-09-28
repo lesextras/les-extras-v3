@@ -24,9 +24,8 @@ const links = [
   // « Tarifs » et « Aide » ont quitté la barre le 5/8/2026 (demande Siham).
   // Sept entrées, c'était trop : les produits — ce qu'on est venu chercher —
   // se disputaient la place avec deux pages de réassurance. Elles n'ont pas
-  // disparu : elles ont chacune leur section sur la page d'accueil (#tarifs
-  // et #aide), et restent dans le pied de page, qui est exactement l'endroit
-  // où on va les chercher.
+  // disparu : elles restent dans le pied de page (« Frais de service »,
+  // « Centre d'aide »), qui est exactement l'endroit où on va les chercher.
 ];
 
 export interface UtilisateurEnTete {

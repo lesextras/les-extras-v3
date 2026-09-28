@@ -176,6 +176,70 @@ const HORS_OFFRE_PUBLIQUE = [
   { source: '/outils/cout-remplacement', destination: '/outils' },
 ].map((r) => ({ ...r, permanent: false }));
 
+/**
+ * LES QUATRE FORMATIONS RESTÉES AU CATALOGUE DES ATELIERS (audit du 28/09/2026).
+ *
+ * Ce sont des formations rangées parmi les ateliers : elles partent sur le
+ * site du centre de formation ADéPA, en 308, vers la fiche équivalente
+ * d'adepa77.fr quand elle existe. Adresses relevées le 28/09/2026 (curl avec un
+ * agent de navigateur, statut 200) :
+ *   • « Accueil du public difficile » et « Analyse des pratiques » : même slug ;
+ *   • « Gestion de la violence » : la fiche d'adepa77.fr porte un slug aux
+ *     accents cassés (« ge-rer »), c'est bien la même formation ;
+ *   • « Accompagnement des jeunes majeurs » : aucune fiche équivalente
+ *     (404), donc le catalogue des formations.
+ *
+ * ⚠ L'API les écarte AUSSI de toute lecture publique (catalogue, accueil,
+ * sitemap) : `apps/api/src/public/fiches-retirees.ts`. Les deux listes vont
+ * ensemble, par slug.
+ */
+const FORMATIONS_SORTIES_DES_ATELIERS = {
+  'accompagnement-des-jeunes-majeurs': 'https://adepa77.fr/formations/',
+  'accueil-du-public-difficile-et-ou-en-difficulte-sociale':
+    'https://adepa77.fr/formations/accueil-du-public-difficile-et-ou-en-difficulte-sociale/',
+  'gestion-de-la-violence-anticiper-et-gerer-les-conflits':
+    'https://adepa77.fr/formations/gestion-de-la-violence-anticiper-et-ge-rer-les-conflits/',
+  'analyse-des-pratiques-professionnelles':
+    'https://adepa77.fr/formations/analyse-des-pratiques-professionnelles/',
+};
+
+/**
+ * L'ARTICLE DE L'ÉDUBLOG QUI DISAIT ONZE FOIS « FREELANCE » (audit du 28/09/2026).
+ *
+ * Le mot est banni du site (vocabulaire sanctionné par le Conseil d'État le
+ * 11/02/2025, n° 491128), et il était jusque dans l'adresse. Le texte corrigé
+ * et la marche à suivre sont préparés à part ; le changement se fait EN BASE,
+ * pas ici.
+ *
+ * ⚠ LE SLUG NE SE MODIFIE PAR AUCUNE ROUTE DE L'API (il n'est dans aucun DTO
+ * d'écriture). Tant qu'il n'a pas changé en base, rediriger l'ancienne adresse
+ * enverrait les lecteurs sur « Actualité introuvable ». La redirection n'est
+ * donc posée QUE si le nouveau slug répond, vérifié au moment où `redirects()`
+ * s'évalue (au build) : déployer le site avant le changement ne casse rien, et
+ * le déploiement qui suit le changement l'active.
+ */
+const ARTICLE_SANS_FREELANCE = {
+  ancien: 'recrutement-educateur-freelance-bien-cadrer-un-renfort-d-equipe',
+  nouveau: 'recrutement-educateur-independant-bien-cadrer-un-renfort-d-equipe',
+};
+
+async function articleRenommeEnLigne() {
+  const base = (
+    process.env.API_BASE_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    'https://api.les-extras.fr/api'
+  ).replace(/\/$/, '');
+  try {
+    const reponse = await fetch(`${base}/articles/feed/${ARTICLE_SANS_FREELANCE.nouveau}`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    return reponse.ok;
+  } catch {
+    // Aucune redirection plutôt qu'une redirection vers une page vide.
+    return false;
+  }
+}
+
 /** @type {import('next').NextConfig} */
 /**
  * LES FICHES ATELIER : IDENTIFIANT → ADRESSE LISIBLE, EN VRAIE 308.
@@ -262,7 +326,28 @@ const nextConfig = {
   // liens déjà partagés.
   async redirects() {
     const fiches = await redirectionsFichesAtelier();
+    const articleRenomme = await articleRenommeEnLigne();
+    // Les redirections d'anciens slugs visent directement l'adresse finale :
+    // une chaîne de deux redirections perd du signal à chaque saut.
+    const slugEdublog = (slug) =>
+      articleRenomme && slug === ARTICLE_SANS_FREELANCE.ancien ? ARTICLE_SANS_FREELANCE.nouveau : slug;
     return [
+      // Avant la table des identifiants : une règle par slug, qui ne peut pas
+      // attraper autre chose que ces quatre fiches.
+      ...Object.entries(FORMATIONS_SORTIES_DES_ATELIERS).map(([slug, destination]) => ({
+        source: `/ateliers/${slug}`,
+        destination,
+        permanent: true,
+      })),
+      ...(articleRenomme
+        ? [
+            {
+              source: `/edublog/${ARTICLE_SANS_FREELANCE.ancien}`,
+              destination: `/edublog/${ARTICLE_SANS_FREELANCE.nouveau}`,
+              permanent: true,
+            },
+          ]
+        : []),
       ...fiches,
       // Le renfort de poste hors vitrine — voir le bloc « OFFRE PUBLIQUE »
       // en tête de fichier. Placé AVANT tout le reste : `/renfort/:ville` doit
@@ -331,12 +416,12 @@ const nextConfig = {
       })),
       ...Object.entries(SLUGS_ACCENTS_REPARES).map(([casse, propre]) => ({
         source: `/edublog/${casse}`,
-        destination: `/edublog/${propre}`,
+        destination: `/edublog/${slugEdublog(propre)}`,
         permanent: true,
       })),
       ...Object.entries(ARTICLES_RENOMMES).map(([ancien, neuf]) => ({
         source: `/${ancien}`,
-        destination: `/edublog/${neuf}`,
+        destination: `/edublog/${slugEdublog(neuf)}`,
         permanent: true,
       })),
       ...Object.entries(PAGES_WORDPRESS).map(([source, destination]) => ({

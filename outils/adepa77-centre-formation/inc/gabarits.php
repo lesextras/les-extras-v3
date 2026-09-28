@@ -27,8 +27,19 @@ function adepa_cf_page_concernee() {
 		return true;
 	}
 	if (is_singular()) {
+		// Seuls NOS shortcodes : [adepa_don], [adepa_adhesion] et
+		// [adepa_merci_don] viennent d'un extrait WPCode et gardent leur
+		// propre apparence (le préfixe « [adepa_ » les attrapait aussi).
 		$p = get_post();
-		return $p && strpos((string) $p->post_content, '[adepa_') !== false;
+		if (!$p) {
+			return false;
+		}
+		foreach (array('adepa_formations', 'adepa_informations_reglementaires', 'adepa_cgv_formation', 'adepa_reclamation', 'adepa_accessibilite') as $code) {
+			if (has_shortcode((string) $p->post_content, $code)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	return false;
 }
@@ -96,7 +107,7 @@ function adepa_cf_carte($f) {
 	$h  = '<article class="afc-carte" data-theme="' . esc_attr(sanitize_title($theme)) . '" data-type="' . ($gratuit ? 'gratuit' : 'qualiopi') . '">';
 	$h .= '<a class="afc-carte__lien" href="' . esc_url(get_permalink($id)) . '">';
 	if ($img) {
-		$h .= '<span class="afc-carte__visuel"><img loading="lazy" src="' . esc_url($img) . '" alt=""></span>';
+		$h .= '<span class="afc-carte__visuel"><img loading="lazy" src="' . esc_url($img) . '" alt="' . esc_attr($f->post_title) . '"></span>';
 	} else {
 		// Sans couverture : la thématique, dans la charte, plutôt qu'une initiale.
 		$h .= '<span class="afc-carte__visuel afc-carte__visuel--vide"><span>' . esc_html($theme ?: 'Formation ADéPA') . '</span></span>';
@@ -261,9 +272,6 @@ function adepa_cf_rendu_fiche($id) {
 	$themes  = wp_get_post_terms($id, ADEPA_CF_THEME);
 	$theme   = $themes && !is_wp_error($themes) ? $themes[0] : null;
 	$faq     = (array) adepa_cf_meta($id, 'faq', array());
-	$sessions = array_filter((array) adepa_cf_meta($id, 'sessions', array()), function ($s) {
-		return !empty($s['startDate']) && strtotime($s['startDate']) >= strtotime('today') && (empty($s['status']) || $s['status'] !== 'CANCELLED');
-	});
 	$enroll  = adepa_cf_meta($id, 'enrollUrl');
 	$duree   = adepa_cf_duree($id);
 	$attPrix = (int) adepa_cf_meta($id, 'attestationPrix', 0);
@@ -298,6 +306,11 @@ function adepa_cf_rendu_fiche($id) {
 					echo adepa_cf_attribut('Public visé', adepa_cf_meta($id, 'targetAudience'), 'or'); // phpcs:ignore
 					echo adepa_cf_attribut('Prérequis', adepa_cf_meta($id, 'prerequisites'), 'rouge'); // phpcs:ignore
 					echo adepa_cf_attribut('Lieu', adepa_cf_meta($id, 'city')); // phpcs:ignore
+					// Formations en intra : pas de sessions datées affichées (la méta
+					// _af_sessions est conservée, seulement plus montrée).
+					if (!$gratuit) {
+						echo adepa_cf_attribut('Dates', 'À convenir avec vous'); // phpcs:ignore
+					}
 					?>
 				</div>
 
@@ -308,20 +321,6 @@ function adepa_cf_rendu_fiche($id) {
 				echo adepa_cf_bloc('Méthodologie pédagogique', adepa_cf_meta($id, 'methodology')); // phpcs:ignore
 				echo adepa_cf_bloc('Modalités d’évaluation', adepa_cf_meta($id, 'evaluation')); // phpcs:ignore
 				?>
-
-				<?php if ($sessions) : ?>
-				<section class="afc-bloc">
-					<h2 class="afc-h3">Prochaines sessions</h2>
-					<ul class="afc-sessions">
-						<?php foreach ($sessions as $s) : ?>
-							<li>
-								<span><strong><?php echo esc_html($s['title']); ?></strong><br><?php echo esc_html(wp_date('j F Y', strtotime($s['startDate']))); ?><?php echo !empty($s['location']) ? ' · ' . esc_html($s['location']) : ''; ?></span>
-								<span><?php echo !empty($s['maxSeats']) ? esc_html($s['maxSeats']) . ' places' : ''; ?></span>
-							</li>
-						<?php endforeach; ?>
-					</ul>
-				</section>
-				<?php endif; ?>
 
 				<?php if ($faq) : ?>
 				<section class="afc-bloc">

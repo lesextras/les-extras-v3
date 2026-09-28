@@ -23,7 +23,9 @@ export default async function AssistantPage() {
           "8 trames professionnelles avec cadre déontologique, dont les courriers aux parents",
           "Votre trame maison apprise depuis un de vos écrits, export Word et PDF",
           "Vous relisez et validez : vous restez l'auteur",
-          "Inclus aussi : générateur d'activités et bot d'aide LEX",
+          // Le bot d'aide n'est pas un avantage de LEX : il est gratuit pour tous, et
+          // il ne s'appelle plus LEX (audit du 28/09/2026).
+          "Inclus aussi : le générateur d'activités",
         ]}
       />
     );

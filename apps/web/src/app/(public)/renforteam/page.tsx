@@ -6,8 +6,17 @@
 // un CDD signé avant l'ouverture. Décision de Siham : ce montage sort de
 // l'offre publique (voir `@/lib/offre`). Ce qui reste — et qui devient le
 // sujet de la page — c'est le renfort assuré par des intervenants
-// INDÉPENDANTS et SPÉCIALISÉS : ergothérapeute, éducateur spécialisé,
-// psychomotricienne, psychologue, orthophoniste.
+// INDÉPENDANTS et SPÉCIALISÉS.
+//
+// ⚠⚠ RECENTRÉE LE 28/09/2026 (audit, stratégie de Siham) : RenforTeam est
+// « la team d'éducateurs en renfort », le cœur de la place de marché.
+// Éducateurs spécialisés, moniteurs-éducateurs, AES ; en Seine-et-Marne puis
+// en Île-de-France ; chaque mission décrite comme une PRESTATION AVEC SES
+// OBJECTIFS. Ergothérapeute, psychomotricienne, orthophoniste (et tout métier
+// paramédical) sont retirés de la promesse, partout. Ne pas les remettre.
+// Aucun chiffre ni prix nouveau : 15 % reste le taux de RenforTeam
+// (`lib/commission.ts`). Jamais « freelance », jamais « vérifié(s) » comme
+// promesse de contrôle.
 //
 // Trois conséquences, et chacune se voit dans le texte :
 //
@@ -81,15 +90,15 @@ import { UnSeulFormulaire } from "../../_shared/UnSeulFormulaire";
 import { ApercuProduit } from "../../_shared/ApercuProduit";
 
 export const metadata: Metadata = metaPublique({
-  title: "RenforTeam, des intervenants spécialisés en renfort",
+  title: "RenforTeam, la team d’éducateurs en renfort",
   // ⚠ 160 CARACTÈRES MAXIMUM, et un test le vérifie
   // (`lib/__tests__/meta-descriptions.test.ts`). Au-delà, Google coupe au
   // milieu d'un mot. « Psychologue » et la liste des demandeurs ont sauté ici
   // : ils sont dans le titre H1 et dans le premier paragraphe, que le moteur
   // lit aussi.
   description: visioconsultationVisible()
-    ? "Ergothérapeute, éducateur spécialisé, psychomotricienne, orthophoniste : un renfort sur un besoin précis, en présentiel ou en visioconsultation."
-    : "Ergothérapeute, éducateur spécialisé, psychomotricienne, orthophoniste : un renfort sur un besoin précis, là où vit la personne accompagnée.",
+    ? "Éducateurs spécialisés, moniteurs-éducateurs, AES : la team d’éducateurs en renfort, sur place ou en visioconsultation, en Seine-et-Marne puis en Île-de-France."
+    : "Éducateurs spécialisés, moniteurs-éducateurs, AES : la team d’éducateurs en renfort, sur un besoin précis, en Seine-et-Marne puis en Île-de-France.",
   path: "/renforteam",
 });
 
@@ -107,17 +116,14 @@ interface MissionApercu {
 /**
  * LES MÉTIERS DE LA TEAM — nommés, jamais résumés en « professionnels ».
  *
- * Une famille ne cherche pas « un intervenant » : elle cherche une
- * psychomotricienne, parce que le CAMSP lui en a parlé et qu'il n'y en a pas
- * avant quatorze mois. Le mot exact est ce qui fait reconnaître la page.
+ * Personne ne cherche « un intervenant » : on cherche un éducateur. Le mot
+ * exact est ce qui fait reconnaître la page.
+ *
+ * ⚠ LES TROIS MÉTIERS DE LA TEAM D'ÉDUCATEURS (28/09/2026). La liste portait
+ * ergothérapeute, psychomotricienne, psychologue et orthophoniste : ils sont
+ * retirés de la promesse de RenforTeam.
  */
-const METIERS_TEAM = [
-  "Ergothérapeute",
-  "Éducateur spécialisé",
-  "Psychomotricienne",
-  "Psychologue",
-  "Orthophoniste",
-];
+const METIERS_TEAM = ["Éducateur spécialisé", "Moniteur-éducateur", "AES"];
 
 /**
  * Qui peut demander. La liste est ouverte, et c'est le changement de 2026.
@@ -177,13 +183,13 @@ const PORTES_FERMEES = [
   {
     titre: "Le libéral, en direct",
     texte:
-      "Vous appelez les cabinets du département les uns après les autres, ceux dont on vous a donné le nom.",
+      "Vous appelez les éducateurs indépendants du département les uns après les autres, ceux dont on vous a donné le nom.",
     mur: "Répondeur, ou liste fermée.",
   },
   {
     titre: "L’établissement, en interne",
     texte:
-      "Il faudrait trois heures par semaine d’ergothérapie. Ni la ligne budgétaire, ni le poste, ni le candidat.",
+      "Il faudrait trois heures par semaine d’accompagnement éducatif. Ni la ligne budgétaire, ni le poste, ni le candidat.",
     mur: "Personne à embaucher pour trois heures.",
   },
 ];
@@ -194,21 +200,23 @@ const DEROULE = [
     numero: "1",
     titre: "Vous décrivez le besoin",
     texte:
-      "La situation, ce que vous cherchez, où et quand. Quelques minutes, et sans compte pour commencer.",
+      "La situation, les objectifs de l’intervention, où et quand. Quelques minutes, et sans compte pour commencer.",
   },
   {
     numero: "2",
-    titre: "Un professionnel vérifié vous répond",
+    titre: "Un éducateur de la team vous répond",
     texte:
-      "Le métier que la situation appelle, parmi les indépendants de l’équipe. Diplôme, pièces et assurance contrôlés par l’association avant qu’il n’intervienne.",
+      "Éducateur spécialisé, moniteur-éducateur ou AES, selon ce que la situation appelle, parmi les indépendants de la team. Diplôme, pièces et assurance contrôlés par l’association avant qu’il n’intervienne.",
   },
   {
     numero: "3",
     titre: "L’intervention se met en place",
+    // Chaque mission est une PRESTATION AVEC SES OBJECTIFS (28/09/2026) : le
+    // devis les écrit avant la première intervention.
     texte:
       visioconsultationVisible()
-        ? "Chez vous, dans l’établissement, à l’école, ou en visioconsultation. Le devis est écrit avant, pas après."
-        : "Chez vous, dans l’établissement, à l’école. Le devis est écrit avant, pas après.",
+        ? "Une prestation aux objectifs écrits, chez vous, dans l’établissement, à l’école, ou en visioconsultation. Le devis est écrit avant, pas après."
+        : "Une prestation aux objectifs écrits, chez vous, dans l’établissement, à l’école. Le devis est écrit avant, pas après.",
   },
 ];
 
@@ -255,12 +263,10 @@ const INTERVENANT_POINTS = [
  * la base de son propre travail. Ce n'est pas un service de rédaction : ni la
  * plateforme ni l'association n'écrit ni ne signe à sa place.
  */
-const ECRITS = [
-  "Dossier MDPH",
-  "Convention école – éducateur",
-  "Bilan orthophonique",
-  "Bilan psychologique",
-];
+// « Bilan orthophonique » et « Bilan psychologique » sont retirés le
+// 28/09/2026 : ni l'un ni l'autre n'est un écrit d'éducateur, et la team de
+// RenforTeam n'en compte plus d'autres.
+const ECRITS = ["Dossier MDPH", "Convention école – éducateur"];
 
 /**
  * CE QUE LES EXTRAS NE FAIT PAS.
@@ -279,7 +285,7 @@ function NoteAdn() {
       <Scale className="size-5 shrink-0 text-primary" aria-hidden />
       <p className="min-w-[240px] flex-1 text-sm leading-relaxed text-muted-foreground" lang="fr">
         <strong className="font-semibold text-foreground">
-          Ce n’est pas du soin, c’est de la rééducation et de l’éducation spécialisée.
+          Ce n’est pas du soin, c’est de l’éducation spécialisée.
         </strong>{" "}
         Les intervenants ne posent pas de diagnostic et ne remplacent ni votre médecin, ni le
         CMPP, ni l’équipe qui suit déjà la personne. Ils interviennent en complément, sur un
@@ -345,7 +351,7 @@ export default async function SosRenfortPage() {
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl">
             {montreCdd
               ? "Un arrêt maladie à 21 h. Le poste est couvert avant l’ouverture."
-              : "Quatorze mois d’attente pour une psychomotricienne. Ou une demande, ce soir."}
+              : "Il faudrait un éducateur de plus, quelques heures par semaine. Une demande, ce soir."}
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
             {montreCdd ? (
@@ -355,9 +361,10 @@ export default async function SosRenfortPage() {
               </>
             ) : (
               <>
-                Ergothérapeute, éducateur spécialisé, psychomotricienne, psychologue,
-                orthophoniste : des indépendants qui interviennent en renfort, sur un besoin
-                nommé.{visioconsultationVisible() ? " En présentiel ou en visioconsultation." : ""} Que
+                Éducateurs spécialisés, moniteurs-éducateurs, AES&nbsp;: la team d’éducateurs en
+                renfort. Des indépendants qui interviennent sur un besoin nommé, en Seine-et-Marne
+                puis en Île-de-France, et chaque mission est une prestation avec ses objectifs
+                écrits.{visioconsultationVisible() ? " En présentiel ou en visioconsultation." : ""} Que
                 vous soyez une famille, une école, une mairie ou un établissement.
               </>
             )}
@@ -494,8 +501,8 @@ export default async function SosRenfortPage() {
               RenforTeam est la quatrième porte.
             </p>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground" lang="fr">
-              Un professionnel indépendant, sur un besoin nommé, sans attendre qu’une place se
-              libère quelque part. Il ne remplace pas le CAMSP ni l’équipe qui suit déjà la
+              Un éducateur indépendant, sur un besoin nommé et des objectifs écrits, sans attendre
+              qu’une place se libère quelque part. Il ne remplace pas le CAMSP ni l’équipe qui suit déjà la
               personne&nbsp;: il intervient à côté, sur ce qui est possible maintenant.
             </p>
           </div>
@@ -696,13 +703,14 @@ export default async function SosRenfortPage() {
             </span>
             <div className="space-y-3">
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                Une équipe spécialisée, vérifiée une par une
+                {/* ⚠ Le titre disait « vérifiée une par une » : plus aucune
+                    promesse écrite avec « vérifié(s) » (audit du 28/09/2026). */}
+                Une team d’éducateurs, pas un annuaire ouvert
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
-                RenforTeam n’est pas un annuaire ouvert. Ce sont des professionnels de
-                l’éducation spécialisée et de la rééducation, et l’association contrôle chacun
-                d’eux avant qu’il n’intervienne&nbsp;: diplôme, pièce d’identité, bulletin n° 3 du
-                casier judiciaire, assurance, et le numéro ADELI quand la profession en a un.
+                Ce sont des éducateurs spécialisés, des moniteurs-éducateurs et des AES, et
+                l’association contrôle le dossier de chacun avant qu’il n’intervienne&nbsp;:
+                diplôme, pièce d’identité, bulletin n° 3 du casier judiciaire, assurance.
               </p>
               <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
                 C’est ce travail-là que paient les <strong className="font-semibold text-foreground">15&nbsp;%
@@ -810,9 +818,8 @@ export default async function SosRenfortPage() {
                 Vous êtes de l’autre côté&nbsp;?
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground" lang="fr">
-                Ergothérapeute, éducateur spécialisé, psychomotricienne, psychologue,
-                orthophoniste&nbsp;: ce sont ces demandes-là qui arrivent, et elles attendent
-                quelqu’un.
+                Éducateur spécialisé, moniteur-éducateur, AES&nbsp;: ce sont ces demandes-là qui
+                arrivent, et elles attendent quelqu’un.
               </p>
               <Button asChild variant="outline">
                 <Link href="/register?next=/dashboard/opportunites">
@@ -941,7 +948,7 @@ export default async function SosRenfortPage() {
             sujet="RenforTeam · demande sans compte"
             bouton="Envoyer ma demande"
             structure
-            offre="La situation, le métier recherché, où et quand. N’indiquez ni le nom d’une personne accompagnée, ni une information de santé."
+            offre="La situation, les objectifs de l’intervention, où et quand. N’indiquez ni le nom d’une personne accompagnée, ni une information de santé."
           />
         </section>
       )}

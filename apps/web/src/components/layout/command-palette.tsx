@@ -87,7 +87,7 @@ const DESTINATIONS: Dest[] = [
   { label: "Mes publications", href: "/dashboard/actualites", group: "Mon espace", keywords: "édublog article actualité écrire publier visibilité" },
   { label: "Mes données personnelles", href: "/dashboard/donnees-personnelles", group: "Mon espace", keywords: "rgpd export suppression effacement vie privée confidentialité" },
   { label: "Boîte à idées", href: "/dashboard/idees", group: "Mon espace", keywords: "idée suggestion amélioration vote proposition" },
-  { label: "LEX · Crédits & abonnement", href: "/dashboard/adhesion", group: "Structure", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },
+  { label: "Crédits LEX", href: "/dashboard/adhesion", group: "Structure", keywords: "stripe paiement crédits recharge lex abonnement utilisation" },
   { label: "Mon compte", href: "/dashboard/account", group: "Mon espace", keywords: "profil paramètres facturation siret" },
   { label: "Admin, Vue d’ensemble", href: "/admin", group: "Admin", keywords: "back-office" },
   { label: "Admin, Utilisateurs", href: "/admin/utilisateurs", group: "Admin", keywords: "users comptes titulaire" },

@@ -85,7 +85,7 @@ export default function NotreHistoirePage() {
               </span>
               <h3 className="pt-2 font-semibold text-foreground">Ateliers</h3>
               <p className="text-sm text-muted-foreground">
-                Un catalogue d’ateliers éducatifs à réserver. Devis, contrat et facture générés.
+                Un catalogue d’ateliers éducatifs à réserver. Devis, feuille de mission et facture générés.
               </p>
             </CardContent>
           </Card>

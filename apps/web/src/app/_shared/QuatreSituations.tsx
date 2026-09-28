@@ -121,12 +121,20 @@ type Situation = {
 const SITUATIONS: Situation[] = [
   {
     service: 'RenforTeam',
-    probleme: 'La notification est arrivée. Le rendez-vous est dans quatorze mois.',
+    /*
+      ⚠ LA TEAM D'ÉDUCATEURS EN RENFORT (audit du 28/09/2026, stratégie de
+      Siham). Cette section racontait l'attente d'une orthophoniste ou d'une
+      psychomotricienne : RenforTeam ne porte plus aucun métier paramédical.
+      Elle parle désormais d'éducateurs (éducateurs spécialisés,
+      moniteurs-éducateurs, AES), en Seine-et-Marne puis en Île-de-France, et
+      chaque mission y est une prestation aux objectifs écrits.
+    */
+    probleme: 'Il faudrait un éducateur de plus, quelques heures par semaine. Personne ne viendra pour si peu.',
     situation: [
-      'La MDPH a notifié, le SESSAD a une liste d’attente, l’orthophoniste du secteur ne prend plus personne. Côté structure c’est la même impasse, et l’enfant grandit pendant ce temps.',
+      'Un jeune qui décroche, un groupe qui déborde, une famille à épauler. Recruter pour quelques heures, personne ne sait le faire, et la situation n’attend pas.',
     ],
     reponse: [
-      'Vous décrivez le besoin en cinq minutes, le soir même',
+      'Vous décrivez le besoin et ses objectifs en cinq minutes, le soir même',
       'Le réseau est prévenu, vous choisissez qui vient',
       'Devis écrit avant l’intervention, jamais après',
     ],
@@ -143,8 +151,8 @@ const SITUATIONS: Situation[] = [
       trois, c'est partout en même temps, pas ici seulement.
     */
     accent: VISIO
-      ? 'Éducateurs spécialisés, ergothérapeutes, psychomotriciennes, orthophonistes, psychologues. Ils interviennent chez vous, en présentiel ou en visioconférence quand personne n’est disponible près de chez vous.'
-      : 'Éducateurs spécialisés, ergothérapeutes, psychomotriciennes, orthophonistes, psychologues. Ils interviennent chez vous, dans votre établissement ou au domicile.',
+      ? 'Éducateurs spécialisés, moniteurs-éducateurs, AES. La team d’éducateurs en renfort intervient en Seine-et-Marne puis en Île-de-France, en présentiel ou en visioconférence quand personne n’est disponible près de chez vous.'
+      : 'Éducateurs spécialisés, moniteurs-éducateurs, AES. La team d’éducateurs en renfort intervient dans votre établissement ou au domicile, en Seine-et-Marne puis en Île-de-France.',
     chiffre: { valeur: '48 h', quoi: 'pour recevoir un devis' },
     lien: { href: '/renforteam', libelle: 'Comment ça se passe' },
     image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),

@@ -16,6 +16,7 @@ import { DEPARTEMENTS, trouverDepartement } from '../common/territoires';
 import { QueryPublicCatalogDto } from './dto/query-public-catalog.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { regrouperPublics, variantesDe } from '../common/publics';
+import { HORS_FICHES_RETIREES } from './fiches-retirees';
 
 /**
  * Vitrine : une fiche publiée qui n'appartient PAS à un salarié.
@@ -38,6 +39,11 @@ const VITRINE = {
   // salarié n'existe plus depuis le 24/09/2026, mais ouvrir leurs fiches
   // publierait d'un coup ce que personne n'a choisi de publier.
   account: { profilSalarie: false, archivedAt: null },
+  // Les quatre fiches de formation restées au catalogue des ateliers
+  // (28/09/2026) : la liste et sa raison sont dans `fiches-retirees.ts`.
+  // ⚠ Posé sous `AND`, jamais en `OR` à plat : `catalog()` écrit son propre
+  // `where.OR` pour la recherche, qui écraserait celui-ci.
+  AND: [HORS_FICHES_RETIREES],
 } satisfies Prisma.ServiceWhereInput;
 
 /**
@@ -425,25 +431,18 @@ export class PublicService {
       ...(notes.get(a.id) ?? { rating: null, reviewsCount: 0 }),
     }));
 
-    // ⚠ ON EN RENVOIE PLUS QUE DIX, ET C'EST VOULU. L'accueil partage ces
-    // formations en DEUX rayons, les parcours gratuits de la maison d'un côté
-    // et les formations Qualiopi de l'autre. Dix au total, c'était donc au
-    // mieux dix cartes à se partager entre deux onglets, et souvent trois d'un
-    // côté et sept de l'autre. On en renvoie trente : chaque rayon a de quoi
-    // remplir ses dix, et la page coupe elle-même ce qu'elle affiche.
-    const brutes = await this.prisma.formation.findMany({
-      where: { status: 'PUBLISHED' },
-      orderBy: [{ createdAt: 'desc' }],
-      take: 60,
-      select: FORMATION_CARD_SELECT,
-    });
-    const satisfactions = await this.prisma.inscription.groupBy({
-      by: ['sessionId'],
-      where: { satisfaction: { not: null } },
-      _avg: { satisfaction: true },
-    });
-    void satisfactions; // agrégation par session : la note est portée par la fiche détail.
-    const formations = brutes.map(carteFormation).slice(0, 30);
+    // ⚠ PLUS AUCUNE FORMATION ICI (28/09/2026, décision de Siham).
+    //
+    // Cette réponse portait aussi une liste de trente formations, que
+    // l'accueil partageait en deux rayons. Les formations ont quitté Les
+    // Extras pour adepa77.fr, le site du centre de formation ADéPA, et
+    // l'accueil ne lit plus cette liste depuis. La renvoyer quand même
+    // continuait d'exposer un catalogue que le site ne vend plus.
+    //
+    // ⚠ LA CLÉ `formations` RESTE, VIDE : un client déployé avant ce changement
+    // la lit peut-être encore, et un tableau vide ne casse personne là où une
+    // clé absente ferait tomber un `.map()`.
+    const formations: ReturnType<typeof carteFormation>[] = [];
 
     return { ateliers: ateliersNotes, formations };
   }

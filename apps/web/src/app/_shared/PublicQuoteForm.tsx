@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const CHAMPS: {
   name: string;
@@ -41,10 +42,16 @@ export function PublicQuoteForm({
   formationSlug,
   titre,
   principal = false,
+  classeBouton,
 }: {
   serviceId?: string;
   formationSlug?: string;
   titre: string;
+  /**
+   * Classes ajoutées au bouton déclencheur. Sert à la barre fixe des fiches
+   * atelier sur téléphone, où le bouton doit tenir à côté du prix.
+   */
+  classeBouton?: string;
   /**
    * Rend le déclencheur en bouton PLEIN plutôt qu'en bouton bordé.
    *
@@ -106,7 +113,7 @@ export function PublicQuoteForm({
   return (
     <Dialog open={ouvert} onOpenChange={setOuvert}>
       <DialogTrigger asChild>
-        <Button variant={principal ? "primary" : "outline"} className="w-full">
+        <Button variant={principal ? "primary" : "outline"} className={cn("w-full", classeBouton)}>
           Demander un devis
         </Button>
       </DialogTrigger>

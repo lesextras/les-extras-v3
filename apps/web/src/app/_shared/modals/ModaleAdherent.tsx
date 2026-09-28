@@ -77,7 +77,7 @@ export function ModaleAdherent({
 
         <p className="text-xs text-muted-foreground">
           Tout le reste de la plateforme : renforts, ateliers, contractualisation, planning,
-          gestion d’équipe et bot d’aide : reste gratuit et le restera.
+          gestion d’équipe et Assistant d’aide : reste gratuit et le restera.
         </p>
       </DialogContent>
     </Dialog>

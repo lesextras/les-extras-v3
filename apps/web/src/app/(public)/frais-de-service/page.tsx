@@ -21,7 +21,9 @@ const GRATUIT = [
   renfortSalarieVisible()
     ? "RenforTeam : publication, candidatures, jusqu’au CDD généré"
     : "RenforTeam : demande, mise en relation, devis et feuille de mission",
-  "Ateliers : catalogue, réservation, devis, contrat et facture",
+  // ⚠ Un atelier ne donne pas lieu à un contrat : la plateforme édite un
+  // devis et une feuille de mission, puis la facture (audit du 28/09/2026).
+  "Ateliers : catalogue, réservation, devis, feuille de mission et facture",
   "Planning partagé, pointage et validation des heures",
   "Messagerie interne rattachée aux missions",
   "Coffre-fort de conformité et alertes d’échéance",
@@ -39,7 +41,7 @@ const PAYANT = [
     titre: "Vous utilisez LEX, l’assistant IA",
     prix: "À crédits, un crédit par génération",
     detail:
-      "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. 15 générations offertes chaque mois, sans carte bancaire et sans date de fin ; au-delà, packs ou abonnement à dotation mensuelle. Les tarifs sont affichés dans votre espace ; le bot d’aide reste gratuit.",
+      "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. 15 générations offertes chaque mois, sans carte bancaire et sans date de fin ; au-delà, packs ou abonnement à dotation mensuelle. Les tarifs sont affichés dans votre espace ; l’Assistant d’aide reste gratuit.",
   },
 ];
 
@@ -194,7 +196,7 @@ export default function FraisPage() {
              facture d’atelier se règle par virement, d’établissement à intervenant.
         */}
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Chaque prestation donne lieu à un contrat à double signature, une déclaration
+          Chaque prestation donne lieu à un devis, une feuille de mission, une déclaration
           d’heures validée et une facture PDF. La facture porte le tarif de l’intervenant,
           sans ligne de frais : il n’y en a pas. Elle est téléchargeable à tout moment et
           se règle par virement, directement à l’intervenant qui l’a émise.

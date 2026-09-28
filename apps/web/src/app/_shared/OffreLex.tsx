@@ -357,8 +357,8 @@ export function OffreLex() {
           produit payant ne proposait rien à faire. Le lecteur qui venait d'être
           convaincu devait remonter chercher un bouton ailleurs.
 
-          ⚠ LE LIBELLÉ EST « CRÉER UN COMPTE », EXACTEMENT COMME L'AUTRE BOUTON
-          DE LA PAGE QUI MÈNE À `/register`. Un libellé par destination : c'est
+          ⚠ LE LIBELLÉ EST CELUI DE L'AUTRE BOUTON DE LA PAGE QUI MÈNE AU MÊME
+          ÉCRAN (`INSCRIPTION.ecrireAvecLex` depuis le 28/09/2026). Un libellé par destination : c'est
           la règle posée le 12/08 puis re-cassée le 3/09 par un « Découvrir
           LEX » qui promettait une découverte et livrait un formulaire
           d'inscription. Tout libellé de ce bloc qui s'écarterait de celui-ci
@@ -387,8 +387,11 @@ export function OffreLex() {
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button asChild variant="primary" size="lg">
-            <Link href="/register">
-              Créer un compte
+            {/* Depuis le 28/09/2026 ce bloc ne vit plus que sur /lex : il
+                mène donc à l'inscription qui ramène dans l'assistant
+                (`INSCRIPTION.ecrireAvecLex`), comme le bouton du haut de page. */}
+            <Link href="/register?next=/dashboard/assistant">
+              Créer un compte pour écrire avec LEX
               <ArrowRight />
             </Link>
           </Button>

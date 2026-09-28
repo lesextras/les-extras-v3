@@ -24,7 +24,7 @@ import { PageHeader, SectionTitle, ErrorState } from "../../../_shared/ui";
 import { CheckoutButton } from "../../../_shared/BillingActions";
 import { formatDate } from "../../../_shared/format";
 
-export const metadata: Metadata = { title: "LEX, Crédits & abonnement" };
+export const metadata: Metadata = { title: "Crédits LEX" };
 
 interface Plan {
   id: string;
@@ -137,7 +137,7 @@ export default async function LexCreditsPage({
   if (resOverview.error || !resOverview.data) {
     return (
       <div className="space-y-6">
-        <PageHeader title="LEX, Crédits & abonnement" subtitle="Votre utilisation de l'assistant IA." />
+        <PageHeader title="Crédits LEX" subtitle="Votre utilisation de l'assistant IA." />
         <ErrorState description={resOverview.error ?? "Données indisponibles."} />
       </div>
     );
@@ -162,7 +162,7 @@ export default async function LexCreditsPage({
   return (
     <div className="space-y-8">
       <PageHeader
-        title="LEX, Crédits & abonnement"
+        title="Crédits LEX"
         subtitle="LEX est le seul outil payant de votre espace : un crédit par génération. Toute la mise en relation, renforts, ateliers, contractualisation, reste gratuite."
       />
 
@@ -479,7 +479,7 @@ export default async function LexCreditsPage({
             </ul>
             <p className="mt-3 text-xs text-muted-foreground">
               Un crédit par génération. Si une génération échoue, le crédit est automatiquement
-              remboursé. Le bot d&apos;aide, lui, est gratuit.
+              remboursé. L&apos;Assistant d&apos;aide, lui, est gratuit.
             </p>
           </CardContent>
         </Card>
@@ -491,7 +491,7 @@ export default async function LexCreditsPage({
                 "Publier des renforts et y candidater, jusqu'au contrat signé",
                 "Proposer et réserver des ateliers, de la demande à la facture",
                 "Votre agenda, vos disponibilités et le suivi des pièces de conformité",
-                "La messagerie, le catalogue, les devis et le bot d'aide",
+                "La messagerie, le catalogue, les devis et l'Assistant d'aide",
               ].map((i) => (
                 <li key={i} className="flex gap-2 text-sm text-muted-foreground">
                   <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />

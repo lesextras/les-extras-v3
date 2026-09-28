@@ -162,7 +162,7 @@ const AIDE: Record<string, PageHelpEntry> = {
       'Vos factures, paiements et documents comptables. Chaque facture est téléchargeable en PDF ; le paiement en ligne est disponible sur les factures dues.',
   },
   '/dashboard/adhesion': {
-    titre: 'LEX, Crédits & abonnement',
+    titre: 'Crédits LEX',
     texte:
       'LEX, l’assistant IA, fonctionne à crédits : un crédit par génération. Cet écran montre votre solde, votre consommation et vos recharges. Toute la mise en relation, renforts, ateliers, contractualisation, reste gratuite.',
     etapes: [

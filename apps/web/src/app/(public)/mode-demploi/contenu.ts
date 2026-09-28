@@ -128,14 +128,14 @@ export const GUIDES: Guide[] = [
         titre: "Publiez vos propres ateliers",
         texte: [
           "Créez une fiche : objectifs, méthode, public, durée, tarif. Relue par l'équipe, elle rejoint le catalogue public : c'est votre vitrine, indexée par Google, avec vos avis clients.",
-          "Quand un établissement demande un devis, vous le chiffrez ; il l'accepte en ligne, et la réservation se crée avec le contrat.",
+          "Quand un établissement demande un devis, vous le chiffrez ; il l'accepte en ligne, et la réservation se crée avec sa feuille de mission.",
         ],
         lien: { href: "/intervenant-independant", label: "Pourquoi publier ici" },
       },
       {
         titre: "Facturez, et gardez tout",
         texte: [
-          "Contrat, déclaration d'heures, facture PDF : tout est généré depuis la mission, à votre nom et sous votre SIRET. Vous facturez l'établissement en direct.",
+          "Devis, feuille de mission, déclaration d'heures, facture PDF : tout est généré depuis la mission, à votre nom et sous votre SIRET. Vous facturez l'établissement en direct.",
           "Vous touchez 100 % de votre tarif dans les deux cas. Sur vos ateliers, rien n'est ajouté. Sur un renfort RenforTeam, 15 % de frais de gestion s'ajoutent à votre tarif et sont payés par le demandeur : ils rémunèrent la vérification de votre dossier par l'association, qui encaisse et vous reverse.",
         ],
       },

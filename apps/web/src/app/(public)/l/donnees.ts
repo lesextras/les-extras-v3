@@ -21,6 +21,8 @@
 // `type = "Landing · <produit>"` : elle arrive dans /admin/contacts, l'équipe
 // est prévenue par courriel, et la source de la visite est conservée.
 
+import { INSCRIPTION } from '@/lib/inscription-liens';
+
 export interface Landing {
   slug: string;
   /** Balise <title>. */
@@ -43,6 +45,13 @@ export interface Landing {
   enSavoirPlus: { href: string; label: string };
   /** Sujet posé sur la demande de contact. */
   sujet: string;
+  /**
+   * Quand le produit s'essaie en créant un compte, le bouton d'inscription
+   * passe AVANT le formulaire de contact (audit du 28/09/2026 : /l/lex
+   * finissait sur un formulaire, sans aucun moyen de s'inscrire). Toujours une
+   * destination de `INSCRIPTION`, jamais un libellé écrit ici.
+   */
+  inscription?: { href: string; libelle: string };
 }
 
 export const LANDINGS: Landing[] = [
@@ -135,6 +144,8 @@ export const LANDINGS: Landing[] = [
     structure: false,
     enSavoirPlus: { href: '/confiance-lex', label: 'Comment LEX protège les noms' },
     sujet: 'Landing · LEX',
+    // Créer un compte, puis revenir dans l'assistant : le bouton principal.
+    inscription: INSCRIPTION.ecrireAvecLex,
   },
   {
     slug: 'intervenants',
@@ -142,7 +153,7 @@ export const LANDINGS: Landing[] = [
     public: 'Intervenants, formateurs, animateurs du médico-social',
     promesse: 'Vos ateliers devant les établissements qui les cherchent. Vous gardez 100 % de votre tarif.',
     sous:
-      'Une fiche, un catalogue lu par des directions d’IME, de MECS et d’ESAT, des demandes de devis qui arrivent dans votre boîte. Contrats et factures édités par la plateforme. Aucune commission sur vos ateliers.',
+      'Une fiche, un catalogue lu par des directions d’IME, de MECS et d’ESAT, des demandes de devis qui arrivent dans votre boîte. Devis, feuilles de mission et factures édités par la plateforme. Aucune commission sur vos ateliers.',
     preuves: [
       {
         titre: 'Zéro commission sur vos ateliers, zéro abonnement',
@@ -152,7 +163,7 @@ export const LANDINGS: Landing[] = [
       {
         titre: 'Les papiers sont faits',
         texte:
-          'Devis, contrat, signature électronique, facture numérotée : vous animez, la plateforme édite. Et 15 générations LEX par mois pour vos écrits.',
+          'Devis, feuille de mission, signature électronique, facture numérotée : vous animez, la plateforme édite. Et 15 générations LEX par mois pour vos écrits.',
       },
       {
         titre: 'Des missions de renfort, en plus',

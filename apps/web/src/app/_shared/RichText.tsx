@@ -15,6 +15,9 @@ import Image from "next/image";
 // `visuel()` réécrit les hôtes hérités, sinon un article de 2023 affiche une
 // image cassée après chaque déménagement de la médiathèque.
 import { visuel } from "@/lib/media";
+// Les liens vers l'ancien WordPress (`app.les-extras.fr/listing/…`) sont
+// réécrits vers leur équivalent sur le site, à la lecture (28/09/2026).
+import { lienSite } from "@/lib/liens-wordpress";
 import type { ReactNode } from "react";
 
 // Entités HTML rencontrées dans les exports WordPress. Les lettres accentuées
@@ -71,6 +74,25 @@ function lienSur(href: string | undefined): string | null {
   return /^(https?:\/\/|mailto:|\/)/i.test(propre) ? propre : null;
 }
 
+/**
+ * Un lien d'article. Une adresse du site (réécrite depuis l'ancien WordPress,
+ * ou déjà relative) s'ouvre sur place et sans `nofollow` : c'est du maillage
+ * interne. Une adresse extérieure garde le nouvel onglet et le `nofollow`.
+ */
+function Lien({ href, children }: { href: string; children: ReactNode }) {
+  const cible = lienSite(href);
+  const interne = cible.startsWith("/");
+  return (
+    <a
+      href={cible}
+      {...(interne ? {} : { target: "_blank", rel: "noopener noreferrer nofollow" })}
+      className="text-primary underline underline-offset-2"
+    >
+      {children}
+    </a>
+  );
+}
+
 /** Gras, italique et liens à l'intérieur d'une ligne. */
 function inline(texte: string, cle: string): ReactNode[] {
   const sortie: ReactNode[] = [];
@@ -89,15 +111,9 @@ function inline(texte: string, cle: string): ReactNode[] {
       const libelle = t.slice(1, t.indexOf("]"));
       const href = m[2];
       sortie.push(
-        <a
-          key={`${cle}-a${i}`}
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer nofollow"
-          className="text-primary underline underline-offset-2"
-        >
+        <Lien key={`${cle}-a${i}`} href={href}>
           {libelle}
-        </a>,
+        </Lien>,
       );
     }
     dernier = m.index + t.length;
@@ -134,15 +150,9 @@ function enligneHtml(html: string, cle: string): ReactNode[] {
       const libelle = texteNu(m[4]) || href || "";
       sortie.push(
         href ? (
-          <a
-            key={`${cle}-a${i}`}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="text-primary underline underline-offset-2"
-          >
+          <Lien key={`${cle}-a${i}`} href={href}>
             {libelle}
-          </a>
+          </Lien>
         ) : (
           // Schéma refusé : on garde le texte, on jette l'adresse.
           <span key={`${cle}-a${i}`}>{libelle}</span>

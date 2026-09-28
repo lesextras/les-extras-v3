@@ -208,7 +208,7 @@ export function Header({ user, accounts, activeAccount, isMember, onMenuClick }:
           compte admin, ces trois entrées poussaient le travail
           d'administration sous la ligne de flottaison.
 
-          Les trois outils sont ici ; « LEX · Crédits » reste dans le menu de
+          Les trois outils sont ici ; « Crédits LEX » reste dans le menu de
           gauche, à côté des autres réglages du compte. */}
         <DropdownMenu align="start">
           <DropdownMenuTrigger className="hidden items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent md:flex">

@@ -25,7 +25,34 @@
  *    n'est pas juste non optimisée, elle ne s'affiche pas du tout.
  * 3. **Aucune URL de médiathèque en dur ailleurs.** Elles passent toutes par
  *    `wp()` ou par `visuel()`.
+ *
+ * ⚠ DEPUIS LE 28/09/2026, LES IMAGES UTILISÉES SONT RAPATRIÉES SUR LE SITE
+ * (`public/wp/<chemin sous wp-content/uploads>`, par `scripts/rapatrier-wordpress.py`).
+ * `wp()` et `visuel()` renvoient alors `/wp/<chemin>` : le WordPress peut
+ * fermer sans qu'une image du site ne casse. La réécriture se fait ICI, à la
+ * lecture ; la base n'est pas touchée. Seul ce qui figure dans
+ * `wp-rapatrie.ts` est réécrit : une image absente de la liste garde son
+ * adresse d'origine, plutôt que de pointer vers un fichier qui n'existe pas.
  */
+import { WP_RAPATRIES } from './wp-rapatrie';
+
+const RAPATRIES = new Set(WP_RAPATRIES);
+const UPLOADS = '/wp-content/uploads/';
+
+/**
+ * `/wp/<chemin>` si l'image a été rapatriée, sinon `null`. Reçoit le chemin
+ * d'URL (`/wp-content/uploads/2025/02/handisport.jpeg`).
+ */
+export function cheminRapatrie(pathname: string): string | null {
+  if (!pathname.startsWith(UPLOADS)) return null;
+  let relatif = pathname.slice(UPLOADS.length);
+  try {
+    relatif = decodeURIComponent(relatif);
+  } catch {
+    /* un % isolé : on compare le chemin tel quel */
+  }
+  return RAPATRIES.has(relatif) ? `/wp/${relatif}` : null;
+}
 
 /** Hôtes qui ont servi la médiathèque, et ne la servent plus. */
 const HOTES_HERITES = new Set([
@@ -49,7 +76,8 @@ export const MEDIATHEQUE = 'ialexia.fr';
  * code : sans cela, ces URL-là survivent au déménagement et cassent seules.
  */
 export function wp(chemin: string): string {
-  return `https://${MEDIATHEQUE}${chemin.startsWith('/') ? chemin : `/${chemin}`}`;
+  const absolu = chemin.startsWith('/') ? chemin : `/${chemin}`;
+  return cheminRapatrie(absolu) ?? `https://${MEDIATHEQUE}${absolu}`;
 }
 
 /**
@@ -76,7 +104,8 @@ export function visuel(src?: string | null): string | null {
   if (!valeur) return null;
 
   if (!/^https?:\/\//i.test(valeur)) {
-    return VISUELS_ECARTES.has(valeur) ? null : valeur;
+    if (VISUELS_ECARTES.has(valeur)) return null;
+    return cheminRapatrie(valeur) ?? valeur;
   }
 
   let url: URL;
@@ -87,6 +116,13 @@ export function visuel(src?: string | null): string | null {
   }
 
   if (VISUELS_ECARTES.has(url.pathname)) return null;
+
+  const hoteWordpress = HOTES_HERITES.has(url.hostname) || url.hostname === MEDIATHEQUE;
+  if (hoteWordpress) {
+    // L'image a été copiée sur le site : on la sert d'ici.
+    const local = cheminRapatrie(url.pathname);
+    if (local) return local;
+  }
 
   if (HOTES_HERITES.has(url.hostname) && url.pathname.startsWith('/wp-content/')) {
     url.hostname = MEDIATHEQUE;

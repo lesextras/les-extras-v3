@@ -156,8 +156,21 @@ export default function RegisterPage() {
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function terminer() {
+  /**
+   * LA DESTINATION DE RETOUR (`?next=`), SEULEMENT SI C'EST UN CHEMIN DU SITE.
+   *
+   * Les pages qui envoient ici (LEX, RenforTeam, invitations) passent un
+   * chemin interne. Une adresse absolue (`https://…`) ou relative au protocole
+   * (`//…`) ferait de l'inscription une porte de sortie vers n'importe quel
+   * site : elle est ignorée, et le parcours normal reprend.
+   */
+  function suiteDemandee(): string | null {
     const suite = params.get('next');
+    return suite && suite.startsWith('/') && !suite.startsWith('//') ? suite : null;
+  }
+
+  function terminer() {
+    const suite = suiteDemandee();
     router.push(suite || '/welcome?bienvenue=1');
     router.refresh();
   }
@@ -209,9 +222,17 @@ export default function RegisterPage() {
         variant: 'success',
       });
 
-      // Une invitation en attente passe avant le reste du parcours.
-      const suite = params.get('next');
+      // Une invitation en attente, ou la page d'où l'on vient (LEX, par
+      // exemple), passe avant le reste du parcours.
+      //
+      // ⚠ LA STRUCTURE S'ÉCRIT AVANT DE PARTIR (audit du 28/09/2026). Le
+      // retour vers `next` sautait `enregistrerStructure()` : « Qui vous
+      // emploie », saisi à l'écran précédent, était perdu en silence pour
+      // toute inscription partie d'un lien avec `next`. L'écriture est
+      // tolérante à l'échec, elle ne retarde pas le départ.
+      const suite = suiteDemandee();
       if (suite) {
+        await enregistrerStructure();
         router.push(suite);
         router.refresh();
         return;

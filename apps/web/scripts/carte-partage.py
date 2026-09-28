@@ -75,21 +75,27 @@ def construire():
     )
 
     # ── Bloc de marque ────────────────────────────────────────────────────
-    # Badge « LEX » arrondi, avec la pastille orange en haut à droite.
+    # Badge arrondi, avec la pastille orange en haut à droite.
+    #
+    # ⚠ IL NE DIT PLUS « LEX » (audit du 28/09/2026) : le logo du site, le bot
+    # d'aide et le produit payant d'aide à l'écriture portaient tous ce nom.
+    # LEX reste le produit payant ; le badge porte le nom du site, sur deux
+    # lignes, comme la pastille de l'en-tête et l'icône de l'onglet.
     bx, by, bc = MARGE, 72, 74
     d.rounded_rectangle(
         [(bx * E, by * E), ((bx + bc) * E, (by + bc) * E)],
         radius=22 * E,
         fill=ROSE,
     )
-    f_lex = police(GRAS, 26 * E)
-    lw = largeur(d, "LEX", f_lex)
-    d.text(
-        ((bx + bc / 2) * E - lw / 2, (by + bc / 2) * E - 17 * E),
-        "LEX",
-        font=f_lex,
-        fill=(255, 255, 255),
-    )
+    f_badge = police(GRAS, 17 * E)
+    for texte, dy in (("Les", -19), ("Extras", 2)):
+        lw = largeur(d, texte, f_badge)
+        d.text(
+            ((bx + bc / 2) * E - lw / 2, (by + bc / 2 + dy) * E),
+            texte,
+            font=f_badge,
+            fill=(255, 255, 255),
+        )
     d.ellipse(
         [((bx + bc - 16) * E, (by - 6) * E), ((bx + bc + 4) * E, (by + 14) * E)],
         fill=ORANGE,

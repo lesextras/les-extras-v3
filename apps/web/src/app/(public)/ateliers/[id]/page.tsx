@@ -647,6 +647,45 @@ export default async function AtelierPublicPage({ params: paramsPromesse }: { pa
         </section>
       ) : null}
 
+      {/* ── Barre fixe « prix + devis », téléphone seulement ────────────────
+          Audit du 28/09/2026 : sur téléphone, le prix et « Demander un devis »
+          n'arrivaient qu'après la galerie, le titre et toute la description,
+          entre 1 600 et 2 200 px de haut. La barre ouvre LE MÊME formulaire
+          de devis que la colonne d'action (même composant, même envoi).
+
+          ⚠ `pr-[4.5rem]` LAISSE LA PLACE À LA BULLE D'AIDE, posée en bas à
+          droite au-dessus de la barre : sans cette marge, elle recouvrirait
+          le bouton.
+          ⚠ Le pied de page s'allonge de la hauteur de la barre pour ne pas
+          être masqué (`data-barre-mobile`, voir `globals.css`). */}
+      <div
+        data-barre-mobile
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 py-3 pl-4 pr-[4.5rem] shadow-card backdrop-blur md:hidden"
+      >
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            {service.price ? (
+              <>
+                <p className="text-lg font-bold leading-tight text-foreground">
+                  {formatMoney(service.price)}
+                </p>
+                <p className="text-[11px] leading-tight text-muted-foreground">par séance</p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Tarif sur devis</p>
+            )}
+          </div>
+          <div className="shrink-0">
+            <PublicQuoteForm
+              serviceId={service.id}
+              titre={service.title}
+              principal
+              classeBouton="h-auto min-h-11 w-auto whitespace-normal px-4 py-2 leading-tight"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Référencement : service + fil d'Ariane + FAQ structurée. */}
       <script
         type="application/ld+json"

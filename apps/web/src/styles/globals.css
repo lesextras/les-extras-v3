@@ -880,3 +880,21 @@
 .scrollbar-visible::-webkit-scrollbar-thumb:hover {
   background-color: hsl(var(--muted-foreground));
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LA BARRE « PRIX + DEVIS » DES FICHES ATELIER, SUR TÉLÉPHONE (28/09/2026).
+
+   Sur une fiche atelier, au téléphone, le prix et « Demander un devis »
+   arrivaient entre 1 600 et 2 200 px de haut : après la galerie, le titre et
+   la description. Une barre fixe les garde à portée de pouce
+   (`ateliers/[id]/page.tsx`, attribut `data-barre-mobile`).
+
+   ⚠ ELLE MASQUERAIT LA FIN DU PIED DE PAGE : le pied de page s'allonge donc
+   de la hauteur de la barre, sur les seules pages qui la portent, et
+   seulement là où elle s'affiche (sous `md`, comme son `md:hidden`).
+   ═════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767.98px) {
+  body:has([data-barre-mobile]) [data-pied-site] {
+    padding-bottom: 5.5rem;
+  }
+}

@@ -101,49 +101,86 @@ export function BandeauCookies() {
 
   const lignes = avecMesure ? [...NECESSAIRES, ...MESURE] : NECESSAIRES;
 
+  // ⚠ SUR TÉLÉPHONE, DEUX LIGNES (audit du 28/09/2026). Le bandeau faisait
+  // 352 px de haut, 42 % de l'écran, et recouvrait les boutons de la page.
+  // Sous `md` il ne garde qu'une phrase courte et « Détails » sur la
+  // première ligne, les boutons sur la seconde ; le texte complet, la
+  // politique et le tableau se déplient avec « Détails ». Rien ne change à
+  // la mécanique : mêmes boutons, même ordre (refuser avant accepter), même
+  // enregistrement du choix. Au-delà de `md`, l'affichage est inchangé.
   return (
     <div
       role="region"
       aria-label={avecMesure ? "Choix concernant les cookies" : "Information sur les cookies"}
-      className="theme-sombre fixed inset-x-0 bottom-0 z-[60] border-t border-border bg-card/95 p-4 text-foreground shadow-card backdrop-blur-md md:p-5"
+      className="theme-sombre fixed inset-x-0 bottom-0 z-[60] border-t border-border bg-card/95 px-4 py-3 text-foreground shadow-card backdrop-blur-md md:p-5"
     >
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-4">
-        <div className="flex flex-wrap items-start gap-4">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+      <div className="mx-auto flex max-h-[80vh] max-w-[1200px] flex-col gap-2 overflow-y-auto md:max-h-none md:gap-4 md:overflow-visible">
+        <div className="flex flex-wrap items-start gap-2 md:gap-4">
+          <span className="hidden size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary md:grid">
             <Cookie className="size-5" aria-hidden />
           </span>
 
           <div className="min-w-0 flex-1">
-            {avecMesure ? (
-              <>
-                <p className="font-semibold">Votre accord pour la mesure de nos campagnes</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Les cookies qui vous gardent connecté sont indispensables et restent posés dans
-                  tous les cas. À côté, nous aimerions déposer un cookie de mesure : il nous dit
-                  quelle annonce a amené une inscription, et rien de plus, jamais votre identité,
-                  jamais le contenu de vos écrits professionnels.{" "}
-                  <strong className="text-foreground">
-                    Refuser ne change rien à votre utilisation du site.
-                  </strong>
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="font-semibold">Ce site n&apos;utilise que des cookies indispensables</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Aucun traceur publicitaire, aucun outil de mesure d&apos;audience, aucun partage
-                  avec des tiers. Les seuls cookies déposés servent à vous garder connecté et à
-                  mémoriser votre compte actif : sans eux, la plateforme ne fonctionne pas.
-                  C&apos;est pour cela qu&apos;il n&apos;y a rien à refuser ici.
-                </p>
-              </>
-            )}
+            {/* Téléphone : la version courte, et le dépliant. */}
+            <div className="flex items-center gap-3 md:hidden">
+              <p className="min-w-0 flex-1 text-sm leading-snug">
+                {avecMesure
+                  ? "Un cookie de mesure de nos campagnes, avec votre accord."
+                  : "Ce site n'utilise que des cookies indispensables."}
+              </p>
+              <button
+                type="button"
+                onClick={() => setDetaille((v) => !v)}
+                aria-expanded={detaille}
+                className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                Détails
+                <ChevronDown
+                  className={`size-4 transition-transform ${detaille ? "rotate-180" : ""}`}
+                  aria-hidden
+                />
+              </button>
+            </div>
+
+            {/* Le texte complet : toujours au-delà de `md`, déplié en dessous. */}
+            <div className={detaille ? "mt-2 md:mt-0" : "hidden md:block"}>
+              {avecMesure ? (
+                <>
+                  <p className="font-semibold">Votre accord pour la mesure de nos campagnes</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    Les cookies qui vous gardent connecté sont indispensables et restent posés dans
+                    tous les cas. À côté, nous aimerions déposer un cookie de mesure : il nous dit
+                    quelle annonce a amené une inscription, et rien de plus, jamais votre identité,
+                    jamais le contenu de vos écrits professionnels.{" "}
+                    <strong className="text-foreground">
+                      Refuser ne change rien à votre utilisation du site.
+                    </strong>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold">Ce site n&apos;utilise que des cookies indispensables</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    Aucun traceur publicitaire, aucun outil de mesure d&apos;audience, aucun partage
+                    avec des tiers. Les seuls cookies déposés servent à vous garder connecté et à
+                    mémoriser votre compte actif : sans eux, la plateforme ne fonctionne pas.
+                    C&apos;est pour cela qu&apos;il n&apos;y a rien à refuser ici.
+                  </p>
+                </>
+              )}
+              <Link
+                href="/legal/cookies"
+                className="mt-2 inline-flex text-sm font-medium text-primary hover:underline md:hidden"
+              >
+                La politique complète
+              </Link>
+            </div>
 
             <button
               type="button"
               onClick={() => setDetaille((v) => !v)}
               aria-expanded={detaille}
-              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              className="mt-2 hidden items-center gap-1 text-sm font-medium text-primary hover:underline md:inline-flex"
             >
               {detaille ? "Masquer le détail" : "Voir exactement ce qui est stocké"}
               <ChevronDown
@@ -153,25 +190,31 @@ export function BandeauCookies() {
             </button>
           </div>
 
-          <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
-            <Button asChild variant="outline" size="sm">
+          <div className="flex w-full shrink-0 flex-wrap items-center gap-2 md:w-auto">
+            <Button asChild variant="outline" size="sm" className="hidden md:inline-flex">
               <Link href="/legal/cookies">La politique complète</Link>
             </Button>
 
             {avecMesure ? (
               <>
                 {/* Même taille, même variante, refus en premier : accepter ne
-                    doit pas être le chemin le plus facile. */}
-                <Button variant="outline" size="sm" onClick={() => repondre("refuse")}>
+                    doit pas être le chemin le plus facile. Sur téléphone, les
+                    deux se partagent la ligne à parts égales. */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 md:flex-none"
+                  onClick={() => repondre("refuse")}
+                >
                   Refuser
                 </Button>
-                <Button size="sm" onClick={() => repondre("accepte")}>
+                <Button size="sm" className="flex-1 md:flex-none" onClick={() => repondre("accepte")}>
                   Accepter
                 </Button>
               </>
             ) : (
               <>
-                <Button size="sm" onClick={accuserReception}>
+                <Button size="sm" className="flex-1 md:flex-none" onClick={accuserReception}>
                   J&apos;ai compris
                 </Button>
                 <button

@@ -180,11 +180,15 @@ export default function LexPage() {
           relisez, vous corrigez, vous signez&nbsp;: l’écrit reste le vôtre.
         </p>
         <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+          {/* ⚠ `next` RAMÈNE DANS L'ASSISTANT après l'inscription (audit du
+              28/09/2026) : sans lui, on tombait sur le tableau de bord. Le
+              libellé est celui de `INSCRIPTION.ecrireAvecLex`, écrit en dur
+              pour que `inscription-liens.test.ts` le vérifie. */}
           <Link
-            href="/register"
+            href="/register?next=/dashboard/assistant"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
           >
-            Créer un compte
+            Créer un compte pour écrire avec LEX
             <ArrowRight className="size-4" aria-hidden />
           </Link>
           <Link

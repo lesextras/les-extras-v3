@@ -147,3 +147,43 @@ describe('texteBrut', () => {
     expect(texteBrut('<p>Bonjour</p><script>var a=1</script>')).toBe('Bonjour');
   });
 });
+
+/**
+ * L'ANCIEN WORDPRESS DOIT POUVOIR FERMER (audit du 28/09/2026) : ses liens et
+ * ses images sont réécrits AU RENDU, jamais en base.
+ */
+describe('RichText, liens et images de l’ancien WordPress', () => {
+  it('mène un lien vers une fiche WordPress à la fiche du site, sur place', () => {
+    render(
+      <RichText
+        value={'<p>Voir <a href="https://app.les-extras.fr/listing/atelier-psycho-boxe/">la psycho-boxe</a></p>'}
+      />,
+    );
+    const lien = screen.getByRole('link', { name: 'la psycho-boxe' });
+    expect(lien.getAttribute('href')).toBe('/ateliers/atelier-psycho-boxe');
+    // Un lien interne ne s'ouvre pas dans un nouvel onglet et n'est pas en nofollow.
+    expect(lien.getAttribute('target')).toBeNull();
+    expect(lien.getAttribute('rel')).toBeNull();
+  });
+
+  it('réécrit aussi un lien Markdown', () => {
+    render(<RichText value={'Voir [le catalogue](https://app.les-extras.fr/listing/theatre/)'} />);
+    expect(screen.getByRole('link', { name: 'le catalogue' }).getAttribute('href')).toBe('/ateliers');
+  });
+
+  it('garde le nouvel onglet et le nofollow sur un lien extérieur', () => {
+    render(<RichText value={'<p><a href="https://www.has-sante.fr/">la HAS</a></p>'} />);
+    const lien = screen.getByRole('link', { name: 'la HAS' });
+    expect(lien.getAttribute('target')).toBe('_blank');
+    expect(lien.getAttribute('rel')).toContain('nofollow');
+  });
+
+  it('sert une image rapatriée depuis le site', () => {
+    const { container } = render(
+      <RichText
+        value={'<p><img src="https://app.les-extras.fr/wp-content/uploads/2025/02/handisport.jpeg" alt="Handisport" /></p>'}
+      />,
+    );
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('/wp/2025/02/handisport.jpeg');
+  });
+});

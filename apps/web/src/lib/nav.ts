@@ -289,7 +289,7 @@ const freelanceNav: NavSection[] = [
       // tête de cette section-là.
       // LEX se recharge aussi depuis un compte intervenant : l'assistant IA
       // est ouvert aux deux types de comptes, à crédits pour tout le monde.
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
+      { label: 'Crédits LEX', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       { label: 'Avis', href: '/dashboard/avis', icon: Star, avance: true, rubrique: RUBRIQUE_SECONDAIRE, hint: 'Les avis reçus et ceux qu\'il vous reste à donner' },
       // La progression se REGARDE, elle ne se fait pas : c'est un état, pas un
       // geste. Rien ne s'y décide, et elle avance toute seule.
@@ -460,7 +460,7 @@ const establishmentNav: NavSection[] = [
       // prestations », dont il est la quatrième et dernière marche — publier,
       // être réservé, faire, être payé. Ne pas le redescendre : voir
       // l'avertissement en tête de cette section-là.
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
+      { label: 'Crédits LEX', href: '/dashboard/adhesion', icon: Receipt, hint: 'Votre dotation mensuelle offerte, votre consommation, le journal des générations et vos recharges. Le reste de la plateforme est gratuit.' },
       // Elle ferme la section : c'est ce qu'on vérifie, pas ce qu'on fait tous
       // les jours. Essentielle depuis le 23/09/2026 : c'est ici qu'une
       // structure contrôle les pièces d'un intervenant.
@@ -650,7 +650,7 @@ const particulierNav: NavSection[] = [
             { label: 'Ma disponibilité', href: '/dashboard/disponibilite', icon: UserPlus, hint: 'Proposer vos disponibilités pour des remplacements en CDD, et vous retirer de la liste quand vous voulez' },
           ]
         : []),
-      { label: 'LEX · Crédits', href: '/dashboard/adhesion', icon: Sparkles, hint: 'Votre dotation offerte du mois et vos recharges' },
+      { label: 'Crédits LEX', href: '/dashboard/adhesion', icon: Sparkles, hint: 'Votre dotation offerte du mois et vos recharges' },
       { label: 'Mon profil', href: '/dashboard/account', icon: Users, hint: 'Vos informations et vos préférences d’e-mail' },
       { label: 'Aide & contact', href: '/dashboard/aide', icon: LifeBuoy, hint: 'Écrivez à l’équipe Les Extras : un problème, une question. La réponse arrive ici et par e-mail.' },
     ],

@@ -9,10 +9,17 @@ export interface LogoProps {
 }
 
 /**
- * Logo « LES EXTRAS » — pastille bleu nuit « LEX » + mot-symbole.
+ * Logo « LES EXTRAS » — pastille bleu nuit « Les Extras » + mot-symbole.
  *
  * Le mot-symbole porte seul l'identité : la baseline sous le nom brouillait la
  * lecture à petite taille et doublonnait avec l'accroche de la page d'accueil.
+ *
+ * ⚠ LA PASTILLE NE DIT PLUS « LEX » (audit du 28/09/2026). Le logo, le bot
+ * d'aide et le produit payant d'aide à l'écriture s'appelaient tous « LEX » :
+ * on ne savait plus ce qui était le site, ce qui était gratuit, ce qui se
+ * payait. LEX reste le nom du produit payant, et de lui seul. La pastille porte
+ * le nom du site, comme l'icône de l'onglet et de l'application
+ * (`public/icons/`, `app/icon.svg`) : mêmes couleurs, même forme.
  */
 export function Logo({ href = '/', className, compact }: LogoProps) {
   const inner = (
@@ -21,7 +28,10 @@ export function Logo({ href = '/', className, compact }: LogoProps) {
     // au bloc un seul nom, et le detail visuel n'est plus annonce.
     <span className={cn('inline-flex items-center gap-3', className)} role="img" aria-label="LES EXTRAS">
       <span className="relative grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft" aria-hidden="true">
-        <span className="text-[15px] font-bold leading-none tracking-[0.02em]">LEX</span>
+        <span className="flex flex-col items-center text-[9.5px] font-bold leading-[1.1]">
+          <span>Les</span>
+          <span>Extras</span>
+        </span>
         <span className="absolute -right-1 -top-1 size-3 rounded-full border-2 border-background bg-secondary" />
       </span>
       {!compact && (

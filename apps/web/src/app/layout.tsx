@@ -112,7 +112,8 @@ export const metadata: Metadata = {
   // consulte au téléphone). Manifeste servi par src/app/manifest.ts.
   applicationName: 'Les Extras',
   manifest: '/manifest.webmanifest',
-  // Favicon « LEX » : l'onglet doit être reconnaissable au milieu de vingt autres.
+  // Favicon « Les Extras » (il disait « LEX » jusqu’au 28/09/2026, le nom du produit
+  // payant) : l'onglet doit être reconnaissable au milieu de vingt autres.
   icons: {
     icon: [
       { url: '/icons/favicon.svg', type: 'image/svg+xml' },

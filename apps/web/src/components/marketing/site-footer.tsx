@@ -42,7 +42,9 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       // fixé le 2/09 : ne rien y ajouter sans en retirer un.
       { label: 'LEX, l’assistant d’écriture', href: '/lex' },
       { label: 'Renfort par métier', href: '/renfort' },
-      { label: 'Tarifs', href: '/#tarifs' },
+      // « Tarifs » (/#tarifs) est retiré le 28/09/2026 avec la section de
+      // l'accueil qu'il visait : il aurait mené en haut de l'accueil. La page
+      // des prix est « Frais de service », dans la colonne « Combien ça coûte ».
       { label: "Simulateur d'économies", href: '/simulateur' },
       { label: 'Créer un compte', href: '/register' },
     ],
@@ -160,7 +162,9 @@ function colonnesAffichees() {
 /** Pied de page marketing. */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-card">
+    // `data-pied-site` : la barre fixe des fiches atelier allonge le pied de
+    // page de sa hauteur sur téléphone (voir `globals.css`).
+    <footer data-pied-site className="border-t border-border bg-card">
       <div className="mx-auto max-w-[1200px] px-6 py-10">
         <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-[1.15fr_repeat(5,minmax(0,1fr))]">
           <div>

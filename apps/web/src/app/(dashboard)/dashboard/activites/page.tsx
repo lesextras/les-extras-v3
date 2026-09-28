@@ -20,7 +20,9 @@ export default async function ActivitesPage() {
           "Deux propositions structurées par demande",
           "Points de vigilance et indicateurs d'observation inclus",
           "Noms masqués avant tout traitement",
-          "Inclus aussi : assistant d'écriture et bot d'aide LEX",
+          // Le bot d'aide n'est pas un avantage de LEX : il est gratuit pour tous, et
+          // il ne s'appelle plus LEX (audit du 28/09/2026).
+          "Inclus aussi : l'assistant d'écriture",
         ]}
       />
     );

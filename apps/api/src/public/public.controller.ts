@@ -29,7 +29,7 @@ export class PublicController {
     return this.publicService.detail(id);
   }
 
-  /** GET /public/highlights — les 10 ateliers et 10 formations mis en avant. */
+  /** GET /public/highlights — les 10 derniers ateliers ; `formations` reste vide depuis le 28/09/2026. */
   @Get('highlights')
   highlights() {
     return this.publicService.highlights();

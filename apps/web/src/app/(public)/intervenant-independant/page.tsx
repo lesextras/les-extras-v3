@@ -31,7 +31,9 @@ const ZERO = [
 ];
 
 const INCLUS = [
-  "Contrat à double signature, généré automatiquement",
+  // Un atelier se formalise par un devis et une feuille de mission, pas par
+  // un contrat (audit du 28/09/2026).
+  "Devis et feuille de mission, générés automatiquement",
   "Planning partagé, pointage et validation des heures",
   "Facture PDF éditée à la fin de la mission",
   "Messagerie interne rattachée à chaque mission",
@@ -138,7 +140,7 @@ L’association se finance sur les crédits LEX, jamais sur la rémunération de
             ))}
           </ul>
           <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-            Le temps que vous ne passez pas sur un contrat ou une facture est du temps facturable.
+            Le temps que vous ne passez pas sur un devis ou une facture est du temps facturable.
           </p>
         </section>
       </div>
@@ -230,7 +232,7 @@ La seule distinction qui change votre statut sur une intervention. Vous pouvez f
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
 Un établissement réserve votre offre. Vous intervenez{" "}
               <strong>en tant qu’indépendant</strong>, sous votre SIRET, et vous facturez en
-              direct. Devis, contrat et facture sont générés, rien n’est prélevé.
+              direct. Devis, feuille de mission et facture sont générés, rien n’est prélevé.
             </p>
             <p className="mt-3 text-sm font-medium text-foreground">
               Il vous faut donc un statut d’indépendant.

@@ -1,8 +1,14 @@
 "use client";
 
-// « Lex » — bot d'aide flottant. Sur le site public il répond sur la
-// plateforme uniquement ; dans l'espace connecté il guide l'utilisation.
-// Aucune donnée n'est conservée : l'historique vit dans l'onglet.
+// L'ASSISTANT D'AIDE — bot d'aide flottant, gratuit. Sur le site public il
+// répond sur la plateforme uniquement ; dans l'espace connecté il guide
+// l'utilisation. Aucune donnée n'est conservée : l'historique vit dans l'onglet.
+//
+// ⚠ IL NE S'APPELLE PLUS « LEX » (audit du 28/09/2026). Le logo, ce bot et le
+// produit payant d'aide à l'écriture portaient tous trois ce nom : on ne
+// savait plus ce qui était gratuit. LEX reste le nom du produit payant ; ce
+// bot est « l'Assistant d'aide ». Ses routes (`/public/chatbot`,
+// `/assistant/chat`) ne changent pas.
 import * as React from "react";
 import { MessageCircle, Send, X, Sparkles, Lock } from "lucide-react";
 import { apiRequest } from "@/lib/api";
@@ -74,7 +80,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Fermer l'assistant Lex" : "Ouvrir l'assistant Lex"}
+        aria-label={open ? "Fermer l'Assistant d'aide" : "Ouvrir l'Assistant d'aide"}
         className={cn(
           "fixed bottom-3 right-3 z-50 grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-card transition-all duration-200 hover:scale-105 sm:bottom-5 sm:right-5 sm:size-14",
           range && !open && "pointer-events-none translate-y-4 opacity-0",
@@ -87,7 +93,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
       {open ? (
         <div
           role="dialog"
-          aria-label="Assistant Lex"
+          aria-label="Assistant d'aide"
           className="fixed bottom-24 right-5 z-50 flex h-[480px] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card"
         >
           <div className="flex items-center gap-2.5 border-b border-border bg-primary px-4 py-3 text-primary-foreground">
@@ -95,7 +101,7 @@ export function ChatBot({ mode, locked = false }: { mode: "public" | "dashboard"
               <Sparkles className="size-4" />
             </span>
             <div>
-              <p className="text-sm font-semibold leading-tight">Lex : l'assistant Les Extras</p>
+              <p className="text-sm font-semibold leading-tight">Assistant d&apos;aide</p>
               <p className="text-[11px] text-primary-foreground/75">
                 {mode === "public" ? "Questions sur la plateforme" : "Aide sur votre espace"}
               </p>

@@ -135,7 +135,7 @@ export const RUBRIQUES: Rubrique[] = [
         slug: "ce-qui-est-gratuit",
         question: "Qu'est-ce qui est gratuit ?",
         reponse: [
-          "Tout le logiciel : publier un renfort, réserver un atelier, contrats, factures, planning, messagerie, pointage, coffre-fort de conformité. Gratuit, pour les établissements comme pour les intervenants, sans abonnement.",
+          "Tout le logiciel : publier un renfort, réserver un atelier, devis, feuilles de mission, factures, planning, messagerie, pointage, coffre-fort de conformité. Gratuit, pour les établissements comme pour les intervenants, sans abonnement.",
           "Ce qui se paie : LEX (l'assistant IA, à crédits), et 15 % de frais de gestion sur les renforts RenforTeam. Ils paient la vérification de l'intervenant et s'ajoutent à son tarif. Un atelier, lui, se paie à son intervenant, à son tarif, et la plateforme n'ajoute rien.",
         ],
       },
@@ -144,7 +144,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Comment fonctionnent les crédits LEX ?",
         reponse: [
           "LEX, l'assistant IA (écriture professionnelle, générateur d'activités, fiches pré-remplies), fonctionne à crédits : un crédit par génération. Chaque compte reçoit 15 générations offertes à son ouverture puis le 1er de chaque mois, sans carte bancaire et sans date de fin ; ce qui n'est pas consommé se reporte jusqu'à trois mois. Au-delà, vous rechargez par packs ou par un abonnement à dotation mensuelle.",
-          "Votre consommation, votre solde et les tarifs sont visibles dans votre espace, page « LEX, Crédits & abonnement ». Le bot d'aide, lui, reste gratuit. Les recettes soutiennent les actions de l'association.",
+          "Votre consommation, votre solde et les tarifs sont visibles dans votre espace, page « Crédits LEX ». L'Assistant d'aide, lui, reste gratuit. Les recettes soutiennent les actions de l'association.",
         ],
       },
       {
