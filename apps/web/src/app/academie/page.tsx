@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { academieConnectee, apiAcademie, sessionAcademie } from './_session';
 import { chargerChemin, tempsDe, TEINTES } from './_chemin';
+
+export const metadata: Metadata = { alternates: { canonical: '/academie' } };
 import { Accent, Barre, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, Encart, Pastille, SousTitre, Titre, Tuile, formaterDate } from './_ui';
 import { LIBELLES_QUALIOPI, type EspaceAcademie } from './_types';
 import { BlocStatistiques } from './_stats';

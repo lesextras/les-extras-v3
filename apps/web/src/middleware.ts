@@ -115,7 +115,20 @@ export async function middleware(request: NextRequest) {
       return NextResponse.rewrite(url);
     }
 
-    // Fichiers partagés entre les sites (robots, plan du site…).
+    // ROBOTS ET PLAN DU SITE : les siens. Les fichiers partagés annonçaient
+    // les-extras.fr/sitemap.xml, donc aucune page de Pilote aux moteurs.
+    if (pathname === '/robots.txt') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/pilote/robots.txt';
+      return NextResponse.rewrite(url);
+    }
+    if (pathname === '/sitemap.xml') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/plan-pilote';
+      return NextResponse.rewrite(url);
+    }
+
+    // Fichiers partagés entre les sites (icônes, modèles…).
     if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
 
     // Les pages publiques hors espace : un formulaire partagé, la vitrine d'une

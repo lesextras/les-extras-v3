@@ -5,7 +5,7 @@ import { CARTE, Encart, Titre, formaterDate } from '../_ui';
 import { LIBELLES_QUALIOPI, type FicheAcademie } from '../_types';
 import { ReferentielQualiopi, type Referentiel } from './Referentiel';
 
-export const metadata: Metadata = { title: 'Ma certification Qualiopi' };
+export const metadata: Metadata = { title: 'Ma certification Qualiopi', alternates: { canonical: '/academie/certification' } };
 
 /**
  * `/academie/certification` — OÙ EN EST LA CERTIFICATION.

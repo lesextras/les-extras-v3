@@ -29,7 +29,7 @@ export const ETAPES_ACADEMIE: EtapeAcademie[] = [
     numero: 1,
     titre: 'Vérifier que c\'est bien de la formation',
     resume:
-      "Toute transmission de savoir n'est pas de la formation professionnelle. L'action doit viser une compétence pour l'emploi, avoir des objectifs évaluables, un programme, une durée et un public identifié. De l'animation, du conseil ou du coaching relèvent d'autres régimes — et n'ouvrent pas droit aux financements.",
+      "Toute transmission de savoir n'est pas de la formation professionnelle. L'action doit viser une compétence pour l'emploi, avoir des objectifs évaluables, un programme, une durée et un public identifié. De l'animation, du conseil ou du coaching relèvent d'autres régimes, et n'ouvrent pas droit aux financements.",
     pourPasser: 'Tu sais dire en une phrase quelle compétence professionnelle ta formation fait acquérir.',
   },
   {
@@ -54,7 +54,7 @@ export const ETAPES_ACADEMIE: EtapeAcademie[] = [
     numero: 4,
     titre: 'Signer la première convention',
     resume:
-      "C'est le point que personne ne voit venir : la déclaration d'activité n'est recevable qu'accompagnée d'une première convention de formation professionnelle — ou d'un contrat, si l'apprenant paie lui-même. Il faut donc une première vente avant d'être déclaré.",
+      "C'est le point que personne ne voit venir : la déclaration d'activité n'est recevable qu'accompagnée d'une première convention de formation professionnelle (ou d'un contrat, si l'apprenant paie lui-même). Il faut donc une première vente avant d'être déclaré.",
     pourPasser: 'Une convention ou un contrat de formation est signé.',
   },
   {
@@ -62,7 +62,7 @@ export const ETAPES_ACADEMIE: EtapeAcademie[] = [
     numero: 5,
     titre: 'Déposer la déclaration d\'activité',
     resume:
-      "Le dossier part à la DREETS de ta région, dans les trois mois qui suivent la première convention. En retour, le numéro de déclaration d'activité (NDA) — onze chiffres. Il ne vaut pas agrément et ne se présente jamais comme tel : la mention exacte est « Cet enregistrement ne vaut pas agrément de l'État ».",
+      "Le dossier part à la DREETS de ta région, dans les trois mois qui suivent la première convention. En retour, le numéro de déclaration d'activité (NDA), onze chiffres. Il ne vaut pas agrément et ne se présente jamais comme tel : la mention exacte est « Cet enregistrement ne vaut pas agrément de l'État ».",
     pourPasser: 'Ton NDA est renseigné dans ta fiche.',
     deduite: 'nda',
   },
@@ -79,7 +79,7 @@ export const ETAPES_ACADEMIE: EtapeAcademie[] = [
     numero: 7,
     titre: 'Désigner le référent handicap',
     resume:
-      "Obligatoire, et vérifié en audit : une personne nommée, joignable, dont le nom est publié. Elle n'a pas à être experte — elle doit savoir orienter et adapter. Le référent pédagogique se désigne dans la foulée.",
+      "Obligatoire, et vérifié en audit : une personne nommée, joignable, dont le nom est publié. Elle n'a pas à être experte : elle doit savoir orienter et adapter. Le référent pédagogique se désigne dans la foulée.",
     pourPasser: 'Le référent handicap est nommé dans ta fiche.',
     deduite: 'referentHandicap',
   },
@@ -122,7 +122,7 @@ export const ETAPES_ACADEMIE: EtapeAcademie[] = [
     numero: 12,
     titre: 'S\'ouvrir aux financements',
     resume:
-      "Certifié, tu peux te référencer : EDOF pour le CPF, conventionnement avec les OPCO, catalogue France Travail. Et chaque année avant le 30 avril, le bilan pédagogique et financier — l'oublier suspend la déclaration d'activité.",
+      "Certifié, tu peux te référencer : EDOF pour le CPF, conventionnement avec les OPCO, catalogue France Travail. Et chaque année avant le 30 avril, le bilan pédagogique et financier : l'oublier suspend la déclaration d'activité.",
     pourPasser: 'Tu es référencé sur au moins un dispositif de financement.',
   },
 ];

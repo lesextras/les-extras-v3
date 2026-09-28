@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { descriptionSeo } from '@/lib/meta';
+import { titrePilote } from '../../../_pilote-seo';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Pastille } from '../../_ui';
@@ -14,8 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ etape: st
   const d = await chargerEtape(etape);
   if (!d) return { title: 'Étape introuvable' };
   return {
-    title: `Étape ${d.etape.numero} : ${d.etape.titre}`,
-    description: `${d.etape.enUnMot} ${d.etape.pourquoi}`,
+    title: titrePilote(`Étape ${d.etape.numero} : ${d.etape.titre}`, 'Piloter mon association'),
+    description: descriptionSeo(`${d.etape.enUnMot} ${d.etape.pourquoi}`),
     alternates: { canonical: `/chemin/${d.etape.slug}` },
   };
 }

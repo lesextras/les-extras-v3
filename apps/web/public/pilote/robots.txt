@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /espace
+Disallow: /academie/espace
+Disallow: /academie/mon-academie
+
+Sitemap: https://pilote.toulali.fr/sitemap.xml

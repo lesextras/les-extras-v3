@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { descriptionSeo } from '@/lib/meta';
+import { titrePilote } from '../../../_pilote-seo';
 import { notFound } from 'next/navigation';
 import { chargerEtape, tempsDe, TEINTES } from '../../_chemin';
 import { academieConnectee, apiAcademie, sessionAcademie } from '../../_session';
@@ -15,7 +17,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { etape: slug } = await params;
   const d = await chargerEtape(slug);
   if (!d) return { title: 'Étape introuvable' };
-  return { title: d.etape.titre, description: d.etape.resume.slice(0, 300) };
+  return {
+    title: titrePilote(d.etape.titre, 'Piloter mon académie'),
+    description: descriptionSeo(d.etape.resume),
+    alternates: { canonical: `/academie/chemin/${d.etape.slug}` },
+  };
 }
 
 /** UNE ÉTAPE DU CHEMIN : ce qu'elle est, ce qu'il faut pour passer à la suivante. */

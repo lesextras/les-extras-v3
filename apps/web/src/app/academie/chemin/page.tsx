@@ -7,6 +7,7 @@ import type { EspaceAcademie } from '../_types';
 
 export const metadata: Metadata = {
   title: 'Le chemin',
+  alternates: { canonical: '/academie/chemin' },
   description:
     "Douze étapes, de l'idée à l'organisme de formation certifié Qualiopi et finançable : ce qu'il faut faire, dans l'ordre où ça se pose vraiment.",
 };
