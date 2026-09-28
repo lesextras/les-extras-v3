@@ -893,6 +893,17 @@ export class MailService implements OnModuleDestroy {
     html: string,
     pieces?: PieceJointe[],
   ): Promise<void> {
+    // ADRESSES QUI NE PEUVENT RIEN RECEVOIR (28/09/2026). Le domaine
+    // `intervenants.les-extras.fr` n'a aucun enregistrement MX : les quatre
+    // comptes créés par le seed du 27/07/2026 y ont une adresse de façade.
+    // Chaque envoi revenait en erreur et abîmait la réputation d'envoi du
+    // domaine. On n'écrit plus à ces adresses ; les comptes et leurs fiches
+    // restent en ligne. Le jour où une vraie adresse est posée, le compte
+    // redevient joignable sans rien changer ici.
+    if (adresseSansBoite(to)) {
+      this.logger.warn(`[MAIL] non envoyé (domaine sans boîte) to=${to} subject="${subject}"`);
+      return;
+    }
     const transport = this.transport;
     if (transport) {
       try {
@@ -2654,4 +2665,12 @@ function echapper(texte: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/** Domaines sans boîte aux lettres : jamais d'envoi. */
+export const DOMAINES_SANS_BOITE = ['intervenants.les-extras.fr'];
+
+export function adresseSansBoite(adresse: string): boolean {
+  const domaine = String(adresse ?? '').trim().toLowerCase().split('@').pop() ?? '';
+  return DOMAINES_SANS_BOITE.includes(domaine);
 }
