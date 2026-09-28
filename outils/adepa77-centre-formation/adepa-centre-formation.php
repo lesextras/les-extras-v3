@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ADéPA, centre de formation
  * Description: Le catalogue des formations de l'organisme de formation ADéPA (certifié Qualiopi) : formations en établissement sur devis, parcours gratuits en ligne, demandes de devis, et pages réglementaires (informations Qualiopi, CGV formation, réclamation, accessibilité), et prise de rendez-vous en ligne (créneaux de 20 minutes).
- * Version: 1.4.6
+ * Version: 1.4.8
  * Author: Association ADéPA
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-define('ADEPA_CF_VERSION', '1.4.6');
+define('ADEPA_CF_VERSION', '1.4.8');
 define('ADEPA_CF_DIR', plugin_dir_path(__FILE__));
 define('ADEPA_CF_URL', plugin_dir_url(__FILE__));
 define('ADEPA_CF_TYPE', 'adepa_formation');

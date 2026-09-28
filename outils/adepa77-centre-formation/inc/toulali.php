@@ -24,7 +24,10 @@ add_action('parse_request', function () {
 		return;
 	}
 	nocache_headers();
-	wp_redirect(adepa_cf_teachizy('formations/community-manager-ia'), 302, 'ADePA');
+	// 1.4.8 : la formation Community Manager IA est offerte aux jeunes de Melun
+	// Val de Seine par le studio A2PA ; c'est a2pa.fr qui explique l'accès et
+	// renvoie au programme sur Teachizy (demande de Siham, 28/09/2026).
+	wp_redirect('https://a2pa.fr/#seformer', 302, 'ADePA');
 	exit;
 }, 1);
 
@@ -143,6 +146,53 @@ function adepa_cf_migration_145() {
 		\Elementor\Plugin::$instance->files_manager->clear_cache();
 	}
 	update_option('adepa_cf_migration_145', array('date' => current_time('mysql'), 'bilan' => $bilan), false);
+}
+
+/**
+ * Migration 1.4.7 : un seul menu « Notre académie » sur tout le site.
+ * L'en-tête du modèle Elementor (5093) gardait trois entrées que l'accueil
+ * n'a plus : bilan en Seine-et-Marne, grille tarifaire, renfort éducatif.
+ * Les pages existent toujours ; elles sortent seulement du menu, comme sur
+ * l'accueil. Copie d'avant : méta `_adepa_cf_elementor_avant_147`.
+ */
+function adepa_cf_regles_147() {
+	$slugs = 'bilan-de-competences-seine-et-marne|grille-tarifaire-bilans-de-competences|renfort-educatif-en-etablissement-medico-social';
+	return array(
+		'menu' => array('~\s*<a(?:\s+class="msub")?\s+href="https://adepa77\.fr/(?:' . $slugs . ')/">[^<]*</a>~u', ''),
+	);
+}
+
+function adepa_cf_migration_147() {
+	global $wpdb;
+	$ids = $wpdb->get_col("SELECT DISTINCT pm.post_id FROM {$wpdb->postmeta} pm JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+		WHERE pm.meta_key = '_elementor_data' AND p.post_type <> 'revision'
+		AND pm.meta_value LIKE '%grille-tarifaire-bilans-de-competences%' AND pm.meta_value LIKE '%adepa-hdr%'");
+	$bilan = array();
+	foreach ($ids as $id) {
+		$brut = get_post_meta($id, '_elementor_data', true);
+		$data = is_string($brut) ? json_decode($brut) : null;
+		if ($data === null) {
+			continue;
+		}
+		$compte = array();
+		adepa_cf_toulali_parcourir($data, adepa_cf_regles_147(), $compte, 'adepa-hdr');
+		if (!$compte) {
+			continue;
+		}
+		$json = wp_json_encode($data);
+		if (!$json) {
+			continue;
+		}
+		add_post_meta($id, '_adepa_cf_elementor_avant_147', wp_slash($brut), true);
+		update_post_meta($id, '_elementor_data', wp_slash($json));
+		delete_post_meta($id, '_elementor_element_cache');
+		delete_post_meta($id, '_elementor_css');
+		$bilan[$id] = $compte;
+	}
+	if (class_exists('\Elementor\Plugin') && isset(\Elementor\Plugin::$instance->files_manager)) {
+		\Elementor\Plugin::$instance->files_manager->clear_cache();
+	}
+	update_option('adepa_cf_migration_147', array('date' => current_time('mysql'), 'bilan' => $bilan), false);
 }
 
 /** Migration 1.4.1 : applique les règles à tous les contenus Elementor qui citent Toulali. */

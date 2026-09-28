@@ -6104,3 +6104,29 @@ l'IA, marges et budget, export comptable), débloqué UNIQUEMENT après paiement
   pages `/espace/factures` et `/academie/factures`, entrées de menu « Mes
   factures · Premium » dans les deux `BarreLaterale`. 5 tests
   (`factures.service.spec.ts`).
+
+### 28/09/2026 (nuit) — un seul menu sur adepa77, et a2pa.fr présente l'e-learning
+
+- **adepa77 1.4.7** (`adepa_cf_migration_147`) : le modèle d'en-tête Elementor
+  (5093) portait sous « Notre académie » trois entrées que l'accueil (4883,
+  widget 778f086) n'avait plus : bilan en Seine-et-Marne, grille tarifaire,
+  renfort éducatif. Retirées du menu (les pages existent toujours) ; copie
+  d'avant en méta `_adepa_cf_elementor_avant_147`. Le menu Astra « Primary
+  Menu » (id 23, item 5073) pointait encore sur toulali.fr : → /community-manager/.
+- **1.4.8** : `/community-manager/` redirige vers `https://a2pa.fr/#seformer`
+  (c'est le studio qui offre la formation aux jeunes), plus vers Teachizy.
+- ⚠ **Le dossier de l'extension sur le site s'appelle `adepa-centre-formation/`**
+  (sans « 77 »). Un zip dont le dossier racine est `adepa77-centre-formation`
+  s'installe À CÔTÉ, en doublon inactif, et son activation échoue en fatale
+  (fonctions redéclarées). Un tel doublon 1.4.7 est resté sur le site (la
+  suppression a été refusée au garde-fou) : **à supprimer par Siham dans
+  Extensions**, il est inactif et sans effet. Toujours zipper depuis
+  `/tmp/z/adepa-centre-formation`.
+- **a2pa.fr** (dépôt `lesextras/a2pa-studio`, fichier `public/home.html`,
+  déploiement manuel Coolify `e1351sp07kqo6e2xun4rz4t0`) : la section
+  `#seformer` présente trois formations en e-learning avec leurs liens Teachizy :
+  Workshop Studio A2PA (gratuit), Community Manager IA (offerte aux jeunes de
+  Melun Val de Seine par le studio, « Demander mon accès » → formulaire),
+  Community Manager Mobile (59 €, prix relevé sur Teachizy). Toulali n'y est
+  plus présenté comme centre de formation : ADéPA l'est. Le lien pied de page
+  « Toulali — formations » → adepa77.fr/formations/.

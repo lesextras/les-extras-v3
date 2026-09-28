@@ -61,6 +61,10 @@ function adepa_cf_migrer() {
 		// 1.4.5 : « profils vérifiés » et « formation en ligne » retirés de l'accueil (inc/toulali.php).
 		adepa_cf_migration_145();
 	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.4.7', '<')) {
+		// 1.4.7 : le menu « Notre académie » du modèle d'en-tête aligné sur celui de l'accueil.
+		adepa_cf_migration_147();
+	}
 
 	update_option('adepa_cf_version', ADEPA_CF_VERSION, true);
 	delete_transient('adepa_cf_migration_en_cours');
