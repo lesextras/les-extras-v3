@@ -6140,3 +6140,15 @@ l'IA, marges et budget, export comptable), débloqué UNIQUEMENT après paiement
   `PILOTE_FACTURES_PRIX_CENTS=2000` posée sur l'app API (Coolify), API
   redéployée. ⚠ Coolify crée la variable en Production ET en Preview (deux
   lignes du même nom, c'est normal).
+- **Teachizy : la formation images IA devient un parcours complet** (uuid
+  `b7fc7cc0-55b7-436a-9031-4df62ff79976`, renommée « Créer du contenu avec
+  l’IA : images, vidéos, avatars et monétisation », toujours en BROUILLON,
+  prix 0 à fixer par Siham). 10 sections, 32 leçons : Introduction (bases,
+  cadre juridique), Images 1 à 5 (existantes, renommées), puis Vidéos,
+  Avatars et voix, Montage/son/effets, Publier et monétiser (loi du 9 juin
+  2023 sur l’influence commerciale, mentions IA). Source :
+  `outils/teachizy/images-ia/parcours-complet.js` ; les 16 nouvelles leçons
+  sont vérifiées identiques au caractère près en ligne. ⚠ Mêmes chapitres que
+  la formation Skool de référence, contenu entièrement original ; aucun chiffre
+  de vues ni de revenu. ⚠ `POST training_items` ignore `order` : l’intro a été
+  remontée en tête par l’émission du v-model du `draggable`.
